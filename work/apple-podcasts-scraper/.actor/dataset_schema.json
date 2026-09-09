@@ -1,0 +1,270 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Type",
+        "example": "episode"
+      },
+      "collectionId": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "CollectionId",
+        "example": 1434243584
+      },
+      "podcastName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PodcastName",
+        "example": "Lex Fridman Podcast"
+      },
+      "episodeId": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "EpisodeId",
+        "example": 1000786117598
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "#501 \u2013 DHH: Future of Programming, AI, Agentic Engineering, Vibe Coding & Linux"
+      },
+      "episodeNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodeNumber"
+      },
+      "seasonNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SeasonNumber"
+      },
+      "releaseDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReleaseDate",
+        "example": "2026-08-26T21:47:04Z"
+      },
+      "durationMs": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "DurationMs",
+        "example": 19317000
+      },
+      "durationMinutes": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "DurationMinutes",
+        "example": 322
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description",
+        "example": "DHH is the creator of Ruby on Rails, Omarchy Linux, CTO of 37signals, and a racecar driver.\n\nThank you for listening \u2764 C"
+      },
+      "shortDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ShortDescription",
+        "example": "DHH is the creator of Ruby on Rails, Omarchy Linux, CTO of 37signals, and a racecar driver.\n\nThank you for listening \u2764 C"
+      },
+      "episodeUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodeUrl",
+        "example": "https://media.blubrry.com/takeituneasy/ins.blubrry.com/takeituneasy/lex_ai_dhh_2.mp3"
+      },
+      "episodeFileExtension": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodeFileExtension",
+        "example": "mp3"
+      },
+      "episodeContentType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodeContentType",
+        "example": "audio"
+      },
+      "episodeGuid": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodeGuid",
+        "example": "https://lexfridman.com/?p=6506"
+      },
+      "explicit": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Explicit",
+        "example": true
+      },
+      "artworkUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ArtworkUrl",
+        "example": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts115/v4/3e/e3/9c/3ee39c89-de08-47a6-7f3d-3849cef6d255/mza_16657851278549"
+      },
+      "episodePageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodePageUrl",
+        "example": "https://podcasts.apple.com/us/podcast/501-dhh-future-of-programming-ai-agentic-engineering/id1434243584?i=1000786117598&"
+      },
+      "feedUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FeedUrl",
+        "example": "https://lexfridman.com/feed/podcast/"
+      },
+      "artistName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ArtistName",
+        "example": "Lex Fridman"
+      },
+      "podcastUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PodcastUrl",
+        "example": "https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584?uo=4"
+      },
+      "primaryGenre": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimaryGenre",
+        "example": "Technology"
+      },
+      "episodeCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "EpisodeCount",
+        "example": 502
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ScrapedAt",
+        "example": "2026-09-09T22:05:26.821Z"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "type",
+          "collectionId",
+          "podcastName",
+          "episodeId",
+          "title",
+          "episodeNumber",
+          "seasonNumber",
+          "releaseDate",
+          "durationMs",
+          "durationMinutes"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "collectionId": {
+            "label": "CollectionId",
+            "format": "number"
+          },
+          "podcastName": {
+            "label": "PodcastName",
+            "format": "text"
+          },
+          "episodeId": {
+            "label": "EpisodeId",
+            "format": "number"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "episodeNumber": {
+            "label": "EpisodeNumber",
+            "format": "text"
+          },
+          "seasonNumber": {
+            "label": "SeasonNumber",
+            "format": "text"
+          },
+          "releaseDate": {
+            "label": "ReleaseDate",
+            "format": "text"
+          },
+          "durationMs": {
+            "label": "DurationMs",
+            "format": "number"
+          },
+          "durationMinutes": {
+            "label": "DurationMinutes",
+            "format": "number"
+          }
+        }
+      }
+    }
+  }
+}

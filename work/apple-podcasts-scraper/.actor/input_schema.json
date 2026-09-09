@@ -1,0 +1,103 @@
+{
+  "title": "Apple Podcasts Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "dataType": {
+      "title": "What to scrape",
+      "type": "string",
+      "description": "episodes = every episode of the given shows; reviews = listener reviews and star ratings; podcasts = the show records themselves (use with Search terms to discover shows).",
+      "default": "episodes",
+      "enum": ["episodes", "reviews", "podcasts"],
+      "enumTitles": ["Episodes", "Listener reviews", "Podcasts (search / show info)"],
+      "editor": "select"
+    },
+    "podcasts": {
+      "title": "Podcasts",
+      "type": "array",
+      "description": "Apple Podcasts URLs or numeric show IDs, e.g. https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584 or 1434243584.",
+      "editor": "stringList",
+      "prefill": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"]
+    },
+    "searchTerms": {
+      "title": "Search terms",
+      "type": "array",
+      "description": "Find shows by keyword instead of (or as well as) giving URLs. Each match is then scraped according to 'What to scrape'.",
+      "editor": "stringList",
+      "prefill": []
+    },
+    "searchLimit": {
+      "title": "Podcasts per search term",
+      "type": "integer",
+      "description": "How many shows to take from each search term (max 200).",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 200
+    },
+    "country": {
+      "title": "Country storefront",
+      "type": "string",
+      "description": "Two-letter storefront code (us, gb, de, ...). Availability, charts and reviews differ per storefront.",
+      "default": "us",
+      "editor": "textfield"
+    },
+    "maxEpisodesPerPodcast": {
+      "title": "Max episodes per podcast",
+      "type": "integer",
+      "description": "Apple's episode endpoint exposes up to 200 of the most recent episodes per show.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 200
+    },
+    "maxReviewsPerPodcast": {
+      "title": "Max reviews per podcast",
+      "type": "integer",
+      "description": "Apple exposes up to 500 reviews (10 pages of 50) per show per storefront.",
+      "default": 200,
+      "minimum": 1,
+      "maximum": 500
+    },
+    "sort": {
+      "title": "Review sort",
+      "type": "string",
+      "description": "Only applies to reviews.",
+      "default": "mostRecent",
+      "enum": ["mostRecent", "mostHelpful"],
+      "editor": "select"
+    },
+    "includePodcastInfo": {
+      "title": "Include show metadata on every row",
+      "type": "boolean",
+      "description": "Attach show name, host, genre, RSS feed URL and episode count to each episode/review row.",
+      "default": true
+    },
+    "maxResults": {
+      "title": "Max results (total)",
+      "type": "integer",
+      "description": "Overall cap across all shows — also caps what you pay for.",
+      "default": 2000,
+      "minimum": 1,
+      "maximum": 50000
+    },
+    "minRating": {
+      "title": "Minimum star rating",
+      "type": "integer",
+      "description": "Reviews only: keep reviews rated >= this (1-5).",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "maxRating": {
+      "title": "Maximum star rating",
+      "type": "integer",
+      "description": "Reviews only: keep reviews rated <= this (1-5).",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "keyword": {
+      "title": "Keyword filter",
+      "type": "string",
+      "description": "Reviews only: keep reviews whose title or text contains this word/phrase (case-insensitive).",
+      "editor": "textfield"
+    }
+  }
+}
