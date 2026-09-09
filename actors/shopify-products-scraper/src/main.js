@@ -24,7 +24,17 @@ async function pushResult(item) {
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
   return pushed < maxResults;
 }
-const http = (url) => gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, headers: { accept: 'application/json,text/html' } });
+// Shopify's localization layer strips `compare_at_price` out of the JSON endpoints when the
+// request carries an Accept-Language header (some stores only: brooklinen.com returns 760
+// variants with a compare price without it and 0 with it; allbirds/rothys are unaffected).
+// got-scraping's header generator always adds one, so send an explicit empty value to suppress
+// it — omitting the key lets the generator put its own back. Without this, `compareAtPrice`
+// and `isOnSale` are silently wrong (null/false) on affected stores.
+const request = (url, headers) => gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, headers: { accept: 'application/json,text/html', ...headers } });
+const http = async (url) => {
+  try { return await request(url, { 'accept-language': '' }); }
+  catch (e) { return request(url, {}); } // a store that rejects the empty header still gets served, just without sale prices
+};
 const textOf = (html) => (html ? cheerio.load(html).text().replace(/\s+/g, ' ').trim() : null);
 
 function endpointFor(raw) {
