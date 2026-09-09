@@ -3,15 +3,24 @@
 {% block desc %}{{ t.summary }}{% endblock %}
 {% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}","offers":{"@type":"Offer","price":"0.0025","priceCurrency":"USD","description":"Pay per result"}}</script>{% endblock %}
 {% block body %}
-<h1>{{ t.title }}</h1>
-<p class="lead">{{ t.summary }}</p>
+<div style="padding-top:40px"><p class="muted"><a href="/tools">Tools</a> / {{ t.title }}</p><h1>{{ t.title }}</h1><p class="lead" style="color:var(--ink-2);max-width:720px">{{ t.summary }}</p></div>
+<div class="two">
+<div>
 {% if t.description %}<div class="prose">{{ t.description | safe }}</div>{% endif %}
 <h2>Run it</h2>
 <pre><code>curl -X POST {{ site_url }}/api/v1/run/{{ t.slug }} \
   -H "Authorization: Bearer YOUR_KEY" -H "Content-Type: application/json" \
   -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>
-<p>Price: <strong>{{ t.credits_per_result or 1 }} credit per result</strong> (<a href="/pricing">credit packs</a>). Also available on <a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Apify Store</a> with pay-per-event pricing.</p>
-{% if t.output_fields %}<h2>Output fields</h2><ul>{% for f in t.output_fields %}<li><code>{{ f }}</code></li>{% endfor %}</ul>{% endif %}
+{% if t.output_fields %}<h2>Output fields</h2><p class="prose">{% for f in t.output_fields %}<code>{{ f }}</code> {% endfor %}</p>{% endif %}
 {% if t.sample_output %}<h2>Sample output</h2><pre><code>{{ t.sample_output | tojson(indent=2) }}</code></pre>{% endif %}
 <p class="muted">Only publicly accessible pages are read. Respect the source site's terms when using the data.</p>
+</div>
+<aside class="side">
+  <div class="price">{{ t.credits_per_result or 1 }} credit <small>per result</small></div>
+  <div class="muted">About ${{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }} per result on the Starter pack. Failed runs are free.</div>
+  <a class="btn" href="/pricing">Buy credits</a>
+  <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
+  <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
+</aside>
+</div>
 {% endblock %}

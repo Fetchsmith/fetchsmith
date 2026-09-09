@@ -1,26 +1,56 @@
 {% extends "base.html" %}
 {% block body %}
 <section class="hero">
-  <h1>Public web pages in, clean JSON out.</h1>
-  <p class="lead">FetchSmith is a catalog of small, reliable data extraction tools. Call one HTTP endpoint, pay only per result returned, and skip running scrapers yourself.</p>
-  <p><a class="btn" href="/tools">Browse tools</a> <a class="btn ghost" href="/docs">Read the API docs</a></p>
+  <div>
+    <div class="eyebrow"><i></i>{{ count }} tools live · new ones every week</div>
+    <h1>Public web pages in.<br>Clean JSON out.</h1>
+    <p class="lead">FetchSmith is a catalog of small, reliable data extraction tools. Call one endpoint, pay only per result returned, and skip running scrapers yourself.</p>
+    <div class="btns"><a class="btn" href="/tools">Browse tools</a><a class="btn ghost" href="/docs">Read the API docs</a></div>
+  </div>
+  <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="c"># one request, structured results</span>
+<span class="k">curl</span> -X POST {{ site_url }}/api/v1/run/google-news-scraper \
+  -H <span class="s">"Authorization: Bearer $FETCHSMITH_KEY"</span> \
+  -d <span class="s">'{"queries":["electric vehicles"],"max_results":50}'</span>
+
+{
+  <span class="s">"results"</span>: <span class="n">50</span>,
+  <span class="s">"credits_charged"</span>: <span class="n">50</span>,
+  <span class="s">"items"</span>: [{
+    <span class="s">"title"</span>: <span class="s">"EV sales hit a new record in Europe"</span>,
+    <span class="s">"source"</span>: <span class="s">"Reuters"</span>,
+    <span class="s">"url"</span>: <span class="s">"https://www.reuters.com/..."</span>,
+    <span class="s">"publishedAt"</span>: <span class="s">"2026-09-08T06:10:00Z"</span>
+  }, <span class="c">…</span>]
+}</pre></div>
 </section>
-<section class="grid3">
-  <div><h3>Per result, not per month</h3><p>Credits never expire. A result that fails to come back is never charged.</p></div>
-  <div><h3>Maintained daily</h3><p>Every tool is re-tested each night and repaired when a source site changes.</p></div>
-  <div><h3>Two ways to run</h3><p>Use the hosted API with your key, or run the same tools on Apify with pay-per-event pricing.</p></div>
+<section class="stats">
+  <div class="stat"><b>Per result</b><span>Charged only for rows returned. Failed runs are free.</span></div>
+  <div class="stat"><b>No browser</b><span>HTTP-only tools finish in seconds and cost almost nothing.</span></div>
+  <div class="stat"><b>Nightly checks</b><span>Every tool is re-tested each night and fixed when a site changes.</span></div>
+  <div class="stat"><b>Two ways to run</b><span>Hosted API with a key, or the same tools on Apify Store.</span></div>
 </section>
 {% if tools %}
 <section>
-  <h2>Latest tools</h2>
+  <div class="section-head"><h2>Tools</h2>{% if count > tools|length %}<a href="/tools">See all {{ count }} →</a>{% endif %}</div>
   <div class="cards">
   {% for t in tools %}
-    <a class="card" href="/tools/{{ t.slug }}"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span></a>
+    <a class="card" href="/tools/{{ t.slug }}"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span><div class="meta"><span class="pill">{{ t.credits_per_result or 1 }} credit / result</span>{% if t.status == 'beta' %}<span class="pill gray">beta</span>{% endif %}</div></a>
   {% endfor %}
   </div>
-  {% if count > tools|length %}<p><a href="/tools">See all {{ count }} tools →</a></p>{% endif %}
 </section>
 {% else %}
 <section class="notice">The first tools are being published this week. Check back shortly or <a href="/contact">tell us which site you need data from</a>.</section>
 {% endif %}
+<section>
+  <h2>How it works</h2>
+  <div class="grid3">
+    <div class="feature"><div class="ic">1</div><h3>Pick a tool</h3><p>Each tool targets one site or one kind of page and documents its input and output fields.</p></div>
+    <div class="feature"><div class="ic">2</div><h3>Buy credits or run on Apify</h3><p>Prepaid credits never expire. Prefer usage billing? Run the same tool on Apify Store.</p></div>
+    <div class="feature"><div class="ic">3</div><h3>Call the endpoint</h3><p>POST your input, get JSON back in seconds. You're charged only for results actually returned.</p></div>
+  </div>
+</section>
+<section>
+  <h2>Need a site we don't cover?</h2>
+  <p class="prose">Email <a href="mailto:requests@fetchsmith.com">requests@fetchsmith.com</a> with the URL and the fields you need. Popular requests are built within days and published for everyone.</p>
+</section>
 {% endblock %}

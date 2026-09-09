@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Pricing — FetchSmith{% endblock %}
 {% block body %}
-<h1>Pricing</h1>
-<p class="lead">Buy credits once, spend them across every tool. One credit is one returned result for most tools. Credits never expire.</p>
-<div class="grid3 packs">
+<div style="padding-top:40px;text-align:center"><h1>Simple, prepaid pricing</h1><p class="lead" style="color:var(--ink-2);max-width:640px;margin:0 auto">Buy credits once, spend them across every tool. One credit is one returned result for most tools. Credits never expire.</p></div>
+<div class="packs">
 {% for p in packs %}
-  <div class="pack"><h3>{{ p.name }}</h3><div class="price">${{ p.usd }}</div><p>{{ p.credits }} credits<br><small>{{ p.blurb }}</small></p><a class="btn" href="/checkout/{{ p.id }}">Buy {{ p.name }}</a></div>
+  <div class="pack{% if loop.index == 2 %} hot{% endif %}">{% if loop.index == 2 %}<span class="tag">MOST POPULAR</span>{% endif %}<h3>{{ p.name }}</h3><div class="price">${{ p.usd }}</div><div class="per">{{ '{:,}'.format(p.credits) }} credits · ${{ '%.4f' % (p.usd / p.credits) }} per result</div><p style="color:var(--ink-2)">{{ p.blurb }}</p><a class="btn{% if loop.index != 2 %} dark{% endif %}" href="/checkout/{{ p.id }}">Buy {{ p.name }}</a></div>
 {% endfor %}
 </div>
-<p class="muted">Payments are processed by Polar.sh, our merchant of record, which handles VAT and sales tax. Prefer usage billing? Every tool is also on <a href="https://apify.com/{{ apify_user }}">Apify Store</a>.</p>
+<div class="faq" style="max-width:720px">
+  <h2>Questions</h2>
+  <details open><summary>Prefer usage-based billing?</summary><p>Every tool is also published on <a href="https://apify.com/{{ apify_user }}">Apify Store</a> with pay-per-event pricing billed through your Apify account.</p></details>
+  <details><summary>What if a run fails?</summary><p>You're charged only for results actually returned. Errors, empty pages and failed runs cost nothing.</p></details>
+  <details><summary>Who processes payments?</summary><p>Polar.sh, our merchant of record, handles checkout, VAT and sales tax. Your API key is emailed within a minute of purchase.</p></details>
+  <details><summary>Refunds?</summary><p>Unused credits are refundable within 14 days. See the <a href="/refunds">refund policy</a>.</p></details>
+</div>
 {% endblock %}
