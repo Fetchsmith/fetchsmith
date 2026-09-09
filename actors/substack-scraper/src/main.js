@@ -187,11 +187,15 @@ async function handlePost(post, origin, preloadedDetail = null) {
   return keepGoing;
 }
 
+// Returns 'ok' | 'empty' (archive has no matching posts) | 'filtered' (posts exist but
+// audienceFilter/publishedAfter/publishedBefore excluded all of them) | 'error' (archive request failed).
 async function scrapePublication(origin) {
   log.info(`Publication: ${origin}${searchQuery ? ` (search: "${searchQuery}")` : ''}`);
   let offset = 0;
   let seen = 0;
   const pageSize = 50;
+  const pushedBefore = pushed;
+  let requestFailed = false;
   while (keepGoing && seen < maxPostsPerPublication) {
     const url = new URL(`${origin}/api/v1/archive`);
     url.searchParams.set('sort', 'new');
@@ -203,16 +207,20 @@ async function scrapePublication(origin) {
       posts = await getJson(url.toString());
     } catch (e) {
       log.warning(`Archive request failed for ${origin} (offset ${offset}): ${e.message}`);
+      requestFailed = true;
       break;
     }
     if (!Array.isArray(posts) || !posts.length) break;
     for (const post of posts) {
       seen += 1;
-      if (!(await handlePost(post, origin))) return;
+      if (!(await handlePost(post, origin))) return pushed > pushedBefore ? 'ok' : 'filtered';
       if (seen >= maxPostsPerPublication) break;
     }
     offset += posts.length;
   }
+  if (requestFailed && seen === 0) return 'error';
+  if (seen === 0) return 'empty';
+  return pushed > pushedBefore ? 'ok' : 'filtered';
 }
 
 const publicationTargets = [];
@@ -227,18 +235,44 @@ for (const raw of input.postUrls ?? []) {
   else if (t) publicationTargets.push(t);
 }
 
+const errored = [];
+const empty = [];
+const filtered = [];
+
 if (!publicationTargets.length && !postTargets.length) {
   log.warning('No publicationUrls or postUrls provided — nothing to do.');
+  await Actor.setStatusMessage('No items returned — no publicationUrls or postUrls were provided.');
 } else {
   for (const t of postTargets) {
     if (!keepGoing) break;
+    const label = t.origin && t.postSlug ? `${t.origin}/p/${t.postSlug}` : t.origin;
     const detail = await fetchDetail(t.origin, t.postSlug);
-    if (!detail) continue;
+    if (!detail) { errored.push(label); continue; }
+    const pushedBefore = pushed;
     if (!(await handlePost(detail, t.origin, detail))) break;
+    if (pushed === pushedBefore) filtered.push(label);
   }
   for (const t of publicationTargets) {
     if (!keepGoing) break;
-    await scrapePublication(t.origin);
+    const result = await scrapePublication(t.origin);
+    if (result === 'error') errored.push(t.origin);
+    else if (result === 'empty') empty.push(t.origin);
+    else if (result === 'filtered') filtered.push(t.origin);
+  }
+
+  if (pushed === 0 && (publicationTargets.length || postTargets.length)) {
+    const why = errored.length
+      ? `the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`
+      : filtered.length && !empty.length
+        ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/publishedAfter/publishedBefore — try widening those filters`
+        : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
+    await Actor.setStatusMessage(`No items returned — ${why}.`);
+  } else if (errored.length || empty.length || filtered.length) {
+    const notes = [];
+    if (errored.length) notes.push(`request failed for ${errored.join(', ')}`);
+    if (empty.length) notes.push(`no posts found for ${empty.join(', ')}`);
+    if (filtered.length) notes.push(`filters excluded everything from ${filtered.join(', ')}`);
+    await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
   }
 }
 
