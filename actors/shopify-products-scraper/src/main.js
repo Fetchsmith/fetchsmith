@@ -36,19 +36,28 @@ function endpointFor(raw) {
   if (col) return { origin, kind: 'collection', url: `${origin}/collections/${col}/products.json` };
   return { origin, kind: 'store', url: `${origin}/products.json` };
 }
-function shape(p, origin) {
+function shape(p, origin, currency) {
   const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: v.available ?? null, option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping }));
   const prices = variants.map((v) => v.price).filter((n) => !Number.isNaN(n));
+  const priceMin = prices.length ? Math.min(...prices) : null;
+  const compareAtPriceMin = variants.map((v) => v.compareAtPrice).filter((x) => x != null).sort((a, b) => a - b)[0] ?? null;
   return {
     id: p.id, title: p.title, handle: p.handle, url: `${origin}/products/${p.handle}`, vendor: p.vendor, productType: p.product_type || null, tags: p.tags ?? [],
-    priceMin: prices.length ? Math.min(...prices) : null, priceMax: prices.length ? Math.max(...prices) : null,
-    compareAtPriceMin: variants.map((v) => v.compareAtPrice).filter((x) => x != null).sort((a, b) => a - b)[0] ?? null,
+    currency: currency ?? null,
+    priceMin, priceMax: prices.length ? Math.max(...prices) : null,
+    compareAtPriceMin, isOnSale: !!(compareAtPriceMin != null && priceMin != null && compareAtPriceMin > priceMin),
     available: variants.some((v) => v.available), variantCount: variants.length,
-    images: (p.images ?? []).map((i) => i.src), imageUrl: p.images?.[0]?.src ?? null,
+    images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null,
     options: (p.options ?? []).map((o) => ({ name: o.name, values: o.values })),
     ...(withVariants ? { variants } : {}), ...(withDesc ? { description: textOf(p.body_html) } : {}),
     createdAt: p.created_at, updatedAt: p.updated_at, publishedAt: p.published_at, store: origin, scrapedAt: new Date().toISOString(),
   };
+}
+async function currencyFor(origin) {
+  try {
+    const res = await http(`${origin}/meta.json`);
+    return JSON.parse(res.body)?.currency ?? null;
+  } catch { return null; }
 }
 
 let keepGoing = true;
@@ -57,9 +66,10 @@ for (const raw of storeUrls) {
   let ep; try { ep = endpointFor(raw); } catch { log.warning(`Bad URL: ${raw}`); continue; }
   let got = 0;
   try {
+    const currency = await currencyFor(ep.origin);
     if (ep.kind === 'product') {
       const p = JSON.parse((await http(ep.url)).body).product;
-      if (p && (!onlyAvailable || (p.variants ?? []).some((v) => v.available))) { keepGoing = await pushResult(shape(p, ep.origin)); got++; }
+      if (p && (!onlyAvailable || (p.variants ?? []).some((v) => v.available))) { keepGoing = await pushResult(shape(p, ep.origin, currency)); got++; }
     } else {
       for (let page = 1; got < perStore && keepGoing; page++) {
         const res = await http(`${ep.url}?limit=250&page=${page}`);
@@ -68,7 +78,7 @@ for (const raw of storeUrls) {
         for (const p of products) {
           if (got >= perStore) break;
           if (onlyAvailable && !(p.variants ?? []).some((v) => v.available)) continue;
-          keepGoing = await pushResult(shape(p, ep.origin)); got++;
+          keepGoing = await pushResult(shape(p, ep.origin, currency)); got++;
           if (!keepGoing) break;
         }
         if (products.length < 250) break;
