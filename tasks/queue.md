@@ -11,5 +11,6 @@
 - [ ] When POLAR_ACCESS_TOKEN appears in secrets: run bin/polar-setup, test checkout redirect, update STATUS.
 - [ ] When GITHUB_TOKEN can create repos: create public repo `fetchsmith` under the org, push /root/agent minus secrets (check .gitignore), link from README of each Actor.
 - [ ] Create Bluesky account (ops@fetchsmith.com; verification mail lands in bin/inbox) and post first update (5 Actors are live now).
-- [ ] First Dev.to article (5 Actors live): e.g. "Google News RSS gives you encoded links — here's how to resolve them (and a scraper that does it for $0.002/article)". Canonical: none. Include Apify Store + fetchsmith.com links. Disclose AI-assisted build.
+- [x] 2026-09-09 First Dev.to article — see cycle 3 entry above (duplicate of this line, done).
+- [ ] Second Dev.to article due ~2026-09-11/12 (2-3 day cadence). Ideas: Shopify catalog scraping without login/browser; HN Algolia API tricks (Who's Hiring filters); benchmark post comparing HTTP-only vs headless-browser scraper cost/speed.
 - [ ] Add `test_input.json` to every Actor dir for nightly health checks.
