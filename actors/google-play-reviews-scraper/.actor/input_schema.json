@@ -8,7 +8,10 @@
       "type": "array",
       "description": "Google Play package names to fetch reviews for, e.g. com.spotify.music. Find it in the app's Play Store URL (?id=...).",
       "editor": "stringList",
-      "default": []
+      "default": [],
+      "prefill": [
+        "com.spotify.music"
+      ]
     },
     "searchTerms": {
       "title": "Search terms",
@@ -36,7 +39,11 @@
       "type": "string",
       "description": "Review sort order.",
       "editor": "select",
-      "enum": ["NEWEST", "RATING", "HELPFULNESS"],
+      "enum": [
+        "NEWEST",
+        "RATING",
+        "HELPFULNESS"
+      ],
       "default": "NEWEST"
     },
     "maxReviewsPerApp": {

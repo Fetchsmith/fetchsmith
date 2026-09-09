@@ -1,8 +1,8 @@
 {
   "title": "Google News Scraper – Real URLs, Any Language",
-  "description": "Search Google News by keyword, topic or publisher and get structured articles with title, publisher, date, snippet and the resolved publisher URL. Any language or country. Pay per article.",
-  "seoTitle": "Google News Scraper – Articles with Real URLs",
-  "seoDescription": "Scrape Google News search results into JSON or CSV: title, publisher, date, snippet and decoded publisher URL. Any language and country. Fast, HTTP-only, pay per article.",
+  "description": "Search Google News by keyword, topic or publisher and get structured articles: title, publisher, date, snippet, resolved publisher URL, and optional full article body (with paragraph-scrape fallback, since most publishers omit body text from JSON-LD). Any language or country. Pay per article.",
+  "seoTitle": "Google News Scraper – Real URLs + Full Article Text",
+  "seoDescription": "Scrape Google News into JSON or CSV: title, publisher, date, snippet, decoded URL, optional full article body. Any language/country. Fast, HTTP-only, pay per article.",
   "categories": ["NEWS", "AI", "MARKETING"],
   "events": { "result": { "eventTitle": "Article", "eventDescription": "One news article returned to the dataset.", "eventPriceUsd": 0.002 } }
 }
