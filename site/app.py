@@ -18,6 +18,20 @@ logging.basicConfig(level=logging.INFO)
 def env(k, d=""):
     return os.environ.get(k, d)
 
+def _vid_salt():
+    """Stable secret salt for visitor tokens (must survive restarts, else same-day
+    dedupe breaks). Generated once on first boot; never leaves this box."""
+    f = ROOT / "data" / ".vid_salt"
+    try:
+        return f.read_text().strip()
+    except OSError:
+        s = secrets.token_hex(16)
+        f.write_text(s)
+        os.chmod(f, 0o600)
+        return s
+
+VID_SALT = _vid_salt()
+
 app = FastAPI(title="FetchSmith", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=str(ROOT / "site" / "static")), name="static")
 tpl = Jinja2Templates(directory=str(ROOT / "site" / "templates"))
@@ -38,7 +52,14 @@ def init_db():
         CREATE TABLE IF NOT EXISTS usage(id INTEGER PRIMARY KEY, key TEXT, tool TEXT, results INTEGER, cost INTEGER, ts INTEGER);
         CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY, kind TEXT, payload TEXT, ts INTEGER);
         CREATE TABLE IF NOT EXISTS pageviews(id INTEGER PRIMARY KEY, path TEXT, ref TEXT, ua TEXT, ts INTEGER);
+        CREATE TABLE IF NOT EXISTS asset_hits(vid TEXT PRIMARY KEY, ts INTEGER);
         """)
+        # cycle 32: pseudonymous per-day visitor token, so crawler traffic can be told
+        # apart from real browsers (UA alone overstates humans ~40x). Added by migration
+        # because the table predates it.
+        cols = {r[1] for r in c.execute("PRAGMA table_info(pageviews)")}
+        if "vid" not in cols:
+            c.execute("ALTER TABLE pageviews ADD COLUMN vid TEXT")
 init_db()
 
 def load_registry():
@@ -99,17 +120,38 @@ def load_posts():
     return _blog_cache["posts"]
 
 # ---------- lightweight analytics (no cookies) ----------
+def visitor_token(request: Request) -> str:
+    """Pseudonymous per-day visitor id: sha256(daily salt + client ip + ua), truncated.
+
+    Not reversible to an IP and it rotates every day, so this stays within the privacy
+    policy's "without identifying you" — but it lets us count distinct visitors and,
+    combined with asset_hits, separate real browsers from UA-spoofing crawlers.
+    """
+    ip = (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+          or (request.client.host if request.client else ""))
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    raw = f"{VID_SALT}|{day}|{ip}|{request.headers.get('user-agent','')}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
 @app.middleware("http")
 async def track(request: Request, call_next):
     resp = await call_next(request)
     p = request.url.path
-    if resp.status_code == 200 and not p.startswith(("/static", "/api", "/webhooks", "/health")) and "." not in p.rsplit("/", 1)[-1]:
-        try:
+    if resp.status_code != 200:
+        return resp
+    try:
+        if p.startswith("/static"):
+            # A client that loads our CSS/JS is a real browser, not a link enumerator.
             with db() as c:
-                c.execute("INSERT INTO pageviews(path,ref,ua,ts) VALUES(?,?,?,?)",
-                          (p, request.headers.get("referer", "")[:200], request.headers.get("user-agent", "")[:200], int(time.time())))
-        except Exception:
-            pass
+                c.execute("INSERT OR IGNORE INTO asset_hits(vid,ts) VALUES(?,?)",
+                          (visitor_token(request), int(time.time())))
+        elif not p.startswith(("/api", "/webhooks", "/health")) and "." not in p.rsplit("/", 1)[-1]:
+            with db() as c:
+                c.execute("INSERT INTO pageviews(path,ref,ua,ts,vid) VALUES(?,?,?,?,?)",
+                          (p, request.headers.get("referer", "")[:200], request.headers.get("user-agent", "")[:200],
+                           int(time.time()), visitor_token(request)))
+    except Exception:
+        pass
     return resp
 
 def render(request, name, **ctx):

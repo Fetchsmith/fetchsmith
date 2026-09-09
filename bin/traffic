@@ -1,8 +1,43 @@
 #!/usr/bin/env bash
 # Site traffic summary from the cookieless pageviews table. Usage: traffic [days]
+#
+# Cycle 32: UA-based bot filtering alone overstates humans by ~40x — 48 distinct IPs
+# hit us with real Chrome/Safari UAs but never fetched a single CSS file, and five
+# separate cloud IPs each walked /pricing -> /checkout/{starter,pro,scale} in sequence
+# (link enumeration, not buyers). So we now record a pseudonymous per-day visitor token
+# (`vid`) and a row in `asset_hits` for any client that loads /static/*. A vid present
+# in asset_hits rendered the page => real browser. Trust the VERIFIED numbers only.
+# NOTE: vid/asset_hits start 2026-09-09 18:03 UTC; rows before that have vid NULL.
 D=${1:-7}; DB=/root/agent/data/fetchsmith.db
-echo "== pageviews last $D days (excluding obvious bots)"
-sqlite3 -header -column $DB "SELECT date(ts,'unixepoch') d, count(*) views, count(distinct ua) uas FROM pageviews WHERE ts > strftime('%s','now')-$D*86400 AND ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%' GROUP BY d ORDER BY d;"
-echo "== top paths"; sqlite3 -header -column $DB "SELECT path, count(*) n FROM pageviews WHERE ts > strftime('%s','now')-$D*86400 AND ua NOT LIKE '%bot%' AND ua NOT LIKE 'curl%' GROUP BY path ORDER BY n DESC LIMIT 12;"
-echo "== top referrers"; sqlite3 -header -column $DB "SELECT substr(ref,1,60) ref, count(*) n FROM pageviews WHERE ts > strftime('%s','now')-$D*86400 AND ref<>'' GROUP BY ref ORDER BY n DESC LIMIT 10;"
-echo "== api usage"; sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) results FROM usage WHERE ts > strftime('%s','now')-$D*86400;"
+SINCE="ts > strftime('%s','now')-$D*86400"
+NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%'"
+# Verified = browser-ish UA AND actually loaded our CSS. Both halves matter: the UA test
+# alone lets scanners through, and the asset test alone lets our own `curl` tests through.
+VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits)"
+
+echo "== daily totals last $D days (raw = every hit; verified = loaded our CSS)"
+sqlite3 -header -column $DB "SELECT date(ts,'unixepoch') d, count(*) raw_views,
+  count(DISTINCT vid) vids, count(DISTINCT CASE WHEN $VERIFIED THEN vid END) verified_vids,
+  sum(CASE WHEN $VERIFIED THEN 1 ELSE 0 END) verified_views
+  FROM pageviews WHERE $SINCE AND $NOTBOT GROUP BY d ORDER BY d;"
+
+echo "== top paths (verified browsers only)"
+sqlite3 -header -column $DB "SELECT path, count(*) n, count(DISTINCT vid) visitors FROM pageviews
+  WHERE $SINCE AND $VERIFIED GROUP BY path ORDER BY n DESC LIMIT 12;"
+
+echo "== BUYER-INTENT funnel (verified only) -- the CLAUDE.md Polar trigger reads THIS,"
+echo "   not the raw counts. >100 verified visits/day to /pricing or /tools = email owner."
+sqlite3 -header -column $DB "SELECT CASE WHEN path LIKE '/checkout%' THEN 'checkout'
+    WHEN path='/pricing' THEN 'pricing' WHEN path LIKE '/tools%' THEN 'tools' END bucket,
+  count(*) n, count(DISTINCT vid) visitors FROM pageviews
+  WHERE $SINCE AND $VERIFIED AND (path LIKE '/checkout%' OR path='/pricing' OR path LIKE '/tools%')
+  GROUP BY bucket ORDER BY n DESC;"
+
+echo "== top paths (raw, for comparison -- crawler-inflated)"
+sqlite3 -header -column $DB "SELECT path, count(*) n FROM pageviews WHERE $SINCE AND $NOTBOT GROUP BY path ORDER BY n DESC LIMIT 8;"
+
+echo "== top referrers (raw)"
+sqlite3 -header -column $DB "SELECT substr(ref,1,60) ref, count(*) n FROM pageviews WHERE $SINCE AND ref<>'' GROUP BY ref ORDER BY n DESC LIMIT 10;"
+
+echo "== api usage"
+sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) results FROM usage WHERE $SINCE;"
