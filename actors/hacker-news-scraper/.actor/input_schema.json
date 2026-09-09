@@ -1,0 +1,15 @@
+{
+  "title": "Hacker News Scraper input", "type": "object", "schemaVersion": 1,
+  "properties": {
+    "queries": { "title": "Search queries", "type": "array", "description": "Keywords to search for. Leave empty to browse by tag/date only (e.g. latest front-page stories or the newest Who's Hiring thread).", "editor": "stringList", "prefill": ["apify"] },
+    "tags": { "title": "Filter by tag", "type": "array", "description": "story, comment, poll, ask_hn, show_hn, job, front_page. Combine e.g. [\"story\"] for posts only.", "editor": "stringList", "default": ["story"], "prefill": ["story"] },
+    "includeComments": { "title": "Include comments", "type": "boolean", "description": "If tags includes 'comment', set true to fetch comment text too.", "default": true },
+    "sortBy": { "title": "Sort order", "type": "string", "description": "'relevance' ranks by search relevance and points; 'date' returns the newest items first.", "editor": "select", "enum": ["relevance", "date"], "default": "relevance" },
+    "minPoints": { "title": "Minimum points", "type": "integer", "description": "Only return stories/comments with at least this many points.", "minimum": 0 },
+    "postedAfter": { "title": "Posted after (ISO date)", "type": "string", "description": "e.g. 2026-01-01", "editor": "textfield" },
+    "postedBefore": { "title": "Posted before (ISO date)", "type": "string", "description": "e.g. 2026-09-01", "editor": "textfield" },
+    "maxItemsPerQuery": { "title": "Max items per query", "type": "integer", "description": "Cap per search query/tag combination.", "default": 100, "minimum": 1, "maximum": 1000 },
+    "maxResults": { "title": "Max results (total)", "type": "integer", "description": "Overall cap across all queries.", "default": 200, "minimum": 1, "maximum": 5000 }
+  },
+  "required": []
+}

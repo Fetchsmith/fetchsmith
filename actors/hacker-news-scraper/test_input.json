@@ -1,0 +1,7 @@
+{
+  "queries": ["apify"],
+  "tags": ["story"],
+  "sortBy": "relevance",
+  "maxItemsPerQuery": 10,
+  "maxResults": 10
+}

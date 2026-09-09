@@ -136,6 +136,52 @@
    },
    "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p>",
    "memory_mb": 256
+  },
+  {
+   "slug": "hacker-news-scraper",
+   "title": "Hacker News Scraper",
+   "summary": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API, with points and date filters.",
+   "status": "live",
+   "credits_per_result": 1,
+   "example_input": {
+    "queries": [
+     "apify"
+    ],
+    "tags": [
+     "story"
+    ],
+    "sortBy": "relevance",
+    "maxItemsPerQuery": 50,
+    "max_results": 50
+   },
+   "output_fields": [
+    "id",
+    "type",
+    "title",
+    "url",
+    "hnUrl",
+    "author",
+    "points",
+    "numComments",
+    "storyId",
+    "storyTitle",
+    "storyUrl",
+    "text",
+    "createdAt",
+    "query"
+   ],
+   "sample_output": {
+    "id": "15558405",
+    "type": "story",
+    "title": "Show HN: Apify – Turn any website into an API",
+    "url": "https://www.apify.com/",
+    "author": "jancurn",
+    "points": 45,
+    "numComments": 21,
+    "createdAt": "2017-10-26T13:03:29Z"
+   },
+   "description": "<p>Uses HN's official Algolia Search API, so results are fast and reliable. Filter by tag (<code>story</code>, <code>comment</code>, <code>ask_hn</code>, <code>show_hn</code>, <code>job</code>), minimum points, and date range. Leave <code>queries</code> empty and sort by date to pull the newest items for a tag, e.g. the latest monthly Who's Hiring thread.</p>",
+   "memory_mb": 256
   }
  ]
 }

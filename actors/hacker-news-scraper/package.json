@@ -1,0 +1,8 @@
+{
+  "name": "hacker-news-scraper",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Hacker News scraper via the official Algolia Search API: stories, comments, Ask HN, Show HN, Who's Hiring",
+  "dependencies": { "apify": "^3.4.0", "got-scraping": "^4.0.0" },
+  "scripts": { "start": "node src/main.js" }
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Hacker News Scraper – Stories, Comments & Who's Hiring",
+  "description": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API. Filter by points and date. Pay per item.",
+  "seoTitle": "Hacker News Scraper API – Stories, Comments, Who's Hiring",
+  "seoDescription": "Scrape Hacker News into JSON or CSV: stories, comments, Ask HN, Show HN, jobs and Who's Hiring threads with points, author, date and full text. Fast, reliable, pay per item.",
+  "categories": ["NEWS", "DEVELOPER_TOOLS", "AI"],
+  "events": { "result": { "eventTitle": "Item", "eventDescription": "One Hacker News story or comment returned to the dataset.", "eventPriceUsd": 0.001 } }
+}
