@@ -44,3 +44,5 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 - Use `sortBy: "date"` for a live monitoring feed of new mentions of your keyword.
 
 Only publicly available data is collected via HN's official search API. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/hacker-news-scraper
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/hacker-news-scraper

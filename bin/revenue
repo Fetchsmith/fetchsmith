@@ -4,7 +4,9 @@ import json, os, time, subprocess, httpx
 env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
 T = env["APIFY_TOKEN"]; H = {"Authorization": f"Bearer {T}"}; API = "https://api.apify.com/v2"
 snap = {"ts": int(time.time()), "date": time.strftime("%Y-%m-%d"), "apify": {}, "polar": {}}
-acts = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
+acts_list = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
+# The list endpoint omits isPublic/stats fields; fetch each actor individually for accurate data.
+acts = [httpx.get(f"{API}/acts/{a['id']}", headers=H).json()["data"] for a in acts_list]
 tot_users = tot_runs = 0
 for a in acts:
     s = a.get("stats", {})

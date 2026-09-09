@@ -44,3 +44,5 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
 - Turn off `decodeUrls` for the fastest runs if you only need headlines and sources.
 
 Only publicly available data is collected. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/google-news-scraper
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/google-news-scraper

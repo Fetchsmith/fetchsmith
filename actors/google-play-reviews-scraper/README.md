@@ -53,3 +53,5 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 
 ## Notes
 Only public Google Play data is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/google-play-reviews-scraper

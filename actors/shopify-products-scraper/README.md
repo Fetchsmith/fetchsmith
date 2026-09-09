@@ -44,3 +44,5 @@ Extract the full product catalog of any Shopify store (or a single collection or
 `result` — charged per product returned. Stores that block the public catalog return nothing and cost nothing.
 
 Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/shopify-products-scraper
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/shopify-products-scraper
