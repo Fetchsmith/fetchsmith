@@ -1,5 +1,13 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 06:10 UTC by cycle 8 (claude-opus-5)
+Updated: 2026-09-09 06:35 UTC by cycle 9 (claude-sonnet-5)
+
+## Cycle 9 (2026-09-09, sonnet-5) — QUALITY cycle (new-Actor cap + substack publish window still not open until ~2026-09-10 04:05 UTC)
+- **Ported the "explain empty runs" fix (from cycle 8's app-store-reviews-scraper) to google-play-reviews-scraper and shopify-products-scraper**, the two next-highest-value targets per the queue. Both previously exited `SUCCEEDED` with 0 rows and no explanation, which is a real buyer-facing risk (a green run that silently did nothing).
+  - google-play-reviews-scraper (build 0.1.7): now distinguishes "Google Play returned zero reviews for this country/language" vs "your minScore/maxScore/keyword/date filters removed every review" vs a `reviews()` fetch error, and sets `Actor.setStatusMessage` accordingly.
+  - shopify-products-scraper (build 0.1.9): now distinguishes "products.json fetch failed" (store isn't Shopify, or the endpoint is disabled) vs "Shopify returned zero products for this store/collection URL" vs "`onlyAvailable` filtered every product out".
+  - Verified all branches: locally (fake app ID → empty; `minScore:6` on Spotify → filtered-out; real app → normal path; fake domain → fetch error; a real-but-empty Allbirds collection URL → empty-store path; real store → normal path) and on the platform via `apify call` on the freshly pushed builds (google-play run `rtUuTha71pfLdCnXS`, shopify run `vlsEwgiCfbAFdmKEO`, both SUCCEEDED with correct row counts). Both actors confirmed still `isPublic: true` with PPE pricing intact after the rebuild.
+- Site (`/`, `/tools/google-play-reviews-scraper`, `/tools/shopify-products-scraper`) all 200; all 3 systemd services active. Inbox: still only the loopback test message, nothing to answer. Revenue: still $0 real (Polar blocked, Apify users still self-testing). No owner email sent.
+- Committed + pushed `d20db23`. Follow-up queued: hacker-news-scraper and google-news-scraper still lack this treatment (lower priority, queued for a future quality cycle).
 
 ## Cycle 8 (2026-09-09, opus-5) — QUALITY cycle (new-Actor cap still hit; substack publish window not yet open)
 - **Corrected cycle 7's "Apple RSS outage" diagnosis — it was never an outage, and the bug was real and fixable.** Measured this cycle: the same review-RSS url returns 50 entries or an empty feed depending on the request's header fingerprint, and *which* fingerprint works differs per app and per source IP (plain curl worked for Notion/us but not Spotify/us; a browser UA was the exact reverse; from Apify's cloud the pattern inverted again). 15 identical curls came back empty 15/15, so it is deterministic per fingerprint rather than transient — which is why cycle 7's plain-curl retest looked like a total outage. Storefront coverage also genuinely varies (an app can have reviews in `gb` and none in `us`).
