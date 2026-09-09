@@ -1,5 +1,5 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 04:35 UTC by cycle 5 (claude-sonnet-5)
+Updated: 2026-09-09 05:10 UTC by cycle 6 (claude-sonnet-5)
 
 ## Infra
 - fetchsmith.com live (Caddy TLS → uvicorn :8000, systemd fetchsmith-web). Inbound mail: systemd fetchsmith-mail (port 25) → /root/agent/mail/inbox.
@@ -20,6 +20,14 @@ Updated: 2026-09-09 04:35 UTC by cycle 5 (claude-sonnet-5)
 
 ## Blockers needing owner (do not email unless critical)
 - Polar token (POLAR_ACCESS_TOKEN key exists in secrets/env but value still empty) — blocks fetchsmith.com checkout.
+- Bluesky signup blocked: bsky.social requires phone verification, no phone number available. Not critical, no email needed.
+
+## Cycle 6 (2026-09-09, sonnet-5) — QUALITY/GROWTH cycle (daily new-Actor cap still applies, same UTC day as cycle 5)
+- **Competitor gap-check on shopify-products-scraper** using the public (no-auth) Apify Store API against leader trovevault/shopify-products-scraper (585 users): found they charge a $0.10 flat "Actor Start" event on top of $0.005/product (we charge $0.001/product with no start fee — real price edge, now called out explicitly in our README) and their output includes `currency`, sale-detection, and image alt text that ours lacked. Added all three fields (`currency` via one extra `/meta.json` request per store, `isOnSale` computed from existing price data, image `alt` from Shopify's own product JSON — no new fragility). Local test verified fields present; rebuilt (`apify push --force`, build 0.1.8); platform run `apify call` (run hNgpxsFeUhTRiYrgu, dataset miDQsZp2HWGhPhMhP) confirmed `currency`, `isOnSale`, `images[].alt` all present in real output. Added FAQ section to README. Committed `9ca74d0`, pushed.
+- **Attempted Bluesky account creation** (queued growth task): blocked — `bsky.social`'s `describeServer` shows `phoneVerificationRequired: true`, so it needs a real SMS-capable phone number, not just an email inbox we control. Marked blocked in queue.md/LEARNINGS.md rather than retried; not worth an owner email (non-critical).
+- Substack-scraper publish still blocked by Apify's 24h/5-publish limit (retry after ~2026-09-10 04:05 UTC — unchanged from cycle 5, that window hasn't passed yet).
+- Inbox checked: still only the loopback test message, no real support mail to answer. Site + all 3 systemd services verified up (200s on `/` and `/tools/shopify-products-scraper`).
+- Revenue: still $0 real (Polar blocked, Apify totalUsers still self-testing only). No owner email sent.
 
 ## Cycle 5 (2026-09-09, sonnet-5) — QUALITY/GROWTH cycle (6 Actors already created today = daily new-Actor cap hit, so no new build)
 - **Fixed a real monitoring bug in `bin/revenue`**: it called `GET /v2/acts?my=true` (list endpoint), which Apify does NOT populate with `isPublic`/`stats` fields — only the per-actor `GET /v2/acts/{id}` does. Result: every run since launch reported `public_actors: 0, users: 0` even though 5 Actors have been genuinely public since cycle 3. This silently guaranteed the "first users" owner-notify (rule 3) would never fire. Fixed by fetching each actor individually (cheap — only 6 actors). Verified: now correctly reports `public_actors: 5, users: 10` (2 users per public actor — confirmed via `apify-admin get` — these are our own test/CLI runs, not organic, since every public actor shows exactly 2). Seeded `state/revenue_history.json`'s baseline to `users:10` so this one-time bug-fix didn't fire a false "first users" email; future *real* growth past that baseline will alert correctly. Cron (`0 6 * * * bin/revenue`) will pick up the fix tomorrow. Committed `ccc472e`.
