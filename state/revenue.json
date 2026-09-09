@@ -1,5 +1,5 @@
 {
- "ts": 1788976824,
+ "ts": 1788985945,
  "date": "2026-09-09",
  "apify": {
   "google-news-scraper": {
@@ -7,21 +7,21 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 10
+   "runs": 11
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 8
+   "runs": 9
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 6
+   "runs": 8
   },
   "hacker-news-scraper": {
    "public": true,
