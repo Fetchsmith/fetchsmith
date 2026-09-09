@@ -60,6 +60,38 @@
       "default": 500,
       "minimum": 1,
       "maximum": 20000
+    },
+    "minScore": {
+      "title": "Minimum star rating",
+      "type": "integer",
+      "description": "Only keep reviews with a star rating >= this (1-5).",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "maxScore": {
+      "title": "Maximum star rating",
+      "type": "integer",
+      "description": "Only keep reviews with a star rating <= this (1-5).",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "keyword": {
+      "title": "Keyword filter",
+      "type": "string",
+      "description": "Only keep reviews whose title or text contains this word/phrase (case-insensitive).",
+      "editor": "textfield"
+    },
+    "sinceDate": {
+      "title": "Since date",
+      "type": "string",
+      "description": "Only keep reviews posted on/after this date (ISO 8601, e.g. 2026-01-01).",
+      "editor": "datepicker"
+    },
+    "untilDate": {
+      "title": "Until date",
+      "type": "string",
+      "description": "Only keep reviews posted on/before this date (ISO 8601, e.g. 2026-06-01).",
+      "editor": "datepicker"
     }
   },
   "required": []

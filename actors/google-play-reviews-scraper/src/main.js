@@ -13,6 +13,21 @@ const sort = gplay.sort[sortName] ?? gplay.sort.NEWEST;
 const maxReviewsPerApp = Math.min(Number(input.maxReviewsPerApp ?? 100), 5000);
 const includeAppDetails = input.includeAppDetails !== false;
 const maxResults = Math.min(Number(input.maxResults ?? 500), 20000);
+const minScore = input.minScore != null ? Number(input.minScore) : null;
+const maxScore = input.maxScore != null ? Number(input.maxScore) : null;
+const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
+const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;
+const untilDate = input.untilDate ? new Date(input.untilDate) : null;
+
+function passesFilters(r) {
+  if (minScore != null && r.score < minScore) return false;
+  if (maxScore != null && r.score > maxScore) return false;
+  if (keyword && !`${r.title || ''} ${r.text || ''}`.toLowerCase().includes(keyword)) return false;
+  const d = r.date ? new Date(r.date) : null;
+  if (sinceDate && (!d || d < sinceDate)) return false;
+  if (untilDate && (!d || d > untilDate)) return false;
+  return true;
+}
 
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
@@ -87,10 +102,12 @@ function mapReview(appId, r) {
     appId,
     reviewId: r.id,
     userName: r.userName,
+    reviewerProfileImageUrl: r.userImage || null,
     score: r.score,
     title: r.title || null,
     text: r.text,
     date: r.date,
+    language: lang,
     thumbsUp: r.thumbsUp,
     version: r.version || null,
     replyText: r.replyText || null,
@@ -120,6 +137,7 @@ for (const appId of resolvedAppIds) {
     const { data } = await gplay.reviews({ appId, lang, country, sort, num: maxReviewsPerApp });
     log.info(`${appId}: fetched ${data.length} reviews`);
     for (const r of data) {
+      if (!passesFilters(r)) continue;
       const keepGoing = await pushResult(mapReview(appId, r));
       if (!keepGoing) break;
     }

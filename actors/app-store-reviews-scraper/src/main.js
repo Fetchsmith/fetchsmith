@@ -9,7 +9,17 @@ const sort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const perApp = Math.min(Number(input.maxReviewsPerApp ?? 200), 500);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeInfo = input.includeAppInfo !== false;
+const minRating = input.minRating != null ? Number(input.minRating) : null;
+const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
+const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
 if (!apps.length) await Actor.fail('Provide at least one app URL or ID.');
+
+function passesFilters(item) {
+  if (minRating != null && item.rating < minRating) return false;
+  if (maxRating != null && item.rating > maxRating) return false;
+  if (keyword && !`${item.title || ''} ${item.content || ''}`.toLowerCase().includes(keyword)) return false;
+  return true;
+}
 
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
@@ -57,7 +67,9 @@ for (const app of apps) {
           version: lbl(e['im:version']), author: lbl(e.author?.name), authorUrl: lbl(e.author?.uri), updatedAt: lbl(e.updated),
           voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, ...(info || {}), scrapedAt: new Date().toISOString(),
         };
-        keepGoing = await pushResult(item); got += 1;
+        got += 1;
+        if (!passesFilters(item)) continue;
+        keepGoing = await pushResult(item);
         if (!keepGoing) break;
       }
     }

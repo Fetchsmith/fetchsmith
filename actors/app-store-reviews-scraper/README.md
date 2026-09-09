@@ -17,6 +17,10 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) |
 | `includeAppInfo` | boolean | Attach app name, developer, average rating and rating count |
 | `maxResults` | integer | Total cap |
+| `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
+| `keyword` | string | Only keep reviews whose title or content contains this word/phrase (case-insensitive) |
+
+Filtering happens before you're charged — you never pay for rows that got filtered out.
 
 ## Output (one item per review)
 ```json
@@ -29,6 +33,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
   "rating": 5,
   "version": "3.42.0",
   "author": "jane_doe",
+  "authorUrl": "https://itunes.apple.com/us/reviews/id...",
   "updatedAt": "2026-09-07T16:13:22-07:00",
   "voteSum": 0,
   "voteCount": 0,
