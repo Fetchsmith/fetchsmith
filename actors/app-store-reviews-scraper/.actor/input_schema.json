@@ -24,6 +24,12 @@
         "us"
       ]
     },
+    "countryFallback": {
+      "title": "Fall back to another storefront when a country is empty",
+      "type": "boolean",
+      "description": "Apple's review feed sometimes returns nothing for an app in one storefront while other storefronts have plenty. With this on, the Actor automatically retrieves that app's reviews from a storefront that does have them (rows carry the real 'country' plus 'requestedCountry' and 'fallbackUsed'), instead of finishing with zero results.",
+      "default": false
+    },
     "sort": {
       "title": "Sort",
       "type": "string",

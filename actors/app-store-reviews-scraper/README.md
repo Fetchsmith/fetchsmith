@@ -13,6 +13,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 |---|---|---|
 | `apps` | array | App Store URLs or numeric app IDs |
 | `countries` | array | Storefront codes, e.g. `us`, `gb`, `de`, `jp`, `br` (default `us`) |
+| `countryFallback` | boolean | If a storefront returns nothing, pull that app's reviews from one that works (default `false`) |
 | `sort` | string | `mostRecent` (default) or `mostHelpful` |
 | `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) |
 | `includeAppInfo` | boolean | Attach app name, developer, average rating and rating count |
@@ -46,6 +47,16 @@ Filtering happens before you're charged — you never pay for rows that got filt
 
 ## Pricing
 `result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
+
+## Never silently returns an empty result
+Apple's public review feed is inconsistent: for the same app the same URL returns a full page of reviews on one request and an empty feed on the next, and coverage differs per storefront. Most scrapers hand you an empty dataset and a green "succeeded" run. This one:
+
+- retries each empty page under several request fingerprints before believing there are no reviews;
+- when a storefront really is empty, probes other storefronts and **tells you which ones have reviews** for that app;
+- with `countryFallback: true`, fetches from a working storefront automatically — rows keep the real `country` plus `requestedCountry` and `fallbackUsed: true`, so nothing is mislabelled;
+- sets a run status message explaining *why* a run returned few or no rows (empty Apple feed vs. your own rating/keyword filters).
+
+You are never charged for empty pages or for retries.
 
 ## Notes
 Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`. Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/app-store-reviews-scraper
