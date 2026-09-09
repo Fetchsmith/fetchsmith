@@ -1,0 +1,82 @@
+{
+  "title": "Substack Scraper input", "type": "object", "schemaVersion": 1,
+  "properties": {
+    "publicationUrls": {
+      "title": "Publication URLs or handles",
+      "type": "array",
+      "description": "Substack publications to scrape. Accepts any form: \"astralcodexten\", \"astralcodexten.substack.com\", or a custom domain like \"https://www.bigtechnology.com\". Custom domains and redirects are handled automatically.",
+      "editor": "stringList",
+      "prefill": ["https://astralcodexten.substack.com"]
+    },
+    "postUrls": {
+      "title": "Individual post URLs",
+      "type": "array",
+      "description": "Scrape specific posts instead of (or in addition to) whole publications, e.g. https://www.bigtechnology.com/p/some-post.",
+      "editor": "stringList"
+    },
+    "searchQuery": {
+      "title": "Search within the publication",
+      "type": "string",
+      "description": "Only return posts matching this keyword inside each publication's archive. Leave empty to get the newest posts.",
+      "editor": "textfield"
+    },
+    "includeBodyText": {
+      "title": "Include full article text",
+      "type": "boolean",
+      "description": "Fetch each post's full body and return it as clean plain text. Costs one extra request per post; free posts return the whole article, paywalled posts return the public preview.",
+      "default": true
+    },
+    "includeBodyHtml": {
+      "title": "Include raw HTML body",
+      "type": "boolean",
+      "description": "Also return the original body_html (large; useful if you want to keep formatting, images and links).",
+      "default": false
+    },
+    "includeComments": {
+      "title": "Include comments",
+      "type": "boolean",
+      "description": "Also return each post's comments (whole thread, flattened, with parent IDs). Comments are charged as results like posts.",
+      "default": false
+    },
+    "maxCommentsPerPost": {
+      "title": "Max comments per post",
+      "type": "integer",
+      "description": "Cap on comments returned per post.",
+      "default": 50, "minimum": 1, "maximum": 1000
+    },
+    "audienceFilter": {
+      "title": "Free / paid posts",
+      "type": "string",
+      "description": "Return all posts, only free (public) posts, or only paywalled subscriber posts.",
+      "editor": "select",
+      "enum": ["all", "free", "paid"],
+      "enumTitles": ["All posts", "Free posts only", "Paid posts only"],
+      "default": "all"
+    },
+    "publishedAfter": {
+      "title": "Published after (ISO date)",
+      "type": "string",
+      "description": "e.g. 2026-01-01. Posts older than this are skipped.",
+      "editor": "textfield"
+    },
+    "publishedBefore": {
+      "title": "Published before (ISO date)",
+      "type": "string",
+      "description": "e.g. 2026-09-01. Posts newer than this are skipped.",
+      "editor": "textfield"
+    },
+    "maxPostsPerPublication": {
+      "title": "Max posts per publication",
+      "type": "integer",
+      "description": "How deep to go into each publication's archive.",
+      "default": 50, "minimum": 1, "maximum": 5000
+    },
+    "maxResults": {
+      "title": "Max results (total)",
+      "type": "integer",
+      "description": "Overall cap across all publications, posts and comments. This is what you pay for.",
+      "default": 200, "minimum": 1, "maximum": 10000
+    }
+  },
+  "required": []
+}

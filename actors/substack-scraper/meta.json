@@ -1,0 +1,8 @@
+{
+  "title": "Substack Scraper – Posts, Full Text & Comments",
+  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Custom domains supported. No login, no browser. $0.002 per result.",
+  "seoTitle": "Substack Scraper API – Posts, Full Article Text & Comments",
+  "seoDescription": "Scrape Substack publications to JSON, CSV or Excel: post metadata, full article text, reactions, restacks and comment threads. Search inside archives, filter free vs paid, pay per result.",
+  "categories": ["NEWS", "SOCIAL_MEDIA", "AI"],
+  "events": { "result": { "eventTitle": "Result", "eventDescription": "One Substack post or comment returned to the dataset.", "eventPriceUsd": 0.002 } }
+}

@@ -1,0 +1,362 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Type",
+        "example": "post"
+      },
+      "id": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Id",
+        "example": 207542232
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "God Help Us, Let\u2019s Try To Learn About Mechanistic Interpretability Techniques"
+      },
+      "subtitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Subtitle",
+        "example": "..."
+      },
+      "slug": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Slug",
+        "example": "god-help-us-lets-try-to-learn-about"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://www.astralcodexten.com/p/god-help-us-lets-try-to-learn-about"
+      },
+      "publicationUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PublicationUrl",
+        "example": "https://astralcodexten.substack.com"
+      },
+      "publicationId": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PublicationId",
+        "example": 89120
+      },
+      "publicationName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PublicationName",
+        "example": "Astral Codex Ten"
+      },
+      "authors": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Authors"
+      },
+      "postDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PostDate",
+        "example": "2026-09-08T12:04:21.658Z"
+      },
+      "audience": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Audience",
+        "example": "everyone"
+      },
+      "isPaid": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "IsPaid",
+        "example": false
+      },
+      "postType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PostType",
+        "example": "newsletter"
+      },
+      "wordCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "WordCount",
+        "example": 4695
+      },
+      "reactionCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ReactionCount",
+        "example": 199
+      },
+      "commentCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "CommentCount",
+        "example": 118
+      },
+      "restackCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "RestackCount",
+        "example": 14
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description",
+        "example": "..."
+      },
+      "coverImage": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CoverImage",
+        "example": "https://substackcdn.com/image/fetch/$s_!S-UV!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media."
+      },
+      "section": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Section"
+      },
+      "tags": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Tags"
+      },
+      "podcastUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PodcastUrl"
+      },
+      "podcastDurationSec": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PodcastDurationSec"
+      },
+      "language": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Language",
+        "example": "en"
+      },
+      "bodyText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BodyText",
+        "example": "The Story So Far\nMechanistic interpretability is the science of \u201creading an AI\u2019s mind\u201d.\nLarge language models are \u201cgrown"
+      },
+      "bodyTruncated": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "BodyTruncated",
+        "example": false
+      },
+      "postId": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PostId",
+        "example": 207542232
+      },
+      "postTitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PostTitle",
+        "example": "God Help Us, Let\u2019s Try To Learn About Mechanistic Interpretability Techniques"
+      },
+      "postUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PostUrl",
+        "example": "https://www.astralcodexten.com/p/god-help-us-lets-try-to-learn-about"
+      },
+      "parentCommentId": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ParentCommentId"
+      },
+      "author": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Author",
+        "example": "Johannes M\u00fcller"
+      },
+      "authorHandle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorHandle",
+        "example": "derideonobis623245"
+      },
+      "body": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Body",
+        "example": "ai research will end with a couch, a clipboard, and \u201ctell me more about this activation.\u201d"
+      },
+      "date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Date",
+        "example": "2026-09-08T13:08:44.304Z"
+      },
+      "replyCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ReplyCount",
+        "example": 2
+      },
+      "isDeleted": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "IsDeleted",
+        "example": false
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "type",
+          "id",
+          "title",
+          "subtitle",
+          "slug",
+          "url",
+          "publicationUrl",
+          "publicationId",
+          "publicationName",
+          "postDate"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "id": {
+            "label": "Id",
+            "format": "number"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "subtitle": {
+            "label": "Subtitle",
+            "format": "text"
+          },
+          "slug": {
+            "label": "Slug",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "link"
+          },
+          "publicationUrl": {
+            "label": "PublicationUrl",
+            "format": "link"
+          },
+          "publicationId": {
+            "label": "PublicationId",
+            "format": "number"
+          },
+          "publicationName": {
+            "label": "PublicationName",
+            "format": "text"
+          },
+          "postDate": {
+            "label": "PostDate",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

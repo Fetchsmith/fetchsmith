@@ -1,0 +1,47 @@
+{
+ "ts": 1788926409,
+ "date": "2026-09-09",
+ "apify": {
+  "google-news-scraper": {
+   "public": null,
+   "users": 0,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 5
+  },
+  "app-store-reviews-scraper": {
+   "public": null,
+   "users": 0,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 5
+  },
+  "shopify-products-scraper": {
+   "public": null,
+   "users": 0,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 3
+  },
+  "hacker-news-scraper": {
+   "public": null,
+   "users": 0,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 3
+  },
+  "google-play-reviews-scraper": {
+   "public": null,
+   "users": 0,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 3
+  }
+ },
+ "polar": {},
+ "apify_totals": {
+  "public_actors": 0,
+  "users": 0,
+  "runs30d": 0
+ }
+}

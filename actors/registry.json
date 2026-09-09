@@ -1,234 +1,300 @@
 {
- "tools": [
-  {
-   "slug": "google-news-scraper",
-   "title": "Google News Scraper",
-   "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL. Any language or country.",
-   "status": "live",
-   "credits_per_result": 1,
-   "example_input": {
-    "queries": [
-     "electric vehicles"
-    ],
-    "language": "en-US",
-    "country": "US",
-    "maxItemsPerQuery": 50,
-    "decodeUrls": true,
-    "max_results": 50
-   },
-   "output_fields": [
-    "title",
-    "url",
-    "googleNewsUrl",
-    "source",
-    "sourceUrl",
-    "publishedAt",
-    "snippet",
-    "query",
-    "language",
-    "country"
-   ],
-   "sample_output": {
-    "title": "Apify raises new funding - TechCrunch",
-    "url": "https://techcrunch.com/2026/09/02/apify-funding/",
-    "source": "TechCrunch",
-    "publishedAt": "2026-09-02T07:00:00.000Z",
-    "snippet": "Apify raises new funding"
-   },
-   "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL.</p>",
-   "memory_mb": 256
-  },
-  {
-   "slug": "app-store-reviews-scraper",
-   "title": "App Store Reviews Scraper",
-   "summary": "Apple App Store reviews for any iOS app and country storefront: rating, title, text, version, author, date, plus app metadata.",
-   "status": "live",
-   "credits_per_result": 1,
-   "example_input": {
-    "apps": [
-     "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281"
-    ],
-    "countries": [
-     "us",
-     "gb"
-    ],
-    "sort": "mostRecent",
-    "maxReviewsPerApp": 100,
-    "max_results": 200
-   },
-   "output_fields": [
-    "reviewId",
-    "appId",
-    "country",
-    "title",
-    "content",
-    "rating",
-    "version",
-    "author",
-    "updatedAt",
-    "voteSum",
-    "voteCount",
-    "appName",
-    "developer",
-    "averageRating",
-    "ratingCount"
-   ],
-   "sample_output": {
-    "reviewId": "14522836737",
-    "appId": "1232780281",
-    "country": "us",
-    "title": "Confusing",
-    "content": "It's probably because I'm new but it is really confusing to work with.",
-    "rating": 4,
-    "version": "1.7.333",
-    "appName": "Notion: Notes, Tasks, AI",
-    "averageRating": 4.78,
-    "ratingCount": 90020
-   },
-   "description": "<p>Apple exposes the 500 most recent reviews per app per country (sorted by most recent or most helpful). Run on a schedule and deduplicate by <code>reviewId</code> to build a history.</p>",
-   "memory_mb": 256
-  },
-  {
-   "slug": "shopify-products-scraper",
-   "title": "Shopify Products Scraper",
-   "summary": "Full product catalog of any Shopify store or collection: prices, compare-at prices, variants, SKUs, stock, images, tags and descriptions.",
-   "status": "live",
-   "credits_per_result": 1,
-   "example_input": {
-    "storeUrls": [
-     "https://www.allbirds.com"
-    ],
-    "maxProductsPerStore": 250,
-    "includeVariants": true,
-    "max_results": 250
-   },
-   "output_fields": [
-    "id",
-    "title",
-    "handle",
-    "url",
-    "vendor",
-    "productType",
-    "tags",
-    "priceMin",
-    "priceMax",
-    "compareAtPriceMin",
-    "available",
-    "variantCount",
-    "imageUrl",
-    "images",
-    "options",
-    "variants",
-    "description",
-    "createdAt",
-    "updatedAt",
-    "store"
-   ],
-   "sample_output": {
-    "id": 6543210987,
-    "title": "Men's Wool Runner",
-    "handle": "mens-wool-runners",
-    "url": "https://www.allbirds.com/products/mens-wool-runners",
-    "vendor": "Allbirds",
-    "priceMin": 98,
-    "available": true,
-    "variantCount": 12
-   },
-   "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p>",
-   "memory_mb": 256
-  },
-  {
-   "slug": "hacker-news-scraper",
-   "title": "Hacker News Scraper",
-   "summary": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API, with points and date filters.",
-   "status": "live",
-   "credits_per_result": 1,
-   "example_input": {
-    "queries": [
-     "apify"
-    ],
-    "tags": [
-     "story"
-    ],
-    "sortBy": "relevance",
-    "maxItemsPerQuery": 50,
-    "max_results": 50
-   },
-   "output_fields": [
-    "id",
-    "type",
-    "title",
-    "url",
-    "hnUrl",
-    "author",
-    "points",
-    "numComments",
-    "storyId",
-    "storyTitle",
-    "storyUrl",
-    "text",
-    "createdAt",
-    "query"
-   ],
-   "sample_output": {
-    "id": "15558405",
-    "type": "story",
-    "title": "Show HN: Apify – Turn any website into an API",
-    "url": "https://www.apify.com/",
-    "author": "jancurn",
-    "points": 45,
-    "numComments": 21,
-    "createdAt": "2017-10-26T13:03:29Z"
-   },
-   "description": "<p>Uses HN's official Algolia Search API, so results are fast and reliable. Filter by tag (<code>story</code>, <code>comment</code>, <code>ask_hn</code>, <code>show_hn</code>, <code>job</code>), minimum points, and date range. Leave <code>queries</code> empty and sort by date to pull the newest items for a tag, e.g. the latest monthly Who's Hiring thread.</p>",
-   "memory_mb": 256
-  },
-  {
-   "slug": "google-play-reviews-scraper",
-   "title": "Google Play Reviews Scraper",
-   "summary": "Google Play app reviews and app details by app ID or search term: rating, text, date, replies, plus installs, score and developer info.",
-   "status": "live",
-   "credits_per_result": 1,
-   "example_input": {
-    "appIds": [
-     "com.spotify.music"
-    ],
-    "country": "us",
-    "language": "en",
-    "sort": "NEWEST",
-    "maxReviewsPerApp": 100,
-    "includeAppDetails": true,
-    "max_results": 500
-   },
-   "output_fields": [
-    "recordType",
-    "appId",
-    "reviewId",
-    "userName",
-    "score",
-    "title",
-    "text",
-    "date",
-    "thumbsUp",
-    "version",
-    "replyText",
-    "replyDate",
-    "url",
-    "developer",
-    "installs",
-    "histogram"
-   ],
-   "sample_output": {
-    "recordType": "review",
-    "appId": "com.spotify.music",
-    "userName": "Nikhil Rathod",
-    "score": 5,
-    "text": "my motivation",
-    "date": "2026-09-08T03:01:35.135Z",
-    "thumbsUp": 0
-   },
-   "description": "<p>Pass Google Play package names (<code>appIds</code>, e.g. <code>com.spotify.music</code>) or plain <code>searchTerms</code> to resolve the top matching app automatically. Returns review rows plus an optional app-details row (installs, score, rating histogram, developer). Supports country/language targeting and sort by newest, rating or helpfulness.</p>",
-   "memory_mb": 256
-  }
- ]
+  "tools": [
+    {
+      "slug": "google-news-scraper",
+      "title": "Google News Scraper",
+      "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL. Any language or country.",
+      "status": "live",
+      "credits_per_result": 1,
+      "example_input": {
+        "queries": [
+          "electric vehicles"
+        ],
+        "language": "en-US",
+        "country": "US",
+        "maxItemsPerQuery": 50,
+        "decodeUrls": true,
+        "max_results": 50
+      },
+      "output_fields": [
+        "title",
+        "url",
+        "googleNewsUrl",
+        "source",
+        "sourceUrl",
+        "publishedAt",
+        "snippet",
+        "query",
+        "language",
+        "country"
+      ],
+      "sample_output": {
+        "title": "Apify raises new funding - TechCrunch",
+        "url": "https://techcrunch.com/2026/09/02/apify-funding/",
+        "source": "TechCrunch",
+        "publishedAt": "2026-09-02T07:00:00.000Z",
+        "snippet": "Apify raises new funding"
+      },
+      "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL.</p>",
+      "memory_mb": 256
+    },
+    {
+      "slug": "app-store-reviews-scraper",
+      "title": "App Store Reviews Scraper",
+      "summary": "Apple App Store reviews for any iOS app and country storefront: rating, title, text, version, author, date, plus app metadata.",
+      "status": "live",
+      "credits_per_result": 1,
+      "example_input": {
+        "apps": [
+          "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281"
+        ],
+        "countries": [
+          "us",
+          "gb"
+        ],
+        "sort": "mostRecent",
+        "maxReviewsPerApp": 100,
+        "max_results": 200
+      },
+      "output_fields": [
+        "reviewId",
+        "appId",
+        "country",
+        "title",
+        "content",
+        "rating",
+        "version",
+        "author",
+        "updatedAt",
+        "voteSum",
+        "voteCount",
+        "appName",
+        "developer",
+        "averageRating",
+        "ratingCount"
+      ],
+      "sample_output": {
+        "reviewId": "14522836737",
+        "appId": "1232780281",
+        "country": "us",
+        "title": "Confusing",
+        "content": "It's probably because I'm new but it is really confusing to work with.",
+        "rating": 4,
+        "version": "1.7.333",
+        "appName": "Notion: Notes, Tasks, AI",
+        "averageRating": 4.78,
+        "ratingCount": 90020
+      },
+      "description": "<p>Apple exposes the 500 most recent reviews per app per country (sorted by most recent or most helpful). Run on a schedule and deduplicate by <code>reviewId</code> to build a history.</p>",
+      "memory_mb": 256
+    },
+    {
+      "slug": "shopify-products-scraper",
+      "title": "Shopify Products Scraper",
+      "summary": "Full product catalog of any Shopify store or collection: prices, compare-at prices, variants, SKUs, stock, images, tags and descriptions.",
+      "status": "live",
+      "credits_per_result": 1,
+      "example_input": {
+        "storeUrls": [
+          "https://www.allbirds.com"
+        ],
+        "maxProductsPerStore": 250,
+        "includeVariants": true,
+        "max_results": 250
+      },
+      "output_fields": [
+        "id",
+        "title",
+        "handle",
+        "url",
+        "vendor",
+        "productType",
+        "tags",
+        "priceMin",
+        "priceMax",
+        "compareAtPriceMin",
+        "available",
+        "variantCount",
+        "imageUrl",
+        "images",
+        "options",
+        "variants",
+        "description",
+        "createdAt",
+        "updatedAt",
+        "store"
+      ],
+      "sample_output": {
+        "id": 6543210987,
+        "title": "Men's Wool Runner",
+        "handle": "mens-wool-runners",
+        "url": "https://www.allbirds.com/products/mens-wool-runners",
+        "vendor": "Allbirds",
+        "priceMin": 98,
+        "available": true,
+        "variantCount": 12
+      },
+      "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p>",
+      "memory_mb": 256
+    },
+    {
+      "slug": "hacker-news-scraper",
+      "title": "Hacker News Scraper",
+      "summary": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API, with points and date filters.",
+      "status": "live",
+      "credits_per_result": 1,
+      "example_input": {
+        "queries": [
+          "apify"
+        ],
+        "tags": [
+          "story"
+        ],
+        "sortBy": "relevance",
+        "maxItemsPerQuery": 50,
+        "max_results": 50
+      },
+      "output_fields": [
+        "id",
+        "type",
+        "title",
+        "url",
+        "hnUrl",
+        "author",
+        "points",
+        "numComments",
+        "storyId",
+        "storyTitle",
+        "storyUrl",
+        "text",
+        "createdAt",
+        "query"
+      ],
+      "sample_output": {
+        "id": "15558405",
+        "type": "story",
+        "title": "Show HN: Apify – Turn any website into an API",
+        "url": "https://www.apify.com/",
+        "author": "jancurn",
+        "points": 45,
+        "numComments": 21,
+        "createdAt": "2017-10-26T13:03:29Z"
+      },
+      "description": "<p>Uses HN's official Algolia Search API, so results are fast and reliable. Filter by tag (<code>story</code>, <code>comment</code>, <code>ask_hn</code>, <code>show_hn</code>, <code>job</code>), minimum points, and date range. Leave <code>queries</code> empty and sort by date to pull the newest items for a tag, e.g. the latest monthly Who's Hiring thread.</p>",
+      "memory_mb": 256
+    },
+    {
+      "slug": "google-play-reviews-scraper",
+      "title": "Google Play Reviews Scraper",
+      "summary": "Google Play app reviews and app details by app ID or search term: rating, text, date, replies, plus installs, score and developer info.",
+      "status": "live",
+      "credits_per_result": 1,
+      "example_input": {
+        "appIds": [
+          "com.spotify.music"
+        ],
+        "country": "us",
+        "language": "en",
+        "sort": "NEWEST",
+        "maxReviewsPerApp": 100,
+        "includeAppDetails": true,
+        "max_results": 500
+      },
+      "output_fields": [
+        "recordType",
+        "appId",
+        "reviewId",
+        "userName",
+        "score",
+        "title",
+        "text",
+        "date",
+        "thumbsUp",
+        "version",
+        "replyText",
+        "replyDate",
+        "url",
+        "developer",
+        "installs",
+        "histogram"
+      ],
+      "sample_output": {
+        "recordType": "review",
+        "appId": "com.spotify.music",
+        "userName": "Nikhil Rathod",
+        "score": 5,
+        "text": "my motivation",
+        "date": "2026-09-08T03:01:35.135Z",
+        "thumbsUp": 0
+      },
+      "description": "<p>Pass Google Play package names (<code>appIds</code>, e.g. <code>com.spotify.music</code>) or plain <code>searchTerms</code> to resolve the top matching app automatically. Returns review rows plus an optional app-details row (installs, score, rating histogram, developer). Supports country/language targeting and sort by newest, rating or helpfulness.</p>",
+      "memory_mb": 256
+    },
+    {
+      "slug": "substack-scraper",
+      "title": "Substack Scraper",
+      "summary": "Any Substack publication as structured data: posts with full article text, engagement stats, and comment threads. Custom domains supported.",
+      "status": "live",
+      "credits_per_result": 2,
+      "apify_actor_id": "bIpBH8qvOYQKSN8dB",
+      "example_input": {
+        "publicationUrls": [
+          "astralcodexten",
+          "https://www.bigtechnology.com"
+        ],
+        "searchQuery": "",
+        "includeBodyText": true,
+        "includeComments": true,
+        "maxCommentsPerPost": 3,
+        "maxPostsPerPublication": 4,
+        "max_results": 20
+      },
+      "output_fields": [
+        "type",
+        "id",
+        "title",
+        "subtitle",
+        "slug",
+        "url",
+        "publicationName",
+        "publicationUrl",
+        "authors",
+        "postDate",
+        "audience",
+        "isPaid",
+        "wordCount",
+        "reactionCount",
+        "commentCount",
+        "restackCount",
+        "tags",
+        "podcastUrl",
+        "bodyText",
+        "bodyTruncated",
+        "postId",
+        "parentCommentId",
+        "author",
+        "authorHandle",
+        "body",
+        "date"
+      ],
+      "sample_output": {
+        "type": "post",
+        "id": 207542232,
+        "title": "God Help Us, Let's Try To Learn About Mechanistic Interpretability Techniques",
+        "url": "https://www.astralcodexten.com/p/god-help-us-lets-try-to-learn-about",
+        "publicationName": "Astral Codex Ten",
+        "authors": [
+          "Scott Alexander"
+        ],
+        "postDate": "2026-09-08T12:04:21.658Z",
+        "isPaid": false,
+        "wordCount": 4695,
+        "reactionCount": 199,
+        "commentCount": 118,
+        "bodyText": "The Story So Far\nMechanistic interpretability is the science of “reading an AI’s mind”…"
+      },
+      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record — including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
+      "memory_mb": 512
+    }
+  ]
 }

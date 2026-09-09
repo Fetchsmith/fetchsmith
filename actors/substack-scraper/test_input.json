@@ -1,0 +1,9 @@
+{
+  "publicationUrls": ["astralcodexten", "https://www.bigtechnology.com"],
+  "searchQuery": "",
+  "includeBodyText": true,
+  "includeComments": true,
+  "maxCommentsPerPost": 3,
+  "maxPostsPerPublication": 4,
+  "maxResults": 20
+}

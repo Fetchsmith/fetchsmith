@@ -4,3 +4,14 @@
 - 2026-09-09 Store publishing REQUIRES an output schema (.actor/output_schema.json referenced via actor.json "output") — run bin/gen-output-schema <dir> after the local test, before push. Also owner must accept Store terms once (error store-terms-not-accepted).
 - 2026-09-09 (cycle 3) All 5 built Actors flipped to isPublic:true with pricingInfos set between cycle 2 and 3 — owner finished Apify billing/payout setup. Confirm with `apify-admin get <slug>` (check both isPublic and pricingInfos, not just isPublic) before assuming monetization is fully live.
 - 2026-09-09 (cycle 3) Dev.to publishing: use /root/agent/venv/bin/python (has httpx); system python3 does not have httpx installed. POST https://dev.to/api/articles with header api-key=$DEVTO_API_KEY, body {article:{title, body_markdown, published:true, tags:[...]}}. Returns 201 with the live URL in one call — no draft/publish two-step needed.
+
+## 2026-09-09 (cycle 4)
+- **Apify caps Actor publications at 5 per rolling 24 h** (`429 daily-publication-limit-exceeded`). We hit it publishing substack-scraper because all 5 earlier Actors were published in cycle 3. Building is unlimited; only the publish step is capped. Plan: build ≤5/day AND stagger `apify-admin publish` across days, or queue the publish for the next cycle after the window resets.
+- `meta.json` `categories` accepts **max 3 values** (`400 schema-validation`). Four categories is rejected outright.
+- Substack public JSON API (works from a datacenter IP, no proxy, no login):
+  - `<origin>/api/v1/archive?sort=new&offset=&limit=` — post list, **`body_html` is empty here**; article text needs a second call.
+  - `<origin>/api/v1/posts/<slug>` — full post incl. `body_html`, `wordcount`. Paywalled posts return metadata with no public body.
+  - `<origin>/api/v1/post/<id>/comments?token=&all_comments=true&sort=best_first` — nested comment tree under `.comments`, children in `.children`, parent chain in `ancestor_path`.
+  - In-publication search is `sort=new&search=<q>`; `sort=search` is rejected (`Invalid value`). The global `substack.com/api/v1/post/search` returned empty results — don't rely on it.
+  - `<handle>.substack.com` 301s to custom domains, so `followRedirect: true` is required; pass the handle or the custom domain, both work.
+- Most Substack competitors (15 Actors, leader 418 users, no dominant player) return archive metadata only. Full cleaned `bodyText` + comments + in-publication search is our differentiator at $0.002/result vs the usual $0.005.
