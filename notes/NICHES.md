@@ -6,8 +6,10 @@ Apify Store is saturated: nearly every keyword has 20–30 Actors. Strategy: HTT
 - app-store-reviews-scraper (626/26; Apple RSS JSON) — $0.0005/result
 - shopify-products-scraper (571/26; products.json) — $0.001/result
 
+## Built (2026-09-09, cycle 2)
+- google-play-reviews-scraper (reviews + app details; `google-play-scraper` npm, HTTP-only) — very saturated (30+ actors, leader neatrat 2515 users) but built anyway since already scoped; priced $0.0003/result (thewolves leader charges $0.0001/result — we're mid-pack on price but differentiate with app-details bundling + search-term resolution). Local + platform tested OK.
+
 ## Next candidates (HTTP-only verified from datacenter IP = no proxy needed)
-1. google-play-reviews-scraper — demand 709/30; use `google-play-scraper` npm (batchexecute, HTTP-only). Leader neatrat 2515 users.
 2. substack-scraper — 293/28; public JSON: /api/v1/archive?sort=new&offset=&limit=, /api/v1/posts/<slug>; comments endpoint. Leader automation-lab 418 users ($0.005 start).
 3. steam-reviews-scraper — 34/25; store.steampowered.com/appreviews/<appid>?json=1 (+ app details api). Low demand but trivial.
 4. rightmove-scraper — 152/24; page 200 with __NEXT_DATA__ (verify listing search JSON API `api/_search`).
