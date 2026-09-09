@@ -74,6 +74,11 @@ With `fetchArticleBody: true` each item also carries:
 **Why does `articleFetchStatus` say `blocked` or `no-body`?** The publisher likely paywalls the article or serves it without readable paragraph text; both are reported explicitly instead of a silently empty `articleBody`.
 **Why did a run return 0 articles with status SUCCEEDED?** The status message distinguishes "Google returned nothing for this query" from "every result was a duplicate of another feed" from "the request failed" — check it before assuming your query is wrong.
 
+## Related guides
+Engineering write-ups behind this Actor:
+- [How we resolve Google News's encoded redirect links](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
+- [Why "JSON-LD only" article extraction fails on real news sites](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
+
 Only publicly available data is collected. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/google-news-scraper
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/google-news-scraper

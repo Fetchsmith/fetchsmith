@@ -65,6 +65,10 @@ You are never charged for empty pages or for retries.
 **Do I get charged for empty pages or retries?** No — only reviews actually returned to the dataset are charged.
 
 ## Notes
-Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`. Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/app-store-reviews-scraper
+Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`. ## Related guides
+Engineering write-ups behind this Actor:
+- [Apple's review feed isn't down — it's picky about your request headers](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
+
+Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/app-store-reviews-scraper
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/app-store-reviews-scraper

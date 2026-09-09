@@ -53,6 +53,11 @@ Extract the full product catalog of any Shopify store (or a single collection or
 **Can I tell which products are on sale?** Yes, each item includes `isOnSale` (true when `compareAtPriceMin` is above `priceMin`) plus store `currency`.
 **Does it bypass password-protected or dev stores?** No — only publicly reachable catalogs are read, same as a logged-out shopper would see.
 
+## Related guides
+Engineering write-ups behind this Actor:
+- [Every Shopify store's catalog is public JSON — no login, no browser](https://fetchsmith.com/blog/shopify-catalog-products-json-no-login)
+- [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
+
 Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/shopify-products-scraper
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/shopify-products-scraper

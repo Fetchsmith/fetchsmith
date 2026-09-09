@@ -58,7 +58,11 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 **Why did I get fewer reviews than the app's total rating count?** Google Play's review API only returns a subset of written reviews, not every rating — this is a platform limitation, not a bug.
 **Can I filter to just negative or just recent reviews?** Yes — set `maxScore` (e.g. 2) for negative-only, or `sinceDate`/`untilDate` for a date window; filtering happens before you're charged, so you never pay for rows you filtered out.
 
+## Related guides
+Engineering write-ups behind this Actor:
+- [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
+
 ## Notes
-Only public Google Play data is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
+Only public Google Play data is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/google-play-reviews-scraper
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/google-play-reviews-scraper

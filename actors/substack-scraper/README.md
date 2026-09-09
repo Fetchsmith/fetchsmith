@@ -132,6 +132,11 @@ Pay per result: **$0.002** per post or comment returned. `maxResults` is a hard 
 
 **Rate limits?** Requests are retried with backoff on 429/5xx. For very large jobs, split them across runs or lower concurrency by running publications separately.
 
+## Related guides
+Engineering write-ups behind this Actor:
+- [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
+
+
 ---
 
 Built and maintained by [FetchSmith](https://fetchsmith.com) — small, fast, HTTP-only scrapers. Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/substack-scraper

@@ -52,6 +52,10 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 **Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
 **Do I get charged for empty queries?** No — only items actually returned to the dataset are charged.
 
+## Related guides
+Engineering write-ups behind this Actor:
+- [HN's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
+
 Only publicly available data is collected via HN's official search API. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/hacker-news-scraper
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/hacker-news-scraper
