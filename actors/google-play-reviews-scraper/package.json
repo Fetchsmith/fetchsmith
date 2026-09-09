@@ -1,0 +1,8 @@
+{
+  "name": "google-play-reviews-scraper",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Scrape Google Play app reviews and app details by app ID or search term.",
+  "dependencies": { "apify": "^3.4.0", "google-play-scraper": "^10.1.3" },
+  "scripts": { "start": "node src/main.js" }
+}

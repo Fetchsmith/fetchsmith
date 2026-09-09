@@ -1,0 +1,10 @@
+{
+  "appIds": ["com.spotify.music"],
+  "searchTerms": [],
+  "country": "us",
+  "language": "en",
+  "sort": "NEWEST",
+  "maxReviewsPerApp": 5,
+  "includeAppDetails": true,
+  "maxResults": 6
+}

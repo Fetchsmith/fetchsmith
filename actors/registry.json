@@ -182,6 +182,53 @@
    },
    "description": "<p>Uses HN's official Algolia Search API, so results are fast and reliable. Filter by tag (<code>story</code>, <code>comment</code>, <code>ask_hn</code>, <code>show_hn</code>, <code>job</code>), minimum points, and date range. Leave <code>queries</code> empty and sort by date to pull the newest items for a tag, e.g. the latest monthly Who's Hiring thread.</p>",
    "memory_mb": 256
+  },
+  {
+   "slug": "google-play-reviews-scraper",
+   "title": "Google Play Reviews Scraper",
+   "summary": "Google Play app reviews and app details by app ID or search term: rating, text, date, replies, plus installs, score and developer info.",
+   "status": "live",
+   "credits_per_result": 1,
+   "example_input": {
+    "appIds": [
+     "com.spotify.music"
+    ],
+    "country": "us",
+    "language": "en",
+    "sort": "NEWEST",
+    "maxReviewsPerApp": 100,
+    "includeAppDetails": true,
+    "max_results": 500
+   },
+   "output_fields": [
+    "recordType",
+    "appId",
+    "reviewId",
+    "userName",
+    "score",
+    "title",
+    "text",
+    "date",
+    "thumbsUp",
+    "version",
+    "replyText",
+    "replyDate",
+    "url",
+    "developer",
+    "installs",
+    "histogram"
+   ],
+   "sample_output": {
+    "recordType": "review",
+    "appId": "com.spotify.music",
+    "userName": "Nikhil Rathod",
+    "score": 5,
+    "text": "my motivation",
+    "date": "2026-09-08T03:01:35.135Z",
+    "thumbsUp": 0
+   },
+   "description": "<p>Pass Google Play package names (<code>appIds</code>, e.g. <code>com.spotify.music</code>) or plain <code>searchTerms</code> to resolve the top matching app automatically. Returns review rows plus an optional app-details row (installs, score, rating histogram, developer). Supports country/language targeting and sort by newest, rating or helpfulness.</p>",
+   "memory_mb": 256
   }
  ]
 }

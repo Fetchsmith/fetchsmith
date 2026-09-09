@@ -1,0 +1,66 @@
+{
+  "title": "Google Play Reviews Scraper Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "appIds": {
+      "title": "App IDs",
+      "type": "array",
+      "description": "Google Play package names to fetch reviews for, e.g. com.spotify.music. Find it in the app's Play Store URL (?id=...).",
+      "editor": "stringList",
+      "default": []
+    },
+    "searchTerms": {
+      "title": "Search terms",
+      "type": "array",
+      "description": "Alternative to App IDs: search terms; the top matching app(s) for each term will have their reviews fetched.",
+      "editor": "stringList",
+      "default": []
+    },
+    "country": {
+      "title": "Country code",
+      "type": "string",
+      "description": "Play Store country code (affects app availability and review language).",
+      "editor": "textfield",
+      "default": "us"
+    },
+    "language": {
+      "title": "Language code",
+      "type": "string",
+      "description": "Language for reviews and app details.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "description": "Review sort order.",
+      "editor": "select",
+      "enum": ["NEWEST", "RATING", "HELPFULNESS"],
+      "default": "NEWEST"
+    },
+    "maxReviewsPerApp": {
+      "title": "Max reviews per app",
+      "type": "integer",
+      "description": "Stop fetching reviews for an app after this many.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "includeAppDetails": {
+      "title": "Include app details record",
+      "type": "boolean",
+      "description": "Also push one extra item per app with title, developer, rating, installs, price, description.",
+      "default": true
+    },
+    "maxResults": {
+      "title": "Max total results",
+      "type": "integer",
+      "description": "Hard cap across all apps and app-detail records.",
+      "default": 500,
+      "minimum": 1,
+      "maximum": 20000
+    }
+  },
+  "required": []
+}

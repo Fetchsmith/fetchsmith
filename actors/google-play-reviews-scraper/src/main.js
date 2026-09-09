@@ -1,0 +1,132 @@
+import { Actor, log } from 'apify';
+import gplay from 'google-play-scraper';
+
+await Actor.init();
+const input = (await Actor.getInput()) ?? {};
+
+const appIds = (input.appIds ?? []).map((s) => String(s).trim()).filter(Boolean);
+const searchTerms = (input.searchTerms ?? []).map((s) => String(s).trim()).filter(Boolean);
+const country = String(input.country ?? 'us').toLowerCase();
+const lang = String(input.language ?? 'en').toLowerCase();
+const sortName = String(input.sort ?? 'NEWEST').toUpperCase();
+const sort = gplay.sort[sortName] ?? gplay.sort.NEWEST;
+const maxReviewsPerApp = Math.min(Number(input.maxReviewsPerApp ?? 100), 5000);
+const includeAppDetails = input.includeAppDetails !== false;
+const maxResults = Math.min(Number(input.maxResults ?? 500), 20000);
+
+const cm = Actor.getChargingManager();
+const isPPE = cm.getPricingInfo().isPayPerEvent;
+let pushed = 0;
+let stop = false;
+
+async function pushResult(item) {
+  if (isPPE) {
+    const r = await Actor.charge({ eventName: 'result', count: 1 });
+    if (r.chargedCount === 0) return false;
+    await Actor.pushData(item);
+    pushed += 1;
+    if (r.eventChargeLimitReached || pushed >= maxResults) stop = true;
+    return !stop;
+  }
+  await Actor.pushData(item);
+  pushed += 1;
+  if (pushed >= maxResults) stop = true;
+  return !stop;
+}
+
+async function resolveAppIds() {
+  const resolved = [...appIds];
+  for (const term of searchTerms) {
+    try {
+      const results = await gplay.search({ term, num: 1, lang, country });
+      if (results.length) {
+        log.info(`Search "${term}" -> ${results[0].appId}`);
+        resolved.push(results[0].appId);
+      } else {
+        log.warning(`No app found for search term "${term}"`);
+      }
+    } catch (e) {
+      log.warning(`Search failed for "${term}": ${e.message}`);
+    }
+  }
+  return [...new Set(resolved)];
+}
+
+function mapAppDetails(app) {
+  return {
+    recordType: 'app',
+    appId: app.appId,
+    title: app.title,
+    developer: app.developer,
+    developerId: app.developerId,
+    summary: app.summary,
+    description: app.description,
+    score: app.score,
+    ratings: app.ratings,
+    reviewsCount: app.reviews,
+    histogram: app.histogram,
+    installs: app.installs,
+    minInstalls: app.minInstalls,
+    price: app.price,
+    free: app.free,
+    currency: app.currency,
+    androidVersionText: app.androidVersionText,
+    genre: app.genre,
+    genreId: app.genreId,
+    contentRating: app.contentRating,
+    released: app.released,
+    updated: app.updated ? new Date(app.updated).toISOString() : null,
+    version: app.version,
+    url: app.url,
+  };
+}
+
+function mapReview(appId, r) {
+  return {
+    recordType: 'review',
+    appId,
+    reviewId: r.id,
+    userName: r.userName,
+    score: r.score,
+    title: r.title || null,
+    text: r.text,
+    date: r.date,
+    thumbsUp: r.thumbsUp,
+    version: r.version || null,
+    replyText: r.replyText || null,
+    replyDate: r.replyDate || null,
+    url: r.url,
+  };
+}
+
+const resolvedAppIds = await resolveAppIds();
+if (!resolvedAppIds.length) {
+  log.warning('No appIds resolved (empty appIds and searchTerms, or all searches failed). Nothing to do.');
+}
+
+for (const appId of resolvedAppIds) {
+  if (stop) break;
+  if (includeAppDetails) {
+    try {
+      const app = await gplay.app({ appId, lang, country });
+      const keepGoing = await pushResult(mapAppDetails(app));
+      if (!keepGoing) break;
+    } catch (e) {
+      log.warning(`app() failed for ${appId}: ${e.message}`);
+    }
+  }
+  if (stop) break;
+  try {
+    const { data } = await gplay.reviews({ appId, lang, country, sort, num: maxReviewsPerApp });
+    log.info(`${appId}: fetched ${data.length} reviews`);
+    for (const r of data) {
+      const keepGoing = await pushResult(mapReview(appId, r));
+      if (!keepGoing) break;
+    }
+  } catch (e) {
+    log.warning(`reviews() failed for ${appId}: ${e.message}`);
+  }
+}
+
+log.info(`Done. Pushed ${pushed} items.`);
+await Actor.exit();
