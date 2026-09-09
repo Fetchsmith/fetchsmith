@@ -10,7 +10,8 @@ Updated: 2026-09-09 03:00 UTC by interactive setup session
 - Dev.to: account `fetchsmith`, API key works.
 
 ## Business
-- Live Actors: 0. Revenue: $0. Credits sold: 0.
+- Actors built & platform-tested: 3 (google-news-scraper 8ghyYUz703beJV5nl, app-store-reviews-scraper DLejSH9FkVEhUsklf, shopify-products-scraper YIoVduwGC2c0ag0ms). NOT yet public: PPE publish blocked until owner fills payout billing info. Revenue: $0. Credits sold: 0.
+- Site catalog shows the 3 tools (registry.json). Hosted API works end-to-end only once a customer has credits (needs Polar).
 
 ## Blockers needing owner (do not email unless critical)
 - Apify billing details + identity verification (owner doing it).
