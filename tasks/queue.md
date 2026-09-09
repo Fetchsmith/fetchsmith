@@ -1,5 +1,7 @@
 # Task queue (top = next). Mark done with [x] and date. Add [hard] for tasks needing the strongest model.
 
+NOTE (cycle 5): 6 Actor dirs were already created today (2026-09-09) — the daily cap (max 6 new Actors/day) is HIT for today. Do not build Actor #7 until the next UTC calendar day. If it's still 2026-09-09, pick a growth/quality task instead (Bluesky account, Dev.to article prep, support mail, competitor gap-check on an existing Actor).
+
 - [x] 2026-09-09 NICHES.md built; Actors #1–3 built, platform-tested, registered on site (google-news, app-store-reviews, shopify-products). Publishing with PPE pricing is BLOCKED by Apify error `cannot-monetize-without-payout-billing-info` until the owner fills billing info (they are doing it). 
 - [x] 2026-09-09 Build Actor #4: hacker-news-scraper (Algolia HN Search API; stories/comments/Ask HN/Show HN/jobs + Who's Hiring via tag+date filters). Local + platform tested, registered on site, IndexNow submitted, committed (07d2afb). Publish blocked same as others (billing).
 - [x] 2026-09-09 All 5 Actors published to Store with PPE pricing (owner completed billing + Store terms). Verified `apify-admin get <slug>` shows isPublic true + pricingInfos set for all 5 (cycle 3).
@@ -10,7 +12,8 @@
 - [ ] Build Actor #7: apple-podcasts-scraper (iTunes lookup API; 9 competitors, leader only 161 users — least crowded verified niche); #8: rightmove-scraper (verify __NEXT_DATA__/api search JSON first) [hard]; #9: steam-reviews-scraper (trivial but low demand: leader 64 users).
 - [ ] When POLAR_ACCESS_TOKEN appears in secrets: run bin/polar-setup, test checkout redirect, update STATUS.
 - [x] 2026-09-09 GitHub: public repo https://github.com/Fetchsmith/fetchsmith pushed (remote origin set, token works).
-- [ ] Add a 'Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/<slug>' line to every Actor README (5 Actors), then `apify push --force -w 600` each so the Store page shows it (README changes need a rebuild).
+- [x] 2026-09-09 (cycle 5) Added 'Source code' README line to all 5 remaining Actors + `apify push --force` rebuilt each (google-news 0.1.6, app-store-reviews 0.1.8, shopify-products 0.1.7, hacker-news 0.1.5, google-play-reviews 0.1.5); verified still isPublic true. Committed ccc472e.
+- [x] 2026-09-09 (cycle 5) Fixed `bin/revenue` bug: it queried the Apify list endpoint which omits isPublic/stats, so it always reported 0 public actors / 0 users despite 5 being genuinely public — the "first users" owner-email could never have fired. Now fetches each actor individually. Seeded revenue_history.json baseline (users:10, all self-testing) to avoid a false "first users" email from the fix itself. Committed ccc472e. NOTE for next cycle: current apify totalUsers=10 (2/actor) is just our own CLI/console test runs — only alert-worthy once it grows beyond that baseline from real external users.
 - [ ] Create Bluesky account (ops@fetchsmith.com; verification mail lands in bin/inbox) and post first update (5 Actors are live now).
 - [x] 2026-09-09 First Dev.to article — see cycle 3 entry above (duplicate of this line, done).
 - [ ] Second Dev.to article due ~2026-09-11/12 (2-3 day cadence). Ideas: Shopify catalog scraping without login/browser; HN Algolia API tricks (Who's Hiring filters); benchmark post comparing HTTP-only vs headless-browser scraper cost/speed.

@@ -1,5 +1,5 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 04:12 UTC by cycle 4 (claude-opus-5)
+Updated: 2026-09-09 04:35 UTC by cycle 5 (claude-sonnet-5)
 
 ## Infra
 - fetchsmith.com live (Caddy TLS → uvicorn :8000, systemd fetchsmith-web). Inbound mail: systemd fetchsmith-mail (port 25) → /root/agent/mail/inbox.
@@ -20,4 +20,11 @@ Updated: 2026-09-09 04:12 UTC by cycle 4 (claude-opus-5)
 
 ## Blockers needing owner (do not email unless critical)
 - Polar token (POLAR_ACCESS_TOKEN key exists in secrets/env but value still empty) — blocks fetchsmith.com checkout.
+
+## Cycle 5 (2026-09-09, sonnet-5) — QUALITY/GROWTH cycle (6 Actors already created today = daily new-Actor cap hit, so no new build)
+- **Fixed a real monitoring bug in `bin/revenue`**: it called `GET /v2/acts?my=true` (list endpoint), which Apify does NOT populate with `isPublic`/`stats` fields — only the per-actor `GET /v2/acts/{id}` does. Result: every run since launch reported `public_actors: 0, users: 0` even though 5 Actors have been genuinely public since cycle 3. This silently guaranteed the "first users" owner-notify (rule 3) would never fire. Fixed by fetching each actor individually (cheap — only 6 actors). Verified: now correctly reports `public_actors: 5, users: 10` (2 users per public actor — confirmed via `apify-admin get` — these are our own test/CLI runs, not organic, since every public actor shows exactly 2). Seeded `state/revenue_history.json`'s baseline to `users:10` so this one-time bug-fix didn't fire a false "first users" email; future *real* growth past that baseline will alert correctly. Cron (`0 6 * * * bin/revenue`) will pick up the fix tomorrow. Committed `ccc472e`.
+- Added the "Source code: github.com/Fetchsmith/fetchsmith/tree/main/actors/<slug>" README line (previously only substack-scraper had it) to the other 5 Actors, then `apify push --force` rebuilt each (new build numbers: google-news 0.1.6, app-store-reviews 0.1.8, shopify-products 0.1.7, hacker-news 0.1.5, google-play-reviews 0.1.5). Verified all 5 still `isPublic: true` after rebuild (push does not touch visibility). This queue item is now DONE.
+- Re-attempted `apify-admin publish substack-scraper` — still `429 daily-publication-limit-exceeded`, confirms the ~24h window from cycle 3's 5 publishes (retry after ~2026-09-10 04:05 UTC, unchanged).
+- Inbox checked: only a loopback test message, no real support mail. Site uptime verified (200 on `/` and `/tools/substack-scraper`); all 3 systemd services active.
+- Revenue: still $0 real (Polar blocked, Apify totalUsers all self-testing). No owner email sent (correctly — see bug-fix note above, would have been a false positive).
 
