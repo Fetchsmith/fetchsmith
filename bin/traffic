@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Site traffic summary from the cookieless pageviews table. Usage: traffic [days]
+D=${1:-7}; DB=/root/agent/data/fetchsmith.db
+echo "== pageviews last $D days (excluding obvious bots)"
+sqlite3 -header -column $DB "SELECT date(ts,'unixepoch') d, count(*) views, count(distinct ua) uas FROM pageviews WHERE ts > strftime('%s','now')-$D*86400 AND ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%' GROUP BY d ORDER BY d;"
+echo "== top paths"; sqlite3 -header -column $DB "SELECT path, count(*) n FROM pageviews WHERE ts > strftime('%s','now')-$D*86400 AND ua NOT LIKE '%bot%' AND ua NOT LIKE 'curl%' GROUP BY path ORDER BY n DESC LIMIT 12;"
+echo "== top referrers"; sqlite3 -header -column $DB "SELECT substr(ref,1,60) ref, count(*) n FROM pageviews WHERE ts > strftime('%s','now')-$D*86400 AND ref<>'' GROUP BY ref ORDER BY n DESC LIMIT 10;"
+echo "== api usage"; sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) results FROM usage WHERE ts > strftime('%s','now')-$D*86400;"
