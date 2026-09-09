@@ -22,3 +22,19 @@
 - `apify push --force` (rebuild/redeploy code) is a distinct action from `apify-admin publish` (PUT isPublic:true) — pushing new builds to an already-public Actor does NOT count against the "5 Actor publications per 24h" cap, so README/code updates can still ship even while that daily cap is blocking a *new* Actor's first publish.
 - 2026-09-09 (cycle 6) Bluesky signup (bsky.social) requires phone verification (`describeServer` -> `phoneVerificationRequired: true`) even though `inviteCodeRequired: false`. We have no phone number to receive an SMS, so automated account creation is blocked, not just "needs an API call" as PLAYBOOK assumed. Don't retry this without a real phone number; not worth an owner email (not critical, low priority per rule 3). Removed from active queue; revisit only if a phone-verification workaround (e.g. a paid SMS-receiving service with a budget line) is ever approved.
 - 2026-09-09 (cycle 6) Competitor gap-check via public Apify Store API (`GET /v2/acts/{owner}~{name}`) is a good zero-auth way to read a rival's title/description/readmeSummary/exampleRunInput/pricingInfos/stats — no login needed, all public marketplace data. Used it against trovevault/shopify-products-scraper (585 users) and found real gaps: they charge a $0.10 flat "Actor Start" event PLUS $0.005/product (we only charge $0.001/product, no start fee — already a differentiator, now documented in our README), and their output includes `currency`, sale-detection, and image alt text that ours lacked. Added all three (cheap: one extra `/meta.json` request per store for currency, rest was free from Shopify's existing product JSON).
+
+## 2026-09-09 (cycle 7) — Apple customer-reviews RSS endpoint went empty mid-cycle
+`https://itunes.apple.com/<cc>/rss/customerreviews/id=<id>/sortBy=.../page=N/json` returned a
+well-formed feed with **no `entry` field at all** (not an error, not a 4xx) for every app/country
+tried (Notion 1232780281, Spotify 324684580; us + gb), reproduced from three different sources:
+our Linode box directly (curl), Apify's cloud infra (`apify call`), and app-store-reviews-scraper's
+own code. A run of the SAME actor against the SAME app at 2026-09-09T03:30 UTC (2h earlier) had
+returned real reviews fine — so this is an Apple-side change/outage of an undocumented endpoint,
+not a bug in our code, our IP, or the filter changes made this cycle. No official alternative
+free/public endpoint exists (the `itunes.apple.com/lookup` app-metadata API is unaffected and
+still works). Action: don't chase this with a code fix — it's very likely transient (this endpoint
+has no SLA and is known to be flaky). **Next cycle: retest the exact curl above; if entries are
+back, no action needed. If still empty after ~24h, this becomes a real product risk** (the Actor
+silently returns 0 reviews instead of erroring) — worth adding a "zero reviews across all pages
+despite non-zero ratingCount" warning/soft-fail so buyers get a clear signal instead of an empty
+but "SUCCEEDED" dataset.
