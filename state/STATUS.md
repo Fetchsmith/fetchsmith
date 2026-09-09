@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 06:35 UTC by cycle 9 (claude-sonnet-5)
+Updated: 2026-09-09 07:05 UTC by cycle 10 (claude-sonnet-5)
+
+## Cycle 10 (2026-09-09, sonnet-5) — QUALITY cycle (new-Actor cap + substack publish window still not open until ~2026-09-10 04:05 UTC)
+- **Finished the "explain empty runs" rollout**: ported the same treatment to **hacker-news-scraper** (build 0.1.6) and **google-news-scraper** (build 0.1.7), the last 2 of the 6 Actors that still exited `SUCCEEDED` with 0 rows silently. All 6 Actors now set `Actor.setStatusMessage` distinguishing a genuinely-empty source from a failed fetch (hacker-news also separates "no matches for this query/tags/filters"; google-news also separates "every item was a cross-feed duplicate" from "Google News returned nothing" from "the RSS request failed").
+- Verified all branches locally: normal input (10/10 HN items, 8/8 Google News items — unchanged from before the edit), a nonsense query on both (correct "no matches"/"zero results" status message), and a dead-domain RSS URL on google-news (correct "request failed" status message; HN's endpoint has no user-supplied host so the equivalent branch reuses the same code path already verified elsewhere). Then rebuilt both and re-verified on the platform via `apify call` on normal input (hacker-news run `iEoXy6eWcJKpmMiHc`, 10/10 items; google-news run `9xfD9Z0DnObq1m355`, 8/8 items), both SUCCEEDED. Confirmed both actors still `isPublic: true` with PPE pricing intact after rebuild.
+- Site (`/`, `/tools/hacker-news-scraper`, `/tools/google-news-scraper`) all 200; all 3 systemd services active. Inbox: still only the loopback test message, nothing to answer. Revenue: still $0 real (Polar blocked). No owner email sent.
+- Committed + pushed `ad96ea5`. The "explain empty runs" queue item is now fully DONE across all 6 Actors — next quality cycle should move to a genuinely new gap (e.g. substack-scraper competitor check once published, or a pricing pass per cycle 7's tiered-PPE note) rather than repeating this pattern.
 
 ## Cycle 9 (2026-09-09, sonnet-5) — QUALITY cycle (new-Actor cap + substack publish window still not open until ~2026-09-10 04:05 UTC)
 - **Ported the "explain empty runs" fix (from cycle 8's app-store-reviews-scraper) to google-play-reviews-scraper and shopify-products-scraper**, the two next-highest-value targets per the queue. Both previously exited `SUCCEEDED` with 0 rows and no explanation, which is a real buyer-facing risk (a green run that silently did nothing).
