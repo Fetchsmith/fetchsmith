@@ -1,0 +1,43 @@
+# FetchSmith Playbook
+
+## Strategy (why we do what we do)
+Research (2026-09-09) showed: cold email/SEO/bounties earn ~$0 in 30 days for autonomous agents; marketplaces with built-in demand do. Apify Store pays ~$1.5M/mo to ~3,900 devs, 80% revenue share, fully programmatic publishing, PPE (pay-per-event) only since Oct 2026. Winners: many small Actors for **underserved regional/vertical sites** (job boards by country, business directories, marketplaces, public registries, event listings, real-estate portals, app/plugin directories), HTTP-only, per-result pricing, excellent README + schemas. Avoid crowded: LinkedIn, Amazon, Instagram, Facebook, TikTok, X, Google Maps, YouTube, Apollo. Avoid PII-centric products (emails/phones of individuals) — business listings are fine.
+Our edge: throughput + nightly maintenance. Target: 10 live Actors by day 7, 40 by day 30, 100 by day 60. Secondary revenue: same tools sold as hosted API credits on fetchsmith.com via Polar.
+
+## Demand discovery (do this before each new Actor)
+- `apify-admin store "<keyword>" 20` shows competitors with totalUsers / users30d / pricing. Signals: (a) a site with 1–3 Actors that have 100+ users (demand exists, room for a better/cheaper one), (b) sites with zero Actors but obvious data demand (regional job boards, national business registries, classifieds, tender portals, university/course catalogs, government open-data portals, restaurant/travel review sites in non-English markets, niche marketplaces, app stores, plugin directories), (c) Actors marked deprecated/under maintenance (users looking for replacements).
+- Keep a niche shortlist in `/root/agent/notes/NICHES.md` with evidence; pick highest (demand ÷ competition) where the site is scrapeable without a browser (check: `curl -sA "Mozilla/5.0" URL | head`, look for JSON endpoints in page source, `__NEXT_DATA__`, XHR APIs, sitemaps, RSS).
+- Verify the site allows scraping of public pages (robots.txt is advisory, but skip sites that require login, have strict anti-bot walls like Cloudflare Turnstile, or whose ToS is obviously violated by data resale of personal info).
+
+## Build an Actor (HTTP-only, PPE)
+1. `cp -r /root/agent/actors/_template /root/agent/actors/<slug>`; replace SLUG/TITLE/DESCRIPTION in `.actor/actor.json`, `package.json`, `README.md`, `meta.json`. Slug: `<site>-scraper` or `<site>-<entity>-scraper` (lowercase, hyphens, ≤ 40 chars).
+2. Write `src/main.js`: got-scraping + cheerio (or direct JSON APIs). Support inputs that users expect (query/location/category/url list/maxResults). Push clean, flat, well-named fields; include `url` and a stable `id` per item. Charge event `result` per pushed item via `pushResult()`; never push unpaid items. Handle pagination, retries, and empty results gracefully (finish with 0 items, do not fail).
+3. Input schema: `.actor/input_schema.json` with titles, descriptions, defaults, `editor` hints. Output: document fields in README with a sample row.
+4. Local test: `cd /root/agent/actors/<slug> && npm install --omit=dev && ACTOR_TEST_PAY_PER_EVENT=true APIFY_LOCAL_STORAGE_DIR=./storage timeout 240 node src/main.js` with `storage/key_value_stores/default/INPUT.json` set. Check `storage/datasets/default/` items (≥ 5 real rows, no nulls in key fields).
+5. Deploy: `apify push --force -w 600` (token stored). Then run on platform to validate: `apify call <slug> --input-file storage/key_value_stores/default/INPUT.json --timeout 240` or via API run-sync. Inspect dataset.
+6. Price: `result` $0.001–$0.01 per item depending on value (job posts ~$0.002–0.005; business listings with contact details ~$0.005–0.01; simple lists ~$0.001). Undercut the closest competitor by 20–40% while staying above compute cost. Keep runs HTTP-only so compute ≈ $0.0001/item.
+7. Publish: fill `meta.json` (title 40–50 chars incl. site name + "Scraper", description one sentence, seoTitle, seoDescription 140–156 chars, categories from: JOBS, LEAD_GENERATION, BUSINESS, ECOMMERCE, REAL_ESTATE, TRAVEL, NEWS, SEO_TOOLS, DEVELOPER_TOOLS, AUTOMATION, OTHER, MARKETING, FINANCE, EDUCATION, SOCIAL_MEDIA, AI, AGENTS), then `apify-admin publish <slug> meta.json`. Verify with `apify-admin get <slug>` (isPublic true, pricingInfos set). If the API rejects pricing because payouts aren't set up, record in STATUS.md as blocker (owner does it once) and keep building.
+8. Register on the site: add an entry to `/root/agent/actors/registry.json` → `tools[]`: `{slug,title,summary,description(html ok),status:"live",credits_per_result,example_input,output_fields,sample_output,apify_actor_id,memory_mb}`; the site reloads the file on each request. `curl -s https://fetchsmith.com/tools/<slug> | head -c 300` to verify.
+9. Commit: `cd /root/agent && git add -A && git commit -qm "actor: <slug>"` (repo is local; push to GitHub when a token with repo permissions exists — see STATUS.md).
+
+## Nightly maintenance
+`/root/agent/bin/actor-health` (cron 03:30 UTC) runs every live Actor with its `test_input.json` and writes `/root/agent/state/health.json`. Fix any FAILED Actor before building new ones (users punish broken tools with 1-star reviews; Apify auto-deprecates after 30 days under maintenance).
+
+## fetchsmith.com
+- Landing/catalog/legal pages exist. Checkout needs POLAR_ACCESS_TOKEN: when present, run `/root/agent/bin/polar-setup` once (creates 3 credit-pack products + webhook, writes state/polar_products.json, POLAR_WEBHOOK_SECRET to secrets). Test `curl -I https://fetchsmith.com/checkout/starter` → 303.
+- Every Actor gets a `/tools/<slug>` page (SEO + LLM citations). Push new URLs to IndexNow: `bin/indexnow <url...>`.
+- Support email arrives at support@fetchsmith.com → `bin/inbox`. Reply via Resend (see bin/notify for the API shape; from `support@fetchsmith.com`).
+
+## Marketing (automation-friendly, ToS-safe)
+- Dev.to (API key in secrets): 1 article every 2–3 days: "how to get X data from Y site in 5 minutes", benchmarks, dataset write-ups; canonical_url to fetchsmith.com/blog if a blog exists, else omit. Tag: webscraping, dataengineering, api, javascript. Disclose that tools are built with AI assistance. Max 1 post/day.
+- Apify itself is the main channel: good SEO title/description, README with input/output tables, sample output, use cases; respond to Store issues within a day (issues arrive via Apify email to the owner; check `apify-admin runs` for failures instead).
+- Bluesky: create account via API using ops@fetchsmith.com (verification email lands in inbox); post changelog-style updates; disclose commercial nature in bio.
+- Free directories (Tiny Startups, Microlaunch, Dev Hunt, BetaList, SaaSHub, AlternativeTo, Peerlist): submit once fetchsmith.com has ≥ 10 tools. No paid listings without a budget line.
+- Never: Reddit posting bots, vote solicitation, cold email to scraped addresses.
+
+## Revenue tracking
+`/root/agent/bin/revenue` (cron 06:00 UTC daily) pulls Apify actor stats (users/runs by others) and Polar orders, writes `state/revenue.json`, and emails the owner via `notify --once` on: first paid run detected, first Polar order, each new calendar month's totals, and when an Apify payout invoice is generated (11th). Apify pays month N earnings around the 21st–25th of month N+1.
+
+## Auth / platform limits
+- Worker auth: CLAUDE_CODE_OAUTH_TOKEN (1-year token, minted 2026-09-09). If runs fail with auth errors, run.sh emails the owner once.
+- Usage limits: run.sh detects "hit your limit" and sleeps until reset. Use `--model` routing: routine cycles on Sonnet, hard tasks (new Actor on a tricky site, debugging) on Opus — mark tasks in queue.md with `[hard]` to request Opus for the next cycle.

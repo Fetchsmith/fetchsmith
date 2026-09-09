@@ -1,0 +1,10 @@
+{
+  "title": "TITLE",
+  "description": "DESCRIPTION (one sentence, what site, what fields)",
+  "seoTitle": "TITLE (40-50 chars)",
+  "seoDescription": "SEO description 140-156 characters describing the data returned and who it's for.",
+  "categories": ["OTHER"],
+  "events": {
+    "result": { "eventTitle": "Result item", "eventDescription": "One extracted record returned to the dataset.", "eventPriceUsd": 0.002 }
+  }
+}

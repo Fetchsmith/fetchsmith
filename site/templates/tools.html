@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}All tools — FetchSmith{% endblock %}
+{% block body %}
+<h1>Tools</h1>
+{% if tools %}
+<div class="cards">
+{% for t in tools %}
+  <a class="card" href="/tools/{{ t.slug }}"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span><em>{{ t.credits_per_result or 1 }} credit / result{% if t.status == 'beta' %} · beta{% endif %}</em></a>
+{% endfor %}
+</div>
+{% else %}
+<p class="notice">No tools are public yet. The first batch ships this week.</p>
+{% endif %}
+{% endblock %}

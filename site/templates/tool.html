@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ t.title }} — FetchSmith{% endblock %}
+{% block desc %}{{ t.summary }}{% endblock %}
+{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}","offers":{"@type":"Offer","price":"0.0025","priceCurrency":"USD","description":"Pay per result"}}</script>{% endblock %}
+{% block body %}
+<h1>{{ t.title }}</h1>
+<p class="lead">{{ t.summary }}</p>
+{% if t.description %}<div class="prose">{{ t.description | safe }}</div>{% endif %}
+<h2>Run it</h2>
+<pre><code>curl -X POST {{ site_url }}/api/v1/run/{{ t.slug }} \
+  -H "Authorization: Bearer YOUR_KEY" -H "Content-Type: application/json" \
+  -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>
+<p>Price: <strong>{{ t.credits_per_result or 1 }} credit per result</strong> (<a href="/pricing">credit packs</a>). Also available on <a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Apify Store</a> with pay-per-event pricing.</p>
+{% if t.output_fields %}<h2>Output fields</h2><ul>{% for f in t.output_fields %}<li><code>{{ f }}</code></li>{% endfor %}</ul>{% endif %}
+{% if t.sample_output %}<h2>Sample output</h2><pre><code>{{ t.sample_output | tojson(indent=2) }}</code></pre>{% endif %}
+<p class="muted">Only publicly accessible pages are read. Respect the source site's terms when using the data.</p>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}API docs — FetchSmith{% endblock %}
+{% block body %}
+<h1>API documentation</h1>
+<p>Base URL: <code>{{ site_url }}/api/v1</code>. Authenticate with <code>Authorization: Bearer YOUR_KEY</code>. Keys are emailed after purchase.</p>
+<h2>Endpoints</h2>
+<h3>GET /account</h3><p>Returns your remaining credits.</p>
+<pre><code>curl -H "Authorization: Bearer YOUR_KEY" {{ site_url }}/api/v1/account</code></pre>
+<h3>GET /tools</h3><p>Lists tools with their input schema and price. No key needed.</p>
+<h3>POST /run/{slug}</h3>
+<p>Runs a tool synchronously (up to about four minutes) and returns <code>items</code>. Body is the tool's input JSON; <code>max_results</code> caps the number of results and the maximum charge. You are charged only for results actually returned.</p>
+<pre><code>curl -X POST {{ site_url }}/api/v1/run/example-tool \
+  -H "Authorization: Bearer YOUR_KEY" -H "Content-Type: application/json" \
+  -d '{"query": "...", "max_results": 50}'</code></pre>
+<h3>Errors</h3>
+<ul><li><code>401</code> bad key</li><li><code>402</code> not enough credits</li><li><code>404</code> unknown tool</li><li><code>502</code> the run failed; nothing charged</li></ul>
+{% if tools %}<h2>Tools</h2><ul>{% for t in tools %}<li><a href="/tools/{{ t.slug }}">{{ t.title }}</a> — <code>{{ t.slug }}</code></li>{% endfor %}</ul>{% endif %}
+{% endblock %}

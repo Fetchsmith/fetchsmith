@@ -1,0 +1,42 @@
+#!/root/agent/venv/bin/python
+"""Apify admin helper.
+  apify-admin list                         -> my actors with stats
+  apify-admin get <name>                   -> full actor JSON
+  apify-admin publish <name> <meta.json>   -> set title/description/seo/categories/pricing, isPublic true
+  apify-admin unpublish <name>
+  apify-admin store <query> [n]            -> search Apify Store (demand signal): users, runs, ratings
+  apify-admin runs <name> [n]              -> recent runs (status, started, stats)
+"""
+import sys, json, httpx
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+T = env["APIFY_TOKEN"]; H = {"Authorization": f"Bearer {T}"}; API = "https://api.apify.com/v2"
+def me(): return httpx.get(f"{API}/users/me", headers=H).json()["data"]["username"]
+def get(name): return httpx.get(f"{API}/acts/{me()}~{name}", headers=H).json()["data"]
+cmd = sys.argv[1]
+if cmd == "list":
+    r = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
+    for a in r:
+        s = a.get("stats", {})
+        print(f"{a['name']:40} public={str(a.get('isPublic',False)):5} users30d={s.get('totalUsers30Days',0):4} runs30d={s.get('totalRuns30Days',0):5} totalUsers={s.get('totalUsers',0):4} lastRun={str(s.get('lastRunStartedAt',''))[:10]}")
+elif cmd == "get":
+    print(json.dumps(get(sys.argv[2]), indent=2))
+elif cmd == "publish":
+    a = get(sys.argv[2]); meta = json.load(open(sys.argv[3]))
+    payload = {k: meta[k] for k in ("title", "description", "seoTitle", "seoDescription", "categories") if k in meta}
+    if "events" in meta:
+        payload["pricingInfos"] = [{"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": meta["events"]}}]
+    payload["isPublic"] = True
+    r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json=payload)
+    print(r.status_code, json.dumps(r.json())[:600])
+elif cmd == "unpublish":
+    a = get(sys.argv[2]); r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json={"isPublic": False}); print(r.status_code)
+elif cmd == "store":
+    n = int(sys.argv[3]) if len(sys.argv) > 3 else 20
+    r = httpx.get(f"{API}/store", params={"search": sys.argv[2], "limit": n, "sortBy": "relevance"}).json()["data"]["items"]
+    for a in r:
+        s = a.get("stats", {}); p = a.get("currentPricingInfo", {})
+        print(f"{a['username']}/{a['name']:38} users={s.get('totalUsers',0):6} u30d={s.get('totalUsers30Days',0):5} runs30d={s.get('totalRuns30Days',0):6} model={p.get('pricingModel','?'):14} modified={a.get('modifiedAt','')[:10]} title={a.get('title','')[:50]}")
+elif cmd == "runs":
+    a = get(sys.argv[2]); n = int(sys.argv[3]) if len(sys.argv) > 3 else 10
+    r = httpx.get(f"{API}/acts/{a['id']}/runs?desc=true&limit={n}", headers=H).json()["data"]["items"]
+    for x in r: print(x["id"], x["status"], x["startedAt"][:19], x.get("stats", {}).get("durationMillis"), "ms")

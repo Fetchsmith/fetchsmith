@@ -1,0 +1,8 @@
+secrets/
+data/
+logs/
+mail/inbox/
+venv/
+**/node_modules/
+**/storage/
+state/notified.json

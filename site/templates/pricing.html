@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Pricing — FetchSmith{% endblock %}
+{% block body %}
+<h1>Pricing</h1>
+<p class="lead">Buy credits once, spend them across every tool. One credit is one returned result for most tools. Credits never expire.</p>
+<div class="grid3 packs">
+{% for p in packs %}
+  <div class="pack"><h3>{{ p.name }}</h3><div class="price">${{ p.usd }}</div><p>{{ p.credits }} credits<br><small>{{ p.blurb }}</small></p><a class="btn" href="/checkout/{{ p.id }}">Buy {{ p.name }}</a></div>
+{% endfor %}
+</div>
+<p class="muted">Payments are processed by Polar.sh, our merchant of record, which handles VAT and sales tax. Prefer usage billing? Every tool is also on <a href="https://apify.com/{{ apify_user }}">Apify Store</a>.</p>
+{% endblock %}

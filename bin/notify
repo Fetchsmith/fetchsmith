@@ -1,0 +1,26 @@
+#!/root/agent/venv/bin/python
+"""Email the owner via Resend. Usage: notify "<subject>" "<body-or-@file>" [--once KEY]
+--once KEY: send only if KEY hasn't been sent before (dedupe stored in state/notified.json)."""
+import sys, os, json, time, httpx
+sys.argv = [a for a in sys.argv]
+env = {}
+for line in open("/root/agent/secrets/env"):
+    if "=" in line and not line.startswith("#"):
+        k, v = line.rstrip("\n").split("=", 1); env[k] = v
+once = None
+if "--once" in sys.argv:
+    i = sys.argv.index("--once"); once = sys.argv[i+1]; del sys.argv[i:i+2]
+subject, body = sys.argv[1], sys.argv[2]
+if body.startswith("@"): body = open(body[1:]).read()
+sent_path = "/root/agent/state/notified.json"
+sent = json.load(open(sent_path)) if os.path.exists(sent_path) else {}
+if once and once in sent:
+    print("skip (already sent)", once); sys.exit(0)
+r = httpx.post("https://api.resend.com/emails", headers={"Authorization": f"Bearer {env['RESEND_API_KEY']}"},
+    json={"from": "FetchSmith Agent <agent@fetchsmith.com>", "to": [env["OWNER_EMAIL"]], "subject": subject, "text": body}, timeout=30)
+print(r.status_code, r.text[:200])
+with open("/root/agent/logs/notify.log", "a") as f:
+    f.write(f"{int(time.time())}\t{r.status_code}\t{subject}\n")
+if r.status_code < 300 and once:
+    sent[once] = int(time.time()); json.dump(sent, open(sent_path, "w"))
+sys.exit(0 if r.status_code < 300 else 1)

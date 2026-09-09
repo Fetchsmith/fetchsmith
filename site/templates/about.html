@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}About — FetchSmith{% endblock %}
+{% block body %}
+<h1>About FetchSmith</h1>
+<div class="prose">
+<p>FetchSmith is a small, independent catalog of web data extraction tools. Each tool targets one site or one kind of page, reads only what is publicly accessible, and returns tidy JSON. The tools are built and maintained with heavy use of automation, including AI coding agents, and are re-tested every night so that when a source site changes, the fix ships fast.</p>
+<p>The same tools are published on <a href="https://apify.com/{{ apify_user }}">Apify Store</a> for teams that prefer usage-based billing there.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}FetchSmith — pay-per-result web data extraction APIs{% endblock %}</title>
+<meta name="description" content="{% block desc %}FetchSmith turns public web pages into clean JSON. Hosted APIs and Apify Actors, priced per result. No subscription, no browser farm to run.{% endblock %}">
+<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
+<link rel="stylesheet" href="/static/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f766e'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'>F</text></svg>">
+{% block head %}{% endblock %}
+</head>
+<body>
+<header class="wrap nav">
+  <a class="brand" href="/">Fetch<span>Smith</span></a>
+  <nav>
+    <a href="/tools">Tools</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/docs">API docs</a>
+    <a href="https://apify.com/{{ apify_user }}" rel="noopener">Apify Store</a>
+  </nav>
+</header>
+<main class="wrap">
+{% block body %}{% endblock %}
+</main>
+<footer class="wrap foot">
+  <div>© FetchSmith · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/refunds">Refunds</a></div>
+  <div class="muted">Extracts publicly available data only. Not affiliated with any of the websites the tools read.</div>
+</footer>
+</body>
+</html>

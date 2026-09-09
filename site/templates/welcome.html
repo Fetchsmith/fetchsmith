@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Thanks — FetchSmith{% endblock %}
+{% block body %}
+<h1>Thank you!</h1>
+<p class="lead">Your API key is on its way to the email you used at checkout. It usually arrives within a minute. If it doesn't, email <a href="mailto:{{ support_email }}">{{ support_email }}</a> and mention checkout <code>{{ checkout_id }}</code>.</p>
+<p><a class="btn" href="/docs">Open the API docs</a></p>
+{% endblock %}

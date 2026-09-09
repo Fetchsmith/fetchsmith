@@ -1,0 +1,10 @@
+{
+  "title": "Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": { "title": "Search query", "type": "string", "description": "What to search for.", "editor": "textfield" },
+    "maxResults": { "title": "Max results", "type": "integer", "description": "Stop after this many results.", "default": 50, "minimum": 1, "maximum": 5000 }
+  },
+  "required": []
+}

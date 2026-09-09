@@ -1,0 +1,18 @@
+#!/root/agent/venv/bin/python
+"""List or read inbound emails. Usage: inbox [list [N]] | inbox read <id-prefix> | inbox search <text>"""
+import sys, os, json, glob
+files = sorted(glob.glob("/root/agent/mail/inbox/*.json"))
+cmd = sys.argv[1] if len(sys.argv) > 1 else "list"
+if cmd == "list":
+    n = int(sys.argv[2]) if len(sys.argv) > 2 else 30
+    for f in files[-n:]:
+        m = json.load(open(f)); print(f"{m['id'][:8]}  {m['ts']}  {m['from'][:30]:30}  -> {','.join(m['to'])[:30]:30}  {m['subject'][:60]}")
+elif cmd == "read":
+    for f in files:
+        m = json.load(open(f))
+        if m["id"].startswith(sys.argv[2]): print(json.dumps(m, indent=2)); break
+elif cmd == "search":
+    q = sys.argv[2].lower()
+    for f in files:
+        m = json.load(open(f))
+        if q in json.dumps(m).lower(): print(f"{m['id'][:8]}  {m['from']}  {m['subject']}")
