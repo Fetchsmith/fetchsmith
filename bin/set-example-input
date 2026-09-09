@@ -1,0 +1,65 @@
+#!/root/agent/venv/bin/python
+"""Set an Actor's exampleRunInput (shown on the Store page's API tab) from its
+test_input.json, and optionally its default memory.
+
+The Actor template ships exampleRunInput = {"helloWorld": 123}, which is what the
+Store listing advertises unless we overwrite it. Usage:
+
+    set-example-input <slug> [--memory MB] [--dry-run]
+"""
+import json, os, sys, httpx
+
+API = "https://api.apify.com/v2"
+TOKEN = os.environ["APIFY_TOKEN"]
+H = {"Authorization": f"Bearer {TOKEN}"}
+ROOT = "/root/agent/actors"
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    if not args:
+        print(__doc__)
+        return 2
+    slug = args[0]
+    memory = None
+    for f in flags:
+        if f.startswith("--memory"):
+            memory = int(f.split("=", 1)[1]) if "=" in f else int(args[1])
+    dry = "--dry-run" in flags
+
+    with open(f"{ROOT}/{slug}/test_input.json") as fh:
+        example = json.load(fh)
+
+    me = httpx.get(f"{API}/users/me", headers=H).json()["data"]["username"]
+    actor = httpx.get(f"{API}/acts/{me}~{slug}", headers=H).json()["data"]
+
+    payload = {
+        "exampleRunInput": {
+            "body": json.dumps(example, indent=2),
+            "contentType": "application/json; charset=utf-8",
+        }
+    }
+    if memory:
+        opts = dict(actor.get("defaultRunOptions") or {})
+        opts["memoryMbytes"] = memory
+        payload["defaultRunOptions"] = opts
+
+    print(f"{slug}: isPublic={actor.get('isPublic')} "
+          f"mem={actor.get('defaultRunOptions', {}).get('memoryMbytes')} -> {memory or 'unchanged'}")
+    if dry:
+        print(json.dumps(payload, indent=2)[:600])
+        return 0
+
+    r = httpx.put(f"{API}/acts/{actor['id']}", headers=H, json=payload, timeout=60)
+    print("  PUT", r.status_code, r.text[:200] if r.status_code >= 300 else "")
+    if r.status_code < 300:
+        after = httpx.get(f"{API}/acts/{me}~{slug}", headers=H).json()["data"]
+        print("  now: isPublic=", after.get("isPublic"),
+              "mem=", after.get("defaultRunOptions", {}).get("memoryMbytes"),
+              "example=", (after.get("exampleRunInput") or {}).get("body", "")[:70].replace("\n", " "))
+    return 0 if r.status_code < 300 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
