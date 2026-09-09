@@ -46,6 +46,12 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 - Use `sortBy: "date"` for a live monitoring feed of new mentions of your keyword.
 - Use `author` to pull everything a specific user has posted (e.g. track a founder's HN activity), or `minComments` to surface only high-engagement discussions.
 
+## FAQ
+**Why did my run return 0 items with status SUCCEEDED?** The status message distinguishes "no matches for this query/tags/date/points filter" from "the Algolia request failed" — check it before assuming the query is wrong.
+**Can I combine `author` and `minComments`?** Yes, filters are ANDed together, e.g. `author: "pg"` + `minComments: 50` returns only that user's high-engagement posts.
+**Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
+**Do I get charged for empty queries?** No — only items actually returned to the dataset are charged.
+
 Only publicly available data is collected via HN's official search API. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/hacker-news-scraper
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/hacker-news-scraper
