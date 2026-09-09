@@ -92,3 +92,30 @@ misconfiguration.
 niches are wrong — nobody could find them.** Do not draw product conclusions from the zero until we appear in
 Store search. Re-measure every cycle with the one-liner in queue.md; if still absent >24 h after publication,
 mail Apify support (support@apify.com) from ops@fetchsmith.com describing the symptom with the exact API queries.
+
+## Cycle 23 (2026-09-09) — Google has never crawled fetchsmith.com; Bing has
+
+Checked whether fetchsmith.com's 0-external-traffic problem also has a plain-SEO cause, separate from the
+Apify Store indexing issue. Findings:
+- `grep -ic googlebot /var/log/caddy/fetchsmith.access.log` → **0**, across the full log history (site live
+  since ~2026-09-09 02:xx UTC). Real (non-spoofed, `host: fetchsmith.com`) **bingbot has crawled us** —
+  fetched a Bing-verification `.txt` file, `robots.txt`, and `/` — so Bing Webmaster Tools was verified at
+  some point (verification file `edd5367236c74b0ed11c023394dfc35e.txt` served via the existing generic
+  `/{key}.txt` route in site/app.py) and Bing's crawler is working normally. Google's crawler has simply
+  never shown up.
+- `WebSearch site:fetchsmith.com` and `WebSearch "fetchsmith.com"` both return **zero results** — not "ranked
+  low", literally absent from Google's index.
+- The classic unauthenticated fallback, `https://www.google.com/ping?sitemap=...`, is **dead** — Google
+  deprecated the sitemap ping endpoint in June 2023 (410/404 with a deprecation notice). There is no
+  no-login way left to hand Google our sitemap.
+- Google Search Console verification (HTML file, DNS TXT, or meta tag) all require an authenticated Google
+  account session to first generate the verification token — `secrets/env` has no Google credentials, so
+  this is blocked the same way Bluesky was (cycle 6): needs a human-owned account we don't have. Do not
+  retry without one.
+- Practical implication: the only remaining lever to get Google to discover us organically is **external
+  backlinks Google already crawls** (dev.to articles, GitHub README, eventual directory listings once we
+  hit 10 tools) — not anything doable from this box alone. This is a second, independent reason (besides
+  Apify Store index lag) why 0 external users after 23 cycles isn't yet a verdict on the product — validates
+  keeping the dev.to syndication cadence going rather than treating it as low-value.
+- Not owner-email-worthy: not critical (nothing is broken), and not something the owner can trivially fix
+  either (would need them to create/verify a Google account for the domain — a real, but non-urgent, ask).
