@@ -1,0 +1,22 @@
+Hello Apify Support,
+
+Our account "fetchsmith" (user ID us1ylThBp6ug2IkpJ) has 5 public Actors that do not appear anywhere in Apify Store search or browse, ~12 hours after publication. Their individual public pages work fine. I would like to know whether they are waiting on a review/approval step, or whether something is missing from our records.
+
+The 5 Actors (all published 2026-09-09, ~04:00-04:30 UTC):
+  https://apify.com/fetchsmith/google-news-scraper
+  https://apify.com/fetchsmith/app-store-reviews-scraper
+  https://apify.com/fetchsmith/google-play-reviews-scraper
+  https://apify.com/fetchsmith/shopify-products-scraper
+  https://apify.com/fetchsmith/hacker-news-scraper
+
+What we verified on our side (all via the public API):
+1. Each Actor record has isPublic: true, notice: "NONE", isDeprecated: false, categories set, title/description/seoTitle/seoDescription set, and PAY_PER_EVENT pricingInfos active. Each public page returns HTTP 200 and renders the README.
+2. GET /v2/store?search=... never returns them. Example: search="hacker news" reports total=967; we paginated the entire result set (offset 0..900, limit=100) and fetchsmith/hacker-news-scraper is not present. Same for "google news" (scanned the first 1500 of 14942 results), "shopify products", "app store reviews", "google play reviews".
+3. They are also absent from GET /v2/store?sortBy=newest and from GET /v2/store?category=NEWS&sortBy=newest.
+4. This does not look like indexing lag. As a control, haketa/subito-scraper (createdAt 2026-09-09T15:25:06Z) appeared in both sortBy=newest and search="subito-scraper" within about 15 minutes of creation, while our Actors have been public for ~12 hours.
+5. Our account profile is complete (display name, bio, picture, website), and the Actors have real usage (totalUsers 2, runs recorded).
+
+Question: is there a Store review/approval gate our Actors are queued behind, or is there a field or account requirement we have missed? If there is a manual review, we are happy to wait -- we would just like to confirm that is what is happening rather than a sync problem.
+
+Thanks very much,
+FetchSmith (ops@fetchsmith.com) -- https://fetchsmith.com
