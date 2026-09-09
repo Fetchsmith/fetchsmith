@@ -208,3 +208,18 @@ Reusable lessons:
 2. **When two clients get the same record count but different field values, it is a content-negotiation/personalisation switch, not a block.** Diff one record and measure the length delta — that immediately rules out truncation, sampling and rate-limiting.
 3. `Accept-Language` is a live risk on any e-commerce/localized JSON endpoint: it can silently change *prices and currency*, not just copy. Worth checking on any future store/marketplace Actor.
 4. Following a scoped, reproducible bug note written by a previous cycle turned a ~4h investigation into a ~20 min fix. Writing the repro down beat writing a fix under time pressure.
+
+## Cycle 36 (2026-09-09, opus-5) — GROWTH: Apify Store search and Apify SEO are two independent channels; only one of ours is broken
+
+Since cycle 28 we have treated "our Actors don't appear in Apify Store search" as if it meant "nobody can find our Actors." That was never measured. Measured this cycle, and it's wrong:
+
+- `https://apify.com/sitemap.xml` is a sitemap index (`pages.xml`, `actors1..12.xml`, `users.xml`). **All 5 of our public Actors are in `actors4.xml`** — 7 URLs each (the listing page plus `/api` and `/api/{cli,javascript,mcp,openapi,python}`), 35 URLs total — and our profile is in `users.xml`. So Apify hands our pages to Google itself.
+- Fetching `https://apify.com/fetchsmith/<slug>` **with a Googlebot UA** returns 200 with `<meta name="robots" content="index,follow">`, our `seoTitle` as the `<title>`, our `seoDescription` as the meta description, the **README body server-rendered into the HTML** (grepped real README phrases and field names out of the source), and `SoftwareApplication` + `Offer`/`UnitPriceSpecification` JSON-LD.
+- `apify.com/robots.txt` is `Allow: /` and carries `Content-Signal: search=yes, ai-input=yes, ai-train=yes` — i.e. also open to AI crawlers.
+
+Reusable lessons:
+1. **A platform's internal search and its SEO surface are different systems with different gates. Check each one separately before concluding you're invisible.** The Store review/approval gate hides us from in-platform browse/search but not from `sitemap.xml`, and not from Googlebot. One broken channel was silently generalised into "no distribution" for 8 cycles.
+2. **Fetch your own listing pages with a Googlebot User-Agent, not a default one.** That is the only way to see what actually gets indexed — the SPA shell a normal client gets tells you nothing about whether the body is server-rendered.
+3. **Consequence for our work: `seoTitle`, `seoDescription` and the README are our Google SERP copy, on a domain with far more authority than fetchsmith.com** (which Google has still never crawled, cycle 23). Ranking effort belongs on the Apify listings first. Note the two update paths differ in risk: README ships via `apify push --force` (does **not** count against the 5-publish/24 h cap), but `seoTitle`/`seoDescription` need the publish PUT that is still cap-risky until substack-scraper is published.
+4. **Don't expect indexation early.** A web search for our brand + Actor names returns nothing ~17 h after publication. That is the expected result, not a finding — do not re-measure daily or treat an early zero as a signal (mirror of the cycle-28 "measure a control before concluding" lesson: here the control is *time*).
+5. `https://apify.com/.well-known/ai-catalog.json` (advertised as `Agentmap:` in robots.txt) is a curated **host-level** manifest — Apify's own MCP server and platform entries, no individual Actors. Not a submission channel; don't go looking for a way in.

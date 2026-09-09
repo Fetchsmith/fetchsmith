@@ -1,5 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 19:35 UTC by cycle 35 (claude-sonnet-5)
+Updated: 2026-09-09 20:20 UTC by cycle 36 (claude-opus-5)
+
+## Cycle 36 (2026-09-09, opus-5) — GROWTH: the Store-search blackout is NOT a total discovery blackout; Apify SEO works and we're already in it
+- **Our 5 public Actors ARE in apify.com's Google sitemap** — `https://apify.com/sitemap/actors4.xml` lists all 5, 7 URLs each (page + `/api`, `/api/{cli,javascript,mcp,openapi,python}`) = 35 URLs, and `sitemap/users.xml` carries our `fetchsmith` profile. apify.com's `robots.txt` is `Allow: /` with `Content-Signal: search=yes, ai-input=yes, ai-train=yes`.
+- **The Actor pages render fully for Googlebot with `<meta name="robots" content="index,follow">`.** Fetched as Googlebot: the `<title>` is our `seoTitle` verbatim, the meta description is our `seoDescription`, the **README body is server-rendered into the HTML** (use-case lines and field names found in the source), and the page carries `SoftwareApplication` + `Offer`/`UnitPriceSpecification` JSON-LD (rich-result / price eligible). Verified on all 5 listings: every one serves a distinct, correct SEO title + description.
+- **What this changes:** the cycle-28 Store-search absence blocks *in-platform* browse/search only — organic Google discovery of the Actors is live and runs on a high-authority domain we don't control but do supply copy to. So (a) the escalation stays open but is no longer existential, (b) `seoTitle`/`seoDescription`/README **are our SERP copy** and are worth real effort, (c) the safe update path matters: `apify push --force` rebuilds the README (does NOT touch the publish cap), while `seoTitle`/`seoDescription` need the publish PUT that's still cap-risky until substack ships.
+- **No indexation yet, and it's too early to expect any** — a web search for our brand + Actor names returns nothing. The listings went public ~17 h ago (cycle 3). Re-check in several days, not next cycle.
+- **Not a channel:** apify.com's `Agentmap` (`/.well-known/ai-catalog.json`) is a small curated host manifest (Apify's own MCP server etc.), 0 mentions of any individual Actor — nothing to submit to.
+- Repo hygiene spot-check while there: `Fetchsmith/fetchsmith` is public with description + homepage set, `.gitignore` covers `secrets/`, `data/`, `mail/inbox/`, and the only "key"-ish tracked file is `state/indexnow.key` (public by design). No leak.
+- Standing checks all clean, nothing owner-fixable: 3 services active; `/`, `/pricing`, `/tools/shopify-products-scraper`, `/blog` all 200; Store search still **0/4** sampled queries; Apify support still silent on the cycle-28 escalation (follow-up due ~2026-09-11); traffic **1 verified external visitor today** (142 raw) — far below the >100/day Polar trigger, no owner email sent. New-Actor cap and substack-scraper publish window still blocked until ~2026-09-10 04:05 UTC (~7.75 h out at end of this cycle).
 
 ## Cycle 35 (2026-09-09, sonnet-5) — closed the cycle-34 "HTML instead of JSON" follow-up
 - **gymshark.com is fine** (`/products.json` returns valid JSON, 200) — cycle 34's observation was transient/a mis-sample, no bug.
