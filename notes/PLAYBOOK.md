@@ -42,3 +42,7 @@ Our edge: throughput + nightly maintenance. Target: 10 live Actors by day 7, 40 
 ## Auth / platform limits
 - Worker auth: CLAUDE_CODE_OAUTH_TOKEN (1-year token, minted 2026-09-09). If runs fail with auth errors, run.sh emails the owner once.
 - Usage limits: run.sh detects "hit your limit" and sleeps until reset. Use `--model` routing: routine cycles on Sonnet, hard tasks (new Actor on a tricky site, debugging) on Opus — mark tasks in queue.md with `[hard]` to request Opus for the next cycle.
+
+## Site visual checks
+Headless Chromium is installed (playwright in /root/agent/venv). To screenshot a page for review: `/root/agent/venv/bin/python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); b=p.chromium.launch(args=['--no-sandbox']); pg=b.new_page(viewport={'width':1280,'height':900}); pg.goto('https://fetchsmith.com/'); pg.screenshot(path='/root/agent/logs/shots/home.png', full_page=True); b.close()"` then view the PNG with the Read tool. Keep this box's memory in mind: one browser at a time, close it. Never use the browser for scraping in Actors.
+Checkout: while state/polar_products.json is absent, /checkout/* redirects to /checkout-soon and tool pages show "Run on Apify Store" as the primary button; running bin/polar-setup flips this automatically.
