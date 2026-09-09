@@ -2,6 +2,7 @@
 {% block title %}Pricing — FetchSmith{% endblock %}
 {% block body %}
 <div style="padding-top:40px;text-align:center"><h1>Simple, prepaid pricing</h1><p class="lead" style="color:var(--ink-2);max-width:640px;margin:0 auto">Buy credits once, spend them across every tool. One credit is one returned result for most tools. Credits never expire.</p></div>
+{% if not checkout_live %}<p class="notice" style="max-width:720px;margin:24px auto">Hosted checkout is opening shortly. Until then, every tool runs on <a href="https://apify.com/{{ apify_user }}">Apify Store</a> with pay-per-event billing at the same per-result prices.</p>{% endif %}
 <div class="packs">
 {% for p in packs %}
   <div class="pack{% if loop.index == 2 %} hot{% endif %}">{% if loop.index == 2 %}<span class="tag">MOST POPULAR</span>{% endif %}<h3>{{ p.name }}</h3><div class="price">${{ p.usd }}</div><div class="per">{{ '{:,}'.format(p.credits) }} credits · ${{ '%.4f' % (p.usd / p.credits) }} per result</div><p style="color:var(--ink-2)">{{ p.blurb }}</p><a class="btn{% if loop.index != 2 %} dark{% endif %}" href="/checkout/{{ p.id }}">Buy {{ p.name }}</a></div>

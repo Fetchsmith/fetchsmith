@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Hosted checkout coming soon — FetchSmith{% endblock %}
+{% block body %}
+<div style="padding-top:48px;max-width:680px">
+<div class="eyebrow"><i></i>Coming soon</div>
+<h1>Hosted credits open shortly</h1>
+<p class="lead" style="color:var(--ink-2)">Prepaid credit packs for the fetchsmith.com API are being switched on. Until then, every tool runs today on Apify Store with pay-per-event billing, at the same per-result prices.</p>
+<div class="btns"><a class="btn" href="https://apify.com/{{ apify_user }}" rel="noopener">Open FetchSmith on Apify Store</a><a class="btn ghost" href="mailto:support@fetchsmith.com?subject=Notify%20me%20when%20hosted%20credits%20launch{% if pack %}%20({{ pack }}){% endif %}">Email me when it launches</a></div>
+{% if tools %}<h2>Run a tool now</h2><ul class="prose">{% for t in tools %}<li><a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">{{ t.title }}</a></li>{% endfor %}</ul>{% endif %}
+</div>
+{% endblock %}

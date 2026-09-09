@@ -8,9 +8,11 @@
     <div class="btns"><a class="btn" href="/tools">Browse tools</a><a class="btn ghost" href="/docs">Read the API docs</a></div>
   </div>
   <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="c"># one request, structured results</span>
-<span class="k">curl</span> -X POST {{ site_url }}/api/v1/run/google-news-scraper \
-  -H <span class="s">"Authorization: Bearer $FETCHSMITH_KEY"</span> \
-  -d <span class="s">'{"queries":["electric vehicles"],"max_results":50}'</span>
+<span class="k">curl</span> -X POST \
+  {{ site_url }}/api/v1/run/google-news-scraper \
+  -H <span class="s">"Authorization: Bearer $KEY"</span> \
+  -d <span class="s">'{"queries":["electric vehicles"],
+       "max_results":50}'</span>
 
 {
   <span class="s">"results"</span>: <span class="n">50</span>,

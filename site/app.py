@@ -68,6 +68,7 @@ def render(request, name, **ctx):
     ctx.setdefault("site_url", SITE_URL)
     ctx.setdefault("support_email", SUPPORT_EMAIL)
     ctx.setdefault("apify_user", env("APIFY_USERNAME", "fetchsmith"))
+    ctx.setdefault("checkout_live", bool(polar_products()))
     return tpl.TemplateResponse(request, name, ctx)
 
 # ---------- pages ----------
@@ -151,7 +152,7 @@ async def checkout(pack_id: str):
         raise HTTPException(404)
     pid = polar_products().get(pack_id)
     if not pid:
-        raise HTTPException(503, "Checkout is not configured yet. Email support@fetchsmith.com.")
+        return RedirectResponse(f"/checkout-soon?pack={pack_id}", status_code=303)
     async with httpx.AsyncClient(timeout=20) as cl:
         r = await cl.post(f"{POLAR_API}/checkouts/", headers=polar_headers(),
                           json={"products": [pid], "success_url": f"{SITE_URL}/welcome?checkout_id={{CHECKOUT_ID}}", "metadata": {"pack": pack_id}})
@@ -220,6 +221,10 @@ async def polar_webhook(request: Request):
                 await send_key_email(email, key, pack)
                 await notify_owner(f"FetchSmith sale: {pack['name']} ${pack['usd']}", f"Order {data.get('id')} from {email}. Credits granted: {pack['credits']}.")
     return {"ok": True}
+
+@app.get("/checkout-soon", response_class=HTMLResponse)
+def checkout_soon(request: Request, pack: str = ""):
+    return render(request, "checkout_soon.html", pack=pack, tools=public_tools())
 
 @app.get("/welcome", response_class=HTMLResponse)
 def welcome(request: Request, checkout_id: str = ""):

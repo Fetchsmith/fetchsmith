@@ -18,8 +18,9 @@
 <aside class="side">
   <div class="price">{{ t.credits_per_result or 1 }} credit <small>per result</small></div>
   <div class="muted">About ${{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }} per result on the Starter pack. Failed runs are free.</div>
-  <a class="btn" href="/pricing">Buy credits</a>
-  <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
+{% if checkout_live %}  <a class="btn" href="/pricing">Buy credits</a>
+  <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Run on Apify Store</a>{% else %}  <a class="btn" href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
+  <a class="btn ghost" href="/pricing">Hosted API pricing</a>{% endif %}
   <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
 </aside>
 </div>
