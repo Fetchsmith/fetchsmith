@@ -6,6 +6,8 @@
     "includeComments": { "title": "Include comments", "type": "boolean", "description": "If tags includes 'comment', set true to fetch comment text too.", "default": true },
     "sortBy": { "title": "Sort order", "type": "string", "description": "'relevance' ranks by search relevance and points; 'date' returns the newest items first.", "editor": "select", "enum": ["relevance", "date"], "default": "relevance" },
     "minPoints": { "title": "Minimum points", "type": "integer", "description": "Only return stories/comments with at least this many points.", "minimum": 0 },
+    "minComments": { "title": "Minimum comments", "type": "integer", "description": "Only return stories with at least this many comments (e.g. find high-engagement discussions).", "minimum": 0 },
+    "author": { "title": "Author username", "type": "string", "description": "Only return items posted by this exact HN username.", "editor": "textfield" },
     "postedAfter": { "title": "Posted after (ISO date)", "type": "string", "description": "e.g. 2026-01-01", "editor": "textfield" },
     "postedBefore": { "title": "Posted before (ISO date)", "type": "string", "description": "e.g. 2026-09-01", "editor": "textfield" },
     "maxItemsPerQuery": { "title": "Max items per query", "type": "integer", "description": "Cap per search query/tag combination.", "default": 100, "minimum": 1, "maximum": 1000 },

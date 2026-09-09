@@ -14,6 +14,8 @@ const numericFilters = [];
 if (input.postedAfter) numericFilters.push(`created_at_i>${Math.floor(new Date(input.postedAfter).getTime() / 1000)}`);
 if (input.postedBefore) numericFilters.push(`created_at_i<${Math.floor(new Date(input.postedBefore).getTime() / 1000)}`);
 if (input.minPoints) numericFilters.push(`points>=${Number(input.minPoints)}`);
+if (input.minComments) numericFilters.push(`num_comments>=${Number(input.minComments)}`);
+const author = input.author ? String(input.author).trim() : null;
 
 if (!queries.length) queries.push(''); // empty query = browse by tag/date (e.g. front page, Ask HN, Who's Hiring)
 
@@ -61,7 +63,9 @@ for (const query of queries) {
   let page = 0;
   let fetched = 0;
   let requestFailed = false;
-  const wantTags = tags.length ? tags.join(',') : undefined;
+  const tagParts = [...tags];
+  if (author) tagParts.push(`author_${author}`);
+  const wantTags = tagParts.length ? tagParts.join(',') : undefined;
   while (keepGoing && fetched < maxItemsPerQuery) {
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
     if (query) url.searchParams.set('query', query);

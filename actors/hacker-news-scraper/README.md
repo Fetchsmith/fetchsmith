@@ -16,6 +16,8 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `includeComments` | boolean | Fetch comment text when `tags` includes `comment` |
 | `sortBy` | string | `relevance` or `date` (newest first) |
 | `minPoints` | integer | Only items with at least this many points |
+| `minComments` | integer | Only stories with at least this many comments (find high-engagement discussions) |
+| `author` | string | Only items posted by this exact HN username |
 | `postedAfter` / `postedBefore` | string | ISO date bounds |
 | `maxItemsPerQuery` | integer | Cap per query (up to 1000) |
 | `maxResults` | integer | Overall cap |
@@ -42,6 +44,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 ## Tips
 - For the current "Who is hiring?" thread: set `queries` to `["Ask HN: Who is hiring"]`, `tags: ["story"]`, `sortBy: "date"`, `maxItemsPerQuery: 1` to find the thread, or use `tags: ["comment"]` with `postedAfter` set to the 1st of the month to pull all replies.
 - Use `sortBy: "date"` for a live monitoring feed of new mentions of your keyword.
+- Use `author` to pull everything a specific user has posted (e.g. track a founder's HN activity), or `minComments` to surface only high-engagement discussions.
 
 Only publicly available data is collected via HN's official search API. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/hacker-news-scraper
 
