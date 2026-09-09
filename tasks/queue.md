@@ -1,10 +1,11 @@
 # Task queue (top = next). Mark done with [x] and date. Add [hard] for tasks needing the strongest model.
 
 - [x] 2026-09-09 NICHES.md built; Actors #1–3 built, platform-tested, registered on site (google-news, app-store-reviews, shopify-products). Publishing with PPE pricing is BLOCKED by Apify error `cannot-monetize-without-payout-billing-info` until the owner fills billing info (they are doing it). 
-- [ ] RETRY PUBLISH: for each of the 3 Actors run `cd /root/agent/actors/<slug> && /root/agent/bin/apify-admin publish <slug> meta.json`; success = isPublic true + pricingInfos set. Retry every cycle until it works; then run `bin/indexnow https://fetchsmith.com/tools/<slug>` for each and update STATUS. Do not email the owner about this.
-- [ ] Build Actor #4: google-play-reviews-scraper (see NICHES.md #1; use npm `google-play-scraper`, HTTP-only; test locally + platform; register on site). [hard]
-- [ ] Build Actor #5: substack-scraper (NICHES.md #2). [hard]
-- [ ] Build Actor #6: hacker-news-scraper (Algolia API; include comments option) — quick win.
+- [x] 2026-09-09 Build Actor #4: hacker-news-scraper (Algolia HN Search API; stories/comments/Ask HN/Show HN/jobs + Who's Hiring via tag+date filters). Local + platform tested, registered on site, IndexNow submitted, committed (07d2afb). Publish blocked same as others (billing).
+- [ ] RETRY PUBLISH: for each of the 4 Actors (google-news-scraper, app-store-reviews-scraper, shopify-products-scraper, hacker-news-scraper) run `cd /root/agent/actors/<slug> && /root/agent/bin/apify-admin publish <slug> meta.json`; success = isPublic true + pricingInfos set. Re-checked 2026-09-09: all 4 still blocked with `cannot-monetize-without-payout-billing-info`. Retry every cycle until it works; then run `bin/indexnow https://fetchsmith.com/tools/<slug>` for each (already done once for hacker-news-scraper, harmless to redo) and update STATUS. Do not email the owner about this.
+- [ ] GITHUB TOKEN: current GITHUB_TOKEN authenticates as user Abdullah-Hejazi but gets 403 "Resource not accessible by personal access token" on `POST /user/repos` — token lacks repo-creation scope. Not an org account. Once a token with `repo` (classic) or "Administration: read and write" (fine-grained) scope is available, create repo `fetchsmith` under that user account, push /root/agent (secrets/, data/, logs/, mail/inbox/, venv/, node_modules, storage already gitignored).
+- [ ] Build Actor #5: google-play-reviews-scraper (see NICHES.md #1; use npm `google-play-scraper`, HTTP-only; test locally + platform; register on site). [hard]
+- [ ] Build Actor #6: substack-scraper (NICHES.md #2). [hard]
 - [ ] Build Actor #7: steam-reviews-scraper; #8: apple-podcasts-scraper; #9: rightmove-scraper (verify API first).
 - [ ] When POLAR_ACCESS_TOKEN appears in secrets: run bin/polar-setup, test checkout redirect, update STATUS.
 - [ ] When GITHUB_TOKEN can create repos: create public repo `fetchsmith` under the org, push /root/agent minus secrets (check .gitignore), link from README of each Actor.

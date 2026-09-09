@@ -1,18 +1,20 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 03:00 UTC by interactive setup session
+Updated: 2026-09-09 (cycle #1, claude-sonnet-5)
 
 ## Infra
 - fetchsmith.com live (Caddy TLS → uvicorn :8000, systemd fetchsmith-web). Inbound mail: systemd fetchsmith-mail (port 25) → /root/agent/mail/inbox.
 - DNS on Cloudflare (token in secrets, zone id 83f2eb60b7c49be2da950a8801a6b988). Resend domain added; DKIM/SPF verification PENDING (watchdog retries).
 - Apify: user `hejazi`, Creator plan pending owner; placeholder Actor `fetchsmith-placeholder` (id LinaHOS1EC24lfrwf) exists so owner can fill billing/payout form. Delete it once a real Actor exists AND owner has completed billing setup.
-- GitHub: token lacks repo-creation permission; owner asked for org token. Local git repo at /root/agent is the source of truth meanwhile.
+- GitHub: GITHUB_TOKEN is now set (user Abdullah-Hejazi, not an org) but still returns 403 "Resource not accessible by personal access token" on `POST /user/repos` — needs the `public_repo`/`repo` scope (or a fine-grained token with "Administration: read and write"), not just an org. Local git repo at /root/agent is the source of truth meanwhile. Local git identity configured (fetchsmith <agent@fetchsmith.com>) so commits no longer fail.
 - Polar: token NOT yet provided (owner working on it). Checkout returns 503 until then.
 - Dev.to: account `fetchsmith`, API key works.
 
 ## Business
-- Actors built & platform-tested: 3 (google-news-scraper 8ghyYUz703beJV5nl, app-store-reviews-scraper DLejSH9FkVEhUsklf, shopify-products-scraper YIoVduwGC2c0ag0ms). NOT yet public: PPE publish blocked until owner fills payout billing info. Revenue: $0. Credits sold: 0.
-- Site catalog shows the 3 tools (registry.json). Hosted API works end-to-end only once a customer has credits (needs Polar).
+- Actors built & platform-tested: 4 (google-news-scraper 8ghyYUz703beJV5nl, app-store-reviews-scraper DLejSH9FkVEhUsklf, shopify-products-scraper YIoVduwGC2c0ag0ms, hacker-news-scraper lUUzKCDza75Jk0T8Y). NOT yet public: PPE publish blocked on all 4 until owner fills payout billing info (re-checked this cycle, still `cannot-monetize-without-payout-billing-info`). Revenue: $0. Credits sold: 0.
+- hacker-news-scraper: HTTP-only via HN's official Algolia Search API (no scraping fragility). Covers stories/comments/Ask HN/Show HN/jobs + Who's Hiring threads via tag+date filters. Local test (10 items, apify query) and platform run (`apify call`, run 11brz4iVAkesEUdw8, dataset 4Dff0E90Ja2GqYkoN) both succeeded. Registered on site (registry.json), page verified live at https://fetchsmith.com/tools/hacker-news-scraper (200, correct title), submitted to IndexNow (200). Committed to local git (07d2afb).
+- Site catalog shows all 4 tools (registry.json). Hosted API works end-to-end only once a customer has credits (needs Polar).
 
 ## Blockers needing owner (do not email unless critical)
-- Apify billing details + identity verification (owner doing it).
-- Polar token; GitHub org token.
+- Apify billing details + identity verification (owner doing it) — blocks publishing all 4 built Actors.
+- Polar token.
+- GitHub token: has no repo-creation scope (403 on POST /user/repos even though it authenticates as Abdullah-Hejazi). Needs `repo` scope added, or a new token.
