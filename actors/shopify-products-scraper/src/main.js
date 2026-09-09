@@ -111,7 +111,14 @@ for (const raw of storeUrls) {
     }
   } catch (e) {
     erroredStores.push(ep.origin);
-    log.warning(`${raw}: ${e.message} (store may not be Shopify or has products.json disabled)`);
+    // got-scraping doesn't throw on 4xx/redirect-to-HTML, so a headless/custom storefront
+    // (e.g. Shopify Hydrogen/Oxygen, which has no classic Liquid products.json route) or a
+    // bot-check page shows up here as a JSON.parse SyntaxError, not a request-level error —
+    // give that its own message instead of surfacing the raw "Unexpected token '<'".
+    const reason = e instanceof SyntaxError && /Unexpected token '<'/.test(e.message)
+      ? 'this URL returned an HTML page instead of JSON — likely a headless/custom storefront (e.g. Shopify Hydrogen) without the classic products.json endpoint, or a bot-check page. Not a failure on our end.'
+      : `${e.message} (store may not be Shopify or has products.json disabled)`;
+    log.warning(`${ep.origin}: ${reason}`);
   }
   log.info(`${ep.origin}: ${got} products`);
 }
