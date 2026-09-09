@@ -60,21 +60,29 @@ async function currencyFor(origin) {
   } catch { return null; }
 }
 
+const erroredStores = []; // products.json fetch failed (not Shopify, or endpoint disabled)
+const emptyStores = []; // request succeeded but Shopify returned zero products for this URL
+const filteredOutStores = []; // products existed but onlyAvailable removed all of them
 let keepGoing = true;
 for (const raw of storeUrls) {
   if (!keepGoing) break;
   let ep; try { ep = endpointFor(raw); } catch { log.warning(`Bad URL: ${raw}`); continue; }
   let got = 0;
+  let seenBeforeFilter = 0;
   try {
     const currency = await currencyFor(ep.origin);
     if (ep.kind === 'product') {
       const p = JSON.parse((await http(ep.url)).body).product;
-      if (p && (!onlyAvailable || (p.variants ?? []).some((v) => v.available))) { keepGoing = await pushResult(shape(p, ep.origin, currency)); got++; }
+      if (p) {
+        seenBeforeFilter = 1;
+        if (!onlyAvailable || (p.variants ?? []).some((v) => v.available)) { keepGoing = await pushResult(shape(p, ep.origin, currency)); got++; }
+      }
     } else {
       for (let page = 1; got < perStore && keepGoing; page++) {
         const res = await http(`${ep.url}?limit=250&page=${page}`);
         const products = JSON.parse(res.body).products ?? [];
         if (!products.length) break;
+        seenBeforeFilter += products.length;
         for (const p of products) {
           if (got >= perStore) break;
           if (onlyAvailable && !(p.variants ?? []).some((v) => v.available)) continue;
@@ -84,10 +92,28 @@ for (const raw of storeUrls) {
         if (products.length < 250) break;
       }
     }
+    if (seenBeforeFilter === 0) {
+      emptyStores.push(ep.origin);
+      log.warning(`${ep.origin}: Shopify returned zero products for this URL (empty store/collection, or products.json is disabled — not a scrape failure).`);
+    } else if (got === 0) {
+      filteredOutStores.push(ep.origin);
+      log.warning(`${ep.origin}: fetched ${seenBeforeFilter} products but "onlyAvailable" removed all of them (none are in stock).`);
+    }
   } catch (e) {
+    erroredStores.push(ep.origin);
     log.warning(`${raw}: ${e.message} (store may not be Shopify or has products.json disabled)`);
   }
   log.info(`${ep.origin}: ${got} products`);
 }
 log.info(`Done. Pushed ${pushed} products.`);
+if (pushed === 0 && storeUrls.length) {
+  const why = erroredStores.length
+    ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
+    : filteredOutStores.length && !emptyStores.length
+      ? 'products were found but "onlyAvailable" removed all of them'
+      : `Shopify returned zero products for: ${emptyStores.join(', ')}`;
+  await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
+} else if (emptyStores.length || filteredOutStores.length || erroredStores.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`)].join(', ')}.`);
+}
 await Actor.exit();

@@ -121,6 +121,9 @@ if (!resolvedAppIds.length) {
   log.warning('No appIds resolved (empty appIds and searchTerms, or all searches failed). Nothing to do.');
 }
 
+const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
+const filteredOutApps = []; // reviews existed but minScore/maxScore/keyword/date filters removed all of them
+const erroredApps = [];
 for (const appId of resolvedAppIds) {
   if (stop) break;
   if (includeAppDetails) {
@@ -133,18 +136,37 @@ for (const appId of resolvedAppIds) {
     }
   }
   if (stop) break;
+  const pushedBefore = pushed;
   try {
     const { data } = await gplay.reviews({ appId, lang, country, sort, num: maxReviewsPerApp });
-    log.info(`${appId}: fetched ${data.length} reviews`);
+    log.info(`${appId}: fetched ${data.length} reviews, ${data.filter(passesFilters).length} pass filters`);
     for (const r of data) {
       if (!passesFilters(r)) continue;
       const keepGoing = await pushResult(mapReview(appId, r));
       if (!keepGoing) break;
     }
+    if (data.length === 0) {
+      emptyApps.push(appId);
+      log.warning(`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}" (try a different country/language, not a scrape failure).`);
+    } else if (pushed === pushedBefore) {
+      filteredOutApps.push(appId);
+      log.warning(`${appId}: fetched ${data.length} reviews but your minScore/maxScore/keyword/date filters removed all of them.`);
+    }
   } catch (e) {
+    erroredApps.push(appId);
     log.warning(`reviews() failed for ${appId}: ${e.message}`);
   }
 }
 
 log.info(`Done. Pushed ${pushed} items.`);
+if (pushed === 0 && resolvedAppIds.length) {
+  const why = erroredApps.length
+    ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
+    : filteredOutApps.length && !emptyApps.length
+      ? 'reviews were found but every one was removed by your minScore/maxScore/keyword/date filters'
+      : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
+  await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
+} else if (emptyApps.length || filteredOutApps.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
+}
 await Actor.exit();
