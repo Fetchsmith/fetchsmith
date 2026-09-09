@@ -73,20 +73,38 @@ const feeds = [
   ...queries.map((q) => ({ query: q, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
   ...rssUrls.map((u) => ({ query: null, url: u })),
 ];
+const emptyFeeds = []; // Google News RSS returned zero <item>s for this query/URL
+const erroredFeeds = []; // the RSS request itself failed
+const dedupedFeeds = []; // items existed but were all duplicates of an earlier feed's guid
 let keepGoing = true;
 for (const feed of feeds) {
   if (!keepGoing) break;
   log.info(`Fetching feed: ${feed.url}`);
   let items = [];
   try { items = parseRss((await http(feed.url)).body).slice(0, perQuery); }
-  catch (e) { log.warning(`Feed failed (${feed.url}): ${e.message}`); continue; }
+  catch (e) { log.warning(`Feed failed (${feed.url}): ${e.message}`); erroredFeeds.push(feed.query || feed.url); continue; }
   log.info(`${items.length} items`);
+  if (!items.length) { emptyFeeds.push(feed.query || feed.url); continue; }
+  const pushedBefore = pushed;
+  let allDuped = true;
   for (const it of items) {
     if (seen.has(it.guid)) continue; seen.add(it.guid);
+    allDuped = false;
     const url = decode ? (await decodeUrl(it.googleNewsUrl)) : null;
     keepGoing = await pushResult({ ...it, url, query: feed.query, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }
+  if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.url);
 }
 log.info(`Done. Pushed ${pushed} articles.`);
+if (pushed === 0 && feeds.length) {
+  const why = erroredFeeds.length
+    ? `the RSS request failed for: ${erroredFeeds.join(', ')} (see log for the error)`
+    : dedupedFeeds.length && !emptyFeeds.length
+      ? `every item found was a duplicate already returned by another query/RSS URL: ${dedupedFeeds.join(', ')}`
+      : `Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`;
+  await Actor.setStatusMessage(`No articles returned — ${why}.`);
+} else if (emptyFeeds.length || erroredFeeds.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.`);
+}
 await Actor.exit();

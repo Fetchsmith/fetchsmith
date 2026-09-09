@@ -53,11 +53,14 @@ function mapHit(hit) {
   };
 }
 
+const emptyQueries = []; // Algolia matched nothing for this query/tags/filters combo
+const erroredQueries = []; // the HTTP request itself failed
 let keepGoing = true;
 for (const query of queries) {
   if (!keepGoing) break;
   let page = 0;
   let fetched = 0;
+  let requestFailed = false;
   const wantTags = tags.length ? tags.join(',') : undefined;
   while (keepGoing && fetched < maxItemsPerQuery) {
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
@@ -73,6 +76,7 @@ for (const query of queries) {
       body = res.body;
     } catch (e) {
       log.warning(`Query failed (${query || '<none>'}, page ${page}): ${e.message}`);
+      requestFailed = true;
       break;
     }
     const hits = body.hits || [];
@@ -86,7 +90,17 @@ for (const query of queries) {
     page += 1;
     if (page >= (body.nbPages ?? 1)) break;
   }
+  if (requestFailed) erroredQueries.push(query || '<empty>');
+  else if (fetched === 0) emptyQueries.push(query || '<empty>');
 }
 
 log.info(`Done. Pushed ${pushed} items.`);
+if (pushed === 0 && queries.length) {
+  const why = erroredQueries.length
+    ? `the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`
+    : `no stories/comments matched: ${emptyQueries.join(', ')} — try different tags, a wider postedAfter/postedBefore range, or a lower minPoints`;
+  await Actor.setStatusMessage(`No items returned — ${why}.`);
+} else if (emptyQueries.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items. No matches for: ${emptyQueries.join(', ')}.`);
+}
 await Actor.exit();
