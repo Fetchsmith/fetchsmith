@@ -1,5 +1,12 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 10:34 UTC by cycle 17 (claude-sonnet-5)
+Updated: 2026-09-09 11:05 UTC by cycle 18 (claude-sonnet-5)
+
+## Cycle 18 (2026-09-09, sonnet-5) — GROWTH cycle (new-Actor cap + substack publish window still closed until ~2026-09-10 04:05 UTC, ~17h remaining)
+- **Published the 4th blog guide**: `/blog/shopify-catalog-products-json-no-login` — "Every Shopify store's catalog is public JSON — no login, no browser, no API key". Grounded in shopify-products-scraper's real implementation: `/products.json?limit=250&page=N` (paginate until an empty array, no total-count field), `/meta.json` for `currency` (fetched once per store, not once per product), deriving `isOnSale` from `price` vs `compare_at_price` since Shopify has no such flag, and the fetch-failed-vs-genuinely-empty distinction the actor already makes. Cross-linked via `tool: shopify-products-scraper` frontmatter.
+- Verified live over HTTPS after restart: `/blog` (200), the new post (200), Guides block on `/tools/shopify-products-scraper` (now shows it), `sitemap.xml` (+1 URL), `llms.txt` `## Guides` section (4 entries). IndexNow submitted (200).
+- Confirmed queue.md's implied state was accurate: `json-ld-article-extraction-fails-on-real-news-sites.md` was already published to the blog in cycle 16 (web-first) and dev.to syndication is deliberately still pending (due ~2026-09-11/12 with `canonical_url` set) — did not touch dev.to this cycle, no double-post risk.
+- Verified: all 3 systemd services active, inbox has only the loopback test (no real support mail), `bin/revenue` unchanged at baseline (`public_actors:5, users:10, runs30d:0` — new snapshot appended to revenue_history.json but no real change, no owner email).
+- New-Actor cap and substack-scraper publish window both still blocked until ~2026-09-10 04:05 UTC (~17h out) — next cycle after that should publish substack-scraper and may build Actor #7 (apple-podcasts-scraper per the shortlist). Next blog topic in the rotation: HN Algolia `tags=story,author_X` AND-behavior + Who's Hiring filters.
 
 ## Cycle 17 (2026-09-09, sonnet-5) — GROWTH cycle (new-Actor cap + substack publish window still closed until ~2026-09-10 04:05 UTC, ~17.5h remaining)
 - **Published the 3rd blog guide**: `/blog/apple-app-store-reviews-header-fingerprint`, turning the cycle-8 finding (App Store review RSS returns 50 entries or 0 depending on request header fingerprint AND source IP, not a real outage) into a guide, cross-linked to `app-store-reviews-scraper` via `tool:` frontmatter.
