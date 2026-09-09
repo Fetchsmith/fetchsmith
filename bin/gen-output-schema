@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Generate .actor/output_schema.json + .actor/dataset_schema.json for an Actor dir from its local test dataset (storage/datasets/default/*.json) or registry sample. Usage: gen-output-schema <actor-dir>"""
+import sys, json, glob, os
+d = sys.argv[1].rstrip('/'); slug = os.path.basename(d)
+items = []
+for f in sorted(glob.glob(f"{d}/storage/datasets/default/*.json"))[:20]:
+    try: items.append(json.load(open(f)))
+    except Exception: pass
+if not items:
+    reg = json.load(open('/root/agent/actors/registry.json'))['tools']
+    t = next((t for t in reg if t['slug'] == slug), None)
+    if t and t.get('sample_output'): items = [t['sample_output']]
+if not items: print('no sample items for', slug); sys.exit(1)
+def jtype(v):
+    if isinstance(v, bool): return 'boolean'
+    if isinstance(v, int) or isinstance(v, float): return 'number'
+    if isinstance(v, list): return 'array'
+    if isinstance(v, dict): return 'object'
+    return 'string'
+props = {}
+for it in items:
+    for k, v in it.items():
+        if k not in props:
+            props[k] = {"type": jtype(v) if v is not None else 'string', "title": k[0].upper() + k[1:].replace('_', ' ')}
+            if v not in (None, '', [], {}): props[k]["example"] = v if not isinstance(v, str) else v[:120]
+        elif props[k]["type"] == 'string' and v is not None and jtype(v) != 'string': props[k]["type"] = jtype(v)
+for k in props:
+    if props[k]["type"] in ('array', 'object'): props[k].pop("example", None)
+    if props[k]["type"] == 'string' and 'example' in props[k] and isinstance(props[k]['example'], (int, float, bool)): props[k]["example"] = str(props[k]["example"])
+    if props[k]["type"] != 'string': props[k]["nullable"] = True
+    if props[k]["type"] == 'string': props[k]["nullable"] = True
+# nullable isn't standard JSON schema; use type arrays instead
+for k in props:
+    props[k].pop("nullable", None); props[k]["type"] = [props[k]["type"], "null"]
+scalar = [k for k, p in props.items() if p["type"][0] in ('string', 'number', 'boolean') and k not in ('scrapedAt',)][:10]
+fmt = {}
+for k in scalar:
+    t = props[k]["type"][0]
+    fmt[k] = {"label": props[k]["title"], "format": "link" if (t == 'string' and (k == 'url' or k.lower().endswith('url'))) else ("number" if t == 'number' else ("boolean" if t == 'boolean' else "text"))}
+ds = {"actorSpecification": 1,
+      "fields": {"type": "object", "properties": props},
+      "views": {"overview": {"title": "Overview", "transformation": {"fields": scalar}, "display": {"component": "table", "properties": fmt}}}}
+os.makedirs(f"{d}/.actor", exist_ok=True)
+json.dump(ds, open(f"{d}/.actor/dataset_schema.json", 'w'), indent=2)
+out = {"actorOutputSchemaVersion": 1, "title": "Output", "properties": {"dataset": {"type": "string", "title": "Results", "template": "{{links.apiDefaultDatasetUrl}}/items?clean=true&format=json"}}}
+json.dump(out, open(f"{d}/.actor/output_schema.json", 'w'), indent=2)
+aj = json.load(open(f"{d}/.actor/actor.json"))
+aj["output"] = "./output_schema.json"; aj["storages"] = {"dataset": "./dataset_schema.json"}
+json.dump(aj, open(f"{d}/.actor/actor.json", 'w'), indent=2)
+print(slug, 'fields:', len(props), 'view fields:', scalar)

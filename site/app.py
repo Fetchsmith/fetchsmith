@@ -67,7 +67,7 @@ async def track(request: Request, call_next):
 def render(request, name, **ctx):
     ctx.setdefault("site_url", SITE_URL)
     ctx.setdefault("support_email", SUPPORT_EMAIL)
-    ctx.setdefault("apify_user", env("APIFY_USERNAME", "hejazi"))
+    ctx.setdefault("apify_user", env("APIFY_USERNAME", "fetchsmith"))
     return tpl.TemplateResponse(request, name, ctx)
 
 # ---------- pages ----------
@@ -278,7 +278,7 @@ async def run_tool(slug: str, request: Request, a=Depends(auth)):
     body["max_results"] = max_results
     # Run the Apify actor synchronously
     token = env("APIFY_TOKEN")
-    actor_id = t.get("apify_actor_id") or f"{env('APIFY_USERNAME','hejazi')}~{t['slug']}"
+    actor_id = t.get("apify_actor_id") or f"{env('APIFY_USERNAME','fetchsmith')}~{t['slug']}"
     async with httpx.AsyncClient(timeout=300) as cl:
         r = await cl.post(f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items",
                           params={"token": token, "timeout": 240, "memory": t.get("memory_mb", 256), "clean": "true", "limit": max_results}, json=body)

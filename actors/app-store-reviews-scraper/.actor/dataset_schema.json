@@ -1,0 +1,240 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "reviewId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewId",
+        "example": "14522836737"
+      },
+      "appId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AppId",
+        "example": "1232780281"
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Country",
+        "example": "us"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "Confusing"
+      },
+      "content": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Content",
+        "example": "It\u2019s probably because I\u2019m new but it is really confusing to work with."
+      },
+      "rating": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Rating",
+        "example": 4
+      },
+      "version": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Version",
+        "example": "1.7.333"
+      },
+      "author": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Author",
+        "example": "Braders815"
+      },
+      "authorUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorUrl",
+        "example": "https://itunes.apple.com/us/reviews/id1727316115"
+      },
+      "updatedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UpdatedAt",
+        "example": "2026-09-07T13:49:20-07:00"
+      },
+      "voteSum": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VoteSum",
+        "example": 0
+      },
+      "voteCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VoteCount",
+        "example": 0
+      },
+      "appName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AppName",
+        "example": "Notion: Notes, Tasks, AI"
+      },
+      "developer": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Developer",
+        "example": "Notion Labs, Incorporated"
+      },
+      "bundleId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BundleId",
+        "example": "notion.id"
+      },
+      "averageRating": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AverageRating",
+        "example": 4.77662
+      },
+      "ratingCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "RatingCount",
+        "example": 90020
+      },
+      "currentVersion": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CurrentVersion",
+        "example": "1.7.333"
+      },
+      "primaryGenre": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimaryGenre",
+        "example": "Productivity"
+      },
+      "appUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AppUrl",
+        "example": "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281?uo=4"
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ScrapedAt",
+        "example": "2026-09-09T02:32:49.074Z"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "reviewId",
+          "appId",
+          "country",
+          "title",
+          "content",
+          "rating",
+          "version",
+          "author",
+          "authorUrl",
+          "updatedAt"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "reviewId": {
+            "label": "ReviewId",
+            "format": "text"
+          },
+          "appId": {
+            "label": "AppId",
+            "format": "text"
+          },
+          "country": {
+            "label": "Country",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "content": {
+            "label": "Content",
+            "format": "text"
+          },
+          "rating": {
+            "label": "Rating",
+            "format": "number"
+          },
+          "version": {
+            "label": "Version",
+            "format": "text"
+          },
+          "author": {
+            "label": "Author",
+            "format": "text"
+          },
+          "authorUrl": {
+            "label": "AuthorUrl",
+            "format": "link"
+          },
+          "updatedAt": {
+            "label": "UpdatedAt",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

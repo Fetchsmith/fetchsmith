@@ -1,0 +1,126 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Id",
+        "example": "15558405"
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Type",
+        "example": "story"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "Show HN: Apify \u2013 Turn any website into an API"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://www.apify.com/"
+      },
+      "author": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Author",
+        "example": "jancurn"
+      },
+      "points": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Points",
+        "example": 45
+      },
+      "numComments": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "NumComments",
+        "example": 21
+      },
+      "createdAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CreatedAt",
+        "example": "2017-10-26T13:03:29Z"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "id",
+          "type",
+          "title",
+          "url",
+          "author",
+          "points",
+          "numComments",
+          "createdAt"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "Id",
+            "format": "text"
+          },
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "link"
+          },
+          "author": {
+            "label": "Author",
+            "format": "text"
+          },
+          "points": {
+            "label": "Points",
+            "format": "number"
+          },
+          "numComments": {
+            "label": "NumComments",
+            "format": "number"
+          },
+          "createdAt": {
+            "label": "CreatedAt",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,243 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Id",
+        "example": 7369944137808
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "Free Returns Coverage"
+      },
+      "handle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Handle",
+        "example": "free-returns-coverage"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://www.allbirds.com/products/free-returns-coverage"
+      },
+      "vendor": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Vendor",
+        "example": "re:do"
+      },
+      "productType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ProductType",
+        "example": "return,package_protection"
+      },
+      "tags": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Tags"
+      },
+      "priceMin": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PriceMin",
+        "example": 0.8
+      },
+      "priceMax": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PriceMax",
+        "example": 2.98
+      },
+      "compareAtPriceMin": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "CompareAtPriceMin",
+        "example": 0.8
+      },
+      "available": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Available",
+        "example": true
+      },
+      "variantCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VariantCount",
+        "example": 2
+      },
+      "images": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Images"
+      },
+      "imageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ImageUrl",
+        "example": "https://cdn.shopify.com/s/files/1/1104/4168/files/Screenshot_2026-06-11_at_10.12.01_AM.png?v=1781197934"
+      },
+      "options": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Options"
+      },
+      "variants": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Variants"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description"
+      },
+      "createdAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CreatedAt",
+        "example": "2026-06-05T07:14:57-07:00"
+      },
+      "updatedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UpdatedAt",
+        "example": "2026-09-08T19:32:50-07:00"
+      },
+      "publishedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PublishedAt",
+        "example": "2026-09-02T11:33:11-07:00"
+      },
+      "store": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Store",
+        "example": "https://www.allbirds.com"
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ScrapedAt",
+        "example": "2026-09-09T02:32:50.604Z"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "id",
+          "title",
+          "handle",
+          "url",
+          "vendor",
+          "productType",
+          "priceMin",
+          "priceMax",
+          "compareAtPriceMin",
+          "available"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "Id",
+            "format": "number"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "handle": {
+            "label": "Handle",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "link"
+          },
+          "vendor": {
+            "label": "Vendor",
+            "format": "text"
+          },
+          "productType": {
+            "label": "ProductType",
+            "format": "text"
+          },
+          "priceMin": {
+            "label": "PriceMin",
+            "format": "number"
+          },
+          "priceMax": {
+            "label": "PriceMax",
+            "format": "number"
+          },
+          "compareAtPriceMin": {
+            "label": "CompareAtPriceMin",
+            "format": "number"
+          },
+          "available": {
+            "label": "Available",
+            "format": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

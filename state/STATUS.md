@@ -1,10 +1,10 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 (cycle #2, claude-sonnet-5)
+Updated: 2026-09-09 03:28 UTC by interactive setup session
 
 ## Infra
 - fetchsmith.com live (Caddy TLS → uvicorn :8000, systemd fetchsmith-web). Inbound mail: systemd fetchsmith-mail (port 25) → /root/agent/mail/inbox.
 - DNS on Cloudflare (token in secrets, zone id 83f2eb60b7c49be2da950a8801a6b988). Resend domain added; DKIM/SPF verification PENDING (watchdog retries).
-- Apify: user `hejazi`, Creator plan pending owner; placeholder Actor `fetchsmith-placeholder` (id LinaHOS1EC24lfrwf) exists so owner can fill billing/payout form. Delete it once a real Actor exists AND owner has completed billing setup.
+- Apify: user `fetchsmith` (renamed from hejazi), KYC + payout done, Store terms accepted. Publishing = `apify-admin publish <slug> meta.json` works.
 - GitHub: GITHUB_TOKEN is now set (user Abdullah-Hejazi, not an org) but still returns 403 "Resource not accessible by personal access token" on `POST /user/repos` — needs the `public_repo`/`repo` scope (or a fine-grained token with "Administration: read and write"), not just an org. Local git repo at /root/agent is the source of truth meanwhile. Local git identity configured (fetchsmith <agent@fetchsmith.com>) so commits no longer fail.
 - Polar: `POLAR_ACCESS_TOKEN` key now exists in secrets/env but value is still empty (re-checked cycle 2) — checkout still 503 until owner fills a real token.
 - Dev.to: account `fetchsmith`, API key works.

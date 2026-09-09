@@ -1,0 +1,317 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "recordType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecordType",
+        "example": "app"
+      },
+      "appId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AppId",
+        "example": "com.spotify.music"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "Spotify: Music and Podcasts"
+      },
+      "developer": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Developer",
+        "example": "Spotify AB"
+      },
+      "developerId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DeveloperId",
+        "example": "Spotify+AB"
+      },
+      "summary": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Summary",
+        "example": "Listen to songs, play podcasts, create playlists and discover music you'll love"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description",
+        "example": "With the Spotify music and podcast app, you can play millions of songs, albums and original podcasts for free. We have e"
+      },
+      "score": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Score",
+        "example": 4.3452206
+      },
+      "ratings": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Ratings",
+        "example": 36265319
+      },
+      "reviewsCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ReviewsCount",
+        "example": 1851510
+      },
+      "histogram": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "title": "Histogram"
+      },
+      "installs": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Installs",
+        "example": "1,000,000,000+"
+      },
+      "minInstalls": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "MinInstalls",
+        "example": 1000000000
+      },
+      "price": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Price",
+        "example": 0
+      },
+      "free": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Free",
+        "example": true
+      },
+      "currency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Currency",
+        "example": "USD"
+      },
+      "androidVersionText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AndroidVersionText",
+        "example": "Varies with device"
+      },
+      "genre": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Genre",
+        "example": "Music & Audio"
+      },
+      "genreId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "GenreId",
+        "example": "MUSIC_AND_AUDIO"
+      },
+      "contentRating": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ContentRating",
+        "example": "Teen"
+      },
+      "released": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Released",
+        "example": "May 27, 2014"
+      },
+      "updated": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Updated",
+        "example": "2026-09-08T09:26:27.000Z"
+      },
+      "version": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Version",
+        "example": "VARY"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://play.google.com/store/apps/details?id=com.spotify.music&hl=en&gl=us"
+      },
+      "reviewId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewId",
+        "example": "24191734-8bd7-4aac-a714-46193c46b4d4"
+      },
+      "userName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UserName",
+        "example": "Nikhil Rathod"
+      },
+      "text": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Text",
+        "example": "my motivation"
+      },
+      "date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Date",
+        "example": "2026-09-08T03:01:35.135Z"
+      },
+      "thumbsUp": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ThumbsUp",
+        "example": 0
+      },
+      "replyText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReplyText"
+      },
+      "replyDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReplyDate"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "recordType",
+          "appId",
+          "title",
+          "developer",
+          "developerId",
+          "summary",
+          "description",
+          "score",
+          "ratings",
+          "reviewsCount"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "recordType": {
+            "label": "RecordType",
+            "format": "text"
+          },
+          "appId": {
+            "label": "AppId",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "developer": {
+            "label": "Developer",
+            "format": "text"
+          },
+          "developerId": {
+            "label": "DeveloperId",
+            "format": "text"
+          },
+          "summary": {
+            "label": "Summary",
+            "format": "text"
+          },
+          "description": {
+            "label": "Description",
+            "format": "text"
+          },
+          "score": {
+            "label": "Score",
+            "format": "number"
+          },
+          "ratings": {
+            "label": "Ratings",
+            "format": "number"
+          },
+          "reviewsCount": {
+            "label": "ReviewsCount",
+            "format": "number"
+          }
+        }
+      }
+    }
+  }
+}

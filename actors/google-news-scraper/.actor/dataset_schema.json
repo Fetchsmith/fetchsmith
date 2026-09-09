@@ -1,0 +1,176 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "GoProxies Scraping API Review: A Scale-First Take on the Build-vs-Buy Problem - shattered.io"
+      },
+      "googleNewsUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "GoogleNewsUrl",
+        "example": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBYcVctWkhUVS1MYTBzUlAzNE9SODRGVmFURTVqcW9oMjdaOEFQRjdoVm9wMHRQSjNZVjF"
+      },
+      "guid": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Guid",
+        "example": "CBMiYEFVX3lxTFBYcVctWkhUVS1MYTBzUlAzNE9SODRGVmFURTVqcW9oMjdaOEFQRjdoVm9wMHRQSjNZVjFNZGU4b1lLS29VNTA2SjkzMnM1bE9HN1FqS1JD"
+      },
+      "publishedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PublishedAt",
+        "example": "2026-09-04T07:41:06.000Z"
+      },
+      "source": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Source",
+        "example": "shattered.io"
+      },
+      "sourceUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SourceUrl",
+        "example": "https://shattered.io"
+      },
+      "snippet": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Snippet",
+        "example": "GoProxies Scraping API Review: A Scale-First Take on the Build-vs-Buy Problem"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://shattered.io/goproxies-scraping-api-review/"
+      },
+      "query": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Query",
+        "example": "web scraping"
+      },
+      "feedUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FeedUrl",
+        "example": "https://news.google.com/rss/search?q=web%20scraping&hl=en-US&gl=US&ceid=US:en"
+      },
+      "language": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Language",
+        "example": "en-US"
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Country",
+        "example": "US"
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ScrapedAt",
+        "example": "2026-09-09T02:32:45.275Z"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "title",
+          "googleNewsUrl",
+          "guid",
+          "publishedAt",
+          "source",
+          "sourceUrl",
+          "snippet",
+          "url",
+          "query",
+          "feedUrl"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "googleNewsUrl": {
+            "label": "GoogleNewsUrl",
+            "format": "link"
+          },
+          "guid": {
+            "label": "Guid",
+            "format": "text"
+          },
+          "publishedAt": {
+            "label": "PublishedAt",
+            "format": "text"
+          },
+          "source": {
+            "label": "Source",
+            "format": "text"
+          },
+          "sourceUrl": {
+            "label": "SourceUrl",
+            "format": "link"
+          },
+          "snippet": {
+            "label": "Snippet",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "link"
+          },
+          "query": {
+            "label": "Query",
+            "format": "text"
+          },
+          "feedUrl": {
+            "label": "FeedUrl",
+            "format": "link"
+          }
+        }
+      }
+    }
+  }
+}
