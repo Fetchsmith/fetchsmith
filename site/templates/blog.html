@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Guides — FetchSmith{% endblock %}
+{% block desc %}Field notes from building HTTP-only scrapers: what breaks on real sites, what we measured, and how the fixes work.{% endblock %}
+{% block body %}
+<div style="padding-top:40px"><div class="eyebrow"><i></i>{{ posts|length }} guide{{ '' if posts|length == 1 else 's' }}</div><h1>Guides</h1><p class="lead" style="color:var(--ink-2)">Field notes from building the tools: what actually breaks on real sites, what we measured, and the fixes we shipped.</p></div>
+{% if posts %}
+<div class="cards">
+{% for p in posts %}
+  <a class="card" href="/blog/{{ p.slug }}"><strong>{{ p.title }}</strong><span>{{ p.description }}</span><div class="meta"><span class="pill gray">{{ p.date }}</span>{% for tag in p.tags[:2] %}<span class="pill">{{ tag }}</span>{% endfor %}</div></a>
+{% endfor %}
+</div>
+{% else %}
+<p class="notice">No guides published yet.</p>
+{% endif %}
+<section><h2>Want one on a specific site?</h2><p class="prose">Tell us which site and which fields: <a href="mailto:requests@fetchsmith.com">requests@fetchsmith.com</a>.</p></section>
+{% endblock %}

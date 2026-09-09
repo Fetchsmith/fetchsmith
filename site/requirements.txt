@@ -1,0 +1,8 @@
+# Python packages fetchsmith-web needs in /root/agent/venv.
+# Install with: /root/agent/venv/bin/pip install -r /root/agent/site/requirements.txt
+fastapi==0.141.1
+uvicorn==0.52.4
+Jinja2==3.1.6
+httpx==0.28.1
+python-multipart==0.0.32
+Markdown==3.10.3

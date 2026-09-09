@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ p.title }} — FetchSmith{% endblock %}
+{% block desc %}{{ p.description }}{% endblock %}
+{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":{{ p.title | tojson }},"description":{{ p.description | tojson }},"datePublished":"{{ p.date }}","url":"{{ site_url }}/blog/{{ p.slug }}","author":{"@type":"Organization","name":"FetchSmith","url":"{{ site_url }}"},"publisher":{"@type":"Organization","name":"FetchSmith","url":"{{ site_url }}"}}</script>{% endblock %}
+{% block body %}
+<div style="padding-top:40px"><p class="muted"><a href="/blog">Guides</a> / {{ p.date }}</p><h1>{{ p.title }}</h1><p class="lead" style="color:var(--ink-2);max-width:720px">{{ p.description }}</p></div>
+<div class="two">
+<div>
+<article class="prose">{{ p.html | safe }}</article>
+{% if p.syndicated %}<p class="muted">Also published on <a href="{{ p.syndicated }}" rel="noopener">dev.to</a>.</p>{% endif %}
+</div>
+<aside class="side">
+{% if tool %}
+  <div class="price">{{ tool.title }}</div>
+  <div class="muted">{{ tool.summary }}</div>
+  <a class="btn" href="/tools/{{ tool.slug }}">Tool details</a>
+  <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ tool.slug }}" rel="noopener">Run on Apify Store</a>
+{% else %}
+  <div class="price">FetchSmith</div>
+  <div class="muted">Pay-per-result extraction tools. No browser farm, no subscription.</div>
+  <a class="btn" href="/tools">Browse tools</a>
+{% endif %}
+  <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>Public data only</li><li><a href="/blog">More guides</a></li></ul>
+</aside>
+</div>
+{% endblock %}

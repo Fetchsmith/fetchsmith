@@ -50,6 +50,54 @@ def load_registry():
 def public_tools():
     return [t for t in load_registry() if t.get("status") in ("live", "beta")]
 
+# ---------- blog (markdown files in site/content/blog) ----------
+BLOG_DIR = ROOT / "site" / "content" / "blog"
+_blog_cache = {"stamp": None, "posts": []}
+
+def _parse_post(path: Path):
+    raw = path.read_text()
+    meta, body = {}, raw
+    if raw.startswith("---"):
+        head, _, body = raw[3:].partition("\n---")
+        for line in head.strip().splitlines():
+            if ":" in line:
+                k, v = line.split(":", 1)
+                meta[k.strip()] = v.strip()
+        body = body.lstrip("\n")
+    try:
+        import markdown
+        html = markdown.markdown(body, extensions=["fenced_code", "tables"])
+    except Exception:  # never let a rendering dep take the site down
+        log.exception("markdown render failed for %s", path.name)
+        html = "<pre>" + body.replace("<", "&lt;") + "</pre>"
+    return {
+        "slug": path.stem,
+        "title": meta.get("title", path.stem),
+        "description": meta.get("description", ""),
+        "date": meta.get("date", ""),
+        "tags": [t.strip() for t in meta.get("tags", "").split(",") if t.strip()],
+        "tool": meta.get("tool", ""),
+        "syndicated": meta.get("syndicated", ""),
+        "html": html,
+    }
+
+def load_posts():
+    try:
+        files = sorted(BLOG_DIR.glob("*.md"))
+    except Exception:
+        return []
+    stamp = tuple((f.name, f.stat().st_mtime) for f in files)
+    if _blog_cache["stamp"] != stamp:
+        posts = []
+        for f in files:
+            try:
+                posts.append(_parse_post(f))
+            except Exception:
+                log.exception("bad blog post %s", f.name)
+        posts.sort(key=lambda p: (p["date"], p["slug"]), reverse=True)
+        _blog_cache.update(stamp=stamp, posts=posts)
+    return _blog_cache["posts"]
+
 # ---------- lightweight analytics (no cookies) ----------
 @app.middleware("http")
 async def track(request: Request, call_next):
@@ -86,7 +134,19 @@ def tool_page(request: Request, slug: str):
     t = next((t for t in public_tools() if t["slug"] == slug), None)
     if not t:
         raise HTTPException(404)
-    return render(request, "tool.html", t=t)
+    return render(request, "tool.html", t=t, guides=[p for p in load_posts() if p.get("tool") == slug])
+
+@app.get("/blog", response_class=HTMLResponse)
+def blog_index(request: Request):
+    return render(request, "blog.html", posts=load_posts())
+
+@app.get("/blog/{slug}", response_class=HTMLResponse)
+def blog_post(request: Request, slug: str):
+    p = next((p for p in load_posts() if p["slug"] == slug), None)
+    if not p:
+        raise HTTPException(404)
+    tool = next((t for t in public_tools() if t["slug"] == p.get("tool")), None)
+    return render(request, "post.html", p=p, tool=tool)
 
 @app.get("/pricing", response_class=HTMLResponse)
 def pricing(request: Request):
@@ -112,12 +172,18 @@ def llms():
     lines = ["# FetchSmith", "", "> Pay-per-result web data extraction tools: hosted APIs and Apify Actors. No subscription required; buy credits, call an endpoint, get JSON.", "", "## Tools"]
     for t in public_tools():
         lines.append(f"- [{t['title']}]({SITE_URL}/tools/{t['slug']}): {t.get('summary','')}")
+    if load_posts():
+        lines += ["", "## Guides"]
+        for p in load_posts():
+            lines.append(f"- [{p['title']}]({SITE_URL}/blog/{p['slug']}): {p['description']}")
     lines += ["", "## Docs", f"- [API docs]({SITE_URL}/docs)", f"- [Pricing]({SITE_URL}/pricing)"]
     return "\n".join(lines) + "\n"
 
 @app.get("/sitemap.xml")
 def sitemap():
-    urls = ["", "/tools", "/pricing", "/docs", "/about", "/contact", "/terms", "/privacy", "/refunds"] + [f"/tools/{t['slug']}" for t in public_tools()]
+    urls = (["", "/tools", "/pricing", "/docs", "/blog", "/about", "/contact", "/terms", "/privacy", "/refunds"]
+            + [f"/tools/{t['slug']}" for t in public_tools()]
+            + [f"/blog/{p['slug']}" for p in load_posts()])
     body = "".join(f"<url><loc>{SITE_URL}{u}</loc></url>" for u in urls)
     return Response(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>', media_type="application/xml")
 

@@ -13,6 +13,7 @@
   -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>
 {% if t.output_fields %}<h2>Output fields</h2><p class="prose">{% for f in t.output_fields %}<code>{{ f }}</code> {% endfor %}</p>{% endif %}
 {% if t.sample_output %}<h2>Sample output</h2><pre><code>{{ t.sample_output | tojson(indent=2) }}</code></pre>{% endif %}
+{% if guides %}<h2>Guides</h2><ul class="prose">{% for g in guides %}<li><a href="/blog/{{ g.slug }}">{{ g.title }}</a> — {{ g.description }}</li>{% endfor %}</ul>{% endif %}
 <p class="muted">Only publicly accessible pages are read. Respect the source site's terms when using the data.</p>
 </div>
 <aside class="side">
