@@ -294,3 +294,10 @@ async def run_tool(slug: str, request: Request, a=Depends(auth)):
         c.execute("UPDATE credits SET balance=balance-? WHERE customer_id=?", (cost, a["customer_id"]))
         c.execute("INSERT INTO usage(key,tool,results,cost,ts) VALUES(?,?,?,?,?)", (a["key"], slug, n, cost, int(time.time())))
     return {"tool": slug, "results": n, "credits_charged": cost, "credits_left": a["balance"] - cost, "items": items}
+
+@app.get("/{key}.txt", response_class=PlainTextResponse)
+def indexnow_key(key: str):
+    p = ROOT / "state" / "indexnow.key"
+    if p.exists() and p.read_text().strip() == key:
+        return key
+    raise HTTPException(404)

@@ -11,12 +11,16 @@ const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const cm = Actor.getChargingManager();
 let pushed = 0;
 
+const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
-  const r = await Actor.charge({ eventName: 'result', count: 1 });
-  if (r.chargedCount === 0) return false;            // budget exhausted; do not push unpaid items
-  await Actor.pushData(item);
-  pushed += 1;
-  return !r.eventChargeLimitReached && pushed < maxResults;
+  if (isPPE) {
+    const r = await Actor.charge({ eventName: 'result', count: 1 });
+    if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
+    await Actor.pushData(item); pushed += 1;
+    return !r.eventChargeLimitReached && pushed < maxResults;
+  }
+  await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
+  return pushed < maxResults;
 }
 
 async function fetchHtml(url, opts = {}) {

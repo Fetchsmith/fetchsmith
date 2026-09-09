@@ -1,0 +1,64 @@
+{
+  "title": "App Store Reviews Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "apps": {
+      "title": "Apps",
+      "type": "array",
+      "description": "App Store URLs or numeric app IDs, e.g. https://apps.apple.com/us/app/notion/id1232780281 or 1232780281.",
+      "editor": "stringList",
+      "prefill": [
+        "https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"
+      ]
+    },
+    "countries": {
+      "title": "Countries",
+      "type": "array",
+      "description": "Storefront country codes to pull reviews from (each has its own reviews).",
+      "editor": "stringList",
+      "default": [
+        "us"
+      ],
+      "prefill": [
+        "us"
+      ]
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "mostRecent or mostHelpful",
+      "default": "mostRecent",
+      "enum": [
+        "mostRecent",
+        "mostHelpful"
+      ],
+      "editor": "select"
+    },
+    "maxReviewsPerApp": {
+      "title": "Max reviews per app per country",
+      "type": "integer",
+      "description": "Apple exposes up to 500 (10 pages of 50).",
+      "default": 200,
+      "minimum": 1,
+      "maximum": 500
+    },
+    "includeAppInfo": {
+      "title": "Include app metadata",
+      "type": "boolean",
+      "description": "Attach app name, developer, average rating and rating count to every review.",
+      "default": true
+    },
+    "maxResults": {
+      "title": "Max results (total)",
+      "type": "integer",
+      "default": 2000,
+      "minimum": 1,
+      "maximum": 50000,
+      "description": "Overall cap on the number of reviews across all apps and countries."
+    }
+  },
+  "required": [
+    "apps"
+  ]
+}

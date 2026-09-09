@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Submit URLs to IndexNow (Bing/DDG/Yandex). Usage: indexnow https://fetchsmith.com/tools/x ...
+KEYF=/root/agent/state/indexnow.key; [[ -f $KEYF ]] || tr -dc a-f0-9 </dev/urandom | head -c 32 >$KEYF
+KEY=$(cat $KEYF); mkdir -p /root/agent/site/static; echo -n "$KEY" >/root/agent/site/static/$KEY.txt
+urls=$(printf '"%s",' "$@"); urls=${urls%,}
+curl -s -X POST https://api.indexnow.org/indexnow -H 'Content-Type: application/json' -d "{\"host\":\"fetchsmith.com\",\"key\":\"$KEY\",\"keyLocation\":\"https://fetchsmith.com/static/$KEY.txt\",\"urlList\":[$urls]}" -w " %{http_code}\n"

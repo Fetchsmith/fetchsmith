@@ -1,0 +1,8 @@
+{
+  "title": "App Store Reviews Scraper – Any App, Any Country",
+  "description": "Extract Apple App Store reviews for any iOS app and country: rating, title, text, version, author, date, plus app metadata. Fast, HTTP-only, pay per review.",
+  "seoTitle": "App Store Reviews Scraper – iOS App Reviews to JSON/CSV",
+  "seoDescription": "Scrape Apple App Store reviews for any app and country storefront. Get rating, title, text, version, author and date with app metadata. Pay per review, no browser.",
+  "categories": ["ECOMMERCE", "MARKETING", "AI"],
+  "events": { "result": { "eventTitle": "Review", "eventDescription": "One app review returned to the dataset.", "eventPriceUsd": 0.0005 } }
+}

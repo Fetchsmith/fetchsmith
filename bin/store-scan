@@ -1,0 +1,17 @@
+#!/root/agent/venv/bin/python
+"""Gap scan: for each keyword, show #actors, top users, users30d sum. Usage: store-scan kw1 kw2 ..."""
+import sys, httpx, time
+API="https://api.apify.com/v2/store"
+rows=[]
+for kw in sys.argv[1:]:
+    try:
+        items=httpx.get(API,params={"search":kw,"limit":30},timeout=30).json()["data"]["items"]
+    except Exception as e:
+        print(kw,"ERR",e); continue
+    rel=[a for a in items if kw.lower().split()[0] in (a.get("name","")+" "+a.get("title","")).lower()]
+    n=len(rel); top=max([a.get("stats",{}).get("totalUsers",0) for a in rel],default=0)
+    u30=sum(a.get("stats",{}).get("totalUsers30Days",0) for a in rel)
+    best=max(rel,key=lambda a:a.get("stats",{}).get("totalUsers",0))["name"] if rel else "-"
+    rows.append((kw,n,top,u30,best)); time.sleep(0.15)
+for kw,n,top,u30,best in sorted(rows,key=lambda r:(-r[3]/(r[1]+1))):
+    print(f"{kw:28} actors={n:2} topUsers={top:6} u30dSum={u30:5} demand/competition={u30/(n+1):6.1f}  best={best[:40]}")

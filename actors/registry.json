@@ -1,3 +1,141 @@
 {
-  "tools": []
+ "tools": [
+  {
+   "slug": "google-news-scraper",
+   "title": "Google News Scraper",
+   "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL. Any language or country.",
+   "status": "live",
+   "credits_per_result": 1,
+   "example_input": {
+    "queries": [
+     "electric vehicles"
+    ],
+    "language": "en-US",
+    "country": "US",
+    "maxItemsPerQuery": 50,
+    "decodeUrls": true,
+    "max_results": 50
+   },
+   "output_fields": [
+    "title",
+    "url",
+    "googleNewsUrl",
+    "source",
+    "sourceUrl",
+    "publishedAt",
+    "snippet",
+    "query",
+    "language",
+    "country"
+   ],
+   "sample_output": {
+    "title": "Apify raises new funding - TechCrunch",
+    "url": "https://techcrunch.com/2026/09/02/apify-funding/",
+    "source": "TechCrunch",
+    "publishedAt": "2026-09-02T07:00:00.000Z",
+    "snippet": "Apify raises new funding"
+   },
+   "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL.</p>",
+   "memory_mb": 256
+  },
+  {
+   "slug": "app-store-reviews-scraper",
+   "title": "App Store Reviews Scraper",
+   "summary": "Apple App Store reviews for any iOS app and country storefront: rating, title, text, version, author, date, plus app metadata.",
+   "status": "live",
+   "credits_per_result": 1,
+   "example_input": {
+    "apps": [
+     "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281"
+    ],
+    "countries": [
+     "us",
+     "gb"
+    ],
+    "sort": "mostRecent",
+    "maxReviewsPerApp": 100,
+    "max_results": 200
+   },
+   "output_fields": [
+    "reviewId",
+    "appId",
+    "country",
+    "title",
+    "content",
+    "rating",
+    "version",
+    "author",
+    "updatedAt",
+    "voteSum",
+    "voteCount",
+    "appName",
+    "developer",
+    "averageRating",
+    "ratingCount"
+   ],
+   "sample_output": {
+    "reviewId": "14522836737",
+    "appId": "1232780281",
+    "country": "us",
+    "title": "Confusing",
+    "content": "It's probably because I'm new but it is really confusing to work with.",
+    "rating": 4,
+    "version": "1.7.333",
+    "appName": "Notion: Notes, Tasks, AI",
+    "averageRating": 4.78,
+    "ratingCount": 90020
+   },
+   "description": "<p>Apple exposes the 500 most recent reviews per app per country (sorted by most recent or most helpful). Run on a schedule and deduplicate by <code>reviewId</code> to build a history.</p>",
+   "memory_mb": 256
+  },
+  {
+   "slug": "shopify-products-scraper",
+   "title": "Shopify Products Scraper",
+   "summary": "Full product catalog of any Shopify store or collection: prices, compare-at prices, variants, SKUs, stock, images, tags and descriptions.",
+   "status": "live",
+   "credits_per_result": 1,
+   "example_input": {
+    "storeUrls": [
+     "https://www.allbirds.com"
+    ],
+    "maxProductsPerStore": 250,
+    "includeVariants": true,
+    "max_results": 250
+   },
+   "output_fields": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "priceMin",
+    "priceMax",
+    "compareAtPriceMin",
+    "available",
+    "variantCount",
+    "imageUrl",
+    "images",
+    "options",
+    "variants",
+    "description",
+    "createdAt",
+    "updatedAt",
+    "store"
+   ],
+   "sample_output": {
+    "id": 6543210987,
+    "title": "Men's Wool Runner",
+    "handle": "mens-wool-runners",
+    "url": "https://www.allbirds.com/products/mens-wool-runners",
+    "vendor": "Allbirds",
+    "priceMin": 98,
+    "available": true,
+    "variantCount": 12
+   },
+   "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p>",
+   "memory_mb": 256
+  }
+ ]
 }

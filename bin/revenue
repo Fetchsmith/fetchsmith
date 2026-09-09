@@ -1,0 +1,34 @@
+#!/root/agent/venv/bin/python
+"""Daily revenue/usage snapshot: Apify actor stats (users/runs by others) + Polar orders. Emails owner on first-money events."""
+import json, os, time, subprocess, httpx
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+T = env["APIFY_TOKEN"]; H = {"Authorization": f"Bearer {T}"}; API = "https://api.apify.com/v2"
+snap = {"ts": int(time.time()), "date": time.strftime("%Y-%m-%d"), "apify": {}, "polar": {}}
+acts = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
+tot_users = tot_runs = 0
+for a in acts:
+    s = a.get("stats", {})
+    snap["apify"][a["name"]] = {"public": a.get("isPublic"), "users": s.get("totalUsers", 0), "users30d": s.get("totalUsers30Days", 0), "runs30d": s.get("totalRuns30Days", 0), "runs": s.get("totalRuns", 0)}
+    if a.get("isPublic"): tot_users += s.get("totalUsers", 0); tot_runs += s.get("totalRuns30Days", 0)
+snap["apify_totals"] = {"public_actors": sum(1 for a in acts if a.get("isPublic")), "users": tot_users, "runs30d": tot_runs}
+# Polar orders
+pt = env.get("POLAR_ACCESS_TOKEN")
+if pt:
+    try:
+        r = httpx.get("https://api.polar.sh/v1/orders/", headers={"Authorization": f"Bearer {pt}"}, params={"limit": 100}, timeout=30).json()
+        items = r.get("items", []); snap["polar"] = {"orders": len(items), "gross_usd": sum(o.get("total_amount", 0) for o in items) / 100, "net_usd": sum(o.get("net_amount", o.get("total_amount", 0)) for o in items) / 100}
+    except Exception as e:
+        snap["polar"] = {"error": str(e)[:200]}
+hist_p = "/root/agent/state/revenue_history.json"
+hist = json.load(open(hist_p)) if os.path.exists(hist_p) else []
+prev_users = hist[-1]["apify_totals"]["users"] if hist else 0
+hist.append(snap); json.dump(hist[-400:], open(hist_p, "w"))
+json.dump(snap, open("/root/agent/state/revenue.json", "w"), indent=1)
+def notify(subj, body, key): subprocess.run(["/root/agent/bin/notify", subj, body, "--once", key])
+if tot_users > 0 and prev_users == 0:
+    notify("[FetchSmith] First users on Apify Store", f"Public Actors now have {tot_users} distinct users (runs by other accounts). Apify credits earnings monthly; the first payout invoice is generated on the 11th of next month and paid ~21st-25th. Snapshot:\n{json.dumps(snap['apify'], indent=1)}", "first_apify_users")
+if snap["polar"].get("orders", 0) > 0:
+    notify("[FetchSmith] Revenue: Polar orders", f"Polar orders so far: {snap['polar']['orders']}, gross ${snap['polar']['gross_usd']:.2f}, net ${snap['polar']['net_usd']:.2f}.", f"polar_orders_{snap['polar']['orders']}")
+if time.strftime("%d") == "11" and snap["apify_totals"]["users"] > 0:
+    notify(f"[FetchSmith] Apify payout invoice day ({snap['date']})", f"Apify generates developer payout invoices on the 11th. Check Apify Console → Insights → Payouts. Current public actors: {snap['apify_totals']['public_actors']}, total users: {tot_users}, runs30d: {tot_runs}.", f"payout_day_{time.strftime('%Y-%m')}")
+print(json.dumps(snap["apify_totals"]), json.dumps(snap["polar"]))

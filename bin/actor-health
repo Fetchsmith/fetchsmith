@@ -1,0 +1,28 @@
+#!/root/agent/venv/bin/python
+"""Nightly: run every live Actor on Apify with its test_input.json; record pass/fail in state/health.json."""
+import json, os, time, httpx, sys
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+T = env["APIFY_TOKEN"]; API = "https://api.apify.com/v2"; user = httpx.get(f"{API}/users/me", headers={"Authorization": f"Bearer {T}"}).json()["data"]["username"]
+reg = json.load(open("/root/agent/actors/registry.json")).get("tools", [])
+report = {"ts": int(time.time()), "results": {}}
+for t in reg:
+    if t.get("status") not in ("live", "beta"): continue
+    slug = t["slug"]; p = f"/root/agent/actors/{slug}/test_input.json"
+    inp = json.load(open(p)) if os.path.exists(p) else t.get("example_input", {"maxResults": 5})
+    inp = {**inp, "maxResults": min(int(inp.get("maxResults", 5)), 10)}
+    try:
+        r = httpx.post(f"{API}/acts/{user}~{slug}/run-sync-get-dataset-items", params={"token": T, "timeout": 180, "memory": t.get("memory_mb", 256), "clean": "true", "limit": 10}, json=inp, timeout=240)
+        items = r.json() if r.status_code < 300 else []
+        n = len(items) if isinstance(items, list) else 0
+        ok = r.status_code < 300 and n >= 1
+        report["results"][slug] = {"ok": ok, "status": r.status_code, "items": n, "sample_keys": list(items[0].keys())[:8] if n else [], "err": None if ok else r.text[:200]}
+    except Exception as e:
+        report["results"][slug] = {"ok": False, "items": 0, "err": str(e)[:200]}
+    print(slug, report["results"][slug])
+json.dump(report, open("/root/agent/state/health.json", "w"), indent=1)
+failed = [k for k, v in report["results"].items() if not v["ok"]]
+if failed:
+    q = "/root/agent/tasks/queue.md"; txt = open(q).read()
+    line = f"- [ ] FIX FAILED ACTORS (nightly health {time.strftime('%Y-%m-%d')}): {', '.join(failed)} — see state/health.json [hard]\n"
+    if line not in txt:
+        open(q, "w").write(txt.replace("# Task queue", "# Task queue", 1).replace("\n\n", "\n\n" + line, 1))

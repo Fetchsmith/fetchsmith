@@ -1,0 +1,1 @@
+- 2026-09-09 Apify input schema validation: EVERY property needs a 'description' (build fails otherwise). Add .actorignore (node_modules, storage, test_input.json, meta.json).

@@ -1,0 +1,13 @@
+{
+  "title": "Google News Scraper input", "type": "object", "schemaVersion": 1,
+  "properties": {
+    "queries": { "title": "Search queries", "type": "array", "description": "One or more search terms. Supports Google News operators like \"exact phrase\", site:bbc.com, when:7d, before:2026-01-01.", "editor": "stringList", "prefill": ["artificial intelligence"] },
+    "rssUrls": { "title": "Custom Google News RSS URLs", "type": "array", "description": "Optional: topic/section/publication feeds from news.google.com/rss/... (added to the queries).", "editor": "stringList" },
+    "language": { "title": "Language (hl)", "type": "string", "description": "e.g. en-US, en-GB, de, fr, es, pt-BR, ar, ja", "default": "en-US", "editor": "textfield" },
+    "country": { "title": "Country (gl)", "type": "string", "description": "Two-letter country code, e.g. US, GB, DE, IN, EG", "default": "US", "editor": "textfield" },
+    "maxItemsPerQuery": { "title": "Max articles per query", "type": "integer", "description": "Google returns up to 100 per feed.", "default": 100, "minimum": 1, "maximum": 100 },
+    "decodeUrls": { "title": "Resolve real article URLs", "type": "boolean", "description": "Google News links are encoded redirects. When on, each link is decoded to the publisher's URL (one extra request per article).", "default": true },
+    "maxResults": { "title": "Max results (total)", "type": "integer", "description": "Overall cap across all queries.", "default": 500, "minimum": 1, "maximum": 5000 }
+  },
+  "required": ["queries"]
+}

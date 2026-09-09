@@ -1,0 +1,53 @@
+{
+  "title": "Shopify Products Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "storeUrls": {
+      "title": "Store URLs",
+      "type": "array",
+      "description": "Shopify store homepages, collection URLs or product URLs, e.g. https://www.allbirds.com or https://www.allbirds.com/collections/mens.",
+      "editor": "stringList",
+      "prefill": [
+        "https://www.allbirds.com"
+      ]
+    },
+    "maxProductsPerStore": {
+      "title": "Max products per store",
+      "type": "integer",
+      "default": 500,
+      "minimum": 1,
+      "maximum": 100000,
+      "description": "Stop after this many products for each store URL."
+    },
+    "includeDescription": {
+      "title": "Include description",
+      "type": "boolean",
+      "description": "Include the product description as plain text.",
+      "default": true
+    },
+    "includeVariants": {
+      "title": "Include variants",
+      "type": "boolean",
+      "description": "Include the full variants array (SKU, price, options, availability).",
+      "default": true
+    },
+    "onlyAvailable": {
+      "title": "Only available products",
+      "type": "boolean",
+      "description": "Skip products where no variant is available.",
+      "default": false
+    },
+    "maxResults": {
+      "title": "Max results (total)",
+      "type": "integer",
+      "default": 5000,
+      "minimum": 1,
+      "maximum": 200000,
+      "description": "Overall cap on the number of products across all stores."
+    }
+  },
+  "required": [
+    "storeUrls"
+  ]
+}

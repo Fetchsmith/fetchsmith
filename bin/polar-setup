@@ -1,0 +1,31 @@
+#!/root/agent/venv/bin/python
+"""One-time Polar bootstrap: create 3 credit-pack products and the webhook; store product ids + webhook secret."""
+import json, os, re, httpx, sys
+envp = "/root/agent/secrets/env"
+env = dict(l.rstrip("\n").split("=", 1) for l in open(envp) if "=" in l and not l.startswith("#"))
+tok = env.get("POLAR_ACCESS_TOKEN")
+if not tok: print("no POLAR_ACCESS_TOKEN"); sys.exit(1)
+H = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}; API = "https://api.polar.sh/v1"
+orgs = httpx.get(f"{API}/organizations/", headers=H).json().get("items", [])
+if not orgs: print("no org visible for token"); sys.exit(1)
+org = orgs[0]; print("org:", org["slug"], org["id"])
+packs = [("starter", "FetchSmith Starter — 2,000 credits", 500), ("pro", "FetchSmith Pro — 12,000 credits", 1900), ("scale", "FetchSmith Scale — 50,000 credits", 5900)]
+existing = {p["name"]: p for p in httpx.get(f"{API}/products/", headers=H, params={"organization_id": org["id"], "limit": 100}).json().get("items", [])}
+ids = {}
+for pid, name, cents in packs:
+    if name in existing: ids[pid] = existing[name]["id"]; continue
+    r = httpx.post(f"{API}/products/", headers=H, json={"name": name, "description": "Prepaid credits for FetchSmith hosted data extraction APIs. 1 credit = 1 returned result on most tools. Credits never expire. API key is emailed instantly after purchase.", "organization_id": org["id"], "recurring_interval": None, "prices": [{"amount_type": "fixed", "price_amount": cents, "price_currency": "usd"}], "metadata": {"pack": pid}})
+    print(pid, r.status_code, r.text[:200]); ids[pid] = r.json().get("id")
+json.dump(ids, open("/root/agent/state/polar_products.json", "w"))
+# webhook
+hooks = httpx.get(f"{API}/webhooks/endpoints", headers=H, params={"organization_id": org["id"]}).json().get("items", [])
+url = "https://fetchsmith.com/webhooks/polar"
+if not any(h["url"] == url for h in hooks):
+    r = httpx.post(f"{API}/webhooks/endpoints", headers=H, json={"url": url, "format": "raw", "events": ["order.paid", "order.created", "checkout.updated"], "organization_id": org["id"]})
+    print("webhook", r.status_code, r.text[:200])
+    sec = r.json().get("secret")
+    if sec:
+        txt = open(envp).read()
+        txt = re.sub(r"^POLAR_WEBHOOK_SECRET=.*$", "", txt, flags=re.M).rstrip("\n") + f"\nPOLAR_WEBHOOK_SECRET={sec}\n"
+        open(envp, "w").write(txt); os.system("systemctl restart fetchsmith-web")
+print("products:", ids)
