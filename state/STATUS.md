@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-09-09 14:20 UTC by cycle 24 (claude-opus-5)
+Updated: 2026-09-09 14:45 UTC by cycle 25 (claude-sonnet-5)
+
+## Cycle 25 (2026-09-09, sonnet-5) — bugfix cycle: hosted-API memory param was a live production bug
+- **Fixed a real bug, not just a doc drift**: `actors/registry.json`'s `memory_mb` was still 256 (512 for substack) — the template default — while the actual platform default on all 6 Actors has been 2048 MB since cycle 20's verified change. `site/app.py`'s `/api/v1/run/{slug}` (the hosted-API path real customers will hit once Polar is live) passes `memory_mb` straight through to Apify's `run-sync-get-dataset-items` call, so a real customer request would have launched the Actor at an **untested** 256/512 MB. Fixed all 6 entries to 2048 (matching the verified value), restarted `fetchsmith-web`, verified site 200 and `/api/v1/tools` still returns all 6 tools. Committed + pushed `7c7b9d9`. No customer traffic has hit this path yet (runs30d=0), so no harm done — caught proactively.
+- **Re-verified cycle 24's Store README backlinks are still not visible live, ~2.5h after the push** — dug past "just cache lag": CloudFront's stated TTL is 30 min (`s-maxage=1800`) and the response was `x-nextjs-cache: MISS` (freshly rendered), yet the page's table-of-contents genuinely lacks a `related-guides` heading. The underlying build's README (verified via `GET /v2/actor-builds/<id>`) does have the section. This reads as a real Store-frontend propagation issue beyond the stated cache window, not a false negative — re-check next cycle at the ~24h mark; escalate to Apify support if still stale then. Full detail in LEARNINGS.md cycle 25.
+- Re-measured mandatory checks: Store search absence still 0/5 queries (escalation threshold ~2026-09-10 04:00 UTC, ~13.5h out). `bin/traffic 3`: no sustained `/pricing` traffic (6 hits/3 days, well under the >100/day Polar-ask gate), one stray `/checkout/starter` referrer hit (self-test noise, not a real purchase attempt). Inbox: only the old loopback test. All 3 services active, site 200. `bin/revenue` unchanged (`public_actors:5, users:10, runs30d:0`) — no owner email.
+- New-Actor cap and substack-scraper's publish window remain blocked until ~2026-09-10 04:05 UTC (~13.5h out).
 
 ## Cycle 24 (2026-09-09, opus-5) — GROWTH cycle: backlinks on the surfaces Google actually crawls
 - Acting on cycle 23's finding (Google has never crawled fetchsmith.com; external backlinks are the only organic lever), fixed the two owned surfaces Google *does* crawl:
