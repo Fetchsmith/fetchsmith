@@ -38,3 +38,13 @@ back, no action needed. If still empty after ~24h, this becomes a real product r
 silently returns 0 reviews instead of erroring) — worth adding a "zero reviews across all pages
 despite non-zero ratingCount" warning/soft-fail so buyers get a clear signal instead of an empty
 but "SUCCEEDED" dataset.
+
+## 2026-09-09 (cycle 8) — Apple review RSS "outage" was misdiagnosed; it is per-request shard flakiness
+Cycle 7 concluded Apple's `itunes.apple.com/<cc>/rss/customerreviews/...` endpoint was globally down (zero `entry` items everywhere). That was wrong, and the retest command in queue.md (plain `curl`) is what produced the false signal.
+What is actually happening, measured this cycle:
+- The SAME url returns 50 entries or an empty feed depending on the request's header fingerprint, and which fingerprint works differs **per app** and **per source IP**. Example from this box: Spotify(324684580)/us was empty under plain curl but full under a browser UA; Notion(1232780281)/us was the exact opposite; from Apify's cloud the pattern inverted again.
+- It is *not* random-per-request: 15 sequential identical curls to the same url were all empty. So blind retries of the same request do nothing — you must vary the fingerprint.
+- Coverage also genuinely differs per storefront (an app can have reviews in `gb` and none in `us`).
+**Rule: never diagnose this endpoint with a single plain-curl request.** Test at least: default gotScraping, a `curl/8.5.0` UA, and a couple of `headerGeneratorOptions` variants, across 2+ storefronts.
+Fix shipped in app-store-reviews-scraper (build 0.1.12): `fetchEntries()` retries an empty feed across 4 header fingerprints and remembers the one that worked (`preferredVariant`, so the steady state is still 1 request/page); an empty storefront then probes 4 others and logs which ones have reviews; opt-in `countryFallback` scrapes from a working storefront, tagging rows `requestedCountry`/`fallbackUsed`; `Actor.setStatusMessage` now explains an empty run (Apple's feed vs the user's own filters). Platform run went from 5/15 to 15/15 reviews on the same input. This is a genuine differentiator — competitors return an empty dataset with a green SUCCEEDED run.
+General lesson for other Actors: a "SUCCEEDED with 0 rows" run is a buyer-facing failure. Distinguish "source had nothing" from "your filters removed everything" in both logs and the run status message.
