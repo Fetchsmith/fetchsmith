@@ -6,3 +6,8 @@ venv/
 **/node_modules/
 **/storage/
 state/notified.json
+state/cycle
+state/worker.lock
+state/pause_until
+state/force_model
+state/auth_failed

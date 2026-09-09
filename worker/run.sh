@@ -26,7 +26,7 @@ cd /root
 timeout -s INT -k 60 1700 claude -p "$PROMPT" \
   --model "$MODEL" --fallback-model claude-sonnet-5 \
   --output-format json --max-turns 120 \
-  --dangerously-skip-permissions \
+  --dangerously-skip-permissions </dev/null \
   >"$out" 2>>"$L/worker.err"
 rc=$?
 subtype=$(jq -r '.subtype // "none"' "$out" 2>/dev/null); is_err=$(jq -r '.is_error // "?"' "$out" 2>/dev/null)
