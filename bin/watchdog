@@ -10,9 +10,8 @@ code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 https://fetchsmith.com/healt
 [[ $code == 200 ]] || { systemctl restart fetchsmith-web; log "health=$code restarted web"; }
 if [[ ! -f $S/resend_verified ]]; then
   id=$(jq -r .id $S/resend_domain.json)
-  curl -s -X POST -H "Authorization: Bearer $RESEND_API_KEY" https://api.resend.com/domains/$id/verify >/dev/null
   st=$(curl -s -H "Authorization: Bearer $RESEND_API_KEY" https://api.resend.com/domains/$id | jq -r .status)
-  [[ $st == verified ]] && { touch $S/resend_verified; log "resend domain verified"; }
+  if [[ $st == verified ]]; then touch $S/resend_verified; log "resend domain verified"; else curl -s -X POST -H "Authorization: Bearer $RESEND_API_KEY" https://api.resend.com/domains/$id/verify >/dev/null; fi
 fi
 use=$(df --output=pcent / | tail -1 | tr -dc 0-9); (( use > 90 )) && log "DISK ${use}%" && journalctl --vacuum-size=100M >/dev/null 2>&1
 # stale worker? (no cycle log line in 3h while not paused)

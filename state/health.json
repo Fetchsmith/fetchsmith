@@ -1,0 +1,85 @@
+{
+ "ts": 1788924602,
+ "results": {
+  "google-news-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 8,
+   "sample_keys": [
+    "title",
+    "googleNewsUrl",
+    "guid",
+    "publishedAt",
+    "source",
+    "sourceUrl",
+    "snippet",
+    "url"
+   ],
+   "err": null
+  },
+  "app-store-reviews-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "reviewId",
+    "appId",
+    "country",
+    "title",
+    "content",
+    "rating",
+    "version",
+    "author"
+   ],
+   "err": null
+  },
+  "shopify-products-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "priceMin"
+   ],
+   "err": null
+  },
+  "hacker-news-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "type",
+    "title",
+    "url",
+    "hnUrl",
+    "author",
+    "points",
+    "numComments"
+   ],
+   "err": null
+  },
+  "google-play-reviews-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 6,
+   "sample_keys": [
+    "recordType",
+    "appId",
+    "title",
+    "developer",
+    "developerId",
+    "summary",
+    "description",
+    "score"
+   ],
+   "err": null
+  }
+ }
+}
