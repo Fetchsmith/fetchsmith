@@ -1,6 +1,7 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 import * as cheerio from 'cheerio';
+import { makeArticleFetcher } from './article.js';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -11,8 +12,11 @@ const gl = (input.country || 'US').toUpperCase();
 const ceid = `${gl}:${hl.split('-')[0]}`;
 const perQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), 100);
 const maxResults = Math.min(Number(input.maxResults ?? 500), 5000);
-const decode = input.decodeUrls !== false;
+const fetchBody = input.fetchArticleBody === true;
+const decode = input.decodeUrls !== false || fetchBody; // the body lives on the publisher's page, so it needs the real URL
+const bodyMaxChars = Math.min(Math.max(Number(input.articleBodyMaxChars ?? 20000), 500), 200000);
 if (!queries.length && !rssUrls.length) { await Actor.fail('Provide at least one query or RSS URL.'); }
+if (fetchBody && input.decodeUrls === false) log.warning('fetchArticleBody needs the publisher URL, so decodeUrls was turned back on.');
 
 let pushed = 0;
 const seen = new Set();
@@ -47,16 +51,28 @@ function parseRss(xml) {
   }).get();
 }
 
+const fetchArticle = makeArticleFetcher({ http, bodyMaxChars, log });
+
 // Decode Google News redirect URL -> publisher URL (batchexecute method).
+// Google rate-limits this endpoint per source IP (429) once you decode a lot in a short window;
+// when that happens every article comes back with url:null, so count it and say so at the end
+// instead of leaving the user with a silently empty column.
+let decodeRateLimited = 0; let decodeFailed = 0;
 async function decodeUrl(gnUrl) {
   try {
     const id = gnUrl.split('/articles/')[1]?.split('?')[0];
-    if (!id) return null;
-    const page = await http(`https://news.google.com/articles/${id}`);
+    if (!id) { decodeFailed += 1; return null; }
+    const page = await http(`https://news.google.com/articles/${id}`, { throwHttpErrors: false });
+    if (page.statusCode === 429) {
+      decodeRateLimited += 1;
+      log.warning('Google News rate-limited the URL-decoding endpoint (429) — this article keeps its googleNewsUrl but url will be null.');
+      await new Promise((r) => setTimeout(r, Math.min(2000 * decodeRateLimited, 15000))); // back off so a burst can recover
+      return null;
+    }
     const $ = cheerio.load(page.body);
     const div = $('c-wiz > div').first();
     const sg = div.attr('data-n-a-sg'); const ts = div.attr('data-n-a-ts');
-    if (!sg || !ts) return null;
+    if (!sg || !ts) { decodeFailed += 1; return null; }
     const payload = ['Fbv4je', `["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],"X","X",1,[1,1,1],1,1,null,0,0,null,0],"${id}",${ts},"${sg}"]`];
     const res = await http('https://news.google.com/_/DotsSplashUi/data/batchexecute', {
       method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8' },
@@ -66,7 +82,7 @@ async function decodeUrl(gnUrl) {
     const parsed = JSON.parse(chunk);
     const inner = JSON.parse(parsed[0][2]);
     return inner[1] || null;
-  } catch (e) { log.debug(`decode failed: ${e.message}`); return null; }
+  } catch (e) { log.debug(`decode failed: ${e.message}`); decodeFailed += 1; return null; }
 }
 
 const feeds = [
@@ -76,6 +92,7 @@ const feeds = [
 const emptyFeeds = []; // Google News RSS returned zero <item>s for this query/URL
 const erroredFeeds = []; // the RSS request itself failed
 const dedupedFeeds = []; // items existed but were all duplicates of an earlier feed's guid
+let bodiesOk = 0; let bodiesFailed = 0; // only counted when fetchArticleBody is on
 let keepGoing = true;
 for (const feed of feeds) {
   if (!keepGoing) break;
@@ -91,12 +108,22 @@ for (const feed of feeds) {
     if (seen.has(it.guid)) continue; seen.add(it.guid);
     allDuped = false;
     const url = decode ? (await decodeUrl(it.googleNewsUrl)) : null;
-    keepGoing = await pushResult({ ...it, url, query: feed.query, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
+    let article = {};
+    if (fetchBody) {
+      article = url ? await fetchArticle(url) : { articleFetchStatus: 'no-url' };
+      if (article.articleFetchStatus === 'ok') bodiesOk += 1; else bodiesFailed += 1;
+    }
+    keepGoing = await pushResult({ ...it, url, ...article, query: feed.query, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }
   if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.url);
 }
 log.info(`Done. Pushed ${pushed} articles.`);
+if (fetchBody) log.info(`Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywall/blocked/no text).`);
+const bodyNote = fetchBody ? ` Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywalled or publisher-blocked — see articleFetchStatus).` : '';
+const decodeNote = decodeRateLimited
+  ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s) (url is null; googleNewsUrl still works) — re-run with a proxy or fewer articles per run.`
+  : decodeFailed ? ` ${decodeFailed} article URL(s) could not be decoded (url is null; googleNewsUrl still works).` : '';
 if (pushed === 0 && feeds.length) {
   const why = erroredFeeds.length
     ? `the RSS request failed for: ${erroredFeeds.join(', ')} (see log for the error)`
@@ -105,6 +132,8 @@ if (pushed === 0 && feeds.length) {
       : `Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`;
   await Actor.setStatusMessage(`No articles returned — ${why}.`);
 } else if (emptyFeeds.length || erroredFeeds.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.`);
+  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}`);
+} else if ((fetchBody && bodiesFailed) || decodeNote) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items.${bodyNote}${decodeNote}`);
 }
 await Actor.exit();

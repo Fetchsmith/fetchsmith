@@ -1,5 +1,5 @@
 {
- "ts": 1788933601,
+ "ts": 1788939179,
  "date": "2026-09-09",
  "apify": {
   "google-news-scraper": {
@@ -7,35 +7,35 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 5
+   "runs": 6
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 6
+   "runs": 8
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 5
+   "runs": 6
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 3
+   "runs": 5
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 4
+   "runs": 5
   },
   "substack-scraper": {
    "public": false,

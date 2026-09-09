@@ -7,6 +7,8 @@
     "country": { "title": "Country (gl)", "type": "string", "description": "Two-letter country code, e.g. US, GB, DE, IN, EG", "default": "US", "editor": "textfield" },
     "maxItemsPerQuery": { "title": "Max articles per query", "type": "integer", "description": "Google returns up to 100 per feed.", "default": 100, "minimum": 1, "maximum": 100 },
     "decodeUrls": { "title": "Resolve real article URLs", "type": "boolean", "description": "Google News links are encoded redirects. When on, each link is decoded to the publisher's URL (one extra request per article).", "default": true },
+    "fetchArticleBody": { "title": "Extract full article text", "type": "boolean", "description": "Open each publisher page and extract the full article body, author, image, keywords and section (JSON-LD first, HTML paragraphs as fallback). Adds one request per article and is slower; paywalled/blocked articles are still returned with articleFetchStatus explaining why the text is missing.", "default": false },
+    "articleBodyMaxChars": { "title": "Max article body length", "type": "integer", "description": "Truncate articleBody to this many characters (articleBodyTruncated tells you when it happened). Only used when 'Extract full article text' is on.", "default": 20000, "minimum": 500, "maximum": 200000 },
     "maxResults": { "title": "Max results (total)", "type": "integer", "description": "Overall cap across all queries.", "default": 500, "minimum": 1, "maximum": 5000 }
   },
   "required": ["queries"]
