@@ -6,10 +6,10 @@
     "dataType": {
       "title": "What to scrape",
       "type": "string",
-      "description": "episodes = every episode of the given shows; reviews = listener reviews and star ratings; podcasts = the show records themselves (use with Search terms to discover shows).",
+      "description": "episodes = every episode of the given shows; reviews = listener reviews and star ratings; podcasts = the show records themselves (use with Search terms to discover shows); charts = today's top podcasts in a storefront (no podcasts/search terms needed).",
       "default": "episodes",
-      "enum": ["episodes", "reviews", "podcasts"],
-      "enumTitles": ["Episodes", "Listener reviews", "Podcasts (search / show info)"],
+      "enum": ["episodes", "reviews", "podcasts", "charts"],
+      "enumTitles": ["Episodes", "Listener reviews", "Podcasts (search / show info)", "Top charts"],
       "editor": "select"
     },
     "podcasts": {
@@ -25,6 +25,14 @@
       "description": "Find shows by keyword instead of (or as well as) giving URLs. Each match is then scraped according to 'What to scrape'.",
       "editor": "stringList",
       "prefill": []
+    },
+    "chartCount": {
+      "title": "Chart size",
+      "type": "integer",
+      "description": "Charts only: how many top podcasts to fetch for the storefront (Apple currently only exposes an overall chart, not genre-specific ones).",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 200
     },
     "searchLimit": {
       "title": "Podcasts per search term",

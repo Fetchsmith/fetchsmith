@@ -5,8 +5,9 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 const podcasts = (input.podcasts ?? []).map(String).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map(String).filter(Boolean);
-const dataType = ['episodes', 'reviews', 'podcasts'].includes(input.dataType) ? input.dataType : 'episodes';
+const dataType = ['episodes', 'reviews', 'podcasts', 'charts'].includes(input.dataType) ? input.dataType : 'episodes';
 const country = String(input.country || 'us').toLowerCase().trim();
+const chartCount = Math.min(Number(input.chartCount ?? 50), 200);
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
 const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), 200);
 const perPodcastReviews = Math.min(Number(input.maxReviewsPerPodcast ?? 200), 500);
@@ -17,7 +18,7 @@ const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
 
-if (!podcasts.length && !searchTerms.length) {
+if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
   await Actor.fail('Provide at least one podcast (Apple Podcasts URL or numeric ID) in "podcasts", or at least one query in "searchTerms".');
 }
 
@@ -223,7 +224,42 @@ for (const term of searchTerms) {
 
 // ---- run -------------------------------------------------------------------
 const emptyIds = [];
-if (dataType === 'podcasts') {
+if (dataType === 'charts') {
+  // Apple only exposes an overall top-podcasts chart per storefront now (no genre-specific
+  // path — /genre=<id>/ 404s, ?g= is silently ignored); rank comes from array order.
+  const url = `https://rss.marketingtools.apple.com/api/v2/${country}/podcasts/top/${chartCount}/podcasts.json`;
+  let results = [];
+  try { results = (await getJson(url)).feed?.results ?? []; }
+  catch (e) { log.warning(`Chart fetch failed for storefront "${country}": ${e.message}`); }
+  for (let i = 0; i < results.length; i++) {
+    if (!keepGoing) break;
+    const r = results[i];
+    const chartRank = i + 1;
+    let full = null;
+    if (includePodcastInfo) {
+      try { full = (await getJson(`https://itunes.apple.com/lookup?id=${r.id}&country=${country}`)).results?.[0] ?? null; }
+      catch (e) { log.debug(`lookup failed for chart entry ${r.id}: ${e.message}`); }
+    }
+    const row = full ? podcastRow(full) : {
+      type: 'podcast',
+      collectionId: Number(r.id) || null,
+      podcastName: r.name ?? null,
+      artistName: r.artistName ?? null,
+      podcastUrl: r.url ?? null,
+      feedUrl: null,
+      primaryGenre: r.genres?.[0]?.name ?? null,
+      genres: r.genres?.map?.((g) => g.name) ?? null,
+      episodeCount: null,
+      latestReleaseDate: null,
+      explicit: r.contentAdvisoryRating === 'Explict' || r.contentAdvisoryRating === 'Explicit',
+      contentAdvisoryRating: r.contentAdvisoryRating ?? null,
+      artworkUrl: r.artworkUrl100 ?? null,
+      country,
+    };
+    keepGoing = await pushResult({ ...row, chartRank, scrapedAt: new Date().toISOString() });
+  }
+  if (!results.length) emptyIds.push(country);
+} else if (dataType === 'podcasts') {
   // Search results already carry the full podcast record; explicit IDs need one lookup each.
   const pushedFromSearch = new Set();
   for (const { term, p } of searchHits) {

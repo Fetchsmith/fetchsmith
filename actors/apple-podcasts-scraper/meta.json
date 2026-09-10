@@ -1,8 +1,8 @@
 {
-  "title": "Apple Podcasts Scraper \u2013 Episodes, Reviews & Search",
-  "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), listener reviews with star ratings, or search shows by keyword. HTTP-only, no login, pay per result.",
+  "title": "Apple Podcasts Scraper \u2013 Episodes, Reviews, Search & Charts",
+  "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), listener reviews with star ratings, search shows by keyword, or pull top charts by storefront. HTTP-only, no login, pay per result.",
   "seoTitle": "Apple Podcasts Scraper \u2013 Episodes & Reviews to JSON/CSV",
-  "seoDescription": "Scrape Apple Podcasts episodes, listener reviews and star ratings, or search shows by keyword. Audio URLs, RSS feeds, no browser. Pay per result.",
+  "seoDescription": "Scrape Apple Podcasts episodes, listener reviews, search or top charts by storefront. Audio URLs, RSS feeds, no browser. Pay per result.",
   "categories": [
     "SOCIAL_MEDIA",
     "LEAD_GENERATION",

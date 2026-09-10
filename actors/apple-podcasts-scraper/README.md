@@ -1,6 +1,6 @@
-# Apple Podcasts Scraper — Episodes, Reviews & Search
+# Apple Podcasts Scraper — Episodes, Reviews, Search & Charts
 
-Scrape Apple Podcasts without a browser or login: **every episode** of a show (title, release date, duration, description, direct audio URL, RSS feed), **listener reviews** with star ratings, or **search Apple's podcast catalogue** by keyword. Export to JSON, CSV or Excel. Pay only per row returned.
+Scrape Apple Podcasts without a browser or login: **every episode** of a show (title, release date, duration, description, direct audio URL, RSS feed), **listener reviews** with star ratings, **search Apple's podcast catalogue** by keyword, or pull **today's top-charts** for any storefront. Export to JSON, CSV or Excel. Pay only per row returned.
 
 Episodes, reviews and search live in **one Actor**, so you can go from "podcasts about AI" to "every 1-star review those shows got" in a single run — and at **$0.001 per row with no per-run start fee**, it costs a fraction of comparable Apple Podcasts Actors (commonly $0.0025–$0.004 per row, several of them with a start fee on top).
 
@@ -10,15 +10,17 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 - **Content and SEO research** — episode titles + descriptions for a whole niche, ready for keyword analysis.
 - **Media monitoring** — schedule the Actor to catch new episodes or new reviews for the shows you track.
 - **AI/LLM pipelines** — episode descriptions and reviews as clean JSON, plus `episodeUrl` (the direct audio file) for transcription.
+- **Trend tracking** — pull the top-N chart for any storefront on a schedule to see which shows are rising or falling.
 
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `dataType` | string | `episodes` (default), `reviews`, or `podcasts` (the show records themselves) |
+| `dataType` | string | `episodes` (default), `reviews`, `podcasts` (show records), or `charts` (today's top podcasts — no `podcasts`/`searchTerms` needed) |
 | `podcasts` | array | Apple Podcasts URLs or numeric show IDs, e.g. `https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584` |
 | `searchTerms` | array | Find shows by keyword instead of, or as well as, giving URLs |
 | `searchLimit` | integer | Shows to take per search term (default 10, max 200) |
-| `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews and availability differ per storefront |
+| `chartCount` | integer | Charts only: how many top shows to fetch (default 50, max 200) |
+| `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
 | `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) |
 | `maxReviewsPerPodcast` | integer | Up to 500 reviews per show per storefront (Apple's limit) |
 | `sort` | string | Reviews only: `mostRecent` (default) or `mostHelpful` |
@@ -91,6 +93,8 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 
 **`dataType: "podcasts"`** — one item per show: `collectionId`, `podcastName`, `artistName`, `podcastUrl`, `feedUrl`, `primaryGenre`, `genres`, `episodeCount`, `latestReleaseDate`, `explicit`, `contentAdvisoryRating`, `artworkUrl`, and `searchTerm` when it came from a search.
 
+**`dataType: "charts"`** — same shape as `podcasts`, plus `chartRank` (1 = #1 in the storefront). Set `includePodcastInfo:false` to skip the per-show detail lookup and get just the raw chart fields (name, artist, genre, artwork, URL) faster.
+
 ## FAQ
 
 **Do I need an Apple account or API key?** No. Everything comes from Apple's public podcast endpoints. No login, no browser, no proxy required.
@@ -100,6 +104,8 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 **How many episodes can I get?** Apple's endpoint exposes up to 200 of the most recent episodes per show. For the complete back catalogue of a show, use the `feedUrl` returned on every row — that's the show's public RSS feed.
 
 **How fast is it?** HTTP-only, no headless browser: a show's 200 episodes come from a single request, and reviews page 50 at a time. Runs cost a few seconds of compute plus the per-result fee.
+
+**Can I get genre-specific charts?** No — Apple's public chart endpoint currently only exposes an overall top-podcasts chart per storefront, not per-genre. Each chart row still includes the show's genre(s), so you can filter client-side.
 
 **Is this legal?** It only reads public, unauthenticated Apple endpoints — the same data any visitor sees on podcasts.apple.com. No personal data beyond the public reviewer nicknames Apple itself publishes.
 
