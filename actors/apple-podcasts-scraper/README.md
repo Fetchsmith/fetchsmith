@@ -1,6 +1,6 @@
-# Apple Podcasts Scraper — Episodes, Reviews, Search & Charts
+# Apple Podcasts Scraper — Episodes, Reviews, Search, Charts & Publishers
 
-Scrape Apple Podcasts without a browser or login: **every episode** of a show (title, release date, duration, description, direct audio URL, RSS feed), **listener reviews** with star ratings, **search Apple's podcast catalogue** by keyword, or pull **today's top-charts** for any storefront. Export to JSON, CSV or Excel. Pay only per row returned.
+Scrape Apple Podcasts without a browser or login: **every episode** of a show (title, release date, duration, description, direct audio URL, RSS feed), **listener reviews** with star ratings, **search Apple's podcast catalogue** by keyword, pull **today's top-charts** for any storefront, or list **every show a publisher runs**. Export to JSON, CSV or Excel. Pay only per row returned.
 
 Episodes, reviews and search live in **one Actor**, so you can go from "podcasts about AI" to "every 1-star review those shows got" in a single run — and at **$0.001 per row with no per-run start fee**, it costs a fraction of comparable Apple Podcasts Actors (commonly $0.0025–$0.004 per row, several of them with a start fee on top).
 
@@ -11,15 +11,17 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 - **Media monitoring** — schedule the Actor to catch new episodes or new reviews for the shows you track.
 - **AI/LLM pipelines** — episode descriptions and reviews as clean JSON, plus `episodeUrl` (the direct audio file) for transcription.
 - **Trend tracking** — pull the top-N chart for any storefront on a schedule to see which shows are rising or falling.
+- **Network mapping** — give a publisher's Apple Podcasts artist ID and get every show they run (e.g. a media company's whole podcast slate) in one call.
 
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `dataType` | string | `episodes` (default), `reviews`, `podcasts` (show records), or `charts` (today's top podcasts — no `podcasts`/`searchTerms` needed) |
-| `podcasts` | array | Apple Podcasts URLs or numeric show IDs, e.g. `https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584` |
+| `dataType` | string | `episodes` (default), `reviews`, `podcasts` (show records), `charts` (today's top podcasts — no `podcasts`/`searchTerms` needed), or `publisher` (every show by a publisher/artist) |
+| `podcasts` | array | Apple Podcasts show URLs/IDs, e.g. `https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584`. For `dataType: "publisher"`, give the publisher's artist URL/ID instead, e.g. `https://podcasts.apple.com/us/artist/the-new-york-times/121664449` |
 | `searchTerms` | array | Find shows by keyword instead of, or as well as, giving URLs |
 | `searchLimit` | integer | Shows to take per search term (default 10, max 200) |
 | `chartCount` | integer | Charts only: how many top shows to fetch (default 50, max 200) |
+| `maxPodcastsPerPublisher` | integer | Publisher only: how many shows to return per publisher (default 200, max 200) |
 | `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
 | `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) |
 | `maxReviewsPerPodcast` | integer | Up to 500 reviews per show per storefront (Apple's limit) |
@@ -95,7 +97,11 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 
 **`dataType: "charts"`** — same shape as `podcasts`, plus `chartRank` (1 = #1 in the storefront). Set `includePodcastInfo:false` to skip the per-show detail lookup and get just the raw chart fields (name, artist, genre, artwork, URL) faster.
 
+**`dataType: "publisher"`** — same shape as `podcasts`, plus `publisherId` (the artist ID you gave). One item per show the publisher runs.
+
 ## FAQ
+
+**How do I find a publisher's artist ID?** It's the trailing number on their "See All" / artist page on podcasts.apple.com (e.g. `.../artist/the-new-york-times/121664449`), or run `dataType: "podcasts"` for any one of their shows first — the search/lookup result carries `artistId` even though this Actor doesn't surface it by default on `podcasts` rows (open a request if you need it added).
 
 **Do I need an Apple account or API key?** No. Everything comes from Apple's public podcast endpoints. No login, no browser, no proxy required.
 

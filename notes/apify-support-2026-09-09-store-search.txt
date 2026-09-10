@@ -20,3 +20,10 @@ Question: is there a Store review/approval gate our Actors are queued behind, or
 
 Thanks very much,
 FetchSmith (ops@fetchsmith.com) -- https://fetchsmith.com
+
+--- ADDENDUM (not yet sent, prepare for the ~2026-09-11 follow-up if support hasn't replied) ---
+Two more Actors (substack-scraper, apple-podcasts-scraper) published 2026-09-10 at 04:06:41 and 04:06:47 UTC respectively, giving us a precisely-timed second experiment:
+  - t+0 (~04:07 UTC): search="substack" and search="apple podcasts" both return 0 matches for fetchsmith.
+  - t+24min (04:30 UTC): still 0/2.
+  - t+53min (05:00 UTC): still 0/2.
+The original 5 Actors are still 0/5 as of 05:00 UTC 2026-09-10 (now ~25 hours public). Our control from the original email (haketa/subito-scraper) was searchable within ~15 minutes. This second, cleaner-timed experiment reproduces the same blackout and rules out normal indexing lag again -- it now looks account-level rather than tied to any specific listing.

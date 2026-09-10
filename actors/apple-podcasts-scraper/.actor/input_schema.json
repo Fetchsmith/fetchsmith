@@ -6,16 +6,16 @@
     "dataType": {
       "title": "What to scrape",
       "type": "string",
-      "description": "episodes = every episode of the given shows; reviews = listener reviews and star ratings; podcasts = the show records themselves (use with Search terms to discover shows); charts = today's top podcasts in a storefront (no podcasts/search terms needed).",
+      "description": "episodes = every episode of the given shows; reviews = listener reviews and star ratings; podcasts = the show records themselves (use with Search terms to discover shows); charts = today's top podcasts in a storefront (no podcasts/search terms needed); publisher = every show published by a given publisher/artist.",
       "default": "episodes",
-      "enum": ["episodes", "reviews", "podcasts", "charts"],
-      "enumTitles": ["Episodes", "Listener reviews", "Podcasts (search / show info)", "Top charts"],
+      "enum": ["episodes", "reviews", "podcasts", "charts", "publisher"],
+      "enumTitles": ["Episodes", "Listener reviews", "Podcasts (search / show info)", "Top charts", "All shows by a publisher"],
       "editor": "select"
     },
     "podcasts": {
-      "title": "Podcasts",
+      "title": "Podcasts / publishers",
       "type": "array",
-      "description": "Apple Podcasts URLs or numeric show IDs, e.g. https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584 or 1434243584.",
+      "description": "Apple Podcasts show URLs/IDs, e.g. https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584 or 1434243584. For dataType 'publisher', give the publisher's Apple Podcasts artist URL/ID instead, e.g. https://podcasts.apple.com/us/artist/the-new-york-times/121664449.",
       "editor": "stringList",
       "prefill": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"]
     },
@@ -54,6 +54,14 @@
       "type": "integer",
       "description": "Apple's episode endpoint exposes up to 200 of the most recent episodes per show.",
       "default": 100,
+      "minimum": 1,
+      "maximum": 200
+    },
+    "maxPodcastsPerPublisher": {
+      "title": "Max podcasts per publisher",
+      "type": "integer",
+      "description": "dataType 'publisher' only: how many shows to return per publisher (Apple's lookup endpoint returns up to 200).",
+      "default": 200,
       "minimum": 1,
       "maximum": 200
     },

@@ -5,12 +5,13 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 const podcasts = (input.podcasts ?? []).map(String).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map(String).filter(Boolean);
-const dataType = ['episodes', 'reviews', 'podcasts', 'charts'].includes(input.dataType) ? input.dataType : 'episodes';
+const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
 const country = String(input.country || 'us').toLowerCase().trim();
 const chartCount = Math.min(Number(input.chartCount ?? 50), 200);
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
 const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), 200);
 const perPodcastReviews = Math.min(Number(input.maxReviewsPerPodcast ?? 200), 500);
+const maxPodcastsPerPublisher = Math.min(Number(input.maxPodcastsPerPublisher ?? 200), 200);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const sort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const includePodcastInfo = input.includePodcastInfo !== false;
@@ -19,7 +20,7 @@ const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
 
 if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
-  await Actor.fail('Provide at least one podcast (Apple Podcasts URL or numeric ID) in "podcasts", or at least one query in "searchTerms".');
+  await Actor.fail('Provide at least one podcast or publisher (Apple Podcasts show/artist URL, or numeric ID) in "podcasts", or at least one query in "searchTerms".');
 }
 
 let pushed = 0;
@@ -68,7 +69,9 @@ async function fetchEntries(url, rotate = true) {
 
 const lbl = (o) => (o && typeof o === 'object' && 'label' in o ? o.label : o ?? null);
 // Apple Podcasts URLs and App Store URLs share the /id<digits> shape, so does a bare ID.
-const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] || null);
+// Publisher/artist URLs (…/artist/the-new-york-times/121664449) have no "id" prefix, just a
+// trailing numeric segment — checked last so it never overrides the "id<digits>" show-URL match.
+const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] || s.match(/\/(\d{6,})(?:[/?]|$)/)?.[1] || null);
 
 function podcastRow(p) {
   return {
@@ -281,6 +284,25 @@ if (dataType === 'charts') {
       keepGoing = await pushResult({ ...podcastRow(p), scrapedAt: new Date().toISOString() });
     } catch (e) { log.warning(`Lookup failed for ${id}: ${e.message}`); }
   }
+} else if (dataType === 'publisher') {
+  // One lookup per publisher/artist ID returns every podcast they publish (no per-show ID needed).
+  for (const id of ids) {
+    if (!keepGoing) break;
+    try {
+      const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcast&limit=${maxPodcastsPerPublisher}`;
+      const results = (await getJson(url)).results ?? [];
+      const shows = results.filter((r) => r.wrapperType === 'track' && r.kind === 'podcast');
+      if (!shows.length) {
+        emptyIds.push(id);
+        log.warning(`No podcasts found for publisher ID ${id} in storefront "${country}" — check this is an Apple Podcasts artist/publisher ID, not a show ID.`);
+        continue;
+      }
+      for (const p of shows) {
+        if (!keepGoing) break;
+        keepGoing = await pushResult({ ...podcastRow(p), publisherId: Number(id), scrapedAt: new Date().toISOString() });
+      }
+    } catch (e) { log.warning(`Publisher lookup failed for ${id}: ${e.message}`); }
+  }
 } else {
   for (const id of ids) {
     if (!keepGoing) break;
@@ -296,7 +318,7 @@ if (dataType === 'charts') {
   }
 }
 
-log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' ? 'podcasts' : dataType}.`);
+log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publisher' ? 'podcasts' : dataType}.`);
 if (pushed === 0) {
   const why = emptyIds.length
     ? `Apple returned nothing for: ${emptyIds.join(', ')} in storefront "${country}"`
