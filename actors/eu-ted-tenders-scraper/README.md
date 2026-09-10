@@ -20,7 +20,9 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `maxResults` | integer | Stop after this many notices. Default 100. |
 
 ## Output
-One row per notice: `publicationNumber`, `noticeType`, `procedureType`, `title` (+ `titleLanguage`), `buyerName`, `buyerCountry`, `buyerCity`, `contractNature` (array), `cpvCodes` (array), `description`, `totalValue` + `totalValueCurrency`, `deadlineDate`, `deadlineReceiptRequestDate`, `publicationDate`, `noticeUrl`.
+One row per notice: `publicationNumber`, `noticeType`, `noticeSubtype`, `procedureType`, `title` (+ `titleLanguage`), `buyerName`, `buyerCountry`, `buyerCity`, `buyerEmail`, `buyerPhone`, `buyerUrl`, `placeOfPerformanceCountry` + `placeOfPerformanceCity` (arrays, deduplicated), `contractNature` (array), `cpvCodes` (array), `description`, `totalValue` + `totalValueCurrency`, `deadlineDate`, `deadlineReceiptRequestDate`, `publicationDate`, `noticeUrl`.
+
+Buyer contact details (`buyerEmail`/`buyerPhone`/`buyerUrl`) are real lead-generation fields, not just reference data — most notices carry a direct procurement-office email or phone.
 
 ## Pricing
 `result` — $0.003 per returned notice. The run start is free, no minimum spend.

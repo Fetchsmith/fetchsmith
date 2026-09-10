@@ -12,8 +12,10 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : null;
 
 const FIELDS = [
-  'publication-number', 'notice-title', 'notice-type', 'procedure-type',
+  'publication-number', 'notice-title', 'notice-type', 'notice-subtype', 'procedure-type',
   'publication-date', 'buyer-name', 'buyer-country', 'buyer-city',
+  'organisation-email-buyer', 'organisation-tel-buyer', 'organisation-internet-address-buyer',
+  'place-of-performance-country-lot', 'place-of-performance-city-lot',
   'contract-nature', 'classification-cpv', 'description-lot',
   'total-value', 'total-value-cur',
   'deadline-date-lot', 'deadline-receipt-request-date-lot', 'links',
@@ -91,6 +93,12 @@ function normalize(notice) {
     buyerName,
     buyerCountry: Array.isArray(buyerCountryRaw) ? buyerCountryRaw[0] ?? null : buyerCountryRaw ?? null,
     buyerCity: preferredText(buyerCityRaw)[0],
+    noticeSubtype: notice['notice-subtype'] ?? null,
+    buyerEmail: firstValue(notice['organisation-email-buyer']),
+    buyerPhone: firstValue(notice['organisation-tel-buyer']),
+    buyerUrl: firstValue(notice['organisation-internet-address-buyer']),
+    placeOfPerformanceCountry: dedupe(notice['place-of-performance-country-lot']),
+    placeOfPerformanceCity: dedupe(notice['place-of-performance-city-lot']),
     contractNature: dedupe(notice['contract-nature']),
     cpvCodes: dedupe(notice['classification-cpv']),
     description,
