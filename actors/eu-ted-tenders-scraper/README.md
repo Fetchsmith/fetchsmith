@@ -34,3 +34,5 @@ One row per notice: `publicationNumber`, `noticeType`, `procedureType`, `title` 
 
 ## Notes
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/eu-ted-tenders-scraper
