@@ -230,7 +230,12 @@ if (dataType === 'charts') {
   const url = `https://rss.marketingtools.apple.com/api/v2/${country}/podcasts/top/${chartCount}/podcasts.json`;
   let results = [];
   try { results = (await getJson(url)).feed?.results ?? []; }
-  catch (e) { log.warning(`Chart fetch failed for storefront "${country}": ${e.message}`); }
+  catch (e) {
+    const msg = e instanceof SyntaxError
+      ? `storefront "${country}" is not a valid Apple Podcasts country code (Apple returned an HTML error page, not chart data) — use a 2-letter code like "us", "gb", "de".`
+      : `Chart fetch failed for storefront "${country}": ${e.message}`;
+    log.warning(msg);
+  }
   for (let i = 0; i < results.length; i++) {
     if (!keepGoing) break;
     const r = results[i];
