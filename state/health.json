@@ -1,5 +1,5 @@
 {
- "ts": 1789011001,
+ "ts": 1789032681,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -110,6 +110,22 @@
     "episodeNumber",
     "seasonNumber",
     "releaseDate"
+   ],
+   "err": null
+  },
+  "steam-reviews-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "type",
+    "appId",
+    "reviewId",
+    "review",
+    "language",
+    "recommended",
+    "createdAt",
+    "updatedAt"
    ],
    "err": null
   }
