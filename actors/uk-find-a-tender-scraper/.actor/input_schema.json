@@ -3,6 +3,14 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "sources": {
+      "title": "Portals",
+      "type": "array",
+      "description": "Which official UK procurement portals to search. 'cf' = Contracts Finder (sub-threshold contracts, the high-volume feed: ~18 tender-stage and 100+ award notices a day). 'fts' = Find a Tender (above-threshold notices only, a thin feed of ~7-8 tender-stage notices a day). Both are searched by default and merged into one deduplicated result set with a 'source' field on every row.",
+      "editor": "select",
+      "items": { "type": "string", "enum": ["fts", "cf"], "enumTitles": ["Find a Tender (above threshold)", "Contracts Finder (sub threshold)"] },
+      "default": ["fts", "cf"]
+    },
     "stages": {
       "title": "Stages",
       "type": "array",

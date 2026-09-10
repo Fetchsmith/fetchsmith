@@ -1,8 +1,13 @@
-# UK Find a Tender — Public Contract Notices (OCDS API)
+# UK Public Contracts — Find a Tender + Contracts Finder (OCDS API)
 
-Search **UK public-sector procurement notices** — live tender opportunities, contract awards and pipeline notices — from the UK government's **official Find a Tender OCDS API**, and get them back as flat, ready-to-use JSON rows.
+Search **UK public-sector procurement notices** — live tender opportunities, contract awards and pipeline notices — from **both official UK portals**, and get them back as flat, ready-to-use JSON rows in one merged, deduplicated feed.
 
-Find a Tender is where every above-threshold UK public contract is published. The raw API speaks [OCDS](https://standard.open-contracting.org/) — deeply nested release packages where the buyer's email is four levels down inside a `parties[]` array, the CPV codes are scattered across `tender.items[].additionalClassifications[]`, and the awarded value usually isn't on the award at all. This Actor flattens all of that into one row per notice.
+- **Find a Tender (FTS)** publishes **above-threshold** contracts. It is an authoritative but thin feed — roughly 7–8 tender-stage notices a day.
+- **Contracts Finder (CF)** publishes the far larger **sub-threshold** flow — the sub-£139k central-government and sub-£214k wider-public-sector contracts that never reach Find a Tender. Typically ~18 tender-stage and 100+ award notices a day.
+
+Searching only one portal means missing most of the UK market. This Actor queries both by default, normalizes them into a single row shape, dedupes them, and tags every row with a `source` field (`fts` / `cf`) so you always know which portal it came from.
+
+Both portals speak [OCDS](https://standard.open-contracting.org/) — deeply nested release packages where the buyer's email is four levels down inside a `parties[]` array, the CPV codes are scattered across `tender.items[].additionalClassifications[]`, and the awarded value usually isn't on the award at all. The two portals also disagree in small ways (Contracts Finder has no lots and puts SME suitability and the contract period on the tender; Find a Tender puts them per lot). This Actor flattens and reconciles all of it into one row per notice.
 
 **Post-Brexit UK notices are not in EU TED**, so this is additive coverage if you already track EU procurement (see our [EU TED Tenders Scraper](https://apify.com/fetchsmith/eu-ted-tenders-scraper)).
 
@@ -15,10 +20,11 @@ One row per notice, including:
 - **Money** — `valueAmount` / `valueCurrency` for tenders; `awardValueAmount` / `awardValueCurrency` for awards.
 - **Timing** — `deadlineDate` (submission deadline), `awardPeriodStart`, `contractStartDate`, `contractEndDate`, `contractDateSigned`.
 - **Classification** — `cpvCode` + `cpvDescription` plus the full `cpvCodes` list gathered from every lot and item.
-- **Lots** — `lotCount`, `lotTitles`, `suitableForSme`, `suitableForVcse`.
+- **Lots** — `lotCount`, `lotTitles`, `suitableForSme`, `suitableForVcse` (read per-lot on Find a Tender, tender-level on Contracts Finder).
 - **Awards** — `awardedSuppliers` (who won), `awardStatus`, `contractCount`.
 - **Delivery** — `deliveryRegions` (NUTS codes) and `deliveryLocations` (free text).
-- `noticeUrl` — the public Find a Tender page for the notice.
+- `source` / `sourceName` — which portal the row came from (`fts` / `cf`).
+- `noticeUrl` — the public notice page on the portal it came from.
 
 ## Use cases
 
@@ -31,6 +37,7 @@ One row per notice, including:
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
+| `sources` | array | `["fts","cf"]` | Which portals to search. `cf` = Contracts Finder (sub-threshold, high volume), `fts` = Find a Tender (above-threshold, thin). Both by default. |
 | `stages` | array | `["tender"]` | `planning`, `tender` (opportunities) and/or `award` (winners). |
 | `updatedWithinDays` | integer | `7` | Only notices published/updated in the last N days. Newest first. |
 | `cpvCodes` | array | `[]` | e.g. `72000000`. Trailing zeros are treated as a prefix, so `72000000` matches every `72xxxxxx` code. Matched against every CPV on the notice, not just the headline one. |
@@ -85,20 +92,23 @@ One row per notice, including:
 
 ## FAQ
 
-**Which notices are in Find a Tender?**
-Above-threshold UK public contracts (the post-Brexit replacement for the UK's TED publication), including Scotland, Wales and Northern Ireland. Lower-value notices generally go to Contracts Finder instead.
+**What is the difference between the two portals?**
+Find a Tender carries **above-threshold** UK public contracts (the post-Brexit replacement for the UK's TED publication), including Scotland, Wales and Northern Ireland. Contracts Finder carries the **sub-threshold** contracts below those limits — a much larger flow, and the one most SMEs actually bid on. They are separate systems with separate APIs; a contract normally appears on one or the other, not both. Rows are deduplicated on `ocid` and notice id regardless.
 
-**Why does a 10-day tender-stage query only return ~75 notices?**
-Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day. Widen `updatedWithinDays` for a bigger set.
+**Why does a 10-day Find-a-Tender-only query only return ~75 notices?**
+Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day. This is exactly why the Actor searches Contracts Finder too by default. Widen `updatedWithinDays` for a bigger set, or leave `sources` at its default.
+
+**In what order do results come back?**
+Portal by portal, in the order listed in `sources` (Find a Tender first by default), newest first within each. If you set a small `maxResults`, the first portal can fill the whole quota — set `sources: ["cf"]` if you specifically want Contracts Finder rows.
 
 **Why is `awardValueAmount` sometimes missing on award notices?**
 Because the buyer did not publish a value. Where a value exists it is usually attached to the signed contract rather than the award, so this Actor reads `contracts[].value` and totals it (`contractCount` tells you how many contracts were summed, and `awardValueSource` says whether the number came from the award or the contracts).
 
 **Do you need a proxy or an API key?**
-No. Find a Tender's OCDS API is free, key-free and open-licensed (Open Government Licence v3). The Actor self-throttles to stay under the API's rate limit and backs off politely if it still hits one.
+No. Both portals' OCDS APIs are free, key-free and open-licensed (Open Government Licence v3). The Actor self-throttles per portal to stay under each API's rate limit and backs off politely if it still hits one.
 
 **Is this legal?**
-Yes — it reads an official UK government open-data API under the OGL v3 licence. The contact details published on a notice are organisational procurement contacts, published by the buyer for exactly this purpose.
+Yes — it reads two official UK government open-data APIs under the OGL v3 licence. The contact details published on a notice are organisational procurement contacts, published by the buyer for exactly this purpose.
 
 ## Source code
 

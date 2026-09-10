@@ -4,10 +4,17 @@ import { gotScraping } from 'got-scraping';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+function uniqStrings(arr) {
+    return Array.from(new Set((arr ?? []).filter(Boolean)));
+}
+
 const VALID_STAGES = ['planning', 'tender', 'award'];
 const stages = (input.stages ?? ['tender'])
     .map((s) => String(s).toLowerCase().trim())
     .filter((s) => VALID_STAGES.includes(s));
+const VALID_SOURCES = ['fts', 'cf'];
+const sources = uniqStrings((input.sources ?? ['fts', 'cf']).map((s) => String(s).toLowerCase().trim()))
+    .filter((s) => VALID_SOURCES.includes(s));
 const updatedWithinDays = Math.min(Math.max(Number(input.updatedWithinDays ?? 7), 1), 365);
 const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
 const searchQuery = input.searchQuery ? String(input.searchQuery).toLowerCase().trim() : null;
@@ -17,14 +24,59 @@ const openOnly = input.openOnly === true;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const maxPagesScanned = Math.min(Math.max(Number(input.maxPagesScanned ?? 50), 1), 500);
 
-const API = 'https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages';
-const PAGE_SIZE = 100; // hard API cap: limit=200 returns HTTP 400
+const PAGE_SIZE = 100; // hard API cap on both portals: limit=200 returns HTTP 400
+
+// The two official UK procurement portals. Find a Tender carries above-threshold notices
+// (a thin feed, ~7-8 tender-stage notices/day); Contracts Finder carries the much larger
+// sub-threshold flow (~18 tender-stage and 100+ award notices/day). Both publish the same
+// OCDS 1.1 release shape, so one normalizer handles both.
+const SOURCES = {
+    fts: {
+        key: 'fts',
+        label: 'Find a Tender',
+        api: 'https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages',
+        // FTS rate-limits hard: "Rate limit of 12 exceeded. Please retry after 120 seconds."
+        rateMax: 10,
+        requestTimes: [],
+        buildUrl() {
+            const u = new URL(this.api);
+            u.searchParams.set('limit', String(PAGE_SIZE));
+            u.searchParams.set('updatedFrom', isoSeconds(Date.now() - updatedWithinDays * 86400_000));
+            if (stages.length) u.searchParams.set('stages', stages.join(','));
+            return u.toString();
+        },
+        noticeUrl: (release) => (release.id ? `https://www.find-tender.service.gov.uk/Notice/${release.id}` : null),
+    },
+    cf: {
+        key: 'cf',
+        label: 'Contracts Finder',
+        api: 'https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search',
+        rateMax: 20,
+        requestTimes: [],
+        buildUrl() {
+            const u = new URL(this.api);
+            u.searchParams.set('limit', String(PAGE_SIZE));
+            u.searchParams.set('publishedFrom', isoSeconds(Date.now() - updatedWithinDays * 86400_000));
+            // publishedTo MUST be sent explicitly. Without it, Contracts Finder defaults it to
+            // "now" and omits links.next entirely, silently capping every run at 100 rows.
+            u.searchParams.set('publishedTo', isoSeconds(Date.now()));
+            if (stages.length) u.searchParams.set('stages', stages.join(','));
+            return u.toString();
+        },
+        // The OCDS release id is "<notice guid>-<internal number>"; only the guid resolves.
+        // Passing the full id lands on a "You have been signed out" page instead of the notice.
+        noticeUrl: (release) => {
+            const guid = String(release.id ?? '').replace(/-\d+$/, '');
+            return guid ? `https://www.contractsfinder.service.gov.uk/notice/${guid}` : null;
+        },
+    },
+};
 
 const searchWords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
 
-function isoSecondsAgo(days) {
-    const d = new Date(Date.now() - days * 86400_000);
-    return d.toISOString().slice(0, 19); // API wants YYYY-MM-DDTHH:MM:SS, no timezone suffix
+function isoSeconds(ms) {
+    // Both APIs want YYYY-MM-DDTHH:MM:SS with no timezone suffix.
+    return new Date(ms).toISOString().slice(0, 19);
 }
 
 function uniq(arr) {
@@ -86,7 +138,7 @@ function awardValue(release) {
     return [null, null, null];
 }
 
-function normalize(release) {
+function normalize(release, source) {
     const tender = release.tender ?? {};
     const buyer = party(release, 'buyer');
     const awards = release.awards ?? [];
@@ -105,9 +157,11 @@ function normalize(release) {
     const cpv = allCpv(tender);
 
     return {
+        source: source.key,
+        sourceName: source.label,
         ocid: release.ocid ?? null,
         noticeId: release.id ?? null,
-        noticeUrl: release.id ? `https://www.find-tender.service.gov.uk/Notice/${release.id}` : null,
+        noticeUrl: source.noticeUrl(release),
         stage: uniq(release.tag),
         publishedDate: release.date ?? null,
         language: release.language ?? null,
@@ -130,8 +184,9 @@ function normalize(release) {
         deadlineDate: tender.tenderPeriod?.endDate ?? null,
         tenderStartDate: tender.tenderPeriod?.startDate ?? null,
         awardPeriodStart: tender.awardPeriod?.startDate ?? null,
-        contractStartDate: firstAward?.contractPeriod?.startDate ?? lots[0]?.contractPeriod?.startDate ?? null,
-        contractEndDate: firstAward?.contractPeriod?.endDate ?? lots[0]?.contractPeriod?.endDate ?? null,
+        // Contracts Finder has no lots and carries the period on tender.contractPeriod instead.
+        contractStartDate: firstAward?.contractPeriod?.startDate ?? lots[0]?.contractPeriod?.startDate ?? tender.contractPeriod?.startDate ?? null,
+        contractEndDate: firstAward?.contractPeriod?.endDate ?? lots[0]?.contractPeriod?.endDate ?? tender.contractPeriod?.endDate ?? null,
 
         buyerName: buyer?.name ?? release.buyer?.name ?? null,
         buyerId: buyer?.id ?? release.buyer?.id ?? null,
@@ -149,8 +204,9 @@ function normalize(release) {
 
         lotCount: lots.length,
         lotTitles: uniq(lots.map((l) => l.title)),
-        suitableForSme: lots.some((l) => l.suitability?.sme === true) || null,
-        suitableForVcse: lots.some((l) => l.suitability?.vcse === true) || null,
+        // Find a Tender puts suitability per lot; Contracts Finder puts it once on the tender.
+        suitableForSme: (tender.suitability?.sme === true || lots.some((l) => l.suitability?.sme === true)) || null,
+        suitableForVcse: (tender.suitability?.vcse === true || lots.some((l) => l.suitability?.vcse === true)) || null,
 
         awardStatus: firstAward?.status ?? null,
         awardValueAmount: awardAmount,
@@ -198,29 +254,26 @@ async function pushResult(item) {
     return pushed < maxResults;
 }
 
-const startUrl = new URL(API);
-startUrl.searchParams.set('limit', String(PAGE_SIZE));
-startUrl.searchParams.set('updatedFrom', isoSecondsAgo(updatedWithinDays));
-if (stages.length) startUrl.searchParams.set('stages', stages.join(','));
-
-log.info(`Find a Tender: stages=[${stages.join(',') || 'all'}] updatedFrom=${startUrl.searchParams.get('updatedFrom')} maxResults=${maxResults}`);
+log.info(
+    `Sources=[${sources.join(',') || 'none'}] stages=[${stages.join(',') || 'all'}] `
+    + `updatedWithinDays=${updatedWithinDays} maxResults=${maxResults}`,
+);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Find a Tender rate-limits hard ("Rate limit of 12 exceeded. Please retry after 120 seconds.")
-// and answers with a PLAIN-TEXT body, so responseType:'json' must not be used — an unparsed
-// error body would otherwise look like an empty page and end the run with 0 rows silently.
+// Both portals rate-limit and answer errors with a PLAIN-TEXT body, so responseType:'json'
+// must not be used — an unparsed error body would otherwise look like an empty page and end
+// the run with 0 rows silently. Each source carries its own request-time window.
 const RATE_WINDOW_MS = 60_000;
-const RATE_MAX = 10;
-const requestTimes = [];
 
-async function fetchPage(pageUrl) {
+async function fetchPage(pageUrl, source) {
+    const { requestTimes, rateMax } = source;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
         const now = Date.now();
         while (requestTimes.length && now - requestTimes[0] > RATE_WINDOW_MS) requestTimes.shift();
-        if (requestTimes.length >= RATE_MAX) {
+        if (requestTimes.length >= rateMax) {
             const waitMs = RATE_WINDOW_MS - (now - requestTimes[0]) + 500;
-            log.info(`Self-throttling to stay under the API rate limit: waiting ${Math.ceil(waitMs / 1000)}s`);
+            log.info(`Self-throttling ${source.label} to stay under its rate limit: waiting ${Math.ceil(waitMs / 1000)}s`);
             await sleep(waitMs);
         }
         requestTimes.push(Date.now());
@@ -236,67 +289,90 @@ async function fetchPage(pageUrl) {
 
         if (resp.statusCode === 429) {
             const retryAfter = Number(resp.headers['retry-after']) || 120;
-            log.warning(`Rate-limited by Find a Tender (429). Waiting ${retryAfter}s before retry ${attempt}/4.`);
+            log.warning(`Rate-limited by ${source.label} (429). Waiting ${retryAfter}s before retry ${attempt}/4.`);
             await sleep((retryAfter + 2) * 1000);
             continue;
         }
         if (resp.statusCode !== 200) {
-            log.warning(`Find a Tender API returned ${resp.statusCode}: ${String(resp.body).slice(0, 300)}`);
+            log.warning(`${source.label} API returned ${resp.statusCode}: ${String(resp.body).slice(0, 300)}`);
             return null;
         }
         try {
             return JSON.parse(resp.body);
         } catch {
-            log.warning(`Find a Tender returned a non-JSON body (${String(resp.body).slice(0, 200)})`);
+            log.warning(`${source.label} returned a non-JSON body (${String(resp.body).slice(0, 200)})`);
             return null;
         }
     }
-    log.warning('Still rate-limited after 4 retries; stopping early rather than returning a partial page silently.');
+    log.warning(`Still rate-limited by ${source.label} after 4 retries; stopping that source early rather than returning a partial page silently.`);
     return null;
 }
 
-let url = startUrl.toString();
 let page = 0;
 let scanned = 0;
 let filtered = 0;
+// Deduped across both portals: a contract can legitimately appear on each, and OCIDs are
+// portal-prefixed, so the ocid is the only key that could collide — check it as well as the id.
 const seen = new Set();
+const perSource = {};
 let keepGoing = true;
 
-while (url && keepGoing && pushed < maxResults && page < maxPagesScanned) {
-    const body = await fetchPage(url);
-    if (!body) break;
+if (!sources.length) {
+    log.warning('No valid "sources" selected — pick "fts" (Find a Tender), "cf" (Contracts Finder), or both.');
+}
 
-    const releases = body.releases ?? [];
-    if (!releases.length) break;
-    page += 1;
-    scanned += releases.length;
+for (const key of sources) {
+    if (!keepGoing || pushed >= maxResults || page >= maxPagesScanned) break;
+    const source = SOURCES[key];
+    let url = source.buildUrl();
+    let sourcePushed = 0;
+    log.info(`${source.label}: ${url}`);
 
-    for (const release of releases) {
-        // The same OCID can be re-published (amendments); keep the first (newest) copy only.
-        const key = release.id ?? release.ocid;
-        if (key && seen.has(key)) continue;
-        if (key) seen.add(key);
+    while (url && keepGoing && pushed < maxResults && page < maxPagesScanned) {
+        const body = await fetchPage(url, source);
+        if (!body) break;
 
-        const row = normalize(release);
-        if (!matches(row)) { filtered += 1; continue; }
-        keepGoing = await pushResult(row);
-        if (!keepGoing) break;
+        const releases = body.releases ?? [];
+        if (!releases.length) break;
+        page += 1;
+        scanned += releases.length;
+
+        for (const release of releases) {
+            // The same OCID can be re-published (amendments); keep the first (newest) copy only.
+            const key2 = release.id ?? release.ocid;
+            if (key2 && seen.has(key2)) continue;
+            if (release.ocid && seen.has(release.ocid)) continue;
+            if (key2) seen.add(key2);
+            if (release.ocid) seen.add(release.ocid);
+
+            const row = normalize(release, source);
+            if (!matches(row)) { filtered += 1; continue; }
+            keepGoing = await pushResult(row);
+            sourcePushed += 1;
+            if (!keepGoing) break;
+        }
+
+        log.info(`${source.label} page ${page}: scanned ${releases.length} releases (${scanned} total), pushed ${pushed}/${maxResults}, filtered out ${filtered}`);
+        url = body.links?.next ?? null;
     }
-
-    log.info(`page ${page}: scanned ${releases.length} releases (${scanned} total), pushed ${pushed}/${maxResults}, filtered out ${filtered}`);
-    url = body.links?.next ?? null;
+    perSource[source.key] = sourcePushed;
 }
 
 if (pushed === 0) {
     log.warning(
         `No notices matched. Scanned ${scanned} releases over ${page} page(s) and filtered out ${filtered}. `
         + 'Most common causes, in order: (1) "searchQuery" is too specific — every word must appear in the title, '
-        + 'description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — Find a Tender uses '
+        + 'description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — both portals use '
         + '8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
         + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
-        + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. Filtered rows are never charged.',
+        + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '
+        + 'notices are on — Find a Tender is above-threshold only and is a thin feed; Contracts Finder carries the '
+        + 'much larger sub-threshold flow. Filtered rows are never charged.',
     );
 }
 
-log.info(`Done. Scanned ${scanned} releases over ${page} page(s), pushed ${pushed}.`);
+log.info(
+    `Done. Scanned ${scanned} releases over ${page} page(s), pushed ${pushed} `
+    + `(${sources.map((s) => `${SOURCES[s].label}: ${perSource[s] ?? 0}`).join(', ')}).`,
+);
 await Actor.exit();

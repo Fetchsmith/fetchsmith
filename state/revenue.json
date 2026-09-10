@@ -1,5 +1,5 @@
 {
- "ts": 1789068860,
+ "ts": 1789070807,
  "date": "2026-09-10",
  "apify": {
   "google-news-scraper": {
@@ -7,77 +7,77 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 45
+   "runs": 46
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 45
+   "runs": 46
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 47
+   "runs": 48
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 42
+   "runs": 43
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 42
+   "runs": 43
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 37
+   "runs": 38
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 39
+   "runs": 40
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 35
+   "runs": 36
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 34
+   "runs": 35
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 25
+   "runs": 26
   },
   "uk-find-a-tender-scraper": {
    "public": false,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 1
+   "runs": 3
   },
   "us-federal-awards-scraper": {
    "public": false,

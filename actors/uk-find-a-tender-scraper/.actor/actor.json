@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "uk-find-a-tender-scraper",
-  "title": "UK Find a Tender \u2014 Public Contract Notices (OCDS API)",
-  "description": "Search UK public-sector tenders and contract awards from the official Find a Tender OCDS API. Flat JSON with buyer contact details, value, CPV codes and deadlines.",
+  "title": "UK Public Contracts \u2014 Find a Tender + Contracts Finder",
+  "description": "Search UK public-sector tenders and contract awards from both official portals (Find a Tender + Contracts Finder) in one deduplicated feed. Flat JSON with buyer contact details, value, CPV codes and deadlines.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

@@ -1,10 +1,17 @@
 {
-  "title": "UK Find a Tender — Public Contract Notices (OCDS API)",
-  "description": "Search UK public-sector tenders and contract awards from the official Find a Tender OCDS API. Filter by CPV code, contract value, free text and open-deadline-only. Flat JSON rows with buyer email, phone and address, contract value, CPV codes, lot titles and deadlines.",
-  "seoTitle": "UK Find a Tender Scraper — Government Contracts JSON API",
-  "seoDescription": "Scrape UK government tenders and contract awards from the official Find a Tender OCDS API. Filter by CPV, value, keyword and open deadline. Buyer contact details included.",
-  "categories": ["LEAD_GENERATION", "OTHER"],
+  "title": "UK Public Contracts \u2014 Find a Tender + Contracts Finder",
+  "description": "Search UK public-sector tenders and contract awards from BOTH official portals \u2014 Find a Tender (above threshold) and Contracts Finder (sub threshold) \u2014 in one deduplicated feed. Filter by CPV, value, keyword and open deadline. Flat JSON with buyer email, phone, address, value and deadlines.",
+  "seoTitle": "UK Tenders Scraper \u2014 Find a Tender + Contracts Finder API",
+  "seoDescription": "Scrape UK government tenders and contract awards from both official UK portals: Find a Tender and Contracts Finder. Filter by CPV, value, keyword, open deadline. Buyer contacts included.",
+  "categories": [
+    "LEAD_GENERATION",
+    "OTHER"
+  ],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One normalized UK procurement notice returned to the dataset.", "eventPriceUsd": 0.004 }
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized UK procurement notice returned to the dataset.",
+      "eventPriceUsd": 0.004
+    }
   }
 }

@@ -3,54 +3,335 @@
   "fields": {
     "type": "object",
     "properties": {
-      "ocid": { "type": ["string", "null"], "title": "OCID" },
-      "noticeId": { "type": ["string", "null"], "title": "Notice ID" },
-      "noticeUrl": { "type": ["string", "null"], "title": "Notice URL" },
-      "stage": { "type": "array", "title": "Stage tags" },
-      "publishedDate": { "type": ["string", "null"], "title": "Published / updated" },
-      "language": { "type": ["string", "null"], "title": "Language" },
-      "title": { "type": ["string", "null"], "title": "Title" },
-      "description": { "type": ["string", "null"], "title": "Description" },
-      "status": { "type": ["string", "null"], "title": "Status" },
-      "procurementMethod": { "type": ["string", "null"], "title": "Procurement method" },
-      "procurementMethodDetails": { "type": ["string", "null"], "title": "Procedure" },
-      "mainProcurementCategory": { "type": ["string", "null"], "title": "Category" },
-      "legalBasis": { "type": ["string", "null"], "title": "Legal basis" },
-      "cpvCode": { "type": ["string", "null"], "title": "Main CPV code" },
-      "cpvDescription": { "type": ["string", "null"], "title": "Main CPV description" },
-      "cpvCodes": { "type": "array", "title": "All CPV codes" },
-      "valueAmount": { "type": ["number", "null"], "title": "Contract value" },
-      "valueCurrency": { "type": ["string", "null"], "title": "Currency" },
-      "deadlineDate": { "type": ["string", "null"], "title": "Submission deadline" },
-      "tenderStartDate": { "type": ["string", "null"], "title": "Tender period start" },
-      "awardPeriodStart": { "type": ["string", "null"], "title": "Award period start" },
-      "contractStartDate": { "type": ["string", "null"], "title": "Contract start" },
-      "contractEndDate": { "type": ["string", "null"], "title": "Contract end" },
-      "buyerName": { "type": ["string", "null"], "title": "Buyer" },
-      "buyerId": { "type": ["string", "null"], "title": "Buyer ID" },
-      "buyerEmail": { "type": ["string", "null"], "title": "Buyer email" },
-      "buyerPhone": { "type": ["string", "null"], "title": "Buyer phone" },
-      "buyerUrl": { "type": ["string", "null"], "title": "Buyer website" },
-      "buyerStreet": { "type": ["string", "null"], "title": "Buyer street" },
-      "buyerLocality": { "type": ["string", "null"], "title": "Buyer town/city" },
-      "buyerPostalCode": { "type": ["string", "null"], "title": "Buyer postcode" },
-      "buyerRegion": { "type": ["string", "null"], "title": "Buyer NUTS region" },
-      "buyerCountry": { "type": ["string", "null"], "title": "Buyer country" },
-      "deliveryRegions": { "type": "array", "title": "Delivery NUTS regions" },
-      "deliveryLocations": { "type": "array", "title": "Delivery locations" },
-      "lotCount": { "type": ["integer", "null"], "title": "Lot count" },
-      "lotTitles": { "type": "array", "title": "Lot titles" },
-      "suitableForSme": { "type": ["boolean", "null"], "title": "SME suitable" },
-      "suitableForVcse": { "type": ["boolean", "null"], "title": "VCSE suitable" },
-      "awardStatus": { "type": ["string", "null"], "title": "Award status" },
-      "awardValueAmount": { "type": ["number", "null"], "title": "Awarded value" },
-      "awardValueCurrency": { "type": ["string", "null"], "title": "Awarded currency" },
-      "awardValueSource": { "type": ["string", "null"], "title": "Awarded value source" },
-      "awardedSuppliers": { "type": "array", "title": "Awarded suppliers" },
-      "contractCount": { "type": ["integer", "null"], "title": "Contract count" },
-      "contractDateSigned": { "type": ["string", "null"], "title": "Contract signed" },
-      "aboveThreshold": { "type": ["boolean", "null"], "title": "Above threshold" },
-      "documentUrls": { "type": "array", "title": "Document URLs" }
+      "source": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Source portal (fts/cf)"
+      },
+      "sourceName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Source portal name"
+      },
+      "ocid": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OCID"
+      },
+      "noticeId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Notice ID"
+      },
+      "noticeUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Notice URL"
+      },
+      "stage": {
+        "type": "array",
+        "title": "Stage tags"
+      },
+      "publishedDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Published / updated"
+      },
+      "language": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Language"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description"
+      },
+      "status": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Status"
+      },
+      "procurementMethod": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Procurement method"
+      },
+      "procurementMethodDetails": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Procedure"
+      },
+      "mainProcurementCategory": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Category"
+      },
+      "legalBasis": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Legal basis"
+      },
+      "cpvCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Main CPV code"
+      },
+      "cpvDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Main CPV description"
+      },
+      "cpvCodes": {
+        "type": "array",
+        "title": "All CPV codes"
+      },
+      "valueAmount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Contract value"
+      },
+      "valueCurrency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Currency"
+      },
+      "deadlineDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Submission deadline"
+      },
+      "tenderStartDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Tender period start"
+      },
+      "awardPeriodStart": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Award period start"
+      },
+      "contractStartDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Contract start"
+      },
+      "contractEndDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Contract end"
+      },
+      "buyerName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer"
+      },
+      "buyerId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer ID"
+      },
+      "buyerEmail": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer email"
+      },
+      "buyerPhone": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer phone"
+      },
+      "buyerUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer website"
+      },
+      "buyerStreet": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer street"
+      },
+      "buyerLocality": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer town/city"
+      },
+      "buyerPostalCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer postcode"
+      },
+      "buyerRegion": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer NUTS region"
+      },
+      "buyerCountry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Buyer country"
+      },
+      "deliveryRegions": {
+        "type": "array",
+        "title": "Delivery NUTS regions"
+      },
+      "deliveryLocations": {
+        "type": "array",
+        "title": "Delivery locations"
+      },
+      "lotCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Lot count"
+      },
+      "lotTitles": {
+        "type": "array",
+        "title": "Lot titles"
+      },
+      "suitableForSme": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "SME suitable"
+      },
+      "suitableForVcse": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "VCSE suitable"
+      },
+      "awardStatus": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Award status"
+      },
+      "awardValueAmount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Awarded value"
+      },
+      "awardValueCurrency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Awarded currency"
+      },
+      "awardValueSource": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Awarded value source"
+      },
+      "awardedSuppliers": {
+        "type": "array",
+        "title": "Awarded suppliers"
+      },
+      "contractCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Contract count"
+      },
+      "contractDateSigned": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Contract signed"
+      },
+      "aboveThreshold": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Above threshold"
+      },
+      "documentUrls": {
+        "type": "array",
+        "title": "Document URLs"
+      }
     }
   },
   "views": {
@@ -58,20 +339,48 @@
       "title": "Overview",
       "transformation": {
         "fields": [
-          "publishedDate", "title", "buyerName", "buyerEmail", "valueAmount", "valueCurrency", "deadlineDate", "noticeUrl"
+          "source",
+          "publishedDate",
+          "title",
+          "buyerName",
+          "buyerEmail",
+          "valueAmount",
+          "valueCurrency",
+          "deadlineDate",
+          "noticeUrl"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "publishedDate": { "label": "Published" },
-          "title": { "label": "Title" },
-          "buyerName": { "label": "Buyer" },
-          "buyerEmail": { "label": "Buyer email" },
-          "valueAmount": { "label": "Value" },
-          "valueCurrency": { "label": "Currency" },
-          "deadlineDate": { "label": "Deadline" },
-          "noticeUrl": { "label": "URL", "format": "link" }
+          "source": {
+            "label": "Portal"
+          },
+          "publishedDate": {
+            "label": "Published"
+          },
+          "title": {
+            "label": "Title"
+          },
+          "buyerName": {
+            "label": "Buyer"
+          },
+          "buyerEmail": {
+            "label": "Buyer email"
+          },
+          "valueAmount": {
+            "label": "Value"
+          },
+          "valueCurrency": {
+            "label": "Currency"
+          },
+          "deadlineDate": {
+            "label": "Deadline"
+          },
+          "noticeUrl": {
+            "label": "URL",
+            "format": "link"
+          }
         }
       }
     }
