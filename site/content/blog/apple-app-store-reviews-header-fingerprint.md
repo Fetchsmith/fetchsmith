@@ -1,12 +1,12 @@
 ---
-title: Apple's App Store review feed has holes — and an iPhone User-Agent sees a different feed entirely
-description: The same App Store customer-reviews RSS URL returns 50 entries or an empty feed depending on the page number, the sort order, and whether your User-Agent looks like an Apple device. Measured, with the numbers.
+title: Apple's App Store review feed has holes — and whether you hit one depends on your HTTP client
+description: The same App Store customer-reviews RSS URL returns 50 entries or an empty feed depending on the page number, the sort order, and what your HTTP client looks like. Three rounds of measurements, including two we had to correct.
 date: 2026-09-09
 tags: webscraping, app-store, ios, api
 tool: app-store-reviews-scraper
 ---
 
-> **Correction, 2026-09-10.** The original version of this post (published 2026-09-09) claimed that empty App Store review feeds are caused by request-header *fingerprinting*, and that rotating a handful of browser User-Agents "unlocks" a feed that a plain `curl` can't see. **That explanation was wrong**, and so was the fix built on it. We re-tested it properly and found two different real mechanisms: Apple's paginated feed contains **holes** (empty pages in the middle of a result set), and there are **two separate feeds** — one served to Apple-device User-Agents and one to everything else — that can contain *completely different reviews*. This post has been rewritten around the measurements below; the URL is unchanged so existing links still work. We ship data for a living, so a correction is worth more to you than a quietly edited page.
+> **Correction, 2026-09-10 (second update, same day).** This post has now been corrected twice, and the second correction retracts part of the first. The original (2026-09-09) blamed empty feeds on request-header *fingerprinting* and recommended rotating User-Agents — wrong. The first correction, earlier today, replaced that with two mechanisms: feed **holes** (right, and confirmed again below) and **two separate review indexes split by Apple-device User-Agent** (wrong — see the retraction under Mechanism 2). What survives all three rounds of measurement is: holes are real, they move, and *whether a given request hits one depends on what your HTTP client looks like to Apple* — but there is one index, not two. The URL is unchanged so existing links still work. We ship data for a living, so watching us correct ourselves in public is worth more to you than a quietly edited page.
 
 If you scrape Apple's undocumented App Store review feed (`itunes.apple.com/<country>/rss/customerreviews/id=<id>/sortBy=<sort>/page=<n>/json`), you will hit this: a URL that worked yesterday returns a well-formed feed with zero `<entry>` elements. No error, no rate-limit header. It looks exactly like an outage.
 
@@ -34,31 +34,30 @@ A hole at page 1 ends the scrape before it starts, and the run reports "no revie
 
 The holes are also sticky within a session — six identical back-to-back requests to an empty key returned empty 6/6 — but they **move over time**: cycle-to-cycle we have seen Spotify/us/`mostHelpful` as `50,50,0,0,0,0,50,0,0,0` on one day and `0,0,0,0,50,0,0,0,50,0` on the next. So retrying the same URL harder does nothing in the moment, and a hole map you cached yesterday is worthless today. Scan the range every run.
 
-## Mechanism 2: two feeds, not one — and the iOS one is bigger
+## Mechanism 2: your HTTP client decides whether a page is a hole — but there is only one feed
 
-Now the part that is genuinely about headers, just not the way we first thought. Send the *identical* URL with an iPhone or iPad User-Agent and you get **a different feed**, not a "more unlocked" version of the same one:
+**Retracted, 2026-09-10.** This section previously reported that an iPhone User-Agent gets a *second, disjoint* review index — Spotify/us returning 50 unique reviews to `curl` and 200 to an iPhone UA with zero overlap. Re-running the identical sweeps the next session, that did not reproduce at all:
 
-| Sweep of pages 1–10, us storefront, `mostRecent` | `curl/8.5.0` UA | iPhone Safari UA | Overlap |
-|---|---|---|---|
-| Spotify (id 324684580) | 50 unique reviews | **200 unique reviews** | **0** |
-| Notion (id 1232780281) | 100 unique | **250 unique** | 100 |
-| Spotify, `gb` storefront | 100 unique | 150 unique | 50 |
+| Full 1–10 sweep, `mostRecent` | `curl/8.5.0` | iPhone Safari | macOS Chrome | Generated browser headers | Overlap |
+|---|---|---|---|---|---|
+| Spotify/us | 500 unique | 500 | 500 | 500 | **500 (identical)** |
+| Notion/us | 450 (hole at page 4) | 500 | 500 | 500 | 450 |
+| Spotify/gb | 500 | 450 (hole at page 6) | 450 (hole at page 4) | 450 (hole at page 4) | 450 |
 
-For Spotify/us the two sweeps have **zero reviews in common**. Not a superset — a disjoint set. The union is 250 reviews; either User-Agent alone gets you at most 200 of them, and the naive `curl` sweep gets you 50.
+Every client sees the **same reviews**. When the counts differ it is purely because one client hit a hole — and note Spotify/gb, where the *iPhone* client is the one that lost a page. So there is one index, and the earlier "two disjoint indexes" reading was an artifact of measuring during a heavily holed window and attributing the pattern to the wrong variable.
 
-Which User-Agents flip the switch? We tested one key (Spotify/us/`mostRecent`, page 1 empty for `curl`, page 5 full for `curl`), interleaving the requests so time couldn't confound the result — the split was perfectly reproducible over six rounds:
+What is real, and reproducible today, is narrower but still useful: **the client class changes whether a specific page is a hole.** Interleaved, on Notion/us `mostRecent` page 4:
 
-| User-Agent | page 1 | page 5 |
-|---|---|---|
-| `curl/8.5.0` | 0 | 50 |
-| Chrome on macOS | 0 | 50 |
-| Safari on macOS | 0 | 50 |
-| Chrome on Android (has `Mobile` token) | 0 | 50 |
-| *(no User-Agent header)* | 0 | 50 |
-| **Safari on iPhone** | **50** | **0** |
-| **Safari on iPad** | **50** | **0** |
+| Client | 4 consecutive requests |
+|---|---|
+| `curl/8.5.0` | 0, 0, 0, 0 |
+| Safari on iPhone | 50, 50, 50, 50 |
+| Chrome on macOS | 50, 50, 50, 50 |
+| Generated browser headers | 50, 50, 50, 50 |
 
-So it is not "browser vs bot", and it is not "mobile vs desktop" — Android Chrome carries `Mobile` and lands with everything else. The dividing line is whether the UA claims to be an **Apple device**. Two client classes, two independently paginated indexes over the same underlying review pool, each with its own holes.
+A plain `curl` request got nothing on that page, every time, while three browser-shaped clients got a full 50 — the same 50. The split here is `curl` versus real-browser headers, *not* Apple-device versus everything else, which is exactly the variable the previous version got backwards. Note also that a plain retry does not fix a hole: seven identical `curl` requests to that page all returned empty. Changing the client is what fixes it.
+
+If you take one thing from the two retractions in this post: when a request-shape variable seems to change your results, vary it along more than one axis before you name the mechanism. "iPhone vs curl" and "browser vs curl" predict identical data on the first test and opposite data on the second.
 
 ## What was wrong with the old advice, and why it survived so long
 
@@ -67,12 +66,12 @@ The original post recommended a 4-variant header rotation that fires on an empty
 - It **cost up to 4× the requests** on every page that came back empty — and with holes everywhere, that is most pages.
 - Worse, it **hid the real bug**. When a scraper has "tried four fingerprints" and still sees nothing, "it's genuinely empty" feels well-earned. It isn't: the loop had simply stopped at page 1 and never looked at page 5. Retry machinery is very good at making a wrong diagnosis feel thorough.
 
-The lesson we'd actually pass on: **test the anti-bot theory before building machinery for it.** Fire the same URL twice under two User-Agents and diff the results. That five-line test is what finally separated "Apple blocks bots" (false) from "Apple serves Apple devices a different index" (true, and worth 4× the data).
+The lesson we'd actually pass on: **test the anti-bot theory before building machinery for it** — and then test it again on another day, because a scraping target measured once is a scraping target measured during one of its moods. The five-line diff (same URL, two clients, compare the review ids) is what separated "Apple blocks bots" from "some clients hit more holes"; running it a second time is what stopped us shipping a 2×-cost dual sweep for data we already had.
 
 ## What to do instead
 
 1. **Sweep the whole page range** (1–10) and skip holes. Never treat an empty page as end-of-feed.
-2. **Sweep both client classes** — one pass with a default HTTP UA, one with an iOS Safari UA — and **dedupe by review id**. On the apps above this is 1.5×–5× the rows for 2× the requests.
+2. **Send browser-shaped headers, and re-request an empty page as a different client** before believing it — one retry under another client class, only on pages that came back empty. Do *not* sweep every page twice under two clients: you will pay double for the same review ids. Dedupe by review id regardless.
 3. **Retry the other sort order** when one is thin. `mostRecent` and `mostHelpful` are separate indexes over the same pool with different holes; the same app can be empty under one and full under the other.
 4. **Then probe other storefronts.** Coverage genuinely differs by country — an app can have real reviews in `gb` and none at all in `us` — and that is a different answer from "no reviews anywhere."
 5. **Say which path served the data.** Tag every row with the sort order, the storefront and whether a fallback fired. A scraper that can't tell "Apple had nothing" from "our loop stopped early" is shipping silent failure.

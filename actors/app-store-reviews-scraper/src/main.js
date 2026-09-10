@@ -40,11 +40,27 @@ const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, t
 // well-formed but EMPTY feed while later pages return a full 50 (verified 2026-09-10 — Spotify/us
 // mostHelpful yields 50,50,0,0,0,0,50,0,0,0 across pages 1-10, reproducibly). An empty page
 // therefore does NOT mean "end of reviews", so we scan the whole 1..10 page range and skip holes.
-// Header fingerprint makes no difference (same URL, same result under curl/Chrome/Safari UAs), so
-// there is nothing to rotate — retries are for network errors only, handled by got-scraping.
 const MAX_RSS_PAGE = 10; // Apple serves no page beyond 10
-async function fetchEntries(url) {
-  let entries = (await getJson(url)).feed?.entry ?? [];
+
+// Whether a page is a hole depends on the CLIENT CLASS of the request, and the split is
+// curl-vs-real-browser, not Apple-device-vs-not (measured 2026-09-10, interleaved, 4/4 rounds:
+// Notion/us mostRecent page 4 returned 0 to `curl/8.5.0` every single time while an iPhone Safari
+// UA, a macOS Chrome UA and got-scraping's own generated headers all returned a full 50 — same 50
+// reviews, so it is one index, not two). Our default requests already use got-scraping's generated
+// browser headers, i.e. the good side of the split. But holes still hit browser-class requests
+// sometimes (Spotify/gb page 4, same session), and a hole is 50 lost reviews, so when a page comes
+// back empty we re-request it under the OTHER client class before accepting it as a real hole.
+// That costs extra requests only on holes, unlike sweeping every page twice.
+const CLIENT_CLASSES = {
+  default: undefined, // let got-scraping generate its normal desktop-browser header set
+  ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+};
+async function fetchEntries(url, clientClass = 'default') {
+  const ua = CLIENT_CLASSES[clientClass];
+  // useHeaderGenerator:false so got-scraping's generated desktop UA cannot override ours — the
+  // whole point of this call is which class of UA Apple sees.
+  const opts = ua ? { headers: { 'user-agent': ua, accept: '*/*' }, useHeaderGenerator: false } : {};
+  let entries = (await getJson(url, opts)).feed?.entry ?? [];
   if (!Array.isArray(entries)) entries = [entries];
   return entries;
 }
@@ -63,10 +79,10 @@ async function probeStorefronts(appId, skip) {
   for (const c of PROBE_COUNTRIES) {
     if (c === skip) continue;
     // Page 1 alone is not enough evidence — it is often one of Apple's empty holes — so sample a
-    // couple of pages under both sorts and stop at the first hit.
-    for (const [sortBy, page] of [['mostHelpful', 1], ['mostRecent', 1], ['mostHelpful', 2], ['mostRecent', 2]]) {
+    // few pages spread across both sorts AND both client classes, and stop at the first hit.
+    for (const [sortBy, page, cls] of [['mostHelpful', 1, 'default'], ['mostRecent', 1, 'ios'], ['mostHelpful', 2, 'ios'], ['mostRecent', 2, 'default']]) {
       try {
-        const e = await fetchEntries(`https://itunes.apple.com/${c}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`);
+        const e = await fetchEntries(`https://itunes.apple.com/${c}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`, cls);
         if (e.length) { found.push(c); break; }
       } catch { /* probe is best-effort */ }
     }
@@ -83,21 +99,32 @@ async function getAppInfo(appId, country) {
   return null;
 }
 
-// Scrapes one app in one storefront under one sort order. Returns how many reviews Apple actually
-// served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
-// review id, because scanning past empty pages (and the sort fallback below) can re-serve a review.
-async function scrapeAppCountrySort(appId, country, sortBy, seen, extra = {}) {
-  const info = await getAppInfo(appId, country);
-  let got = 0;
-  for (let page = 1; page <= MAX_RSS_PAGE && got < perApp && keepGoing; page++) {
-    let entries = [];
+// Fetches one page, retrying an empty result under the other client class (see CLIENT_CLASSES).
+// Returns the entries plus the class that actually served them, so rows are never mislabelled.
+async function fetchPage(url, primary = 'default') {
+  for (const clientClass of [primary, primary === 'default' ? 'ios' : 'default']) {
+    let entries;
     try {
-      const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
-      entries = await fetchEntries(url);
-    } catch (e) { log.warning(`page ${page} failed for ${appId}/${country}: ${e.message}`); continue; }
-    if (!entries.length) continue; // a hole in Apple's feed, not the end of it — keep paging
+      entries = await fetchEntries(url, clientClass);
+    } catch (e) { log.warning(`${url} failed (${clientClass}): ${e.message}`); continue; }
+    if (entries.length) return { entries, clientClass };
+  }
+  return { entries: [], clientClass: primary };
+}
+
+// Scrapes one app in one storefront under one sort order. Returns how many NEW reviews Apple
+// served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
+// review id across pages and sorts — scanning past empty pages, the sort fallback and the
+// client-class retry can all re-serve the same review.
+async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, extra = {}) {
+  let got = 0;
+  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < perApp && keepGoing; page++) {
+    const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
+    const { entries, clientClass } = await fetchPage(url);
+    if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
+    if (clientClass !== 'default') log.info(`${appId}/${country} ${sortBy} page ${page}: empty for the default client, recovered ${entries.length} reviews under the iOS client.`);
     for (const e of entries) {
-      if (got >= perApp) break;
+      if (tally.got >= perApp) break;
       const reviewId = lbl(e.id);
       if (reviewId != null && seen.has(reviewId)) continue;
       if (reviewId != null) seen.add(reviewId);
@@ -105,9 +132,9 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, extra = {}) {
         reviewId, appId, country, title: lbl(e.title), content: lbl(e.content), rating: Number(lbl(e['im:rating'])) || null,
         version: lbl(e['im:version']), author: lbl(e.author?.name), authorUrl: lbl(e.author?.uri), updatedAt: lbl(e.updated),
         voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, sortUsed: sortBy,
-        ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
+        clientClass, ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
       };
-      got += 1;
+      got += 1; tally.got += 1;
       if (!passesFilters(item)) continue;
       keepGoing = await pushResult(item);
       if (!keepGoing) break;
@@ -122,13 +149,15 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, extra = {}) {
 // other rather than telling the user there are no reviews. Rows always carry `sortUsed`.
 async function scrapeAppCountry(appId, country, extra = {}) {
   const seen = new Set();
-  let got = await scrapeAppCountrySort(appId, country, sort, seen, extra);
-  if (got === 0 && keepGoing) {
+  const tally = { got: 0 };
+  const info = await getAppInfo(appId, country);
+  await scrapeAppCountrySort(appId, country, sort, seen, info, tally, extra);
+  if (tally.got === 0 && keepGoing) {
     const alt = sort === 'mostRecent' ? 'mostHelpful' : 'mostRecent';
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
-    got = await scrapeAppCountrySort(appId, country, alt, seen, extra);
+    await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra);
   }
-  return got;
+  return tally.got;
 }
 
 const emptyPairs = [];

@@ -108,6 +108,15 @@
         "description": "Which Apple sort order this row actually came from (mostRecent or mostHelpful). Differs from your 'sort' input only when Apple's feed for that sort was empty and the Actor fell back to the other one.",
         "example": "mostRecent"
       },
+      "clientClass": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ClientClass",
+        "description": "Which of Apple's two review indexes served this row: 'default' (what curl or a desktop browser sees) or 'ios' (what an iPhone/iPad client sees). Apple paginates the two independently and they often barely overlap, so this Actor sweeps both and unions them — up to 5x more reviews per app than a single-client scrape.",
+        "example": "default"
+      },
       "appName": {
         "type": [
           "string",

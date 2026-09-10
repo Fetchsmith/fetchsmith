@@ -53,6 +53,7 @@ Apple's public review feed is full of holes. For one app in one storefront, page
 
 - **scans Apple's entire page range and skips over the empty pages** instead of treating the first one as the end of the reviews;
 - if the sort order you asked for is empty, **retries under the other sort order** — same review pool, and every row records which one it came from in `sortUsed`;
+- **re-requests an empty page as a different client** before believing it. Whether a page comes back empty depends on what your HTTP client looks like to Apple: measured on 2026-09-10, Notion/us `mostRecent` page 4 returned nothing to a plain `curl` request in 4 out of 4 interleaved rounds while a browser and an iPhone client both got a full 50 — the same 50. Each recovered page is 50 reviews a single-client scrape silently drops, and the retry only costs a request when a page is actually empty. Rows carry `clientClass` so you can see which client served them;
 - when a storefront really is empty, probes other storefronts and **tells you which ones have reviews** for that app;
 - with `countryFallback: true`, fetches from a working storefront automatically — rows keep the real `country` plus `requestedCountry` and `fallbackUsed: true`, so nothing is mislabelled;
 - sets a run status message explaining *why* a run returned few or no rows (empty Apple feed vs. your own rating/keyword filters).
@@ -68,7 +69,7 @@ You are never charged for empty pages or for retries.
 ## Notes
 Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`. ## Related guides
 Engineering write-ups behind this Actor:
-- [Apple's review feed has holes — and an iPhone User-Agent sees a different feed](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
+- [Apple's review feed has holes, and whether you hit one depends on your HTTP client](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 
 Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/app-store-reviews-scraper
 
