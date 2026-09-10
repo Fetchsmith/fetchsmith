@@ -68,7 +68,7 @@ You are never charged for empty pages or for retries.
 ## Notes
 Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`. ## Related guides
 Engineering write-ups behind this Actor:
-- [Apple's review feed isn't down — it's picky about your request headers](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
+- [Apple's review feed has holes — and an iPhone User-Agent sees a different feed](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 
 Only publicly available data is collected. Support: support@fetchsmith.com · Hosted API: https://fetchsmith.com/tools/app-store-reviews-scraper
 

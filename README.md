@@ -23,7 +23,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 
 - [Google News RSS gives you encoded redirect links — here's how to resolve them](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
 - [We tested "JSON-LD only" article extraction against 8 real news sites. It got 0.](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
-- [Apple's App Store review feed isn't down — it's picky about your request headers](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
+- [Apple's App Store review feed has holes — and an iPhone User-Agent sees a different feed entirely](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 - [Every Shopify store's catalog is public JSON — no login, no browser, no API key](https://fetchsmith.com/blog/shopify-catalog-products-json-no-login)
 - [Hacker News's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
 - [We timed HTTP-only scraping against a headless browser on the same page. It wasn't close.](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
