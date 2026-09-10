@@ -120,3 +120,9 @@ Pay per result: **$0.001 per row** (episode, review or podcast) returned to your
 
 ---
 Built by [FetchSmith](https://fetchsmith.com) — fast, HTTP-only scrapers with honest pricing. Questions or a field you need? Email support@fetchsmith.com.
+
+## Related guides
+Engineering write-ups behind this Actor:
+- [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
+
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

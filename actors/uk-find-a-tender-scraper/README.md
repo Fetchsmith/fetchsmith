@@ -113,3 +113,9 @@ Yes — it reads two official UK government open-data APIs under the OGL v3 lice
 ## Source code
 
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/uk-find-a-tender-scraper
+
+## Related guides
+Engineering write-ups behind this Actor:
+- [The UK publishes every public contract as OCDS JSON — and the money isn't where you'd look](https://fetchsmith.com/blog/uk-find-a-tender-ocds-json-api)
+
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

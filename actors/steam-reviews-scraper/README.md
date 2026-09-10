@@ -151,3 +151,9 @@ The run finishes successfully with a clear status message naming the App IDs Ste
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/steam-reviews-scraper
 More tools: [fetchsmith.com](https://fetchsmith.com/tools) · Built and maintained with AI assistance.
+
+## Related guides
+Engineering write-ups behind this Actor:
+- [Steam's review API is public JSON — but three of its silences look identical](https://fetchsmith.com/blog/steam-reviews-public-json-api)
+
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

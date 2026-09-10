@@ -15,7 +15,11 @@ They run on [Apify Store](https://apify.com/fetchsmith) with pay-per-event prici
 | **Google Play Reviews Scraper** | Google Play reviews and app details by app ID or search term: rating, text, date, developer replies, installs, score. | [Apify Store](https://apify.com/fetchsmith/google-play-reviews-scraper) · [Docs](https://fetchsmith.com/tools/google-play-reviews-scraper) · [Source](actors/google-play-reviews-scraper) |
 | **Shopify Products Scraper** | Full product catalog of any Shopify store or collection: prices, compare-at prices, currency, variants, SKUs, stock, images, tags. | [Apify Store](https://apify.com/fetchsmith/shopify-products-scraper) · [Docs](https://fetchsmith.com/tools/shopify-products-scraper) · [Source](actors/shopify-products-scraper) |
 | **Hacker News Scraper** | Stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API, with author, points, comment-count and date filters. | [Apify Store](https://apify.com/fetchsmith/hacker-news-scraper) · [Docs](https://fetchsmith.com/tools/hacker-news-scraper) · [Source](actors/hacker-news-scraper) |
-| **Substack Scraper** | Any Substack publication as structured data: posts with full cleaned article text, engagement stats and comment threads. Custom domains supported. | Store listing pending · [Docs](https://fetchsmith.com/tools/substack-scraper) · [Source](actors/substack-scraper) |
+| **Substack Scraper** | Any Substack publication as structured data: posts with full cleaned article text, engagement stats and comment threads. Custom domains supported. | [Apify Store](https://apify.com/fetchsmith/substack-scraper) · [Docs](https://fetchsmith.com/tools/substack-scraper) · [Source](actors/substack-scraper) |
+| **Apple Podcasts Scraper** | Four modes in one Actor: every episode of a show with its *direct audio file URL*, listener reviews, podcast search, and country top charts. | [Apify Store](https://apify.com/fetchsmith/apple-podcasts-scraper) · [Docs](https://fetchsmith.com/tools/apple-podcasts-scraper) · [Source](actors/apple-podcasts-scraper) |
+| **Steam Reviews Scraper** | Steam player reviews with full text, playtime at review and total, recommended/not, helpfulness votes and verified-purchase flag — plus a game-details mode (price, genres, review score). | [Apify Store](https://apify.com/fetchsmith/steam-reviews-scraper) · [Docs](https://fetchsmith.com/tools/steam-reviews-scraper) · [Source](actors/steam-reviews-scraper) |
+| **Scholarship Scraper (bold.org)** | Every bold.org scholarship as a row: award amount and number of awards, deadline (rolling flagged), the actual essay prompt with word limits, eligibility and a competitiveness ratio. | [Apify Store](https://apify.com/fetchsmith/scholarship-scraper) · [Docs](https://fetchsmith.com/tools/scholarship-scraper) · [Source](actors/scholarship-scraper) |
+| **EU TED Tenders Scraper** | The EU's official TED public-procurement journal by country, CPV code and date: buyer, value, deadlines and notice links, deduplicated and language-flattened. | [Apify Store](https://apify.com/fetchsmith/eu-ted-tenders-scraper) · [Docs](https://fetchsmith.com/tools/eu-ted-tenders-scraper) · [Source](actors/eu-ted-tenders-scraper) |
 
 ## Guides
 
@@ -23,10 +27,15 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 
 - [Google News RSS gives you encoded redirect links — here's how to resolve them](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
 - [We tested "JSON-LD only" article extraction against 8 real news sites. It got 0.](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
-- [Apple's App Store review feed has holes — and an iPhone User-Agent sees a different feed entirely](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
+- [Apple's App Store review feed has holes — and whether you hit one depends on your HTTP client](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 - [Every Shopify store's catalog is public JSON — no login, no browser, no API key](https://fetchsmith.com/blog/shopify-catalog-products-json-no-login)
 - [Hacker News's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
 - [We timed HTTP-only scraping against a headless browser on the same page. It wasn't close.](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
+- [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
+- [Steam's review API is public JSON — but three of its silences look identical](https://fetchsmith.com/blog/steam-reviews-public-json-api)
+- [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
+- [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
+- [The UK publishes every public contract as OCDS JSON — and the money isn't where you'd look](https://fetchsmith.com/blog/uk-find-a-tender-ocds-json-api)
 
 ## Layout
 

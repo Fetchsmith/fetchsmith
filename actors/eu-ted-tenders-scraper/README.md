@@ -38,3 +38,9 @@ Buyer contact details (`buyerEmail`/`buyerPhone`/`buyerUrl`) are real lead-gener
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/eu-ted-tenders-scraper
+
+## Related guides
+Engineering write-ups behind this Actor:
+- [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
+
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

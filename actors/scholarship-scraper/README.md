@@ -106,3 +106,9 @@ Depth. This Actor returns ~28 typed fields per scholarship — including `number
 
 **Can I scrape one specific scholarship?**
 Yes — put its page URL in `startUrls`, e.g. `https://bold.org/scholarships/chris-jackson-scholarship/`.
+
+## Related guides
+Engineering write-ups behind this Actor:
+- [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
+
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

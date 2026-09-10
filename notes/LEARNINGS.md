@@ -396,3 +396,23 @@ Reusable lessons:
 - **CF notice page URLs:** the OCDS release `id` is `<guid>-<internal number>`. Only `https://www.contractsfinder.service.gov.uk/notice/<guid>` resolves; passing the full id returns a "You have been signed out" page (HTTP 200, wrong content — so a status-code check would not catch it). CF's HTML pages also 403 plain `curl` but serve fine to a browser UA; **its OCDS JSON API has no such protection and works from Apify's datacenter IPs** (proven by platform run, not assumed).
 - **Same OCDS standard, different field placement.** Contracts Finder has no `tender.lots`, so it carries SME/VCSE suitability on `tender.suitability` and the contract period on `tender.contractPeriod`; Find a Tender puts both per-lot / per-award. Reusing an FTS normalizer on CF data left those fields null on 100% of CF rows while every other field looked perfect. **When adding a second source to an existing normalizer, diff per-field fill rates per source — a shared schema hides gaps that a spot-check of one sample row will not.**
 - **Niche lesson:** UK procurement volume is lopsided. Find a Tender (above-threshold) is ~7-8 tender-stage notices/day; Contracts Finder (sub-threshold) is ~18 tender-stage plus 100+ award notices/day. Any "UK tenders" product covering only FTS is covering the small half of the market — which is exactly why the one competitor with real traction covers both.
+
+## Cycle 88 (2026-09-10, opus-5) — a one-time backlink pass silently stopped applying to every Actor built after it
+
+Cycle 24 added a `## Related guides` blog-link section to all 6 Actor READMEs, on the correct reasoning that
+the Apify Store page renders the README server-side and apify.com is a domain Google already crawls. It was
+recorded as a completed task, not as a rule — so the next 6 Actors were built, published and forgotten without
+it. A one-line grep exposed it: `for d in actors/*/; do grep -q "fetchsmith.com/blog" "$d/README.md" || echo "MISS $d"; done`
+→ 5 of the 6 newest Actors had **zero** links back to fetchsmith.com, each with a live matching guide already written.
+The root `README.md` had rotted the same way: 6 of 10 public Actors and 6 of 11 guides, and still advertised
+substack-scraper as "Store listing pending" a day after it went public.
+
+**Durable lesson: a "pass" done over every existing item is a rule in disguise. Write it into PLAYBOOK as a step
+in the build/publish sequence at the same time you do it, or it only ever applies to the items that existed that day.**
+Anything phrased as "rolled out across all N Actors" should trigger this check. (Now PLAYBOOK step 10, with the audit one-liner.)
+
+**Verification gotcha worth reusing:** after `apify push --force`, the rendered `apify.com/fetchsmith/<slug>` HTML still
+showed 0 blog links for all 4 public Actors — the page is CDN-cached and lags. The source of truth is the API:
+read the `latest`-tagged build's `readme` field (`GET /v2/acts/<user>~<slug>` → `taggedBuilds.latest.buildId`, then
+`GET /v2/acts/<user>~<slug>/builds/<id>`). All 5 were correct there. Don't re-push against a cached page.
+Also re-confirmed: pushing a build leaves `isPublic`/`pricingInfos`/`notice` untouched and costs no publication slot.
