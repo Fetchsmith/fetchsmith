@@ -1,0 +1,325 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Type",
+        "example": "review"
+      },
+      "appId": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AppId",
+        "example": 1145360
+      },
+      "reviewId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewId",
+        "example": "234888482"
+      },
+      "review": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Review",
+        "example": "As far as content made by and/or targeted at Tumblr gooners goes, this is pretty good."
+      },
+      "language": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Language",
+        "example": "english"
+      },
+      "recommended": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Recommended",
+        "example": true
+      },
+      "createdAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CreatedAt",
+        "example": "2026-09-10T03:35:39.000Z"
+      },
+      "updatedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UpdatedAt",
+        "example": "2026-09-10T03:37:38.000Z"
+      },
+      "votesUp": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VotesUp",
+        "example": 0
+      },
+      "votesFunny": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VotesFunny",
+        "example": 0
+      },
+      "weightedVoteScore": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "WeightedVoteScore",
+        "example": 0.5
+      },
+      "commentCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "CommentCount",
+        "example": 0
+      },
+      "steamPurchase": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "SteamPurchase",
+        "example": true
+      },
+      "receivedForFree": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "ReceivedForFree",
+        "example": false
+      },
+      "writtenDuringEarlyAccess": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "WrittenDuringEarlyAccess",
+        "example": false
+      },
+      "refunded": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Refunded",
+        "example": false
+      },
+      "playtimeForeverHours": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PlaytimeForeverHours",
+        "example": 3.9
+      },
+      "playtimeAtReviewHours": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PlaytimeAtReviewHours",
+        "example": 3.9
+      },
+      "playtimeLastTwoWeeksHours": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PlaytimeLastTwoWeeksHours",
+        "example": 3.7
+      },
+      "authorSteamId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorSteamId",
+        "example": "76561197974061804"
+      },
+      "authorName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorName",
+        "example": "BobbyRunout"
+      },
+      "authorProfileUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorProfileUrl",
+        "example": "https://steamcommunity.com/id/BobbyRunout/"
+      },
+      "authorNumGamesOwned": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AuthorNumGamesOwned",
+        "example": 1180
+      },
+      "authorNumReviews": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AuthorNumReviews",
+        "example": 100
+      },
+      "reviewUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewUrl",
+        "example": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/"
+      },
+      "gameName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "GameName",
+        "example": "Hades"
+      },
+      "developers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Developers"
+      },
+      "publishers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Publishers"
+      },
+      "genres": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Genres"
+      },
+      "releaseDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReleaseDate",
+        "example": "Sep 17, 2020"
+      },
+      "storeUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "StoreUrl",
+        "example": "https://store.steampowered.com/app/1145360/"
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ScrapedAt",
+        "example": "2026-09-10T06:04:02.509Z"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "type",
+          "appId",
+          "reviewId",
+          "review",
+          "language",
+          "recommended",
+          "createdAt",
+          "updatedAt",
+          "votesUp",
+          "votesFunny"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "appId": {
+            "label": "AppId",
+            "format": "number"
+          },
+          "reviewId": {
+            "label": "ReviewId",
+            "format": "text"
+          },
+          "review": {
+            "label": "Review",
+            "format": "text"
+          },
+          "language": {
+            "label": "Language",
+            "format": "text"
+          },
+          "recommended": {
+            "label": "Recommended",
+            "format": "boolean"
+          },
+          "createdAt": {
+            "label": "CreatedAt",
+            "format": "text"
+          },
+          "updatedAt": {
+            "label": "UpdatedAt",
+            "format": "text"
+          },
+          "votesUp": {
+            "label": "VotesUp",
+            "format": "number"
+          },
+          "votesFunny": {
+            "label": "VotesFunny",
+            "format": "number"
+          }
+        }
+      }
+    }
+  }
+}

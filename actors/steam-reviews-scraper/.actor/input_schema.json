@@ -1,0 +1,128 @@
+{
+  "title": "Steam Reviews Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "dataType": {
+      "title": "What to scrape",
+      "type": "string",
+      "description": "reviews = player reviews for the given games; games = the store record for each game (price, genres, developer, review score summary, optional live player count).",
+      "default": "reviews",
+      "enum": ["reviews", "games"],
+      "enumTitles": ["Player reviews", "Game / store details"],
+      "editor": "select"
+    },
+    "apps": {
+      "title": "Games",
+      "type": "array",
+      "description": "Steam store URLs or numeric App IDs, e.g. https://store.steampowered.com/app/1145360/Hades/ or 1145360.",
+      "editor": "stringList",
+      "prefill": ["https://store.steampowered.com/app/1145360/Hades/"]
+    },
+    "searchTerms": {
+      "title": "Search terms",
+      "type": "array",
+      "description": "Find games by name instead of (or as well as) giving URLs. Each match is then scraped according to 'What to scrape'.",
+      "editor": "stringList",
+      "prefill": []
+    },
+    "maxReviewsPerApp": {
+      "title": "Max reviews per game",
+      "type": "integer",
+      "description": "Reviews only: how many reviews to fetch per game before moving to the next one (max 5000).",
+      "default": 200,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "maxResults": {
+      "title": "Max results (total)",
+      "type": "integer",
+      "description": "Hard cap on rows pushed to the dataset across all games — also caps what you are charged.",
+      "default": 2000,
+      "minimum": 1,
+      "maximum": 50000
+    },
+    "language": {
+      "title": "Review language",
+      "type": "string",
+      "description": "Steam language code for the reviews to return: english, schinese, russian, german, french, spanish, japanese, brazilian, ... or \"all\" for every language.",
+      "default": "english",
+      "editor": "textfield"
+    },
+    "reviewType": {
+      "title": "Recommended / not recommended",
+      "type": "string",
+      "description": "positive = thumbs-up reviews only, negative = thumbs-down only.",
+      "default": "all",
+      "enum": ["all", "positive", "negative"],
+      "enumTitles": ["All reviews", "Positive only", "Negative only"],
+      "editor": "select"
+    },
+    "purchaseType": {
+      "title": "Purchase type",
+      "type": "string",
+      "description": "steam = reviews from players who bought the game on Steam (excludes key activations and free weekends).",
+      "default": "all",
+      "enum": ["all", "steam", "non_steam_purchase"],
+      "enumTitles": ["All", "Steam purchases only", "Non-Steam purchases only"],
+      "editor": "select"
+    },
+    "sortBy": {
+      "title": "Sort / selection",
+      "type": "string",
+      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking (only this mode supports 'Last N days').",
+      "default": "recent",
+      "enum": ["recent", "updated", "all"],
+      "enumTitles": ["Most recent", "Recently updated", "Most helpful"],
+      "editor": "select"
+    },
+    "dayRange": {
+      "title": "Last N days (helpfulness mode only)",
+      "type": "integer",
+      "description": "With Sort = Most helpful, restrict to reviews from the last N days (1-365). Ignored in the other sort modes, which are already chronological.",
+      "minimum": 1,
+      "maximum": 365,
+      "editor": "number"
+    },
+    "minPlaytimeHours": {
+      "title": "Minimum playtime (hours)",
+      "type": "integer",
+      "description": "Keep only reviews from players with at least this many hours in the game — a cheap way to drop drive-by reviews.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "keyword": {
+      "title": "Keyword filter",
+      "type": "string",
+      "description": "Keep only reviews whose text contains this word or phrase (case-insensitive), e.g. \"crash\", \"controller\", \"price\".",
+      "editor": "textfield"
+    },
+    "country": {
+      "title": "Country / currency",
+      "type": "string",
+      "description": "Two-letter country code used for store prices and availability (us, gb, de, ...).",
+      "default": "us",
+      "editor": "textfield"
+    },
+    "includeGameInfo": {
+      "title": "Attach game info to every review",
+      "type": "boolean",
+      "description": "Adds gameName, developers, publishers, genres, releaseDate and storeUrl to each review row (one extra request per game).",
+      "default": true
+    },
+    "includePlayerCount": {
+      "title": "Include live player count",
+      "type": "boolean",
+      "description": "Game details only: also fetch the current concurrent player count for each game (one extra request per game).",
+      "default": false
+    },
+    "searchLimit": {
+      "title": "Games per search term",
+      "type": "integer",
+      "description": "How many games to take from each search term (max 50).",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 50
+    }
+  }
+}

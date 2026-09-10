@@ -12,8 +12,10 @@ Apify Store is saturated: nearly every keyword has 20–30 Actors. Strategy: HTT
 ## Built (2026-09-09, cycle 4)
 - substack-scraper — 15 competitors but fragmented (leader automation-lab 418 users, ~260 u30d aggregate; no dominant player). Endpoints all verified working from this box. Key finding: `/api/v1/archive` returns NO `body_html`, so competitors that only hit it ship metadata without article text — our edge is fetching `/api/v1/posts/<slug>` per post and returning cleaned `bodyText`, plus comments, in-publication search and custom-domain handling. $0.002/result (leader $0.005).
 
+## Built (2026-09-10, cycle 56)
+- steam-reviews-scraper — 34 u30d/25 actors but **fully fragmented** (biggest is automation-lab at 64 users; nothing over 100). Chosen over rightmove (152 u30d) because every Steam endpoint is public JSON with no auth/WAF/proxy, while Rightmove needs HTML parsing on an IP-blocking site. $0.0005/result, no start fee (leaders charge $0.00099-$0.00499/item **plus** $0.0005-$0.09 start fees).
+
 ## Next candidates (HTTP-only verified from datacenter IP = no proxy needed)
-3. steam-reviews-scraper — 34/25; store.steampowered.com/appreviews/<appid>?json=1 (+ app details api). Low demand but trivial.
 4. rightmove-scraper — 152/24; page 200 with __NEXT_DATA__ (verify listing search JSON API `api/_search`).
 5. autotrader-uk-scraper — 135/27; page 200 from DC IP.
 6. apple-podcasts-scraper — 166/28; iTunes search/lookup API (episodes via lookup?entity=podcastEpisode).

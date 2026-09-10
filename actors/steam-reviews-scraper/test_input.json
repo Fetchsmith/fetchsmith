@@ -1,0 +1,8 @@
+{
+  "dataType": "reviews",
+  "apps": ["https://store.steampowered.com/app/1145360/Hades/"],
+  "maxReviewsPerApp": 10,
+  "maxResults": 10,
+  "language": "english",
+  "sortBy": "recent"
+}
