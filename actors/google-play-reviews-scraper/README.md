@@ -50,7 +50,7 @@ Sample review row:
 Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `reviewsCount`, `histogram`, `installs`, `price`, `free`, `genre`, `contentRating`, `released`, `updated`, `url`.
 
 ## Pricing
-`result` — $0.0003 per returned item (review or app-details row). The run start is free.
+`result` — $0.00015 per returned item (review or app-details row). The run start is free.
 
 ## FAQ
 **Can I get reviews in a specific country or language?** Yes, set `country` and `language` (Play Store returns different review sets per locale — run the Actor for each locale you need).

@@ -5,6 +5,6 @@
   "seoDescription": "Extract Google Play Store reviews and app details by app ID or search term. Ratings, review text, dates, replies. Pay only per result, HTTP-only, no browser.",
   "categories": ["DEVELOPER_TOOLS", "MARKETING"],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One review or app-details record returned to the dataset.", "eventPriceUsd": 0.0003 }
+    "result": { "eventTitle": "Result item", "eventDescription": "One review or app-details record returned to the dataset.", "eventPriceUsd": 0.00015 }
   }
 }
