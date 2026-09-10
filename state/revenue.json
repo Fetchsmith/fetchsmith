@@ -1,5 +1,5 @@
 {
- "ts": 1789000493,
+ "ts": 1789003837,
  "date": "2026-09-10",
  "apify": {
   "google-news-scraper": {
@@ -21,7 +21,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 9
+   "runs": 12
   },
   "hacker-news-scraper": {
    "public": true,
@@ -49,7 +49,7 @@
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 3
+   "runs": 4
   }
  },
  "polar": {},
