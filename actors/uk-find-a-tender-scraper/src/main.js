@@ -321,42 +321,53 @@ if (!sources.length) {
     log.warning('No valid "sources" selected — pick "fts" (Find a Tender), "cf" (Contracts Finder), or both.');
 }
 
-for (const key of sources) {
-    if (!keepGoing || pushed >= maxResults || page >= maxPagesScanned) break;
-    const source = SOURCES[key];
-    let url = source.buildUrl();
-    let sourcePushed = 0;
-    log.info(`${source.label}: ${url}`);
+// Row-level round-robin across sources, not page-level. A single Find a Tender page already
+// returns up to 100 releases — with both sources on and a small maxResults (the common case),
+// draining FTS's first page before ever fetching Contracts Finder meant a "both sources" run
+// could come back 100% FTS with no CF rows at all, since FTS is the much thinner feed
+// (~7-8 tender-stage notices/day vs CF's ~18+100/day). Buffer each source's current page and
+// pop one release at a time round-robin, only fetching a source's next page when its buffer
+// empties, so both sources contribute from the very first pushed rows.
+const cursors = sources.map((key) => ({ key, source: SOURCES[key], url: SOURCES[key].buildUrl(), buffer: [], pushed: 0, done: false }));
+for (const c of cursors) log.info(`${c.source.label}: ${c.url}`);
 
-    while (url && keepGoing && pushed < maxResults && page < maxPagesScanned) {
-        const body = await fetchPage(url, source);
-        if (!body) break;
-
+async function fillBuffer(c) {
+    while (!c.buffer.length && c.url && page < maxPagesScanned) {
+        const body = await fetchPage(c.url, c.source);
+        if (!body) { c.url = null; break; }
         const releases = body.releases ?? [];
-        if (!releases.length) break;
         page += 1;
         scanned += releases.length;
-
-        for (const release of releases) {
-            // The same OCID can be re-published (amendments); keep the first (newest) copy only.
-            const key2 = release.id ?? release.ocid;
-            if (key2 && seen.has(key2)) continue;
-            if (release.ocid && seen.has(release.ocid)) continue;
-            if (key2) seen.add(key2);
-            if (release.ocid) seen.add(release.ocid);
-
-            const row = normalize(release, source);
-            if (!matches(row)) { filtered += 1; continue; }
-            keepGoing = await pushResult(row);
-            sourcePushed += 1;
-            if (!keepGoing) break;
-        }
-
-        log.info(`${source.label} page ${page}: scanned ${releases.length} releases (${scanned} total), pushed ${pushed}/${maxResults}, filtered out ${filtered}`);
-        url = body.links?.next ?? null;
+        log.info(`${c.source.label} page ${page}: scanned ${releases.length} releases (${scanned} total so far)`);
+        c.url = body.links?.next ?? null;
+        if (!releases.length) break;
+        c.buffer = releases;
     }
-    perSource[source.key] = sourcePushed;
+    if (!c.buffer.length) c.done = true;
 }
+
+while (keepGoing && pushed < maxResults && cursors.some((c) => !c.done)) {
+    for (const c of cursors) {
+        if (c.done || !keepGoing || pushed >= maxResults) continue;
+        if (!c.buffer.length) await fillBuffer(c);
+        if (c.done || !c.buffer.length) continue;
+
+        const release = c.buffer.shift();
+        // The same OCID can be re-published (amendments); keep the first (newest) copy only.
+        const key2 = release.id ?? release.ocid;
+        const isDup = (key2 && seen.has(key2)) || (release.ocid && seen.has(release.ocid));
+        if (key2) seen.add(key2);
+        if (release.ocid) seen.add(release.ocid);
+        if (isDup) continue;
+
+        const row = normalize(release, c.source);
+        if (!matches(row)) { filtered += 1; continue; }
+        keepGoing = await pushResult(row);
+        c.pushed += 1;
+    }
+}
+log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, after ${page} page(s) scanned.`);
+for (const c of cursors) perSource[c.key] = c.pushed;
 
 if (pushed === 0) {
     log.warning(

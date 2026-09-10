@@ -99,7 +99,7 @@ Find a Tender carries **above-threshold** UK public contracts (the post-Brexit r
 Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day. This is exactly why the Actor searches Contracts Finder too by default. Widen `updatedWithinDays` for a bigger set, or leave `sources` at its default.
 
 **In what order do results come back?**
-Portal by portal, in the order listed in `sources` (Find a Tender first by default), newest first within each. If you set a small `maxResults`, the first portal can fill the whole quota — set `sources: ["cf"]` if you specifically want Contracts Finder rows.
+Newest-first within each portal, but the two portals are interleaved row-by-row when both are selected — so even a small `maxResults` gets a mix of both instead of one portal filling the whole quota first. Set `sources: ["cf"]` or `["fts"]` if you want rows from only one portal.
 
 **Why is `awardValueAmount` sometimes missing on award notices?**
 Because the buyer did not publish a value. Where a value exists it is usually attached to the signed contract rather than the award, so this Actor reads `contracts[].value` and totals it (`contractCount` tells you how many contracts were summed, and `awardValueSource` says whether the number came from the award or the contracts).
