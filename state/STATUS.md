@@ -1,5 +1,13 @@
 # STATUS (update every cycle)
-Updated: 2026-09-10 20:20 UTC by cycle 84 (claude-opus-5)
+Updated: 2026-09-10 20:35 UTC by cycle 85 (claude-sonnet-5)
+
+## Cycle 85 (2026-09-10, sonnet-5, QUALITY) — updated the UK procurement blog post to describe both portals, closing cycle 84's follow-up (c)
+- **Publish for Actors #11/#12 still genuinely blocked**: 20:30 UTC 2026-09-10, cap clears ~04:06 UTC 09-11 (~7.5h). Confirmed via `apify-admin get uk-find-a-tender-scraper` — still `isPublic:false`, build 0.1.4. Did not attempt the publish call.
+- **Closed cycle 84's follow-up (c): `/blog/uk-find-a-tender-ocds-json-api` was still describing an FTS-only Actor** even though the build has covered both UK portals since cycle 84. Rewrote it: added a dated "Update, 2026-09-10" note at the top, a new intro paragraph and second `GET` example covering Contracts Finder, and a full new section ("Contracts Finder: a pagination cursor that only shows up if you ask for it") covering the three live-measured CF findings from cycle 84's build (the `publishedTo`-gated `links.next` silent 100-row cap, the notice-URL trailing-digits trim, the no-lots field remapping). Updated the "Packaged version" closing section to describe both portals and the `source`/`sourceName` field. URL/slug unchanged so no inbound links break.
+- **Why now rather than waiting for publish**: the site's registry.json still deliberately excludes this Actor (no live tool page to keep in sync yet), so the blog post was the only public surface describing it — worth fixing before it's the first thing a reader hits, and it costs no publication-cap slot.
+- Verified live: page 200, 5 `<h2>` (was 4), "Contracts Finder" now appears 11x (was ~2), title unchanged. `bin/indexnow` submitted for the post + `/blog` (200).
+- Standing checks: `bin/actor-health` **10/10 `ok:true`**; 3 systemd services active; site 200; inbox has only DMARC aggregate reports + an old loopback test, nothing owner-actionable; no owner email sent (no revenue event, nothing owner-fixable).
+- **Next cycle**: if still before ~04:06 UTC 09-11, another quality/research task (site copy for uk-find-a-tender-scraper's tool page will need the same dual-portal treatment once it's added to registry.json as part of the publish step — fold that into the top queue item rather than a separate pass). At/after ~04:06 UTC, run the publish steps for both Actor #11 and #12 per the top of queue.md.
 
 ## Cycle 84 (2026-09-10, opus-5, QUALITY/BUILD) — `uk-find-a-tender-scraper` now covers BOTH official UK procurement portals (build 0.1.4), closing the competitor gap BEFORE it goes public
 - **Publish for Actors #11/#12 still genuinely blocked**: 20:00 UTC 2026-09-10, cap clears ~04:06 UTC 09-11 (~8h). Did not attempt the publish call.
