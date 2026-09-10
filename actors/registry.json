@@ -3,7 +3,7 @@
     {
       "slug": "google-news-scraper",
       "title": "Google News Scraper",
-      "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL \u2014 plus optional full article text, author, image and keywords. Any language or country.",
+      "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL — plus optional full article text, author, image and keywords. Any language or country.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -173,7 +173,7 @@
       "sample_output": {
         "id": "15558405",
         "type": "story",
-        "title": "Show HN: Apify \u2013 Turn any website into an API",
+        "title": "Show HN: Apify – Turn any website into an API",
         "url": "https://www.apify.com/",
         "author": "jancurn",
         "points": 45,
@@ -291,9 +291,9 @@
         "wordCount": 4695,
         "reactionCount": 199,
         "commentCount": 118,
-        "bodyText": "The Story So Far\nMechanistic interpretability is the science of \u201creading an AI\u2019s mind\u201d\u2026"
+        "bodyText": "The Story So Far\nMechanistic interpretability is the science of “reading an AI’s mind”…"
       },
-      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record \u2014 including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
+      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record — including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
       "memory_mb": 1024
     },
     {
@@ -366,7 +366,7 @@
     {
       "slug": "steam-reviews-scraper",
       "title": "Steam Reviews Scraper",
-      "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type \u2014 plus a games mode with prices, genres, developers, review-score summaries and live player counts.",
+      "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type — plus a games mode with prices, genres, developers, review-score summaries and live player counts.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "EDfr7BDOOsO7azSOv",
@@ -451,7 +451,87 @@
         ],
         "reviewUrl": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/"
       },
-      "description": "<p>Two modes in one Actor. <code>reviews</code> returns Steam player reviews with the full text, the reviewer's <strong>playtime at review and total</strong>, whether they recommend the game, helpfulness votes, comment count and whether it was a genuine Steam purchase \u2014 filterable by <code>language</code>, <code>reviewType</code> (positive/negative), <code>purchaseType</code>, <code>minPlaytimeHours</code> and a text <code>keyword</code>. <code>games</code> returns the store record for each game: price and discount in any country's currency, release date, developers, publishers, genres, platforms, Metacritic score, the full review-score summary (total positive/negative and % positive) and optionally the <strong>live concurrent player count</strong>. Accepts Steam store URLs, numeric App IDs or plain game names to search. HTTP-only: no login, no API key, no headless browser.</p>",
+      "description": "<p>Two modes in one Actor. <code>reviews</code> returns Steam player reviews with the full text, the reviewer's <strong>playtime at review and total</strong>, whether they recommend the game, helpfulness votes, comment count and whether it was a genuine Steam purchase — filterable by <code>language</code>, <code>reviewType</code> (positive/negative), <code>purchaseType</code>, <code>minPlaytimeHours</code> and a text <code>keyword</code>. <code>games</code> returns the store record for each game: price and discount in any country's currency, release date, developers, publishers, genres, platforms, Metacritic score, the full review-score summary (total positive/negative and % positive) and optionally the <strong>live concurrent player count</strong>. Accepts Steam store URLs, numeric App IDs or plain game names to search. HTTP-only: no login, no API key, no headless browser.</p>",
+      "memory_mb": 1024
+    },
+    {
+      "slug": "scholarship-scraper",
+      "title": "Scholarship Scraper (bold.org)",
+      "summary": "Scholarship listings from bold.org as structured data: award amount, number of awards, deadline, essay prompt, judging criteria, education levels, donor and the live applicant count — plus a computed applicants-per-award competitiveness ratio.",
+      "status": "live",
+      "credits_per_result": 1,
+      "apify_actor_id": "nT9KnaY4AwTVzXwoI",
+      "example_input": {
+        "categoryTypes": [
+          "by-major",
+          "by-type"
+        ],
+        "maxCategoryPages": 10,
+        "maxResults": 200,
+        "minAwardAmount": 1000,
+        "educationLevels": [
+          "highschool"
+        ]
+      },
+      "output_fields": [
+        "name",
+        "slug",
+        "url",
+        "description",
+        "category",
+        "deadline",
+        "isRollingDeadline",
+        "announcementDate",
+        "awardAmount",
+        "awardAmounts",
+        "totalAwardAmount",
+        "numberOfAwards",
+        "numberOfApplicants",
+        "applicantsPerAward",
+        "educationLevels",
+        "acceptsHighSchool",
+        "criteria",
+        "requiresEssay",
+        "essayTopic",
+        "essayMinLength",
+        "essayMaxLength",
+        "isMultiYear",
+        "donorName",
+        "donorProfileUrl",
+        "imageUrl",
+        "winnersCount",
+        "publishedAt",
+        "updatedAt",
+        "sourceUrl",
+        "scrapedAt"
+      ],
+      "sample_output": {
+        "name": "Pamela Branchini Memorial Scholarship",
+        "url": "https://bold.org/scholarships/pamela-branchini-memorial-scholarship/",
+        "category": "Arts",
+        "deadline": "2026-11-05T23:59:59Z",
+        "awardAmount": 1000,
+        "totalAwardAmount": 2000,
+        "numberOfAwards": 2,
+        "numberOfApplicants": 665,
+        "applicantsPerAward": 332.5,
+        "educationLevels": [
+          "highSchool",
+          "undergraduate",
+          "graduate"
+        ],
+        "criteria": [
+          "Ambition",
+          "Need",
+          "Boldest Bold.org Profile"
+        ],
+        "requiresEssay": true,
+        "essayMinLength": 400,
+        "essayMaxLength": 600,
+        "donorName": "Dan Branchini and the Glitter Team at Community Lutheran",
+        "updatedAt": "2026-09-10T00:40:38.001Z"
+      },
+      "description": "<p>Every scholarship listed on <strong>bold.org</strong> as a clean row: the award amount and how many awards are given, the deadline (with rolling deadlines flagged), the actual <strong>essay question</strong> as plain text with its word limits, the judging criteria, which education levels can apply, the donor, and bold.org's <strong>live applicant count</strong>. From those last two numbers we compute <code>applicantsPerAward</code>, so you can rank a list by how winnable each award actually is rather than by headline dollar amount.</p><p>Crawls the <code>by-major</code>, <code>by-state</code>, <code>by-type</code>, <code>by-demographics</code> and <code>by-year</code> category families (discovered from bold.org's own sitemap — never a query-string URL, which its robots.txt disallows), returning about 30 complete records per HTTP request and de-duplicating across categories. Filter by minimum award, deadline window, education level, or open-only. HTTP-only: no login, no headless browser, no proxy.</p>",
       "memory_mb": 1024
     }
   ]

@@ -49,9 +49,10 @@ Filtering happens before you're charged — you never pay for rows that got filt
 `result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
 
 ## Never silently returns an empty result
-Apple's public review feed is inconsistent: for the same app the same URL returns a full page of reviews on one request and an empty feed on the next, and coverage differs per storefront. Most scrapers hand you an empty dataset and a green "succeeded" run. This one:
+Apple's public review feed is full of holes. For one app in one storefront, page 1 can be empty while pages 2 and 7 return a full 50 reviews each; an app can be completely empty under `mostRecent` and have hundreds under `mostHelpful`; and coverage differs per storefront. Most scrapers stop at the first empty page and hand you an empty dataset with a green "succeeded" run. This one:
 
-- retries each empty page under several request fingerprints before believing there are no reviews;
+- **scans Apple's entire page range and skips over the empty pages** instead of treating the first one as the end of the reviews;
+- if the sort order you asked for is empty, **retries under the other sort order** — same review pool, and every row records which one it came from in `sortUsed`;
 - when a storefront really is empty, probes other storefronts and **tells you which ones have reviews** for that app;
 - with `countryFallback: true`, fetches from a working storefront automatically — rows keep the real `country` plus `requestedCountry` and `fallbackUsed: true`, so nothing is mislabelled;
 - sets a run status message explaining *why* a run returned few or no rows (empty Apple feed vs. your own rating/keyword filters).

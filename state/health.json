@@ -1,5 +1,5 @@
 {
- "ts": 1789032681,
+ "ts": 1789036526,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -126,6 +126,22 @@
     "recommended",
     "createdAt",
     "updatedAt"
+   ],
+   "err": null
+  },
+  "scholarship-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "name",
+    "slug",
+    "url",
+    "description",
+    "category",
+    "deadline",
+    "isRollingDeadline",
+    "announcementDate"
    ],
    "err": null
   }

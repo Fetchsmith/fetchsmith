@@ -99,6 +99,15 @@
         "title": "VoteCount",
         "example": 0
       },
+      "sortUsed": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SortUsed",
+        "description": "Which Apple sort order this row actually came from (mostRecent or mostHelpful). Differs from your 'sort' input only when Apple's feed for that sort was empty and the Actor fell back to the other one.",
+        "example": "mostRecent"
+      },
       "appName": {
         "type": [
           "string",

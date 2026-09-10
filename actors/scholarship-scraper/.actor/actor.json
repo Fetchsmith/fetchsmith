@@ -1,0 +1,14 @@
+{
+  "actorSpecification": 1,
+  "name": "scholarship-scraper",
+  "title": "Scholarship Scraper (bold.org)",
+  "description": "Scrape bold.org scholarships to JSON/CSV: name, award amount, deadline, essay prompt, eligibility level, applicant counts and a competitiveness ratio. HTTP-only, no browser.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "output": "./output_schema.json",
+  "storages": { "dataset": "./dataset_schema.json" }
+}

@@ -1,0 +1,86 @@
+{
+  "title": "Scholarship Scraper (bold.org) input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "categoryTypes": {
+      "title": "Category types to crawl",
+      "type": "array",
+      "description": "Which bold.org scholarship category families to crawl. Category pages are discovered from bold.org's sitemap, so no query-string URLs are ever requested. Ignored when you supply Start URLs.",
+      "editor": "select",
+      "default": ["by-major"],
+      "items": {
+        "type": "string",
+        "enum": ["by-major", "by-state", "by-type", "by-demographics", "by-year"],
+        "enumTitles": ["By major (e.g. computer science)", "By state", "By type (e.g. no-essay, easy)", "By demographics", "By year (e.g. high school seniors)"]
+      }
+    },
+    "maxCategoryPages": {
+      "title": "Max category pages",
+      "type": "integer",
+      "description": "How many category pages to fetch. Each page returns about 30 complete scholarship records in one request, so 20 pages is roughly 600 records before de-duplication.",
+      "default": 20,
+      "minimum": 1,
+      "maximum": 600
+    },
+    "maxResults": {
+      "title": "Max scholarships",
+      "type": "integer",
+      "description": "Stop after this many scholarships have been returned. This is also your cost cap: you are charged per returned scholarship only.",
+      "default": 200,
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "startUrls": {
+      "title": "Start URLs (optional)",
+      "type": "array",
+      "description": "Specific bold.org URLs to scrape instead of sitemap-discovered categories. Accepts category pages (https://bold.org/scholarships/by-major/nursing-scholarships/) and individual scholarship pages (https://bold.org/scholarships/<slug>/). Do not include query strings — bold.org's robots.txt disallows them.",
+      "editor": "requestListSources",
+      "default": []
+    },
+    "openOnly": {
+      "title": "Open scholarships only",
+      "type": "boolean",
+      "description": "Skip scholarships whose deadline has already passed. Rolling-deadline scholarships are always kept.",
+      "default": true
+    },
+    "minAwardAmount": {
+      "title": "Minimum award amount (USD)",
+      "type": "integer",
+      "description": "Only return scholarships whose largest single award is at least this many dollars. Leave empty for no minimum.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "deadlineAfter": {
+      "title": "Deadline after",
+      "type": "string",
+      "description": "Only return scholarships with a deadline on or after this date (YYYY-MM-DD).",
+      "editor": "datepicker"
+    },
+    "deadlineBefore": {
+      "title": "Deadline before",
+      "type": "string",
+      "description": "Only return scholarships with a deadline on or before this date (YYYY-MM-DD). Useful for building 'closing this month' lists.",
+      "editor": "datepicker"
+    },
+    "educationLevels": {
+      "title": "Education levels",
+      "type": "array",
+      "description": "Only return scholarships open to at least one of these levels. Leave empty for all levels.",
+      "editor": "select",
+      "default": [],
+      "items": {
+        "type": "string",
+        "enum": ["highschool", "undergraduate", "graduate"],
+        "enumTitles": ["High school students", "Undergraduate", "Graduate"]
+      }
+    },
+    "includeEssayPrompt": {
+      "title": "Include essay prompt",
+      "type": "boolean",
+      "description": "Include the scholarship's essay question(s) as plain text in the essayTopic field.",
+      "default": true
+    }
+  },
+  "required": []
+}

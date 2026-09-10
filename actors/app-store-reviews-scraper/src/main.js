@@ -36,31 +36,17 @@ async function pushResult(item) {
 }
 const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
 
-// Apple's review RSS is served by shards that disagree: for a given app the SAME url returns
-// 50 reviews under one header fingerprint and an empty feed under another (verified 2026-09-09 —
-// Spotify needed browser-like headers, Notion needed a minimal curl-style one). So on an empty
-// feed we retry the request under other fingerprints before believing there are no reviews.
-const RSS_VARIANTS = [
-  {},
-  { headers: { 'user-agent': 'curl/8.5.0' } },
-  { headerGeneratorOptions: { browsers: ['firefox'], devices: ['desktop'], operatingSystems: ['windows'] } },
-  { headerGeneratorOptions: { browsers: ['safari'], devices: ['mobile'], operatingSystems: ['ios'] } },
-];
-let preferredVariant = 0; // the fingerprint that last worked; tried first to keep requests at 1/page
-async function fetchEntries(url, rotate = true) {
-  const order = rotate
-    ? [preferredVariant, ...RSS_VARIANTS.keys()].filter((v, i, a) => a.indexOf(v) === i)
-    : [preferredVariant]; // mid-pagination an empty feed just means "no more reviews"
-  let lastError = null;
-  for (const i of order) {
-    try {
-      let entries = (await getJson(url, RSS_VARIANTS[i])).feed?.entry ?? [];
-      if (!Array.isArray(entries)) entries = [entries];
-      if (entries.length) { preferredVariant = i; return entries; }
-    } catch (e) { lastError = e; }
-  }
-  if (lastError) throw lastError;
-  return [];
+// Apple's review RSS has holes: for a given (app, country, sortBy) some page numbers return a
+// well-formed but EMPTY feed while later pages return a full 50 (verified 2026-09-10 — Spotify/us
+// mostHelpful yields 50,50,0,0,0,0,50,0,0,0 across pages 1-10, reproducibly). An empty page
+// therefore does NOT mean "end of reviews", so we scan the whole 1..10 page range and skip holes.
+// Header fingerprint makes no difference (same URL, same result under curl/Chrome/Safari UAs), so
+// there is nothing to rotate — retries are for network errors only, handled by got-scraping.
+const MAX_RSS_PAGE = 10; // Apple serves no page beyond 10
+async function fetchEntries(url) {
+  let entries = (await getJson(url)).feed?.entry ?? [];
+  if (!Array.isArray(entries)) entries = [entries];
+  return entries;
 }
 const lbl = (o) => (o && typeof o === 'object' && 'label' in o ? o.label : o ?? null);
 const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] || null);
@@ -76,10 +62,14 @@ async function probeStorefronts(appId, skip) {
   const found = [];
   for (const c of PROBE_COUNTRIES) {
     if (c === skip) continue;
-    try {
-      const e = await fetchEntries(`https://itunes.apple.com/${c}/rss/customerreviews/id=${appId}/sortBy=mostRecent/page=1/json`);
-      if (e.length) found.push(c);
-    } catch { /* probe is best-effort */ }
+    // Page 1 alone is not enough evidence — it is often one of Apple's empty holes — so sample a
+    // couple of pages under both sorts and stop at the first hit.
+    for (const [sortBy, page] of [['mostHelpful', 1], ['mostRecent', 1], ['mostHelpful', 2], ['mostRecent', 2]]) {
+      try {
+        const e = await fetchEntries(`https://itunes.apple.com/${c}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`);
+        if (e.length) { found.push(c); break; }
+      } catch { /* probe is best-effort */ }
+    }
   }
   return found;
 }
@@ -93,30 +83,50 @@ async function getAppInfo(appId, country) {
   return null;
 }
 
-// Scrapes one app in one storefront. Returns how many reviews Apple actually served
-// (before filters); `pushed` tracks how many were kept and charged.
-async function scrapeAppCountry(appId, country, extra = {}) {
+// Scrapes one app in one storefront under one sort order. Returns how many reviews Apple actually
+// served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
+// review id, because scanning past empty pages (and the sort fallback below) can re-serve a review.
+async function scrapeAppCountrySort(appId, country, sortBy, seen, extra = {}) {
   const info = await getAppInfo(appId, country);
   let got = 0;
-  for (let page = 1; page <= 10 && got < perApp && keepGoing; page++) {
+  for (let page = 1; page <= MAX_RSS_PAGE && got < perApp && keepGoing; page++) {
     let entries = [];
     try {
-      const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sort}/page=${page}/json`;
-      entries = await fetchEntries(url, got === 0);
-    } catch (e) { log.warning(`page ${page} failed for ${appId}/${country}: ${e.message}`); break; }
-    if (!entries.length) break;
+      const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
+      entries = await fetchEntries(url);
+    } catch (e) { log.warning(`page ${page} failed for ${appId}/${country}: ${e.message}`); continue; }
+    if (!entries.length) continue; // a hole in Apple's feed, not the end of it — keep paging
     for (const e of entries) {
       if (got >= perApp) break;
+      const reviewId = lbl(e.id);
+      if (reviewId != null && seen.has(reviewId)) continue;
+      if (reviewId != null) seen.add(reviewId);
       const item = {
-        reviewId: lbl(e.id), appId, country, title: lbl(e.title), content: lbl(e.content), rating: Number(lbl(e['im:rating'])) || null,
+        reviewId, appId, country, title: lbl(e.title), content: lbl(e.content), rating: Number(lbl(e['im:rating'])) || null,
         version: lbl(e['im:version']), author: lbl(e.author?.name), authorUrl: lbl(e.author?.uri), updatedAt: lbl(e.updated),
-        voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
+        voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, sortUsed: sortBy,
+        ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
       };
       got += 1;
       if (!passesFilters(item)) continue;
       keepGoing = await pushResult(item);
       if (!keepGoing) break;
     }
+  }
+  return got;
+}
+
+// Apple's feed holes are per (app, country, sortBy): an app can be completely empty under
+// "mostRecent" yet serve hundreds of reviews under "mostHelpful" (Spotify/us, 2026-09-10). Both
+// sorts return the same review pool, so if the requested one comes back empty we fall back to the
+// other rather than telling the user there are no reviews. Rows always carry `sortUsed`.
+async function scrapeAppCountry(appId, country, extra = {}) {
+  const seen = new Set();
+  let got = await scrapeAppCountrySort(appId, country, sort, seen, extra);
+  if (got === 0 && keepGoing) {
+    const alt = sort === 'mostRecent' ? 'mostHelpful' : 'mostRecent';
+    log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
+    got = await scrapeAppCountrySort(appId, country, alt, seen, extra);
   }
   return got;
 }

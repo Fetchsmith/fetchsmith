@@ -1,5 +1,5 @@
 {
- "ts": 1789032612,
+ "ts": 1789034413,
  "date": "2026-09-10",
  "apify": {
   "google-news-scraper": {
@@ -7,56 +7,56 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 14
+   "runs": 15
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 12
+   "runs": 13
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 15
+   "runs": 16
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 11
+   "runs": 12
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 11
+   "runs": 12
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 6
+   "runs": 7
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 8
+   "runs": 9
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 4
+   "runs": 5
   }
  },
  "polar": {},

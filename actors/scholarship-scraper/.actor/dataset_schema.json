@@ -1,0 +1,34 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "name": { "type": ["string", "null"], "title": "Scholarship" },
+      "url": { "type": ["string", "null"], "title": "URL" },
+      "awardAmount": { "type": ["integer", "null"], "title": "Award (USD)" },
+      "numberOfAwards": { "type": ["integer", "null"], "title": "Awards" },
+      "deadline": { "type": ["string", "null"], "title": "Deadline" },
+      "numberOfApplicants": { "type": ["integer", "null"], "title": "Applicants" },
+      "applicantsPerAward": { "type": ["number", "null"], "title": "Applicants / award" },
+      "category": { "type": ["string", "null"], "title": "Category" }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": { "fields": ["name", "awardAmount", "deadline", "numberOfApplicants", "applicantsPerAward", "category", "url"] },
+      "display": {
+        "component": "table",
+        "properties": {
+          "name": { "label": "Scholarship" },
+          "awardAmount": { "label": "Award (USD)" },
+          "deadline": { "label": "Deadline" },
+          "numberOfApplicants": { "label": "Applicants" },
+          "applicantsPerAward": { "label": "Applicants / award" },
+          "category": { "label": "Category" },
+          "url": { "label": "URL", "format": "link" }
+        }
+      }
+    }
+  }
+}

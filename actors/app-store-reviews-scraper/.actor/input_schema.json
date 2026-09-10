@@ -33,7 +33,7 @@
     "sort": {
       "title": "Sort",
       "type": "string",
-      "description": "mostRecent or mostHelpful",
+      "description": "mostRecent or mostHelpful. Apple's feed is sometimes empty for one sort order and full for the other on the very same app — if the sort you pick returns nothing, the Actor automatically retries under the other one, and every row records which order it came from in 'sortUsed'.",
       "default": "mostRecent",
       "enum": [
         "mostRecent",
