@@ -50,7 +50,7 @@ Sample review row:
 Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `reviewsCount`, `histogram`, `installs`, `price`, `free`, `genre`, `contentRating`, `released`, `updated`, `url`.
 
 ## Pricing
-`result` — $0.00015 per returned item (review or app-details row). The run start is free.
+`result` — $0.0001 per returned item (review or app-details row). The run start is free. Matches the two largest real-usage competitors' flat rate (`thewolves` 1440 users, `theagents` 603 users, both $0.0001/review no start fee) — cheaper than `neatrat`'s (2583 users) tiered $0.00015 FREE-tier rate too.
 
 ## FAQ
 **Can I get reviews in a specific country or language?** Yes, set `country` and `language` (Play Store returns different review sets per locale — run the Actor for each locale you need).
