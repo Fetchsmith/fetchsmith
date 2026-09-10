@@ -92,6 +92,8 @@ A direct email or phone number for the procurement office behind the contract, p
 
 [eu-ted-tenders-scraper on Apify](https://apify.com/fetchsmith/eu-ted-tenders-scraper) wraps this: filter by buyer country, CPV code, notice type and publication date (or pass a raw TED expert-query string), and get back one flat row per notice — English-preferred title, deduplicated CPV and place-of-performance arrays, a guarded `totalValue`, and the buyer's email/phone/URL where TED has them. HTTP-only, no browser, no proxy, pay per result.
 
+If you need the UK's or the US's equivalent public-procurement feed instead, see [UK Find a Tender / Contracts Finder](/blog/uk-find-a-tender-ocds-json-api) and [USAspending federal awards](/blog/usaspending-federal-awards-json-api) — same idea, different shapes and gotchas per country.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every JSON snippet above comes from a live request made while writing this post, not from documentation.*
