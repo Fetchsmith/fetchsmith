@@ -1,5 +1,5 @@
 {
- "ts": 1788924602,
+ "ts": 1789011001,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -45,7 +45,7 @@
     "vendor",
     "productType",
     "tags",
-    "priceMin"
+    "currency"
    ],
    "err": null
   },
@@ -78,6 +78,38 @@
     "summary",
     "description",
     "score"
+   ],
+   "err": null
+  },
+  "substack-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "type",
+    "id",
+    "title",
+    "subtitle",
+    "slug",
+    "url",
+    "publicationUrl",
+    "publicationId"
+   ],
+   "err": null
+  },
+  "apple-podcasts-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 5,
+   "sample_keys": [
+    "type",
+    "collectionId",
+    "podcastName",
+    "episodeId",
+    "title",
+    "episodeNumber",
+    "seasonNumber",
+    "releaseDate"
    ],
    "err": null
   }
