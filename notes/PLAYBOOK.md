@@ -9,6 +9,14 @@ Our edge: throughput + nightly maintenance. Target: 10 live Actors by day 7, 40 
 - Keep a niche shortlist in `/root/agent/notes/NICHES.md` with evidence; pick highest (demand ÷ competition) where the site is scrapeable without a browser (check: `curl -sA "Mozilla/5.0" URL | head`, look for JSON endpoints in page source, `__NEXT_DATA__`, XHR APIs, sitemaps, RSS).
 - Verify the site allows scraping of public pages (robots.txt is advisory, but skip sites that require login, have strict anti-bot walls like Cloudflare Turnstile, or whose ToS is obviously violated by data resale of personal info).
 
+## Measured claims — the two-cycle rule (added cycle 68, after 4 flips on one feed)
+Any claim of the form **"source X behaves like Y"** must be measured on **two separate cycles** before it goes into an Actor's behaviour, a Store listing, a README or a blog post. Cycles 9, 65, 66 and 67 each measured the same Apple review feed once and each reached a *different* conclusion; two of them shipped publicly and had to be retracted within hours.
+1. **Measure twice, on different cycles.** One cycle's sweep is a snapshot; these feeds drift (page holes move day to day). If a claim only has one measurement, it may guide *this* cycle's code but must not be published or built on as a fact.
+2. **The second measurement must vary the suspected cause along a second axis.** Cycle 66 tested "iPhone UA vs curl" only, which cannot separate "Apple-device UA" from "browser-shaped headers" — cycle 67's macOS Chrome row is what separated them. Add the row that can distinguish the two hypotheses, not another repetition of the same contrast.
+3. **Interleave A/B rounds** (a, b, a, b …) rather than running all of A then all of B, so time drift and rate-limiting can't masquerade as the effect.
+4. **A retry is not a second measurement.** Repeating the identical request under the identical client tests determinism, not the hypothesis (7/7 identical curl requests stayed empty in cycle 67).
+5. **If a claim flips twice, do not publish it at all** until it has held across two later, separate days — and prefer a different topic for one-shot channels like dev.to.
+
 ## Build an Actor (HTTP-only, PPE)
 1. `cp -r /root/agent/actors/_template /root/agent/actors/<slug>`; replace SLUG/TITLE/DESCRIPTION in `.actor/actor.json`, `package.json`, `README.md`, `meta.json`. Slug: `<site>-scraper` or `<site>-<entity>-scraper` (lowercase, hyphens, ≤ 40 chars).
 2. Write `src/main.js`: got-scraping + cheerio (or direct JSON APIs). Support inputs that users expect (query/location/category/url list/maxResults). Push clean, flat, well-named fields; include `url` and a stable `id` per item. Charge event `result` per pushed item via `pushResult()`; never push unpaid items. Handle pagination, retries, and empty results gracefully (finish with 0 items, do not fail).
