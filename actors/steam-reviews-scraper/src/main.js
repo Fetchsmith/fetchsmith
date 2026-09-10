@@ -190,7 +190,7 @@ async function scrapeReviews(appId) {
   const seen = new Set();
   for (let page = 0; page < 200 && got < perAppReviews && keepGoing; page++) {
     let body;
-    try { body = await getJson(reviewsUrl(appId, encodeURIComponent(cursor))); }
+    try { body = await getJson(reviewsUrl(appId, cursor)); } // URLSearchParams below already encodes the cursor — do not encode it twice
     catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
     if (body?.success !== 1) { log.warning(`Steam refused the review query for app ${appId} (success=${body?.success}).`); break; }
     if (page === 0 && body.query_summary) summaries.set(appId, body.query_summary);
