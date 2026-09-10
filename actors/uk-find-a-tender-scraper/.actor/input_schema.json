@@ -1,0 +1,71 @@
+{
+  "title": "Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "stages": {
+      "title": "Stages",
+      "type": "array",
+      "description": "Which notice stages to return. 'tender' = live/closed opportunities to bid on (the default, and what most buyers want). 'award' = contract award notices, including the winning supplier. 'planning' = early pipeline notices. Leave as ['tender'] unless you want awards.",
+      "editor": "select",
+      "items": { "type": "string", "enum": ["planning", "tender", "award"], "enumTitles": ["Planning (pipeline)", "Tender (opportunities)", "Award (winners)"] },
+      "default": ["tender"]
+    },
+    "updatedWithinDays": {
+      "title": "Updated within (days)",
+      "type": "integer",
+      "description": "Only return notices published or updated in the last N days. Notices come back newest first.",
+      "default": 7,
+      "minimum": 1,
+      "maximum": 365
+    },
+    "cpvCodes": {
+      "title": "CPV codes",
+      "type": "array",
+      "description": "Common Procurement Vocabulary codes to filter by, e.g. 72000000 (IT services), 45000000 (construction), 85000000 (health). Trailing zeros are treated as a prefix, so 72000000 matches every 72xxxxxx code. Leave empty for all.",
+      "editor": "stringList",
+      "default": []
+    },
+    "searchQuery": {
+      "title": "Search text",
+      "type": "string",
+      "description": "Free-text filter. Every word must appear somewhere in the title, description, buyer name, CPV description or lot titles (case-insensitive). E.g. \"software\" or \"nhs cleaning\".",
+      "editor": "textfield"
+    },
+    "minValueGbp": {
+      "title": "Minimum contract value (GBP)",
+      "type": "integer",
+      "description": "Only return notices whose published contract value is at least this much. Notices without a published value are excluded when this is set.",
+      "editor": "number"
+    },
+    "maxValueGbp": {
+      "title": "Maximum contract value (GBP)",
+      "type": "integer",
+      "description": "Only return notices whose published contract value is at most this much. Notices without a published value are excluded when this is set.",
+      "editor": "number"
+    },
+    "openOnly": {
+      "title": "Only still-open tenders",
+      "type": "boolean",
+      "description": "Only return notices whose submission deadline is still in the future. Use with stages = ['tender'] — award notices have no future deadline and will all be filtered out.",
+      "default": false
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many notices.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "maxPagesScanned": {
+      "title": "Max API pages to scan",
+      "type": "integer",
+      "description": "Safety cap on how many 100-notice API pages to read while looking for matches. Raise it if you use a narrow filter over a long date range.",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 500
+    }
+  },
+  "required": []
+}

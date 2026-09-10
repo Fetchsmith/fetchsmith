@@ -1,0 +1,10 @@
+{
+  "title": "UK Find a Tender — Public Contract Notices (OCDS API)",
+  "description": "Search UK public-sector tenders and contract awards from the official Find a Tender OCDS API. Filter by CPV code, contract value, free text and open-deadline-only. Flat JSON rows with buyer email, phone and address, contract value, CPV codes, lot titles and deadlines.",
+  "seoTitle": "UK Find a Tender Scraper — Government Contracts JSON API",
+  "seoDescription": "Scrape UK government tenders and contract awards from the official Find a Tender OCDS API. Filter by CPV, value, keyword and open deadline. Buyer contact details included.",
+  "categories": ["LEAD_GENERATION", "OTHER"],
+  "events": {
+    "result": { "eventTitle": "Result item", "eventDescription": "One normalized UK procurement notice returned to the dataset.", "eventPriceUsd": 0.004 }
+  }
+}
