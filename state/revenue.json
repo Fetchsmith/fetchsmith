@@ -1,6 +1,6 @@
 {
- "ts": 1788993084,
- "date": "2026-09-09",
+ "ts": 1788998597,
+ "date": "2026-09-10",
  "apify": {
   "google-news-scraper": {
    "public": true,
@@ -43,6 +43,13 @@
    "users30d": 0,
    "runs30d": 0,
    "runs": 3
+  },
+  "apple-podcasts-scraper": {
+   "public": false,
+   "users": 1,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 2
   }
  },
  "polar": {},

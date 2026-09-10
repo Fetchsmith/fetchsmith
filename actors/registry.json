@@ -3,7 +3,7 @@
     {
       "slug": "google-news-scraper",
       "title": "Google News Scraper",
-      "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL \u2014 plus optional full article text, author, image and keywords. Any language or country.",
+      "summary": "Search Google News by keyword, topic or publisher and get articles with title, source, date, snippet and the resolved publisher URL — plus optional full article text, author, image and keywords. Any language or country.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -173,7 +173,7 @@
       "sample_output": {
         "id": "15558405",
         "type": "story",
-        "title": "Show HN: Apify \u2013 Turn any website into an API",
+        "title": "Show HN: Apify – Turn any website into an API",
         "url": "https://www.apify.com/",
         "author": "jancurn",
         "points": 45,
@@ -291,9 +291,76 @@
         "wordCount": 4695,
         "reactionCount": 199,
         "commentCount": 118,
-        "bodyText": "The Story So Far\nMechanistic interpretability is the science of \u201creading an AI\u2019s mind\u201d\u2026"
+        "bodyText": "The Story So Far\nMechanistic interpretability is the science of “reading an AI’s mind”…"
       },
-      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record \u2014 including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
+      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record — including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
+      "memory_mb": 1024
+    },
+    {
+      "slug": "apple-podcasts-scraper",
+      "title": "Apple Podcasts Scraper",
+      "summary": "Apple Podcasts as structured data: every episode with direct audio URL, duration and RSS feed; listener reviews with star ratings; or podcast search by keyword. Any country storefront.",
+      "status": "live",
+      "credits_per_result": 1,
+      "apify_actor_id": "sit99YHSd0o1JhJZd",
+      "example_input": {
+        "dataType": "episodes",
+        "podcasts": [
+          "https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"
+        ],
+        "country": "us",
+        "maxEpisodesPerPodcast": 25,
+        "includePodcastInfo": true,
+        "max_results": 25
+      },
+      "output_fields": [
+        "type",
+        "collectionId",
+        "podcastName",
+        "artistName",
+        "podcastUrl",
+        "feedUrl",
+        "primaryGenre",
+        "episodeCount",
+        "episodeId",
+        "title",
+        "episodeNumber",
+        "seasonNumber",
+        "releaseDate",
+        "durationMs",
+        "durationMinutes",
+        "description",
+        "shortDescription",
+        "episodeUrl",
+        "episodeFileExtension",
+        "episodeContentType",
+        "episodeGuid",
+        "explicit",
+        "artworkUrl",
+        "episodePageUrl",
+        "reviewId",
+        "content",
+        "rating",
+        "author",
+        "authorUrl",
+        "updatedAt",
+        "voteSum",
+        "voteCount",
+        "country",
+        "scrapedAt"
+      ],
+      "sample_output": {
+        "type": "episode",
+        "collectionId": 1434243584,
+        "podcastName": "Lex Fridman Podcast",
+        "title": "#501 - DHH: Future of Programming, AI, Agentic Engineering, Vibe Coding & Linux",
+        "releaseDate": "2026-08-26T21:47:04Z",
+        "durationMinutes": 322,
+        "episodeUrl": "https://media.blubrry.com/takeituneasy/ins.blubrry.com/takeituneasy/lex_ai_dhh_2.mp3",
+        "episodePageUrl": "https://podcasts.apple.com/us/podcast/id1434243584?i=1000786117598",
+        "feedUrl": "https://lexfridman.com/feed/podcast/"
+      },
+      "description": "<p>Three modes in one Actor. <code>episodes</code> returns every episode of a show with its <strong>direct audio file URL</strong> (<code>episodeUrl</code>), duration, publish date, description and the show's RSS feed. <code>reviews</code> returns listener reviews with star rating, title, body, author and date, filterable by <code>minRating</code>/<code>maxRating</code> and by <code>keyword</code>. <code>podcasts</code> searches Apple Podcasts by keyword and can be chained straight into episodes or reviews. Accepts an Apple Podcasts URL, a bare collection ID or a search term, in any country storefront. HTTP-only: no login, no headless browser.</p>",
       "memory_mb": 1024
     }
   ]
