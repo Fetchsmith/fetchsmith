@@ -70,7 +70,7 @@
     "sortBy": {
       "title": "Sort / selection",
       "type": "string",
-      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking (only this mode supports 'Last N days').",
+      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking. Note: Steam itself defaults 'all' to only the last 30 days unless you also set 'Last N days' below.",
       "default": "recent",
       "enum": ["recent", "updated", "all"],
       "enumTitles": ["Most recent", "Recently updated", "Most helpful"],
@@ -79,7 +79,7 @@
     "dayRange": {
       "title": "Last N days (helpfulness mode only)",
       "type": "integer",
-      "description": "With Sort = Most helpful, restrict to reviews from the last N days (1-365). Ignored in the other sort modes, which are already chronological.",
+      "description": "With Sort = Most helpful, restrict to reviews from the last N days (1-365). Steam applies a 30-day window by default in that mode if you leave this blank, so set it to 365 for a true all-time 'most helpful' pull. Ignored in the other sort modes, which are already chronological.",
       "minimum": 1,
       "maximum": 365,
       "editor": "number"

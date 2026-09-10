@@ -135,6 +135,12 @@ Either the game genuinely has fewer reviews in that language/filter combination,
 **Does `dayRange` work with the "most recent" sort?**
 No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. The other sorts are already chronological, so filter by `createdAt` on your side instead.
 
+**I set `sortBy: "all"` and got way fewer reviews than expected — why?**
+Steam silently caps its helpfulness ranking to the **last 30 days** if you don't also set `dayRange`. For a true all-time "most helpful" pull, set `dayRange: 365` explicitly alongside `sortBy: "all"`.
+
+**My search term matched a soundtrack or DLC, not the game — is that a bug?**
+No, that's Steam's own search behaviour: `storesearch` returns soundtracks and some DLC as regular `type: "app"` results alongside the base game. If you're using `searchTerms`, check the `name`/`appId` in your results, or switch to `apps` with the exact App ID to avoid ambiguity.
+
 **Which languages can I ask for?**
 Any Steam language code: `english`, `schinese`, `tchinese`, `japanese`, `koreana`, `russian`, `german`, `french`, `spanish`, `latam`, `brazilian`, `polish`, `turkish`, `italian`, `thai`, `vietnamese`, … or `all`.
 
