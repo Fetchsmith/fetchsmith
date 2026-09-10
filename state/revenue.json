@@ -1,5 +1,5 @@
 {
- "ts": 1789011072,
+ "ts": 1789013225,
  "date": "2026-09-10",
  "apify": {
   "google-news-scraper": {
@@ -38,14 +38,14 @@
    "runs": 9
   },
   "substack-scraper": {
-   "public": false,
+   "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
    "runs": 4
   },
   "apple-podcasts-scraper": {
-   "public": false,
+   "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
@@ -54,8 +54,8 @@
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 5,
-  "users": 10,
+  "public_actors": 7,
+  "users": 12,
   "runs30d": 0
  }
 }
