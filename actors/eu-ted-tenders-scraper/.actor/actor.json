@@ -1,0 +1,16 @@
+{
+  "actorSpecification": 1,
+  "name": "eu-ted-tenders-scraper",
+  "title": "EU TED Tenders — Public Procurement Notice Scraper",
+  "description": "Search the EU's official TED public-procurement journal by country, CPV code and date. Returns clean, deduplicated JSON.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "output": "./output_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}

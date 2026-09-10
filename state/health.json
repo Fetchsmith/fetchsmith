@@ -1,5 +1,5 @@
 {
- "ts": 1789041799,
+ "ts": 1789043729,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -142,6 +142,22 @@
     "deadline",
     "isRollingDeadline",
     "announcementDate"
+   ],
+   "err": null
+  },
+  "eu-ted-tenders-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "publicationNumber",
+    "noticeType",
+    "procedureType",
+    "title",
+    "titleLanguage",
+    "buyerName",
+    "buyerCountry",
+    "buyerCity"
    ],
    "err": null
   }

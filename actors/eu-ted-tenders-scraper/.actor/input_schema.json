@@ -1,0 +1,51 @@
+{
+  "title": "Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "countries": {
+      "title": "Buyer countries",
+      "type": "array",
+      "description": "ISO 3166-1 alpha-3 codes of the buyer's country (e.g. DEU, FRA, ITA, ESP, NLD). Leave empty for all EU/EEA countries.",
+      "editor": "stringList",
+      "default": []
+    },
+    "cpvCodes": {
+      "title": "CPV codes",
+      "type": "array",
+      "description": "Common Procurement Vocabulary codes to filter by (e.g. 72000000 for IT services, 45000000 for construction). Exact 8-digit codes only. Leave empty for all.",
+      "editor": "stringList",
+      "default": []
+    },
+    "noticeTypes": {
+      "title": "Notice types",
+      "type": "array",
+      "description": "TED notice-type codes to filter by, e.g. cn-standard (contract notice), can-standard (contract award notice), pin-standard (prior information). Leave empty for all types.",
+      "editor": "stringList",
+      "default": []
+    },
+    "publishedWithinDays": {
+      "title": "Published within (days)",
+      "type": "integer",
+      "description": "Only return notices published in the last N days.",
+      "default": 7,
+      "minimum": 1,
+      "maximum": 365
+    },
+    "expertQuery": {
+      "title": "Expert query (advanced, overrides the filters above)",
+      "type": "string",
+      "description": "Raw TED expert-query string (same syntax as the TED website's expert search), e.g. \"buyer-country=DEU AND classification-cpv=72000000 AND publication-date>=today(-30)\". If set, this replaces countries/cpvCodes/noticeTypes/publishedWithinDays entirely.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many notices.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
+    }
+  },
+  "required": []
+}

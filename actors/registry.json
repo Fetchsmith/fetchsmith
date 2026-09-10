@@ -533,6 +533,65 @@
       },
       "description": "<p>Every scholarship listed on <strong>bold.org</strong> as a clean row: the award amount and how many awards are given, the deadline (with rolling deadlines flagged), the actual <strong>essay question</strong> as plain text with its word limits, the judging criteria, which education levels can apply, the donor, and bold.org's <strong>live applicant count</strong>. From those last two numbers we compute <code>applicantsPerAward</code>, so you can rank a list by how winnable each award actually is rather than by headline dollar amount.</p><p>Crawls the <code>by-major</code>, <code>by-state</code>, <code>by-type</code>, <code>by-demographics</code> and <code>by-year</code> category families (discovered from bold.org's own sitemap — never a query-string URL, which its robots.txt disallows), returning about 30 complete records per HTTP request and de-duplicating across categories. Filter by minimum award, deadline window, education level, or open-only. HTTP-only: no login, no headless browser, no proxy.</p>",
       "memory_mb": 1024
+    },
+    {
+      "slug": "eu-ted-tenders-scraper",
+      "title": "EU TED Tenders Scraper (Public Procurement)",
+      "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer, value, CPV codes, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON.",
+      "status": "live",
+      "credits_per_result": 3,
+      "apify_actor_id": "5LxaohNcO1zA86cEp",
+      "example_input": {
+        "countries": [
+          "FRA"
+        ],
+        "publishedWithinDays": 14,
+        "maxResults": 20
+      },
+      "output_fields": [
+        "publicationNumber",
+        "noticeType",
+        "procedureType",
+        "title",
+        "titleLanguage",
+        "buyerName",
+        "buyerCountry",
+        "buyerCity",
+        "contractNature",
+        "cpvCodes",
+        "description",
+        "totalValue",
+        "totalValueCurrency",
+        "deadlineDate",
+        "deadlineReceiptRequestDate",
+        "publicationDate",
+        "noticeUrl"
+      ],
+      "sample_output": {
+        "publicationNumber": "590290-2026",
+        "noticeType": "can-standard",
+        "procedureType": "open",
+        "title": "France – Construction work – Opération de construction du Pôle logistique du CEA Grenoble",
+        "titleLanguage": "eng",
+        "buyerName": "CEA - Grenoble",
+        "buyerCountry": "FRA",
+        "buyerCity": "Grenoble",
+        "contractNature": [
+          "works"
+        ],
+        "cpvCodes": [
+          "45000000",
+          "45213220",
+          "45260000"
+        ],
+        "description": "Travaux de Couverture / Bardage dans le cadre de l'opération de construction du Pôle logistique située sur le site du CEA Grenoble",
+        "totalValue": 834262,
+        "totalValueCurrency": "EUR",
+        "deadlineDate": null,
+        "deadlineReceiptRequestDate": null,
+        "publicationDate": "2026-08-27",
+        "noticeUrl": "https://ted.europa.eu/en/notice/590290-2026/pdf"
+      }
     }
   ]
 }

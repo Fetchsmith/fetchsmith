@@ -1,0 +1,48 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "publicationNumber": { "type": ["string", "null"], "title": "Publication number" },
+      "noticeType": { "type": ["string", "null"], "title": "Notice type" },
+      "procedureType": { "type": ["string", "null"], "title": "Procedure type" },
+      "title": { "type": ["string", "null"], "title": "Title" },
+      "titleLanguage": { "type": ["string", "null"], "title": "Title language" },
+      "buyerName": { "type": ["string", "null"], "title": "Buyer name" },
+      "buyerCountry": { "type": ["string", "null"], "title": "Buyer country" },
+      "buyerCity": { "type": ["string", "null"], "title": "Buyer city" },
+      "contractNature": { "type": "array", "title": "Contract nature" },
+      "cpvCodes": { "type": "array", "title": "CPV codes" },
+      "description": { "type": ["string", "null"], "title": "Description" },
+      "totalValue": { "type": ["number", "null"], "title": "Total value" },
+      "totalValueCurrency": { "type": ["string", "null"], "title": "Currency" },
+      "deadlineDate": { "type": ["string", "null"], "title": "Tender submission deadline" },
+      "deadlineReceiptRequestDate": { "type": ["string", "null"], "title": "Request-to-participate deadline" },
+      "publicationDate": { "type": ["string", "null"], "title": "Publication date" },
+      "noticeUrl": { "type": ["string", "null"], "title": "Notice URL" }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "publicationDate", "title", "buyerName", "buyerCountry", "totalValue", "totalValueCurrency", "deadlineDate", "noticeUrl"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "publicationDate": { "label": "Published" },
+          "title": { "label": "Title" },
+          "buyerName": { "label": "Buyer" },
+          "buyerCountry": { "label": "Country" },
+          "totalValue": { "label": "Value" },
+          "totalValueCurrency": { "label": "Currency" },
+          "deadlineDate": { "label": "Deadline" },
+          "noticeUrl": { "label": "URL", "format": "link" }
+        }
+      }
+    }
+  }
+}
