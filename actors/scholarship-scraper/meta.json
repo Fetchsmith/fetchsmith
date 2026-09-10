@@ -1,8 +1,8 @@
 {
   "title": "Scholarship Scraper (bold.org)",
-  "description": "Scrape scholarship listings from bold.org to JSON/CSV: name, award amount, number of awards, deadline, essay prompt, criteria, education level, applicant count and a computed applicants-per-award competitiveness ratio. Filter by amount, deadline window and education level.",
+  "description": "Scrape scholarship listings from bold.org to JSON/CSV: award amount, number of awards, deadline, essay prompt, criteria, education level and applicant count, with a computed applicants-per-award ratio. ~28 typed fields. Filter by free-text topic, amount, deadline window and education level.",
   "seoTitle": "Scholarship Scraper - bold.org Scholarships to JSON/CSV",
-  "seoDescription": "Scrape bold.org scholarships to JSON/CSV: award amount, deadline, essay prompt, eligibility and applicants-per-award. Filter by amount, deadline and level. Pay per result.",
+  "seoDescription": "Scrape bold.org scholarships to JSON/CSV: amount, deadline, essay prompt, applicants-per-award. Filter by topic, amount, deadline, level. Pay per result.",
   "categories": ["EDUCATION", "OTHER", "DEVELOPER_TOOLS"],
   "events": {
     "result": { "eventTitle": "Result item", "eventDescription": "One scholarship record returned to the dataset. Records removed by your filters are not charged.", "eventPriceUsd": 0.0005 }
