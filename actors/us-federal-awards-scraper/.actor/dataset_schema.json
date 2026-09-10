@@ -1,0 +1,363 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "awardId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardId",
+        "example": "89243425FEE000489"
+      },
+      "awardUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardUrl",
+        "example": "https://www.usaspending.gov/award/CONT_AWD_89243425FEE000489_8900_89243423AEE000008_8900"
+      },
+      "generatedInternalId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "GeneratedInternalId",
+        "example": "CONT_AWD_89243425FEE000489_8900_89243423AEE000008_8900"
+      },
+      "awardCategory": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardCategory",
+        "example": "contracts"
+      },
+      "awardType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardType",
+        "example": "BPA CALL"
+      },
+      "recipientName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientName",
+        "example": "ENERGY TECHNOLOGY ALLIANCE LLC"
+      },
+      "recipientUei": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientUei",
+        "example": "WDTLX4NKRKC8"
+      },
+      "recipientId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientId",
+        "example": "1e9ef813-f574-8382-62be-70b18403cfb2-C"
+      },
+      "recipientAddress": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientAddress",
+        "example": "920 NW BOND ST STE 204"
+      },
+      "recipientCity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientCity",
+        "example": "BEND"
+      },
+      "recipientState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientState",
+        "example": "OR"
+      },
+      "recipientCountry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecipientCountry",
+        "example": "UNITED STATES"
+      },
+      "awardingAgency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardingAgency",
+        "example": "Department of Energy"
+      },
+      "awardingSubAgency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardingSubAgency",
+        "example": "Department of Energy"
+      },
+      "fundingAgency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FundingAgency",
+        "example": "Department of Energy"
+      },
+      "fundingSubAgency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FundingSubAgency",
+        "example": "Department of Energy"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description",
+        "example": "SCIENTIFIC, ENGINEERING AND TECHNICAL SUPPORT (SETS) FOR DOE EERE'S SOLAR ENERGY TECHNOLOGIES OFFICE (SETO) - FOLLOW-ON "
+      },
+      "awardAmount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AwardAmount",
+        "example": 7909335.88
+      },
+      "totalOutlays": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "TotalOutlays",
+        "example": 7909335.88
+      },
+      "loanValue": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LoanValue"
+      },
+      "subsidyCost": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubsidyCost"
+      },
+      "startDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "StartDate",
+        "example": "2025-04-30"
+      },
+      "endDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EndDate",
+        "example": "2026-04-30"
+      },
+      "baseObligationDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BaseObligationDate",
+        "example": "2025-04-30"
+      },
+      "lastModifiedDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LastModifiedDate",
+        "example": "2026-07-15 10:00:49"
+      },
+      "placeOfPerformanceCity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PlaceOfPerformanceCity",
+        "example": "GOLDEN"
+      },
+      "placeOfPerformanceState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PlaceOfPerformanceState",
+        "example": "CO"
+      },
+      "placeOfPerformanceZip": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PlaceOfPerformanceZip",
+        "example": "80401"
+      },
+      "placeOfPerformanceCountry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PlaceOfPerformanceCountry",
+        "example": "USA"
+      },
+      "naicsCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "NaicsCode",
+        "example": "562910"
+      },
+      "naicsDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "NaicsDescription",
+        "example": "REMEDIATION SERVICES"
+      },
+      "pscCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PscCode",
+        "example": "R425"
+      },
+      "pscDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PscDescription",
+        "example": "SUPPORT- PROFESSIONAL: ENGINEERING/TECHNICAL"
+      },
+      "cfdaNumbers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "CfdaNumbers"
+      },
+      "cfdaProgramTitles": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "CfdaProgramTitles"
+      },
+      "disasterEmergencyFundCodes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "DisasterEmergencyFundCodes"
+      },
+      "kind": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Kind",
+        "example": "contract"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "awardId",
+          "awardUrl",
+          "generatedInternalId",
+          "awardCategory",
+          "awardType",
+          "recipientName",
+          "recipientUei",
+          "recipientId",
+          "recipientAddress",
+          "recipientCity"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "awardId": {
+            "label": "AwardId",
+            "format": "text"
+          },
+          "awardUrl": {
+            "label": "AwardUrl",
+            "format": "link"
+          },
+          "generatedInternalId": {
+            "label": "GeneratedInternalId",
+            "format": "text"
+          },
+          "awardCategory": {
+            "label": "AwardCategory",
+            "format": "text"
+          },
+          "awardType": {
+            "label": "AwardType",
+            "format": "text"
+          },
+          "recipientName": {
+            "label": "RecipientName",
+            "format": "text"
+          },
+          "recipientUei": {
+            "label": "RecipientUei",
+            "format": "text"
+          },
+          "recipientId": {
+            "label": "RecipientId",
+            "format": "text"
+          },
+          "recipientAddress": {
+            "label": "RecipientAddress",
+            "format": "text"
+          },
+          "recipientCity": {
+            "label": "RecipientCity",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

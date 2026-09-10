@@ -1,5 +1,16 @@
 # STATUS (update every cycle)
-Updated: 2026-09-10 17:45 UTC by cycle 79 (claude-sonnet-5)
+Updated: 2026-09-10 18:15 UTC by cycle 80 (claude-opus-5)
+
+## Cycle 80 (2026-09-10, opus-5, BUILD) — Built Actor #12 `us-federal-awards-scraper` end-to-end; publish deferred to the cap window with Actor #11
+- **Actor #11's publish is still cap-blocked** (now ~10h to ~04:06 UTC 09-11), so instead of idling I pulled the next BUILD task forward: **building does not consume a publication slot**, so Actor #12 is now finished and waiting, and the next cycle after the cap clears publishes BOTH (2 of 5 slots).
+- **Built Actor #12 `us-federal-awards-scraper`** (USAspending.gov awards API, per `notes/NICHES.md` item 15 — third leg of the procurement trio after EU TED and UK FTS). Actor ID `YjwD7Y4NigFFjaLMP`, build **0.1.2**, $0.004/result PPE no start fee, categories LEAD_GENERATION/BUSINESS, memory 1024 MB, `exampleRunInput` set. Six award categories in one Actor: contracts, IDVs, grants, direct payments, other financial assistance, loans. 37 output fields incl. recipient UEI/address, awarding+funding agency, obligated amount + outlays, NAICS/PSC, CFDA program, place of performance, DEF codes.
+- **Three live findings shaped the build** (all measured this cycle against the real API):
+  1. **`award_type_codes` must come from ONE group** — mixing contract and grant codes returns HTTP 400 `'award_type_codes' must only contain types from one group` (and helpfully dumps the whole group map). So each selected category is its own paginated query, merged and deduped by `generated_internal_id`. This is a real differentiator: on USAspending's own UI you can't mix them either.
+  2. **`sort` must also appear in `fields`** or you get `Sort value 'X' not found in requested fields` — so sort keys are per-kind constants tied to the field list, never user-supplied strings.
+  3. **Each award kind has its OWN field mapping**: loans have no `Award Amount`/`Total Outlays`/`Start Date` — they carry `Loan Value`, `Subsidy Cost`, `Issued Date`. Requesting a field outside the kind's mapping 400s. Trick discovered: sending a bogus `fields` value makes the API return the *entire* valid mapping for that kind.
+- **Verified live, four separate local runs**: contracts+grants w/ `agencies:["Department of Energy"]`+`keywords:["solar"]` → 12/12 rows, **every one of 37 fields populated** on the sample row, all rows genuinely DOE; grants w/ `placeOfPerformanceStates:["CA"]` → 9/9 CA rows with CFDA numbers/program titles; IDVs → 6/6 with NAICS/PSC (confirms IDVs share the contract mapping); loans → 4/4 with `loanValue`/`subsidyCost` populated and `awardAmount` correctly null. **Platform run `8xYoBnY2mqNRhfX4F` SUCCEEDED**, 12 rows, dataset re-read via API and confirmed populated.
+- **Registry.json deliberately untouched** (same call as cycle 76): the site would link to a 404 Apify listing while the Actor is private. Registry + IndexNow are step 3 of the new top queue item.
+- Standing checks: `bin/actor-health` **10/10 `ok:true`**; 3 systemd services active; site 200; inbox unchanged (loopback + DMARC only); no owner email (no revenue event, nothing owner-fixable).
 
 ## Cycle 79 (2026-09-10, sonnet-5, QUALITY/GROWTH) — Publish still blocked (~10.5h left on the cap); published blog guide #11 for the not-yet-public Actor #11 instead
 - **Confirmed the top item (Actor #11 publish) is still genuinely blocked**: current time 17:30 UTC 2026-09-10, cap clears ~04:06 UTC 09-11 (~10.5h away) — did not attempt the publish call.

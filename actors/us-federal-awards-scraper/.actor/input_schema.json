@@ -1,0 +1,116 @@
+{
+  "title": "US Federal Awards Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "awardCategories": {
+      "title": "Award categories",
+      "type": "array",
+      "description": "Which kinds of federal awards to pull. Each category is fetched with its own query (the API refuses to mix contract and grant codes in one request), then merged into one dataset.",
+      "editor": "select",
+      "default": ["contracts"],
+      "items": {
+        "type": "string",
+        "enum": ["contracts", "idvs", "grants", "direct_payments", "other_financial_assistance", "loans"],
+        "enumTitles": [
+          "Contracts (BPA calls, purchase/delivery orders, definitive contracts)",
+          "IDVs (GWAC, IDC, FSS, BOA, BPA)",
+          "Grants (block, formula, project, cooperative agreements)",
+          "Direct payments",
+          "Other financial assistance",
+          "Loans (face value + subsidy cost instead of obligated amount)"
+        ]
+      }
+    },
+    "startDate": {
+      "title": "Start date",
+      "type": "string",
+      "description": "Earliest award action date, YYYY-MM-DD. Defaults to one year ago. The API has no data before 2007-10-01, so earlier dates are clamped.",
+      "editor": "textfield",
+      "example": "2026-01-01"
+    },
+    "endDate": {
+      "title": "End date",
+      "type": "string",
+      "description": "Latest award action date, YYYY-MM-DD. Defaults to today.",
+      "editor": "textfield",
+      "example": "2026-09-10"
+    },
+    "keywords": {
+      "title": "Keywords",
+      "type": "array",
+      "description": "Free-text search across award description, recipient and agency. Multiple keywords are ORed by the API.",
+      "editor": "stringList",
+      "example": ["solar energy"]
+    },
+    "agencies": {
+      "title": "Awarding agencies",
+      "type": "array",
+      "description": "Exact top-tier awarding agency names as USAspending spells them, e.g. \"Department of Energy\", \"Department of Defense\", \"National Aeronautics and Space Administration\". Abbreviations do not match.",
+      "editor": "stringList",
+      "example": ["Department of Energy"]
+    },
+    "placeOfPerformanceStates": {
+      "title": "Place-of-performance states",
+      "type": "array",
+      "description": "Two-letter USPS state codes for where the work is performed, e.g. CA, TX.",
+      "editor": "stringList",
+      "example": ["CA"]
+    },
+    "recipientStates": {
+      "title": "Recipient states",
+      "type": "array",
+      "description": "Two-letter USPS state codes for the recipient's own address, e.g. NY, VA.",
+      "editor": "stringList"
+    },
+    "minAwardAmount": {
+      "title": "Minimum award amount (USD)",
+      "type": "integer",
+      "description": "Only return awards at or above this obligated amount.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "maxAwardAmount": {
+      "title": "Maximum award amount (USD)",
+      "type": "integer",
+      "description": "Only return awards at or below this obligated amount.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "sortBy": {
+      "title": "Sort by",
+      "type": "string",
+      "description": "Ordering of results within each category. Loans are sorted by loan value / issued date, which are their equivalents of amount / start date.",
+      "editor": "select",
+      "default": "awardAmount",
+      "enum": ["awardAmount", "lastModifiedDate", "startDate", "recipientName"],
+      "enumTitles": ["Award amount", "Last modified date", "Start date", "Recipient name"]
+    },
+    "order": {
+      "title": "Sort order",
+      "type": "string",
+      "description": "Whether the sort field runs high-to-low (descending, e.g. biggest awards first) or low-to-high.",
+      "editor": "select",
+      "default": "desc",
+      "enum": ["desc", "asc"],
+      "enumTitles": ["Descending", "Ascending"]
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many awards in total (across all selected categories). You are only charged for awards actually returned.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "maxPagesPerCategory": {
+      "title": "Max pages per category",
+      "type": "integer",
+      "description": "Safety cap on how deep to paginate each category (100 awards per page).",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 200
+    }
+  },
+  "required": []
+}

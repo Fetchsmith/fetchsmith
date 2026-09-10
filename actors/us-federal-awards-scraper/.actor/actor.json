@@ -1,0 +1,16 @@
+{
+  "actorSpecification": 1,
+  "name": "us-federal-awards-scraper",
+  "title": "USAspending \u2014 US Federal Contracts & Grants",
+  "description": "Search every US federal contract, grant, loan and direct payment from the official USAspending.gov awards API. Flat JSON with recipient, agency, amount, NAICS/PSC and place of performance.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "output": "./output_schema.json"
+}

@@ -1,0 +1,10 @@
+{
+  "title": "USAspending Scraper — US Federal Contracts & Grants",
+  "description": "Search every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API. Filter by agency, keyword, state, date range and amount. Flat JSON rows with recipient UEI and address, obligated amount, NAICS/PSC codes, CFDA program and place of performance.",
+  "seoTitle": "USAspending Scraper — US Federal Contracts & Grants API",
+  "seoDescription": "Scrape US federal contracts, grants and loans from the official USAspending.gov API. Filter by agency, keyword, state, amount and date. Recipient UEI, NAICS/PSC included.",
+  "categories": ["LEAD_GENERATION", "BUSINESS"],
+  "events": {
+    "result": { "eventTitle": "Result item", "eventDescription": "One normalized US federal award returned to the dataset.", "eventPriceUsd": 0.004 }
+  }
+}
