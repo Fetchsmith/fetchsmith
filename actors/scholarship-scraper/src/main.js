@@ -28,6 +28,12 @@ const minAwardAmount = input.minAwardAmount == null ? null : Number(input.minAwa
 const deadlineBefore = input.deadlineBefore ? Date.parse(input.deadlineBefore) : null;
 const deadlineAfter = input.deadlineAfter ? Date.parse(input.deadlineAfter) : null;
 const educationLevels = (input.educationLevels ?? []).map((s) => String(s).replace(/^_/, '').toLowerCase());
+// Free-text search. "scholarship(s)" is dropped as a stopword so "nursing scholarships" behaves
+// like "nursing"; every remaining token must appear somewhere in the record's text.
+const searchTokens = String(input.searchQuery ?? '')
+    .toLowerCase()
+    .split(/[^a-z0-9+#]+/)
+    .filter((t) => t && !/^scholarships?$/.test(t));
 
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
@@ -186,6 +192,11 @@ function normalise(s, sourceUrl) {
 }
 
 function keep(item) {
+    if (searchTokens.length) {
+        const hay = [item.name, item.description, item.category, item.slug, ...(item.criteria ?? [])]
+            .filter(Boolean).join(' ').toLowerCase();
+        if (!searchTokens.every((t) => hay.includes(t))) return false;
+    }
     const dl = item.deadline ? Date.parse(item.deadline) : null;
     if (openOnly && !item.isRollingDeadline && dl != null && dl < Date.now()) return false;
     if (minAwardAmount != null && (item.awardAmount ?? 0) < minAwardAmount) return false;
@@ -211,6 +222,19 @@ async function discoverCategoryUrls(types) {
             // hub page and carries no scholarship records.
             const m = u.match(new RegExp(`/scholarships/${t}/([^/?]+)`));
             if (m) byType.get(t).push(`${BASE}/scholarships/${t}/${m[1]}/`);
+        }
+    }
+    // bold.org's sitemap lists the same category URL many times over (by-year: 109 <loc> entries
+    // for 9 distinct categories). Without this, maxCategoryPages is spent re-fetching pages we
+    // have already crawled and the run returns far fewer unique scholarships than it could.
+    for (const t of types) byType.set(t, [...new Set(byType.get(t))]);
+    // With a search query, crawl the category pages whose slug matches it first, so a small
+    // maxCategoryPages spends its budget on relevant pages instead of alphabetical luck.
+    if (searchTokens.length) {
+        for (const t of types) {
+            const list = byType.get(t);
+            const hit = (u) => searchTokens.some((tok) => u.toLowerCase().includes(tok));
+            byType.set(t, [...list.filter(hit), ...list.filter((u) => !hit(u))]);
         }
     }
     // Interleave types so a small maxCategoryPages still samples every type the user asked for.
@@ -266,7 +290,7 @@ try {
     if (pushed === 0) {
         log.warning(
             `0 scholarships pushed. ${seen.size} record(s) were found but every one was removed by your filters `
-            + `(${filteredOut} filtered out). Try clearing minAwardAmount / deadlineBefore / deadlineAfter / educationLevels, `
+            + `(${filteredOut} filtered out). Try clearing searchQuery / minAwardAmount / deadlineBefore / deadlineAfter / educationLevels, `
             + 'or set openOnly=false to include closed scholarships. Filtered-out records are never charged.',
         );
     }

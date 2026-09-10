@@ -38,6 +38,12 @@
       "editor": "requestListSources",
       "default": []
     },
+    "searchQuery": {
+      "title": "Search query (optional)",
+      "type": "string",
+      "description": "Free-text filter, e.g. \"nursing\" or \"first generation\". Every word must appear in the scholarship's name, description, category, slug or criteria (the word \"scholarship\" itself is ignored). It also reorders sitemap-discovered category pages so matching ones are crawled first. Filtered-out records are never charged.",
+      "editor": "textfield"
+    },
     "openOnly": {
       "title": "Open scholarships only",
       "type": "boolean",

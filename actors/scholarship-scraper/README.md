@@ -12,6 +12,7 @@ Every row is a complete scholarship: award amount, number of awards, deadline, e
 - **Find the winnable ones** — sort your dataset by `applicantsPerAward`; a $1,000 award with 40 applicants beats a $10,000 award with 12,000.
 - **"Closing this month" lists** — set `deadlineBefore` to the end of the month and `openOnly: true`.
 - **Filter by money** — `minAwardAmount: 5000` keeps only the serious awards.
+- **Search by topic** — `searchQuery: "nursing"` finds the matching categories for you, so you do not have to know bold.org's category slugs.
 - **Prep essays in bulk** — `essayTopic` gives the actual essay question(s) as plain text, with `essayMinLength` / `essayMaxLength`.
 - **Segment by audience** — `educationLevels: ["highschool"]` for graduating seniors, `["graduate"]` for grad students.
 
@@ -23,6 +24,7 @@ Every row is a complete scholarship: award amount, number of awards, deadline, e
 | `maxCategoryPages` | integer | `20` | How many category pages to fetch (≈30 scholarships each) |
 | `maxResults` | integer | `200` | Hard cap on rows returned — also your cost cap |
 | `startUrls` | array | — | Specific bold.org category **or** individual scholarship URLs, instead of sitemap discovery |
+| `searchQuery` | string | — | Free-text filter, e.g. `nursing` or `first generation`. Every word must appear in the name, description, category, slug or criteria (the word "scholarship" is ignored). Also crawls matching category pages first |
 | `openOnly` | boolean | `true` | Drop scholarships whose deadline has passed (rolling deadlines are always kept) |
 | `minAwardAmount` | integer | — | Minimum single-award size in USD |
 | `deadlineAfter` | string | — | Only deadlines on/after this date (`YYYY-MM-DD`) |
