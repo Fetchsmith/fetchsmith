@@ -96,6 +96,9 @@ The filters are ANDed. A keyword plus a state plus a minimum amount over a short
 **Are loan amounts in `awardAmount`?**
 No. Loans report `loanValue` (face value) and `subsidyCost` instead of an obligated amount — that is how the API models them, and both fields are passed through unchanged.
 
+**Why does `startDate` on a row show a date decades before my search window?**
+`startDate`/`endDate` filter on the award's *action date* (when it was last modified), not on `startDate`'s own value. A long-running contract (e.g. a national-lab management contract) can have a 1978 period-of-performance start and still match a 2025-2026 filter window because it was modified this year — `lastModifiedDate` is what actually falls inside your range. Sort by `lastModifiedDate` instead of `startDate` if you want the most recently active awards first.
+
 **Is this the same as SAM.gov?**
 No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *awards already made*. This Actor covers awards — who won, how much, which agency, and when the work ends.
 
