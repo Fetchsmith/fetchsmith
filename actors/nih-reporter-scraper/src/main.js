@@ -70,7 +70,19 @@ const CRITERIA_ALLOWLIST = new Set([
     'date_added', 'project_start_date', 'project_end_date', 'award_notice_date',
     'spending_categories', 'full_study_sections', 'foa', 'exclude_subprojects',
     'sub_project_only', 'multi_pi_only', 'newly_added_projects_only', 'use_relevance',
+    'award_amount_range',
 ]);
+
+// SECOND-ORDER FORM OF THE SAME TRAP (verified live, cycle 136): award_amount_range is a real
+// field, but a HALF-FILLED one is silently ignored the same way an unknown field name is --
+// {"min_amount":5000000} alone returned the full unfiltered 83531-row FY2024 total, byte-identical
+// to the fake-field control, while {"min_amount":5000000,"max_amount":999999999} correctly returned
+// 599. So the allowlist above is not enough here: the object must always be sent with BOTH bounds
+// or not at all, or a "grants over $5M" request silently becomes "every grant" that the customer
+// pays per result for. Missing bounds are filled with these sentinels; max_amount is capped at
+// int32 (2147483647 works, 999999999999 makes the API 500).
+const AMOUNT_MIN_SENTINEL = 0;
+const AMOUNT_MAX_SENTINEL = 2147483647;
 
 function assertCriteria(criteria) {
     const bad = Object.keys(criteria).filter((k) => !CRITERIA_ALLOWLIST.has(k));
@@ -105,6 +117,24 @@ const orgStates = strList(input.orgStates).map((s) => s.toUpperCase());
 const piNames = strList(input.piNames);
 const projectNums = strList(input.projectNums);
 
+const amountNum = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? Math.min(Math.floor(n), AMOUNT_MAX_SENTINEL) : null;
+};
+const minAwardAmount = amountNum(input.minAwardAmount);
+const maxAwardAmount = amountNum(input.maxAwardAmount);
+if (minAwardAmount !== null && maxAwardAmount !== null && minAwardAmount > maxAwardAmount) {
+    throw new Error(`minAwardAmount (${minAwardAmount}) is greater than maxAwardAmount (${maxAwardAmount}); no project can match that band.`);
+}
+
+if (minAwardAmount !== null || maxAwardAmount !== null) {
+    log.warning(
+        'Award-amount filtering is active. NIH RePORTER drops projects that have no award amount recorded '
+        + 'from any amount-filtered query (~3% of rows in a measured FY2024 sample), so those will not appear '
+        + 'in the results even if they match every other filter.',
+    );
+}
+
 const unknownIcs = agencyIcCodes.filter((c) => !IC_CODES.includes(c));
 if (unknownIcs.length) {
     log.warning(
@@ -136,7 +166,14 @@ function buildCriteria() {
     if (orgNames.length) c.org_names = orgNames;
     if (orgStates.length) c.org_states = orgStates;
     if (piNames.length) c.pi_names = piNames.map((n) => ({ any_name: n }));
+    if (minAwardAmount !== null || maxAwardAmount !== null) {
+        c.award_amount_range = {
+            min_amount: minAwardAmount ?? AMOUNT_MIN_SENTINEL,
+            max_amount: maxAwardAmount ?? AMOUNT_MAX_SENTINEL,
+        };
+    }
     if (input.activeOnly === true) c.include_active_projects = true;
+    if (input.newlyAddedOnly === true) c.newly_added_projects_only = true;
     if (input.excludeSubprojects !== false) c.exclude_subprojects = true;
     return assertCriteria(c);
 }

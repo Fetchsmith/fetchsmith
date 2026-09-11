@@ -29,8 +29,11 @@ No API key, no login, no proxy. Public data only.
 | `orgNames` | array | Funded organization, partial match |
 | `orgStates` | array | Two-letter US state codes |
 | `piNames` | array | PI name contains, e.g. `["Doudna"]` |
+| `minAwardAmount` | integer | Only awards of at least this many dollars (e.g. `1000000`) |
+| `maxAwardAmount` | integer | Only awards of at most this many dollars — combine with the minimum for an exact band |
 | `projectNums` | array | Exact lookup — **ignores every other filter** |
 | `activeOnly` | boolean | Currently active projects only |
+| `newlyAddedOnly` | boolean | Only projects recently added to RePORTER — cheap incremental pulls |
 | `excludeSubprojects` | boolean | Drop P01/U54 subproject duplicates (default `true`) |
 | `includePublications` | boolean | Join linked PubMed PMIDs (default `true`) |
 | `includeAbstract` | boolean | Include abstract + public-health relevance (default `true`) |
@@ -78,6 +81,10 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 **How do I get more than 15,000 rows?** Just raise `maxResults`; the chunking is automatic. If a query is so broad that even chunking can't reach the rest, the log says so explicitly rather than silently truncating.
 
 **Why does one project appear several times?** NIH RePORTER records one row per *fiscal year of funding*. `R01CA234538` returns six rows for its six funded years. De-duplicate on `coreProjectNum` if you want one row per project.
+
+**Can I filter by award size?** Yes — `minAwardAmount` and `maxAwardAmount`, either alone or as a band. One caveat we measured rather than assumed: NIH RePORTER excludes projects with **no award amount recorded** from any amount-filtered query — about 2.8% of a 500-row FY2024 sample, matching a 2.6% drop in the reported total. So an amount filter is slightly narrower than "every project in that range"; the run log warns you whenever one is active.
+
+**How do I pull only what's new since my last run?** Set `newlyAddedOnly: true`. That is RePORTER's own "recently added to the index" flag — about 8.9k projects index-wide when measured, almost all current-fiscal-year — so an incremental pull costs a handful of results instead of re-scanning a whole fiscal year.
 
 **Is any personal contact data collected?** No. The NIH RePORTER schema contains no email or phone field at all. PI and program-officer **names** are included because they are statutory public disclosure, published on every reporter.nih.gov project page — the same class of data as a federal contract awardee's name.
 
