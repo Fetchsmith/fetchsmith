@@ -7,10 +7,12 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 ## What you can do with it
 
 - **Federal-contractor lead lists** — every company that won work from a given agency, with UEI, address and NAICS/PSC codes.
-- **Competitor tracking** — pull one recipient's full award history by name keyword and watch amounts, agencies and end dates (recompete timing).
+- **Competitor tracking** — pull one recipient's full award history by exact name (`recipients`) and watch amounts, agencies and end dates (recompete timing).
 - **Grant prospecting** — filter to grants and cooperative agreements by CFDA/Assistance Listing program and state.
 - **Market sizing** — how much a given agency obligated on solar, cyber, AI or any keyword over any window since 2007.
 - **Recompete alerts** — sort by end date and find contracts about to expire in your NAICS.
+- **Single-award lookup** — already have a PIID/FAIN/URI from a solicitation or a news story? `awardIds` fetches that exact award, ignoring every other filter.
+- **Pass-through grant tracing** — `fundingAgencies` finds awards where the money's actual source agency differs from the agency that administers the award (common on formula/block grants routed through a state).
 
 ## Input
 
@@ -19,7 +21,10 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `awardCategories` | array | `["contracts"]` | `contracts`, `idvs`, `grants`, `direct_payments`, `other_financial_assistance`, `loans`. Pick several — each is fetched separately and merged. |
 | `startDate` / `endDate` | string | last 365 days | `YYYY-MM-DD`, filters on award action date. Nothing exists before `2007-10-01`; earlier dates are clamped. |
 | `keywords` | array | – | Free text over description, recipient and agency. Multiple keywords are ORed. |
-| `agencies` | array | – | **Exact** top-tier agency names, e.g. `Department of Energy`. Abbreviations like `DOE` match nothing. |
+| `recipients` | array | – | Free-text recipient name search, e.g. `Lockheed Martin`. Multiple values are ORed. |
+| `agencies` | array | – | **Exact** top-tier *awarding* agency names, e.g. `Department of Energy`. Abbreviations like `DOE` match nothing. |
+| `fundingAgencies` | array | – | **Exact** top-tier *funding* agency names — the agency whose budget pays, which can differ from `agencies` on pass-through grants. Same exact-name rule. |
+| `awardIds` | array | – | Exact PIID/FAIN/URI values, e.g. `N0001917C0001`. **Exclusive mode**: set this and every other filter (including the date window) is ignored so the exact award can never be hidden by an unrelated filter. |
 | `placeOfPerformanceStates` | array | – | Two-letter USPS codes for where the work happens (`CA`, `TX`). |
 | `recipientStates` | array | – | Two-letter USPS codes for the recipient's own address. |
 | `minAwardAmount` / `maxAwardAmount` | integer | – | Obligated amount bounds in USD. |

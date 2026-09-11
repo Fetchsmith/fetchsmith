@@ -59,6 +59,9 @@ const effectiveStart = startDate < EARLIEST ? EARLIEST : startDate;
 
 const keywords = (input.keywords ?? []).map((k) => String(k).trim()).filter(Boolean);
 const agencies = (input.agencies ?? []).map((a) => String(a).trim()).filter(Boolean);
+const fundingAgencies = (input.fundingAgencies ?? []).map((a) => String(a).trim()).filter(Boolean);
+const recipients = (input.recipients ?? []).map((r) => String(r).trim()).filter(Boolean);
+const awardIds = (input.awardIds ?? []).map((a) => String(a).trim()).filter(Boolean);
 const states = (input.placeOfPerformanceStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const recipientStates = (input.recipientStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
@@ -73,9 +76,22 @@ function buildFilters(codes) {
         award_type_codes: codes,
         time_period: [{ start_date: effectiveStart, end_date: endDate }],
     };
+    // Exact-ID lookup is exclusive: every other filter is dropped and the date window is
+    // widened to the API's full supported range, so an award_ids match can never be silently
+    // hidden by an unrelated filter — same trap class as grants-gov's oppNum, clinicaltrials'
+    // nctIds and nih-reporter's projectNums.
+    if (awardIds.length) {
+        filters.award_ids = awardIds;
+        filters.time_period = [{ start_date: EARLIEST, end_date: isoDay(today) }];
+        return filters;
+    }
     if (keywords.length) filters.keywords = keywords;
-    if (agencies.length) {
-        filters.agencies = agencies.map((name) => ({ type: 'awarding', tier: 'toptier', name }));
+    if (recipients.length) filters.recipient_search_text = recipients;
+    if (agencies.length || fundingAgencies.length) {
+        filters.agencies = [
+            ...agencies.map((name) => ({ type: 'awarding', tier: 'toptier', name })),
+            ...fundingAgencies.map((name) => ({ type: 'funding', tier: 'toptier', name })),
+        ];
     }
     if (states.length) {
         filters.place_of_performance_locations = states.map((state) => ({ country: 'USA', state }));
@@ -200,12 +216,18 @@ async function pushResult(item) {
     return pushed < maxResults;
 }
 
-log.info(
-    `USAspending: categories=[${categories.join(',')}] ${effectiveStart}..${endDate} `
-    + `sort=${sortBy} ${order} maxResults=${maxResults}`
-    + (keywords.length ? ` keywords=[${keywords.join(', ')}]` : '')
-    + (agencies.length ? ` agencies=[${agencies.join(', ')}]` : ''),
-);
+if (awardIds.length) {
+    log.info(`USAspending: exact award-ID lookup awardIds=[${awardIds.join(', ')}] (all other filters ignored) maxResults=${maxResults}`);
+} else {
+    log.info(
+        `USAspending: categories=[${categories.join(',')}] ${effectiveStart}..${endDate} `
+        + `sort=${sortBy} ${order} maxResults=${maxResults}`
+        + (keywords.length ? ` keywords=[${keywords.join(', ')}]` : '')
+        + (recipients.length ? ` recipients=[${recipients.join(', ')}]` : '')
+        + (agencies.length ? ` agencies=[${agencies.join(', ')}]` : '')
+        + (fundingAgencies.length ? ` fundingAgencies=[${fundingAgencies.join(', ')}]` : ''),
+    );
+}
 
 const seen = new Set();
 let scanned = 0;

@@ -50,6 +50,27 @@
       "editor": "stringList",
       "example": ["Department of Energy"]
     },
+    "fundingAgencies": {
+      "title": "Funding agencies",
+      "type": "array",
+      "description": "Exact top-tier funding agency names (the agency whose budget actually pays, which can differ from the awarding agency on pass-through grants). Same exact-name rule as Awarding agencies.",
+      "editor": "stringList",
+      "example": ["Department of Transportation"]
+    },
+    "recipients": {
+      "title": "Recipients",
+      "type": "array",
+      "description": "Free-text recipient name search, e.g. \"Lockheed Martin\". Matches the same box as USAspending's Advanced Search → Recipient. Multiple values are ORed.",
+      "editor": "stringList",
+      "example": ["Lockheed Martin"]
+    },
+    "awardIds": {
+      "title": "Award IDs (exact lookup)",
+      "type": "array",
+      "description": "Exact PIID / FAIN / URI values, e.g. \"N0001917C0001\". When set, this becomes an exclusive lookup: every other filter (keywords, agencies, recipients, states, amounts, date window) is ignored and the full 2007-10-01..today date range is used, so an exact-ID lookup can never be silently hidden by an unrelated filter.",
+      "editor": "stringList",
+      "example": ["N0001917C0001"]
+    },
     "placeOfPerformanceStates": {
       "title": "Place-of-performance states",
       "type": "array",
