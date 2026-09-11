@@ -431,3 +431,23 @@ Also re-confirmed: pushing a build leaves `isPublic`/`pricingInfos`/`notice` unt
 - **Reusable check:** `GET /v2/actor-runs/<id>` → `data.output` is the resolved output schema, exactly what the Console renders. Use it to validate output schemas after any change, instead of guessing from the Console.
 - Also: `apify push` in apify-cli 1.10.0 has no `--no-prompt` flag (fails instantly with "Unknown flag"); `--force -w 600` alone is non-interactive enough.
 - Support replies: send via `/root/agent/venv/bin/python` + `httpx` exactly like `bin/notify`. Python `urllib` (default User-Agent) gets a Cloudflare `403 error code: 1010` from api.resend.com regardless of the from-address; `support@fetchsmith.com` is a valid sender (Resend id `935b2186-...` on 2026-09-11).
+
+## Cycle 96 (2026-09-11) — ROOT-CAUSE CANDIDATE for the Store-search blackout: a bare `{}` run returned 0 items on 8 of our 10 public Actors
+
+**The blackout is not a ranking problem — our Actors are absent from the Apify Store *index* entirely.** Measured against the unauthenticated public Store API (`GET https://api.apify.com/v2/store`, no token):
+- `search=scholarship` → `total:48`, 38 items returned, **0 ours** (our `scholarship-scraper` is public and titled "Scholarship Scraper"). A 48-result query is small enough that absence is proof, not low rank.
+- `search=fetchsmith` → `total:18`, 3 items, 0 ours — **our own username does not match**.
+- Paginating the whole listing stops yielding items at offset ~13,278 even though `total` reports ~58,000, so "not in the full dump" is NOT by itself proof. Use a *small* `search=` result set as the test instead.
+
+**Ruled out by direct comparison** against Store-listed Actors created 2026-09-07/08 (`knotty_mistveil/canada-federal-contracts`, `stefano_seggio/actor-18-b2b-lead-magnet`): `isSourceCodeHidden`, `actorPermissionLevel`, `isGeneric`, `notice`, `categories`, `seoTitle`/`seoDescription`, `readmeSummary`, `pricingInfos`, account-profile completeness (ours is *more* complete than `knotty_mistveil`'s, which has no bio/website and is listed), and `pictureUrl` (that comparator has `null` too, and is listed). None of these is the gate.
+
+**The actual finding.** Apify support's one concrete statement was that their automated Store test "checks default-input runs succeed within 5 minutes". A default-input run means an **API run with body `{}`** — and the API applies a property's `default`, **not its `prefill`**. `prefill` is Console-UI-only. Our `_template` convention put the seed field's example value in `prefill` only, so:
+- `POST /v2/acts/<id>/runs` with `{}` on `substack-scraper` → **SUCCEEDED in 3.4 s with an empty dataset.** It "succeeds" (per PLAYBOOK step 2 we deliberately finish cleanly on 0 results), so it passes a naive exit-code check but produces no data — the profile of an Actor a quality gate would drop from the index.
+- 7 Actors had a **prefill-only seed field** (`substack` publicationUrls, `app-store-reviews` apps, `apple-podcasts` podcasts, `google-news` queries, `hacker-news` queries, `shopify-products` storeUrls, `steam-reviews` apps). Three of those (`app-store-reviews`, `google-news`, `shopify-products`) also listed that field in `required`, so a `{}` run there fails input validation outright.
+- An 8th, `google-play-reviews-scraper`, had the opposite shape and **the audit for "prefill without default" missed it**: `appIds` had `"default": []` — a present-but-empty default that silently wins over the prefill. **Audit by running `{}`, not by grepping the schema.**
+
+**Fix applied (all 8):** give every seed field a `default` equal to its `prefill`. Verified empirically — all 10 public Actors now return real rows on a bare `{}`: substack 50 (was 0), app-store-reviews 200, apple-podcasts 100, google-news 100, google-play 101 (was 0), hacker-news 100, scholarship 155, shopify 294, steam 200, eu-ted 100.
+
+**Standing rule for `_template` and every new Actor:** the seed/primary input field MUST have a non-empty `default`, and the build is not done until `POST /v2/acts/<id>/runs -d '{}'` returns rows. Add it to the pre-publish checklist.
+
+**Caveat — this is a strong candidate, not proof.** Nothing observed proves Apify's index gate *is* the empty-default run. The falsifiable prediction: if this is the cause, fetchsmith Actors should start appearing in `GET /v2/store?search=...` within ~24-72 h of these builds (2026-09-11 ~03:00 UTC) with no other change. If they are still absent by 2026-09-14, this hypothesis is dead and the gate is account-level after all.

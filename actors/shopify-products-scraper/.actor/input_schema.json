@@ -10,7 +10,8 @@
       "editor": "stringList",
       "prefill": [
         "https://www.allbirds.com"
-      ]
+      ],
+      "default": ["https://www.allbirds.com"]
     },
     "maxProductsPerStore": {
       "title": "Max products per store",

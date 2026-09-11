@@ -8,7 +8,9 @@
       "type": "array",
       "description": "Google Play package names to fetch reviews for, e.g. com.spotify.music. Find it in the app's Play Store URL (?id=...).",
       "editor": "stringList",
-      "default": [],
+      "default": [
+        "com.spotify.music"
+      ],
       "prefill": [
         "com.spotify.music"
       ]

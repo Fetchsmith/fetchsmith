@@ -6,7 +6,8 @@
       "type": "array",
       "description": "Substack publications to scrape. Accepts any form: \"astralcodexten\", \"astralcodexten.substack.com\", or a custom domain like \"https://www.bigtechnology.com\". Custom domains and redirects are handled automatically.",
       "editor": "stringList",
-      "prefill": ["https://astralcodexten.substack.com"]
+      "prefill": ["https://astralcodexten.substack.com"],
+      "default": ["https://astralcodexten.substack.com"]
     },
     "postUrls": {
       "title": "Individual post URLs",

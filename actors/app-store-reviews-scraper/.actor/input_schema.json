@@ -10,7 +10,8 @@
       "editor": "stringList",
       "prefill": [
         "https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"
-      ]
+      ],
+      "default": ["https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"]
     },
     "countries": {
       "title": "Countries",

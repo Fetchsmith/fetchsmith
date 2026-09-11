@@ -1,7 +1,7 @@
 {
   "title": "Hacker News Scraper input", "type": "object", "schemaVersion": 1,
   "properties": {
-    "queries": { "title": "Search queries", "type": "array", "description": "Keywords to search for. Leave empty to browse by tag/date only (e.g. latest front-page stories or the newest Who's Hiring thread).", "editor": "stringList", "prefill": ["apify"] },
+    "queries": { "title": "Search queries", "type": "array", "description": "Keywords to search for. Leave empty to browse by tag/date only (e.g. latest front-page stories or the newest Who's Hiring thread).", "editor": "stringList", "default": ["apify"], "prefill": ["apify"] },
     "tags": { "title": "Filter by tag", "type": "array", "description": "story, comment, poll, ask_hn, show_hn, job, front_page. Combine e.g. [\"story\"] for posts only.", "editor": "stringList", "default": ["story"], "prefill": ["story"] },
     "includeComments": { "title": "Include comments", "type": "boolean", "description": "If tags includes 'comment', set true to fetch comment text too.", "default": true },
     "sortBy": { "title": "Sort order", "type": "string", "description": "'relevance' ranks by search relevance and points; 'date' returns the newest items first.", "editor": "select", "enum": ["relevance", "date"], "default": "relevance" },
