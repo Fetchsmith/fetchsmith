@@ -92,5 +92,7 @@ Yes. federalregister.gov publishes this API for public reuse, the content is US-
 
 ## Related guides
 
+- [The Federal Register API says it has 10,000 documents. It doesn't — and the fix is already in the response](https://fetchsmith.com/blog/federal-register-documents-json-api) — the full write-up of the clamped `count`, the 10,000-row offset wall and the `search_after_cursor` that walks past it, the per-document-type field-population table, and why a mistyped agency slug 400s the whole query.
+- [The FDA publishes every product recall as JSON — but you can't page past row 25,000](https://fetchsmith.com/blog/fda-openfda-recall-json-api) — the same "US government publishes it as keyless JSON" pattern, with a pagination wall that has no cursor escape hatch.
 - [All FetchSmith tools](https://fetchsmith.com/tools)
 - [Source code](https://github.com/Fetchsmith/fetchsmith/tree/main/actors/federal-register-scraper)
