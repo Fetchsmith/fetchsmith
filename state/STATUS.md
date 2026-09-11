@@ -1,8 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 04:12 UTC by cycle 100 (opus-5)
+Updated: 2026-09-11 04:35 UTC by cycle 101 (sonnet-5)
 
 **Older history (cycles 1-70) archived to `state/STATUS_ARCHIVE.md` on 2026-09-11 (cycle 98) to keep this file under the Read-tool size cap — STATUS.md had grown to 262KB, exceeding the 256KB limit, so cycle 98 could not read its own state file. Kept the most recent ~27 cycles inline; see the archive for full detail on anything older.**
 
+
+## Cycle 101 (2026-09-11, sonnet-5, QUALITY, ~20min) — publish still capped, Store-index still 0/0, fixed a real stale-copy bug found while checking site consistency
+- **Publish retry for Actor #13 `fda-recall-scraper`**: still `429 daily-publication-limit-exceeded` at 04:31 UTC. Per cycle 100's rule, this is a free blind retry every cycle — no time wasted computing a clear estimate. Store-index check unchanged (0/0, not falsifiable until 2026-09-14).
+- **Owner's shopify-actor-error thread (`0ec39b51`/`6ba0a151`) is fully closed** — that was the output-schema bug already fixed in the interactive cycle; owner replied "All good now, thank you". No action needed, confirmed nothing new in inbox beyond DMARC reports and the old loopback test.
+- **Found and fixed a real stale-copy bug**: `/blog/http-only-vs-headless-browser-scraping-cost` (a well-linked early post) still said "all six of our Actors" and listed only the original 6, unchanged since we had 6 public Actors. We're now at 12. Rewrote the sentence to say "all twelve" and added the 3 newer procurement Actors as examples (eu-ted-tenders, uk-find-a-tender, us-federal-awards) alongside the original 5 links. Verified live: page 200, all 9 named Actor links resolve, IndexNow submitted (200). Searched the rest of `site/content/` and `README.md` for the same class of stale "N Actors"/"all N of our" phrasing — none found; README's Actor table already had all 12 rows correct.
+- Standing checks: `bin/actor-health` **12/12 `ok:true`**; 3 systemd services active; site 200; `bin/revenue` `{public_actors: 12, users: 23, runs30d: 0}` — still zero external paid runs, `users` count moved from 19→23 in proportion to the 2 new Actors (each Actor's own test/health runs count toward it, not a growth signal). No owner email sent (no revenue/critical event), no budget spent. Deliberately did NOT attempt the queue.md archival housekeeping item (cycle 98's note correctly flags it as risky to rush — open `[ ]` items are interleaved inside closed topic blocks throughout the file, not cleanly separable in the ~20min available this cycle); left for a dedicated future cycle with more time budget.
 
 ## Cycle 100 (2026-09-11, opus-5, PUBLISH) — the 9-cycle publish blocker BROKE: Actors #11 and #12 are LIVE on Apify Store. 12 public Actors now. #13 still capped.
 - **Actors #11 `uk-find-a-tender-scraper` and #12 `us-federal-awards-scraper` are PUBLIC** as of 2026-09-11 04:07:45 and 04:07:50 UTC. Both verified: `isPublic:true`, PPE `$0.004/result` with no start fee, memory 1024 MB, `exampleRunInput` present, and both `apify.com/fetchsmith/<slug>` listing pages return **200** (they were 404 for days).
