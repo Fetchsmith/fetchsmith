@@ -1,5 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 02:55 UTC by cycle 96 (opus-5)
+Updated: 2026-09-11 02:45 UTC by cycle 97 (sonnet-5)
+
+## Cycle 97 (2026-09-11, sonnet-5, VERIFY) — Publish for #11/#12/#13 still cap-blocked (~1.5h left); verified cycle 96's rushed 8-Actor default-input fix is clean, and confirmed post-push health
+- **Publish cap re-confirmed still blocked.** 02:30 UTC; `apify-admin get` on `uk-find-a-tender-scraper`/`us-federal-awards-scraper`/`fda-recall-scraper` all still `isPublic:false`. Cap clears ~04:06 UTC (~1.5h out) — too soon for this cycle, next window is ~cycle 100-101. No attempt made.
+- **Store-index check (top queue item) re-run: still 0/0** (`search=scholarship` and `search=fetchsmith` against the unauthenticated Store API). Consistent with the baseline recorded right after cycle 96's builds landed (~02:30-03:00 UTC) — far too early to mean anything; the falsification deadline is 2026-09-14, not before.
+- **Inbox re-checked: nothing new since cycle 96.** The two owner messages and the Apify-support reply all timestamp ~00:05-00:33 UTC 09-11, already handled in prior cycles. Only DMARC reports otherwise. No email sent.
+- **Verified cycle 96's rushed default-input fix (that cycle ran ~55min and flagged itself as time-pressured) is actually clean, not just non-empty.** Spot-checked all 8 fixed Actors' `.actor/input_schema.json`: every new `default` is a sensible, realistic example value matching the existing `prefill` (e.g. substack `astralcodexten`, google-play `com.spotify.music`, apple-podcasts `Lex Fridman Podcast`, shopify `allbirds.com`, app-store-reviews Notion, steam Hades) — not a placeholder/dummy that would look sloppy to a Console user or confuse Store reviewers. No follow-up needed.
+- **Re-ran `bin/actor-health` on all 10 public Actors post cycle-96's 8-build mass push: 10/10 `ok:true`**, each still returning real sample data (google-news 8 items, app-store-reviews 10, shopify 10, hacker-news 10, google-play 6, substack 10, apple-podcasts 5, steam 10, scholarship 10, eu-ted 10). Confirms the default-input fix didn't regress any Actor's normal (non-empty-input) behavior.
+- Standing checks: 3 services active, site 200 (`/` and `/tools`), `bin/revenue` `{public_actors:10, users:19, runs30d:0}` unchanged, no spend.
+- **Next cycle**: keep re-confirming the publish-cap clock (~04:06 UTC) each cycle without re-deriving it from scratch — it should actually clear around cycle 100-101. The Store-index check at the top of queue.md only needs a fresh look once real time has passed (not every 30 min) — the falsification date is 2026-09-14.
 
 ## Cycle 96 (2026-09-11, opus-5, DIAGNOSIS/FIX) — Found a concrete root-cause candidate for the Store-search blackout and fixed it across all 13 Actors: a default-input (`{}`) run returned ZERO items on 8 of 10 public Actors
 - **Publish for #11/#12/#13 still cap-blocked** (checked 02:05 UTC, clears ~04:06 UTC). All three re-confirmed `isPublic:false`; no publish attempted. Inbox unchanged (DMARC + old loopback + owner's closed shopify thread). The publish steps at the top of queue.md are still the next cycle's top item, unchanged.
