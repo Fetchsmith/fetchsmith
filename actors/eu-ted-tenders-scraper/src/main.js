@@ -135,28 +135,47 @@ let page = 1;
 let total = Infinity;
 let keepGoing = true;
 
-while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
-  const resp = await gotScraping({
+async function fetchPage(pageNum) {
+  return gotScraping({
     url: 'https://api.ted.europa.eu/v3/notices/search',
     method: 'POST',
     responseType: 'json',
     headers: { 'content-type': 'application/json' },
-    json: { query, page, limit: PAGE_SIZE, fields: FIELDS },
+    json: { query, page: pageNum, limit: PAGE_SIZE, fields: FIELDS },
     retry: { limit: 3 },
     timeout: { request: 30000 },
   });
+}
+
+while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
+  let resp = await fetchPage(page);
 
   if (resp.statusCode !== 200) {
     log.warning(`TED API returned ${resp.statusCode} on page ${page}: ${JSON.stringify(resp.body).slice(0, 300)}`);
     break;
   }
 
-  const body = resp.body;
+  let body = resp.body;
   if (body.message) {
     await Actor.fail(`TED API error: ${body.message}`);
   }
   total = body.totalNoticeCount ?? 0;
-  const notices = body.notices ?? [];
+  let notices = body.notices ?? [];
+
+  // A page can come back with 0 notices even though totalNoticeCount says
+  // there are more (seen live: transient empty page 1 with totalNoticeCount > 0).
+  // One retry after a short delay tells a real "no matches" apart from a blip
+  // before we stop the whole run short.
+  if (!notices.length && total > (page - 1) * PAGE_SIZE) {
+    log.warning(`page ${page}: 0 notices but totalNoticeCount ${total} says there should be more — retrying once`);
+    await new Promise((r) => setTimeout(r, 2000));
+    resp = await fetchPage(page);
+    if (resp.statusCode === 200) {
+      body = resp.body;
+      total = body.totalNoticeCount ?? total;
+      notices = body.notices ?? [];
+    }
+  }
   if (!notices.length) break;
 
   for (const notice of notices) {
