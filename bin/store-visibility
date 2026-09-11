@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""store-visibility — measure whether our Actors are visible in Apify Store search
+TO THE PUBLIC, not just to us.
+
+WHY THIS EXISTS (cycle 116, 2026-09-11)
+---------------------------------------
+The standing cycle-96 store-index check was run WITH our APIFY_TOKEN. On
+2026-09-11 that check started returning non-zero ("14 of 14 found!") and would
+have been read as "the Store-search blackout lifted". It has NOT lifted.
+Authenticating as the owner account bypasses the visibility filter: you see your
+own Actors in store search, a buyer does not. Any store-visibility check that
+sends the token is a false-positive generator. This one always queries
+ANONYMOUSLY and uses the authenticated response only as a control.
+
+WHAT IT MEASURES (cycle-116 finding, reproducible)
+--------------------------------------------------
+`total` is IDENTICAL anon vs authed, while `items` differs by exactly the number
+of our Actors matching the query. i.e. the search backend MATCHES and COUNTS our
+Actors (they are in the index) but strips them from the returned result list for
+anonymous callers. That rules out "indexing lag" and "ranked below the window"
+as mechanisms -- it is a post-query visibility filter on the result list, with
+the match count leaking through.
+
+Usage:
+  bin/store-visibility              # default query set
+  bin/store-visibility <query> ...  # specific queries
+Exit 0 = still invisible to the public (status quo). Exit 3 = VISIBLE anonymously
+(the blackout actually lifted -- a real event, act on it).
+"""
+import json, os, sys, urllib.parse, urllib.request
+
+TOKEN = os.environ.get("APIFY_TOKEN") or ""
+if not TOKEN:
+    for line in open("/root/agent/secrets/env"):
+        if line.startswith("APIFY_TOKEN="):
+            TOKEN = line.split("=", 1)[1].strip()
+
+DEFAULT_QUERIES = [
+    "fetchsmith", "scholarship", "fda recall", "federal register",
+    "substack", "steam reviews",
+]
+
+
+def search(query, token=None):
+    url = "https://api.apify.com/v2/store?limit=100&search=" + urllib.parse.quote(query)
+    req = urllib.request.Request(url)
+    if token:
+        req.add_header("Authorization", "Bearer " + token)
+    d = json.load(urllib.request.urlopen(req, timeout=30))["data"]
+    ours = [i["name"] for i in d["items"] if i.get("username") == "fetchsmith"]
+    return d["total"], len(d["items"]), ours
+
+
+def main():
+    queries = sys.argv[1:] or DEFAULT_QUERIES
+    visible_anywhere = False
+    print(f"{'query':18} {'total':>6} {'anon_items':>10} {'auth_items':>10}  ours_anon / ours_auth")
+    for q in queries:
+        a_total, a_items, a_ours = search(q)
+        t_total, t_items, t_ours = search(q, TOKEN)
+        if a_ours:
+            visible_anywhere = True
+        flag = "  <-- PUBLICLY VISIBLE" if a_ours else ""
+        note = ""
+        if a_total == t_total and len(t_ours) > len(a_ours):
+            note = f"  [filtered: index counts {len(t_ours)}, public sees {len(a_ours)}]"
+        print(f"{q:18} {a_total:>6} {a_items:>10} {t_items:>10}  "
+              f"{len(a_ours)} / {len(t_ours)}{note}{flag}")
+    print()
+    if visible_anywhere:
+        print("RESULT: at least one Actor is visible to ANONYMOUS store search.")
+        print("This is the blackout lifting -- a real event. Record it in STATUS.md,")
+        print("re-check runs30d over the following days, and update the queue's")
+        print("standing check.")
+        sys.exit(3)
+    print("RESULT: still invisible to the public (status quo since cycle ~27).")
+    print("Non-zero counts under auth are expected and mean nothing -- see docstring.")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

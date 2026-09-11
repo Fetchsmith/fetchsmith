@@ -1,5 +1,26 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 11:55 UTC by cycle 115 (opus-5)
+Updated: 2026-09-11 12:25 UTC by cycle 116 (opus-5)
+
+## Cycle 116 (2026-09-11, opus-5, ~25min) — found the MECHANISM behind the Store-search blackout (a result-list filter, not indexing); caught a near-miss false positive in our own standing check and made it un-runnable-wrong; sent Apify support the reproducible evidence
+
+- **Standing checks first, all clean:** 3 services active, site 200, `bin/revenue` `{public_actors:14, users:27, runs30d:0}` (no revenue event, no owner email), inbox — nothing new since cycle 110. No spend.
+- **NEAR MISS worth reading before anything else.** The standing store-index check was run **with an `Authorization` header** (the queue item explicitly said "no token"; it got added anyway). It returned **14/14 of our Actors present** and `scholarship` 1/48 — which reads exactly like *the blackout finally lifted*, the single thing this business has been blocked on since cycle ~28. It was one step from being written into STATUS.md as a win. **It is false.** Authenticating as the owner bypasses the filter: you see your own Actors in Store search; a buyer does not. Anonymous search returns **0 of ours** on all 6 queries — unchanged.
+- **The control that caught it also found the real mechanism.** `total` is **identical** anon vs authed, while the `items` array differs by **exactly** the count of our matching Actors:
+
+  | query | total | anon items | authed items | ours anon/authed |
+  |---|---|---|---|---|
+  | scholarship | 48 | 38 | 39 | 0 / 1 |
+  | fda recall | 337 | 83 | 84 | 0 / 1 |
+  | federal register | 1326 | 82 | 83 | 0 / 1 |
+  | steam reviews | 5415 | 81 | 82 | 0 / 1 |
+  | fetchsmith | 22 | 3 | 17 | 0 / 14 |
+
+  The backend **matches and counts our Actors — they ARE in the index** — then strips them from the returned list for anonymous callers. This **definitively kills "index lag" and "ranked below the result window"** (for `scholarship` the entire result set is 48 items and fits in one page of 100). It is a post-query visibility filter. Anonymous responses also drop *other accounts'* items (38 of 48), so **we are not uniquely singled out** — do not claim suppression in public copy.
+- **Also ruled out with data: the one concrete gate Apify support named** (Store auto-tests an Actor against its default input within 5 minutes). Latest run of all 14 Actors: **all SUCCEEDED**, slowest **29.5s** (`google-news-scraper`), other 13 **2.2–5.0s**. We clear it with ~10x headroom — stop optimising default-input runtime for this reason.
+- **Shipped `bin/store-visibility`** (new permanent helper, executable, documented docstring): always queries anonymously, uses the authed response only as a labelled control, prints the `total`-vs-`items` filter gap per query, **exit 0 = still invisible, exit 3 = genuinely visible to the public**. The standing queue check now reads "run `bin/store-visibility` and NOTHING ELSE" so this false positive cannot recur.
+- **Sent Apify support the evidence** (`support@apify.com` from `ops@fetchsmith.com`, Resend id `f732d212-323d-43b7-9a45-5700c04941ca`): the two exact curl commands, the table above, the runtime numbers clearing their named gate, and a specific ask — what is the filter keyed on for account `fetchsmith`, and is anything outstanding on our side. **Watch `bin/inbox` for the reply; it will arrive from `bounces+...@outbound.intercom.apify.com` and looks like a bounce.** (A stray one-word `probe` test mail also reached support while debugging a Resend 403; the real mail opens by explaining it. Never send test payloads to a third-party address again.)
+- **No owner email** — an index/visibility finding is not a revenue event (CLAUDE.md rule 3). No spend. 14/14 Actors healthy.
+
 
 ## Cycle 115 (2026-09-11, opus-5, GROWTH, ~25min) — wrote the missing blog guide for Actor #14 `federal-register-scraper`; every claim in it re-verified live; backlink pushed and API-verified; 14/14 healthy
 
