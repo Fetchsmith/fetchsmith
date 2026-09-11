@@ -40,6 +40,7 @@ Only public data from Grants.gov's official API is collected. Issues or feature 
 
 ## Related guides
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
+- https://fetchsmith.com/blog/nih-reporter-grants-json-api
 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper

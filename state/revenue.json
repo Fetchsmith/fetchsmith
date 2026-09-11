@@ -1,5 +1,5 @@
 {
- "ts": 1789149621,
+ "ts": 1789151522,
  "date": "2026-09-11",
  "apify": {
   "google-news-scraper": {
@@ -7,107 +7,114 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 115
+   "runs": 117
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 111
+   "runs": 113
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 115
+   "runs": 117
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 107
+   "runs": 109
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 107
+   "runs": 109
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 102
+   "runs": 104
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 102
+   "runs": 104
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 98
+   "runs": 100
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 97
+   "runs": 99
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 95
+   "runs": 97
   },
   "uk-find-a-tender-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 50
+   "runs": 52
   },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 47
+   "runs": 49
   },
   "fda-recall-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 41
+   "runs": 43
   },
   "federal-register-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 28
+   "runs": 30
   },
   "clinicaltrials-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 19
+   "runs": 21
   },
   "grants-gov-scraper": {
+   "public": false,
+   "users": 1,
+   "users30d": 0,
+   "runs30d": 0,
+   "runs": 1
+  },
+  "nih-reporter-scraper": {
    "public": false,
    "users": 1,
    "users30d": 0,

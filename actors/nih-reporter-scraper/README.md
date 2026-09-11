@@ -91,6 +91,7 @@ Only public data from NIH RePORTER's official API is collected. Issues or featur
 
 ## Related guides
 
+- https://fetchsmith.com/blog/nih-reporter-grants-json-api
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 - https://fetchsmith.com/tools
 
