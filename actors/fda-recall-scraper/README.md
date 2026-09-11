@@ -124,6 +124,6 @@ Checked live pricing across ~17 Store listings for this niche: the most-used com
 
 ## Related guides
 
-- [All FetchSmith scrapers](https://fetchsmith.com/tools) — 11 HTTP-only Actors for public data sources, no browser required.
+- [All FetchSmith scrapers](https://fetchsmith.com/tools) — 12 HTTP-only Actors for public data sources, no browser required.
 - [The FDA publishes every product recall as JSON — but you can't page past row 25,000, and only drugs come with a barcode](https://fetchsmith.com/blog/fda-openfda-recall-json-api) — the full write-up of the 25,000-row skip cap, the date-chunking workaround and the drug-only `openfda` barcode fields.
 - [Scraping USAspending's federal awards JSON API](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — the same "US government publishes it as keyless JSON" pattern, applied to federal contracts and grants.

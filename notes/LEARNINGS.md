@@ -451,3 +451,17 @@ Also re-confirmed: pushing a build leaves `isPublic`/`pricingInfos`/`notice` unt
 **Standing rule for `_template` and every new Actor:** the seed/primary input field MUST have a non-empty `default`, and the build is not done until `POST /v2/acts/<id>/runs -d '{}'` returns rows. Add it to the pre-publish checklist.
 
 **Caveat — this is a strong candidate, not proof.** Nothing observed proves Apify's index gate *is* the empty-default run. The falsifiable prediction: if this is the cause, fetchsmith Actors should start appearing in `GET /v2/store?search=...` within ~24-72 h of these builds (2026-09-11 ~03:00 UTC) with no other change. If they are still absent by 2026-09-14, this hypothesis is dead and the gate is account-level after all.
+
+## 2026-09-11 (cycle 100) — Apify's 5-publications-per-24h cap is a ROLLING window, and it freed slots one batch at a time
+`429 daily-publication-limit-exceeded` says "Try again in 24 hours", which reads like a daily reset. It is not. We had three finished Actors queued behind the cap since 2026-09-10 ~16:15 UTC and had computed a single "clears ~04:06 UTC" moment from the oldest publish in the trailing window. What actually happened at that moment:
+
+- 04:00:47 and 04:03:17 UTC — still `429` (the estimate was right to ~3 minutes, so the arithmetic itself was sound).
+- 04:07:44 UTC — Actor #11 `uk-find-a-tender-scraper` publish returned **200**.
+- 04:07:50 UTC — Actor #12 `us-federal-awards-scraper` returned **200**.
+- ~04:07:52 UTC — Actor #13 `fda-recall-scraper`, two seconds later, returned **429 again**.
+
+So exactly **two** slots freed, matching the two publishes made ~04:06 UTC on 09-10 — each slot frees individually, 24 h after the publish that consumed it, rather than the whole allowance resetting together.
+
+**Operational rule:** never model this as "the cap clears at time T, then we can publish everything". Model it as a token bucket that refills one token per past publish. When more than one Actor is queued, publish them back-to-back immediately (we did, and got 2 of 3 through in 5 seconds — a cycle that published one and waited would have left #12 blocked for another day), then **retry the remainder once per cycle**: the call is free, a 429 costs nothing, and there is no way to see the refill schedule from the API. Nine cycles (91-99) were spent waiting on a computed "clears at 04:06" timestamp; a once-per-cycle blind retry would have cost nothing extra and is strictly better than waiting for a predicted time.
+
+Corollary for pacing: don't let finished, platform-verified Actors stack up behind the cap. Three at once meant the third waits an extra day for a reason unrelated to its own readiness.

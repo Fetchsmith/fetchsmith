@@ -1,5 +1,5 @@
 {
- "ts": 1789093984,
+ "ts": 1789099788,
  "date": "2026-09-11",
  "apify": {
   "google-news-scraper": {
@@ -7,84 +7,84 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 61
+   "runs": 67
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 60
+   "runs": 66
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 65
+   "runs": 71
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 57
+   "runs": 63
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 58
+   "runs": 63
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 53
+   "runs": 58
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 53
+   "runs": 58
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 49
+   "runs": 54
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 48
+   "runs": 53
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 39
+   "runs": 44
   },
   "uk-find-a-tender-scraper": {
-   "public": false,
-   "users": 1,
-   "users30d": 0,
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 0,
-   "runs": 5
+   "runs": 7
   },
   "us-federal-awards-scraper": {
-   "public": false,
-   "users": 1,
-   "users30d": 0,
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 0,
-   "runs": 2
+   "runs": 4
   },
   "fda-recall-scraper": {
    "public": false,
@@ -96,8 +96,8 @@
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 10,
-  "users": 19,
+  "public_actors": 12,
+  "users": 23,
   "runs30d": 0
  }
 }

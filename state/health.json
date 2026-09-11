@@ -1,5 +1,5 @@
 {
- "ts": 1789095642,
+ "ts": 1789099734,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -158,6 +158,38 @@
     "buyerName",
     "buyerCountry",
     "buyerCity"
+   ],
+   "err": null
+  },
+  "uk-find-a-tender-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "source",
+    "sourceName",
+    "ocid",
+    "noticeId",
+    "noticeUrl",
+    "stage",
+    "publishedDate",
+    "language"
+   ],
+   "err": null
+  },
+  "us-federal-awards-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "awardId",
+    "awardUrl",
+    "generatedInternalId",
+    "awardCategory",
+    "awardType",
+    "recipientName",
+    "recipientUei",
+    "recipientId"
    ],
    "err": null
   }
