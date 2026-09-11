@@ -4,7 +4,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 
 ## What it does
 - Queries the official `api.ted.europa.eu` Search API (no key, no auth required).
-- Filters by buyer country, CPV code, notice type and publication date, or drop in a raw TED expert-query string for full control.
+- Filters by buyer country, CPV code, notice type, free-text keywords and publication date (relative window or an absolute from/to range), or drop in a raw TED expert-query string for full control.
 - Normalizes TED's raw response: notices come back as multilingual maps (`{"deu": ["..."]}`) with heavily duplicated per-lot arrays (the same CPV code repeated a dozen times). This Actor flattens each notice to one row with an English-preferred title/buyer name, deduplicated CPV/contract-nature arrays, and the earliest deadline date.
 - Pay per result: you are charged only for notices actually returned.
 - HTTP-only (no browser), so runs are fast and cheap.
@@ -15,8 +15,10 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `countries` | array | ISO 3166-1 alpha-3 buyer country codes (e.g. `DEU`, `FRA`). Empty = all. |
 | `cpvCodes` | array | 8-digit CPV codes to filter by (e.g. `72000000` for IT services). Empty = all. |
 | `noticeTypes` | array | TED notice-type codes (e.g. `cn-standard`, `can-standard`, `pin-standard`). Empty = all. |
-| `publishedWithinDays` | integer | Only notices published in the last N days. Default 7. |
-| `expertQuery` | string | Raw TED expert-query string — overrides the filters above entirely. |
+| `publishedWithinDays` | integer | Only notices published in the last N days. Default 7. Ignored if `publicationDateFrom`/`publicationDateTo` is set. |
+| `publicationDateFrom` / `publicationDateTo` | string | Absolute date window, `YYYYMMDD` or `YYYY-MM-DD`. Either or both — overrides `publishedWithinDays`. |
+| `keywords` | string | Free-text search across the notice's title, description and buyer name (TED's `FT~` operator). |
+| `expertQuery` | string | Raw TED expert-query string — overrides all the filters above entirely. |
 | `maxResults` | integer | Stop after this many notices. Default 100. |
 
 ## Output
@@ -32,7 +34,9 @@ Buyer contact details (`buyerEmail`/`buyerPhone`/`buyerUrl`) are real lead-gener
 
 **Does this cover contract value?** Yes, when TED has it (`totalValue`/`totalValueCurrency`) — not every notice type carries a value (e.g. prior-information notices often don't).
 
-**Can I search full text?** Not directly in the simple filters yet — use `expertQuery` with TED's expert-search syntax for anything beyond country/CPV/type/date.
+**Can I search full text?** Yes — set `keywords` (e.g. `"cloud hosting"`), which is sent as TED's `FT~` full-text operator against title/description/buyer name. For anything beyond that, `expertQuery` gives raw access to TED's expert-search syntax.
+
+**Can I pull a specific historical month or quarter, not just "the last N days"?** Yes — set `publicationDateFrom`/`publicationDateTo` (either or both) to an absolute `YYYYMMDD` window; it overrides `publishedWithinDays`.
 
 ## Notes
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

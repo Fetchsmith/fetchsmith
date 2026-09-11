@@ -10,6 +10,21 @@ const noticeTypes = (input.noticeTypes ?? []).map((c) => String(c).trim()).filte
 const publishedWithinDays = Math.min(Math.max(Number(input.publishedWithinDays ?? 7), 1), 365);
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : null;
+const keywords = input.keywords ? String(input.keywords).trim() : null;
+
+function normalizeDate(raw, label) {
+  if (raw == null || raw === '') return null;
+  const digits = String(raw).trim().replace(/-/g, '');
+  if (!/^\d{8}$/.test(digits)) {
+    throw new Error(`"${label}" must be YYYYMMDD or YYYY-MM-DD, got "${raw}".`);
+  }
+  return digits;
+}
+const publicationDateFrom = normalizeDate(input.publicationDateFrom, 'publicationDateFrom');
+const publicationDateTo = normalizeDate(input.publicationDateTo, 'publicationDateTo');
+if (publicationDateFrom && publicationDateTo && publicationDateFrom > publicationDateTo) {
+  throw new Error(`"publicationDateFrom" (${publicationDateFrom}) is after "publicationDateTo" (${publicationDateTo}).`);
+}
 
 const FIELDS = [
   'publication-number', 'notice-title', 'notice-type', 'notice-subtype', 'procedure-type',
@@ -26,13 +41,27 @@ function orGroup(field, values) {
   return `(${values.map((v) => `${field}=${v}`).join(' OR ')})`;
 }
 
+function dateClause() {
+  // Explicit from/to (either or both) overrides the relative publishedWithinDays
+  // window entirely — that matches both Store competitors' "absolute date range"
+  // filters, which we lacked (only a 1-365 day relative lookback existed before).
+  if (publicationDateFrom || publicationDateTo) {
+    const clauses = [];
+    if (publicationDateFrom) clauses.push(`publication-date>=${publicationDateFrom}`);
+    if (publicationDateTo) clauses.push(`publication-date<=${publicationDateTo}`);
+    return clauses.join(' AND ');
+  }
+  return `publication-date>=today(-${publishedWithinDays})`;
+}
+
 function buildQuery() {
   if (expertQueryInput) return expertQueryInput;
   const parts = [
     orGroup('buyer-country', countries),
     orGroup('classification-cpv', cpvCodes),
     orGroup('notice-type', noticeTypes),
-    `publication-date>=today(-${publishedWithinDays})`,
+    keywords ? `FT~"${keywords.replace(/"/g, '\\"')}"` : null,
+    dateClause(),
   ].filter(Boolean);
   return parts.join(' AND ');
 }

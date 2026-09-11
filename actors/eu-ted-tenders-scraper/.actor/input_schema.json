@@ -27,10 +27,28 @@
     "publishedWithinDays": {
       "title": "Published within (days)",
       "type": "integer",
-      "description": "Only return notices published in the last N days.",
+      "description": "Only return notices published in the last N days. Ignored if publicationDateFrom or publicationDateTo is set.",
       "default": 7,
       "minimum": 1,
       "maximum": 365
+    },
+    "publicationDateFrom": {
+      "title": "Published from (absolute date)",
+      "type": "string",
+      "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)' with an absolute historical window. Leave empty for no lower bound (with publicationDateTo set).",
+      "editor": "textfield"
+    },
+    "publicationDateTo": {
+      "title": "Published to (absolute date)",
+      "type": "string",
+      "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)'. Leave empty for no upper bound (with publicationDateFrom set).",
+      "editor": "textfield"
+    },
+    "keywords": {
+      "title": "Keywords (full-text)",
+      "type": "string",
+      "description": "Free-text search across the notice's title, description and buyer name (TED's FT~ full-text operator). Example: \"cloud hosting\". Leave empty to match everything in your other filters.",
+      "editor": "textfield"
     },
     "expertQuery": {
       "title": "Expert query (advanced, overrides the filters above)",
