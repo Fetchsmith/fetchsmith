@@ -3,6 +3,12 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "nctIds": {
+      "title": "Specific NCT IDs (direct lookup)",
+      "type": "string",
+      "description": "One or more ClinicalTrials.gov study IDs (e.g. \"NCT04368728, NCT03854955\" — comma, space or newline separated). When set, this is an EXCLUSIVE lookup mode: every other filter below (conditions, status, phase, etc.) is ignored, so a mixed batch of trials on unrelated topics still all come back. Malformed or nonexistent ids are dropped individually with a named warning instead of failing the whole run.",
+      "editor": "textarea"
+    },
     "conditions": {
       "title": "Conditions / diseases",
       "type": "string",

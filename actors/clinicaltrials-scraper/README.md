@@ -37,6 +37,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 
 | Input | Notes |
 | --- | --- |
+| `nctIds` | Comma/space/newline-separated NCT IDs (e.g. `NCT04368728, NCT03854955`) for a direct lookup by ID instead of a search — what other Actors call "search by direct URL". **Exclusive mode**: when set, every filter below is ignored (so a mixed batch of unrelated trials all come back), and a malformed or nonexistent ID is dropped individually with a named warning instead of failing the whole batch. |
 | `conditions` / `interventions` / `sponsors` / `locations` | Free-text, each maps to the API's own `query.cond` / `query.intr` / `query.spons` / `query.locn`. ANDed together. |
 | `searchQuery` | General free-text search across titles, outcomes and eligibility text. |
 | `overallStatus` | e.g. `RECRUITING`, `COMPLETED`, `TERMINATED`. All 14 official values supported. |
@@ -73,6 +74,9 @@ Ask the API for `pageSize=1001` and it doesn't 400 — it silently returns **200
 **$0.0015 per result, no Actor-start fee.** The 41-user Store leader in this niche charges **$0.16 to start plus $0.012/result** — about 8x more per row, with a start fee we don't charge at all. 1,000 studies costs $1.50 here vs. $12.16 there.
 
 ## FAQ
+
+**I already have a list of NCT IDs — can I just fetch those?**
+Yes, set `nctIds` (e.g. `"NCT04368728, NCT03854955"`) instead of the search filters. ClinicalTrials.gov's own API 400s the *entire* request if even one ID in a batch is malformed or doesn't exist — we've verified this live and handle it for you: bad IDs are dropped individually with a named warning, and the rest of your batch still comes back.
 
 **Why did I get zero rows?**
 Filters are ANDed — combining a narrow condition, sponsor and location at once often genuinely matches nothing. Drop one filter and retry. Also, `phases` only applies to interventional studies with a phase assigned; pairing it with `studyTypes: ["OBSERVATIONAL"]` always returns nothing.

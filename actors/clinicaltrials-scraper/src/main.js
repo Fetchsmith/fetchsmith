@@ -24,6 +24,14 @@ const cleanList = (v, allowed) => (Array.isArray(v) ? v : [])
     .map((x) => String(x).toUpperCase().trim())
     .filter((x) => !allowed || allowed.has(x));
 
+const NCT_RE = /^NCT\d{8}$/;
+const nctIdsRaw = String(input.nctIds ?? '').split(/[\s,]+/).map((s) => s.trim().toUpperCase()).filter(Boolean);
+const nctIds = [...new Set(nctIdsRaw.filter((id) => NCT_RE.test(id)))];
+const nctIdsBadFormat = nctIdsRaw.filter((id) => !NCT_RE.test(id));
+if (nctIdsBadFormat.length) {
+    log.warning(`Dropped ${nctIdsBadFormat.length} nctIds with bad format (expected NCT + 8 digits): ${nctIdsBadFormat.join(', ')}`);
+}
+
 const conditions = String(input.conditions ?? '').trim();
 const interventions = String(input.interventions ?? '').trim();
 const sponsors = String(input.sponsors ?? '').trim();
@@ -38,7 +46,7 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function apiGet(params) {
+async function apiGet(params, { quiet = false } = {}) {
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
         if (Array.isArray(v)) { if (v.length) qs.set(k, v.join(',')); }
@@ -63,17 +71,19 @@ async function apiGet(params) {
         let parsed = null;
         try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
         if (resp.statusCode !== 200) {
-            const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
-            log.warning(`ClinicalTrials.gov API ${resp.statusCode}: ${detail}`);
+            if (!quiet) {
+                const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
+                log.warning(`ClinicalTrials.gov API ${resp.statusCode}: ${detail}`);
+            }
             return null;
         }
         if (!parsed) {
-            log.warning(`ClinicalTrials.gov returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
+            if (!quiet) log.warning(`ClinicalTrials.gov returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
             return null;
         }
         return parsed;
     }
-    log.warning('ClinicalTrials.gov API kept erroring after 4 attempts; stopping early.');
+    if (!quiet) log.warning('ClinicalTrials.gov API kept erroring after 4 attempts; stopping early.');
     return null;
 }
 
@@ -94,6 +104,25 @@ function baseParams() {
     if (phases.length) advanced.push(`AREA[Phase](${phases.join(' OR ')})`);
     if (advanced.length) p['filter.advanced'] = advanced.join(' AND ');
     return p;
+}
+
+// Verified live: `filter.ids=NCT1,NCT2,...` works, but if ANY id in the batch is malformed or
+// doesn't exist, ClinicalTrials.gov 400s the WHOLE request (not a partial/ignore-bad-ones
+// response) — a single typo silently makes an otherwise-correct batch return zero rows unless
+// handled explicitly. Bisect on failure so one bad id can't take out an entire good batch.
+// nctIds deliberately does NOT combine with the search filters below (conditions/interventions/
+// sponsors/locations/searchQuery/overallStatus/studyTypes/phases/hasResultsOnly): `conditions`
+// carries a schema `default` of "cancer" that Apify applies server-side to any input missing the
+// field (verified cycle 96/121), so an API caller who sends only `nctIds` would otherwise get an
+// invisible `AND query.cond=cancer` and silently lose every non-cancer trial they asked for.
+async function resolveIdsChunk(ids) {
+    const params = { 'filter.ids': ids, pageSize: Math.min(MAX_PAGE_SIZE, Math.max(ids.length, 1)) };
+    const page = await apiGet(params, { quiet: ids.length > 1 });
+    if (page) return { studies: listOf(page.studies), notFound: [] };
+    if (ids.length === 1) return { studies: [], notFound: ids };
+    const mid = Math.ceil(ids.length / 2);
+    const [a, b] = await Promise.all([resolveIdsChunk(ids.slice(0, mid)), resolveIdsChunk(ids.slice(mid))]);
+    return { studies: [...a.studies, ...b.studies], notFound: [...a.notFound, ...b.notFound] };
 }
 
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
@@ -173,55 +202,82 @@ async function pushResult(item) {
     return pushed < maxResults;
 }
 
-log.info(
-    `ClinicalTrials.gov: conditions="${conditions}" interventions="${interventions}" sponsors="${sponsors}" `
-    + `locations="${locations}" searchQuery="${searchQuery}" overallStatus=[${overallStatus.join(',')}] `
-    + `studyTypes=[${studyTypes.join(',')}] phases=[${phases.join(',')}] hasResultsOnly=${hasResultsOnly} `
-    + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`,
-);
+log.info(nctIds.length
+    ? `ClinicalTrials.gov: direct-lookup mode, nctIds=[${nctIds.join(',')}] (other search filters ignored) `
+      + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`
+    : `ClinicalTrials.gov: conditions="${conditions}" interventions="${interventions}" sponsors="${sponsors}" `
+      + `locations="${locations}" searchQuery="${searchQuery}" overallStatus=[${overallStatus.join(',')}] `
+      + `studyTypes=[${studyTypes.join(',')}] phases=[${phases.join(',')}] hasResultsOnly=${hasResultsOnly} `
+      + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`);
 
-let pageToken = null;
 let scanned = 0;
 let pages = 0;
 let keepGoing = true;
 
-while (keepGoing) {
-    const params = baseParams();
-    if (pageToken) params.pageToken = pageToken;
-    const page = await apiGet(params);
-    if (!page) break;
-    const studies = listOf(page.studies);
-    if (!studies.length) break;
-    pages += 1;
-
-    for (const study of studies) {
-        scanned += 1;
-        const row = normalizeStudy(study);
-        if (rowsPerStudy === 'site') {
-            const sites = row.locations.length ? row.locations : [null];
-            for (const site of sites) {
-                const { locations: _drop, locationCount: _drop2, ...studyFields } = row;
-                keepGoing = await pushResult({ ...studyFields, site });
-                if (!keepGoing) break;
-            }
-        } else {
-            keepGoing = await pushResult(row);
+async function emitStudy(study) {
+    scanned += 1;
+    const row = normalizeStudy(study);
+    if (rowsPerStudy === 'site') {
+        const sites = row.locations.length ? row.locations : [null];
+        for (const site of sites) {
+            const { locations: _drop, locationCount: _drop2, ...studyFields } = row;
+            keepGoing = await pushResult({ ...studyFields, site });
+            if (!keepGoing) return;
         }
-        if (!keepGoing) break;
+    } else {
+        keepGoing = await pushResult(row);
     }
+}
 
-    pageToken = page.nextPageToken ?? null;
-    if (!pageToken) break;
+if (nctIds.length) {
+    // Direct-lookup mode: fetch specific trials by NCT id (what most competitor Actors call
+    // "search by direct URL"). Exclusive of the search filters below — see the note on
+    // resolveIdsChunk for why they are not ANDed in here.
+    const CHUNK = 500; // keeps each top-level request well under MAX_PAGE_SIZE / URL-length limits
+    const notFound = [];
+    for (let i = 0; i < nctIds.length && keepGoing; i += CHUNK) {
+        const { studies, notFound: nf } = await resolveIdsChunk(nctIds.slice(i, i + CHUNK));
+        notFound.push(...nf);
+        pages += 1;
+        for (const study of studies) {
+            await emitStudy(study);
+            if (!keepGoing) break;
+        }
+    }
+    if (notFound.length) {
+        log.warning(`${notFound.length} of ${nctIds.length} nctIds were not found on ClinicalTrials.gov: ${notFound.join(', ')}`);
+    }
+} else {
+    let pageToken = null;
+    while (keepGoing) {
+        const params = baseParams();
+        if (pageToken) params.pageToken = pageToken;
+        const page = await apiGet(params);
+        if (!page) break;
+        const studies = listOf(page.studies);
+        if (!studies.length) break;
+        pages += 1;
+
+        for (const study of studies) {
+            await emitStudy(study);
+            if (!keepGoing) break;
+        }
+
+        pageToken = page.nextPageToken ?? null;
+        if (!pageToken) break;
+    }
 }
 
 if (pushed === 0) {
     log.warning(
-        `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
-        + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
-        + 'narrow filters often genuinely matches nothing; drop one and retry. '
-        + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
-        + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
-        + '(3) hasResultsOnly is true on a small minority of studies — combine with a broad condition first.',
+        nctIds.length
+            ? 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.'
+            : `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
+              + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
+              + 'narrow filters often genuinely matches nothing; drop one and retry. '
+              + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
+              + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
+              + '(3) hasResultsOnly is true on a small minority of studies — combine with a broad condition first.',
     );
 }
 
