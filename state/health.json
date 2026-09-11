@@ -1,5 +1,5 @@
 {
- "ts": 1789107027,
+ "ts": 1789108322,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -190,6 +190,22 @@
     "recipientName",
     "recipientUei",
     "recipientId"
+   ],
+   "err": null
+  },
+  "fda-recall-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "productType",
+    "recallNumber",
+    "eventId",
+    "status",
+    "classification",
+    "voluntaryMandated",
+    "initialFirmNotification",
+    "recallingFirm"
    ],
    "err": null
   }

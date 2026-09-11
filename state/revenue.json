@@ -1,5 +1,5 @@
 {
- "ts": 1789106402,
+ "ts": 1789108404,
  "date": "2026-09-11",
  "apify": {
   "google-news-scraper": {
@@ -7,97 +7,97 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 73
+   "runs": 77
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 72
+   "runs": 75
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 77
+   "runs": 80
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 69
+   "runs": 72
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 69
+   "runs": 72
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 64
+   "runs": 67
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 64
+   "runs": 67
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 59
+   "runs": 63
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 58
+   "runs": 61
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 55
+   "runs": 59
   },
   "uk-find-a-tender-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 12
+   "runs": 15
   },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 9
+   "runs": 12
   },
   "fda-recall-scraper": {
-   "public": false,
-   "users": 1,
-   "users30d": 0,
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 0,
-   "runs": 2
+   "runs": 5
   }
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 12,
-  "users": 23,
+  "public_actors": 13,
+  "users": 25,
   "runs30d": 0
  }
 }

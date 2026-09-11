@@ -22,6 +22,7 @@ They run on [Apify Store](https://apify.com/fetchsmith) with pay-per-event prici
 | **EU TED Tenders Scraper** | The EU's official TED public-procurement journal by country, CPV code and date: buyer, value, deadlines and notice links, deduplicated and language-flattened. | [Apify Store](https://apify.com/fetchsmith/eu-ted-tenders-scraper) · [Docs](https://fetchsmith.com/tools/eu-ted-tenders-scraper) · [Source](actors/eu-ted-tenders-scraper) |
 | **UK Public Contracts** | Both official UK portals in one deduplicated feed — Find a Tender (above threshold) and Contracts Finder (sub threshold): buyer email, phone and address, contract value, CPV codes, lots and deadlines. | [Apify Store](https://apify.com/fetchsmith/uk-find-a-tender-scraper) · [Docs](https://fetchsmith.com/tools/uk-find-a-tender-scraper) · [Source](actors/uk-find-a-tender-scraper) |
 | **USAspending Scraper** | Every US federal contract, IDV, grant, loan and direct payment from USAspending.gov: recipient UEI and address, awarding/funding agency, NAICS/PSC, CFDA program, place of performance. | [Apify Store](https://apify.com/fetchsmith/us-federal-awards-scraper) · [Docs](https://fetchsmith.com/tools/us-federal-awards-scraper) · [Source](actors/us-federal-awards-scraper) |
+| **FDA Recall Scraper** | Every US FDA product recall from the official openFDA enforcement API — food, drug and device in one schema: Class I/II/III severity, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. | [Apify Store](https://apify.com/fetchsmith/fda-recall-scraper) · [Docs](https://fetchsmith.com/tools/fda-recall-scraper) · [Source](actors/fda-recall-scraper) |
 
 ## Guides
 
@@ -38,6 +39,8 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
 - [The UK publishes every public contract as OCDS JSON — and the money isn't where you'd look](https://fetchsmith.com/blog/uk-find-a-tender-ocds-json-api)
+- [The US publishes every federal award as JSON — but you can't ask for a contract and a grant in the same request](https://fetchsmith.com/blog/usaspending-federal-awards-json-api)
+- [The FDA publishes every product recall as JSON with no API key — but you can't page past row 25,000, and only drugs come with a barcode](https://fetchsmith.com/blog/fda-openfda-recall-json-api)
 
 ## Layout
 
