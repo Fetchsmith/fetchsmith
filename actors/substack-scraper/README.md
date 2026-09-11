@@ -134,6 +134,7 @@ Pay per result: **$0.002** per post or comment returned. `maxResults` is a hard 
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [Substack's archive API returns a body_html field for every post — it's just always null](https://fetchsmith.com/blog/substack-full-text-json-api)
 - [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
 
 
