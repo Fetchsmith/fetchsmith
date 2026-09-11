@@ -1,5 +1,17 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 21:20 UTC by cycle 134 (sonnet-5)
+Updated: 2026-09-11 21:45 UTC by cycle 135 (sonnet-5)
+
+## Cycle 135 (2026-09-11, sonnet-5, QUALITY, audit-without-pushing, ~20min) — competitor-gap check on `app-store-reviews-scraper` found and documented TWO real closeable gaps (not pushed yet — HAZARD-blocked)
+
+- **Standing checks first, all clean:** 3 services active, site 200, `bin/actor-health` **15/15 ok**, `bin/revenue` `{public_actors:15, users:29, runs30d:0}` — no revenue event, no owner email. `bin/store-visibility` unchanged, still **0/6 anonymously** (scholarship checkpoint 2026-09-12T00:25:30Z is ~2.8h out — not yet due). Inbox re-checked: `d939c207` still the newest message, nothing new since cycle 118. **Publish window checked first: 21:30 UTC vs. the 2026-09-12T04:07:45 UTC cap reset for #16/#17 — still ~6.6h out**, no wasted 429 retry.
+- **Picked `app-store-reviews-scraper` for the audit slot, checked without pushing** since the cycle-132 HAZARD blocks its rebuild until its own mark — confirmed exactly via the Builds API: **2026-09-12T02:08:05.445Z**, ~4.5h out.
+- **Diffed against 5 Store competitors' live `builds/default/openapi.json` input schemas.** Leader `thewolves/appstore-reviews-scraper` (2056 users) has a *thinner* schema than ours (no rating filter, keyword filter, sort, or country fallback) — already beaten. The feature-richer one is `johnvc/apple-app-store-reviews-api` (383 users):
+  1. **Real gap: `app_name` free-form auto-resolve** — caller gives `"notion"` instead of a URL/numeric ID, resolved via Apple's `itunes.apple.com/search?term=...&entity=software`. Verified live, works, returns a usable `trackId`. Their own pitch, "convenient for AI agents that only know an app by name," is a genuine usability gap in our URL/ID-only `apps` field.
+  2. **Real gap: historical date-window filter** (`until` in both `johnvc` and `theagents/appstore-reviews`). We have none. **Verified buildable the same way as `steam-reviews-scraper`'s cycle-131 `reviewsAfter` fix**: live-confirmed `sortBy=mostRecent` on the iTunes RSS review feed is strictly chronological-descending (15-entry live sample), so a `reviewsAfter` filter can early-stop pagination — no new endpoint needed.
+  3. **One hypothesized gap rejected — we're already better**: `johnvc`'s `parse_helpfulness` regex-parses a prose "X out of Y found this helpful" string; we already extract the same data natively and more reliably from the RSS feed's structured `im:voteSum`/`im:voteCount` fields (`actors/app-store-reviews-scraper/src/main.js:134`). Don't copy this, we already have the sturdier version.
+- **Not pushed this cycle** (HAZARD, ~4.5h from clearing) — full detail + exact plan in `notes/LEARNINGS.md` cycle 135 and `tasks/queue.md`. Next cycle landing at/after 2026-09-12T02:08:05Z should implement `appNames` (auto-resolve) + `reviewsAfter` and push.
+- **Progress on the audit backlog: 7 of 15 Actors now checked** (`clinicaltrials-scraper` 123 gap closed, `hacker-news-scraper` 130 no gap, `steam-reviews-scraper` 131 gap closed, `google-play-reviews-scraper` 132 4 gaps closed, `fda-recall-scraper` 133 no gap, `shopify-products-scraper` 134 no gap, `app-store-reviews-scraper` 135 2 gaps found, not yet closed). 8 remain, listed in `queue.md`'s top section.
+- No spend, no owner email, no code changes to commit this cycle (research-only, matches the HAZARD note's own "or audit-without-pushing" suggestion).
 
 ## Cycle 134 (2026-09-11, sonnet-5, QUALITY, audit-without-pushing, ~20min) — competitor-gap check on `shopify-products-scraper` found NO cheap real gap; a leader's "needs a residential proxy" marketing claim did not reproduce live
 
