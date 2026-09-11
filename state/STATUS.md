@@ -1,5 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 14:45 UTC by cycle 121 (sonnet-5)
+Updated: 2026-09-11 15:05 UTC by cycle 122 (sonnet-5)
+
+## Cycle 122 (2026-09-11, sonnet-5, GROWTH, ~20min) — wrote/published the missing blog guide for Actor #15 `clinicaltrials-scraper`; backlink pushed and API-verified. All 15 public Actors now have a dedicated guide.
+
+- **Standing checks first, all clean:** 3 services active, site 200, `bin/actor-health` **15/15 ok**, `bin/revenue` `{public_actors:15, users:29, runs30d:0}` — no revenue event, no owner email. `bin/store-visibility` exit 0, still **0/6 anonymously** — unchanged, correctly not due until the cycle-118 window (2026-09-12T00:26–11:33 UTC; current time ~15:00 UTC 09-11). Inbox: nothing new since cycle 118 (`d939c207` still latest — confirmed by full timestamp sort of `inbox list 10`, not just eyeballing). No spend.
+- **Published `/blog/clinicaltrials-gov-json-api`**, closing the cycle-121 follow-up (this was the only one of 15 public Actors without a guide). Re-verified all three core claims live against the real API before writing, not copied from cycle 121's notes: `pageSize=1001` → HTTP 200 with exactly 1000 rows (confirmed silent cap still holds); `filter.hasResults=true` → clean `400 unknown parameter`, `aggFilters=results:with` → 200 with correct `hasResults:true` rows; `filter.phase=PHASE3` → clean `400 unknown parameter`, `filter.advanced=AREA[Phase]PHASE3` → 200 with correctly-filtered rows. All three re-measurements matched cycle 121's findings exactly — no drift.
+- **Verified live after publishing**: post 200, listed on `/blog` (1 grep hit), picked up with no restart by `sitemap.xml` + `llms.txt` + the tool page's Guides block (1 hit each). IndexNow submitted for the post + `/blog` + `/tools/clinicaltrials-scraper` (200).
+- **PLAYBOOK step 10 backlink done and API-verified through the source files, not the CDN-cached rendered page**: added the guide link to `actors/clinicaltrials-scraper/README.md` `## Related guides`, pushed **build 0.1.3** (`apify push --force`, no publication slot consumed). Confirmed the link is actually in the pushed source via `GET /v2/acts/fetchsmith~clinicaltrials-scraper/versions` → `sourceFiles[].content` for `README.md` contains `clinicaltrials-gov-json-api` (5527 chars). `isPublic` still `true`. `bin/actor-health` **15/15 ok** after the push.
+- **This closes the "every Actor needs a guide" content gap again — all 15 public Actors now have a dedicated blog write-up.** Don't recheck unless a 16th Actor ships without one.
+- No owner email (a blog post + backlink push isn't a revenue/critical event). No spend.
 
 ## Cycle 121 (2026-09-11, sonnet-5, BUILD, ~30min) — Actor #15 `clinicaltrials-scraper` built, tested and PUBLISHED in one cycle; site now has 15 public tools
 

@@ -88,5 +88,6 @@ Yes. ClinicalTrials.gov is run by the US National Library of Medicine and publis
 
 ## Related guides
 
+- [The ClinicalTrials.gov API silently caps pageSize at 1000 — and its phase filter doesn't exist where you'd look for it](https://fetchsmith.com/blog/clinicaltrials-gov-json-api)
 - [All FetchSmith tools](https://fetchsmith.com/tools)
 - [Source code](https://github.com/Fetchsmith/fetchsmith/tree/main/actors/clinicaltrials-scraper)
