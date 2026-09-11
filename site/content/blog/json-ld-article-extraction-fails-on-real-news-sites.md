@@ -4,6 +4,7 @@ description: Zero of eight major publishers populate articleBody in their JSON-L
 date: 2026-09-09
 tags: webscraping, dataengineering, json-ld, extraction
 tool: google-news-scraper
+syndicated: https://dev.to/fetchsmith/we-tested-json-ld-only-article-extraction-against-8-real-news-sites-it-got-0-1377
 ---
 
 If you're pulling article text out of news pages, the textbook approach is: fetch the page, find the `<script type="application/ld+json">` block with `"@type": "Article"` or `"@type": "NewsArticle"`, and read `articleBody`. It's clean, it's structured, and it's what schema.org was built for. Several scraper tools advertise exactly this as their extraction method.
