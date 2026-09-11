@@ -1,0 +1,320 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Id",
+        "example": "332894"
+      },
+      "opportunityNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OpportunityNumber",
+        "example": "W911NF21S0009"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "LPS Qubit Collaboratory (LQC)"
+      },
+      "agencyCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AgencyCode",
+        "example": "DOD-AMC"
+      },
+      "agency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Agency",
+        "example": "Dept of the Army -- Materiel Command"
+      },
+      "openDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OpenDate",
+        "example": "04/16/2021"
+      },
+      "closeDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CloseDate",
+        "example": "04/30/2027"
+      },
+      "oppStatus": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OppStatus",
+        "example": "posted"
+      },
+      "docType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DocType",
+        "example": "synopsis"
+      },
+      "cfdaList": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "CfdaList"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://www.grants.gov/search-results-detail/332894"
+      },
+      "agencyName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AgencyName",
+        "example": "Dept of the Army -- Materiel Command"
+      },
+      "topAgencyName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "TopAgencyName",
+        "example": "Department of Defense"
+      },
+      "topAgencyCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "TopAgencyCode",
+        "example": "DOD"
+      },
+      "opportunityCategory": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OpportunityCategory",
+        "example": "Discretionary"
+      },
+      "postingDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PostingDate",
+        "example": "Apr 16, 2021 12:00:00 AM EDT"
+      },
+      "responseDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ResponseDate",
+        "example": "Apr 30, 2027 12:00:00 AM EDT"
+      },
+      "archiveDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ArchiveDate",
+        "example": "May 30, 2027 12:00:00 AM EDT"
+      },
+      "costSharing": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "CostSharing",
+        "example": false
+      },
+      "awardCeiling": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardCeiling",
+        "example": "none"
+      },
+      "awardFloor": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardFloor",
+        "example": "none"
+      },
+      "applicantEligibilityDesc": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ApplicantEligibilityDesc"
+      },
+      "applicantTypes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "ApplicantTypes"
+      },
+      "fundingInstruments": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "FundingInstruments"
+      },
+      "fundingActivityCategories": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "FundingActivityCategories"
+      },
+      "synopsisText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SynopsisText",
+        "example": "The U.S. Army Research Office (ARO) in partnership with NSA\u2019s Laboratory for Physical Science (LPS) is soliciting Incuba"
+      },
+      "cfdas": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Cfdas"
+      },
+      "fundingDescLinkUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FundingDescLinkUrl",
+        "example": "https://arl.devcom.army.mil/collaborate-with-us/"
+      },
+      "synopsisDocumentURLs": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "SynopsisDocumentURLs"
+      },
+      "assistURL": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AssistURL"
+      },
+      "lastUpdatedDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LastUpdatedDate",
+        "example": "Mar 18, 2026 03:44:15 PM EDT"
+      },
+      "modComments": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ModComments",
+        "example": "Amendment 3: Extending the response date/ submission date to 30 April 2027."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "id",
+          "opportunityNumber",
+          "title",
+          "agencyCode",
+          "agency",
+          "openDate",
+          "closeDate",
+          "oppStatus",
+          "docType",
+          "url"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "Id",
+            "format": "text"
+          },
+          "opportunityNumber": {
+            "label": "OpportunityNumber",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "agencyCode": {
+            "label": "AgencyCode",
+            "format": "text"
+          },
+          "agency": {
+            "label": "Agency",
+            "format": "text"
+          },
+          "openDate": {
+            "label": "OpenDate",
+            "format": "text"
+          },
+          "closeDate": {
+            "label": "CloseDate",
+            "format": "text"
+          },
+          "oppStatus": {
+            "label": "OppStatus",
+            "format": "text"
+          },
+          "docType": {
+            "label": "DocType",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "link"
+          }
+        }
+      }
+    }
+  }
+}

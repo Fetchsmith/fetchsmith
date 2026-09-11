@@ -1,0 +1,126 @@
+{
+  "title": "Grants.gov Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "keyword": {
+      "title": "Keyword",
+      "type": "string",
+      "description": "Full-text search across the opportunity title and synopsis. Leave empty to return everything matching the other filters.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "oppStatuses": {
+      "title": "Opportunity status",
+      "type": "array",
+      "description": "Which opportunity statuses to include. Defaults to forecasted + posted (open for applications). \"Closed\" and \"archived\" are historical.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["forecasted", "posted", "closed", "archived"],
+        "enumTitles": ["Forecasted (upcoming)", "Posted (open now)", "Closed", "Archived"]
+      },
+      "uniqueItems": true,
+      "default": ["forecasted", "posted"]
+    },
+    "agencies": {
+      "title": "Agency codes",
+      "type": "array",
+      "description": "Grants.gov agency codes, e.g. \"NSF\", \"DOD-AMC\", \"USDA-NIFA\". Leave empty for all agencies. Codes are validated against the live agency list; an unrecognised code is dropped with a warning rather than silently returning zero results.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "eligibilities": {
+      "title": "Applicant eligibility",
+      "type": "array",
+      "description": "Restrict to opportunities open to these applicant types.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["00", "01", "02", "04", "05", "06", "07", "08", "11", "12", "13", "20", "21", "22", "23", "25", "99"],
+        "enumTitles": [
+          "State governments", "County governments", "City or township governments",
+          "Special district governments", "Independent school districts",
+          "Public and State controlled institutions of higher education",
+          "Native American tribal governments (federally recognized)",
+          "Public housing authorities/Indian housing authorities",
+          "Native American tribal organizations (other than federally recognized)",
+          "Nonprofits with 501(c)(3) status, other than higher education",
+          "Nonprofits without 501(c)(3) status, other than higher education",
+          "Private institutions of higher education", "Individuals",
+          "For-profit organizations other than small businesses", "Small businesses",
+          "Others", "Unrestricted"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "fundingCategories": {
+      "title": "Funding categories",
+      "type": "array",
+      "description": "Restrict to opportunities in these funding activity categories, e.g. Health, Education, Environment.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["ACA", "AG", "AR", "BC", "CD", "CP", "DPR", "ED", "ELT", "EN", "EIC", "ENV", "FN", "HL", "HO", "HU", "ISS", "IS", "IIJ", "LJL", "NR", "OZ", "O", "RT", "RD", "ST", "T"],
+        "enumTitles": [
+          "Affordable Care Act", "Agriculture", "Arts", "Business and Commerce", "Community Development",
+          "Consumer Protection", "Disaster Prevention and Relief", "Education", "Employment, Labor and Training",
+          "Energy", "Energy Infrastructure and Critical Minerals", "Environment", "Food and Nutrition", "Health",
+          "Housing", "Humanities", "Income Security and Social Services", "Information and Statistics",
+          "Infrastructure Investment and Jobs Act", "Law, Justice and Legal Services", "Natural Resources",
+          "Opportunity Zone Benefits", "Other", "Recreation and Tourism", "Regional Development",
+          "Science and Technology / R&D", "Transportation"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "fundingInstruments": {
+      "title": "Funding instruments",
+      "type": "array",
+      "description": "Restrict to these award types.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["CA", "G", "O", "PC"],
+        "enumTitles": ["Cooperative Agreement", "Grant", "Other", "Procurement Contract"]
+      },
+      "uniqueItems": true
+    },
+    "cfda": {
+      "title": "CFDA / Assistance Listing number",
+      "type": "string",
+      "description": "Restrict to one Assistance Listing (CFDA) number, e.g. \"93.859\". Leave empty for all.",
+      "editor": "textfield"
+    },
+    "oppNum": {
+      "title": "Opportunity number",
+      "type": "string",
+      "description": "Look up a single opportunity by its exact funding opportunity number, e.g. \"PD-25-275Y\". When set, all other filters are ignored.",
+      "editor": "textfield"
+    },
+    "sortBy": {
+      "title": "Sort order",
+      "type": "string",
+      "description": "Sort by open date or close date. An unsupported value silently returns zero rows on Grants.gov's own API, so only these validated options are offered.",
+      "editor": "select",
+      "enum": ["", "openDate|desc", "openDate|asc", "closeDate|desc", "closeDate|asc"],
+      "enumTitles": ["Default (most relevant)", "Open date, newest first", "Open date, oldest first", "Close date, soonest last", "Close date, soonest first"],
+      "default": ""
+    },
+    "enrich": {
+      "title": "Enrich with full detail (award amounts, eligibility text, synopsis)",
+      "type": "boolean",
+      "description": "Grants.gov's search results carry only 10 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis. Turn off for fast, cheap sweeps of just the thin fields.",
+      "default": true
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many opportunities.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 20000
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,7 @@
+{
+  "keyword": "research",
+  "oppStatuses": ["posted"],
+  "eligibilities": ["20", "06"],
+  "enrich": true,
+  "maxResults": 10
+}

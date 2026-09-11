@@ -1,0 +1,17 @@
+{
+  "title": "Grants.gov Scraper – Status, Eligibility & Award Details",
+  "description": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup. $0.0015/result, no start fee.",
+  "seoTitle": "Grants.gov Scraper — Federal Grant Opportunities",
+  "seoDescription": "Search US federal grant opportunities via the official Grants.gov API. Agency, status and eligibility filters, plus award amounts on request.",
+  "categories": [
+    "LEAD_GENERATION",
+    "BUSINESS"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized Grants.gov opportunity returned to the dataset.",
+      "eventPriceUsd": 0.0015
+    }
+  }
+}
