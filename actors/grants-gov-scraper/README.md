@@ -39,7 +39,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
-- https://fetchsmith.com/tools
+- https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper
