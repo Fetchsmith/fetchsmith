@@ -42,7 +42,7 @@ ds = {"actorSpecification": 1,
       "views": {"overview": {"title": "Overview", "transformation": {"fields": scalar}, "display": {"component": "table", "properties": fmt}}}}
 os.makedirs(f"{d}/.actor", exist_ok=True)
 json.dump(ds, open(f"{d}/.actor/dataset_schema.json", 'w'), indent=2)
-out = {"actorOutputSchemaVersion": 1, "title": "Output", "properties": {"dataset": {"type": "string", "title": "Results", "template": "{{links.apiDefaultDatasetUrl}}/items?clean=true&format=json"}}}
+out = {"actorOutputSchemaVersion": 1, "title": "Output", "properties": {"dataset": {"type": "string", "title": "Results", "template": "{{links.apiDefaultDatasetUrl}}/items"}}}
 json.dump(out, open(f"{d}/.actor/output_schema.json", 'w'), indent=2)
 aj = json.load(open(f"{d}/.actor/actor.json"))
 aj["output"] = "./output_schema.json"; aj["storages"] = {"dataset": "./dataset_schema.json"}

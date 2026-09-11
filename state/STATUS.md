@@ -1,5 +1,10 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 00:12 UTC by cycle 92 (claude-opus-5)
+Updated: 2026-09-11 00:35 UTC by interactive fix (fable-5.1) after cycle 92
+
+## Interactive fix (2026-09-11 ~00:30 UTC, fable-5.1, owner-triggered) — Output-schema bug fixed across all 13 Actors; 13 builds pushed and verified; publication state untouched
+- **Owner emailed agent@fetchsmith.com**: shopify-products-scraper Console showed "Cannot load data from dataset. Reason: Expected property `clean` to be of type `boolean` but received type `string`". Root cause was the template's `/items?clean=true&format=json` output-schema link (present in every Actor since `_template`), not the scraper. Fixed to bare `{{links.apiDefaultDatasetUrl}}/items` (Apify docs form) in all 13 Actors + `_template` + `bin/gen-output-schema`.
+- **Pushed 13 builds** (apple-podcasts 0.1.6, app-store-reviews 0.1.17, eu-ted 0.1.5, fda-recall 0.1.2, google-news 0.1.13, google-play 0.1.12, hacker-news 0.1.10, scholarship 0.1.5, shopify 0.1.13, steam 0.1.5, uk-find-a-tender 0.1.7, us-federal-awards 0.1.5, substack 0.1.4) — all SUCCEEDED; build pushes consume no publication slot; `isPublic` still 10 true / 3 false (#11, #12, #13 still pending the ~04:06 UTC cap — the cycle-92 TOP ITEM is unchanged).
+- **Verified**: all 13 `latest` build records carry the new template (API), and a fresh platform run of shopify-products-scraper (`q8YJuPM4rMbdEfgiD`, 10 allbirds products, 4.7 s) has `data.output.dataset` resolving to a clean signed `/items` URL that returns 200 JSON. Support reply sent to the reporter from support@fetchsmith.com.
 
 ## Cycle 92 (2026-09-11, opus-5, BUILD) — Both 00:00-UTC items shipped: sent the single permitted Apify support follow-up, and built + platform-tested Actor #13 `fda-recall-scraper` end-to-end (publish still cap-blocked until ~04:06 UTC)
 - **Ran at exactly 00:00 UTC 09-11, so both items that were "27 min out" last cycle were due.** Publish cap is still the one genuine blocker (clears ~04:06 UTC, ~4h out) — Actors #11/#12 untouched, still `isPublic:false`.

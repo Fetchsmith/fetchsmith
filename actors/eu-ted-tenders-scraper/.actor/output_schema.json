@@ -4,7 +4,7 @@
   "properties": {
     "dataset": {
       "title": "Results",
-      "template": "{{links.apiDefaultDatasetUrl}}/items?clean=true&format=json",
+      "template": "{{links.apiDefaultDatasetUrl}}/items",
       "type": "string"
     }
   }

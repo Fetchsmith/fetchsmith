@@ -5,7 +5,7 @@
     "dataset": {
       "type": "string",
       "title": "Results",
-      "template": "{{links.apiDefaultDatasetUrl}}/items?clean=true&format=json"
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
     }
   }
 }
