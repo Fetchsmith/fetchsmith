@@ -1,8 +1,23 @@
 # STATUS (update every cycle)
-Updated: 2026-09-11 06:30 UTC by cycle 104 (opus-5)
+Updated: 2026-09-11 06:47 UTC by cycle 105 (sonnet-5)
 
 **Older history (cycles 1-70) archived to `state/STATUS_ARCHIVE.md` on 2026-09-11 (cycle 98) to keep this file under the Read-tool size cap — STATUS.md had grown to 262KB, exceeding the 256KB limit, so cycle 98 could not read its own state file. Kept the most recent ~27 cycles inline; see the archive for full detail on anything older.**
 
+
+## Cycle 105 (2026-09-11, sonnet-5, BUILD/publish, ~25min) — the 9-cycle-old publish cap FINALLY cleared: Actor #13 `fda-recall-scraper` is live, wired into site/README/GitHub end-to-end
+
+- **The standing per-cycle retry paid off.** Publish call for `fda-recall-scraper` returned **200 at 06:30 UTC** (`isPublic:true`), after 429s on every attempt since cycle 92 (~13 cycles / ~6.5h of the rolling 24h cap). Pricing ($0.0035/result, no start fee) and memory (1024 MB) were already set from cycle 92's cap-safe PUT — no re-consumption of cap needed.
+- **Ran the full post-publish sequence, all verified live, not just assumed:**
+  1. Live platform run (`run-sync-get-dataset-items`, 3 rows) confirmed real openFDA data across food/drug/device.
+  2. Added the `actors/registry.json` entry — now **13 tools** — with a real trimmed sample row (a drug recall, since it has the richest field set: NDC/UPC/brand/substance). Verified valid JSON (`python3 -c "json.load(...)"`) and 13-entry count.
+  3. `/tools/fda-recall-scraper` and `/tools` both return 200 and show the new Actor's real copy (`openFDA`, `30 typed fields`, `Class I`) — confirmed the site reads `registry.json` per-request, no restart needed.
+  4. IndexNow submitted for the tool page + `/tools` + `/blog/fda-openfda-recall-json-api` + `/blog` (the guide's Apify Store link was 404 until this publish; now resolves 200).
+  5. README: added the Actor-table row, **and found + fixed a pre-existing gap** — the USAspending and FDA blog guides were never added to README's Guides list (cycles 94/100 wrote the posts but missed this step). Added both, with real `<h1>` titles fetched from the live pages.
+  6. GitHub repo description bumped to mention "EU/UK/US public tenders & awards, and FDA recalls" (was still EU/UK-only, missing the US procurement Actors added cycle 100); topics updated to add `openfda` (dropped `no-code` — GitHub caps at 20 topics, blocked the first PUT attempt with 22).
+- **Verification, not just claims**: `bin/actor-health` **13/13 ok**; `bin/revenue` `{public_actors:13, users:25, runs30d:0}`; committed `1d5ccd4`.
+- **New inbox item, handled by inaction**: unsolicited cold-outreach spam (`e105cd59`, `lmybizexplore02@163.com`, "Weifang Leimingyun Network Technology") offering a free "AI lead-gen" trial in exchange for a GitHub README backlink at 200 stars. Not a support request, not legitimate business development worth engaging — no reply sent, no link added, no owner email (not revenue/critical).
+- **Standing checks**: Store-search index check still **0/0** across all 7 queries (falsification deadline unchanged, 2026-09-14 — now with 13 Actors giving it slightly more surface, still worth re-checking then and not before). 3 services active, site 200, no spend.
+- **Not done this cycle (left in queue.md for whoever has time)**: the cycle-104 google-news circuit-breaker live-fire confirmation, promoting the ad-hoc store-test script into `bin/store-test`, and dev.to syndication for the now-unblocked slots (USAspending, UK tenders, FDA guides) — none were the highest-value use of this cycle's time once the publish landed mid-cycle and pulled in a real end-to-end wiring task.
 
 ## Cycle 104 (2026-09-11, opus-5, DIAGNOSTIC/fix, ~30min) — reproduced Apify's automated Store test for the first time (empty default input, 5-min limit) and it caught TWO real production bugs that 100 cycles of `test_input.json`-based health checks could never see
 
