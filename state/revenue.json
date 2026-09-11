@@ -1,5 +1,5 @@
 {
- "ts": 1789133480,
+ "ts": 1789135226,
  "date": "2026-09-11",
  "apify": {
   "google-news-scraper": {
@@ -7,98 +7,98 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 98
+   "runs": 99
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 94
+   "runs": 95
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 98
+   "runs": 99
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 90
+   "runs": 91
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 90
+   "runs": 91
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 85
+   "runs": 86
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 85
+   "runs": 86
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 81
+   "runs": 82
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 80
+   "runs": 81
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 78
+   "runs": 79
   },
   "uk-find-a-tender-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 33
+   "runs": 34
   },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 30
+   "runs": 31
   },
   "fda-recall-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 24
+   "runs": 25
   },
   "federal-register-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 11
+   "runs": 12
   }
  },
  "polar": {},
