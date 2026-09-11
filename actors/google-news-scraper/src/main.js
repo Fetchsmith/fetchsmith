@@ -57,18 +57,31 @@ const fetchArticle = makeArticleFetcher({ http, bodyMaxChars, log });
 // Google rate-limits this endpoint per source IP (429) once you decode a lot in a short window;
 // when that happens every article comes back with url:null, so count it and say so at the end
 // instead of leaving the user with a silently empty column.
-let decodeRateLimited = 0; let decodeFailed = 0;
+// Once the endpoint starts 429ing for this IP it generally stays that way for the
+// whole run, so backing off per article just burns the user's compute minutes to
+// produce url:null anyway (seen live 2026-09-11: 100 articles x ~18s of backoff =
+// ~30 min run, every url null). Give the burst a few chances to recover, then stop
+// decoding for the rest of the run and finish fast with googleNewsUrl only.
+const DECODE_GIVE_UP_AFTER = 4;
+let decodeRateLimited = 0; let decodeFailed = 0; let decodeDisabled = false; let consecutive429 = 0;
 async function decodeUrl(gnUrl) {
+  if (decodeDisabled) return null;
   try {
     const id = gnUrl.split('/articles/')[1]?.split('?')[0];
     if (!id) { decodeFailed += 1; return null; }
     const page = await http(`https://news.google.com/articles/${id}`, { throwHttpErrors: false });
     if (page.statusCode === 429) {
-      decodeRateLimited += 1;
+      decodeRateLimited += 1; consecutive429 += 1;
+      if (consecutive429 >= DECODE_GIVE_UP_AFTER) {
+        decodeDisabled = true;
+        log.warning(`Google News rate-limited the URL-decoding endpoint (429) ${consecutive429} times in a row — giving up on decoding for this run. Every article still gets googleNewsUrl (which redirects to the publisher in a browser); url will be null.`);
+        return null;
+      }
       log.warning('Google News rate-limited the URL-decoding endpoint (429) — this article keeps its googleNewsUrl but url will be null.');
       await new Promise((r) => setTimeout(r, Math.min(2000 * decodeRateLimited, 15000))); // back off so a burst can recover
       return null;
     }
+    consecutive429 = 0; // the burst recovered; don't trip the breaker on scattered 429s
     const $ = cheerio.load(page.body);
     const div = $('c-wiz > div').first();
     const sg = div.attr('data-n-a-sg'); const ts = div.attr('data-n-a-ts');
@@ -122,7 +135,7 @@ log.info(`Done. Pushed ${pushed} articles.`);
 if (fetchBody) log.info(`Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywall/blocked/no text).`);
 const bodyNote = fetchBody ? ` Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywalled or publisher-blocked — see articleFetchStatus).` : '';
 const decodeNote = decodeRateLimited
-  ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s) (url is null; googleNewsUrl still works) — re-run with a proxy or fewer articles per run.`
+  ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s)${decodeDisabled ? ', so decoding was switched off for the rest of the run' : ''} (url is null; googleNewsUrl still works) — re-run with a proxy or fewer articles per run.`
   : decodeFailed ? ` ${decodeFailed} article URL(s) could not be decoded (url is null; googleNewsUrl still works).` : '';
 if (pushed === 0 && feeds.length) {
   const why = erroredFeeds.length

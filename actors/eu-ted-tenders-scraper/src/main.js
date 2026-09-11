@@ -134,8 +134,29 @@ const PAGE_SIZE = 250;
 let page = 1;
 let total = Infinity;
 let keepGoing = true;
+let httpError = null;
+
+// gotScraping runs with throwHttpErrors:false, so got's own `retry` never fires on a
+// non-2xx — a single TED 429 used to end the run instantly (seen live 2026-09-11: the
+// default input 429'd on page 1 at 277ms and the Actor still exited SUCCEEDED with 0
+// notices). Retry transient statuses here, honouring Retry-After when TED sends one.
+const TRANSIENT_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
 
 async function fetchPage(pageNum) {
+  let resp = await fetchPageOnce(pageNum);
+  for (const fallbackMs of HTTP_RETRY_DELAYS_MS) {
+    if (!TRANSIENT_STATUS.has(resp.statusCode)) break;
+    const retryAfterMs = Number(resp.headers?.['retry-after']) * 1000;
+    const waitMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(retryAfterMs, 30000) : fallbackMs;
+    log.warning(`TED API returned ${resp.statusCode} on page ${pageNum} — retrying in ${waitMs}ms`);
+    await new Promise((r) => setTimeout(r, waitMs));
+    resp = await fetchPageOnce(pageNum);
+  }
+  return resp;
+}
+
+async function fetchPageOnce(pageNum) {
   return gotScraping({
     url: 'https://api.ted.europa.eu/v3/notices/search',
     method: 'POST',
@@ -152,6 +173,7 @@ while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
 
   if (resp.statusCode !== 200) {
     log.warning(`TED API returned ${resp.statusCode} on page ${page}: ${JSON.stringify(resp.body).slice(0, 300)}`);
+    httpError = resp.statusCode;
     break;
   }
 
@@ -164,11 +186,15 @@ while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
 
   // A page can come back with 0 notices even though totalNoticeCount says
   // there are more (seen live: transient empty page 1 with totalNoticeCount > 0).
-  // One retry after a short delay tells a real "no matches" apart from a blip
-  // before we stop the whole run short.
-  if (!notices.length && total > (page - 1) * PAGE_SIZE) {
-    log.warning(`page ${page}: 0 notices but totalNoticeCount ${total} says there should be more — retrying once`);
-    await new Promise((r) => setTimeout(r, 2000));
+  // A single 2s retry (cycle 102) was not always enough — cycle 103 saw the
+  // exact same input fail on the platform, then succeed instantly seconds
+  // later on a fresh manual call — so retry up to 3 times with backoff before
+  // treating it as real end-of-results.
+  const RETRY_DELAYS_MS = [2000, 5000, 10000];
+  for (const delayMs of RETRY_DELAYS_MS) {
+    if (notices.length || total <= (page - 1) * PAGE_SIZE) break;
+    log.warning(`page ${page}: 0 notices but totalNoticeCount ${total} says there should be more — retrying in ${delayMs}ms`);
+    await new Promise((r) => setTimeout(r, delayMs));
     resp = await fetchPage(page);
     if (resp.statusCode === 200) {
       body = resp.body;
@@ -186,5 +212,12 @@ while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
   page += 1;
 }
 
+// A run that scraped nothing because TED was erroring is a failure, not a quiet
+// success — exiting 0 with an empty dataset looks to the user like "no tenders match".
+if (!pushed && httpError) {
+  await Actor.fail(`TED's API kept returning HTTP ${httpError} (retried ${HTTP_RETRY_DELAYS_MS.length} times), so no notices could be fetched. This is a TED-side outage or rate limit, not a problem with your input — please re-run in a few minutes.`);
+}
+
 log.info(`Done. Pushed ${pushed} notices.`);
+if (!pushed) await Actor.setStatusMessage(`No notices matched this query (${query}). Widen publishedWithinDays, drop a filter, or check your CPV codes.`);
 await Actor.exit();
