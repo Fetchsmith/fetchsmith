@@ -1,0 +1,108 @@
+{
+  "title": "NIH RePORTER Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "keyword": {
+      "title": "Keyword",
+      "type": "string",
+      "description": "Full-text search across project title, abstract and NIH indexing terms (e.g. \"CRISPR\", \"alzheimer\", \"mRNA vaccine\"). Leave empty to return everything matching the other filters.",
+      "editor": "textfield",
+      "default": "cancer"
+    },
+    "fiscalYears": {
+      "title": "Fiscal years",
+      "type": "array",
+      "description": "NIH fiscal years to include, e.g. 2024, 2025. A project appears once per fiscal year it was funded in. Leave empty for all years (1985 onwards).",
+      "editor": "json",
+      "uniqueItems": true
+    },
+    "agencyIcCodes": {
+      "title": "NIH Institute / Center (IC)",
+      "type": "array",
+      "description": "Administering institute abbreviations: NCI, NIAID, NHLBI, NIGMS, NIDDK, NINDS, NIMH, NIA, NICHD, NIDA, NIAMS, NEI, NIEHS, NIDCD, NIDCR, NIAAA, NIBIB, NHGRI, NIMHD, NINR, NLM, NCATS, NCCIH, FIC, OD, CC, CIT, CSR, NIOSH, plus AHRQ, CDC, FDA, HRSA, SAMHSA, ACF, ACL, ASPR, VA, OASH. Leave empty for all.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "activityCodes": {
+      "title": "Activity codes",
+      "type": "array",
+      "description": "NIH activity (award mechanism) codes, e.g. R01, R21, R43, F32, K99, U54, P01, N01. Leave empty for all.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "awardTypes": {
+      "title": "Award types",
+      "type": "array",
+      "description": "Application type code: 1 = new, 2 = competing renewal, 3 = supplement, 4 = competing extension, 5 = non-competing continuation, 7 = change of institution, 9 = change of NIH institute.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        "enumTitles": ["1 - New", "2 - Competing renewal", "3 - Supplement", "4 - Competing extension", "5 - Non-competing continuation", "6 - Other", "7 - Change of institution", "8 - Other", "9 - Change of NIH institute"]
+      },
+      "uniqueItems": true
+    },
+    "orgNames": {
+      "title": "Organization names",
+      "type": "array",
+      "description": "Funded organizations, e.g. \"Stanford University\", \"Moderna\". Partial names match.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "orgStates": {
+      "title": "Organization states",
+      "type": "array",
+      "description": "Two-letter US state codes of the funded organization, e.g. CA, MA, NY.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "piNames": {
+      "title": "Principal investigator names",
+      "type": "array",
+      "description": "Match projects whose PI name contains any of these strings, e.g. \"Doudna\".",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "projectNums": {
+      "title": "Project numbers (exact lookup)",
+      "type": "array",
+      "description": "Look up specific projects by full project number (5R01CA234538-06) or core number (R01CA234538). When set, EVERY other filter is ignored, so a keyword or fiscal-year filter can never silently hide the project you asked for by number.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "activeOnly": {
+      "title": "Active projects only",
+      "type": "boolean",
+      "description": "Only projects that are currently active (within their project period).",
+      "default": false
+    },
+    "excludeSubprojects": {
+      "title": "Exclude subprojects",
+      "type": "boolean",
+      "description": "Exclude subproject records of multi-component awards (P01/U54 centers), which otherwise duplicate their parent project.",
+      "default": true
+    },
+    "includePublications": {
+      "title": "Include linked PubMed publications",
+      "type": "boolean",
+      "description": "Join each project to the PubMed papers it produced (PMIDs + count) via NIH RePORTER's publications endpoint. Batched, so it costs roughly one extra request per 25 projects.",
+      "default": true
+    },
+    "includeAbstract": {
+      "title": "Include abstract text",
+      "type": "boolean",
+      "description": "Include the full project abstract and public-health-relevance statement. Turn off for a smaller dataset.",
+      "default": true
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many project records. You are charged per result returned.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20000,
+      "default": 100
+    }
+  }
+}

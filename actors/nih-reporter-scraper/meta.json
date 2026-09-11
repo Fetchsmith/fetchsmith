@@ -1,0 +1,17 @@
+{
+  "title": "NIH RePORTER Scraper – No 15k Row Cap, PubMed Join",
+  "description": "Search all NIH-funded research projects from the official NIH RePORTER API: keyword, fiscal year, institute (IC), activity code, organization, state and PI filters, award amounts, study section and org details — plus an optional join to the PubMed papers each project produced. Auto-chunks past the API's 15,000-row offset wall. $0.0015/result, no start fee.",
+  "seoTitle": "NIH RePORTER Scraper — NIH Grant & Award Data",
+  "seoDescription": "Export NIH-funded research projects via the official NIH RePORTER API. Award amounts, PIs, institutions, study sections and linked PubMed publications.",
+  "categories": [
+    "LEAD_GENERATION",
+    "BUSINESS"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized NIH RePORTER project record returned to the dataset.",
+      "eventPriceUsd": 0.0015
+    }
+  }
+}

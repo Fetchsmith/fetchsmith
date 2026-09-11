@@ -1,0 +1,13 @@
+{
+  "name": "nih-reporter-scraper",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Scrape US federal grant opportunities from Grants.gov's official public API",
+  "dependencies": {
+    "apify": "^3.4.0",
+    "got-scraping": "^4.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
+}
