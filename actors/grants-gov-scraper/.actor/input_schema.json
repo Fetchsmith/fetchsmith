@@ -110,8 +110,29 @@
     "enrich": {
       "title": "Enrich with full detail (award amounts, eligibility text, synopsis)",
       "type": "boolean",
-      "description": "Grants.gov's search results carry only 10 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis. Turn off for fast, cheap sweeps of just the thin fields.",
+      "description": "Grants.gov's search results carry only 10 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis. Turn off for fast, cheap sweeps of just the thin fields. Forced on automatically if minAwardAmount/maxAwardAmount is set, since the amount only exists in the detail record.",
       "default": true
+    },
+    "postedWithinDays": {
+      "title": "Posted within the last N days",
+      "type": "integer",
+      "description": "Only return opportunities posted in the last N days (Grants.gov's own \"Posted Date\" facet, verified live to accept any positive day count, not just its 3/7/14/21-day preset buttons). Cheap way to do an incremental daily pull instead of re-scanning the whole index. Leave empty for no date restriction. Ignored when Opportunity number is set.",
+      "editor": "number",
+      "minimum": 1
+    },
+    "minAwardAmount": {
+      "title": "Minimum award ceiling (USD)",
+      "type": "integer",
+      "description": "Only return opportunities whose award ceiling (the maximum a single award can pay) is at least this amount. Forces \"Enrich\" on, since the amount lives only in the per-opportunity detail record. Excludes: unposted \"forecast\" listings with no detail record at all (~3% of the index), AND opportunities whose detail record has no ceiling set at all -- Grants.gov spells this as the literal string \"none\", measured live at roughly a third to half of posted opportunities. This is common, not a rare edge case.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "maxAwardAmount": {
+      "title": "Maximum award ceiling (USD)",
+      "type": "integer",
+      "description": "Only return opportunities whose award ceiling is at most this amount. Same exclusions as Minimum award ceiling: forces \"Enrich\" on and drops any opportunity with no usable ceiling (no detail record, or the detail record's ceiling is literally unset).",
+      "editor": "number",
+      "minimum": 0
     },
     "maxResults": {
       "title": "Max results",

@@ -7,6 +7,8 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 - Search results alone carry only 10 thin fields (id, number, title, agency, dates, status). Turn on `enrich` (default) to join each row with a second call for the money fields a grant seeker actually decides on: `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, and the full synopsis text.
 - **Agency codes are resolved and expanded**, not passed through blind: Grants.gov's parent agency codes (e.g. `"USDA"`, `"DOD"`) do **not** automatically include their sub-agencies in a search — unlike some other government APIs. This Actor expands a parent code you supply into all of its real sub-agency codes (e.g. `"USDA"` → `USDA-NIFA`, `USDA-FS`, `USDA-APHIS`, …) so filtering by department actually works. An unrecognised code is dropped with a named warning instead of silently returning zero rows.
 - **Opportunity-number lookup ignores your other filters.** Grants.gov ANDs `oppNum` with every other filter, including its own default status filter — looking up a *closed* or *archived* opportunity by its exact number normally returns nothing. Set `oppNum` and this Actor searches all statuses and ignores keyword/agency/eligibility filters, so an exact-number lookup always finds the opportunity if it exists.
+- **`postedWithinDays` for cheap incremental pulls** — Grants.gov's own "Posted Date" filter accepts any positive number of days, not just its site's 3/7/14/21-day preset buttons (verified live). Use it instead of re-scanning the whole index on a daily/weekly cron.
+- **`minAwardAmount`/`maxAwardAmount` filter on award ceiling** — forces `enrich` on since the amount only exists in the per-opportunity detail record. Grants.gov returns award amounts as strings, and roughly a third to half of posted opportunities have no ceiling set at all (the API spells this as the literal string `"none"`, not null or absent) — this Actor normalizes both into real numbers or `null`, and the amount filter correctly drops the `"none"` rows rather than treating them as zero.
 - Pay per result: charged only for rows actually returned.
 
 ## Input
@@ -22,6 +24,9 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 | `oppNum` | string | Look up one opportunity by exact number — ignores all other filters |
 | `sortBy` | string | `openDate\|desc`, `openDate\|asc`, `closeDate\|desc`, `closeDate\|asc` |
 | `enrich` | boolean | Join each row with award/eligibility/synopsis detail (default `true`) |
+| `postedWithinDays` | integer | Only opportunities posted in the last N days — cheap incremental pull |
+| `minAwardAmount` | integer | Minimum award ceiling (USD); forces `enrich` on, excludes opportunities with no ceiling set |
+| `maxAwardAmount` | integer | Maximum award ceiling (USD); same exclusions as `minAwardAmount` |
 | `maxResults` | integer | Stop after this many opportunities (default 100) |
 
 ## Output (thin fields, always present)

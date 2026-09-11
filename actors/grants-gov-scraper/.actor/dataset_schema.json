@@ -156,19 +156,17 @@
       },
       "awardCeiling": {
         "type": [
-          "string",
+          "number",
           "null"
         ],
-        "title": "AwardCeiling",
-        "example": "none"
+        "title": "AwardCeiling"
       },
       "awardFloor": {
         "type": [
-          "string",
+          "number",
           "null"
         ],
-        "title": "AwardFloor",
-        "example": "none"
+        "title": "AwardFloor"
       },
       "applicantEligibilityDesc": {
         "type": [

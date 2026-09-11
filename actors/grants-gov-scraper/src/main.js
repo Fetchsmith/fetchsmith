@@ -61,8 +61,30 @@ const fundingInstruments = (input.fundingInstruments ?? []).join('|');
 const cfda = String(input.cfda ?? '').trim();
 const oppNum = String(input.oppNum ?? '').trim();
 const sortBy = String(input.sortBy ?? '');
-const enrich = input.enrich !== false;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
+
+// Verified live: dateRange takes any positive integer number of days (not just the 3/7/14/...
+// preset buttons the site's own facet list advertises -- dateRange:"10" returned a real
+// in-between count), but like every other param on this API a garbage value is never rejected,
+// just silently matches nothing. Validate client-side rather than trust the platform's plain
+// "integer" schema type (a caller could still post a negative number via a raw API call).
+let postedWithinDays = null;
+if (input.postedWithinDays !== undefined && input.postedWithinDays !== null && input.postedWithinDays !== '') {
+    const n = Number(input.postedWithinDays);
+    if (Number.isFinite(n) && n >= 1) postedWithinDays = Math.floor(n);
+    else log.warning(`Ignoring invalid postedWithinDays "${input.postedWithinDays}" (must be a positive number of days).`);
+}
+
+// awardCeiling only exists on the per-opportunity detail record (search2's thin rows have no
+// award data at all), so either bound forces enrich on regardless of the input's own "enrich"
+// value -- otherwise the filter would silently have nothing to compare against and every row
+// would look like a non-match.
+const minAwardAmount = Number.isFinite(Number(input.minAwardAmount)) && input.minAwardAmount !== '' && input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
+const maxAwardAmount = Number.isFinite(Number(input.maxAwardAmount)) && input.maxAwardAmount !== '' && input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
+if (minAwardAmount !== null && maxAwardAmount !== null && minAwardAmount > maxAwardAmount) {
+    throw new Error(`minAwardAmount (${minAwardAmount}) is greater than maxAwardAmount (${maxAwardAmount}).`);
+}
+const enrich = input.enrich !== false || minAwardAmount !== null || maxAwardAmount !== null;
 const PAGE_SIZE = 1000; // No row cap was found (5000 verified in one call), but keeping requests
 // modest means a mid-run failure loses less already-scanned work.
 
@@ -129,11 +151,24 @@ function baseParams() {
     if (fundingInstruments) p.fundingInstruments = fundingInstruments;
     if (cfda) p.cfda = cfda;
     if (sortBy) p.sortBy = sortBy;
+    if (postedWithinDays !== null) p.dateRange = String(postedWithinDays);
     return p;
 }
 
 const stripHtml = (html) => (html ? String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null);
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
+
+// awardCeiling/awardFloor come back as STRINGS, not numbers, and -- found while testing the new
+// award-amount filter below -- the literal string "none" (not null, not "0", not omitted) is how
+// the API spells "no ceiling set" whenever there is one: measured live on a 60-opportunity sample,
+// 19/60 (~32%) had a literal "none" awardCeiling. Every enriched row has been shipping this raw,
+// inconsistently-typed string since the Actor's first build; parse it into a real number (or null)
+// here so both the output and the new amount filter below get a consistent type.
+function parseMoney(v) {
+    if (typeof v !== 'string') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null; // covers "none" and any other non-numeric string
+}
 
 function normalizeThin(row) {
     return {
@@ -175,8 +210,8 @@ function normalizeEnriched(detail) {
         responseDate: s.responseDate ?? null,
         archiveDate: s.archiveDate ?? null,
         costSharing: typeof s.costSharing === 'boolean' ? s.costSharing : null,
-        awardCeiling: s.awardCeiling ?? null,
-        awardFloor: s.awardFloor ?? null,
+        awardCeiling: parseMoney(s.awardCeiling),
+        awardFloor: parseMoney(s.awardFloor),
         applicantEligibilityDesc: s.applicantEligibilityDesc || null,
         applicantTypes: listOf(s.applicantTypes).map((t) => t.description).filter(Boolean),
         fundingInstruments: listOf(s.fundingInstruments).map((t) => t.description).filter(Boolean),
@@ -239,11 +274,24 @@ log.info(
         + (fundingCategories ? ` fundingCategories=[${fundingCategories}]` : '')
         + (fundingInstruments ? ` fundingInstruments=[${fundingInstruments}]` : '')
         + (cfda ? ` cfda=${cfda}` : '')
-        + (sortBy ? ` sortBy=${sortBy}` : ''),
+        + (sortBy ? ` sortBy=${sortBy}` : '')
+        + (postedWithinDays !== null ? ` postedWithinDays=${postedWithinDays}` : '')
+        + (minAwardAmount !== null ? ` minAwardAmount=${minAwardAmount}` : '')
+        + (maxAwardAmount !== null ? ` maxAwardAmount=${maxAwardAmount}` : ''),
 );
+if (minAwardAmount !== null || maxAwardAmount !== null) {
+    log.info(
+        'Award-amount filtering drops any opportunity with no usable award ceiling: unposted '
+        + '"forecast" listings with no detail record at all (~3% of the index), AND opportunities '
+        + 'whose detail record literally has no ceiling set (Grants.gov spells this as the string '
+        + '"none", measured live at roughly a third to half of posted opportunities depending on the '
+        + 'agency/category mix) -- a real, common case, not a rare edge case.',
+    );
+}
 
 let startRecordNum = 0;
 let scanned = 0;
+let droppedNoAward = 0;
 let keepGoing = true;
 
 while (keepGoing && pushed < maxResults) {
@@ -259,6 +307,14 @@ while (keepGoing && pushed < maxResults) {
         const details = await enrichBatch(hits);
         batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i] } : row));
     }
+    if (minAwardAmount !== null || maxAwardAmount !== null) {
+        batch = batch.filter((row) => {
+            if (typeof row.awardCeiling !== 'number') { droppedNoAward += 1; return false; }
+            if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
+            if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
+            return true;
+        });
+    }
 
     keepGoing = await pushResults(batch);
     startRecordNum += hits.length;
@@ -273,9 +329,14 @@ if (pushed === 0) {
             + 'keyword plus agency plus eligibility often has zero real matches, drop one and retry; '
             + '(2) oppStatuses defaults to forecasted+posted (open/upcoming only) -- add "closed" or '
             + '"archived" to search history; (3) an unrecognised agency code is dropped with a warning '
-            + 'above, not guessed at.',
+            + 'above, not guessed at; (4) postedWithinDays is a hard AND filter -- a small window plus '
+            + 'a narrow keyword can easily have zero real matches; (5) minAwardAmount/maxAwardAmount '
+            + 'excludes any row with no detail record at all, not just rows outside the range.',
     );
 }
 
-log.info(`Done. Pushed ${pushed} opportunities (scanned ${scanned} rows).`);
+log.info(
+    `Done. Pushed ${pushed} opportunities (scanned ${scanned} rows).`
+    + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) with no award ceiling to compare against the amount filter.` : ''),
+);
 await Actor.exit();
