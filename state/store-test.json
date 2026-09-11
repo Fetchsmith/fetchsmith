@@ -1,82 +1,10 @@
 {
- "ts": 1789110424,
+ "ts": 1789121122,
  "results": {
-  "google-news-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 34,
-   "items": 100,
-   "pass": true
-  },
-  "app-store-reviews-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 7,
-   "items": 50,
-   "pass": true
-  },
-  "shopify-products-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 24,
-   "items": 294,
-   "pass": true
-  },
-  "hacker-news-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 8,
-   "items": 100,
-   "pass": true
-  },
-  "google-play-reviews-scraper": {
+  "federal-register-scraper": {
    "status": "SUCCEEDED",
    "secs": 9,
-   "items": 101,
-   "pass": true
-  },
-  "substack-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 95,
-   "items": 50,
-   "pass": true
-  },
-  "apple-podcasts-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 9,
-   "items": 100,
-   "pass": true
-  },
-  "steam-reviews-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 15,
-   "items": 200,
-   "pass": true
-  },
-  "scholarship-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 21,
-   "items": 154,
-   "pass": true
-  },
-  "eu-ted-tenders-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 11,
-   "items": 100,
-   "pass": true
-  },
-  "uk-find-a-tender-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 13,
-   "items": 100,
-   "pass": true
-  },
-  "us-federal-awards-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 10,
-   "items": 100,
-   "pass": true
-  },
-  "fda-recall-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 11,
-   "items": 100,
+   "items": 79,
    "pass": true
   }
  }

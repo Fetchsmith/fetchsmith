@@ -1,0 +1,16 @@
+{
+  "actorSpecification": 1,
+  "name": "federal-register-scraper",
+  "title": "Federal Register Scraper \u2013 Agency, Type & Comment Deadlines",
+  "description": "Scrape US Federal Register rules, proposed rules, notices and presidential documents from the official government API. Agency, type, date, full-text and comment-deadline filters; cursor paging with no 10,000-row wall.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "output": "./output_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}

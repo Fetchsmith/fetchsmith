@@ -1,0 +1,17 @@
+{
+  "title": "Federal Register Scraper \u2013 Agency, Type & Comment Deadlines",
+  "description": "Scrape the US Federal Register from its official government API: rules, proposed rules, notices and presidential documents. 30 flat fields incl. comment-close deadline, EO 12866 significance, RIN, docket IDs and CFR refs. Cursor paging past the 10,000-row wall. $0.0008/result, no start fee.",
+  "seoTitle": "Federal Register Scraper \u2014 US Rules & Notices API",
+  "seoDescription": "Scrape US Federal Register rules, proposed rules and notices via the official API. 30 fields incl. comment deadlines, RIN, CFR refs. No start fee.",
+  "categories": [
+    "BUSINESS",
+    "NEWS"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized Federal Register document returned to the dataset.",
+      "eventPriceUsd": 0.0008
+    }
+  }
+}

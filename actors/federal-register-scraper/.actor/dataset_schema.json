@@ -1,0 +1,298 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "documentNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DocumentNumber",
+        "example": "2026-18739"
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Type",
+        "example": "Presidential Document"
+      },
+      "subtype": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Subtype",
+        "example": "Executive Order"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title",
+        "example": "Adjusting Certain Delegations Under the Defense Production Act"
+      },
+      "abstract": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Abstract"
+      },
+      "action": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Action"
+      },
+      "publicationDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PublicationDate",
+        "example": "2026-09-11"
+      },
+      "effectiveOn": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EffectiveOn"
+      },
+      "commentsCloseOn": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CommentsCloseOn"
+      },
+      "signingDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SigningDate",
+        "example": "2026-09-08"
+      },
+      "datesText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DatesText"
+      },
+      "significant": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Significant"
+      },
+      "agencyNames": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "AgencyNames"
+      },
+      "agencySlugs": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "AgencySlugs"
+      },
+      "parentAgencyNames": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "ParentAgencyNames"
+      },
+      "docketIds": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "DocketIds"
+      },
+      "regulationIdNumbers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "RegulationIdNumbers"
+      },
+      "cfrReferences": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "CfrReferences"
+      },
+      "topics": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Topics"
+      },
+      "citation": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Citation",
+        "example": "91 FR 58007"
+      },
+      "startPage": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "StartPage",
+        "example": 58007
+      },
+      "endPage": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "EndPage",
+        "example": 58008
+      },
+      "pageLength": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PageLength",
+        "example": 2
+      },
+      "president": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "President",
+        "example": "Donald Trump"
+      },
+      "executiveOrderNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ExecutiveOrderNumber",
+        "example": "14427"
+      },
+      "excerpt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Excerpt"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Url",
+        "example": "https://www.federalregister.gov/documents/2026/09/11/2026-18739/adjusting-certain-delegations-under-the-defense-producti"
+      },
+      "pdfUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PdfUrl",
+        "example": "https://www.govinfo.gov/content/pkg/FR-2026-09-11/pdf/2026-18739.pdf"
+      },
+      "fullTextUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FullTextUrl",
+        "example": "https://www.federalregister.gov/documents/full_text/text/2026/09/11/2026-18739.txt"
+      },
+      "jsonUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "JsonUrl",
+        "example": "https://www.federalregister.gov/api/v1/documents/2026-18739?publication_date=2026-09-11"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "documentNumber",
+          "type",
+          "title",
+          "publicationDate",
+          "commentsCloseOn",
+          "significant",
+          "agencyNames",
+          "docketIds",
+          "citation",
+          "url"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "documentNumber": {
+            "label": "DocumentNumber",
+            "format": "text"
+          },
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "publicationDate": {
+            "label": "PublicationDate",
+            "format": "text"
+          },
+          "commentsCloseOn": {
+            "label": "CommentsCloseOn",
+            "format": "text"
+          },
+          "significant": {
+            "label": "Significant",
+            "format": "text"
+          },
+          "agencyNames": {
+            "label": "AgencyNames",
+            "format": "text"
+          },
+          "docketIds": {
+            "label": "DocketIds",
+            "format": "text"
+          },
+          "citation": {
+            "label": "Citation",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

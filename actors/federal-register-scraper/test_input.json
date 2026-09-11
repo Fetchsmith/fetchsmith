@@ -1,0 +1,6 @@
+{
+  "documentTypes": ["RULE", "PRORULE"],
+  "agencies": ["Environmental Protection Agency"],
+  "commentsOpenOnly": true,
+  "maxResults": 12
+}
