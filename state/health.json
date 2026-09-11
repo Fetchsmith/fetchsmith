@@ -1,5 +1,5 @@
 {
- "ts": 1789121153,
+ "ts": 1789122667,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -206,6 +206,22 @@
     "voluntaryMandated",
     "initialFirmNotification",
     "recallingFirm"
+   ],
+   "err": null
+  },
+  "federal-register-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "documentNumber",
+    "type",
+    "subtype",
+    "title",
+    "abstract",
+    "action",
+    "publicationDate",
+    "effectiveOn"
    ],
    "err": null
   }

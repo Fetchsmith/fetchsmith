@@ -921,6 +921,66 @@
         "unii": [],
         "splSetId": null
       }
+    },
+    {
+      "slug": "federal-register-scraper",
+      "title": "Federal Register Scraper – Agency, Type & Comment Deadlines",
+      "summary": "Scrape the US Federal Register's official government API: final rules, proposed rules, notices and presidential documents. 30 flat fields incl. comment-close deadline, EO 12866 significance, RIN, docket IDs and CFR references, with cursor paging past the API's own 10,000-row wall.",
+      "status": "live",
+      "credits_per_result": 1,
+      "apify_actor_id": "0SxkO5SMgcu0M6xv5",
+      "memory_mb": 1024,
+      "example_input": {
+        "documentTypes": ["RULE", "PRORULE"],
+        "agencies": ["Environmental Protection Agency"],
+        "commentsOpenOnly": true,
+        "maxResults": 100
+      },
+      "output_fields": [
+        "documentNumber",
+        "type",
+        "subtype",
+        "title",
+        "abstract",
+        "action",
+        "publicationDate",
+        "effectiveOn",
+        "commentsCloseOn",
+        "signingDate",
+        "datesText",
+        "significant",
+        "agencyNames",
+        "agencySlugs",
+        "parentAgencyNames",
+        "docketIds",
+        "regulationIdNumbers",
+        "cfrReferences",
+        "topics",
+        "citation",
+        "startPage",
+        "endPage",
+        "pageLength",
+        "president",
+        "executiveOrderNumber",
+        "excerpt",
+        "url",
+        "pdfUrl",
+        "fullTextUrl",
+        "jsonUrl"
+      ],
+      "sample_output": {
+        "documentNumber": "2026-18552",
+        "type": "Proposed Rule",
+        "title": "Wisconsin: Approval of State Coal Combustion Residuals Permit Program",
+        "publicationDate": "2026-09-11",
+        "commentsCloseOn": "2026-11-10",
+        "agencyNames": ["Environmental Protection Agency"],
+        "docketIds": ["EPA-HQ-OLEM-2026-4324", "FRL-13374-01-OLEM"],
+        "cfrReferences": ["40 CFR 257"],
+        "citation": "91 FR 57842",
+        "url": "https://www.federalregister.gov/documents/2026/09/11/2026-18552/wisconsin-approval-of-state-coal-combustion-residuals-permit-program",
+        "fullTextUrl": "https://www.federalregister.gov/documents/full_text/text/2026/09/11/2026-18552.txt"
+      }
     }
   ]
 }

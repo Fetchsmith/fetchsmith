@@ -1,5 +1,5 @@
 {
- "ts": 1789121220,
+ "ts": 1789122836,
  "date": "2026-09-11",
  "apify": {
   "google-news-scraper": {
@@ -7,104 +7,104 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 90
+   "runs": 91
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 85
+   "runs": 86
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 90
+   "runs": 91
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 82
+   "runs": 83
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 82
+   "runs": 83
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 77
+   "runs": 78
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 77
+   "runs": 78
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 73
+   "runs": 74
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 71
+   "runs": 73
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 69
+   "runs": 70
   },
   "uk-find-a-tender-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 25
+   "runs": 26
   },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 22
+   "runs": 23
   },
   "fda-recall-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 0,
-   "runs": 16
+   "runs": 17
   },
   "federal-register-scraper": {
-   "public": false,
-   "users": 1,
-   "users30d": 0,
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 0,
-   "runs": 1
+   "runs": 4
   }
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 13,
-  "users": 25,
+  "public_actors": 14,
+  "users": 27,
   "runs30d": 0
  }
 }
