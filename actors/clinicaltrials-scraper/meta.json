@@ -1,0 +1,17 @@
+{
+  "title": "ClinicalTrials.gov Scraper – Condition, Phase & Site Mode",
+  "description": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, status, type and phase filters. Optional one-row-per-site mode for site-selection. No contact PII shipped, ever. $0.0015/result, no start fee.",
+  "seoTitle": "ClinicalTrials.gov Scraper API — Trials JSON, No Key",
+  "seoDescription": "Scrape ClinicalTrials.gov studies via the official NIH API. Condition, phase, status filters, per-site output mode. No start fee, no contact PII.",
+  "categories": [
+    "BUSINESS",
+    "LEAD_GENERATION"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized ClinicalTrials.gov study (or trial site, in site mode) returned to the dataset.",
+      "eventPriceUsd": 0.0015
+    }
+  }
+}

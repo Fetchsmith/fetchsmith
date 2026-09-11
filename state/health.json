@@ -1,5 +1,5 @@
 {
- "ts": 1789135239,
+ "ts": 1789137395,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -222,6 +222,22 @@
     "action",
     "publicationDate",
     "effectiveOn"
+   ],
+   "err": null
+  },
+  "clinicaltrials-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "nctId",
+    "briefTitle",
+    "officialTitle",
+    "acronym",
+    "overallStatus",
+    "studyType",
+    "phases",
+    "enrollmentCount"
    ],
    "err": null
   }

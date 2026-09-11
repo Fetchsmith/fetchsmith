@@ -1,0 +1,16 @@
+{
+  "actorSpecification": 1,
+  "name": "clinicaltrials-scraper",
+  "title": "ClinicalTrials.gov Scraper \u2013 Condition, Phase & Site Mode",
+  "description": "Scrape ClinicalTrials.gov studies from the official NIH API. Condition, intervention, sponsor, location, status, type and phase filters; optional one-row-per-site mode. No contact PII shipped.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "output": "./output_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "title": "ClinicalTrials.gov Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "conditions": {
+      "title": "Conditions / diseases",
+      "type": "string",
+      "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty with a search query or overallStatus filter, or every study since 1999 matches.",
+      "editor": "textfield",
+      "prefill": "breast cancer",
+      "default": "cancer"
+    },
+    "interventions": {
+      "title": "Interventions / treatments",
+      "type": "string",
+      "description": "Drug, device or procedure name, e.g. \"pembrolizumab\". Maps to query.intr.",
+      "editor": "textfield"
+    },
+    "sponsors": {
+      "title": "Sponsor / collaborator name",
+      "type": "string",
+      "description": "Lead sponsor or collaborator organization name. Maps to query.spons.",
+      "editor": "textfield"
+    },
+    "locations": {
+      "title": "Location (city, state or country)",
+      "type": "string",
+      "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn.",
+      "editor": "textfield"
+    },
+    "searchQuery": {
+      "title": "Free-text search",
+      "type": "string",
+      "description": "General search term across titles, outcomes and eligibility text. Maps to query.term.",
+      "editor": "textfield"
+    },
+    "overallStatus": {
+      "title": "Recruitment status",
+      "type": "array",
+      "description": "Filter by recruitment status. Leave empty for all statuses.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["RECRUITING", "NOT_YET_RECRUITING", "ENROLLING_BY_INVITATION", "ACTIVE_NOT_RECRUITING", "COMPLETED", "TERMINATED", "WITHDRAWN", "SUSPENDED", "UNKNOWN", "WITHHELD", "AVAILABLE", "NO_LONGER_AVAILABLE", "APPROVED_FOR_MARKETING", "TEMPORARILY_NOT_AVAILABLE"]
+      },
+      "uniqueItems": true
+    },
+    "studyTypes": {
+      "title": "Study type",
+      "type": "array",
+      "description": "Interventional, observational or expanded-access. Leave empty for all.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["INTERVENTIONAL", "OBSERVATIONAL", "EXPANDED_ACCESS"]
+      },
+      "uniqueItems": true
+    },
+    "phases": {
+      "title": "Phase",
+      "type": "array",
+      "description": "Trial phase. Only meaningful for interventional studies; ~19% of all studies have no phase at all (observational studies, device trials). Leave empty for all.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3", "PHASE4", "NA"],
+        "enumTitles": ["Early Phase 1", "Phase 1", "Phase 2", "Phase 3", "Phase 4", "Not Applicable"]
+      },
+      "uniqueItems": true
+    },
+    "hasResultsOnly": {
+      "title": "Only studies with posted results",
+      "type": "boolean",
+      "description": "Restrict to studies that have posted a results section on ClinicalTrials.gov.",
+      "default": false
+    },
+    "rowsPerStudy": {
+      "title": "Row mode",
+      "type": "string",
+      "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. A single study averages 5 sites (max seen: 110), so site mode returns roughly 5x more billable rows for the same query.",
+      "editor": "select",
+      "enum": ["study", "site"],
+      "enumTitles": ["One row per study", "One row per trial site"],
+      "default": "study"
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many rows (studies, or sites if rowsPerStudy=\"site\"). Token-based paging has no offset wall.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 50000
+    }
+  },
+  "required": []
+}

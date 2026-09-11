@@ -1,0 +1,281 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "nctId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "NctId",
+        "example": "NCT04137653"
+      },
+      "briefTitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BriefTitle",
+        "example": "Treatment of Triple-negative Breast Cancer With Albumin-bound Paclitaxel as Neoadjuvant Therapy: a Prospective RCT"
+      },
+      "officialTitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OfficialTitle",
+        "example": "Treatment of Triple-negative Breast Cancer With Albumin-bound Paclitaxel as Neoadjuvant Therapy: a Prospective Randomize"
+      },
+      "acronym": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Acronym"
+      },
+      "overallStatus": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OverallStatus",
+        "example": "RECRUITING"
+      },
+      "studyType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "StudyType",
+        "example": "INTERVENTIONAL"
+      },
+      "phases": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Phases"
+      },
+      "enrollmentCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "EnrollmentCount",
+        "example": 1498
+      },
+      "startDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "StartDate",
+        "example": "2021-07-19"
+      },
+      "primaryCompletionDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimaryCompletionDate",
+        "example": "2025-11-30"
+      },
+      "completionDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CompletionDate",
+        "example": "2026-11-30"
+      },
+      "studyFirstPostDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "StudyFirstPostDate",
+        "example": "2019-10-24"
+      },
+      "lastUpdatePostDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LastUpdatePostDate",
+        "example": "2021-07-20"
+      },
+      "leadSponsor": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LeadSponsor",
+        "example": "Shengjing Hospital"
+      },
+      "collaborators": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Collaborators"
+      },
+      "conditions": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Conditions"
+      },
+      "keywords": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Keywords"
+      },
+      "interventions": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Interventions"
+      },
+      "briefSummary": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BriefSummary",
+        "example": "Triple-negative breast cancer (TNBC) accounts for about 20% of clinical breast cancer. Clinical characteristics include "
+      },
+      "sex": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Sex",
+        "example": "FEMALE"
+      },
+      "minimumAge": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "MinimumAge",
+        "example": "18 Years"
+      },
+      "maximumAge": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "MaximumAge",
+        "example": "70 Years"
+      },
+      "healthyVolunteers": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "HealthyVolunteers",
+        "example": false
+      },
+      "hasResults": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "HasResults",
+        "example": false
+      },
+      "locationCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "LocationCount",
+        "example": 1
+      },
+      "locations": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Locations"
+      },
+      "studyUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "StudyUrl",
+        "example": "https://clinicaltrials.gov/study/NCT04137653"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "nctId",
+          "briefTitle",
+          "officialTitle",
+          "acronym",
+          "overallStatus",
+          "studyType",
+          "enrollmentCount",
+          "startDate",
+          "primaryCompletionDate",
+          "completionDate"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "nctId": {
+            "label": "NctId",
+            "format": "text"
+          },
+          "briefTitle": {
+            "label": "BriefTitle",
+            "format": "text"
+          },
+          "officialTitle": {
+            "label": "OfficialTitle",
+            "format": "text"
+          },
+          "acronym": {
+            "label": "Acronym",
+            "format": "text"
+          },
+          "overallStatus": {
+            "label": "OverallStatus",
+            "format": "text"
+          },
+          "studyType": {
+            "label": "StudyType",
+            "format": "text"
+          },
+          "enrollmentCount": {
+            "label": "EnrollmentCount",
+            "format": "number"
+          },
+          "startDate": {
+            "label": "StartDate",
+            "format": "text"
+          },
+          "primaryCompletionDate": {
+            "label": "PrimaryCompletionDate",
+            "format": "text"
+          },
+          "completionDate": {
+            "label": "CompletionDate",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

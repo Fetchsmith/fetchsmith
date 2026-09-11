@@ -1,10 +1,10 @@
 {
- "ts": 1789122769,
+ "ts": 1789137315,
  "results": {
-  "federal-register-scraper": {
+  "clinicaltrials-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
-   "items": 75,
+   "secs": 10,
+   "items": 44,
    "pass": true
   }
  }
