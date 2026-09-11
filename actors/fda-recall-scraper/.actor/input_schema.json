@@ -1,0 +1,80 @@
+{
+  "title": "FDA Recall Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "productTypes": {
+      "title": "Product types",
+      "type": "array",
+      "description": "Which openFDA enforcement endpoints to search. All three by default. Results are interleaved and every row is tagged with productType.",
+      "editor": "select",
+      "items": { "type": "string", "enum": ["food", "drug", "device"], "enumTitles": ["Food", "Drug", "Device"] },
+      "uniqueItems": true,
+      "default": ["food", "drug", "device"]
+    },
+    "reportDateFrom": {
+      "title": "Report date from",
+      "type": "string",
+      "description": "Earliest FDA enforcement-report date, YYYY-MM-DD or YYYYMMDD. Defaults to one year ago. Note this is when FDA published the report, which can be months after the recall started.",
+      "editor": "textfield"
+    },
+    "reportDateTo": {
+      "title": "Report date to",
+      "type": "string",
+      "description": "Latest FDA enforcement-report date, YYYY-MM-DD or YYYYMMDD. Defaults to today.",
+      "editor": "textfield"
+    },
+    "classifications": {
+      "title": "Classifications",
+      "type": "array",
+      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. Leave empty for all.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["Class I", "Class II", "Class III"],
+        "enumTitles": ["Class I (most serious)", "Class II", "Class III (least serious)"]
+      },
+      "uniqueItems": true
+    },
+    "states": {
+      "title": "Recalling firm states",
+      "type": "array",
+      "description": "Two-letter US state codes of the RECALLING FIRM (not where the product was distributed — see distributionPattern in the output for that). Leave empty for all.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "status": {
+      "title": "Recall status",
+      "type": "string",
+      "description": "Filter by FDA recall status. Leave empty for all.",
+      "editor": "select",
+      "enum": ["", "Ongoing", "Completed", "Terminated", "Pending"],
+      "enumTitles": ["All statuses", "Ongoing", "Completed", "Terminated", "Pending"],
+      "default": ""
+    },
+    "searchQuery": {
+      "title": "Search query",
+      "type": "string",
+      "description": "Free-text phrase matched against product description, reason for recall and recalling firm name. One distinctive word works better than a long phrase.",
+      "editor": "textfield"
+    },
+    "order": {
+      "title": "Sort order",
+      "type": "string",
+      "description": "Sort by report date, newest or oldest first.",
+      "editor": "select",
+      "enum": ["desc", "asc"],
+      "enumTitles": ["Newest report date first", "Oldest report date first"],
+      "default": "desc"
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many recalls in total across all selected product types.",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 50000
+    }
+  },
+  "required": []
+}

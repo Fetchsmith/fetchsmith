@@ -1,0 +1,10 @@
+{
+  "title": "FDA Recall Scraper — Food, Drug & Device Enforcement Reports",
+  "description": "Search every US FDA product recall from the official openFDA enforcement API. All three product types — food, drug and device — in ONE Actor and one flat schema, where most alternatives cover only one. 30 typed fields incl. classification (Class I/II/III), recalling firm, reason for recall, distribution pattern and ISO dates, plus NDC, UPC, brand/generic name and substance on drug recalls. Filter by product type, severity, firm state, status, date range and free text.",
+  "seoTitle": "FDA Recall Scraper — Food, Drug & Device Recalls API",
+  "seoDescription": "Scrape US FDA recalls from openFDA: food, drug and device enforcement reports in one Actor. 30 fields incl. Class I/II/III severity, recalling firm, NDC/UPC on drugs. Filter by state, status, date.",
+  "categories": ["LEAD_GENERATION", "BUSINESS"],
+  "events": {
+    "result": { "eventTitle": "Result item", "eventDescription": "One normalized FDA recall (enforcement report) returned to the dataset.", "eventPriceUsd": 0.0035 }
+  }
+}

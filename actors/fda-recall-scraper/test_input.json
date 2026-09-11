@@ -1,0 +1,6 @@
+{
+  "productTypes": ["food", "drug", "device"],
+  "classifications": ["Class I", "Class II"],
+  "reportDateFrom": "2026-01-01",
+  "maxResults": 12
+}

@@ -1,0 +1,327 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "productType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ProductType",
+        "example": "drug"
+      },
+      "recallNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecallNumber",
+        "example": "D-0785-2026"
+      },
+      "eventId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EventId",
+        "example": "99584"
+      },
+      "status": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Status",
+        "example": "Ongoing"
+      },
+      "classification": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Classification",
+        "example": "Class II"
+      },
+      "voluntaryMandated": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "VoluntaryMandated",
+        "example": "Voluntary: Firm initiated"
+      },
+      "initialFirmNotification": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "InitialFirmNotification",
+        "example": "Letter"
+      },
+      "recallingFirm": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecallingFirm",
+        "example": "ACCORD HEALTHCARE, INC."
+      },
+      "city": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "City",
+        "example": "Raleigh"
+      },
+      "state": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "State",
+        "example": "NC"
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Country",
+        "example": "United States"
+      },
+      "productDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ProductDescription",
+        "example": "Levothyroxine Sodium Tablets, USP, 200 mcg (0.2 mg), packaged in a) 90-count bottles (NDC  16729-457-15) and b) 1000-cou"
+      },
+      "productQuantity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ProductQuantity",
+        "example": "N/A"
+      },
+      "reasonForRecall": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReasonForRecall",
+        "example": "Subpotent Drug"
+      },
+      "distributionPattern": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DistributionPattern",
+        "example": "Nationwide within the United States"
+      },
+      "codeInfo": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CodeInfo",
+        "example": "a) Lot # D2402430, D2402431, Exp Date: 10/31/2026. b) Lot #: D2402432, Exp. Date 10/31/2026; D2500180, Exp. Date 12/31/2"
+      },
+      "moreCodeInfo": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "MoreCodeInfo"
+      },
+      "reportDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReportDate",
+        "example": "2026-09-02"
+      },
+      "recallInitiationDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "RecallInitiationDate",
+        "example": "2026-08-06"
+      },
+      "centerClassificationDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CenterClassificationDate",
+        "example": "2026-08-21"
+      },
+      "terminationDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "TerminationDate"
+      },
+      "brandName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BrandName",
+        "example": "LEVOTHYROXINE SODIUM"
+      },
+      "genericName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "GenericName",
+        "example": "LEVOTHYROXINE SODIUM"
+      },
+      "manufacturerName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ManufacturerName",
+        "example": "Accord Healthcare Inc."
+      },
+      "substanceName": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "SubstanceName"
+      },
+      "productNdc": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "ProductNdc"
+      },
+      "packageNdc": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "PackageNdc"
+      },
+      "upc": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Upc"
+      },
+      "applicationNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ApplicationNumber",
+        "example": "ANDA212399"
+      },
+      "drugRoute": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "DrugRoute"
+      },
+      "rxcui": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Rxcui"
+      },
+      "unii": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Unii"
+      },
+      "splSetId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SplSetId",
+        "example": "a6233381-3043-4e9a-aaa6-a6b105e5142b"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "productType",
+          "recallNumber",
+          "eventId",
+          "status",
+          "classification",
+          "voluntaryMandated",
+          "initialFirmNotification",
+          "recallingFirm",
+          "city",
+          "state"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "productType": {
+            "label": "ProductType",
+            "format": "text"
+          },
+          "recallNumber": {
+            "label": "RecallNumber",
+            "format": "text"
+          },
+          "eventId": {
+            "label": "EventId",
+            "format": "text"
+          },
+          "status": {
+            "label": "Status",
+            "format": "text"
+          },
+          "classification": {
+            "label": "Classification",
+            "format": "text"
+          },
+          "voluntaryMandated": {
+            "label": "VoluntaryMandated",
+            "format": "text"
+          },
+          "initialFirmNotification": {
+            "label": "InitialFirmNotification",
+            "format": "text"
+          },
+          "recallingFirm": {
+            "label": "RecallingFirm",
+            "format": "text"
+          },
+          "city": {
+            "label": "City",
+            "format": "text"
+          },
+          "state": {
+            "label": "State",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

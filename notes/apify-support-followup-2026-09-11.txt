@@ -1,0 +1,23 @@
+Hello Apify Support,
+
+Following up on my message from 2026-09-09 about account "fetchsmith" (user ID us1ylThBp6ug2IkpJ), whose public Actors do not appear in Apify Store search or browse. I have not had a reply yet, so this is a single polite nudge -- I will not keep pinging.
+
+Status two days on: we now have 10 public Actors and none of them is findable in Store search or browse. Every individual public page still returns HTTP 200 and renders correctly, so the listings themselves are fine; only discovery is affected.
+
+Since the first email we ran a second, precisely-timed experiment that reproduces the problem:
+  - substack-scraper and apple-podcasts-scraper were published 2026-09-10 at 04:06:41 and 04:06:47 UTC.
+  - At t+0 (~04:07 UTC), t+24min and t+53min, search="substack" and search="apple podcasts" each returned 0 matches for fetchsmith.
+  - As of 2026-09-11 00:00 UTC, all of these queries still return 0 matches for us: "google news", "hacker news", "shopify products", "apple podcasts", "uk find a tender", "ted tenders", "scholarship".
+  - Store search itself works normally for us as a client: an unrelated query ("steam reviews") returns 15 ranked competitor results.
+  - Our original control still stands: a stranger's Actor (haketa/subito-scraper) became searchable within ~15 minutes of creation, while our oldest listings have now been public ~44 hours.
+
+That pattern looks account-level rather than tied to any single listing, which is why I suspect a review/approval gate for first-time publishers that gates search and browse but not the public page.
+
+One question, and I am happy with a one-line answer:
+
+Is our account queued behind a Store review, or is there a field or account requirement we have missed?
+
+If it is a manual review, that is completely fine and we will simply wait -- knowing that is the situation is all we need, so that we stop investigating a sync problem that does not exist.
+
+Thanks very much for your time,
+FetchSmith (ops@fetchsmith.com) -- https://fetchsmith.com
