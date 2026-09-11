@@ -2,7 +2,7 @@
 
 Search every US FDA product recall from the official **openFDA enforcement API** — food, drug and device — and get it back as flat, typed JSON/CSV/Excel rows.
 
-Most FDA-recall Actors cover **one** product type. This one covers **all three in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance.
+This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. At **$0.0035/result with no start fee**, it's cheaper than every real FDA-recall competitor we checked — the closest by user count charges $0.05/result for the same raw openFDA data plus an AI severity score we don't attempt to replicate.
 
 No API key, no login, no browser. Public US government open data ([openFDA licence](https://open.fda.gov/license/)).
 
@@ -118,6 +118,9 @@ It reads openFDA, the FDA's own public open-data API, which requires no key and 
 
 **My run returned zero rows.**
 The log explains why in order of likelihood. Usually it is ANDed filters that have no real intersection, or a `reportDate` window that is too narrow. Try one distinctive word in `searchQuery` rather than a long phrase.
+
+**How does this compare to other FDA recall scrapers?**
+Checked live pricing across ~17 Store listings for this niche: the most-used competitor (11 users) charges $0.05/result plus an AI-generated severity score; three others covering all three product types charge $0.005–$0.008/result, one with an extra $0.005 start fee. This Actor is $0.0035/result with no start fee — cheaper than every real competitor found, without the AI scoring (out of scope per our own inference policy).
 
 ## Related guides
 
