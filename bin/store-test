@@ -1,0 +1,98 @@
+#!/root/agent/venv/bin/python
+"""Apify's automated Store test replica: run live/beta Actors with EMPTY input {} (schema
+defaults apply, default memory) and check SUCCEEDED / items>0 / duration<300s. This is a
+DIFFERENT code path from actor-health (which uses hand-written test_input.json) — cycle 104
+found 2 real bugs (eu-ted-tenders-scraper, google-news-scraper) that actor-health's 12/12
+green missed entirely, because a first-time Store visitor clicking "Try for free" and Apify's
+own automated test both hit the empty-input path, not our curated one.
+
+Usage:
+  bin/store-test                       run empty-input test on every live/beta Actor
+  bin/store-test <slug>                run empty-input test on one Actor
+  bin/store-test --concurrent <slug> <n> <grep-pattern>
+                                        launch n concurrent empty-input runs of one Actor
+                                        (to provoke rate-limit/backoff/circuit-breaker paths
+                                        that only fire under real concurrent load) and grep
+                                        each run's log for grep-pattern.
+
+Re-run this whenever an Actor is added or its input schema changes (cycle 104 lesson).
+Results saved to state/store-test.json.
+"""
+import json, os, sys, time, httpx
+
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+T = env["APIFY_TOKEN"]; API = "https://api.apify.com/v2"; H = {"Authorization": f"Bearer {T}"}
+user = httpx.get(f"{API}/users/me", headers=H).json()["data"]["username"]
+reg = json.load(open("/root/agent/actors/registry.json")).get("tools", [])
+
+
+def live_slugs():
+    return [t["slug"] for t in reg if t.get("status") in ("live", "beta")]
+
+
+def start_run(slug):
+    r = httpx.post(f"{API}/acts/{user}~{slug}/runs", headers=H, json={}, params={"timeout": 330}, timeout=30)
+    d = r.json().get("data", {})
+    return {"id": d.get("id"), "mem": d.get("options", {}).get("memoryMbytes"), "code": r.status_code}
+
+
+def poll_run(run_id):
+    d = httpx.get(f"{API}/actor-runs/{run_id}", headers=H, timeout=30).json()["data"]
+    while d["status"] in ("READY", "RUNNING"):
+        time.sleep(5)
+        d = httpx.get(f"{API}/actor-runs/{run_id}", headers=H, timeout=30).json()["data"]
+    dur = d.get("stats", {}).get("durationMillis")
+    ds = httpx.get(f"{API}/datasets/{d['defaultDatasetId']}", headers=H, timeout=30).json()["data"]
+    n = ds.get("itemCount", 0)
+    secs = None if dur is None else round(dur / 1000)
+    passed = d["status"] == "SUCCEEDED" and n > 0 and secs is not None and secs < 300
+    return {"status": d["status"], "secs": secs, "items": n, "pass": passed}
+
+
+def cmd_default(slugs):
+    runs = {s: start_run(s) for s in slugs}
+    out = {}
+    for s, r in runs.items():
+        if not r.get("id"):
+            out[s] = {"status": "START_FAILED", "code": r["code"], "pass": False}
+            print(f"{s:32} START_FAILED code={r['code']}")
+            continue
+        res = poll_run(r["id"])
+        out[s] = res
+        flag = "" if res["pass"] else "   <-- STORE-TEST FAIL"
+        print(f"{s:32} {res['status']:12} {str(res['secs'])+'s':>7} items={res['items']:<6}{flag}")
+    json.dump({"ts": int(time.time()), "results": out}, open("/root/agent/state/store-test.json", "w"), indent=1)
+    failed = [s for s, r in out.items() if not r["pass"]]
+    if failed:
+        print(f"\nFAILED: {', '.join(failed)}")
+        sys.exit(1)
+    print("\nAll passed.")
+
+
+def cmd_concurrent(slug, n, pattern):
+    print(f"Launching {n} concurrent empty-input runs of {slug}...")
+    runs = [start_run(slug) for _ in range(n)]
+    ids = [r["id"] for r in runs if r.get("id")]
+    if len(ids) < n:
+        print(f"WARNING: only {len(ids)}/{n} runs started")
+    results = [poll_run(rid) for rid in ids]
+    for i, (rid, res) in enumerate(zip(ids, results)):
+        print(f"run {i} ({rid}): {res}")
+    found = False
+    for rid in ids:
+        log = httpx.get(f"{API}/logs/{rid}", headers=H, timeout=30).text
+        if pattern.lower() in log.lower():
+            print(f"MATCH in run {rid}: found {pattern!r}")
+            found = True
+    print(f"\nPattern {pattern!r} {'FOUND' if found else 'NOT FOUND'} across {len(ids)} concurrent runs.")
+    sys.exit(0 if found else 1)
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if args and args[0] == "--concurrent":
+        cmd_concurrent(args[1], int(args[2]), args[3])
+    elif args:
+        cmd_default(args)
+    else:
+        cmd_default(live_slugs())
