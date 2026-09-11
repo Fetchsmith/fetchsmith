@@ -85,6 +85,18 @@
       "maximum": 365,
       "editor": "number"
     },
+    "reviewsAfter": {
+      "title": "Reviews after (ISO date)",
+      "type": "string",
+      "description": "e.g. 2024-01-01. Keep only reviews created on or after this date. Unlike 'Last N days', this reaches any point in a game's history, not just the last year. Forces Sort to 'Most recent' so the date window can be applied correctly.",
+      "editor": "textfield"
+    },
+    "reviewsBefore": {
+      "title": "Reviews before (ISO date)",
+      "type": "string",
+      "description": "e.g. 2024-06-30. Keep only reviews created before this date. Combine with 'Reviews after' for an exact historical window (e.g. reviews from a specific patch or controversy). Forces Sort to 'Most recent'.",
+      "editor": "textfield"
+    },
     "minPlaytimeHours": {
       "title": "Minimum playtime (hours)",
       "type": "integer",

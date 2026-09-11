@@ -10,7 +10,15 @@ const country = String(input.country || 'us').toLowerCase().trim();
 const language = String(input.language || 'english').toLowerCase().trim();
 const reviewType = ['all', 'positive', 'negative'].includes(input.reviewType) ? input.reviewType : 'all';
 const purchaseType = ['all', 'steam', 'non_steam_purchase'].includes(input.purchaseType) ? input.purchaseType : 'all';
-const sortBy = ['recent', 'updated', 'all'].includes(input.sortBy) ? input.sortBy : 'recent';
+const reviewsAfter = input.reviewsAfter ? new Date(input.reviewsAfter) : null;
+const reviewsBefore = input.reviewsBefore ? new Date(input.reviewsBefore) : null;
+const hasDateWindow = (reviewsAfter && !isNaN(reviewsAfter)) || (reviewsBefore && !isNaN(reviewsBefore));
+// Reviews-after/before need reviews in strict newest-first order to filter and early-stop correctly.
+let sortBy = ['recent', 'updated', 'all'].includes(input.sortBy) ? input.sortBy : 'recent';
+if (hasDateWindow && sortBy !== 'recent') {
+  log.warning(`Sort was "${sortBy}" but "Reviews after/before" requires chronological order — using "recent" instead.`);
+  sortBy = 'recent';
+}
 const dayRange = input.dayRange != null ? Math.min(Math.max(Number(input.dayRange), 1), 365) : null;
 const perAppReviews = Math.min(Number(input.maxReviewsPerApp ?? 200), 5000);
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 50);
@@ -122,6 +130,8 @@ function reviewRow(appId, r, info) {
 function reviewPassesFilters(item) {
   if (minPlaytimeHours != null && !(item.playtimeForeverHours >= minPlaytimeHours)) return false;
   if (keyword && !(item.review || '').toLowerCase().includes(keyword)) return false;
+  if (reviewsAfter && !isNaN(reviewsAfter) && new Date(item.createdAt) < reviewsAfter) return false;
+  if (reviewsBefore && !isNaN(reviewsBefore) && new Date(item.createdAt) >= reviewsBefore) return false;
   return true;
 }
 
@@ -196,15 +206,20 @@ async function scrapeReviews(appId) {
     if (page === 0 && body.query_summary) summaries.set(appId, body.query_summary);
     const reviews = body.reviews ?? [];
     if (!reviews.length) break;
+    let pastWindow = false;
     for (const r of reviews) {
       if (got >= perAppReviews || !keepGoing) break;
       if (seen.has(r.recommendationid)) continue; // Steam repeats the last page when the cursor runs out
       seen.add(r.recommendationid);
       got += 1;
       const item = { ...reviewRow(appId, r, info), scrapedAt: new Date().toISOString() };
+      // sort=recent is strictly newest-created-first, so once we're older than "reviewsAfter"
+      // every review from here on (this page and all later pages) is also too old — stop paging.
+      if (reviewsAfter && !isNaN(reviewsAfter) && new Date(item.createdAt) < reviewsAfter) { pastWindow = true; break; }
       if (!reviewPassesFilters(item)) continue;
       keepGoing = await pushResult(item);
     }
+    if (pastWindow) break;
     const next = body.cursor;
     if (!next || next === cursor) break; // same cursor twice = end of feed
     cursor = next;
@@ -276,8 +291,8 @@ if (pushed === 0) {
     ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
     : emptySearches.length
       ? `your search terms matched no Steam games: ${emptySearches.join(', ')}`
-      : keyword || minPlaytimeHours != null
-        ? 'every review Steam returned was removed by your keyword / minimum-playtime filters'
+      : keyword || minPlaytimeHours != null || hasDateWindow
+        ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
         : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
 } else if (emptyIds.length) {

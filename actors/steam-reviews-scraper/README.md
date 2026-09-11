@@ -11,6 +11,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 - **Track sentiment after a patch or a price change** — pull reviews sorted by most recent, filter to `negative`, and diff week over week.
 - **Find bug reports in the wild** — set `keyword` to `crash`, `stutter`, `controller` or `refund` and get only the reviews that mention it.
 - **Filter out drive-by reviews** — `minPlaytimeHours: 10` keeps only reviewers who actually played the game.
+- **Pull reviews from an exact historical window** — `reviewsAfter`/`reviewsBefore` (e.g. a specific patch, a controversy, a launch week years ago) reach any point in a game's history, not just the last year.
 - **Competitive research** — `dataType: "games"` returns price, discount, genres, developer, Metacritic score, the full review-score summary (total positive/negative, % positive) and, optionally, the **live concurrent player count**.
 - **Localised research** — `language: "schinese"`, `"russian"`, `"brazilian"` … or `"all"` for every language at once.
 - **Feed an LLM / dataset pipeline** — clean flat rows, stable `reviewId`, ISO-8601 timestamps.
@@ -29,6 +30,8 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `purchaseType` | string | `all` | `steam` excludes key activations and free weekends |
 | `sortBy` | string | `recent` | `recent`, `updated`, or `all` (Steam's helpfulness ranking) |
 | `dayRange` | integer | — | With `sortBy: "all"`, restrict to the last N days (1–365) |
+| `reviewsAfter` | string | — | ISO date (`2024-01-01`) — keep only reviews created on/after this date. Reaches any point in history, forces `sortBy` to `recent`. |
+| `reviewsBefore` | string | — | ISO date — keep only reviews created before this date. Combine with `reviewsAfter` for an exact window. |
 | `minPlaytimeHours` | integer | — | Keep only reviewers with at least this many hours in the game |
 | `keyword` | string | — | Keep only reviews whose text contains this word/phrase |
 | `country` | string | `us` | Two-letter code for store prices and availability |
@@ -130,10 +133,13 @@ No. This Actor only reads Steam's public store endpoints over plain HTTP. No log
 Yes — the Actor paginates with Steam's review cursor. Set `maxReviewsPerApp` (up to 5000 per game) and `maxResults` for the overall cap. Remember you are charged per row returned, so set both deliberately.
 
 **Why did I get fewer reviews than `maxReviewsPerApp`?**
-Either the game genuinely has fewer reviews in that language/filter combination, or your `keyword` / `minPlaytimeHours` filters removed the rest. Filtered-out reviews are **not** charged. The run's status message says which case it was.
+Either the game genuinely has fewer reviews in that language/filter combination, or your `keyword` / `minPlaytimeHours` / `reviewsAfter` / `reviewsBefore` filters removed the rest. Filtered-out reviews are **not** charged. The run's status message says which case it was.
 
 **Does `dayRange` work with the "most recent" sort?**
-No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. The other sorts are already chronological, so filter by `createdAt` on your side instead.
+No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. For any other historical window, use `reviewsAfter`/`reviewsBefore` instead — the Actor forces chronological order and stops paging as soon as it passes your window, so it works arbitrarily far back, not just the last 365 days.
+
+**Can I pull reviews from a specific week/month years ago, like a launch controversy?**
+Yes — set `reviewsAfter` and `reviewsBefore` to that exact window (e.g. `"2024-01-15"` / `"2024-02-01"`). Steam's own API has no such filter (only a rolling `dayRange` capped at 365 days for the helpfulness sort); this Actor gets there by paging newest-first and stopping the instant it's past your window, so a narrow window years back is cheap even on a huge game.
 
 **I set `sortBy: "all"` and got way fewer reviews than expected — why?**
 Steam silently caps its helpfulness ranking to the **last 30 days** if you don't also set `dayRange`. For a true all-time "most helpful" pull, set `dayRange: 365` explicitly alongside `sortBy: "all"`.
