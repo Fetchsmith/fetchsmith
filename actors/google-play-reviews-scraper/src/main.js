@@ -4,7 +4,24 @@ import gplay from 'google-play-scraper';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
-const appIds = (input.appIds ?? []).map((s) => String(s).trim()).filter(Boolean);
+// Accept either a bare package name or a full Play Store URL -- users paste the URL far more
+// often than the package name, and both top competitors take a URL.
+function toAppId(raw) {
+  const s = String(raw).trim();
+  if (!s) return null;
+  if (!/^https?:\/\//i.test(s)) return s;
+  try {
+    const u = new URL(s);
+    const id = u.searchParams.get('id');
+    if (id) return id.trim();
+    log.warning(`Play Store URL has no "?id=" param, skipping: ${s}`);
+  } catch {
+    log.warning(`Not a valid URL or package name, skipping: ${s}`);
+  }
+  return null;
+}
+
+const appIds = (input.appIds ?? []).map(toAppId).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((s) => String(s).trim()).filter(Boolean);
 const country = String(input.country ?? 'us').toLowerCase();
 const lang = String(input.language ?? 'en').toLowerCase();
@@ -16,13 +33,24 @@ const maxResults = Math.min(Number(input.maxResults ?? 500), 20000);
 const minScore = input.minScore != null ? Number(input.minScore) : null;
 const maxScore = input.maxScore != null ? Number(input.maxScore) : null;
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
+const keywords = (input.keywords ?? []).map((s) => String(s).trim().toLowerCase()).filter(Boolean);
+const ratingFilter = (input.ratingFilter ?? [])
+  .map((s) => Number(String(s).trim()))
+  .filter((n) => Number.isFinite(n));
+const appVersions = (input.appVersions ?? []).map((s) => String(s).trim()).filter(Boolean);
 const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;
 const untilDate = input.untilDate ? new Date(input.untilDate) : null;
 
 function passesFilters(r) {
   if (minScore != null && r.score < minScore) return false;
   if (maxScore != null && r.score > maxScore) return false;
-  if (keyword && !`${r.title || ''} ${r.text || ''}`.toLowerCase().includes(keyword)) return false;
+  if (ratingFilter.length && !ratingFilter.includes(Number(r.score))) return false;
+  const hay = `${r.title || ''} ${r.text || ''}`.toLowerCase();
+  if (keyword && !hay.includes(keyword)) return false;
+  if (keywords.length && !keywords.some((k) => hay.includes(k))) return false;
+  // Google Play leaves `version` null on many reviews; a version filter must drop those
+  // rather than silently letting them through as "unknown".
+  if (appVersions.length && !appVersions.includes(String(r.version ?? ''))) return false;
   const d = r.date ? new Date(r.date) : null;
   if (sinceDate && (!d || d < sinceDate)) return false;
   if (untilDate && (!d || d > untilDate)) return false;
@@ -122,9 +150,11 @@ if (!resolvedAppIds.length) {
 }
 
 const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
-const filteredOutApps = []; // reviews existed but minScore/maxScore/keyword/date filters removed all of them
+const filteredOutApps = []; // reviews existed but rating/keyword/appVersion/date filters removed all of them
 const erroredApps = [];
 const invalidApps = []; // app() confirmed the appId doesn't exist -- not a country/language issue
+const seenReviewIds = new Set();
+let duplicatesSkipped = 0;
 for (const appId of resolvedAppIds) {
   if (stop) break;
   let appIdInvalid = false;
@@ -148,6 +178,14 @@ for (const appId of resolvedAppIds) {
     log.info(`${appId}: fetched ${data.length} reviews, ${data.filter(passesFilters).length} pass filters`);
     for (const r of data) {
       if (!passesFilters(r)) continue;
+      // Never push (and under pay-per-result, never charge for) the same reviewId twice --
+      // Google Play's paginated review endpoint can repeat a row across page boundaries.
+      // (Duplicate *apps* are already collapsed in resolveAppIds().)
+      if (r.id != null && seenReviewIds.has(r.id)) {
+        duplicatesSkipped += 1;
+        continue;
+      }
+      if (r.id != null) seenReviewIds.add(r.id);
       const keepGoing = await pushResult(mapReview(appId, r));
       if (!keepGoing) break;
     }
@@ -156,7 +194,7 @@ for (const appId of resolvedAppIds) {
       log.warning(`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}" (try a different country/language, not a scrape failure).`);
     } else if (data.length > 0 && pushed === pushedBefore) {
       filteredOutApps.push(appId);
-      log.warning(`${appId}: fetched ${data.length} reviews but your minScore/maxScore/keyword/date filters removed all of them.`);
+      log.warning(`${appId}: fetched ${data.length} reviews but your rating/keyword/appVersion/date filters removed all of them.`);
     }
   } catch (e) {
     erroredApps.push(appId);
@@ -164,14 +202,14 @@ for (const appId of resolvedAppIds) {
   }
 }
 
-log.info(`Done. Pushed ${pushed} items.`);
+log.info(`Done. Pushed ${pushed} items.${duplicatesSkipped ? ` Skipped ${duplicatesSkipped} duplicate review(s) (not charged).` : ''}`);
 if (pushed === 0 && resolvedAppIds.length) {
   const why = invalidApps.length
     ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
     : erroredApps.length
     ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
     : filteredOutApps.length && !emptyApps.length
-      ? 'reviews were found but every one was removed by your minScore/maxScore/keyword/date filters'
+      ? 'reviews were found but every one was removed by your rating/keyword/appVersion/date filters'
       : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
   await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
 } else if (emptyApps.length || filteredOutApps.length) {
