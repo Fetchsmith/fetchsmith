@@ -124,14 +124,20 @@ if (!resolvedAppIds.length) {
 const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
 const filteredOutApps = []; // reviews existed but minScore/maxScore/keyword/date filters removed all of them
 const erroredApps = [];
+const invalidApps = []; // app() confirmed the appId doesn't exist -- not a country/language issue
 for (const appId of resolvedAppIds) {
   if (stop) break;
+  let appIdInvalid = false;
   if (includeAppDetails) {
     try {
       const app = await gplay.app({ appId, lang, country });
       const keepGoing = await pushResult(mapAppDetails(app));
       if (!keepGoing) break;
     } catch (e) {
+      // app() throws on an unknown package name; reviews() does not -- it just returns zero
+      // rows for the same id, which would otherwise read as "wrong country/language" below.
+      appIdInvalid = /not found/i.test(e.message);
+      if (appIdInvalid) invalidApps.push(appId);
       log.warning(`app() failed for ${appId}: ${e.message}`);
     }
   }
@@ -145,10 +151,10 @@ for (const appId of resolvedAppIds) {
       const keepGoing = await pushResult(mapReview(appId, r));
       if (!keepGoing) break;
     }
-    if (data.length === 0) {
+    if (data.length === 0 && !appIdInvalid) {
       emptyApps.push(appId);
       log.warning(`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}" (try a different country/language, not a scrape failure).`);
-    } else if (pushed === pushedBefore) {
+    } else if (data.length > 0 && pushed === pushedBefore) {
       filteredOutApps.push(appId);
       log.warning(`${appId}: fetched ${data.length} reviews but your minScore/maxScore/keyword/date filters removed all of them.`);
     }
@@ -160,7 +166,9 @@ for (const appId of resolvedAppIds) {
 
 log.info(`Done. Pushed ${pushed} items.`);
 if (pushed === 0 && resolvedAppIds.length) {
-  const why = erroredApps.length
+  const why = invalidApps.length
+    ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
+    : erroredApps.length
     ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
     : filteredOutApps.length && !emptyApps.length
       ? 'reviews were found but every one was removed by your minScore/maxScore/keyword/date filters'

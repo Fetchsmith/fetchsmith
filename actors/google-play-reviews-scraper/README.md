@@ -60,6 +60,7 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [Google Play has no public reviews API — but the store's own JSON endpoint does](https://fetchsmith.com/blog/google-play-reviews-no-api-batchexecute)
 - [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
 
 ## Notes
