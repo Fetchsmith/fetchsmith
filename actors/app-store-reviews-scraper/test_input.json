@@ -1,1 +1,1 @@
-{ "apps": ["1232780281"], "countries": ["us"], "maxReviewsPerApp": 10, "maxResults": 10 }
+{ "apps": ["1232780281"], "countries": ["us"], "countryFallback": true, "maxReviewsPerApp": 10, "maxResults": 10 }
