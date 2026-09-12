@@ -16,6 +16,33 @@ const VALID_SOURCES = ['fts', 'cf'];
 const sources = uniqStrings((input.sources ?? ['fts', 'cf']).map((s) => String(s).toLowerCase().trim()))
     .filter((s) => VALID_SOURCES.includes(s));
 const updatedWithinDays = Math.min(Math.max(Number(input.updatedWithinDays ?? 7), 1), 365);
+
+// Absolute date window. When either bound is given it overrides the relative
+// "updatedWithinDays" window. Both portals enforce these server-side and precisely
+// (verified live: a 2026-08-10..2026-08-13 window returns only 08-10..08-12 rows on
+// both FTS and Contracts Finder), so this is a real filter, not a client-side trim.
+function parseBound(raw, label) {
+    if (raw == null || String(raw).trim() === '') return null;
+    const s = String(raw).trim();
+    // Accept YYYY-MM-DD (midnight UTC) or a full ISO datetime.
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    const ms = m ? Date.parse(`${s}T00:00:00Z`) : Date.parse(s);
+    if (!Number.isFinite(ms)) {
+        throw new Error(`"${label}" is not a valid date: ${JSON.stringify(raw)}. Use YYYY-MM-DD (e.g. 2026-08-01) or a full ISO datetime.`);
+    }
+    return ms;
+}
+
+const dateFromMs = parseBound(input.dateFrom, 'dateFrom');
+const dateToMs = parseBound(input.dateTo, 'dateTo');
+if (dateFromMs != null && dateToMs != null && dateFromMs > dateToMs) {
+    throw new Error(`"dateFrom" (${input.dateFrom}) is after "dateTo" (${input.dateTo}) — the window is empty. Swap them.`);
+}
+const useAbsoluteWindow = dateFromMs != null || dateToMs != null;
+// Lower bound: explicit dateFrom, else now - updatedWithinDays.
+const windowFromMs = dateFromMs ?? (Date.now() - updatedWithinDays * 86400_000);
+// Upper bound: explicit dateTo, else "now" (which is what both portals already did).
+const windowToMs = dateToMs ?? Date.now();
 const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
 const searchQuery = input.searchQuery ? String(input.searchQuery).toLowerCase().trim() : null;
 const minValueGbp = input.minValueGbp != null ? Number(input.minValueGbp) : null;
@@ -41,7 +68,10 @@ const SOURCES = {
         buildUrl() {
             const u = new URL(this.api);
             u.searchParams.set('limit', String(PAGE_SIZE));
-            u.searchParams.set('updatedFrom', isoSeconds(Date.now() - updatedWithinDays * 86400_000));
+            u.searchParams.set('updatedFrom', isoSeconds(windowFromMs));
+            // Only sent when the caller asked for an explicit upper bound. Omitting it (the
+            // previous always-on behaviour) means "up to now", which is the same thing.
+            if (dateToMs != null) u.searchParams.set('updatedTo', isoSeconds(windowToMs));
             if (stages.length) u.searchParams.set('stages', stages.join(','));
             return u.toString();
         },
@@ -56,10 +86,10 @@ const SOURCES = {
         buildUrl() {
             const u = new URL(this.api);
             u.searchParams.set('limit', String(PAGE_SIZE));
-            u.searchParams.set('publishedFrom', isoSeconds(Date.now() - updatedWithinDays * 86400_000));
+            u.searchParams.set('publishedFrom', isoSeconds(windowFromMs));
             // publishedTo MUST be sent explicitly. Without it, Contracts Finder defaults it to
             // "now" and omits links.next entirely, silently capping every run at 100 rows.
-            u.searchParams.set('publishedTo', isoSeconds(Date.now()));
+            u.searchParams.set('publishedTo', isoSeconds(windowToMs));
             if (stages.length) u.searchParams.set('stages', stages.join(','));
             return u.toString();
         },
@@ -256,7 +286,10 @@ async function pushResult(item) {
 
 log.info(
     `Sources=[${sources.join(',') || 'none'}] stages=[${stages.join(',') || 'all'}] `
-    + `updatedWithinDays=${updatedWithinDays} maxResults=${maxResults}`,
+    + (useAbsoluteWindow
+        ? `window=${isoSeconds(windowFromMs)}..${isoSeconds(windowToMs)} (absolute, overrides updatedWithinDays) `
+        : `updatedWithinDays=${updatedWithinDays} `)
+    + `maxResults=${maxResults}`,
 );
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

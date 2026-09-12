@@ -40,6 +40,7 @@ One row per notice, including:
 | `sources` | array | `["fts","cf"]` | Which portals to search. `cf` = Contracts Finder (sub-threshold, high volume), `fts` = Find a Tender (above-threshold, thin). Both by default. |
 | `stages` | array | `["tender"]` | `planning`, `tender` (opportunities) and/or `award` (winners). |
 | `updatedWithinDays` | integer | `7` | Only notices published/updated in the last N days. Newest first. |
+| `dateFrom` / `dateTo` | string | — | Absolute date window, e.g. `2026-08-01` (or a full ISO datetime). Setting either one **overrides** `updatedWithinDays`. Both portals enforce this server-side, so nothing is fetched and discarded. A bare date means midnight, so `dateTo: "2026-08-31"` excludes the 31st — use `2026-09-01` to include it. |
 | `cpvCodes` | array | `[]` | e.g. `72000000`. Trailing zeros are treated as a prefix, so `72000000` matches every `72xxxxxx` code. Matched against every CPV on the notice, not just the headline one. |
 | `searchQuery` | string | — | Every word must appear in title, description, buyer name, CPV description or lot titles. |
 | `minValueGbp` / `maxValueGbp` | integer | — | Contract-value bounds. Notices with no published value are excluded when either is set. |
@@ -96,7 +97,7 @@ One row per notice, including:
 Find a Tender carries **above-threshold** UK public contracts (the post-Brexit replacement for the UK's TED publication), including Scotland, Wales and Northern Ireland. Contracts Finder carries the **sub-threshold** contracts below those limits — a much larger flow, and the one most SMEs actually bid on. They are separate systems with separate APIs; a contract normally appears on one or the other, not both. Rows are deduplicated on `ocid` and notice id regardless.
 
 **Why does a 10-day Find-a-Tender-only query only return ~75 notices?**
-Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day. This is exactly why the Actor searches Contracts Finder too by default. Widen `updatedWithinDays` for a bigger set, or leave `sources` at its default.
+Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day, and none on weekends. This is exactly why the Actor searches Contracts Finder too by default. Widen `updatedWithinDays` (or use `dateFrom`/`dateTo`) for a bigger set, or leave `sources` at its default.
 
 **In what order do results come back?**
 Newest-first within each portal, but the two portals are interleaved row-by-row when both are selected — so even a small `maxResults` gets a mix of both instead of one portal filling the whole quota first. Set `sources: ["cf"]` or `["fts"]` if you want rows from only one portal.

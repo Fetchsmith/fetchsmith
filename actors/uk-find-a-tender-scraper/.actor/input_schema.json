@@ -27,6 +27,18 @@
       "minimum": 1,
       "maximum": 365
     },
+    "dateFrom": {
+      "title": "Published/updated from (absolute date)",
+      "type": "string",
+      "description": "Optional absolute start of the date window, e.g. 2026-08-01 (or a full ISO datetime). Setting either this or 'dateTo' OVERRIDES 'Updated within (days)'. Enforced server-side by both portals, so it is a real filter and does not waste results.",
+      "editor": "textfield"
+    },
+    "dateTo": {
+      "title": "Published/updated to (absolute date)",
+      "type": "string",
+      "description": "Optional absolute end of the date window, e.g. 2026-08-31 (or a full ISO datetime). Defaults to the run start time. Note a bare date means midnight, so 2026-08-31 excludes the 31st itself — use 2026-09-01 to include it.",
+      "editor": "textfield"
+    },
     "cpvCodes": {
       "title": "CPV codes",
       "type": "array",
