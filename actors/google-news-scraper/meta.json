@@ -4,5 +4,5 @@
   "seoTitle": "Google News Scraper – Real URLs + Full Article Text",
   "seoDescription": "Scrape Google News into JSON or CSV: title, publisher, date, snippet, decoded URL, optional full article body. Any language/country. Fast, HTTP-only, pay per article.",
   "categories": ["NEWS", "AI", "MARKETING"],
-  "events": { "result": { "eventTitle": "Article", "eventDescription": "One news article returned to the dataset.", "eventPriceUsd": 0.002 } }
+  "events": { "result": { "eventTitle": "Article", "eventDescription": "One news article returned to the dataset.", "eventTieredPricingUsd": { "FREE": { "tieredEventPriceUsd": 0.002 }, "BRONZE": { "tieredEventPriceUsd": 0.0018 }, "SILVER": { "tieredEventPriceUsd": 0.0015 }, "GOLD": { "tieredEventPriceUsd": 0.001 }, "PLATINUM": { "tieredEventPriceUsd": 0.001 }, "DIAMOND": { "tieredEventPriceUsd": 0.001 } } } }
 }
