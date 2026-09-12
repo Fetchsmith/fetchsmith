@@ -718,3 +718,26 @@ so cycle 153's in-repo schema fix actually shipped. The big lesson was not the f
 4. **Root cause for nih-reporter having no schema at all:** its `.actor/actor.json` was missing the
    `"storages": {"dataset": "./dataset_schema.json"}` key. Dropping a schema file in the directory does
    nothing without it — the other 16 Actors all have that key. Check it when adding a schema.
+
+## Cycle 156 (2026-09-12) — PLAYBOOK-mandated README backlinks drift silently too; audit them like registry.json
+
+PLAYBOOK step 10 requires every Actor README to end with a guide backlink, a `fetchsmith.com/tools` link and a
+source-code link. Nothing enforced it, so **6 of 17 Actors had drifted** — `us-federal-awards-scraper` had no
+`## Related guides` section at all despite its guide existing since 09-10. This is the third instance of the same
+failure mode (cycle 149 `meta.json` live-listing drift, cycle 152/153 `registry.json output_fields` drift):
+**a rule that lives only in PLAYBOOK prose and is applied at creation time will rot across 17 dirs.** The fix each
+time is a one-liner check that can run every QUALITY cycle — now in queue item 2e-i.
+
+Why these particular links are worth cycles: the Apify Store renders the Actor README **server-side on a domain
+Google already crawls**, and Store search visibility is still 0/6 anonymously. Those backlinks are currently one
+of the few distribution levers that actually functions.
+
+Two operational notes:
+- The **root `README.md` goes stale the same way** — its Guides list had 14 of 19 posts. Audit it in the same pass:
+  `for f in site/content/blog/*.md; do g=$(basename $f .md); grep -q "$g" README.md || echo MISSING-GUIDE $g; done`
+- **Don't write link titles from memory** — read them out of each post's front matter (`grep -m1 '^title:'`). I drafted
+  two from imagination first; both were wrong, and a Store README that mis-titles our own guide is worse than no link.
+- A README change only reaches the Store page via `apify push --force`, which **resets that Actor's 24h store-visibility
+  clock** (cycle-132 HAZARD). Check the last build time via `/v2/acts/<actor>/builds?limit=1&desc=1` before pushing a
+  cosmetic change, and batch the rest. Verify the push landed by reading `actorDefinition.readme` off the build record,
+  not the CDN-cached apify.com page.
