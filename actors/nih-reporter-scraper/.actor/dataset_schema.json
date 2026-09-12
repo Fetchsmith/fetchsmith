@@ -1,0 +1,432 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "applId": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Appl ID",
+        "example": 10862591
+      },
+      "projectNum": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Project number",
+        "example": "5P30AG066530-05"
+      },
+      "coreProjectNum": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Core project number"
+      },
+      "subprojectId": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ],
+        "title": "Subproject ID"
+      },
+      "fiscalYear": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Fiscal year",
+        "example": 2024
+      },
+      "projectTitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Project title",
+        "example": "Alzheimer Disease Research Center"
+      },
+      "activityCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Activity code",
+        "example": "P30"
+      },
+      "awardType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Award type"
+      },
+      "fundingMechanism": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Funding mechanism"
+      },
+      "awardAmount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Award amount (USD)",
+        "example": 1
+      },
+      "directCostAmt": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Direct cost (USD)"
+      },
+      "indirectCostAmt": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Indirect cost (USD)"
+      },
+      "isActive": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Active"
+      },
+      "isNew": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "New award"
+      },
+      "projectStartDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Project start",
+        "example": "2020-09-01T00:00:00"
+      },
+      "projectEndDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Project end",
+        "example": "2025-06-30T00:00:00"
+      },
+      "budgetStart": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Budget start"
+      },
+      "budgetEnd": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Budget end"
+      },
+      "awardNoticeDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Award notice date"
+      },
+      "dateAdded": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Date added"
+      },
+      "agencyCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Agency code"
+      },
+      "icCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "IC code"
+      },
+      "icAbbreviation": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "IC",
+        "example": "NIA"
+      },
+      "icName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "IC name",
+        "example": "National Institute on Aging"
+      },
+      "icFundings": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "IC fundings by year"
+      },
+      "opportunityNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Opportunity number"
+      },
+      "cfdaCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CFDA code"
+      },
+      "studySection": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Study section",
+        "example": "ZAG1-ZIJ-G(J1)"
+      },
+      "spendingCategoriesDesc": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Spending categories"
+      },
+      "contactPiName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Contact PI"
+      },
+      "principalInvestigators": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Principal investigators"
+      },
+      "programOfficers": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Program officers"
+      },
+      "orgName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Organization",
+        "example": "UNIVERSITY OF SOUTHERN CALIFORNIA"
+      },
+      "orgCity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "City",
+        "example": "Los Angeles"
+      },
+      "orgState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "State",
+        "example": "CA"
+      },
+      "orgCountry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Country"
+      },
+      "orgZip": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ZIP"
+      },
+      "orgDeptType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Department type"
+      },
+      "orgUei": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UEI"
+      },
+      "orgType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Organization type"
+      },
+      "congDist": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Congressional district"
+      },
+      "latitude": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Latitude"
+      },
+      "longitude": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Longitude"
+      },
+      "terms": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Terms"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "URL",
+        "example": "https://reporter.nih.gov/project-details/10862591"
+      },
+      "abstractText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Abstract"
+      },
+      "publicHealthRelevance": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Public health relevance"
+      },
+      "publicationCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Publications",
+        "example": 899
+      },
+      "pubmedIds": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "PubMed IDs"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "projectTitle",
+          "orgName",
+          "awardAmount",
+          "fiscalYear",
+          "icAbbreviation",
+          "contactPiName",
+          "projectStartDate",
+          "projectEndDate",
+          "publicationCount",
+          "url"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "projectTitle": {
+            "label": "Project title",
+            "format": "text"
+          },
+          "orgName": {
+            "label": "Organization",
+            "format": "text"
+          },
+          "awardAmount": {
+            "label": "Award amount (USD)",
+            "format": "number"
+          },
+          "fiscalYear": {
+            "label": "Fiscal year",
+            "format": "number"
+          },
+          "icAbbreviation": {
+            "label": "IC",
+            "format": "text"
+          },
+          "contactPiName": {
+            "label": "Contact PI",
+            "format": "text"
+          },
+          "projectStartDate": {
+            "label": "Project start",
+            "format": "text"
+          },
+          "projectEndDate": {
+            "label": "Project end",
+            "format": "text"
+          },
+          "publicationCount": {
+            "label": "Publications",
+            "format": "number"
+          },
+          "url": {
+            "label": "URL",
+            "format": "link"
+          }
+        }
+      }
+    }
+  }
+}

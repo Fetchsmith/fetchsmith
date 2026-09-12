@@ -3,30 +3,271 @@
   "fields": {
     "type": "object",
     "properties": {
-      "name": { "type": ["string", "null"], "title": "Scholarship" },
-      "url": { "type": ["string", "null"], "title": "URL" },
-      "awardAmount": { "type": ["integer", "null"], "title": "Award (USD)" },
-      "numberOfAwards": { "type": ["integer", "null"], "title": "Awards" },
-      "deadline": { "type": ["string", "null"], "title": "Deadline" },
-      "numberOfApplicants": { "type": ["integer", "null"], "title": "Applicants" },
-      "applicantsPerAward": { "type": ["number", "null"], "title": "Applicants / award" },
-      "category": { "type": ["string", "null"], "title": "Category" }
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Scholarship"
+      },
+      "slug": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Slug"
+      },
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "URL"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description"
+      },
+      "category": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Category"
+      },
+      "deadline": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Deadline"
+      },
+      "isRollingDeadline": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Rolling deadline"
+      },
+      "announcementDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Announcement date"
+      },
+      "awardAmount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Award (USD)"
+      },
+      "awardAmounts": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "All award amounts (USD)"
+      },
+      "totalAwardAmount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Total award pool (USD)"
+      },
+      "numberOfAwards": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Awards"
+      },
+      "numberOfApplicants": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Applicants"
+      },
+      "applicantsPerAward": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Applicants / award"
+      },
+      "educationLevels": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Education levels"
+      },
+      "acceptsHighSchool": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Accepts high school"
+      },
+      "criteria": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Eligibility criteria"
+      },
+      "requiresEssay": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Requires essay"
+      },
+      "essayMinLength": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Essay min length"
+      },
+      "essayMaxLength": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Essay max length"
+      },
+      "isMultiYear": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Multi-year"
+      },
+      "featured": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Featured"
+      },
+      "donorName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Donor"
+      },
+      "donorProfileUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Donor profile URL"
+      },
+      "donorVerified": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Donor verified"
+      },
+      "imageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Image URL"
+      },
+      "winnersCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Winners"
+      },
+      "publishedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Published at"
+      },
+      "updatedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Updated at"
+      },
+      "sourceUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Source URL"
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Scraped at"
+      },
+      "essayTopic": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Essay topic"
+      }
     }
   },
   "views": {
     "overview": {
       "title": "Overview",
-      "transformation": { "fields": ["name", "awardAmount", "deadline", "numberOfApplicants", "applicantsPerAward", "category", "url"] },
+      "transformation": {
+        "fields": [
+          "name",
+          "awardAmount",
+          "deadline",
+          "numberOfApplicants",
+          "applicantsPerAward",
+          "category",
+          "url"
+        ]
+      },
       "display": {
         "component": "table",
         "properties": {
-          "name": { "label": "Scholarship" },
-          "awardAmount": { "label": "Award (USD)" },
-          "deadline": { "label": "Deadline" },
-          "numberOfApplicants": { "label": "Applicants" },
-          "applicantsPerAward": { "label": "Applicants / award" },
-          "category": { "label": "Category" },
-          "url": { "label": "URL", "format": "link" }
+          "name": {
+            "label": "Scholarship"
+          },
+          "awardAmount": {
+            "label": "Award (USD)"
+          },
+          "deadline": {
+            "label": "Deadline"
+          },
+          "numberOfApplicants": {
+            "label": "Applicants"
+          },
+          "applicantsPerAward": {
+            "label": "Applicants / award"
+          },
+          "category": {
+            "label": "Category"
+          },
+          "url": {
+            "label": "URL",
+            "format": "link"
+          }
         }
       }
     }

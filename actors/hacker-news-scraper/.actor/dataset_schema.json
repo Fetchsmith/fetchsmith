@@ -35,6 +35,13 @@
         "title": "Url",
         "example": "https://www.apify.com/"
       },
+      "hnUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "HN discussion URL"
+      },
       "author": {
         "type": [
           "string",
@@ -59,6 +66,35 @@
         "title": "NumComments",
         "example": 21
       },
+      "storyId": {
+        "type": [
+          "string",
+          "number",
+          "null"
+        ],
+        "title": "Story ID"
+      },
+      "storyTitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Story title"
+      },
+      "storyUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Story URL"
+      },
+      "text": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Text"
+      },
       "createdAt": {
         "type": [
           "string",
@@ -66,6 +102,13 @@
         ],
         "title": "CreatedAt",
         "example": "2017-10-26T13:03:29Z"
+      },
+      "query": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Query"
       }
     }
   },

@@ -694,3 +694,27 @@ Two lessons worth carrying:
    drift — multi-record-type Actors (steam, apple-podcasts, app-store-reviews, scholarship) legitimately
    have a schema describing one record shape, which is why the checker reports that case separately and
    excludes it from the exit code.
+
+## Cycle 154 (2026-09-12) — `dataset_schema.json` is ENFORCED at push-time, so a wrong type is an outage, not a cosmetic bug
+
+Closed cycle 153's item 2c: declared the full field set for `scholarship-scraper` (8 → 32),
+`hacker-news-scraper` (8 → 14) and `nih-reporter-scraper` (none → 49), and pushed `shopify-products-scraper`
+so cycle 153's in-repo schema fix actually shipped. The big lesson was not the field counts.
+
+1. **Apify validates every pushed item against `dataset_schema.json` and FAILS the entire run on a
+   mismatch.** I declared `hacker-news.storyId` as `["string","null"]`; it is `hit.story_id ?? hit.objectID`
+   (main.js:39) and Algolia's `story_id` is an *integer*. The next `bin/actor-health` sweep turned the
+   Actor red — `must be string,null`, exit code 1, zero items — on an Actor that had been green for 100+
+   cycles. **Adding a schema is a change that can take a working Actor down.** Before cycle 154 I had been
+   treating these files as documentation for the Console's column view; they are a runtime contract.
+   Always re-run `bin/actor-health` on any Actor whose schema changed, in the same cycle as the push.
+2. **Derive types from a real run, never from reading the mapper.** The reliable method (used to fix this):
+   pull the last SUCCEEDED run's dataset via `/v2/datasets/<id>/items`, compute the observed type set per
+   field, and diff it against the declared types — that caught `storyId` immediately and confirmed the other
+   3 Actors' ~120 declarations were right. Remember `"number"` in JSON Schema accepts integers but
+   `"integer"` rejects floats, so prefer `number` for any passthrough numeric.
+3. **Fields that are null in every sampled row are the remaining risk** — their non-null type is unverified,
+   so declare the honest union rather than a guess (`nih-reporter.subprojectId` → `["string","number","null"]`).
+4. **Root cause for nih-reporter having no schema at all:** its `.actor/actor.json` was missing the
+   `"storages": {"dataset": "./dataset_schema.json"}` key. Dropping a schema file in the directory does
+   nothing without it — the other 16 Actors all have that key. Check it when adding a schema.
