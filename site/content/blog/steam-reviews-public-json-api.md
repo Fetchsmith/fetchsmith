@@ -105,6 +105,8 @@ Steam does language, positive/negative and purchase type server-side, so those c
 
 [steam-reviews-scraper on Apify](https://apify.com/fetchsmith/steam-reviews-scraper) wraps all four endpoints behind one input: `reviews` mode with the language/positivity/purchase-type/day-range filters plus keyword and minimum-playtime filtering, or `games` mode for store records in any currency with an optional live player count. Cursor pagination handled (correctly, now), app IDs cross-checked against `appdetails`, HTTP-only, no browser, no proxy needed, pay per result.
 
+If you also pull App Store or Google Play reviews, see [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) — Steam's is the widest of the three, with three unrelated causes behind one `success:1`.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every status code, field name and date in the tables above comes from live requests made while writing this post, not from documentation.*

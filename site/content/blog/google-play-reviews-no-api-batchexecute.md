@@ -52,6 +52,8 @@ We shipped this exact ambiguity in earlier builds: a bad `appId` with `includeAp
 
 [google-play-reviews-scraper on Apify](https://apify.com/fetchsmith/google-play-reviews-scraper) wraps app details and reviews behind one input — package ID or search term, any Play Store locale, server-side filtering by star rating, keyword and date range so you're only charged for rows you actually want, and the invalid-app-id message fixed above.
 
+If you also pull App Store or Steam reviews, see [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) — Google Play's is an identity problem, only solvable by cross-checking the details call.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every number and error message above comes from live calls made while writing this post.*
