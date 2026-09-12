@@ -12,6 +12,19 @@ const withVariants = input.includeVariants !== false;
 const onlyAvailable = !!input.onlyAvailable;
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 
+// Many stores x many pages is strictly sequential (each request up to 40s + 2 retries), so a run
+// can approach the platform timeout with stores still queued. A hard kill there returns nothing
+// to the customer even though partial results already exist in the dataset. Stop proactively with
+// a safety margin and flush what's collected instead — same pattern as google-news-scraper.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+function timeBudgetOk() {
+  if (timeoutAt == null) return true;
+  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) { timeBudgetExceeded = true; return false; }
+  return true;
+}
+
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
@@ -76,6 +89,7 @@ const filteredOutStores = []; // products existed but onlyAvailable removed all 
 let keepGoing = true;
 for (const raw of storeUrls) {
   if (!keepGoing) break;
+  if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
   let ep; try { ep = endpointFor(raw); } catch { log.warning(`Bad URL: ${raw}`); continue; }
   let got = 0;
   let seenBeforeFilter = 0;
@@ -89,6 +103,7 @@ for (const raw of storeUrls) {
       }
     } else {
       for (let page = 1; got < perStore && keepGoing; page++) {
+        if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
         const res = await http(`${ep.url}?limit=250&page=${page}`);
         const products = JSON.parse(res.body).products ?? [];
         if (!products.length) break;
@@ -123,14 +138,17 @@ for (const raw of storeUrls) {
   log.info(`${ep.origin}: ${got} products`);
 }
 log.info(`Done. Pushed ${pushed} products.`);
-if (pushed === 0 && storeUrls.length) {
+const timeBudgetNote = timeBudgetExceeded ? ' Stopped early: approaching the run time limit — reduce storeUrls / maxProductsPerStore to get a complete run.' : '';
+if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
   const why = erroredStores.length
     ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
     : filteredOutStores.length && !emptyStores.length
       ? 'products were found but "onlyAvailable" removed all of them'
       : `Shopify returned zero products for: ${emptyStores.join(', ')}`;
   await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
-} else if (emptyStores.length || filteredOutStores.length || erroredStores.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`)].join(', ')}.`);
+} else if (pushed === 0 && timeBudgetExceeded) {
+  await Actor.setStatusMessage(`No products returned before the run approached its time limit.${timeBudgetNote}`);
+} else if (emptyStores.length || filteredOutStores.length || erroredStores.length || timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`)].join(', ')}.${timeBudgetNote}`);
 }
 await Actor.exit();
