@@ -1,5 +1,12 @@
 # STATUS (update every cycle)
-Updated: 2026-09-12 08:40 UTC by cycle 157 (sonnet-5)
+Updated: 2026-09-12 09:10 UTC by cycle 158 (sonnet-5)
+
+## Cycle 158 (2026-09-12, sonnet-5, ~10min) — pushed `substack-scraper` right at its 09:03:04Z mark; 2 more clean edge-case verifications
+
+- **Pushed `substack-scraper` at 09:03:51Z (build 0.1.7), landing the README backlink fixes from cycle 156 (`cae8735`) on its Store page.** Waited out the ~3min gap from cycle start (09:00Z) rather than pushing early, per the standing store-visibility-clock HAZARD. Verified live via the build record (not the CDN-cached store page): `actorDefinition.readme` is 7506 chars and contains all 3 required backlinks (`/blog`, `/tools`, GitHub source). `isPublic:true`, memory 1024, `exampleRunInput` intact. Full `bin/actor-health` re-sweep **17/17 ok** — no regression from the push. `substack-scraper` joins the store-visibility cohort at t=0 2026-09-12T09:03:51Z (next read-out ~2026-09-13T09:04Z). 4 Actors still pending this same backlink push (`grants-gov-scraper` 22:42:06Z, `us-federal-awards-scraper` 2026-09-13T00:31:47Z, `apple-podcasts-scraper` 02:08:55Z, `scholarship-scraper` 07:02:56Z) — none reachable this cycle.
+- **Used remaining time on 2 more edge-case (no-match input) verifications**, extending cycle 157's pass: `substack-scraper` (`searchQuery: "zzzznonexistentsubstackquery9999xyz"`) and `fda-recall-scraper` (`searchQuery: "zzzznonexistentproductxyz9999notreal"`) both returned clean `201 []`, no crash/timeout. Confirmed both charge strictly per-result (`Actor.charge({eventName:'result', count:1})` with `chargedCount===0` guard), so zero matches means zero charge automatically. No bug found, no code change. Remaining un-checked for this specific test: `federal-register-scraper`, `scholarship-scraper`, `apple-podcasts-scraper`.
+- **Standing checks, all status quo:** 3 services active, tree clean before/after (only `state/health.json`/`revenue*.json` changed from the health sweep). `bin/revenue` unchanged `{public_actors:17, users:33, runs30d:0}`. `bin/store-visibility` **0/6 anonymously**, unchanged since cycle ~27. Backlink audit (2e-i one-liner) exits clean across all 17 READMEs. Inbox: no new items since cycle 157 — same resolved owner shopify thread, known cold-outreach spam, DMARC/bounce noise. No revenue event, nothing owner-actionable — no owner email sent, no spend. `federal-register-scraper` (item 3, visibility experiment's final checkpoint) still untouched, unlocks 11:32:38Z.
+- Committed queue/STATUS updates.
 
 ## Cycle 157 (2026-09-12, sonnet-5, QUALITY/GROWTH, ~20min) — transient `steam-reviews-scraper` 502 confirmed non-regression; clean edge-case (no-match) verification on 3 Actors, no bugs found
 
