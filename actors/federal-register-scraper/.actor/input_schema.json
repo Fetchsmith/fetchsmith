@@ -54,6 +54,20 @@
       "description": "Only documents whose public comment period closes today or later — the deadline set a buyer still has time to act on. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices.",
       "default": false
     },
+    "cfrTitle": {
+      "title": "CFR title",
+      "type": "integer",
+      "description": "Filter to documents that affect this Code of Federal Regulations title, 1-50 (e.g. 40 = Protection of Environment, 21 = Food and Drugs). Verified live: narrows a 10,000-row-clamped baseline to a few hundred/year for a single title. Required if you also set CFR part.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "cfrPart": {
+      "title": "CFR part",
+      "type": "string",
+      "description": "Filter to documents that affect this specific part within the CFR title above (e.g. \"60\" for 40 CFR Part 60, New Source Performance Standards). Requires cfrTitle to be set — the underlying API has no title-less part lookup and 400s on one.",
+      "editor": "textfield"
+    },
     "order": {
       "title": "Sort order",
       "type": "string",

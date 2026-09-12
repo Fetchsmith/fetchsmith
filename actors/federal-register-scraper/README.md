@@ -47,6 +47,7 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 | `searchQuery` | Full-text search across title and body. |
 | `significantOnly` | EO 12866 significant rules only. |
 | `commentsOpenOnly` | Only documents whose comment period closes today or later. |
+| `cfrTitle` / `cfrPart` | Filter to documents affecting a specific Code of Federal Regulations title (1-50) and, optionally, a part within it (e.g. title `40`, part `60` = 40 CFR Part 60, New Source Performance Standards). Verified live: a single title alone narrows the 10,000-clamped baseline to a few hundred/year; adding a part narrows further into the dozens. `cfrPart` requires `cfrTitle` — the API has no title-less part lookup and 400s on one, so this Actor fails loudly client-side instead. |
 | `order` | `newest`, `oldest` or `relevance`. |
 | `maxResults` | Up to 50,000. |
 

@@ -36,6 +36,20 @@ const commentsOpenOnly = input.commentsOpenOnly === true;
 const order = ['newest', 'oldest', 'relevance'].includes(input.order) ? input.order : 'newest';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 
+// Verified live: the API itself validates this pair cleanly (400 "CFR title must be between
+// 1 and 50" on a part given without a title, or on a title outside 1-50) — no silent-ignore
+// trap here, so we only need to fail loudly on the one combination the API can't express:
+// a part with no title at all, which 400s the whole request instead of being ignored.
+const cfrTitleRaw = input.cfrTitle;
+const cfrTitle = cfrTitleRaw == null || cfrTitleRaw === '' ? null : Number(cfrTitleRaw);
+const cfrPart = String(input.cfrPart ?? '').trim() || null;
+if (cfrTitle != null && (!Number.isInteger(cfrTitle) || cfrTitle < 1 || cfrTitle > 50)) {
+    throw new Error(`cfrTitle must be an integer from 1 to 50 (got ${cfrTitleRaw}).`);
+}
+if (cfrPart && cfrTitle == null) {
+    throw new Error('cfrPart requires cfrTitle to also be set — the CFR API has no title-less part lookup.');
+}
+
 const today = new Date();
 const isoDay = (d) => d.toISOString().slice(0, 10);
 const normDate = (v, fallback) => {
@@ -147,6 +161,8 @@ function baseParams() {
     if (significantOnly) p['conditions[significant]'] = 1;
     // "Comment period still open" = a closing date on or after today.
     if (commentsOpenOnly) p['conditions[comment_date][gte]'] = isoDay(today);
+    if (cfrTitle != null) p['conditions[cfr][title]'] = cfrTitle;
+    if (cfrPart) p['conditions[cfr][part]'] = cfrPart;
     return p;
 }
 
@@ -226,7 +242,8 @@ log.info(
     + (agencySlugs.length ? ` agencies=[${agencySlugs.join(',')}]` : '')
     + (searchQuery ? ` searchQuery="${searchQuery}"` : '')
     + (significantOnly ? ' significantOnly' : '')
-    + (commentsOpenOnly ? ' commentsOpenOnly' : ''),
+    + (commentsOpenOnly ? ' commentsOpenOnly' : '')
+    + (cfrTitle != null ? ` cfr=${cfrTitle}${cfrPart ? `/${cfrPart}` : ''}` : ''),
 );
 
 const seen = new Set();
@@ -270,7 +287,9 @@ if (pushed === 0) {
         + 'archive goes back to 1994-01-03). '
         + '(3) significantOnly only ever matches rules and proposed rules — combining it with '
         + 'documentTypes=["NOTICE"] or ["PRESDOCU"] always returns nothing. '
-        + '(4) an agency value that was not recognised is dropped with a warning above, not guessed at.',
+        + '(4) an agency value that was not recognised is dropped with a warning above, not guessed at. '
+        + '(5) cfrTitle/cfrPart is an AND with every other filter — a narrow CFR part combined with '
+        + 'a short date window or a significantOnly flag often has zero real matches.',
     );
 }
 
