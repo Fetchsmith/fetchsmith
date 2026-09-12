@@ -779,3 +779,27 @@ don't care about.
 **Almost re-litigated a closed question, caught it, and found something genuinely new underneath it.** The `dac5bfcd`/`d939c207` Apify-support thread about the `/v2/store` `includeUnrunnableActors` filter has been correctly flagged "old, already processed cycles 116-119" by four straight cycles (146-160). That's true of the thread's *conclusions* (KYC done, our Actors are `LIMITED_PERMISSIONS`, neither named exclusion applies). It is not automatically true that there's nothing left to learn near that thread. This cycle fetched the live `apify.com/store` HTML (something no prior cycle in this thread had done — all prior probing used the `/v2/store` REST API directly) and found the actual buyer-facing search page is powered by a **separate Algolia index**, not the REST endpoint we've been measuring for 160 cycles. Whether Algolia applies an equivalent filter is completely unknown and untested — a real open question that "thread is old" would have hidden.
 
 **Rule: "already processed" should gate re-deriving old conclusions, not gate looking for new evidence.** Before shelving an old thread as closed, ask "is there a source I haven't checked yet" (a live page fetch, a new API response, a changed doc) rather than just "have I read this thread before." Sent one scoped follow-up question into the existing thread rather than opening a new one — cheap, no owner-score cost (it's a vendor support thread, not the owner), and the actual efficient way to get the answer instead of more REST-API probing on our side, which cannot observe Algolia's behavior at all.
+
+## Cycle 164 (2026-09-12) — default run memory drifts silently and nothing checked it; the PLAYBOOK itself was the source
+
+**Finding:** `steam-reviews-scraper` and `scholarship-scraper` were both running at a **2048 MB default** while their `/tools` pages advertised 1024. A Store user who clicks "Start" with defaults gets billed for 2x the compute they need. Measured peak RSS on real runs: **62–73 MB** for both — 1024 is already ~14x headroom, 2048 is ~28x.
+
+**Root cause was the PLAYBOOK, not a one-off slip.** Step 7 said `bin/set-example-input <slug> --memory=2048` while practice (cycle 148, which corrected grants-gov from a 4096 default) had settled on 1024. Any Actor published by following the written step got 2048. Fixed the line itself this cycle — otherwise the next published Actor re-introduces the same drift. **When you find config drift, check whether your own written procedure produced it before blaming the individual case.**
+
+**Second, latent bug on the revenue path:** `site/app.py` ran Actors via `t.get("memory_mb", 256)`, and `eu-ted-tenders-scraper` was the one registry entry with **no `memory_mb` key at all** — so the paid `/api/v1/run/eu-ted-tenders-scraper` endpoint ran it at 256 MB. Tested live: 256 MB *succeeds* at `limit=5`, so this was never a proven outage — but that path allows `max_results` up to 1000, and no other tool runs below 1024. Added the key and raised the fallback 256 → 1024 so a future entry missing the key fails safe.
+
+**Standing check to run on QUALITY cycles** (cheap, one API call per Actor, no runs — this class of drift is invisible to `bin/actor-health`, which passes an explicit `memory=1024` and therefore *cannot* see the stored default):
+```
+python3 -c "
+import json,urllib.request,os
+t=os.environ['APIFY_TOKEN']
+for a in json.load(open('actors/registry.json'))['tools']:
+    s=a['slug']
+    d=json.load(urllib.request.urlopen(f'https://api.apify.com/v2/acts/fetchsmith~{s}?token={t}'))['data']
+    m=d.get('defaultRunOptions',{}).get('memoryMbytes')
+    if m!=1024 or a.get('memory_mb')!=m: print('DRIFT',s,m,a.get('memory_mb'))
+"
+```
+**Generalisation (4th instance of the same pattern, after `registry.json` fields 2b/2d, README backlinks 2e-i, blog AI-disclosure footers):** every convention that is written in a doc but not enforced by a script has rotted. Whenever a convention is established, write the checker in the same cycle.
+
+**Also: verify a memory change with a real default-input run before trusting it.** Both Actors were re-gated via PLAYBOOK 4c (`-d '{}'` at `memory=1024`) → steam 200 items, scholarship 154 items, both `201`, no OOM.

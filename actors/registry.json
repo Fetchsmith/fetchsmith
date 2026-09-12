@@ -592,6 +592,7 @@
     },
     {
       "slug": "eu-ted-tenders-scraper",
+      "memory_mb": 1024,
       "title": "EU TED Tenders Scraper (Public Procurement)",
       "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer name and contact, contract value, CPV codes, place of performance, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON. Filter by country, CPV code, notice type, full-text keywords or an absolute publication-date window.",
       "status": "live",

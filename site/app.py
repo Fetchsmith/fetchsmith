@@ -394,7 +394,7 @@ async def run_tool(slug: str, request: Request, a=Depends(auth)):
     actor_id = t.get("apify_actor_id") or f"{env('APIFY_USERNAME','fetchsmith')}~{t['slug']}"
     async with httpx.AsyncClient(timeout=300) as cl:
         r = await cl.post(f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items",
-                          params={"token": token, "timeout": 240, "memory": t.get("memory_mb", 256), "clean": "true", "limit": max_results}, json=body)
+                          params={"token": token, "timeout": 240, "memory": t.get("memory_mb", 1024), "clean": "true", "limit": max_results}, json=body)
     if r.status_code >= 300:
         log.error("apify run error %s %s", r.status_code, r.text[:300])
         raise HTTPException(502, "Tool run failed; you were not charged.")
