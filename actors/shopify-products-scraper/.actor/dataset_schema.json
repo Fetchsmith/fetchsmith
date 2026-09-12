@@ -89,9 +89,48 @@
         "title": "CompareAtPriceMin",
         "example": 0.8
       },
+      "compareAtPriceMax": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "CompareAtPriceMax",
+        "example": 2.98
+      },
       "isOnSale": {
         "type": "boolean",
         "title": "On sale"
+      },
+      "discountPercent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Discount %",
+        "example": 20.5
+      },
+      "availableVariantCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AvailableVariantCount",
+        "example": 2
+      },
+      "imageCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ImageCount",
+        "example": 4
+      },
+      "descriptionHtml": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DescriptionHtml"
       },
       "available": {
         "type": [
@@ -201,6 +240,7 @@
           "priceMin",
           "priceMax",
           "compareAtPriceMin",
+          "discountPercent",
           "available"
         ]
       },
@@ -241,6 +281,10 @@
           },
           "compareAtPriceMin": {
             "label": "CompareAtPriceMin",
+            "format": "number"
+          },
+          "discountPercent": {
+            "label": "Discount %",
             "format": "number"
           },
           "available": {

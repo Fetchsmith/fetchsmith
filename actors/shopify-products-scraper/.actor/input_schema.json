@@ -46,6 +46,13 @@
       "minimum": 1,
       "maximum": 200000,
       "description": "Overall cap on the number of products across all stores."
+    },
+    "proxyConfiguration": {
+      "title": "Proxy configuration",
+      "type": "object",
+      "editor": "proxy",
+      "description": "Route storefront requests through Apify Proxy. Recommended: some stores rate-limit or geo-gate products.json by IP, and residential/country-specific proxies also return that country's prices and currency. Leave as-is to use automatic Apify Proxy; runs on accounts without proxy access fall back to a direct connection.",
+      "default": { "useApifyProxy": true }
     }
   },
   "required": [

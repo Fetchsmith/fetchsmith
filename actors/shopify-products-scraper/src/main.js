@@ -12,6 +12,20 @@ const withVariants = input.includeVariants !== false;
 const onlyAvailable = !!input.onlyAvailable;
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 
+// Some storefronts rate-limit or geo-gate products.json by IP, and the platform's shared egress
+// IPs get hit first. Route through Apify Proxy when the run has access to it; if the account has
+// no proxy access the run must still work, so fall back to a direct connection instead of failing.
+let proxyUrlFor = async () => undefined;
+try {
+  const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
+  if (proxyConfiguration) {
+    proxyUrlFor = (sessionId) => proxyConfiguration.newUrl(sessionId);
+    log.info('Using Apify Proxy for storefront requests.');
+  }
+} catch (e) {
+  log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`);
+}
+
 // Many stores x many pages is strictly sequential (each request up to 40s + 2 retries), so a run
 // can approach the platform timeout with stores still queued. A hard kill there returns nothing
 // to the customer even though partial results already exist in the dataset. Stop proactively with
@@ -43,7 +57,7 @@ async function pushResult(item) {
 // got-scraping's header generator always adds one, so send an explicit empty value to suppress
 // it — omitting the key lets the generator put its own back. Without this, `compareAtPrice`
 // and `isOnSale` are silently wrong (null/false) on affected stores.
-const request = (url, headers) => gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, headers: { accept: 'application/json,text/html', ...headers } });
+const request = async (url, headers) => gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers } });
 const http = async (url) => {
   try { return await request(url, { 'accept-language': '' }); }
   catch (e) { return request(url, {}); } // a store that rejects the empty header still gets served, just without sale prices
@@ -60,19 +74,27 @@ function endpointFor(raw) {
   return { origin, kind: 'store', url: `${origin}/products.json` };
 }
 function shape(p, origin, currency) {
-  const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: v.available ?? null, option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping }));
+  const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: v.available ?? null, option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping, taxable: v.taxable ?? null, position: v.position ?? null, featuredImage: v.featured_image?.src ?? null }));
   const prices = variants.map((v) => v.price).filter((n) => !Number.isNaN(n));
   const priceMin = prices.length ? Math.min(...prices) : null;
-  const compareAtPriceMin = variants.map((v) => v.compareAtPrice).filter((x) => x != null).sort((a, b) => a - b)[0] ?? null;
+  const comparePrices = variants.map((v) => v.compareAtPrice).filter((x) => x != null).sort((a, b) => a - b);
+  const compareAtPriceMin = comparePrices[0] ?? null;
+  // Percentage off the list price, from the cheapest variant's own compare-at price (not the
+  // catalog-wide min/max, which would mix two different variants and overstate the discount).
+  const cheapest = variants.filter((v) => v.price === priceMin).sort((a, b) => (b.compareAtPrice ?? 0) - (a.compareAtPrice ?? 0))[0];
+  const discountPercent = cheapest?.compareAtPrice > priceMin
+    ? Math.round(((cheapest.compareAtPrice - priceMin) / cheapest.compareAtPrice) * 1000) / 10
+    : null;
   return {
     id: p.id, title: p.title, handle: p.handle, url: `${origin}/products/${p.handle}`, vendor: p.vendor, productType: p.product_type || null, tags: p.tags ?? [],
     currency: currency ?? null,
     priceMin, priceMax: prices.length ? Math.max(...prices) : null,
-    compareAtPriceMin, isOnSale: !!(compareAtPriceMin != null && priceMin != null && compareAtPriceMin > priceMin),
-    available: variants.some((v) => v.available), variantCount: variants.length,
-    images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null,
+    compareAtPriceMin, compareAtPriceMax: comparePrices[comparePrices.length - 1] ?? null,
+    isOnSale: !!(compareAtPriceMin != null && priceMin != null && compareAtPriceMin > priceMin), discountPercent,
+    available: variants.some((v) => v.available), availableVariantCount: variants.filter((v) => v.available).length, variantCount: variants.length,
+    images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null, imageCount: (p.images ?? []).length,
     options: (p.options ?? []).map((o) => ({ name: o.name, values: o.values })),
-    ...(withVariants ? { variants } : {}), ...(withDesc ? { description: textOf(p.body_html) } : {}),
+    ...(withVariants ? { variants } : {}), ...(withDesc ? { description: textOf(p.body_html), descriptionHtml: p.body_html || null } : {}),
     createdAt: p.created_at, updatedAt: p.updated_at, publishedAt: p.published_at, store: origin, scrapedAt: new Date().toISOString(),
   };
 }
