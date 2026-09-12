@@ -4,7 +4,7 @@ Scrape **scholarship listings from bold.org** — the largest single scholarship
 
 Every row is a complete scholarship: award amount, number of awards, deadline, essay prompt, judging criteria, education levels, donor, and the **number of people who have already applied** — plus a computed `applicantsPerAward` ratio so you can see at a glance which awards are actually winnable.
 
-**Pay per result: $0.0005 per scholarship. No start fee** — a run that returns nothing costs nothing, and scholarships removed by your filters are never charged.
+**Pay per result: $0.00035 per scholarship. No start fee** — a run that returns nothing costs nothing, and scholarships removed by your filters are never charged.
 
 ## What you can do with it
 

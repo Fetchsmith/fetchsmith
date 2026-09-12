@@ -11,7 +11,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - **Custom domains just work.** `bigtechnology.com`, `astralcodexten.com` — redirects from `<handle>.substack.com` are followed automatically.
 - **Search inside a publication.** `searchQuery` filters the archive server-side instead of downloading everything.
 - **Many publications per run**, plus direct post URLs.
-- **Cheap:** $0.002 per result, roughly 60% under the usual $0.005.
+- **Cheap:** $0.002 per result on the Free plan, tapering to $0.0012 on Gold and above — roughly 60-75% under the usual $0.005.
 
 ## Use cases
 
@@ -116,7 +116,7 @@ Two record shapes, distinguished by `type`.
 
 ## Pricing
 
-Pay per result: **$0.002** per post or comment returned. `maxResults` is a hard cap, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
+Pay per result: **$0.002 per post or comment on the Free plan, tapering to $0.0012 on Gold and above** (Bronze $0.0018, Silver $0.0015). `maxResults` is a hard cap, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
 
 ## FAQ
 

@@ -58,8 +58,8 @@ Extract the full product catalog of any Shopify store (or a single collection or
 `seoTitle`/`seoDescription`/`ratingValue`/`reviewCount` are only present when `detailLevel` is `"full"` (see Input) — they come from the live product page, not the JSON feed.
 
 ## Pricing
-`result` — charged per product returned, at $0.001/product. No per-run "Actor Start" fee (some competitors charge ~$0.10 just to start a run before any data is delivered). Stores that block the public catalog return nothing and cost nothing.
-`productDetail` — charged per product only when `detailLevel` is `"full"` **and** the extra page fetch actually found SEO/rating data, at $0.0015/product. A product page that has none of those (no rating app installed, no meta description) costs nothing.
+`result` — charged per product returned, **$0.001/product on the Free plan, tapering to $0.00085/product on Gold and above.** No per-run "Actor Start" fee (some competitors charge ~$0.10 just to start a run before any data is delivered). Stores that block the public catalog return nothing and cost nothing.
+`productDetail` — charged per product only when `detailLevel` is `"full"` **and** the extra page fetch actually found SEO/rating data, at the same tiered rate as `result` ($0.001 Free → $0.00085 Gold+). A product page that has none of those (no rating app installed, no meta description) costs nothing.
 
 ## FAQ
 **Does it work on custom domains, not just `*.myshopify.com`?** Yes — pass any storefront domain that runs Shopify; no need to resolve it to the `myshopify.com` backend first.
