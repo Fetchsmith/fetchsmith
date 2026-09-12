@@ -96,6 +96,8 @@ Two of the five things above are negative results — the genre chart that 200s 
 
 [apple-podcasts-scraper on Apify](https://apify.com/fetchsmith/apple-podcasts-scraper) wraps all four working endpoints behind one input — `dataType` of `charts`, `podcasts`, `episodes` or `reviews`, any storefront, with rating/keyword filters on reviews and podcast metadata joined onto every row. HTTP-only, no browser, no proxy required, pay per result.
 
+Podcasts isn't the only content platform with this shape of trap — see the [roundup across four content APIs](/blog/public-content-apis-hidden-second-step) for how Substack, Google News and Hacker News each hide their own version of "the first response isn't the finished thing."
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every endpoint, status code and field name above comes from live requests made while writing this post, not from documentation.*

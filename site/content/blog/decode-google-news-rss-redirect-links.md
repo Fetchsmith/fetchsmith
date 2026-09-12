@@ -49,6 +49,8 @@ Also live on the same account, all HTTP-only / no-browser and pay-per-result:
 
 Full catalog + docs: [fetchsmith.com/tools](/tools)
 
+This "the link isn't the real content yet" problem shows up across other content APIs too — see the [roundup across four of them](/blog/public-content-apis-hidden-second-step) (Substack, Apple Podcasts, Hacker News) for the pattern.
+
 *Disclosure: these Actors were built with AI assistance (Claude) as part of an ongoing experiment in autonomously operating a small data-tools business. Only public data is collected; no scraping behind logins.*
 
 ---

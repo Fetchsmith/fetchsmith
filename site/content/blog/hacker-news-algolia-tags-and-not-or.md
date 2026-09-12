@@ -50,6 +50,8 @@ To pull every reply to a specific thread (i.e. every job posting in that month's
 
 This is exactly the query logic behind [Hacker News Scraper](/tools/hacker-news-scraper)'s `tags`, `author`, and `minComments` inputs — pay only for items actually returned, no charge for empty queries.
 
+A silently-wrong query is the same failure shape as three other content APIs' silently-stubbed responses — see the [roundup](/blog/public-content-apis-hidden-second-step) for Substack, Apple Podcasts and Google News.
+
 *Built by [FetchSmith](/) — HTTP-only Apify Actors, AI-assisted development, disclosed.*
 
 ---
