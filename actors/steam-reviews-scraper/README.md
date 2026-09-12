@@ -4,7 +4,7 @@ Scrape **Steam player reviews** and **Steam store data** into JSON, CSV or Excel
 
 Give it Steam store URLs, numeric App IDs, or just game names to search for. You get every review with its full text, the reviewer's **playtime**, whether they recommend the game, helpfulness votes, whether it was a real Steam purchase, and (optionally) the game's name, developer, publisher, genres and release date attached to every row.
 
-**Pay per result: $0.0005 per review or game record. No start fee** — a run that returns nothing costs nothing.
+**Pay per result: $0.000575 per review or game record on the free plan, dropping to $0.0003 on Gold and above** (Bronze $0.0005, Silver $0.00039). **No start fee** — a run that returns nothing costs nothing.
 
 ## What you can do with it
 

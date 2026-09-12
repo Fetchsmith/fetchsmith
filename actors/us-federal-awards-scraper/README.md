@@ -85,7 +85,7 @@ One flat row per award:
 
 ## Pricing
 
-Pay per result: **$0.004 per award**, **no Actor-start fee**. You only pay for awards actually written to the dataset.
+Pay per result: **$0.004 per award on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0035, Silver $0.003), **no Actor-start fee**. You only pay for awards actually written to the dataset.
 
 ## FAQ
 
@@ -111,7 +111,7 @@ No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *a
 No. Plain HTTPS to a public government API, so runs are fast and cheap.
 
 **How does this compare to other USAspending scrapers?**
-Checked the real `pricingInfos` and depth of the top competitors on Apify Store (2026-09-10). Pricing is bimodal: the two highest-traction players — `parseforge` (25 users, the most of any competitor) at $0.012/result + $0.16 start, and `benthepythondev` (17 users, 292 runs/30d, the most active) at $0.005/result + start — are both pricier than our $0.004/result with no start fee. Two lower-traction entrants (`copious_atoll`, 10 users; `themineworks`, 3 users) charge $0.001/result, cheaper than us on price alone — but `themineworks`' own listing advertises "18 Fields"; this Actor returns **37 typed fields across 6 award categories** (contracts, IDVs, grants, direct payments, other financial assistance, loans), each category with its own correct field mapping (loans carry `loanValue`/`subsidyCost`, not `awardAmount`) rather than one generic shape stretched across every award kind.
+Checked the real `pricingInfos` and depth of the top competitors on Apify Store (2026-09-10). Pricing is bimodal: the two highest-traction players — `parseforge` (25 users, the most of any competitor) at $0.012/result + $0.16 start, and `benthepythondev` (17 users, 292 runs/30d, the most active) at $0.005/result + start — are both pricier than our $0.004/result (free plan) to $0.0025/result (Gold and above), with no start fee. Re-checked 2026-09-12 by real external runs/30d: the busiest competitor charges $0.004 tapering to $0.0025 on Gold+ plus a start fee — the same schedule as ours, minus our no-start-fee advantage. Two lower-traction entrants (`copious_atoll`, 10 users; `themineworks`, 3 users) charge $0.001/result, cheaper than us on price alone — but `themineworks`' own listing advertises "18 Fields"; this Actor returns **37 typed fields across 6 award categories** (contracts, IDVs, grants, direct payments, other financial assistance, loans), each category with its own correct field mapping (loans carry `loanValue`/`subsidyCost`, not `awardAmount`) rather than one generic shape stretched across every award kind.
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federal-awards-scraper
 

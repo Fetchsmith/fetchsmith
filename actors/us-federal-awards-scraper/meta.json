@@ -1,10 +1,36 @@
 {
-  "title": "USAspending Scraper — US Federal Contracts & Grants",
+  "title": "USAspending Scraper \u2014 US Federal Contracts & Grants",
   "description": "Search every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API. 6 award categories, 37 typed output fields incl. recipient UEI/address, NAICS/PSC, CFDA program and place of performance. Filter by agency, keyword, state, date range and amount.",
-  "seoTitle": "USAspending Scraper — US Federal Contracts & Grants API",
+  "seoTitle": "USAspending Scraper \u2014 US Federal Contracts & Grants API",
   "seoDescription": "Scrape US federal contracts, grants and loans from USAspending.gov. 6 award categories, 37 fields incl. recipient UEI, NAICS/PSC, CFDA. Filter by agency, state, amount, date.",
-  "categories": ["LEAD_GENERATION", "BUSINESS"],
+  "categories": [
+    "LEAD_GENERATION",
+    "BUSINESS"
+  ],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One normalized US federal award returned to the dataset.", "eventPriceUsd": 0.004 }
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized US federal award returned to the dataset.",
+      "eventTieredPricingUsd": {
+        "FREE": {
+          "tieredEventPriceUsd": 0.004
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.0035
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.003
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.0025
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.0025
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.0025
+        }
+      }
+    }
   }
 }
