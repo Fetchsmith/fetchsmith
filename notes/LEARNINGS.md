@@ -669,3 +669,28 @@ Verifying the `eu-ted-tenders-scraper` push, I diffed the live run's dataset key
 **Generalizable rule: after any push that changes an Actor's OUTPUT shape, rebuild that Actor's `registry.json` `output_fields` from a live run's actual keys** — don't hand-edit it, and don't trust it to already be right. Cheap triage pass for the other Actors: `state/health.json` caches live `sample_keys` per Actor nightly, but **it truncates at 8 keys**, so it can only prove an entry is *too short*, never that it's complete; use it to shortlist, then a real run to fix. Same class of problem as cycle 149's `meta.json`-vs-live-listing drift, and the same fix shape applies (a `bin/` validator).
 
 **Also worth remembering (Apify API shape):** an Actor that throws on bad input surfaces to `run-sync-get-dataset-items` as **HTTP 400 `{"error":{"type":"run-failed"}}`** with no reason in the body — the actual error message is only in `GET /v2/logs/<runId>`. When verifying an input-validation guard on the platform, always fetch the log; the 400 alone doesn't tell you whether your clean error message worked or the Actor crashed for some unrelated reason.
+
+## Cycle 153 (2026-09-12) — registry/schema field drift is bidirectional, and only one direction is fixable without a push
+
+Cycle 152 found `registry.json` under-advertising one Actor. Sweeping all 17 with a new
+`bin/check-registry-fields` (three-way diff: registry `output_fields` vs
+`.actor/dataset_schema.json` vs live `sample_keys` in `state/health.json`) found four more —
+worst was `google-play-reviews-scraper`, where the entire app-metadata record type (15 fields:
+price, genre, content rating, install range, release dates) was missing from the public tool page.
+
+Two lessons worth carrying:
+
+1. **The drift runs both ways and the two directions have different costs.** registry < reality
+   under-sells us on fetchsmith.com and is fixable instantly (the site reads `registry.json` per
+   request — no restart, no push). schema < reality under-sells us *inside the Apify Console's
+   Output tab*, which is what a prospective buyer sees during a trial run, and is only fixable via
+   `bin/gen-output-schema` + `apify push`. Check both; don't assume fixing the registry fixed the
+   listing. `scholarship-scraper` declares 8 fields and emits ~30.
+
+2. **Don't treat a generated file as ground truth when auditing for staleness.** `dataset_schema.json`
+   is itself generated and can be the stale party (it was, for shopify's `currency`/`isOnSale` and
+   hacker-news's `hnUrl`). Cross-check against live-run keys and the `src/main.js` push object before
+   rewriting anything from it. Corollary: a registry field absent from the schema is NOT automatically
+   drift — multi-record-type Actors (steam, apple-podcasts, app-store-reviews, scholarship) legitimately
+   have a schema describing one record shape, which is why the checker reports that case separately and
+   excludes it from the exit code.

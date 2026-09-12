@@ -58,6 +58,13 @@
         ],
         "title": "Tags"
       },
+      "currency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Currency"
+      },
       "priceMin": {
         "type": [
           "number",
@@ -81,6 +88,10 @@
         ],
         "title": "CompareAtPriceMin",
         "example": 0.8
+      },
+      "isOnSale": {
+        "type": "boolean",
+        "title": "On sale"
       },
       "available": {
         "type": [

@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Catch silent drift between what an Actor returns and what fetchsmith.com advertises.
+
+Nothing ties `apify push` to `actors/registry.json`, so an Actor can gain output
+fields and the public tool page keeps advertising the old, shorter list. That is
+exactly what happened to eu-ted-tenders-scraper: 6 lead-gen fields shipped in
+cycle 70 and the product page under-sold them for ~80 cycles (cycle 152).
+
+Three sources are compared per slug:
+  registry  actors/registry.json -> tools[].output_fields   (what we advertise)
+  schema    actors/<slug>/.actor/dataset_schema.json        (what Console tabulates)
+  live      state/health.json -> sample_keys                (real run, TRUNCATED to 8)
+
+Exit 0 = clean, 1 = drift found. Usage: check-registry-fields [slug ...]
+"""
+import json
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def load(path, default=None):
+    try:
+        with open(os.path.join(ROOT, path)) as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        return default
+
+
+def main(argv):
+    reg = load('actors/registry.json')
+    health = (load('state/health.json') or {}).get('results', {})
+    wanted = set(argv[1:])
+    drift = 0
+
+    for tool in reg['tools']:
+        slug = tool['slug']
+        if wanted and slug not in wanted:
+            continue
+        advertised = tool.get('output_fields', [])
+        ds = load('actors/%s/.actor/dataset_schema.json' % slug)
+        schema = list(ds['fields']['properties'].keys()) if ds else None
+        live = health.get(slug, {}).get('sample_keys', [])
+
+        problems = []
+        if schema is None:
+            problems.append('no .actor/dataset_schema.json (Console shows raw JSON, no column view)')
+        else:
+            unadvertised = [f for f in schema if f not in advertised]
+            if unadvertised:
+                problems.append('in schema, NOT advertised: %s' % ', '.join(unadvertised))
+            # registry-only fields are normal for multi-record-type Actors (the schema
+            # declares one record shape), so they are reported but are not drift.
+            extra = [f for f in advertised if f not in schema]
+            if extra:
+                problems.append('advertised, not in schema (ok if multi-record-type): %s' % ', '.join(extra))
+        # health truncates at 8 keys, so it can only ever add evidence, never subtract.
+        undeclared = [f for f in live if schema is not None and f not in schema]
+        if undeclared:
+            problems.append('returned by a live run but missing from schema: %s' % ', '.join(undeclared))
+
+        hard = [p for p in problems if 'ok if multi-record-type' not in p]
+        if hard:
+            drift += 1
+        if problems:
+            print('%s' % slug)
+            for p in problems:
+                print('    %s' % p)
+        else:
+            print('%-32s ok (%d fields)' % (slug, len(advertised)))
+
+    print('\n%d Actor(s) with drift.' % drift)
+    return 1 if drift else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
