@@ -52,6 +52,12 @@
       "description": "Free-text filter. Every word must appear somewhere in the title, description, buyer name, CPV description or lot titles (case-insensitive). E.g. \"software\" or \"nhs cleaning\".",
       "editor": "textfield"
     },
+    "buyerName": {
+      "title": "Buyer name contains",
+      "type": "string",
+      "description": "Case-insensitive substring match against the buying authority's name only, e.g. 'NHS', 'Ministry of Defence', 'Kent County Council'. Narrower than 'Search text', which also matches the title, description, CPV description and lot titles — so use this when you want a buyer's own notices and not every notice that merely mentions them.",
+      "editor": "textfield"
+    },
     "minValueGbp": {
       "title": "Minimum contract value (GBP)",
       "type": "integer",

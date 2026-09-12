@@ -43,6 +43,7 @@ One row per notice, including:
 | `dateFrom` / `dateTo` | string | — | Absolute date window, e.g. `2026-08-01` (or a full ISO datetime). Setting either one **overrides** `updatedWithinDays`. Both portals enforce this server-side, so nothing is fetched and discarded. A bare date means midnight, so `dateTo: "2026-08-31"` excludes the 31st — use `2026-09-01` to include it. |
 | `cpvCodes` | array | `[]` | e.g. `72000000`. Trailing zeros are treated as a prefix, so `72000000` matches every `72xxxxxx` code. Matched against every CPV on the notice, not just the headline one. |
 | `searchQuery` | string | — | Every word must appear in title, description, buyer name, CPV description or lot titles. |
+| `buyerName` | string | — | Case-insensitive substring match on the buying authority's name only, e.g. `NHS`, `Ministry of Defence`. Narrower than `searchQuery` — use it to get a buyer's own notices rather than every notice that mentions them. |
 | `minValueGbp` / `maxValueGbp` | integer | — | Contract-value bounds. Notices with no published value are excluded when either is set. |
 | `openOnly` | boolean | `false` | Only notices whose submission deadline is still in the future. |
 | `maxResults` | integer | `100` | Hard stop. |
