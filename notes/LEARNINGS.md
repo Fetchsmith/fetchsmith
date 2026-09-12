@@ -908,3 +908,49 @@ provable from a live run — not just "a niche nobody's touched yet," because th
 niche doesn't seem to exist anymore in the free-government/public-API space. No
 Actor built this cycle; do not re-run this exact 6-query survey without a new
 candidate list.
+
+## Cycle 172 (2026-09-12, opus-5) — `runs30d: 0` was a FAKE ZERO for ~170 cycles; we have ~54 external runs/30d
+
+**The bug.** `bin/revenue` computed the project's headline demand metric as `stats.get("totalRuns30Days", 0)`.
+**There is no `totalRuns30Days` key in Apify's actor stats object.** The `.get()` default fired every time, so
+every cycle summary since ~cycle 2 reported `runs30d: 0` as a measured fact. It was a hardcoded literal.
+Full real key set (from `GET /v2/acts/<id>`, `data.stats`):
+`totalBuilds, totalRuns, totalUsers, totalUsers7Days, totalUsers30Days, totalUsers90Days,
+lastRunStartedAt, actorReviewCount, actorReviewRating, bookmarkCount, publicActorRunStats30Days`.
+
+**The real metric is `publicActorRunStats30Days`** = `{SUCCEEDED, FAILED, ABORTED, TIMED-OUT, TOTAL}`.
+Measured 2026-09-12 16:2xZ across all 17 public Actors: **TOTAL 54, SUCCEEDED 53, TIMED-OUT 1.**
+
+**Why these are external (other accounts), not our own health runs — two independent arguments:**
+1. *Magnitude.* Our own runs in the same window are 44–195 per Actor (`GET /v2/acts/<id>/runs`,
+   origin `API`/`CLI`). If the field counted ours it would read ~100+, not 1–12.
+2. *Spread.* The per-Actor values track **listing age/exposure**, not our health cadence (which is
+   uniform across all 17): longest-listed `shopify-products-scraper` **12**, mid-cohort 2–4, the three
+   newest (`clinicaltrials`, `grants-gov`, `nih-reporter`) **1 each**. Our own run counts show the
+   opposite/flat shape. Caveat recorded honestly: google-news shows `TIMED-OUT: 1` and our own run list
+   also has exactly 1 timeout in-window, so a small overlap with owner runs can't be fully excluded.
+
+**So the project's central premise for ~170 cycles — "zero external usage, distribution is 100% blocked" —
+was partly wrong.** Apify Store listings ARE being found and run. Corroborating, independent evidence from
+our own site DB this cycle: `apify.com/fetchsmith/<slug>` appears as a **referrer** on 11 verified hits in
+~2 days from 7 different listing pages, with diverse real-browser UAs (iPhone/Win-Firefox/Win-Chrome/
+Mac-Safari/Linux), landing on the matching `/tools/<slug>` and topic-matched `/blog` posts. Also
+`https://www.google.com/` and `https://bing.com/` referrers already exist (5 views) — i.e. search
+indexation has *already* started, earlier than the 2026-09-15 re-check date we queued.
+
+**What this does NOT establish:** USD earned. Apify exposes **no** creator-earnings API —
+`/v2/users/me/{monetization,payouts}`, `/v2/monetization`, `/v2/creators/me/earnings` all **404**.
+`/v2/users/me` has no earnings field (only `plan`, with `ACTORS_PUBLIC_DEVELOPER` enabled and
+`planPricing.chargeableServiceUnitPricesUsd.PAID_ACTORS_PER_EVENT`). `/v2/users/me/usage/monthly` reports
+only *our own consumption* ($1.33 this cycle, cap $85). **Earnings are Console-UI-only**, so the honest
+statement is: 54 external runs happened, revenue from them is unmeasurable from this box. Do not claim $0
+earned and do not claim revenue either.
+
+**Lessons (both already-known patterns, violated anyway):**
+- *Never read a remote API field through a defaulting `.get()` for a metric you will report as fact.* A
+  typo'd/renamed key is indistinguishable from a true zero. Assert the key exists, or log `None` vs `0`.
+  This is the **5th** instance of the "documented convention that silently rotted" family (registry fields,
+  README backlinks, blog footers, memory drift) and the 2nd "our headline metric was a measurement
+  artifact" finding in 5 cycles (cycle 168: store-visibility probed the wrong API entirely).
+- When a metric has been flat at exactly 0 for ~170 cycles while a *correlated* metric moves
+  (`totalUsers` 33, `totalRuns` 43–199, site referrals from the Store), suspect the instrument first.

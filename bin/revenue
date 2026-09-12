@@ -7,12 +7,27 @@ snap = {"ts": int(time.time()), "date": time.strftime("%Y-%m-%d"), "apify": {}, 
 acts_list = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
 # The list endpoint omits isPublic/stats fields; fetch each actor individually for accurate data.
 acts = [httpx.get(f"{API}/acts/{a['id']}", headers=H).json()["data"] for a in acts_list]
-tot_users = tot_runs = 0
+tot_users = tot_runs = tot_ok = tot_bad = tot_bm = tot_rev = 0
+# NOTE (cycle 172): there is NO `totalRuns30Days` key in Apify's actor stats object -- the old
+# code read it with a .get() default of 0, so `runs30d` printed a hardcoded zero for ~170 cycles.
+# The real field is `publicActorRunStats30Days` = {SUCCEEDED,FAILED,ABORTED,TIMED-OUT,TOTAL},
+# which counts runs of the PUBLIC listing by other accounts (our own API/CLI health runs number
+# 44-195 per Actor per 30d and do not appear in it). Treat TOTAL as external demand.
 for a in acts:
-    s = a.get("stats", {})
-    snap["apify"][a["name"]] = {"public": a.get("isPublic"), "users": s.get("totalUsers", 0), "users30d": s.get("totalUsers30Days", 0), "runs30d": s.get("totalRuns30Days", 0), "runs": s.get("totalRuns", 0)}
-    if a.get("isPublic"): tot_users += s.get("totalUsers", 0); tot_runs += s.get("totalRuns30Days", 0)
-snap["apify_totals"] = {"public_actors": sum(1 for a in acts if a.get("isPublic")), "users": tot_users, "runs30d": tot_runs}
+    s = a.get("stats", {}); p = s.get("publicActorRunStats30Days") or {}
+    bad = p.get("FAILED", 0) + p.get("ABORTED", 0) + p.get("TIMED-OUT", 0)
+    snap["apify"][a["name"]] = {"public": a.get("isPublic"), "users": s.get("totalUsers", 0),
+        "users30d": s.get("totalUsers30Days", 0), "runs30d": p.get("TOTAL", 0), "runs": s.get("totalRuns", 0),
+        "ext_ok30d": p.get("SUCCEEDED", 0), "ext_bad30d": bad, "ext_stats30d": p,
+        "bookmarks": s.get("bookmarkCount", 0), "reviews": s.get("actorReviewCount", 0),
+        "rating": s.get("actorReviewRating", 0)}
+    if a.get("isPublic"):
+        tot_users += s.get("totalUsers", 0); tot_runs += p.get("TOTAL", 0)
+        tot_ok += p.get("SUCCEEDED", 0); tot_bad += bad
+        tot_bm += s.get("bookmarkCount", 0); tot_rev += s.get("actorReviewCount", 0)
+snap["apify_totals"] = {"public_actors": sum(1 for a in acts if a.get("isPublic")), "users": tot_users,
+    "runs30d": tot_runs, "ext_ok30d": tot_ok, "ext_bad30d": tot_bad, "bookmarks": tot_bm, "reviews": tot_rev,
+    "metric": "runs30d=publicActorRunStats30Days.TOTAL (external runs); pre-cycle-172 history had a false 0 here"}
 # Polar orders
 pt = env.get("POLAR_ACCESS_TOKEN")
 if pt:
