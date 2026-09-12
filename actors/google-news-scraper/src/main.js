@@ -7,6 +7,8 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 const queries = (input.queries ?? []).map((q) => String(q).trim()).filter(Boolean);
 const rssUrls = (input.rssUrls ?? []).map((u) => String(u).trim()).filter(Boolean);
+const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
+const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
 const hl = input.language || 'en-US';
 const gl = (input.country || 'US').toUpperCase();
 const ceid = `${gl}:${hl.split('-')[0]}`;
@@ -99,7 +101,7 @@ async function decodeUrl(gnUrl) {
 }
 
 const feeds = [
-  ...queries.map((q) => ({ query: q, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
+  ...queries.map((q) => ({ query: q, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix)}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
   ...rssUrls.map((u) => ({ query: null, url: u })),
 ];
 const emptyFeeds = []; // Google News RSS returned zero <item>s for this query/URL

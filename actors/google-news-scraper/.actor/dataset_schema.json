@@ -9,7 +9,7 @@
           "null"
         ],
         "title": "Title",
-        "example": "GoProxies Scraping API Review: A Scale-First Take on the Build-vs-Buy Problem - shattered.io"
+        "example": "EDPB web scraping guidelines for AI: Making the impossible possible? - Reed Smith LLP"
       },
       "googleNewsUrl": {
         "type": [
@@ -17,7 +17,7 @@
           "null"
         ],
         "title": "GoogleNewsUrl",
-        "example": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBYcVctWkhUVS1MYTBzUlAzNE9SODRGVmFURTVqcW9oMjdaOEFQRjdoVm9wMHRQSjNZVjF"
+        "example": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxOTUxqNWNGWEsybG53cEJhWWZidGpKY3RpV3U1Yzlta3dqN1lLODVzSFllbmh1Uk5yQjF"
       },
       "guid": {
         "type": [
@@ -25,7 +25,7 @@
           "null"
         ],
         "title": "Guid",
-        "example": "CBMiYEFVX3lxTFBYcVctWkhUVS1MYTBzUlAzNE9SODRGVmFURTVqcW9oMjdaOEFQRjdoVm9wMHRQSjNZVjFNZGU4b1lLS29VNTA2SjkzMnM1bE9HN1FqS1JD"
+        "example": "CBMi3AFBVV95cUxOTUxqNWNGWEsybG53cEJhWWZidGpKY3RpV3U1Yzlta3dqN1lLODVzSFllbmh1Uk5yQjFCTDZTbFVQTlQzSGVtTlFtT3VTeXNSeGtuT0hv"
       },
       "publishedAt": {
         "type": [
@@ -33,7 +33,7 @@
           "null"
         ],
         "title": "PublishedAt",
-        "example": "2026-09-04T07:41:06.000Z"
+        "example": "2026-07-14T07:00:00.000Z"
       },
       "source": {
         "type": [
@@ -41,7 +41,7 @@
           "null"
         ],
         "title": "Source",
-        "example": "shattered.io"
+        "example": "Reed Smith LLP"
       },
       "sourceUrl": {
         "type": [
@@ -49,7 +49,7 @@
           "null"
         ],
         "title": "SourceUrl",
-        "example": "https://shattered.io"
+        "example": "https://www.reedsmith.com"
       },
       "snippet": {
         "type": [
@@ -57,7 +57,7 @@
           "null"
         ],
         "title": "Snippet",
-        "example": "GoProxies Scraping API Review: A Scale-First Take on the Build-vs-Buy Problem"
+        "example": "EDPB web scraping guidelines for AI: Making the impossible possible?"
       },
       "url": {
         "type": [
@@ -65,7 +65,7 @@
           "null"
         ],
         "title": "Url",
-        "example": "https://shattered.io/goproxies-scraping-api-review/"
+        "example": "https://www.reedsmith.com/our-insights/blogs/technology-law-dispatch/102nbqu/edpb-web-scraping-guidelines-for-ai-making-"
       },
       "query": {
         "type": [
@@ -105,7 +105,7 @@
           "null"
         ],
         "title": "ScrapedAt",
-        "example": "2026-09-09T02:32:45.275Z"
+        "example": "2026-09-12T03:04:12.766Z"
       }
     }
   },

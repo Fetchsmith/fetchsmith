@@ -3,6 +3,7 @@
   "properties": {
     "queries": { "title": "Search queries", "type": "array", "description": "One or more search terms. Supports Google News operators like \"exact phrase\", site:bbc.com, when:7d, before:2026-01-01.", "editor": "stringList", "default": ["artificial intelligence"], "prefill": ["artificial intelligence"] },
     "rssUrls": { "title": "Custom Google News RSS URLs", "type": "array", "description": "Optional: topic/section/publication feeds from news.google.com/rss/... (added to the queries).", "editor": "stringList" },
+    "excludeWords": { "title": "Exclude words", "type": "array", "description": "Words or phrases to exclude, applied to every query (e.g. \"iphone\" drops articles mentioning it). Equivalent to typing -word yourself, just easier to manage as a list. Does not apply to rssUrls, since those are fixed feed URLs, not search terms.", "editor": "stringList" },
     "language": { "title": "Language (hl)", "type": "string", "description": "e.g. en-US, en-GB, de, fr, es, pt-BR, ar, ja", "default": "en-US", "editor": "textfield" },
     "country": { "title": "Country (gl)", "type": "string", "description": "Two-letter country code, e.g. US, GB, DE, IN, EG", "default": "US", "editor": "textfield" },
     "maxItemsPerQuery": { "title": "Max articles per query", "type": "integer", "description": "Google returns up to 100 per feed.", "default": 100, "minimum": 1, "maximum": 100 },

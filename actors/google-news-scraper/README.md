@@ -13,6 +13,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
 |---|---|---|
 | `queries` | array | Search terms. Operators work: `"exact phrase"`, `site:reuters.com`, `when:7d`, `before:2026-01-01`, `after:2026-06-01` |
 | `rssUrls` | array | Optional Google News RSS feed URLs (topics, sections, publications) |
+| `excludeWords` | array | Words/phrases to drop from every query, e.g. `["iphone"]` on a query `apple` removes iPhone coverage. Same effect as typing `-word` yourself, just a manageable list. Does not apply to `rssUrls` (fixed feeds, not search terms) |
 | `language` | string | `hl` code such as `en-US`, `de`, `fr`, `pt-BR`, `ar`, `ja` (default `en-US`) |
 | `country` | string | `gl` code such as `US`, `GB`, `DE`, `IN` (default `US`) |
 | `maxItemsPerQuery` | integer | Up to 100 (Google's feed limit) |
@@ -63,6 +64,7 @@ With `fetchArticleBody: true` each item also carries:
 
 ## Tips
 - Combine `queries` with `when:1d` to get only fresh news for daily runs.
+- Use `excludeWords` to drop off-topic coverage that shares a keyword with your query (e.g. exclude `iphone` when tracking `apple` as a company, not a product line).
 - Use `rssUrls` for topic feeds, e.g. `https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en`.
 - Turn off `decodeUrls` for the fastest runs if you only need headlines and sources.
 - `fetchArticleBody` adds one request per article, so it is slower — but it costs no extra: you are still charged once per article returned, body or no body.
