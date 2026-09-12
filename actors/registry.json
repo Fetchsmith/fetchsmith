@@ -44,7 +44,7 @@
     {
       "slug": "app-store-reviews-scraper",
       "title": "App Store Reviews Scraper",
-      "summary": "Apple App Store reviews for any iOS app and country storefront: rating, title, text, version, author, date, plus app metadata.",
+      "summary": "Apple App Store reviews for any iOS app and country storefront: rating, title, text, author (with profile URL), version, vote counts, sort/client diagnostics, plus full app metadata (developer, bundle id, genre, current version, store URL).",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -68,13 +68,21 @@
         "rating",
         "version",
         "author",
+        "authorUrl",
         "updatedAt",
         "voteSum",
         "voteCount",
+        "sortUsed",
+        "clientClass",
         "appName",
         "developer",
+        "bundleId",
         "averageRating",
-        "ratingCount"
+        "ratingCount",
+        "currentVersion",
+        "primaryGenre",
+        "appUrl",
+        "scrapedAt"
       ],
       "sample_output": {
         "reviewId": "14522836737",
@@ -84,9 +92,22 @@
         "content": "It's probably because I'm new but it is really confusing to work with.",
         "rating": 4,
         "version": "1.7.333",
+        "author": "Braders815",
+        "authorUrl": "https://itunes.apple.com/us/reviews/id1727316115",
+        "updatedAt": "2026-09-07T13:49:20-07:00",
+        "voteSum": 0,
+        "voteCount": 0,
+        "sortUsed": "mostRecent",
+        "clientClass": "default",
         "appName": "Notion: Notes, Tasks, AI",
+        "developer": "Notion Labs, Incorporated",
+        "bundleId": "notion.id",
         "averageRating": 4.78,
-        "ratingCount": 90020
+        "ratingCount": 90020,
+        "currentVersion": "1.7.334",
+        "primaryGenre": "Productivity",
+        "appUrl": "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281?uo=4",
+        "scrapedAt": "2026-09-12T07:30:31.577Z"
       },
       "description": "<p>Apple exposes the 500 most recent reviews per app per country (sorted by most recent or most helpful). Run on a schedule and deduplicate by <code>reviewId</code> to build a history.</p>",
       "memory_mb": 1024

@@ -59,6 +59,62 @@
         "title": "Version",
         "example": "1.7.333"
       },
+      "author": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Author",
+        "example": "Braders815"
+      },
+      "authorUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorUrl",
+        "example": "https://itunes.apple.com/us/reviews/id1727316115"
+      },
+      "updatedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UpdatedAt",
+        "example": "2026-09-07T13:49:20-07:00"
+      },
+      "voteSum": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VoteSum",
+        "example": 0
+      },
+      "voteCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VoteCount",
+        "example": 0
+      },
+      "sortUsed": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SortUsed",
+        "example": "mostRecent"
+      },
+      "clientClass": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ClientClass",
+        "example": "default"
+      },
       "appName": {
         "type": [
           "string",
@@ -66,6 +122,22 @@
         ],
         "title": "AppName",
         "example": "Notion: Notes, Tasks, AI"
+      },
+      "developer": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Developer",
+        "example": "Notion Labs, Incorporated"
+      },
+      "bundleId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "BundleId",
+        "example": "notion.id"
       },
       "averageRating": {
         "type": [
@@ -82,6 +154,38 @@
         ],
         "title": "RatingCount",
         "example": 90020
+      },
+      "currentVersion": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "CurrentVersion",
+        "example": "1.7.334"
+      },
+      "primaryGenre": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimaryGenre",
+        "example": "Productivity"
+      },
+      "appUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AppUrl",
+        "example": "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281?uo=4"
+      },
+      "scrapedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ScrapedAt",
+        "example": "2026-09-12T07:30:31.577Z"
       }
     }
   },
@@ -93,11 +197,14 @@
           "reviewId",
           "appId",
           "country",
+          "rating",
           "title",
           "content",
-          "rating",
+          "author",
           "version",
+          "updatedAt",
           "appName",
+          "developer",
           "averageRating",
           "ratingCount"
         ]
@@ -117,6 +224,10 @@
             "label": "Country",
             "format": "text"
           },
+          "rating": {
+            "label": "Rating",
+            "format": "number"
+          },
           "title": {
             "label": "Title",
             "format": "text"
@@ -125,16 +236,24 @@
             "label": "Content",
             "format": "text"
           },
-          "rating": {
-            "label": "Rating",
-            "format": "number"
+          "author": {
+            "label": "Author",
+            "format": "text"
           },
           "version": {
             "label": "Version",
             "format": "text"
           },
+          "updatedAt": {
+            "label": "UpdatedAt",
+            "format": "date"
+          },
           "appName": {
             "label": "AppName",
+            "format": "text"
+          },
+          "developer": {
+            "label": "Developer",
             "format": "text"
           },
           "averageRating": {
