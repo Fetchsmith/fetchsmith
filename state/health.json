@@ -1,5 +1,5 @@
 {
- "ts": 1789184060,
+ "ts": 1789186318,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -238,6 +238,38 @@
     "studyType",
     "phases",
     "enrollmentCount"
+   ],
+   "err": null
+  },
+  "grants-gov-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "opportunityNumber",
+    "title",
+    "agencyCode",
+    "agency",
+    "openDate",
+    "closeDate",
+    "oppStatus"
+   ],
+   "err": null
+  },
+  "nih-reporter-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "applId",
+    "projectNum",
+    "coreProjectNum",
+    "subprojectId",
+    "fiscalYear",
+    "projectTitle",
+    "activityCode",
+    "awardType"
    ],
    "err": null
   }
