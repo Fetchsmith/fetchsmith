@@ -13,6 +13,11 @@
       "eventTitle": "Product",
       "eventDescription": "One product returned to the dataset.",
       "eventPriceUsd": 0.001
+    },
+    "productDetail": {
+      "eventTitle": "Product detail (SEO + rating)",
+      "eventDescription": "Extra fetch of the product's live page for seoTitle, seoDescription, ratingValue and reviewCount. Only charged when detailLevel is \"full\".",
+      "eventPriceUsd": 0.0015
     }
   }
 }

@@ -10,6 +10,7 @@ const maxResults = Math.min(Number(input.maxResults ?? 5000), 200000);
 const withDesc = input.includeDescription !== false;
 const withVariants = input.includeVariants !== false;
 const onlyAvailable = !!input.onlyAvailable;
+const detailLevel = input.detailLevel === 'full' ? 'full' : 'basic';
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 
 // Some storefronts rate-limit or geo-gate products.json by IP, and the platform's shared egress
@@ -105,6 +106,46 @@ async function currencyFor(origin) {
   } catch { return null; }
 }
 
+// products.json/product.json never carry SEO tags or a rating summary — Shopify only renders
+// those into the live product page's <head> (og/twitter meta) and into a ld+json script (rating
+// apps like Judge.me/Yotpo inject their own <script type="application/ld+json"> block alongside
+// Shopify's ProductGroup one, so scan all of them for `aggregateRating` rather than assuming
+// position). Charged separately since it's a second request per product; only charged when it
+// actually finds something, matching the "no data, no charge" rule the base scrape already uses.
+let detailBudgetOk = true;
+async function enrichWithDetail(item, origin, handle) {
+  if (!detailBudgetOk || !timeBudgetOk()) return;
+  let seoTitle = null, seoDescription = null, ratingValue = null, reviewCount = null;
+  try {
+    // `request()`'s default Accept header prefers application/json, and Shopify's product route
+    // honors that and serves the raw product JSON instead of the rendered page — override it here
+    // since the whole point of this request is the page's <head>/ld+json, not the JSON again.
+    const res = await request(`${origin}/products/${handle}`, { accept: 'text/html,application/xhtml+xml' });
+    const $ = cheerio.load(res.body);
+    seoTitle = $('title').first().text().trim() || null;
+    seoDescription = $('meta[name="description"]').attr('content')?.trim() || null;
+    $('script[type="application/ld+json"]').each((_, el) => {
+      if (ratingValue != null) return;
+      let data;
+      try { data = JSON.parse($(el).contents().text()); } catch { return; }
+      const rating = data?.aggregateRating ?? (Array.isArray(data) ? data.find((d) => d?.aggregateRating)?.aggregateRating : null);
+      if (rating) {
+        ratingValue = rating.ratingValue != null ? Number(rating.ratingValue) : null;
+        reviewCount = rating.reviewCount != null ? Number(rating.reviewCount) : (rating.ratingCount != null ? Number(rating.ratingCount) : null);
+      }
+    });
+  } catch (e) {
+    log.warning(`${origin}/products/${handle}: detail fetch failed (${e.message}) — seoTitle/seoDescription/rating left null for this product.`);
+    return;
+  }
+  if (seoTitle == null && seoDescription == null && ratingValue == null) return; // nothing found, nothing charged
+  if (isPPE) {
+    const r = await Actor.charge({ eventName: 'productDetail', count: 1 });
+    if (r.chargedCount === 0) { detailBudgetOk = false; return; } // budget exhausted: stop enriching, keep scraping base data
+  }
+  item.seoTitle = seoTitle; item.seoDescription = seoDescription; item.ratingValue = ratingValue; item.reviewCount = reviewCount;
+}
+
 const erroredStores = []; // products.json fetch failed (not Shopify, or endpoint disabled)
 const emptyStores = []; // request succeeded but Shopify returned zero products for this URL
 const filteredOutStores = []; // products existed but onlyAvailable removed all of them
@@ -121,7 +162,11 @@ for (const raw of storeUrls) {
       const p = JSON.parse((await http(ep.url)).body).product;
       if (p) {
         seenBeforeFilter = 1;
-        if (!onlyAvailable || (p.variants ?? []).some((v) => v.available)) { keepGoing = await pushResult(shape(p, ep.origin, currency)); got++; }
+        if (!onlyAvailable || (p.variants ?? []).some((v) => v.available)) {
+          const item = shape(p, ep.origin, currency);
+          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
+          keepGoing = await pushResult(item); got++;
+        }
       }
     } else {
       for (let page = 1; got < perStore && keepGoing; page++) {
@@ -133,7 +178,9 @@ for (const raw of storeUrls) {
         for (const p of products) {
           if (got >= perStore) break;
           if (onlyAvailable && !(p.variants ?? []).some((v) => v.available)) continue;
-          keepGoing = await pushResult(shape(p, ep.origin, currency)); got++;
+          const item = shape(p, ep.origin, currency);
+          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
+          keepGoing = await pushResult(item); got++;
           if (!keepGoing) break;
         }
         if (products.length < 250) break;

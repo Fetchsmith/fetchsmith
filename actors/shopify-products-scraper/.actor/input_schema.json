@@ -53,6 +53,15 @@
       "editor": "proxy",
       "description": "Route storefront requests through Apify Proxy. Recommended: some stores rate-limit or geo-gate products.json by IP, and residential/country-specific proxies also return that country's prices and currency. Leave as-is to use automatic Apify Proxy; runs on accounts without proxy access fall back to a direct connection.",
       "default": { "useApifyProxy": true }
+    },
+    "detailLevel": {
+      "title": "Detail level",
+      "type": "string",
+      "editor": "select",
+      "description": "\"Basic\" (default) uses only the store's products.json/product.json feed — one request per page of products. \"Full\" additionally fetches each product's live page to read its SEO title/description and star-rating summary, which are not present in products.json. This is one extra HTTP request per product and is charged separately.",
+      "enum": ["basic", "full"],
+      "enumTitles": ["Basic (fast, feed only)", "Full (+ SEO title/description + rating, 1 extra request/product)"],
+      "default": "basic"
     }
   },
   "required": [

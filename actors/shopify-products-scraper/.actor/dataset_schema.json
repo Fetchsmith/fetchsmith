@@ -9,7 +9,7 @@
           "null"
         ],
         "title": "Id",
-        "example": 7369944137808
+        "example": 7205191974992
       },
       "title": {
         "type": [
@@ -17,7 +17,7 @@
           "null"
         ],
         "title": "Title",
-        "example": "Free Returns Coverage"
+        "example": "Men's Dasher NZ - Anthracite (Dark Anthracite Sole)"
       },
       "handle": {
         "type": [
@@ -25,7 +25,7 @@
           "null"
         ],
         "title": "Handle",
-        "example": "free-returns-coverage"
+        "example": "mens-dasher-nz-anthracite"
       },
       "url": {
         "type": [
@@ -33,7 +33,7 @@
           "null"
         ],
         "title": "Url",
-        "example": "https://www.allbirds.com/products/free-returns-coverage"
+        "example": "https://www.allbirds.com/products/mens-dasher-nz-anthracite"
       },
       "vendor": {
         "type": [
@@ -41,7 +41,7 @@
           "null"
         ],
         "title": "Vendor",
-        "example": "re:do"
+        "example": "Allbirds"
       },
       "productType": {
         "type": [
@@ -49,7 +49,7 @@
           "null"
         ],
         "title": "ProductType",
-        "example": "return,package_protection"
+        "example": "Shoes"
       },
       "tags": {
         "type": [
@@ -63,7 +63,8 @@
           "string",
           "null"
         ],
-        "title": "Currency"
+        "title": "Currency",
+        "example": "USD"
       },
       "priceMin": {
         "type": [
@@ -71,7 +72,7 @@
           "null"
         ],
         "title": "PriceMin",
-        "example": 0.8
+        "example": 140
       },
       "priceMax": {
         "type": [
@@ -79,7 +80,7 @@
           "null"
         ],
         "title": "PriceMax",
-        "example": 2.98
+        "example": 140
       },
       "compareAtPriceMin": {
         "type": [
@@ -87,7 +88,7 @@
           "null"
         ],
         "title": "CompareAtPriceMin",
-        "example": 0.8
+        "example": 125
       },
       "compareAtPriceMax": {
         "type": [
@@ -95,42 +96,23 @@
           "null"
         ],
         "title": "CompareAtPriceMax",
-        "example": 2.98
+        "example": 125
       },
       "isOnSale": {
-        "type": "boolean",
-        "title": "On sale"
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "IsOnSale",
+        "example": false
       },
       "discountPercent": {
         "type": [
           "number",
           "null"
         ],
-        "title": "Discount %",
-        "example": 20.5
-      },
-      "availableVariantCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "AvailableVariantCount",
-        "example": 2
-      },
-      "imageCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "ImageCount",
-        "example": 4
-      },
-      "descriptionHtml": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "DescriptionHtml"
+        "title": "DiscountPercent",
+        "example": 21.6
       },
       "available": {
         "type": [
@@ -140,13 +122,21 @@
         "title": "Available",
         "example": true
       },
+      "availableVariantCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AvailableVariantCount",
+        "example": 8
+      },
       "variantCount": {
         "type": [
           "number",
           "null"
         ],
         "title": "VariantCount",
-        "example": 2
+        "example": 13
       },
       "images": {
         "type": [
@@ -161,7 +151,15 @@
           "null"
         ],
         "title": "ImageUrl",
-        "example": "https://cdn.shopify.com/s/files/1/1104/4168/files/Screenshot_2026-06-11_at_10.12.01_AM.png?v=1781197934"
+        "example": "https://cdn.shopify.com/s/files/1/1104/4168/files/A12416_26Q1_Dasher-NZ-Anthracite-Dark-Anthr_PDP_LEFT.png?v=1768948005"
+      },
+      "imageCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ImageCount",
+        "example": 5
       },
       "options": {
         "type": [
@@ -182,7 +180,16 @@
           "string",
           "null"
         ],
-        "title": "Description"
+        "title": "Description",
+        "example": "A new take on our fan-favorite Dasher, made for busy days and spontaneous plans. Lightweight, breathable comfort keeps y"
+      },
+      "descriptionHtml": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "DescriptionHtml",
+        "example": "<p>A new take on our fan-favorite Dasher, made for busy days and spontaneous plans. Lightweight, breathable comfort keep"
       },
       "createdAt": {
         "type": [
@@ -190,7 +197,7 @@
           "null"
         ],
         "title": "CreatedAt",
-        "example": "2026-06-05T07:14:57-07:00"
+        "example": "2025-08-06T18:54:33-07:00"
       },
       "updatedAt": {
         "type": [
@@ -198,7 +205,7 @@
           "null"
         ],
         "title": "UpdatedAt",
-        "example": "2026-09-08T19:32:50-07:00"
+        "example": "2026-09-12T12:05:37-07:00"
       },
       "publishedAt": {
         "type": [
@@ -206,7 +213,7 @@
           "null"
         ],
         "title": "PublishedAt",
-        "example": "2026-09-02T11:33:11-07:00"
+        "example": "2026-08-24T09:53:01-07:00"
       },
       "store": {
         "type": [
@@ -222,7 +229,39 @@
           "null"
         ],
         "title": "ScrapedAt",
-        "example": "2026-09-09T02:32:50.604Z"
+        "example": "2026-09-12T19:05:37.865Z"
+      },
+      "seoTitle": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SeoTitle",
+        "example": "Men\u2019s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
+      },
+      "seoDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SeoDescription",
+        "example": "Discover the Men\u2019s Dasher NZ\u2014lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
+      },
+      "ratingValue": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "RatingValue",
+        "example": 4.6
+      },
+      "reviewCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ReviewCount",
+        "example": 51
       }
     }
   },
@@ -237,11 +276,10 @@
           "url",
           "vendor",
           "productType",
+          "currency",
           "priceMin",
           "priceMax",
-          "compareAtPriceMin",
-          "discountPercent",
-          "available"
+          "compareAtPriceMin"
         ]
       },
       "display": {
@@ -271,6 +309,10 @@
             "label": "ProductType",
             "format": "text"
           },
+          "currency": {
+            "label": "Currency",
+            "format": "text"
+          },
           "priceMin": {
             "label": "PriceMin",
             "format": "number"
@@ -282,14 +324,6 @@
           "compareAtPriceMin": {
             "label": "CompareAtPriceMin",
             "format": "number"
-          },
-          "discountPercent": {
-            "label": "Discount %",
-            "format": "number"
-          },
-          "available": {
-            "label": "Available",
-            "format": "boolean"
           }
         }
       }
