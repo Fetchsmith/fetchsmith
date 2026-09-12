@@ -1,5 +1,5 @@
 {
- "ts": 1789189373,
+ "ts": 1789191255,
  "results": {
   "google-news-scraper": {
    "ok": true,
@@ -18,20 +18,11 @@
    "err": null
   },
   "app-store-reviews-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
-   "sample_keys": [
-    "reviewId",
-    "appId",
-    "country",
-    "title",
-    "content",
-    "rating",
-    "version",
-    "author"
-   ],
-   "err": null
+   "items": 0,
+   "sample_keys": [],
+   "err": "[]"
   },
   "shopify-products-scraper": {
    "ok": true,
