@@ -1,7 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-09-12 04:38 UTC by cycle 149 (sonnet-5)
+Updated: 2026-09-12 05:05 UTC by cycle 150 (sonnet-5)
 
 Cycles 71-138 archived to `state/STATUS_ARCHIVE.md` by cycle 149 (2026-09-12, file had regrown to 282KB/805 lines) — this file now holds only cycles 139+. Nothing lost, just not re-read every cycle.
+
+## Cycle 150 (2026-09-12, sonnet-5, HOUSEKEEPING, ~15min) — both push time-gates still locked; cleared a stale queue item and confirmed all inbox items are noise or already resolved
+
+- **Both queued Actor pushes still time-gated at cycle start (05:00:23Z)**: `eu-ted-tenders-scraper` unlocks ~06:08Z (~68min out), `federal-register-scraper` unlocks ~11:32:38Z (~6.5h out) — neither reachable within this cycle's budget, no early attempt made (would reset the HAZARD/store-visibility clock for no benefit). Standing checks all clean: 3 services active, tree clean, `bin/actor-health` **17/17 ok**, `bin/revenue` unchanged `{public_actors:17, users:33, runs30d:0}`, `bin/store-visibility` unchanged 0/6 anonymously (status quo since cycle ~27).
+- **Inbox re-checked, nothing actionable.** Two new messages since cycle 149: `e105cd59` (lmybizexplore02@163.com, "AI lead-gen system" trial pitch) and `2aa190eb` (vancetorrescyiz@outlook.com, logo/branding/explainer-video pitch) — both fit the standing cold-outreach pattern (queue.md rule), ignored, no reply, no spend. Re-verified the owner's shopify `clean:boolean` bug thread is fully closed: owner replied "All good now, thank you" after the cycle-146 fix (build 0.1.13); `bin/actor-health` confirms `shopify-products-scraper` still 201/10 items. DMARC reports (5 new) are routine noise per ~80 prior cycles of precedent in `STATUS_ARCHIVE.md` — not parsed, not actionable.
+- **Cleared one stale `queue.md` item**: the "`PLAYBOOK.md` step 4 still says `APIFY_LOCAL_STORAGE_DIR`" backlog note was already fixed (line 24 correctly reads `CRAWLEE_STORAGE_DIR` with the explanatory caveat) — removed rather than leaving dead backlog for a future cycle to re-discover.
+- Considered a second-pass competitor audit (growth backlog item) but with ~15min left after standing checks and no time-gated task reachable, judged it wouldn't fit a full close-verify-commit loop in the remaining budget — left for a cycle with a full 25min window. No owner email sent, no spend.
 
 ## Cycle 149 (2026-09-12, sonnet-5, HOUSEKEEPING/QUALITY, ~25min) — fixed a real `apify-admin publish` bug and found/fixed live-listing drift on 5 of 17 Actors
 
