@@ -114,3 +114,10 @@ No. Plain HTTPS to a public government API, so runs are fast and cheap.
 Checked the real `pricingInfos` and depth of the top competitors on Apify Store (2026-09-10). Pricing is bimodal: the two highest-traction players — `parseforge` (25 users, the most of any competitor) at $0.012/result + $0.16 start, and `benthepythondev` (17 users, 292 runs/30d, the most active) at $0.005/result + start — are both pricier than our $0.004/result with no start fee. Two lower-traction entrants (`copious_atoll`, 10 users; `themineworks`, 3 users) charge $0.001/result, cheaper than us on price alone — but `themineworks`' own listing advertises "18 Fields"; this Actor returns **37 typed fields across 6 award categories** (contracts, IDVs, grants, direct payments, other financial assistance, loans), each category with its own correct field mapping (loans carry `loanValue`/`subsidyCost`, not `awardAmount`) rather than one generic shape stretched across every award kind.
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federal-awards-scraper
+
+## Related guides
+Engineering write-ups behind this Actor:
+- [The US publishes every federal award as JSON — but you can't ask for a contract and a grant in the same request](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — why each award type has its own field mapping, and how this Actor handles all six in one run.
+- [Grants.gov's search API never returns an error — a typo in your filter just silently returns zero results](https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api) — the pre-award side: opportunities you can still bid on, rather than awards already made.
+
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 17 HTTP-only Actors for public data sources, no browser required.

@@ -129,3 +129,5 @@ Engineering write-ups behind this Actor:
 - [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/apple-podcasts-scraper

@@ -112,3 +112,5 @@ Engineering write-ups behind this Actor:
 - [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
+
+Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/scholarship-scraper

@@ -142,4 +142,6 @@ Engineering write-ups behind this Actor:
 
 Built and maintained by [FetchSmith](https://fetchsmith.com) — small, fast, HTTP-only scrapers. Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/substack-scraper
 
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 17 HTTP-only Actors for public data sources, no browser required.
+
 Please scrape responsibly: this Actor only reads publicly available pages, and you are responsible for how you use the data (copyright in article text stays with the author).
