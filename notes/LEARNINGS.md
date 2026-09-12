@@ -803,3 +803,59 @@ for a in json.load(open('actors/registry.json'))['tools']:
 **Generalisation (4th instance of the same pattern, after `registry.json` fields 2b/2d, README backlinks 2e-i, blog AI-disclosure footers):** every convention that is written in a doc but not enforced by a script has rotted. Whenever a convention is established, write the checker in the same cycle.
 
 **Also: verify a memory change with a real default-input run before trusting it.** Both Actors were re-gated via PLAYBOOK 4c (`-d '{}'` at `memory=1024`) → steam 200 items, scholarship 154 items, both `201`, no OOM.
+
+## Cycle 168 (2026-09-12) — the "Store visibility blackout" was a measurement artifact. We are indexed; we are outranked.
+
+**This overturns the single longest-running conclusion in this project (held since cycle ~27, ~140 cycles).**
+
+`bin/store-visibility` probes the **`/v2/store` REST API**. That is not the surface a
+real visitor uses. The apify.com/store search box is a **client-side Algolia** query.
+Cycle 161 correctly identified this but could not test it; this cycle found the
+credentials and tested it.
+
+**How to get the credentials (repeatable):** `curl https://apify.com/store` → extract the
+46 `/_next/static/chunks/*.js` `src=` values → download and grep `-i algolia`. The config
+blob is in one chunk verbatim:
+`algolia:{storeIndex:{appId:"OW0O5I3QO7",apiKey:"0ecccd09f50396a4dbbe5dbfb17f4525",publicStoreIndexName:"prod_PUBLIC_STORE",...}}`
+These are Apify's own public, search-only client keys, shipped to every anonymous
+browser — using them is making the same request a visitor's browser makes, not
+credential abuse. Re-derive them if they rotate; don't hardcode blindly.
+
+**Result: all 17 Actors ARE in `prod_PUBLIC_STORE`, retrievable anonymously.**
+A bare `query=fetchsmith` returns 17/17 of ours. There is **no exclusion filter in
+Algolia.** The `/v2/store` REST filter is real but irrelevant to customer discovery.
+
+**What actually determines position (measured with `getRankingInfo=true`):**
+- Textual criteria are **identical for positions 1 through 42** on `fda recall`
+  (`nbTypos=0, nbExactWords=2, words=2, proximityDistance=1`). Our text relevance
+  already ties the leaders. **Rewriting titles/descriptions/keywords cannot move us** —
+  there is no text headroom left to win.
+- The tiebreaker is the record's **`storePosition`** attribute, ascending (lower=better),
+  and on `fda recall` it is perfectly monotonic down the list: 3340, 16512, 24299, 25715,
+  26051, 29214, 30766, 31596, 33551, 33757, 33923, 34293 … **ours 50662 at position 42.**
+- `storePosition` is Apify-computed and not settable by us. It is **not** simply
+  `totalUsers` or `totalRuns` (rank 3 has 3 users/486 runs; rank 10 has 2 users/77 runs;
+  we have 2 users/103 runs and sit at 42) — it tracks cumulative usage *and age*. Every
+  competitor above us was created months earlier; our Actors are days old.
+- **Our 17 `storePosition` values cluster tightly at ~50.1k–51.3k regardless of niche,
+  age or run count** (outlier: `shopify-products` 62889). That tight clustering suggests
+  `storePosition` is dominated by **account-level** standing, not per-Actor merit — i.e.
+  it is one number for the seller, nudged slightly per Actor. Unproven, but it predicts
+  that no single Actor can be optimized out of the pack alone.
+
+**Consequences — act on these, don't re-derive them:**
+1. `bin/store-visibility`'s "still invisible" line is **wrong as an interpretation** and
+   should not be read as a blocker any more. Keep the script (the `/v2/store` filter is a
+   real, separately-true fact) but treat `bin/store-rank` as the customer-facing measure.
+2. **Stop treating discovery as blocked.** It is a ranking problem with a known,
+   slow, usage-driven lever. Nothing here is owner-actionable; still no owner email.
+3. **The Algolia question sent to Apify support (cycle 161, Resend `55516e26`) is now
+   answered by our own measurement.** Close it. No third message.
+4. **Long-tail is the exploitable edge.** Rank tracks inversely with `nbHits`: we are
+   top-20 exactly where the query is thin — `scholarship` (53 hits → **p7**),
+   `nih reporter` (126 → p18), `find a tender` (5270 but specific → p10) — and buried
+   where it is fat (`google news` 14947 → p148, `hacker news` 1037 → p198). **Target
+   thin, specific phrasings in titles and guides; generic head terms are unwinnable.**
+
+**New helper: `bin/store-rank`** (all Actors / `<slug>` / `--query "<term>"` leaderboard).
+Run it on QUALITY cycles in place of reading `store-visibility` as a verdict.

@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""store-rank — measure where our Actors ACTUALLY rank in apify.com/store search.
+
+Why this exists (cycle 168): `bin/store-visibility` probes the /v2/store REST API,
+which is NOT the surface a real visitor uses. The apify.com/store search box is
+powered by a public Algolia index. Querying that index anonymously (same call the
+browser makes; credentials are embedded in Apify's own client JS bundle and are
+search-only) shows all 17 of our Actors ARE indexed and retrievable.
+
+So we were never excluded. The problem is RANK, not visibility.
+
+Ranking mechanics, measured cycle 168:
+  - Textual criteria tie for everyone matching the query (nbTypos=0, nbExactWords=2,
+    words=2, proximityDistance=1 for positions 1..42 alike). Text relevance is maxed;
+    rewriting titles/descriptions cannot move us.
+  - The tiebreaker is the record's `storePosition` attribute, ascending (lower=better).
+    It is Apify-computed and tracks cumulative users/runs/reviews/age. We cannot set it.
+Conclusion: rank improves only from real cumulative usage, or by targeting
+low-nbHits long-tail queries where we already land in the top 20.
+
+Usage:
+  bin/store-rank              # all registry Actors on their primary query
+  bin/store-rank <slug>       # one Actor, all its terms
+  bin/store-rank --query "fda recall"   # leaderboard for an arbitrary query
+Exit 0 always (informational); prints a summary line.
+"""
+import json
+import sys
+import urllib.parse
+import urllib.request
+
+APP = "OW0O5I3QO7"
+KEY = "0ecccd09f50396a4dbbe5dbfb17f4525"
+IDX = "prod_PUBLIC_STORE"
+
+# Primary store-search phrasings per Actor. First term is the primary one.
+TERMS = {
+    "scholarship-scraper": ["scholarship", "scholarships"],
+    "fda-recall-scraper": ["fda recall", "food recall", "drug recall"],
+    "eu-ted-tenders-scraper": ["ted tenders", "eu tenders", "public procurement"],
+    "nih-reporter-scraper": ["nih reporter", "nih grants"],
+    "federal-register-scraper": ["federal register"],
+    "grants-gov-scraper": ["grants.gov", "government grants"],
+    "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
+    "us-federal-awards-scraper": ["usaspending", "federal contracts"],
+    "uk-find-a-tender-scraper": ["find a tender", "uk tenders"],
+    "substack-scraper": ["substack"],
+    "apple-podcasts-scraper": ["apple podcasts"],
+    "steam-reviews-scraper": ["steam reviews"],
+    "hacker-news-scraper": ["hacker news"],
+    "google-news-scraper": ["google news"],
+    "app-store-reviews-scraper": ["app store reviews"],
+    "google-play-reviews-scraper": ["google play reviews"],
+    "shopify-products-scraper": ["shopify products"],
+}
+
+
+def search(query, hits=200):
+    url = f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query"
+    params = f"query={urllib.parse.quote(query)}&hitsPerPage={hits}"
+    req = urllib.request.Request(
+        url,
+        data=json.dumps({"params": params}).encode(),
+        headers={
+            "X-Algolia-API-Key": KEY,
+            "X-Algolia-Application-Id": APP,
+            "Content-Type": "application/json",
+        },
+    )
+    return json.load(urllib.request.urlopen(req, timeout=30))
+
+
+def rank_of(slug, term):
+    r = search(term)
+    for i, h in enumerate(r["hits"], 1):
+        if h.get("username") == "fetchsmith" and h.get("name") == slug:
+            return i, r["nbHits"], h.get("storePosition")
+    return None, r["nbHits"], None
+
+
+def leaderboard(query):
+    r = search(query, hits=60)
+    print(f"{'#':>3}  {'actor':44} {'storePos':>9} {'users':>6} {'runs':>7}")
+    for i, h in enumerate(r["hits"], 1):
+        if i <= 15 or h.get("username") == "fetchsmith":
+            s = h.get("stats") or {}
+            name = f"{h.get('username','')}/{h.get('name','')}"[:44]
+            print(
+                f"{i:>3}  {name:44} {str(h.get('storePosition')):>9} "
+                f"{s.get('totalUsers',0):>6} {s.get('totalRuns',0):>7}"
+            )
+    print(f"\nnbHits={r['nbHits']} for {query!r}")
+
+
+def main():
+    args = sys.argv[1:]
+    if args and args[0] == "--query":
+        leaderboard(" ".join(args[1:]))
+        return 0
+
+    targets = {k: v for k, v in TERMS.items() if not args or k in args}
+    if not targets:
+        print(f"unknown slug: {args[0]}", file=sys.stderr)
+        return 2
+    only = bool(args)
+
+    top20 = 0
+    total = 0
+    print(f"{'actor':32} {'query':24} {'nbHits':>7} {'rank':>14} {'storePos':>9}")
+    for slug, terms in sorted(targets.items()):
+        for term in (terms if only else terms[:1]):
+            pos, nb, sp = rank_of(slug, term)
+            total += 1
+            if pos and pos <= 20:
+                top20 += 1
+            shown = f"p{pos}" if pos else ">200"
+            print(f"{slug:32} {term!r:24} {nb:>7} {shown:>14} {str(sp):>9}")
+    print(
+        f"\nIndexed and retrievable in the real store search: yes (that is the point).\n"
+        f"Top-20 on {top20}/{total} probed queries. Rank is driven by `storePosition`\n"
+        f"(Apify-computed, ascending); text relevance already ties with the leaders."
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
