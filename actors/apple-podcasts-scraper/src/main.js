@@ -30,6 +30,20 @@ if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
   await Actor.fail('Provide at least one podcast or publisher (Apple Podcasts show/artist URL, or numeric ID) in "podcasts", or at least one query in "searchTerms".');
 }
 
+// Many podcasts x many episodes/review-pages is strictly sequential (each request up to 30s +
+// 2 retries, plus review-fingerprint retries), so a run can approach the platform timeout with
+// work still queued. A hard kill there returns nothing to the customer even though partial
+// results already exist in the dataset. Stop proactively with a safety margin and flush what's
+// collected instead — same pattern as google-news-scraper / shopify-products-scraper.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+function timeBudgetOk() {
+  if (timeoutAt == null) return true;
+  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) { timeBudgetExceeded = true; return false; }
+  return true;
+}
+
 let pushed = 0;
 let unknownDurationKept = 0;
 let keepGoing = true;
@@ -202,6 +216,7 @@ async function scrapeReviews(id) {
   const info = await getPodcastInfo(id);
   let got = 0;
   for (let page = 1; page <= 10 && got < perPodcastReviews && keepGoing; page++) {
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     let entries = [];
     try {
       const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${id}/sortBy=${sort}/page=${page}/json`;
@@ -249,6 +264,7 @@ const searchHits = [];
 const emptySearches = [];
 for (const term of searchTerms) {
   if (!keepGoing) break;
+  if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
   try {
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=podcast&country=${country}&limit=${searchLimit}`;
     const results = (await getJson(url)).results ?? [];
@@ -274,6 +290,7 @@ if (dataType === 'charts') {
   }
   for (let i = 0; i < results.length; i++) {
     if (!keepGoing) break;
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     const r = results[i];
     const chartRank = i + 1;
     let full = null;
@@ -310,6 +327,7 @@ if (dataType === 'charts') {
   }
   for (const id of ids) {
     if (!keepGoing) break;
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     if (pushedFromSearch.has(id)) continue;
     try {
       const p = (await getJson(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).results?.[0];
@@ -321,6 +339,7 @@ if (dataType === 'charts') {
   // One lookup per publisher/artist ID returns every podcast they publish (no per-show ID needed).
   for (const id of ids) {
     if (!keepGoing) break;
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     try {
       const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcast&limit=${maxPodcastsPerPublisher}`;
       const results = (await getJson(url)).results ?? [];
@@ -339,6 +358,7 @@ if (dataType === 'charts') {
 } else {
   for (const id of ids) {
     if (!keepGoing) break;
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     const before = pushed;
     const got = dataType === 'reviews' ? await scrapeReviews(id) : await scrapeEpisodes(id);
     log.info(`${id}: ${got} ${dataType} fetched, ${pushed - before} kept after filters.`);
@@ -355,14 +375,19 @@ if (unknownDurationKept > 0) {
   log.warning(`minDurationSeconds is set: ${unknownDurationKept} episode(s) had no duration in Apple's own data and were kept rather than dropped, since an unknown duration is not evidence of a short episode.`);
 }
 log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publisher' ? 'podcasts' : dataType}.`);
-if (pushed === 0) {
+const timeBudgetNote = timeBudgetExceeded
+  ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'
+  : '';
+if (pushed === 0 && timeBudgetExceeded) {
+  await Actor.setStatusMessage(`No results before the run approached its time limit.${timeBudgetNote}`);
+} else if (pushed === 0) {
   const why = emptyIds.length
     ? `Apple returned nothing for: ${emptyIds.join(', ')} in storefront "${country}"`
     : emptySearches.length
       ? `your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`
       : 'no valid podcast IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
-} else if (emptyIds.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results. Apple returned nothing for: ${emptyIds.join(', ')}.`);
+} else if (emptyIds.length || timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` Apple returned nothing for: ${emptyIds.join(', ')}.` : ''}${timeBudgetNote}`);
 }
 await Actor.exit();
