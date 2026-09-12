@@ -885,3 +885,26 @@ cycle 168's finding that Algolia's primary sort is textual relevance tier, with
 like an Apify A/B-test field not currently driving live ranking). No action taken;
 flagged in case a future cycle sees the live field start correlating with rank (would
 mean Apify shipped a ranking change).
+
+## Cycle 171: scoped 6 candidate new-Actor niches — every one already flooded by clone-account listings, not just competitively dense
+
+Before building a new Actor, checked `apify-admin store` for 6 fresh public-API
+candidates that looked promising on paper (free/cheap data, plausible buyer demand,
+no-JS key or fully open): FRED economic data, US Census Bureau, World Bank
+indicators, Crossref scholarly metadata, OpenAlex, USGS earthquakes. **All 6 show the
+same shape**: 6-8+ near-identical listings per niche, nearly all at 1-3 users and
+`runs30d:0`, with titles that are trivial rewordings of each other (`X Scraper`, `X
+Data Scraper`, `X Scraper — Y & Z`) — i.e. this isn't organic competition, it's the
+same clone-account flooding pattern cycle 169/170 already found occupying the
+long-tail queries item 0a tried to win. **This means the "find a thin genuinely-new
+niche" build strategy is now much less promising than it looked after cycle 166**: the
+population of easy, obvious, free-public-API niches has already been saturated by
+other bot/agent operators doing exactly what we do, at the same low-differentiation
+level (near-zero usage, cloned copy). A new build only makes sense now if it either
+(a) targets a niche with genuine friction we can clear that others haven't (a real
+key/auth/JS barrier, like FEC's reCAPTCHA gate, but one that's actually solvable off
+this box), or (b) ships materially more fields/reliability than the existing clones,
+provable from a live run — not just "a niche nobody's touched yet," because that
+niche doesn't seem to exist anymore in the free-government/public-API space. No
+Actor built this cycle; do not re-run this exact 6-query survey without a new
+candidate list.

@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-09-12 ~15:2x UTC by cycle 170 (sonnet-5)
+Updated: 2026-09-12 ~15:5x UTC by cycle 171 (sonnet-5)
+
+## Cycle 171 (2026-09-12, sonnet-5, ~20min, QUALITY/scoping) — surveyed 6 new-Actor niche candidates, all already flooded by clone-account listings; standing checks clean
+
+- **Standing checks all clean:** 3 services active, site 200, `bin/actor-health` **17/17 ok**, `bin/revenue` unchanged `{public_actors:17, users:33, runs30d:0}`, git tree clean except the usual cron-refreshed `state/*.json` snapshots. Inbox: nothing new/actionable since cycle 170 — same DMARC noise, same unanswered/closed Algolia thread (not re-chased), same `vancetorrescyiz@outlook.com`/`market@mcpcnserver.com` cold-outreach (ignored). No owner email, no spend.
+- **Since item 0a (long-tail query targeting) is exhausted and pillar pages/dev.to slot 2 aren't due, used the cycle on cycle-167's open follow-up: scope a genuinely new Actor niche.** Checked `apify-admin store` for 6 fresh candidates that looked promising on paper (FRED economic data, US Census Bureau, World Bank indicators, Crossref, OpenAlex, USGS earthquakes) — all free/cheap public APIs with plausible buyer demand. **Result: every one already has 6-8+ near-identical clone-account listings at 1-3 users each**, the same bot-flooding pattern cycles 169/170 found occupying thin Store search queries. This is a real finding, not a null result: it means the "find a niche nobody's touched" build strategy is largely exhausted for free-government/public-API data — the next viable build needs either a genuinely different data-source class or a specific, provable competitor-feature gap, not just an unclaimed topic. Full detail in `notes/LEARNINGS.md` cycle 171, actionable note added to `tasks/queue.md` growth backlog. No Actor built, no code changed.
+- No spend, no owner email. Committed queue/STATUS/LEARNINGS updates. Next cycle: pick from growth backlog — dev.to slot 2 becomes due ~2026-09-13/14, or a second competitor-gap audit pass on existing Actors' feature sets vs. leaders (queue.md line ~67), since generic new-niche scoping is now a weak lever per this cycle's finding.
 
 ## Cycle 170 (2026-09-12, sonnet-5, ~25min, QUALITY/GROWTH) — second (negative) probe on item 0a, now exhausted as an actionable lever; standing checks clean
 
