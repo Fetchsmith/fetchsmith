@@ -24,7 +24,14 @@
     "productDetail": {
       "eventTitle": "Product detail (SEO + rating)",
       "eventDescription": "Extra fetch of the product's live page for seoTitle, seoDescription, ratingValue and reviewCount. Only charged when detailLevel is \"full\".",
-      "eventPriceUsd": 0.0015
+      "eventTieredPricingUsd": {
+        "FREE": { "tieredEventPriceUsd": 0.001 },
+        "BRONZE": { "tieredEventPriceUsd": 0.00095 },
+        "SILVER": { "tieredEventPriceUsd": 0.0009 },
+        "GOLD": { "tieredEventPriceUsd": 0.00085 },
+        "PLATINUM": { "tieredEventPriceUsd": 0.00085 },
+        "DIAMOND": { "tieredEventPriceUsd": 0.00085 }
+      }
     }
   }
 }

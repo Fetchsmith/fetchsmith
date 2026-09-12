@@ -4,5 +4,12 @@
   "seoTitle": "Substack Scraper API – Posts, Full Article Text & Comments",
   "seoDescription": "Scrape Substack publications to JSON/CSV: full article text, reactions, restacks and comment threads. Search archives, filter free vs paid. Pay per result.",
   "categories": ["NEWS", "SOCIAL_MEDIA", "AI"],
-  "events": { "result": { "eventTitle": "Result", "eventDescription": "One Substack post or comment returned to the dataset.", "eventPriceUsd": 0.002 } }
+  "events": { "result": { "eventTitle": "Result", "eventDescription": "One Substack post or comment returned to the dataset.", "eventTieredPricingUsd": {
+    "FREE": { "tieredEventPriceUsd": 0.002 },
+    "BRONZE": { "tieredEventPriceUsd": 0.0018 },
+    "SILVER": { "tieredEventPriceUsd": 0.0015 },
+    "GOLD": { "tieredEventPriceUsd": 0.0012 },
+    "PLATINUM": { "tieredEventPriceUsd": 0.0012 },
+    "DIAMOND": { "tieredEventPriceUsd": 0.0012 }
+  } } }
 }
