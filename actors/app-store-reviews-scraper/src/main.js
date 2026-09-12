@@ -3,9 +3,22 @@ import { gotScraping } from 'got-scraping';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
-const apps = (input.apps ?? []).map(String);
+// The schema's "apps" field carries a default (Notion) so the Store's bare-{} auto-test has
+// something real to run. Verified live on the platform 2026-09-11 that this default gets silently
+// merged back in even when a caller sends {"appNames":[...]} and omits "apps" entirely — same class
+// of trap as cycle 123/127/136/138's default-field-injection bugs. A caller who only wants
+// name-resolved apps would otherwise get an uninvited, unpaid-for Notion review batch mixed in. Since
+// we can't tell "user genuinely wants exactly the default app" from "field was silently defaulted",
+// treat an unmodified default as unset whenever appNames is also present.
+const DEFAULT_APPS = ['https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281'];
+let apps = (input.apps ?? []).map(String);
+const appNames = (input.appNames ?? []).map(String).filter(Boolean);
+if (appNames.length && apps.length === DEFAULT_APPS.length && apps.every((a, i) => a === DEFAULT_APPS[i])) {
+  log.info('appNames given without an explicit "apps" list: ignoring the schema\'s default Notion app rather than mixing it in.');
+  apps = [];
+}
 const countries = (input.countries?.length ? input.countries : ['us']).map((c) => c.toLowerCase().trim());
-const sort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
+const requestedSort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const perApp = Math.min(Number(input.maxReviewsPerApp ?? 200), 500);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeInfo = input.includeAppInfo !== false;
@@ -13,12 +26,22 @@ const countryFallback = input.countryFallback === true;
 const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
-if (!apps.length) await Actor.fail('Provide at least one app URL or ID.');
+let reviewsAfterDate = null;
+if (input.reviewsAfter) {
+  reviewsAfterDate = new Date(input.reviewsAfter);
+  if (Number.isNaN(reviewsAfterDate.getTime())) await Actor.fail(`"reviewsAfter" is not a valid date: "${input.reviewsAfter}". Use an ISO date like 2026-01-01.`);
+}
+// Chronological early-stop (below) only works on the date-sorted feed. mostHelpful has no date
+// ordering, so a cutoff there is still applied as a plain filter but can't cut pagination short.
+if (reviewsAfterDate && requestedSort === 'mostHelpful') log.warning('"reviewsAfter" forces sort to "mostRecent" (Apple\'s "mostHelpful" feed is not date-ordered, so a historical cutoff can\'t be applied to it efficiently).');
+const sort = reviewsAfterDate ? 'mostRecent' : requestedSort;
+if (!apps.length && !appNames.length) await Actor.fail('Provide at least one app URL/ID in "apps" or a name in "appNames".');
 
 function passesFilters(item) {
   if (minRating != null && item.rating < minRating) return false;
   if (maxRating != null && item.rating > maxRating) return false;
   if (keyword && !`${item.title || ''} ${item.content || ''}`.toLowerCase().includes(keyword)) return false;
+  if (reviewsAfterDate && item.updatedAt && new Date(item.updatedAt) < reviewsAfterDate) return false;
   return true;
 }
 
@@ -66,6 +89,36 @@ async function fetchEntries(url, clientClass = 'default') {
 }
 const lbl = (o) => (o && typeof o === 'object' && 'label' in o ? o.label : o ?? null);
 const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] || null);
+
+// Apple's search API is a real trap for "resolve this name" features: it almost NEVER returns zero
+// results, even for pure gibberish — verified live 2026-09-11 with random keyboard-mash strings and
+// emoji, every one came back with 1-3 completely unrelated apps (e.g. "xqzzptmwvbnjklasdfgh..." ->
+// an Arabic math-quiz game). A naive "take the first hit" implementation would silently resolve a
+// typo'd app name to a random unrelated app instead of failing loudly. So a match is only accepted
+// if at least one significant word (>=3 chars) of the query appears in the candidate's name, bundle
+// id or developer name; otherwise this is treated as NO MATCH FOUND, not a guess.
+const searchCountry = countries[0] || 'us';
+async function resolveAppName(name) {
+  let data;
+  try {
+    data = await getJson(`https://itunes.apple.com/search?entity=software&country=${searchCountry}&limit=5&term=${encodeURIComponent(name)}`);
+  } catch (e) { log.warning(`appNames: search for "${name}" failed: ${e.message}`); return null; }
+  const results = data.results || [];
+  const qTokens = name.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((t) => t.length >= 3);
+  const norm = (s) => String(s || '').toLowerCase();
+  const isRelevant = (r) => {
+    const hay = `${norm(r.trackName)} ${norm(r.bundleId)} ${norm(r.artistName)}`;
+    return qTokens.length ? qTokens.some((t) => hay.includes(t)) : hay.includes(norm(name));
+  };
+  const match = results.find(isRelevant);
+  if (!match) {
+    const top = results[0]?.trackName ? ` (Apple's closest hit was the unrelated "${results[0].trackName}")` : '';
+    log.warning(`appNames: NO real match found for "${name}"${top} — searched the "${searchCountry}" storefront. Apple's search API returns some app for almost any input, so an unrelated top hit is treated as no match rather than guessed. Use a numeric app id or App Store URL instead.`);
+    return null;
+  }
+  log.info(`appNames: resolved "${name}" -> "${match.trackName}" (id ${match.trackId}) in the "${searchCountry}" storefront.`);
+  return String(match.trackId);
+}
 
 // Apple's RSS feed is populated per storefront: an app can have plenty of reviews in one
 // country and an empty feed in another. Probe a few popular storefronts so an empty result
@@ -118,7 +171,11 @@ async function fetchPage(url, primary = 'default') {
 // client-class retry can all re-serve the same review.
 async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, extra = {}) {
   let got = 0;
-  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < perApp && keepGoing; page++) {
+  let hitCutoff = false;
+  // Only "mostRecent" is date-ordered (verified live 2026-09-11: strictly descending across pages,
+  // no reset at page boundaries) — so pagination can only be safely cut short under that sort.
+  const canEarlyStop = reviewsAfterDate && sortBy === 'mostRecent';
+  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < perApp && keepGoing && !hitCutoff; page++) {
     const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
     const { entries, clientClass } = await fetchPage(url);
     if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
@@ -134,6 +191,11 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
         voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, sortUsed: sortBy,
         clientClass, ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
       };
+      if (canEarlyStop && item.updatedAt && new Date(item.updatedAt) < reviewsAfterDate) {
+        hitCutoff = true;
+        log.info(`${appId}/${country}: reached a review older than "reviewsAfter" (${item.updatedAt}) — stopping pagination early instead of scanning the rest of the (chronologically-sorted) feed.`);
+        break;
+      }
       got += 1; tally.got += 1;
       if (!passesFilters(item)) continue;
       keepGoing = await pushResult(item);
@@ -159,6 +221,12 @@ async function scrapeAppCountry(appId, country, extra = {}) {
   }
   return tally.got;
 }
+
+if (appNames.length) {
+  const resolved = (await Promise.all(appNames.map(resolveAppName))).filter(Boolean);
+  apps.push(...resolved);
+}
+if (!apps.length) await Actor.fail('None of the given "apps"/"appNames" resolved to a usable app id — see the warnings above.');
 
 const emptyPairs = [];
 const filteredOutPairs = [];

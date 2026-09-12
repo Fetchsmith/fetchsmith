@@ -12,6 +12,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | Field | Type | Description |
 |---|---|---|
 | `apps` | array | App Store URLs or numeric app IDs |
+| `appNames` | array | Free-text app names (e.g. `"Notion"`) — auto-resolved to an app id via Apple's own search API. See caveat below. |
 | `countries` | array | Storefront codes, e.g. `us`, `gb`, `de`, `jp`, `br` (default `us`) |
 | `countryFallback` | boolean | If a storefront returns nothing, pull that app's reviews from one that works (default `false`) |
 | `sort` | string | `mostRecent` (default) or `mostHelpful` |
@@ -20,8 +21,11 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `maxResults` | integer | Total cap |
 | `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
 | `keyword` | string | Only keep reviews whose title or content contains this word/phrase (case-insensitive) |
+| `reviewsAfter` | string (ISO date) | Only keep reviews posted on or after this date. Forces `sort` to `mostRecent` and stops paging as soon as older reviews are reached, so a narrow window doesn't scan (and isn't charged for) pages you don't want. |
 
 Filtering happens before you're charged — you never pay for rows that got filtered out.
+
+**`appNames` caveat, verified live:** Apple's search API almost never returns zero results — even keyboard-mash gibberish gets back an unrelated app (measured: nonsense strings matched an Arabic quiz game, an emoji trivia app, etc., every time). A naive "take the first hit" would silently resolve a typo'd name to the wrong app. This Actor only accepts a match that shares a real word with the requested name (in the app's name, developer, or bundle id); otherwise it skips the name with a "no match found" warning instead of guessing. Use a numeric app id or Store URL when you need certainty. Also note: if you pass `appNames` and leave `apps` untouched, the Actor deliberately ignores `apps`'s own example default rather than mixing an uninvited app into your results.
 
 ## Output (one item per review)
 ```json

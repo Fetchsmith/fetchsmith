@@ -6,12 +6,18 @@
     "apps": {
       "title": "Apps",
       "type": "array",
-      "description": "App Store URLs or numeric app IDs, e.g. https://apps.apple.com/us/app/notion/id1232780281 or 1232780281.",
+      "description": "App Store URLs or numeric app IDs, e.g. https://apps.apple.com/us/app/notion/id1232780281 or 1232780281. Leave empty if you use \"appNames\" instead.",
       "editor": "stringList",
       "prefill": [
         "https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"
       ],
       "default": ["https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"]
+    },
+    "appNames": {
+      "title": "App names (auto-resolve)",
+      "type": "array",
+      "description": "Free-text app names, e.g. \"Notion\". Each is resolved to an app id via Apple's search API and added to \"apps\". Apple's search almost never returns zero results (even gibberish gets an unrelated hit), so a name is only accepted if it shares a real word with the matched app's name/developer/bundle id — otherwise it's skipped with a \"no match found\" warning instead of silently using the wrong app. Prefer numeric app IDs or Store URLs when you need certainty.",
+      "editor": "stringList"
     },
     "countries": {
       "title": "Countries",
@@ -83,9 +89,12 @@
       "type": "string",
       "description": "Only keep reviews whose title or content contains this word/phrase (case-insensitive).",
       "editor": "textfield"
+    },
+    "reviewsAfter": {
+      "title": "Reviews after (ISO date)",
+      "type": "string",
+      "description": "Only keep reviews posted on or after this date (e.g. 2026-01-01). Forces \"sort\" to mostRecent (Apple's date-ordered feed) and stops paging as soon as older reviews are reached, so a narrow window on a high-volume app doesn't scan/charge through hundreds of pages first.",
+      "editor": "textfield"
     }
-  },
-  "required": [
-    "apps"
-  ]
+  }
 }

@@ -41,7 +41,7 @@
           "null"
         ],
         "title": "Content",
-        "example": "It\u2019s probably because I\u2019m new but it is really confusing to work with."
+        "example": "It's probably because I'm new but it is really confusing to work with."
       },
       "rating": {
         "type": [
@@ -59,64 +59,6 @@
         "title": "Version",
         "example": "1.7.333"
       },
-      "author": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Author",
-        "example": "Braders815"
-      },
-      "authorUrl": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "AuthorUrl",
-        "example": "https://itunes.apple.com/us/reviews/id1727316115"
-      },
-      "updatedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "UpdatedAt",
-        "example": "2026-09-07T13:49:20-07:00"
-      },
-      "voteSum": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "VoteSum",
-        "example": 0
-      },
-      "voteCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "VoteCount",
-        "example": 0
-      },
-      "sortUsed": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "SortUsed",
-        "description": "Which Apple sort order this row actually came from (mostRecent or mostHelpful). Differs from your 'sort' input only when Apple's feed for that sort was empty and the Actor fell back to the other one.",
-        "example": "mostRecent"
-      },
-      "clientClass": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ClientClass",
-        "description": "Which of Apple's two review indexes served this row: 'default' (what curl or a desktop browser sees) or 'ios' (what an iPhone/iPad client sees). Apple paginates the two independently and they often barely overlap, so this Actor sweeps both and unions them — up to 5x more reviews per app than a single-client scrape.",
-        "example": "default"
-      },
       "appName": {
         "type": [
           "string",
@@ -125,29 +67,13 @@
         "title": "AppName",
         "example": "Notion: Notes, Tasks, AI"
       },
-      "developer": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Developer",
-        "example": "Notion Labs, Incorporated"
-      },
-      "bundleId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "BundleId",
-        "example": "notion.id"
-      },
       "averageRating": {
         "type": [
           "number",
           "null"
         ],
         "title": "AverageRating",
-        "example": 4.77662
+        "example": 4.78
       },
       "ratingCount": {
         "type": [
@@ -156,38 +82,6 @@
         ],
         "title": "RatingCount",
         "example": 90020
-      },
-      "currentVersion": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "CurrentVersion",
-        "example": "1.7.333"
-      },
-      "primaryGenre": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "PrimaryGenre",
-        "example": "Productivity"
-      },
-      "appUrl": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "AppUrl",
-        "example": "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281?uo=4"
-      },
-      "scrapedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ScrapedAt",
-        "example": "2026-09-09T02:32:49.074Z"
       }
     }
   },
@@ -203,9 +97,9 @@
           "content",
           "rating",
           "version",
-          "author",
-          "authorUrl",
-          "updatedAt"
+          "appName",
+          "averageRating",
+          "ratingCount"
         ]
       },
       "display": {
@@ -239,17 +133,17 @@
             "label": "Version",
             "format": "text"
           },
-          "author": {
-            "label": "Author",
+          "appName": {
+            "label": "AppName",
             "format": "text"
           },
-          "authorUrl": {
-            "label": "AuthorUrl",
-            "format": "link"
+          "averageRating": {
+            "label": "AverageRating",
+            "format": "number"
           },
-          "updatedAt": {
-            "label": "UpdatedAt",
-            "format": "text"
+          "ratingCount": {
+            "label": "RatingCount",
+            "format": "number"
           }
         }
       }

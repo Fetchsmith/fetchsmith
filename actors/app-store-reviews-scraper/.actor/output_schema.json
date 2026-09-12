@@ -3,9 +3,9 @@
   "title": "Output",
   "properties": {
     "dataset": {
+      "type": "string",
       "title": "Results",
-      "template": "{{links.apiDefaultDatasetUrl}}/items",
-      "type": "string"
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
     }
   }
 }
