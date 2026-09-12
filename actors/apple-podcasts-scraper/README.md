@@ -30,6 +30,9 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | `maxResults` | integer | Overall cap across all shows — also caps what you pay |
 | `minRating` / `maxRating` | integer | Reviews only: keep reviews rated within 1-5 |
 | `keyword` | string | Reviews only: keep reviews whose title or text contains this word/phrase |
+| `minReleaseDate` / `maxReleaseDate` | string | Episodes only: keep episodes released in this window (`YYYY-MM-DD` or full ISO). This narrows *within* the `maxEpisodesPerPodcast` most-recent episodes Apple returns, not further back into a show's archive |
+| `minDurationSeconds` | integer | Episodes only: drop episodes shorter than this (e.g. exclude trailers/ads). **Apple omits duration for ~half of episodes on some shows regardless of actual length** (measured on a real 20-episode sample) — episodes with unknown duration are always kept, never assumed short |
+| `explicitFilter` | string | Episodes only: `all` (default), `clean` (exclude Explicit-flagged), or `explicitOnly` |
 
 Filtering happens **before** you're charged — you never pay for rows a filter removed.
 

@@ -115,6 +115,33 @@
       "type": "string",
       "description": "Reviews only: keep reviews whose title or text contains this word/phrase (case-insensitive).",
       "editor": "textfield"
+    },
+    "minReleaseDate": {
+      "title": "Episodes released on/after",
+      "type": "string",
+      "description": "Episodes only: keep episodes released on or after this date (YYYY-MM-DD or full ISO). Note: Apple's episode lookup only returns the most recent 'Max episodes per podcast' episodes, so this narrows within that recent window and cannot reach further back into a show's archive than Apple already returned.",
+      "editor": "textfield"
+    },
+    "maxReleaseDate": {
+      "title": "Episodes released on/before",
+      "type": "string",
+      "description": "Episodes only: keep episodes released on or before this date (YYYY-MM-DD or full ISO). Same recent-window caveat as 'Episodes released on/after'.",
+      "editor": "textfield"
+    },
+    "minDurationSeconds": {
+      "title": "Minimum episode duration (seconds)",
+      "type": "integer",
+      "description": "Episodes only: drop episodes shorter than this — useful for excluding trailers, ads or short teasers. Leave empty to keep all lengths.",
+      "minimum": 0
+    },
+    "explicitFilter": {
+      "title": "Explicit content filter",
+      "type": "string",
+      "description": "Episodes only: 'all' keeps everything (default), 'clean' excludes episodes flagged Explicit, 'explicitOnly' keeps only episodes flagged Explicit.",
+      "default": "all",
+      "enum": ["all", "clean", "explicitOnly"],
+      "enumTitles": ["All episodes", "Clean only", "Explicit only"],
+      "editor": "select"
     }
   }
 }

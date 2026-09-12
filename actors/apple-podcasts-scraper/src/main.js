@@ -18,12 +18,20 @@ const includePodcastInfo = input.includePodcastInfo !== false;
 const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
+const minReleaseDate = input.minReleaseDate ? new Date(input.minReleaseDate) : null;
+const maxReleaseDate = input.maxReleaseDate ? new Date(input.maxReleaseDate) : null;
+if ((minReleaseDate && Number.isNaN(minReleaseDate.getTime())) || (maxReleaseDate && Number.isNaN(maxReleaseDate.getTime()))) {
+  await Actor.fail('"minReleaseDate"/"maxReleaseDate" must be valid dates (YYYY-MM-DD or full ISO).');
+}
+const minDurationSeconds = input.minDurationSeconds != null ? Number(input.minDurationSeconds) : null;
+const explicitFilter = ['all', 'clean', 'explicitOnly'].includes(input.explicitFilter) ? input.explicitFilter : 'all';
 
 if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
   await Actor.fail('Provide at least one podcast or publisher (Apple Podcasts show/artist URL, or numeric ID) in "podcasts", or at least one query in "searchTerms".');
 }
 
 let pushed = 0;
+let unknownDurationKept = 0;
 let keepGoing = true;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
@@ -125,6 +133,28 @@ function reviewPassesFilters(item) {
   return true;
 }
 
+// Apple's episode lookup only ever returns the most recent `maxEpisodesPerPodcast` (hard cap
+// 200) episodes — these filters narrow *within* that recent window, they cannot reach further
+// back into a show's archive than Apple already handed us. Documented in the README/schema.
+function episodePassesFilters(e) {
+  if (minReleaseDate || maxReleaseDate) {
+    const d = e.releaseDate ? new Date(e.releaseDate) : null;
+    if (!d || Number.isNaN(d.getTime())) return false;
+    if (minReleaseDate && d < minReleaseDate) return false;
+    if (maxReleaseDate && d > maxReleaseDate) return false;
+  }
+  // Apple's own lookup API omits trackTimeMillis for a large, seemingly random share of
+  // episodes regardless of actual length (measured ~50% null on a real 20-episode sample,
+  // full-length flagship episodes included, not just short ones) — so an unknown duration is
+  // NOT treated as "short" here. Filtering nulls out would silently drop about half of a show's
+  // real full-length episodes under the "exclude trailers" feature. Unknown durations are kept
+  // and reported once via a status message instead.
+  if (minDurationSeconds != null && e.durationMs != null && e.durationMs < minDurationSeconds * 1000) return false;
+  if (explicitFilter === 'clean' && e.explicit) return false;
+  if (explicitFilter === 'explicitOnly' && !e.explicit) return false;
+  return true;
+}
+
 // Podcast-level metadata attached to every episode/review row when includePodcastInfo is on.
 const infoCache = new Map();
 async function getPodcastInfo(id) {
@@ -160,7 +190,10 @@ async function scrapeEpisodes(id) {
   for (const e of eps) {
     if (!keepGoing || got >= perPodcastEpisodes) break;
     got += 1;
-    keepGoing = await pushResult({ ...episodeRow(e, info), scrapedAt: new Date().toISOString() });
+    const row = episodeRow(e, info);
+    if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
+    if (!episodePassesFilters(row)) continue;
+    keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
   }
   return got;
 }
@@ -318,6 +351,9 @@ if (dataType === 'charts') {
   }
 }
 
+if (unknownDurationKept > 0) {
+  log.warning(`minDurationSeconds is set: ${unknownDurationKept} episode(s) had no duration in Apple's own data and were kept rather than dropped, since an unknown duration is not evidence of a short episode.`);
+}
 log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publisher' ? 'podcasts' : dataType}.`);
 if (pushed === 0) {
   const why = emptyIds.length
