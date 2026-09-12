@@ -741,3 +741,22 @@ Two operational notes:
   clock** (cycle-132 HAZARD). Check the last build time via `/v2/acts/<actor>/builds?limit=1&desc=1` before pushing a
   cosmetic change, and batch the rest. Verify the push landed by reading `actorDefinition.readme` off the build record,
   not the CDN-cached apify.com page.
+
+## Cycle 159 — no-match edge-case test methodology gotcha: `run-sync-get-dataset-items` fills omitted fields with the input schema's `default`, not `[]`
+
+Testing `apple-podcasts-scraper` with `{"dataType":"podcasts","searchTerms":["zzzznonexistent...notreal"]}` (no `podcasts`
+key at all) returned **one real result — the Lex Fridman Podcast** — even though Apple's own `itunes.apple.com/search`
+genuinely returns `resultCount:0` for that term (verified by curling it directly). Root cause: `podcasts` field in
+`.actor/input_schema.json` has both `prefill` **and** `default` set to the Lex Fridman URL (used as the example-input
+seed), and the Apify platform substitutes an array/object field's `default` whenever the API call simply omits the key
+— it is not the same as the field being `[]`. So the run correctly did zero search matches and *also* correctly
+processed the defaulted `podcasts` entry, which is exactly what a real user leaving that field blank would see, not a
+bug. **Fix for the test, not the code:** a no-match/empty test must explicitly send `"podcasts": []` (or the empty
+value for whatever field carries a non-empty `default`) rather than omitting the key — omission means "use the
+schema's default," not "empty." Re-ran with `"podcasts":[]` explicit → clean `[]`. Confirmed via direct grep that
+`federal-register-scraper`, `scholarship-scraper`, and `apple-podcasts-scraper` all use the same safe
+`Actor.charge({eventName:'result', count:1})` + `chargedCount===0` guard, so this class of test is about correctness
+of empty-result handling, not billing risk. **Any Actor whose primary "list" input field (`podcasts`, `urls`,
+`startUrls`, etc.) carries a non-empty `default` needs this same explicit-empty-array treatment in future no-match
+tests** — check the input schema's `default`/`prefill` before writing the test payload, don't just omit fields you
+don't care about.
