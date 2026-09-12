@@ -30,10 +30,16 @@ elif cmd == "publish":
     existing = a.get("pricingInfos") or []
     existing_events = existing[-1].get("pricingPerEvent", {}).get("actorChargeEvents") if existing else None
     if "events" in meta and meta["events"] != existing_events:
-        # Sending a fresh pricingInfos entry when the price hasn't changed 400s
-        # ("createdAt is required") because the API expects the existing record's
-        # metadata preserved, not a bare new one - only send it on an actual price change.
-        payload["pricingInfos"] = [{"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": meta["events"]}}]
+        # The API requires the pricingInfos array to start with the existing history
+        # verbatim, plus exactly one new entry appended ("incorrect-pricing-modifier-prefix"
+        # otherwise) - sending just a bare new entry also 400s separately ("createdAt is
+        # required"). Verified live cycle 179: a price cut applies immediately (startedAt=now);
+        # untested whether a price increase gets deferred/requires notice.
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        new_entry = {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": meta["events"]},
+                     "createdAt": now, "startedAt": now, "apifyMarginPercentage": existing[-1]["apifyMarginPercentage"] if existing else 0.2}
+        payload["pricingInfos"] = existing + [new_entry]
     payload["isPublic"] = True
     r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json=payload)
     print(r.status_code, json.dumps(r.json())[:600])

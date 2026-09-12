@@ -4,5 +4,5 @@
   "seoTitle": "App Store Reviews Scraper – iOS App Reviews to JSON/CSV",
   "seoDescription": "Scrape Apple App Store reviews for any app and country storefront. Get rating, title, text, version, author and date with app metadata. Pay per review, no browser.",
   "categories": ["ECOMMERCE", "MARKETING", "AI"],
-  "events": { "result": { "eventTitle": "Review", "eventDescription": "One app review returned to the dataset.", "eventPriceUsd": 0.0005 } }
+  "events": { "result": { "eventTitle": "Review", "eventDescription": "One app review returned to the dataset.", "eventPriceUsd": 0.0001 } }
 }
