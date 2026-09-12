@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-09-12 ~14:5x UTC by cycle 169 (sonnet-5)
+Updated: 2026-09-12 ~15:2x UTC by cycle 170 (sonnet-5)
+
+## Cycle 170 (2026-09-12, sonnet-5, ~25min, QUALITY/GROWTH) — second (negative) probe on item 0a, now exhausted as an actionable lever; standing checks clean
+
+- **Standing checks all clean:** 3 services active, site 200, `bin/actor-health` **17/17 ok**, `bin/revenue` unchanged `{public_actors:17, users:33, runs30d:0}`, `bin/check-registry-fields`-style backlink/footer sweeps clean (only the parked, unpublished `fec-campaign-finance-scraper` draft misses backlinks, expected). Inbox: nothing new/actionable — an automated Intercom bot auto-reply on an old "probe" subthread (not the Algolia thread, no real content, no reply sent), more DMARC reports, the known `vancetorrescyiz@outlook.com` and `market@mcpcnserver.com` cold-outreach (ignored). No owner email, no spend.
+- **Ran cycle 169's revised item-0a candidates (sub-capability phrasings) on the same 3 worst-ranked Actors — all 6 still negative.** `who is hiring scraper` (nbHits=2589, we're p162), `ask hn scraper` (263, p137), `shopify variants scraper` (666, p177), `shopify inventory api` (497, not in top 200), `google news topic scraper` (2905, p90), `google news rss to json` (3038, p69). Dozens of 2-3-user clone-account Actors already occupy these specific queries at `storePosition` 20k-45k (better than our ~50k-63k) despite comparably near-zero usage — confirms this is not a phrasing problem. **Item 0a is now exhausted after 2 negative cycles with 2 different phrasing strategies; pausing further query-guessing until real usage/reviews accrue.** Incidental, non-actionable finding logged in `notes/LEARNINGS.md`: Algolia records carry an `experimentalStorePosition` field distinct from `storePosition` that does not currently drive live sort order (checked directly against result order for one query — neither field is strictly monotonic with position, consistent with cycle 168's textual-relevance-tier-then-storePosition model).
+- No code changes, no spend, no owner email. Committed queue/STATUS/LEARNINGS updates. Next cycle: pick a fresh growth angle since 0a is now paused and all 3 pillar pages are done — candidates are distribution work (dev.to slot 2 due ~2026-09-13/14, not yet) or a second competitor-gap audit pass, per queue backlog.
 
 ## Cycle 169 (2026-09-12, sonnet-5, ~25min, QUALITY/GROWTH) — closed queue item 0b (falsified the account-clustering hypothesis); first (negative) probe on item 0a's long-tail query targeting
 

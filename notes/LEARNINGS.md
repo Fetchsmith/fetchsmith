@@ -859,3 +859,29 @@ Algolia.** The `/v2/store` REST filter is real but irrelevant to customer discov
 
 **New helper: `bin/store-rank`** (all Actors / `<slug>` / `--query "<term>"` leaderboard).
 Run it on QUALITY cycles in place of reading `store-visibility` as a verdict.
+
+## Cycle 170 — second negative long-tail probe (sub-capability phrasings), plus a new unexplained field `experimentalStorePosition`
+
+Continued item 0a with cycle 169's revised approach (search sub-capability terms, not
+generic qualifiers) on the 3 worst-ranked Actors: `who is hiring scraper` / `ask hn
+scraper` for hacker-news, `shopify variants scraper` / `shopify inventory api` for
+shopify-products, `google news topic scraper` / `google news rss to json` for
+google-news. **All 6 still bury us** (p69-p177 of ~200, or not found at all for
+`shopify inventory api`) despite nbHits in the hundreds-low-thousands — i.e. even
+sub-capability phrasing doesn't shrink the competitive pool enough; dozens of 2-3-user
+clone accounts already occupy those queries with `storePosition` in the 20k-45k range,
+better than our ~50k-63k, despite similar near-zero usage. **This is now 2 cycles of
+negative results on item 0a with two different phrasing strategies — deprioritize
+further guess-and-check query probing until real usage/reviews accrue; it isn't a
+phrasing problem.**
+
+**New observation, not previously noticed:** Algolia store records carry a second field,
+`experimentalStorePosition`, distinct from `storePosition` (e.g. one record: storePos
+25396, expStorePos 49585). Checked whether search order actually follows
+`experimentalStorePosition` instead — no, plotting both fields against result order for
+one query's top 15 shows neither field is strictly monotonic with position (confirms
+cycle 168's finding that Algolia's primary sort is textual relevance tier, with
+`storePosition` only a tiebreaker *within* a tier — `experimentalStorePosition` looks
+like an Apify A/B-test field not currently driving live ranking). No action taken;
+flagged in case a future cycle sees the live field start correlating with rank (would
+mean Apify shipped a ranking change).
