@@ -4,6 +4,18 @@ import * as cheerio from 'cheerio';
 import { makeArticleFetcher } from './article.js';
 
 await Actor.init();
+// Heavy inputs (many queries x maxItemsPerQuery, decodeUrls/fetchArticleBody on) process articles
+// strictly sequentially, so a run can approach the platform timeout with real work still queued.
+// Getting hard-killed there returns nothing to the customer even though partial results already
+// exist in the dataset. Stop proactively with a safety margin and flush what's collected instead.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+function timeBudgetOk() {
+  if (timeoutAt == null) return true;
+  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) { timeBudgetExceeded = true; return false; }
+  return true;
+}
 const input = (await Actor.getInput()) ?? {};
 const queries = (input.queries ?? []).map((q) => String(q).trim()).filter(Boolean);
 const rssUrls = (input.rssUrls ?? []).map((u) => String(u).trim()).filter(Boolean);
@@ -111,6 +123,7 @@ let bodiesOk = 0; let bodiesFailed = 0; // only counted when fetchArticleBody is
 let keepGoing = true;
 for (const feed of feeds) {
   if (!keepGoing) break;
+  if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
   log.info(`Fetching feed: ${feed.url}`);
   let items = [];
   try { items = parseRss((await http(feed.url)).body).slice(0, perQuery); }
@@ -120,6 +133,7 @@ for (const feed of feeds) {
   const pushedBefore = pushed;
   let allDuped = true;
   for (const it of items) {
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     if (seen.has(it.guid)) continue; seen.add(it.guid);
     allDuped = false;
     const url = decode ? (await decodeUrl(it.googleNewsUrl)) : null;
@@ -139,15 +153,20 @@ const bodyNote = fetchBody ? ` Article bodies: ${bodiesOk} extracted, ${bodiesFa
 const decodeNote = decodeRateLimited
   ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s)${decodeDisabled ? ', so decoding was switched off for the rest of the run' : ''} (url is null; googleNewsUrl still works) — re-run with a proxy or fewer articles per run.`
   : decodeFailed ? ` ${decodeFailed} article URL(s) could not be decoded (url is null; googleNewsUrl still works).` : '';
-if (pushed === 0 && feeds.length) {
+const timeBudgetNote = timeBudgetExceeded
+  ? ` Stopped before finishing all queries because the run was approaching its time limit — the ${pushed} article(s) already found are complete and charged normally; re-run with fewer queries, a lower "Max articles per query", or "Extract full article text" off to cover the rest.`
+  : '';
+if (pushed === 0 && feeds.length && !timeBudgetExceeded) {
   const why = erroredFeeds.length
     ? `the RSS request failed for: ${erroredFeeds.join(', ')} (see log for the error)`
     : dedupedFeeds.length && !emptyFeeds.length
       ? `every item found was a duplicate already returned by another query/RSS URL: ${dedupedFeeds.join(', ')}`
       : `Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`;
   await Actor.setStatusMessage(`No articles returned — ${why}.`);
-} else if (emptyFeeds.length || erroredFeeds.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}`);
+} else if (pushed === 0 && timeBudgetExceeded) {
+  await Actor.setStatusMessage(`No articles returned before the run approached its time limit.${timeBudgetNote}`);
+} else if (emptyFeeds.length || erroredFeeds.length || timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}${timeBudgetNote}`);
 } else if ((fetchBody && bodiesFailed) || decodeNote) {
   await Actor.setStatusMessage(`Pushed ${pushed} items.${bodyNote}${decodeNote}`);
 }

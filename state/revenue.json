@@ -1,131 +1,340 @@
 {
- "ts": 1789221617,
+ "ts": 1789229345,
  "date": "2026-09-12",
  "apify": {
   "google-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 189
+   "runs30d": 4,
+   "runs": 199,
+   "ext_ok30d": 3,
+   "ext_bad30d": 1,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 3,
+    "TIMED-OUT": 1,
+    "TOTAL": 4
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "app-store-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 192
+   "runs30d": 4,
+   "runs": 202,
+   "ext_ok30d": 4,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 4,
+    "TIMED-OUT": 0,
+    "TOTAL": 4
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "shopify-products-scraper": {
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 0,
-   "runs": 191
+   "runs30d": 12,
+   "runs": 201,
+   "ext_ok30d": 12,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 12,
+    "TIMED-OUT": 0,
+    "TOTAL": 12
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "hacker-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 180
+   "runs30d": 4,
+   "runs": 190,
+   "ext_ok30d": 4,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 4,
+    "TIMED-OUT": 0,
+    "TOTAL": 4
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "google-play-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 181
+   "runs30d": 4,
+   "runs": 191,
+   "ext_ok30d": 4,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 4,
+    "TIMED-OUT": 0,
+    "TOTAL": 4
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "substack-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 175
+   "runs30d": 3,
+   "runs": 185,
+   "ext_ok30d": 3,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 3,
+    "TIMED-OUT": 0,
+    "TOTAL": 3
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 181
+   "runs30d": 3,
+   "runs": 191,
+   "ext_ok30d": 3,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 3,
+    "TIMED-OUT": 0,
+    "TOTAL": 3
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "steam-reviews-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 172
+   "runs30d": 3,
+   "runs": 182,
+   "ext_ok30d": 3,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 3,
+    "TIMED-OUT": 0,
+    "TOTAL": 3
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "scholarship-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 171
+   "runs30d": 3,
+   "runs": 181,
+   "ext_ok30d": 3,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 3,
+    "TIMED-OUT": 0,
+    "TOTAL": 3
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 171
+   "runs30d": 3,
+   "runs": 181,
+   "ext_ok30d": 3,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 3,
+    "TIMED-OUT": 0,
+    "TOTAL": 3
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "uk-find-a-tender-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 124
+   "runs30d": 2,
+   "runs": 134,
+   "ext_ok30d": 2,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 2,
+    "TIMED-OUT": 0,
+    "TOTAL": 2
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 125
+   "runs30d": 2,
+   "runs": 135,
+   "ext_ok30d": 2,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 2,
+    "TIMED-OUT": 0,
+    "TOTAL": 2
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "fda-recall-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 113
+   "runs30d": 2,
+   "runs": 123,
+   "ext_ok30d": 2,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 2,
+    "TIMED-OUT": 0,
+    "TOTAL": 2
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "federal-register-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 104
+   "runs30d": 2,
+   "runs": 114,
+   "ext_ok30d": 2,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 2,
+    "TIMED-OUT": 0,
+    "TOTAL": 2
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "clinicaltrials-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 90
+   "runs30d": 1,
+   "runs": 101,
+   "ext_ok30d": 1,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 1,
+    "TIMED-OUT": 0,
+    "TOTAL": 1
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "grants-gov-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 39
+   "runs30d": 1,
+   "runs": 49,
+   "ext_ok30d": 1,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 1,
+    "TIMED-OUT": 0,
+    "TOTAL": 1
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   },
   "nih-reporter-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 0,
-   "runs": 35
+   "runs30d": 1,
+   "runs": 45,
+   "ext_ok30d": 1,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 1,
+    "TIMED-OUT": 0,
+    "TOTAL": 1
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   }
  },
  "polar": {},
  "apify_totals": {
   "public_actors": 17,
   "users": 33,
-  "runs30d": 0
+  "runs30d": 54,
+  "ext_ok30d": 53,
+  "ext_bad30d": 1,
+  "bookmarks": 0,
+  "reviews": 0,
+  "metric": "runs30d=publicActorRunStats30Days.TOTAL (external runs); pre-cycle-172 history had a false 0 here"
  }
 }
