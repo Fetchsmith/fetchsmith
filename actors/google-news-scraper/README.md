@@ -13,6 +13,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
 |---|---|---|
 | `queries` | array | Search terms. Operators work: `"exact phrase"`, `site:reuters.com`, `when:7d`, `before:2026-01-01`, `after:2026-06-01` |
 | `rssUrls` | array | Optional Google News RSS feed URLs (topics, sections, publications) |
+| `topics` | array | Optional: browse Google News' built-in sections without knowing an RSS URL — `WORLD`, `NATION`, `BUSINESS`, `TECHNOLOGY`, `ENTERTAINMENT`, `SCIENCE`, `SPORTS`, `HEALTH` |
 | `excludeWords` | array | Words/phrases to drop from every query, e.g. `["iphone"]` on a query `apple` removes iPhone coverage. Same effect as typing `-word` yourself, just a manageable list. Does not apply to `rssUrls` (fixed feeds, not search terms) |
 | `language` | string | `hl` code such as `en-US`, `de`, `fr`, `pt-BR`, `ar`, `ja` (default `en-US`) |
 | `country` | string | `gl` code such as `US`, `GB`, `DE`, `IN` (default `US`) |
@@ -33,6 +34,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
   "publishedAt": "2026-09-02T07:00:00.000Z",
   "snippet": "Apify raises new funding to scale web data platform",
   "query": "apify",
+  "topic": null,
   "language": "en-US",
   "country": "US"
 }

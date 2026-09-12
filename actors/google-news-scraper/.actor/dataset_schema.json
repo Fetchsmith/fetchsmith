@@ -75,6 +75,14 @@
         "title": "Query",
         "example": "web scraping"
       },
+      "topic": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Topic",
+        "example": "TECHNOLOGY"
+      },
       "feedUrl": {
         "type": [
           "string",
@@ -123,6 +131,7 @@
           "snippet",
           "url",
           "query",
+          "topic",
           "feedUrl"
         ]
       },
@@ -163,6 +172,10 @@
           },
           "query": {
             "label": "Query",
+            "format": "text"
+          },
+          "topic": {
+            "label": "Topic",
             "format": "text"
           },
           "feedUrl": {

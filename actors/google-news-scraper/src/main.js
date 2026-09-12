@@ -19,6 +19,8 @@ function timeBudgetOk() {
 const input = (await Actor.getInput()) ?? {};
 const queries = (input.queries ?? []).map((q) => String(q).trim()).filter(Boolean);
 const rssUrls = (input.rssUrls ?? []).map((u) => String(u).trim()).filter(Boolean);
+const VALID_TOPICS = ['WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SCIENCE', 'SPORTS', 'HEALTH'];
+const topics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()).filter((t) => VALID_TOPICS.includes(t));
 const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
 const hl = input.language || 'en-US';
@@ -29,7 +31,7 @@ const maxResults = Math.min(Number(input.maxResults ?? 500), 5000);
 const fetchBody = input.fetchArticleBody === true;
 const decode = input.decodeUrls !== false || fetchBody; // the body lives on the publisher's page, so it needs the real URL
 const bodyMaxChars = Math.min(Math.max(Number(input.articleBodyMaxChars ?? 20000), 500), 200000);
-if (!queries.length && !rssUrls.length) { await Actor.fail('Provide at least one query or RSS URL.'); }
+if (!queries.length && !rssUrls.length && !topics.length) { await Actor.fail('Provide at least one query, RSS URL or topic.'); }
 if (fetchBody && input.decodeUrls === false) log.warning('fetchArticleBody needs the publisher URL, so decodeUrls was turned back on.');
 
 let pushed = 0;
@@ -113,8 +115,9 @@ async function decodeUrl(gnUrl) {
 }
 
 const feeds = [
-  ...queries.map((q) => ({ query: q, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix)}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
-  ...rssUrls.map((u) => ({ query: null, url: u })),
+  ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix)}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
+  ...rssUrls.map((u) => ({ query: null, topic: null, url: u })),
+  ...topics.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/headlines/section/topic/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
 ];
 const emptyFeeds = []; // Google News RSS returned zero <item>s for this query/URL
 const erroredFeeds = []; // the RSS request itself failed
@@ -127,9 +130,9 @@ for (const feed of feeds) {
   log.info(`Fetching feed: ${feed.url}`);
   let items = [];
   try { items = parseRss((await http(feed.url)).body).slice(0, perQuery); }
-  catch (e) { log.warning(`Feed failed (${feed.url}): ${e.message}`); erroredFeeds.push(feed.query || feed.url); continue; }
+  catch (e) { log.warning(`Feed failed (${feed.url}): ${e.message}`); erroredFeeds.push(feed.query || feed.topic || feed.url); continue; }
   log.info(`${items.length} items`);
-  if (!items.length) { emptyFeeds.push(feed.query || feed.url); continue; }
+  if (!items.length) { emptyFeeds.push(feed.query || feed.topic || feed.url); continue; }
   const pushedBefore = pushed;
   let allDuped = true;
   for (const it of items) {
@@ -142,10 +145,10 @@ for (const feed of feeds) {
       article = url ? await fetchArticle(url) : { articleFetchStatus: 'no-url' };
       if (article.articleFetchStatus === 'ok') bodiesOk += 1; else bodiesFailed += 1;
     }
-    keepGoing = await pushResult({ ...it, url, ...article, query: feed.query, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
+    keepGoing = await pushResult({ ...it, url, ...article, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }
-  if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.url);
+  if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.topic || feed.url);
 }
 log.info(`Done. Pushed ${pushed} articles.`);
 if (fetchBody) log.info(`Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywall/blocked/no text).`);
