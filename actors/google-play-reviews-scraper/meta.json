@@ -1,10 +1,17 @@
 {
-  "title": "Google Play Reviews Scraper",
-  "description": "Get Google Play app reviews and app details (ratings, installs, developer info) by app ID or search term.",
-  "seoTitle": "Google Play Reviews Scraper - App Reviews API",
+  "title": "Google Play Reviews Scraper \u2013 Rating, Keyword & Date Filters",
+  "description": "Google Play reviews and app details by package ID or app-name search. Filter server-side by star rating, keyword or date range, so you are only charged for the rows you want. Country/language targeting, newest-rating-helpfulness sort, HTTP-only: no browser, no proxy, no login.",
+  "seoTitle": "Google Play Reviews Scraper API \u2013 Filter by Rating & Date",
   "seoDescription": "Extract Google Play Store reviews and app details by app ID or search term. Ratings, review text, dates, replies. Pay only per result, HTTP-only, no browser.",
-  "categories": ["DEVELOPER_TOOLS", "MARKETING"],
+  "categories": [
+    "DEVELOPER_TOOLS",
+    "MARKETING"
+  ],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One review or app-details record returned to the dataset.", "eventPriceUsd": 0.0001 }
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One review or app-details record returned to the dataset.",
+      "eventPriceUsd": 0.0001
+    }
   }
 }

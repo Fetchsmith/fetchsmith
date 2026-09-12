@@ -22,8 +22,17 @@ elif cmd == "get":
     print(json.dumps(get(sys.argv[2]), indent=2))
 elif cmd == "publish":
     a = get(sys.argv[2]); meta = json.load(open(sys.argv[3]))
+    limits = {"title": 70, "description": 300, "seoTitle": 70, "seoDescription": 300}
+    errs = [f"{k} is {len(meta[k])} chars, over the {v}-char limit" for k, v in limits.items() if k in meta and len(meta[k]) > v]
+    if errs:
+        sys.exit("meta.json validation failed:\n  " + "\n  ".join(errs))
     payload = {k: meta[k] for k in ("title", "description", "seoTitle", "seoDescription", "categories") if k in meta}
-    if "events" in meta:
+    existing = a.get("pricingInfos") or []
+    existing_events = existing[-1].get("pricingPerEvent", {}).get("actorChargeEvents") if existing else None
+    if "events" in meta and meta["events"] != existing_events:
+        # Sending a fresh pricingInfos entry when the price hasn't changed 400s
+        # ("createdAt is required") because the API expects the existing record's
+        # metadata preserved, not a bare new one - only send it on an actual price change.
         payload["pricingInfos"] = [{"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": meta["events"]}}]
     payload["isPublic"] = True
     r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json=payload)

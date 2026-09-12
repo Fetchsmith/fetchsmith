@@ -1,8 +1,18 @@
 {
-  "title": "Shopify Products Scraper – Full Catalog, Any Store",
+  "title": "Shopify Products Scraper \u2013 Full Catalog, Any Store",
   "description": "Extract every product from any Shopify store or collection: prices, variants, SKUs, availability, images, tags and descriptions. No browser, no login. Pay per product.",
-  "seoTitle": "Shopify Products Scraper – Store Catalog to JSON/CSV",
-  "seoDescription": "Scrape any Shopify store's full product catalog: titles, prices, compare-at prices, variants, SKUs, stock, images, tags and descriptions. Fast HTTP-only scraper, pay per product.",
-  "categories": ["ECOMMERCE", "LEAD_GENERATION", "AI"],
-  "events": { "result": { "eventTitle": "Product", "eventDescription": "One product returned to the dataset.", "eventPriceUsd": 0.001 } }
+  "seoTitle": "Shopify Products Scraper \u2013 Store Catalog to JSON/CSV",
+  "seoDescription": "Scrape any Shopify store's full product catalog: titles, prices, compare-at prices, variants, SKUs, images and tags. Fast HTTP-only scraper, pay per product.",
+  "categories": [
+    "ECOMMERCE",
+    "LEAD_GENERATION",
+    "AI"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Product",
+      "eventDescription": "One product returned to the dataset.",
+      "eventPriceUsd": 0.001
+    }
+  }
 }

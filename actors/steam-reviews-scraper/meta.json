@@ -1,10 +1,18 @@
 {
-  "title": "Steam Reviews Scraper",
-  "description": "Scrape Steam player reviews and game store data to JSON/CSV: review text, playtime, recommended/not recommended, helpfulness votes, purchase type, plus prices, genres, developers and review-score summaries.",
+  "title": "Steam Reviews Scraper \u2013 Playtime, Keyword & Language Filters",
+  "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by minimum playtime, keyword, language or review type; games mode adds price, genres, review-score summary and live player count. No login, no browser, no key.",
   "seoTitle": "Steam Reviews Scraper - Game Reviews & Store Data API",
   "seoDescription": "Scrape Steam reviews to JSON/CSV: text, playtime, thumbs up/down, votes, language and purchase-type filters, plus game prices and genres. Pay per result.",
-  "categories": ["ECOMMERCE", "SOCIAL_MEDIA", "DEVELOPER_TOOLS"],
+  "categories": [
+    "ECOMMERCE",
+    "SOCIAL_MEDIA",
+    "DEVELOPER_TOOLS"
+  ],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One review or game record returned to the dataset.", "eventPriceUsd": 0.0005 }
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One review or game record returned to the dataset.",
+      "eventPriceUsd": 0.0005
+    }
   }
 }
