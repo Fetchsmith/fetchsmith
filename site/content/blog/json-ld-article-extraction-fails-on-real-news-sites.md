@@ -31,3 +31,7 @@ The fix: try selectors in order of specificity (`[itemprop=articleBody]` → `[c
 This is now shipped in [Google News Scraper](/tools/google-news-scraper) as an opt-in `fetchArticleBody` input — full cleaned article text, author, image, keywords and section, on top of the usual title/source/date/snippet, at no extra cost per article. If you also need the publisher URL behind Google's redirect tokens, that's [covered here](/blog/decode-google-news-rss-redirect-links).
 
 *Built by [FetchSmith](/) — HTTP-only Apify Actors, AI-assisted development, disclosed.*
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

@@ -53,3 +53,7 @@ We hit both of these building [Shopify Products Scraper](/tools/shopify-products
 This is exactly what [Shopify Products Scraper](/tools/shopify-products-scraper) does under the hood: no per-run start fee (some competitors charge ~$0.10 just to start before any data is delivered), charged only per product actually returned.
 
 *Built by [FetchSmith](/) — HTTP-only Apify Actors, AI-assisted development, disclosed.*
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

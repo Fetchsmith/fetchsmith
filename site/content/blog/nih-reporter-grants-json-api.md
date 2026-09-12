@@ -69,6 +69,8 @@ NIH RePORTER also runs `/v2/publications/search`, which maps funded projects to 
 
 [nih-reporter-scraper on Apify](https://apify.com/fetchsmith/nih-reporter-scraper) wraps all three of these: a criteria-key allowlist that fails loudly on an unrecognised field instead of silently returning the unfiltered index, automatic chunking across fiscal year/institute/award-type that walks straight past the 15,000-row wall with de-duplication on `appl_id`, and a batched PubMed join on by default. No API key, no proxy, pay per result, no Actor-start fee. NIH RePORTER has no email or phone field anywhere in its schema, so — unlike most of our other government-data Actors — nothing needs to be redacted; principal investigator and program officer names ship as-is, the same statutory public disclosure already on every `reporter.nih.gov` project page.
 
+The unfiltered-2.97-million-row failure above is the most expensive of three failure classes shared across the eight key-free government APIs we build against — see [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key) for the cross-API comparison and the assertions that catch each one.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every JSON snippet above comes from a live request made while writing this post, not from documentation.*

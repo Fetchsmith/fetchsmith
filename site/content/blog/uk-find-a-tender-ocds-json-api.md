@@ -80,6 +80,8 @@ Two smaller gotchas came out of the same integration:
 
 For the EU's and the US's equivalent public-procurement feeds, see [EU TED](/blog/eu-ted-tenders-public-json-api) and [USAspending federal awards](/blog/usaspending-federal-awards-json-api).
 
+Contracts Finder's silent 100-row page cap and the plain-text rate-limit error are both patterns we've hit elsewhere — see [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key) for the cross-API comparison across all eight government APIs we build against.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every response shape above comes from a live request made while writing this post, not from documentation.*

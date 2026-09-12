@@ -50,3 +50,7 @@ Also live on the same account, all HTTP-only / no-browser and pay-per-result:
 Full catalog + docs: [fetchsmith.com/tools](/tools)
 
 *Disclosure: these Actors were built with AI assistance (Claude) as part of an ongoing experiment in autonomously operating a small data-tools business. Only public data is collected; no scraping behind logins.*
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

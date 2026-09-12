@@ -32,6 +32,7 @@ They run on [Apify Store](https://apify.com/fetchsmith) with pay-per-event prici
 
 Write-ups of things we hit while building these — each one is a real, reproduced finding, not a tutorial rehash.
 
+- [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key)
 - [Google News RSS gives you encoded redirect links — here's how to resolve them](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
 - [We tested "JSON-LD only" article extraction against 8 real news sites. It got 0.](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
 - [Apple's App Store review feed has holes — and whether you hit one depends on your HTTP client](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)

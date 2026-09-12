@@ -94,6 +94,8 @@ A direct email or phone number for the procurement office behind the contract, p
 
 If you need the UK's or the US's equivalent public-procurement feed instead, see [UK Find a Tender / Contracts Finder](/blog/uk-find-a-tender-ocds-json-api) and [USAspending federal awards](/blog/usaspending-federal-awards-json-api) — same idea, different shapes and gotchas per country.
 
+TED's shape problems sit alongside the counting problems of the other seven key-free government APIs we build against — the full cross-API comparison is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every JSON snippet above comes from a live request made while writing this post, not from documentation.*

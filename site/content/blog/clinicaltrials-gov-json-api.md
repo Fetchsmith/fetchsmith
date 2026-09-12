@@ -68,3 +68,9 @@ Two `centralContacts[]` and per-location `contacts[]` blocks come back on every 
 ## Packaged version
 
 If you just want the rows — with phase/status/site filters, a `rowsPerStudy: "site"` mode for one-row-per-trial-site output, and the contact fields already stripped — [clinicaltrials-scraper](https://apify.com/fetchsmith/clinicaltrials-scraper) runs on Apify at $0.0015/result, no start fee.
+
+The silent `pageSize` cap above is the same class of failure as openFDA's skip cap and NIH RePORTER's offset wall — see [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key) for the cross-API comparison across all eight government APIs we build against.
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

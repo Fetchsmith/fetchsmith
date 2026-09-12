@@ -67,3 +67,7 @@ Plain paths are unrestricted — no crawl-delay, no blocked sections for the pag
 ## What this buys a scraper vs. a browser
 
 Zero JS execution, zero DOM, zero proxy — a `curl`-class HTTP client and a stream reassembler get every field a headless browser would eventually render, at a fraction of the memory and none of the anti-bot surface area a real browser presents. The tradeoff is that the wire format is React's internal implementation detail, not a stable public contract — a Next.js version bump could reshape the chunk boundaries or the reference syntax without any external announcement. Detect that early by asserting the fields you actually rely on (we assert `slug` and `name` are present on every parsed record, not just that `JSON.parse` didn't throw) rather than trusting that "it parsed" means "it parsed correctly."
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*
