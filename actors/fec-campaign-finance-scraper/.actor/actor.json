@@ -1,0 +1,16 @@
+{
+  "actorSpecification": 1,
+  "name": "fec-campaign-finance-scraper",
+  "title": "FEC Campaign Finance Scraper – Candidates & Financial Totals",
+  "description": "Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle via the FEC's official open.fec.gov API, with each candidate's campaign financial totals (receipts, disbursements, cash on hand) included. No API key needed, no login required.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "output": "./output_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "title": "FEC Campaign Finance Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "candidateName": {
+      "title": "Candidate name",
+      "type": "string",
+      "description": "Full or partial candidate name to search for (e.g. \"Warren\" or \"Elizabeth Warren\"). Leave empty and use state/office/party filters alone to browse instead of searching by name.",
+      "editor": "textfield",
+      "default": "Warren"
+    },
+    "state": {
+      "title": "State (2-letter code)",
+      "type": "string",
+      "description": "Restrict to candidates running in this state, e.g. \"CA\", \"TX\". Leave empty for all states.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "office": {
+      "title": "Office",
+      "type": "string",
+      "description": "Restrict to one office.",
+      "editor": "select",
+      "enum": ["", "H", "S", "P"],
+      "enumTitles": ["All offices", "House", "Senate", "President"],
+      "default": ""
+    },
+    "party": {
+      "title": "Party code",
+      "type": "string",
+      "description": "Restrict to one party code, e.g. \"DEM\", \"REP\", \"IND\", \"LIB\". Leave empty for all parties.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "electionYear": {
+      "title": "Election cycle year",
+      "type": "integer",
+      "description": "Restrict to candidates active in this even-numbered election cycle, e.g. 2024. Leave empty for all cycles.",
+      "editor": "number"
+    },
+    "includeTotals": {
+      "title": "Include financial totals",
+      "type": "boolean",
+      "description": "For each candidate found, fetch their campaign financial totals (receipts, disbursements, cash on hand, individual contributions) from the FEC's totals endpoint. Adds one extra request per candidate.",
+      "default": true
+    },
+    "maxResults": {
+      "title": "Max candidates",
+      "type": "integer",
+      "description": "Stop after this many candidates.",
+      "editor": "number",
+      "default": 20,
+      "minimum": 1,
+      "maximum": 500
+    }
+  },
+  "required": []
+}
