@@ -44,6 +44,10 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `studyTypes` | `INTERVENTIONAL`, `OBSERVATIONAL`, `EXPANDED_ACCESS`. |
 | `phases` | `EARLY_PHASE1`..`PHASE4`, `NA`. Only meaningful for interventional studies — about 1 in 5 studies overall have no phase at all. |
 | `hasResultsOnly` | Only studies with a posted results section. |
+| `sex` | `FEMALE` or `MALE` — restrict to studies whose eligibility criteria specify that sex. Leave blank for all. |
+| `acceptsHealthyVolunteers` | Only studies that accept healthy volunteers, not just patients with the condition. |
+| `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. |
+| `sortBy` | Order results before `maxResults` truncates them: most recently updated, most recently first-posted, or largest enrollment first. Default is the API's own relevance order. |
 | `rowsPerStudy` | `"study"` (default) or `"site"`. |
 | `maxResults` | Up to 50,000. Token-based paging, no offset wall. |
 

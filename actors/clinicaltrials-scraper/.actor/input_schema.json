@@ -81,6 +81,42 @@
       "description": "Restrict to studies that have posted a results section on ClinicalTrials.gov.",
       "default": false
     },
+    "sex": {
+      "title": "Eligible sex",
+      "type": "string",
+      "description": "Restrict to studies whose eligibility criteria specify this sex. Leave blank for all (most studies are open to all).",
+      "editor": "select",
+      "enum": ["", "FEMALE", "MALE"],
+      "enumTitles": ["All", "Female", "Male"],
+      "default": ""
+    },
+    "acceptsHealthyVolunteers": {
+      "title": "Accepts healthy volunteers",
+      "type": "boolean",
+      "description": "Restrict to studies that accept healthy volunteers (not just patients with the condition).",
+      "default": false
+    },
+    "lastUpdatePostedDateFrom": {
+      "title": "Last updated from",
+      "type": "string",
+      "description": "Only studies whose ClinicalTrials.gov record was last updated on or after this date (YYYY-MM-DD). Useful for a repeatable \"what changed since I last pulled\" run.",
+      "editor": "textfield"
+    },
+    "lastUpdatePostedDateTo": {
+      "title": "Last updated to",
+      "type": "string",
+      "description": "Only studies whose ClinicalTrials.gov record was last updated on or before this date (YYYY-MM-DD).",
+      "editor": "textfield"
+    },
+    "sortBy": {
+      "title": "Sort order",
+      "type": "string",
+      "description": "How ClinicalTrials.gov orders results (before maxResults truncates them). Default is the API's own relevance order.",
+      "editor": "select",
+      "enum": ["", "LastUpdatePostDate:desc", "StudyFirstPostDate:desc", "EnrollmentCount:desc"],
+      "enumTitles": ["Relevance (default)", "Most recently updated first", "Most recently first-posted first", "Largest enrollment first"],
+      "default": ""
+    },
     "rowsPerStudy": {
       "title": "Row mode",
       "type": "string",

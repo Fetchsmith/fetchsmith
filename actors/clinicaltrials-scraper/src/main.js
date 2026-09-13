@@ -41,6 +41,13 @@ const overallStatus = cleanList(input.overallStatus, STATUSES);
 const studyTypes = cleanList(input.studyTypes, STUDY_TYPES);
 const phases = cleanList(input.phases, PHASES);
 const hasResultsOnly = input.hasResultsOnly === true;
+const sex = ['FEMALE', 'MALE'].includes(String(input.sex ?? '').toUpperCase()) ? String(input.sex).toUpperCase() : '';
+const acceptsHealthyVolunteers = input.acceptsHealthyVolunteers === true;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
+const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
+const SORT_VALUES = new Set(['LastUpdatePostDate:desc', 'StudyFirstPostDate:desc', 'EnrollmentCount:desc']);
+const sortBy = SORT_VALUES.has(input.sortBy) ? input.sortBy : '';
 const rowsPerStudy = input.rowsPerStudy === 'site' ? 'site' : 'study';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 
@@ -98,11 +105,20 @@ function baseParams() {
     // Verified live: `filter.hasResults` is rejected as unknown; `aggFilters=results:with` is
     // the real parameter name for this.
     if (hasResultsOnly) p.aggFilters = 'results:with';
-    // studyType/phase are AREA-scoped fields, not top-level filters — combine into filter.advanced.
+    // studyType/phase/sex/healthyVolunteers/date-range are AREA-scoped fields, not top-level
+    // filters — combine into filter.advanced. Verified live (this cycle): AREA[Sex](FEMALE),
+    // AREA[HealthyVolunteers](true) and AREA[<field>]RANGE[from,to] (MIN/MAX for an open bound)
+    // all work against the real API.
     const advanced = [];
     if (studyTypes.length) advanced.push(`AREA[StudyType](${studyTypes.join(' OR ')})`);
     if (phases.length) advanced.push(`AREA[Phase](${phases.join(' OR ')})`);
+    if (sex) advanced.push(`AREA[Sex](${sex})`);
+    if (acceptsHealthyVolunteers) advanced.push('AREA[HealthyVolunteers](true)');
+    if (lastUpdatePostedDateFrom || lastUpdatePostedDateTo) {
+        advanced.push(`AREA[LastUpdatePostDate]RANGE[${lastUpdatePostedDateFrom || 'MIN'},${lastUpdatePostedDateTo || 'MAX'}]`);
+    }
     if (advanced.length) p['filter.advanced'] = advanced.join(' AND ');
+    if (sortBy) p.sort = sortBy;
     return p;
 }
 
@@ -208,6 +224,8 @@ log.info(nctIds.length
     : `ClinicalTrials.gov: conditions="${conditions}" interventions="${interventions}" sponsors="${sponsors}" `
       + `locations="${locations}" searchQuery="${searchQuery}" overallStatus=[${overallStatus.join(',')}] `
       + `studyTypes=[${studyTypes.join(',')}] phases=[${phases.join(',')}] hasResultsOnly=${hasResultsOnly} `
+      + `sex="${sex}" acceptsHealthyVolunteers=${acceptsHealthyVolunteers} `
+      + `lastUpdatePostedDateFrom="${lastUpdatePostedDateFrom}" lastUpdatePostedDateTo="${lastUpdatePostedDateTo}" sortBy="${sortBy}" `
       + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`);
 
 let scanned = 0;
