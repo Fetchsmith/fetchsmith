@@ -46,5 +46,6 @@ Pay is returned when the ATS itself publishes it, and left `null` otherwise rath
 Only public, no-login job-board data is collected — the same postings anyone can see on the company's own careers page. Job descriptions occasionally include a named recruiter contact the company itself chose to publish; this Actor does not extract or highlight individual contact data as a feature. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
+- [Six ATS job-board JSON APIs, six different ideas of what a job posting is](https://fetchsmith.com/blog/ats-job-board-json-apis-six-shapes)
 - https://fetchsmith.com/tools
 - Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/ats-jobs-scraper

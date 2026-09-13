@@ -55,6 +55,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [NIH RePORTER's 15,000-row wall doesn't error — it silently shrinks your page, and a plural typo returns 2.97 million unfiltered rows](https://fetchsmith.com/blog/nih-reporter-grants-json-api)
 - [App Store, Google Play and Steam reviews — three JSON APIs, three unrelated meanings of "empty"](https://fetchsmith.com/blog/app-store-review-apis-three-silent-empties)
 - [Substack, Apple Podcasts, Google News and Hacker News — four free APIs where the first response isn't the finished product](https://fetchsmith.com/blog/public-content-apis-hidden-second-step)
+- [Six ATS job-board JSON APIs, six different ideas of what a job posting is](https://fetchsmith.com/blog/ats-job-board-json-apis-six-shapes)
 
 ## Layout
 
