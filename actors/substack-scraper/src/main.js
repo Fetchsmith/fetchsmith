@@ -11,6 +11,24 @@ import { gotScraping } from 'got-scraping';
 import * as cheerio from 'cheerio';
 
 await Actor.init();
+// A run can fan out across many publications (URL list or category discovery) x many posts x
+// per-post detail/comment fetches, all strictly sequential — heavy inputs can approach the
+// platform timeout with real work still queued. Stop proactively with a safety margin and flush
+// what's already collected, same pattern as google-news-scraper/shopify-products-scraper.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+let keepGoing = true;
+function timeBudgetOk() {
+  if (timeoutAt == null) return true;
+  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) {
+    if (!timeBudgetExceeded) log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.');
+    timeBudgetExceeded = true;
+    keepGoing = false;
+    return false;
+  }
+  return true;
+}
 const input = (await Actor.getInput()) ?? {};
 
 const maxResults = Math.min(Number(input.maxResults ?? 200), 10000);
@@ -159,8 +177,6 @@ function mapComment(c, post, origin) {
   };
 }
 
-let keepGoing = true;
-
 async function fetchDetail(origin, slug) {
   try {
     return await getJson(`${origin}/api/v1/posts/${encodeURIComponent(slug)}`);
@@ -177,7 +193,7 @@ async function handlePost(post, origin, preloadedDetail = null) {
   keepGoing = await pushResult(mapPost(post, origin, detail));
   if (!keepGoing) return false;
 
-  if (includeComments && (post.comment_count ?? 0) > 0) {
+  if (includeComments && (post.comment_count ?? 0) > 0 && timeBudgetOk()) {
     try {
       const body = await getJson(`${origin}/api/v1/post/${post.id}/comments?token=&all_comments=true&sort=best_first`);
       const flat = flattenComments(body.comments).slice(0, maxCommentsPerPost);
@@ -201,7 +217,7 @@ async function scrapePublication(origin) {
   const pageSize = 50;
   const pushedBefore = pushed;
   let requestFailed = false;
-  while (keepGoing && seen < maxPostsPerPublication) {
+  while (keepGoing && seen < maxPostsPerPublication && timeBudgetOk()) {
     const url = new URL(`${origin}/api/v1/archive`);
     url.searchParams.set('sort', 'new');
     if (searchQuery) url.searchParams.set('search', searchQuery);
@@ -261,7 +277,7 @@ async function resolveCategoryIds(wanted) {
 async function discoverPublications(cat) {
   const found = [];
   const pageSize = 25;
-  for (let page = 0; found.length < maxPublicationsPerCategory; page += 1) {
+  for (let page = 0; found.length < maxPublicationsPerCategory && timeBudgetOk(); page += 1) {
     const url = `https://substack.com/api/v1/category/public/${cat.id}/all?page=${page}&limit=${pageSize}`;
     let body;
     try {
@@ -300,7 +316,10 @@ let unknownCategories = false;
 if (discoverCategories.length) {
   const cats = await resolveCategoryIds(discoverCategories);
   unknownCategories = cats.length === 0;
-  for (const cat of cats) publicationTargets.push(...(await discoverPublications(cat)));
+  for (const cat of cats) {
+    if (!timeBudgetOk()) break;
+    publicationTargets.push(...(await discoverPublications(cat)));
+  }
 }
 // A publication can be reached by handle and by custom domain, and can sit in two categories.
 const seenOrigins = new Set();
@@ -342,15 +361,21 @@ if (!publicationTargets.length && !postTargets.length) {
     else if (result === 'filtered') filtered.push(t.origin);
   }
 
+  const timeBudgetNote = timeBudgetExceeded
+    ? 'stopped early, approaching the run timeout — narrow publicationUrls/discoverCategories or lower maxPostsPerPublication/maxPublicationsPerCategory to get a complete run'
+    : null;
   if (pushed === 0 && (publicationTargets.length || postTargets.length)) {
-    const why = errored.length
-      ? `the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`
-      : filtered.length && !empty.length
-        ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/publishedAfter/publishedBefore — try widening those filters`
-        : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
+    const why = timeBudgetNote
+      ? timeBudgetNote
+      : errored.length
+        ? `the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`
+        : filtered.length && !empty.length
+          ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/publishedAfter/publishedBefore — try widening those filters`
+          : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
     await Actor.setStatusMessage(`No items returned — ${why}.`);
-  } else if (errored.length || empty.length || filtered.length) {
+  } else if (errored.length || empty.length || filtered.length || timeBudgetNote) {
     const notes = [];
+    if (timeBudgetNote) notes.push(timeBudgetNote);
     if (errored.length) notes.push(`request failed for ${errored.join(', ')}`);
     if (empty.length) notes.push(`no posts found for ${empty.join(', ')}`);
     if (filtered.length) notes.push(`filters excluded everything from ${filtered.join(', ')}`);
