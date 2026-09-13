@@ -4,111 +4,114 @@
     "type": "object",
     "properties": {
       "id": {
+        "title": "Id",
+        "example": "49563355",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Id",
-        "example": "15558405"
+        ]
       },
       "type": {
+        "title": "Type",
+        "example": "story",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Type",
-        "example": "story"
+        ]
       },
       "title": {
+        "title": "Title",
+        "example": "Discovery of a new OpenAI agent message board",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Title",
-        "example": "Show HN: Apify \u2013 Turn any website into an API"
+        ]
       },
       "url": {
+        "title": "Url",
+        "example": "https://collusion.wiki/",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Url",
-        "example": "https://www.apify.com/"
+        ]
       },
       "hnUrl": {
+        "title": "HnUrl",
+        "example": "https://news.ycombinator.com/item?id=49563355",
         "type": [
           "string",
           "null"
-        ],
-        "title": "HN discussion URL"
+        ]
       },
       "author": {
+        "title": "Author",
+        "example": "moultano",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Author",
-        "example": "jancurn"
+        ]
       },
       "points": {
+        "title": "Points",
+        "example": 2293,
         "type": [
           "number",
           "null"
-        ],
-        "title": "Points",
-        "example": 45
+        ]
       },
       "numComments": {
+        "title": "NumComments",
+        "example": 1597,
         "type": [
           "number",
           "null"
-        ],
-        "title": "NumComments",
-        "example": 21
+        ]
       },
       "storyId": {
+        "title": "StoryId",
+        "example": 49563355,
         "type": [
-          "string",
           "number",
+          "string",
           "null"
-        ],
-        "title": "Story ID"
+        ]
       },
       "storyTitle": {
+        "title": "StoryTitle",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Story title"
+        ]
       },
       "storyUrl": {
+        "title": "StoryUrl",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Story URL"
+        ]
       },
       "text": {
+        "title": "Text",
+        "example": "<a href=\"https:&#x2F;&#x2F;www.reuters.com&#x2F;world&#x2F;europe&#x2F;openai-agents-hijacked-german-website-previously-",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Text"
+        ]
       },
       "createdAt": {
+        "title": "CreatedAt",
+        "example": "2026-09-04T11:54:53Z",
         "type": [
           "string",
           "null"
-        ],
-        "title": "CreatedAt",
-        "example": "2017-10-26T13:03:29Z"
+        ]
       },
       "query": {
+        "title": "Query",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Query"
+        ]
       }
     }
   },
@@ -121,10 +124,12 @@
           "type",
           "title",
           "url",
+          "hnUrl",
           "author",
           "points",
           "numComments",
-          "createdAt"
+          "storyId",
+          "storyTitle"
         ]
       },
       "display": {
@@ -146,6 +151,10 @@
             "label": "Url",
             "format": "link"
           },
+          "hnUrl": {
+            "label": "HnUrl",
+            "format": "link"
+          },
           "author": {
             "label": "Author",
             "format": "text"
@@ -158,8 +167,12 @@
             "label": "NumComments",
             "format": "number"
           },
-          "createdAt": {
-            "label": "CreatedAt",
+          "storyId": {
+            "label": "StoryId",
+            "format": "number"
+          },
+          "storyTitle": {
+            "label": "StoryTitle",
             "format": "text"
           }
         }

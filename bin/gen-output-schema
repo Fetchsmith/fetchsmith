@@ -16,6 +16,29 @@ if not items:
     t = next((t for t in reg if t['slug'] == slug), None)
     if t and t.get('sample_output'): items = [t['sample_output']]
 if not items: print('no sample items for', slug); sys.exit(1)
+# Seed prior types from the existing dataset_schema.json (if any). Two failure modes this
+# guards against, both real and found by cycle-199's fleet audit:
+# (a) a field that is null in EVERY row of this run's local sample (e.g. uk-find-a-tender-
+#     scraper's awardValueAmount/aboveThreshold, which only appear on awarded notices and the
+#     local test set has none) must not be downgraded to 'string' just because this scan never
+#     saw a non-null value — that would regress a type the platform already validated correctly.
+# (b) a field that is genuinely polymorphic across real API responses (e.g. hacker-news-
+#     scraper's storyId: `hit.story_id ?? hit.objectID` — a real number from Algolia comment
+#     hits, a real string from Algolia's own objectID on story hits) must not be narrowed to
+#     whichever single type this run's local sample happened to contain — the platform accepts
+#     multi-type arrays and the existing schema already declared both alternates correctly.
+# All prior alternates are unioned with whatever this scan observes; a genuinely wrong prior
+# type (the cycle-198 bug: locked to 'string' by a null-first-sighting) still gets the real
+# type added once real evidence exists, so it stops being pushed as a lone bad type, without
+# needing to prove the old value was never separately valid.
+prior_types = {}
+try:
+    prior = json.load(open(f"{d}/.actor/dataset_schema.json"))
+    for k, p in prior.get("fields", {}).get("properties", {}).items():
+        t = p.get("type")
+        alts = t if isinstance(t, list) else [t]
+        prior_types[k] = [a for a in alts if a and a != 'null']
+except Exception: pass
 def jtype(v):
     if isinstance(v, bool): return 'boolean'
     if isinstance(v, int) or isinstance(v, float): return 'number'
@@ -26,25 +49,24 @@ props = {}
 for it in items:
     for k, v in it.items():
         if k not in props:
-            # Type starts UNRESOLVED (None) rather than defaulting to 'string' on a null first
-            # sighting — a field that is null in every sampled row (never resolved) falls back to
-            # 'string' below, same as before, but a null-first row no longer permanently locks out
-            # the real type (number/boolean/etc.) once a non-null example is seen later.
-            props[k] = {"type": None, "title": k[0].upper() + k[1:].replace('_', ' ')}
-        if props[k]["type"] is None and v is not None:
-            props[k]["type"] = jtype(v)
+            props[k] = {"types": [], "title": k[0].upper() + k[1:].replace('_', ' ')}
+        if v is not None:
+            t = jtype(v)
+            if t not in props[k]["types"]: props[k]["types"].append(t)
         if v not in (None, '', [], {}) and "example" not in props[k]:
             props[k]["example"] = v if not isinstance(v, str) else v[:120]
 for k in props:
-    if props[k]["type"] is None: props[k]["type"] = 'string'
+    for t in prior_types.get(k, []):
+        if t not in props[k]["types"]: props[k]["types"].append(t)
+    if not props[k]["types"]: props[k]["types"] = ['string']
 for k in props:
-    if props[k]["type"] in ('array', 'object'): props[k].pop("example", None)
-    if props[k]["type"] == 'string' and 'example' in props[k] and isinstance(props[k]['example'], (int, float, bool)): props[k]["example"] = str(props[k]["example"])
-    if props[k]["type"] != 'string': props[k]["nullable"] = True
-    if props[k]["type"] == 'string': props[k]["nullable"] = True
-# nullable isn't standard JSON schema; use type arrays instead
+    primary = props[k]["types"][0]
+    if primary in ('array', 'object'): props[k].pop("example", None)
+    if primary == 'string' and 'example' in props[k] and isinstance(props[k]['example'], (int, float, bool)): props[k]["example"] = str(props[k]["example"])
+# type array is the observed/prior alternates (order preserved, primary first) plus 'null'
 for k in props:
-    props[k].pop("nullable", None); props[k]["type"] = [props[k]["type"], "null"]
+    props[k]["type"] = props[k]["types"] + ["null"]
+    del props[k]["types"]
 scalar = [k for k, p in props.items() if p["type"][0] in ('string', 'number', 'boolean') and k not in ('scrapedAt',)][:10]
 fmt = {}
 for k in scalar:
