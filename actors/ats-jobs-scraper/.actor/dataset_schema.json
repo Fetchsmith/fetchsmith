@@ -48,14 +48,16 @@
           "string",
           "null"
         ],
-        "title": "Team"
+        "title": "Team",
+        "example": "Backend"
       },
       "employmentType": {
         "type": [
           "string",
           "null"
         ],
-        "title": "EmploymentType"
+        "title": "EmploymentType",
+        "example": "FullTime"
       },
       "workplaceType": {
         "type": [
@@ -93,42 +95,48 @@
           "string",
           "null"
         ],
-        "title": "Country"
+        "title": "Country",
+        "example": "USA"
       },
       "region": {
         "type": [
           "string",
           "null"
         ],
-        "title": "Region"
+        "title": "Region",
+        "example": "NY"
       },
       "city": {
         "type": [
           "string",
           "null"
         ],
-        "title": "City"
+        "title": "City",
+        "example": "New York City"
       },
       "salaryMin": {
         "type": [
           "number",
           "null"
         ],
-        "title": "SalaryMin"
+        "title": "SalaryMin",
+        "example": 85000
       },
       "salaryMax": {
         "type": [
           "number",
           "null"
         ],
-        "title": "SalaryMax"
+        "title": "SalaryMax",
+        "example": 175000
       },
       "salaryCurrency": {
         "type": [
           "string",
           "null"
         ],
-        "title": "SalaryCurrency"
+        "title": "SalaryCurrency",
+        "example": "USD"
       },
       "publishedAt": {
         "type": [
@@ -184,7 +192,7 @@
           "null"
         ],
         "title": "ScrapedAt",
-        "example": "2026-09-13T04:33:16.343Z"
+        "example": "2026-09-13T05:10:53.105Z"
       }
     }
   },

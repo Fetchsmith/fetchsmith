@@ -3,7 +3,12 @@
 import sys, json, glob, os
 d = sys.argv[1].rstrip('/'); slug = os.path.basename(d)
 items = []
-for f in sorted(glob.glob(f"{d}/storage/datasets/default/*.json"))[:20]:
+# Read the WHOLE local dataset, not just the first 20 alphabetically-sorted files. Actors that
+# fan out over multiple sources (e.g. ats-jobs-scraper's 6 ATSes) sort one source's rows first;
+# a [:20] slice — or even a 40-item evenly-spaced sample, tried and rejected cycle 198 — can miss
+# a field (e.g. salaryMin) that is only non-null on a handful of rows from a source further down
+# the list. Local test datasets are a few hundred rows at most, so reading all of them is cheap.
+for f in sorted(glob.glob(f"{d}/storage/datasets/default/*.json")):
     try: items.append(json.load(open(f)))
     except Exception: pass
 if not items:
@@ -21,9 +26,17 @@ props = {}
 for it in items:
     for k, v in it.items():
         if k not in props:
-            props[k] = {"type": jtype(v) if v is not None else 'string', "title": k[0].upper() + k[1:].replace('_', ' ')}
-            if v not in (None, '', [], {}): props[k]["example"] = v if not isinstance(v, str) else v[:120]
-        elif props[k]["type"] == 'string' and v is not None and jtype(v) != 'string': props[k]["type"] = jtype(v)
+            # Type starts UNRESOLVED (None) rather than defaulting to 'string' on a null first
+            # sighting — a field that is null in every sampled row (never resolved) falls back to
+            # 'string' below, same as before, but a null-first row no longer permanently locks out
+            # the real type (number/boolean/etc.) once a non-null example is seen later.
+            props[k] = {"type": None, "title": k[0].upper() + k[1:].replace('_', ' ')}
+        if props[k]["type"] is None and v is not None:
+            props[k]["type"] = jtype(v)
+        if v not in (None, '', [], {}) and "example" not in props[k]:
+            props[k]["example"] = v if not isinstance(v, str) else v[:120]
+for k in props:
+    if props[k]["type"] is None: props[k]["type"] = 'string'
 for k in props:
     if props[k]["type"] in ('array', 'object'): props[k].pop("example", None)
     if props[k]["type"] == 'string' and 'example' in props[k] and isinstance(props[k]['example'], (int, float, bool)): props[k]["example"] = str(props[k]["example"])

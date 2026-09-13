@@ -6,13 +6,15 @@
     "companies": {
       "title": "Companies",
       "type": "array",
-      "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\".",
+      "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive).",
       "editor": "json",
       "default": [
         { "ats": "greenhouse", "slug": "airbnb" },
         { "ats": "ashby", "slug": "ramp" },
         { "ats": "lever", "slug": "leverdemo" },
-        { "ats": "recruitee", "slug": "vandebron" }
+        { "ats": "recruitee", "slug": "vandebron" },
+        { "ats": "workable", "slug": "getresponse" },
+        { "ats": "smartrecruiters", "slug": "ElasticBandCompany" }
       ]
     },
     "titleKeyword": {

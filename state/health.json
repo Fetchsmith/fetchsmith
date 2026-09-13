@@ -1,6 +1,22 @@
 {
- "ts": 1789272388,
+ "ts": 1789276536,
  "results": {
+  "ats-jobs-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "company",
+    "atsSource",
+    "jobId",
+    "title",
+    "department",
+    "team",
+    "employmentType",
+    "workplaceType"
+   ],
+   "err": null
+  },
   "google-news-scraper": {
    "ok": true,
    "status": 201,
@@ -18,20 +34,11 @@
    "err": null
   },
   "app-store-reviews-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
-   "sample_keys": [
-    "reviewId",
-    "appId",
-    "country",
-    "title",
-    "content",
-    "rating",
-    "version",
-    "author"
-   ],
-   "err": null
+   "items": 0,
+   "sample_keys": [],
+   "err": "[]"
   },
   "shopify-products-scraper": {
    "ok": true,

@@ -1,6 +1,6 @@
-// ATS Jobs Scraper: pulls live job postings from Greenhouse, Ashby, Lever and Recruitee
-// company boards and normalizes them into one cross-ATS schema. No headless browser — every
-// source is a documented, no-auth, no-login JSON endpoint.
+// ATS Jobs Scraper: pulls live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable
+// and SmartRecruiters company boards and normalizes them into one cross-ATS schema. No headless
+// browser — every source is a documented, no-auth, no-login JSON endpoint.
 import { Actor, log } from 'apify';
 import * as cheerio from 'cheerio';
 import { gotScraping } from 'got-scraping';
@@ -8,16 +8,19 @@ import { gotScraping } from 'got-scraping';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters'];
 const DEFAULT_COMPANIES = [
   { ats: 'greenhouse', slug: 'airbnb' },
   { ats: 'ashby', slug: 'ramp' },
   { ats: 'lever', slug: 'leverdemo' },
   { ats: 'recruitee', slug: 'vandebron' },
+  { ats: 'workable', slug: 'getresponse' },
+  { ats: 'smartrecruiters', slug: 'ElasticBandCompany' },
 ];
 const companies = (Array.isArray(input.companies) && input.companies.length ? input.companies : DEFAULT_COMPANIES)
   .map((c) => ({ ats: String(c.ats || '').toLowerCase().trim(), slug: String(c.slug || '').trim() }))
-  .filter((c) => c.slug && ['greenhouse', 'ashby', 'lever', 'recruitee'].includes(c.ats));
-if (!companies.length) await Actor.fail('Provide at least one company as {"ats": "greenhouse|ashby|lever|recruitee", "slug": "<company-slug>"}.');
+  .filter((c) => c.slug && SUPPORTED_ATS.includes(c.ats));
+if (!companies.length) await Actor.fail(`Provide at least one company as {"ats": "${SUPPORTED_ATS.join('|')}", "slug": "<company-slug>"}.`);
 
 const titleKeyword = (input.titleKeyword ?? '').toLowerCase().trim();
 const locationKeyword = (input.locationKeyword ?? '').toLowerCase().trim();
@@ -175,7 +178,115 @@ async function fetchRecruitee(slug) {
   };
 }
 
-const FETCHERS = { greenhouse: fetchGreenhouse, ashby: fetchAshby, lever: fetchLever, recruitee: fetchRecruitee };
+async function fetchWorkable(slug) {
+  const { status, body } = await getJson(`https://apply.workable.com/api/v1/widget/accounts/${encodeURIComponent(slug)}?details=true`);
+  if (status === 404 || !Array.isArray(body?.jobs)) return { jobs: [], notFound: true };
+  return {
+    jobs: body.jobs.map((j) => ({
+      company: slug, atsSource: 'workable', jobId: j.shortcode ?? null, title: j.title?.trim() ?? null,
+      department: j.department ?? null, team: null, employmentType: j.employment_type ?? null,
+      workplaceType: j.telecommuting ? 'remote' : null, isRemote: !!j.telecommuting,
+      location: [j.city, j.state, j.country].filter(Boolean).join(', ') || null,
+      secondaryLocations: (j.locations ?? []).slice(1)
+        .map((l) => [l.city, l.region, l.country].filter(Boolean).join(', ')).filter(Boolean),
+      country: j.country || null, region: j.state || null, city: j.city || null,
+      // No compensation field anywhere in the widget payload across the boards checked cycle 198
+      // (getresponse, automattic) — same "leave null, don't guess" call as ashby's compensation.
+      salaryMin: null, salaryMax: null, salaryCurrency: null,
+      publishedAt: j.published_on ? new Date(j.published_on).toISOString() : null, updatedAt: null,
+      jobUrl: j.url ?? null, applyUrl: j.application_url ?? j.url ?? null,
+      descriptionHtml: includeDescriptions ? (j.description ?? null) : null,
+      descriptionText: includeDescriptions ? textOf(j.description) : null,
+    })),
+  };
+}
+
+// SmartRecruiters' list endpoint (`/postings`) does not carry the job description — that only
+// comes back from a per-job detail call (`/postings/<id>`, `jobAd.sections`). To avoid one HTTP
+// request per posting on large boards (BMWDealerCareers alone has 194), filter on the cheap
+// list-level fields first and only fetch full detail for the jobs that already pass and are
+// within maxJobsPerCompany.
+async function fetchSmartRecruitersDetail(slug, id) {
+  try {
+    const { status, body } = await getJson(`https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(slug)}/postings/${encodeURIComponent(id)}`);
+    return status === 200 ? body : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchSmartRecruiters(slug) {
+  const pageSize = 100;
+  const rawCap = Math.min(Math.max(maxJobsPerCompany * 3, pageSize), 2000);
+  const raw = [];
+  let offset = 0;
+  let notFoundFlag = false;
+  while (raw.length < rawCap && timeBudgetOk()) {
+    const { status, body } = await getJson(`https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(slug)}/postings?limit=${pageSize}&offset=${offset}`);
+    if (status === 404) { notFoundFlag = true; break; }
+    const content = body?.content ?? [];
+    if (!content.length) break;
+    raw.push(...content);
+    offset += pageSize;
+    if (offset >= (body?.totalFound ?? 0)) break;
+  }
+  if (notFoundFlag) return { jobs: [], notFound: true };
+
+  const mapped = raw.map((p) => {
+    const loc = p.location ?? {};
+    return {
+      company: slug, atsSource: 'smartrecruiters', jobId: String(p.id), title: p.name?.trim() ?? null,
+      department: p.department?.label ?? p.function?.label ?? null, team: null,
+      employmentType: p.typeOfEmployment?.label ?? null,
+      workplaceType: loc.remote ? 'remote' : (loc.hybrid ? 'hybrid' : (loc.city ? 'onsite' : null)),
+      isRemote: !!loc.remote,
+      location: [loc.city, loc.region, loc.country].filter(Boolean).join(', ') || (loc.remote ? 'Remote' : null),
+      secondaryLocations: [],
+      country: loc.country || null, region: loc.region || null, city: loc.city || null,
+      // No compensation field observed on any real posting checked cycle 198 — leave null.
+      salaryMin: null, salaryMax: null, salaryCurrency: null,
+      publishedAt: p.releasedDate ?? null, updatedAt: null,
+      // The list endpoint (`/postings`) never carries postingUrl/applyUrl — confirmed live cycle
+      // 198 (both fields absent on every raw posting checked). The URL format is deterministic
+      // (`jobs.smartrecruiters.com/<company>/<id>`, slug suffix optional, confirmed 200 without
+      // it), so build it rather than leave it null; the detail call below overwrites applyUrl
+      // with the real referral-tagged link when includeDescriptions fetches it anyway.
+      jobUrl: `https://jobs.smartrecruiters.com/${encodeURIComponent(slug)}/${encodeURIComponent(p.id)}`,
+      applyUrl: `https://jobs.smartrecruiters.com/${encodeURIComponent(slug)}/${encodeURIComponent(p.id)}`,
+      descriptionHtml: null, descriptionText: null,
+      _rawId: p.id,
+    };
+  });
+
+  const kept = [];
+  for (const job of mapped) {
+    if (!passesFilters(job)) continue;
+    kept.push(job);
+    if (kept.length >= maxJobsPerCompany) break;
+  }
+  if (includeDescriptions) {
+    for (const job of kept) {
+      if (!timeBudgetOk()) break;
+      const detail = await fetchSmartRecruitersDetail(slug, job._rawId);
+      if (detail?.applyUrl) job.applyUrl = detail.applyUrl;
+      if (detail?.postingUrl) job.jobUrl = detail.postingUrl;
+      const sections = detail?.jobAd?.sections;
+      if (sections) {
+        const order = ['companyDescription', 'jobDescription', 'qualifications', 'additionalInformation'];
+        const html = order.filter((k) => sections[k]?.text).map((k) => `<h3>${sections[k].title}</h3>${sections[k].text}`).join('');
+        job.descriptionHtml = html || null;
+        job.descriptionText = textOf(html);
+      }
+    }
+  }
+  kept.forEach((j) => { delete j._rawId; });
+  return { jobs: kept };
+}
+
+const FETCHERS = {
+  greenhouse: fetchGreenhouse, ashby: fetchAshby, lever: fetchLever, recruitee: fetchRecruitee,
+  workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters,
+};
 
 function passesFilters(job) {
   if (titleKeyword && !(job.title ?? '').toLowerCase().includes(titleKeyword)) return false;
