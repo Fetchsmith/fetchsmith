@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "substack-scraper",
-  "title": "Substack Scraper \u2013 Posts, Full Text & Comments",
-  "description": "Scrape any Substack publication: post metadata, full article text, and comments via Substack's public JSON API. No login, no browser.",
+  "title": "Substack Scraper – Posts, Full Text & Comments",
+  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Custom domains supported. No login, no browser. $0.002 per result.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

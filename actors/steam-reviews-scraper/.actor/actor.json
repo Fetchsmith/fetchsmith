@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "steam-reviews-scraper",
-  "title": "Steam Reviews Scraper",
-  "description": "Scrape Steam player reviews and game store details to JSON/CSV \u2014 playtime, recommended/not, votes, prices, genres, review scores.",
+  "title": "Steam Reviews Scraper – Playtime, Keyword & Language Filters",
+  "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by minimum playtime, keyword, language or review type; games mode adds price, genres, review-score summary and live player count. No login, no browser, no key.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

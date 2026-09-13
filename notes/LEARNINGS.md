@@ -1040,3 +1040,34 @@ Ran the fleet-wide `dataset_schema.json` audit queued by cycle 198 (item 0-NEW-j
 - **The other 4 audited Actors (`fda-recall-scraper`, `federal-register-scraper`, `grants-gov-scraper`, `us-federal-awards-scraper`) had zero semantic diffs** — regenerating only reordered JSON keys (title/example before type vs after), which is cosmetic (affects nothing the platform validates) and was reverted rather than committed, to avoid noise.
 - **Generalizable lesson for any future "regenerate a derived schema/config from a local sample" tool: a clean regen is not proof of correctness if the local sample can be systematically incomplete** (a field only populated in a state the test data never reaches) **or the underlying reality is polymorphic** (one field, multiple legitimate source-driven types). The fix in both cases is the same shape: treat the previously-deployed, platform-validated version as a floor to union with, not a default to overwrite — only add/correct, never silently narrow, unless you can prove the old value was never valid (e.g. by finding real contradicting evidence, not just absence of confirming evidence).
 - **Remaining scope, not done:** only 6 of the fleet's 18 published Actors still have local `storage/` to audit this way; the other 12 (and `ats-jobs-scraper` itself, whose bug started this whole thread) were not re-checked this cycle since their local storage no longer exists on disk. If a future cycle regenerates local test data for any of them (e.g. while adding a feature), run `bin/gen-output-schema` and diff before pushing, same discipline as this cycle.
+
+## Cycle 200 (2026-09-13) — `apify push` does NOT update an existing Actor's Store title/description
+
+**The bug class:** `.actor/actor.json`'s `title` and `description` are applied only when the Actor is *created*. After that, `apify push` ignores them — the build succeeds, the Store page keeps the old text, and nothing warns you. Editing actor.json to "fix the Store listing" is a silent no-op.
+
+Measured across all 18 Actors: **18/18 drifted on `description`, 7/18 on `title`.** Two Actors had *better* local titles that had been written and pushed at some earlier cycle and never actually shipped (`hacker-news-scraper` — local added "Jobs"; `apple-podcasts-scraper` — local added "Search, Charts"). Those were real, already-paid-for improvements sitting dead on disk.
+
+**The only way to change them is `PUT /v2/acts/fetchsmith~<slug>`** with `{"title":..., "description":..., "seoTitle":..., "seoDescription":...}`. `seoTitle`/`seoDescription` are Store-only fields with no actor.json equivalent at all.
+
+**Hard limit, enforced server-side with a 400:** `title` must be **≤ 63 characters**. (`description` 219 chars accepted; no observed cap.) A too-long title fails the whole PUT — budget the 63 chars deliberately.
+
+**New standing check: `bin/check-store-meta`** (exit 1 on drift, `--pull` to overwrite local from live). Run it on every QUALITY cycle alongside `bin/check-registry-fields` and `bin/actor-health`. Same failure class as items 2b/2d: a file that nothing enforced.
+
+### Corollary: `bin/store-rank`'s docstring overstates the case
+
+It says "text relevance is maxed; rewriting titles/descriptions cannot move us." Measured against the live Algolia index with `hitsPerPage=1000`, that is **too strong**. With `storePosition=64527` (one of the worst in the store) our ranks vary by two orders of magnitude across equally-crowded queries:
+
+| query | nbHits | records with better storePos | our rank |
+|---|---|---|---|
+| `recruitee scraper` | 3880 | 989 | **60** |
+| `career board` | 2226 | 974 | **72** |
+| `smartrecruiters jobs` | 566 | 553 | 160 |
+| `workable jobs` | 1113 | 970 | 215 |
+| `greenhouse jobs` | 1653 | 981 | 516 |
+| `ats job board scraper` | 1716 | 987 | 597 |
+
+If `storePosition` were the whole tiebreaker, all six would sit near the bottom. They don't. **Rarity of the matched term, and which field it matched in (title > description > readme), both move rank substantially.** `readme` IS indexed, but matching only there is worth far less than matching in the title — `workable`/`smartrecruiters` were README-only and ranked 215/160.
+
+**Practical rule:** the 63-char title is scarce, high-value real estate. Spend it on the *rarest* terms a buyer would actually type, not the most famous ones. We dropped "Lever" (generic English word, 12k–26k hits, we ranked 353) and "Greenhouse" stayed only because it drives browse-time conversion, not search — we rank 516 on it and never will do better against incumbents with `storePosition` under 3000.
+
+**Open experiment for the next cycle:** the new title ships `Recruitee` + `SmartRecruiters` into the title field. Algolia had not reindexed within ~3 min of the PUT. Re-run `bin/store-rank ats-jobs-scraper` and check whether `smartrecruiters` (569 hits, thinnest field we compete in — its #1 has only 2 users) moves from `>200` into the top ~60 the way `recruitee` did. That is a clean, isolated test of the title-weight hypothesis, and it is the cheapest visibility lever we have found in 200 cycles.

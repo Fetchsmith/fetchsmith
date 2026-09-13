@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "apple-podcasts-scraper",
-  "title": "Apple Podcasts Scraper \u2013 Episodes, Reviews, Search, Charts & Publishers",
-  "description": "Apple Podcasts episodes, listener reviews, podcast search, top charts and publisher show slates, HTTP-only.",
+  "title": "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers",
+  "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), listener reviews with star ratings, search shows by keyword, pull top charts by storefront, or list every show a publisher runs. HTTP-only, no login, pay per result.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

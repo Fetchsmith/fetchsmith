@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "fda-recall-scraper",
-  "title": "FDA Recalls \u2014 Food, Drug & Device Enforcement Reports",
-  "description": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device recalls in one flat schema, with NDC/UPC barcodes on drug rows.",
+  "title": "FDA Recall Scraper — Food, Drug & Device Enforcement Reports",
+  "description": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 30 typed fields incl. Class I/II/III severity, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. From $0.0024/result, no start fee.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

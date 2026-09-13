@@ -52,6 +52,10 @@ TERMS = {
     "app-store-reviews-scraper": ["app store reviews"],
     "google-play-reviews-scraper": ["google play reviews"],
     "shopify-products-scraper": ["shopify products"],
+    # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
+    # and "smartrecruiters" are thin fields where we already place; "greenhouse"
+    # and "lever" are broad/crowded and we sit past rank 350 there regardless.
+    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs"],
 }
 
 
