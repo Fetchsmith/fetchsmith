@@ -22,6 +22,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
 | `fetchArticleBody` | boolean | Open each publisher page and extract the full article text, author, image, keywords and section (default false) |
 | `articleBodyMaxChars` | integer | Truncate `articleBody` to this length (default 20000) |
 | `maxResults` | integer | Total cap across queries |
+| `proxyConfiguration` | object | Apify Proxy for Google/publisher requests (default: on). Rotating IPs is the real fix for Google's URL-decode rate limit — see FAQ |
 
 ## Output (one item per article)
 ```json
@@ -73,7 +74,7 @@ With `fetchArticleBody: true` each item also carries:
 - Hard-paywalled publishers will come back as `blocked` or with a short teaser body; filter on `articleWordCount` if you only want complete articles.
 
 ## FAQ
-**Why is `url` null on some articles?** Google occasionally rate-limits the redirect-resolving endpoint; `googleNewsUrl` still works, and the run status message tells you how many articles were affected.
+**Why is `url` null on some articles?** Google occasionally rate-limits the redirect-resolving endpoint per IP; `googleNewsUrl` still works, and the run status message tells you how many articles were affected. Every run routes through rotating Apify Proxy IPs by default specifically to avoid this — if you turned `proxyConfiguration` off, turn it back on first.
 **Does `fetchArticleBody` cost more?** No — you pay once per article returned whether or not the body was fetched.
 **Why does `articleFetchStatus` say `blocked` or `no-body`?** The publisher likely paywalls the article or serves it without readable paragraph text; both are reported explicitly instead of a silently empty `articleBody`.
 **Why did a run return 0 articles with status SUCCEEDED?** The status message distinguishes "Google returned nothing for this query" from "every result was a duplicate of another feed" from "the request failed" — check it before assuming your query is wrong.

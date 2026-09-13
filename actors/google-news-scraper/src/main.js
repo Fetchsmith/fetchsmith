@@ -47,7 +47,18 @@ async function pushResult(item) {
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
   return pushed < maxResults;
 }
-const http = (url, opts = {}) => gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, headers: { 'accept-language': hl }, ...opts });
+// Google rate-limits the URL-decoding endpoint per source IP (see decodeUrl below); rotating
+// proxy IPs is the actual fix, not just a race against the rate limiter. Runs without proxy
+// access must still work, so fall back to a direct connection instead of failing the run.
+let proxyUrlFor = async () => undefined;
+try {
+  const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
+  if (proxyConfiguration) {
+    proxyUrlFor = () => proxyConfiguration.newUrl(); // no session id: a fresh IP each call
+    log.info('Using Apify Proxy for Google/publisher requests.');
+  }
+} catch (e) { log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`); }
+const http = async (url, opts = {}) => gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, headers: { 'accept-language': hl }, proxyUrl: await proxyUrlFor(), ...opts });
 
 function parseRss(xml) {
   const $ = cheerio.load(xml, { xml: true });
@@ -154,7 +165,7 @@ log.info(`Done. Pushed ${pushed} articles.`);
 if (fetchBody) log.info(`Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywall/blocked/no text).`);
 const bodyNote = fetchBody ? ` Article bodies: ${bodiesOk} extracted, ${bodiesFailed} unavailable (paywalled or publisher-blocked — see articleFetchStatus).` : '';
 const decodeNote = decodeRateLimited
-  ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s)${decodeDisabled ? ', so decoding was switched off for the rest of the run' : ''} (url is null; googleNewsUrl still works) — re-run with a proxy or fewer articles per run.`
+  ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s)${decodeDisabled ? ', so decoding was switched off for the rest of the run' : ''} (url is null; googleNewsUrl still works) — Apify Proxy is already on by default; if it's off, turn it on, or reduce articles per run.`
   : decodeFailed ? ` ${decodeFailed} article URL(s) could not be decoded (url is null; googleNewsUrl still works).` : '';
 const timeBudgetNote = timeBudgetExceeded
   ? ` Stopped before finishing all queries because the run was approaching its time limit — the ${pushed} article(s) already found are complete and charged normally; re-run with fewer queries, a lower "Max articles per query", or "Extract full article text" off to cover the rest.`
