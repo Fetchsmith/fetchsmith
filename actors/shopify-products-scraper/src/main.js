@@ -11,6 +11,8 @@ const withDesc = input.includeDescription !== false;
 const withVariants = input.includeVariants !== false;
 const onlyAvailable = !!input.onlyAvailable;
 const detailLevel = input.detailLevel === 'full' ? 'full' : 'basic';
+const searchQuery = String(input.searchQuery ?? '').trim();
+const searchWords = searchQuery ? searchQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 
 // Some storefronts rate-limit or geo-gate products.json by IP, and the platform's shared egress
@@ -99,6 +101,17 @@ function shape(p, origin, currency) {
     createdAt: p.created_at, updatedAt: p.updated_at, publishedAt: p.published_at, store: origin, scrapedAt: new Date().toISOString(),
   };
 }
+// Shopify's public products.json has no full-text query param — there is no server-side
+// "search this store's catalog" endpoint that works without an admin token, and the one public
+// candidate (predictive /search/suggest.json) caps results at ~10 and is theme-dependent. So a
+// keyword search is applied client-side against products already fetched for pagination — zero
+// extra requests, works on every store this Actor can already reach, at the cost of still walking
+// the full catalog (same request budget as an unfiltered run of the same store).
+function matchesSearch(p) {
+  if (!searchWords.length) return true;
+  const haystack = [p.title, p.vendor, p.product_type, ...(p.tags ?? [])].join(' ').toLowerCase();
+  return searchWords.every((w) => haystack.includes(w));
+}
 async function currencyFor(origin) {
   try {
     const res = await http(`${origin}/meta.json`);
@@ -178,6 +191,7 @@ for (const raw of storeUrls) {
         for (const p of products) {
           if (got >= perStore) break;
           if (onlyAvailable && !(p.variants ?? []).some((v) => v.available)) continue;
+          if (!matchesSearch(p)) continue;
           const item = shape(p, ep.origin, currency);
           if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
           keepGoing = await pushResult(item); got++;
@@ -191,7 +205,8 @@ for (const raw of storeUrls) {
       log.warning(`${ep.origin}: Shopify returned zero products for this URL (empty store/collection, or products.json is disabled — not a scrape failure).`);
     } else if (got === 0) {
       filteredOutStores.push(ep.origin);
-      log.warning(`${ep.origin}: fetched ${seenBeforeFilter} products but "onlyAvailable" removed all of them (none are in stock).`);
+      const reason = onlyAvailable && searchWords.length ? '"onlyAvailable" and/or "searchQuery" removed all of them' : onlyAvailable ? '"onlyAvailable" removed all of them (none are in stock)' : '"searchQuery" matched none of them';
+      log.warning(`${ep.origin}: fetched ${seenBeforeFilter} products but ${reason}.`);
     }
   } catch (e) {
     erroredStores.push(ep.origin);
@@ -212,7 +227,7 @@ if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
   const why = erroredStores.length
     ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
     : filteredOutStores.length && !emptyStores.length
-      ? 'products were found but "onlyAvailable" removed all of them'
+      ? 'products were found but "onlyAvailable"/"searchQuery" removed all of them'
       : `Shopify returned zero products for: ${emptyStores.join(', ')}`;
   await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
 } else if (pushed === 0 && timeBudgetExceeded) {

@@ -12,6 +12,7 @@ Extract the full product catalog of any Shopify store (or a single collection or
 | Field | Type | Description |
 |---|---|---|
 | `storeUrls` | array | Store homepages, `/collections/<handle>` URLs, or `/products/<handle>` URLs |
+| `searchQuery` | string | Only keep products whose title, vendor, product type or tags contain every word in the query (case-insensitive). Applied client-side after fetching — Shopify's public feed has no server-side search — so it still scans the whole store at the same request cost as an unfiltered run, but needs no collection URL guessing. Ignored on direct product URLs. |
 | `maxProductsPerStore` | integer | Cap per store (default 500) |
 | `includeDescription` | boolean | Plain-text description (default true) |
 | `includeVariants` | boolean | Full variants array with SKU, price, options, availability (default true) |
@@ -67,6 +68,7 @@ Extract the full product catalog of any Shopify store (or a single collection or
 **Do I get the description as HTML?** Both: `description` is plain text and `descriptionHtml` is the store's raw `body_html`, so you can keep the formatting when re-publishing a catalog.
 **Can I get the product's SEO title/description and star rating?** Yes, set `detailLevel: "full"`. Those aren't in Shopify's `products.json` feed at all — they only live on the rendered product page (`<title>`/meta description tags and, when the store runs a review app like Judge.me or Yotpo, a `ratingValue`/`reviewCount` in the page's structured data), so getting them costs one extra HTTP request per product and is priced as its own event.
 **Does it bypass password-protected or dev stores?** No — only publicly reachable catalogs are read, same as a logged-out shopper would see.
+**Can I search a store for a keyword instead of scraping its whole catalog?** Yes, set `searchQuery` (e.g. `"wool"` or `"merino sweater"`) — it matches against title, vendor, product type and tags (all words must appear). It's a client-side filter, not a separate search API call, since Shopify's public feed has no server-side keyword search; a store with a large catalog still takes the same time to scan as an unfiltered run of the same store.
 
 ## Related guides
 Engineering write-ups behind this Actor:
