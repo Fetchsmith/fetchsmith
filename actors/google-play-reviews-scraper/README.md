@@ -17,7 +17,7 @@ Get Google Play app reviews and app details (ratings, installs, developer info) 
 | `country` | string | Play Store country code (default `us`) |
 | `language` | string | Language for reviews/details (default `en`) |
 | `sort` | string | `NEWEST` (default), `RATING`, or `HELPFULNESS` |
-| `maxReviewsPerApp` | integer | Stop after this many reviews per app (default 100) |
+| `maxReviewsPerApp` | integer | Reviews to *fetch* per app before moving to the next one (default 100, max 5000) — counted before rating/keyword/appVersion/date filtering, see FAQ |
 | `includeAppDetails` | boolean | Also push one app-details record per app (default true) |
 | `maxResults` | integer | Hard cap across all apps and records (default 500) |
 | `minScore` / `maxScore` | integer | Only keep reviews with a star rating in this range (1-5) |
@@ -63,6 +63,8 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 **Can I filter to just negative or just recent reviews?** Yes — set `maxScore` (e.g. 2) for negative-only, `ratingFilter: [1, 5]` for only the extremes, or `sinceDate`/`untilDate` for a date window; filtering happens before you're charged, so you never pay for rows you filtered out.
 
 **Can I see what broke in a specific release?** Set `appVersions` to the version string(s) you care about (they match the `version` field on each review row) and, if you want, combine it with `maxScore: 2` and `keywords` to isolate the complaints. Reviews where Google Play reports no version are excluded rather than guessed at.
+
+**Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **fetch cap**, not a match count — Google Play returns up to that many reviews (newest-first by default), and rating/keyword/appVersion/date filters are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting further back in the feed: on WhatsApp (`com.whatsapp`) with `keyword: "crash"`, `maxReviewsPerApp: 20` fetches 20 reviews and keeps 0, but raising it to `200` finds 1 — the match was always there, just never fetched. When this happens the log carries a `WARN` naming the cap and how many fetched reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
 
 ## Related guides
 Engineering write-ups behind this Actor:

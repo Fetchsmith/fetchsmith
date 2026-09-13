@@ -151,6 +151,11 @@ if (!resolvedAppIds.length) {
 
 const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
 const filteredOutApps = []; // reviews existed but rating/keyword/appVersion/date filters removed all of them
+// Apps where maxReviewsPerApp was hit (gplay.reviews() returned exactly that many) while the
+// rating/keyword/appVersion/date filters were still dropping some of them -- maxReviewsPerApp
+// caps reviews FETCHED, before filtering, so matching reviews may sit further back in Google
+// Play's feed and were never fetched at all.
+const depthCappedApps = [];
 const erroredApps = [];
 const invalidApps = []; // app() confirmed the appId doesn't exist -- not a country/language issue
 const seenReviewIds = new Set();
@@ -175,7 +180,16 @@ for (const appId of resolvedAppIds) {
   const pushedBefore = pushed;
   try {
     const { data } = await gplay.reviews({ appId, lang, country, sort, num: maxReviewsPerApp });
-    log.info(`${appId}: fetched ${data.length} reviews, ${data.filter(passesFilters).length} pass filters`);
+    const passCount = data.filter(passesFilters).length;
+    log.info(`${appId}: fetched ${data.length} reviews, ${passCount} pass filters`);
+    if (data.length === maxReviewsPerApp && passCount < data.length) {
+      depthCappedApps.push(appId);
+      log.warning(
+        `${appId}: maxReviewsPerApp (${maxReviewsPerApp}) was reached and ${data.length - passCount} of the `
+        + `fetched reviews were removed by your rating/keyword/appVersion/date filters. The cap counts reviews `
+        + `fetched, before filtering -- raise maxReviewsPerApp to search deeper in the feed.`,
+      );
+    }
     for (const r of data) {
       if (!passesFilters(r)) continue;
       // Never push (and under pay-per-result, never charge for) the same reviewId twice --
@@ -208,10 +222,14 @@ if (pushed === 0 && resolvedAppIds.length) {
     ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
     : erroredApps.length
     ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
+    : depthCappedApps.length && !emptyApps.length
+      ? `maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/date filters for: ${depthCappedApps.join(', ')} — raise maxReviewsPerApp to search deeper`
     : filteredOutApps.length && !emptyApps.length
       ? 'reviews were found but every one was removed by your rating/keyword/appVersion/date filters'
       : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
   await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
+} else if (depthCappedApps.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyApps.length || filteredOutApps.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
 }

@@ -197,7 +197,7 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
         break;
       }
       got += 1; tally.got += 1;
-      if (!passesFilters(item)) continue;
+      if (!passesFilters(item)) { tally.filteredOut += 1; continue; }
       keepGoing = await pushResult(item);
       if (!keepGoing) break;
     }
@@ -211,7 +211,7 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
 // other rather than telling the user there are no reviews. Rows always carry `sortUsed`.
 async function scrapeAppCountry(appId, country, extra = {}) {
   const seen = new Set();
-  const tally = { got: 0 };
+  const tally = { got: 0, filteredOut: 0 };
   const info = await getAppInfo(appId, country);
   await scrapeAppCountrySort(appId, country, sort, seen, info, tally, extra);
   if (tally.got === 0 && keepGoing) {
@@ -219,7 +219,10 @@ async function scrapeAppCountry(appId, country, extra = {}) {
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
     await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra);
   }
-  return tally.got;
+  // maxReviewsPerApp (perApp) caps reviews SCANNED, before minRating/maxRating/keyword filtering
+  // -- if the cap was hit and some scanned reviews were dropped by a filter, matching reviews may
+  // still sit deeper in Apple's feed and were never looked at.
+  return { got: tally.got, filteredOut: tally.filteredOut, capReached: tally.got >= perApp };
 }
 
 if (appNames.length) {
@@ -230,6 +233,9 @@ if (!apps.length) await Actor.fail('None of the given "apps"/"appNames" resolved
 
 const emptyPairs = [];
 const filteredOutPairs = [];
+// Pairs where maxReviewsPerApp was hit while minRating/maxRating/keyword still discarded scanned
+// reviews -- reviews deeper in Apple's feed were never scanned.
+const depthCappedPairs = [];
 let keepGoing = true;
 for (const app of apps) {
   if (!keepGoing) break;
@@ -238,8 +244,16 @@ for (const app of apps) {
   for (const country of countries) {
     if (!keepGoing) break;
     const pushedBefore = pushed;
-    const got = await scrapeAppCountry(appId, country);
+    const { got, filteredOut, capReached } = await scrapeAppCountry(appId, country);
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
+    if (capReached && filteredOut > 0) {
+      depthCappedPairs.push(`${appId}/${country}`);
+      log.warning(
+        `${appId}/${country}: scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${filteredOut} of them `
+        + `were excluded by the minRating/maxRating/keyword filters. The cap counts reviews scanned, before `
+        + `filtering — raise maxReviewsPerApp to search deeper.`,
+      );
+    }
     if (got === 0) {
       const alt = await probeStorefronts(appId, country);
       if (countryFallback && alt?.length) {
@@ -247,9 +261,16 @@ for (const app of apps) {
         // storefront they really came from plus `requestedCountry`, so nothing is mislabelled.
         const fb = alt[0];
         log.info(`countryFallback: "${country}" is empty for ${appId}, retrieving reviews from "${fb}" instead.`);
-        const fbGot = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true });
-        log.info(`${appId}/${fb} (fallback): ${fbGot} reviews fetched, ${pushed - pushedBefore} kept after filters`);
-        if (fbGot > 0) continue;
+        const fb2 = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true });
+        log.info(`${appId}/${fb} (fallback): ${fb2.got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
+        if (fb2.capReached && fb2.filteredOut > 0) {
+          depthCappedPairs.push(`${appId}/${fb}`);
+          log.warning(
+            `${appId}/${fb} (fallback): scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${fb2.filteredOut} `
+            + `of them were excluded by the minRating/maxRating/keyword filters — raise maxReviewsPerApp to search deeper.`,
+          );
+        }
+        if (fb2.got > 0) continue;
       }
       emptyPairs.push(`${appId}/${country}`);
       const hint = alt?.length
@@ -264,10 +285,14 @@ for (const app of apps) {
 }
 log.info(`Done. Pushed ${pushed} reviews.`);
 if (pushed === 0) {
-  const why = filteredOutPairs.length && !emptyPairs.length
+  const why = depthCappedPairs.length && !emptyPairs.length
+    ? `maxReviewsPerApp (${perApp}) was hit before any review passed your minRating/maxRating/keyword filters for: ${depthCappedPairs.join(', ')} — raise maxReviewsPerApp to search deeper`
+    : filteredOutPairs.length && !emptyPairs.length
     ? 'reviews were found but every one was removed by your minRating/maxRating/keyword filters'
     : `Apple's review feed returned nothing for: ${emptyPairs.join(', ')} (try another storefront in "countries")`;
   await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
+} else if (depthCappedPairs.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} reviews. maxReviewsPerApp (${perApp}) was hit while filtering: ${depthCappedPairs.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyPairs.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} reviews. Empty Apple feed for: ${emptyPairs.join(', ')}.`);
 }

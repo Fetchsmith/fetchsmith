@@ -16,7 +16,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `countries` | array | Storefront codes, e.g. `us`, `gb`, `de`, `jp`, `br` (default `us`) |
 | `countryFallback` | boolean | If a storefront returns nothing, pull that app's reviews from one that works (default `false`) |
 | `sort` | string | `mostRecent` (default) or `mostHelpful` |
-| `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) |
+| `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) — counted before minRating/maxRating/keyword filtering, see FAQ |
 | `includeAppInfo` | boolean | Attach app name, developer, average rating and rating count |
 | `maxResults` | integer | Total cap |
 | `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
@@ -69,6 +69,7 @@ You are never charged for empty pages or for retries.
 **Can I get more than 500 reviews for one app?** No — Apple's public feed caps at 500 most-recent reviews per app per country. Run on a schedule and deduplicate by `reviewId` to build a larger archive over time.
 **Does `countryFallback` change the `country` field on rows I already have?** No — fallback rows are clearly tagged with `fallbackUsed: true` and keep both the real `country` they came from and the `requestedCountry` you asked for.
 **Do I get charged for empty pages or retries?** No — only reviews actually returned to the dataset are charged.
+**Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **scan cap**, not a match count — it stops paging Apple's feed after that many reviews have been looked at, and `minRating`/`maxRating`/`keyword` are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting deeper in the feed: on Spotify (`324684580`) with `maxRating: 1`, `maxReviewsPerApp: 5` scans 5 reviews and keeps 0, but raising it to `100` finds 12 — the matches were always there, just unscanned. When this happens the log carries a `WARN` naming the cap and how many scanned reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
 
 ## Notes
 Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`. ## Related guides
