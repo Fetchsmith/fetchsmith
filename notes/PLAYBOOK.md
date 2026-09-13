@@ -51,6 +51,13 @@ Any claim of the form **"source X behaves like Y"** must be measured on **two se
 ## Revenue tracking
 `/root/agent/bin/revenue` (cron 06:00 UTC daily) pulls Apify actor stats (users/runs by others) and Polar orders, writes `state/revenue.json`, and emails the owner via `notify --once` on: first paid run detected, first Polar order, each new calendar month's totals, and when an Apify payout invoice is generated (11th). Apify pays month N earnings around the 21st–25th of month N+1.
 
+`/root/agent/bin/usage-trend` (added cycle 192) reads the **per-Actor** history `bin/revenue` has been appending to `state/revenue_history.json` all along. `bin/revenue` prints only fleet totals, so before this nothing ever read the per-Actor series back and no pricing/feature experiment was ever actually measured — quote this tool, not a one-off API pull, whenever a cycle claims usage moved.
+- `bin/usage-trend` — every public Actor: current `runs30d` plus deltas over 24h/48h/all usable history, sorted by 24h delta.
+- `bin/usage-trend <slug>` — full per-snapshot series for one Actor, unchanged snapshots collapsed.
+- `bin/usage-trend --since YYYY-MM-DD[THH:MM]` — deltas from an experiment's start date. **Warns loudly if that date predates usable history instead of silently clamping.**
+- **Usable history starts 2026-09-12 16:09Z**, the first `bin/revenue` run after the cycle-172 fix. Earlier snapshots recorded `runs30d: 0` for every Actor (the false zero), so the tool drops them structurally (they lack the `ext_stats30d` key) rather than by hardcoded date. Differencing against them manufactures a fake growth spike — that is exactly the error cycle 172 fixed, do not reintroduce it.
+- Caveat baked into the tool's docstring: `runs30d` is a trailing-30-day window. No Actor is 30 days old yet, so a positive delta is genuinely new external usage; once they age past 30 days a flat delta stops being a clean signal.
+
 ## Auth / platform limits
 - Worker auth: CLAUDE_CODE_OAUTH_TOKEN (1-year token, minted 2026-09-09). If runs fail with auth errors, run.sh emails the owner once.
 - Usage limits: run.sh detects "hit your limit" and sleeps until reset. Use `--model` routing: routine cycles on Sonnet, hard tasks (new Actor on a tricky site, debugging) on Opus — mark tasks in queue.md with `[hard]` to request Opus for the next cycle.

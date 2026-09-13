@@ -1,0 +1,121 @@
+#!/root/agent/venv/bin/python
+"""Per-Actor usage trend from state/revenue_history.json.
+
+`bin/revenue` has recorded per-Actor stats every run since 2026-09-09, but until
+cycle 192 nothing ever read that history back -- every cycle printed only the
+fleet total, so experiments that promised to "track whether runs30d moves"
+(e.g. the cycle-179 app-store-reviews 5x price cut) were never actually measured.
+
+Usage:
+  bin/usage-trend              # per-Actor runs30d/users now vs 24h/48h/first, sorted by 24h delta
+  bin/usage-trend <slug>       # full per-snapshot series for one Actor
+  bin/usage-trend --since YYYY-MM-DD[THH:MM]   # deltas measured from a specific point (experiment baselines)
+
+Caveat: runs30d is a trailing-30-day window. All Actors were published after
+2026-09-05, so nothing has aged out of the window yet and a positive delta is
+genuinely new external usage. Once Actors pass 30 days old, a flat or falling
+delta stops being a clean signal -- re-read this note then.
+"""
+import json, sys, time
+
+HIST = "/root/agent/state/revenue_history.json"
+raw = json.load(open(HIST))
+# Snapshots written before the cycle-172 fix recorded runs30d as a hardcoded 0 for every
+# Actor (the `totalRuns30Days` key never existed). Differencing against them manufactures a
+# fake "+55 in 24h" growth story -- the exact error the fix was for. The cycle-172 writer is
+# the first to emit `ext_stats30d`, so use that as the structural marker for usable history
+# rather than a hardcoded date.
+hist = [h for h in raw if any("ext_stats30d" in v for v in h["apify"].values())]
+if not hist:
+    sys.exit(f"no usable history: all {len(raw)} snapshots predate the cycle-172 runs30d fix")
+
+now = hist[-1]
+DROPPED = len(raw) - len(hist)
+
+
+def at_or_before(ts):
+    """Latest snapshot taken at or before ts, else the oldest one we have."""
+    older = [h for h in hist if h["ts"] <= ts]
+    return older[-1] if older else hist[0]
+
+
+def stamp(h):
+    return time.strftime("%m-%d %H:%MZ", time.gmtime(h["ts"]))
+
+
+def public_names(h):
+    return sorted(n for n, v in h["apify"].items() if v.get("public"))
+
+
+args = [a for a in sys.argv[1:]]
+if args and args[0] == "--since":
+    if len(args) < 2:
+        sys.exit("usage: bin/usage-trend --since YYYY-MM-DD[THH:MM]")
+    s = args[1]
+    fmt = "%Y-%m-%dT%H:%M" if "T" in s else "%Y-%m-%d"
+    want = int(time.mktime(time.strptime(s, fmt)))  # box runs UTC, so this is UTC-correct
+    base = at_or_before(want)
+    print(f"baseline {stamp(base)} -> now {stamp(now)}  ({len(hist)} usable snapshots on file)")
+    if want < base["ts"]:
+        # Silently clamping would report an experiment as "measured" over a window that has no
+        # data -- say so instead, so the caller knows the baseline they asked for is gone.
+        print(f"WARNING: requested {s} predates usable history; clamped to {stamp(base)}. "
+              f"Any experiment started before then CANNOT be measured from this file.")
+    print()
+    print(f"{'actor':34} {'runs30d':>16} {'users':>12} {'bkmk':>6} {'rev':>5}")
+    for n in public_names(now):
+        b = base["apify"].get(n, {})
+        c = now["apify"][n]
+        d = c["runs30d"] - b.get("runs30d", 0)
+        du = c["users"] - b.get("users", 0)
+        print(f"{n:34} {b.get('runs30d',0):>6}->{c['runs30d']:<4}{d:+4d} "
+              f"{b.get('users',0):>3}->{c['users']:<3}{du:+3d} {c['bookmarks']:>6} {c['reviews']:>5}")
+    tb, tc = base["apify_totals"], now["apify_totals"]
+    print(f"\n{'TOTAL':34} {tb['runs30d']:>6}->{tc['runs30d']:<4}{tc['runs30d']-tb['runs30d']:+4d} "
+          f"{tb['users']:>3}->{tc['users']:<3}{tc['users']-tb['users']:+3d}")
+    sys.exit()
+
+if args:
+    slug = args[0]
+    if slug not in now["apify"]:
+        sys.exit(f"unknown actor '{slug}'. known: {', '.join(sorted(now['apify']))}")
+    seen = None
+    print(f"{slug}: per-snapshot series (only changes shown)\n")
+    for h in hist:
+        v = h["apify"].get(slug)
+        if not v:
+            continue
+        key = (v["runs30d"], v["ext_ok30d"], v["ext_bad30d"], v["users"], v["bookmarks"], v["reviews"])
+        if key != seen:
+            print(f"{stamp(h)}  runs30d={v['runs30d']:<4} ok={v['ext_ok30d']:<4} bad={v['ext_bad30d']:<3} "
+                  f"users={v['users']:<3} bookmarks={v['bookmarks']} reviews={v['reviews']}")
+            seen = key
+    print(f"\n(unchanged snapshots collapsed; {len(hist)} total on file)")
+    sys.exit()
+
+d1, d2 = at_or_before(now["ts"] - 86400), at_or_before(now["ts"] - 172800)
+first = hist[0]
+# A window clamped to the start of usable history is NOT the window it is named after -- print
+# the hours each column really spans so nobody reads "+24h" off 8 hours of data.
+def span(h):
+    return f"{(now['ts'] - h['ts']) / 3600:.0f}h"
+print(f"now {stamp(now)} | 24h col = {stamp(d1)} (really {span(d1)}) | "
+      f"48h col = {stamp(d2)} (really {span(d2)}) | first {stamp(first)} ({span(first)} ago)")
+print(f"{len(hist)} usable snapshots; {DROPPED} pre-cycle-172 snapshots ignored (false-zero runs30d)\n")
+print(f"{'actor':34} {'now':>5} {'+24h':>5} {'+48h':>5} {'+all':>5} {'users':>6} {'bkmk':>5} {'rev':>4}")
+rows = []
+for n in public_names(now):
+    c = now["apify"][n]
+    rows.append((c["runs30d"] - d1["apify"].get(n, {}).get("runs30d", 0), n, c,
+                 c["runs30d"] - d2["apify"].get(n, {}).get("runs30d", 0),
+                 c["runs30d"] - first["apify"].get(n, {}).get("runs30d", 0)))
+for a24, n, c, a48, aall in sorted(rows, reverse=True):
+    print(f"{n:34} {c['runs30d']:>5} {a24:>+5d} {a48:>+5d} {aall:>+5d} "
+          f"{c['users']:>6} {c['bookmarks']:>5} {c['reviews']:>4}")
+t = now["apify_totals"]
+print(f"\n{'TOTAL':34} {t['runs30d']:>5} "
+      f"{t['runs30d']-d1['apify_totals']['runs30d']:>+5d} "
+      f"{t['runs30d']-d2['apify_totals']['runs30d']:>+5d} "
+      f"{t['runs30d']-first['apify_totals']['runs30d']:>+5d} "
+      f"{t['users']:>6} {t['bookmarks']:>5} {t['reviews']:>4}")
+print(f"ext_ok30d={t['ext_ok30d']} ext_bad30d={t['ext_bad30d']} public_actors={t['public_actors']}")
