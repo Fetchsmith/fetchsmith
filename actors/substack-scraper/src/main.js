@@ -48,6 +48,8 @@ const discoverType = ['all', 'newsletter', 'podcast'].includes(input.discoverTyp
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
+let excludedByFilters = 0;
+const filtersActive = audienceFilter !== 'all' || !!publishedAfter || !!publishedBefore;
 
 async function pushResult(item, eventName = 'result') {
   if (isPPE) {
@@ -187,7 +189,7 @@ async function fetchDetail(origin, slug) {
 }
 
 async function handlePost(post, origin, preloadedDetail = null) {
-  if (!matchesAudience(post) || !matchesDate(post)) return true;
+  if (!matchesAudience(post) || !matchesDate(post)) { excludedByFilters += 1; return true; }
   const needDetail = includeBodyText || includeBodyHtml;
   const detail = preloadedDetail ?? (needDetail && post.slug ? await fetchDetail(origin, post.slug) : null);
   keepGoing = await pushResult(mapPost(post, origin, detail));
@@ -216,6 +218,7 @@ async function scrapePublication(origin) {
   let seen = 0;
   const pageSize = 50;
   const pushedBefore = pushed;
+  const excludedBefore = excludedByFilters;
   let requestFailed = false;
   while (keepGoing && seen < maxPostsPerPublication && timeBudgetOk()) {
     const url = new URL(`${origin}/api/v1/archive`);
@@ -241,6 +244,17 @@ async function scrapePublication(origin) {
   }
   if (requestFailed && seen === 0) return 'error';
   if (seen === 0) return 'empty';
+  // Depth cap reached with filters discarding posts: whatever sits deeper in the archive was
+  // never looked at, so the result set is truncated by the cap rather than by the filters.
+  if (seen >= maxPostsPerPublication && excludedByFilters > excludedBefore) {
+    const dropped = excludedByFilters - excludedBefore;
+    log.warning(
+      `${origin}: scanned the maxPostsPerPublication limit of ${maxPostsPerPublication} post(s) and `
+      + `${dropped} of them were excluded by audienceFilter/publishedAfter/publishedBefore. `
+      + `The cap counts posts scanned, before filtering — raise maxPostsPerPublication to search deeper.`,
+    );
+    depthCapped.push(origin);
+  }
   return pushed > pushedBefore ? 'ok' : 'filtered';
 }
 
@@ -334,6 +348,9 @@ publicationTargets.push(...dedupedPublications);
 const errored = [];
 const empty = [];
 const filtered = [];
+// Publications where the maxPostsPerPublication depth cap was reached while filters were
+// dropping posts — the user is silently seeing fewer results than actually match.
+const depthCapped = [];
 
 if (!publicationTargets.length && !postTargets.length) {
   const why = unknownCategories
@@ -373,12 +390,18 @@ if (!publicationTargets.length && !postTargets.length) {
           ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/publishedAfter/publishedBefore — try widening those filters`
           : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
     await Actor.setStatusMessage(`No items returned — ${why}.`);
-  } else if (errored.length || empty.length || filtered.length || timeBudgetNote) {
+  } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote) {
     const notes = [];
     if (timeBudgetNote) notes.push(timeBudgetNote);
     if (errored.length) notes.push(`request failed for ${errored.join(', ')}`);
     if (empty.length) notes.push(`no posts found for ${empty.join(', ')}`);
     if (filtered.length) notes.push(`filters excluded everything from ${filtered.join(', ')}`);
+    if (depthCapped.length) {
+      notes.push(
+        `hit maxPostsPerPublication (${maxPostsPerPublication}) while filtering ${depthCapped.join(', ')}`
+        + ` — the cap counts posts scanned before filters, so raise it to search deeper`,
+      );
+    }
     await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
   }
 }

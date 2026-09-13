@@ -117,7 +117,7 @@
     "maxPostsPerPublication": {
       "title": "Max posts per publication",
       "type": "integer",
-      "description": "How deep to go into each publication's archive.",
+      "description": "How deep to go into each publication's archive. This counts posts SCANNED, before audienceFilter/publishedAfter/publishedBefore are applied — so when you use those filters (or searchQuery, which returns matches in relevance order, not date order), raise this well above the number of results you want, or matching posts deeper in the archive are never looked at.",
       "default": 50,
       "minimum": 1,
       "maximum": 5000

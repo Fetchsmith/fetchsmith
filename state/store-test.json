@@ -1,9 +1,9 @@
 {
- "ts": 1789294200,
+ "ts": 1789330195,
  "results": {
   "substack-scraper": {
    "status": "SUCCEEDED",
-   "secs": 97,
+   "secs": 87,
    "items": 50,
    "pass": true
   }
