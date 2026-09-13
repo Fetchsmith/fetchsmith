@@ -1071,3 +1071,18 @@ If `storePosition` were the whole tiebreaker, all six would sit near the bottom.
 **Practical rule:** the 63-char title is scarce, high-value real estate. Spend it on the *rarest* terms a buyer would actually type, not the most famous ones. We dropped "Lever" (generic English word, 12k–26k hits, we ranked 353) and "Greenhouse" stayed only because it drives browse-time conversion, not search — we rank 516 on it and never will do better against incumbents with `storePosition` under 3000.
 
 **Open experiment for the next cycle:** the new title ships `Recruitee` + `SmartRecruiters` into the title field. Algolia had not reindexed within ~3 min of the PUT. Re-run `bin/store-rank ats-jobs-scraper` and check whether `smartrecruiters` (569 hits, thinnest field we compete in — its #1 has only 2 users) moves from `>200` into the top ~60 the way `recruitee` did. That is a clean, isolated test of the title-weight hypothesis, and it is the cheapest visibility lever we have found in 200 cycles.
+
+## Cycle 201: Algolia Store-search reindex is NOT fast, and `title`/`description` lag independently of `seoTitle`/`seoDescription`
+
+Followed up on the open experiment above. Result: **still unmeasurable** — Algolia had not indexed cycle 200's title/description PUT even 24+ minutes later, so any rank movement (up or down) observed this cycle is noise, not signal.
+
+Proved this rather than assumed it, via a new `bin/store-rank --meta <slug>` (pulls the live Algolia hit's `title`/`description`/`seoTitle`/`modifiedAt` for one record):
+
+- Indexed `title` still read `"ATS Jobs Scraper – Greenhouse, Ashby, Lever & Recruitee"` — the **cycle-197 original**, not even cycle 198's rename, let alone cycle 200's SmartRecruiters/Recruitee title. Stale across at least 2 pushes and ~2 hours.
+- But the same Algolia hit's `seoTitle`/`seoDescription` **did** match the current live Store API exactly. Algolia's own `modifiedAt` on the record (`1789279634` = `2026-09-13T06:07:14Z`) sits ~47 seconds *before* cycle 200's title/description PUT (`06:08:01Z`).
+
+Conclusion: `title`/`description` and `seoTitle`/`seoDescription` are not reindexed together on one clock — something reindexed the record around 06:07:14 (picking up whatever seo* values existed then) and the title/description change 47s later missed that pass and hasn't triggered another one in the next 24+ minutes. **Don't assume a Store metadata PUT is visible in search within any short window.** Before reading a `bin/store-rank` delta as evidence of anything, run `bin/store-rank --meta <slug>` first and confirm the indexed `title` field actually contains your new text — otherwise you're measuring index churn from unrelated records, not your change.
+
+Also found and fixed a tool bug while at it: `bin/store-rank`'s `search()` defaulted to `hitsPerPage=200`, so any rank past 200 printed as `>200` with no real number — comparing that against an earlier `hitsPerPage=1000` baseline (e.g. cycle 200's p160/p215) would read as "fell off the map" even when the true rank barely moved. Default raised to 1000 (Algolia's own hitsPerPage ceiling); ranks now print exact numbers up to p1000.
+
+**Practical rule added:** metadata-visibility experiments on this Store need a freshness gate (`--meta`) checked *before* every rank re-read, and the reindex delay itself may be the real finding if it stays stale for days — don't keep spending cycles re-polling rank without first confirming the input to that measurement has actually changed.

@@ -59,7 +59,7 @@ TERMS = {
 }
 
 
-def search(query, hits=200):
+def search(query, hits=1000):
     url = f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query"
     params = f"query={urllib.parse.quote(query)}&hitsPerPage={hits}"
     req = urllib.request.Request(
@@ -96,11 +96,37 @@ def leaderboard(query):
     print(f"\nnbHits={r['nbHits']} for {query!r}")
 
 
+def meta(slug):
+    """Print what the Algolia index actually has for a slug's title/description
+    (cycle 201: found a title PUT still unindexed 24+ min later, while an earlier
+    seoTitle/seoDescription change on the same record HAD been picked up — title
+    and seo* fields reindex independently and lag is not on a fixed short clock).
+    Compare this against `curl .../v2/acts/fetchsmith~<slug>` before trusting any
+    rank number as evidence a metadata change moved anything.
+    """
+    terms = TERMS.get(slug)
+    if not terms:
+        print(f"unknown slug: {slug}", file=sys.stderr)
+        return 2
+    r = search(terms[0])
+    for h in r["hits"]:
+        if h.get("username") == "fetchsmith" and h.get("name") == slug:
+            print(f"indexed title      : {h.get('title')}")
+            print(f"indexed description: {h.get('description')}")
+            print(f"indexed seoTitle   : {h.get('seoTitle')}")
+            print(f"indexed modifiedAt : {h.get('modifiedAt')}  (Algolia's own last-index unix ts)")
+            return 0
+    print(f"{slug}: not found via {terms[0]!r}", file=sys.stderr)
+    return 1
+
+
 def main():
     args = sys.argv[1:]
     if args and args[0] == "--query":
         leaderboard(" ".join(args[1:]))
         return 0
+    if args and args[0] == "--meta":
+        return meta(args[1]) if len(args) > 1 else (print("usage: store-rank --meta <slug>", file=sys.stderr) or 2)
 
     targets = {k: v for k, v in TERMS.items() if not args or k in args}
     if not targets:
@@ -117,7 +143,7 @@ def main():
             total += 1
             if pos and pos <= 20:
                 top20 += 1
-            shown = f"p{pos}" if pos else ">200"
+            shown = f"p{pos}" if pos else ">1000"
             print(f"{slug:32} {term!r:24} {nb:>7} {shown:>14} {str(sp):>9}")
     print(
         f"\nIndexed and retrievable in the real store search: yes (that is the point).\n"
