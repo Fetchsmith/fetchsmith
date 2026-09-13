@@ -1,0 +1,88 @@
+#!/root/agent/venv/bin/python
+"""Baseline-adjusted demand: strip the Apify per-Actor daily auto-run floor out of runs30d.
+
+WHY (discovered cycle 224): `bin/revenue`/`bin/usage-trend` report
+`publicActorRunStats30Days.TOTAL` as "external demand". That number is real
+(our own health runs genuinely do not appear in it) but it is NOT all demand:
+every public Actor accrues a near-constant ~1.1-1.3 runs/day from the moment it
+is published, independent of niche, price, feature depth or listing copy. Across
+the 18-Actor fleet on 2026-09-13, 17 of 18 Actors sat in a 1.10-1.40 runs/day
+band since publication -- a flat floor, not a demand curve. Only
+`shopify-products-scraper` exceeded it (2.85/day). Reading the raw total is what
+made ~20 cycles record "broad organic pickup, +1 across 7 Actors" when what was
+actually happening was each Actor collecting its one automatic daily run.
+
+This tool subtracts that floor. `excess` is the only number here that responds to
+anything we do; treat it -- not runs30d -- as the demand signal.
+
+  real-demand            -> per-Actor table + fleet totals
+  real-demand --json     -> machine-readable
+"""
+import json, statistics, sys, time
+
+HIST = "/root/agent/state/revenue_history.json"
+WINDOW_DAYS = 30.0
+# An Actor needs to have been public this long before its rate is stable enough
+# to fold into the baseline estimate (a half-day-old Actor reads 1.85/day purely
+# from integer rounding of a single run).
+MIN_DAYS_FOR_BASELINE = 1.5
+
+
+def load():
+    hist = json.load(open(HIST))
+    first_public = {}
+    for snap in hist:
+        for name, a in (snap.get("apify") or {}).items():
+            if a.get("public") and name not in first_public:
+                first_public[name] = snap["ts"]
+    last = hist[-1]
+    return last, first_public
+
+
+def compute():
+    last, first_public = load()
+    now = last["ts"]
+    rows = []
+    for name, a in (last.get("apify") or {}).items():
+        if not a.get("public"):
+            continue
+        # runs30d only counts the trailing 30 days, so an Actor public for longer
+        # than the window has an effective exposure of exactly the window.
+        days = min((now - first_public.get(name, now)) / 86400.0, WINDOW_DAYS)
+        rows.append({"actor": name, "days_public": days, "runs30d": a.get("runs30d", 0),
+                     "rate": a.get("runs30d", 0) / days if days > 0 else 0.0,
+                     "users": a.get("users", 0), "users30d": a.get("users30d", 0)})
+    stable = [r["rate"] for r in rows if r["days_public"] >= MIN_DAYS_FOR_BASELINE]
+    # Median, not mean: a genuine breakout Actor must not drag the floor up and
+    # hide itself. Falls back to 0 (i.e. no correction) if nothing is stable yet.
+    baseline = statistics.median(stable) if stable else 0.0
+    for r in rows:
+        r["expected"] = baseline * r["days_public"]
+        r["excess"] = r["runs30d"] - r["expected"]
+    rows.sort(key=lambda r: -r["excess"])
+    return {"ts": now, "date": last.get("date"), "baseline_runs_per_day": baseline,
+            "actors": rows,
+            "raw_runs30d": sum(r["runs30d"] for r in rows),
+            "baseline_runs30d": sum(r["expected"] for r in rows),
+            "excess_runs30d": sum(r["excess"] for r in rows)}
+
+
+def main():
+    res = compute()
+    if "--json" in sys.argv:
+        print(json.dumps(res, indent=2))
+        return
+    print(f"as of {res['date']} ({time.strftime('%H:%MZ', time.gmtime(res['ts']))})  "
+          f"baseline floor = {res['baseline_runs_per_day']:.2f} runs/day/Actor (fleet median)")
+    print(f"{'actor':32} {'days':>6} {'runs30d':>8} {'expect':>7} {'excess':>7} {'users':>6}")
+    for r in res["actors"]:
+        flag = "  <-- real demand" if r["excess"] >= 2 else ""
+        print(f"{r['actor']:32} {r['days_public']:6.2f} {r['runs30d']:8} "
+              f"{r['expected']:7.1f} {r['excess']:+7.1f} {r['users']:6}{flag}")
+    print(f"\nraw runs30d       {res['raw_runs30d']:8}")
+    print(f"baseline floor    {res['baseline_runs30d']:8.1f}  (accrues automatically on publication)")
+    print(f"REAL DEMAND       {res['excess_runs30d']:+8.1f}  <- the only number that responds to our work")
+
+
+if __name__ == "__main__":
+    main()
