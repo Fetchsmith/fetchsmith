@@ -22,13 +22,17 @@ All fields are optional; with an empty input you get the last year of food, drug
 | Field | Type | Description |
 |---|---|---|
 | `productTypes` | array | `food`, `drug`, `device`. Default: all three. Results are interleaved, not one type after another. |
-| `reportDateFrom` | string | Earliest FDA report date, `YYYY-MM-DD` or `YYYYMMDD`. Default: one year ago. |
-| `reportDateTo` | string | Latest FDA report date. Default: today. |
+| `dateField` | string | Which date `reportDateFrom`/`reportDateTo` filter on: `report_date` (default, when FDA published the report), `recall_initiation_date` (when the recall actually started), or `termination_date` (when it closed out). |
+| `reportDateFrom` | string | Earliest date for the field above, `YYYY-MM-DD` or `YYYYMMDD`. Default: one year ago. |
+| `reportDateTo` | string | Latest date for the field above. Default: today. |
 | `classifications` | array | `Class I` (reasonable probability of serious harm or death), `Class II` (temporary/reversible), `Class III` (unlikely to cause harm). Empty = all. |
 | `states` | array | Two-letter state codes of the **recalling firm**. Empty = all. |
 | `status` | string | `Ongoing`, `Completed`, `Terminated`, `Pending`. Empty = all. |
+| `recallingFirm` | string | Filter to one firm, e.g. `Tyson Foods`. Narrower than `searchQuery`, which also matches product description and recall reason. |
+| `city` | string | Filter to recalls whose recalling firm is in this city, e.g. `Chicago`. |
+| `voluntaryMandated` | string | `Voluntary: Firm initiated` or `FDA Mandated` (rare, under 2% of recalls). Empty = both. |
 | `searchQuery` | string | Free-text phrase matched against product description, reason for recall and recalling firm. |
-| `order` | string | `desc` (newest report date first, default) or `asc`. |
+| `order` | string | `desc` (newest first, default) or `asc` — sorts by whichever field `dateField` selects. |
 | `maxResults` | integer | Total rows across all selected product types. Default 100. |
 
 Filters are **ANDed**. A search query plus a state plus a classification over a short date window often has zero real matches — drop one filter and retry.
@@ -105,7 +109,7 @@ Because FDA only publishes them for drugs. The `openfda` block that carries thos
 Interleaved across the product types you selected — one row per type per round — so a small `maxResults` gives you a mix rather than filling the whole quota from `food`. Within each product type, rows are ordered by `reportDate`.
 
 **What is the difference between `reportDate` and `recallInitiationDate`?**
-`recallInitiationDate` is when the firm started the recall; `reportDate` is when FDA published the enforcement report, which is often weeks or months later. The date filters apply to **`reportDate`**, so if you are looking for a recall you know began recently, widen the window.
+`recallInitiationDate` is when the firm started the recall; `reportDate` is when FDA published the enforcement report, which is often weeks or months later. The date filters apply to **`reportDate` by default** — set `dateField: "recall_initiation_date"` to filter on when the recall actually began instead, or `"termination_date"` to find recalls that closed out in a window.
 
 **Can I get more than 25,000 rows from one filter?**
 Yes. openFDA refuses to page past row 25,000 (`skip` is hard-capped), so when a query matches more than that the Actor automatically splits it into narrower `reportDate` windows and pages each one — the year-boundary split was verified to sum exactly to the unsplit total, with no duplicated or dropped rows. If one single window still exceeds the cap, the run logs a warning telling you to narrow the date range.
@@ -120,7 +124,7 @@ It reads openFDA, the FDA's own public open-data API, which requires no key and 
 The log explains why in order of likelihood. Usually it is ANDed filters that have no real intersection, or a `reportDate` window that is too narrow. Try one distinctive word in `searchQuery` rather than a long phrase.
 
 **How does this compare to other FDA recall scrapers?**
-Checked live pricing again on 2026-09-12, ranked by real external runs in the last 30 days: the busiest competitor charges $0.008/result tapering to $0.006154 on Gold+, another charges $0.05/result plus an AI-generated severity score, and one charges $0.004 tapering to $0.0024 on Gold+ with a start fee. This Actor is $0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee — at or below every all-three-types competitor, without the AI scoring (out of scope per our own inference policy). One food-only competitor charges $0.002/result plus a start fee, but covers food recalls alone.
+Checked live pricing again on 2026-09-13, against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, cheaper at every run size, and we cover drug and device recalls too, not just food. Their one real feature edge — filtering by recalling firm, city, voluntary/mandated status, and choosing which date field to filter on (report vs. initiation vs. termination date) — is now matched (`recallingFirm`, `city`, `voluntaryMandated`, `dateField` above).
 
 ## Related guides
 

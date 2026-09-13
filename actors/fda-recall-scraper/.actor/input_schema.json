@@ -12,17 +12,47 @@
       "uniqueItems": true,
       "default": ["food", "drug", "device"]
     },
-    "reportDateFrom": {
-      "title": "Report date from",
+    "dateField": {
+      "title": "Date field to filter on",
       "type": "string",
-      "description": "Earliest FDA enforcement-report date, YYYY-MM-DD or YYYYMMDD. Defaults to one year ago. Note this is when FDA published the report, which can be months after the recall started.",
+      "description": "Which date the date range below applies to. Report date (default) is when FDA published the enforcement report, which can be months after the recall actually started — switch to recall initiation date to catch recalls by when the firm/FDA acted, or termination date to find recalls that closed out in a window.",
+      "editor": "select",
+      "enum": ["report_date", "recall_initiation_date", "termination_date"],
+      "enumTitles": ["Report date (FDA publication)", "Recall initiation date", "Termination date"],
+      "default": "report_date"
+    },
+    "reportDateFrom": {
+      "title": "Date from",
+      "type": "string",
+      "description": "Earliest date, YYYY-MM-DD or YYYYMMDD, for whichever field dateField selects (report date by default). Defaults to one year ago.",
       "editor": "textfield"
     },
     "reportDateTo": {
-      "title": "Report date to",
+      "title": "Date to",
       "type": "string",
-      "description": "Latest FDA enforcement-report date, YYYY-MM-DD or YYYYMMDD. Defaults to today.",
+      "description": "Latest date, YYYY-MM-DD or YYYYMMDD, for whichever field dateField selects (report date by default). Defaults to today.",
       "editor": "textfield"
+    },
+    "recallingFirm": {
+      "title": "Recalling firm",
+      "type": "string",
+      "description": "Filter to recalls by one firm, for example \"Tyson Foods\". Phrase-matched against the recalling_firm field. Leave empty for all firms. Narrower than searchQuery, which also matches product description and recall reason.",
+      "editor": "textfield"
+    },
+    "city": {
+      "title": "Recalling firm city",
+      "type": "string",
+      "description": "Filter to recalls whose recalling firm is in this city, for example \"Chicago\". Leave empty for all cities.",
+      "editor": "textfield"
+    },
+    "voluntaryMandated": {
+      "title": "Voluntary or FDA mandated",
+      "type": "string",
+      "description": "Filter by whether the recall was voluntary (firm-initiated) or FDA mandated. FDA-mandated recalls are rare (under 2% of all recalls) and often signal a more serious enforcement action.",
+      "editor": "select",
+      "enum": ["", "Voluntary: Firm initiated", "FDA Mandated"],
+      "enumTitles": ["Any", "Voluntary (firm initiated)", "FDA Mandated"],
+      "default": ""
     },
     "classifications": {
       "title": "Classifications",
@@ -61,7 +91,7 @@
     "order": {
       "title": "Sort order",
       "type": "string",
-      "description": "Sort by report date, newest or oldest first.",
+      "description": "Sort by whichever field dateField selects, newest or oldest first.",
       "editor": "select",
       "enum": ["desc", "asc"],
       "enumTitles": ["Newest report date first", "Oldest report date first"],

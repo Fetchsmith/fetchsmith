@@ -35,7 +35,21 @@ const classifications = (input.classifications ?? [])
 const states = (input.states ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const searchQuery = String(input.searchQuery ?? '').trim();
 const status = String(input.status ?? '').trim();
+const recallingFirm = String(input.recallingFirm ?? '').trim();
+const city = String(input.city ?? '').trim();
+const VOLUNTARY_MANDATED = ['Voluntary: Firm initiated', 'FDA Mandated'];
+const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMandated ?? '').trim())
+    ? String(input.voluntaryMandated).trim()
+    : '';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
+
+// Which date the reportDateFrom/reportDateTo range and the sort both apply to. report_date
+// (FDA publication) is the long-standing default; the other two are real distinct fields on
+// all three endpoints (verified live: sort and range both work on food/drug/device for all 3).
+const DATE_FIELDS = ['report_date', 'recall_initiation_date', 'termination_date'];
+const dateField = DATE_FIELDS.includes(String(input.dateField ?? '').trim())
+    ? String(input.dateField).trim()
+    : 'report_date';
 
 const compactDay = (d) => d.toISOString().slice(0, 10).replace(/-/g, '');
 const today = new Date();
@@ -52,19 +66,23 @@ const reportDateFrom = normDate(
 );
 const reportDateTo = normDate(input.reportDateTo, compactDay(today));
 
-// A bare `sort` is rejected unless the field exists on the endpoint; report_date is on all three.
+// A bare `sort` is rejected unless the field exists on the endpoint; all 3 dateField choices
+// are valid sort fields on all three endpoints (verified live).
 const order = input.order === 'asc' ? 'asc' : 'desc';
-const SORT = `report_date:${order}`;
+const SORT = `${dateField}:${order}`;
 
 // Lucene-ish query syntax: openFDA ANDs space-separated clauses and needs quoted phrases.
 const quote = (v) => `"${String(v).replace(/"/g, '')}"`;
 const orClause = (field, values) => `${field}:(${values.map(quote).join('+OR+')})`;
 
 function buildSearch(from, to) {
-    const clauses = [`report_date:[${from}+TO+${to}]`];
+    const clauses = [`${dateField}:[${from}+TO+${to}]`];
     if (classifications.length) clauses.push(orClause('classification', classifications));
     if (states.length) clauses.push(orClause('state', states));
     if (status) clauses.push(`status:${quote(status)}`);
+    if (recallingFirm) clauses.push(`recalling_firm:${quote(recallingFirm)}`);
+    if (city) clauses.push(`city:${quote(city)}`);
+    if (voluntaryMandated) clauses.push(`voluntary_mandated:${quote(voluntaryMandated)}`);
     if (searchQuery) {
         // Free text spans the three fields a buyer actually searches on.
         const q = quote(searchQuery);
@@ -225,10 +243,13 @@ async function pushResult(item) {
 }
 
 log.info(
-    `openFDA recalls: productTypes=[${productTypes.join(',')}] report_date ${reportDateFrom}..${reportDateTo} `
+    `openFDA recalls: productTypes=[${productTypes.join(',')}] ${dateField} ${reportDateFrom}..${reportDateTo} `
     + `sort=${SORT} maxResults=${maxResults}`
     + (classifications.length ? ` classifications=[${classifications.join(', ')}]` : '')
     + (states.length ? ` states=[${states.join(',')}]` : '')
+    + (recallingFirm ? ` recallingFirm="${recallingFirm}"` : '')
+    + (city ? ` city="${city}"` : '')
+    + (voluntaryMandated ? ` voluntaryMandated="${voluntaryMandated}"` : '')
     + (searchQuery ? ` searchQuery="${searchQuery}"` : ''),
 );
 
@@ -292,8 +313,9 @@ if (pushed === 0) {
         `No recalls matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) the filters are ANDed — a searchQuery plus a state plus a classification over a short '
         + 'report_date window often has zero real matches; drop one filter and retry. '
-        + '(2) reportDateFrom/reportDateTo filter on report_date (when FDA published the enforcement '
-        + 'report), which can be months after recall_initiation_date — widen the window. '
+        + `(2) reportDateFrom/reportDateTo currently filter on ${dateField} — if that's report_date `
+        + '(when FDA published the enforcement report), it can be months after the recall actually '
+        + 'started; try dateField="recall_initiation_date" or widen the window. '
         + '(3) "states" must be the 2-letter code of the RECALLING FIRM\'s state, not where the '
         + 'product was distributed; use distributionPattern in the output for distribution instead. '
         + '(4) searchQuery is a phrase match over product description, recall reason and firm name — '
