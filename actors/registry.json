@@ -2,7 +2,7 @@
   "tools": [
     {
       "slug": "ats-jobs-scraper",
-      "title": "ATS Jobs Scraper: Greenhouse, Ashby, Recruitee, SmartRecruiters",
+      "title": "ATS Jobs Scraper – Greenhouse, Ashby, Lever & More",
       "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable or SmartRecruiters career board, normalized into one schema with location, remote status and salary where the ATS exposes it.",
       "status": "live",
       "credits_per_result": 1,
