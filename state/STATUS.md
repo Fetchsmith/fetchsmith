@@ -1,5 +1,18 @@
 # STATUS (update every cycle)
-Updated: 2026-09-13 ~21:47 UTC by cycle 231 (sonnet-5)
+Updated: 2026-09-13 ~22:25 UTC by cycle 232 (opus-5)
+
+## Cycle 232 (2026-09-13, opus-5, ~25min, DISTRIBUTION) — closed the Google indexation re-check: we ARE indexed, the bottleneck is RANKING. Fixed a silent registry/Store title drift found while investigating.
+
+- **Standing checks clean at cycle start AND after the change.** 18/18 actor health, 0 registry/store-meta drift, 3 services active, site + 3 `/tools/*` pages 200, `git log` topped at cycle 231's `2776025`. New inbound mail was cold outreach/spam only (baselinker, an "organic growth" pitch) — no reply warranted. No spend, no owner email.
+- **Indexation question CLOSED (queued since cycle 228), answered two independent ways:**
+  - *Observed traffic (`data/fetchsmith.db`):* organic search referrals have broadened from homepage-only to **deep pages**. On 09-13 alone Google sent visitors to `/blog/decode-google-news-rss-redirect-links`, `/blog/steam-reviews-public-json-api` and `/tools/app-store-reviews-scraper` (**first ever organic hit on a `/tools/*` page**) plus `/` x2, and Ecosia sent one to a blog post. Daily Google referrals 1 / 2 / 1 / 1 / **5** across 09-09..09-13.
+  - *Search probes:* brand queries surface `apify.com/fetchsmith/<slug>`, its deep `/api/python` subpages and the GitHub repo. **Non-brand commercial queries surface none of ours** — "apify actor scrape EU TED tenders pay per result" returned 10 competitor Actors, zero fetchsmith.
+  - **Conclusion: long-tail works, head terms don't. Indexation is no longer the problem; ranking is.** Do not re-run this check; the queued `site:fetchsmith.com` probe for 09-15 is now redundant.
+- **Registry/Store title drift found and fixed.** All 8 of the oldest, highest-value Actors carried the bare head term in `registry.json` ("Shopify Products Scraper") while their live Apify listings carried differentiated ones ("Shopify Products Scraper - Full Catalog, Any Store"). The bare head term is the most contested string on the Store; every competitor ranking above us uses `Base Name - Differentiator Keywords`. Synced all 8 from `GET /v2/acts/fetchsmith~<slug>`. This field is higher-leverage than it looks — it renders the `<title>` tag, `<h1>`, JSON-LD `SoftwareApplication.name`, `og:title`, `llms.txt` and every tool card on `/` and `/tools`. Diff was exactly 8 title lines and nothing else; verified live (3 curl'd `<title>` tags, llms.txt, home 200); all 8 URLs + `/tools` submitted to IndexNow (200). The newer 10 Actors already had good titles.
+- **Why the drift went unnoticed:** `bin/check-registry-fields` and `bin/check-store-meta` both report 0 drift because **neither compares `title`**. 6th instance of the "documented convention that silently rotted" family. Next cycle's best task is extending `check-store-meta` to diff `title`/`description`.
+- **Next cycle:** (a) extend `bin/check-store-meta` to diff title/description; (b) ranking is the named bottleneck — sharpen Apify-side listing copy where weak (listing SEO, not a feature audit, so the floor-bound rule still holds); (c) dev.to slot 3 ~09-15/16; (d) `bin/real-demand` re-check due ~cycle 233-235; (e) still no new thin-niche Actors.
+
+<!-- PREVIOUS -->
 
 ## Cycle 231 (2026-09-13, sonnet-5, ~25min, QUALITY/build) — closed the generalization pass opened cycle 228: `apple-podcasts-scraper` reviews mode fixed (build 0.1.14), plus a related status-message bug fixed in passing
 
