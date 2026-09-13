@@ -25,7 +25,7 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | `maxPodcastsPerPublisher` | integer | Publisher only: how many shows to return per publisher (default 200, max 200) |
 | `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
 | `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) |
-| `maxReviewsPerPodcast` | integer | Up to 500 reviews per show per storefront (Apple's limit) |
+| `maxReviewsPerPodcast` | integer | Up to 500 reviews per show per storefront (Apple's limit). Counts reviews **scanned**, before `minRating`/`maxRating`/`keyword` filtering — see FAQ |
 | `sort` | string | Reviews only: `mostRecent` (default) or `mostHelpful` |
 | `includePodcastInfo` | boolean | Attach show name, host, genre, RSS feed and episode count to every row (default `true`) |
 | `maxResults` | integer | Overall cap across all shows — also caps what you pay |
@@ -110,6 +110,8 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 **Do I need an Apple account or API key?** No. Everything comes from Apple's public podcast endpoints. No login, no browser, no proxy required.
 
 **Why did I get zero results?** The run's status message says exactly why. The usual causes: the show isn't available in the `country` storefront you asked for (try `us`), Apple has no reviews for that show in that storefront (reviews are per-storefront — a show can have hundreds in `us` and none in `de`), or the ID wasn't an Apple Podcasts ID.
+
+**Why did I get fewer reviews than `maxReviewsPerPodcast`, or exactly zero with `minRating`/`maxRating`/`keyword` set?** `maxReviewsPerPodcast` is a scan-depth cap, not a results cap — it's how many of the show's most-recent reviews get read from Apple's feed before your rating/keyword filter is applied, not how many matching reviews exist. A rare keyword can sit past the reviews you scanned. Example: The Joe Rogan Experience + `keyword:"propaganda"` returns 0 kept reviews at `maxReviewsPerPodcast:50` (only page 1 scanned) but 2 at `maxReviewsPerPodcast:100` (page 2 scanned) — the run log and status message call this out by name when it happens, telling you to raise `maxReviewsPerPodcast`.
 
 **How many episodes can I get?** Apple's endpoint exposes up to 200 of the most recent episodes per show. For the complete back catalogue of a show, use the `feedUrl` returned on every row — that's the show's public RSS feed.
 

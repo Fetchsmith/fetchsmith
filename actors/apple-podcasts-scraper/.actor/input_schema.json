@@ -78,7 +78,7 @@
     "maxReviewsPerPodcast": {
       "title": "Max reviews per podcast",
       "type": "integer",
-      "description": "Apple exposes up to 500 reviews (10 pages of 50) per show per storefront.",
+      "description": "Apple exposes up to 500 reviews (10 pages of 50) per show per storefront. This cap counts reviews scanned before minRating/maxRating/keyword filtering, not results kept — see README FAQ.",
       "default": 200,
       "minimum": 1,
       "maximum": 500

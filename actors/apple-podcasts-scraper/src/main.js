@@ -230,6 +230,7 @@ async function scrapeEpisodes(id) {
 async function scrapeReviews(id) {
   const info = await getPodcastInfo(id);
   let got = 0;
+  let filteredOut = 0;
   for (let page = 1; page <= 10 && got < perPodcastReviews && keepGoing; page++) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     let entries = [];
@@ -257,12 +258,13 @@ async function scrapeReviews(id) {
         scrapedAt: new Date().toISOString(),
       };
       got += 1;
-      if (!reviewPassesFilters(item)) continue;
+      if (!reviewPassesFilters(item)) { filteredOut += 1; continue; }
       keepGoing = await pushResult(item);
       if (!keepGoing) break;
     }
   }
-  return got;
+  const capReached = got >= perPodcastReviews;
+  return { got, filteredOut, capReached };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -291,6 +293,7 @@ for (const term of searchTerms) {
 
 // ---- run -------------------------------------------------------------------
 const emptyIds = [];
+const depthCapped = [];
 if (dataType === 'charts') {
   // Rank comes from array order in both cases.
   const url = chartGenre
@@ -393,7 +396,21 @@ if (dataType === 'charts') {
     if (!keepGoing) break;
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     const before = pushed;
-    const got = dataType === 'reviews' ? await scrapeReviews(id) : await scrapeEpisodes(id);
+    let got;
+    if (dataType === 'reviews') {
+      const r = await scrapeReviews(id);
+      got = r.got;
+      if (r.capReached && r.filteredOut > 0) {
+        log.warning(
+          `Podcast ${id}: scanned the maxReviewsPerPodcast limit of ${perPodcastReviews} review(s) and ${r.filteredOut} of them `
+          + `were excluded by the minRating/maxRating/keyword filter. The cap counts reviews scanned, before filtering `
+          + `— raise maxReviewsPerPodcast to search deeper.`,
+        );
+        depthCapped.push(id);
+      }
+    } else {
+      got = await scrapeEpisodes(id);
+    }
     log.info(`${id}: ${got} ${dataType} fetched, ${pushed - before} kept after filters.`);
     if (got === 0) {
       emptyIds.push(id);
@@ -418,8 +435,14 @@ if (pushed === 0 && timeBudgetExceeded) {
     ? `Apple returned nothing for: ${emptyIds.join(', ')} in storefront "${country}"`
     : emptySearches.length
       ? `your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`
-      : 'no valid podcast IDs could be parsed from your input';
+      : depthCapped.length
+        ? `maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`
+        : dataType === 'reviews' && (keyword || minRating != null || maxRating != null)
+          ? 'every review Apple returned was removed by your minRating/maxRating/keyword filters'
+          : 'no valid podcast IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
+} else if (depthCapped.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`);
 } else if (emptyIds.length || timeBudgetExceeded) {
   await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` Apple returned nothing for: ${emptyIds.join(', ')}.` : ''}${timeBudgetNote}`);
 }
