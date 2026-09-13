@@ -1,6 +1,6 @@
 {
   "title": "Substack Scraper \u2013 Posts, Full Text & Comments",
-  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Discover newsletters by category \u2014 no URL list needed. Custom domains supported. No login, no browser. Pay per result, from $0.002 down to $0.0012.",
+  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Discover newsletters by category \u2014 no URL list needed. Custom domains supported. No login, no browser. Posts from $0.002, comments billed separately from $0.0006.",
   "seoTitle": "Substack Scraper API \u2013 Posts, Full Article Text & Comments",
   "seoDescription": "Scrape Substack publications to JSON/CSV: full article text, reactions, restacks and comments. Discover top newsletters by category, no URL list needed.",
   "categories": [
@@ -11,7 +11,7 @@
   "events": {
     "result": {
       "eventTitle": "Result",
-      "eventDescription": "One Substack post or comment returned to the dataset.",
+      "eventDescription": "One Substack post returned to the dataset.",
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.002
@@ -30,6 +30,30 @@
         },
         "DIAMOND": {
           "tieredEventPriceUsd": 0.0012
+        }
+      }
+    },
+    "comment": {
+      "eventTitle": "Comment",
+      "eventDescription": "One Substack comment returned to the dataset (only charged when includeComments is on).",
+      "eventTieredPricingUsd": {
+        "FREE": {
+          "tieredEventPriceUsd": 0.0006
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.0005
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.0004
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.0003
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.0003
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.0003
         }
       }
     }

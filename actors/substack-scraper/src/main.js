@@ -31,9 +31,9 @@ const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
 
-async function pushResult(item) {
+async function pushResult(item, eventName = 'result') {
   if (isPPE) {
-    const r = await Actor.charge({ eventName: 'result', count: 1 });
+    const r = await Actor.charge({ eventName, count: 1 });
     if (r.chargedCount === 0) return false; // budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
     return !r.eventChargeLimitReached && pushed < maxResults;
@@ -182,7 +182,7 @@ async function handlePost(post, origin, preloadedDetail = null) {
       const body = await getJson(`${origin}/api/v1/post/${post.id}/comments?token=&all_comments=true&sort=best_first`);
       const flat = flattenComments(body.comments).slice(0, maxCommentsPerPost);
       for (const c of flat) {
-        keepGoing = await pushResult(mapComment(c, post, origin));
+        keepGoing = await pushResult(mapComment(c, post, origin), 'comment');
         if (!keepGoing) return false;
       }
     } catch (e) {

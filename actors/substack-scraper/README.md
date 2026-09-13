@@ -12,7 +12,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - **Discover newsletters by category — no URL list needed.** Give `discoverCategories` a topic like `technology` or `finance` and the Actor pulls the top publications from Substack's own category leaderboard and scrapes them in the same run.
 - **Search inside a publication.** `searchQuery` filters the archive server-side instead of downloading everything.
 - **Many publications per run**, plus direct post URLs.
-- **Cheap:** $0.002 per result on the Free plan, tapering to $0.0012 on Gold and above — roughly 60-75% under the usual $0.005.
+- **Cheap:** $0.002 per post on the Free plan, tapering to $0.0012 on Gold and above — roughly 60-75% under the usual $0.005. Comments are billed separately at a lower rate ($0.0006 down to $0.0003), so comment-heavy runs aren't priced like full articles.
 
 ## Use cases
 
@@ -34,7 +34,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 | `searchQuery` | string | — | Only return posts matching this keyword within each publication's archive. |
 | `includeBodyText` | boolean | `true` | Fetch the full body and return clean plain text (one extra request per post). |
 | `includeBodyHtml` | boolean | `false` | Also return the original HTML body. |
-| `includeComments` | boolean | `false` | Also return each post's comments (charged as results). |
+| `includeComments` | boolean | `false` | Also return each post's comments (charged at the lower `comment` rate, not the post rate). |
 | `maxCommentsPerPost` | integer | `50` | Cap on comments per post. |
 | `audienceFilter` | string | `all` | `all`, `free` (public posts only) or `paid` (subscriber-only posts). |
 | `publishedAfter` / `publishedBefore` | string | — | ISO dates, e.g. `2026-01-01`. |
@@ -120,7 +120,12 @@ Two record shapes, distinguished by `type`.
 
 ## Pricing
 
-Pay per result: **$0.002 per post or comment on the Free plan, tapering to $0.0012 on Gold and above** (Bronze $0.0018, Silver $0.0015). `maxResults` is a hard cap, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
+Pay per result, split by item type so comment-heavy runs aren't billed at full-article rates:
+
+- **Posts:** $0.002 on the Free plan, tapering to $0.0012 on Gold and above (Bronze $0.0018, Silver $0.0015).
+- **Comments:** $0.0006 on the Free plan, tapering to $0.0003 on Gold and above (Bronze $0.0005, Silver $0.0004) — only charged when `includeComments` is on.
+
+`maxResults` is a hard cap across both event types, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
 
 ## FAQ
 
