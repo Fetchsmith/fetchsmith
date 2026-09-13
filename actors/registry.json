@@ -2,7 +2,7 @@
   "tools": [
     {
       "slug": "ats-jobs-scraper",
-      "title": "ATS Jobs Scraper – Greenhouse, Ashby, Lever & More",
+      "title": "ATS Jobs Scraper: Greenhouse, Ashby, Recruitee, SmartRecruiters",
       "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable or SmartRecruiters career board, normalized into one schema with location, remote status and salary where the ATS exposes it.",
       "status": "live",
       "credits_per_result": 1,
@@ -678,7 +678,7 @@
     {
       "slug": "eu-ted-tenders-scraper",
       "memory_mb": 1024,
-      "title": "EU TED Tenders Scraper (Public Procurement)",
+      "title": "EU TED Tenders Scraper – Country, CPV, Date & Expert Query",
       "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer name and contact, contract value, CPV codes, place of performance, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON. Filter by country, CPV code, notice type, full-text keywords or an absolute publication-date window.",
       "status": "live",
       "credits_per_result": 3,

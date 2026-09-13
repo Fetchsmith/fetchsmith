@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """check-store-meta — detect drift between local .actor/actor.json and the live
-Apify Store metadata (title, description).
+Apify Store metadata (title, description), AND between actors/registry.json's
+`title` (what fetchsmith.com renders) and that same live Store title.
 
 WHY (cycle 200): `apify push` does NOT update an existing Actor's Store title or
 description. Those fields are set once at creation and thereafter only via the
@@ -9,6 +10,19 @@ like it worked and silently changes nothing. Found this with 18/18 Actors drifti
 on `description` and 7 on `title` — including two Actors (hacker-news, apple-podcasts)
 whose *better* local titles had been sitting unshipped for many cycles.
 
+WHY the registry check was added (cycle 233, after cycle 232 found it by hand):
+this script only ever compared `.actor/actor.json` (the local Apify-repo copy)
+against live — it never looked at `registry.json`, the file that actually drives
+fetchsmith.com's `<title>`, `<h1>`, JSON-LD name, `og:title` and tool cards. Cycle
+232 found all 8 of the oldest Actors carrying a bare head-term title in
+`registry.json` while the live Store listing (and `.actor/actor.json`) had long
+since been sharpened to `Base Name - Differentiator Keywords`. `description` is
+deliberately NOT compared here: registry.json's `description` is long-form HTML
+body copy for the site, `.actor/actor.json`'s is a short Store one-liner — they
+are meant to read differently, so diffing them would just be permanent false-
+positive noise, not real drift. `title` is the only field both files intend to
+hold identically.
+
 Same failure class as `bin/check-registry-fields` (2b/2d): a file nothing enforced.
 
 Store limits (measured, enforced server-side, 400 on violation):
@@ -16,7 +30,7 @@ Store limits (measured, enforced server-side, 400 on violation):
 
 Usage:
   bin/check-store-meta          # report drift, exit 1 if any
-  bin/check-store-meta --pull   # overwrite local actor.json from live (live wins)
+  bin/check-store-meta --pull   # overwrite local actor.json AND registry.json title from live (live wins)
 Deliberate local->live changes must be PUT explicitly; this tool never pushes.
 """
 import json
@@ -46,8 +60,11 @@ def live(slug, tok):
 def main():
     pull = "--pull" in sys.argv[1:]
     tok = token()
-    tools = json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]
+    registry_path = os.path.join(ROOT, "actors/registry.json")
+    registry = json.load(open(registry_path))
+    tools = registry["tools"]
     drift = 0
+    registry_changed = False
     for t in tools:
         slug = t["slug"]
         path = os.path.join(ROOT, "actors", slug, ".actor/actor.json")
@@ -70,6 +87,19 @@ def main():
             with open(path, "w") as fh:
                 fh.write(json.dumps(loc, indent=2, ensure_ascii=False) + "\n")
             print(f"  -> pulled live into {path}")
+        # registry.json's `title` drives fetchsmith.com; compare it against the
+        # same live Store title (not against .actor/actor.json's, since those two
+        # can themselves differ deliberately, e.g. a shorter Store-only variant).
+        if (t.get("title") or "") != (rem.get("title") or ""):
+            drift += 1
+            print(f"{slug}: registry title DRIFT\n  registry: {t.get('title')}\n  live    : {rem.get('title')}")
+            if pull:
+                t["title"] = rem.get("title")
+                registry_changed = True
+                print(f"  -> pulled live into registry.json")
+    if registry_changed:
+        with open(registry_path, "w") as fh:
+            fh.write(json.dumps(registry, indent=2, ensure_ascii=False) + "\n")
     print(f"check-store-meta: {len(tools)} Actors, {drift} drift(s)")
     return 1 if (drift and not pull) else 0
 
