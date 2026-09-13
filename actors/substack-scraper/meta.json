@@ -1,15 +1,37 @@
 {
-  "title": "Substack Scraper – Posts, Full Text & Comments",
-  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Custom domains supported. No login, no browser. Pay per result, from $0.002 down to $0.0012.",
-  "seoTitle": "Substack Scraper API – Posts, Full Article Text & Comments",
-  "seoDescription": "Scrape Substack publications to JSON/CSV: full article text, reactions, restacks and comment threads. Search archives, filter free vs paid. Pay per result.",
-  "categories": ["NEWS", "SOCIAL_MEDIA", "AI"],
-  "events": { "result": { "eventTitle": "Result", "eventDescription": "One Substack post or comment returned to the dataset.", "eventTieredPricingUsd": {
-    "FREE": { "tieredEventPriceUsd": 0.002 },
-    "BRONZE": { "tieredEventPriceUsd": 0.0018 },
-    "SILVER": { "tieredEventPriceUsd": 0.0015 },
-    "GOLD": { "tieredEventPriceUsd": 0.0012 },
-    "PLATINUM": { "tieredEventPriceUsd": 0.0012 },
-    "DIAMOND": { "tieredEventPriceUsd": 0.0012 }
-  } } }
+  "title": "Substack Scraper \u2013 Posts, Full Text & Comments",
+  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Discover newsletters by category \u2014 no URL list needed. Custom domains supported. No login, no browser. Pay per result, from $0.002 down to $0.0012.",
+  "seoTitle": "Substack Scraper API \u2013 Posts, Full Article Text & Comments",
+  "seoDescription": "Scrape Substack publications to JSON/CSV: full article text, reactions, restacks and comments. Discover top newsletters by category, no URL list needed.",
+  "categories": [
+    "NEWS",
+    "SOCIAL_MEDIA",
+    "AI"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Result",
+      "eventDescription": "One Substack post or comment returned to the dataset.",
+      "eventTieredPricingUsd": {
+        "FREE": {
+          "tieredEventPriceUsd": 0.002
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.0018
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.0015
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.0012
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.0012
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.0012
+        }
+      }
+    }
+  }
 }
