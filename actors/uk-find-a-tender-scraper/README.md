@@ -48,6 +48,7 @@ One row per notice, including:
 | `openOnly` | boolean | `false` | Only notices whose submission deadline is still in the future. |
 | `maxResults` | integer | `100` | Hard stop. |
 | `maxPagesScanned` | integer | `50` | Safety cap on API pages read while looking for matches. Raise it for narrow filters over long date ranges. |
+| `includeRawOcds` | boolean | `false` | Attach the complete, unmodified OCDS 1.1 release JSON as a `rawOcds` field on every row, alongside the normalized fields — for pipelines that want the full nested government data (all parties, all documents, amendment history), not just the flattened columns. |
 
 ### Example
 

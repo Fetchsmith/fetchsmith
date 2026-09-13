@@ -806,7 +806,8 @@
     "contractCount",
     "contractDateSigned",
     "aboveThreshold",
-    "documentUrls"
+    "documentUrls",
+    "rawOcds"
    ],
    "sample_output": {
     "source": "fts",

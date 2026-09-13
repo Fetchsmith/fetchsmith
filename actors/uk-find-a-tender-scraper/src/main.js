@@ -51,6 +51,7 @@ const buyerNameFilter = input.buyerName ? String(input.buyerName).toLowerCase().
 const minValueGbp = input.minValueGbp != null ? Number(input.minValueGbp) : null;
 const maxValueGbp = input.maxValueGbp != null ? Number(input.maxValueGbp) : null;
 const openOnly = input.openOnly === true;
+const includeRawOcds = input.includeRawOcds === true;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const maxPagesScanned = Math.min(Math.max(Number(input.maxPagesScanned ?? 50), 1), 500);
 
@@ -171,7 +172,7 @@ function awardValue(release) {
     return [null, null, null];
 }
 
-function normalize(release, source) {
+function normalize(release, source, includeRaw) {
     const tender = release.tender ?? {};
     const buyer = party(release, 'buyer');
     const awards = release.awards ?? [];
@@ -251,6 +252,8 @@ function normalize(release, source) {
         aboveThreshold: firstAward?.aboveThreshold ?? null,
 
         documentUrls: uniq((tender.documents ?? []).map((d) => d.url)),
+
+        ...(includeRaw ? { rawOcds: release } : {}),
     };
 }
 
@@ -397,7 +400,7 @@ while (keepGoing && pushed < maxResults && cursors.some((c) => !c.done)) {
         if (release.ocid) seen.add(release.ocid);
         if (isDup) continue;
 
-        const row = normalize(release, c.source);
+        const row = normalize(release, c.source, includeRawOcds);
         if (!matches(row)) { filtered += 1; continue; }
         keepGoing = await pushResult(row);
         c.pushed += 1;

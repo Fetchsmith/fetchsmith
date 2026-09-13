@@ -331,6 +331,10 @@
       "documentUrls": {
         "type": "array",
         "title": "Document URLs"
+      },
+      "rawOcds": {
+        "type": "object",
+        "title": "Raw OCDS release (only when includeRawOcds is true)"
       }
     }
   },
