@@ -75,10 +75,49 @@
       },
       "uniqueItems": true
     },
+    "resultsAvailability": {
+      "title": "Posted results",
+      "type": "string",
+      "description": "Filter on whether the study has posted a results section on ClinicalTrials.gov. \"With results\" is the endpoint set for outcome/efficacy analysis; \"without results\" finds completed trials that never reported (an FDAAA-compliance use case).",
+      "editor": "select",
+      "enum": ["", "with", "without"],
+      "enumTitles": ["Any (default)", "Only studies WITH posted results", "Only studies WITHOUT posted results"],
+      "default": ""
+    },
     "hasResultsOnly": {
-      "title": "Only studies with posted results",
+      "title": "Only studies with posted results (legacy)",
       "type": "boolean",
-      "description": "Restrict to studies that have posted a results section on ClinicalTrials.gov.",
+      "description": "Deprecated — use \"Posted results\" above instead. Kept so older saved inputs keep working; equivalent to setting \"Posted results\" to \"with\". Ignored if \"Posted results\" is set.",
+      "default": false
+    },
+    "ageGroups": {
+      "title": "Age group",
+      "type": "array",
+      "description": "Restrict to studies enrolling these standard age groups (child = birth–17, adult = 18–64, older adult = 65+). A study can belong to several. Leave empty for all.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["CHILD", "ADULT", "OLDER_ADULT"],
+        "enumTitles": ["Child (0–17)", "Adult (18–64)", "Older adult (65+)"]
+      },
+      "uniqueItems": true
+    },
+    "documentTypes": {
+      "title": "Has study document",
+      "type": "array",
+      "description": "Only studies that have uploaded one of these documents to ClinicalTrials.gov (multiple selections are OR-ed). Roughly 9% of studies have any — useful when you need the actual protocol or analysis plan, not just the registry summary.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["prot", "sap", "icf"],
+        "enumTitles": ["Study protocol", "Statistical analysis plan (SAP)", "Informed consent form (ICF)"]
+      },
+      "uniqueItems": true
+    },
+    "fdaRegulationViolation": {
+      "title": "Only studies with an FDAAA violation notice",
+      "type": "boolean",
+      "description": "Restrict to the small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — currently a few dozen registry-wide. Leave off for normal searches.",
       "default": false
     },
     "sex": {

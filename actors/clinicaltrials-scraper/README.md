@@ -12,7 +12,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `phases`, `studyType`, `overallStatus` | Filterable and returned flat, not nested. |
 | `enrollmentCount`, `sex`, `minimumAge`, `maximumAge`, `healthyVolunteers` | The eligibility snapshot without parsing free-text criteria. |
 | `leadSponsorClass` | The lead sponsor's organization type (`NIH`, `INDUSTRY`, `FED`, etc.) — filterable via `funderTypes`. |
-| `hasResults` | Whether the trial has posted a results section — filterable via `hasResultsOnly`. |
+| `hasResults` | Whether the trial has posted a results section — filterable via `resultsAvailability` (with **or** without). |
 | `interventions` | Type + name for every drug/device/procedure arm. |
 | `studyUrl` | Direct link to the public study page. |
 
@@ -44,7 +44,10 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `overallStatus` | e.g. `RECRUITING`, `COMPLETED`, `TERMINATED`. All 14 official values supported. |
 | `studyTypes` | `INTERVENTIONAL`, `OBSERVATIONAL`, `EXPANDED_ACCESS`. |
 | `phases` | `EARLY_PHASE1`..`PHASE4`, `NA`. Only meaningful for interventional studies — about 1 in 5 studies overall have no phase at all. |
-| `hasResultsOnly` | Only studies with a posted results section. |
+| `resultsAvailability` | `with` = only studies that posted a results section; `without` = only studies that never reported (the FDAAA-compliance question). Blank = both. Supersedes the older boolean `hasResultsOnly`, which still works. |
+| `ageGroups` | Standard age groups the study enrols: `CHILD` (0–17), `ADULT` (18–64), `OLDER_ADULT` (65+). Multiple = OR. Coarser and more reliable than `ageRangeFromYears`/`ageRangeToYears`, which only match studies that state a numeric bound. |
+| `documentTypes` | Only studies that uploaded one of these documents: `prot` (study protocol), `sap` (statistical analysis plan), `icf` (informed consent form). Multiple = OR. About 9% of studies have any. |
+| `fdaRegulationViolation` | Only studies carrying an FDA regulation (FDAAA 801) violation notice — 8 registry-wide as of 2026-09-13. |
 | `sex` | `FEMALE` or `MALE` — restrict to studies whose eligibility criteria specify that sex. Leave blank for all. |
 | `acceptsHealthyVolunteers` | Only studies that accept healthy volunteers, not just patients with the condition. |
 | `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. |

@@ -41,6 +41,12 @@ const overallStatus = cleanList(input.overallStatus, STATUSES);
 const studyTypes = cleanList(input.studyTypes, STUDY_TYPES);
 const phases = cleanList(input.phases, PHASES);
 const hasResultsOnly = input.hasResultsOnly === true;
+// `resultsAvailability` supersedes the older boolean `hasResultsOnly`; the boolean is kept as a
+// legacy fallback so saved inputs / scheduled runs from before this field existed keep working.
+const RESULTS_AVAILABILITY = new Set(['with', 'without']);
+const resultsAvailability = RESULTS_AVAILABILITY.has(String(input.resultsAvailability ?? '').trim())
+    ? String(input.resultsAvailability).trim()
+    : (hasResultsOnly ? 'with' : '');
 const sex = ['FEMALE', 'MALE'].includes(String(input.sex ?? '').toUpperCase()) ? String(input.sex).toUpperCase() : '';
 const acceptsHealthyVolunteers = input.acceptsHealthyVolunteers === true;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -52,6 +58,20 @@ const funderTypes = cleanList(input.funderTypes, FUNDER_TYPES);
 // open bound) — same RANGE syntax as the date fields above, just a different unit string.
 const ageRangeFromYears = Number.isInteger(input.ageRangeFromYears) && input.ageRangeFromYears >= 0 ? input.ageRangeFromYears : null;
 const ageRangeToYears = Number.isInteger(input.ageRangeToYears) && input.ageRangeToYears >= 0 ? input.ageRangeToYears : null;
+// Verified live: AREA[StdAge](CHILD OR OLDER_ADULT) returns exactly the same totalCount as the
+// UI's `aggFilters=ages:child older` (119,295 on query.cond=cancer) — same filter, and the AREA
+// form composes with AND inside the existing filter.advanced string, so no extra param needed.
+const AGE_GROUPS = new Set(['CHILD', 'ADULT', 'OLDER_ADULT']);
+const ageGroups = cleanList(input.ageGroups, AGE_GROUPS);
+// Study-document filter. Values are the UI's lowercase codes, OR-ed by SPACE inside one
+// aggFilters pair (`docs:sap prot`); a comma there is a 400, and an unknown code is NOT an
+// error — it silently returns 0 rows — so this list must stay a strict whitelist.
+const DOCUMENT_TYPES = new Set(['prot', 'sap', 'icf']);
+const documentTypes = (Array.isArray(input.documentTypes) ? input.documentTypes : [])
+    .map((x) => String(x).toLowerCase().trim())
+    .filter((x) => DOCUMENT_TYPES.has(x));
+// Only `violation:y` is a real value (`violation:n` silently returns 0), so this is a boolean.
+const fdaRegulationViolation = input.fdaRegulationViolation === true;
 const titleOrAcronym = String(input.titleOrAcronym ?? '').trim();
 const outcomeMeasure = String(input.outcomeMeasure ?? '').trim();
 const SORT_VALUES = new Set(['LastUpdatePostDate:desc', 'StudyFirstPostDate:desc', 'EnrollmentCount:desc']);
@@ -113,8 +133,13 @@ function baseParams() {
     if (outcomeMeasure) p['query.outc'] = outcomeMeasure;
     if (overallStatus.length) p['filter.overallStatus'] = overallStatus;
     // Verified live: `filter.hasResults` is rejected as unknown; `aggFilters=results:with` is
-    // the real parameter name for this.
-    if (hasResultsOnly) p.aggFilters = 'results:with';
+    // the real parameter name for this. Multiple aggFilters pairs are COMMA-separated and AND-ed
+    // (`docs:sap,results:with` verified live: 9,559 vs 10,597 / 18,341 for each alone).
+    const agg = [];
+    if (resultsAvailability) agg.push(`results:${resultsAvailability}`);
+    if (documentTypes.length) agg.push(`docs:${documentTypes.join(' ')}`);
+    if (fdaRegulationViolation) agg.push('violation:y');
+    if (agg.length) p.aggFilters = agg.join(',');
     // studyType/phase/sex/healthyVolunteers/date-range are AREA-scoped fields, not top-level
     // filters — combine into filter.advanced. Verified live (this cycle): AREA[Sex](FEMALE),
     // AREA[HealthyVolunteers](true) and AREA[<field>]RANGE[from,to] (MIN/MAX for an open bound)
@@ -130,6 +155,7 @@ function baseParams() {
     if (ageRangeFromYears !== null) advanced.push(`AREA[MinimumAge]RANGE[${ageRangeFromYears} Years,MAX]`);
     if (ageRangeToYears !== null) advanced.push(`AREA[MaximumAge]RANGE[MIN,${ageRangeToYears} Years]`);
     if (funderTypes.length) advanced.push(`AREA[LeadSponsorClass](${funderTypes.join(' OR ')})`);
+    if (ageGroups.length) advanced.push(`AREA[StdAge](${ageGroups.join(' OR ')})`);
     if (advanced.length) p['filter.advanced'] = advanced.join(' AND ');
     if (sortBy) p.sort = sortBy;
     return p;

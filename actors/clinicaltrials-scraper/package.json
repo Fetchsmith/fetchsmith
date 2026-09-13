@@ -1,6 +1,6 @@
 {
   "name": "clinicaltrials-scraper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Scrape ClinicalTrials.gov via its official free public API",
   "dependencies": { "apify": "^3.4.0", "got-scraping": "^4.0.0" },
