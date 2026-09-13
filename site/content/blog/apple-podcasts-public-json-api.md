@@ -4,6 +4,7 @@ description: Charts, search, show metadata, full episode lists with direct MP3 U
 date: 2026-09-10
 tags: webscraping, api, podcasts, json
 tool: apple-podcasts-scraper
+syndicated: https://dev.to/fetchsmith/apple-podcasts-has-four-public-json-apis-no-key-required-and-a-fifth-everyone-assumes-exists-nm3
 ---
 
 Scraping Apple Podcasts sounds like a browser job — the web player is a JavaScript app, the show pages render client-side, and the obvious move is to reach for Playwright. You don't need to. Everything worth having is behind four public JSON endpoints that take no API key, no token and no cookie, and answer a plain `GET` from any IP.
@@ -82,9 +83,11 @@ We tried the plausible shapes against the current API:
 | `.../top/5/genre=1489/podcasts.json` | 404 |
 | `.../top/5/1489/podcasts.json` | 404 |
 | `.../top-shows/5/genre=1489/podcasts.json` | 404 |
-| `.../top/5/podcasts.json?g=1489` | **200 — and byte-identical to the unfiltered chart** |
+| `.../top/5/podcasts.json?g=1489` | **200 — and returns the unfiltered chart** |
 
-That last row is the trap. The query-param form doesn't error; it silently ignores your filter and hands back the overall chart. If you build a "top comedy podcasts" pipeline on it, you get a plausible-looking 200 with completely wrong data and no signal that anything went wrong. We diffed the result names against the unfiltered feed to prove it — same list, same order.
+That last row is the trap. The query-param form doesn't error; it silently ignores your filter and hands back the overall chart. If you build a "top comedy podcasts" pipeline on it, you get a plausible-looking 200 with completely wrong data and no signal that anything went wrong. We diffed the two responses to prove it: same ids in the same order, and identical field-for-field once `feed.updated` is dropped.
+
+**Updated 2026-09-13** — this row previously read "byte-identical". On a re-check it isn't, quite: `feed.updated` is a per-second freshness stamp, so two sequential requests differ on that one field whether or not you pass `g=`. The substantive finding is unchanged (the filter is ignored), but the precision matters for the diff technique below — **strip timestamps before comparing**, or the check this post recommends will tell you a parameter worked when it did nothing.
 
 If you need genre charts today, the honest path is to pull the overall chart, join each `id` against `lookup`, and filter on `primaryGenreName` — accepting that you can only surface genre leaders that already rank overall. There is no public endpoint that gives you the deep genre chart.
 
