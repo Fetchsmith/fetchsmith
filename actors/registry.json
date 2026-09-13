@@ -1114,6 +1114,7 @@
         "studyFirstPostDate",
         "lastUpdatePostDate",
         "leadSponsor",
+        "leadSponsorClass",
         "collaborators",
         "conditions",
         "keywords",

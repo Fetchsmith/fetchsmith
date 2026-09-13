@@ -9,7 +9,7 @@
           "null"
         ],
         "title": "NctId",
-        "example": "NCT04137653"
+        "example": "NCT00001625"
       },
       "briefTitle": {
         "type": [
@@ -17,7 +17,7 @@
           "null"
         ],
         "title": "BriefTitle",
-        "example": "Treatment of Triple-negative Breast Cancer With Albumin-bound Paclitaxel as Neoadjuvant Therapy: a Prospective RCT"
+        "example": "Methods for Measuring Insulin Sensitivity"
       },
       "officialTitle": {
         "type": [
@@ -25,7 +25,7 @@
           "null"
         ],
         "title": "OfficialTitle",
-        "example": "Treatment of Triple-negative Breast Cancer With Albumin-bound Paclitaxel as Neoadjuvant Therapy: a Prospective Randomize"
+        "example": "Methods for Assessing Insulin Sensitivity In Vivo"
       },
       "acronym": {
         "type": [
@@ -40,7 +40,7 @@
           "null"
         ],
         "title": "OverallStatus",
-        "example": "RECRUITING"
+        "example": "COMPLETED"
       },
       "studyType": {
         "type": [
@@ -48,7 +48,7 @@
           "null"
         ],
         "title": "StudyType",
-        "example": "INTERVENTIONAL"
+        "example": "OBSERVATIONAL"
       },
       "phases": {
         "type": [
@@ -63,7 +63,7 @@
           "null"
         ],
         "title": "EnrollmentCount",
-        "example": 1498
+        "example": 480
       },
       "startDate": {
         "type": [
@@ -71,15 +71,14 @@
           "null"
         ],
         "title": "StartDate",
-        "example": "2021-07-19"
+        "example": "1997-04-03"
       },
       "primaryCompletionDate": {
         "type": [
           "string",
           "null"
         ],
-        "title": "PrimaryCompletionDate",
-        "example": "2025-11-30"
+        "title": "PrimaryCompletionDate"
       },
       "completionDate": {
         "type": [
@@ -87,7 +86,7 @@
           "null"
         ],
         "title": "CompletionDate",
-        "example": "2026-11-30"
+        "example": "2007-04-11"
       },
       "studyFirstPostDate": {
         "type": [
@@ -95,7 +94,7 @@
           "null"
         ],
         "title": "StudyFirstPostDate",
-        "example": "2019-10-24"
+        "example": "1999-11-04"
       },
       "lastUpdatePostDate": {
         "type": [
@@ -103,7 +102,7 @@
           "null"
         ],
         "title": "LastUpdatePostDate",
-        "example": "2021-07-20"
+        "example": "2017-07-02"
       },
       "leadSponsor": {
         "type": [
@@ -111,7 +110,15 @@
           "null"
         ],
         "title": "LeadSponsor",
-        "example": "Shengjing Hospital"
+        "example": "National Center for Complementary and Integrative Health (NCCIH)"
+      },
+      "leadSponsorClass": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LeadSponsorClass",
+        "example": "NIH"
       },
       "collaborators": {
         "type": [
@@ -147,7 +154,7 @@
           "null"
         ],
         "title": "BriefSummary",
-        "example": "Triple-negative breast cancer (TNBC) accounts for about 20% of clinical breast cancer. Clinical characteristics include "
+        "example": "Patients with high blood pressure, diabetes, and who are overweight are known to have defects in the way their body resp"
       },
       "sex": {
         "type": [
@@ -155,7 +162,7 @@
           "null"
         ],
         "title": "Sex",
-        "example": "FEMALE"
+        "example": "ALL"
       },
       "minimumAge": {
         "type": [
@@ -163,7 +170,7 @@
           "null"
         ],
         "title": "MinimumAge",
-        "example": "18 Years"
+        "example": "21 Years"
       },
       "maximumAge": {
         "type": [
@@ -171,7 +178,7 @@
           "null"
         ],
         "title": "MaximumAge",
-        "example": "70 Years"
+        "example": "65 Years"
       },
       "healthyVolunteers": {
         "type": [
@@ -210,7 +217,7 @@
           "null"
         ],
         "title": "StudyUrl",
-        "example": "https://clinicaltrials.gov/study/NCT04137653"
+        "example": "https://clinicaltrials.gov/study/NCT00001625"
       }
     }
   },

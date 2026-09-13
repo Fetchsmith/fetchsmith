@@ -46,6 +46,14 @@ const acceptsHealthyVolunteers = input.acceptsHealthyVolunteers === true;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
 const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
+const FUNDER_TYPES = new Set(['NIH', 'FED', 'OTHER_GOV', 'INDUSTRY', 'NETWORK', 'INDIV', 'OTHER', 'UNKNOWN', 'AMBIG']);
+const funderTypes = cleanList(input.funderTypes, FUNDER_TYPES);
+// Verified live: AREA[MinimumAge]/AREA[MaximumAge] RANGE take "<n> Years" (or MIN/MAX for an
+// open bound) — same RANGE syntax as the date fields above, just a different unit string.
+const ageRangeFromYears = Number.isInteger(input.ageRangeFromYears) && input.ageRangeFromYears >= 0 ? input.ageRangeFromYears : null;
+const ageRangeToYears = Number.isInteger(input.ageRangeToYears) && input.ageRangeToYears >= 0 ? input.ageRangeToYears : null;
+const titleOrAcronym = String(input.titleOrAcronym ?? '').trim();
+const outcomeMeasure = String(input.outcomeMeasure ?? '').trim();
 const SORT_VALUES = new Set(['LastUpdatePostDate:desc', 'StudyFirstPostDate:desc', 'EnrollmentCount:desc']);
 const sortBy = SORT_VALUES.has(input.sortBy) ? input.sortBy : '';
 const rowsPerStudy = input.rowsPerStudy === 'site' ? 'site' : 'study';
@@ -101,6 +109,8 @@ function baseParams() {
     if (sponsors) p['query.spons'] = sponsors;
     if (locations) p['query.locn'] = locations;
     if (searchQuery) p['query.term'] = searchQuery;
+    if (titleOrAcronym) p['query.titles'] = titleOrAcronym;
+    if (outcomeMeasure) p['query.outc'] = outcomeMeasure;
     if (overallStatus.length) p['filter.overallStatus'] = overallStatus;
     // Verified live: `filter.hasResults` is rejected as unknown; `aggFilters=results:with` is
     // the real parameter name for this.
@@ -117,6 +127,9 @@ function baseParams() {
     if (lastUpdatePostedDateFrom || lastUpdatePostedDateTo) {
         advanced.push(`AREA[LastUpdatePostDate]RANGE[${lastUpdatePostedDateFrom || 'MIN'},${lastUpdatePostedDateTo || 'MAX'}]`);
     }
+    if (ageRangeFromYears !== null) advanced.push(`AREA[MinimumAge]RANGE[${ageRangeFromYears} Years,MAX]`);
+    if (ageRangeToYears !== null) advanced.push(`AREA[MaximumAge]RANGE[MIN,${ageRangeToYears} Years]`);
+    if (funderTypes.length) advanced.push(`AREA[LeadSponsorClass](${funderTypes.join(' OR ')})`);
     if (advanced.length) p['filter.advanced'] = advanced.join(' AND ');
     if (sortBy) p.sort = sortBy;
     return p;
@@ -185,6 +198,7 @@ function normalizeStudy(study) {
         studyFirstPostDate: status.studyFirstPostDateStruct?.date ?? null,
         lastUpdatePostDate: status.lastUpdatePostDateStruct?.date ?? null,
         leadSponsor: sponsor.leadSponsor?.name ?? null,
+        leadSponsorClass: sponsor.leadSponsor?.class ?? null,
         // Populated on ~24% of studies (measured live sample of 50) — most trials have none.
         collaborators: listOf(sponsor.collaborators).map((c) => c.name).filter(Boolean),
         conditions: listOf(cond.conditions),
@@ -225,7 +239,9 @@ log.info(nctIds.length
       + `locations="${locations}" searchQuery="${searchQuery}" overallStatus=[${overallStatus.join(',')}] `
       + `studyTypes=[${studyTypes.join(',')}] phases=[${phases.join(',')}] hasResultsOnly=${hasResultsOnly} `
       + `sex="${sex}" acceptsHealthyVolunteers=${acceptsHealthyVolunteers} `
-      + `lastUpdatePostedDateFrom="${lastUpdatePostedDateFrom}" lastUpdatePostedDateTo="${lastUpdatePostedDateTo}" sortBy="${sortBy}" `
+      + `lastUpdatePostedDateFrom="${lastUpdatePostedDateFrom}" lastUpdatePostedDateTo="${lastUpdatePostedDateTo}" `
+      + `ageRangeFromYears=${ageRangeFromYears} ageRangeToYears=${ageRangeToYears} funderTypes=[${funderTypes.join(',')}] `
+      + `titleOrAcronym="${titleOrAcronym}" outcomeMeasure="${outcomeMeasure}" sortBy="${sortBy}" `
       + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`);
 
 let scanned = 0;

@@ -11,6 +11,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `rowsPerStudy: "site"` mode | One row per **trial site** instead of one per study — facility name, city, state, country and lat/lon, so a site-selection or patient-recruitment buyer doesn't have to explode the array themselves. A study averages 5 sites (max seen: 110), so this mode returns roughly 5x more billable rows for the same query. |
 | `phases`, `studyType`, `overallStatus` | Filterable and returned flat, not nested. |
 | `enrollmentCount`, `sex`, `minimumAge`, `maximumAge`, `healthyVolunteers` | The eligibility snapshot without parsing free-text criteria. |
+| `leadSponsorClass` | The lead sponsor's organization type (`NIH`, `INDUSTRY`, `FED`, etc.) — filterable via `funderTypes`. |
 | `hasResults` | Whether the trial has posted a results section — filterable via `hasResultsOnly`. |
 | `interventions` | Type + name for every drug/device/procedure arm. |
 | `studyUrl` | Direct link to the public study page. |
@@ -47,6 +48,10 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `sex` | `FEMALE` or `MALE` — restrict to studies whose eligibility criteria specify that sex. Leave blank for all. |
 | `acceptsHealthyVolunteers` | Only studies that accept healthy volunteers, not just patients with the condition. |
 | `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. |
+| `ageRangeFromYears` / `ageRangeToYears` | Only studies whose stated minimum/maximum eligibility age falls in this range (years), either bound optional. E.g. `ageRangeToYears: 65` excludes studies with no senior-age cap. |
+| `funderTypes` | Lead sponsor organization type: `NIH`, `FED` (other US federal), `OTHER_GOV`, `INDUSTRY`, `NETWORK`, `INDIV`, `OTHER` (academic/nonprofit), `UNKNOWN`, `AMBIG`. |
+| `titleOrAcronym` | Search only the official/brief title and acronym — narrower than `searchQuery`. |
+| `outcomeMeasure` | Search only the study's stated outcome measures, e.g. "overall survival". |
 | `sortBy` | Order results before `maxResults` truncates them: most recently updated, most recently first-posted, or largest enrollment first. Default is the API's own relevance order. |
 | `rowsPerStudy` | `"study"` (default) or `"site"`. |
 | `maxResults` | Up to 50,000. Token-based paging, no offset wall. |

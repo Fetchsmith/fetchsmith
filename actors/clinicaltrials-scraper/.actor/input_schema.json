@@ -108,6 +108,44 @@
       "description": "Only studies whose ClinicalTrials.gov record was last updated on or before this date (YYYY-MM-DD).",
       "editor": "textfield"
     },
+    "ageRangeFromYears": {
+      "title": "Minimum eligibility age from (years)",
+      "type": "integer",
+      "description": "Only studies whose stated minimum eligibility age is at least this many years (e.g. 18 to exclude studies open to minors). Leave blank for no lower bound.",
+      "minimum": 0,
+      "maximum": 120
+    },
+    "ageRangeToYears": {
+      "title": "Maximum eligibility age to (years)",
+      "type": "integer",
+      "description": "Only studies whose stated maximum eligibility age is at most this many years (e.g. 65 to exclude studies with no senior-age cap). Leave blank for no upper bound.",
+      "minimum": 0,
+      "maximum": 120
+    },
+    "funderTypes": {
+      "title": "Funder / lead sponsor type",
+      "type": "array",
+      "description": "Restrict to studies whose lead sponsor is this type of organization. Leave empty for all.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["NIH", "FED", "OTHER_GOV", "INDUSTRY", "NETWORK", "INDIV", "OTHER", "UNKNOWN", "AMBIG"],
+        "enumTitles": ["NIH", "Other U.S. federal agency", "Other government (non-U.S. or non-federal)", "Industry", "Network", "Individual", "Other (academic/nonprofit)", "Unknown", "Ambiguous"]
+      },
+      "uniqueItems": true
+    },
+    "titleOrAcronym": {
+      "title": "Title or acronym contains",
+      "type": "string",
+      "description": "Search only the study's official/brief title and acronym (not eligibility text or outcomes). Maps to query.titles. Narrower than the general free-text search above.",
+      "editor": "textfield"
+    },
+    "outcomeMeasure": {
+      "title": "Outcome measure contains",
+      "type": "string",
+      "description": "Search only the study's stated outcome measures, e.g. \"progression-free survival\" or \"overall survival\". Maps to query.outc.",
+      "editor": "textfield"
+    },
     "sortBy": {
       "title": "Sort order",
       "type": "string",
