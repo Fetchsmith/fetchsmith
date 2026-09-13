@@ -75,6 +75,42 @@ if (input.postedWithinDays !== undefined && input.postedWithinDays !== null && i
     else log.warning(`Ignoring invalid postedWithinDays "${input.postedWithinDays}" (must be a positive number of days).`);
 }
 
+// Grants.gov's API has no absolute-date filter at all (verified live: posting a
+// postedFromDate/postedToDate body param is silently dropped, not echoed back in
+// searchParams and not applied). openDate is already present on every thin search2 row
+// though (even archived ones), so an absolute range is applied client-side after fetch --
+// zero extra requests, same cost as no filter at all. Parsed once here as real Date objects
+// so the per-row filter below is a cheap comparison, not a re-parse every iteration.
+function parseIsoDate(s, label) {
+    if (s === undefined || s === null || s === '') return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s).trim());
+    if (!m) {
+        log.warning(`Ignoring invalid ${label} "${s}" (expected YYYY-MM-DD).`);
+        return null;
+    }
+    const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+    if (Number.isNaN(d.getTime())) {
+        log.warning(`Ignoring invalid ${label} "${s}" (expected YYYY-MM-DD).`);
+        return null;
+    }
+    return d;
+}
+function parseUsDate(s) {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(s ?? ''));
+    if (!m) return null;
+    const d = new Date(Date.UTC(Number(m[3]), Number(m[1]) - 1, Number(m[2])));
+    return Number.isNaN(d.getTime()) ? null : d;
+}
+const postedFrom = parseIsoDate(input.postedFrom, 'postedFrom');
+const postedTo = parseIsoDate(input.postedTo, 'postedTo');
+if (postedFrom !== null && postedTo !== null && postedFrom > postedTo) {
+    throw new Error(`postedFrom (${input.postedFrom}) is after postedTo (${input.postedTo}).`);
+}
+const hasAbsoluteDateFilter = postedFrom !== null || postedTo !== null;
+if (hasAbsoluteDateFilter && postedWithinDays !== null) {
+    log.warning('Both postedWithinDays and postedFrom/postedTo are set; ignoring postedWithinDays since an absolute range was given.');
+}
+
 // awardCeiling only exists on the per-opportunity detail record (search2's thin rows have no
 // award data at all), so either bound forces enrich on regardless of the input's own "enrich"
 // value -- otherwise the filter would silently have nothing to compare against and every row
@@ -151,7 +187,7 @@ function baseParams() {
     if (fundingInstruments) p.fundingInstruments = fundingInstruments;
     if (cfda) p.cfda = cfda;
     if (sortBy) p.sortBy = sortBy;
-    if (postedWithinDays !== null) p.dateRange = String(postedWithinDays);
+    if (postedWithinDays !== null && !hasAbsoluteDateFilter) p.dateRange = String(postedWithinDays);
     return p;
 }
 
@@ -275,7 +311,9 @@ log.info(
         + (fundingInstruments ? ` fundingInstruments=[${fundingInstruments}]` : '')
         + (cfda ? ` cfda=${cfda}` : '')
         + (sortBy ? ` sortBy=${sortBy}` : '')
-        + (postedWithinDays !== null ? ` postedWithinDays=${postedWithinDays}` : '')
+        + (postedWithinDays !== null && !hasAbsoluteDateFilter ? ` postedWithinDays=${postedWithinDays}` : '')
+        + (postedFrom !== null ? ` postedFrom=${input.postedFrom}` : '')
+        + (postedTo !== null ? ` postedTo=${input.postedTo}` : '')
         + (minAwardAmount !== null ? ` minAwardAmount=${minAwardAmount}` : '')
         + (maxAwardAmount !== null ? ` maxAwardAmount=${maxAwardAmount}` : ''),
 );
@@ -292,6 +330,7 @@ if (minAwardAmount !== null || maxAwardAmount !== null) {
 let startRecordNum = 0;
 let scanned = 0;
 let droppedNoAward = 0;
+let droppedOutOfRange = 0;
 let keepGoing = true;
 
 while (keepGoing && pushed < maxResults) {
@@ -315,6 +354,15 @@ while (keepGoing && pushed < maxResults) {
             return true;
         });
     }
+    if (hasAbsoluteDateFilter && !exclusiveOppNum) {
+        batch = batch.filter((row) => {
+            const opened = parseUsDate(row.openDate);
+            if (opened === null) { droppedOutOfRange += 1; return false; }
+            if (postedFrom !== null && opened < postedFrom) return false;
+            if (postedTo !== null && opened > postedTo) return false;
+            return true;
+        });
+    }
 
     keepGoing = await pushResults(batch);
     startRecordNum += hits.length;
@@ -329,14 +377,16 @@ if (pushed === 0) {
             + 'keyword plus agency plus eligibility often has zero real matches, drop one and retry; '
             + '(2) oppStatuses defaults to forecasted+posted (open/upcoming only) -- add "closed" or '
             + '"archived" to search history; (3) an unrecognised agency code is dropped with a warning '
-            + 'above, not guessed at; (4) postedWithinDays is a hard AND filter -- a small window plus '
-            + 'a narrow keyword can easily have zero real matches; (5) minAwardAmount/maxAwardAmount '
-            + 'excludes any row with no detail record at all, not just rows outside the range.',
+            + 'above, not guessed at; (4) postedWithinDays/postedFrom/postedTo are hard AND filters -- a '
+            + 'small window plus a narrow keyword can easily have zero real matches; (5) '
+            + 'minAwardAmount/maxAwardAmount excludes any row with no detail record at all, not just '
+            + 'rows outside the range.',
     );
 }
 
 log.info(
     `Done. Pushed ${pushed} opportunities (scanned ${scanned} rows).`
-    + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) with no award ceiling to compare against the amount filter.` : ''),
+    + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) with no award ceiling to compare against the amount filter.` : '')
+    + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : ''),
 );
 await Actor.exit();

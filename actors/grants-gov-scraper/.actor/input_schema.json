@@ -116,9 +116,21 @@
     "postedWithinDays": {
       "title": "Posted within the last N days",
       "type": "integer",
-      "description": "Only return opportunities posted in the last N days (Grants.gov's own \"Posted Date\" facet, verified live to accept any positive day count, not just its 3/7/14/21-day preset buttons). Cheap way to do an incremental daily pull instead of re-scanning the whole index. Leave empty for no date restriction. Ignored when Opportunity number is set.",
+      "description": "Only return opportunities posted in the last N days (Grants.gov's own \"Posted Date\" facet, verified live to accept any positive day count, not just its 3/7/14/21-day preset buttons). Cheap way to do an incremental daily pull instead of re-scanning the whole index. Leave empty for no date restriction. Ignored when Opportunity number is set, and ignored if Posted from/to below is set (they'd otherwise double-filter in confusing ways).",
       "editor": "number",
       "minimum": 1
+    },
+    "postedFrom": {
+      "title": "Posted from (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only return opportunities with an open (posted) date on or after this date. Unlike \"Posted within the last N days\" (which counts back from today), this is a fixed calendar date -- for pulling a specific historical window, e.g. everything posted in Q1. Grants.gov's own API has no server-side absolute-date filter, so this is applied client-side against each row's own open date (already present on every thin result row, no extra detail lookups needed). Leave empty for no lower bound.",
+      "editor": "textfield"
+    },
+    "postedTo": {
+      "title": "Posted to (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound.",
+      "editor": "textfield"
     },
     "minAwardAmount": {
       "title": "Minimum award ceiling (USD)",
