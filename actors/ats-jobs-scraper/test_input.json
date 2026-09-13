@@ -1,0 +1,10 @@
+{
+  "companies": [
+    { "ats": "greenhouse", "slug": "airbnb" },
+    { "ats": "ashby", "slug": "ramp" },
+    { "ats": "lever", "slug": "leverdemo" },
+    { "ats": "recruitee", "slug": "vandebron" }
+  ],
+  "maxJobsPerCompany": 500,
+  "maxResults": 2000
+}

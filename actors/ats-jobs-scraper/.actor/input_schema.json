@@ -1,0 +1,73 @@
+{
+  "title": "Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "companies": {
+      "title": "Companies",
+      "type": "array",
+      "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\".",
+      "editor": "json",
+      "default": [
+        { "ats": "greenhouse", "slug": "airbnb" },
+        { "ats": "ashby", "slug": "ramp" },
+        { "ats": "lever", "slug": "leverdemo" },
+        { "ats": "recruitee", "slug": "vandebron" }
+      ]
+    },
+    "titleKeyword": {
+      "title": "Title keyword filter",
+      "type": "string",
+      "description": "Only keep postings whose title contains this text (case-insensitive). Leave empty for all titles.",
+      "editor": "textfield"
+    },
+    "locationKeyword": {
+      "title": "Location keyword filter",
+      "type": "string",
+      "description": "Only keep postings whose location/city/country contains this text (case-insensitive). Leave empty for all locations.",
+      "editor": "textfield"
+    },
+    "remoteOnly": {
+      "title": "Remote only",
+      "type": "boolean",
+      "description": "Only keep postings the ATS itself marks as remote.",
+      "default": false
+    },
+    "postedAfter": {
+      "title": "Posted after (ISO date)",
+      "type": "string",
+      "description": "Only keep postings published on or after this date, e.g. 2026-08-01. Leave empty for no date filter.",
+      "editor": "textfield"
+    },
+    "includeDescriptions": {
+      "title": "Include job descriptions",
+      "type": "boolean",
+      "description": "Include the full HTML and plain-text job description. Turn off for a smaller/faster dataset.",
+      "default": true
+    },
+    "maxJobsPerCompany": {
+      "title": "Max jobs per company",
+      "type": "integer",
+      "description": "Stop pulling from a single company's board after this many postings (before filters).",
+      "default": 500,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "maxResults": {
+      "title": "Max results (total)",
+      "type": "integer",
+      "description": "Stop the whole run after this many postings are pushed, across all companies.",
+      "default": 2000,
+      "minimum": 1,
+      "maximum": 100000
+    },
+    "proxyConfiguration": {
+      "title": "Proxy configuration",
+      "type": "object",
+      "description": "Route requests through Apify Proxy (recommended, on by default).",
+      "editor": "proxy",
+      "default": { "useApifyProxy": true }
+    }
+  },
+  "required": ["companies"]
+}
