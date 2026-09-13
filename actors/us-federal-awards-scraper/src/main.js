@@ -42,6 +42,25 @@ const SORTS = {
     recipientName: { contract: 'Recipient Name', assistance: 'Recipient Name', loan: 'Recipient Name' },
 };
 
+// Sub-award rows come from the same endpoint with `subawards: true`, but they have their own
+// field mapping — asking for a prime-award field (e.g. "Award Amount") there is a 400. This
+// list is the API's own Sub-Award mapping, taken verbatim from its 400 error text.
+const SUB_FIELDS = [
+    'Sub-Award ID', 'Sub-Award Type', 'Sub-Awardee Name', 'Sub-Award Date', 'Sub-Award Amount',
+    'Sub-Award Description', 'Sub-Recipient UEI',
+    'Awarding Agency', 'Awarding Sub Agency',
+    'Prime Award ID', 'Prime Recipient Name', 'Prime Award Recipient UEI', 'prime_award_recipient_id',
+];
+// Sub-awards carry no "last modified" date; that sort falls back to the sub-award action date.
+const SUB_SORTS = {
+    awardAmount: 'Sub-Award Amount',
+    lastModifiedDate: 'Sub-Award Date',
+    startDate: 'Sub-Award Date',
+    recipientName: 'Sub-Awardee Name',
+};
+
+const isSubaward = String(input.awardLevel ?? 'prime').toLowerCase().trim() === 'subaward';
+
 const categories = (input.awardCategories ?? ['contracts'])
     .map((c) => String(c).toLowerCase().trim())
     .filter((c) => Object.hasOwn(CATEGORIES, c));
@@ -203,6 +222,36 @@ function normalize(r, category, kind) {
     };
 }
 
+function normalizeSub(r, category) {
+    const primeGid = r.prime_award_generated_internal_id ?? null;
+    return {
+        awardLevel: 'subaward',
+        subAwardId: r['Sub-Award ID'] ?? null,
+        subAwardType: r['Sub-Award Type'] ?? null,
+        subAwardDate: r['Sub-Award Date'] ?? null,
+        subAwardAmount: typeof r['Sub-Award Amount'] === 'number' ? r['Sub-Award Amount'] : null,
+        subAwardDescription: r['Sub-Award Description'] ?? null,
+
+        subRecipientName: r['Sub-Awardee Name'] ?? null,
+        subRecipientUei: r['Sub-Recipient UEI'] ?? null,
+
+        primeAwardId: r['Prime Award ID'] ?? null,
+        primeRecipientName: r['Prime Recipient Name'] ?? null,
+        primeRecipientUei: r['Prime Award Recipient UEI'] ?? null,
+        primeRecipientId: r.prime_award_recipient_id ?? null,
+        primeAwardGeneratedInternalId: primeGid,
+        // Same URL shape as a prime row's awardUrl, so a sub-award row can be joined straight
+        // back to the prime award page (or to a prime-level run of this Actor).
+        primeAwardUrl: primeGid ? `https://www.usaspending.gov/award/${encodeURIComponent(primeGid)}` : null,
+
+        awardingAgency: r['Awarding Agency'] ?? null,
+        awardingSubAgency: r['Awarding Sub Agency'] ?? null,
+
+        awardCategory: category,
+        kind: 'subaward',
+    };
+}
+
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
@@ -217,10 +266,13 @@ async function pushResult(item) {
 }
 
 if (awardIds.length) {
-    log.info(`USAspending: exact award-ID lookup awardIds=[${awardIds.join(', ')}] (all other filters ignored) maxResults=${maxResults}`);
+    log.info(
+        `USAspending: exact award-ID lookup awardIds=[${awardIds.join(', ')}] (all other filters ignored) maxResults=${maxResults}`
+        + (isSubaward ? ' — in subaward mode these are PRIME award IDs; every sub-award under them is returned' : ''),
+    );
 } else {
     log.info(
-        `USAspending: categories=[${categories.join(',')}] ${effectiveStart}..${endDate} `
+        `USAspending: level=${isSubaward ? 'subaward' : 'prime'} categories=[${categories.join(',')}] ${effectiveStart}..${endDate} `
         + `sort=${sortBy} ${order} maxResults=${maxResults}`
         + (keywords.length ? ` keywords=[${keywords.join(', ')}]` : '')
         + (recipients.length ? ` recipients=[${recipients.join(', ')}]` : '')
@@ -236,32 +288,34 @@ let keepGoing = true;
 for (const category of categories) {
     if (!keepGoing || pushed >= maxResults) break;
     const { codes, kind } = CATEGORIES[category];
-    const fields = [...BASE_FIELDS, ...KIND_FIELDS[kind]];
-    const sort = SORTS[sortBy][kind];
+    const fields = isSubaward ? SUB_FIELDS : [...BASE_FIELDS, ...KIND_FIELDS[kind]];
+    const sort = isSubaward ? SUB_SORTS[sortBy] : SORTS[sortBy][kind];
     const filters = buildFilters(codes);
 
     let page = 1;
     let categoryRows = 0;
     while (keepGoing && pushed < maxResults && page <= maxPagesPerCategory) {
-        const body = await postPage({ filters, fields, page, limit: PAGE_SIZE, sort, order, subawards: false });
+        const body = await postPage({ filters, fields, page, limit: PAGE_SIZE, sort, order, subawards: isSubaward });
         if (!body) break;
         const results = body.results ?? [];
         if (!results.length) break;
         scanned += results.length;
 
         for (const row of results) {
-            const key = row.generated_internal_id ?? `${category}:${row.internal_id}`;
+            const key = isSubaward
+                ? `sub:${row.internal_id ?? row['Sub-Award ID']}`
+                : row.generated_internal_id ?? `${category}:${row.internal_id}`;
             if (seen.has(key)) continue;
             seen.add(key);
             categoryRows += 1;
-            keepGoing = await pushResult(normalize(row, category, kind));
+            keepGoing = await pushResult(isSubaward ? normalizeSub(row, category) : normalize(row, category, kind));
             if (!keepGoing) break;
         }
-        log.info(`${category} page ${page}: ${results.length} awards (pushed ${pushed}/${maxResults})`);
+        log.info(`${category} page ${page}: ${results.length} ${isSubaward ? 'sub-awards' : 'awards'} (pushed ${pushed}/${maxResults})`);
         if (!body.page_metadata?.hasNext) break;
         page += 1;
     }
-    log.info(`${category}: pushed ${categoryRows} awards.`);
+    log.info(`${category}: pushed ${categoryRows} ${isSubaward ? 'sub-awards' : 'awards'}.`);
 }
 
 if (pushed === 0) {
@@ -273,9 +327,13 @@ if (pushed === 0) {
         + '(e.g. "Department of Energy", not "DOE" or "Energy"). '
         + '(3) the date window filters on award action date — widen "startDate"/"endDate" '
         + '(dates before 2007-10-01 are not supported by the API and are clamped). '
-        + '(4) state codes must be 2-letter USPS codes (CA, TX). Rows that match nothing are never charged.',
+        + '(4) state codes must be 2-letter USPS codes (CA, TX). Rows that match nothing are never charged.'
+        + (isSubaward
+            ? ' (5) awardLevel="subaward" only covers prime awards whose recipient filed FSRS sub-award reports — '
+                + 'small awards and most loans/direct payments have none; try awardLevel="prime" to confirm the prime award exists.'
+            : ''),
     );
 }
 
-log.info(`Done. Scanned ${scanned} awards, pushed ${pushed}.`);
+log.info(`Done. Scanned ${scanned} ${isSubaward ? 'sub-awards' : 'awards'}, pushed ${pushed}.`);
 await Actor.exit();

@@ -13,11 +13,13 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 - **Recompete alerts** — sort by end date and find contracts about to expire in your NAICS.
 - **Single-award lookup** — already have a PIID/FAIN/URI from a solicitation or a news story? `awardIds` fetches that exact award, ignoring every other filter.
 - **Pass-through grant tracing** — `fundingAgencies` finds awards where the money's actual source agency differs from the agency that administers the award (common on formula/block grants routed through a state).
+- **Sub-award / subcontractor mining** — set `awardLevel` to `subaward` and get the FSRS sub-contracts and sub-grants filed *under* prime awards: who the prime contractor actually paid, how much, and for what. Every sub-award row carries the prime award's ID and URL, so you can join it straight back to a prime-level run. This is the tier-2 supplier list that never appears in prime-award data.
 
 ## Input
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
+| `awardLevel` | string | `prime` | `prime` = the federal award itself. `subaward` = the sub-contracts/sub-grants reported under prime awards. Every filter below works in both modes — see [Sub-award mode](#sub-award-mode). |
 | `awardCategories` | array | `["contracts"]` | `contracts`, `idvs`, `grants`, `direct_payments`, `other_financial_assistance`, `loans`. Pick several — each is fetched separately and merged. |
 | `startDate` / `endDate` | string | last 365 days | `YYYY-MM-DD`, filters on award action date. Nothing exists before `2007-10-01`; earlier dates are clamped. |
 | `keywords` | array | – | Free text over description, recipient and agency. Multiple keywords are ORed. |
@@ -55,6 +57,29 @@ One flat row per award:
 | `naicsCode`, `naicsDescription`, `pscCode`, `pscDescription` | `562910`, `REMEDIATION SERVICES`, `R425`, `SUPPORT- PROFESSIONAL: ENGINEERING/TECHNICAL` |
 | `cfdaNumbers`, `cfdaProgramTitles` | grants/loans — e.g. `["93.778"]`, `["GRANTS TO STATES FOR MEDICAID"]` |
 | `disasterEmergencyFundCodes` | `["Q"]` |
+
+## Sub-award mode
+
+With `awardLevel: "subaward"` the same six categories, the same date window and the same filters are applied to USAspending's sub-award (FSRS) data instead, and each row is one sub-contract or sub-grant:
+
+| Field | Example |
+|---|---|
+| `awardLevel`, `kind` | `subaward`, `subaward` |
+| `subAwardId`, `subAwardType` | `200155`, `sub-contract` |
+| `subAwardDate`, `subAwardAmount` | `2025-05-30`, `1154736350` |
+| `subAwardDescription` | `CONSTRUCTION SUBCONTRACT (CS)-111G BUILDING OUTFITTING` |
+| `subRecipientName`, `subRecipientUei` | `KIEWIT POWER CONSTRUCTORS CO`, `CFCCZHPBR445` |
+| `primeAwardId`, `primeRecipientName`, `primeRecipientUei`, `primeRecipientId` | `89233018CNR000004`, `FLUOR MARINE PROPULSION, LLC`, `CWHMVCX7K1N6` |
+| `primeAwardGeneratedInternalId`, `primeAwardUrl` | `CONT_AWD_89233018CNR000004_8900_-NONE-_-NONE-`, `https://www.usaspending.gov/award/CONT_AWD_89233018CNR000004_8900_…` |
+| `awardingAgency`, `awardingSubAgency`, `awardCategory` | `Department of Energy`, `Department of Energy`, `contracts` |
+
+`primeAwardGeneratedInternalId` is the **same value** as a prime row's `generatedInternalId`, so the two modes join cleanly on it (or on `primeAwardUrl` = `awardUrl`).
+
+Three things to know:
+
+- **Filters retarget to the sub-recipient.** `recipients` and `recipientStates` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates` and the amount bounds work as usual. `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
+- **`sortBy: lastModifiedDate` falls back to the sub-award date**, because sub-award records carry no last-modified timestamp.
+- **Coverage is narrower than prime awards.** Only prime recipients required to file FSRS reports have sub-awards, so small awards, most loans and most direct payments return nothing here. An empty sub-award result does not mean the prime award doesn't exist — re-run with `awardLevel: "prime"` to confirm.
 
 ### Sample row
 

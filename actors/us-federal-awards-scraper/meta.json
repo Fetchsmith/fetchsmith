@@ -1,8 +1,8 @@
 {
-  "title": "USAspending Scraper \u2014 US Federal Contracts & Grants",
-  "description": "Search every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API. 6 award categories, 37 typed output fields incl. recipient UEI/address, NAICS/PSC, CFDA program and place of performance. Filter by agency, keyword, state, date range and amount.",
-  "seoTitle": "USAspending Scraper \u2014 US Federal Contracts & Grants API",
-  "seoDescription": "Scrape US federal contracts, grants and loans from USAspending.gov. 6 award categories, 37 fields incl. recipient UEI, NAICS/PSC, CFDA. Filter by agency, state, amount, date.",
+  "title": "USAspending Scraper — US Federal Contracts & Grants",
+  "description": "Every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API — plus the sub-contracts and sub-grants filed under them, joined to the prime award. 51 typed fields incl. recipient UEI/address, NAICS/PSC, CFDA. Filter by agency, keyword, state, date.",
+  "seoTitle": "USAspending Scraper — US Federal Contracts & Grants API",
+  "seoDescription": "Scrape US federal contracts, grants, loans and sub-awards from USAspending.gov. 51 fields incl. recipient UEI, NAICS/PSC, CFDA. Filter by agency, state, date.",
   "categories": [
     "LEAD_GENERATION",
     "BUSINESS"
@@ -10,7 +10,7 @@
   "events": {
     "result": {
       "eventTitle": "Result item",
-      "eventDescription": "One normalized US federal award returned to the dataset.",
+      "eventDescription": "One normalized US federal award or sub-award returned to the dataset.",
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.004
