@@ -9,6 +9,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - **Full article text, cleaned.** Most Substack scrapers stop at the archive listing, which contains no article body at all. This Actor fetches each post and returns readable plain text (`bodyText`), with optional raw `bodyHtml`.
 - **Comments included.** The whole thread, flattened, with `parentCommentId` so you can rebuild the tree.
 - **Custom domains just work.** `bigtechnology.com`, `astralcodexten.com` — redirects from `<handle>.substack.com` are followed automatically.
+- **Discover newsletters by category — no URL list needed.** Give `discoverCategories` a topic like `technology` or `finance` and the Actor pulls the top publications from Substack's own category leaderboard and scrapes them in the same run.
 - **Search inside a publication.** `searchQuery` filters the archive server-side instead of downloading everything.
 - **Many publications per run**, plus direct post URLs.
 - **Cheap:** $0.002 per result on the Free plan, tapering to $0.0012 on Gold and above — roughly 60-75% under the usual $0.005.
@@ -27,6 +28,9 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 |---|---|---|---|
 | `publicationUrls` | array | — | Publications to scrape: `astralcodexten`, `astralcodexten.substack.com`, or `https://www.bigtechnology.com`. |
 | `postUrls` | array | — | Individual post URLs (`https://.../p/some-slug`). |
+| `discoverCategories` | array | `[]` | **Start from a topic, not a URL list.** Substack category slugs (`technology`, `business`, `finance`, `culture`, `us-politics`, `food`, …, plus subcategory slugs). Publications come back in Substack's own leaderboard order. |
+| `maxPublicationsPerCategory` | integer | `10` | How many top publications to take from each discovered category. |
+| `discoverType` | string | `all` | Restrict discovery to `newsletter` or `podcast` publications. |
 | `searchQuery` | string | — | Only return posts matching this keyword within each publication's archive. |
 | `includeBodyText` | boolean | `true` | Fetch the full body and return clean plain text (one extra request per post). |
 | `includeBodyHtml` | boolean | `false` | Also return the original HTML body. |

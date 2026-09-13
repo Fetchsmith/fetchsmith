@@ -1,19 +1,57 @@
 {
-  "title": "Substack Scraper input", "type": "object", "schemaVersion": 1,
+  "title": "Substack Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
   "properties": {
     "publicationUrls": {
       "title": "Publication URLs or handles",
       "type": "array",
       "description": "Substack publications to scrape. Accepts any form: \"astralcodexten\", \"astralcodexten.substack.com\", or a custom domain like \"https://www.bigtechnology.com\". Custom domains and redirects are handled automatically.",
       "editor": "stringList",
-      "prefill": ["https://astralcodexten.substack.com"],
-      "default": ["https://astralcodexten.substack.com"]
+      "prefill": [
+        "https://astralcodexten.substack.com"
+      ],
+      "default": [
+        "https://astralcodexten.substack.com"
+      ]
     },
     "postUrls": {
       "title": "Individual post URLs",
       "type": "array",
       "description": "Scrape specific posts instead of (or in addition to) whole publications, e.g. https://www.bigtechnology.com/p/some-post.",
       "editor": "stringList"
+    },
+    "discoverCategories": {
+      "title": "Discover by category (no URLs needed)",
+      "type": "array",
+      "description": "Start from a topic instead of a URL list: Substack category slugs (e.g. technology, business, finance, culture, us-politics, food). Publications come back in Substack leaderboard order and are scraped like any other publication. Subcategory slugs work too. Combine with maxPublicationsPerCategory.",
+      "editor": "stringList",
+      "default": []
+    },
+    "maxPublicationsPerCategory": {
+      "title": "Max publications per category",
+      "type": "integer",
+      "description": "How many top publications to take from each category in discoverCategories.",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "discoverType": {
+      "title": "Discovery: newsletters or podcasts",
+      "type": "string",
+      "description": "Filter discovered publications by type. Only applies to discoverCategories.",
+      "editor": "select",
+      "default": "all",
+      "enum": [
+        "all",
+        "newsletter",
+        "podcast"
+      ],
+      "enumTitles": [
+        "All",
+        "Newsletters only",
+        "Podcasts only"
+      ]
     },
     "searchQuery": {
       "title": "Search within the publication",
@@ -43,15 +81,25 @@
       "title": "Max comments per post",
       "type": "integer",
       "description": "Cap on comments returned per post.",
-      "default": 50, "minimum": 1, "maximum": 1000
+      "default": 50,
+      "minimum": 1,
+      "maximum": 1000
     },
     "audienceFilter": {
       "title": "Free / paid posts",
       "type": "string",
       "description": "Return all posts, only free (public) posts, or only paywalled subscriber posts.",
       "editor": "select",
-      "enum": ["all", "free", "paid"],
-      "enumTitles": ["All posts", "Free posts only", "Paid posts only"],
+      "enum": [
+        "all",
+        "free",
+        "paid"
+      ],
+      "enumTitles": [
+        "All posts",
+        "Free posts only",
+        "Paid posts only"
+      ],
       "default": "all"
     },
     "publishedAfter": {
@@ -70,13 +118,17 @@
       "title": "Max posts per publication",
       "type": "integer",
       "description": "How deep to go into each publication's archive.",
-      "default": 50, "minimum": 1, "maximum": 5000
+      "default": 50,
+      "minimum": 1,
+      "maximum": 5000
     },
     "maxResults": {
       "title": "Max results (total)",
       "type": "integer",
       "description": "Overall cap across all publications, posts and comments. This is what you pay for.",
-      "default": 200, "minimum": 1, "maximum": 10000
+      "default": 200,
+      "minimum": 1,
+      "maximum": 10000
     }
   },
   "required": []

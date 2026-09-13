@@ -1,10 +1,10 @@
 {
- "ts": 1789141374,
+ "ts": 1789294200,
  "results": {
-  "clinicaltrials-scraper": {
+  "substack-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
-   "items": 83,
+   "secs": 97,
+   "items": 50,
    "pass": true
   }
  }

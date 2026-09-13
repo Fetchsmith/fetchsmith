@@ -4,6 +4,8 @@
 //   GET <pub>/api/v1/archive?sort=new&search=<q>&...      -> in-publication search
 //   GET <pub>/api/v1/posts/<slug>                          -> single post incl. body_html
 //   GET <pub>/api/v1/post/<id>/comments?all_comments=true  -> comment tree
+//   GET substack.com/api/v1/categories                     -> category slugs/ids
+//   GET substack.com/api/v1/category/public/<id>/all?page= -> leaderboard publications in a category
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 import * as cheerio from 'cheerio';
@@ -21,6 +23,9 @@ const maxCommentsPerPost = Math.min(Number(input.maxCommentsPerPost ?? 50), 1000
 const audienceFilter = ['all', 'free', 'paid'].includes(input.audienceFilter) ? input.audienceFilter : 'all';
 const publishedAfter = input.publishedAfter ? new Date(input.publishedAfter) : null;
 const publishedBefore = input.publishedBefore ? new Date(input.publishedBefore) : null;
+const discoverCategories = (input.discoverCategories ?? []).map((c) => String(c ?? '').trim()).filter(Boolean);
+const maxPublicationsPerCategory = Math.min(Number(input.maxPublicationsPerCategory ?? 10), 100);
+const discoverType = ['all', 'newsletter', 'podcast'].includes(input.discoverType) ? input.discoverType : 'all';
 
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
@@ -223,6 +228,63 @@ async function scrapePublication(origin) {
   return pushed > pushedBefore ? 'ok' : 'filtered';
 }
 
+// Category discovery: turn "technology"/"finance"/... into publication origins, ranked by
+// Substack's own leaderboard order, so a run can start from a topic instead of a URL list.
+async function resolveCategoryIds(wanted) {
+  let cats;
+  try {
+    cats = await getJson('https://substack.com/api/v1/categories');
+  } catch (e) {
+    log.warning(`Could not load Substack category list: ${e.message}`);
+    return [];
+  }
+  const flat = [];
+  for (const c of Array.isArray(cats) ? cats : []) {
+    flat.push(c);
+    for (const s of c.subcategories ?? []) flat.push(s);
+  }
+  const bySlug = new Map();
+  for (const c of flat) {
+    if (c.slug) bySlug.set(String(c.slug).toLowerCase(), c);
+    if (c.name) bySlug.set(String(c.name).toLowerCase(), c);
+    if (c.id != null) bySlug.set(String(c.id), c);
+  }
+  const out = [];
+  for (const w of wanted) {
+    const hit = bySlug.get(w.toLowerCase());
+    if (hit) out.push({ id: hit.id, slug: hit.slug ?? String(hit.id) });
+    else log.warning(`Unknown category "${w}" — skipped. Valid slugs come from substack.com/api/v1/categories (e.g. technology, business, finance, culture).`);
+  }
+  return out;
+}
+
+async function discoverPublications(cat) {
+  const found = [];
+  const pageSize = 25;
+  for (let page = 0; found.length < maxPublicationsPerCategory; page += 1) {
+    const url = `https://substack.com/api/v1/category/public/${cat.id}/all?page=${page}&limit=${pageSize}`;
+    let body;
+    try {
+      body = await getJson(url);
+    } catch (e) {
+      log.warning(`Category "${cat.slug}" page ${page} failed: ${e.message}`);
+      break;
+    }
+    const pubs = body?.publications;
+    if (!Array.isArray(pubs) || !pubs.length) break;
+    for (const p of pubs) {
+      if (discoverType !== 'all' && p.type && p.type !== discoverType) continue;
+      const host = p.custom_domain || (p.subdomain ? `${p.subdomain}.substack.com` : null);
+      if (!host) continue;
+      found.push({ origin: `https://${host}`, postSlug: null, name: p.name, category: cat.slug });
+      if (found.length >= maxPublicationsPerCategory) break;
+    }
+    if (!body.more) break;
+  }
+  log.info(`Category "${cat.slug}": discovered ${found.length} publication(s)${found.length ? ` — ${found.slice(0, 5).map((f) => f.name).join(', ')}${found.length > 5 ? ', …' : ''}` : ''}`);
+  return found;
+}
+
 const publicationTargets = [];
 const postTargets = [];
 for (const raw of input.publicationUrls ?? []) {
@@ -234,14 +296,34 @@ for (const raw of input.postUrls ?? []) {
   if (t?.postSlug) postTargets.push(t);
   else if (t) publicationTargets.push(t);
 }
+let unknownCategories = false;
+if (discoverCategories.length) {
+  const cats = await resolveCategoryIds(discoverCategories);
+  unknownCategories = cats.length === 0;
+  for (const cat of cats) publicationTargets.push(...(await discoverPublications(cat)));
+}
+// A publication can be reached by handle and by custom domain, and can sit in two categories.
+const seenOrigins = new Set();
+const dedupedPublications = publicationTargets.filter((t) => {
+  if (seenOrigins.has(t.origin)) return false;
+  seenOrigins.add(t.origin);
+  return true;
+});
+publicationTargets.length = 0;
+publicationTargets.push(...dedupedPublications);
 
 const errored = [];
 const empty = [];
 const filtered = [];
 
 if (!publicationTargets.length && !postTargets.length) {
-  log.warning('No publicationUrls or postUrls provided — nothing to do.');
-  await Actor.setStatusMessage('No items returned — no publicationUrls or postUrls were provided.');
+  const why = unknownCategories
+    ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
+    : discoverCategories.length
+      ? 'category discovery returned no publications — try a different category or raise maxPublicationsPerCategory'
+      : 'no publicationUrls, postUrls or discoverCategories were provided';
+  log.warning(`Nothing to do — ${why}.`);
+  await Actor.setStatusMessage(`No items returned — ${why}.`);
 } else {
   for (const t of postTargets) {
     if (!keepGoing) break;
