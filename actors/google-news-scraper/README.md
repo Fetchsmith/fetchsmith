@@ -15,6 +15,9 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
 | `rssUrls` | array | Optional Google News RSS feed URLs (topics, sections, publications) |
 | `topics` | array | Optional: browse Google News' built-in sections without knowing an RSS URL — `WORLD`, `NATION`, `BUSINESS`, `TECHNOLOGY`, `ENTERTAINMENT`, `SCIENCE`, `SPORTS`, `HEALTH` |
 | `excludeWords` | array | Words/phrases to drop from every query, e.g. `["iphone"]` on a query `apple` removes iPhone coverage. Same effect as typing `-word` yourself, just a manageable list. Does not apply to `rssUrls` (fixed feeds, not search terms) |
+| `timePeriod` | string | Only articles published within this window: `1h`, `6h`, `12h`, `1d`, `7d`, `30d`, `90d`, `1y`. Filtered by Google itself, so it costs no extra requests and you are never charged for articles outside the window. Applies to `queries` only |
+| `publishedAfter` | string | `YYYY-MM-DD` — only articles published on or after this date. Overrides `timePeriod`. Applies to `queries` only |
+| `publishedBefore` | string | `YYYY-MM-DD` — only articles published before this date. Overrides `timePeriod`. Applies to `queries` only |
 | `language` | string | `hl` code such as `en-US`, `de`, `fr`, `pt-BR`, `ar`, `ja` (default `en-US`) |
 | `country` | string | `gl` code such as `US`, `GB`, `DE`, `IN` (default `US`) |
 | `maxItemsPerQuery` | integer | Up to 100 (Google's feed limit) |
@@ -68,6 +71,8 @@ With `fetchArticleBody: true` each item also carries:
 ## Tips
 - Combine `queries` with `when:1d` to get only fresh news for daily runs.
 - Use `excludeWords` to drop off-topic coverage that shares a keyword with your query (e.g. exclude `iphone` when tracking `apple` as a company, not a product line).
+- Google News' RSS search only understands the hour, day and year units in a time filter. `when:1m` and `when:12m` come back as an **empty feed, not an error** — which looks exactly like "no articles matched". That is why `timePeriod` offers `30d`, `90d` and `1y` rather than a "last month" option. If you type `when:`/`after:`/`before:` directly into a query, that query keeps your operator and `timePeriod` is not applied on top of it.
+- `publishedAfter`/`publishedBefore` are Google's own `after:`/`before:` operators, and Google evaluates the day boundary in its locale, not in UTC. Expect the edges to be loose by a few hours — a `before:2026-09-05` query can return an article stamped `2026-09-05T01:51Z` (observed live). If you need a hard UTC cut-off, filter the `publishedAt` field yourself after the run.
 - Use `rssUrls` for topic feeds, e.g. `https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en`.
 - Turn off `decodeUrls` for the fastest runs if you only need headlines and sources.
 - `fetchArticleBody` adds one request per article, so it is slower — but it costs no extra: you are still charged once per article returned, body or no body.

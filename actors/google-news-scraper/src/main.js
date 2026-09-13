@@ -23,6 +23,39 @@ const VALID_TOPICS = ['WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMEN
 const topics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()).filter((t) => VALID_TOPICS.includes(t));
 const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
+
+// Date filtering is done by Google itself, via search operators appended to the query — no extra
+// requests and no client-side discarding of articles the customer already paid to fetch.
+// Only the h/d/y units work on the RSS search endpoint: `when:1m` and `when:12m` return an EMPTY
+// feed rather than an error (verified live, cycle 204), so the enum below deliberately offers 30d
+// and 1y instead of "1 month"/"1 year in months".
+const VALID_PERIODS = ['1h', '6h', '12h', '1d', '7d', '30d', '90d', '1y'];
+const rawPeriod = String(input.timePeriod ?? '').trim().toLowerCase();
+const timePeriod = VALID_PERIODS.includes(rawPeriod) ? rawPeriod : '';
+if (rawPeriod && !timePeriod) log.warning(`Ignoring unsupported timePeriod "${rawPeriod}" — use one of: ${VALID_PERIODS.join(', ')}.`);
+const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v);
+const normDate = (v, name) => {
+  const s = String(v ?? '').trim().slice(0, 10);
+  if (!s) return '';
+  if (!isDate(s)) { log.warning(`Ignoring ${name} "${s}" — expected YYYY-MM-DD.`); return ''; }
+  return s;
+};
+const publishedAfter = normDate(input.publishedAfter, 'publishedAfter');
+const publishedBefore = normDate(input.publishedBefore, 'publishedBefore');
+// Explicit dates win: Google applies the narrower of the two inconsistently, so never send both.
+let timeSuffix = '';
+if (publishedAfter || publishedBefore) {
+  if (timePeriod) log.warning('Both timePeriod and publishedAfter/publishedBefore were set — using the explicit dates and ignoring timePeriod.');
+  if (publishedAfter) timeSuffix += ` after:${publishedAfter}`;
+  if (publishedBefore) timeSuffix += ` before:${publishedBefore}`;
+} else if (timePeriod) {
+  timeSuffix = ` when:${timePeriod}`;
+}
+// These operators only exist on the search endpoint. Topic sections and user-supplied RSS URLs are
+// fixed feeds, so a date filter set with only those inputs would silently do nothing — say so.
+if (timeSuffix && !queries.length) log.warning('A date filter was set but there are no search queries — it does not apply to topics or custom RSS URLs, which are fixed feeds.');
+// Don't double-apply if the customer already typed the operator into the query themselves.
+const hasOwnTimeOp = (q) => /\b(when|after|before):/i.test(q);
 const hl = input.language || 'en-US';
 const gl = (input.country || 'US').toUpperCase();
 const ceid = `${gl}:${hl.split('-')[0]}`;
@@ -126,7 +159,7 @@ async function decodeUrl(gnUrl) {
 }
 
 const feeds = [
-  ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix)}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
+  ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix + (hasOwnTimeOp(q) ? '' : timeSuffix))}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
   ...rssUrls.map((u) => ({ query: null, topic: null, url: u })),
   ...topics.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/headlines/section/topic/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
 ];
