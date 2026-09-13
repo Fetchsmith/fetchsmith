@@ -5,7 +5,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 ## What it does
 - Queries the official `api.ted.europa.eu` Search API (no key, no auth required).
 - Filters by buyer country, CPV code, notice type, free-text keywords and publication date (relative window or an absolute from/to range), or drop in a raw TED expert-query string for full control.
-- Normalizes TED's raw response: notices come back as multilingual maps (`{"deu": ["..."]}`) with heavily duplicated per-lot arrays (the same CPV code repeated a dozen times). This Actor flattens each notice to one row with an English-preferred title/buyer name, deduplicated CPV/contract-nature arrays, and the earliest deadline date.
+- Normalizes TED's raw response: notices come back as multilingual maps (`{"deu": ["..."]}`) with heavily duplicated per-lot arrays (the same CPV code repeated a dozen times). This Actor flattens each notice to one row with an English-preferred (or your chosen language) title/buyer name, deduplicated CPV/contract-nature arrays, and the earliest deadline date.
 - Pay per result: you are charged only for notices actually returned.
 - HTTP-only (no browser), so runs are fast and cheap.
 
@@ -20,6 +20,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `keywords` | string | Free-text search across the notice's title, description and buyer name (TED's `FT~` operator). |
 | `expertQuery` | string | Raw TED expert-query string — overrides all the filters above entirely. |
 | `maxResults` | integer | Stop after this many notices. Default 100. |
+| `outputLanguage` | string | Preferred language for `title`/`description`/`buyerName`/`buyerCity`/`noticeUrl` (24 EU languages, e.g. `deu`, `fra`, `spa`). Default `eng`. Falls back to English, then to whatever TED provided, if a notice has no translation into your chosen language. |
 
 ## Output
 One row per notice: `publicationNumber`, `noticeType`, `noticeSubtype`, `procedureType`, `title` (+ `titleLanguage`), `buyerName`, `buyerCountry`, `buyerCity`, `buyerEmail`, `buyerPhone`, `buyerUrl`, `placeOfPerformanceCountry` + `placeOfPerformanceCity` (arrays, deduplicated), `contractNature` (array), `cpvCodes` (array), `description`, `totalValue` + `totalValueCurrency`, `deadlineDate`, `deadlineReceiptRequestDate`, `publicationDate`, `noticeUrl`.
@@ -37,6 +38,8 @@ Buyer contact details (`buyerEmail`/`buyerPhone`/`buyerUrl`) are real lead-gener
 **Can I search full text?** Yes — set `keywords` (e.g. `"cloud hosting"`), which is sent as TED's `FT~` full-text operator against title/description/buyer name. For anything beyond that, `expertQuery` gives raw access to TED's expert-search syntax.
 
 **Can I pull a specific historical month or quarter, not just "the last N days"?** Yes — set `publicationDateFrom`/`publicationDateTo` (either or both) to an absolute `YYYYMMDD` window; it overrides `publishedWithinDays`.
+
+**Can I get titles/descriptions in a language other than English?** Yes — set `outputLanguage` to any of 24 EU language codes (e.g. `deu`, `fra`, `spa`, `pol`). TED publishes every notice in every EU language, so this returns the same notice in your chosen language instead of English, including a matching-language notice URL. Notices without a translation into that language fall back to English automatically.
 
 ## Notes
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

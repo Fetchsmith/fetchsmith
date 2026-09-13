@@ -63,6 +63,15 @@
       "default": 100,
       "minimum": 1,
       "maximum": 5000
+    },
+    "outputLanguage": {
+      "title": "Output language",
+      "type": "string",
+      "description": "Preferred language for localized fields (title, description, buyer name, notice link). Falls back to English, then to whichever language TED provided, if this notice has no translation into the chosen language.",
+      "editor": "select",
+      "default": "eng",
+      "enum": ["eng", "deu", "fra", "ita", "spa", "pol", "nld", "por", "swe", "dan", "fin", "ces", "ell", "hun", "ron", "slk", "slv", "bul", "hrv", "est", "lav", "lit", "gle", "mlt"],
+      "enumTitles": ["English", "German", "French", "Italian", "Spanish", "Polish", "Dutch", "Portuguese", "Swedish", "Danish", "Finnish", "Czech", "Greek", "Hungarian", "Romanian", "Slovak", "Slovenian", "Bulgarian", "Croatian", "Estonian", "Latvian", "Lithuanian", "Irish", "Maltese"]
     }
   },
   "required": []

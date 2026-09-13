@@ -8,6 +8,21 @@ const searchTerms = (input.searchTerms ?? []).map(String).filter(Boolean);
 const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
 const country = String(input.country || 'us').toLowerCase().trim();
 const chartCount = Math.min(Number(input.chartCount ?? 50), 200);
+// Apple's newer rss.marketingtools.apple.com chart endpoint has no genre filter (/genre=<id>/
+// 404s, ?g= is ignored), but the older itunes.apple.com RSS Generator endpoint still honours
+// one — verified live cycle 217 (e.g. genre=1303 returns a Comedy-only chart, distinct from the
+// overall top chart). GOTCHA: an unrecognized genre id does NOT error — it silently falls back
+// to the overall top chart (HTTP 200), so a typo would read as "genre X's top chart" when it's
+// really just the front page. The whitelist below is load-bearing; never pass a raw value through.
+const CHART_GENRE_IDS = {
+  arts: 1301, business: 1321, comedy: 1303, education: 1304, fiction: 1483,
+  government: 1511, healthFitness: 1512, history: 1487, kidsFamily: 1305,
+  leisure: 1502, music: 1310, news: 1489, religionSpirituality: 1314,
+  science: 1533, societyCulture: 1324, sports: 1545, technology: 1318,
+  trueCrime: 1488, tvFilm: 1309,
+};
+const chartGenre = input.chartGenre && CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null;
+if (input.chartGenre && !chartGenre) log.warning(`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join(', ')}.`);
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
 const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), 200);
 const perPodcastReviews = Math.min(Number(input.maxReviewsPerPodcast ?? 200), 500);
@@ -277,12 +292,30 @@ for (const term of searchTerms) {
 // ---- run -------------------------------------------------------------------
 const emptyIds = [];
 if (dataType === 'charts') {
-  // Apple only exposes an overall top-podcasts chart per storefront now (no genre-specific
-  // path — /genre=<id>/ 404s, ?g= is silently ignored); rank comes from array order.
-  const url = `https://rss.marketingtools.apple.com/api/v2/${country}/podcasts/top/${chartCount}/podcasts.json`;
+  // Rank comes from array order in both cases.
+  const url = chartGenre
+    ? `https://itunes.apple.com/${country}/rss/toppodcasts/limit=${chartCount}/genre=${CHART_GENRE_IDS[chartGenre]}/json`
+    : `https://rss.marketingtools.apple.com/api/v2/${country}/podcasts/top/${chartCount}/podcasts.json`;
   let results = [];
-  try { results = (await getJson(url)).feed?.results ?? []; }
-  catch (e) {
+  try {
+    if (chartGenre) {
+      const entries = (await getJson(url)).feed?.entry ?? [];
+      // Normalize the older endpoint's Atom-ish shape to the same {id, name, artistName, url,
+      // genres, contentAdvisoryRating, artworkUrl100} shape the marketingtools endpoint returns,
+      // so the rest of this loop (including the includePodcastInfo lookup) is untouched below.
+      results = entries.map((e) => ({
+        id: e.id?.attributes?.['im:id'] ?? null,
+        name: e['im:name']?.label ?? null,
+        artistName: e['im:artist']?.label ?? null,
+        url: e.link?.attributes?.href ?? null,
+        genres: e.category?.attributes?.label ? [{ name: e.category.attributes.label }] : [],
+        contentAdvisoryRating: null,
+        artworkUrl100: e['im:image']?.[e['im:image'].length - 1]?.label ?? null,
+      }));
+    } else {
+      results = (await getJson(url)).feed?.results ?? [];
+    }
+  } catch (e) {
     const msg = e instanceof SyntaxError
       ? `storefront "${country}" is not a valid Apple Podcasts country code (Apple returned an HTML error page, not chart data) — use a 2-letter code like "us", "gb", "de".`
       : `Chart fetch failed for storefront "${country}": ${e.message}`;

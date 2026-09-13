@@ -30,10 +30,19 @@
     "chartCount": {
       "title": "Chart size",
       "type": "integer",
-      "description": "Charts only: how many top podcasts to fetch for the storefront (Apple currently only exposes an overall chart, not genre-specific ones).",
+      "description": "Charts only: how many top podcasts to fetch for the storefront. Leave \"Chart genre\" empty for Apple's overall top chart, or set it for a genre-specific one.",
       "default": 50,
       "minimum": 1,
       "maximum": 200
+    },
+    "chartGenre": {
+      "title": "Chart genre",
+      "type": "string",
+      "description": "Charts only: restrict the chart to one Apple Podcasts category instead of the overall top chart. Leave empty for the overall chart.",
+      "editor": "select",
+      "enum": ["", "arts", "business", "comedy", "education", "fiction", "government", "healthFitness", "history", "kidsFamily", "leisure", "music", "news", "religionSpirituality", "science", "societyCulture", "sports", "technology", "trueCrime", "tvFilm"],
+      "enumTitles": ["Overall top chart", "Arts", "Business", "Comedy", "Education", "Fiction", "Government", "Health & Fitness", "History", "Kids & Family", "Leisure", "Music", "News", "Religion & Spirituality", "Science", "Society & Culture", "Sports", "Technology", "True Crime", "TV & Film"],
+      "default": ""
     },
     "searchLimit": {
       "title": "Podcasts per search term",

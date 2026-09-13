@@ -21,6 +21,7 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | `searchTerms` | array | Find shows by keyword instead of, or as well as, giving URLs |
 | `searchLimit` | integer | Shows to take per search term (default 10, max 200) |
 | `chartCount` | integer | Charts only: how many top shows to fetch (default 50, max 200) |
+| `chartGenre` | string | Charts only: restrict the chart to one category (`comedy`, `trueCrime`, `news`, `business`, ... 19 total) instead of the overall top chart. Leave empty for the overall chart |
 | `maxPodcastsPerPublisher` | integer | Publisher only: how many shows to return per publisher (default 200, max 200) |
 | `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
 | `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) |
@@ -114,7 +115,7 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 
 **How fast is it?** HTTP-only, no headless browser: a show's 200 episodes come from a single request, and reviews page 50 at a time. Runs cost a few seconds of compute plus the per-result fee.
 
-**Can I get genre-specific charts?** No — Apple's public chart endpoint currently only exposes an overall top-podcasts chart per storefront, not per-genre. Each chart row still includes the show's genre(s), so you can filter client-side.
+**Can I get genre-specific charts?** Yes — set `chartGenre` (e.g. `comedy`, `trueCrime`, `business`) to get that category's own top chart instead of the overall one, using Apple's own per-genre chart feed. 19 genres are supported; an unrecognized value is ignored with a warning rather than silently returning the wrong chart.
 
 **Is this legal?** It only reads public, unauthenticated Apple endpoints — the same data any visitor sees on podcasts.apple.com. No personal data beyond the public reviewer nicknames Apple itself publishes.
 

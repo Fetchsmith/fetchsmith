@@ -11,6 +11,7 @@ const publishedWithinDays = Math.min(Math.max(Number(input.publishedWithinDays ?
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : null;
 const keywords = input.keywords ? String(input.keywords).trim() : null;
+const outputLanguage = String(input.outputLanguage ?? 'eng').toLowerCase();
 
 function normalizeDate(raw, label) {
   if (raw == null || raw === '') return null;
@@ -74,6 +75,7 @@ function firstValue(v) {
 }
 function preferredText(map) {
   if (!map || typeof map !== 'object') return [null, null];
+  if (outputLanguage !== 'eng' && map[outputLanguage] != null) return [firstValue(map[outputLanguage]), outputLanguage];
   if (map.eng != null) return [firstValue(map.eng), 'eng'];
   if (map.mul != null) return [firstValue(map.mul), 'mul'];
   const lang = Object.keys(map)[0];
@@ -96,9 +98,11 @@ function earliestDate(arr) {
 
 function pickNoticeUrl(links) {
   if (!links || typeof links !== 'object') return null;
+  const preferredUpper = outputLanguage.toUpperCase();
   for (const kind of ['pdf', 'xml']) {
     const byLang = links[kind];
     if (!byLang) continue;
+    if (preferredUpper !== 'ENG' && byLang[preferredUpper]) return byLang[preferredUpper];
     if (byLang.ENG) return byLang.ENG;
     if (byLang.MUL) return byLang.MUL;
     const firstKey = Object.keys(byLang)[0];
