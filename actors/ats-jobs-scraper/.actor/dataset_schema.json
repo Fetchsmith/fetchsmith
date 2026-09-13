@@ -1,263 +1,271 @@
 {
-  "actorSpecification": 1,
-  "fields": {
-    "type": "object",
-    "properties": {
-      "company": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Company",
-        "example": "airbnb"
-      },
-      "atsSource": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "AtsSource",
-        "example": "greenhouse"
-      },
-      "jobId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "JobId",
-        "example": "8184174"
-      },
-      "title": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Title",
-        "example": "Account Manager"
-      },
-      "department": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Department",
-        "example": "Business Development"
-      },
-      "team": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Team",
-        "example": "Backend"
-      },
-      "employmentType": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "EmploymentType",
-        "example": "FullTime"
-      },
-      "workplaceType": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "WorkplaceType",
-        "example": "Hybrid"
-      },
-      "isRemote": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "IsRemote",
-        "example": false
-      },
-      "location": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Location",
-        "example": "London, United Kingdom"
-      },
-      "secondaryLocations": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "SecondaryLocations"
-      },
-      "country": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Country",
-        "example": "USA"
-      },
-      "region": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Region",
-        "example": "NY"
-      },
-      "city": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "City",
-        "example": "New York City"
-      },
-      "salaryMin": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "SalaryMin",
-        "example": 85000
-      },
-      "salaryMax": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "SalaryMax",
-        "example": 175000
-      },
-      "salaryCurrency": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "SalaryCurrency",
-        "example": "USD"
-      },
-      "publishedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "PublishedAt",
-        "example": "2026-09-09T04:35:19-04:00"
-      },
-      "updatedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "UpdatedAt",
-        "example": "2026-09-09T04:35:19-04:00"
-      },
-      "jobUrl": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "JobUrl",
-        "example": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
-      },
-      "applyUrl": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ApplyUrl",
-        "example": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
-      },
-      "descriptionHtml": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "DescriptionHtml",
-        "example": "<div class=\"content-intro\"><p><span style=\"font-family: helvetica, arial, sans-serif; font-size: 12pt;\">Airbnb was born "
-      },
-      "descriptionText": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "DescriptionText",
-        "example": "Airbnb was born in 2007 when two hosts welcomed three guests to their San Francisco home, and has since grown to over 5 "
-      },
-      "scrapedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ScrapedAt",
-        "example": "2026-09-13T05:10:53.105Z"
-      }
-    }
-  },
-  "views": {
-    "overview": {
-      "title": "Overview",
-      "transformation": {
-        "fields": [
-          "company",
-          "atsSource",
-          "jobId",
-          "title",
-          "department",
-          "team",
-          "employmentType",
-          "workplaceType",
-          "isRemote",
-          "location"
-        ]
-      },
-      "display": {
-        "component": "table",
-        "properties": {
-          "company": {
-            "label": "Company",
-            "format": "text"
-          },
-          "atsSource": {
-            "label": "AtsSource",
-            "format": "text"
-          },
-          "jobId": {
-            "label": "JobId",
-            "format": "text"
-          },
-          "title": {
-            "label": "Title",
-            "format": "text"
-          },
-          "department": {
-            "label": "Department",
-            "format": "text"
-          },
-          "team": {
-            "label": "Team",
-            "format": "text"
-          },
-          "employmentType": {
-            "label": "EmploymentType",
-            "format": "text"
-          },
-          "workplaceType": {
-            "label": "WorkplaceType",
-            "format": "text"
-          },
-          "isRemote": {
-            "label": "IsRemote",
-            "format": "boolean"
-          },
-          "location": {
-            "label": "Location",
-            "format": "text"
-          }
-        }
-      }
-    }
+ "actorSpecification": 1,
+ "fields": {
+  "type": "object",
+  "properties": {
+   "company": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Company",
+    "example": "airbnb"
+   },
+   "atsSource": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "AtsSource",
+    "example": "greenhouse"
+   },
+   "jobId": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "JobId",
+    "example": "8184174"
+   },
+   "title": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Title",
+    "example": "Account Manager"
+   },
+   "department": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Department",
+    "example": "Business Development"
+   },
+   "team": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Team",
+    "example": "Backend"
+   },
+   "employmentType": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "EmploymentType",
+    "example": "FullTime"
+   },
+   "workplaceType": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "WorkplaceType",
+    "example": "Hybrid"
+   },
+   "isRemote": {
+    "type": [
+     "boolean",
+     "null"
+    ],
+    "title": "IsRemote",
+    "example": false
+   },
+   "location": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Location",
+    "example": "London, United Kingdom"
+   },
+   "secondaryLocations": {
+    "type": [
+     "array",
+     "null"
+    ],
+    "title": "SecondaryLocations"
+   },
+   "country": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Country",
+    "example": "USA"
+   },
+   "region": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "Region",
+    "example": "NY"
+   },
+   "city": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "City",
+    "example": "New York City"
+   },
+   "salaryMin": {
+    "type": [
+     "number",
+     "null"
+    ],
+    "title": "SalaryMin",
+    "example": 85000
+   },
+   "salaryMax": {
+    "type": [
+     "number",
+     "null"
+    ],
+    "title": "SalaryMax",
+    "example": 175000
+   },
+   "salaryCurrency": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "SalaryCurrency",
+    "example": "USD"
+   },
+   "salaryInterval": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "SalaryInterval",
+    "example": "year"
+   },
+   "publishedAt": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "PublishedAt",
+    "example": "2026-09-09T04:35:19-04:00"
+   },
+   "updatedAt": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "UpdatedAt",
+    "example": "2026-09-09T04:35:19-04:00"
+   },
+   "jobUrl": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "JobUrl",
+    "example": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
+   },
+   "applyUrl": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "ApplyUrl",
+    "example": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
+   },
+   "descriptionHtml": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "DescriptionHtml",
+    "example": "<div class=\"content-intro\"><p><span style=\"font-family: helvetica, arial, sans-serif; font-size: 12pt;\">Airbnb was born "
+   },
+   "descriptionText": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "DescriptionText",
+    "example": "Airbnb was born in 2007 when two hosts welcomed three guests to their San Francisco home, and has since grown to over 5 "
+   },
+   "scrapedAt": {
+    "type": [
+     "string",
+     "null"
+    ],
+    "title": "ScrapedAt",
+    "example": "2026-09-13T05:10:53.105Z"
+   }
   }
+ },
+ "views": {
+  "overview": {
+   "title": "Overview",
+   "transformation": {
+    "fields": [
+     "company",
+     "atsSource",
+     "jobId",
+     "title",
+     "department",
+     "team",
+     "employmentType",
+     "workplaceType",
+     "isRemote",
+     "location"
+    ]
+   },
+   "display": {
+    "component": "table",
+    "properties": {
+     "company": {
+      "label": "Company",
+      "format": "text"
+     },
+     "atsSource": {
+      "label": "AtsSource",
+      "format": "text"
+     },
+     "jobId": {
+      "label": "JobId",
+      "format": "text"
+     },
+     "title": {
+      "label": "Title",
+      "format": "text"
+     },
+     "department": {
+      "label": "Department",
+      "format": "text"
+     },
+     "team": {
+      "label": "Team",
+      "format": "text"
+     },
+     "employmentType": {
+      "label": "EmploymentType",
+      "format": "text"
+     },
+     "workplaceType": {
+      "label": "WorkplaceType",
+      "format": "text"
+     },
+     "isRemote": {
+      "label": "IsRemote",
+      "format": "boolean"
+     },
+     "location": {
+      "label": "Location",
+      "format": "text"
+     }
+    }
+   }
+  }
+ }
 }

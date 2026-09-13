@@ -32,9 +32,12 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 
 ## Output
 One row per job posting:
-`company, atsSource, jobId, title, department, team, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
+`company, atsSource, jobId, title, department, team, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, salaryInterval, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
 
-Salary fields are populated when the ATS itself exposes them (confirmed on Recruitee and Lever boards that publish pay ranges); left `null` otherwise rather than guessed.
+### Salary
+Pay is returned when the ATS itself publishes it, and left `null` otherwise rather than guessed — **Ashby**, **Lever** and **Recruitee** expose structured pay ranges; Greenhouse, Workable and SmartRecruiters do not carry a compensation field at all. Ashby coverage is the best of the three: on a live board of 145 postings, 138 carried a numeric range.
+
+`salaryInterval` says what the number actually means — `year`, `month`, `week`, `day` or `hour`. Each ATS spells its period differently (`1 YEAR`, `monthly`, `per-year-salary`); they are normalized to one vocabulary so an hourly rate and an annual salary are never silently compared.
 
 ## Pricing
 `job` — $0.0015 per job posting returned. No start fee.

@@ -83,6 +83,40 @@ function textOf(html) {
   return cheerio.load(html).text().replace(/\s+/g, ' ').trim() || null;
 }
 
+// The three ATSes that expose a pay period each spell it differently — Ashby "1 YEAR"/"1 HOUR",
+// Recruitee "yearly"/"monthly", Lever "per-year-salary" (all four observed live, cycle 212).
+// A normalized schema should not hand the buyer three vocabularies, so collapse to a bare unit.
+function normalizeInterval(raw) {
+  if (!raw) return null;
+  const s = String(raw).toLowerCase();
+  for (const unit of ['year', 'month', 'week', 'day', 'hour']) {
+    if (s.includes(unit)) return unit;
+  }
+  return s === 'none' ? null : s;
+}
+
+// Ashby publishes structured pay when a board turns compensation on: `compensation.summaryComponents[]`
+// (and the same shape nested under `compensationTiers[].components[]`) carries real numeric
+// `minValue`/`maxValue` plus `currencyCode` and `interval`. Several component types share the array
+// (`EquityPercentage`, `Commission`, ...) with null values — only the `Salary` one is a pay range.
+// Measured live on jobs.ashbyhq.com/ramp (cycle 212): 138 of 145 postings carried a Salary component.
+function ashbySalary(comp) {
+  const pools = [comp?.summaryComponents, ...(comp?.compensationTiers ?? []).map((t) => t?.components)];
+  for (const pool of pools) {
+    if (!Array.isArray(pool)) continue;
+    const salary = pool.find((c) => c?.compensationType === 'Salary' && (c.minValue != null || c.maxValue != null));
+    if (salary) {
+      return {
+        min: salary.minValue ?? null,
+        max: salary.maxValue ?? null,
+        currency: salary.currencyCode ?? null,
+        interval: normalizeInterval(salary.interval),
+      };
+    }
+  }
+  return { min: null, max: null, currency: null, interval: null };
+}
+
 async function fetchGreenhouse(slug) {
   const { status, body } = await getJson(`https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(slug)}/jobs?content=true`);
   if (status === 404) return { jobs: [], notFound: true };
@@ -97,7 +131,7 @@ async function fetchGreenhouse(slug) {
         workplaceType, isRemote: /remote/i.test(j.location?.name ?? '') || (workplaceType ? /remote/i.test(workplaceType) : null),
         location: j.location?.name ?? null, secondaryLocations: (j.offices ?? []).slice(1).map((o) => o.name),
         country: null, region: null, city: null,
-        salaryMin: null, salaryMax: null, salaryCurrency: null,
+        salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
         publishedAt: j.first_published ?? null, updatedAt: j.updated_at ?? null,
         jobUrl: j.absolute_url ?? null, applyUrl: j.absolute_url ?? null,
         descriptionHtml: html ?? null, descriptionText: includeDescriptions ? textOf(html) : null,
@@ -110,7 +144,9 @@ async function fetchAshby(slug) {
   const { status, body } = await getJson(`https://api.ashbyhq.com/posting-api/job-board/${encodeURIComponent(slug)}?includeCompensation=true`);
   if (status === 404 || !body?.jobs) return { jobs: [], notFound: true };
   return {
-    jobs: body.jobs.map((j) => ({
+    jobs: body.jobs.map((j) => {
+      const pay = ashbySalary(j.compensation);
+      return {
       company: slug, atsSource: 'ashby', jobId: j.id, title: j.title?.trim() ?? null,
       department: j.department ?? null, team: j.team ?? null,
       employmentType: j.employmentType ?? null, workplaceType: j.workplaceType ?? null, isRemote: j.isRemote ?? null,
@@ -119,15 +155,13 @@ async function fetchAshby(slug) {
       country: j.address?.postalAddress?.addressCountry ?? null,
       region: j.address?.postalAddress?.addressRegion ?? null,
       city: j.address?.postalAddress?.addressLocality ?? null,
-      // Ashby's compensation payload shape is not confirmed against a real numeric example yet
-      // (shouldDisplayCompensationOnJobPostings was false on every board checked cycle 197) —
-      // leave null rather than guess a field path; revisit if a board with real numbers turns up.
-      salaryMin: null, salaryMax: null, salaryCurrency: null,
+      salaryMin: pay.min, salaryMax: pay.max, salaryCurrency: pay.currency, salaryInterval: pay.interval,
       publishedAt: j.publishedAt ?? null, updatedAt: null,
       jobUrl: j.jobUrl ?? null, applyUrl: j.applyUrl ?? null,
       descriptionHtml: includeDescriptions ? (j.descriptionHtml ?? null) : null,
       descriptionText: includeDescriptions ? textOf(j.descriptionHtml) : null,
-    })),
+      };
+    }),
   };
 }
 
@@ -146,6 +180,7 @@ async function fetchLever(slug) {
       location: j.categories?.location ?? null, secondaryLocations: (j.categories?.allLocations ?? []).slice(1),
       country: j.country ?? null, region: null, city: null,
       salaryMin: j.salaryRange?.min ?? null, salaryMax: j.salaryRange?.max ?? null, salaryCurrency: j.salaryRange?.currency ?? null,
+      salaryInterval: normalizeInterval(j.salaryRange?.interval),
       publishedAt: j.createdAt ? new Date(j.createdAt).toISOString() : null, updatedAt: null,
       jobUrl: j.hostedUrl ?? null, applyUrl: j.applyUrl ?? j.hostedUrl ?? null,
       descriptionHtml: includeDescriptions ? (j.description ?? null) : null,
@@ -170,6 +205,10 @@ async function fetchRecruitee(slug) {
       salaryMin: o.salary?.min != null ? Number(o.salary.min) : null,
       salaryMax: o.salary?.max != null ? Number(o.salary.max) : null,
       salaryCurrency: o.salary?.currency ?? null,
+      // Recruitee's `salary.period` ("yearly"/"monthly"/...) was being dropped, so a monthly
+      // EUR 2600 and an annual USD 211400 landed in the same column with nothing to tell them
+      // apart. Surface it (cycle 212).
+      salaryInterval: normalizeInterval(o.salary?.period),
       publishedAt: o.published_at ?? null, updatedAt: o.updated_at ?? null,
       jobUrl: o.careers_url ?? null, applyUrl: o.careers_apply_url ?? o.careers_url ?? null,
       descriptionHtml: includeDescriptions ? (o.description ?? null) : null,
@@ -192,7 +231,7 @@ async function fetchWorkable(slug) {
       country: j.country || null, region: j.state || null, city: j.city || null,
       // No compensation field anywhere in the widget payload across the boards checked cycle 198
       // (getresponse, automattic) — same "leave null, don't guess" call as ashby's compensation.
-      salaryMin: null, salaryMax: null, salaryCurrency: null,
+      salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
       publishedAt: j.published_on ? new Date(j.published_on).toISOString() : null, updatedAt: null,
       jobUrl: j.url ?? null, applyUrl: j.application_url ?? j.url ?? null,
       descriptionHtml: includeDescriptions ? (j.description ?? null) : null,
@@ -244,7 +283,7 @@ async function fetchSmartRecruiters(slug) {
       secondaryLocations: [],
       country: loc.country || null, region: loc.region || null, city: loc.city || null,
       // No compensation field observed on any real posting checked cycle 198 — leave null.
-      salaryMin: null, salaryMax: null, salaryCurrency: null,
+      salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
       publishedAt: p.releasedDate ?? null, updatedAt: null,
       // The list endpoint (`/postings`) never carries postingUrl/applyUrl — confirmed live cycle
       // 198 (both fields absent on every raw posting checked). The URL format is deterministic
