@@ -30,7 +30,7 @@
     "maxReviewsPerApp": {
       "title": "Max reviews per game",
       "type": "integer",
-      "description": "Reviews only: how many reviews to fetch per game before moving to the next one (max 5000).",
+      "description": "Reviews only: how many reviews to SCAN per game before moving to the next one (max 5000). This counts reviews looked at, before the keyword/minPlaytimeHours filter is applied — a low cap combined with a narrow filter can return far fewer matches than actually exist deeper in Steam's feed. Raise it if the log warns the cap was hit while filtering.",
       "default": 200,
       "minimum": 1,
       "maximum": 5000

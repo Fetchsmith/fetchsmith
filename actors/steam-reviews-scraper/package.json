@@ -1,6 +1,6 @@
 {
   "name": "steam-reviews-scraper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Scrape Steam player reviews and game store details (HTTP-only, no browser).",
   "dependencies": {

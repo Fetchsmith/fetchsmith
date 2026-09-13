@@ -23,7 +23,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `dataType` | string | `reviews` | `reviews` = player reviews; `games` = store record for each game |
 | `apps` | array | — | Steam store URLs (`https://store.steampowered.com/app/1145360/Hades/`) or numeric App IDs (`1145360`) |
 | `searchTerms` | array | — | Find games by name instead of / as well as URLs |
-| `maxReviewsPerApp` | integer | `200` | Reviews per game before moving to the next one (max 5000) |
+| `maxReviewsPerApp` | integer | `200` | Reviews to *scan* per game before moving to the next one (max 5000) — counted before `keyword`/`minPlaytimeHours` filtering, see FAQ |
 | `maxResults` | integer | `2000` | Hard cap on rows pushed — also caps what you are charged |
 | `language` | string | `english` | Steam language code, or `all` |
 | `reviewType` | string | `all` | `positive` / `negative` to keep only thumbs-up / thumbs-down |
@@ -133,7 +133,7 @@ No. This Actor only reads Steam's public store endpoints over plain HTTP. No log
 Yes — the Actor paginates with Steam's review cursor. Set `maxReviewsPerApp` (up to 5000 per game) and `maxResults` for the overall cap. Remember you are charged per row returned, so set both deliberately.
 
 **Why did I get fewer reviews than `maxReviewsPerApp`?**
-Either the game genuinely has fewer reviews in that language/filter combination, or your `keyword` / `minPlaytimeHours` / `reviewsAfter` / `reviewsBefore` filters removed the rest. Filtered-out reviews are **not** charged. The run's status message says which case it was.
+`maxReviewsPerApp` is a **scan cap**, not a match count — it stops Steam pagination after that many reviews have been looked at, and `keyword`/`minPlaytimeHours` are applied *after* that, per review. So a narrow filter combined with a low cap can miss real matches sitting deeper in the feed: on Dota 2 (appId `570`) with `keyword: "toxic"`, `maxReviewsPerApp: 20` scans 20 reviews and keeps 0, but raising it to `50` finds 1 and `200` finds 2 — the matches were always there, just unscanned. When this happens the log carries a `WARN` naming the cap and how many scanned reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. (`reviewsAfter`/`reviewsBefore` don't have this problem: newest-first paging stops cleanly at the date boundary instead of relying on the scan cap.) Filtered-out reviews are **not** charged either way.
 
 **Does `dayRange` work with the "most recent" sort?**
 No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. For any other historical window, use `reviewsAfter`/`reviewsBefore` instead — the Actor forces chronological order and stops paging as soon as it passes your window, so it works arbitrarily far back, not just the last 365 days.

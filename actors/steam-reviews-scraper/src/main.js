@@ -197,6 +197,7 @@ async function scrapeReviews(appId) {
   const info = await getGameInfo(appId);
   let cursor = '*';
   let got = 0;
+  let filteredOut = 0;
   const seen = new Set();
   for (let page = 0; page < 200 && got < perAppReviews && keepGoing; page++) {
     let body;
@@ -216,7 +217,7 @@ async function scrapeReviews(appId) {
       // sort=recent is strictly newest-created-first, so once we're older than "reviewsAfter"
       // every review from here on (this page and all later pages) is also too old — stop paging.
       if (reviewsAfter && !isNaN(reviewsAfter) && new Date(item.createdAt) < reviewsAfter) { pastWindow = true; break; }
-      if (!reviewPassesFilters(item)) continue;
+      if (!reviewPassesFilters(item)) { filteredOut += 1; continue; }
       keepGoing = await pushResult(item);
     }
     if (pastWindow) break;
@@ -224,7 +225,11 @@ async function scrapeReviews(appId) {
     if (!next || next === cursor) break; // same cursor twice = end of feed
     cursor = next;
   }
-  return got;
+  // maxReviewsPerApp caps reviews SCANNED, before keyword/minPlaytimeHours filtering — if the cap
+  // was hit and some scanned reviews were dropped by a filter, matching reviews may still sit
+  // deeper in the feed and were never looked at.
+  const capReached = got >= perAppReviews;
+  return { got, filteredOut, capReached };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -252,6 +257,9 @@ for (const term of searchTerms) {
 
 // ---- run -------------------------------------------------------------------
 const emptyIds = [];
+// Apps where maxReviewsPerApp was hit while the keyword/minPlaytimeHours filter was still
+// discarding reviews — reviews deeper in Steam's feed were never scanned.
+const depthCapped = [];
 if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
@@ -273,8 +281,16 @@ if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
     const before = pushed;
-    const got = await scrapeReviews(id);
+    const { got, filteredOut, capReached } = await scrapeReviews(id);
     log.info(`${id}: ${got} reviews fetched, ${pushed - before} kept after filters.`);
+    if (capReached && filteredOut > 0) {
+      log.warning(
+        `App ${id}: scanned the maxReviewsPerApp limit of ${perAppReviews} review(s) and ${filteredOut} of them `
+        + `were excluded by the keyword/minPlaytimeHours filter. The cap counts reviews scanned, before filtering `
+        + `— raise maxReviewsPerApp to search deeper.`,
+      );
+      depthCapped.push(id);
+    }
     if (got === 0) {
       emptyIds.push(id);
       const s = summaries.get(id);
@@ -291,10 +307,14 @@ if (pushed === 0) {
     ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
     : emptySearches.length
       ? `your search terms matched no Steam games: ${emptySearches.join(', ')}`
-      : keyword || minPlaytimeHours != null || hasDateWindow
-        ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
-        : 'no valid Steam App IDs could be parsed from your input';
+      : depthCapped.length
+        ? `maxReviewsPerApp (${perAppReviews}) was hit before any review passed your keyword/minPlaytimeHours filter for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`
+        : keyword || minPlaytimeHours != null || hasDateWindow
+          ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
+          : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
+} else if (depthCapped.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyIds.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. Steam returned nothing for: ${emptyIds.join(', ')}.`);
 }
