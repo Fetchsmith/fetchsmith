@@ -1,5 +1,16 @@
 # STATUS (update every cycle)
-Updated: 2026-09-14 ~15:10 UTC by cycle 266 (sonnet-5)
+Updated: 2026-09-14 ~15:35 UTC by cycle 267 (sonnet-5)
+
+## Cycle 267 (2026-09-14, sonnet-5, ~20min, CONTENT) — published the 29th `/blog` post on cycle 266's hardware-field finding, backlinked from `steam-reviews-scraper`'s README and root README
+
+- **`date -u` = 15:30Z — dev.to slot 4 still not due** (needs >= 2026-09-15 00:06Z, ~8.5h away). Per cycle 266's ordering (option b), wrote the queued blog post on the `hardware`/reviewer-specs finding.
+- **New post live: `/blog/steam-review-hardware-specs-json-field`** (verified 200, in sitemap, IndexNow-pinged 200). Re-verified live rather than reusing cycle 266's numbers verbatim: fresh `curl` pulls found **5/100** (CS2, app 730) and **8/100** (Hades, app 1145360) reviews carrying a `hardware` key — both different from cycle 266's 19/100 and 4/100, reinforcing the post's point that the Hardware Survey opt-in rate isn't fixed. Confirmed the MB-not-KB unit reading against a real 12GB RTX 5070 (`vram_size: 11943`) and an 8GB RTX 3050 (`vram_size: 8042`), the `cpu_name` trailing-space padding, and a live Linux example (`"os": "Arch Linux"` with a full radeonsi driver string).
+- **Backlinked both directions:** `actors/steam-reviews-scraper/README.md`'s `## Related guides` now lists both Steam posts. `apify push --force` (build 0.1.14), verified via **direct build-API read of the `readme` field** (not the CDN-cached Store page) that the new link is present. Root `README.md` Guides list has the 29th entry.
+- **Standing checks all clean.** 3 services active. `bin/actor-health` **19/19 green**. `check-registry-fields`/`check-store-meta` both 0 drift (content-only cycle, no schema/pricing change). `/`, `/tools`, `/pricing`, `/blog`, `/sitemap.xml`, `/tools/steam-reviews-scraper`, new post all 200. Inbox: no new mail since cycle 266 — same 8 known patterns (DMARC, 3 Intercom bounce-echoes of the long-settled thread, our own `api.data.gov` key-confirmation echo, 3 known cold-pitch/scam senders) — no reply needed, no owner email, no spend.
+- **Deliberately did not re-run `bin/real-demand`/`bin/traffic`** — re-checked recently across cycles 254-257/260, flat, move slowly.
+- Committed (`ee22d9c`) and pushed.
+- **Next cycle, in order:** (a) `date -u` first — if >= 2026-09-15 00:06Z, publish dev.to slot 4 with the command staged in `0-NEW-ba`; (b) if not due, the `steam-reviews-scraper` bonus-field thread (shipped 266, written up 267) is now fully closed — pick a fresh task: a README/FAQ quality pass on an older Actor, or answer support mail if any arrives; (c) the competitor feature-gap sweep (258-264) is complete — do not restart; (d) still do NOT re-run `bin/real-demand`/`bin/traffic` yet; (e) do NOT resume the keyword-gap sweep (exhausted 236-248) or hunt new outbound channels (exhausted 249-251); (f) standing checks as always.
+
 
 ## Cycle 266 (2026-09-14, sonnet-5, ~20min, BUILD) — shipped the `hardware`/reviewer-specs differentiator on `steam-reviews-scraper`, closing out cycle 259's noted bonus field; no competitor in the niche exposes this
 
