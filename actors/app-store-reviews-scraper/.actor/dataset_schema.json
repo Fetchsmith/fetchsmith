@@ -4,188 +4,211 @@
     "type": "object",
     "properties": {
       "reviewId": {
+        "title": "ReviewId",
+        "example": "14544347452",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ReviewId",
-        "example": "14522836737"
+        ]
       },
       "appId": {
+        "title": "AppId",
+        "example": "389801252",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AppId",
-        "example": "1232780281"
+        ]
       },
       "country": {
+        "title": "Country",
+        "example": "us",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Country",
-        "example": "us"
+        ]
       },
       "title": {
+        "title": "Title",
+        "example": "Awful account management system",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Title",
-        "example": "Confusing"
+        ]
       },
       "content": {
+        "title": "Content",
+        "example": "There is no way to delete your own account once you lose the email and phone number for it. If you have pictures of your",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Content",
-        "example": "It's probably because I'm new but it is really confusing to work with."
+        ]
       },
       "rating": {
+        "title": "Rating",
+        "example": 1,
         "type": [
           "number",
           "null"
-        ],
-        "title": "Rating",
-        "example": 4
+        ]
       },
       "version": {
+        "title": "Version",
+        "example": "446.0.0",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Version",
-        "example": "1.7.333"
+        ]
       },
       "author": {
+        "title": "Author",
+        "example": "Ads-ruin-games",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Author",
-        "example": "Braders815"
+        ]
       },
       "authorUrl": {
+        "title": "AuthorUrl",
+        "example": "https://itunes.apple.com/us/reviews/id1768745079",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AuthorUrl",
-        "example": "https://itunes.apple.com/us/reviews/id1727316115"
+        ]
       },
       "updatedAt": {
+        "title": "UpdatedAt",
+        "example": "2026-09-13T02:28:12-07:00",
         "type": [
           "string",
           "null"
-        ],
-        "title": "UpdatedAt",
-        "example": "2026-09-07T13:49:20-07:00"
+        ]
+      },
+      "reviewUrl": {
+        "title": "ReviewUrl",
+        "example": "https://itunes.apple.com/us/review?id=389801252&type=Purple%20Software",
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "voteSum": {
+        "title": "VoteSum",
+        "example": 0,
         "type": [
           "number",
           "null"
-        ],
-        "title": "VoteSum",
-        "example": 0
+        ]
       },
       "voteCount": {
+        "title": "VoteCount",
+        "example": 0,
         "type": [
           "number",
           "null"
-        ],
-        "title": "VoteCount",
-        "example": 0
+        ]
       },
       "sortUsed": {
+        "title": "SortUsed",
+        "example": "mostRecent",
         "type": [
           "string",
           "null"
-        ],
-        "title": "SortUsed",
-        "example": "mostRecent"
+        ]
       },
       "clientClass": {
+        "title": "ClientClass",
+        "example": "default",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ClientClass",
-        "example": "default"
+        ]
       },
       "appName": {
+        "title": "AppName",
+        "example": "Instagram",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AppName",
-        "example": "Notion: Notes, Tasks, AI"
+        ]
       },
       "developer": {
+        "title": "Developer",
+        "example": "Instagram, Inc.",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Developer",
-        "example": "Notion Labs, Incorporated"
+        ]
       },
       "bundleId": {
+        "title": "BundleId",
+        "example": "com.burbn.instagram",
         "type": [
           "string",
           "null"
-        ],
-        "title": "BundleId",
-        "example": "notion.id"
+        ]
       },
       "averageRating": {
+        "title": "AverageRating",
+        "example": 4.69062,
         "type": [
           "number",
           "null"
-        ],
-        "title": "AverageRating",
-        "example": 4.78
+        ]
       },
       "ratingCount": {
+        "title": "RatingCount",
+        "example": 29480285,
         "type": [
           "number",
           "null"
-        ],
-        "title": "RatingCount",
-        "example": 90020
+        ]
       },
       "currentVersion": {
+        "title": "CurrentVersion",
+        "example": "446.0.0",
         "type": [
           "string",
           "null"
-        ],
-        "title": "CurrentVersion",
-        "example": "1.7.334"
+        ]
       },
       "primaryGenre": {
+        "title": "PrimaryGenre",
+        "example": "Photo & Video",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PrimaryGenre",
-        "example": "Productivity"
+        ]
       },
       "appUrl": {
+        "title": "AppUrl",
+        "example": "https://apps.apple.com/us/app/instagram/id389801252?uo=4",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AppUrl",
-        "example": "https://apps.apple.com/us/app/notion-notes-tasks-ai/id1232780281?uo=4"
+        ]
+      },
+      "totalRatings": {
+        "title": "TotalRatings",
+        "example": 29481802,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "ratingBreakdown": {
+        "title": "RatingBreakdown",
+        "type": [
+          "object",
+          "null"
+        ]
       },
       "scrapedAt": {
+        "title": "ScrapedAt",
+        "example": "2026-09-14T12:10:31.198Z",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ScrapedAt",
-        "example": "2026-09-12T07:30:31.577Z"
+        ]
       }
     }
   },
@@ -197,16 +220,13 @@
           "reviewId",
           "appId",
           "country",
-          "rating",
           "title",
           "content",
-          "author",
+          "rating",
           "version",
-          "updatedAt",
-          "appName",
-          "developer",
-          "averageRating",
-          "ratingCount"
+          "author",
+          "authorUrl",
+          "updatedAt"
         ]
       },
       "display": {
@@ -224,10 +244,6 @@
             "label": "Country",
             "format": "text"
           },
-          "rating": {
-            "label": "Rating",
-            "format": "number"
-          },
           "title": {
             "label": "Title",
             "format": "text"
@@ -236,33 +252,25 @@
             "label": "Content",
             "format": "text"
           },
-          "author": {
-            "label": "Author",
-            "format": "text"
+          "rating": {
+            "label": "Rating",
+            "format": "number"
           },
           "version": {
             "label": "Version",
             "format": "text"
           },
+          "author": {
+            "label": "Author",
+            "format": "text"
+          },
+          "authorUrl": {
+            "label": "AuthorUrl",
+            "format": "link"
+          },
           "updatedAt": {
             "label": "UpdatedAt",
-            "format": "date"
-          },
-          "appName": {
-            "label": "AppName",
             "format": "text"
-          },
-          "developer": {
-            "label": "Developer",
-            "format": "text"
-          },
-          "averageRating": {
-            "label": "AverageRating",
-            "format": "number"
-          },
-          "ratingCount": {
-            "label": "RatingCount",
-            "format": "number"
           }
         }
       }

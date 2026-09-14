@@ -143,13 +143,62 @@ async function probeStorefronts(appId, skip) {
   return found;
 }
 
+// The per-star ratings histogram ("how many 1-star vs 5-star ratings") is NOT in the iTunes lookup
+// API (that only carries the average and the total) and not in the review RSS feed either. It IS
+// embedded in the public App Store web page, inside the <script id="serialized-server-data"> JSON
+// that Apple server-renders for every listing, as a node with "$kind": "Ratings".
+// Verified live 2026-09-14 on 5 apps across the us/gb/de storefronts (Instagram, Threads, Spotify,
+// YouTube, WhatsApp): "ratingCounts" is always a 5-element array ordered 5* -> 1*, always sums
+// exactly to "totalNumberOfRatings", and its descending-weighted mean reproduces Apple's own
+// "ratingAverage" to within rounding. Counts arrive as floats (2000234.9999999998), hence Math.round.
+// This is app-level, not review-level: one fetch per (app, country), only when includeAppInfo is on.
+async function getRatingBreakdown(appId, country) {
+  try {
+    const html = (await gotScraping({ url: `https://apps.apple.com/${country}/app/id${appId}`, timeout: { request: 30000 }, retry: { limit: 1 } })).body;
+    const m = html.match(/<script type="application\/json" id="serialized-server-data">(.*?)<\/script>/s);
+    if (!m) return null;
+    let node = null;
+    (function walk(o) {
+      if (node || !o || typeof o !== 'object') return;
+      if (!Array.isArray(o) && o.$kind === 'Ratings' && Array.isArray(o.ratingCounts)) { node = o; return; }
+      for (const v of Array.isArray(o) ? o : Object.values(o)) walk(v);
+    })(JSON.parse(m[1]));
+    if (!node || node.ratingCounts.length !== 5) return null;
+    const c = node.ratingCounts.map((n) => Math.round(Number(n) || 0));
+    const total = c.reduce((a, b) => a + b, 0);
+    if (!total) return null;
+    // Guard the 5*->1* ordering assumption instead of trusting it silently: if Apple ever flips the
+    // array, the weighted mean stops matching their own average and we say so rather than shipping
+    // a breakdown that is exactly backwards.
+    const mean = c.reduce((a, n, i) => a + n * (5 - i), 0) / total;
+    if (node.ratingAverage != null && Math.abs(mean - Number(node.ratingAverage)) > 0.15) {
+      log.warning(`${appId}/${country}: ratings histogram failed its sanity check (computed ${mean.toFixed(2)} vs Apple's ${node.ratingAverage}) — omitting ratingBreakdown for this app rather than reporting a possibly mis-ordered one.`);
+      return null;
+    }
+    return { totalRatings: total, ratingBreakdown: { five: c[0], four: c[1], three: c[2], two: c[3], one: c[4] } };
+  } catch (e) { log.debug(`ratings histogram failed for ${appId}/${country}: ${e.message}`); return null; }
+}
+
 async function getAppInfo(appId, country) {
   if (!includeInfo) return null;
-  try {
-    const a = (await getJson(`https://itunes.apple.com/lookup?id=${appId}&country=${country}`)).results?.[0];
-    if (a) return { appName: a.trackName, developer: a.artistName, bundleId: a.bundleId, averageRating: a.averageUserRating ?? null, ratingCount: a.userRatingCount ?? null, currentVersion: a.version, primaryGenre: a.primaryGenreName, appUrl: a.trackViewUrl };
-  } catch (e) { log.debug(`lookup failed: ${e.message}`); }
-  return null;
+  // Both requests are app-level metadata for the same (app, country); run them together so the
+  // histogram costs no extra wall-clock on top of the lookup we already do.
+  const [lookup, breakdown] = await Promise.allSettled([
+    getJson(`https://itunes.apple.com/lookup?id=${appId}&country=${country}`),
+    getRatingBreakdown(appId, country),
+  ]);
+  const extra = breakdown.status === 'fulfilled' && breakdown.value ? breakdown.value : { totalRatings: null, ratingBreakdown: null };
+  if (lookup.status !== 'fulfilled') {
+    log.debug(`lookup failed: ${lookup.reason?.message}`);
+    return extra.ratingBreakdown ? extra : null;
+  }
+  const a = lookup.value.results?.[0];
+  if (!a) return extra.ratingBreakdown ? extra : null;
+  return {
+    appName: a.trackName, developer: a.artistName, bundleId: a.bundleId, averageRating: a.averageUserRating ?? null,
+    ratingCount: a.userRatingCount ?? null, currentVersion: a.version, primaryGenre: a.primaryGenreName, appUrl: a.trackViewUrl,
+    ...extra,
+  };
 }
 
 // Fetches one page, retrying an empty result under the other client class (see CLIENT_CLASSES).
@@ -188,6 +237,9 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
       const item = {
         reviewId, appId, country, title: lbl(e.title), content: lbl(e.content), rating: Number(lbl(e['im:rating'])) || null,
         version: lbl(e['im:version']), author: lbl(e.author?.name), authorUrl: lbl(e.author?.uri), updatedAt: lbl(e.updated),
+        // Apple's own "related" link for the review. It is app+storefront scoped, not per-review
+        // (every entry in a feed carries the same href) — kept verbatim rather than synthesised.
+        reviewUrl: (Array.isArray(e.link) ? e.link[0] : e.link)?.attributes?.href ?? null,
         voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, sortUsed: sortBy,
         clientClass, ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
       };

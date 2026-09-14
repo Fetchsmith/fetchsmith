@@ -1,6 +1,6 @@
 # App Store Reviews Scraper (Apple)
 
-Get customer reviews for any iOS / macOS app from the Apple App Store, for any country storefront, as JSON, CSV or Excel. Each review includes rating, title, text, app version, author and date, plus optional app metadata (name, developer, average rating, rating count). Pay only per review returned.
+Get customer reviews for any iOS / macOS app from the Apple App Store, for any country storefront, as JSON, CSV or Excel. Each review includes rating, title, text, app version, author and date, plus optional app metadata (name, developer, average rating, rating count) and the **full per-star ratings breakdown** — how many 1★, 2★, 3★, 4★ and 5★ ratings the app has in that storefront. Pay only per review returned.
 
 ## Use cases
 - Product research and competitor analysis across countries
@@ -17,7 +17,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `countryFallback` | boolean | If a storefront returns nothing, pull that app's reviews from one that works (default `false`) |
 | `sort` | string | `mostRecent` (default) or `mostHelpful` |
 | `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) — counted before minRating/maxRating/keyword filtering, see FAQ |
-| `includeAppInfo` | boolean | Attach app name, developer, average rating and rating count |
+| `includeAppInfo` | boolean | Attach app name, developer, average rating, rating count and the per-star `ratingBreakdown` (default `true`) |
 | `maxResults` | integer | Total cap |
 | `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
 | `keyword` | string | Only keep reviews whose title or content contains this word/phrase (case-insensitive) |
@@ -40,14 +40,32 @@ Filtering happens before you're charged — you never pay for rows that got filt
   "author": "jane_doe",
   "authorUrl": "https://itunes.apple.com/us/reviews/id...",
   "updatedAt": "2026-09-07T16:13:22-07:00",
+  "reviewUrl": "https://itunes.apple.com/us/review?id=1232780281&type=Purple%20Software",
   "voteSum": 0,
   "voteCount": 0,
   "appName": "Notion: Notes, Docs, Tasks",
   "developer": "Notion Labs, Incorporated",
   "averageRating": 4.7,
-  "ratingCount": 512345
+  "ratingCount": 512345,
+  "totalRatings": 519312,
+  "ratingBreakdown": { "five": 432140, "four": 51220, "three": 15870, "two": 6190, "one": 13892 }
 }
 ```
+
+## Per-star ratings breakdown (`ratingBreakdown`)
+An app's average rating hides the shape of its distribution: 4.5 stars from mostly 5s and a handful of 1s is a very different product story from 4.5 stars from a wall of 4s. Apple's public lookup API only gives you the average and the total, so most App Store review scrapers stop there. This Actor also returns the **actual count of ratings at each star level**, per storefront, on every row when `includeAppInfo` is on:
+
+```json
+"totalRatings": 29481802,
+"ratingBreakdown": { "five": 25284650, "four": 2000235, "three": 696048, "two": 274710, "one": 1226159 }
+```
+
+- Counts are **ratings**, not reviews — they include the millions of users who tapped a star without writing anything, so `totalRatings` is far larger than the 500 reviews Apple's feed will hand you.
+- The breakdown is **per storefront**, so `countries: ["us", "gb", "de"]` gives you three genuinely different distributions to compare.
+- It costs nothing extra: it is fetched once per app/storefront alongside the app lookup, and you are only ever charged per review returned.
+- It is verified before it is reported — if the numbers don't reconstruct Apple's own published average, the Actor omits the field and logs a warning rather than handing you a distribution that might be inverted.
+
+Useful for a 1★-share trend line over releases, for weighting sentiment against how many silent raters actually sit behind a review, and for competitor comparisons where two apps show the same average.
 
 ## Pricing
 `result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
@@ -66,7 +84,9 @@ You are never charged for empty pages or for retries.
 
 ## FAQ
 **Why did my run return 0 reviews with status SUCCEEDED?** Check the run's status message first — it tells you whether Apple's feed was genuinely empty for that app/storefront or your own `minRating`/`maxRating`/`keyword` filters removed every row.
-**Can I get more than 500 reviews for one app?** No — Apple's public feed caps at 500 most-recent reviews per app per country. Run on a schedule and deduplicate by `reviewId` to build a larger archive over time.
+**Can I get more than 500 reviews for one app?** No — Apple's public feed caps at 500 most-recent reviews per app per country. Run on a schedule and deduplicate by `reviewId` to build a larger archive over time. Note that `totalRatings`/`ratingBreakdown` are **not** capped: they cover every rating the app has ever received in that storefront, so you still get the full-population distribution even though only 500 written reviews are reachable.
+**Why is `totalRatings` different from `ratingCount`?** They come from two different Apple sources and are both real. `ratingCount` is Apple's lookup API figure; `totalRatings` is the sum of the per-star histogram shown on the App Store product page, which updates on a slightly different schedule. Expect them to agree to within a fraction of a percent — if you need the number that matches `ratingBreakdown` exactly, use `totalRatings`.
+**Is `reviewUrl` unique per review?** No, and it isn't presented as such. It's Apple's own "related" link from the feed entry, which points at the app's review page for that storefront — the same URL for every review of that app in that country. Apple does not publish a per-review permalink; use `reviewId` as the unique key.
 **Does `countryFallback` change the `country` field on rows I already have?** No — fallback rows are clearly tagged with `fallbackUsed: true` and keep both the real `country` they came from and the `requestedCountry` you asked for.
 **Do I get charged for empty pages or retries?** No — only reviews actually returned to the dataset are charged.
 **Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **scan cap**, not a match count — it stops paging Apple's feed after that many reviews have been looked at, and `minRating`/`maxRating`/`keyword` are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting deeper in the feed: on Spotify (`324684580`) with `maxRating: 1`, `maxReviewsPerApp: 5` scans 5 reviews and keeps 0, but raising it to `100` finds 12 — the matches were always there, just unscanned. When this happens the log carries a `WARN` naming the cap and how many scanned reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
