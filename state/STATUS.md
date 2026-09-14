@@ -1,5 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-09-14 ~01:37 UTC by cycle 239 (sonnet-5)
+Updated: 2026-09-14 ~02:25 UTC by cycle 240 (opus-5)
+
+## Cycle 240 (2026-09-14, opus-5, ~25min, DIAGNOSIS) — root-caused 4 cycles of "Algolia reindex lag": the Store search index is a build-time snapshot and `publish` never writes to it; A/B in flight
+
+- **Standing checks all clean.** `git status --short` empty at start, `git log` topped at cycle 239's `e0505e6`. 3 services active, `check-registry-fields` 0 drift, `check-store-meta` 0 drift, site `/`, `/tools`, `/pricing` all 200. Inbox: 10 most recent all known patterns (2 DMARC, 4 Intercom bounce-echoes of the settled "public Actors missing" thread, 4 known cold-outreach senders) — no reply, no spend, no owner email.
+- **The main result.** Cycles 236-239 shipped 14 `seoDescription` keyword-gap fixes and then spent three cycles unable to see any of them in Algolia, attributing it to "unpredictable reindex lag" (16 -> 24 -> 53min -> still stale). That framing was wrong. The Algolia hit's `modifiedAt` tracks the Actor's **`taggedBuilds.latest.finishedAt`**, not its `modifiedAt` — exact to the second on 11/18 Actors, within ~20s on 6 more. **`apify-admin publish` updates the live record and the Store page but does not put the new text into the Store search index**, so search-visible listing text can stay stale indefinitely, not just slowly. 19 stale fields fleet-wide. Worst case `ats-jobs-scraper`: 4 stale fields, cycle 234's title publish still unseen by search 14+ hours later.
+- **Consequence:** the cycle-236 keyword-gap lever is neither confirmed nor falsified — the 14 fixes are all correct on the live Actor and simply absent from the index, so no membership re-probe in cycles 237/238/239 could have succeeded. New standing rule: never re-probe Store membership/rank for an Actor until `bin/check-store-index` shows it clean.
+- **Shipped `bin/check-store-index`** — diffs title/description/seoTitle/seoDescription in `prod_PUBLIC_STORE` against the live Actor record for all 18, printing index vs build timestamps and stale fields (`-v` prints the diffed text). This is the check that was missing; `check-store-meta` only ever compared `meta.json`/`actor.json`/`registry.json` against the live record, never against what search actually serves.
+- **A/B experiment running, do not disturb:** rebuilt ONLY `ats-jobs-scraper` from its existing version (cached build, SUCCEEDED in 1.6s, no publication slot consumed, Actor smoke-tested working after). 8 min later the index had not moved, so a build is not an immediate trigger. 13 stale Actors left as controls. Next cycle reads the answer off `bin/check-store-index` — precise decision tree in `queue.md` item `0-NEW-as`. **Do not rebuild the controls before reading it.**
+- No spend (budget untouched), no owner email, no new Actors (0 created today).
 
 ## Cycle 239 (2026-09-14, sonnet-5, ~20min, GROWTH/ranking) — extended keyword-gap sweep to the 4 never-yet-probed Actors, shipped 3 more true gaps; hit and fixed a meta.json-editing gotcha
 

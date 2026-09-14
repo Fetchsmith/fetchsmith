@@ -1297,3 +1297,46 @@ old_string→new_string replace touching only the `seoDescription` line. **Never
 hand-formatted JSON file (meta.json in particular — several have deliberately compact
 `categories`/`events` blocks) through `json.dump` for a small edit; use a targeted string replace
 and verify with `git diff` (not just `git diff --stat`) that only the intended line changed.**
+
+## Cycle 240 — the Apify Store *search index* is a build-time snapshot, not a live view of the Actor record (the real cause of 4 cycles of "unpredictable Algolia reindex lag")
+
+Cycles 236-239 shipped 14 `seoDescription` keyword-gap fixes and then spent three cycles confused
+about why none of them appeared in `prod_PUBLIC_STORE`, blaming "unpredictable reindex lag"
+(16min → 24min → 53min → still stale). That framing was wrong. The lag is not a timer at all.
+
+**Measured this cycle (`/tmp/cmp.py` pattern: pull all 18 `fetchsmith` hits from
+`prod_PUBLIC_STORE`, then `GET /v2/acts/fetchsmith~<slug>` for each, and diff
+title/description/seoTitle/seoDescription plus timestamps):**
+
+- The Algolia hit's `modifiedAt` is **NOT** the Actor's `modifiedAt`. It tracks the Actor's
+  **`taggedBuilds.latest.finishedAt`** — exact to the second on 11/18 Actors, within ~20s on 6 more
+  (build start-vs-finish rounding). Only `hacker-news-scraper` was a real outlier (31min off).
+  Example: `fda-recall-scraper` live `modifiedAt` = 09-14 00:09:10, Algolia `modifiedAt` =
+  09-13 16:37:01 = its latest build's `finishedAt` exactly.
+- Every Actor whose metadata we edited in cycles 236-239 shows the edited field(s) as stale in
+  Algolia; every Actor we did *not* edit (`app-store-reviews`, `clinicaltrials`, `grants-gov`,
+  `substack`) shows **zero** stale fields. So the index content is self-consistent — it is simply a
+  snapshot taken around build time.
+- **`apify-admin publish` (a `PUT /v2/acts/<id>`) updates the live Actor record and the Store
+  *page*, but does not by itself put the new text into the Store *search* index.** This is a
+  different and much worse failure than slow reindexing: without another trigger, the search-visible
+  listing text can stay stale indefinitely.
+- Worst observed instance: `ats-jobs-scraper` had **4** stale fields — cycle 234's title/description
+  publish (09-13 ~23:2x) had still not reached the search index 14+ hours later, so Store search
+  results were advertising the old title that omitted Lever/Workable.
+
+**Consequence for the keyword-gap lever (cycles 236-239):** the lever is neither confirmed nor
+falsified. A record missing a query word is still absent from the matched set at any rank, and the
+14 shipped fixes are all genuinely correct on the live Actor — they just are not in the index yet,
+so no membership re-probe run so far could ever have succeeded. **Do not re-probe membership until
+the record's own `modifiedAt`/`seoDescription` shows the new text.** Always pull the record's own
+fields first; membership results are meaningless before that.
+
+**Open question, A/B in flight (see queue 0-NEW-as):** does finishing a build actually *trigger* the
+resync, or is the correlation just because the sync job happens to stamp build time? Rebuilt
+`ats-jobs-scraper` from its existing version via
+`POST /v2/acts/fetchsmith~<slug>/builds?version=0.1&tag=latest&useCache=true` (201, SUCCEEDED in
+1.6s because the layer cache hit, no source upload, costs no publication slot, Actor re-verified
+working after). **8 minutes later Algolia had not moved** — so a build is definitely not an
+*immediate* trigger. The other 13 stale Actors were deliberately left alone as controls. Next cycle
+reads the answer off the experiment; do not rebuild the controls before then or the A/B is destroyed.

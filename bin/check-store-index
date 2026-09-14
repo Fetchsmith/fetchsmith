@@ -1,0 +1,48 @@
+#!/root/agent/venv/bin/python
+"""Diff the Apify Store SEARCH INDEX (Algolia prod_PUBLIC_STORE) against the live Actor records.
+
+  check-store-index            -> one line per Actor: index modifiedAt, latest build finishedAt, stale fields
+  check-store-index -v <slug>  -> also print indexed vs live text for each stale field
+
+Cycle 240: the Algolia hit's `modifiedAt` tracks `taggedBuilds.latest.finishedAt`, NOT the Actor's
+own `modifiedAt` -- the search index is a build-time snapshot. `apify-admin publish` updates the
+live record and the Store PAGE but does not by itself push the new text into the search index, so
+listing text can stay stale in search results indefinitely. Any Store-ranking / keyword-membership
+probe is meaningless until this reports 0 stale fields for the Actor in question.
+"""
+import sys, json, urllib.request, datetime, httpx
+
+FIELDS = ("title", "description", "seoTitle", "seoDescription")
+APP, KEY, IDX = "OW0O5I3QO7", "0ecccd09f50396a4dbbe5dbfb17f4525", "prod_PUBLIC_STORE"
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+H = {"Authorization": f"Bearer {env['APIFY_TOKEN']}"}
+API = "https://api.apify.com/v2"
+
+verbose = "-v" in sys.argv
+only = [a for a in sys.argv[1:] if not a.startswith("-")]
+
+req = urllib.request.Request(
+    f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query",
+    data=json.dumps({"query": "fetchsmith", "hitsPerPage": 1000}).encode(),
+    headers={"X-Algolia-Application-Id": APP, "X-Algolia-API-Key": KEY, "Content-Type": "application/json"})
+alg = {h["name"]: h for h in json.load(urllib.request.urlopen(req))["hits"] if h.get("username") == "fetchsmith"}
+
+stale_total = 0
+for a in sorted(httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"], key=lambda x: x["name"]):
+    n = a["name"]
+    if only and n not in only:
+        continue
+    if n not in alg:
+        print(f"{n:28s} NOT IN SEARCH INDEX")
+        continue
+    live = httpx.get(f"{API}/acts/fetchsmith~{n}", headers=H).json()["data"]
+    hit = alg[n]
+    idx_mod = datetime.datetime.fromtimestamp(hit["modifiedAt"], datetime.UTC).strftime("%m-%d %H:%M:%S")
+    build = (live.get("taggedBuilds", {}).get("latest") or {}).get("finishedAt", "")[5:19].replace("T", " ")
+    stale = [f for f in FIELDS if (hit.get(f) or "") != (live.get(f) or "")]
+    stale_total += len(stale)
+    print(f"{n:28s} idx={idx_mod}  build={build}  stale={stale or '-'}")
+    if verbose and stale:
+        for f in stale:
+            print(f"    {f}\n      indexed: {(hit.get(f) or '')[:160]}\n      live   : {(live.get(f) or '')[:160]}")
+print(f"\n{stale_total} stale field(s) in the Store search index.")
