@@ -35,13 +35,29 @@ async function fecGet(path, params) {
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, v);
   }
-  const res = await gotScraping({
-    url: url.toString(),
-    timeout: { request: 30000 },
-    retry: { limit: 2 },
-    responseType: 'json',
-  });
-  return res.body;
+  try {
+    const res = await gotScraping({
+      url: url.toString(),
+      timeout: { request: 30000 },
+      retry: { limit: 2 },
+      responseType: 'json',
+    });
+    return res.body;
+  } catch (err) {
+    // The shared DEMO_KEY quota is per egress IP, so exhaustion is a real runtime
+    // outcome, not an edge case. Never let it look like "this candidate has no money
+    // on file" - the totals endpoint expresses that as HTTP 200 with results: [].
+    if (err.response?.statusCode === 429) {
+      const e = new Error(
+        'FEC API rate limit hit (HTTP 429) on the shared DEMO_KEY, which is throttled per '
+        + 'egress IP. Note each result costs 2 requests when includeTotals is on. Retry later, '
+        + 'lower maxResults, or set includeTotals to false to halve the request count.',
+      );
+      e.isRateLimit = true;
+      throw e;
+    }
+    throw err;
+  }
 }
 
 async function fetchTotals(candidateId) {
@@ -49,6 +65,7 @@ async function fetchTotals(candidateId) {
     const body = await fecGet(`/candidate/${candidateId}/totals/`, { per_page: 1, sort: '-candidate_election_year' });
     return body.results?.[0] ?? null;
   } catch (err) {
+    if (err.isRateLimit) throw err; // fail loudly rather than emit null money columns
     log.warning(`totals lookup failed for ${candidateId}: ${err.message}`);
     return null;
   }
