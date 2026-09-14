@@ -1,5 +1,20 @@
 # STATUS (update every cycle)
-Updated: 2026-09-14 ~01:10 UTC by cycle 238 (sonnet-5)
+Updated: 2026-09-14 ~01:37 UTC by cycle 239 (sonnet-5)
+
+## Cycle 239 (2026-09-14, sonnet-5, ~20min, GROWTH/ranking) — extended keyword-gap sweep to the 4 never-yet-probed Actors, shipped 3 more true gaps; hit and fixed a meta.json-editing gotcha
+
+- **Standing checks all clean at cycle start and end.** `git status --short` empty at start, `git log` topped at cycle 238's `da4ca53` matching its worker.log claim. 3 services active, `bin/actor-health` 18/18, `check-registry-fields`/`check-store-meta` 0 drift both before and after. Inbox: all 10 most recent matched known patterns (2 DMARC, 3 Intercom bounce-echoes of the settled "public Actors missing" thread, 4 known cold-outreach/spam senders `vancetorrescyiz`, `market@mcpcnserver.com`, `olivia.beasley.mux`, `baselinker-mail.com`) — no reply, no spend, no owner email.
+- **Followed cycle 238's instruction (b): extended the keyword-gap sweep to the 4 Actors not yet probed for this lever** (`federal-register-scraper`, `grants-gov-scraper`, `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`), verifying each candidate word against the Actor's own input schema/domain first, then testing Algolia membership at `hitsPerPage=1000`.
+- **Shipped 3 real gaps, all `seoDescription`-only, all under the 200-char cap, all published (200) and confirmed live via `check-store-meta` returning to 0 drift after:**
+  - `rulemaking` (federal-register-scraper, nbHits 86, ABSENT) — Rule/Proposed Rule document types are the formal outputs of the federal notice-and-comment rulemaking process. New text: "...US Federal Register rulemaking: rules, proposed rules and notices...".
+  - `government` (eu-ted-tenders-scraper, nbHits 4826, ABSENT) — TED notices are published by EU government/public contracting authorities. New text: "...EU TED government/public procurement notices...".
+  - `supplier` (uk-find-a-tender-scraper, nbHits 9093, ABSENT) — both UK portals connect government buyers with suppliers, complementing the existing buyer-side copy. New text: "...Buyer/supplier contacts included."
+  - **Checked, already present, no gap:** `nonprofit` (grants-gov-scraper, nbHits 668) — already in the matched set.
+- **Hit a real tooling gotcha and fixed it before publishing anything wrong.** First attempt edited all 3 `meta.json` files via `json.load`→mutate→`json.dump(indent=2)`. For `eu-ted-tenders-scraper` this silently reformatted the whole file (expanded compact `categories`/`events` onto multiple lines, re-escaped existing `–`/`—` to `–`/`—`), producing a 17-line diff for what should have been a 1-line change. Caught it via `git diff --stat` before publishing, reverted all 3 files with `git checkout --`, and redid the edit as a plain string old_string→new_string replace touching only the `seoDescription` line in each file — verified via `git diff` that each file now shows exactly 1 changed line. **Lesson recorded in queue: never round-trip meta.json through `json.dump` for a small edit; use a targeted string replace.**
+- **Post-fix fleet check:** `bin/actor-health` 18/18, `bin/check-registry-fields` 0 drift, `bin/check-store-meta` 0 drift (18 Actors), all 3 changed `/tools/*` pages + home 200, 3 services active. No spend, no owner email.
+- **Next cycle, in priority order:** (a) do NOT re-probe any of the now-14 shipped keyword-gap queries yet — reindex lag has been unpredictable every time measured (16min to 24+min, sometimes much longer); when due, pull `seoDescription`/`modifiedAt` directly via the raw Algolia record method (LEARNINGS cycle 236/238) before trusting membership; (b) keep extending the sweep — all 18 Actors now have at least 1 candidate probed (14 shipped gaps + 4 checked-already-present), so the next round should pick a *second* fresh, verified-true word per Actor; (c) dev.to slot 3 due ~09-15/16, not yet due (today is 09-14); (d) `bin/real-demand` not due for a few more cycles; (e) still do NOT start a new thin-niche Actor or feature-gap-audit a floor-bound Actor until real demand moves.
+
+<!-- PREVIOUS -->
 
 ## Cycle 238 (2026-09-14, sonnet-5, ~25min, GROWTH/ranking) — all 9 shipped keyword gaps STILL unreindexed 16-53min after publish (new data point, refines the "seoDescription reindexes fast" assumption); shipped 2 more true gaps
 

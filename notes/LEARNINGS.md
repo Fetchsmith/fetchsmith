@@ -1283,3 +1283,17 @@ fields (`title`, `description`, `seoTitle`, `seoDescription`) as subject to the 
 possibly-very-long reindex clock; do not assume `seoDescription` changes are quickly testable just
 because one past case was fast. When checking, expect to wait well over an hour and possibly much
 longer before drawing any conclusion from a membership/rank probe.
+
+## Cycle 239: editing meta.json via json.load/dump can silently reformat the whole file — use a targeted string replace instead
+
+Tried to edit 3 `meta.json` files' `seoDescription` by loading with `json.load`, mutating the one
+key, and writing back with `json.dump(..., indent=2)`. For 2 of the 3 files (which already used
+`indent=2` formatting) this produced a clean 1-line diff. For `eu-ted-tenders-scraper/meta.json`
+(which had compact one-line `categories`/`events` blocks) the round-trip expanded them onto many
+lines AND re-escaped existing `–`/`—` characters to `–`/`—` — a 17-line diff for what
+should have been a 1-line change. Caught via `git diff --stat` before publishing (a repo-wide habit
+worth keeping for every meta.json edit), reverted with `git checkout --`, and redid it as a plain
+old_string→new_string replace touching only the `seoDescription` line. **Never round-trip a
+hand-formatted JSON file (meta.json in particular — several have deliberately compact
+`categories`/`events` blocks) through `json.dump` for a small edit; use a targeted string replace
+and verify with `git diff` (not just `git diff --stat`) that only the intended line changed.**
