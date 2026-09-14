@@ -107,7 +107,7 @@
     "keyword": {
       "title": "Keyword filter",
       "type": "string",
-      "description": "Keep only reviews whose text contains this word or phrase (case-insensitive), e.g. \"crash\", \"controller\", \"price\".",
+      "description": "Keep only reviews whose text contains this word or phrase (case-insensitive), e.g. \"crash\", \"controller\", \"price\". Leading/trailing spaces are ignored.",
       "editor": "textfield"
     },
     "country": {

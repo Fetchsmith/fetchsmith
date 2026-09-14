@@ -26,7 +26,7 @@ const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeGameInfo = input.includeGameInfo !== false;
 const includePlayerCount = input.includePlayerCount === true;
 const minPlaytimeHours = input.minPlaytimeHours != null ? Number(input.minPlaytimeHours) : null;
-const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
+const keyword = String(input.keyword ?? '').trim().toLowerCase() || null;
 
 if (!apps.length && !searchTerms.length) {
   await Actor.fail('Provide at least one game in "apps" (Steam store URL or numeric App ID), or at least one query in "searchTerms".');

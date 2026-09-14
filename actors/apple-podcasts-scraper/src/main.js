@@ -32,7 +32,7 @@ const sort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const includePodcastInfo = input.includePodcastInfo !== false;
 const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
-const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
+const keyword = String(input.keyword ?? '').trim().toLowerCase() || null;
 const minReleaseDate = input.minReleaseDate ? new Date(input.minReleaseDate) : null;
 const maxReleaseDate = input.maxReleaseDate ? new Date(input.maxReleaseDate) : null;
 if ((minReleaseDate && Number.isNaN(minReleaseDate.getTime())) || (maxReleaseDate && Number.isNaN(maxReleaseDate.getTime()))) {

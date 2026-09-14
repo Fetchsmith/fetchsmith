@@ -94,7 +94,7 @@
     "keyword": {
       "title": "Keyword filter",
       "type": "string",
-      "description": "Only keep reviews whose title or text contains this word/phrase (case-insensitive). For several words, use \"Keyword filters (any of)\" below.",
+      "description": "Only keep reviews whose title or text contains this word/phrase (case-insensitive). For several words, use \"Keyword filters (any of)\" below. Leading/trailing spaces are ignored.",
       "editor": "textfield"
     },
     "keywords": {
