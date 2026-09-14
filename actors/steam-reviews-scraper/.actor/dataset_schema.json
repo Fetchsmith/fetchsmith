@@ -131,6 +131,14 @@
         "title": "Refunded",
         "example": false
       },
+      "steamDeck": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "SteamDeck",
+        "example": false
+      },
       "playtimeForeverHours": {
         "type": [
           "number",
@@ -194,6 +202,14 @@
         ],
         "title": "AuthorNumReviews",
         "example": 100
+      },
+      "authorLastPlayedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorLastPlayedAt",
+        "example": "2026-09-13T04:15:54.000Z"
       },
       "reviewUrl": {
         "type": [

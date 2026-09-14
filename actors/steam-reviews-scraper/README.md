@@ -75,6 +75,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
   "receivedForFree": false,
   "writtenDuringEarlyAccess": false,
   "refunded": false,
+  "steamDeck": false,
   "playtimeForeverHours": 3.9,
   "playtimeAtReviewHours": 3.9,
   "playtimeLastTwoWeeksHours": 3.7,
@@ -83,6 +84,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
   "authorProfileUrl": "https://steamcommunity.com/id/BobbyRunout/",
   "authorNumGamesOwned": 1180,
   "authorNumReviews": 100,
+  "authorLastPlayedAt": "2026-09-13T04:15:54.000Z",
   "reviewUrl": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/",
   "gameName": "Hades",
   "developers": ["Supergiant Games"],
@@ -152,6 +154,9 @@ Any Steam language code: `english`, `schinese`, `tchinese`, `japanese`, `koreana
 
 **What happens if a game is delisted or region-locked?**
 The run finishes successfully with a clear status message naming the App IDs Steam returned nothing for, instead of failing. You are only charged for rows you actually receive.
+
+**Do reviews say whether they were written on Steam Deck, or when the reviewer last played?**
+Yes — every review row includes `steamDeck` (true if the review was primarily written on Steam Deck) and `authorLastPlayedAt` (ISO timestamp of the author's last session in the game), straight from Steam's own review API.
 
 ---
 

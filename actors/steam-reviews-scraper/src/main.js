@@ -114,6 +114,7 @@ function reviewRow(appId, r, info) {
     receivedForFree: r.received_for_free ?? null,
     writtenDuringEarlyAccess: r.written_during_early_access ?? null,
     refunded: r.refunded ?? null,
+    steamDeck: r.primarily_steam_deck ?? null,
     playtimeForeverHours: a.playtime_forever != null ? Math.round(a.playtime_forever / 6) / 10 : null,
     playtimeAtReviewHours: a.playtime_at_review != null ? Math.round(a.playtime_at_review / 6) / 10 : null,
     playtimeLastTwoWeeksHours: a.playtime_last_two_weeks != null ? Math.round(a.playtime_last_two_weeks / 6) / 10 : null,
@@ -122,6 +123,7 @@ function reviewRow(appId, r, info) {
     authorProfileUrl: a.profile_url ?? null,
     authorNumGamesOwned: a.num_games_owned ?? null,
     authorNumReviews: a.num_reviews ?? null,
+    authorLastPlayedAt: iso(a.last_played),
     reviewUrl: r.recommendationid ? `https://steamcommunity.com/profiles/${a.steamid}/recommended/${appId}/` : null,
     ...(info || {}),
   };
