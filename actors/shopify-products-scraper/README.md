@@ -19,7 +19,7 @@ Extract the full product catalog of any Shopify store (or a single collection or
 | `onlyAvailable` | boolean | Skip sold-out products |
 | `maxResults` | integer | Total cap |
 | `proxyConfiguration` | object | Route storefront requests through Apify Proxy (default on). Use a country-specific residential group to read that country's prices and currency, or to get past IP rate-limiting. Accounts without proxy access fall back to a direct connection instead of failing. |
-| `detailLevel` | string | `"basic"` (default) reads only the products feed. `"full"` also fetches each product's live page for `seoTitle`, `seoDescription`, `ratingValue` and `reviewCount` — not present in `products.json` — at one extra request per product, priced separately (see Pricing). |
+| `detailLevel` | string | `"basic"` (default) reads only the products feed. `"full"` also fetches each product's live page **and** its per-product JSON for `barcode`, `inventoryQuantity`, `inventoryManagement`, `inventoryPolicy`, `totalInventory`, `seoTitle`, `seoDescription`, `ratingValue` and `reviewCount` — none of which the bulk `products.json` feed carries — priced as one extra event per product (see Pricing). Both requests run in parallel, so it costs no extra wall-clock. |
 
 ## Output (one item per product)
 ```json
@@ -41,10 +41,11 @@ Extract the full product catalog of any Shopify store (or a single collection or
   "available": true,
   "availableVariantCount": 9,
   "variantCount": 12,
+  "totalInventory": 149,
   "images": [{ "src": "https://cdn.shopify.com/s/files/....jpg", "alt": "Men's Wool Runner in Natural Grey" }],
   "imageUrl": "https://cdn.shopify.com/s/files/....jpg",
   "imageCount": 6,
-  "variants": [{ "id": 1, "title": "8 / Natural Grey", "sku": "WR-8-NG", "price": 98, "compareAtPrice": 125, "available": true, "grams": 340, "requiresShipping": true, "taxable": true, "position": 1, "featuredImage": "https://cdn.shopify.com/s/files/....jpg" }],
+  "variants": [{ "id": 1, "title": "8 / Natural Grey", "sku": "WR-8-NG", "price": 98, "compareAtPrice": 125, "available": true, "grams": 340, "requiresShipping": true, "taxable": true, "position": 1, "featuredImage": "https://cdn.shopify.com/s/files/....jpg", "barcode": "196942208243", "inventoryQuantity": 15, "inventoryManagement": "shopify", "inventoryPolicy": "deny" }],
   "description": "Our classic everyday sneaker ...",
   "descriptionHtml": "<p>Our classic everyday sneaker ...</p>",
   "createdAt": "2025-01-10T12:00:00Z",
@@ -56,17 +57,20 @@ Extract the full product catalog of any Shopify store (or a single collection or
   "reviewCount": 51
 }
 ```
-`seoTitle`/`seoDescription`/`ratingValue`/`reviewCount` are only present when `detailLevel` is `"full"` (see Input) — they come from the live product page, not the JSON feed.
+`barcode`/`inventoryQuantity`/`inventoryManagement`/`inventoryPolicy` (per variant), `totalInventory` (per product), `seoTitle`, `seoDescription`, `ratingValue` and `reviewCount` are only present when `detailLevel` is `"full"` (see Input) — Shopify's bulk `products.json` feed carries none of them.
+
+**How complete the stock fields are is a per-store setting, not something any scraper controls.** Measured live: allbirds.com publishes real per-variant quantities *and* UPC barcodes; brooklinen.com publishes a barcode but no quantity; rothys.com publishes barcodes but no quantities. Missing values come back as `null` rather than a guess. `barcode` is whatever the merchant typed into that field — a GTIN/UPC on most stores, an internal SKU on some. `totalInventory` counts only variants Shopify actually tracks stock for, so untracked items (`inventoryManagement: null`, which report a 999999 sentinel) can't inflate it; it is `null` — not `0` — when a store tracks none, keeping "sold out" distinguishable from "this store doesn't publish stock".
 
 ## Pricing
 `result` — charged per product returned, **$0.001/product on the Free plan, tapering to $0.00085/product on Gold and above.** No per-run "Actor Start" fee (some competitors charge ~$0.10 just to start a run before any data is delivered). Stores that block the public catalog return nothing and cost nothing.
-`productDetail` — charged per product only when `detailLevel` is `"full"` **and** the extra page fetch actually found SEO/rating data, at the same tiered rate as `result` ($0.001 Free → $0.00085 Gold+). A product page that has none of those (no rating app installed, no meta description) costs nothing.
+`productDetail` — charged **once** per product (not once per extra request) only when `detailLevel` is `"full"` **and** the extra fetches actually found stock, SEO or rating data, at the same tiered rate as `result` ($0.001 Free → $0.00085 Gold+). A product that yields none of them — no rating app installed, no meta description, store doesn't publish stock — costs nothing.
 
 ## FAQ
 **Does it work on custom domains, not just `*.myshopify.com`?** Yes — pass any storefront domain that runs Shopify; no need to resolve it to the `myshopify.com` backend first.
 **Can I tell which products are on sale?** Yes, each item includes `isOnSale` (true when `compareAtPriceMin` is above `priceMin`) and `discountPercent` — the percentage off the cheapest variant's own list price, so it never mixes two different variants — plus store `currency`.
 **Do I get the description as HTML?** Both: `description` is plain text and `descriptionHtml` is the store's raw `body_html`, so you can keep the formatting when re-publishing a catalog.
 **Can I get the product's SEO title/description and star rating?** Yes, set `detailLevel: "full"`. Those aren't in Shopify's `products.json` feed at all — they only live on the rendered product page (`<title>`/meta description tags and, when the store runs a review app like Judge.me or Yotpo, a `ratingValue`/`reviewCount` in the page's structured data), so getting them costs one extra HTTP request per product and is priced as its own event.
+**Can I get real inventory counts and barcodes?** Yes, set `detailLevel: "full"`. Shopify's bulk `products.json` feed strips `barcode`, `inventory_quantity`, `inventory_management` and `inventory_policy` out of every variant, but the per-product JSON route still serves them on the same variant ids, so they merge back in exactly. How much a given store exposes is that store's own setting (see the note under Output) — you get real values where they are published and `null` where they are not, never a guess. No login or Admin API token is involved; this is the same data a logged-out shopper's browser receives.
 **Does it bypass password-protected or dev stores?** No — only publicly reachable catalogs are read, same as a logged-out shopper would see.
 **Can I search a store for a keyword instead of scraping its whole catalog?** Yes, set `searchQuery` (e.g. `"wool"` or `"merino sweater"`) — it matches against title, vendor, product type and tags (all words must appear). It's a client-side filter, not a separate search API call, since Shopify's public feed has no server-side keyword search; a store with a large catalog still takes the same time to scan as an unfiltered run of the same store.
 

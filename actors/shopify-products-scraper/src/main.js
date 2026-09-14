@@ -76,8 +76,31 @@ function endpointFor(raw) {
   if (col) return { origin, kind: 'collection', url: `${origin}/collections/${col}/products.json` };
   return { origin, kind: 'store', url: `${origin}/products.json` };
 }
+// The bulk `/products.json` endpoint omits these four per-variant fields entirely, but the
+// per-product `/products/<handle>.json` route carries them (same variant ids, so they merge
+// cleanly — verified id-for-id on allbirds). Whether a store exposes them at all is a
+// store-level setting, not an endpoint difference: allbirds returns real quantities and UPC
+// barcodes, brooklinen a barcode but no quantity, rothys omits all four. `barcode` is whatever
+// the merchant typed into that field — a GTIN/UPC on some stores, an internal SKU on others.
+const inventoryFieldsOf = (v) => ({
+  barcode: v.barcode || null,
+  inventoryQuantity: v.inventory_quantity ?? null,
+  inventoryManagement: v.inventory_management ?? null,
+  inventoryPolicy: v.inventory_policy ?? null,
+});
+const hasInventoryData = (v) => !!(v.barcode || v.inventory_quantity != null || v.inventory_management || v.inventory_policy);
+// Sum of the quantities the store actually tracks; null (not 0) when it tracks none, so "out of
+// stock" stays distinguishable from "this store doesn't publish stock levels". Untracked variants
+// (`inventoryManagement: null`, usually paired with `inventoryPolicy: continue`) report a sentinel
+// quantity rather than a real one — allbirds' "Free Returns Coverage" comes back as 999999 per
+// variant, which summed to 1,981,856 before this filter — so they are excluded from the total.
+// Per-variant `inventoryQuantity` is still passed through verbatim; only the roll-up is filtered.
+function totalInventoryOf(variants) {
+  const qs = variants.filter((v) => v.inventoryManagement).map((v) => v.inventoryQuantity).filter((n) => typeof n === 'number');
+  return qs.length ? qs.reduce((a, b) => a + b, 0) : null;
+}
 function shape(p, origin, currency) {
-  const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: v.available ?? null, option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping, taxable: v.taxable ?? null, position: v.position ?? null, featuredImage: v.featured_image?.src ?? null }));
+  const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: v.available ?? null, option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping, taxable: v.taxable ?? null, position: v.position ?? null, featuredImage: v.featured_image?.src ?? null, ...inventoryFieldsOf(v) }));
   const prices = variants.map((v) => v.price).filter((n) => !Number.isNaN(n));
   const priceMin = prices.length ? Math.min(...prices) : null;
   const comparePrices = variants.map((v) => v.compareAtPrice).filter((x) => x != null).sort((a, b) => a - b);
@@ -95,6 +118,7 @@ function shape(p, origin, currency) {
     compareAtPriceMin, compareAtPriceMax: comparePrices[comparePrices.length - 1] ?? null,
     isOnSale: !!(compareAtPriceMin != null && priceMin != null && compareAtPriceMin > priceMin), discountPercent,
     available: variants.some((v) => v.available), availableVariantCount: variants.filter((v) => v.available).length, variantCount: variants.length,
+    totalInventory: totalInventoryOf(variants),
     images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null, imageCount: (p.images ?? []).length,
     options: (p.options ?? []).map((o) => ({ name: o.name, values: o.values })),
     ...(withVariants ? { variants } : {}), ...(withDesc ? { description: textOf(p.body_html), descriptionHtml: p.body_html || null } : {}),
@@ -126,37 +150,63 @@ async function currencyFor(origin) {
 // position). Charged separately since it's a second request per product; only charged when it
 // actually finds something, matching the "no data, no charge" rule the base scrape already uses.
 let detailBudgetOk = true;
-async function enrichWithDetail(item, origin, handle) {
+async function enrichWithDetail(item, origin, handle, needInventory = true) {
   if (!detailBudgetOk || !timeBudgetOk()) return;
   let seoTitle = null, seoDescription = null, ratingValue = null, reviewCount = null;
-  try {
+  let detailVariants = [];
+  // Two different routes are needed — the rendered page for <head>/ld+json, the per-product JSON
+  // for stock fields — so fire them together. The rest of the run is strictly sequential and
+  // full-detail runs are the ones closest to the time budget, so the second request costs no
+  // extra wall-clock this way. Settled (not all-or-nothing): a store that serves one route but
+  // not the other still gets whatever it does serve.
+  const [pageRes, jsonRes] = await Promise.allSettled([
     // `request()`'s default Accept header prefers application/json, and Shopify's product route
     // honors that and serves the raw product JSON instead of the rendered page — override it here
     // since the whole point of this request is the page's <head>/ld+json, not the JSON again.
-    const res = await request(`${origin}/products/${handle}`, { accept: 'text/html,application/xhtml+xml' });
-    const $ = cheerio.load(res.body);
-    seoTitle = $('title').first().text().trim() || null;
-    seoDescription = $('meta[name="description"]').attr('content')?.trim() || null;
-    $('script[type="application/ld+json"]').each((_, el) => {
-      if (ratingValue != null) return;
-      let data;
-      try { data = JSON.parse($(el).contents().text()); } catch { return; }
-      const rating = data?.aggregateRating ?? (Array.isArray(data) ? data.find((d) => d?.aggregateRating)?.aggregateRating : null);
-      if (rating) {
-        ratingValue = rating.ratingValue != null ? Number(rating.ratingValue) : null;
-        reviewCount = rating.reviewCount != null ? Number(rating.reviewCount) : (rating.ratingCount != null ? Number(rating.ratingCount) : null);
-      }
-    });
-  } catch (e) {
-    log.warning(`${origin}/products/${handle}: detail fetch failed (${e.message}) — seoTitle/seoDescription/rating left null for this product.`);
-    return;
+    request(`${origin}/products/${handle}`, { accept: 'text/html,application/xhtml+xml' }),
+    needInventory ? request(`${origin}/products/${handle}.json`, { accept: 'application/json' }) : Promise.resolve(null),
+  ]);
+  if (pageRes.status === 'rejected') {
+    log.warning(`${origin}/products/${handle}: detail fetch failed (${pageRes.reason.message}) — seoTitle/seoDescription/rating left null for this product.`);
+  } else {
+    try {
+      const $ = cheerio.load(pageRes.value.body);
+      seoTitle = $('title').first().text().trim() || null;
+      seoDescription = $('meta[name="description"]').attr('content')?.trim() || null;
+      $('script[type="application/ld+json"]').each((_, el) => {
+        if (ratingValue != null) return;
+        let data;
+        try { data = JSON.parse($(el).contents().text()); } catch { return; }
+        const rating = data?.aggregateRating ?? (Array.isArray(data) ? data.find((d) => d?.aggregateRating)?.aggregateRating : null);
+        if (rating) {
+          ratingValue = rating.ratingValue != null ? Number(rating.ratingValue) : null;
+          reviewCount = rating.reviewCount != null ? Number(rating.reviewCount) : (rating.ratingCount != null ? Number(rating.ratingCount) : null);
+        }
+      });
+    } catch (e) {
+      log.warning(`${origin}/products/${handle}: could not parse the product page (${e.message}) — seoTitle/seoDescription/rating left null for this product.`);
+    }
   }
-  if (seoTitle == null && seoDescription == null && ratingValue == null) return; // nothing found, nothing charged
+  if (jsonRes.status === 'rejected') {
+    log.warning(`${origin}/products/${handle}.json: stock fields unavailable (${jsonRes.reason.message}).`);
+  } else if (jsonRes.value) {
+    try { detailVariants = (JSON.parse(jsonRes.value.body)?.product?.variants ?? []).filter(hasInventoryData); }
+    catch (e) { log.warning(`${origin}/products/${handle}.json: stock fields unavailable (${e.message}).`); }
+  }
+  if (seoTitle == null && seoDescription == null && ratingValue == null && !detailVariants.length) return; // nothing found, nothing charged
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'productDetail', count: 1 });
     if (r.chargedCount === 0) { detailBudgetOk = false; return; } // budget exhausted: stop enriching, keep scraping base data
   }
   item.seoTitle = seoTitle; item.seoDescription = seoDescription; item.ratingValue = ratingValue; item.reviewCount = reviewCount;
+  if (detailVariants.length) {
+    const byId = new Map(detailVariants.map((v) => [v.id, v]));
+    for (const v of item.variants ?? []) { // absent when includeVariants is off — totalInventory still lands
+      const d = byId.get(v.id);
+      if (d) Object.assign(v, inventoryFieldsOf(d));
+    }
+    item.totalInventory = totalInventoryOf(detailVariants.map(inventoryFieldsOf));
+  }
 }
 
 const erroredStores = []; // products.json fetch failed (not Shopify, or endpoint disabled)
@@ -177,7 +227,9 @@ for (const raw of storeUrls) {
         seenBeforeFilter = 1;
         if (!onlyAvailable || (p.variants ?? []).some((v) => v.available)) {
           const item = shape(p, ep.origin, currency);
-          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
+          // A single-product URL already fetched `/products/<handle>.json`, which carries the
+          // stock fields — no need for the enrichment step to fetch the same route again.
+          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle, false);
           keepGoing = await pushResult(item); got++;
         }
       }

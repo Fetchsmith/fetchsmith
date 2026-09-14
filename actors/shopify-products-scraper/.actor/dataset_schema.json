@@ -138,6 +138,14 @@
         "title": "VariantCount",
         "example": 13
       },
+      "totalInventory": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "TotalInventory",
+        "example": 0
+      },
       "images": {
         "type": [
           "array",
@@ -237,7 +245,7 @@
           "null"
         ],
         "title": "SeoTitle",
-        "example": "Men\u2019s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
+        "example": "Men’s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
       },
       "seoDescription": {
         "type": [
@@ -245,7 +253,7 @@
           "null"
         ],
         "title": "SeoDescription",
-        "example": "Discover the Men\u2019s Dasher NZ\u2014lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
+        "example": "Discover the Men’s Dasher NZ—lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
       },
       "ratingValue": {
         "type": [
@@ -277,6 +285,7 @@
           "vendor",
           "productType",
           "currency",
+          "totalInventory",
           "priceMin",
           "priceMax",
           "compareAtPriceMin"
@@ -323,6 +332,10 @@
           },
           "compareAtPriceMin": {
             "label": "CompareAtPriceMin",
+            "format": "number"
+          },
+          "totalInventory": {
+            "label": "TotalInventory",
             "format": "number"
           }
         }

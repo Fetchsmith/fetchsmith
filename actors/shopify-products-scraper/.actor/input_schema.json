@@ -64,9 +64,9 @@
       "title": "Detail level",
       "type": "string",
       "editor": "select",
-      "description": "\"Basic\" (default) uses only the store's products.json/product.json feed — one request per page of products. \"Full\" additionally fetches each product's live page to read its SEO title/description and star-rating summary, which are not present in products.json. This is one extra HTTP request per product and is charged separately.",
+      "description": "\"Basic\" (default) uses only the store's bulk products.json feed — one request per page of products. \"Full\" additionally fetches each product's live page and its per-product JSON to read barcodes, inventory counts (inventoryQuantity / totalInventory), SEO title/description and the star-rating summary — none of which the bulk feed carries. The two extra requests run in parallel and are charged as a single event per product. How much stock data exists is a per-store setting; unpublished values come back as null.",
       "enum": ["basic", "full"],
-      "enumTitles": ["Basic (fast, feed only)", "Full (+ SEO title/description + rating, 1 extra request/product)"],
+      "enumTitles": ["Basic (fast, feed only)", "Full (+ barcodes, inventory counts, SEO + rating)"],
       "default": "basic"
     }
   },
