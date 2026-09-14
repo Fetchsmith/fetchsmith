@@ -109,6 +109,8 @@ try {
         cashOnHandEnd: totals?.last_cash_on_hand_end_period ?? null,
         individualContributions: totals?.individual_contributions ?? null,
         individualItemizedContributions: totals?.individual_itemized_contributions ?? null,
+        individualUnitemizedContributions: totals?.individual_unitemized_contributions ?? null,
+        refundedIndividualContributions: totals?.refunded_individual_contributions ?? null,
         coverageStartDate: totals?.coverage_start_date ?? null,
         coverageEndDate: totals?.coverage_end_date ?? null,
       };

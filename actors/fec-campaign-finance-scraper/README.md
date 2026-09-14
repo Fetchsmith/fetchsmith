@@ -6,7 +6,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 - **Political/campaign research** — pull every Senate candidate in a state with their fundraising totals in a single dataset instead of clicking through fec.gov one candidate at a time.
 - **Journalism & fact-checking** — compare receipts, burn rate (`disbursements` vs `receipts`) and war chests (`cashOnHandEnd`) across a race, with the FEC page URL attached to each row for citation.
 - **Watchdog & transparency dashboards** — schedule a run per cycle and diff the totals to track who is raising money and how fast.
-- **Small-dollar vs. large-dollar analysis** — `individualItemizedContributions` (the >$200-aggregate subset) against `individualContributions` shows how much of a campaign's money comes from large donors versus small ones.
+- **Small-dollar vs. large-dollar analysis** — `individualUnitemizedContributions` (small-dollar giving as the FEC itself computes it, no subtraction required) against `individualItemizedContributions` (the >$200-aggregate subset) shows how much of a campaign's money comes from grassroots donors versus large ones.
 - **Candidate list building** — enumerate everyone who has ever filed for a given office/state/cycle, including long-shot and prior candidates.
 
 ## Input
@@ -56,6 +56,8 @@ One item per candidate:
 | `cashOnHandEnd` | Cash on hand at the close of the covered period. |
 | `individualContributions` | All contributions from individuals. |
 | `individualItemizedContributions` | The itemized (>$200 aggregate) subset of the above. |
+| `individualUnitemizedContributions` | The unitemized (small-dollar, ≤$200 aggregate) subset — the FEC's own computed figure, not derived by subtraction. |
+| `refundedIndividualContributions` | Individual contributions refunded back to donors during the period. |
 | `coverageStartDate`, `coverageEndDate` | The reporting period these totals cover, as ISO timestamps. |
 
 Financial fields are `null` when `includeTotals` is `false` or the candidate has never filed a financial report.
@@ -81,6 +83,8 @@ Financial fields are `null` when `includeTotals` is `false` or the candidate has
   "cashOnHandEnd": 3754333.02,
   "individualContributions": 4234605.7,
   "individualItemizedContributions": 1373252.85,
+  "individualUnitemizedContributions": 2861352.85,
+  "refundedIndividualContributions": 30368.08,
   "coverageStartDate": "2025-01-01T00:00:00",
   "coverageEndDate": "2026-06-30T00:00:00"
 }
@@ -102,6 +106,9 @@ Straight from the FEC: `C` = present candidate, `F` = future candidate, `N` = no
 
 **Are `receipts` lifetime totals?**
 No. The FEC stores one totals record per election cycle, and this Actor returns the **most recent** one, with `coverageStartDate`/`coverageEndDate` telling you exactly which period it covers. Elizabeth Warren, for example, has 12 separate totals records on file. If you need a specific past cycle, set `electionYear`.
+
+**Do I have to compute small-dollar giving myself?**
+No. `individualUnitemizedContributions` is the FEC's own ≤$200-aggregate figure, returned straight from the same totals record as `individualItemizedContributions` — you don't need to subtract one from `individualContributions` to get it.
 
 **Why do `electionYears` and `cycles` differ?**
 `electionYears` are the years the person was on the ballot; `cycles` are every two-year window the FEC holds data for, which includes the off-years in between. In the sample above that's `[2012, 2018, 2024, 2030]` versus `[2012 … 2026]`.

@@ -72,6 +72,14 @@
         "type": ["number", "null"],
         "title": "Individual itemized contributions (USD)"
       },
+      "individualUnitemizedContributions": {
+        "type": ["number", "null"],
+        "title": "Individual unitemized (small-dollar) contributions (USD)"
+      },
+      "refundedIndividualContributions": {
+        "type": ["number", "null"],
+        "title": "Refunded individual contributions (USD)"
+      },
       "coverageStartDate": {
         "type": ["string", "null"],
         "title": "Totals coverage start"

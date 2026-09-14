@@ -1457,6 +1457,8 @@
         "cashOnHandEnd",
         "individualContributions",
         "individualItemizedContributions",
+        "individualUnitemizedContributions",
+        "refundedIndividualContributions",
         "coverageStartDate",
         "coverageEndDate"
       ],
@@ -1474,6 +1476,7 @@
         "disbursements": 4109645.05,
         "cashOnHandEnd": 3754333.02,
         "individualContributions": 4234605.7,
+        "individualUnitemizedContributions": 2861352.85,
         "coverageStartDate": "2025-01-01T00:00:00",
         "coverageEndDate": "2026-06-30T00:00:00"
       }
