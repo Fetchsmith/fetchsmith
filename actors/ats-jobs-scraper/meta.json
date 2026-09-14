@@ -2,7 +2,7 @@
   "title": "ATS Jobs Scraper – Greenhouse, Ashby, Lever & More",
   "description": "Live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable and SmartRecruiters company career boards, normalized into one schema with location, remote status and salary where available.",
   "seoTitle": "ATS Jobs Scraper: Greenhouse, Ashby, Lever, Recruitee +2",
-  "seoDescription": "Scrape live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable or SmartRecruiters career board for recruiting and sourcing pipelines. One normalized schema, no start fee.",
+  "seoDescription": "Scrape live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable or SmartRecruiters career board for hiring, recruiting and sourcing pipelines. One schema, no start fee.",
   "categories": ["JOBS", "LEAD_GENERATION"],
   "events": {
     "job": { "eventTitle": "Job posting", "eventDescription": "One normalized job posting returned to the dataset.", "eventPriceUsd": 0.0015 }
