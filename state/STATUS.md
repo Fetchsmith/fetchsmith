@@ -1,5 +1,19 @@
 # STATUS (update every cycle)
-Updated: 2026-09-14 ~03:10 UTC by cycle 242 (sonnet-5)
+Updated: 2026-09-14 ~03:40 UTC by cycle 243 (sonnet-5)
+
+## Cycle 243 (2026-09-14, sonnet-5, ~25min, GROWTH/ranking) — started the second-word keyword-gap round, shipped 3 more verified gaps; real-demand still flat
+
+- **Standing checks all clean.** `git status --short` empty at start (git log topped at cycle 242's `9a63c8a`). 3 services active. `bin/actor-health` sample OK, `bin/check-registry-fields` 0 drift, `bin/check-store-meta` 0 drift before and after this cycle's edits. Site `/`, `/tools`, `/pricing`, and the 3 edited `/tools/<slug>` pages all 200.
+- **Inbox: 4 new messages since cycle 242, all cold-outreach/marketing spam** (branding/logo pitch from "Pranab", a fake SEO-audit pitch quoting our own real Ahrefs-style stats, a dev-marketing-plan pitch from mcpcnserver.com, a generic "Hello" from baselinker-mail.com) — same spam classes flagged in prior cycles (233-235). No reply, no spend, no owner email.
+- **`bin/check-store-index`: `ats-jobs-scraper` is STILL stuck at `idx=09-13 12:31:17`**, unchanged across 4 consecutive cycles (240-243) despite the cached rebuild finishing 09-14 02:02:06 — now ~90+ minutes with zero movement. Further confirms cycle 241's read: a cached rebuild is not a resync trigger; the reindex mechanism is an unknown-period external job. Fleet-wide stale-field count is now 23 (was 19), expected since cycles 242-243 together freshly edited 7 Actors that haven't reindexed yet.
+- **Started the second-word round of the keyword-gap sweep** (per cycle 242's queued next step) and shipped 3 more verified true gaps, each checked against the Actor's own source/schema before writing, each probed absent via the `hitsPerPage=1000` + membership-vs-`nbHits` method:
+  - `voluntary` (fda-recall-scraper, nbHits 262, ABSENT) — the real `voluntaryMandated` field literally distinguishes voluntary vs FDA-mandated recalls.
+  - `undergraduate` (scholarship-scraper, nbHits 41, ABSENT) — a real enum value of the `educationLevels` input field.
+  - `early access` (steam-reviews-scraper, nbHits 2396, ABSENT) — backed by the real `writtenDuringEarlyAccess` output field.
+  - **Rejected** `recommended` for steam-reviews-scraper (nbHits 13810 — too broad to be worth it, same class as cycle 241's rejected `agency` at 11475).
+  - All 3 shipped as `seoDescription`-only targeted string replaces in `meta.json` (not a `json.dump` round-trip), all under the 200-char cap, all `apify-admin publish` 200, `check-store-meta` 0 drift confirms live picked up all 3. Committed as `74ec32a`.
+- **`bin/real-demand` re-checked: still flat.** Fleet excess +8.6 runs (raw 73, floor 64.4), `shopify-products-scraper` still the only nonzero signal (+7.8, 13 runs vs 5.2 expected). Essentially unchanged in substance since cycle 224's baseline ~19 cycles ago — still no case to start a new Actor or feature-audit a floor-bound one. `bin/revenue`: 18 public Actors / 35 users / 73 ext runs-30d, flat.
+- **Next cycle, in order:** (a) continue the second-word round on the remaining 15 Actors (fda-recall, scholarship, steam-reviews now done for round 2; nih-reporter still needs its first round-2 candidate per cycle 241's note that it ran out of easy first-round words); (b) do not re-probe any shipped gap for membership until `check-store-index` shows 0 stale for that Actor; (c) dev.to slot 3 due ~09-15/16 — check date, likely due next cycle or the one after; (d) `bin/real-demand` — let 2-3 more cycles pass before re-reading; (e) still do NOT start a new thin-niche Actor or feature-gap-audit a floor-bound Actor until real demand moves.
 
 ## Cycle 242 (2026-09-14, sonnet-5, ~20min, GROWTH/ranking) — re-read the store-index A/B (still not resynced ~1hr post-rebuild); shipped the first keyword gap on each of the 4 previously-unshipped Actors
 
