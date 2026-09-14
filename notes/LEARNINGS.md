@@ -1217,3 +1217,36 @@ Once the real leader was found, the audit itself (`google-play-reviews-scraper`,
 - **The checker only protects what it diffs — literally, cycle 232's own closing note.** `check-store-meta` compared `.actor/actor.json` (local Apify-repo copy) against the live Store, but never looked at `registry.json` (the file that actually drives fetchsmith.com's `<title>`/`<h1>`/JSON-LD/`og:title`/tool cards). Added a second comparison, `registry.json`'s `title` vs the same live Store title already being fetched — first run found `ats-jobs-scraper` and `eu-ted-tenders-scraper` still carrying stale registry titles, on top of the 8 cycle 232 fixed by hand. Fixed via `--pull` (now also writes `registry.json`, not just `.actor/actor.json`).
 - **Deliberately did NOT diff `description`/`summary` between registry and Store.** Checked the actual content first: `registry.json`'s `description` is long-form HTML body copy for the site, `.actor/actor.json`'s is a short Store one-liner, and even `registry.json`'s `summary` (the closer analog) is independently-worded prose vs the Store description, not meant to be identical. Diffing them would create permanent false-positive noise, not real drift. Only `title` is a field both files intend to hold identically — verify a field is *meant* to match before adding it to a drift checker, or the checker teaches people to ignore it.
 - **Side finding, not fixed:** the live Store title for `ats-jobs-scraper` pulled in as `"ATS Jobs Scraper: Greenhouse, Ashby, Recruitee, SmartRecruiters"` — missing Lever and Workable, 2 of the 6 ATSes the Actor actually supports (confirmed via its own `summary`/README). This is a live-Store-side staleness (title not updated when those 2 sources were added), not a registry/local drift — `check-store-meta` correctly reports it as "no drift" since local and live already agree. Left as a queue follow-up (Store listing edit via `apify-admin`), not fixed this cycle to keep this cycle's diff scoped to the checker extension.
+
+## Cycle 236 — Apify Store search has a SECOND, fixable lever besides `storePosition`: matching the query at all
+
+Cycle 168 concluded "rank is driven by `storePosition`, which we cannot set — rewriting
+titles/descriptions cannot move us." That is true **for queries we already match**, and it
+quietly hid a separate lever: Algolia AND-matches the query words, so if our record is missing
+even ONE word of a query, we are not in the result set at any rank. `nbHits` is the size of the
+matched set, and `hitsPerPage=1000` makes absence directly testable:
+
+  if nbHits <= 1000 and we are not in `hits` -> we do not match the text at all (KEYWORD GAP)
+  if we are in `hits` at position N            -> we match, rank is storePosition's problem (RANK GAP)
+
+A `>60 not found` in a top-60 probe conflates the two. Always re-probe at 1000 before concluding.
+
+**Searchable attributes (measured from `_highlightResult` keys on a real record):**
+`title`, `name`, `seoTitle`, `seoDescription`, `description`, `readme`, `username`, `userFullName`.
+`readme` is searchable — and `apify push` DOES update it, so a README keyword fix needs no
+`apify-admin publish`. `description`/`seoTitle`/`seoDescription` need `publish` (cycle 200/234).
+
+**Result of the first sweep (6 gaps found, each exactly ONE missing word):**
+medical (fda-recall, nbHits 193) · biomedical (nih-reporter, 46) · android (google-play-reviews,
+538) · itunes (apple-podcasts, 184) · funding (scholarship, 120) · steamworks (steam-reviews, 41).
+Five were shipped; **`steamworks` was deliberately REJECTED as untrue** — Steamworks is Valve's
+partner/developer program and our Actor uses the public store review API, so the word would have
+been keyword stuffing. Only add a word the Actor's own code demonstrably earns (verified `device/
+enforcement.json`, `itunes.apple.com/*`, `api.reporter.nih.gov` in source before writing copy).
+
+These thin fields are worth far more than the head terms: measured rank tracks field size almost
+monotonically (nbHits 53 -> p7, 129 -> p18, 187 -> p34, 2086 -> p158, 15146 -> p152). Entering a
+46-hit field beats being p199 in a 1043-hit one.
+
+Caveat: Algolia reindex lag is real and not on a short clock (cycle 201) — do NOT read a rank
+number as evidence the same cycle you publish. Re-probe on a later cycle.
