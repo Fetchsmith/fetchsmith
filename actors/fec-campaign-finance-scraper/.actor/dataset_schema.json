@@ -3,12 +3,82 @@
   "fields": {
     "type": "object",
     "properties": {
-      "url": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "URL"
+      "candidateId": {
+        "type": ["string", "null"],
+        "title": "Candidate ID",
+        "example": "S2MA00170"
+      },
+      "name": {
+        "type": ["string", "null"],
+        "title": "Name"
+      },
+      "party": {
+        "type": ["string", "null"],
+        "title": "Party"
+      },
+      "office": {
+        "type": ["string", "null"],
+        "title": "Office"
+      },
+      "state": {
+        "type": ["string", "null"],
+        "title": "State"
+      },
+      "district": {
+        "type": ["string", "null"],
+        "title": "District"
+      },
+      "incumbentChallenge": {
+        "type": ["string", "null"],
+        "title": "Incumbent/challenger status"
+      },
+      "candidateStatus": {
+        "type": ["string", "null"],
+        "title": "Candidate status"
+      },
+      "electionYears": {
+        "type": ["array", "null"],
+        "title": "Election years"
+      },
+      "cycles": {
+        "type": ["array", "null"],
+        "title": "Cycles"
+      },
+      "firstFileDate": {
+        "type": ["string", "null"],
+        "title": "First file date"
+      },
+      "fecUrl": {
+        "type": ["string", "null"],
+        "title": "FEC record URL"
+      },
+      "receipts": {
+        "type": ["number", "null"],
+        "title": "Total receipts (USD)"
+      },
+      "disbursements": {
+        "type": ["number", "null"],
+        "title": "Total disbursements (USD)"
+      },
+      "cashOnHandEnd": {
+        "type": ["number", "null"],
+        "title": "Cash on hand, period end (USD)"
+      },
+      "individualContributions": {
+        "type": ["number", "null"],
+        "title": "Individual contributions (USD)"
+      },
+      "individualItemizedContributions": {
+        "type": ["number", "null"],
+        "title": "Individual itemized contributions (USD)"
+      },
+      "coverageStartDate": {
+        "type": ["string", "null"],
+        "title": "Totals coverage start"
+      },
+      "coverageEndDate": {
+        "type": ["string", "null"],
+        "title": "Totals coverage end"
       }
     }
   },
@@ -17,16 +87,31 @@
       "title": "Overview",
       "transformation": {
         "fields": [
-          "url"
+          "name",
+          "party",
+          "office",
+          "state",
+          "candidateStatus",
+          "receipts",
+          "disbursements",
+          "cashOnHandEnd",
+          "coverageEndDate",
+          "fecUrl"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": {
-            "label": "URL",
-            "format": "link"
-          }
+          "name": { "label": "Name", "format": "text" },
+          "party": { "label": "Party", "format": "text" },
+          "office": { "label": "Office", "format": "text" },
+          "state": { "label": "State", "format": "text" },
+          "candidateStatus": { "label": "Status", "format": "text" },
+          "receipts": { "label": "Receipts (USD)", "format": "number" },
+          "disbursements": { "label": "Disbursements (USD)", "format": "number" },
+          "cashOnHandEnd": { "label": "Cash on hand (USD)", "format": "number" },
+          "coverageEndDate": { "label": "Coverage end", "format": "text" },
+          "fecUrl": { "label": "FEC record", "format": "link" }
         }
       }
     }

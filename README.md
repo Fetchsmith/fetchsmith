@@ -28,6 +28,7 @@ They run on [Apify Store](https://apify.com/fetchsmith) with pay-per-event prici
 | **Grants.gov Scraper** | US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional detail enrichment for award ceiling/floor, applicant-eligibility text and the full synopsis. | [Apify Store](https://apify.com/fetchsmith/grants-gov-scraper) · [Docs](https://fetchsmith.com/tools/grants-gov-scraper) · [Source](actors/grants-gov-scraper) |
 | **NIH RePORTER Scraper** | NIH-funded research projects from the official RePORTER API: keyword, fiscal year, institute, activity code, organization, state and PI filters, award amounts, study sections and an optional join to the PubMed papers each project produced — auto-chunks past the API's 15,000-row offset wall. | [Apify Store](https://apify.com/fetchsmith/nih-reporter-scraper) · [Docs](https://fetchsmith.com/tools/nih-reporter-scraper) · [Source](actors/nih-reporter-scraper) |
 | **ATS Jobs Scraper** | Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable or SmartRecruiters career board, normalized into one schema: location, remote status, salary where the ATS exposes it, department, team, employment type. Companies that moved off an ATS are skipped, not failed. | [Apify Store](https://apify.com/fetchsmith/ats-jobs-scraper) · [Docs](https://fetchsmith.com/tools/ats-jobs-scraper) · [Source](actors/ats-jobs-scraper) |
+| **FEC Campaign Finance Scraper** | US federal candidates (House, Senate, President) from the official FEC open.fec.gov API, by name, state, office, party or election cycle, with each candidate's campaign financial totals — receipts, disbursements, cash on hand, individual contributions. | [Apify Store](https://apify.com/fetchsmith/fec-campaign-finance-scraper) · [Docs](https://fetchsmith.com/tools/fec-campaign-finance-scraper) · [Source](actors/fec-campaign-finance-scraper) |
 
 ## Guides
 
@@ -56,6 +57,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [App Store, Google Play and Steam reviews — three JSON APIs, three unrelated meanings of "empty"](https://fetchsmith.com/blog/app-store-review-apis-three-silent-empties)
 - [Substack, Apple Podcasts, Google News and Hacker News — four free APIs where the first response isn't the finished product](https://fetchsmith.com/blog/public-content-apis-hidden-second-step)
 - [Six ATS job-board JSON APIs, six different ideas of what a job posting is](https://fetchsmith.com/blog/ats-job-board-json-apis-six-shapes)
+- [The FEC publishes campaign finance as key-free JSON — and its three rate limits contradict each other](https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key)
 
 ## Layout
 

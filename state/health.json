@@ -1,5 +1,5 @@
 {
- "ts": 1789372962,
+ "ts": 1789375334,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -286,6 +286,22 @@
     "projectTitle",
     "activityCode",
     "awardType"
+   ],
+   "err": null
+  },
+  "fec-campaign-finance-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 2,
+   "sample_keys": [
+    "candidateId",
+    "name",
+    "party",
+    "office",
+    "state",
+    "district",
+    "incumbentChallenge",
+    "candidateStatus"
    ],
    "err": null
   }

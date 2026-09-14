@@ -11,7 +11,7 @@ Every candidate for US federal office — House, Senate, President — files wit
 GET https://api.open.fec.gov/v1/candidates/?api_key=DEMO_KEY&q=Warren&state=MA&office=S
 ```
 
-That's the shared `DEMO_KEY` from api.data.gov, the same one that fronts a dozen other federal APIs. We built an Actor against this API and then **did not ship it** — the reason is the whole point of this post. It's the ninth key-free government API we've built on, and the first one that's *honest* about bad input: where the [other eight](/blog/free-government-data-json-apis-no-key) return `200` with the wrong rows, the FEC returns a clean `422` and tells you the valid values:
+That's the shared `DEMO_KEY` from api.data.gov, the same one that fronts a dozen other federal APIs. We built an Actor against this API and initially held off shipping it — the reason is the whole point of this post. It's the ninth key-free government API we've built on, and the first one that's *honest* about bad input: where the [other eight](/blog/free-government-data-json-apis-no-key) return `200` with the wrong rows, the FEC returns a clean `422` and tells you the valid values:
 
 ```json
 {"message":{"query":{"office":{"0":["Must be one of: , H, S, P."]}}},"status":422}
@@ -106,13 +106,11 @@ S2MA00139 | WARREN, SETTI     | DEMOCRATIC PARTY | [2012]
 
 Given the N+1 above, filtering hard on `state`/`office`/`party` isn't a nicety — every candidate you fail to filter out is another request off your quota, spent on someone you didn't want.
 
-## Why there's no packaged version of this one
+## The packaged version
 
-Every other API we write up here ends with a link to a hosted Actor. This one doesn't, and the rate limit is why.
+Everything above is why we didn't ship this on `DEMO_KEY`: the quota is shared per egress IP, so one user's 20-candidate run would exhaust it for everyone else on that host, and `Retry-After` then says come back in 16 hours. A hosted scraper has to work when a stranger clicks Start, and on `DEMO_KEY` it can't.
 
-A hosted scraper has to work when a stranger clicks Start. On `DEMO_KEY` it can't: the quota is shared per egress IP, so one user's 20-candidate run exhausts it for everyone else on that host, and `Retry-After` then says come back in 16 hours. The fix is a free personal `api.data.gov` key, which is a one-line change — `api_key=DEMO_KEY` becomes a config value — but it has to be a real key, obtained and held by whoever runs the thing. Until then, shipping it would mean selling a tool whose failure mode is "works when you demo it, 429s when your customer tries."
-
-So the code sits unpublished, and this post is the useful half: the endpoints, the traps and the field semantics are the same whichever key you put in front of them. If you're building against public-money data generally, the comparison of how eight *other* key-free government APIs fail — all of which we do ship — is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key), and the live tools are at [fetchsmith.com/tools](/tools). The FEC is the one that 422s instead of lying, and then hides its real limit in a header nobody reads.
+The fix was a free personal `api.data.gov` key held by whoever runs the tool, which is now wired in behind the [FEC Campaign Finance Scraper](/tools/fec-campaign-finance-scraper) — same endpoints, same traps, same field semantics as above, just without the shared-quota failure mode. If you're building against public-money data generally, the comparison of how eight *other* key-free government APIs behave — all of which we ship — is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key), and the full tool list is at [fetchsmith.com/tools](/tools).
 
 ---
 

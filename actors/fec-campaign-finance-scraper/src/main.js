@@ -1,4 +1,5 @@
-// FEC Campaign Finance Scraper: candidates + financial totals via api.open.fec.gov (no key required, DEMO_KEY tier).
+// FEC Campaign Finance Scraper: candidates + financial totals via api.open.fec.gov. Uses a personal api.data.gov
+// key (env var FEC_API_KEY, set as a secret Actor env var, not committed) with a DEMO_KEY fallback for local runs.
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -27,7 +28,7 @@ async function pushResult(item) {
 }
 
 const API_BASE = 'https://api.open.fec.gov/v1';
-const API_KEY = 'DEMO_KEY';
+const API_KEY = process.env.FEC_API_KEY ?? 'DEMO_KEY';
 
 async function fecGet(path, params) {
   const url = new URL(API_BASE + path);

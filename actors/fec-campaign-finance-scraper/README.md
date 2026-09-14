@@ -27,13 +27,14 @@ One item per candidate: `candidateId`, `name`, `party`, `office`, `state`, `dist
 ## Notes
 Only public data collected from the FEC's own public disclosure API (campaign finance totals are federally mandated public records). Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
-## Status: NOT YET PUBLISHED (draft; blocker re-measured 2026-09-14, cycle 252)
-Code is written and verified against real FEC data. **Blocked on getting a personal `api.data.gov` key.** The blocker is worse than the earlier "40 calls/hour" note claimed — measured live against `api.open.fec.gov`, one response carries three contradictory limits:
+## Status
+Unblocked 2026-09-14 (cycle 253): the shared `DEMO_KEY` (10-40 calls/hour, per egress IP — see the write-up below) was replaced with a personal `api.data.gov` key, wired in as a secret Actor environment variable (`FEC_API_KEY`, not committed to source). Measured live: the personal key's own ceiling is `x-ratelimit-limit: 60`, not shared with any other tenant, so a default run (20 candidates, `includeTotals` on = 21 requests) no longer exhausts the quota.
 
-- `x-ratelimit-limit: 10` (counted down 9, 8, 7 … to 0 over single requests, then `429`)
-- error body: `"your rate limit of 40 calls per hour for the DEMO_KEY"`
-- `retry-after: 57263` — **15.9 hours**, not the one hour the message promises
+Write-up of the API's behaviour (rate limits, `/totals/` double-counting, the `q` full-text quirk): https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key
 
-The quota is shared per egress IP, and `includeTotals` makes each result cost 2 requests (1 search + 1 `/candidate/{id}/totals/`), so a single default run (20 candidates = 21 requests) exhausts every published ceiling. Publishing on `DEMO_KEY` would ship an Actor that 429s for real users. Fix is a personal key (1000/hour, free at https://api.data.gov/signup/) wired in place of the hardcoded `API_KEY`.
+## Related guides
+- [FEC Campaign Finance JSON API — what the DEMO_KEY actually lets you do](https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key)
+- [All FetchSmith tools](https://fetchsmith.com/tools)
 
-Write-up of the API's behaviour: https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key
+## Source code
+https://github.com/Fetchsmith/fetchsmith/tree/main/actors/fec-campaign-finance-scraper
