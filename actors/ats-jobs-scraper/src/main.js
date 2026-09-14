@@ -1,6 +1,6 @@
-// ATS Jobs Scraper: pulls live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable
-// and SmartRecruiters company boards and normalizes them into one cross-ATS schema. No headless
-// browser — every source is a documented, no-auth, no-login JSON endpoint.
+// ATS Jobs Scraper: pulls live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable,
+// SmartRecruiters and Workday company boards and normalizes them into one cross-ATS schema. No
+// headless browser — every source is a documented, no-auth, no-login JSON endpoint.
 import { Actor, log } from 'apify';
 import * as cheerio from 'cheerio';
 import { gotScraping } from 'got-scraping';
@@ -8,7 +8,7 @@ import { gotScraping } from 'got-scraping';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
-const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters'];
+const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday'];
 const DEFAULT_COMPANIES = [
   { ats: 'greenhouse', slug: 'airbnb' },
   { ats: 'ashby', slug: 'ramp' },
@@ -16,6 +16,7 @@ const DEFAULT_COMPANIES = [
   { ats: 'recruitee', slug: 'vandebron' },
   { ats: 'workable', slug: 'getresponse' },
   { ats: 'smartrecruiters', slug: 'ElasticBandCompany' },
+  { ats: 'workday', slug: 'okgov.wd1.myworkdayjobs.com/okgovjobs' },
 ];
 const companies = (Array.isArray(input.companies) && input.companies.length ? input.companies : DEFAULT_COMPANIES)
   .map((c) => ({ ats: String(c.ats || '').toLowerCase().trim(), slug: String(c.slug || '').trim() }))
@@ -322,9 +323,104 @@ async function fetchSmartRecruiters(slug) {
   return { jobs: kept };
 }
 
+// Workday's slug is not a single company identifier like the other five ATSes — its public
+// career-board API is namespaced by tenant *and* wdN host *and* site (e.g. Walmart's board lives
+// at `walmart.wd5.myworkdayjobs.com/WalmartExternal`), so the slug format here is
+// `"<host>/<site>"`, e.g. `"okgov.wd1.myworkdayjobs.com/okgovjobs"`. Verified live (cycle 262):
+// `POST https://<host>/wday/cxs/<tenant>/<site>/jobs` with body `{appliedFacets:{}, limit, offset,
+// searchText:""}` returns `{total, jobPostings:[...]}`, no auth needed — `tenant` is the host's
+// first label. `limit` caps at 20 per page (21+ returns HTTP 400); `total` is only meaningful on
+// the offset-0 page (later pages return `total: 0` on some tenants — a real, reproducible quirk,
+// not a bug in this code), so it's captured once and reused as the pagination stop condition.
+async function fetchWorkdayDetail(host, tenant, site, externalPath) {
+  try {
+    const { status, body } = await getJson(`https://${host}/wday/cxs/${tenant}/${site}${externalPath}`);
+    return status === 200 ? body : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchWorkday(slug) {
+  const slashAt = slug.indexOf('/');
+  const host = slashAt === -1 ? slug : slug.slice(0, slashAt);
+  const site = slashAt === -1 ? '' : slug.slice(slashAt + 1);
+  if (!site || !/\.myworkdayjobs\.com$/i.test(host)) return { jobs: [], notFound: true };
+  const tenant = host.split('.')[0];
+  const pageSize = 20;
+  const rawCap = Math.min(Math.max(maxJobsPerCompany * 3, pageSize), 2000);
+  const raw = [];
+  let offset = 0;
+  let total = null;
+  let notFoundFlag = false;
+  while (raw.length < rawCap && timeBudgetOk()) {
+    const res = await gotScraping({
+      url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`, method: 'POST',
+      json: { appliedFacets: {}, limit: pageSize, offset, searchText: '' },
+      timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(),
+      throwHttpErrors: false, responseType: 'json',
+    });
+    if (res.statusCode !== 200) { if (offset === 0) notFoundFlag = true; break; }
+    if (offset === 0) total = res.body?.total ?? null;
+    const postings = res.body?.jobPostings ?? [];
+    if (!postings.length) break;
+    raw.push(...postings);
+    offset += pageSize;
+    if (total != null && total > 0 && offset >= total) break;
+  }
+  if (notFoundFlag) return { jobs: [], notFound: true };
+
+  // List-level fields only (title, locationsText, a relative "Posted N Days Ago" string, and the
+  // requisition id in bulletFields) — no department, employment type, exact date or description
+  // without a per-job detail call, same tradeoff `fetchSmartRecruiters` already makes above.
+  const mapped = raw.map((p) => ({
+    company: tenant, atsSource: 'workday', jobId: (p.bulletFields ?? [])[0] || p.externalPath || null,
+    title: p.title?.trim() ?? null,
+    department: null, team: null, employmentType: null, workplaceType: null,
+    isRemote: /remote/i.test(p.locationsText ?? ''),
+    location: p.locationsText ?? null, secondaryLocations: [],
+    country: null, region: null, city: null,
+    salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+    publishedAt: null, updatedAt: null,
+    jobUrl: `https://${host}/${site}${p.externalPath}`, applyUrl: `https://${host}/${site}${p.externalPath}`,
+    descriptionHtml: null, descriptionText: null,
+    _externalPath: p.externalPath,
+  }));
+
+  const kept = [];
+  for (const job of mapped) {
+    if (!passesFilters(job)) continue;
+    kept.push(job);
+    if (kept.length >= maxJobsPerCompany) break;
+  }
+  if (includeDescriptions) {
+    for (const job of kept) {
+      if (!timeBudgetOk()) break;
+      const detail = await fetchWorkdayDetail(host, tenant, site, job._externalPath);
+      const info = detail?.jobPostingInfo;
+      if (info) {
+        job.descriptionHtml = info.jobDescription ?? null;
+        job.descriptionText = textOf(info.jobDescription);
+        job.employmentType = info.timeType ?? null;
+        job.location = info.jobRequisitionLocation?.descriptor ?? info.location ?? job.location;
+        job.country = info.country?.descriptor ?? null;
+        job.publishedAt = info.startDate ? new Date(info.startDate).toISOString() : null;
+        job.jobUrl = info.externalUrl ?? job.jobUrl;
+        job.applyUrl = info.externalUrl ?? job.applyUrl;
+        // Workday has no dedicated "department" field in the public postings API; the hiring
+        // organization name (e.g. "131 DEPARTMENT OF CORRECTIONS") is the closest real substitute
+        // and matches what boards actually render as the owning org — verified live, cycle 262.
+        job.department = detail?.hiringOrganization?.name ?? null;
+      }
+    }
+  }
+  kept.forEach((j) => { delete j._externalPath; });
+  return { jobs: kept };
+}
+
 const FETCHERS = {
   greenhouse: fetchGreenhouse, ashby: fetchAshby, lever: fetchLever, recruitee: fetchRecruitee,
-  workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters,
+  workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters, workday: fetchWorkday,
 };
 
 function passesFilters(job) {
