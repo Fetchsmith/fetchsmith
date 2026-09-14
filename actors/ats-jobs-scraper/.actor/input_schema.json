@@ -6,7 +6,7 @@
     "companies": {
       "title": "Companies",
       "type": "array",
-      "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive).",
+      "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive); Workday uses \"<host>/<site>\" from the board's own URL, e.g. \"okgov.wd1.myworkdayjobs.com/okgovjobs\".",
       "editor": "json",
       "default": [
         { "ats": "greenhouse", "slug": "airbnb" },
@@ -14,7 +14,8 @@
         { "ats": "lever", "slug": "leverdemo" },
         { "ats": "recruitee", "slug": "vandebron" },
         { "ats": "workable", "slug": "getresponse" },
-        { "ats": "smartrecruiters", "slug": "ElasticBandCompany" }
+        { "ats": "smartrecruiters", "slug": "ElasticBandCompany" },
+        { "ats": "workday", "slug": "okgov.wd1.myworkdayjobs.com/okgovjobs" }
       ]
     },
     "titleKeyword": {
@@ -50,7 +51,7 @@
     "maxJobsPerCompany": {
       "title": "Max jobs per company",
       "type": "integer",
-      "description": "Stop pulling from a single company's board after this many postings (before filters).",
+      "description": "Cap on how many postings that pass your filters are kept per company (the filters are applied first, then this cap).",
       "default": 500,
       "minimum": 1,
       "maximum": 5000

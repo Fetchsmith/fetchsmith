@@ -1,11 +1,10 @@
 {
- "ts": 1789330195,
+ "ts": 1789407082,
  "results": {
-  "substack-scraper": {
-   "status": "SUCCEEDED",
-   "secs": 87,
-   "items": 50,
-   "pass": true
+  "--help": {
+   "status": "START_FAILED",
+   "code": 404,
+   "pass": false
   }
  }
 }

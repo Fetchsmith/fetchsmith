@@ -145,4 +145,4 @@ Engineering write-ups behind this Actor:
 - [The US publishes every federal award as JSON — but you can't ask for a contract and a grant in the same request](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — why each award type has its own field mapping, and how this Actor handles all six in one run.
 - [Grants.gov's search API never returns an error — a typo in your filter just silently returns zero results](https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api) — the pre-award side: opportunities you can still bid on, rather than awards already made.
 
-More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 17 HTTP-only Actors for public data sources, no browser required.
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.

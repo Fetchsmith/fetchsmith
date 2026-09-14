@@ -1,21 +1,21 @@
 {
- "ts": 1789365601,
+ "ts": 1789409228,
  "date": "2026-09-14",
  "apify": {
   "google-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
-   "runs": 372,
-   "ext_ok30d": 4,
+   "runs30d": 6,
+   "runs": 416,
+   "ext_ok30d": 5,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 1,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -25,16 +25,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
-   "runs": 378,
-   "ext_ok30d": 5,
+   "runs30d": 6,
+   "runs": 422,
+   "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 0,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -44,16 +44,16 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 13,
-   "runs": 375,
-   "ext_ok30d": 13,
+   "runs30d": 14,
+   "runs": 420,
+   "ext_ok30d": 14,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 13,
+    "SUCCEEDED": 14,
     "TIMED-OUT": 0,
-    "TOTAL": 13
+    "TOTAL": 14
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -63,16 +63,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
-   "runs": 359,
-   "ext_ok30d": 5,
+   "runs30d": 6,
+   "runs": 404,
+   "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 0,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -82,8 +82,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 6,
+   "runs": 401,
+   "ext_ok30d": 6,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 6,
+    "TIMED-OUT": 0,
+    "TOTAL": 6
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "substack-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 5,
-   "runs": 358,
+   "runs": 404,
    "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -97,39 +116,20 @@
    "reviews": 0,
    "rating": 0
   },
-  "substack-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 4,
-   "runs": 361,
-   "ext_ok30d": 4,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 4,
-    "TIMED-OUT": 0,
-    "TOTAL": 4
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 360,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 403,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -139,16 +139,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 347,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 393,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -158,16 +158,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 344,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 388,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -177,8 +177,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 5,
+   "runs": 388,
+   "ext_ok30d": 5,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 5,
+    "TIMED-OUT": 0,
+    "TOTAL": 5
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "uk-find-a-tender-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 4,
-   "runs": 343,
+   "runs": 341,
    "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -192,39 +211,20 @@
    "reviews": 0,
    "rating": 0
   },
-  "uk-find-a-tender-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 3,
-   "runs": 298,
-   "ext_ok30d": 3,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 3,
-    "TIMED-OUT": 0,
-    "TOTAL": 3
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 3,
-   "runs": 298,
-   "ext_ok30d": 3,
+   "runs30d": 4,
+   "runs": 341,
+   "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 3,
+    "SUCCEEDED": 4,
     "TIMED-OUT": 0,
-    "TOTAL": 3
+    "TOTAL": 4
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -234,16 +234,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 3,
-   "runs": 285,
-   "ext_ok30d": 3,
+   "runs30d": 4,
+   "runs": 329,
+   "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 3,
+    "SUCCEEDED": 4,
     "TIMED-OUT": 0,
-    "TOTAL": 3
+    "TOTAL": 4
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -253,16 +253,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 3,
-   "runs": 275,
-   "ext_ok30d": 3,
+   "runs30d": 4,
+   "runs": 319,
+   "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 3,
+    "SUCCEEDED": 4,
     "TIMED-OUT": 0,
-    "TOTAL": 3
+    "TOTAL": 4
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -272,8 +272,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 4,
+   "runs": 308,
+   "ext_ok30d": 4,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 4,
+    "TIMED-OUT": 0,
+    "TOTAL": 4
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "grants-gov-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 3,
-   "runs": 264,
+   "runs": 256,
    "ext_ok30d": 3,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -287,39 +306,20 @@
    "reviews": 0,
    "rating": 0
   },
-  "grants-gov-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 2,
-   "runs": 210,
-   "ext_ok30d": 2,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 2,
-    "TIMED-OUT": 0,
-    "TOTAL": 2
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "nih-reporter-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 2,
-   "runs": 205,
-   "ext_ok30d": 2,
+   "runs30d": 3,
+   "runs": 248,
+   "ext_ok30d": 3,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 2,
+    "SUCCEEDED": 3,
     "TIMED-OUT": 0,
-    "TOTAL": 2
+    "TOTAL": 3
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -329,8 +329,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 2,
+   "runs": 165,
+   "ext_ok30d": 2,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 2,
+    "TIMED-OUT": 0,
+    "TOTAL": 2
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "fec-campaign-finance-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 1,
-   "runs": 119,
+   "runs": 42,
    "ext_ok30d": 1,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -347,10 +366,10 @@
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 18,
-  "users": 35,
-  "runs30d": 73,
-  "ext_ok30d": 72,
+  "public_actors": 19,
+  "users": 37,
+  "runs30d": 92,
+  "ext_ok30d": 91,
   "ext_bad30d": 1,
   "bookmarks": 0,
   "reviews": 0,

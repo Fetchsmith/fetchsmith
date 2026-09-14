@@ -12,6 +12,23 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 - **`minAwardAmount`/`maxAwardAmount` filter on award ceiling** — forces `enrich` on since the amount only exists in the per-opportunity detail record. Grants.gov returns award amounts as strings, and roughly a third to half of posted opportunities have no ceiling set at all (the API spells this as the literal string `"none"`, not null or absent) — this Actor normalizes both into real numbers or `null`, and the amount filter correctly drops the `"none"` rows rather than treating them as zero.
 - Pay per result: charged only for rows actually returned.
 
+## Use cases
+- **Grant-seeking pipelines** — pull every open opportunity a nonprofit, university or small business is eligible for (`eligibilities` + `fundingCategories`), already joined with award ceiling/floor so you can triage by money without a second lookup.
+- **Daily/weekly funding alerts** — run `postedWithinDays: 1` on a cron and only pay for the handful of opportunities posted since yesterday, instead of re-scanning the whole index.
+- **Award-size screening** — `minAwardAmount: 500000` to surface only large awards, or `maxAwardAmount` to find the small ones a single PI can realistically manage.
+- **Grants-landscape research** — filter by `agencies` (parent codes expand to every sub-agency) and `postedFrom`/`postedTo` to reconstruct a fixed historical window, e.g. everything a department posted last quarter.
+- **Enriching an existing list** — set `oppNum` to look up one opportunity by its exact number and get the full record back, even if it is closed or archived.
+
+### Example input
+```json
+{
+  "keyword": "cancer research",
+  "oppStatuses": ["posted"],
+  "minAwardAmount": 500000,
+  "maxResults": 3
+}
+```
+
 ## Input
 | Field | Type | Description |
 |---|---|---|
@@ -38,10 +55,67 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 ## Output (enriched fields, when `enrich: true`)
 `agencyName`, `agencyCode`, `topAgencyName`, `topAgencyCode`, `opportunityCategory`, `postingDate`, `responseDate`, `archiveDate`, `costSharing`, `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, `synopsisText`, `cfdas`, `fundingDescLinkUrl`, `synopsisDocumentURLs`, `assistURL`, `lastUpdatedDate`, `modComments`
 
+### Sample output (one real row from the example input above)
+```json
+{
+  "id": "357002",
+  "opportunityNumber": "PAR-24-311",
+  "title": "Molecular Imaging of Inflammation in Cancer (R01 Clinical Trial Not Allowed)",
+  "agencyCode": "HHS-NIH11",
+  "agency": "National Institutes of Health",
+  "openDate": "11/06/2024",
+  "closeDate": "01/07/2028",
+  "oppStatus": "posted",
+  "docType": "synopsis",
+  "cfdaList": ["93.394", "93.395", "93.396"],
+  "url": "https://www.grants.gov/search-results-detail/357002",
+  "topAgencyName": "Department of Health and Human Services",
+  "topAgencyCode": "HHS",
+  "opportunityCategory": "Discretionary",
+  "postingDate": "Nov 06, 2024 12:00:00 AM EST",
+  "responseDate": "Jan 07, 2028 12:00:00 AM EST",
+  "archiveDate": "Feb 12, 2028 12:00:00 AM EST",
+  "costSharing": false,
+  "awardCeiling": 500000,
+  "awardFloor": null,
+  "applicantTypes": ["State governments", "Small businesses", "Independent school districts", "..."],
+  "fundingInstruments": ["Grant"],
+  "fundingActivityCategories": ["Education", "Health"],
+  "synopsisText": "The purpose of this Notice of Funding Opportunity (NOFO) is to invite research grant applications (R01) for the development and use of ...",
+  "cfdas": [{ "number": "93.394", "title": "Cancer Detection and Diagnosis Research" }],
+  "fundingDescLinkUrl": "http://grants.nih.gov/grants/guide/pa-files/PAR-24-311.html",
+  "lastUpdatedDate": "Nov 06, 2024 10:10:59 AM EST"
+}
+```
+Note `awardFloor: null` alongside a real `awardCeiling` — agencies often set only one of the two. Dates come back in Grants.gov's own two formats: `MM/DD/YYYY` on the thin search fields, and a long `MMM DD, YYYY hh:mm:ss AM/PM TZ` string on the enriched detail fields. Both are passed through as the API returns them.
+
 **Privacy note:** Grants.gov's detail API also carries an `agencyContactName`/`agencyContactEmail`/`agencyContactPhone` block and a `synopsis.agencyName`/`agencyPhone`/`agencyAddressDesc` block that are agency-entered free text — sometimes a department name, sometimes a named individual program officer with a direct phone and email. Because the two cases can't be told apart per row, none of those fields are ever emitted. Organisational contact info (`agencyName`/`agencyCode` from the structured agency lookup) is included instead.
 
 ## Pricing
 `result` — $0.0015 per returned item, no start fee. Meaningfully cheaper than the largest pure-Grants.gov listing on Apify ($0.009/result) and the only in-niche listing to charge no Actor-start fee at all.
+
+## FAQ
+
+**Do I need a Grants.gov account or API key?**
+No. This uses Grants.gov's own public `search2`/`fetchOpportunity` endpoints — no key, no login, no proxy.
+
+**Does `maxResults` count rows before or after the filters?**
+After. It caps the number of opportunities actually returned to you, which is also the number you are charged for. Verified live: `keyword: "cancer research"`, `oppStatuses: ["posted"]`, `minAwardAmount: 500000`, `maxResults: 3` returned exactly 3 rows, all with an award ceiling of $500,000 or more — not 3 scanned rows of which some survived.
+
+**Why does an opportunity have `awardCeiling: null`?**
+Because the agency never set one. Grants.gov spells this as the literal string `"none"` in its detail record; this Actor normalizes it to `null` rather than passing through an inconsistently-typed string or pretending it is `0`. Measured live at roughly a third of posted opportunities, so it is a common case. Note that `minAwardAmount`/`maxAwardAmount` therefore *exclude* these rows — there is no ceiling to compare against.
+
+**I filtered by `"USDA"` — do I get the sub-agencies too?**
+Yes. Grants.gov's own API does not do this: a parent code matches nothing but itself, so a plain `"USDA"` search on the raw API returns almost nothing. This Actor expands the parent into its real sub-agency codes first. Verified live: `agencies: ["USDA"]` returns rows with `agencyCode` values like `USDA-NIFA` and `USDA-APHIS`. An unrecognised code is dropped with a named warning in the log instead of silently returning zero rows.
+
+**Can I look up a closed or archived opportunity by its number?**
+Yes, and you do not need to change `oppStatuses` to do it. When `oppNum` is set, this Actor searches all four statuses and ignores every other filter. Verified live: `oppNum: "USDA-NIFA-BFR-002918"` with the default statuses (forecasted + posted) and a deliberately unrelated `keyword: "quantum physics"` still returned that one archived opportunity.
+
+**Why did my run return zero results?**
+Every filter is ANDed, and Grants.gov's API never reports a bad value — a typo'd code returns "success" with zero hits. Most common causes, in order: `oppStatuses` defaults to forecasted + posted, so history needs `closed`/`archived` added; a narrow keyword plus agency plus eligibility often genuinely has no matches; a small `postedWithinDays`/`postedFrom` window is a hard filter; and the award-amount filters drop every row with no ceiling set. The run log names which one applied.
+
+**Should I turn `enrich` off?**
+Only for fast, cheap sweeps where the thin fields (id, number, title, agency, dates, status, CFDA list, plus a URL this Actor builds for you) are enough. Everything a funding decision actually turns on — award amounts, eligibility text, funding instrument/category, the full synopsis — exists only in the detail record, which is why `enrich` defaults to on. It is forced on when you set an award-amount filter.
 
 ## Notes
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
@@ -53,4 +127,4 @@ Only public data from Grants.gov's official API is collected. Issues or feature 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper
 
-More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 17 HTTP-only Actors for public data sources, no browser required.
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.

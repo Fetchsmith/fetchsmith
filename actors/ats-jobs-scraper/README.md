@@ -9,6 +9,13 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 - Companies that have migrated off an ATS (very common for Lever) are skipped with a warning, not a failed run.
 - Pay per result: you are charged only for job postings actually returned. **No start fee.**
 
+## Use cases
+- **Job-board aggregation** — pull live openings from every company you track across 7 different ATSes into one feed, instead of maintaining 7 separate scrapers.
+- **Recruiting/sourcing intelligence** — spot when a target company opens a new role in a specific team or location, with `department`/`team`/`location` already normalized so you can filter without per-ATS cleanup.
+- **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever and Recruitee postings that publish pay ranges.
+- **Remote-work tracking** — `remoteOnly` plus the normalized `workplaceType`/`isRemote` fields build a remote-jobs feed across every ATS at once, not just the ones with a "remote" search filter.
+- **Hiring-trend research** — `postedAfter` plus `publishedAt` let you track how fast a company (or a whole market segment) is opening new roles over time.
+
 ## Input
 | Field | Type | Description |
 |---|---|---|
@@ -18,7 +25,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | ISO date; only keep postings published on/after it. |
 | `includeDescriptions` | boolean | Include full HTML + plain-text description. Default `true`. |
-| `maxJobsPerCompany` | integer | Cap postings pulled per company before filters. Default `500`. |
+| `maxJobsPerCompany` | integer | Cap on how many postings that pass your filters are kept per company — filters are applied first, then this cap. Default `500`. |
 | `maxResults` | integer | Cap total postings returned across all companies. Default `2000`. |
 | `proxyConfiguration` | object | Apify Proxy config. Default: Apify Proxy on. |
 
@@ -44,6 +51,19 @@ Pay is returned when the ATS itself publishes it, and left `null` otherwise rath
 
 ## Pricing
 `job` — $0.0015 per job posting returned. No start fee.
+
+## FAQ
+**How do `titleKeyword`, `locationKeyword`, `remoteOnly` and `postedAfter` combine?** All of them must pass (AND) — set only the ones you need, leave the rest empty/`false`.
+
+**Does `maxJobsPerCompany` cap before or after my filters run?** After. Filters are applied first, then up to `maxJobsPerCompany` of the *matching* postings are kept per company — so `{"titleKeyword": "engineer", "maxJobsPerCompany": 3}` returns 3 postings that actually contain "engineer", not the first 3 raw postings off the board (verified live: a real Greenhouse board run with those exact inputs returned 3/3 titles containing "Engineer"/"Engineering").
+
+**Will `postedAfter` filter out a posting that has no date?** No — if an ATS doesn't return a `publishedAt` for a posting (this happens on Workday when `includeDescriptions` is `false`, since the date only comes from the per-job detail call), that posting is kept regardless of `postedAfter`. Set `includeDescriptions: true` for Workday companies if you need the date filter to actually apply to them.
+
+**Which ATSes expose salary?** Only Ashby, Lever and Recruitee publish a structured pay range today — Greenhouse, Workable, SmartRecruiters and Workday don't carry a compensation field at all, so those come back `null` rather than guessed.
+
+**A company I need isn't on any of these 7 ATSes — can it still be scraped?** Only if it uses one of the 7 (or a client-side board no ATS API backs, which this Actor can't reach). Message support@fetchsmith.com with the company's careers URL if you're unsure which ATS it runs on.
+
+**Why did a company I listed return zero postings?** Either it's genuinely down to 0 open roles, or it has migrated off that ATS — the run logs (not a failure) list any company that 404s so you can find its new slug/ATS instead of getting a silently empty result.
 
 ## Notes
 Only public, no-login job-board data is collected — the same postings anyone can see on the company's own careers page. Job descriptions occasionally include a named recruiter contact the company itself chose to publish; this Actor does not extract or highlight individual contact data as a feature. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
