@@ -59,6 +59,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Substack, Apple Podcasts, Google News and Hacker News — four free APIs where the first response isn't the finished product](https://fetchsmith.com/blog/public-content-apis-hidden-second-step)
 - [Six ATS job-board JSON APIs, six different ideas of what a job posting is](https://fetchsmith.com/blog/ats-job-board-json-apis-six-shapes)
 - [The FEC publishes campaign finance as key-free JSON — and its three rate limits contradict each other](https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key)
+- [The App Store's per-star ratings breakdown isn't in any of Apple's APIs — it's in the page's JSON blob](https://fetchsmith.com/blog/app-store-per-star-ratings-breakdown)
 
 ## Layout
 
