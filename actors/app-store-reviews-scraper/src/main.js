@@ -25,6 +25,9 @@ const includeInfo = input.includeAppInfo !== false;
 const countryFallback = input.countryFallback === true;
 const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
+if (minRating != null && maxRating != null && minRating > maxRating) {
+  throw new Error(`"minRating" (${minRating}) is greater than "maxRating" (${maxRating}) — no review can ever match. Swap them.`);
+}
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
 let reviewsAfterDate = null;
 if (input.reviewsAfter) {

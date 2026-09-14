@@ -32,6 +32,9 @@ const includeAppDetails = input.includeAppDetails !== false;
 const maxResults = Math.min(Number(input.maxResults ?? 500), 20000);
 const minScore = input.minScore != null ? Number(input.minScore) : null;
 const maxScore = input.maxScore != null ? Number(input.maxScore) : null;
+if (minScore != null && maxScore != null && minScore > maxScore) {
+  throw new Error(`"minScore" (${minScore}) is greater than "maxScore" (${maxScore}) — no review can ever match. Swap them.`);
+}
 const keyword = input.keyword ? String(input.keyword).toLowerCase() : null;
 const keywords = (input.keywords ?? []).map((s) => String(s).trim().toLowerCase()).filter(Boolean);
 const ratingFilter = (input.ratingFilter ?? [])

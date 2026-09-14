@@ -85,6 +85,9 @@ const states = (input.placeOfPerformanceStates ?? []).map((s) => String(s).trim(
 const recipientStates = (input.recipientStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
+if (minAwardAmount != null && maxAwardAmount != null && minAwardAmount > maxAwardAmount) {
+  throw new Error(`"minAwardAmount" (${minAwardAmount}) is greater than "maxAwardAmount" (${maxAwardAmount}) — no award can ever match. Swap them.`);
+}
 const sortBy = Object.hasOwn(SORTS, input.sortBy) ? input.sortBy : 'awardAmount';
 const order = input.order === 'asc' ? 'asc' : 'desc';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 10000);

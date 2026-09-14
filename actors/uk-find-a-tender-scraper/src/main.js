@@ -50,6 +50,9 @@ const searchQuery = input.searchQuery ? String(input.searchQuery).toLowerCase().
 const buyerNameFilter = input.buyerName ? String(input.buyerName).toLowerCase().trim() : null;
 const minValueGbp = input.minValueGbp != null ? Number(input.minValueGbp) : null;
 const maxValueGbp = input.maxValueGbp != null ? Number(input.maxValueGbp) : null;
+if (minValueGbp != null && maxValueGbp != null && minValueGbp > maxValueGbp) {
+    throw new Error(`"minValueGbp" (${minValueGbp}) is greater than "maxValueGbp" (${maxValueGbp}) — no notice can ever match. Swap them.`);
+}
 const openOnly = input.openOnly === true;
 const includeRawOcds = input.includeRawOcds === true;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
