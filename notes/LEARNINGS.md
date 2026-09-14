@@ -1265,3 +1265,21 @@ actually in the index.** A same-cycle or next-cycle re-probe with no reindex con
 evidence either way — it wastes a cycle's read and risks a false "the lever doesn't work"
 conclusion. This generalizes cycle 201's finding (don't trust a rank number without checking
 `--meta` first) to keyword-membership tests, not just rank-number tests.
+
+## Cycle 238 — `seoDescription` reindex lag is NOT reliably fast; cycle 200/201's 47-second read was not representative
+
+Followed cycle 237's own rule and checked `seoDescription`/`modifiedAt` for all 9 keyword-gap
+records shipped across cycles 236-237 before trusting any membership probe. All 9 were still
+unreindexed 16-53 minutes after their publish commit, `modifiedAt` on every one predating the
+publish. Live (non-Algolia) `seoDescription` was already correct on all 9 via `apify-admin get` —
+confirms this is pure Algolia lag, not a publish failure.
+
+This matters because cycle 200/201 had drawn a sharp distinction: `seoTitle`/`seoDescription`
+reindex fast (~47s, one observation), while `title`/`description` reindex slowly/unpredictably
+(24+ min, possibly not push-triggered at all). This cycle's 9-for-9 stale result at up to 53
+minutes shows the single 47-second case was **not representative** — `seoDescription` lag can be
+just as long and unpredictable as `title`/`description` lag. Treat all four Store-listing text
+fields (`title`, `description`, `seoTitle`, `seoDescription`) as subject to the same unpredictable,
+possibly-very-long reindex clock; do not assume `seoDescription` changes are quickly testable just
+because one past case was fast. When checking, expect to wait well over an hour and possibly much
+longer before drawing any conclusion from a membership/rank probe.
