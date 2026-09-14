@@ -52,12 +52,25 @@ const acceptsHealthyVolunteers = input.acceptsHealthyVolunteers === true;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
 const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
+if (lastUpdatePostedDateFrom && lastUpdatePostedDateTo && lastUpdatePostedDateFrom > lastUpdatePostedDateTo) {
+    throw new Error(
+        `"lastUpdatePostedDateFrom" (${lastUpdatePostedDateFrom}) is after "lastUpdatePostedDateTo" (${lastUpdatePostedDateTo}) — the window is empty. Swap them.`,
+    );
+}
 const FUNDER_TYPES = new Set(['NIH', 'FED', 'OTHER_GOV', 'INDUSTRY', 'NETWORK', 'INDIV', 'OTHER', 'UNKNOWN', 'AMBIG']);
 const funderTypes = cleanList(input.funderTypes, FUNDER_TYPES);
 // Verified live: AREA[MinimumAge]/AREA[MaximumAge] RANGE take "<n> Years" (or MIN/MAX for an
 // open bound) — same RANGE syntax as the date fields above, just a different unit string.
 const ageRangeFromYears = Number.isInteger(input.ageRangeFromYears) && input.ageRangeFromYears >= 0 ? input.ageRangeFromYears : null;
 const ageRangeToYears = Number.isInteger(input.ageRangeToYears) && input.ageRangeToYears >= 0 ? input.ageRangeToYears : null;
+if (ageRangeFromYears !== null && ageRangeToYears !== null && ageRangeFromYears > ageRangeToYears) {
+    // Verified live: a study's own MaximumAge must be >= its own MinimumAge, so requiring
+    // MinimumAge >= ageRangeFromYears AND MaximumAge <= ageRangeToYears with from > to is a
+    // contradiction no study can ever satisfy — confirmed empty on a real API call, not just reasoned.
+    throw new Error(
+        `"ageRangeFromYears" (${ageRangeFromYears}) is greater than "ageRangeToYears" (${ageRangeToYears}) — no study's eligibility range can ever satisfy both. Swap them.`,
+    );
+}
 // Verified live: AREA[StdAge](CHILD OR OLDER_ADULT) returns exactly the same totalCount as the
 // UI's `aggFilters=ages:child older` (119,295 on query.cond=cancer) — same filter, and the AREA
 // form composes with AND inside the existing filter.advanced string, so no extra param needed.

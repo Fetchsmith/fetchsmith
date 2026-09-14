@@ -50,8 +50,8 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `fdaRegulationViolation` | Only studies carrying an FDA regulation (FDAAA 801) violation notice — 8 registry-wide as of 2026-09-13. |
 | `sex` | `FEMALE` or `MALE` — restrict to studies whose eligibility criteria specify that sex. Leave blank for all. |
 | `acceptsHealthyVolunteers` | Only studies that accept healthy volunteers, not just patients with the condition. |
-| `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. |
-| `ageRangeFromYears` / `ageRangeToYears` | Only studies whose stated minimum/maximum eligibility age falls in this range (years), either bound optional. E.g. `ageRangeToYears: 65` excludes studies with no senior-age cap. |
+| `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. Setting `From` after `To` fails fast with an error instead of silently returning 0 rows. |
+| `ageRangeFromYears` / `ageRangeToYears` | Only studies whose stated minimum/maximum eligibility age falls in this range (years), either bound optional. E.g. `ageRangeToYears: 65` excludes studies with no senior-age cap. Setting `From` above `To` fails fast with an error instead of silently returning 0 rows. |
 | `funderTypes` | Lead sponsor organization type: `NIH`, `FED` (other US federal), `OTHER_GOV`, `INDUSTRY`, `NETWORK`, `INDIV`, `OTHER` (academic/nonprofit), `UNKNOWN`, `AMBIG`. |
 | `titleOrAcronym` | Search only the official/brief title and acronym — narrower than `searchQuery`. |
 | `outcomeMeasure` | Search only the study's stated outcome measures, e.g. "overall survival". |
