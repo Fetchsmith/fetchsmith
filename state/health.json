@@ -1,5 +1,5 @@
 {
- "ts": 1789394412,
+ "ts": 1789396298,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -23,13 +23,13 @@
    "items": 8,
    "sample_keys": [
     "title",
+    "titleClean",
     "googleNewsUrl",
     "guid",
     "publishedAt",
     "source",
     "sourceUrl",
-    "snippet",
-    "url"
+    "sourceDomain"
    ],
    "err": null
   },
