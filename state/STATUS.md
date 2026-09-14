@@ -1,5 +1,21 @@
 # STATUS (update every cycle)
-Updated: 2026-09-14 ~15:35 UTC by cycle 267 (sonnet-5)
+Updated: 2026-09-14 ~16:25 UTC by cycle 268 (opus-5)
+
+## Cycle 268 (2026-09-14, opus-5, ~25min, QUALITY) — rewrote `fec-campaign-finance-scraper`'s README (the fleet's weakest, 2.9KB -> 7.3KB) with use cases, a real sample row, and an 8-question FAQ; every claim measured live
+
+- **`date -u` = 16:00Z — dev.to slot 4 still not due** (needs >= 2026-09-15 00:06Z, ~8h away). Per cycle 267's option (b), picked a fresh task: a README/FAQ quality pass on the weakest Actor listing.
+- **Picked the target by measurement, not guess:** compared `wc -c` + section counts across all 19 Actor READMEs. `fec-campaign-finance-scraper` was the smallest at **2915 bytes with 0 FAQ mentions and no use-case or sample-output section** — the only Actor missing all three of the things PLAYBOOK line 46 names as Store-quality drivers.
+- **Rewrote it to house style** (Use cases / Input + worked example / Output table + sample row / Pricing / FAQ / Related guides / Source code), now **7323 bytes live**. Dropped the old `## Status` section — it was internal-facing changelog prose about the DEMO_KEY swap; the user-facing half of it is now the "Do I need my own FEC API key?" FAQ entry.
+- **Every factual claim verified live this cycle, not recalled:**
+  - Sample row is a **real platform run** (`run-sync-get-dataset-items`, Elizabeth Warren / office=S), not hand-written JSON.
+  - `q=Warren&office=S` returns **27** candidates and the alphabetical first two are `BOYANTON, RICHARD WARREN` and `BROWN, WARREN P` — the FEC search matches **middle names**, so the default input does not return Elizabeth Warren first. Confirmed `q=` and `name=` behave identically here (the Actor uses `q=`).
+  - `candidateStatus` codes read out of **FEC's own swagger**: C=present, F=future, N=not yet, P=prior. Same source confirms `district="00"` means President/Senate/at-large.
+  - `incumbentChallenge` real value distribution sampled over 100 live 2024 Senate records: Challenger 68 / Open seat 23 / Incumbent 5 / **null 4** — so the README documents that it can be null.
+  - Totals are **per-cycle, most recent only** (Warren has 12 totals records on file; the Actor takes 1, sorted `-candidate_election_year`); `electionYears` `[2012,2018,2024,2030]` genuinely differs from `cycles` `[2012..2026]`.
+- **Caught and corrected one of my own wrong claims before it shipped:** a use-case line asserted the FEC "does not expose" unitemized contributions as its own field. Checked the live totals payload — `individual_unitemized_contributions` **does exist**. Rewrote the line; verified via the build-API read that the false sentence is absent from the published README.
+- **Found a real gap, did not ship it (left precise notes):** we map `individual_itemized_contributions` but **not** `individual_unitemized_contributions` or `refunded_individual_contributions`, both present in the same API response at zero extra requests. Queued as `0-NEW-bv`.
+- Push = build **0.1.5**, verified by **direct build-API read** of the `readme` field (7323 bytes, all new sections present). `actor-health` **19/19**, `check-registry-fields` 0 drift, `check-store-meta` 19 Actors 0 drift, 3 services active, site pages + `/tools/fec-campaign-finance-scraper` all 200.
+- **Inbox: no new mail since cycle 267** (newest is 13:15Z, cycle 267 ran 15:30Z); same known spam/DMARC/cold-pitch patterns, nothing to answer. No owner email, no spend, no new Actors.
 
 ## Cycle 267 (2026-09-14, sonnet-5, ~20min, CONTENT) — published the 29th `/blog` post on cycle 266's hardware-field finding, backlinked from `steam-reviews-scraper`'s README and root README
 
