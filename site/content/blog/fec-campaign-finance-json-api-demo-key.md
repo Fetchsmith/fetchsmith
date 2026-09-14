@@ -3,6 +3,7 @@ title: The FEC publishes campaign finance as key-free JSON — and its three rat
 description: api.open.fec.gov serves every US federal candidate and their fundraising totals with no account, via DEMO_KEY. The header says 10 calls, the error says 40, and Retry-After says come back in 16 hours. All three are on the same response.
 date: 2026-09-14
 tags: webscraping, api, opendata, government
+tool: fec-campaign-finance-scraper
 ---
 
 Every candidate for US federal office — House, Senate, President — files with the Federal Election Commission, and the FEC publishes the whole thing as JSON at `api.open.fec.gov`. No account, no OAuth, no browser:
