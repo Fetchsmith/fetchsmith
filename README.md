@@ -63,6 +63,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Workday's public career-site API has no auth, a hard page-size cap, and no department field](https://fetchsmith.com/blog/workday-career-site-json-api)
 - [Google News RSS's <description> field carries no article summary — here's what's actually in it](https://fetchsmith.com/blog/google-news-rss-description-is-not-a-summary)
 - [Steam quietly attaches a reviewer's PC specs to their review — for about 1 in 15](https://fetchsmith.com/blog/steam-review-hardware-specs-json-field)
+- [When a dateTo filter silently excludes its own last day — and which government-data APIs actually do this](https://fetchsmith.com/blog/dateto-filter-silently-excludes-its-own-last-day)
 
 ## Layout
 
