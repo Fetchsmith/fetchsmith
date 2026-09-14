@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-news-scraper",
-  "title": "Google News Scraper – Real URLs, Any Language",
-  "description": "Search Google News by keyword, topic or publisher and get structured articles: title, publisher, date, snippet, resolved publisher URL, and optional full article body (with paragraph-scrape fallback, since most publishers omit body text from JSON-LD). Any language or country. Pay per article.",
+  "title": "Google News Scraper \u2013 Real URLs, Any Language",
+  "description": "Search Google News by keyword, topic or publisher and get structured articles: headline (raw and with the \" - Publisher\" suffix stripped), publisher name and domain, date, feed rank, resolved publisher URL, related coverage of the same story, and optional full article text. Pay per article.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

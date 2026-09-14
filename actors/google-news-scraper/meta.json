@@ -1,8 +1,37 @@
 {
-  "title": "Google News Scraper – Real URLs, Any Language",
-  "description": "Search Google News by keyword, topic or publisher and get structured articles: title, publisher, date, snippet, resolved publisher URL, and optional full article body (with paragraph-scrape fallback, since most publishers omit body text from JSON-LD). Any language or country. Pay per article.",
-  "seoTitle": "Google News Scraper – Real URLs + Full Article Text",
-  "seoDescription": "Scrape Google News, the news aggregator, or any custom RSS feed into JSON/CSV: title, publisher, date, snippet, decoded URL, full article body. Any language/country, HTTP-only, pay per article.",
-  "categories": ["NEWS", "AI", "MARKETING"],
-  "events": { "result": { "eventTitle": "Article", "eventDescription": "One news article returned to the dataset.", "eventTieredPricingUsd": { "FREE": { "tieredEventPriceUsd": 0.002 }, "BRONZE": { "tieredEventPriceUsd": 0.0018 }, "SILVER": { "tieredEventPriceUsd": 0.0015 }, "GOLD": { "tieredEventPriceUsd": 0.001 }, "PLATINUM": { "tieredEventPriceUsd": 0.001 }, "DIAMOND": { "tieredEventPriceUsd": 0.001 } } } }
+  "title": "Google News Scraper \u2013 Real URLs, Any Language",
+  "description": "Search Google News by keyword, topic or publisher and get structured articles: headline (raw and with the \" - Publisher\" suffix stripped), publisher name and domain, date, feed rank, resolved publisher URL, related coverage of the same story, and optional full article text. Pay per article.",
+  "seoTitle": "Google News Scraper \u2013 Real URLs + Full Article Text",
+  "seoDescription": "Scrape Google News or any RSS feed to JSON/CSV: clean headline, publisher name + domain, date, feed rank, decoded URL, related coverage, full article text.",
+  "categories": [
+    "NEWS",
+    "AI",
+    "MARKETING"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Article",
+      "eventDescription": "One news article returned to the dataset.",
+      "eventTieredPricingUsd": {
+        "FREE": {
+          "tieredEventPriceUsd": 0.002
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.0018
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.0015
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.001
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.001
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.001
+        }
+      }
+    }
+  }
 }

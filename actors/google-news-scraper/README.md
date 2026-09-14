@@ -1,6 +1,6 @@
 # Google News Scraper
 
-Search Google News and get clean, structured articles as JSON, CSV or Excel: title, publisher, publish time, snippet and the **real publisher URL** (Google's encoded redirect links are resolved for you). Optionally extract the **full article text** — body, author, image, keywords and section — from the publisher's page. Works for any language and country. Pay only per article returned.
+Search Google News and get clean, structured articles as JSON, CSV or Excel: headline (raw *and* with the ` - Publisher` suffix stripped), publisher name and domain, publish time, feed rank and the **real publisher URL** (Google's encoded redirect links are resolved for you). Optionally extract the **full article text** — body, author, image, keywords and section — from the publisher's page. Works for any language and country. Pay only per article returned.
 
 ## Use cases
 - Media monitoring and brand mentions for any keyword, in any market
@@ -31,18 +31,32 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: tit
 ```json
 {
   "title": "Apify raises new funding to scale web data platform - TechCrunch",
+  "titleClean": "Apify raises new funding to scale web data platform",
   "url": "https://techcrunch.com/2026/09/02/apify-funding/",
   "googleNewsUrl": "https://news.google.com/rss/articles/CBMi...",
   "source": "TechCrunch",
   "sourceUrl": "https://techcrunch.com",
+  "sourceDomain": "techcrunch.com",
   "publishedAt": "2026-09-02T07:00:00.000Z",
   "snippet": "Apify raises new funding to scale web data platform",
+  "relatedArticles": [
+    { "title": "Apify closes funding round", "source": "Reuters", "googleNewsUrl": "https://news.google.com/rss/articles/CBMi..." }
+  ],
+  "position": 1,
   "query": "apify",
   "topic": null,
   "language": "en-US",
   "country": "US"
 }
 ```
+
+A few of these are worth knowing about:
+
+- **`titleClean`** — Google News always appends ` - Publisher` to the headline. `title` keeps it exactly as Google sends it; `titleClean` is the same headline with that suffix removed, which is what you usually want in a dashboard or digest.
+- **`sourceDomain`** — the publisher's bare domain (`www.` stripped), so you can group or filter by outlet without parsing URLs yourself.
+- **`position`** — the article's 1-based rank inside its own feed, so Google's relevance/recency ordering survives export and re-sorting.
+- **`relatedArticles`** — when Google groups several outlets covering the same story, the other outlets land here with their own title, source and Google News URL. Costs no extra requests. Most items have an empty array; expect it on roughly 1% of results for a typical search.
+- **`snippet`** — kept for backward compatibility, but be aware Google News RSS ships **no real article summary**: this field always repeats the headline. For an actual summary, turn on `fetchArticleBody` and read `articleDescription`.
 
 With `fetchArticleBody: true` each item also carries:
 

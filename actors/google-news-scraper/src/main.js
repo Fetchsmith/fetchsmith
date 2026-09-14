@@ -93,20 +93,45 @@ try {
 } catch (e) { log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`); }
 const http = async (url, opts = {}) => gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, headers: { 'accept-language': hl }, proxyUrl: await proxyUrlFor(), ...opts });
 
+// Google News RSS titles always arrive as "Headline - Publisher" (verified live on 204/204 items
+// across two search feeds, cycle 264), which is noise once `source` already carries the publisher.
+const stripSourceSuffix = (title, source) => (source && title.endsWith(` - ${source}`) ? title.slice(0, -(source.length + 3)).trim() : null);
+const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return null; } };
+
 function parseRss(xml) {
   const $ = cheerio.load(xml, { xml: true });
   return $('item').map((_, el) => {
     const $el = $(el);
     const descHtml = $el.find('description').text();
     const $d = cheerio.load(descHtml || '');
+    const title = $el.find('title').text().trim();
+    const source = $el.find('source').text().trim() || null;
+    const sourceUrl = $el.find('source').attr('url') || null;
+    // The <description> is not a summary: it is either a single <a> holding the headline again, or
+    // an <ol> of the same story as covered by several publishers, each <a> paired with a grey
+    // <font> naming that publisher. Entries after the first are therefore genuinely new data.
+    const $links = $d('a');
+    const $fonts = $d('font');
+    const related = $links.slice(1).map((i, a) => ({
+      title: $d(a).text().trim() || null,
+      source: $fonts.eq(i + 1).text().trim() || null,
+      googleNewsUrl: $d(a).attr('href') || null,
+    })).get().filter((r) => r.title);
     return {
-      title: $el.find('title').text().trim(),
+      title,
+      // Google's own clean headline, with the " - Publisher" suffix removed.
+      titleClean: stripSourceSuffix(title, source) || $links.first().text().trim() || title,
       googleNewsUrl: $el.find('link').text().trim(),
       guid: $el.find('guid').text().trim(),
       publishedAt: new Date($el.find('pubDate').text().trim()).toISOString(),
-      source: $el.find('source').text().trim() || null,
-      sourceUrl: $el.find('source').attr('url') || null,
-      snippet: $d('a').first().text().trim() || null,
+      source,
+      sourceUrl,
+      sourceDomain: hostOf(sourceUrl),
+      // Kept for backward compatibility with existing customer pipelines, but Google News RSS ships
+      // no real article summary — this always mirrors the headline. Turn on "Extract full article
+      // text" and use `articleDescription` for an actual summary.
+      snippet: $links.first().text().trim() || null,
+      relatedArticles: related,
     };
   }).get();
 }
@@ -179,7 +204,7 @@ for (const feed of feeds) {
   if (!items.length) { emptyFeeds.push(feed.query || feed.topic || feed.url); continue; }
   const pushedBefore = pushed;
   let allDuped = true;
-  for (const it of items) {
+  for (const [idx, it] of items.entries()) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     if (seen.has(it.guid)) continue; seen.add(it.guid);
     allDuped = false;
@@ -189,7 +214,9 @@ for (const feed of feeds) {
       article = url ? await fetchArticle(url) : { articleFetchStatus: 'no-url' };
       if (article.articleFetchStatus === 'ok') bodiesOk += 1; else bodiesFailed += 1;
     }
-    keepGoing = await pushResult({ ...it, url, ...article, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
+    // Rank as Google ordered it within this feed (1-based), so relevance/recency order survives
+    // into the dataset even after export or sorting.
+    keepGoing = await pushResult({ ...it, url, ...article, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }
   if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.topic || feed.url);

@@ -11,6 +11,14 @@
         "title": "Title",
         "example": "EDPB web scraping guidelines for AI: Making the impossible possible? - Reed Smith LLP"
       },
+      "titleClean": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "TitleClean",
+        "example": "EDPB web scraping guidelines for AI: Making the impossible possible?"
+      },
       "googleNewsUrl": {
         "type": [
           "string",
@@ -51,6 +59,14 @@
         "title": "SourceUrl",
         "example": "https://www.reedsmith.com"
       },
+      "sourceDomain": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SourceDomain",
+        "example": "reedsmith.com"
+      },
       "snippet": {
         "type": [
           "string",
@@ -59,6 +75,11 @@
         "title": "Snippet",
         "example": "EDPB web scraping guidelines for AI: Making the impossible possible?"
       },
+      "relatedArticles": {
+        "type": "array",
+        "title": "RelatedArticles",
+        "description": "Other publishers covering the same story, when Google groups them (title, source, googleNewsUrl). Empty for most items."
+      },
       "url": {
         "type": [
           "string",
@@ -66,6 +87,14 @@
         ],
         "title": "Url",
         "example": "https://www.reedsmith.com/our-insights/blogs/technology-law-dispatch/102nbqu/edpb-web-scraping-guidelines-for-ai-making-"
+      },
+      "position": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Position",
+        "example": 1
       },
       "query": {
         "type": [
@@ -123,13 +152,16 @@
       "transformation": {
         "fields": [
           "title",
+          "titleClean",
           "googleNewsUrl",
           "guid",
           "publishedAt",
           "source",
           "sourceUrl",
+          "sourceDomain",
           "snippet",
           "url",
+          "position",
           "query",
           "topic",
           "feedUrl"
@@ -140,6 +172,10 @@
         "properties": {
           "title": {
             "label": "Title",
+            "format": "text"
+          },
+          "titleClean": {
+            "label": "TitleClean",
             "format": "text"
           },
           "googleNewsUrl": {
@@ -162,6 +198,10 @@
             "label": "SourceUrl",
             "format": "link"
           },
+          "sourceDomain": {
+            "label": "SourceDomain",
+            "format": "text"
+          },
           "snippet": {
             "label": "Snippet",
             "format": "text"
@@ -169,6 +209,10 @@
           "url": {
             "label": "Url",
             "format": "link"
+          },
+          "position": {
+            "label": "Position",
+            "format": "text"
           },
           "query": {
             "label": "Query",
