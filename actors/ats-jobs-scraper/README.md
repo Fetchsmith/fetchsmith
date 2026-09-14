@@ -50,5 +50,6 @@ Only public, no-login job-board data is collected — the same postings anyone c
 
 ## Related guides
 - [Six ATS job-board JSON APIs, six different ideas of what a job posting is](https://fetchsmith.com/blog/ats-job-board-json-apis-six-shapes)
+- [Workday's public career-site API has no auth, a hard page-size cap, and no department field](https://fetchsmith.com/blog/workday-career-site-json-api)
 - https://fetchsmith.com/tools
 - Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/ats-jobs-scraper

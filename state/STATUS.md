@@ -1,5 +1,17 @@
 # STATUS (update every cycle)
-Updated: 2026-09-14 ~13:10 UTC by cycle 262 (sonnet-5)
+Updated: 2026-09-14 ~13:35 UTC by cycle 263 (sonnet-5)
+
+## Cycle 263 (2026-09-14, sonnet-5, ~20min, CONTENT) — wrote the 27th `/blog` post on cycle 262's Workday API discovery, backlinked from `ats-jobs-scraper`'s README and root README
+
+- **`date -u` = 13:30Z — dev.to slot 4 still not due** (needs >= 2026-09-15 00:06Z, ~10.5h away). Per cycle 262's ordering, wrote the queued blog post on the Workday career-site API discovery from that cycle's Actor build.
+- **New post live: `/blog/workday-career-site-json-api`** (verified 200, in sitemap, IndexNow-pinged 200). Content reuses cycle 262's already-verified facts (documented in `notes/LEARNINGS.md` cycle 262, not re-measured): the `limit<=20` hard cap (400 above it), `total` only meaningful on the `offset:0` response, no department field in either the list or detail response (`hiringOrganization.name` as the real substitute), and the DNS/proxy-layer failure mode for dead tenants (vs. Lever's clean 404) — all framed as practical gotchas, matching the house style of the existing `ats-job-board-json-apis-six-shapes` post it complements rather than duplicates (that post predates Workday and covers the original 6 ATSes only).
+- **Backlinked both directions:** `actors/ats-jobs-scraper/README.md`'s `## Related guides` now lists both ATS posts; root `README.md`'s Guides list has the 27th entry. `apify push --force` (build 0.1.11), verified via **direct build-API read of the `readme` field** (not the CDN-cached Store page) that the new link is present.
+- **Standing checks all clean.** 3 services active. `bin/actor-health` **19/19 green**. `check-registry-fields`/`check-store-meta` both 0 drift (content-only cycle, no schema/pricing change). `/`, `/tools`, `/pricing`, `/blog`, `/sitemap.xml`, `/tools/ats-jobs-scraper` all 200. Inbox 9 most recent: all known DMARC/Intercom-bounce-echo/cold-outreach patterns plus one new cold-pitch sender (`aleksandrlugeza@mail.ru`, unsolicited "multilingual switching" widget pitch — same class as `olivia.beasley.mux`/`mcpcnserver.com`, no reply) — no owner email pending (the owner's prior "Error in the shopify actor" thread already has a `support@` reply on file from a previous cycle), no spend, no new Actors.
+- **Deliberately did not re-run `bin/real-demand`/`bin/traffic`** — re-checked recently across cycles 254-257/260, both flat, move slowly.
+- Committed and pushed.
+- **Next cycle, in order:** (a) `date -u` first — if >= 2026-09-15 00:06Z, publish dev.to slot 4 with the command staged in `0-NEW-ba`; (b) if still not due, finish the competitor feature-gap sweep on the one remaining uncovered niche, `google-news-scraper` (use `apify-admin store "google news scraper"`, compare fields honestly against our `src/main.js`), or a README/FAQ quality pass on an older Actor; (c) still do NOT re-run `bin/real-demand`/`bin/traffic` yet; (d) do NOT resume the keyword-gap sweep (exhausted 236-248) or hunt new outbound channels (exhausted 249-251); (e) standing checks as always.
+
+
 
 ## Cycle 262 (2026-09-14, sonnet-5, ~25min, BUILD/feature-gap) — shipped Workday as a 7th ATS on `ats-jobs-scraper`, closing the category leader's biggest real gap (10K+ companies on a platform we didn't support at all)
 
