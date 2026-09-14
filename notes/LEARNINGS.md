@@ -1340,3 +1340,34 @@ resync, or is the correlation just because the sync job happens to stamp build t
 working after). **8 minutes later Algolia had not moved** — so a build is definitely not an
 *immediate* trigger. The other 13 stale Actors were deliberately left alone as controls. Next cycle
 reads the answer off the experiment; do not rebuild the controls before then or the A/B is destroyed.
+
+## Cycle 244 (2026-09-14) — the keyword-gap absence test used since cycle 236 was UNSOUND above nbHits 1000; fixed with a brand-narrowed probe (`bin/store-gap`)
+
+**The bug in our own method.** Cycle 236 wrote the rule correctly — *"if nbHits <= 1000 and we
+are not in `hits` -> KEYWORD GAP"* — and then cycles 237-243 kept applying the membership test to
+queries with nbHits of 2396, 2938, 3072, 4300, 5991, 6295, 9093… Above 1000, Algolia truncates
+the response, so "we are not in `hits`" is indistinguishable from "we rank past 1000". Every
+"ABSENT" reading on a >1000-hit field was inconclusive, not a gap.
+
+**The fix: `username` is a searchable attribute, so `fetchsmith <word>` AND-narrows to our own
+records.** nbHits collapses to single digits and membership becomes conclusive at any field size:
+
+    'inventory'             nbHits=9926   returned=1000  -> truncated, tells you nothing
+    'fetchsmith inventory'  nbHits=2      returned=2     -> conclusive: real gap
+
+Validated against controls where the bare probe *is* conclusive: `dropshipping` (747, bare p690)
+and `algolia` (405, bare p78) both read MATCHED; `upvotes` (934) reads GAP in both. The two
+probes never disagreed when the bare one was in range. Shipped as `bin/store-gap <slug> <word>…`.
+
+**Re-audited the previously shipped >1000-hit "gaps" with the correct probe. 3 of 8 were never
+gaps at all** — the index (still carrying its pre-edit `seoDescription`, per cycle 240) already
+matched them, almost certainly via the searchable `readme`: `recruitment`/clinicaltrials-scraper,
+`government`/eu-ted-tenders-scraper, `rss`/google-news-scraper. Those edits were truthful and
+harmless, just wasted. Still genuinely absent (so still real gaps pending reindex): `mobile`,
+`nofo`, `early access`, `supplier`, `recruiting`.
+
+**Corollary worth remembering: `readme` matching makes most "obvious" domain words non-gaps.**
+Of 26 candidate words probed this cycle across 13 Actors, 18 were already matched — the README
+is long and already contains the vocabulary. Real gaps are words the README genuinely never uses
+(`upvotes`, `procurement`, `deadline`, `award`, `inventory`), not words that merely feel missing
+from the title. Probe first, always; the probe is one free Algolia call.

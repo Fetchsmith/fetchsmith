@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""store-gap — is a word ALREADY matched by our Apify Store search record, or is it a real gap?
+
+Why this exists (cycle 244): cycles 236-243 tested absence by running the bare word at
+`hitsPerPage=1000` and checking whether `fetchsmith/<slug>` came back. That test is only
+conclusive when `nbHits <= 1000` (LEARNINGS cycle 236 says so explicitly) — above that,
+Algolia truncates at 1000 and "not in hits" can simply mean "ranked past 1000". Several
+words shipped as "gaps" on nbHits>1000 queries turned out to be already present.
+
+Fix: `username` is a searchable attribute, so prefixing the query with `fetchsmith`
+AND-narrows the matched set to our own records. nbHits then collapses to single digits
+and membership is conclusive at ANY field size.
+
+  'inventory'            nbHits=9926  -> truncated, ABSENT is meaningless
+  'fetchsmith inventory' nbHits=2     -> conclusive
+
+Validated cycle 244 against three known-present and one known-absent control; the
+brand-narrowed and bare probes agree whenever the bare one is conclusive.
+
+Caveat (cycle 240): this reads the Store SEARCH INDEX, which is a stale build-time
+snapshot — `apify-admin publish` does not write into it. So a word you just published
+still reads ABSENT here. Check `bin/check-store-index` before trusting a re-probe.
+
+Usage:
+  bin/store-gap <slug> <word> [<word> ...]      # one Actor, N candidate words
+Exit 0 always (informational).
+"""
+import json
+import sys
+import urllib.request
+
+APP = "OW0O5I3QO7"
+KEY = "0ecccd09f50396a4dbbe5dbfb17f4525"
+IDX = "prod_PUBLIC_STORE"
+URL = f"https://{APP.lower()}-dsn.algolia.net/1/indexes/{IDX}/query"
+
+
+def search(query):
+    body = json.dumps({"query": query, "hitsPerPage": 1000}).encode()
+    req = urllib.request.Request(URL, data=body, headers={
+        "X-Algolia-Application-Id": APP,
+        "X-Algolia-API-Key": KEY,
+        "Content-Type": "application/json",
+    })
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def main():
+    if len(sys.argv) < 3:
+        print(__doc__.strip())
+        return 0
+    slug = sys.argv[1]
+    me = f"fetchsmith/{slug}"
+    gaps = 0
+    for word in sys.argv[2:]:
+        narrowed = search(f"fetchsmith {word}")
+        ours = [f"{h.get('username')}/{h.get('name')}" for h in narrowed.get("hits", [])]
+        present = me in ours
+        bare = search(word)
+        # rank in the bare query, if we are in the (possibly truncated) page
+        bare_names = [f"{h.get('username')}/{h.get('name')}" for h in bare.get("hits", [])]
+        rank = bare_names.index(me) + 1 if me in bare_names else None
+        verdict = f"MATCHED (bare rank p{rank})" if present and rank else (
+            "MATCHED (bare rank >1000)" if present else "GAP")
+        if not present:
+            gaps += 1
+        print(f"{word!r:24} field={bare['nbHits']:<7} ours={narrowed['nbHits']:<3} {verdict}")
+    print(f"store-gap: {slug}, {gaps} real gap(s) of {len(sys.argv) - 2} candidate(s)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

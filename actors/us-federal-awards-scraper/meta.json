@@ -2,7 +2,7 @@
   "title": "USAspending Scraper — US Federal Contracts & Grants",
   "description": "Every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API — plus the sub-contracts and sub-grants filed under them, joined to the prime award. 51 typed fields incl. recipient UEI/address, NAICS/PSC, CFDA. Filter by agency, keyword, state, date.",
   "seoTitle": "USAspending Scraper — US Federal Contracts & Grants API",
-  "seoDescription": "Scrape US federal contracts, grants, loans and sub-awards from USAspending.gov's spending-transparency portal. 51 fields incl. recipient UEI, NAICS/PSC, CFDA. Filter by agency, state, date.",
+  "seoDescription": "Scrape US federal procurement contracts, grants, loans and sub-awards from USAspending.gov's spending-transparency portal. 51 fields: recipient UEI, NAICS/PSC, CFDA. Filter by agency, state, date.",
   "categories": [
     "LEAD_GENERATION",
     "BUSINESS"
