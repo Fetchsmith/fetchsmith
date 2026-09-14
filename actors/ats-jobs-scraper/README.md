@@ -54,6 +54,7 @@ Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 o
 
 ## FAQ
 **How do `titleKeyword`, `locationKeyword`, `remoteOnly` and `postedAfter` combine?** All of them must pass (AND) — set only the ones you need, leave the rest empty/`false`.
+**What if `companies` has the same `{ats, slug}` entry twice?** Deduped automatically — an exact repeat is only fetched (and charged) once per run.
 
 **Does `maxJobsPerCompany` cap before or after my filters run?** After. Filters are applied first, then up to `maxJobsPerCompany` of the *matching* postings are kept per company — so `{"titleKeyword": "engineer", "maxJobsPerCompany": 3}` returns 3 postings that actually contain "engineer", not the first 3 raw postings off the board (verified live: a real Greenhouse board run with those exact inputs returned 3/3 titles containing "Engineer"/"Engineering").
 

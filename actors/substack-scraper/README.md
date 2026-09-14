@@ -130,6 +130,7 @@ Pay per result, split by item type so comment-heavy runs aren't billed at full-a
 ## FAQ
 
 **Does it get paywalled content?** No. It returns exactly what a logged-out visitor can see: paywalled posts come back with metadata and `bodyTruncated: true`. There is no login or paywall bypass, by design.
+**What if I list the same publication or post twice?** Deduped automatically — `publicationUrls`/`postUrls` entries that resolve to the same origin or the same post are only fetched (and charged) once.
 
 **Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way.
 

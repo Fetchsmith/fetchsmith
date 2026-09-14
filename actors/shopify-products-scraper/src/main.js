@@ -4,7 +4,19 @@ import * as cheerio from 'cheerio';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
-const storeUrls = (input.storeUrls ?? []).map((s) => String(s).trim()).filter(Boolean);
+const rawStoreUrls = (input.storeUrls ?? []).map((s) => String(s).trim()).filter(Boolean);
+// Dedup by the actual endpoint each URL resolves to, not the raw string — catches the common
+// mistake of the same store/collection pasted twice with a different protocol/trailing slash,
+// which would otherwise fetch and charge for the same products twice.
+const seenEndpoints = new Set();
+let duplicateStoreUrls = 0;
+const storeUrls = rawStoreUrls.filter((raw) => {
+  let key;
+  try { key = endpointFor(raw).url; } catch { key = raw; }
+  if (seenEndpoints.has(key)) { duplicateStoreUrls += 1; return false; }
+  seenEndpoints.add(key);
+  return true;
+});
 const perStore = Math.min(Number(input.maxProductsPerStore ?? 500), 100000);
 const maxResults = Math.min(Number(input.maxResults ?? 5000), 200000);
 const withDesc = input.includeDescription !== false;
@@ -14,6 +26,7 @@ const detailLevel = input.detailLevel === 'full' ? 'full' : 'basic';
 const searchQuery = String(input.searchQuery ?? '').trim();
 const searchWords = searchQuery ? searchQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
+if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeUrls entr${duplicateStoreUrls === 1 ? 'y' : 'ies'} (same endpoint already queued).`);
 
 // Some storefronts rate-limit or geo-gate products.json by IP, and the platform's shared egress
 // IPs get hit first. Route through Apify Proxy when the run has access to it; if the account has

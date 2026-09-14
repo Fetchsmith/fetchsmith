@@ -51,6 +51,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 ## FAQ
 **Why did my run return 0 items with status SUCCEEDED?** The status message distinguishes "no matches for this query/tags/date/points filter" from "the Algolia request failed" — check it before assuming the query is wrong.
 **Can I combine `author` and `minComments`?** Yes, filters are ANDed together, e.g. `author: "pg"` + `minComments: 50` returns only that user's high-engagement posts.
+**What if `queries` has an accidental duplicate?** Deduped automatically — the same story/comment matched by two queries is only pushed (and charged) once per run.
 **Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
 **Do I get charged for empty queries?** No — only items actually returned to the dataset are charged.
 **Is there a dedicated "top stories" or "by user" mode?** No separate mode needed — `tags: ["front_page"]` with no query returns the live front page, and `author` returns everything a given user posted, combinable with any other filter (points, comments, date range) that a fixed mode wouldn't let you apply.

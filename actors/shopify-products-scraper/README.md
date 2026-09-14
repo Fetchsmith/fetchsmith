@@ -67,6 +67,7 @@ Extract the full product catalog of any Shopify store (or a single collection or
 
 ## FAQ
 **Does it work on custom domains, not just `*.myshopify.com`?** Yes — pass any storefront domain that runs Shopify; no need to resolve it to the `myshopify.com` backend first.
+**What if the same store ends up in `storeUrls` twice?** Deduped automatically by the resolved endpoint (so `https://store.com` and `https://store.com/` count as one) — you're never charged twice for the same store.
 **Can I tell which products are on sale?** Yes, each item includes `isOnSale` (true when `compareAtPriceMin` is above `priceMin`) and `discountPercent` — the percentage off the cheapest variant's own list price, so it never mixes two different variants — plus store `currency`.
 **Do I get the description as HTML?** Both: `description` is plain text and `descriptionHtml` is the store's raw `body_html`, so you can keep the formatting when re-publishing a catalog.
 **Can I get the product's SEO title/description and star rating?** Yes, set `detailLevel: "full"`. Those aren't in Shopify's `products.json` feed at all — they only live on the rendered product page (`<title>`/meta description tags and, when the store runs a review app like Judge.me or Yotpo, a `ratingValue`/`reviewCount` in the page's structured data), so getting them costs one extra HTTP request per product and is priced as its own event.

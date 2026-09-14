@@ -344,6 +344,17 @@ const dedupedPublications = publicationTargets.filter((t) => {
 });
 publicationTargets.length = 0;
 publicationTargets.push(...dedupedPublications);
+// Same post reachable via handle or custom domain, or just pasted twice — dedup before fetching
+// so a duplicate postUrls entry doesn't fetch and charge for the same post twice.
+const seenPosts = new Set();
+const dedupedPosts = postTargets.filter((t) => {
+  const key = `${t.origin}/p/${t.postSlug}`;
+  if (seenPosts.has(key)) return false;
+  seenPosts.add(key);
+  return true;
+});
+postTargets.length = 0;
+postTargets.push(...dedupedPosts);
 
 const errored = [];
 const empty = [];

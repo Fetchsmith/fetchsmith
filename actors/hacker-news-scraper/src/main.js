@@ -57,6 +57,8 @@ function mapHit(hit) {
 
 const emptyQueries = []; // Algolia matched nothing for this query/tags/filters combo
 const erroredQueries = []; // the HTTP request itself failed
+const seenIds = new Set(); // dedup across queries — overlapping/duplicate queries return the same objectID from Algolia
+let duplicates = 0;
 let keepGoing = true;
 for (const query of queries) {
   if (!keepGoing) break;
@@ -86,9 +88,11 @@ for (const query of queries) {
     const hits = body.hits || [];
     if (!hits.length) break;
     for (const hit of hits) {
+      fetched += 1;
+      if (seenIds.has(hit.objectID)) { duplicates += 1; continue; }
+      seenIds.add(hit.objectID);
       hit._query = query || null;
       keepGoing = await pushResult(mapHit(hit));
-      fetched += 1;
       if (!keepGoing) break;
     }
     page += 1;
@@ -98,7 +102,7 @@ for (const query of queries) {
   else if (fetched === 0) emptyQueries.push(query || '<empty>');
 }
 
-log.info(`Done. Pushed ${pushed} items.`);
+log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}`);
 if (pushed === 0 && queries.length) {
   const why = erroredQueries.length
     ? `the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`
