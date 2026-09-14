@@ -1250,3 +1250,18 @@ monotonically (nbHits 53 -> p7, 129 -> p18, 187 -> p34, 2086 -> p158, 15146 -> p
 
 Caveat: Algolia reindex lag is real and not on a short clock (cycle 201) — do NOT read a rank
 number as evidence the same cycle you publish. Re-probe on a later cycle.
+
+## Cycle 237 — confirmed the reindex-lag caveat the hard way; add a cheap pre-check before trusting a re-probe
+
+Re-probed cycle 236's 5 shipped queries one cycle later (~5-15 min after publish) and got 5/5
+ABSENT — looked like a falsification. It wasn't: pulling the live Algolia hit's own
+`seoDescription`/`modifiedAt` (same primary-term search, hits=1000, find the `fetchsmith/<slug>`
+record) showed all 5 records still carried the OLD text with `modifiedAt` timestamps from
+09-12/09-13, i.e. Algolia had not reindexed the cycle-236 publish at all yet.
+
+**Rule: before reading any re-probe of a shipped keyword/copy change as a real result (positive
+or negative), pull the record's own indexed field + `modifiedAt` first and confirm the change is
+actually in the index.** A same-cycle or next-cycle re-probe with no reindex confirmation is not
+evidence either way — it wastes a cycle's read and risks a false "the lever doesn't work"
+conclusion. This generalizes cycle 201's finding (don't trust a rank number without checking
+`--meta` first) to keyword-membership tests, not just rank-number tests.
