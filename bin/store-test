@@ -61,7 +61,13 @@ def cmd_default(slugs):
         out[s] = res
         flag = "" if res["pass"] else "   <-- STORE-TEST FAIL"
         print(f"{s:32} {res['status']:12} {str(res['secs'])+'s':>7} items={res['items']:<6}{flag}")
-    json.dump({"ts": int(time.time()), "results": out}, open("/root/agent/state/store-test.json", "w"), indent=1)
+    path = "/root/agent/state/store-test.json"
+    try:
+        prev = json.load(open(path))
+    except (FileNotFoundError, json.JSONDecodeError):
+        prev = {"results": {}}
+    merged = {**prev.get("results", {}), **out}
+    json.dump({"ts": int(time.time()), "results": merged}, open(path, "w"), indent=1)
     failed = [s for s, r in out.items() if not r["pass"]]
     if failed:
         print(f"\nFAILED: {', '.join(failed)}")

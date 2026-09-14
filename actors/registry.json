@@ -17,28 +17,12 @@
             "slug": "ramp"
           },
           {
-            "ats": "lever",
-            "slug": "leverdemo"
-          },
-          {
-            "ats": "recruitee",
-            "slug": "vandebron"
-          },
-          {
-            "ats": "workable",
-            "slug": "getresponse"
-          },
-          {
             "ats": "smartrecruiters",
             "slug": "ElasticBandCompany"
-          },
-          {
-            "ats": "workday",
-            "slug": "okgov.wd1.myworkdayjobs.com/okgovjobs"
           }
         ],
-        "maxJobsPerCompany": 500,
-        "maxResults": 2000
+        "maxJobsPerCompany": 25,
+        "maxResults": 75
       },
       "output_fields": [
         "company",

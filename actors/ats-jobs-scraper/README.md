@@ -25,8 +25,8 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | ISO date; only keep postings published on/after it. |
 | `includeDescriptions` | boolean | Include full HTML + plain-text description. Default `true`. |
-| `maxJobsPerCompany` | integer | Cap on how many postings that pass your filters are kept per company — filters are applied first, then this cap. Default `500`. |
-| `maxResults` | integer | Cap total postings returned across all companies. Default `2000`. |
+| `maxJobsPerCompany` | integer | Cap on how many postings that pass your filters are kept per company — filters are applied first, then this cap. Default `50` — kept low so a run with no input at all (e.g. an API caller omitting the field) stays fast and cheap; pass a higher value explicitly for bulk pulls (up to `5000`). |
+| `maxResults` | integer | Cap total postings returned across all companies. Default `300` — same reasoning as above; pass a higher value explicitly for bulk pulls (up to `100000`). |
 | `proxyConfiguration` | object | Apify Proxy config. Default: Apify Proxy on. |
 
 ### Finding a company's slug

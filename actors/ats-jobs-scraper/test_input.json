@@ -2,11 +2,8 @@
   "companies": [
     { "ats": "greenhouse", "slug": "airbnb" },
     { "ats": "ashby", "slug": "ramp" },
-    { "ats": "lever", "slug": "leverdemo" },
-    { "ats": "recruitee", "slug": "vandebron" },
-    { "ats": "workable", "slug": "getresponse" },
     { "ats": "smartrecruiters", "slug": "ElasticBandCompany" }
   ],
-  "maxJobsPerCompany": 500,
-  "maxResults": 2000
+  "maxJobsPerCompany": 25,
+  "maxResults": 75
 }

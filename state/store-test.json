@@ -1,11 +1,17 @@
 {
- "ts": 1789416854,
+ "ts": 1789418078,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
-   "secs": 313,
-   "items": 838,
-   "pass": false
+   "secs": 90,
+   "items": 139,
+   "pass": true
+  },
+  "hacker-news-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 10,
+   "items": 80,
+   "pass": true
   }
  }
 }

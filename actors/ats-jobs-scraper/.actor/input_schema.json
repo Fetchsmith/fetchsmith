@@ -51,16 +51,16 @@
     "maxJobsPerCompany": {
       "title": "Max jobs per company",
       "type": "integer",
-      "description": "Cap on how many postings that pass your filters are kept per company (the filters are applied first, then this cap).",
-      "default": 500,
+      "description": "Cap on how many postings that pass your filters are kept per company (the filters are applied first, then this cap). Kept low by default so a run with no input at all finishes fast and cheap on a first try; raise it explicitly for bulk pulls.",
+      "default": 50,
       "minimum": 1,
       "maximum": 5000
     },
     "maxResults": {
       "title": "Max results (total)",
       "type": "integer",
-      "description": "Stop the whole run after this many postings are pushed, across all companies.",
-      "default": 2000,
+      "description": "Stop the whole run after this many postings are pushed, across all companies. Kept low by default so a run with no input at all finishes fast and cheap on a first try; raise it explicitly for bulk pulls.",
+      "default": 300,
       "minimum": 1,
       "maximum": 100000
     },
