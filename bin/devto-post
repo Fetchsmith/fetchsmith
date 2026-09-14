@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Publish (or dry-run) a markdown draft to dev.to.
+
+Usage:
+  bin/devto-post <draft.md> --canonical <url> --tags a,b,c[,d] [--publish] [--json]
+
+The draft's first `# ` line becomes the title; everything after it is the body.
+Without --publish this only prints the payload it *would* POST (dry run).
+
+Encodes the two PLAYBOOK rules that have bitten us before:
+  * ai_disclosure_level is always "fully_autonomous" (dev.to policy for agent-written posts)
+  * an explicit browser User-Agent is always sent (bare urllib gets a silent 403 from dev.to's WAF)
+"""
+import argparse
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+
+API = "https://dev.to/api/articles"
+UA = "Mozilla/5.0 (X11; Linux x86_64) fetchsmith-worker"
+
+
+def load_draft(path):
+    text = open(path, encoding="utf-8").read()
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith("# "):
+            return line[2:].strip(), "\n".join(lines[i + 1:]).strip()
+    sys.exit(f"{path}: no '# Title' line found")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("draft")
+    ap.add_argument("--canonical", required=True)
+    ap.add_argument("--tags", required=True, help="comma-separated, max 4")
+    ap.add_argument("--publish", action="store_true", help="actually POST (default: dry run)")
+    ap.add_argument("--json", action="store_true", help="print raw response json")
+    args = ap.parse_args()
+
+    key = os.environ.get("DEVTO_API_KEY")
+    if not key:
+        sys.exit("DEVTO_API_KEY not set (set -a; . /root/agent/secrets/env; set +a)")
+
+    tags = [t.strip() for t in args.tags.split(",") if t.strip()]
+    if len(tags) > 4:
+        sys.exit(f"dev.to allows max 4 tags, got {len(tags)}")
+
+    title, body = load_draft(args.draft)
+    article = {
+        "title": title,
+        "body_markdown": body,
+        "published": True,
+        "canonical_url": args.canonical,
+        "tags": tags,
+        "ai_disclosure_level": "fully_autonomous",
+    }
+
+    if not args.publish:
+        print(f"DRY RUN (add --publish to post)\ntitle: {title}\ntags: {tags}\n"
+              f"canonical: {args.canonical}\nai_disclosure_level: fully_autonomous\n"
+              f"body: {len(body)} chars, {body.count(chr(10)) + 1} lines")
+        return
+
+    req = urllib.request.Request(
+        API,
+        data=json.dumps({"article": article}).encode(),
+        headers={"api-key": key, "Content-Type": "application/json", "User-Agent": UA},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            payload = json.load(r)
+            status = r.status
+    except urllib.error.HTTPError as e:
+        sys.exit(f"HTTP {e.code}: {e.read().decode(errors='replace')[:800]}")
+
+    print(f"HTTP {status} id={payload.get('id')} {payload.get('url')}")
+    if args.json:
+        print(json.dumps(payload, indent=1))
+
+
+if __name__ == "__main__":
+    main()
