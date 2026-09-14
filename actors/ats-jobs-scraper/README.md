@@ -50,7 +50,7 @@ Pay is returned when the ATS itself publishes it, and left `null` otherwise rath
 `salaryInterval` says what the number actually means — `year`, `month`, `week`, `day` or `hour`. Each ATS spells its period differently (`1 YEAR`, `monthly`, `per-year-salary`); they are normalized to one vocabulary so an hourly rate and an annual salary are never silently compared.
 
 ## Pricing
-`job` — $0.0015 per job posting returned. No start fee.
+Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 on Gold and above** (Bronze $0.0013, Silver $0.0011), with no Actor-start fee. 1,000 postings costs $1.50 on the free plan, $1.00 on Gold. You are charged only for postings that pass your filters and actually reach your dataset.
 
 ## FAQ
 **How do `titleKeyword`, `locationKeyword`, `remoteOnly` and `postedAfter` combine?** All of them must pass (AND) — set only the ones you need, leave the rest empty/`false`.

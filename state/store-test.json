@@ -1,9 +1,10 @@
 {
- "ts": 1789407082,
+ "ts": 1789416854,
  "results": {
-  "--help": {
-   "status": "START_FAILED",
-   "code": 404,
+  "ats-jobs-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 313,
+   "items": 838,
    "pass": false
   }
  }

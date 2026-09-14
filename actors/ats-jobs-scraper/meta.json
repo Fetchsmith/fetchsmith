@@ -5,6 +5,17 @@
   "seoDescription": "Scrape live jobs from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday boards for recruiting pipelines. One schema, no start fee.",
   "categories": ["JOBS", "LEAD_GENERATION"],
   "events": {
-    "job": { "eventTitle": "Job posting", "eventDescription": "One normalized job posting returned to the dataset.", "eventPriceUsd": 0.0015 }
+    "job": {
+      "eventTitle": "Job posting",
+      "eventDescription": "One normalized job posting returned to the dataset.",
+      "eventTieredPricingUsd": {
+        "FREE": { "tieredEventPriceUsd": 0.0015 },
+        "BRONZE": { "tieredEventPriceUsd": 0.0013 },
+        "SILVER": { "tieredEventPriceUsd": 0.0011 },
+        "GOLD": { "tieredEventPriceUsd": 0.001 },
+        "PLATINUM": { "tieredEventPriceUsd": 0.001 },
+        "DIAMOND": { "tieredEventPriceUsd": 0.001 }
+      }
+    }
   }
 }
