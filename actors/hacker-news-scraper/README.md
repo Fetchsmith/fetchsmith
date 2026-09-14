@@ -4,6 +4,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 
 ## Use cases
 - Track mentions of your product, company or keyword on HN
+- Pull the current **front page** (live top stories) without a separate feed-crawling mode
 - Pull the newest **Who's Hiring** / **Who Wants to Be Hired** threads for job-market research
 - Feed trending tech discussions into AI agents, newsletters or dashboards
 - Build datasets of Show HN launches or Ask HN discussions by topic
@@ -12,7 +13,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | Field | Type | Description |
 |---|---|---|
 | `queries` | array | Keywords to search. Leave empty to just browse by tag/date. |
-| `tags` | array | `story`, `comment`, `poll`, `ask_hn`, `show_hn`, `job` (default `["story"]`) |
+| `tags` | array | `story`, `comment`, `poll`, `ask_hn`, `show_hn`, `job`, `front_page` (default `["story"]`) |
 | `includeComments` | boolean | Fetch comment text when `tags` includes `comment` |
 | `sortBy` | string | `relevance` or `date` (newest first) |
 | `minPoints` | integer | Only items with at least this many points |
@@ -42,6 +43,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 `result` — charged per item returned. Empty queries and failed pages are free.
 
 ## Tips
+- Want the current front page? Set `queries` to `[]` and `tags` to `["front_page"]` — no keyword needed, returns the stories on HN's front page right now (verified against `hacker-news.firebaseio.com/v0/topstories.json`, refreshes on the same cadence as the live site).
 - For the current "Who is hiring?" thread: set `queries` to `["Ask HN: Who is hiring"]`, `tags: ["story"]`, `sortBy: "date"`, `maxItemsPerQuery: 1` to find the thread, or use `tags: ["comment"]` with `postedAfter` set to the 1st of the month to pull all replies.
 - Use `sortBy: "date"` for a live monitoring feed of new mentions of your keyword.
 - Use `author` to pull everything a specific user has posted (e.g. track a founder's HN activity), or `minComments` to surface only high-engagement discussions.
@@ -51,6 +53,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 **Can I combine `author` and `minComments`?** Yes, filters are ANDed together, e.g. `author: "pg"` + `minComments: 50` returns only that user's high-engagement posts.
 **Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
 **Do I get charged for empty queries?** No — only items actually returned to the dataset are charged.
+**Is there a dedicated "top stories" or "by user" mode?** No separate mode needed — `tags: ["front_page"]` with no query returns the live front page, and `author` returns everything a given user posted, combinable with any other filter (points, comments, date range) that a fixed mode wouldn't let you apply.
 
 ## Related guides
 Engineering write-ups behind this Actor:
