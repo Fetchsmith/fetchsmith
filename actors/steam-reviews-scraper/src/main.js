@@ -125,6 +125,11 @@ function reviewRow(appId, r, info) {
     authorNumReviews: a.num_reviews ?? null,
     authorLastPlayedAt: iso(a.last_played),
     reviewUrl: r.recommendationid ? `https://steamcommunity.com/profiles/${a.steamid}/recommended/${appId}/` : null,
+    hardwareOs: r.hardware?.os ?? null,
+    hardwareCpu: r.hardware?.cpu_name?.trim() ?? null,
+    hardwareGpu: r.hardware?.adapter_description ?? null,
+    hardwareRamMb: r.hardware?.system_ram != null ? Number(r.hardware.system_ram) : null,
+    hardwareVramMb: r.hardware?.vram_size ?? null,
     ...(info || {}),
   };
 }

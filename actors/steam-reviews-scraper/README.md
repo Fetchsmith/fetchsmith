@@ -86,6 +86,11 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
   "authorNumReviews": 100,
   "authorLastPlayedAt": "2026-09-13T04:15:54.000Z",
   "reviewUrl": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/",
+  "hardwareOs": "Windows 11",
+  "hardwareCpu": "13th Gen Intel(R) Core(TM) i7-13620H",
+  "hardwareGpu": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "hardwareRamMb": 16008,
+  "hardwareVramMb": 5920,
   "gameName": "Hades",
   "developers": ["Supergiant Games"],
   "publishers": ["Supergiant Games"],
@@ -157,6 +162,9 @@ The run finishes successfully with a clear status message naming the App IDs Ste
 
 **Do reviews say whether they were written on Steam Deck, or when the reviewer last played?**
 Yes — every review row includes `steamDeck` (true if the review was primarily written on Steam Deck) and `authorLastPlayedAt` (ISO timestamp of the author's last session in the game), straight from Steam's own review API.
+
+**Can I see the reviewer's PC specs?**
+When Steam has them, yes: `hardwareOs`, `hardwareCpu`, `hardwareGpu`, `hardwareRamMb`, `hardwareVramMb` come straight from the reviewer's Steam Hardware Survey opt-in, attached to the review itself. It's only present on a minority of reviews (roughly 1 in 5–25, game-dependent) — everyone else gets `null` on all five fields, never a guess. No other Steam reviews Actor exposes this.
 
 ---
 

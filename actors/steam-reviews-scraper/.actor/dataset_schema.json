@@ -219,6 +219,46 @@
         "title": "ReviewUrl",
         "example": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/"
       },
+      "hardwareOs": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "HardwareOs",
+        "example": "Windows 11"
+      },
+      "hardwareCpu": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "HardwareCpu",
+        "example": "13th Gen Intel(R) Core(TM) i7-13620H"
+      },
+      "hardwareGpu": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "HardwareGpu",
+        "example": "NVIDIA GeForce RTX 4050 Laptop GPU"
+      },
+      "hardwareRamMb": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "HardwareRamMb",
+        "example": 16008
+      },
+      "hardwareVramMb": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "HardwareVramMb",
+        "example": 5920
+      },
       "gameName": {
         "type": [
           "string",
