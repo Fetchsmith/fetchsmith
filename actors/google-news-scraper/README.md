@@ -20,7 +20,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: hea
 | `publishedBefore` | string | `YYYY-MM-DD` — only articles published before this date. Overrides `timePeriod`. Applies to `queries` only |
 | `language` | string | `hl` code such as `en-US`, `de`, `fr`, `pt-BR`, `ar`, `ja` (default `en-US`) |
 | `country` | string | `gl` code such as `US`, `GB`, `DE`, `IN` (default `US`) |
-| `maxItemsPerQuery` | integer | Up to 100 (Google's feed limit). Default `50` — decoding the real publisher URL is a 2-request round trip per article, so 100 articles alone can take 4-5 minutes |
+| `maxItemsPerQuery` | integer | Up to 100 (Google's feed limit). Default `25` — decoding the real publisher URL is a 2-request round trip per article, and Google's per-IP rate limit on that endpoint has gotten slower recently, so 50+ articles can now take 4-5 minutes |
 | `decodeUrls` | boolean | Resolve the publisher URL for each article (default true) |
 | `fetchArticleBody` | boolean | Open each publisher page and extract the full article text, author, image, keywords and section (default false) |
 | `articleBodyMaxChars` | integer | Truncate `articleBody` to this length (default 20000) |
