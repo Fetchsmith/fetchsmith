@@ -64,7 +64,7 @@
       "title": "Detail level",
       "type": "string",
       "editor": "select",
-      "description": "\"Basic\" (default) uses only the store's bulk products.json feed — one request per page of products. \"Full\" additionally fetches each product's live page and its per-product JSON to read barcodes, inventory counts (inventoryQuantity / totalInventory), SEO title/description and the star-rating summary — none of which the bulk feed carries. The two extra requests run in parallel and are charged as a single event per product. How much stock data exists is a per-store setting; unpublished values come back as null.",
+      "description": "\"Basic\" (default) uses only the store's bulk products.json feed — one request per page of products. \"Full\" additionally fetches each product's live page and its per-product .js route to read barcodes, inventory counts (inventoryQuantity / totalInventory), quantity rules (min/max/case-pack), subscription plans, SEO title/description and the star-rating summary — none of which the bulk feed carries. The two extra requests run in parallel and are charged as a single event per product. How much stock/subscription data exists is a per-store setting; unpublished values come back as null.",
       "enum": ["basic", "full"],
       "enumTitles": ["Basic (fast, feed only)", "Full (+ barcodes, inventory counts, SEO + rating)"],
       "default": "basic"

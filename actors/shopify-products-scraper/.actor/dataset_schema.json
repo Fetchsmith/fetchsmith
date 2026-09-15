@@ -270,6 +270,21 @@
         ],
         "title": "ReviewCount",
         "example": 51
+      },
+      "hasSubscriptionOption": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "HasSubscriptionOption",
+        "example": false
+      },
+      "subscriptionPlans": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "SubscriptionPlans"
       }
     }
   },

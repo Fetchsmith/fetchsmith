@@ -89,19 +89,24 @@ function endpointFor(raw) {
   if (col) return { origin, kind: 'collection', url: `${origin}/collections/${col}/products.json` };
   return { origin, kind: 'store', url: `${origin}/products.json` };
 }
-// The bulk `/products.json` endpoint omits these four per-variant fields entirely, but the
-// per-product `/products/<handle>.json` route carries them (same variant ids, so they merge
+// The bulk `/products.json` endpoint omits these per-variant fields entirely, but the
+// per-product `/products/<handle>.js` AJAX route carries them (same variant ids, so they merge
 // cleanly — verified id-for-id on allbirds). Whether a store exposes them at all is a
 // store-level setting, not an endpoint difference: allbirds returns real quantities and UPC
 // barcodes, brooklinen a barcode but no quantity, rothys omits all four. `barcode` is whatever
 // the merchant typed into that field — a GTIN/UPC on some stores, an internal SKU on others.
+// `quantity_rule` is always present on `.js` with a `{min:1,max:null,increment:1}` default even
+// on stores with no real rule, so only a non-default rule counts as "real" B2B/case-pack data —
+// otherwise every enrichment would report a meaningless rule and always look "found".
+const isMeaningfulQuantityRule = (qr) => !!qr && (qr.min > 1 || qr.max != null || qr.increment > 1);
 const inventoryFieldsOf = (v) => ({
   barcode: v.barcode || null,
   inventoryQuantity: v.inventory_quantity ?? null,
   inventoryManagement: v.inventory_management ?? null,
   inventoryPolicy: v.inventory_policy ?? null,
+  quantityRule: isMeaningfulQuantityRule(v.quantity_rule) ? { min: v.quantity_rule.min ?? null, max: v.quantity_rule.max ?? null, increment: v.quantity_rule.increment ?? null } : null,
 });
-const hasInventoryData = (v) => !!(v.barcode || v.inventory_quantity != null || v.inventory_management || v.inventory_policy);
+const hasInventoryData = (v) => !!(v.barcode || v.inventory_quantity != null || v.inventory_management || v.inventory_policy || isMeaningfulQuantityRule(v.quantity_rule));
 // Sum of the quantities the store actually tracks; null (not 0) when it tracks none, so "out of
 // stock" stays distinguishable from "this store doesn't publish stock levels". Untracked variants
 // (`inventoryManagement: null`, usually paired with `inventoryPolicy: continue`) report a sentinel
@@ -162,22 +167,32 @@ async function currencyFor(origin) {
 // Shopify's ProductGroup one, so scan all of them for `aggregateRating` rather than assuming
 // position). Charged separately since it's a second request per product; only charged when it
 // actually finds something, matching the "no data, no charge" rule the base scrape already uses.
+//
+// The second request hits `/products/<handle>.js` (the storefront AJAX route), not `.json` —
+// verified id-for-id on allbirds that `.js` is a strict superset of `.json` for our purposes: it
+// carries every stock field `.json` does (barcode/inventory_quantity/management/policy) PLUS
+// `quantity_rule` (min/max/increment purchase quantity — real B2B/case-pack data) and top-level
+// `selling_plan_groups`/`requires_selling_plan` (subscription plans, via Shopify's native
+// subscriptions or an app like Recharge) that `.json` never exposes at all — confirmed live on
+// magicspoon.com (native "Subscribe & Save") and cometeer.com (Recharge-backed). Same one request
+// either way, just a richer response.
 let detailBudgetOk = true;
-async function enrichWithDetail(item, origin, handle, needInventory = true) {
+async function enrichWithDetail(item, origin, handle) {
   if (!detailBudgetOk || !timeBudgetOk()) return;
   let seoTitle = null, seoDescription = null, ratingValue = null, reviewCount = null;
   let detailVariants = [];
-  // Two different routes are needed — the rendered page for <head>/ld+json, the per-product JSON
-  // for stock fields — so fire them together. The rest of the run is strictly sequential and
-  // full-detail runs are the ones closest to the time budget, so the second request costs no
-  // extra wall-clock this way. Settled (not all-or-nothing): a store that serves one route but
-  // not the other still gets whatever it does serve.
-  const [pageRes, jsonRes] = await Promise.allSettled([
+  let hasSubscriptionOption = false, subscriptionPlans = null;
+  // Two different routes are needed — the rendered page for <head>/ld+json, the `.js` route for
+  // stock/subscription fields — so fire them together. The rest of the run is strictly
+  // sequential and full-detail runs are the ones closest to the time budget, so the second
+  // request costs no extra wall-clock this way. Settled (not all-or-nothing): a store that serves
+  // one route but not the other still gets whatever it does serve.
+  const [pageRes, jsRes] = await Promise.allSettled([
     // `request()`'s default Accept header prefers application/json, and Shopify's product route
     // honors that and serves the raw product JSON instead of the rendered page — override it here
     // since the whole point of this request is the page's <head>/ld+json, not the JSON again.
     request(`${origin}/products/${handle}`, { accept: 'text/html,application/xhtml+xml' }),
-    needInventory ? request(`${origin}/products/${handle}.json`, { accept: 'application/json' }) : Promise.resolve(null),
+    request(`${origin}/products/${handle}.js`, { accept: 'application/json' }),
   ]);
   if (pageRes.status === 'rejected') {
     log.warning(`${origin}/products/${handle}: detail fetch failed (${pageRes.reason.message}) — seoTitle/seoDescription/rating left null for this product.`);
@@ -200,18 +215,32 @@ async function enrichWithDetail(item, origin, handle, needInventory = true) {
       log.warning(`${origin}/products/${handle}: could not parse the product page (${e.message}) — seoTitle/seoDescription/rating left null for this product.`);
     }
   }
-  if (jsonRes.status === 'rejected') {
-    log.warning(`${origin}/products/${handle}.json: stock fields unavailable (${jsonRes.reason.message}).`);
-  } else if (jsonRes.value) {
-    try { detailVariants = (JSON.parse(jsonRes.value.body)?.product?.variants ?? []).filter(hasInventoryData); }
-    catch (e) { log.warning(`${origin}/products/${handle}.json: stock fields unavailable (${e.message}).`); }
+  if (jsRes.status === 'rejected') {
+    log.warning(`${origin}/products/${handle}.js: stock/subscription fields unavailable (${jsRes.reason.message}).`);
+  } else if (jsRes.value) {
+    try {
+      const productJs = JSON.parse(jsRes.value.body);
+      detailVariants = (productJs.variants ?? []).filter(hasInventoryData);
+      hasSubscriptionOption = !!productJs.requires_selling_plan || !!productJs.selling_plan_groups?.length;
+      if (productJs.selling_plan_groups?.length) {
+        subscriptionPlans = productJs.selling_plan_groups.map((g) => ({
+          name: g.name,
+          plans: (g.selling_plans ?? []).map((sp) => ({
+            name: sp.name,
+            recurringDeliveries: !!sp.recurring_deliveries,
+            discountPercent: sp.price_adjustments?.find((a) => a.value_type === 'percentage')?.value ?? null,
+          })),
+        }));
+      }
+    } catch (e) { log.warning(`${origin}/products/${handle}.js: stock/subscription fields unavailable (${e.message}).`); }
   }
-  if (seoTitle == null && seoDescription == null && ratingValue == null && !detailVariants.length) return; // nothing found, nothing charged
+  if (seoTitle == null && seoDescription == null && ratingValue == null && !detailVariants.length && !hasSubscriptionOption) return; // nothing found, nothing charged
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'productDetail', count: 1 });
     if (r.chargedCount === 0) { detailBudgetOk = false; return; } // budget exhausted: stop enriching, keep scraping base data
   }
   item.seoTitle = seoTitle; item.seoDescription = seoDescription; item.ratingValue = ratingValue; item.reviewCount = reviewCount;
+  item.hasSubscriptionOption = hasSubscriptionOption; item.subscriptionPlans = subscriptionPlans;
   if (detailVariants.length) {
     const byId = new Map(detailVariants.map((v) => [v.id, v]));
     for (const v of item.variants ?? []) { // absent when includeVariants is off — totalInventory still lands
@@ -240,9 +269,10 @@ for (const raw of storeUrls) {
         seenBeforeFilter = 1;
         if (!onlyAvailable || (p.variants ?? []).some((v) => v.available)) {
           const item = shape(p, ep.origin, currency);
-          // A single-product URL already fetched `/products/<handle>.json`, which carries the
-          // stock fields — no need for the enrichment step to fetch the same route again.
-          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle, false);
+          // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
+          // route, not `.json` — so even a single-product URL (which already has `.json`) still
+          // needs the enrichment step's own fetch to pick those up.
+          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
           keepGoing = await pushResult(item); got++;
         }
       }
