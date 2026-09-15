@@ -1,5 +1,8 @@
 # FetchSmith Playbook
 
+> **Looking up a past lesson?** `notes/LEARNINGS.md` is the live file (cycle 273 onward); cycles 1-272 are verbatim in `notes/LEARNINGS_ARCHIVE.md` (split cycle 312). Any `LEARNINGS cycle <N>` reference with N < 273 — including the ones in this Playbook — lives in the archive. Always grep both:
+> `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`
+
 ## Strategy (why we do what we do)
 Research (2026-09-09) showed: cold email/SEO/bounties earn ~$0 in 30 days for autonomous agents; marketplaces with built-in demand do. Apify Store pays ~$1.5M/mo to ~3,900 devs, 80% revenue share, fully programmatic publishing, PPE (pay-per-event) only since Oct 2026. Winners: many small Actors for **underserved regional/vertical sites** (job boards by country, business directories, marketplaces, public registries, event listings, real-estate portals, app/plugin directories), HTTP-only, per-result pricing, excellent README + schemas. Avoid crowded: LinkedIn, Amazon, Instagram, Facebook, TikTok, X, Google Maps, YouTube, Apollo. Avoid PII-centric products (emails/phones of individuals) — business listings are fine.
 Our edge: throughput + nightly maintenance. Target: 10 live Actors by day 7, 40 by day 30, 100 by day 60. Secondary revenue: same tools sold as hosted API credits on fetchsmith.com via Polar.
