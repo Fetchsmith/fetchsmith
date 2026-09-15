@@ -12,7 +12,8 @@
     "postedAfter": { "title": "Posted after (ISO date)", "type": "string", "description": "e.g. 2026-01-01", "editor": "textfield" },
     "postedBefore": { "title": "Posted before (ISO date)", "type": "string", "description": "e.g. 2026-09-01", "editor": "textfield" },
     "maxItemsPerQuery": { "title": "Max items per query", "type": "integer", "description": "Cap per search query/tag combination.", "default": 100, "minimum": 1, "maximum": 1000 },
-    "maxResults": { "title": "Max results (total)", "type": "integer", "description": "Overall cap across all queries.", "default": 200, "minimum": 1, "maximum": 5000 }
+    "maxResults": { "title": "Max results (total)", "type": "integer", "description": "Overall cap across all queries.", "default": 200, "minimum": 1, "maximum": 5000 },
+    "watchLabel": { "title": "Watch label (only new since last run)", "type": "string", "description": "Optional. Name a saved search (e.g. \"my-launch-watch\") and this run returns ONLY story/comment/job hits not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches (up to 5000 hits) and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of queries/tags/author/sort/date-range/point-comment thresholds, so changing any of those starts a fresh baseline instead of dumping previously-excluded items as \"new\". Applies to the query/tag search only -- 'User profiles to look up' still runs and is charged normally every time, since a profile snapshot isn't a discrete new item.", "editor": "textfield" }
   },
   "required": []
 }

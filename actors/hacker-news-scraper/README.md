@@ -9,6 +9,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 - Feed trending tech discussions into AI agents, newsletters or dashboards
 - Build datasets of Show HN launches or Ask HN discussions by topic
 - Look up a founder's or user's HN karma, bio and account age (`usernames`)
+- Run a scheduled keyword alert that only ever returns new mentions (`watchLabel`)
 
 ## Input
 | Field | Type | Description |
@@ -24,6 +25,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `maxItemsPerQuery` | integer | Cap per query (up to 1000) |
 | `maxResults` | integer | Overall cap |
 | `usernames` | array | HN usernames to fetch profile data for (karma, about, account age) — a separate lookup, not a story filter. To fetch ONLY profiles with no story search, also set `queries` and `tags` to `[]`. |
+| `watchLabel` | string | Name a saved search to get **only story/comment/job hits new since its last run** — see below |
 
 ## Output (one item per story/comment)
 ```json
@@ -54,8 +56,11 @@ A `usernames` lookup returns one row per user, `type: "user"`:
 }
 ```
 
+## Watch mode (`watchLabel`)
+Name a saved search — `watchLabel: "my-launch-watch"` — and the Actor keeps a per-label record of every story/comment/job hit it has already delivered under that name, so a scheduled run returns **only what is new since last time** and you are charged for nothing else. The first run on a new label is a **free baseline run**: it records what already matches (up to 5000 hits) and returns zero results. Every run after that returns only new items. Change `queries`, `tags`, `author`, `sortBy`, the date range or the point/comment thresholds and the label starts a fresh baseline, instead of dumping everything the old narrower filter excluded as "new". `usernames` profile lookups are unaffected — they run and are charged normally every time, since a profile snapshot isn't a discrete new item.
+
 ## Pricing
-`result` — charged per item returned. Empty queries and failed pages are free.
+`result` — charged per item returned. Empty queries and failed pages are free. A `watchLabel` baseline run always returns 0 rows and is charged nothing.
 
 ## Tips
 - Want the current front page? Set `queries` to `[]` and `tags` to `["front_page"]` — no keyword needed, returns the stories on HN's front page right now (verified against `hacker-news.firebaseio.com/v0/topstories.json`, refreshes on the same cadence as the live site).
@@ -73,10 +78,13 @@ A `usernames` lookup returns one row per user, `type: "user"`:
 **Is there a dedicated "top stories" or "by user" mode?** No separate mode needed — `tags: ["front_page"]` with no query returns the live front page, and `author` returns everything a given user posted, combinable with any other filter (points, comments, date range) that a fixed mode wouldn't let you apply.
 **Can I look up a user's karma or bio, not just their posts?** Yes — put their username(s) in `usernames`. It's a separate lookup (via HN's official Firebase API) that returns one row per user with `karma`, `about` and `accountCreatedAt`, independent of `author`/`queries`. To fetch profiles only, with no story search mixed in, set `queries` and `tags` to `[]` too.
 **What if a username in `usernames` doesn't exist?** It's skipped with no charge; the run's status message names which username(s) weren't found.
+**How do I get a scheduled alert for new mentions of a keyword, not the same matches every time?** Set `watchLabel` (see above). The first run is a free baseline (0 results); schedule the same input to run again later and it returns only hits it has never delivered under that label before.
+**I set `watchLabel` and `usernames` together — why did the profile row still show up on the baseline run?** By design. `watchLabel` only tracks story/comment/job search hits (they have a stable id to dedupe on); a `usernames` profile is a snapshot, not a discrete new item, so it is charged every run regardless of watch mode.
 
 ## Related guides
 Engineering write-ups behind this Actor:
 - [HN's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
+- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the three-run test that proves a baseline is complete
 
 Only publicly available data is collected via HN's official search API. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/hacker-news-scraper
 
