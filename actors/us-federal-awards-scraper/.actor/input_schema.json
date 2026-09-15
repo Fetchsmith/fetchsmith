@@ -120,6 +120,15 @@
             "description": "Two-letter USPS state codes for the recipient's own address, e.g. NY, VA.",
             "editor": "stringList"
         },
+        "naicsCodes": {
+            "title": "NAICS codes",
+            "type": "array",
+            "description": "Filter to one or more NAICS industry codes, e.g. 541511 (custom computer programming). 2-6 digit prefixes are all accepted — 5415 matches every 6-digit code under it. Multiple codes are ORed. Grants/direct payments/other financial assistance/loans have no NAICS, so this filter returns nothing for those categories.",
+            "editor": "stringList",
+            "example": [
+                "541511"
+            ]
+        },
         "minAwardAmount": {
             "title": "Minimum award amount (USD)",
             "type": "integer",

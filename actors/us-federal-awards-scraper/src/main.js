@@ -83,6 +83,7 @@ const recipients = (input.recipients ?? []).map((r) => String(r).trim()).filter(
 const awardIds = (input.awardIds ?? []).map((a) => String(a).trim()).filter(Boolean);
 const states = (input.placeOfPerformanceStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const recipientStates = (input.recipientStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
+const naicsCodes = (input.naicsCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
 if (minAwardAmount != null && maxAwardAmount != null && minAwardAmount > maxAwardAmount) {
@@ -127,6 +128,9 @@ function buildFilters(codes) {
         if (maxAwardAmount != null) bound.upper_bound = maxAwardAmount;
         filters.award_amounts = [bound];
     }
+    // 2/4/6-digit NAICS prefixes are all accepted and ORed by the API; grants/loans have no
+    // NAICS so this filter just returns nothing for those categories rather than erroring.
+    if (naicsCodes.length) filters.naics_codes = { require: naicsCodes };
     return filters;
 }
 

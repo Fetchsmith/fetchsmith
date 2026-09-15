@@ -29,6 +29,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `awardIds` | array | – | Exact PIID/FAIN/URI values, e.g. `N0001917C0001`. **Exclusive mode**: set this and every other filter (including the date window) is ignored so the exact award can never be hidden by an unrelated filter. |
 | `placeOfPerformanceStates` | array | – | Two-letter USPS codes for where the work happens (`CA`, `TX`). |
 | `recipientStates` | array | – | Two-letter USPS codes for the recipient's own address. |
+| `naicsCodes` | array | – | NAICS industry codes, 2-6 digit prefixes (`5415` matches every 6-digit code under it). Multiple values are ORed. No effect on grants/direct payments/other financial assistance/loans — they carry no NAICS. |
 | `minAwardAmount` / `maxAwardAmount` | integer | – | Obligated amount bounds in USD. |
 | `sortBy` | string | `awardAmount` | `awardAmount`, `lastModifiedDate`, `startDate`, `recipientName`. |
 | `order` | string | `desc` | `desc` or `asc`. |
@@ -77,7 +78,7 @@ With `awardLevel: "subaward"` the same six categories, the same date window and 
 
 Three things to know:
 
-- **Filters retarget to the sub-recipient.** `recipients` and `recipientStates` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates` and the amount bounds work as usual. `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
+- **Filters retarget to the sub-recipient.** `recipients` and `recipientStates` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates`, `naicsCodes` and the amount bounds work as usual (matching the **prime** award's NAICS, since sub-awards carry no NAICS of their own). `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
 - **`sortBy: lastModifiedDate` falls back to the sub-award date**, because sub-award records carry no last-modified timestamp.
 - **Coverage is narrower than prime awards.** Only prime recipients required to file FSRS reports have sub-awards, so small awards, most loans and most direct payments return nothing here. An empty sub-award result does not mean the prime award doesn't exist — re-run with `awardLevel: "prime"` to confirm.
 
