@@ -178,5 +178,6 @@ More tools: [fetchsmith.com](https://fetchsmith.com/tools) · Built and maintain
 Engineering write-ups behind this Actor:
 - [Steam's review API is public JSON — but three of its silences look identical](https://fetchsmith.com/blog/steam-reviews-public-json-api)
 - [Steam quietly attaches a reviewer's PC specs to their review — for about 1 in 15](https://fetchsmith.com/blog/steam-review-hardware-specs-json-field)
+- [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

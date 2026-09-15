@@ -113,6 +113,7 @@ Yes. A name like `José` or `María` is kept as one search token instead of bein
 ## Related guides
 Engineering write-ups behind this Actor:
 - [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
+- [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
 

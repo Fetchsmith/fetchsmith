@@ -131,6 +131,7 @@ Built by [FetchSmith](https://fetchsmith.com) — fast, HTTP-only scrapers with 
 ## Related guides
 Engineering write-ups behind this Actor:
 - [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
+- [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
 
