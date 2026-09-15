@@ -117,8 +117,32 @@ function totalInventoryOf(variants) {
   const qs = variants.filter((v) => v.inventoryManagement).map((v) => v.inventoryQuantity).filter((n) => typeof n === 'number');
   return qs.length ? qs.reduce((a, b) => a + b, 0) : null;
 }
+// A single product URL resolves to `/products/<handle>.json`, which uses a DIFFERENT serializer
+// from the bulk `/products.json` list route for the very same product: it returns `tags` as one
+// comma-separated STRING instead of an array, and omits the per-variant `available` flag
+// entirely. Both differences were silent and both were real bugs — a string `tags` is rejected by
+// our own dataset schema (`array|null`), which failed the push for the whole store (surfacing as
+// `WARN <origin>: Schema validation failed` + 0 products on every single-product-URL run,
+// regardless of detailLevel), and a missing `available` made every single-product row read as out
+// of stock and be dropped outright under `onlyAvailable`. Normalize both here so a product URL
+// yields exactly the same row as the same product fetched from the list route.
+const tagsOf = (t) => (Array.isArray(t) ? t : typeof t === 'string' ? t.split(',').map((s) => s.trim()).filter(Boolean) : []);
+// Shopify's own availability rule, applied only when the route didn't ship the flag: a variant
+// whose stock isn't tracked is always purchasable, a tracked one is available while it has stock
+// or the store allows overselling. A tracked variant on a store that hides quantities stays
+// unknown (null) — "we can't tell" must not silently become "sold out".
+function availableOf(v) {
+  if (typeof v.available === 'boolean') return v.available;
+  if (!v.inventory_management) return true;
+  if (v.inventory_policy === 'continue') return true;
+  if (typeof v.inventory_quantity === 'number') return v.inventory_quantity > 0;
+  return null;
+}
+// Unknown availability must not be filtered out as "not available" — the list route always ships
+// the flag, so this is identical to the old `some((v) => v.available)` there.
+const passesAvailability = (p) => (p.variants ?? []).some((v) => availableOf(v) !== false);
 function shape(p, origin, currency) {
-  const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: v.available ?? null, option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping, taxable: v.taxable ?? null, position: v.position ?? null, featuredImage: v.featured_image?.src ?? null, ...inventoryFieldsOf(v) }));
+  const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: availableOf(v), option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping, taxable: v.taxable ?? null, position: v.position ?? null, featuredImage: v.featured_image?.src ?? null, ...inventoryFieldsOf(v) }));
   const prices = variants.map((v) => v.price).filter((n) => !Number.isNaN(n));
   const priceMin = prices.length ? Math.min(...prices) : null;
   const comparePrices = variants.map((v) => v.compareAtPrice).filter((x) => x != null).sort((a, b) => a - b);
@@ -129,13 +153,17 @@ function shape(p, origin, currency) {
   const discountPercent = cheapest?.compareAtPrice > priceMin
     ? Math.round(((cheapest.compareAtPrice - priceMin) / cheapest.compareAtPrice) * 1000) / 10
     : null;
+  // Unknown (null) rather than false when no variant's availability could be determined at all,
+  // for the same reason `totalInventory` does it: a store that doesn't publish stock must stay
+  // distinguishable from one whose products are genuinely sold out.
+  const availabilityUnknown = variants.length > 0 && variants.every((v) => v.available === null);
   return {
-    id: p.id, title: p.title, handle: p.handle, url: `${origin}/products/${p.handle}`, vendor: p.vendor, productType: p.product_type || null, tags: p.tags ?? [],
+    id: p.id, title: p.title, handle: p.handle, url: `${origin}/products/${p.handle}`, vendor: p.vendor, productType: p.product_type || null, tags: tagsOf(p.tags),
     currency: currency ?? null,
     priceMin, priceMax: prices.length ? Math.max(...prices) : null,
     compareAtPriceMin, compareAtPriceMax: comparePrices[comparePrices.length - 1] ?? null,
     isOnSale: !!(compareAtPriceMin != null && priceMin != null && compareAtPriceMin > priceMin), discountPercent,
-    available: variants.some((v) => v.available), availableVariantCount: variants.filter((v) => v.available).length, variantCount: variants.length,
+    available: availabilityUnknown ? null : variants.some((v) => v.available === true), availableVariantCount: availabilityUnknown ? null : variants.filter((v) => v.available === true).length, variantCount: variants.length,
     totalInventory: totalInventoryOf(variants),
     images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null, imageCount: (p.images ?? []).length,
     options: (p.options ?? []).map((o) => ({ name: o.name, values: o.values })),
@@ -181,6 +209,7 @@ async function enrichWithDetail(item, origin, handle) {
   if (!detailBudgetOk || !timeBudgetOk()) return;
   let seoTitle = null, seoDescription = null, ratingValue = null, reviewCount = null;
   let detailVariants = [];
+  let detailAvailability = []; // every `.js` variant (not just the ones with stock fields) — it always carries `available`
   let hasSubscriptionOption = false, subscriptionPlans = null;
   // Two different routes are needed — the rendered page for <head>/ld+json, the `.js` route for
   // stock/subscription fields — so fire them together. The rest of the run is strictly
@@ -221,6 +250,7 @@ async function enrichWithDetail(item, origin, handle) {
     try {
       const productJs = JSON.parse(jsRes.value.body);
       detailVariants = (productJs.variants ?? []).filter(hasInventoryData);
+      detailAvailability = (productJs.variants ?? []).filter((v) => typeof v.available === 'boolean');
       hasSubscriptionOption = !!productJs.requires_selling_plan || !!productJs.selling_plan_groups?.length;
       if (productJs.selling_plan_groups?.length) {
         subscriptionPlans = productJs.selling_plan_groups.map((g) => ({
@@ -241,6 +271,15 @@ async function enrichWithDetail(item, origin, handle) {
   }
   item.seoTitle = seoTitle; item.seoDescription = seoDescription; item.ratingValue = ratingValue; item.reviewCount = reviewCount;
   item.hasSubscriptionOption = hasSubscriptionOption; item.subscriptionPlans = subscriptionPlans;
+  // The `.js` route always carries a real `available` flag, so a full-detail run can resolve what
+  // the base route left unknown (stores that hide inventory quantities) at no extra request. Only
+  // fills in nulls — a flag the base route did ship is never overridden.
+  if (item.available === null && detailAvailability.length) {
+    item.available = detailAvailability.some((v) => v.available === true);
+    item.availableVariantCount = detailAvailability.filter((v) => v.available === true).length;
+    const availById = new Map(detailAvailability.map((v) => [v.id, v.available]));
+    for (const v of item.variants ?? []) if (v.available === null && availById.has(v.id)) v.available = availById.get(v.id);
+  }
   if (detailVariants.length) {
     const byId = new Map(detailVariants.map((v) => [v.id, v]));
     for (const v of item.variants ?? []) { // absent when includeVariants is off — totalInventory still lands
@@ -267,7 +306,7 @@ for (const raw of storeUrls) {
       const p = JSON.parse((await http(ep.url)).body).product;
       if (p) {
         seenBeforeFilter = 1;
-        if (!onlyAvailable || (p.variants ?? []).some((v) => v.available)) {
+        if (!onlyAvailable || passesAvailability(p)) {
           const item = shape(p, ep.origin, currency);
           // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
           // route, not `.json` — so even a single-product URL (which already has `.json`) still
@@ -285,7 +324,7 @@ for (const raw of storeUrls) {
         seenBeforeFilter += products.length;
         for (const p of products) {
           if (got >= perStore) break;
-          if (onlyAvailable && !(p.variants ?? []).some((v) => v.available)) continue;
+          if (onlyAvailable && !passesAvailability(p)) continue;
           if (!matchesSearch(p)) continue;
           const item = shape(p, ep.origin, currency);
           if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
