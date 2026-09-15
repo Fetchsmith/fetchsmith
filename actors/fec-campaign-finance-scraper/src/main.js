@@ -1,15 +1,26 @@
-// FEC Campaign Finance Scraper: candidates + financial totals via api.open.fec.gov. Uses a personal api.data.gov
-// key (env var FEC_API_KEY, set as a secret Actor env var, not committed) with a DEMO_KEY fallback for local runs.
+// FEC Campaign Finance Scraper: candidates + financial totals, or individual donor contributions
+// (Schedule A), via api.open.fec.gov. Uses a personal api.data.gov key (env var FEC_API_KEY, set as
+// a secret Actor env var, not committed) with a DEMO_KEY fallback for local runs.
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
+const searchMode = input.searchMode === 'contributions' ? 'contributions' : 'candidates';
 const candidateName = (input.candidateName ?? 'Warren').trim();
+const donorName = (input.donorName ?? '').trim();
+const donorEmployer = (input.donorEmployer ?? '').trim();
+const minAmount = input.minAmount ? Number(input.minAmount) : undefined;
 const state = (input.state ?? '').trim().toUpperCase();
 const office = (input.office ?? '').trim().toUpperCase();
 const party = (input.party ?? '').trim().toUpperCase();
-const electionYear = input.electionYear ? Number(input.electionYear) : undefined;
+// The FEC's Schedule A endpoint times out on a full-table scan without this filter, so
+// contributions mode always sends one (defaulting to the most recent even year), while
+// candidates mode leaves it unset ("all cycles") unless the caller asks for one.
+const currentEvenYear = new Date().getUTCFullYear() - (new Date().getUTCFullYear() % 2);
+const electionYear = input.electionYear
+  ? Number(input.electionYear)
+  : (searchMode === 'contributions' ? currentEvenYear : undefined);
 const includeTotals = input.includeTotals ?? true;
 const maxResults = Math.min(Number(input.maxResults ?? 20), 500);
 
@@ -76,44 +87,72 @@ try {
   let page = 1;
   let stop = false;
   while (!stop) {
-    const body = await fecGet('/candidates/', {
-      q: candidateName,
-      state,
-      office,
-      party,
-      cycle: electionYear,
-      page,
-      per_page: 20,
-      sort: 'name',
-    });
+    const body = searchMode === 'contributions'
+      ? await fecGet('/schedules/schedule_a/', {
+        contributor_name: donorName,
+        contributor_employer: donorEmployer,
+        contributor_state: state,
+        min_amount: minAmount,
+        two_year_transaction_period: electionYear,
+        page,
+        per_page: 20,
+        sort: '-contribution_receipt_date',
+      })
+      : await fecGet('/candidates/', {
+        q: candidateName,
+        state,
+        office,
+        party,
+        cycle: electionYear,
+        page,
+        per_page: 20,
+        sort: 'name',
+      });
     const results = body.results ?? [];
     if (results.length === 0) break;
 
     for (const c of results) {
-      const totals = includeTotals ? await fetchTotals(c.candidate_id) : null;
-      const item = {
-        candidateId: c.candidate_id,
-        name: c.name,
-        party: c.party_full ?? c.party ?? null,
-        office: c.office_full ?? c.office ?? null,
-        state: c.state ?? null,
-        district: c.district ?? null,
-        incumbentChallenge: c.incumbent_challenge_full ?? null,
-        candidateStatus: c.candidate_status ?? null,
-        electionYears: c.election_years ?? [],
-        cycles: c.cycles ?? [],
-        firstFileDate: c.first_file_date ?? null,
-        fecUrl: `https://www.fec.gov/data/candidate/${c.candidate_id}/`,
-        receipts: totals?.receipts ?? null,
-        disbursements: totals?.disbursements ?? null,
-        cashOnHandEnd: totals?.last_cash_on_hand_end_period ?? null,
-        individualContributions: totals?.individual_contributions ?? null,
-        individualItemizedContributions: totals?.individual_itemized_contributions ?? null,
-        individualUnitemizedContributions: totals?.individual_unitemized_contributions ?? null,
-        refundedIndividualContributions: totals?.refunded_individual_contributions ?? null,
-        coverageStartDate: totals?.coverage_start_date ?? null,
-        coverageEndDate: totals?.coverage_end_date ?? null,
-      };
+      let item;
+      if (searchMode === 'contributions') {
+        item = {
+          contributorName: c.contributor_name ?? null,
+          contributorEmployer: c.contributor_employer ?? null,
+          contributorOccupation: c.contributor_occupation ?? null,
+          contributorCity: c.contributor_city ?? null,
+          contributorState: c.contributor_state ?? null,
+          contributionAmount: c.contribution_receipt_amount ?? null,
+          contributionDate: c.contribution_receipt_date ?? null,
+          contributorAggregateYtd: c.contributor_aggregate_ytd ?? null,
+          committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
+          committeeName: c.committee?.name ?? null,
+          candidateId: c.candidate_id ?? c.committee?.candidate_ids?.[0] ?? null,
+        };
+      } else {
+        const totals = includeTotals ? await fetchTotals(c.candidate_id) : null;
+        item = {
+          candidateId: c.candidate_id,
+          name: c.name,
+          party: c.party_full ?? c.party ?? null,
+          office: c.office_full ?? c.office ?? null,
+          state: c.state ?? null,
+          district: c.district ?? null,
+          incumbentChallenge: c.incumbent_challenge_full ?? null,
+          candidateStatus: c.candidate_status ?? null,
+          electionYears: c.election_years ?? [],
+          cycles: c.cycles ?? [],
+          firstFileDate: c.first_file_date ?? null,
+          fecUrl: `https://www.fec.gov/data/candidate/${c.candidate_id}/`,
+          receipts: totals?.receipts ?? null,
+          disbursements: totals?.disbursements ?? null,
+          cashOnHandEnd: totals?.last_cash_on_hand_end_period ?? null,
+          individualContributions: totals?.individual_contributions ?? null,
+          individualItemizedContributions: totals?.individual_itemized_contributions ?? null,
+          individualUnitemizedContributions: totals?.individual_unitemized_contributions ?? null,
+          refundedIndividualContributions: totals?.refunded_individual_contributions ?? null,
+          coverageStartDate: totals?.coverage_start_date ?? null,
+          coverageEndDate: totals?.coverage_end_date ?? null,
+        };
+      }
       const keepGoing = await pushResult(item);
       if (!keepGoing) { stop = true; break; }
     }

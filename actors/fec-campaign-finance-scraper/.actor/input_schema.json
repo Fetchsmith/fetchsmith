@@ -3,24 +3,53 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "searchMode": {
+      "title": "Search mode",
+      "type": "string",
+      "description": "\"candidates\" (default): search candidates and their financial totals. \"contributions\": search individual donor contributions (Schedule A) instead — donor name, employer, occupation, amount, date, receiving committee.",
+      "editor": "select",
+      "enum": ["candidates", "contributions"],
+      "enumTitles": ["Candidates + financial totals", "Individual donor contributions"],
+      "default": "candidates"
+    },
     "candidateName": {
       "title": "Candidate name",
       "type": "string",
-      "description": "Full or partial candidate name to search for (e.g. \"Warren\" or \"Elizabeth Warren\"). Leave empty and use state/office/party filters alone to browse instead of searching by name.",
+      "description": "Full or partial candidate name to search for (e.g. \"Warren\" or \"Elizabeth Warren\"). Leave empty and use state/office/party filters alone to browse instead of searching by name. Candidates mode only.",
       "editor": "textfield",
       "default": "Warren"
+    },
+    "donorName": {
+      "title": "Donor name",
+      "type": "string",
+      "description": "Search individual contributions by donor name (e.g. \"Elon Musk\"). Contributions mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "donorEmployer": {
+      "title": "Donor employer",
+      "type": "string",
+      "description": "Filter contributions by the donor's self-reported employer (e.g. \"Google\"). Contributions mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "minAmount": {
+      "title": "Minimum contribution amount ($)",
+      "type": "integer",
+      "description": "Only return contributions of at least this amount. Contributions mode only.",
+      "editor": "number"
     },
     "state": {
       "title": "State (2-letter code)",
       "type": "string",
-      "description": "Restrict to candidates running in this state, e.g. \"CA\", \"TX\". Leave empty for all states.",
+      "description": "Candidates mode: restrict to candidates running in this state. Contributions mode: restrict to donors reporting an address in this state. e.g. \"CA\", \"TX\". Leave empty for all states.",
       "editor": "textfield",
       "default": ""
     },
     "office": {
       "title": "Office",
       "type": "string",
-      "description": "Restrict to one office.",
+      "description": "Restrict to one office. Candidates mode only.",
       "editor": "select",
       "enum": ["", "H", "S", "P"],
       "enumTitles": ["All offices", "House", "Senate", "President"],
@@ -29,26 +58,26 @@
     "party": {
       "title": "Party code",
       "type": "string",
-      "description": "Restrict to one party code, e.g. \"DEM\", \"REP\", \"IND\", \"LIB\". Leave empty for all parties.",
+      "description": "Restrict to one party code, e.g. \"DEM\", \"REP\", \"IND\", \"LIB\". Candidates mode only.",
       "editor": "textfield",
       "default": ""
     },
     "electionYear": {
       "title": "Election cycle year",
       "type": "integer",
-      "description": "Restrict to candidates active in this even-numbered election cycle, e.g. 2024. Leave empty for all cycles.",
+      "description": "Even-numbered election cycle, e.g. 2024. Candidates mode: leave empty for all cycles. Contributions mode: required by the FEC API to keep the query fast — defaults to the most recent even year if left empty.",
       "editor": "number"
     },
     "includeTotals": {
       "title": "Include financial totals",
       "type": "boolean",
-      "description": "For each candidate found, fetch their campaign financial totals (receipts, disbursements, cash on hand, individual contributions) from the FEC's totals endpoint. Adds one extra request per candidate.",
+      "description": "For each candidate found, fetch their campaign financial totals (receipts, disbursements, cash on hand, individual contributions) from the FEC's totals endpoint. Adds one extra request per candidate. Candidates mode only.",
       "default": true
     },
     "maxResults": {
-      "title": "Max candidates",
+      "title": "Max results",
       "type": "integer",
-      "description": "Stop after this many candidates.",
+      "description": "Stop after this many rows (candidates or contributions, depending on searchMode).",
       "editor": "number",
       "default": 20,
       "minimum": 1,

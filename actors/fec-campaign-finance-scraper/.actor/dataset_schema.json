@@ -87,6 +87,46 @@
       "coverageEndDate": {
         "type": ["string", "null"],
         "title": "Totals coverage end"
+      },
+      "contributorName": {
+        "type": ["string", "null"],
+        "title": "Donor name (contributions mode)"
+      },
+      "contributorEmployer": {
+        "type": ["string", "null"],
+        "title": "Donor employer (contributions mode)"
+      },
+      "contributorOccupation": {
+        "type": ["string", "null"],
+        "title": "Donor occupation (contributions mode)"
+      },
+      "contributorCity": {
+        "type": ["string", "null"],
+        "title": "Donor city (contributions mode)"
+      },
+      "contributorState": {
+        "type": ["string", "null"],
+        "title": "Donor state (contributions mode)"
+      },
+      "contributionAmount": {
+        "type": ["number", "null"],
+        "title": "Contribution amount, USD (contributions mode)"
+      },
+      "contributionDate": {
+        "type": ["string", "null"],
+        "title": "Contribution date (contributions mode)"
+      },
+      "contributorAggregateYtd": {
+        "type": ["number", "null"],
+        "title": "Donor's aggregate YTD giving to this committee, USD (contributions mode)"
+      },
+      "committeeId": {
+        "type": ["string", "null"],
+        "title": "Receiving committee ID (contributions mode)"
+      },
+      "committeeName": {
+        "type": ["string", "null"],
+        "title": "Receiving committee name (contributions mode)"
       }
     }
   },

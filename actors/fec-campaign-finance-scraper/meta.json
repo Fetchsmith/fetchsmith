@@ -1,8 +1,8 @@
 {
-  "title": "FEC Campaign Finance Scraper - Candidates & Totals",
-  "description": "Search US federal candidates by name/state/office/party/cycle with campaign financial totals, via the official FEC open.fec.gov API. No key needed.",
-  "seoTitle": "FEC Campaign Finance Scraper - Candidates & Totals",
-  "seoDescription": "Search federal candidates (House, Senate, President) by name, state, office, party or cycle and get campaign financial totals - receipts, disbursements, cash on hand - from the FEC's official API.",
+  "title": "FEC Campaign Finance Scraper - Candidates, Totals & Donors",
+  "description": "Search US federal candidates by name/state/office/party/cycle with campaign financial totals, or search individual donor contributions directly, via the official FEC open.fec.gov API. No key needed.",
+  "seoTitle": "FEC Campaign Finance Scraper - Candidates, Totals & Donors",
+  "seoDescription": "Search federal candidates by name, state, office, party or cycle with campaign financial totals, or search individual donor contributions by name/employer - from the FEC's official API.",
   "categories": ["LEAD_GENERATION", "BUSINESS"],
   "events": {
     "result": { "eventTitle": "Result item", "eventDescription": "One candidate record (with financial totals if requested) returned to the dataset.", "eventPriceUsd": 0.001 }
