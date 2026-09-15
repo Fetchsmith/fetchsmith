@@ -91,7 +91,7 @@ One row per notice, including:
 
 ## Pricing
 
-**$0.003 per result on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0028, Silver $0.0026), no start fee. You are charged only for rows that actually land in your dataset — notices filtered out by `cpvCodes`, `searchQuery`, the value bounds or `openOnly` are **never charged**, even though the Actor had to read them from the API to decide.
+**The first 25 matching records of every run are free.** After that, **$0.003 per result on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0028, Silver $0.0026), no start fee. You are charged only for rows that actually land in your dataset — notices filtered out by `cpvCodes`, `searchQuery`, the value bounds or `openOnly` are **never charged**, even though the Actor had to read them from the API to decide.
 
 ## FAQ
 

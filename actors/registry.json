@@ -766,7 +766,7 @@
     {
       "slug": "uk-find-a-tender-scraper",
       "title": "UK Public Contracts \u2014 Find a Tender + Contracts Finder",
-      "summary": "UK public-sector tenders and contract awards from BOTH official portals \u2014 Find a Tender (above threshold) and Contracts Finder (sub threshold) \u2014 in one deduplicated feed. Filter by CPV, value, keyword and open deadline. Flat JSON with buyer email, phone, address, value and deadlines.",
+      "summary": "UK public-sector tenders and contract awards from BOTH official portals \u2014 Find a Tender (above threshold) and Contracts Finder (sub threshold) \u2014 in one deduplicated feed. Filter by CPV, value, keyword and open deadline. Flat JSON with buyer email, phone, address, value and deadlines. First 25 records of every run are free.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "bEjI8uL0d1edUfeh2",

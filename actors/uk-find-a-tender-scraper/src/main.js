@@ -281,10 +281,19 @@ function matches(row) {
     return true;
 }
 
+// First FREE_PER_RUN matching records of every run are free (matches the leading
+// competitor's trial hook) so a buyer can see real data shape before paying for any of it.
+const FREE_PER_RUN = 25;
 let pushed = 0;
+let freeGiven = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     if (isPPE) {
+        if (freeGiven < FREE_PER_RUN) {
+            freeGiven += 1;
+            await Actor.pushData(item); pushed += 1;
+            return pushed < maxResults;
+        }
         const r = await Actor.charge({ eventName: 'result', count: 1 });
         if (r.chargedCount === 0) return false;
         await Actor.pushData(item); pushed += 1;
