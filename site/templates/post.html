@@ -11,10 +11,11 @@
 </div>
 <aside class="side">
 {% if tool %}
-  <div class="price">{{ tool.title }}</div>
-  <div class="muted">{{ tool.summary }}</div>
-  <a class="btn" href="/tools/{{ tool.slug }}">Tool details</a>
-  <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ tool.slug }}" rel="noopener">Run on Apify Store</a>
+  <div class="price">{{ tool.credits_per_result or 1 }} credit <small>per result</small></div>
+  <div class="muted">About ${{ '%.4f' % ((tool.credits_per_result or 1) * 0.0025) }}/result on the Starter pack — {{ tool.title }}</div>
+{% if checkout_live %}  <a class="btn" href="/pricing">Buy credits</a>
+  <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ tool.slug }}" rel="noopener">Run on Apify Store</a>{% else %}  <a class="btn" href="https://apify.com/{{ apify_user }}/{{ tool.slug }}" rel="noopener">Run on Apify Store</a>
+  <a class="btn ghost" href="/tools/{{ tool.slug }}">Tool details</a>{% endif %}
 {% else %}
   <div class="price">FetchSmith</div>
   <div class="muted">Pay-per-result extraction tools. No browser farm, no subscription.</div>
