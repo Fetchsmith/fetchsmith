@@ -2,7 +2,7 @@
 
 Search every US FDA product recall from the official **openFDA enforcement API** — food, drug and device — and get it back as flat, typed JSON/CSV/Excel rows.
 
-This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. At **$0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee**, it undercuts every all-three-types competitor we checked — the most-used one charges $0.05/result for the same raw openFDA data plus an AI severity score we don't attempt to replicate.
+This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. Every row can also carry a `riskScore` (0-100) — a documented, deterministic severity/recency/scope formula, not a black-box "AI" claim. At **$0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee**, it undercuts every all-three-types competitor we checked — the highest-volume one charges $0.05/result for the same raw openFDA data.
 
 No API key, no login, no browser. Public US government open data ([openFDA licence](https://open.fda.gov/license/)).
 
@@ -34,6 +34,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `searchQuery` | string | Free-text phrase matched against product description, reason for recall and recalling firm. |
 | `order` | string | `desc` (newest first, default) or `asc` — sorts by whichever field `dateField` selects. |
 | `maxResults` | integer | Total rows across all selected product types. Default 100. |
+| `includeRiskScore` | boolean | Add the `riskScore` field (see Output/FAQ). Default `true`. |
 
 Filters are **ANDed**. A search query plus a state plus a classification over a short date window often has zero real matches — drop one filter and retry.
 
@@ -51,9 +52,9 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
 
 ## Output
 
-33 fields per row. Every date is converted from openFDA's `YYYYMMDD` strings to ISO `YYYY-MM-DD`.
+34 fields per row. Every date is converted from openFDA's `YYYYMMDD` strings to ISO `YYYY-MM-DD`.
 
-**All product types:** `productType`, `recallNumber`, `eventId`, `status`, `classification`, `voluntaryMandated`, `initialFirmNotification`, `recallingFirm`, `city`, `state`, `country`, `productDescription`, `productQuantity`, `reasonForRecall`, `distributionPattern`, `codeInfo`, `moreCodeInfo`, `reportDate`, `recallInitiationDate`, `centerClassificationDate`, `terminationDate`.
+**All product types:** `productType`, `recallNumber`, `eventId`, `status`, `classification`, `voluntaryMandated`, `initialFirmNotification`, `recallingFirm`, `city`, `state`, `country`, `productDescription`, `productQuantity`, `reasonForRecall`, `distributionPattern`, `codeInfo`, `moreCodeInfo`, `reportDate`, `recallInitiationDate`, `centerClassificationDate`, `terminationDate`, `riskScore`.
 
 **Drug recalls only** (see the FAQ): `brandName`, `genericName`, `manufacturerName`, `substanceName`, `productNdc`, `packageNdc`, `upc`, `applicationNumber`, `drugRoute`, `rxcui`, `unii`, `splSetId`.
 
@@ -81,6 +82,7 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
   "recallInitiationDate": "2026-08-06",
   "centerClassificationDate": "2026-08-21",
   "terminationDate": null,
+  "riskScore": 80,
   "brandName": "LEVOTHYROXINE SODIUM",
   "genericName": "LEVOTHYROXINE SODIUM",
   "manufacturerName": "Accord Healthcare Inc.",
@@ -123,8 +125,11 @@ It reads openFDA, the FDA's own public open-data API, which requires no key and 
 **My run returned zero rows.**
 The log explains why in order of likelihood. Usually it is ANDed filters that have no real intersection, or a `reportDate` window that is too narrow. Try one distinctive word in `searchQuery` rather than a long phrase.
 
+**What exactly is `riskScore` and why isn't it called "AI"?**
+It's a plain weighted formula, computed with no external calls and no model: 45% classification severity (Class I=100, II=60, III=25), 30% recency (linear decay from 100 at today's date to 0 at two years old), 25% distribution scope (100 for nationwide/international language in `distributionPattern`, scaling down by how many distinct US state codes are mentioned, down to 30 for a single state/city). Rounded to an integer 0-100. We could have marketed this as "AI-powered" like a competitor does for the same idea, but it isn't AI, and saying so would be misleading — this is what it actually computes. Set `includeRiskScore: false` to skip it.
+
 **How does this compare to other FDA recall scrapers?**
-Checked live pricing again on 2026-09-13, against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, cheaper at every run size, and we cover drug and device recalls too, not just food. Their one real feature edge — filtering by recalling firm, city, voluntary/mandated status, and choosing which date field to filter on (report vs. initiation vs. termination date) — is now matched (`recallingFirm`, `city`, `voluntaryMandated`, `dateField` above).
+Checked live pricing and features again on 2026-09-15 against the highest-user leader (`benthepythondev/fda-recall-intelligence`, 11 users): they charge $0.05/result tapering to $0.035 on Diamond, **plus a per-GB Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, 10-20x cheaper at every tier. Their input set (8 fields) is a subset of ours (14 fields: three date-field choices instead of one, city, voluntary/mandated, free-text search across three fields, state, and no 1,000-row cap — ours goes to 50,000). Their one real feature, an "AI-powered intelligence score", is now matched by `riskScore` above — ours is fully documented instead of a black box. Also checked against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only, checked 2026-09-13): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — cheaper at every run size, and we cover drug and device recalls too, not just food.
 
 ## Related guides
 

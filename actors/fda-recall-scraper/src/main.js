@@ -42,6 +42,7 @@ const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMand
     ? String(input.voluntaryMandated).trim()
     : '';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
+const includeRiskScore = input.includeRiskScore !== false;
 
 // Which date the reportDateFrom/reportDateTo range and the sort both apply to. report_date
 // (FDA publication) is the long-standing default; the other two are real distinct fields on
@@ -179,6 +180,51 @@ const isoOf = (v) => {
     return d.length === 8 ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` : null;
 };
 
+// A deterministic, documented 0-100 severity/recency/scope score — not a machine-learning
+// model, just a transparent weighted formula (see README). Built as an answer to competitor
+// `benthepythondev/fda-recall-intelligence`'s "AI-powered intelligence score": we do not call
+// an LLM for customer-facing inference (standing rule), and a made-up "AI" label on a formula
+// like this would be misleading, so this ships as a plainly-explained risk score instead.
+const CLASS_SEVERITY = { 'Class I': 100, 'Class II': 60, 'Class III': 25 };
+const US_STATES = new Set(
+    'AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC'.split(' '),
+);
+
+function severityPoints(classification) {
+    return CLASS_SEVERITY[classification] ?? 50; // unclassified/unknown: neutral, not zero
+}
+
+// Linear decay from 100 (today) to 0 at two years old. Recalls are actionable news; a two-year-old
+// one is mostly historical record-keeping, which is why the floor is 0 rather than some non-zero base.
+function recencyPoints(isoDate) {
+    if (!isoDate) return 50; // no usable date: neutral
+    const days = (today - new Date(isoDate)) / 86_400_000;
+    if (!Number.isFinite(days)) return 50;
+    return Math.max(0, Math.min(100, Math.round(100 - (days / 730) * 100)));
+}
+
+// `distribution_pattern` is free text (verified live sample: "New York.", "NY, NJ, PA",
+// "Product was shipped to the following states: KY, NC..."). Detecting explicit nationwide/
+// international language is reliable; short of that, the number of distinct US state codes
+// found in the text is a reasonable proxy for how many people were exposed.
+function scopePoints(pattern) {
+    if (!pattern) return 40; // unknown: neutral-low, don't reward missing data
+    if (/nationwide|worldwide|international/i.test(pattern)) return 100;
+    const codes = new Set((pattern.match(/\b[A-Z]{2}\b/g) ?? []).filter((c) => US_STATES.has(c)));
+    if (codes.size === 0) return 30; // no recognizable multi-state code: reads as one state/city
+    if (codes.size === 1) return 30;
+    if (codes.size <= 5) return 55;
+    if (codes.size <= 15) return 75;
+    return 90;
+}
+
+function riskScore(classification, isoDate, distributionPattern) {
+    const s = severityPoints(classification);
+    const r = recencyPoints(isoDate);
+    const d = scopePoints(distributionPattern);
+    return Math.round(0.45 * s + 0.3 * r + 0.25 * d);
+}
+
 function normalize(r, productType) {
     // `openfda` is populated on drug rows only — verified 5/5 drug rows populated and 5/5
     // food and device rows empty on a live sample. These flattened fields are therefore
@@ -212,6 +258,10 @@ function normalize(r, productType) {
         recallInitiationDate: isoOf(r.recall_initiation_date),
         centerClassificationDate: isoOf(r.center_classification_date),
         terminationDate: isoOf(r.termination_date),
+
+        riskScore: includeRiskScore
+            ? riskScore(r.classification, isoOf(r.recall_initiation_date) ?? isoOf(r.report_date), r.distribution_pattern)
+            : null,
 
         // drug-only, see comment above
         brandName: first(o.brand_name),

@@ -104,6 +104,12 @@
       "default": 100,
       "minimum": 1,
       "maximum": 50000
+    },
+    "includeRiskScore": {
+      "title": "Include risk score",
+      "type": "boolean",
+      "description": "Add a riskScore field (0-100) to every row: a documented, deterministic formula (not AI) combining Class I/II/III severity (45%), how recent the recall is (30%, linear decay to 0 at two years old), and distribution scope parsed from distributionPattern (25%: nationwide/international text or count of US state codes mentioned). Useful for sorting/triaging a large result set. On by default; set false to skip the computation.",
+      "default": true
     }
   },
   "required": []

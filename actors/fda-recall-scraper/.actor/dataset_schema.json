@@ -4,259 +4,268 @@
     "type": "object",
     "properties": {
       "productType": {
+        "title": "ProductType",
+        "example": "food",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ProductType",
-        "example": "drug"
+        ]
       },
       "recallNumber": {
+        "title": "RecallNumber",
+        "example": "H-1305-2026",
         "type": [
           "string",
           "null"
-        ],
-        "title": "RecallNumber",
-        "example": "D-0785-2026"
+        ]
       },
       "eventId": {
+        "title": "EventId",
+        "example": "99646",
         "type": [
           "string",
           "null"
-        ],
-        "title": "EventId",
-        "example": "99584"
+        ]
       },
       "status": {
+        "title": "Status",
+        "example": "Ongoing",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Status",
-        "example": "Ongoing"
+        ]
       },
       "classification": {
+        "title": "Classification",
+        "example": "Class III",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Classification",
-        "example": "Class II"
+        ]
       },
       "voluntaryMandated": {
+        "title": "VoluntaryMandated",
+        "example": "Voluntary: Firm initiated",
         "type": [
           "string",
           "null"
-        ],
-        "title": "VoluntaryMandated",
-        "example": "Voluntary: Firm initiated"
+        ]
       },
       "initialFirmNotification": {
+        "title": "InitialFirmNotification",
+        "example": "Other",
         "type": [
           "string",
           "null"
-        ],
-        "title": "InitialFirmNotification",
-        "example": "Letter"
+        ]
       },
       "recallingFirm": {
+        "title": "RecallingFirm",
+        "example": "Prince Bakery Inc",
         "type": [
           "string",
           "null"
-        ],
-        "title": "RecallingFirm",
-        "example": "ACCORD HEALTHCARE, INC."
+        ]
       },
       "city": {
+        "title": "City",
+        "example": "Bronx",
         "type": [
           "string",
           "null"
-        ],
-        "title": "City",
-        "example": "Raleigh"
+        ]
       },
       "state": {
+        "title": "State",
+        "example": "NY",
         "type": [
           "string",
           "null"
-        ],
-        "title": "State",
-        "example": "NC"
+        ]
       },
       "country": {
+        "title": "Country",
+        "example": "United States",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Country",
-        "example": "United States"
+        ]
       },
       "productDescription": {
+        "title": "ProductDescription",
+        "example": "Prince ITALIAN BREAD; Sesame; ITALIAN & FRENCH BREAD, LARGE; NET WEIGHT 12 OZ. (340g); INGREDIENTS: ENRICHED BLEACHED FL",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ProductDescription",
-        "example": "Levothyroxine Sodium Tablets, USP, 200 mcg (0.2 mg), packaged in a) 90-count bottles (NDC  16729-457-15) and b) 1000-cou"
+        ]
       },
       "productQuantity": {
+        "title": "ProductQuantity",
+        "example": "150 units (total)",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ProductQuantity",
-        "example": "N/A"
+        ]
       },
       "reasonForRecall": {
+        "title": "ReasonForRecall",
+        "example": "Sesame is not declared in the ingredient statement but is declared in the statement of identity.",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ReasonForRecall",
-        "example": "Subpotent Drug"
+        ]
       },
       "distributionPattern": {
+        "title": "DistributionPattern",
+        "example": "New York.",
         "type": [
           "string",
           "null"
-        ],
-        "title": "DistributionPattern",
-        "example": "Nationwide within the United States"
+        ]
       },
       "codeInfo": {
+        "title": "CodeInfo",
+        "example": "No codes",
         "type": [
           "string",
           "null"
-        ],
-        "title": "CodeInfo",
-        "example": "a) Lot # D2402430, D2402431, Exp Date: 10/31/2026. b) Lot #: D2402432, Exp. Date 10/31/2026; D2500180, Exp. Date 12/31/2"
+        ]
       },
       "moreCodeInfo": {
+        "title": "MoreCodeInfo",
         "type": [
           "string",
           "null"
-        ],
-        "title": "MoreCodeInfo"
+        ]
       },
       "reportDate": {
+        "title": "ReportDate",
+        "example": "2026-09-09",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ReportDate",
-        "example": "2026-09-02"
+        ]
       },
       "recallInitiationDate": {
+        "title": "RecallInitiationDate",
+        "example": "2026-08-13",
         "type": [
           "string",
           "null"
-        ],
-        "title": "RecallInitiationDate",
-        "example": "2026-08-06"
+        ]
       },
       "centerClassificationDate": {
+        "title": "CenterClassificationDate",
+        "example": "2026-08-28",
         "type": [
           "string",
           "null"
-        ],
-        "title": "CenterClassificationDate",
-        "example": "2026-08-21"
+        ]
       },
       "terminationDate": {
+        "title": "TerminationDate",
+        "example": "2026-08-27",
         "type": [
           "string",
           "null"
-        ],
-        "title": "TerminationDate"
+        ]
+      },
+      "riskScore": {
+        "title": "RiskScore",
+        "example": 47,
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "brandName": {
+        "title": "BrandName",
+        "example": "CLINDAMYCIN PHOSPHATE",
         "type": [
           "string",
           "null"
-        ],
-        "title": "BrandName",
-        "example": "LEVOTHYROXINE SODIUM"
+        ]
       },
       "genericName": {
+        "title": "GenericName",
+        "example": "CLINDAMYCIN PHOSPHATE",
         "type": [
           "string",
           "null"
-        ],
-        "title": "GenericName",
-        "example": "LEVOTHYROXINE SODIUM"
+        ]
       },
       "manufacturerName": {
+        "title": "ManufacturerName",
+        "example": "Baxter Healthcare Company",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ManufacturerName",
-        "example": "Accord Healthcare Inc."
+        ]
       },
       "substanceName": {
+        "title": "SubstanceName",
         "type": [
           "array",
           "null"
-        ],
-        "title": "SubstanceName"
+        ]
       },
       "productNdc": {
+        "title": "ProductNdc",
         "type": [
           "array",
           "null"
-        ],
-        "title": "ProductNdc"
+        ]
       },
       "packageNdc": {
+        "title": "PackageNdc",
         "type": [
           "array",
           "null"
-        ],
-        "title": "PackageNdc"
+        ]
       },
       "upc": {
+        "title": "Upc",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Upc"
+        ]
       },
       "applicationNumber": {
+        "title": "ApplicationNumber",
+        "example": "ANDA208084",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ApplicationNumber",
-        "example": "ANDA212399"
+        ]
       },
       "drugRoute": {
+        "title": "DrugRoute",
         "type": [
           "array",
           "null"
-        ],
-        "title": "DrugRoute"
+        ]
       },
       "rxcui": {
+        "title": "Rxcui",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Rxcui"
+        ]
       },
       "unii": {
+        "title": "Unii",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Unii"
+        ]
       },
       "splSetId": {
+        "title": "SplSetId",
+        "example": "78832ac6-04c5-45e0-ae4d-f56d7920dda9",
         "type": [
           "string",
           "null"
-        ],
-        "title": "SplSetId",
-        "example": "a6233381-3043-4e9a-aaa6-a6b105e5142b"
+        ]
       }
     }
   },
