@@ -91,6 +91,25 @@
       "description": "Add publication-level fields to every post row: free subscriber count, paid-subscriber band, bestseller tier, author name/handle/bio, subscription plan prices, podcast flag, language and first-post date. Costs one extra request per publication (cached), not per post.",
       "default": false
     },
+    "contentType": {
+      "title": "Content type",
+      "type": "string",
+      "description": "Filter posts by type: regular newsletter posts, podcast episodes, or threads (Substack Notes-style discussion posts).",
+      "editor": "select",
+      "enum": [
+        "all",
+        "newsletter",
+        "podcast",
+        "thread"
+      ],
+      "enumTitles": [
+        "All types",
+        "Newsletter posts only",
+        "Podcast episodes only",
+        "Threads only"
+      ],
+      "default": "all"
+    },
     "audienceFilter": {
       "title": "Free / paid posts",
       "type": "string",

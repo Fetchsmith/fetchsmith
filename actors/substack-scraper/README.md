@@ -39,6 +39,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 | `maxCommentsPerPost` | integer | `50` | Cap on comments per post. |
 | `includePublicationInfo` | boolean | `false` | Add the `publication*` profile fields (subscriber count, plan prices, author, bestseller tier) to every post row. One cached request per publication, not per post — and no extra charge. |
 | `audienceFilter` | string | `all` | `all`, `free` (public posts only) or `paid` (subscriber-only posts). |
+| `contentType` | string | `all` | `all`, `newsletter` (text posts only), `podcast` (episodes only) or `thread` (Notes-style threads only). Also works on `postUrls`, not just publication archives. |
 | `publishedAfter` / `publishedBefore` | string | — | ISO dates, e.g. `2026-01-01`. |
 | `maxPostsPerPublication` | integer | `50` | Archive depth per publication — posts **scanned**, before filters. |
 | `maxResults` | integer | `200` | Total cap across everything — this is what you pay for. |
@@ -159,7 +160,7 @@ Pay per result, split by item type so metadata-only and comment-heavy runs aren'
 
 **How far back can it go?** The whole archive — `maxPostsPerPublication` up to 5,000 posts per publication, paginated 50 at a time.
 
-**I used a filter and got far fewer posts than I expected.** `maxPostsPerPublication` is a *scan depth*: it counts posts read from the archive, before `audienceFilter`, `publishedAfter` and `publishedBefore` are applied. Searching `astralcodexten` for `prediction` with `publishedAfter: 2024-06-01` returns 2 posts at the default depth of 50 but 23 at depth 100 — the rest were simply never reached. `searchQuery` makes this easier to hit, because Substack returns search matches in relevance order rather than newest-first. When you combine filters, raise `maxPostsPerPublication` well above the number of rows you want; the run log and status message will tell you when a run was cut short this way. Only `maxResults` affects what you pay for.
+**I used a filter and got far fewer posts than I expected.** `maxPostsPerPublication` is a *scan depth*: it counts posts read from the archive, before `audienceFilter`, `contentType`, `publishedAfter` and `publishedBefore` are applied. Searching `astralcodexten` for `prediction` with `publishedAfter: 2024-06-01` returns 2 posts at the default depth of 50 but 23 at depth 100 — the rest were simply never reached. `searchQuery` makes this easier to hit, because Substack returns search matches in relevance order rather than newest-first. When you combine filters, raise `maxPostsPerPublication` well above the number of rows you want; the run log and status message will tell you when a run was cut short this way. Only `maxResults` affects what you pay for.
 
 **Is it reliable?** It uses documented-shape public JSON endpoints rather than HTML parsing, so it doesn't break when Substack restyles its site. Runs are tested nightly.
 

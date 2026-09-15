@@ -40,6 +40,7 @@ const includeComments = input.includeComments === true;
 const includePublicationInfo = input.includePublicationInfo === true;
 const maxCommentsPerPost = Math.min(Number(input.maxCommentsPerPost ?? 50), 1000);
 const audienceFilter = ['all', 'free', 'paid'].includes(input.audienceFilter) ? input.audienceFilter : 'all';
+const contentType = ['all', 'newsletter', 'podcast', 'thread'].includes(input.contentType) ? input.contentType : 'all';
 const publishedAfter = input.publishedAfter ? new Date(input.publishedAfter) : null;
 const publishedBefore = input.publishedBefore ? new Date(input.publishedBefore) : null;
 const discoverCategories = (input.discoverCategories ?? []).map((c) => String(c ?? '').trim()).filter(Boolean);
@@ -54,7 +55,7 @@ const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
 let excludedByFilters = 0;
-const filtersActive = audienceFilter !== 'all' || !!publishedAfter || !!publishedBefore;
+const filtersActive = audienceFilter !== 'all' || contentType !== 'all' || !!publishedAfter || !!publishedBefore;
 
 async function pushResult(item, eventName = 'result') {
   if (isPPE) {
@@ -179,6 +180,11 @@ function matchesAudience(post) {
   return true;
 }
 
+function matchesContentType(post) {
+  if (contentType === 'all') return true;
+  return post.type === contentType;
+}
+
 function matchesDate(post) {
   if (!publishedAfter && !publishedBefore) return true;
   const d = post.post_date ? new Date(post.post_date) : null;
@@ -220,7 +226,7 @@ function mapPost(post, origin, detail, pubInfo) {
     section: post.section_name ?? null,
     tags: (post.postTags ?? []).map((t) => t.name).filter(Boolean),
     podcastUrl: post.podcast_url ?? null,
-    podcastDurationSec: post.podcast_duration ?? null,
+    podcastDurationSec: post.podcast_duration != null ? Math.round(post.podcast_duration) : null,
     language: post.language ?? null,
     bodyText: includeBodyText ? bodyText : undefined,
     bodyHtml: includeBodyHtml ? bodyHtml : undefined,
@@ -268,7 +274,7 @@ async function fetchDetail(origin, slug) {
 }
 
 async function handlePost(post, origin, preloadedDetail = null) {
-  if (!matchesAudience(post) || !matchesDate(post)) { excludedByFilters += 1; return true; }
+  if (!matchesAudience(post) || !matchesContentType(post) || !matchesDate(post)) { excludedByFilters += 1; return true; }
   const needDetail = includeBodyText || includeBodyHtml;
   const detail = preloadedDetail ?? (needDetail && post.slug ? await fetchDetail(origin, post.slug) : null);
   const pubInfo = await fetchPublicationInfo(origin);
@@ -291,7 +297,7 @@ async function handlePost(post, origin, preloadedDetail = null) {
 }
 
 // Returns 'ok' | 'empty' (archive has no matching posts) | 'filtered' (posts exist but
-// audienceFilter/publishedAfter/publishedBefore excluded all of them) | 'error' (archive request failed).
+// audienceFilter/contentType/publishedAfter/publishedBefore excluded all of them) | 'error' (archive request failed).
 async function scrapePublication(origin) {
   log.info(`Publication: ${origin}${searchQuery ? ` (search: "${searchQuery}")` : ''}`);
   let offset = 0;
@@ -330,7 +336,7 @@ async function scrapePublication(origin) {
     const dropped = excludedByFilters - excludedBefore;
     log.warning(
       `${origin}: scanned the maxPostsPerPublication limit of ${maxPostsPerPublication} post(s) and `
-      + `${dropped} of them were excluded by audienceFilter/publishedAfter/publishedBefore. `
+      + `${dropped} of them were excluded by audienceFilter/contentType/publishedAfter/publishedBefore. `
       + `The cap counts posts scanned, before filtering — raise maxPostsPerPublication to search deeper.`,
     );
     depthCapped.push(origin);
@@ -478,7 +484,7 @@ if (!publicationTargets.length && !postTargets.length) {
       : errored.length
         ? `the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`
         : filtered.length && !empty.length
-          ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/publishedAfter/publishedBefore — try widening those filters`
+          ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore — try widening those filters`
           : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
     await Actor.setStatusMessage(`No items returned — ${why}.`);
   } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote) {

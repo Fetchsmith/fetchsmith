@@ -186,7 +186,7 @@
       "podcastDurationSec": {
         "title": "PodcastDurationSec",
         "type": [
-          "string",
+          "number",
           "null"
         ]
       },

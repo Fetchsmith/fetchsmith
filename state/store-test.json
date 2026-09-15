@@ -1,5 +1,5 @@
 {
- "ts": 1789508401,
+ "ts": 1789510314,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
@@ -39,7 +39,7 @@
   },
   "substack-scraper": {
    "status": "SUCCEEDED",
-   "secs": 87,
+   "secs": 105,
    "items": 50,
    "pass": true
   },
