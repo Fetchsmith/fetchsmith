@@ -1018,7 +1018,7 @@
     {
       "slug": "fda-recall-scraper",
       "title": "FDA Recall Scraper \u2014 Food, Drug & Device Enforcement Reports",
-      "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 34 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls.",
+      "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 34 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. Optional watchLabel mode returns only recalls new since your last run, so a schedule becomes a recall alert.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "Yv9DOUS61nx3xywYM",
@@ -1262,7 +1262,7 @@
     {
       "slug": "grants-gov-scraper",
       "title": "Grants.gov Scraper \u2013 Status, Eligibility & Award Details",
-      "summary": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup.",
+      "summary": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup. Optional watchLabel mode returns only opportunities new since your last run, so a schedule becomes a grant alert.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "Iso3mx8O6oBWJtrFr",

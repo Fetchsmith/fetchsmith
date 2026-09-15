@@ -110,6 +110,12 @@
       "type": "boolean",
       "description": "Add a riskScore field (0-100) to every row: a documented, deterministic formula (not AI) combining Class I/II/III severity (45%), how recent the recall is (30%, linear decay to 0 at two years old), and distribution scope parsed from distributionPattern (25%: nationwide/international text or count of US state codes mentioned). Useful for sorting/triaging a large result set. On by default; set false to skip the computation.",
       "default": true
+    },
+    "watchLabel": {
+      "title": "Watch label (only new since last run)",
+      "type": "string",
+      "description": "Optional. Name a saved search (e.g. \"my-class-i-watch\") and this run returns ONLY recalls not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded recalls as \"new\".",
+      "editor": "textfield"
     }
   },
   "required": []

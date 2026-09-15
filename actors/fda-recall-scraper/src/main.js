@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -43,6 +44,8 @@ const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMand
     : '';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 const includeRiskScore = input.includeRiskScore !== false;
+const watchLabel = String(input.watchLabel ?? '').trim();
+const watchMode = watchLabel.length > 0;
 
 // Which date the reportDateFrom/reportDateTo range and the sort both apply to. report_date
 // (FDA publication) is the long-standing default; the other two are real distinct fields on
@@ -66,6 +69,88 @@ const reportDateFrom = normDate(
     compactDay(new Date(today.getTime() - 365 * 86400_000)),
 );
 const reportDateTo = normDate(input.reportDateTo, compactDay(today));
+
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query. Same shape as
+// grants-gov-scraper (cycle 298) / federal-register-scraper (cycle 297) / nih-reporter-scraper
+// (cycle 296) -- copy that design, don't reinvent it.
+//
+// The baseline is the buyer's own -- the recalls this label has already delivered -- kept in a
+// NAMED key-value store on the buyer's own account (the default KV store is per-run and would
+// reset the baseline every run, i.e. re-charge the whole result set on every scheduled run).
+const WATCH_STORE = 'fetchsmith-fda-recall-watch';
+const SEED_CAP = 20000; // our own bound on a seed walk's runtime, not a server limit
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+// reportDateFrom/reportDateTo default to a ROLLING window (last 365 days / today, both computed
+// from `today` above) -- this is exactly the federal-register-scraper trap (cycle 297):
+// fingerprinting the *resolved* dates would hand a scheduled daily watch a fresh baseline every
+// single day (seeding forever, delivering nothing, looking healthy in the log the whole time).
+// The fix is the same: fingerprint the buyer's raw input (or null if they left it as the rolling
+// default), never the value `normDate()` resolved it to. A sliding default window naturally
+// admitting newly-in-range recalls as "new" on a later run is correct watch behaviour, not a bug.
+const watchCriteria = {
+    productTypes: [...productTypes].sort(),
+    dateField,
+    reportDateFrom: input.reportDateFrom ? String(input.reportDateFrom).trim() : null,
+    reportDateTo: input.reportDateTo ? String(input.reportDateTo).trim() : null,
+    classifications: [...classifications].sort(),
+    states: [...states].sort(),
+    status,
+    recallingFirm,
+    city,
+    voluntaryMandated,
+    searchQuery,
+};
+
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Set(); // `${productType}:${recallNumber|event_id:product_description}` keys already delivered
+
+async function saveWatchRecord(status_) {
+    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        criteria: watchCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status_,
+        runCount: (watchRecord.runCount ?? 0) + 1,
+        seenCount: ids.length,
+        seenIds: ids,
+    });
+}
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        for (const id of existing.seenIds) watchSeen.add(String(id));
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered recall(s). Only recalls NOT in that baseline are returned and charged.`,
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+            + 'It records which recalls already match and returns ZERO results (you are charged nothing). Run it '
+            + 'again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+        );
+    }
+}
 
 // A bare `sort` is rejected unless the field exists on the endpoint; all 3 dateField choices
 // are valid sort fields on all three endpoints (verified live).
@@ -300,8 +385,16 @@ log.info(
     + (recallingFirm ? ` recallingFirm="${recallingFirm}"` : '')
     + (city ? ` city="${city}"` : '')
     + (voluntaryMandated ? ` voluntaryMandated="${voluntaryMandated}"` : '')
-    + (searchQuery ? ` searchQuery="${searchQuery}"` : ''),
+    + (searchQuery ? ` searchQuery="${searchQuery}"` : '')
+    + (watchMode ? ` watchLabel="${watchLabel}"` : ''),
 );
+
+// recall_number is unique per recall; event_id groups several products in one event and is the
+// fallback identity when a row has no recall_number. Shared by the real push loop AND the
+// watch-mode seed walk below so the two can never disagree on what a recall's stable id is.
+function dedupKeyOf(productType, row) {
+    return `${productType}:${row.recall_number ?? `${row.event_id}:${row.product_description}`}`;
+}
 
 // One page-buffered reader per product type. Rows are emitted round-robin (one per type per
 // round) rather than draining one type before the next: a single page holds up to 1000 rows,
@@ -309,10 +402,12 @@ log.info(
 // 0% drug/device.
 const pageSize = Math.min(MAX_LIMIT, Math.max(20, Math.min(maxResults, 200)));
 const readers = [];
-for (const productType of productTypes) {
-    const windows = await planWindows(productType, reportDateFrom, reportDateTo);
-    if (windows === null) continue; // API failed for this type; others still run
-    readers.push({ productType, windows, windowIdx: 0, skip: 0, buffer: [], done: !windows.length, pushed: 0 });
+if (!(watchMode && seeding)) {
+    for (const productType of productTypes) {
+        const windows = await planWindows(productType, reportDateFrom, reportDateTo);
+        if (windows === null) continue; // API failed for this type; others still run
+        readers.push({ productType, windows, windowIdx: 0, skip: 0, buffer: [], done: !windows.length, pushed: 0 });
+    }
 }
 
 async function refill(reader) {
@@ -333,32 +428,101 @@ async function refill(reader) {
     }
 }
 
-const seen = new Set();
-let scanned = 0;
-let keepGoing = true;
-
-while (keepGoing && pushed < maxResults && readers.some((r) => !r.done || r.buffer.length)) {
-    let emitted = false;
-    for (const reader of readers) {
-        if (!keepGoing || pushed >= maxResults) break;
-        await refill(reader);
-        const row = reader.buffer.shift();
-        if (!row) continue;
-        emitted = true;
-        scanned += 1;
-        // recall_number is unique per recall; event_id groups several products in one event.
-        const key = `${reader.productType}:${row.recall_number ?? `${row.event_id}:${row.product_description}`}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        reader.pushed += 1;
-        keepGoing = await pushResult(normalize(row, reader.productType));
+// Seeding only needs ids, so it walks every window at the API's own max page size (1000, not the
+// smaller `pageSize` the real run uses) rather than reusing the `readers` structure above -- the
+// federal-register-scraper trap (cycle 297) was a seed silently inheriting a small per-page size
+// tied to maxResults and stopping short of the full match set. This still calls the exact same
+// `planWindows`/`fetchPage`/`buildSearch` functions the real run uses, so the two walks can never
+// page the underlying API differently -- only how many rows they keep differs (ids vs full rows).
+// Unbounded by maxResults on purpose: a baseline that stopped early would report every recall past
+// the stopping point as "new" on the first incremental run.
+async function seedBaseline() {
+    for (const productType of productTypes) {
+        const windows = await planWindows(productType, reportDateFrom, reportDateTo);
+        if (windows === null) continue;
+        for (const w of windows) {
+            let skip = 0;
+            for (;;) {
+                if (skip >= Math.min(w.total, MAX_SKIP)) break;
+                const limit = Math.min(MAX_LIMIT, MAX_SKIP - skip);
+                const page = await fetchPage(productType, buildSearch(w.from, w.to), limit, skip);
+                if (!page || !page.results.length) break;
+                for (const row of page.results) watchSeen.add(dedupKeyOf(productType, row));
+                skip += limit;
+                if (watchSeen.size >= SEED_CAP) {
+                    log.warning(
+                        `Watch label "${watchLabel}" seed hit the ${SEED_CAP}-recall cap before scanning the whole `
+                        + 'match set. Narrow the query (a shorter date window, a classification, a state) so the '
+                        + 'whole result set fits, or the first incremental run will report recalls past the cap as new.',
+                    );
+                    log.info(`Baseline walk: ${watchSeen.size} recall id(s) recorded.`);
+                    return;
+                }
+                if (page.results.length < limit) break; // last page of this window
+            }
+        }
     }
-    if (!emitted) break;
+    log.info(`Baseline walk: ${watchSeen.size} recall id(s) recorded.`);
 }
 
-for (const reader of readers) log.info(`${reader.productType}: pushed ${reader.pushed} recalls.`);
+let scanned = 0;
+let skippedSeen = 0;
 
-if (pushed === 0) {
+if (watchMode && seeding) {
+    await seedBaseline();
+} else {
+    const seen = new Set();
+    let keepGoing = true;
+
+    while (keepGoing && pushed < maxResults && readers.some((r) => !r.done || r.buffer.length)) {
+        let emitted = false;
+        for (const reader of readers) {
+            if (!keepGoing || pushed >= maxResults) break;
+            await refill(reader);
+            const row = reader.buffer.shift();
+            if (!row) continue;
+            emitted = true;
+            scanned += 1;
+            const key = dedupKeyOf(reader.productType, row);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            // Already delivered under this watch label: dropped before any charge, so a recall
+            // is never paid for twice.
+            if (watchMode && watchSeen.has(key)) { skippedSeen += 1; continue; }
+            reader.pushed += 1;
+            const before = pushed;
+            keepGoing = await pushResult(normalize(row, reader.productType));
+            // Recorded as delivered only after the charge actually succeeded -- anything dropped
+            // by maxResults or a charge limit stays "new" for the next run.
+            if (watchMode && pushed > before) watchSeen.add(key);
+        }
+        if (!emitted) break;
+    }
+
+    for (const reader of readers) log.info(`${reader.productType}: pushed ${reader.pushed} recalls.`);
+}
+
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} recall(s) recorded as already-seen, `
+            + '0 results returned, 0 charged. The next run on this label and these filters returns only new recalls.',
+        );
+    } else {
+        log.info(
+            `Watch label "${watchLabel}": ${pushed} new recall(s) since the last run `
+            + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+        );
+    }
+}
+
+if (pushed === 0 && watchMode && !seeding) {
+    log.warning(
+        `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching recall(s) `
+        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+    );
+} else if (pushed === 0 && !seeding) {
     log.warning(
         `No recalls matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) the filters are ANDed — a searchQuery plus a state plus a classification over a short '
@@ -373,5 +537,5 @@ if (pushed === 0) {
     );
 }
 
-log.info(`Done. Pushed ${pushed} recalls from ${readers.length} product type(s) (scanned ${scanned} rows).`);
+log.info(`Done. Pushed ${pushed} recalls from ${productTypes.length} product type(s) (scanned ${scanned} rows).`);
 await Actor.exit();
