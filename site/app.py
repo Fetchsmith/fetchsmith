@@ -1,5 +1,6 @@
 """FetchSmith web app: catalog, legal pages, API (keys + credits), Polar checkout/webhooks."""
 import os, json, time, secrets, sqlite3, hmac, hashlib, base64, logging
+from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse, RedirectResponse, Response
@@ -96,6 +97,10 @@ def _parse_post(path: Path):
         "title": meta.get("title", path.stem),
         "description": meta.get("description", ""),
         "date": meta.get("date", ""),
+        "date_modified": max(
+            meta.get("date", ""),
+            datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).strftime("%Y-%m-%d"),
+        ),
         "tags": [t.strip() for t in meta.get("tags", "").split(",") if t.strip()],
         "tool": meta.get("tool", ""),
         "syndicated": meta.get("syndicated", ""),
