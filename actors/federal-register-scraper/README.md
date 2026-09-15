@@ -50,6 +50,21 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 | `cfrTitle` / `cfrPart` | Filter to documents affecting a specific Code of Federal Regulations title (1-50) and, optionally, a part within it (e.g. title `40`, part `60` = 40 CFR Part 60, New Source Performance Standards). Verified live: a single title alone narrows the 10,000-clamped baseline to a few hundred/year; adding a part narrows further into the dozens. `cfrPart` requires `cfrTitle` — the API has no title-less part lookup and 400s on one, so this Actor fails loudly client-side instead. |
 | `order` | `newest`, `oldest` or `relevance`. |
 | `maxResults` | Up to 50,000. |
+| `watchLabel` | Optional. Name a saved query and get **only what is new since your last run** — see below. |
+
+## Only what's new since last run (`watchLabel`)
+
+A rule-watching job is a *subscription*, not a search: you want the documents published since you last looked, not the same 400 rows re-delivered (and re-charged) every morning.
+
+Set `watchLabel` to a name for the query — `epa-air-rules`, say — and this Actor keeps track of which documents it has already given you under that name:
+
+- **The first run on a new label is a free baseline.** It records what already matches, returns **zero** results and charges **nothing**. It walks ids only, not full documents.
+- **Every run after that returns only the new documents.** Already-delivered rows are dropped before they are built or billed, so you never pay for the same document twice.
+- **A document counts as delivered only once it has actually been charged.** Anything cut off by `maxResults` or a charge limit stays "new" for the next run rather than vanishing.
+- **Changing a filter starts a fresh baseline** — a different filter is a different question, so you don't get a dump of everything the old, narrower query happened to exclude.
+- **The rolling 90-day default date window is deliberately *not* part of that identity.** It moves every day; if it counted, a daily schedule would re-seed forever and never deliver anything. Dates you set *explicitly* do count.
+
+The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a Federal Register alert.
 
 ## Sample output
 
@@ -90,6 +105,12 @@ No. Each row carries `fullTextUrl`, the public plain-text URL, so you fetch bodi
 
 **Is this legal?**
 Yes. federalregister.gov publishes this API for public reuse, the content is US-government work in the public domain, and no row contains personal data.
+
+**Why did my first `watchLabel` run return nothing?**
+That is what a baseline run does: it records what already matches so that "new" means something, returns zero rows and charges you zero. The next run on the same label and filters returns only what has been published since.
+
+**Can I reset or inspect a watch baseline?**
+Yes. It is a plain JSON record in the `fetchsmith-fedreg-watch` key-value store on your own account, keyed by your label plus a fingerprint of the filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
 
 ## Related guides
 

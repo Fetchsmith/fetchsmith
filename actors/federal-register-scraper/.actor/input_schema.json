@@ -1,90 +1,122 @@
 {
-  "title": "Federal Register Scraper input",
-  "type": "object",
-  "schemaVersion": 1,
-  "properties": {
-    "documentTypes": {
-      "title": "Document types",
-      "type": "array",
-      "description": "Which Federal Register document types to return. All four by default.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": ["RULE", "PRORULE", "NOTICE", "PRESDOCU"],
-        "enumTitles": ["Final rule", "Proposed rule", "Notice", "Presidential document"]
-      },
-      "uniqueItems": true,
-      "default": ["RULE", "PRORULE", "NOTICE", "PRESDOCU"]
+    "title": "Federal Register Scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "documentTypes": {
+            "title": "Document types",
+            "type": "array",
+            "description": "Which Federal Register document types to return. All four by default.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "RULE",
+                    "PRORULE",
+                    "NOTICE",
+                    "PRESDOCU"
+                ],
+                "enumTitles": [
+                    "Final rule",
+                    "Proposed rule",
+                    "Notice",
+                    "Presidential document"
+                ]
+            },
+            "uniqueItems": true,
+            "default": [
+                "RULE",
+                "PRORULE",
+                "NOTICE",
+                "PRESDOCU"
+            ]
+        },
+        "publicationDateFrom": {
+            "title": "Published from",
+            "type": "string",
+            "description": "Earliest publication date, YYYY-MM-DD. Defaults to 90 days ago. The archive reaches back to 1994-01-03 if you widen it.",
+            "editor": "textfield"
+        },
+        "publicationDateTo": {
+            "title": "Published to",
+            "type": "string",
+            "description": "Latest publication date, YYYY-MM-DD. Defaults to today.",
+            "editor": "textfield"
+        },
+        "agencies": {
+            "title": "Agencies",
+            "type": "array",
+            "description": "Agency slugs (from a federalregister.gov/agencies/<slug> URL) or full agency names \u2014 both are accepted and resolved against the official 472-agency list. Filtering by a parent agency includes its sub-agencies: \"homeland-security-department\" also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. Leave empty for all agencies.",
+            "editor": "stringList",
+            "uniqueItems": true,
+            "prefill": [
+                "environmental-protection-agency"
+            ]
+        },
+        "searchQuery": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Full-text search across the document title and body. Leave empty to return everything matching the other filters.",
+            "editor": "textfield"
+        },
+        "significantOnly": {
+            "title": "Significant rules only",
+            "type": "boolean",
+            "description": "Only documents flagged significant under Executive Order 12866 (economically or policy significant). This flag only exists on final and proposed rules, so combining it with notices or presidential documents returns nothing.",
+            "default": false
+        },
+        "commentsOpenOnly": {
+            "title": "Comment period still open",
+            "type": "boolean",
+            "description": "Only documents whose public comment period closes today or later \u2014 the deadline set a buyer still has time to act on. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices.",
+            "default": false
+        },
+        "cfrTitle": {
+            "title": "CFR title",
+            "type": "integer",
+            "description": "Filter to documents that affect this Code of Federal Regulations title, 1-50 (e.g. 40 = Protection of Environment, 21 = Food and Drugs). Verified live: narrows a 10,000-row-clamped baseline to a few hundred/year for a single title. Required if you also set CFR part.",
+            "editor": "number",
+            "minimum": 1,
+            "maximum": 50
+        },
+        "cfrPart": {
+            "title": "CFR part",
+            "type": "string",
+            "description": "Filter to documents that affect this specific part within the CFR title above (e.g. \"60\" for 40 CFR Part 60, New Source Performance Standards). Requires cfrTitle to be set \u2014 the underlying API has no title-less part lookup and 400s on one.",
+            "editor": "textfield"
+        },
+        "order": {
+            "title": "Sort order",
+            "type": "string",
+            "description": "Sort by publication date, or by full-text relevance to the search query.",
+            "editor": "select",
+            "enum": [
+                "newest",
+                "oldest",
+                "relevance"
+            ],
+            "enumTitles": [
+                "Newest first",
+                "Oldest first",
+                "Most relevant first"
+            ],
+            "default": "newest"
+        },
+        "maxResults": {
+            "title": "Max results",
+            "type": "integer",
+            "description": "Stop after this many documents. Deep paging is cursor-based, so there is no 10,000-row wall.",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 50000
+        },
+        "watchLabel": {
+            "title": "Watch label (only new since last run)",
+            "type": "string",
+            "description": "Optional. Name this saved query \u2014 e.g. \"epa-air-rules\" \u2014 and the Actor remembers which documents it has already delivered under that name, so a scheduled run returns ONLY what is new since last time. The first run with a new label is a free baseline: it records what already matches, returns zero results and charges nothing; every run after that returns just the new documents. Changing a filter starts a fresh baseline (a different filter is a different question). The default rolling 90-day date window is deliberately NOT part of that identity, so a daily schedule keeps one stable baseline. The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account.",
+            "editor": "textfield",
+            "example": "epa-air-rules"
+        }
     },
-    "publicationDateFrom": {
-      "title": "Published from",
-      "type": "string",
-      "description": "Earliest publication date, YYYY-MM-DD. Defaults to 90 days ago. The archive reaches back to 1994-01-03 if you widen it.",
-      "editor": "textfield"
-    },
-    "publicationDateTo": {
-      "title": "Published to",
-      "type": "string",
-      "description": "Latest publication date, YYYY-MM-DD. Defaults to today.",
-      "editor": "textfield"
-    },
-    "agencies": {
-      "title": "Agencies",
-      "type": "array",
-      "description": "Agency slugs (from a federalregister.gov/agencies/<slug> URL) or full agency names — both are accepted and resolved against the official 472-agency list. Filtering by a parent agency includes its sub-agencies: \"homeland-security-department\" also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. Leave empty for all agencies.",
-      "editor": "stringList",
-      "uniqueItems": true,
-      "prefill": ["environmental-protection-agency"]
-    },
-    "searchQuery": {
-      "title": "Search query",
-      "type": "string",
-      "description": "Full-text search across the document title and body. Leave empty to return everything matching the other filters.",
-      "editor": "textfield"
-    },
-    "significantOnly": {
-      "title": "Significant rules only",
-      "type": "boolean",
-      "description": "Only documents flagged significant under Executive Order 12866 (economically or policy significant). This flag only exists on final and proposed rules, so combining it with notices or presidential documents returns nothing.",
-      "default": false
-    },
-    "commentsOpenOnly": {
-      "title": "Comment period still open",
-      "type": "boolean",
-      "description": "Only documents whose public comment period closes today or later — the deadline set a buyer still has time to act on. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices.",
-      "default": false
-    },
-    "cfrTitle": {
-      "title": "CFR title",
-      "type": "integer",
-      "description": "Filter to documents that affect this Code of Federal Regulations title, 1-50 (e.g. 40 = Protection of Environment, 21 = Food and Drugs). Verified live: narrows a 10,000-row-clamped baseline to a few hundred/year for a single title. Required if you also set CFR part.",
-      "editor": "number",
-      "minimum": 1,
-      "maximum": 50
-    },
-    "cfrPart": {
-      "title": "CFR part",
-      "type": "string",
-      "description": "Filter to documents that affect this specific part within the CFR title above (e.g. \"60\" for 40 CFR Part 60, New Source Performance Standards). Requires cfrTitle to be set — the underlying API has no title-less part lookup and 400s on one.",
-      "editor": "textfield"
-    },
-    "order": {
-      "title": "Sort order",
-      "type": "string",
-      "description": "Sort by publication date, or by full-text relevance to the search query.",
-      "editor": "select",
-      "enum": ["newest", "oldest", "relevance"],
-      "enumTitles": ["Newest first", "Oldest first", "Most relevant first"],
-      "default": "newest"
-    },
-    "maxResults": {
-      "title": "Max results",
-      "type": "integer",
-      "description": "Stop after this many documents. Deep paging is cursor-based, so there is no 10,000-row wall.",
-      "default": 100,
-      "minimum": 1,
-      "maximum": 50000
-    }
-  },
-  "required": []
+    "required": []
 }

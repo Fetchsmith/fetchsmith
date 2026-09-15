@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -35,6 +36,7 @@ const significantOnly = input.significantOnly === true;
 const commentsOpenOnly = input.commentsOpenOnly === true;
 const order = ['newest', 'oldest', 'relevance'].includes(input.order) ? input.order : 'newest';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
+const watchLabel = String(input.watchLabel ?? '').trim();
 
 // Verified live: the API itself validates this pair cleanly (400 "CFR title must be between
 // 1 and 50" on a part given without a title, or on a title outside 1-50) — no silent-ignore
@@ -166,6 +168,128 @@ function baseParams() {
     return p;
 }
 
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query.
+//
+// The baseline is the buyer's own — the document_numbers this label has already delivered —
+// kept in a NAMED key-value store so it survives across runs. The default KV store is
+// per-run and would reset the baseline every time, i.e. re-charge the whole result set on
+// every scheduled run.
+const WATCH_STORE = 'fetchsmith-fedreg-watch';
+const SEED_CAP = 20000; // bound a seed walk; cursor paging itself has no wall
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+// Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted.
+// The criteria fingerprint is part of the key on purpose: if the buyer edits a filter, that is
+// a different question and gets its own baseline, instead of dumping every document the old
+// narrower filter happened to exclude as if it were brand new.
+//
+// The publication-date window is in the fingerprint ONLY when the buyer set it explicitly.
+// Its default is a rolling "last 90 days", which changes every single day — fingerprinting the
+// resolved value would give a scheduled watch a brand-new baseline on every run, i.e. seed
+// forever and never deliver anything.
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchCriteria = {
+    documentTypes: [...documentTypes].sort(),
+    agencies: [...agencySlugs].sort(),
+    searchQuery,
+    significantOnly,
+    commentsOpenOnly,
+    cfrTitle,
+    cfrPart,
+    // explicit-only, see above
+    publicationDateFrom: normDate(input.publicationDateFrom, null),
+    publicationDateTo: normDate(input.publicationDateTo, null),
+};
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Set(); // document_numbers already delivered under this label+fingerprint
+
+async function saveWatchRecord(status) {
+    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        fingerprint: watchRecord.fingerprint,
+        criteria: watchCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status,
+        runCount: (watchRecord.runCount ?? 0) + 1,
+        seenCount: ids.length,
+        seenIds: ids,
+    });
+}
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        for (const id of existing.seenIds) watchSeen.add(String(id));
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered document(s). Only documents NOT in that baseline are returned and charged.`,
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+            + 'It records which documents already match and returns ZERO results (you are charged nothing). Run it '
+            + 'again on the same label and filters — on a schedule, typically — to get only what is new since now.',
+        );
+    }
+}
+
+// Seeding only needs the ids, so it asks for one field instead of 29. Same filters, same
+// cursor walk, a fraction of the bytes — and it never normalizes, pushes or charges.
+async function seedBaseline() {
+    // per_page is pinned to the maximum, not to maxResults: the baseline has to cover the
+    // WHOLE match set, not one page of it. A baseline that stops early would report every
+    // document past the stopping point as "new" on the first incremental run.
+    const params = { ...baseParams(), 'fields[]': ['document_number'], per_page: MAX_PER_PAGE };
+    let pagesSeeded = 0;
+    while (watchSeen.size < SEED_CAP) {
+        const page = await apiGet('/documents.json', params);
+        if (!page) break;
+        const results = listOf(page.results);
+        if (!results.length) break;
+        pagesSeeded += 1;
+        for (const row of results) {
+            if (row.document_number) watchSeen.add(String(row.document_number));
+        }
+        if (!applyNext(params, page.next_page_url)) break;
+    }
+    log.info(`Baseline walk: ${watchSeen.size} document id(s) over ${pagesSeeded} id-only page(s).`);
+}
+
+// The API hands back next_page_url in TWO different shapes, verified live (cycle 297):
+// a `search_after_cursor` link once the walk is big enough to need it, and a plain `page=N`
+// link for small result sets. Reading only the cursor silently stops the walk after page 1
+// whenever the set is small — harmless for a plain run (per_page is always >= maxResults, so
+// one page already satisfies it) but wrong in watch mode, where most rows are skipped as
+// already-seen and the walk has to keep going to find the new ones.
+function applyNext(params, nextUrl) {
+    if (!nextUrl) return false;
+    const q = new URL(nextUrl).searchParams;
+    const cursor = q.get('search_after_cursor');
+    if (cursor) { params.search_after_cursor = cursor; delete params.page; return true; }
+    const page = q.get('page');
+    if (page) { params.page = page; delete params.search_after_cursor; return true; }
+    return false;
+}
+
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 const cfrString = (r) => {
     const t = r?.title ?? '';
@@ -247,15 +371,17 @@ log.info(
 );
 
 const seen = new Set();
-let cursor = null;
+const walkParams = baseParams();
 let scanned = 0;
 let keepGoing = true;
 let pages = 0;
+let skippedSeen = 0;
+let beforePush = 0;
 
-while (keepGoing && pushed < maxResults) {
-    const params = baseParams();
-    if (cursor) params.search_after_cursor = cursor;
-    const page = await apiGet('/documents.json', params);
+if (seeding) await seedBaseline();
+
+while (!seeding && keepGoing && pushed < maxResults) {
+    const page = await apiGet('/documents.json', walkParams);
     if (!page) break;
     const results = listOf(page.results);
     if (!results.length) break;
@@ -266,19 +392,51 @@ while (keepGoing && pushed < maxResults) {
         const key = row.document_number ?? `${row.citation}:${row.title}`;
         if (seen.has(key)) continue;
         seen.add(key);
+        // Already delivered under this watch label: dropped before normalize() and before
+        // any charge, so a document is never paid for twice.
+        if (watchMode && row.document_number && watchSeen.has(String(row.document_number))) {
+            skippedSeen += 1;
+            continue;
+        }
         keepGoing = await pushResult(normalize(row));
+        // Recorded as delivered only after the charge actually succeeded — anything dropped by
+        // maxResults or a charge limit stays "new" for the next run.
+        if (watchMode && row.document_number && pushed > beforePush) watchSeen.add(String(row.document_number));
+        beforePush = pushed;
         if (!keepGoing || pushed >= maxResults) break;
     }
 
-    // The cursor lives inside next_page_url; reading it back is cheaper and safer than
-    // reinventing offset paging, which 400s past row 10000.
-    const next = page.next_page_url;
-    if (!next) break;
-    cursor = new URL(next).searchParams.get('search_after_cursor');
-    if (!cursor) break;
+    // Following the API's own next_page_url is cheaper and safer than reinventing offset
+    // paging, which 400s past row 10000.
+    if (!applyNext(walkParams, page.next_page_url)) break;
 }
 
-if (pushed === 0) {
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} document(s) recorded as already-seen, `
+            + '0 results returned, 0 charged. The next run on this label and these filters returns only new documents.'
+            + (watchSeen.size >= SEED_CAP
+                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-document cap. Narrow the query (an agency, a `
+                + 'document type, a shorter publication-date window) so the whole result set fits, or the first '
+                + 'incremental run will report documents past the cap as new.'
+                : ''),
+        );
+    } else {
+        log.info(
+            `Watch label "${watchLabel}": ${pushed} new document(s) since the last run `
+            + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+        );
+    }
+}
+
+if (pushed === 0 && watchMode && !seeding) {
+    log.warning(
+        `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching document(s) `
+        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+    );
+} else if (pushed === 0 && !seeding) {
     log.warning(
         `No documents matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) the filters are ANDed — a searchQuery plus an agency plus significantOnly over a short '
