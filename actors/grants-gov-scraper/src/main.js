@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -62,6 +63,7 @@ const cfda = String(input.cfda ?? '').trim();
 const oppNum = String(input.oppNum ?? '').trim();
 const sortBy = String(input.sortBy ?? '');
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
+const watchLabel = String(input.watchLabel ?? '').trim();
 
 // Verified live: dateRange takes any positive integer number of days (not just the 3/7/14/...
 // preset buttons the site's own facet list advertises -- dateRange:"10" returned a real
@@ -169,6 +171,103 @@ const agencies = Array.from(new Set(resolvedAgencies)).join('|');
 // (cycle 123): when oppNum is set, every other filter is dropped and oppStatuses is forced to
 // all four values so status can never hide the exact opportunity the user asked for by number.
 const exclusiveOppNum = oppNum.length > 0;
+
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query. Same shape as
+// federal-register-scraper (cycle 297) and nih-reporter-scraper (cycle 296) -- copy that
+// design, don't reinvent it.
+//
+// The baseline is the buyer's own -- the opportunity `id`s this label has already delivered --
+// kept in a NAMED key-value store so it survives across runs. The default KV store is per-run
+// and would reset the baseline every time, i.e. re-charge the whole result set on every
+// scheduled run. `id` (not `opportunityNumber`) is the stable identity: it's what
+// `/fetchOpportunity` and the public detail URL key off, whereas `opportunityNumber` is a
+// human-facing label an agency could in principle reuse or amend.
+const WATCH_STORE = 'fetchsmith-grants-watch';
+const SEED_CAP = 20000; // Grants.gov's own startRecordNum paging has no wall (cycle 124: rows:5000
+// returned in one call, deep offsets page fine) -- this is our own bound on a seed walk's runtime,
+// not a server limit.
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+if (watchLabel && exclusiveOppNum) {
+    log.warning('watchLabel is ignored when Opportunity number (oppNum) is set -- an exact single-opportunity lookup has no "new since last run" to track.');
+}
+const watchMode = watchLabel.length > 0 && !exclusiveOppNum;
+
+// Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted.
+// The criteria fingerprint is part of the key on purpose: if the buyer edits a filter, that is
+// a different question and gets its own baseline, instead of dumping every opportunity the old
+// narrower filter happened to exclude as if it were brand new.
+//
+// postedWithinDays IS in the fingerprint, unlike a resolved date -- its raw value (an integer
+// day count) never changes on its own, only the window it resolves to at run time does. The
+// federal-register-scraper trap (cycle 297) was fingerprinting a *computed absolute date* from a
+// rolling default; here there is no such computed value in the criteria at all (postedWithinDays
+// is passed to the API as a raw day count, and postedFrom/postedTo are the buyer's own literal
+// strings), so there is nothing relative to accidentally bake in.
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchCriteria = {
+    keyword,
+    oppStatuses: oppStatuses.split('|').sort(),
+    agencies: wantedAgencies.map((a) => a.toUpperCase()).sort(),
+    eligibilities: eligibilities.split('|').filter(Boolean).sort(),
+    fundingCategories: fundingCategories.split('|').filter(Boolean).sort(),
+    fundingInstruments: fundingInstruments.split('|').filter(Boolean).sort(),
+    cfda,
+    postedWithinDays,
+    postedFrom: input.postedFrom ? String(input.postedFrom).trim() : null,
+    postedTo: input.postedTo ? String(input.postedTo).trim() : null,
+    minAwardAmount,
+    maxAwardAmount,
+};
+
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Set(); // opportunity `id`s already delivered under this label+fingerprint
+
+async function saveWatchRecord(status) {
+    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        criteria: watchCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status,
+        runCount: (watchRecord.runCount ?? 0) + 1,
+        seenCount: ids.length,
+        seenIds: ids,
+    });
+}
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        for (const id of existing.seenIds) watchSeen.add(String(id));
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered opportunity(ies). Only opportunities NOT in that baseline are returned and charged.`,
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+            + 'It records which opportunities already match and returns ZERO results (you are charged nothing). Run it '
+            + 'again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+        );
+    }
+}
 
 function baseParams() {
     if (exclusiveOppNum) {
@@ -286,19 +385,15 @@ async function enrichBatch(rows) {
 
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResults(items) {
-    for (const item of items) {
-        if (isPPE) {
-            const r = await Actor.charge({ eventName: 'result', count: 1 });
-            if (r.chargedCount === 0) return false;
-            await Actor.pushData(item); pushed += 1;
-            if (r.eventChargeLimitReached || pushed >= maxResults) return false;
-        } else {
-            await Actor.pushData(item); pushed += 1;
-            if (pushed >= maxResults) return false;
-        }
+async function pushResult(item) {
+    if (isPPE) {
+        const r = await Actor.charge({ eventName: 'result', count: 1 });
+        if (r.chargedCount === 0) return false;
+        await Actor.pushData(item); pushed += 1;
+        return !r.eventChargeLimitReached && pushed < maxResults;
     }
-    return true;
+    await Actor.pushData(item); pushed += 1;
+    return pushed < maxResults;
 }
 
 log.info(
@@ -315,7 +410,8 @@ log.info(
         + (postedFrom !== null ? ` postedFrom=${input.postedFrom}` : '')
         + (postedTo !== null ? ` postedTo=${input.postedTo}` : '')
         + (minAwardAmount !== null ? ` minAwardAmount=${minAwardAmount}` : '')
-        + (maxAwardAmount !== null ? ` maxAwardAmount=${maxAwardAmount}` : ''),
+        + (maxAwardAmount !== null ? ` maxAwardAmount=${maxAwardAmount}` : '')
+        + (watchMode ? ` watchLabel="${watchLabel}"` : ''),
 );
 if (minAwardAmount !== null || maxAwardAmount !== null) {
     log.info(
@@ -327,49 +423,129 @@ if (minAwardAmount !== null || maxAwardAmount !== null) {
     );
 }
 
-let startRecordNum = 0;
 let scanned = 0;
 let droppedNoAward = 0;
 let droppedOutOfRange = 0;
-let keepGoing = true;
+let skippedSeen = 0;
 
-while (keepGoing && pushed < maxResults) {
-    const params = { ...baseParams(), startRecordNum };
-    const page = await apiPost('/search2', params);
-    const hits = listOf(page?.data?.oppHits);
-    if (!hits.length) break;
-    scanned += hits.length;
+// Walks the full startRecordNum offset paging exactly once, applying enrichment and the
+// amount/date filters in one place, so the real run and the watch-mode seed walk can never
+// drift out of sync. `onBatch` receives the filtered, normalized rows for one page and
+// returns whether to keep paging.
+//
+// `thinOnly` skips enrichment -- and therefore the amount filter, which needs it -- UNLESS the
+// buyer's own amount filter forces it anyway. That's what keeps a watch-mode seed cheap: for
+// the common case (no amount filter), no enrich-only field (agency name, synopsis text, etc.)
+// can ever change whether an opportunity is in the match set, so seeding has no reason to pay
+// for a per-row detail fetch across the WHOLE result set. When an amount filter is set, an
+// opportunity's award ceiling can genuinely change between seed time and a later run (an agency
+// raises/sets a ceiling), so skipping enrichment there would let a newly-matching opportunity
+// get wrongly baked into the "already seen" baseline and never surface as new -- enrichment
+// stays on in that case even during seeding.
+async function walkMatches(onBatch, { thinOnly = false } = {}) {
+    const needsEnrich = minAwardAmount !== null || maxAwardAmount !== null ? true : (thinOnly ? false : enrich);
+    let startRecordNum = 0;
+    let keepGoing = true;
+    while (keepGoing) {
+        const params = { ...baseParams(), startRecordNum };
+        const page = await apiPost('/search2', params);
+        const hits = listOf(page?.data?.oppHits);
+        if (!hits.length) break;
+        scanned += hits.length;
 
-    const thin = hits.map(normalizeThin);
-    let batch = thin;
-    if (enrich) {
-        const details = await enrichBatch(hits);
-        batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i] } : row));
-    }
-    if (minAwardAmount !== null || maxAwardAmount !== null) {
-        batch = batch.filter((row) => {
-            if (typeof row.awardCeiling !== 'number') { droppedNoAward += 1; return false; }
-            if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
-            if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
-            return true;
-        });
-    }
-    if (hasAbsoluteDateFilter && !exclusiveOppNum) {
-        batch = batch.filter((row) => {
-            const opened = parseUsDate(row.openDate);
-            if (opened === null) { droppedOutOfRange += 1; return false; }
-            if (postedFrom !== null && opened < postedFrom) return false;
-            if (postedTo !== null && opened > postedTo) return false;
-            return true;
-        });
-    }
+        const thin = hits.map(normalizeThin);
+        let batch = thin;
+        if (needsEnrich) {
+            const details = await enrichBatch(hits);
+            batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i] } : row));
+        }
+        if (minAwardAmount !== null || maxAwardAmount !== null) {
+            batch = batch.filter((row) => {
+                if (typeof row.awardCeiling !== 'number') { droppedNoAward += 1; return false; }
+                if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
+                if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
+                return true;
+            });
+        }
+        if (hasAbsoluteDateFilter && !exclusiveOppNum) {
+            batch = batch.filter((row) => {
+                const opened = parseUsDate(row.openDate);
+                if (opened === null) { droppedOutOfRange += 1; return false; }
+                if (postedFrom !== null && opened < postedFrom) return false;
+                if (postedTo !== null && opened > postedTo) return false;
+                return true;
+            });
+        }
 
-    keepGoing = await pushResults(batch);
-    startRecordNum += hits.length;
-    if (hits.length < PAGE_SIZE) break; // last page
+        keepGoing = await onBatch(batch);
+        startRecordNum += hits.length;
+        if (hits.length < PAGE_SIZE) break; // last page
+    }
 }
 
-if (pushed === 0) {
+// Seeding only needs the ids, so (outside an amount filter) it skips enrichment entirely.
+// It walks the WHOLE match set, unbounded by maxResults -- a baseline that stopped early would
+// report every opportunity past the stopping point as "new" on the first incremental run.
+async function seedBaseline() {
+    await walkMatches(async (batch) => {
+        for (const row of batch) {
+            if (row.id != null) watchSeen.add(String(row.id));
+            if (watchSeen.size >= SEED_CAP) return false;
+        }
+        return true;
+    }, { thinOnly: true });
+    log.info(`Baseline walk: ${watchSeen.size} opportunity id(s) recorded.`);
+}
+
+if (watchMode && seeding) await seedBaseline();
+
+let beforePush = 0;
+if (!seeding) {
+    await walkMatches(async (batch) => {
+        for (const row of batch) {
+            // Already delivered under this watch label: dropped before any charge, so an
+            // opportunity is never paid for twice.
+            if (watchMode && row.id != null && watchSeen.has(String(row.id))) {
+                skippedSeen += 1;
+                continue;
+            }
+            const cont = await pushResult(row);
+            // Recorded as delivered only after the charge actually succeeded -- anything
+            // dropped by maxResults or a charge limit stays "new" for the next run.
+            if (watchMode && row.id != null && pushed > beforePush) watchSeen.add(String(row.id));
+            beforePush = pushed;
+            if (!cont) return false;
+        }
+        return true;
+    });
+}
+
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} opportunity(ies) recorded as already-seen, `
+            + '0 results returned, 0 charged. The next run on this label and these filters returns only new opportunities.'
+            + (watchSeen.size >= SEED_CAP
+                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-opportunity cap. Narrow the query (a keyword, an `
+                + 'agency, a shorter posted-date window) so the whole result set fits, or the first incremental run '
+                + 'will report opportunities past the cap as new.'
+                : ''),
+        );
+    } else {
+        log.info(
+            `Watch label "${watchLabel}": ${pushed} new opportunity(ies) since the last run `
+            + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+        );
+    }
+}
+
+if (pushed === 0 && watchMode && !seeding) {
+    log.warning(
+        `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching opportunity(ies) `
+        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+    );
+} else if (pushed === 0 && !seeding) {
     log.warning(
         exclusiveOppNum
             ? `No opportunity found with number "${oppNum}". Check the exact number on grants.gov/search-grants.`

@@ -10,6 +10,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 - **`postedWithinDays` for cheap incremental pulls** — Grants.gov's own "Posted Date" filter accepts any positive number of days, not just its site's 3/7/14/21-day preset buttons (verified live). Use it instead of re-scanning the whole index on a daily/weekly cron.
 - **`postedFrom`/`postedTo` for a fixed calendar window** — Grants.gov's API has no absolute-date filter server-side, so this Actor applies the range client-side against each row's own open date (already present on every result, no extra detail lookups needed). Use this for historical reporting ("everything posted in Q1") where `postedWithinDays`' relative-to-today window doesn't fit. If both are set, `postedFrom`/`postedTo` wins and `postedWithinDays` is ignored (with a warning).
 - **`minAwardAmount`/`maxAwardAmount` filter on award ceiling** — forces `enrich` on since the amount only exists in the per-opportunity detail record. Grants.gov returns award amounts as strings, and roughly a third to half of posted opportunities have no ceiling set at all (the API spells this as the literal string `"none"`, not null or absent) — this Actor normalizes both into real numbers or `null`, and the amount filter correctly drops the `"none"` rows rather than treating them as zero.
+- **`watchLabel` — only what's new since your last run.** Name a saved search and every run after the first returns just the opportunities not already delivered under that label and filter combination, instead of the whole match set every time. The first run for a label is a free baseline (0 results, 0 charged); it records what already matches in a key-value store on your own Apify account, keyed by the label plus a fingerprint of your other filters, so editing a filter starts a fresh baseline instead of dumping every previously-excluded opportunity as "new". Built for a daily/weekly scheduled run.
 - Pay per result: charged only for rows actually returned.
 
 ## Use cases
@@ -48,6 +49,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 | `minAwardAmount` | integer | Minimum award ceiling (USD); forces `enrich` on, excludes opportunities with no ceiling set |
 | `maxAwardAmount` | integer | Maximum award ceiling (USD); same exclusions as `minAwardAmount` |
 | `maxResults` | integer | Stop after this many opportunities (default 100) |
+| `watchLabel` | string | Optional. Name a saved search to get only opportunities new since your last run under that label — see FAQ |
 
 ## Output (thin fields, always present)
 `id`, `opportunityNumber`, `title`, `agencyCode`, `agency`, `openDate`, `closeDate`, `oppStatus`, `docType`, `cfdaList`, `url`
@@ -116,6 +118,12 @@ Every filter is ANDed, and Grants.gov's API never reports a bad value — a typo
 
 **Should I turn `enrich` off?**
 Only for fast, cheap sweeps where the thin fields (id, number, title, agency, dates, status, CFDA list, plus a URL this Actor builds for you) are enough. Everything a funding decision actually turns on — award amounts, eligibility text, funding instrument/category, the full synopsis — exists only in the detail record, which is why `enrich` defaults to on. It is forced on when you set an award-amount filter.
+
+**How does `watchLabel` know what's already new, and where is that baseline stored?**
+The first run for a label walks the whole match set (every page, not just `maxResults` of it), records every opportunity's `id`, and returns nothing — you are charged $0. Every later run with the same label and the same other filters returns only opportunities whose `id` isn't in that recorded set, then adds them to it. The baseline lives in a key-value store named `fetchsmith-grants-watch` in *your own* Apify account (Storage tab in the console), not ours — you can inspect or delete it any time. Deleting the record for a label resets it to a fresh baseline on the next run. Verified live on build 0.1.9: a seed run over `keyword: "water"` recorded 18,458 opportunity ids and returned 0 rows; an identical rerun returned 0 new; removing 3 ids from the baseline directly and rerunning returned exactly those 3.
+
+**If I change a filter, does `watchLabel` dump a pile of "new" results I've actually seen before?**
+No. The baseline key includes a fingerprint of every other filter you set, so changing `keyword`, `agencies`, `postedFrom`/`postedTo`, `minAwardAmount`, etc. starts an entirely fresh baseline (another free, zero-result seed run) under that label instead of comparing against the old filter's baseline. `oppNum` lookups ignore `watchLabel` entirely — an exact single-opportunity lookup has no "new since last time" to track.
 
 ## Notes
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
