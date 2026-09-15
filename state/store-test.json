@@ -1,27 +1,27 @@
 {
- "ts": 1789490438,
+ "ts": 1789504330,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
-   "secs": 84,
-   "items": 181,
+   "secs": 70,
+   "items": 179,
    "pass": true
   },
   "hacker-news-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
+   "secs": 8,
    "items": 100,
    "pass": true
   },
   "google-news-scraper": {
    "status": "SUCCEEDED",
-   "secs": 87,
+   "secs": 86,
    "items": 25,
    "pass": true
   },
   "app-store-reviews-scraper": {
    "status": "SUCCEEDED",
-   "secs": 15,
+   "secs": 16,
    "items": 200,
    "pass": true
   },
@@ -33,13 +33,13 @@
   },
   "google-play-reviews-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
+   "secs": 10,
    "items": 101,
    "pass": true
   },
   "substack-scraper": {
    "status": "SUCCEEDED",
-   "secs": 98,
+   "secs": 87,
    "items": 50,
    "pass": true
   },
@@ -57,8 +57,8 @@
   },
   "scholarship-scraper": {
    "status": "SUCCEEDED",
-   "secs": 20,
-   "items": 153,
+   "secs": 26,
+   "items": 154,
    "pass": true
   },
   "eu-ted-tenders-scraper": {
@@ -69,13 +69,13 @@
   },
   "uk-find-a-tender-scraper": {
    "status": "SUCCEEDED",
-   "secs": 11,
+   "secs": 10,
    "items": 100,
    "pass": true
   },
   "us-federal-awards-scraper": {
    "status": "SUCCEEDED",
-   "secs": 46,
+   "secs": 47,
    "items": 100,
    "pass": true
   },
@@ -87,33 +87,38 @@
   },
   "federal-register-scraper": {
    "status": "SUCCEEDED",
-   "secs": 8,
+   "secs": 13,
    "items": 100,
    "pass": true
   },
   "clinicaltrials-scraper": {
    "status": "SUCCEEDED",
-   "secs": 10,
+   "secs": 11,
    "items": 100,
    "pass": true
   },
   "grants-gov-scraper": {
    "status": "SUCCEEDED",
-   "secs": 30,
+   "secs": 29,
    "items": 100,
    "pass": true
   },
   "nih-reporter-scraper": {
    "status": "SUCCEEDED",
-   "secs": 10,
+   "secs": 11,
    "items": 100,
    "pass": true
   },
   "fec-campaign-finance-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
-   "items": 11,
+   "secs": 8,
+   "items": 20,
    "pass": true
+  },
+  "--help": {
+   "status": "START_FAILED",
+   "code": 404,
+   "pass": false
   }
  }
 }
