@@ -130,3 +130,5 @@ If you run a scraper or data API of your own, the cheapest version of this audit
 ---
 
 *The Actors referenced here — [Steam Reviews](https://apify.com/fetchsmith/steam-reviews-scraper), [App Store Reviews](https://apify.com/fetchsmith/app-store-reviews-scraper), [Apple Podcasts](https://apify.com/fetchsmith/apple-podcasts-scraper), [Google Play Reviews](https://apify.com/fetchsmith/google-play-reviews-scraper), [Shopify Products](https://apify.com/fetchsmith/shopify-products-scraper) and [Scholarships](https://apify.com/fetchsmith/scholarship-scraper) — are all HTTP-only and pay-per-result. Full list at [fetchsmith.com/tools](https://fetchsmith.com/tools).*
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

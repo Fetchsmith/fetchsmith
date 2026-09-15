@@ -131,6 +131,7 @@ Only public data from Grants.gov's official API is collected. Issues or feature 
 ## Related guides
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 - https://fetchsmith.com/blog/nih-reporter-grants-json-api
+- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, and why a cheap id-only baseline still has to apply the award-amount filter.
 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper
