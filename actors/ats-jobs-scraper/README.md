@@ -15,6 +15,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 - **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever and Recruitee postings that publish pay ranges.
 - **Remote-work tracking** — `remoteOnly` plus the normalized `workplaceType`/`isRemote` fields build a remote-jobs feed across every ATS at once, not just the ones with a "remote" search filter.
 - **Hiring-trend research** — `postedAfter` plus `publishedAt` let you track how fast a company (or a whole market segment) is opening new roles over time.
+- **Job alerts / new-posting watch** — set `watchLabel` and a scheduled run returns *only* the roles that opened since the last run, not the same open-roles list every time. You are charged for new postings only (see [Watch mode](#watch-mode-only-new-postings-since-last-run)).
 
 ## Input
 | Field | Type | Description |
@@ -30,6 +31,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `includeDescriptions` | boolean | Include full HTML + plain-text description. Default `true`. |
 | `maxJobsPerCompany` | integer | Cap on how many postings that pass your filters are kept per company — filters are applied first, then this cap. Default `50` — kept low so a run with no input at all (e.g. an API caller omitting the field) stays fast and cheap; pass a higher value explicitly for bulk pulls (up to `5000`). |
 | `maxResults` | integer | Cap total postings returned across all companies. Default `300` — same reasoning as above; pass a higher value explicitly for bulk pulls (up to `100000`). |
+| `watchLabel` | string | Optional. Name a saved job alert and return only postings not delivered under that label + filter set before. First run per label is a free baseline. See [Watch mode](#watch-mode-only-new-postings-since-last-run). |
 | `proxyConfiguration` | object | Apify Proxy config. Default: Apify Proxy on. |
 
 ### Finding a company's slug
@@ -52,6 +54,15 @@ Pay is returned when the ATS itself publishes it, and left `null` otherwise rath
 
 `salaryInterval` says what the number actually means — `year`, `month`, `week`, `day` or `hour`. Each ATS spells its period differently (`1 YEAR`, `monthly`, `per-year-salary`); they are normalized to one vocabulary so an hourly rate and an annual salary are never silently compared.
 
+## Watch mode (only new postings since last run)
+Set `watchLabel` to any name you like (`"backend-remote-eu"`) and the run stops returning the whole open-roles list every time and starts returning **only the postings that appeared since the previous run under that label**. This is the job-alert shape: schedule it hourly or daily and each run's dataset is your diff.
+
+- **The first run for a label is a free baseline.** It records which postings are currently open (up to 5,000), returns **zero rows** and charges **nothing**. Run it again later to get what's new.
+- **Already-delivered postings are dropped before any charge**, so a run with nothing new costs you nothing.
+- **The baseline lives in your own Apify account** — a named key-value store `fetchsmith-ats-watch`, key `watch-<label>-<fingerprint>`. Nothing is kept on our side.
+- **The fingerprint covers the company list and every filter** (`titleKeyword`, `titleExcludeKeyword`, `locationKeyword`, `locationExcludeKeyword`, `hasSalary`, `remoteOnly`, `postedAfter`, `includeDescriptions`). Change any of them and you get a fresh baseline instead of a dump of postings the old filters had excluded. `maxJobsPerCompany`/`maxResults` are *not* in the fingerprint — they are cost caps, not criteria.
+- **`maxJobsPerCompany` caps what is delivered, not what is checked.** In watch mode the run scans the whole match set for each company (so a new role that sorts 40th is still found) but still delivers at most `maxJobsPerCompany` new postings per company per run; the rest arrive on the following run.
+
 ## Pricing
 Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 on Gold and above** (Bronze $0.0013, Silver $0.0011), with no Actor-start fee. 1,000 postings costs $1.50 on the free plan, $1.00 on Gold. You are charged only for postings that pass your filters and actually reach your dataset.
 
@@ -66,6 +77,12 @@ Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 o
 **Which ATSes expose salary?** Only Ashby, Lever and Recruitee publish a structured pay range today — Greenhouse, Workable, SmartRecruiters and Workday don't carry a compensation field at all, so those come back `null` rather than guessed.
 
 **A company I need isn't on any of these 7 ATSes — can it still be scraped?** Only if it uses one of the 7 (or a client-side board no ATS API backs, which this Actor can't reach). Message support@fetchsmith.com with the company's careers URL if you're unsure which ATS it runs on.
+
+**I set `watchLabel` and got zero results — is it broken?** No. Either it was the baseline run (the log says so explicitly, and you were charged nothing), or nothing new has been posted on those boards since your last run. For a watch, zero is the normal, expected, free result most of the time.
+
+**How do I reset a watch baseline?** Delete its record from the `fetchsmith-ats-watch` key-value store in your Apify account, or just use a new `watchLabel`. Changing any filter also starts a fresh baseline automatically.
+
+**One of my boards failed during the baseline run — what happens?** That board contributes nothing to the baseline, so its currently-open postings will come back as "new" (and billable) on the next run. The baseline run logs a loud warning naming any board that failed, so you can re-seed before scheduling it.
 
 **Why did a company I listed return zero postings?** Either it's genuinely down to 0 open roles, or it has migrated off that ATS — the run logs (not a failure) list any company that 404s so you can find its new slug/ATS instead of getting a silently empty result.
 

@@ -9,13 +9,34 @@
       "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive); Workday uses \"<host>/<site>\" from the board's own URL, e.g. \"okgov.wd1.myworkdayjobs.com/okgovjobs\".",
       "editor": "json",
       "default": [
-        { "ats": "greenhouse", "slug": "airbnb" },
-        { "ats": "ashby", "slug": "ramp" },
-        { "ats": "lever", "slug": "leverdemo" },
-        { "ats": "recruitee", "slug": "vandebron" },
-        { "ats": "workable", "slug": "getresponse" },
-        { "ats": "smartrecruiters", "slug": "ElasticBandCompany" },
-        { "ats": "workday", "slug": "okgov.wd1.myworkdayjobs.com/okgovjobs" }
+        {
+          "ats": "greenhouse",
+          "slug": "airbnb"
+        },
+        {
+          "ats": "ashby",
+          "slug": "ramp"
+        },
+        {
+          "ats": "lever",
+          "slug": "leverdemo"
+        },
+        {
+          "ats": "recruitee",
+          "slug": "vandebron"
+        },
+        {
+          "ats": "workable",
+          "slug": "getresponse"
+        },
+        {
+          "ats": "smartrecruiters",
+          "slug": "ElasticBandCompany"
+        },
+        {
+          "ats": "workday",
+          "slug": "okgov.wd1.myworkdayjobs.com/okgovjobs"
+        }
       ]
     },
     "titleKeyword": {
@@ -82,13 +103,23 @@
       "minimum": 1,
       "maximum": 100000
     },
+    "watchLabel": {
+      "title": "Watch label (only new postings since last run)",
+      "type": "string",
+      "description": "Optional. Name a saved job alert (e.g. \"backend-remote-eu\") and this run returns ONLY postings that were not delivered under that same label and filter set before, instead of the whole open-roles list every time. The first run for a label is a free baseline: it records which postings are already open (up to 5000) and returns zero rows, charging nothing. Run it again later -- on a schedule, typically -- to get only the roles that opened since then. The baseline lives in your own Apify account (a named key-value store, \"fetchsmith-ats-watch\"), keyed by the label plus a fingerprint of the company list and every filter, so changing any of those starts a fresh baseline instead of dumping previously-excluded postings as \"new\".",
+      "editor": "textfield"
+    },
     "proxyConfiguration": {
       "title": "Proxy configuration",
       "type": "object",
       "description": "Route requests through Apify Proxy (recommended, on by default).",
       "editor": "proxy",
-      "default": { "useApifyProxy": true }
+      "default": {
+        "useApifyProxy": true
+      }
     }
   },
-  "required": ["companies"]
+  "required": [
+    "companies"
+  ]
 }
