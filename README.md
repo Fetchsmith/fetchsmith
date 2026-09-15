@@ -65,6 +65,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Steam quietly attaches a reviewer's PC specs to their review — for about 1 in 15](https://fetchsmith.com/blog/steam-review-hardware-specs-json-field)
 - [When a dateTo filter silently excludes its own last day — and which government-data APIs actually do this](https://fetchsmith.com/blog/dateto-filter-silently-excludes-its-own-last-day)
 - [Four ways an invisible character makes a scraper return zero rows — all found in our own code](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
+- [A Try-for-free click shouldn't cost a first-time buyer $1.26 and five minutes](https://fetchsmith.com/blog/default-inputs-should-not-cost-you-five-minutes)
 
 ## Layout
 
