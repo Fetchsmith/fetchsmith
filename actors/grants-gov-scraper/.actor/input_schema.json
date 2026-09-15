@@ -110,7 +110,7 @@
     "enrich": {
       "title": "Enrich with full detail (award amounts, eligibility text, synopsis)",
       "type": "boolean",
-      "description": "Grants.gov's search results carry only 10 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis. Turn off for fast, cheap sweeps of just the thin fields. Forced on automatically if minAwardAmount/maxAwardAmount is set, since the amount only exists in the detail record.",
+      "description": "Grants.gov's search results carry only 11 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis, and is charged at the enriched rate ($0.0015/result). Turn off for fast sweeps of just the thin fields, charged at the cheaper thin rate ($0.0007/result) — the price follows the data, per row. Forced on automatically if minAwardAmount/maxAwardAmount is set, since the amount only exists in the detail record.",
       "default": true
     },
     "postedWithinDays": {

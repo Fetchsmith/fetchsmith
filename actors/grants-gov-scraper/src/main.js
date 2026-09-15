@@ -383,15 +383,29 @@ async function enrichBatch(rows) {
     return out;
 }
 
+// A row that never cost us a /fetchOpportunity call is cheaper to serve, so it is cheaper to
+// buy: the price forks per row, not per run. `ENRICHED` is a Symbol so the marker can ride on
+// the row object itself without ever reaching the dataset (JSON.stringify drops symbol keys,
+// and Actor.pushData serializes as JSON). Two ways a row ends up thin: the buyer set
+// enrich:false, or enrichment was attempted and Grants.gov had no detail record for it
+// (archived opportunities with no synopsis) -- in both cases the buyer gets the 11 thin fields
+// and is charged the thin price, never the full one for data we failed to deliver.
+const ENRICHED = Symbol('enriched');
+const THIN_EVENT = 'opportunity-thin';
+
 let pushed = 0;
+let thinCharged = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
+    const eventName = item[ENRICHED] ? 'result' : THIN_EVENT;
     if (isPPE) {
-        const r = await Actor.charge({ eventName: 'result', count: 1 });
+        const r = await Actor.charge({ eventName, count: 1 });
         if (r.chargedCount === 0) return false;
+        if (eventName === THIN_EVENT) thinCharged += 1;
         await Actor.pushData(item); pushed += 1;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
+    if (eventName === THIN_EVENT) thinCharged += 1;
     await Actor.pushData(item); pushed += 1;
     return pushed < maxResults;
 }
@@ -457,7 +471,7 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
         let batch = thin;
         if (needsEnrich) {
             const details = await enrichBatch(hits);
-            batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i] } : row));
+            batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i], [ENRICHED]: true } : row));
         }
         if (minAwardAmount !== null || maxAwardAmount !== null) {
             batch = batch.filter((row) => {
@@ -562,6 +576,9 @@ if (pushed === 0 && watchMode && !seeding) {
 
 log.info(
     `Done. Pushed ${pushed} opportunities (scanned ${scanned} rows).`
+    + (pushed
+        ? ` Charged ${pushed - thinCharged} as enriched "result" and ${thinCharged} at the cheaper "${THIN_EVENT}" rate.`
+        : '')
     + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) with no award ceiling to compare against the amount filter.` : '')
     + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : ''),
 );

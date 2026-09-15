@@ -94,7 +94,14 @@ Note `awardFloor: null` alongside a real `awardCeiling` — agencies often set o
 **Privacy note:** Grants.gov's detail API also carries an `agencyContactName`/`agencyContactEmail`/`agencyContactPhone` block and a `synopsis.agencyName`/`agencyPhone`/`agencyAddressDesc` block that are agency-entered free text — sometimes a department name, sometimes a named individual program officer with a direct phone and email. Because the two cases can't be told apart per row, none of those fields are ever emitted. Organisational contact info (`agencyName`/`agencyCode` from the structured agency lookup) is included instead.
 
 ## Pricing
-`result` — $0.0015 per returned item, no start fee. Meaningfully cheaper than the largest pure-Grants.gov listing on Apify ($0.009/result) and the only in-niche listing to charge no Actor-start fee at all.
+Two events, no start fee. **The price follows the data, per row** — you are never charged the enriched rate for a row that arrived thin.
+
+| Event | Price | Charged when |
+| --- | --- | --- |
+| `result` (enriched) | $0.0015 per item | The row carries its full detail record: award ceiling/floor, eligibility text, funding instrument/category, synopsis |
+| `opportunity-thin` | $0.0007 per item | `enrich: false`, **or** Grants.gov has no detail record for that opportunity (some archived ones don't) |
+
+Cheaper than the largest pure-Grants.gov listing on Apify ($0.009/result) at either rate, and the only in-niche listing to charge no Actor-start fee at all. The run log prints the split (`Charged N as enriched "result" and M at the cheaper "opportunity-thin" rate`) so the invoice is checkable against the dataset.
 
 ## FAQ
 
@@ -117,7 +124,10 @@ Yes, and you do not need to change `oppStatuses` to do it. When `oppNum` is set,
 Every filter is ANDed, and Grants.gov's API never reports a bad value — a typo'd code returns "success" with zero hits. Most common causes, in order: `oppStatuses` defaults to forecasted + posted, so history needs `closed`/`archived` added; a narrow keyword plus agency plus eligibility often genuinely has no matches; a small `postedWithinDays`/`postedFrom` window is a hard filter; and the award-amount filters drop every row with no ceiling set. The run log names which one applied.
 
 **Should I turn `enrich` off?**
-Only for fast, cheap sweeps where the thin fields (id, number, title, agency, dates, status, CFDA list, plus a URL this Actor builds for you) are enough. Everything a funding decision actually turns on — award amounts, eligibility text, funding instrument/category, the full synopsis — exists only in the detail record, which is why `enrich` defaults to on. It is forced on when you set an award-amount filter.
+Only for fast sweeps where the thin fields (id, number, title, agency, dates, status, CFDA list, plus a URL this Actor builds for you) are enough — those rows are billed at $0.0007 instead of $0.0015, because they cost no detail lookup to serve. Everything a funding decision actually turns on — award amounts, eligibility text, funding instrument/category, the full synopsis — exists only in the detail record, which is why `enrich` defaults to on. It is forced on when you set an award-amount filter.
+
+**I left `enrich` on but some rows came back without award amounts — was I charged full price for them?**
+No. Grants.gov has no detail record for some opportunities (mostly archived ones with no synopsis). When the detail lookup comes back empty, the row is still returned with its thin fields and billed as `opportunity-thin` ($0.0007), not `result` ($0.0015). The split is printed in the run log at the end of every run.
 
 **How does `watchLabel` know what's already new, and where is that baseline stored?**
 The first run for a label walks the whole match set (every page, not just `maxResults` of it), records every opportunity's `id`, and returns nothing — you are charged $0. Every later run with the same label and the same other filters returns only opportunities whose `id` isn't in that recorded set, then adds them to it. The baseline lives in a key-value store named `fetchsmith-grants-watch` in *your own* Apify account (Storage tab in the console), not ours — you can inspect or delete it any time. Deleting the record for a label resets it to a fresh baseline on the next run. Verified live on build 0.1.9: a seed run over `keyword: "water"` recorded 18,458 opportunity ids and returned 0 rows; an identical rerun returned 0 new; removing 3 ids from the baseline directly and rerunning returned exactly those 3.

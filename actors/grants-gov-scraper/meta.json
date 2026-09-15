@@ -1,6 +1,6 @@
 {
   "title": "Grants.gov Scraper – Status, Eligibility & Award Details",
-  "description": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup. $0.0015/result, no start fee.",
+  "description": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus award ceiling/floor, eligibility text and full synopsis via detail lookup. $0.0015/enriched result, $0.0007 for thin rows, no start fee.",
   "seoTitle": "Grants.gov Scraper — Federal Grant Opportunities",
   "seoDescription": "Search US federal grant opportunities (NOFOs) via the official Grants.gov API. Agency, status and eligibility filters, plus application deadlines and award amounts on request.",
   "categories": [
@@ -9,9 +9,14 @@
   ],
   "events": {
     "result": {
-      "eventTitle": "Result item",
-      "eventDescription": "One normalized Grants.gov opportunity returned to the dataset.",
+      "eventTitle": "Opportunity (enriched)",
+      "eventDescription": "One Grants.gov opportunity returned with its full detail record joined in: award ceiling/floor, eligibility text, funding instrument/category and the full synopsis.",
       "eventPriceUsd": 0.0015
+    },
+    "opportunity-thin": {
+      "eventTitle": "Opportunity (thin)",
+      "eventDescription": "One Grants.gov opportunity returned with the 11 search-result fields only (no detail lookup) — charged instead of the enriched price when enrich is off, or when Grants.gov has no detail record for that opportunity.",
+      "eventPriceUsd": 0.0007
     }
   }
 }
