@@ -45,6 +45,10 @@ const discoverCategories = (input.discoverCategories ?? []).map((c) => String(c 
 const maxPublicationsPerCategory = Math.min(Number(input.maxPublicationsPerCategory ?? 10), 100);
 const discoverType = ['all', 'newsletter', 'podcast'].includes(input.discoverType) ? input.discoverType : 'all';
 
+// Posts that come back without an article body are cheaper for us (no per-post detail request)
+// and are billed on their own, cheaper event — see the Pricing section of README.md.
+const POST_EVENT = includeBodyText || includeBodyHtml ? 'result' : 'post-metadata';
+
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
@@ -192,7 +196,7 @@ async function handlePost(post, origin, preloadedDetail = null) {
   if (!matchesAudience(post) || !matchesDate(post)) { excludedByFilters += 1; return true; }
   const needDetail = includeBodyText || includeBodyHtml;
   const detail = preloadedDetail ?? (needDetail && post.slug ? await fetchDetail(origin, post.slug) : null);
-  keepGoing = await pushResult(mapPost(post, origin, detail));
+  keepGoing = await pushResult(mapPost(post, origin, detail), POST_EVENT);
   if (!keepGoing) return false;
 
   if (includeComments && (post.comment_count ?? 0) > 0 && timeBudgetOk()) {

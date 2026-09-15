@@ -12,7 +12,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - **Discover newsletters by category — no URL list needed.** Give `discoverCategories` a topic like `technology` or `finance` and the Actor pulls the top publications from Substack's own category leaderboard and scrapes them in the same run.
 - **Search inside a publication.** `searchQuery` filters the archive server-side instead of downloading everything.
 - **Many publications per run**, plus direct post URLs.
-- **Cheap:** $0.002 per post on the Free plan, tapering to $0.0012 on Gold and above — roughly 60-75% under the usual $0.005. Comments are billed separately at a lower rate ($0.0006 down to $0.0003), so comment-heavy runs aren't priced like full articles.
+- **Cheap, and no Actor-start fee:** $0.002 per full-text post on the Free plan, $0.00078 on Gold and above. Metadata-only posts ($0.00112 down to $0.00039) and comments ($0.00056 down to $0.00019) are billed on their own, cheaper events, so an archive index or a comment-heavy run isn't priced like full articles.
 
 ## Use cases
 
@@ -120,12 +120,18 @@ Two record shapes, distinguished by `type`.
 
 ## Pricing
 
-Pay per result, split by item type so comment-heavy runs aren't billed at full-article rates:
+Pay per result, split by item type so metadata-only and comment-heavy runs aren't billed at full-article rates. **No Actor-start fee** — a 5-post run costs 5 results, not 5 results plus a fixed charge.
 
-- **Posts:** $0.002 on the Free plan, tapering to $0.0012 on Gold and above (Bronze $0.0018, Silver $0.0015).
-- **Comments:** $0.0006 on the Free plan, tapering to $0.0003 on Gold and above (Bronze $0.0005, Silver $0.0004) — only charged when `includeComments` is on.
+| Event | Free | Bronze | Silver | Gold and above |
+| --- | --- | --- | --- | --- |
+| Post with article text | $0.002 | $0.0018 | $0.0015 | $0.00078 |
+| Post, metadata only | $0.00112 | $0.00098 | $0.00076 | $0.00039 |
+| Comment | $0.00056 | $0.00049 | $0.00038 | $0.00019 |
 
-`maxResults` is a hard cap across both event types, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
+- **Metadata-only** is charged automatically whenever `includeBodyText` and `includeBodyHtml` are both off. You still get all 20+ non-body fields (title, subtitle, dates, audience/paywall status, reactions, restacks, comment counts, tags, section, podcast URL and duration, cover image). Turn the body off when you only need an index of a publication's archive — it's also much faster, because no per-post request is made.
+- **Comments** are only charged when `includeComments` is on.
+
+`maxResults` is a hard cap across every event type, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
 
 ## FAQ
 

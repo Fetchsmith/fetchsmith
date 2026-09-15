@@ -1,6 +1,6 @@
 {
   "title": "Substack Scraper \u2013 Posts, Full Text & Comments",
-  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Discover newsletters by category \u2014 no URL list needed. Custom domains supported. No login, no browser. Posts from $0.002, comments billed separately from $0.0006.",
+  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full article text, engagement stats and comment threads. Discover newsletters by category \u2014 no URL list needed. Custom domains supported. No login, no browser, no start fee. Metadata-only posts from $0.00112, full text from $0.002.",
   "seoTitle": "Substack Scraper API \u2013 Posts, Full Article Text & Comments",
   "seoDescription": "Scrape Substack publications and creator newsletters to JSON/CSV: full article text, reactions, restacks, comments and paywall status. Discover top newsletters by category.",
   "categories": [
@@ -10,8 +10,8 @@
   ],
   "events": {
     "result": {
-      "eventTitle": "Result",
-      "eventDescription": "One Substack post returned to the dataset.",
+      "eventTitle": "Post (with article text)",
+      "eventDescription": "One Substack post returned to the dataset with its full article text or HTML body.",
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.002
@@ -23,13 +23,37 @@
           "tieredEventPriceUsd": 0.0015
         },
         "GOLD": {
-          "tieredEventPriceUsd": 0.0012
+          "tieredEventPriceUsd": 0.00078
         },
         "PLATINUM": {
-          "tieredEventPriceUsd": 0.0012
+          "tieredEventPriceUsd": 0.00078
         },
         "DIAMOND": {
-          "tieredEventPriceUsd": 0.0012
+          "tieredEventPriceUsd": 0.00078
+        }
+      }
+    },
+    "post-metadata": {
+      "eventTitle": "Post (metadata only)",
+      "eventDescription": "One Substack post returned without its article body \u2014 charged instead of the full-text price when includeBodyText and includeBodyHtml are both off.",
+      "eventTieredPricingUsd": {
+        "FREE": {
+          "tieredEventPriceUsd": 0.00112
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.00098
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.00076
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.00039
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.00039
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.00039
         }
       }
     },
@@ -38,22 +62,22 @@
       "eventDescription": "One Substack comment returned to the dataset (only charged when includeComments is on).",
       "eventTieredPricingUsd": {
         "FREE": {
-          "tieredEventPriceUsd": 0.0006
+          "tieredEventPriceUsd": 0.00056
         },
         "BRONZE": {
-          "tieredEventPriceUsd": 0.0005
+          "tieredEventPriceUsd": 0.00049
         },
         "SILVER": {
-          "tieredEventPriceUsd": 0.0004
+          "tieredEventPriceUsd": 0.00038
         },
         "GOLD": {
-          "tieredEventPriceUsd": 0.0003
+          "tieredEventPriceUsd": 0.00019
         },
         "PLATINUM": {
-          "tieredEventPriceUsd": 0.0003
+          "tieredEventPriceUsd": 0.00019
         },
         "DIAMOND": {
-          "tieredEventPriceUsd": 0.0003
+          "tieredEventPriceUsd": 0.00019
         }
       }
     }
