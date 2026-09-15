@@ -11,6 +11,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - **Custom domains just work.** `bigtechnology.com`, `astralcodexten.com` — redirects from `<handle>.substack.com` are followed automatically.
 - **Discover newsletters by category — no URL list needed.** Give `discoverCategories` a topic like `technology` or `finance` and the Actor pulls the top publications from Substack's own category leaderboard and scrapes them in the same run.
 - **Search inside a publication.** `searchQuery` filters the archive server-side instead of downloading everything.
+- **Publication profile on every row** (`includePublicationInfo`): free subscriber count, paid-subscriber band, bestseller tier, author name/handle/bio, the actual monthly/annual/founding subscription prices, podcast flag, language and first-post date. One extra request per publication — cached, so it costs the same whether you pull 5 posts or 5,000.
 - **Many publications per run**, plus direct post URLs.
 - **Cheap, and no Actor-start fee:** $0.002 per full-text post on the Free plan, $0.00078 on Gold and above. Metadata-only posts ($0.00112 down to $0.00039) and comments ($0.00056 down to $0.00019) are billed on their own, cheaper events, so an archive index or a comment-heavy run isn't priced like full articles.
 
@@ -36,6 +37,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 | `includeBodyHtml` | boolean | `false` | Also return the original HTML body. |
 | `includeComments` | boolean | `false` | Also return each post's comments (charged at the lower `comment` rate, not the post rate). |
 | `maxCommentsPerPost` | integer | `50` | Cap on comments per post. |
+| `includePublicationInfo` | boolean | `false` | Add the `publication*` profile fields (subscriber count, plan prices, author, bestseller tier) to every post row. One cached request per publication, not per post — and no extra charge. |
 | `audienceFilter` | string | `all` | `all`, `free` (public posts only) or `paid` (subscriber-only posts). |
 | `publishedAfter` / `publishedBefore` | string | — | ISO dates, e.g. `2026-01-01`. |
 | `maxPostsPerPublication` | integer | `50` | Archive depth per publication — posts **scanned**, before filters. |
@@ -77,6 +79,19 @@ Two record shapes, distinguished by `type`.
 | `bodyText` | full article as plain text (28 kB in the sample above) |
 | `bodyHtml` | original HTML (only when `includeBodyHtml`) |
 | `bodyTruncated` | `true` when the post is paywalled and no public text exists |
+
+Only when `includePublicationInfo: true` (values below from a real run on `bigtechnology.com`):
+
+| Field | Example |
+|---|---|
+| `publicationSubscriberCount`, `publicationSubscriberCountLabel` | `156000`, `Over 156,000 subscribers` — both `null` when the publication hides its count |
+| `publicationPaidSubscribersLabel` | `Hundreds of paid subscribers` (Substack publishes a band, never an exact paid number) |
+| `publicationBestsellerTier` | `100` — Substack's bestseller badge threshold (`100`, `1000`, `10000`) |
+| `publicationAuthorName`, `publicationAuthorHandle`, `publicationAuthorBio` | `Alex Kantrowitz`, `bigtechnology`, `I write Big Technology and host Big Technology Podcast` |
+| `publicationPlans` | `[{"interval":"month","intervalCount":1,"amount":8,"currency":"USD","name":"$8 a month"}, …]` |
+| `publicationType`, `publicationLanguage`, `publicationFirstPostDate` | `newsletter`, `en`, `2020-05-26T20:21:30.375Z` |
+| `publicationHasPodcast`, `publicationInviteOnly`, `publicationPaymentsEnabled` | `true`, `false`, `true` |
+| `publicationDescription`, `publicationLogoUrl` | tagline and logo from the publication homepage |
 
 ```json
 {

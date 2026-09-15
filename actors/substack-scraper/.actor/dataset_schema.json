@@ -4,294 +4,430 @@
     "type": "object",
     "properties": {
       "type": {
+        "title": "Type",
+        "example": "post",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Type",
-        "example": "post"
+        ]
       },
       "id": {
+        "title": "Id",
+        "example": 215274838,
         "type": [
           "number",
           "null"
-        ],
-        "title": "Id",
-        "example": 207542232
+        ]
       },
       "title": {
+        "title": "Title",
+        "example": "It\u2019s Time to Bring Some Sanity to the AI Risk Conversation",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Title",
-        "example": "God Help Us, Let\u2019s Try To Learn About Mechanistic Interpretability Techniques"
+        ]
       },
       "subtitle": {
+        "title": "Subtitle",
+        "example": "AI will kill us all? It\u2019s all just marketing? There has to be a better explanation. And there is.",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Subtitle",
-        "example": "..."
+        ]
       },
       "slug": {
+        "title": "Slug",
+        "example": "its-time-to-bring-some-sanity-to",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Slug",
-        "example": "god-help-us-lets-try-to-learn-about"
+        ]
       },
       "url": {
+        "title": "Url",
+        "example": "https://www.bigtechnology.com/p/its-time-to-bring-some-sanity-to",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Url",
-        "example": "https://www.astralcodexten.com/p/god-help-us-lets-try-to-learn-about"
+        ]
       },
       "publicationUrl": {
+        "title": "PublicationUrl",
+        "example": "https://www.bigtechnology.com",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PublicationUrl",
-        "example": "https://astralcodexten.substack.com"
+        ]
       },
       "publicationId": {
+        "title": "PublicationId",
+        "example": 46510,
         "type": [
           "number",
           "null"
-        ],
-        "title": "PublicationId",
-        "example": 89120
+        ]
       },
       "publicationName": {
+        "title": "PublicationName",
+        "example": "Big Technology",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PublicationName",
-        "example": "Astral Codex Ten"
+        ]
       },
       "authors": {
+        "title": "Authors",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Authors"
+        ]
       },
       "postDate": {
+        "title": "PostDate",
+        "example": "2026-09-11T20:00:36.316Z",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PostDate",
-        "example": "2026-09-08T12:04:21.658Z"
+        ]
       },
       "audience": {
+        "title": "Audience",
+        "example": "only_paid",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Audience",
-        "example": "everyone"
+        ]
       },
       "isPaid": {
+        "title": "IsPaid",
+        "example": true,
         "type": [
           "boolean",
           "null"
-        ],
-        "title": "IsPaid",
-        "example": false
+        ]
       },
       "postType": {
+        "title": "PostType",
+        "example": "newsletter",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PostType",
-        "example": "newsletter"
+        ]
       },
       "wordCount": {
+        "title": "WordCount",
+        "example": 1040,
         "type": [
           "number",
           "null"
-        ],
-        "title": "WordCount",
-        "example": 4695
+        ]
       },
       "reactionCount": {
+        "title": "ReactionCount",
+        "example": 56,
         "type": [
           "number",
           "null"
-        ],
-        "title": "ReactionCount",
-        "example": 199
+        ]
       },
       "commentCount": {
+        "title": "CommentCount",
+        "example": 0,
         "type": [
           "number",
           "null"
-        ],
-        "title": "CommentCount",
-        "example": 118
+        ]
       },
       "restackCount": {
+        "title": "RestackCount",
+        "example": 6,
         "type": [
           "number",
           "null"
-        ],
-        "title": "RestackCount",
-        "example": 14
+        ]
       },
       "description": {
+        "title": "Description",
+        "example": "AI will kill us all? It\u2019s all just marketing? There has to be a better explanation. And there is.",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Description",
-        "example": "..."
+        ]
       },
       "coverImage": {
+        "title": "CoverImage",
+        "example": "https://substackcdn.com/image/fetch/$s_!2VPd!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.",
         "type": [
           "string",
           "null"
-        ],
-        "title": "CoverImage",
-        "example": "https://substackcdn.com/image/fetch/$s_!S-UV!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media."
+        ]
       },
       "section": {
+        "title": "Section",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Section"
+        ]
       },
       "tags": {
+        "title": "Tags",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Tags"
+        ]
       },
       "podcastUrl": {
+        "title": "PodcastUrl",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PodcastUrl"
+        ]
       },
       "podcastDurationSec": {
+        "title": "PodcastDurationSec",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PodcastDurationSec"
+        ]
       },
       "language": {
+        "title": "Language",
+        "example": "en",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Language",
-        "example": "en"
+        ]
       },
       "bodyText": {
+        "title": "BodyText",
+        "example": "The AI risk debate is going completely off the rails. As AI gets more powerful and begins to do some legitimately scary ",
         "type": [
           "string",
           "null"
-        ],
-        "title": "BodyText",
-        "example": "The Story So Far\nMechanistic interpretability is the science of \u201creading an AI\u2019s mind\u201d.\nLarge language models are \u201cgrown"
+        ]
+      },
+      "bodyHtml": {
+        "title": "BodyHtml",
+        "example": "<div class=\"captioned-image-container\"><figure><a class=\"image-link image2 is-viewable-img\" target=\"_blank\" href=\"https:",
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "bodyTruncated": {
+        "title": "BodyTruncated",
+        "example": false,
         "type": [
           "boolean",
           "null"
-        ],
-        "title": "BodyTruncated",
-        "example": false
+        ]
+      },
+      "publicationSubscriberCount": {
+        "title": "PublicationSubscriberCount",
+        "example": 156000,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "publicationSubscriberCountLabel": {
+        "title": "PublicationSubscriberCountLabel",
+        "example": "Over 156,000 subscribers",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationPaidSubscribersLabel": {
+        "title": "PublicationPaidSubscribersLabel",
+        "example": "Hundreds of paid subscribers",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationBestsellerTier": {
+        "title": "PublicationBestsellerTier",
+        "example": 100,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "publicationAuthorName": {
+        "title": "PublicationAuthorName",
+        "example": "Alex Kantrowitz",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationAuthorHandle": {
+        "title": "PublicationAuthorHandle",
+        "example": "bigtechnology",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationAuthorBio": {
+        "title": "PublicationAuthorBio",
+        "example": "I write Big Technology and host Big Technology Podcast",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationDescription": {
+        "title": "PublicationDescription",
+        "example": "A newsletter about big tech and society by independent journalist Alex Kantrowitz.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationType": {
+        "title": "PublicationType",
+        "example": "newsletter",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationLanguage": {
+        "title": "PublicationLanguage",
+        "example": "en",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationFirstPostDate": {
+        "title": "PublicationFirstPostDate",
+        "example": "2020-05-26T20:21:30.375Z",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publicationHasPodcast": {
+        "title": "PublicationHasPodcast",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "publicationInviteOnly": {
+        "title": "PublicationInviteOnly",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "publicationPaymentsEnabled": {
+        "title": "PublicationPaymentsEnabled",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "publicationPlans": {
+        "title": "PublicationPlans",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "publicationLogoUrl": {
+        "title": "PublicationLogoUrl",
+        "example": "https://substackcdn.com/image/fetch/$s_!0LxQ!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-b",
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "postId": {
+        "title": "PostId",
+        "example": 214878061,
         "type": [
           "number",
           "null"
-        ],
-        "title": "PostId",
-        "example": 207542232
+        ]
       },
       "postTitle": {
+        "title": "PostTitle",
+        "example": "King Ludd",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PostTitle",
-        "example": "God Help Us, Let\u2019s Try To Learn About Mechanistic Interpretability Techniques"
+        ]
       },
       "postUrl": {
+        "title": "PostUrl",
+        "example": "https://www.astralcodexten.com/p/king-ludd",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PostUrl",
-        "example": "https://www.astralcodexten.com/p/god-help-us-lets-try-to-learn-about"
+        ]
       },
       "parentCommentId": {
+        "title": "ParentCommentId",
+        "example": 337299777,
         "type": [
           "number",
           "null"
-        ],
-        "title": "ParentCommentId"
+        ]
       },
       "author": {
+        "title": "Author",
+        "example": "OmgPuppies",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Author",
-        "example": "Johannes M\u00fcller"
+        ]
       },
       "authorHandle": {
+        "title": "AuthorHandle",
+        "example": "omgpuppies",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AuthorHandle",
-        "example": "derideonobis623245"
+        ]
       },
       "body": {
+        "title": "Body",
+        "example": "Luke's father absolutely did not create the Death Star, in fact he actually seems rather disdainful of it (\"insignifican",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Body",
-        "example": "ai research will end with a couch, a clipboard, and \u201ctell me more about this activation.\u201d"
+        ]
       },
       "date": {
+        "title": "Date",
+        "example": "2026-09-15T00:01:30.859Z",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Date",
-        "example": "2026-09-08T13:08:44.304Z"
+        ]
       },
       "replyCount": {
+        "title": "ReplyCount",
+        "example": 4,
         "type": [
           "number",
           "null"
-        ],
-        "title": "ReplyCount",
-        "example": 2
+        ]
       },
       "isDeleted": {
+        "title": "IsDeleted",
+        "example": false,
         "type": [
           "boolean",
           "null"
-        ],
-        "title": "IsDeleted",
-        "example": false
+        ]
       }
     }
   },

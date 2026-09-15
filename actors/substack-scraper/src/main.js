@@ -37,6 +37,7 @@ const searchQuery = (input.searchQuery ?? '').toString().trim();
 const includeBodyText = input.includeBodyText !== false;
 const includeBodyHtml = input.includeBodyHtml === true;
 const includeComments = input.includeComments === true;
+const includePublicationInfo = input.includePublicationInfo === true;
 const maxCommentsPerPost = Math.min(Number(input.maxCommentsPerPost ?? 50), 1000);
 const audienceFilter = ['all', 'free', 'paid'].includes(input.audienceFilter) ? input.audienceFilter : 'all';
 const publishedAfter = input.publishedAfter ? new Date(input.publishedAfter) : null;
@@ -78,6 +79,79 @@ async function getJson(url) {
   return res.body;
 }
 
+// Publication-level metadata (subscriber count, author, plan prices, podcast flags) is not on any
+// JSON endpoint — /api/v1/publication is owner-only (403 "Not authorized") — but the publication
+// homepage embeds it in `window._preloads`. One extra HTML request per publication, opt-in via
+// includePublicationInfo, cached per origin so a 50-post run still costs exactly one fetch.
+// Deliberately NOT extracted: support_email / email_from (contact details, PII rule).
+const pubInfoCache = new Map();
+
+function parsePlans(plans) {
+  const out = [];
+  for (const p of plans ?? []) {
+    if (!p?.active || typeof p.amount !== 'number') continue;
+    out.push({
+      interval: p.interval ?? null,
+      intervalCount: p.interval_count ?? 1,
+      amount: p.amount / 100,
+      currency: (p.currency ?? 'usd').toUpperCase(),
+      name: p.nickname ?? null,
+    });
+  }
+  return out;
+}
+
+function mapPublicationInfo(pub) {
+  // freeSubscriberCount arrives as a display string ("156,000"); keep a numeric form too.
+  const rawCount = pub.freeSubscriberCount ?? null;
+  const numericCount = rawCount ? Number(String(rawCount).replace(/[^0-9]/g, '')) || null : null;
+  return {
+    publicationSubscriberCount: numericCount,
+    publicationSubscriberCountLabel: pub.rankingDetailFreeSubscriberCount ?? rawCount ?? null,
+    publicationPaidSubscribersLabel: pub.rankingDetail ?? null,
+    publicationBestsellerTier: pub.author_bestseller_tier ?? null,
+    publicationAuthorName: pub.author_name ?? null,
+    publicationAuthorHandle: pub.author_handle ?? null,
+    publicationAuthorBio: pub.author_bio || null,
+    publicationDescription: pub.hero_text || null,
+    publicationType: pub.type ?? null,
+    publicationLanguage: pub.language ?? null,
+    publicationFirstPostDate: pub.first_post_date ?? null,
+    publicationHasPodcast: pub.podcast_enabled ?? pub.has_podcast ?? null,
+    publicationInviteOnly: pub.invite_only ?? null,
+    publicationPaymentsEnabled: pub.payments_state ? pub.payments_state === 'enabled' : null,
+    publicationPlans: parsePlans(pub.plans),
+    publicationLogoUrl: pub.logo_url ?? null,
+  };
+}
+
+// Every field null (rather than an absent key) when the fetch or the parse fails, so the dataset
+// keeps a stable shape and a partial run is still usable.
+const EMPTY_PUB_INFO = mapPublicationInfo({});
+
+async function fetchPublicationInfo(origin) {
+  if (!includePublicationInfo) return null;
+  if (pubInfoCache.has(origin)) return pubInfoCache.get(origin);
+  let info = EMPTY_PUB_INFO;
+  try {
+    const res = await gotScraping({
+      url: `${origin}/`,
+      timeout: { request: 45000 },
+      retry: { limit: 2, statusCodes: [408, 413, 429, 500, 502, 503, 504] },
+      followRedirect: true,
+      headers: { accept: 'text/html' },
+    });
+    const m = String(res.body).match(/window\._preloads\s*=\s*JSON\.parse\("(.*?)"\)\s*<\/script>/s);
+    const pub = m ? JSON.parse(JSON.parse(`"${m[1]}"`))?.pub : null;
+    if (pub) info = mapPublicationInfo(pub);
+    else log.warning(`Publication info not found in the homepage of ${origin} — returning null fields.`);
+  } catch (e) {
+    log.warning(`Publication info failed for ${origin}: ${e.message} — returning null fields.`);
+  }
+  pubInfoCache.set(origin, info);
+  return info;
+}
+
 // "acme", "acme.substack.com", "https://www.acme.com/p/post-slug" -> { origin, postSlug }
 function parseTarget(raw) {
   let s = String(raw ?? '').trim();
@@ -114,7 +188,7 @@ function matchesDate(post) {
   return true;
 }
 
-function mapPost(post, origin, detail) {
+function mapPost(post, origin, detail, pubInfo) {
   const full = detail ?? post;
   const bodyHtml = full.body_html || null;
   const bodyText = htmlToText(bodyHtml) ?? (post.truncated_body_text || null);
@@ -152,6 +226,7 @@ function mapPost(post, origin, detail) {
     bodyHtml: includeBodyHtml ? bodyHtml : undefined,
     // true when the full article text is not publicly available (paywalled subscriber-only post)
     bodyTruncated: includeBodyText ? !bodyText : undefined,
+    ...(pubInfo ?? {}),
   };
 }
 
@@ -196,7 +271,8 @@ async function handlePost(post, origin, preloadedDetail = null) {
   if (!matchesAudience(post) || !matchesDate(post)) { excludedByFilters += 1; return true; }
   const needDetail = includeBodyText || includeBodyHtml;
   const detail = preloadedDetail ?? (needDetail && post.slug ? await fetchDetail(origin, post.slug) : null);
-  keepGoing = await pushResult(mapPost(post, origin, detail), POST_EVENT);
+  const pubInfo = await fetchPublicationInfo(origin);
+  keepGoing = await pushResult(mapPost(post, origin, detail, pubInfo), POST_EVENT);
   if (!keepGoing) return false;
 
   if (includeComments && (post.comment_count ?? 0) > 0 && timeBudgetOk()) {
