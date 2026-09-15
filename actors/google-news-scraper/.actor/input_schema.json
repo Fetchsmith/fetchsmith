@@ -91,8 +91,8 @@
     "maxItemsPerQuery": {
       "title": "Max articles per query",
       "type": "integer",
-      "description": "Google returns up to 100 per feed.",
-      "default": 100,
+      "description": "Google returns up to 100 per feed. Default is 50 — decoding the real publisher URL for each article is a sequential 2-request round trip, so 100 articles alone can take 4-5 minutes; raise it if you don't need every article back quickly.",
+      "default": 50,
       "minimum": 1,
       "maximum": 100
     },

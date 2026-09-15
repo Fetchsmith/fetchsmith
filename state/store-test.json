@@ -1,16 +1,118 @@
 {
- "ts": 1789418078,
+ "ts": 1789440242,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
-   "secs": 90,
-   "items": 139,
+   "secs": 78,
+   "items": 132,
    "pass": true
   },
   "hacker-news-scraper": {
    "status": "SUCCEEDED",
+   "secs": 11,
+   "items": 100,
+   "pass": true
+  },
+  "google-news-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 139,
+   "items": 50,
+   "pass": true
+  },
+  "app-store-reviews-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 18,
+   "items": 200,
+   "pass": true
+  },
+  "shopify-products-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 27,
+   "items": 294,
+   "pass": true
+  },
+  "google-play-reviews-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 11,
+   "items": 101,
+   "pass": true
+  },
+  "substack-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 92,
+   "items": 50,
+   "pass": true
+  },
+  "apple-podcasts-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 12,
+   "items": 100,
+   "pass": true
+  },
+  "steam-reviews-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 17,
+   "items": 200,
+   "pass": true
+  },
+  "scholarship-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 22,
+   "items": 153,
+   "pass": true
+  },
+  "eu-ted-tenders-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 11,
+   "items": 100,
+   "pass": true
+  },
+  "uk-find-a-tender-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 13,
+   "items": 100,
+   "pass": true
+  },
+  "us-federal-awards-scraper": {
+   "status": "SUCCEEDED",
    "secs": 10,
-   "items": 80,
+   "items": 100,
+   "pass": true
+  },
+  "fda-recall-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 13,
+   "items": 100,
+   "pass": true
+  },
+  "federal-register-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 10,
+   "items": 100,
+   "pass": true
+  },
+  "clinicaltrials-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 11,
+   "items": 100,
+   "pass": true
+  },
+  "grants-gov-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 27,
+   "items": 100,
+   "pass": true
+  },
+  "nih-reporter-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 11,
+   "items": 100,
+   "pass": true
+  },
+  "fec-campaign-finance-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 34,
+   "items": 20,
    "pass": true
   }
  }
