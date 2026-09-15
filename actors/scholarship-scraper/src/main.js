@@ -30,9 +30,14 @@ const deadlineAfter = input.deadlineAfter ? Date.parse(input.deadlineAfter) : nu
 const educationLevels = (input.educationLevels ?? []).map((s) => String(s).replace(/^_/, '').toLowerCase());
 // Free-text search. "scholarship(s)" is dropped as a stopword so "nursing scholarships" behaves
 // like "nursing"; every remaining token must appear somewhere in the record's text.
+// \p{L}\p{N} (Unicode letters/numbers, not just a-z0-9) keeps accented names like "José" or
+// "École" as one token instead of splitting on the accented letter — the old ASCII-only class
+// fragmented them into single stray letters ("a", "e") that then matched almost any record,
+// silently disabling the filter instead of narrowing it.
 const searchTokens = String(input.searchQuery ?? '')
+    .normalize('NFC')
     .toLowerCase()
-    .split(/[^a-z0-9+#]+/)
+    .split(/[^\p{L}\p{N}+#]+/u)
     .filter((t) => t && !/^scholarships?$/.test(t));
 
 const cm = Actor.getChargingManager();
@@ -194,7 +199,7 @@ function normalise(s, sourceUrl) {
 function keep(item) {
     if (searchTokens.length) {
         const hay = [item.name, item.description, item.category, item.slug, ...(item.criteria ?? [])]
-            .filter(Boolean).join(' ').toLowerCase();
+            .filter(Boolean).join(' ').normalize('NFC').toLowerCase();
         if (!searchTokens.every((t) => hay.includes(t))) return false;
     }
     const dl = item.deadline ? Date.parse(item.deadline) : null;

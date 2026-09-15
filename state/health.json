@@ -1,5 +1,5 @@
 {
- "ts": 1789433037,
+ "ts": 1789434163,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -84,7 +84,7 @@
   "google-play-reviews-scraper": {
    "ok": true,
    "status": 201,
-   "items": 1,
+   "items": 6,
    "sample_keys": [
     "recordType",
     "appId",

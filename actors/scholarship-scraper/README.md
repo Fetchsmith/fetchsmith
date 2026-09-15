@@ -107,6 +107,9 @@ Depth. This Actor returns ~28 typed fields per scholarship — including `number
 **Can I scrape one specific scholarship?**
 Yes — put its page URL in `startUrls`, e.g. `https://bold.org/scholarships/chris-jackson-scholarship/`.
 
+**Does `searchQuery` handle accented names correctly?**
+Yes. A name like `José` or `María` is kept as one search token instead of being split on the accented letter — matters if you're searching a scholarship named after a person.
+
 ## Related guides
 Engineering write-ups behind this Actor:
 - [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
