@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "clinicaltrials-scraper",
   "title": "ClinicalTrials.gov Scraper – Condition, Phase & Site Mode",
-  "description": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, status, type and phase filters. Optional one-row-per-site mode for site-selection. No contact PII shipped, ever. $0.0015/result, no start fee.",
+  "description": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows (start, completion, first-posted, results). Optional one-row-per-site mode. No contact PII shipped, ever. $0.0015/result, no start fee.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

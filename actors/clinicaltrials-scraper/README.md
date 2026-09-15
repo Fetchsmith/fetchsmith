@@ -52,6 +52,13 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `acceptsHealthyVolunteers` | Only studies that accept healthy volunteers, not just patients with the condition. |
 | `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. Setting `From` after `To` fails fast with an error instead of silently returning 0 rows. |
 | `ageRangeFromYears` / `ageRangeToYears` | Only studies whose stated minimum/maximum eligibility age falls in this range (years), either bound optional. E.g. `ageRangeToYears: 65` excludes studies with no senior-age cap. Setting `From` above `To` fails fast with an error instead of silently returning 0 rows. |
+| `studyStartDateFrom` / `studyStartDateTo` | Absolute `YYYY-MM-DD` window on the study's **start date**. Either bound optional. |
+| `primaryCompletionDateFrom` / `primaryCompletionDateTo` | Window on the **primary completion** date — the readout date a competitive-intelligence pull is usually actually about. |
+| `studyCompletionDateFrom` / `studyCompletionDateTo` | Window on the **overall completion** date. |
+| `firstPostedDateFrom` / `firstPostedDateTo` | Window on the date the study was **first posted** to ClinicalTrials.gov — the "newly registered trials" query. |
+| `resultsFirstPostedDateFrom` / `resultsFirstPostedDateTo` | Window on the date **results** were first posted. Pairs with `resultsAvailability: "with"`. |
+| `facilityName` | Only studies running at a facility whose name matches, e.g. `Mayo Clinic`. This is the **site/hospital name**, not the city — `locations` is the city/state/country field. Multi-word values are matched as a phrase, not as loose terms. |
+| `leadSponsorName` | Only studies whose **lead** sponsor matches, e.g. `Pfizer`. Narrower than `sponsors`, which also matches collaborators. |
 | `funderTypes` | Lead sponsor organization type: `NIH`, `FED` (other US federal), `OTHER_GOV`, `INDUSTRY`, `NETWORK`, `INDIV`, `OTHER` (academic/nonprofit), `UNKNOWN`, `AMBIG`. |
 | `titleOrAcronym` | Search only the official/brief title and acronym — narrower than `searchQuery`. |
 | `outcomeMeasure` | Search only the study's stated outcome measures, e.g. "overall survival". |
@@ -92,6 +99,12 @@ Yes, set `nctIds` (e.g. `"NCT04368728, NCT03854955"`) instead of the search filt
 
 **Why did I get zero rows?**
 Filters are ANDed — combining a narrow condition, sponsor and location at once often genuinely matches nothing. Drop one filter and retry. Also, `phases` only applies to interventional studies with a phase assigned; pairing it with `studyTypes: ["OBSERVATIONAL"]` always returns nothing.
+
+**There are six date filters — which one do I want?**
+`firstPosted*` = when the trial was registered (new-trial alerts). `studyStart*` = when dosing/enrolment begins. `primaryCompletion*` = the primary-endpoint readout date, which is the one most competitive-intelligence pulls actually mean. `studyCompletion*` = last visit of the last patient. `resultsFirstPosted*` = when results were published. `lastUpdatePosted*` = when the record changed at all, which is the right one for an incremental "what's new since my last pull" job. Every pair is independent, ANDed with the rest, and either bound can be left blank for an open range.
+
+**What's the difference between `facilityName` and `locations`?**
+`locations` is the city/state/country text ("Boston, Massachusetts"); `facilityName` is the site name ("Mayo Clinic"). Use `facilityName` for site-selection and KOL work where you care which institution is running the trial, not where it sits. Multi-word values are sent as a quoted phrase, so `Mayo Clinic` does not also match a study at "Cleveland Clinic" in Mayo, Florida.
 
 **Are `phases`, `maximumAge` and `collaborators` always present?**
 No. Measured on a live 50-study sample: `phases` populated on ~70%, `maximumAge` on ~48%, `collaborators` on ~24%. Don't treat a missing value as a scraping error — most studies genuinely don't set these fields.

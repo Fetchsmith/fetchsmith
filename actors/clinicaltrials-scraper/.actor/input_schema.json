@@ -48,7 +48,22 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["RECRUITING", "NOT_YET_RECRUITING", "ENROLLING_BY_INVITATION", "ACTIVE_NOT_RECRUITING", "COMPLETED", "TERMINATED", "WITHDRAWN", "SUSPENDED", "UNKNOWN", "WITHHELD", "AVAILABLE", "NO_LONGER_AVAILABLE", "APPROVED_FOR_MARKETING", "TEMPORARILY_NOT_AVAILABLE"]
+        "enum": [
+          "RECRUITING",
+          "NOT_YET_RECRUITING",
+          "ENROLLING_BY_INVITATION",
+          "ACTIVE_NOT_RECRUITING",
+          "COMPLETED",
+          "TERMINATED",
+          "WITHDRAWN",
+          "SUSPENDED",
+          "UNKNOWN",
+          "WITHHELD",
+          "AVAILABLE",
+          "NO_LONGER_AVAILABLE",
+          "APPROVED_FOR_MARKETING",
+          "TEMPORARILY_NOT_AVAILABLE"
+        ]
       },
       "uniqueItems": true
     },
@@ -59,7 +74,11 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["INTERVENTIONAL", "OBSERVATIONAL", "EXPANDED_ACCESS"]
+        "enum": [
+          "INTERVENTIONAL",
+          "OBSERVATIONAL",
+          "EXPANDED_ACCESS"
+        ]
       },
       "uniqueItems": true
     },
@@ -70,8 +89,22 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["EARLY_PHASE1", "PHASE1", "PHASE2", "PHASE3", "PHASE4", "NA"],
-        "enumTitles": ["Early Phase 1", "Phase 1", "Phase 2", "Phase 3", "Phase 4", "Not Applicable"]
+        "enum": [
+          "EARLY_PHASE1",
+          "PHASE1",
+          "PHASE2",
+          "PHASE3",
+          "PHASE4",
+          "NA"
+        ],
+        "enumTitles": [
+          "Early Phase 1",
+          "Phase 1",
+          "Phase 2",
+          "Phase 3",
+          "Phase 4",
+          "Not Applicable"
+        ]
       },
       "uniqueItems": true
     },
@@ -80,8 +113,16 @@
       "type": "string",
       "description": "Filter on whether the study has posted a results section on ClinicalTrials.gov. \"With results\" is the endpoint set for outcome/efficacy analysis; \"without results\" finds completed trials that never reported (an FDAAA-compliance use case).",
       "editor": "select",
-      "enum": ["", "with", "without"],
-      "enumTitles": ["Any (default)", "Only studies WITH posted results", "Only studies WITHOUT posted results"],
+      "enum": [
+        "",
+        "with",
+        "without"
+      ],
+      "enumTitles": [
+        "Any (default)",
+        "Only studies WITH posted results",
+        "Only studies WITHOUT posted results"
+      ],
       "default": ""
     },
     "hasResultsOnly": {
@@ -97,8 +138,16 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["CHILD", "ADULT", "OLDER_ADULT"],
-        "enumTitles": ["Child (0–17)", "Adult (18–64)", "Older adult (65+)"]
+        "enum": [
+          "CHILD",
+          "ADULT",
+          "OLDER_ADULT"
+        ],
+        "enumTitles": [
+          "Child (0–17)",
+          "Adult (18–64)",
+          "Older adult (65+)"
+        ]
       },
       "uniqueItems": true
     },
@@ -109,8 +158,16 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["prot", "sap", "icf"],
-        "enumTitles": ["Study protocol", "Statistical analysis plan (SAP)", "Informed consent form (ICF)"]
+        "enum": [
+          "prot",
+          "sap",
+          "icf"
+        ],
+        "enumTitles": [
+          "Study protocol",
+          "Statistical analysis plan (SAP)",
+          "Informed consent form (ICF)"
+        ]
       },
       "uniqueItems": true
     },
@@ -125,8 +182,16 @@
       "type": "string",
       "description": "Restrict to studies whose eligibility criteria specify this sex. Leave blank for all (most studies are open to all).",
       "editor": "select",
-      "enum": ["", "FEMALE", "MALE"],
-      "enumTitles": ["All", "Female", "Male"],
+      "enum": [
+        "",
+        "FEMALE",
+        "MALE"
+      ],
+      "enumTitles": [
+        "All",
+        "Female",
+        "Male"
+      ],
       "default": ""
     },
     "acceptsHealthyVolunteers": {
@@ -168,8 +233,28 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["NIH", "FED", "OTHER_GOV", "INDUSTRY", "NETWORK", "INDIV", "OTHER", "UNKNOWN", "AMBIG"],
-        "enumTitles": ["NIH", "Other U.S. federal agency", "Other government (non-U.S. or non-federal)", "Industry", "Network", "Individual", "Other (academic/nonprofit)", "Unknown", "Ambiguous"]
+        "enum": [
+          "NIH",
+          "FED",
+          "OTHER_GOV",
+          "INDUSTRY",
+          "NETWORK",
+          "INDIV",
+          "OTHER",
+          "UNKNOWN",
+          "AMBIG"
+        ],
+        "enumTitles": [
+          "NIH",
+          "Other U.S. federal agency",
+          "Other government (non-U.S. or non-federal)",
+          "Industry",
+          "Network",
+          "Individual",
+          "Other (academic/nonprofit)",
+          "Unknown",
+          "Ambiguous"
+        ]
       },
       "uniqueItems": true
     },
@@ -185,13 +270,95 @@
       "description": "Search only the study's stated outcome measures, e.g. \"progression-free survival\" or \"overall survival\". Maps to query.outc.",
       "editor": "textfield"
     },
+    "studyStartDateFrom": {
+      "title": "Study start from",
+      "type": "string",
+      "description": "Only studies whose start date is on or after this date (YYYY-MM-DD). Maps to AREA[StartDate].",
+      "editor": "textfield"
+    },
+    "studyStartDateTo": {
+      "title": "Study start to",
+      "type": "string",
+      "description": "Only studies whose start date is on or before this date (YYYY-MM-DD). Maps to AREA[StartDate].",
+      "editor": "textfield"
+    },
+    "primaryCompletionDateFrom": {
+      "title": "Primary completion from",
+      "type": "string",
+      "description": "Only studies whose primary completion date is on or after this date (YYYY-MM-DD). Maps to AREA[PrimaryCompletionDate].",
+      "editor": "textfield"
+    },
+    "primaryCompletionDateTo": {
+      "title": "Primary completion to",
+      "type": "string",
+      "description": "Only studies whose primary completion date is on or before this date (YYYY-MM-DD). Maps to AREA[PrimaryCompletionDate].",
+      "editor": "textfield"
+    },
+    "studyCompletionDateFrom": {
+      "title": "Study completion from",
+      "type": "string",
+      "description": "Only studies whose overall completion date is on or after this date (YYYY-MM-DD). Maps to AREA[CompletionDate].",
+      "editor": "textfield"
+    },
+    "studyCompletionDateTo": {
+      "title": "Study completion to",
+      "type": "string",
+      "description": "Only studies whose overall completion date is on or before this date (YYYY-MM-DD). Maps to AREA[CompletionDate].",
+      "editor": "textfield"
+    },
+    "firstPostedDateFrom": {
+      "title": "First posted from",
+      "type": "string",
+      "description": "Only studies first posted to ClinicalTrials.gov on or after this date (YYYY-MM-DD). Use this to find newly registered trials. Maps to AREA[StudyFirstPostDate].",
+      "editor": "textfield"
+    },
+    "firstPostedDateTo": {
+      "title": "First posted to",
+      "type": "string",
+      "description": "Only studies first posted to ClinicalTrials.gov on or before this date (YYYY-MM-DD). Maps to AREA[StudyFirstPostDate].",
+      "editor": "textfield"
+    },
+    "resultsFirstPostedDateFrom": {
+      "title": "Results first posted from",
+      "type": "string",
+      "description": "Only studies whose results were first posted on or after this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
+      "editor": "textfield"
+    },
+    "resultsFirstPostedDateTo": {
+      "title": "Results first posted to",
+      "type": "string",
+      "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
+      "editor": "textfield"
+    },
+    "facilityName": {
+      "title": "Facility name",
+      "type": "string",
+      "description": "Only studies running at a facility whose name matches this text, e.g. \"Mayo Clinic\". This is the site/hospital name, not the city — use \"Location\" above for a city/state/country. Maps to AREA[LocationFacility].",
+      "editor": "textfield"
+    },
+    "leadSponsorName": {
+      "title": "Lead sponsor name (exact field)",
+      "type": "string",
+      "description": "Only studies whose LEAD sponsor name matches this text, e.g. \"Pfizer\". Unlike \"Sponsor / collaborator name\" above (which also matches collaborators and other free-text sponsor fields), this restricts to the lead sponsor only. Maps to AREA[LeadSponsorName].",
+      "editor": "textfield"
+    },
     "sortBy": {
       "title": "Sort order",
       "type": "string",
       "description": "How ClinicalTrials.gov orders results (before maxResults truncates them). Default is the API's own relevance order.",
       "editor": "select",
-      "enum": ["", "LastUpdatePostDate:desc", "StudyFirstPostDate:desc", "EnrollmentCount:desc"],
-      "enumTitles": ["Relevance (default)", "Most recently updated first", "Most recently first-posted first", "Largest enrollment first"],
+      "enum": [
+        "",
+        "LastUpdatePostDate:desc",
+        "StudyFirstPostDate:desc",
+        "EnrollmentCount:desc"
+      ],
+      "enumTitles": [
+        "Relevance (default)",
+        "Most recently updated first",
+        "Most recently first-posted first",
+        "Largest enrollment first"
+      ],
       "default": ""
     },
     "rowsPerStudy": {
@@ -199,8 +366,14 @@
       "type": "string",
       "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. A single study averages 5 sites (max seen: 110), so site mode returns roughly 5x more billable rows for the same query.",
       "editor": "select",
-      "enum": ["study", "site"],
-      "enumTitles": ["One row per study", "One row per trial site"],
+      "enum": [
+        "study",
+        "site"
+      ],
+      "enumTitles": [
+        "One row per study",
+        "One row per trial site"
+      ],
       "default": "study"
     },
     "maxResults": {

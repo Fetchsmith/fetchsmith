@@ -50,13 +50,31 @@ const resultsAvailability = RESULTS_AVAILABILITY.has(String(input.resultsAvailab
 const sex = ['FEMALE', 'MALE'].includes(String(input.sex ?? '').toUpperCase()) ? String(input.sex).toUpperCase() : '';
 const acceptsHealthyVolunteers = input.acceptsHealthyVolunteers === true;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// Every date filter is the same shape: two ISO dates that become one AREA[<field>]RANGE[from,to]
+// clause (MIN/MAX for an open bound). `area` is the ClinicalTrials.gov advanced-filter area name;
+// all six were verified live against the real API before being wired up — a wrong area name is a
+// hard 400 ("Unknown area name"), never a silently-ignored filter, so a typo here cannot ship as
+// "filter had no effect".
+const DATE_FILTERS = [
+    { from: 'lastUpdatePostedDateFrom', to: 'lastUpdatePostedDateTo', area: 'LastUpdatePostDate' },
+    { from: 'studyStartDateFrom', to: 'studyStartDateTo', area: 'StartDate' },
+    { from: 'primaryCompletionDateFrom', to: 'primaryCompletionDateTo', area: 'PrimaryCompletionDate' },
+    { from: 'studyCompletionDateFrom', to: 'studyCompletionDateTo', area: 'CompletionDate' },
+    { from: 'firstPostedDateFrom', to: 'firstPostedDateTo', area: 'StudyFirstPostDate' },
+    { from: 'resultsFirstPostedDateFrom', to: 'resultsFirstPostedDateTo', area: 'ResultsFirstPostDate' },
+];
+const dateRanges = [];
+for (const { from, to, area } of DATE_FILTERS) {
+    const f = DATE_RE.test(input[from]) ? input[from] : '';
+    const t = DATE_RE.test(input[to]) ? input[to] : '';
+    if (f && t && f > t) {
+        throw new Error(`"${from}" (${f}) is after "${to}" (${t}) — the window is empty. Swap them.`);
+    }
+    if (f || t) dateRanges.push(`AREA[${area}]RANGE[${f || 'MIN'},${t || 'MAX'}]`);
+}
+// Kept as named bindings because the run-summary log line below reports them explicitly.
 const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
 const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
-if (lastUpdatePostedDateFrom && lastUpdatePostedDateTo && lastUpdatePostedDateFrom > lastUpdatePostedDateTo) {
-    throw new Error(
-        `"lastUpdatePostedDateFrom" (${lastUpdatePostedDateFrom}) is after "lastUpdatePostedDateTo" (${lastUpdatePostedDateTo}) — the window is empty. Swap them.`,
-    );
-}
 const FUNDER_TYPES = new Set(['NIH', 'FED', 'OTHER_GOV', 'INDUSTRY', 'NETWORK', 'INDIV', 'OTHER', 'UNKNOWN', 'AMBIG']);
 const funderTypes = cleanList(input.funderTypes, FUNDER_TYPES);
 // Verified live: AREA[MinimumAge]/AREA[MaximumAge] RANGE take "<n> Years" (or MIN/MAX for an
@@ -87,6 +105,15 @@ const documentTypes = (Array.isArray(input.documentTypes) ? input.documentTypes 
 const fdaRegulationViolation = input.fdaRegulationViolation === true;
 const titleOrAcronym = String(input.titleOrAcronym ?? '').trim();
 const outcomeMeasure = String(input.outcomeMeasure ?? '').trim();
+// An AREA(...) term is parsed as a query expression, so a multi-word value has to be quoted to
+// stay one phrase (verified live: AREA[LocationFacility](Mayo Clinic) = 3,717 hits on cond=cancer
+// vs AREA[LocationFacility]("Mayo Clinic") = 3,708 — the unquoted form is two loose terms, not the
+// facility name). Double quotes and backslashes inside the value are dropped rather than escaped:
+// neither is ever part of a real facility or sponsor name, and leaving them in can unbalance the
+// quoting and turn a narrow search into a 400 or a wrong-filter result.
+const areaPhrase = (s) => `"${s.replace(/["\\]/g, ' ').replace(/\s+/g, ' ').trim()}"`;
+const facilityName = String(input.facilityName ?? '').trim();
+const leadSponsorName = String(input.leadSponsorName ?? '').trim();
 const SORT_VALUES = new Set(['LastUpdatePostDate:desc', 'StudyFirstPostDate:desc', 'EnrollmentCount:desc']);
 const sortBy = SORT_VALUES.has(input.sortBy) ? input.sortBy : '';
 const rowsPerStudy = input.rowsPerStudy === 'site' ? 'site' : 'study';
@@ -162,9 +189,9 @@ function baseParams() {
     if (phases.length) advanced.push(`AREA[Phase](${phases.join(' OR ')})`);
     if (sex) advanced.push(`AREA[Sex](${sex})`);
     if (acceptsHealthyVolunteers) advanced.push('AREA[HealthyVolunteers](true)');
-    if (lastUpdatePostedDateFrom || lastUpdatePostedDateTo) {
-        advanced.push(`AREA[LastUpdatePostDate]RANGE[${lastUpdatePostedDateFrom || 'MIN'},${lastUpdatePostedDateTo || 'MAX'}]`);
-    }
+    advanced.push(...dateRanges);
+    if (facilityName) advanced.push(`AREA[LocationFacility](${areaPhrase(facilityName)})`);
+    if (leadSponsorName) advanced.push(`AREA[LeadSponsorName](${areaPhrase(leadSponsorName)})`);
     if (ageRangeFromYears !== null) advanced.push(`AREA[MinimumAge]RANGE[${ageRangeFromYears} Years,MAX]`);
     if (ageRangeToYears !== null) advanced.push(`AREA[MaximumAge]RANGE[MIN,${ageRangeToYears} Years]`);
     if (funderTypes.length) advanced.push(`AREA[LeadSponsorClass](${funderTypes.join(' OR ')})`);
@@ -281,6 +308,8 @@ log.info(nctIds.length
       + `lastUpdatePostedDateFrom="${lastUpdatePostedDateFrom}" lastUpdatePostedDateTo="${lastUpdatePostedDateTo}" `
       + `ageRangeFromYears=${ageRangeFromYears} ageRangeToYears=${ageRangeToYears} funderTypes=[${funderTypes.join(',')}] `
       + `titleOrAcronym="${titleOrAcronym}" outcomeMeasure="${outcomeMeasure}" sortBy="${sortBy}" `
+      + `facilityName="${facilityName}" leadSponsorName="${leadSponsorName}" `
+      + `dateRanges=[${dateRanges.join(' AND ')}] `
       + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`);
 
 let scanned = 0;
