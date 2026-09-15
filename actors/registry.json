@@ -60,7 +60,7 @@
         "isRemote": false,
         "jobUrl": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
       },
-      "description": "<p>Give it a list of companies as <code>{\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API \u2014 no browser, no login. Six ATSes normalized into one schema \u2014 the only one of these six to also include Recruitee. Supports <code>titleKeyword</code>, <code>locationKeyword</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
+      "description": "<p>Give it a list of companies as <code>{\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API \u2014 no browser, no login. Seven ATSes normalized into one schema \u2014 the only one of these seven to also include Recruitee. Supports <code>titleKeyword</code>/<code>titleExcludeKeyword</code>, <code>locationKeyword</code>/<code>locationExcludeKeyword</code>, <code>hasSalary</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
       "memory_mb": 1024
     },
     {

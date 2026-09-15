@@ -5,7 +5,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 ## What it does
 - Fetches each company's public job-board API directly (no browser, no login) for **Greenhouse**, **Ashby**, **Lever**, **Recruitee**, **Workable**, **SmartRecruiters** and **Workday** — the ATS behind 10,000+ career sites, including many large employers no other field in this list reaches.
 - Normalizes every posting into one shared schema (title, department, team, employment type, workplace type, remote flag, location, salary where the ATS exposes it, timestamps, apply URL, description).
-- Client-side filters (title keyword, location keyword, remote-only, posted-after date) are applied **before** charging, so you only pay for postings you actually want.
+- Client-side filters (title keyword + exclude, location keyword + exclude, remote-only, has-salary, posted-after date) are applied **before** charging, so you only pay for postings you actually want.
 - Companies that have migrated off an ATS (very common for Lever) are skipped with a warning, not a failed run.
 - Pay per result: you are charged only for job postings actually returned. **No start fee.**
 
@@ -21,7 +21,10 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 |---|---|---|
 | `companies` | array | `[{"ats": "greenhouse\|ashby\|lever\|recruitee\|workable\|smartrecruiters\|workday", "slug": "<company-slug>"}]`. The slug is the company identifier in their career-board URL, e.g. `jobs.ashbyhq.com/ramp` → `{"ats":"ashby","slug":"ramp"}`. **Workday's slug is `"<host>/<site>"`** (see below) since a Workday board has no single short identifier. |
 | `titleKeyword` | string | Only keep postings whose title contains this text. |
+| `titleExcludeKeyword` | string | Drop postings whose title contains this text, e.g. `"Senior"` to filter out senior roles. |
 | `locationKeyword` | string | Only keep postings whose location/city/country contains this text. |
+| `locationExcludeKeyword` | string | Drop postings whose location/city/country contains this text, e.g. a country you don't hire in. |
+| `hasSalary` | boolean | Only keep postings where the ATS itself published a salary. Default `false`. |
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | ISO date; only keep postings published on/after it. |
 | `includeDescriptions` | boolean | Include full HTML + plain-text description. Default `true`. |

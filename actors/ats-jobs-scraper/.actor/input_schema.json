@@ -24,11 +24,29 @@
       "description": "Only keep postings whose title contains this text (case-insensitive). Leave empty for all titles.",
       "editor": "textfield"
     },
+    "titleExcludeKeyword": {
+      "title": "Title exclude keyword",
+      "type": "string",
+      "description": "Drop postings whose title contains this text (case-insensitive), e.g. \"Senior\" to filter out senior roles. Leave empty for no exclusion.",
+      "editor": "textfield"
+    },
     "locationKeyword": {
       "title": "Location keyword filter",
       "type": "string",
       "description": "Only keep postings whose location/city/country contains this text (case-insensitive). Leave empty for all locations.",
       "editor": "textfield"
+    },
+    "locationExcludeKeyword": {
+      "title": "Location exclude keyword",
+      "type": "string",
+      "description": "Drop postings whose location/city/country/secondary locations contains this text (case-insensitive), e.g. a country you don't hire in. Leave empty for no exclusion.",
+      "editor": "textfield"
+    },
+    "hasSalary": {
+      "title": "Only postings with salary",
+      "type": "boolean",
+      "description": "Only keep postings where the ATS itself published a salaryMin or salaryMax (Ashby, Lever, Recruitee). Postings from ATSes that never carry a compensation field (Greenhouse, Workable, SmartRecruiters, Workday) are always dropped when this is on.",
+      "default": false
     },
     "remoteOnly": {
       "title": "Remote only",
