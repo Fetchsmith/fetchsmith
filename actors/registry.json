@@ -1340,26 +1340,39 @@
         "synopsisDocumentURLs",
         "assistURL",
         "lastUpdatedDate",
-        "modComments"
+        "modComments",
+        "numberOfAwards",
+        "estimatedFunding",
+        "estSynopsisPostingDate",
+        "estApplicationResponseDate",
+        "estAwardDate",
+        "estProjectStartDate",
+        "fiscalYear"
       ],
       "sample_output": {
-        "id": "357579",
-        "opportunityNumber": "25-519",
-        "title": "Water, Landscape, and Critical Zone Processes",
-        "agencyCode": "NSF",
-        "agency": "U.S. National Science Foundation",
-        "oppStatus": "posted",
-        "openDate": "12/07/2024",
+        "id": "355824",
+        "opportunityNumber": "MP-CPI-25-001",
+        "title": "Making America Healthy Again by Addressing Dementia Disparities",
+        "agencyCode": "HHS-OPHS",
+        "agency": "Office of the Assistant Secretary for Health",
+        "oppStatus": "forecasted",
+        "docType": "forecast",
+        "openDate": "08/01/2024",
         "closeDate": null,
         "cfdaList": [
-          "47.050"
+          "93.137"
         ],
         "opportunityCategory": "Discretionary",
         "costSharing": false,
-        "awardCeiling": null,
-        "awardFloor": null,
-        "applicantEligibilityDesc": "*Who May Submit Proposals: Proposals may only be submitted by the following:\n  -Non-profit, non-academic organizations: Independent museums, observatories, research laboratories, professional societies and similar organi\u2026",
-        "url": "https://www.grants.gov/search-results-detail/357579"
+        "awardCeiling": 600000,
+        "awardFloor": 450000,
+        "numberOfAwards": 9,
+        "estimatedFunding": 5000000,
+        "estSynopsisPostingDate": "Apr 14, 2025 12:00:00 AM EDT",
+        "estApplicationResponseDate": "Jun 23, 2025 12:00:00 AM EDT",
+        "estAwardDate": "Sep 15, 2025 12:00:00 AM EDT",
+        "fiscalYear": 2025,
+        "url": "https://www.grants.gov/search-results-detail/355824"
       }
     },
     {

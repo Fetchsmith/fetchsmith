@@ -5,6 +5,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 ## What it does
 - Calls Grants.gov's own `search2`/`fetchOpportunity` endpoints (the same API that powers grants.gov/search-grants), not HTML scraping.
 - Search results alone carry only 10 thin fields (id, number, title, agency, dates, status). Turn on `enrich` (default) to join each row with a second call for the money fields a grant seeker actually decides on: `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, and the full synopsis text.
+- **Forecasted opportunities (`docType: "forecast"`) are enriched too**, not just posted ones — roughly half of the default `oppStatuses` result set. Grants.gov gives a forecast its own estimated award ceiling/floor, applicant types and funding instruments/categories under the same field names as a posted synopsis, plus forecast-only fields: `numberOfAwards`, `estimatedFunding`, `estSynopsisPostingDate`, `estApplicationResponseDate`, `estAwardDate`, `estProjectStartDate`, `fiscalYear`.
 - **Agency codes are resolved and expanded**, not passed through blind: Grants.gov's parent agency codes (e.g. `"USDA"`, `"DOD"`) do **not** automatically include their sub-agencies in a search — unlike some other government APIs. This Actor expands a parent code you supply into all of its real sub-agency codes (e.g. `"USDA"` → `USDA-NIFA`, `USDA-FS`, `USDA-APHIS`, …) so filtering by department actually works. An unrecognised code is dropped with a named warning instead of silently returning zero rows.
 - **Opportunity-number lookup ignores your other filters.** Grants.gov ANDs `oppNum` with every other filter, including its own default status filter — looking up a *closed* or *archived* opportunity by its exact number normally returns nothing. Set `oppNum` and this Actor searches all statuses and ignores keyword/agency/eligibility filters, so an exact-number lookup always finds the opportunity if it exists.
 - **`postedWithinDays` for cheap incremental pulls** — Grants.gov's own "Posted Date" filter accepts any positive number of days, not just its site's 3/7/14/21-day preset buttons (verified live). Use it instead of re-scanning the whole index on a daily/weekly cron.
@@ -57,6 +58,8 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 ## Output (enriched fields, when `enrich: true`)
 `agencyName`, `agencyCode`, `topAgencyName`, `topAgencyCode`, `opportunityCategory`, `postingDate`, `responseDate`, `archiveDate`, `costSharing`, `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, `synopsisText`, `cfdas`, `fundingDescLinkUrl`, `synopsisDocumentURLs`, `assistURL`, `lastUpdatedDate`, `modComments`
 
+On a `docType: "forecast"` row, `responseDate`/`archiveDate`/`applicantEligibilityDesc`/`fundingDescLinkUrl` are `null` (a forecast has no firm deadline or eligibility writeup yet) and seven forecast-only fields are added instead: `numberOfAwards`, `estimatedFunding`, `estSynopsisPostingDate` (Grants.gov's own estimate of when the real NOFO posts), `estApplicationResponseDate`, `estAwardDate`, `estProjectStartDate`, `fiscalYear`. These are `null` on synopsis-based (posted/closed/archived) rows.
+
 ### Sample output (one real row from the example input above)
 ```json
 {
@@ -91,6 +94,40 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 ```
 Note `awardFloor: null` alongside a real `awardCeiling` — agencies often set only one of the two. Dates come back in Grants.gov's own two formats: `MM/DD/YYYY` on the thin search fields, and a long `MMM DD, YYYY hh:mm:ss AM/PM TZ` string on the enriched detail fields. Both are passed through as the API returns them.
 
+### Sample output (a forecast, `oppStatuses: ["forecasted"]`)
+```json
+{
+  "id": "355824",
+  "opportunityNumber": "MP-CPI-25-001",
+  "title": "Making America Healthy Again by Addressing Dementia Disparities",
+  "agencyCode": "HHS-OPHS",
+  "agency": "Office of the Assistant Secretary for Health",
+  "openDate": "08/01/2024",
+  "closeDate": null,
+  "oppStatus": "forecasted",
+  "docType": "forecast",
+  "cfdaList": ["93.137"],
+  "url": "https://www.grants.gov/search-results-detail/355824",
+  "opportunityCategory": "Discretionary",
+  "costSharing": false,
+  "awardCeiling": 600000,
+  "awardFloor": 450000,
+  "applicantTypes": ["State governments", "Nonprofits having a 501(c)(3) status with the IRS, other than institutions of higher education", "..."],
+  "fundingInstruments": ["Grant"],
+  "fundingActivityCategories": ["Health"],
+  "synopsisText": "The Office of Minority Health announces the anticipated availability of funds for Fiscal Year (FY) 2025 ...",
+  "cfdas": [{ "number": "93.137", "title": "Community Programs to Improve Minority Health" }],
+  "numberOfAwards": 9,
+  "estimatedFunding": 5000000,
+  "estSynopsisPostingDate": "Apr 14, 2025 12:00:00 AM EDT",
+  "estApplicationResponseDate": "Jun 23, 2025 12:00:00 AM EDT",
+  "estAwardDate": "Sep 15, 2025 12:00:00 AM EDT",
+  "estProjectStartDate": "Sep 30, 2025 12:00:00 AM EDT",
+  "fiscalYear": 2025
+}
+```
+`responseDate`, `archiveDate`, `applicantEligibilityDesc` and `fundingDescLinkUrl` are omitted above because Grants.gov has no forecast equivalent — they read `null`, not missing.
+
 **Privacy note:** Grants.gov's detail API also carries an `agencyContactName`/`agencyContactEmail`/`agencyContactPhone` block and a `synopsis.agencyName`/`agencyPhone`/`agencyAddressDesc` block that are agency-entered free text — sometimes a department name, sometimes a named individual program officer with a direct phone and email. Because the two cases can't be told apart per row, none of those fields are ever emitted. Organisational contact info (`agencyName`/`agencyCode` from the structured agency lookup) is included instead.
 
 ## Pricing
@@ -112,7 +149,10 @@ No. This uses Grants.gov's own public `search2`/`fetchOpportunity` endpoints —
 After. It caps the number of opportunities actually returned to you, which is also the number you are charged for. Verified live: `keyword: "cancer research"`, `oppStatuses: ["posted"]`, `minAwardAmount: 500000`, `maxResults: 3` returned exactly 3 rows, all with an award ceiling of $500,000 or more — not 3 scanned rows of which some survived.
 
 **Why does an opportunity have `awardCeiling: null`?**
-Because the agency never set one. Grants.gov spells this as the literal string `"none"` in its detail record; this Actor normalizes it to `null` rather than passing through an inconsistently-typed string or pretending it is `0`. Measured live at roughly a third of posted opportunities, so it is a common case. Note that `minAwardAmount`/`maxAwardAmount` therefore *exclude* these rows — there is no ceiling to compare against.
+Because the agency never set one. Grants.gov spells this as the literal string `"none"` in its detail record; this Actor normalizes it to `null` rather than passing through an inconsistently-typed string or pretending it is `0`. Measured live at roughly a third of posted opportunities, so it is a common case. Note that `minAwardAmount`/`maxAwardAmount` therefore *exclude* these rows — there is no ceiling to compare against. This applies equally to forecasts — a forecast can have `awardCeiling: null` too if the agency hasn't estimated one yet — but a forecast is never excluded just for *being* a forecast; its detail record is fetched and its `awardCeiling` compared the same as any posted opportunity's.
+
+**Does the award-amount filter work on forecasted opportunities, or only posted ones?**
+Both. Every `docType:"forecast"` row gets the same detail lookup as a posted one, and Grants.gov gives forecasts their own `awardCeiling`/`awardFloor` estimate under the same field names — so `minAwardAmount`/`maxAwardAmount` compare against it identically. (Fixed cycle 325: earlier builds silently treated every forecast as having no detail record at all, so `minAwardAmount`/`maxAwardAmount` dropped 100% of forecasts regardless of their real award ceiling. If you were filtering by amount before and never saw a forecast in your results, that's why — re-run now.)
 
 **I filtered by `"USDA"` — do I get the sub-agencies too?**
 Yes. Grants.gov's own API does not do this: a parent code matches nothing but itself, so a plain `"USDA"` search on the raw API returns almost nothing. This Actor expands the parent into its real sub-agency codes first. Verified live: `agencies: ["USDA"]` returns rows with `agencyCode` values like `USDA-NIFA` and `USDA-APHIS`. An unrecognised code is dropped with a named warning in the log instead of silently returning zero rows.
@@ -127,7 +167,7 @@ Every filter is ANDed, and Grants.gov's API never reports a bad value — a typo
 Only for fast sweeps where the thin fields (id, number, title, agency, dates, status, CFDA list, plus a URL this Actor builds for you) are enough — those rows are billed at $0.0007 instead of $0.0015, because they cost no detail lookup to serve. Everything a funding decision actually turns on — award amounts, eligibility text, funding instrument/category, the full synopsis — exists only in the detail record, which is why `enrich` defaults to on. It is forced on when you set an award-amount filter.
 
 **I left `enrich` on but some rows came back without award amounts — was I charged full price for them?**
-No. Grants.gov has no detail record for some opportunities (mostly archived ones with no synopsis). When the detail lookup comes back empty, the row is still returned with its thin fields and billed as `opportunity-thin` ($0.0007), not `result` ($0.0015). The split is printed in the run log at the end of every run.
+No. Grants.gov has no detail record at all for a small number of opportunities (mostly archived ones with no synopsis or forecast record). When the detail lookup comes back empty, the row is still returned with its thin fields and billed as `opportunity-thin` ($0.0007), not `result` ($0.0015). The split is printed in the run log at the end of every run.
 
 **How does `watchLabel` know what's already new, and where is that baseline stored?**
 The first run for a label walks the whole match set (every page, not just `maxResults` of it), records every opportunity's `id`, and returns nothing — you are charged $0. Every later run with the same label and the same other filters returns only opportunities whose `id` isn't in that recorded set, then adds them to it. The baseline lives in a key-value store named `fetchsmith-grants-watch` in *your own* Apify account (Storage tab in the console), not ours — you can inspect or delete it any time. Deleting the record for a label resets it to a fresh baseline on the next run. Verified live on build 0.1.9: a seed run over `keyword: "water"` recorded 18,458 opportunity ids and returned 0 rows; an identical rerun returned 0 new; removing 3 ids from the baseline directly and rerunning returned exactly those 3.

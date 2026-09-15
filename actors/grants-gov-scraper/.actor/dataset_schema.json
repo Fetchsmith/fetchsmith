@@ -4,250 +4,309 @@
     "type": "object",
     "properties": {
       "id": {
+        "title": "Id",
+        "example": "355824",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Id",
-        "example": "332894"
+        ]
       },
       "opportunityNumber": {
+        "title": "OpportunityNumber",
+        "example": "MP-CPI-25-001",
         "type": [
           "string",
           "null"
-        ],
-        "title": "OpportunityNumber",
-        "example": "W911NF21S0009"
+        ]
       },
       "title": {
+        "title": "Title",
+        "example": "Making America Healthy Again by Addressing Dementia Disparities",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Title",
-        "example": "LPS Qubit Collaboratory (LQC)"
+        ]
       },
       "agencyCode": {
+        "title": "AgencyCode",
+        "example": "HHS-OPHS",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AgencyCode",
-        "example": "DOD-AMC"
+        ]
       },
       "agency": {
+        "title": "Agency",
+        "example": "Office of the Assistant Secretary for Health",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Agency",
-        "example": "Dept of the Army -- Materiel Command"
+        ]
       },
       "openDate": {
+        "title": "OpenDate",
+        "example": "08/01/2024",
         "type": [
           "string",
           "null"
-        ],
-        "title": "OpenDate",
-        "example": "04/16/2021"
+        ]
       },
       "closeDate": {
+        "title": "CloseDate",
+        "example": "11/17/2026",
         "type": [
           "string",
           "null"
-        ],
-        "title": "CloseDate",
-        "example": "04/30/2027"
+        ]
       },
       "oppStatus": {
+        "title": "OppStatus",
+        "example": "forecasted",
         "type": [
           "string",
           "null"
-        ],
-        "title": "OppStatus",
-        "example": "posted"
+        ]
       },
       "docType": {
+        "title": "DocType",
+        "example": "forecast",
         "type": [
           "string",
           "null"
-        ],
-        "title": "DocType",
-        "example": "synopsis"
+        ]
       },
       "cfdaList": {
+        "title": "CfdaList",
         "type": [
           "array",
           "null"
-        ],
-        "title": "CfdaList"
+        ]
       },
       "url": {
+        "title": "Url",
+        "example": "https://www.grants.gov/search-results-detail/355824",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Url",
-        "example": "https://www.grants.gov/search-results-detail/332894"
+        ]
       },
       "agencyName": {
+        "title": "AgencyName",
+        "example": "Office of the Assistant Secretary for Health",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AgencyName",
-        "example": "Dept of the Army -- Materiel Command"
+        ]
       },
       "topAgencyName": {
+        "title": "TopAgencyName",
+        "example": "Department of Health and Human Services",
         "type": [
           "string",
           "null"
-        ],
-        "title": "TopAgencyName",
-        "example": "Department of Defense"
+        ]
       },
       "topAgencyCode": {
+        "title": "TopAgencyCode",
+        "example": "HHS",
         "type": [
           "string",
           "null"
-        ],
-        "title": "TopAgencyCode",
-        "example": "DOD"
+        ]
       },
       "opportunityCategory": {
+        "title": "OpportunityCategory",
+        "example": "Discretionary",
         "type": [
           "string",
           "null"
-        ],
-        "title": "OpportunityCategory",
-        "example": "Discretionary"
+        ]
       },
       "postingDate": {
+        "title": "PostingDate",
+        "example": "Aug 01, 2024 12:00:00 AM EDT",
         "type": [
           "string",
           "null"
-        ],
-        "title": "PostingDate",
-        "example": "Apr 16, 2021 12:00:00 AM EDT"
+        ]
       },
       "responseDate": {
+        "title": "ResponseDate",
+        "example": "Nov 17, 2026 12:00:00 AM EST",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ResponseDate",
-        "example": "Apr 30, 2027 12:00:00 AM EDT"
+        ]
       },
       "archiveDate": {
+        "title": "ArchiveDate",
+        "example": "Dec 23, 2026 12:00:00 AM EST",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ArchiveDate",
-        "example": "May 30, 2027 12:00:00 AM EDT"
+        ]
       },
       "costSharing": {
+        "title": "CostSharing",
+        "example": false,
         "type": [
           "boolean",
           "null"
-        ],
-        "title": "CostSharing",
-        "example": false
+        ]
       },
       "awardCeiling": {
+        "title": "AwardCeiling",
+        "example": 600000,
         "type": [
           "number",
           "null"
-        ],
-        "title": "AwardCeiling"
+        ]
       },
       "awardFloor": {
+        "title": "AwardFloor",
+        "example": 450000,
         "type": [
           "number",
           "null"
-        ],
-        "title": "AwardFloor"
+        ]
       },
       "applicantEligibilityDesc": {
+        "title": "ApplicantEligibilityDesc",
+        "example": "Other Eligible Applicants include the following: Alaska Native and Native Hawaiian Serving Institutions; Asian American ",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ApplicantEligibilityDesc"
+        ]
       },
       "applicantTypes": {
+        "title": "ApplicantTypes",
         "type": [
           "array",
           "null"
-        ],
-        "title": "ApplicantTypes"
+        ]
       },
       "fundingInstruments": {
+        "title": "FundingInstruments",
         "type": [
           "array",
           "null"
-        ],
-        "title": "FundingInstruments"
+        ]
       },
       "fundingActivityCategories": {
+        "title": "FundingActivityCategories",
         "type": [
           "array",
           "null"
-        ],
-        "title": "FundingActivityCategories"
+        ]
       },
       "synopsisText": {
+        "title": "SynopsisText",
+        "example": "The Office of Minority Health announces the anticipated availability of funds for Fiscal Year (FY) 2025 under the author",
         "type": [
           "string",
           "null"
-        ],
-        "title": "SynopsisText",
-        "example": "The U.S. Army Research Office (ARO) in partnership with NSA\u2019s Laboratory for Physical Science (LPS) is soliciting Incuba"
+        ]
       },
       "cfdas": {
+        "title": "Cfdas",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Cfdas"
+        ]
       },
       "fundingDescLinkUrl": {
+        "title": "FundingDescLinkUrl",
+        "example": "http://grants.nih.gov/grants/guide/pa-files/PAR-25-274.html",
         "type": [
           "string",
           "null"
-        ],
-        "title": "FundingDescLinkUrl",
-        "example": "https://arl.devcom.army.mil/collaborate-with-us/"
+        ]
       },
       "synopsisDocumentURLs": {
+        "title": "SynopsisDocumentURLs",
         "type": [
           "array",
           "null"
-        ],
-        "title": "SynopsisDocumentURLs"
+        ]
       },
       "assistURL": {
+        "title": "AssistURL",
         "type": [
           "string",
           "null"
-        ],
-        "title": "AssistURL"
+        ]
       },
       "lastUpdatedDate": {
+        "title": "LastUpdatedDate",
+        "example": "Mar 20, 2025 10:28:30 AM EDT",
         "type": [
           "string",
           "null"
-        ],
-        "title": "LastUpdatedDate",
-        "example": "Mar 18, 2026 03:44:15 PM EDT"
+        ]
       },
       "modComments": {
+        "title": "ModComments",
+        "example": "Title revision",
         "type": [
           "string",
           "null"
-        ],
-        "title": "ModComments",
-        "example": "Amendment 3: Extending the response date/ submission date to 30 April 2027."
+        ]
+      },
+      "numberOfAwards": {
+        "title": "NumberOfAwards",
+        "example": 9,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "estimatedFunding": {
+        "title": "EstimatedFunding",
+        "example": 5000000,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "estSynopsisPostingDate": {
+        "title": "EstSynopsisPostingDate",
+        "example": "Apr 14, 2025 12:00:00 AM EDT",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "estApplicationResponseDate": {
+        "title": "EstApplicationResponseDate",
+        "example": "Jun 23, 2025 12:00:00 AM EDT",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "estAwardDate": {
+        "title": "EstAwardDate",
+        "example": "Sep 15, 2025 12:00:00 AM EDT",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "estProjectStartDate": {
+        "title": "EstProjectStartDate",
+        "example": "Sep 30, 2025 12:00:00 AM EDT",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fiscalYear": {
+        "title": "FiscalYear",
+        "example": 2025,
+        "type": [
+          "number",
+          "null"
+        ]
       }
     }
   },

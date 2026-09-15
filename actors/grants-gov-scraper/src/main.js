@@ -322,17 +322,32 @@ function normalizeThin(row) {
 }
 
 // PII rule (CLAUDE.md rule 1), decided before any code was written and RE-VERIFIED against the
-// live detail response before writing this function: the detail API's synopsis.agencyName /
-// agencyPhone / agencyAddressDesc / agencyContactName / agencyContactPhone / agencyContactDesc /
-// agencyContactEmail / agencyContactEmailDesc, and the top-level publisherUid, are agency-entered
-// free text that is INCONSISTENT -- sometimes a department name (NSF), sometimes a named
-// individual program officer with a direct phone/email ("Andrew Day, Grants/Agreements Officer",
-// verified live on opportunity 332894). Because it cannot be reliably told apart per-row, ALL
-// eight of those synopsis fields plus publisherUid are dropped entirely, never just filtered.
+// live detail response before writing this function: the detail API's synopsis/forecast
+// .agencyName / .agencyPhone / .agencyAddressDesc / .agencyContactName / .agencyContactPhone /
+// .agencyContactDesc / .agencyContactEmail / .agencyContactEmailDesc, and the top-level
+// publisherUid, are agency-entered free text that is INCONSISTENT -- sometimes a department name
+// (NSF), sometimes a named individual program officer with a direct phone/email ("Andrew Day,
+// Grants/Agreements Officer", verified live on opportunity 332894; forecast opportunity 355824
+// carries the identical field names with a named "Stacey Williams" + direct phone/email too).
+// Because it cannot be reliably told apart per-row, ALL eight of those fields plus publisherUid
+// are dropped entirely, never just filtered -- and since this function never reads them by name
+// (from either sub-object below), that holds automatically for forecast rows with no extra code.
 // The clean, always-organizational replacement is agencyDetails/topAgencyDetails (code + name),
-// which stayed a department/bureau name on every sample checked.
+// which stayed a department/bureau name on every sample checked, synopsis or forecast.
+//
+// `sub` is `detail.synopsis` for a posted/closed/archived opportunity or `detail.forecast` for a
+// forecasted one -- verified live (opportunity 355824) that Grants.gov uses the SAME field names
+// for postingDate/costSharing/awardCeiling/awardFloor/applicantTypes/fundingInstruments/
+// fundingActivityCategories/lastUpdatedDate/modComments on both sub-objects, so one generic read
+// covers both docTypes for those fields. Only `responseDate`/`archiveDate`/
+// `applicantEligibilityDesc`/`fundingDescLinkUrl` have no forecast equivalent (a forecast has no
+// firm deadline or eligibility writeup yet) and stay null on forecast rows; `forecastDesc` maps
+// onto the same `synopsisText` output field as `synopsisDesc` since they serve the same purpose
+// (the free-text description). Forecast-only fields (estimated dates/funding/award count) are
+// additive and null on synopsis rows.
 function normalizeEnriched(detail) {
-    const s = detail.synopsis ?? {};
+    const isForecast = !detail.synopsis && !!detail.forecast;
+    const sub = detail.synopsis ?? detail.forecast ?? {};
     const ad = detail.agencyDetails ?? {};
     const tad = detail.topAgencyDetails ?? {};
     return {
@@ -341,28 +356,46 @@ function normalizeEnriched(detail) {
         topAgencyName: tad.agencyName ?? null,
         topAgencyCode: tad.agencyCode ?? null,
         opportunityCategory: detail.opportunityCategory?.description ?? null,
-        postingDate: s.postingDate ?? null,
-        responseDate: s.responseDate ?? null,
-        archiveDate: s.archiveDate ?? null,
-        costSharing: typeof s.costSharing === 'boolean' ? s.costSharing : null,
-        awardCeiling: parseMoney(s.awardCeiling),
-        awardFloor: parseMoney(s.awardFloor),
-        applicantEligibilityDesc: s.applicantEligibilityDesc || null,
-        applicantTypes: listOf(s.applicantTypes).map((t) => t.description).filter(Boolean),
-        fundingInstruments: listOf(s.fundingInstruments).map((t) => t.description).filter(Boolean),
-        fundingActivityCategories: listOf(s.fundingActivityCategories).map((t) => t.description).filter(Boolean),
-        synopsisText: stripHtml(s.synopsisDesc),
+        postingDate: sub.postingDate ?? null,
+        responseDate: sub.responseDate ?? null,
+        archiveDate: sub.archiveDate ?? null,
+        costSharing: typeof sub.costSharing === 'boolean' ? sub.costSharing : null,
+        awardCeiling: parseMoney(sub.awardCeiling),
+        awardFloor: parseMoney(sub.awardFloor),
+        applicantEligibilityDesc: sub.applicantEligibilityDesc || null,
+        applicantTypes: listOf(sub.applicantTypes).map((t) => t.description).filter(Boolean),
+        fundingInstruments: listOf(sub.fundingInstruments).map((t) => t.description).filter(Boolean),
+        fundingActivityCategories: listOf(sub.fundingActivityCategories).map((t) => t.description).filter(Boolean),
+        synopsisText: stripHtml(sub.synopsisDesc ?? sub.forecastDesc),
         cfdas: listOf(detail.cfdas).filter((c) => c.cfdaNumber).map((c) => ({ number: c.cfdaNumber, title: c.programTitle ?? null })),
-        fundingDescLinkUrl: s.fundingDescLinkUrl || null,
+        fundingDescLinkUrl: sub.fundingDescLinkUrl || null,
         synopsisDocumentURLs: listOf(detail.synopsisDocumentURLs).map((d) => ({ url: d.docUrl ?? null, description: d.description ?? null })).filter((d) => d.url),
         assistURL: detail.assistURL || null,
-        lastUpdatedDate: s.lastUpdatedDate ?? null,
-        modComments: s.modComments || null,
+        lastUpdatedDate: sub.lastUpdatedDate ?? null,
+        modComments: sub.modComments || null,
+        // Forecast-only: Grants.gov's own estimate of when the real NOFO posts, the application
+        // deadline, the award date, and project start -- all genuinely new information not
+        // derivable from anything else on a forecast's thin row. null on synopsis-based rows.
+        numberOfAwards: isForecast ? parseMoney(sub.numberOfAwards) : null,
+        estimatedFunding: isForecast ? parseMoney(sub.estimatedFunding) : null,
+        estSynopsisPostingDate: isForecast ? (sub.estSynopsisPostingDate ?? null) : null,
+        estApplicationResponseDate: isForecast ? (sub.estApplicationResponseDate ?? null) : null,
+        estAwardDate: isForecast ? (sub.estAwardDate ?? null) : null,
+        estProjectStartDate: isForecast ? (sub.estProjectStartDate ?? null) : null,
+        fiscalYear: isForecast ? (sub.fiscalYear ?? null) : null,
     };
 }
 
 // Detail lookups measured at ~0.35s each; run a small concurrent pool rather than one at a time
 // so enrich:true stays usable for a few hundred rows without hammering the API.
+//
+// BUG FIXED cycle 325: this guard used to require `detail.data.synopsis`, so every
+// `docType:"forecast"` row (roughly half of the default oppStatuses=[forecasted,posted] result
+// set) silently fell through to the thin fallback below even with enrich:true -- no warning, no
+// error, just 11 fields instead of the enriched set, AND (worse) a silent correctness bug in the
+// minAwardAmount/maxAwardAmount filter, which requires a numeric awardCeiling that a thin row
+// never has, so 100% of forecasts were dropped from any amount-filtered run. Forecasts carry
+// `detail.data.forecast` instead of `.synopsis` -- accept either.
 const ENRICH_CONCURRENCY = 5;
 async function enrichBatch(rows) {
     const out = new Array(rows.length).fill(null);
@@ -372,10 +405,10 @@ async function enrichBatch(rows) {
             const i = next; next += 1;
             if (i >= rows.length) return;
             const detail = await apiPost('/fetchOpportunity', { opportunityId: rows[i].id });
-            if (detail?.data && !detail.data.errorMessages?.length && detail.data.synopsis) {
+            if (detail?.data && !detail.data.errorMessages?.length && (detail.data.synopsis || detail.data.forecast)) {
                 out[i] = normalizeEnriched(detail.data);
             } else {
-                out[i] = null; // detail not available (e.g. archived without a synopsis) -- keep the thin row
+                out[i] = null; // detail not available at all (e.g. archived with no synopsis/forecast) -- keep the thin row
             }
         }
     }
@@ -429,11 +462,11 @@ log.info(
 );
 if (minAwardAmount !== null || maxAwardAmount !== null) {
     log.info(
-        'Award-amount filtering drops any opportunity with no usable award ceiling: unposted '
-        + '"forecast" listings with no detail record at all (~3% of the index), AND opportunities '
-        + 'whose detail record literally has no ceiling set (Grants.gov spells this as the string '
-        + '"none", measured live at roughly a third to half of posted opportunities depending on the '
-        + 'agency/category mix) -- a real, common case, not a rare edge case.',
+        'Award-amount filtering drops any opportunity with no usable award ceiling: opportunities '
+        + '(synopsis or forecast) whose detail record literally has no ceiling set (Grants.gov spells '
+        + 'this as the string "none", measured live at roughly a third to half of posted opportunities '
+        + 'depending on the agency/category mix) -- a real, common case, not a rare edge case -- plus '
+        + 'the rare id with no detail record returned at all.',
     );
 }
 
