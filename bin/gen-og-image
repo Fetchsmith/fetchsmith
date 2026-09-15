@@ -1,0 +1,70 @@
+#!/root/agent/venv/bin/python
+"""Regenerate site/static/og-image.png (1200x630 OG/Twitter preview) from the site's own brand
+mark/colors (site/static/site.css --brand/--brand-2/--ink/--muted, base.html's inline favicon F
+mark). Needs Pillow (pip install Pillow in the venv) -- not a fetchsmith-web runtime dependency,
+just a build-time tool, so it's deliberately not in site/requirements.txt.
+Run whenever the tagline/brand colors change: bin/gen-og-image && systemctl restart fetchsmith-web
+(no restart needed for the PNG itself, static files are served from disk -- only needed if you
+also touch base.html's og: tags).
+"""
+from PIL import Image, ImageDraw, ImageFont
+
+W, H = 1200, 630
+BRAND = (15, 118, 110)      # #0f766e
+BRAND2 = (20, 184, 166)     # #14b8a6
+INK = (11, 18, 32)          # #0b1220
+MUTED = (100, 116, 139)     # #64748b
+BG = (255, 255, 255)
+LINE = (226, 232, 240)      # #e2e8f0
+
+img = Image.new("RGB", (W, H), BG)
+d = ImageDraw.Draw(img)
+d.rectangle([0, 0, W - 1, H - 1], outline=LINE, width=2)
+
+bold = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"
+reg = "/usr/share/fonts/truetype/freefont/FreeSans.ttf"
+
+mark_size = 132
+mark_x, mark_y = 100, 165
+
+
+def lerp(a, b, t):
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+# Supersample the rounded-corner gradient mark 4x then downsample -- avoids a visible
+# antialiasing seam at the mask edge that a direct 1x rounded_rectangle mask leaves.
+SS = 4
+big = mark_size * SS
+grad_img = Image.new("RGB", (big, big))
+gd = ImageDraw.Draw(grad_img)
+for i in range(big):
+    t = i / big
+    gd.line([(0, i), (big, i)], fill=lerp(BRAND, BRAND2, t))
+mask_big = Image.new("L", (big, big), 0)
+ImageDraw.Draw(mask_big).rounded_rectangle([0, 0, big, big], radius=30 * SS, fill=255)
+mark_tile = Image.composite(grad_img, Image.new("RGB", (big, big), BG), mask_big)
+mark_tile = mark_tile.resize((mark_size, mark_size), Image.LANCZOS)
+mask_small = mask_big.resize((mark_size, mark_size), Image.LANCZOS)
+img.paste(mark_tile, (mark_x, mark_y), mask_small)
+
+f_font = ImageFont.truetype(bold, 84)
+d.text((mark_x + mark_size / 2, mark_y + mark_size / 2), "F", font=f_font, fill=(255, 255, 255), anchor="mm")
+
+word_font = ImageFont.truetype(bold, 68)
+sub_font = ImageFont.truetype(reg, 30)
+
+wx = mark_x + mark_size + 28
+d.text((wx, mark_y + 18), "Fetch", font=word_font, fill=INK, anchor="lm")
+fetch_w = d.textlength("Fetch", font=word_font)
+d.text((wx + fetch_w, mark_y + 18), "Smith", font=word_font, fill=BRAND, anchor="lm")
+
+d.text((100, 360), "Pay-per-result web data extraction APIs", font=ImageFont.truetype(bold, 46), fill=INK, anchor="lm")
+d.text((100, 420), "Hosted APIs and Apify Actors, priced per result.", font=sub_font, fill=MUTED, anchor="lm")
+d.text((100, 460), "No subscription. No browser farm to run.", font=sub_font, fill=MUTED, anchor="lm")
+
+d.text((100, 545), "fetchsmith.com", font=ImageFont.truetype(bold, 28), fill=BRAND, anchor="lm")
+
+out = "/root/agent/site/static/og-image.png"
+img.save(out, "PNG", optimize=True)
+print(f"saved {out} {img.size}")
