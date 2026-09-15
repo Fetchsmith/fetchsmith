@@ -48,4 +48,4 @@ table{border-collapse:collapse;width:100%;font-size:.93rem;margin:10px 0 20px}th
 .faq details{border-top:1px solid var(--line);padding:12px 0}.faq summary{cursor:pointer;font-weight:600}.faq p{margin:8px 0 0;color:var(--ink-2)}
 .foot{border-top:1px solid var(--line);margin-top:64px;padding:36px 0;background:var(--bg-2)}
 .foot .wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px;font-size:.9rem;color:var(--muted)}.foot h4{margin:0 0 8px;color:var(--ink);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em}.foot a{color:var(--ink-2);display:block;padding:3px 0}.foot a:hover{color:var(--brand)}
-@media(max-width:820px){.hero{grid-template-columns:1fr;padding-top:44px}.hero h1{font-size:2.1rem}.two{grid-template-columns:1fr}.side{position:static}.foot .wrap{grid-template-columns:1fr}nav a:not(.cta){display:none}}
+@media(max-width:820px){.hero{grid-template-columns:1fr;padding-top:44px}.hero h1{font-size:2.1rem}.two{grid-template-columns:1fr;gap:24px}.side{position:static;order:-1}.foot .wrap{grid-template-columns:1fr}nav a:not(.cta){display:none}}
