@@ -84,6 +84,13 @@ const awardIds = (input.awardIds ?? []).map((a) => String(a).trim()).filter(Bool
 const states = (input.placeOfPerformanceStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const recipientStates = (input.recipientStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const naicsCodes = (input.naicsCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
+// The API rejects anything but 1-4 uppercase alphanumerics with a 422, so uppercase here
+// (buyers type "r425") and fail fast on the rest with a message that names the bad code.
+const pscCodes = (input.pscCodes ?? []).map((c) => String(c).trim().toUpperCase()).filter(Boolean);
+const badPsc = pscCodes.find((c) => !/^[A-Z0-9]{1,4}$/.test(c));
+if (badPsc) {
+  throw new Error(`"pscCodes" entry ${JSON.stringify(badPsc)} is not a PSC code — must be 1 to 4 letters/digits, e.g. "R425" (leaf), "R4" or "10" (prefix group), "R" (whole category).`);
+}
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
 if (minAwardAmount != null && maxAwardAmount != null && minAwardAmount > maxAwardAmount) {
@@ -131,6 +138,11 @@ function buildFilters(codes) {
     // 2/4/6-digit NAICS prefixes are all accepted and ORed by the API; grants/loans have no
     // NAICS so this filter just returns nothing for those categories rather than erroring.
     if (naicsCodes.length) filters.naics_codes = { require: naicsCodes };
+    // PSC takes the flat-list form (NOT the tiered ["Service","R","R4","R425"] paths the
+    // filter-tree endpoint returns — those only work inside `require`). 1-4 char prefixes are
+    // all accepted and ORed, verified: R425 17,465 + R499 71,409 = 88,874 for the pair, exactly.
+    // Only contracts/IDVs carry a PSC, so grants/loans/direct payments return nothing here.
+    if (pscCodes.length) filters.psc_codes = pscCodes;
     return filters;
 }
 
@@ -284,7 +296,11 @@ if (awardIds.length) {
         + (keywords.length ? ` keywords=[${keywords.join(', ')}]` : '')
         + (recipients.length ? ` recipients=[${recipients.join(', ')}]` : '')
         + (agencies.length ? ` agencies=[${agencies.join(', ')}]` : '')
-        + (fundingAgencies.length ? ` fundingAgencies=[${fundingAgencies.join(', ')}]` : ''),
+        + (fundingAgencies.length ? ` fundingAgencies=[${fundingAgencies.join(', ')}]` : '')
+        + (naicsCodes.length ? ` naicsCodes=[${naicsCodes.join(', ')}]` : '')
+        // Log the codes as actually sent (uppercased): an unrecognised PSC returns zero rows
+        // instead of erroring, so this line is what makes an empty run diagnosable.
+        + (pscCodes.length ? ` pscCodes=[${pscCodes.join(', ')}]` : ''),
     );
 }
 

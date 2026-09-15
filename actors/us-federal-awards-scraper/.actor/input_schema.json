@@ -129,6 +129,15 @@
                 "541511"
             ]
         },
+        "pscCodes": {
+            "title": "PSC codes",
+            "type": "array",
+            "description": "Filter to one or more Product or Service Codes (PSC), e.g. `R425` (engineering/technical services). 1-4 character prefixes are all accepted — `R4` matches every professional-services code under it, `10` every weapons product code, `R` the whole services letter. Multiple codes are ORed. Only contracts and IDVs carry a PSC, so this filter returns nothing for grants/loans/direct payments — and an unrecognised code returns zero rows rather than an error, so check your spelling if a run comes back empty.",
+            "editor": "stringList",
+            "example": [
+                "R425"
+            ]
+        },
         "minAwardAmount": {
             "title": "Minimum award amount (USD)",
             "type": "integer",

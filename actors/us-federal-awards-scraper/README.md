@@ -30,6 +30,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `placeOfPerformanceStates` | array | – | Two-letter USPS codes for where the work happens (`CA`, `TX`). |
 | `recipientStates` | array | – | Two-letter USPS codes for the recipient's own address. |
 | `naicsCodes` | array | – | NAICS industry codes, 2-6 digit prefixes (`5415` matches every 6-digit code under it). Multiple values are ORed. No effect on grants/direct payments/other financial assistance/loans — they carry no NAICS. |
+| `pscCodes` | array | – | Product or Service Codes (PSC), 1-4 character prefixes (`R425` one leaf code, `R4` every professional-services code, `R` the whole services letter, `10` every weapons product). Multiple values are ORed. Only contracts and IDVs carry a PSC, so grants/loans/direct payments return nothing. |
 | `minAwardAmount` / `maxAwardAmount` | integer | – | Obligated amount bounds in USD. |
 | `sortBy` | string | `awardAmount` | `awardAmount`, `lastModifiedDate`, `startDate`, `recipientName`. |
 | `order` | string | `desc` | `desc` or `asc`. |
@@ -78,7 +79,7 @@ With `awardLevel: "subaward"` the same six categories, the same date window and 
 
 Three things to know:
 
-- **Filters retarget to the sub-recipient.** `recipients` and `recipientStates` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates`, `naicsCodes` and the amount bounds work as usual (matching the **prime** award's NAICS, since sub-awards carry no NAICS of their own). `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
+- **Filters retarget to the sub-recipient.** `recipients` and `recipientStates` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates`, `naicsCodes`, `pscCodes` and the amount bounds work as usual (matching the **prime** award's NAICS/PSC, since sub-awards carry neither of their own). `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
 - **`sortBy: lastModifiedDate` falls back to the sub-award date**, because sub-award records carry no last-modified timestamp.
 - **Coverage is narrower than prime awards.** Only prime recipients required to file FSRS reports have sub-awards, so small awards, most loans and most direct payments return nothing here. An empty sub-award result does not mean the prime award doesn't exist — re-run with `awardLevel: "prime"` to confirm.
 
@@ -120,6 +121,12 @@ You can here. The underlying API rejects a request whose `award_type_codes` span
 
 **Why did my search return zero awards?**
 The filters are ANDed. A keyword plus a state plus a minimum amount over a short window is often genuinely empty — drop one filter first. The other common cause is an agency name that isn't the exact top-tier spelling (`Department of Energy`, not `DOE`).
+
+**How do I filter by PSC, and where do I find the code?**
+`pscCodes: ["R425"]`. PSC is a 4-level hierarchy and you can stop at any level: `R` (all services), `R4` (professional services), `R425` (engineering/technical support). Product codes are numeric (`10` weapons, `1005` guns through 30mm); R&D codes start with `A` (`AA` agriculture R&D, `AA1`, `AA11`). Codes are case-insensitive here — `r425` is uppercased for you. Browse the live tree at `api.usaspending.gov/api/v2/references/filter_tree/psc/`.
+
+**My `pscCodes` run came back empty — why no error?**
+A PSC that is well-formed but doesn't exist returns zero rows rather than failing, so a typo looks like "no matching awards". The run log prints `pscCodes=[...]` exactly as sent; check it against the tree above. Also remember PSC only exists on contracts and IDVs — combining `pscCodes` with `awardCategories: ["grants"]` is always empty by definition.
 
 **How far back does the data go?**
 `2007-10-01`. The API refuses earlier start dates, so this Actor clamps them instead of failing.
