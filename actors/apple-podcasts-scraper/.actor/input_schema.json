@@ -122,7 +122,7 @@
     "keyword": {
       "title": "Keyword filter",
       "type": "string",
-      "description": "Reviews only: keep reviews whose title or text contains this word/phrase (case-insensitive). Leading/trailing spaces are ignored.",
+      "description": "Reviews only: keep reviews whose title or text contains this word/phrase (case-insensitive). Leading/trailing spaces are ignored. Accented letters are Unicode-normalized before matching, so \"café\" matches regardless of which Unicode form (composed or decomposed) you typed it in.",
       "editor": "textfield"
     },
     "minReleaseDate": {

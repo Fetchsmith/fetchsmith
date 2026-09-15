@@ -107,7 +107,7 @@
     "keyword": {
       "title": "Keyword filter",
       "type": "string",
-      "description": "Keep only reviews whose text contains this word or phrase (case-insensitive), e.g. \"crash\", \"controller\", \"price\". Leading/trailing spaces are ignored.",
+      "description": "Keep only reviews whose text contains this word or phrase (case-insensitive), e.g. \"crash\", \"controller\", \"price\". Leading/trailing spaces are ignored. Accented letters are Unicode-normalized before matching, so \"très\" matches regardless of which Unicode form (composed or decomposed) you typed it in.",
       "editor": "textfield"
     },
     "country": {

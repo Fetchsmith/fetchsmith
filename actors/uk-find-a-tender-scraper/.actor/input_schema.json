@@ -49,7 +49,7 @@
     "searchQuery": {
       "title": "Search text",
       "type": "string",
-      "description": "Free-text filter. Every word must appear somewhere in the title, description, buyer name, CPV description or lot titles (case-insensitive). E.g. \"software\" or \"nhs cleaning\".",
+      "description": "Free-text filter. Every word must appear somewhere in the title, description, buyer name, CPV description or lot titles (case-insensitive, Unicode-normalized so accented words match regardless of composed/decomposed input form). E.g. \"software\" or \"nhs cleaning\".",
       "editor": "textfield"
     },
     "buyerName": {

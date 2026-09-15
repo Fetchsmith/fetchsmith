@@ -60,6 +60,7 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 **Can I get reviews in a specific country or language?** Yes, set `country` and `language` (Play Store returns different review sets per locale — run the Actor for each locale you need).
 **Can I search by app name instead of package ID?** Yes, use `searchTerms`; the top matching app is resolved automatically.
 **Why did I get fewer reviews than the app's total rating count?** Google Play's review API only returns a subset of written reviews, not every rating — this is a platform limitation, not a bug.
+**Does `keyword`/`keywords` handle accented words correctly?** Yes, as of v0.1.20 — both fields and the review text they're matched against are Unicode-normalized before comparing, so an accented word (e.g. "café") matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
 **Can I filter to just negative or just recent reviews?** Yes — set `maxScore` (e.g. 2) for negative-only, `ratingFilter: [1, 5]` for only the extremes, or `sinceDate`/`untilDate` for a date window; filtering happens before you're charged, so you never pay for rows you filtered out.
 
 **Can I see what broke in a specific release?** Set `appVersions` to the version string(s) you care about (they match the `version` field on each review row) and, if you want, combine it with `maxScore: 2` and `keywords` to isolate the complaints. Reviews where Google Play reports no version are excluded rather than guessed at.

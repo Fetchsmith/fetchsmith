@@ -44,10 +44,10 @@ const windowFromMs = dateFromMs ?? (Date.now() - updatedWithinDays * 86400_000);
 // Upper bound: explicit dateTo, else "now" (which is what both portals already did).
 const windowToMs = dateToMs ?? Date.now();
 const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
-const searchQuery = input.searchQuery ? String(input.searchQuery).toLowerCase().trim() : null;
+const searchQuery = input.searchQuery ? String(input.searchQuery).normalize('NFC').toLowerCase().trim() : null;
 // Narrower than searchQuery on purpose: searchQuery ORs across title/description/CPV/lots too,
 // so searchQuery="NHS" also returns council notices that merely mention the NHS.
-const buyerNameFilter = input.buyerName ? String(input.buyerName).toLowerCase().trim() : null;
+const buyerNameFilter = input.buyerName ? String(input.buyerName).normalize('NFC').toLowerCase().trim() : null;
 const minValueGbp = input.minValueGbp != null ? Number(input.minValueGbp) : null;
 const maxValueGbp = input.maxValueGbp != null ? Number(input.maxValueGbp) : null;
 if (minValueGbp != null && maxValueGbp != null && minValueGbp > maxValueGbp) {
@@ -268,10 +268,10 @@ function matches(row) {
         if (!hit) return false;
     }
     if (searchWords.length) {
-        const hay = [row.title, row.description, row.buyerName, row.cpvDescription, ...row.lotTitles].join(' ').toLowerCase();
+        const hay = [row.title, row.description, row.buyerName, row.cpvDescription, ...row.lotTitles].join(' ').normalize('NFC').toLowerCase();
         if (!searchWords.every((w) => hay.includes(w))) return false;
     }
-    if (buyerNameFilter && !String(row.buyerName ?? '').toLowerCase().includes(buyerNameFilter)) return false;
+    if (buyerNameFilter && !String(row.buyerName ?? '').normalize('NFC').toLowerCase().includes(buyerNameFilter)) return false;
     if (minValueGbp != null && !(typeof row.valueAmount === 'number' && row.valueAmount >= minValueGbp)) return false;
     if (maxValueGbp != null && !(typeof row.valueAmount === 'number' && row.valueAmount <= maxValueGbp)) return false;
     if (openOnly) {

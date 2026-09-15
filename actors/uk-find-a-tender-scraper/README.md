@@ -98,6 +98,8 @@ One row per notice, including:
 **What is the difference between the two portals?**
 Find a Tender carries **above-threshold** UK public contracts (the post-Brexit replacement for the UK's TED publication), including Scotland, Wales and Northern Ireland. Contracts Finder carries the **sub-threshold** contracts below those limits — a much larger flow, and the one most SMEs actually bid on. They are separate systems with separate APIs; a contract normally appears on one or the other, not both. Rows are deduplicated on `ocid` and notice id regardless.
 
+**Does `searchQuery`/`buyerName` handle accented words correctly?** Yes, as of v0.1.13 — both fields and the notice text they're matched against are Unicode-normalized before comparing, so an accented word matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
+
 **Why does a 10-day Find-a-Tender-only query only return ~75 notices?**
 Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day, and none on weekends. This is exactly why the Actor searches Contracts Finder too by default. Widen `updatedWithinDays` (or use `dateFrom`/`dateTo`) for a bigger set, or leave `sources` at its default.
 

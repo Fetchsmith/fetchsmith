@@ -32,7 +32,7 @@ const sort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const includePodcastInfo = input.includePodcastInfo !== false;
 const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
-const keyword = String(input.keyword ?? '').trim().toLowerCase() || null;
+const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
 const minReleaseDate = input.minReleaseDate ? new Date(input.minReleaseDate) : null;
 const maxReleaseDate = input.maxReleaseDate ? new Date(input.maxReleaseDate) : null;
 if ((minReleaseDate && Number.isNaN(minReleaseDate.getTime())) || (maxReleaseDate && Number.isNaN(maxReleaseDate.getTime()))) {
@@ -158,7 +158,7 @@ function episodeRow(e, info) {
 function reviewPassesFilters(item) {
   if (minRating != null && item.rating < minRating) return false;
   if (maxRating != null && item.rating > maxRating) return false;
-  if (keyword && !`${item.title || ''} ${item.content || ''}`.toLowerCase().includes(keyword)) return false;
+  if (keyword && !`${item.title || ''} ${item.content || ''}`.normalize('NFC').toLowerCase().includes(keyword)) return false;
   return true;
 }
 

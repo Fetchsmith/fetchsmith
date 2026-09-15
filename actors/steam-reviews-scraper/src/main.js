@@ -26,7 +26,7 @@ const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeGameInfo = input.includeGameInfo !== false;
 const includePlayerCount = input.includePlayerCount === true;
 const minPlaytimeHours = input.minPlaytimeHours != null ? Number(input.minPlaytimeHours) : null;
-const keyword = String(input.keyword ?? '').trim().toLowerCase() || null;
+const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
 
 if (!apps.length && !searchTerms.length) {
   await Actor.fail('Provide at least one game in "apps" (Steam store URL or numeric App ID), or at least one query in "searchTerms".');
@@ -136,7 +136,7 @@ function reviewRow(appId, r, info) {
 
 function reviewPassesFilters(item) {
   if (minPlaytimeHours != null && !(item.playtimeForeverHours >= minPlaytimeHours)) return false;
-  if (keyword && !(item.review || '').toLowerCase().includes(keyword)) return false;
+  if (keyword && !(item.review || '').normalize('NFC').toLowerCase().includes(keyword)) return false;
   if (reviewsAfter && !isNaN(reviewsAfter) && new Date(item.createdAt) < reviewsAfter) return false;
   if (reviewsBefore && !isNaN(reviewsBefore) && new Date(item.createdAt) >= reviewsBefore) return false;
   return true;

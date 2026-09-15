@@ -28,7 +28,7 @@ const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
 if (minRating != null && maxRating != null && minRating > maxRating) {
   throw new Error(`"minRating" (${minRating}) is greater than "maxRating" (${maxRating}) — no review can ever match. Swap them.`);
 }
-const keyword = String(input.keyword ?? '').trim().toLowerCase() || null;
+const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
 let reviewsAfterDate = null;
 if (input.reviewsAfter) {
   reviewsAfterDate = new Date(input.reviewsAfter);
@@ -43,7 +43,7 @@ if (!apps.length && !appNames.length) await Actor.fail('Provide at least one app
 function passesFilters(item) {
   if (minRating != null && item.rating < minRating) return false;
   if (maxRating != null && item.rating > maxRating) return false;
-  if (keyword && !`${item.title || ''} ${item.content || ''}`.toLowerCase().includes(keyword)) return false;
+  if (keyword && !`${item.title || ''} ${item.content || ''}`.normalize('NFC').toLowerCase().includes(keyword)) return false;
   if (reviewsAfterDate && item.updatedAt && new Date(item.updatedAt) < reviewsAfterDate) return false;
   return true;
 }

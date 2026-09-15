@@ -16,7 +16,7 @@
     "searchQuery": {
       "title": "Search query",
       "type": "string",
-      "description": "Only return products whose title, vendor, product type or tags contain every word in this query (case-insensitive). Applied client-side after fetching each store's catalog — Shopify's public feed has no server-side search, so this still walks the full store (same request cost as without it) but needs no collection URL guessing. Ignored for direct product URLs.",
+      "description": "Only return products whose title, vendor, product type or tags contain every word in this query (case-insensitive, Unicode-normalized so accented words like \"café\" match regardless of composed/decomposed input form). Applied client-side after fetching each store's catalog — Shopify's public feed has no server-side search, so this still walks the full store (same request cost as without it) but needs no collection URL guessing. Ignored for direct product URLs.",
       "editor": "textfield"
     },
     "maxProductsPerStore": {

@@ -35,8 +35,8 @@ const maxScore = input.maxScore != null ? Number(input.maxScore) : null;
 if (minScore != null && maxScore != null && minScore > maxScore) {
   throw new Error(`"minScore" (${minScore}) is greater than "maxScore" (${maxScore}) — no review can ever match. Swap them.`);
 }
-const keyword = String(input.keyword ?? '').trim().toLowerCase() || null;
-const keywords = (input.keywords ?? []).map((s) => String(s).trim().toLowerCase()).filter(Boolean);
+const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
+const keywords = (input.keywords ?? []).map((s) => String(s).normalize('NFC').trim().toLowerCase()).filter(Boolean);
 const ratingFilter = (input.ratingFilter ?? [])
   .map((s) => Number(String(s).trim()))
   .filter((n) => Number.isFinite(n));
@@ -48,7 +48,7 @@ function passesFilters(r) {
   if (minScore != null && r.score < minScore) return false;
   if (maxScore != null && r.score > maxScore) return false;
   if (ratingFilter.length && !ratingFilter.includes(Number(r.score))) return false;
-  const hay = `${r.title || ''} ${r.text || ''}`.toLowerCase();
+  const hay = `${r.title || ''} ${r.text || ''}`.normalize('NFC').toLowerCase();
   if (keyword && !hay.includes(keyword)) return false;
   if (keywords.length && !keywords.some((k) => hay.includes(k))) return false;
   // Google Play leaves `version` null on many reviews; a version filter must drop those

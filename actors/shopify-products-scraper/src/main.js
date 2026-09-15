@@ -23,7 +23,7 @@ const withDesc = input.includeDescription !== false;
 const withVariants = input.includeVariants !== false;
 const onlyAvailable = !!input.onlyAvailable;
 const detailLevel = input.detailLevel === 'full' ? 'full' : 'basic';
-const searchQuery = String(input.searchQuery ?? '').trim();
+const searchQuery = String(input.searchQuery ?? '').normalize('NFC').trim();
 const searchWords = searchQuery ? searchQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeUrls entr${duplicateStoreUrls === 1 ? 'y' : 'ies'} (same endpoint already queued).`);
@@ -146,7 +146,7 @@ function shape(p, origin, currency) {
 // the full catalog (same request budget as an unfiltered run of the same store).
 function matchesSearch(p) {
   if (!searchWords.length) return true;
-  const haystack = [p.title, p.vendor, p.product_type, ...(p.tags ?? [])].join(' ').toLowerCase();
+  const haystack = [p.title, p.vendor, p.product_type, ...(p.tags ?? [])].join(' ').normalize('NFC').toLowerCase();
   return searchWords.every((w) => haystack.includes(w));
 }
 async function currencyFor(origin) {

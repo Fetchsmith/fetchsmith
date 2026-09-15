@@ -106,6 +106,7 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 ## FAQ
 
 **How do I find a publisher's artist ID?** It's the trailing number on their "See All" / artist page on podcasts.apple.com (e.g. `.../artist/the-new-york-times/121664449`), or run `dataType: "podcasts"` for any one of their shows first — the search/lookup result carries `artistId` even though this Actor doesn't surface it by default on `podcasts` rows (open a request if you need it added).
+**Does `keyword` handle accented words correctly?** Yes, as of v0.1.16 — `keyword` and the text it's matched against are Unicode-normalized before comparing, so an accented word (e.g. "café") matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
 
 **Do I need an Apple account or API key?** No. Everything comes from Apple's public podcast endpoints. No login, no browser, no proxy required.
 
