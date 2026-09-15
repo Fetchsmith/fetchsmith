@@ -15,7 +15,7 @@
     "apps": {
       "title": "Games",
       "type": "array",
-      "description": "Steam store URLs or numeric App IDs, e.g. https://store.steampowered.com/app/1145360/Hades/ or 1145360.",
+      "description": "Steam store URLs or numeric App IDs, e.g. https://store.steampowered.com/app/1145360/Hades/ or 1145360. Leading/trailing spaces are ignored.",
       "editor": "stringList",
       "prefill": ["https://store.steampowered.com/app/1145360/Hades/"],
       "default": ["https://store.steampowered.com/app/1145360/Hades/"]

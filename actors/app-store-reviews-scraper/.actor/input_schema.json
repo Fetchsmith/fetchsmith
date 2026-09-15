@@ -6,7 +6,7 @@
     "apps": {
       "title": "Apps",
       "type": "array",
-      "description": "App Store URLs or numeric app IDs, e.g. https://apps.apple.com/us/app/notion/id1232780281 or 1232780281. Leave empty if you use \"appNames\" instead.",
+      "description": "App Store URLs or numeric app IDs, e.g. https://apps.apple.com/us/app/notion/id1232780281 or 1232780281. Leading/trailing spaces are ignored. Leave empty if you use \"appNames\" instead.",
       "editor": "stringList",
       "prefill": [
         "https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"

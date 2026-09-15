@@ -11,8 +11,8 @@ const input = (await Actor.getInput()) ?? {};
 // we can't tell "user genuinely wants exactly the default app" from "field was silently defaulted",
 // treat an unmodified default as unset whenever appNames is also present.
 const DEFAULT_APPS = ['https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281'];
-let apps = (input.apps ?? []).map(String);
-const appNames = (input.appNames ?? []).map(String).filter(Boolean);
+let apps = (input.apps ?? []).map((a) => String(a).trim());
+const appNames = (input.appNames ?? []).map((a) => String(a).trim()).filter(Boolean);
 if (appNames.length && apps.length === DEFAULT_APPS.length && apps.every((a, i) => a === DEFAULT_APPS[i])) {
   log.info('appNames given without an explicit "apps" list: ignoring the schema\'s default Notion app rather than mixing it in.');
   apps = [];

@@ -3,8 +3,8 @@ import { gotScraping } from 'got-scraping';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
-const podcasts = (input.podcasts ?? []).map(String).filter(Boolean);
-const searchTerms = (input.searchTerms ?? []).map(String).filter(Boolean);
+const podcasts = (input.podcasts ?? []).map((p) => String(p).trim()).filter(Boolean);
+const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
 const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
 const country = String(input.country || 'us').toLowerCase().trim();
 const chartCount = Math.min(Number(input.chartCount ?? 50), 200);
