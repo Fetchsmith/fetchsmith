@@ -166,6 +166,9 @@ The run finishes successfully with a clear status message naming the App IDs Ste
 **Do reviews say whether they were written on Steam Deck, or when the reviewer last played?**
 Yes — every review row includes `steamDeck` (true if the review was primarily written on Steam Deck) and `authorLastPlayedAt` (ISO timestamp of the author's last session in the game), straight from Steam's own review API.
 
+**My run returned zero reviews for a game I know has thousands. What happened?**
+Steam's review API occasionally serves an incomplete response — HTTP 200, `success: 1`, but no reviews and no review totals — for hours at a time, across games and IP ranges. The Actor recognises that specific shape, retries it twice with a delay, and if Steam is still returning it, **fails the run with a status message naming the upstream fault** rather than quietly reporting "no reviews found". So a zero-row *successful* run always means your filters or the game, never a silent Steam outage — and since billing is per row, a degraded run costs you nothing. Just re-run it later.
+
 **Can I see the reviewer's PC specs?**
 When Steam has them, yes: `hardwareOs`, `hardwareCpu`, `hardwareGpu`, `hardwareRamMb`, `hardwareVramMb` come straight from the reviewer's Steam Hardware Survey opt-in, attached to the review itself. It's only present on a minority of reviews (roughly 1 in 5–25, game-dependent) — everyone else gets `null` on all five fields, never a guess. No other Steam reviews Actor exposes this.
 

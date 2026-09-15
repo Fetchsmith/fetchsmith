@@ -47,6 +47,19 @@ async function pushResult(item) {
 }
 
 const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Steam serves a COMPLETE query_summary (review_score_desc / total_reviews / total_positive / …) on
+// the first review page whenever review_type and purchase_type are both unfiltered — including when
+// the honest answer is "no reviews", which comes back as total_reviews:0. So under those defaults a
+// first page of success:1 + reviews:[] + a summary with NO total_reviews key is Steam handing back a
+// degenerate body, not a real empty result. (Observed 2026-09-15 for ~hours across two apps with
+// 142k/1.5M real reviews and two different IPs; recovered on its own.) With review_type or
+// purchase_type set, Steam trims the summary to {num_reviews} even on legitimate empty answers, so
+// the signal is unavailable and this check correctly stays off.
+const unfilteredQuery = reviewType === 'all' && purchaseType === 'all';
+const looksDegenerate = (body) => unfilteredQuery && body?.success === 1
+  && !(body.reviews?.length) && body?.query_summary?.total_reviews === undefined;
 
 // Steam store URLs are /app/<appid>/<slug>/; a bare numeric ID is also accepted.
 const parseAppId = (s) => (s.match(/\/app\/(\d+)/)?.[1] || s.match(/^\d{1,8}$/)?.[0] || s.match(/[?&]appids?=(\d+)/)?.[1] || null);
@@ -206,10 +219,20 @@ async function scrapeReviews(appId) {
   let got = 0;
   let filteredOut = 0;
   const seen = new Set();
+  let degenerate = false;
   for (let page = 0; page < 200 && got < perAppReviews && keepGoing; page++) {
     let body;
     try { body = await getJson(reviewsUrl(appId, cursor)); } // URLSearchParams below already encodes the cursor — do not encode it twice
     catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
+    // An incomplete first page is usually a short-lived Steam hiccup, so give it two spaced retries
+    // before believing it — got-scraping's own retries fire too fast to outlast one.
+    for (let attempt = 1; attempt <= 2 && page === 0 && looksDegenerate(body); attempt++) {
+      log.warning(`Steam returned an incomplete review response for app ${appId} (no reviews and no review totals) — retrying in ${attempt * 5}s (attempt ${attempt}/2).`);
+      await sleep(attempt * 5000);
+      try { body = await getJson(reviewsUrl(appId, cursor)); }
+      catch (e) { log.warning(`retry ${attempt} failed for ${appId}: ${e.message}`); break; }
+    }
+    if (page === 0 && looksDegenerate(body)) { degenerate = true; break; }
     if (body?.success !== 1) { log.warning(`Steam refused the review query for app ${appId} (success=${body?.success}).`); break; }
     if (page === 0 && body.query_summary) summaries.set(appId, body.query_summary);
     const reviews = body.reviews ?? [];
@@ -236,7 +259,7 @@ async function scrapeReviews(appId) {
   // was hit and some scanned reviews were dropped by a filter, matching reviews may still sit
   // deeper in the feed and were never looked at.
   const capReached = got >= perAppReviews;
-  return { got, filteredOut, capReached };
+  return { got, filteredOut, capReached, degenerate };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -264,6 +287,9 @@ for (const term of searchTerms) {
 
 // ---- run -------------------------------------------------------------------
 const emptyIds = [];
+// Apps where Steam itself served an incomplete review response (see looksDegenerate) — kept apart
+// from emptyIds so an upstream fault is never reported to the user as "no reviews match".
+const upstreamDegraded = [];
 // Apps where maxReviewsPerApp was hit while the keyword/minPlaytimeHours filter was still
 // discarding reviews — reviews deeper in Steam's feed were never scanned.
 const depthCapped = [];
@@ -280,6 +306,12 @@ if (dataType === 'games') {
     try {
       const body = await getJson(`https://store.steampowered.com/appreviews/${id}?json=1&num_per_page=0&language=all&purchase_type=all`);
       summary = body?.query_summary ?? null;
+      // This query is always unfiltered, so a missing total_reviews is unambiguously Steam serving
+      // an incomplete body — say so instead of shipping a row with silently null review scores.
+      if (summary && summary.total_reviews === undefined) {
+        log.warning(`Steam returned an incomplete review summary for app ${id} — reviewScore/totalReviews will be null in this row. Upstream fault; re-run later for those fields.`);
+        summary = null;
+      }
     } catch (e) { log.debug(`review summary failed for ${id}: ${e.message}`); }
     const players = includePlayerCount ? await getPlayerCount(id) : null;
     keepGoing = await pushResult({ ...gameRow(id, d, summary, players), scrapedAt: new Date().toISOString() });
@@ -288,7 +320,7 @@ if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
     const before = pushed;
-    const { got, filteredOut, capReached } = await scrapeReviews(id);
+    const { got, filteredOut, capReached, degenerate } = await scrapeReviews(id);
     log.info(`${id}: ${got} reviews fetched, ${pushed - before} kept after filters.`);
     if (capReached && filteredOut > 0) {
       log.warning(
@@ -298,7 +330,14 @@ if (dataType === 'games') {
       );
       depthCapped.push(id);
     }
-    if (got === 0) {
+    if (degenerate) {
+      upstreamDegraded.push(id);
+      log.warning(
+        `Steam's review API kept returning an incomplete response for app ${id} after 2 retries — `
+        + `success, but no reviews and no review totals. This is an upstream Steam fault, not a filter `
+        + `problem and not a sign that the app has no reviews; re-run this input later.`,
+      );
+    } else if (got === 0) {
       emptyIds.push(id);
       const s = summaries.get(id);
       log.warning(s && s.total_reviews === 0
@@ -309,6 +348,15 @@ if (dataType === 'games') {
 }
 
 log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.`);
+// An upstream fault that produced nothing is a failed run, not an empty one: surfacing it as a
+// success would tell the user their games have no reviews, which is the opposite of the truth.
+if (pushed === 0 && upstreamDegraded.length) {
+  await Actor.fail(
+    `Steam's review API returned incomplete responses (success, but no reviews and no review totals) `
+    + `for: ${upstreamDegraded.join(', ')} — after 2 retries each. This is an upstream Steam fault, `
+    + `not a problem with your input; please re-run later.`,
+  );
+}
 if (pushed === 0) {
   const why = emptyIds.length
     ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
@@ -320,6 +368,10 @@ if (pushed === 0) {
           ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
           : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
+} else if (upstreamDegraded.length) {
+  // Partial success: other apps produced rows, so the run is not a failure, but the user still
+  // needs to know these specific apps are missing for an upstream reason and are worth re-running.
+  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; re-run those later.`);
 } else if (depthCapped.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyIds.length) {
