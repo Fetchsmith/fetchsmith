@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import * as cheerio from 'cheerio';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -24,7 +25,12 @@ const CHART_GENRE_IDS = {
 const chartGenre = input.chartGenre && CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null;
 if (input.chartGenre && !chartGenre) log.warning(`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join(', ')}.`);
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
-const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), 200);
+// Apple's episode lookup API caps at 200 regardless of what's requested. Enabling
+// useRssForFullArchive replaces that call with a direct fetch of the show's own RSS feed, which
+// has no such cap (verified live: a real feed returned 2,977 items vs Apple's 200-episode ceiling)
+// — so the input cap only needs raising in that mode.
+const rssFullArchive = input.useRssForFullArchive === true;
+const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), rssFullArchive ? 20000 : 200);
 const perPodcastReviews = Math.min(Number(input.maxReviewsPerPodcast ?? 200), 500);
 const maxPodcastsPerPublisher = Math.min(Number(input.maxPodcastsPerPublisher ?? 200), 200);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
@@ -151,8 +157,70 @@ function episodeRow(e, info) {
     artworkUrl: e.artworkUrl600 ?? e.artworkUrl160 ?? null,
     episodePageUrl: e.trackViewUrl ?? null,
     feedUrl: e.feedUrl ?? null,
+    episodeType: null,
+    showNotesHtml: null,
+    audioFileSize: null,
+    keywords: null,
+    transcriptUrl: null,
+    source: 'itunes',
     ...(info || {}),
   };
+}
+
+// itunes:duration is "HH:MM:SS", "MM:SS", or bare seconds — all three appear in real feeds.
+function parseItunesDuration(s) {
+  const t = String(s || '').trim();
+  if (!t) return null;
+  if (/^\d+$/.test(t)) return Number(t) * 1000;
+  const parts = t.split(':').map(Number);
+  if (!parts.length || parts.some(Number.isNaN)) return null;
+  return parts.reduce((secs, p) => secs * 60 + p, 0) * 1000;
+}
+
+// Built from a show's own RSS 2.0 / Podcast-namespace feed (useRssForFullArchive), not Apple's
+// lookup API — this is the only way to get episodes beyond Apple's ~200-episode cap, plus fields
+// Apple's JSON never exposes at all (episodeType, full HTML show notes, file size, transcript).
+function rssEpisodeRow($, el, collectionId, info) {
+  const $el = $(el);
+  const enclosure = $el.find('enclosure');
+  const episodeUrl = enclosure.attr('url')?.split('?')[0] || enclosure.attr('url') || null;
+  const durationMs = parseItunesDuration($el.find('itunes\\:duration').text());
+  const pubDateRaw = $el.find('pubDate').text().trim();
+  const releaseDate = pubDateRaw ? new Date(pubDateRaw) : null;
+  return {
+    type: 'episode',
+    collectionId,
+    podcastName: info?.podcastName ?? null,
+    episodeId: null,
+    title: $el.find('title').text().trim() || null,
+    episodeNumber: $el.find('itunes\\:episode').text().trim() || null,
+    seasonNumber: $el.find('itunes\\:season').text().trim() || null,
+    releaseDate: releaseDate && !Number.isNaN(releaseDate.getTime()) ? releaseDate.toISOString() : null,
+    durationMs,
+    durationMinutes: durationMs ? Math.round(durationMs / 60000) : null,
+    description: $el.find('description').text().trim() || null,
+    shortDescription: $el.find('itunes\\:subtitle').text().trim() || null,
+    episodeUrl: enclosure.attr('url') || null,
+    episodeFileExtension: episodeUrl ? (episodeUrl.split('.').pop() || null) : null,
+    episodeContentType: enclosure.attr('type') || null,
+    episodeGuid: $el.find('guid').text().trim() || null,
+    explicit: ['yes', 'true', 'explicit'].includes($el.find('itunes\\:explicit').text().trim().toLowerCase()),
+    artworkUrl: $el.find('itunes\\:image').attr('href') || info?.artworkUrl || null,
+    episodePageUrl: $el.find('link').text().trim() || null,
+    feedUrl: info?.feedUrl ?? null,
+    episodeType: $el.find('itunes\\:episodeType').text().trim() || null,
+    showNotesHtml: $el.find('content\\:encoded').text().trim() || $el.find('description').text().trim() || null,
+    audioFileSize: Number(enclosure.attr('length')) || null,
+    keywords: $el.find('itunes\\:keywords').text().trim() || null,
+    transcriptUrl: $el.find('podcast\\:transcript').attr('url') || null,
+    source: 'rss',
+  };
+}
+
+async function scrapeRssFeed(feedUrl, collectionId, info) {
+  const res = await gotScraping({ url: feedUrl, timeout: { request: 30000 }, retry: { limit: 2 } });
+  const $ = cheerio.load(res.body, { xml: true });
+  return $('item').map((_, el) => rssEpisodeRow($, el, collectionId, info)).get();
 }
 
 function reviewPassesFilters(item) {
@@ -207,19 +275,42 @@ async function getPodcastInfo(id) {
   return info;
 }
 
+// Needed for useRssForFullArchive when includePodcastInfo is off, since the feed URL still has
+// to come from somewhere — getPodcastInfo already carries it when podcast info is on.
+const feedUrlCache = new Map();
+async function getFeedUrlOnly(id) {
+  if (feedUrlCache.has(id)) return feedUrlCache.get(id);
+  let feedUrl = null;
+  try { feedUrl = (await getJson(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).results?.[0]?.feedUrl ?? null; }
+  catch (e) { log.debug(`Feed URL lookup failed for ${id}: ${e.message}`); }
+  feedUrlCache.set(id, feedUrl);
+  return feedUrl;
+}
+
 async function scrapeEpisodes(id) {
-  // One call returns the podcast record plus up to `limit` most recent episodes.
-  const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcastEpisode&limit=${perPodcastEpisodes}`;
-  let results = [];
-  try { results = (await getJson(url)).results ?? []; }
-  catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return 0; }
-  const eps = results.filter((r) => r.wrapperType === 'podcastEpisode');
   const info = includePodcastInfo ? await getPodcastInfo(id) : null;
+  let rows = null;
+  if (rssFullArchive) {
+    const feedUrl = info?.feedUrl ?? await getFeedUrlOnly(id);
+    if (feedUrl) {
+      try { rows = await scrapeRssFeed(feedUrl, Number(id), info ?? { feedUrl }); }
+      catch (e) { log.warning(`RSS full-archive fetch failed for podcast ${id} (${feedUrl}): ${e.message} — falling back to Apple's lookup API (max 200 episodes).`); }
+    } else {
+      log.warning(`No RSS feed URL found for podcast ${id} — falling back to Apple's lookup API (max 200 episodes).`);
+    }
+  }
+  if (rows == null) {
+    // One call returns the podcast record plus up to `limit` most recent episodes (hard cap 200).
+    const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcastEpisode&limit=${Math.min(perPodcastEpisodes, 200)}`;
+    let results = [];
+    try { results = (await getJson(url)).results ?? []; }
+    catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return 0; }
+    rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
+  }
   let got = 0;
-  for (const e of eps) {
+  for (const row of rows) {
     if (!keepGoing || got >= perPodcastEpisodes) break;
     got += 1;
-    const row = episodeRow(e, info);
     if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
     if (!episodePassesFilters(row)) continue;
     keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });

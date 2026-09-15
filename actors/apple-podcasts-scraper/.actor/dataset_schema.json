@@ -161,6 +161,54 @@
         "title": "FeedUrl",
         "example": "https://lexfridman.com/feed/podcast/"
       },
+      "episodeType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EpisodeType",
+        "example": "full"
+      },
+      "showNotesHtml": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ShowNotesHtml",
+        "example": "<p>Guest: Ben Casselman, chief economics correspondent for The New York Times.</p>"
+      },
+      "audioFileSize": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "AudioFileSize",
+        "example": 27329680
+      },
+      "keywords": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Keywords",
+        "example": "technology, programming, AI"
+      },
+      "transcriptUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "TranscriptUrl",
+        "example": "https://example.com/episode-123/transcript.vtt"
+      },
+      "source": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Source",
+        "example": "rss"
+      },
       "artistName": {
         "type": [
           "string",

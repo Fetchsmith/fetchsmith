@@ -24,14 +24,15 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | `chartGenre` | string | Charts only: restrict the chart to one category (`comedy`, `trueCrime`, `news`, `business`, ... 19 total) instead of the overall top chart. Leave empty for the overall chart |
 | `maxPodcastsPerPublisher` | integer | Publisher only: how many shows to return per publisher (default 200, max 200) |
 | `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
-| `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) |
+| `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) — up to 20,000 with `useRssForFullArchive` |
+| `useRssForFullArchive` | boolean | Episodes only: fetch the show's own RSS feed instead of Apple's lookup API to get the **complete episode archive**, not just the most recent ~200 (default `false`; verified live: a real feed returned 502 episodes vs. Apple's 200-episode ceiling for the same show). Also unlocks `episodeType`, `showNotesHtml`, `audioFileSize` and `transcriptUrl` — fields Apple's own API never exposes. Falls back to Apple's lookup API for any show without a usable feed |
 | `maxReviewsPerPodcast` | integer | Up to 500 reviews per show per storefront (Apple's limit). Counts reviews **scanned**, before `minRating`/`maxRating`/`keyword` filtering — see FAQ |
 | `sort` | string | Reviews only: `mostRecent` (default) or `mostHelpful` |
 | `includePodcastInfo` | boolean | Attach show name, host, genre, RSS feed and episode count to every row (default `true`) |
 | `maxResults` | integer | Overall cap across all shows — also caps what you pay |
 | `minRating` / `maxRating` | integer | Reviews only: keep reviews rated within 1-5 |
 | `keyword` | string | Reviews only: keep reviews whose title or text contains this word/phrase |
-| `minReleaseDate` / `maxReleaseDate` | string | Episodes only: keep episodes released in this window (`YYYY-MM-DD` or full ISO). This narrows *within* the `maxEpisodesPerPodcast` most-recent episodes Apple returns, not further back into a show's archive |
+| `minReleaseDate` / `maxReleaseDate` | string | Episodes only: keep episodes released in this window (`YYYY-MM-DD` or full ISO). This narrows *within* the `maxEpisodesPerPodcast` most-recent episodes Apple returns, not further back into a show's archive — enable `useRssForFullArchive` to search further back |
 | `minDurationSeconds` | integer | Episodes only: drop episodes shorter than this (e.g. exclude trailers/ads). **Apple omits duration for ~half of episodes on some shows regardless of actual length** (measured on a real 20-episode sample) — episodes with unknown duration are always kept, never assumed short |
 | `explicitFilter` | string | Episodes only: `all` (default), `clean` (exclude Explicit-flagged), or `explicitOnly` |
 
@@ -71,11 +72,18 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
   "artworkUrl": "https://is1-ssl.mzstatic.com/image/thumb/...",
   "episodePageUrl": "https://podcasts.apple.com/us/podcast/...",
   "feedUrl": "https://lexfridman.com/feed/podcast/",
+  "episodeType": null,
+  "showNotesHtml": null,
+  "audioFileSize": null,
+  "keywords": null,
+  "transcriptUrl": null,
+  "source": "itunes",
   "artistName": "Lex Fridman",
   "primaryGenre": "Technology",
   "episodeCount": 502
 }
 ```
+`episodeType`, `showNotesHtml`, `audioFileSize` and `transcriptUrl` are only populated when `useRssForFullArchive` is on and the show's feed provides them (`source` reads `"rss"` instead of `"itunes"` for those rows) — Apple's own lookup API has no equivalent fields.
 
 **`dataType: "reviews"`** — one item per review:
 ```json
@@ -114,7 +122,7 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 
 **Why did I get fewer reviews than `maxReviewsPerPodcast`, or exactly zero with `minRating`/`maxRating`/`keyword` set?** `maxReviewsPerPodcast` is a scan-depth cap, not a results cap — it's how many of the show's most-recent reviews get read from Apple's feed before your rating/keyword filter is applied, not how many matching reviews exist. A rare keyword can sit past the reviews you scanned. Example: The Joe Rogan Experience + `keyword:"propaganda"` returns 0 kept reviews at `maxReviewsPerPodcast:50` (only page 1 scanned) but 2 at `maxReviewsPerPodcast:100` (page 2 scanned) — the run log and status message call this out by name when it happens, telling you to raise `maxReviewsPerPodcast`.
 
-**How many episodes can I get?** Apple's endpoint exposes up to 200 of the most recent episodes per show. For the complete back catalogue of a show, use the `feedUrl` returned on every row — that's the show's public RSS feed.
+**How many episodes can I get?** Apple's endpoint exposes up to 200 of the most recent episodes per show. For the complete back catalogue, set `useRssForFullArchive: true` — the Actor fetches the show's own RSS feed directly instead (verified live on a real show: 502 episodes vs. Apple's 200-episode cap for the same ID).
 
 **How fast is it?** HTTP-only, no headless browser: a show's 200 episodes come from a single request, and reviews page 50 at a time. Runs cost a few seconds of compute plus the per-result fee.
 

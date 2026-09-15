@@ -62,10 +62,10 @@
     "maxEpisodesPerPodcast": {
       "title": "Max episodes per podcast",
       "type": "integer",
-      "description": "Apple's episode endpoint exposes up to 200 of the most recent episodes per show.",
+      "description": "Apple's episode endpoint exposes up to 200 of the most recent episodes per show. With 'Use RSS for full archive' enabled, this can go up to 20,000 since RSS has no such cap.",
       "default": 100,
       "minimum": 1,
-      "maximum": 200
+      "maximum": 20000
     },
     "maxPodcastsPerPublisher": {
       "title": "Max podcasts per publisher",
@@ -128,7 +128,7 @@
     "minReleaseDate": {
       "title": "Episodes released on/after",
       "type": "string",
-      "description": "Episodes only: keep episodes released on or after this date (YYYY-MM-DD or full ISO). Note: Apple's episode lookup only returns the most recent 'Max episodes per podcast' episodes, so this narrows within that recent window and cannot reach further back into a show's archive than Apple already returned.",
+      "description": "Episodes only: keep episodes released on or after this date (YYYY-MM-DD or full ISO). Note: Apple's episode lookup only returns the most recent 'Max episodes per podcast' episodes, so this narrows within that recent window and cannot reach further back into a show's archive than Apple already returned — enable 'Use RSS for full archive' to search further back.",
       "editor": "textfield"
     },
     "maxReleaseDate": {
@@ -136,6 +136,12 @@
       "type": "string",
       "description": "Episodes only: keep episodes released on or before this date (YYYY-MM-DD or full ISO). Same recent-window caveat as 'Episodes released on/after'.",
       "editor": "textfield"
+    },
+    "useRssForFullArchive": {
+      "title": "Use RSS for full archive (beyond Apple's ~200-episode cap)",
+      "type": "boolean",
+      "description": "Episodes only: fetch each show's own RSS feed instead of Apple's lookup API, which returns only the most recent ~200 episodes. RSS feeds have no such cap (a real feed tested returned 2,977 episodes) and also carry fields Apple's API never exposes: episode type (full/trailer/bonus), full HTML show notes, audio file size and a transcript URL when the publisher provides one (Podcasting 2.0). Costs one extra request per show; Apple's lookup API is used as a fallback for any show without a usable feed. Default off to keep existing run behavior unchanged.",
+      "default": false
     },
     "minDurationSeconds": {
       "title": "Minimum episode duration (seconds)",
