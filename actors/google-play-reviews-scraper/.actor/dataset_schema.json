@@ -247,6 +247,16 @@
           "null"
         ],
         "title": "ReplyDate"
+      },
+      "aspectRatings": {
+        "type": "array",
+        "title": "AspectRatings",
+        "example": [
+          {
+            "criteria": "vaf_app_quality_ads_frequency",
+            "rating": 2
+          }
+        ]
       }
     }
   },

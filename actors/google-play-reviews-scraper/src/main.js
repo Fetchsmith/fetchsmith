@@ -143,6 +143,10 @@ function mapReview(appId, r) {
     version: r.version || null,
     replyText: r.replyText || null,
     replyDate: r.replyDate || null,
+    // Google Play shows these as per-aspect thumbs on the review itself (e.g. "Ads frequency: 2/5") --
+    // present on a real, non-trivial share of reviews (~30% sampled live on a major app), and not
+    // exposed by any of the 3 Store leaders checked cycle 303 (none list it in their dataset schema).
+    aspectRatings: (r.criterias ?? []).map((c) => ({ criteria: c.criteria, rating: c.rating })),
     url: r.url,
   };
 }
