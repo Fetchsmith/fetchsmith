@@ -1,27 +1,179 @@
 {
- "ts": 1789452002,
+ "ts": 1789499441,
  "date": "2026-09-15",
  "apify": {
   "google-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 6,
-   "runs": 455,
-   "ext_ok30d": 5,
+   "runs30d": 7,
+   "runs": 500,
+   "ext_ok30d": 6,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 1,
-    "TOTAL": 6
+    "TOTAL": 7
    },
    "bookmarks": 0,
    "reviews": 0,
    "rating": 0
   },
   "app-store-reviews-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 7,
+   "runs": 502,
+   "ext_ok30d": 7,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 7,
+    "TIMED-OUT": 0,
+    "TOTAL": 7
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "shopify-products-scraper": {
+   "public": true,
+   "users": 1,
+   "users30d": 0,
+   "runs30d": 16,
+   "runs": 519,
+   "ext_ok30d": 16,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 16,
+    "TIMED-OUT": 0,
+    "TOTAL": 16
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "hacker-news-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 7,
+   "runs": 485,
+   "ext_ok30d": 7,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 7,
+    "TIMED-OUT": 0,
+    "TOTAL": 7
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "google-play-reviews-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 7,
+   "runs": 479,
+   "ext_ok30d": 7,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 7,
+    "TIMED-OUT": 0,
+    "TOTAL": 7
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "substack-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 6,
+   "runs": 489,
+   "ext_ok30d": 6,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 6,
+    "TIMED-OUT": 0,
+    "TOTAL": 6
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "apple-podcasts-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 6,
+   "runs": 482,
+   "ext_ok30d": 6,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 6,
+    "TIMED-OUT": 0,
+    "TOTAL": 6
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "steam-reviews-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 6,
+   "runs": 479,
+   "ext_ok30d": 6,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 6,
+    "TIMED-OUT": 0,
+    "TOTAL": 6
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "scholarship-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 6,
+   "runs": 467,
+   "ext_ok30d": 6,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 6,
+    "TIMED-OUT": 0,
+    "TOTAL": 6
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "eu-ted-tenders-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
@@ -40,140 +192,7 @@
    "reviews": 0,
    "rating": 0
   },
-  "shopify-products-scraper": {
-   "public": true,
-   "users": 1,
-   "users30d": 0,
-   "runs30d": 14,
-   "runs": 460,
-   "ext_ok30d": 14,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 14,
-    "TIMED-OUT": 0,
-    "TOTAL": 14
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "hacker-news-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 6,
-   "runs": 447,
-   "ext_ok30d": 6,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 6,
-    "TIMED-OUT": 0,
-    "TOTAL": 6
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "google-play-reviews-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 6,
-   "runs": 440,
-   "ext_ok30d": 6,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 6,
-    "TIMED-OUT": 0,
-    "TOTAL": 6
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "substack-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 5,
-   "runs": 444,
-   "ext_ok30d": 5,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 5,
-    "TIMED-OUT": 0,
-    "TOTAL": 5
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "apple-podcasts-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 5,
-   "runs": 442,
-   "ext_ok30d": 5,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 5,
-    "TIMED-OUT": 0,
-    "TOTAL": 5
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "steam-reviews-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 5,
-   "runs": 440,
-   "ext_ok30d": 5,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 5,
-    "TIMED-OUT": 0,
-    "TOTAL": 5
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "scholarship-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 5,
-   "runs": 428,
-   "ext_ok30d": 5,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 5,
-    "TIMED-OUT": 0,
-    "TOTAL": 5
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "eu-ted-tenders-scraper": {
+  "uk-find-a-tender-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
@@ -192,39 +211,20 @@
    "reviews": 0,
    "rating": 0
   },
-  "uk-find-a-tender-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 4,
-   "runs": 385,
-   "ext_ok30d": 4,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 4,
-    "TIMED-OUT": 0,
-    "TOTAL": 4
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 380,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 420,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -234,16 +234,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 367,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 409,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -253,16 +253,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 356,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 398,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 4,
-   "runs": 349,
+   "runs": 393,
    "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -291,16 +291,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 3,
-   "runs": 294,
-   "ext_ok30d": 3,
+   "runs30d": 4,
+   "runs": 333,
+   "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 3,
+    "SUCCEEDED": 4,
     "TIMED-OUT": 0,
-    "TOTAL": 3
+    "TOTAL": 4
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -310,8 +310,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 4,
+   "runs": 323,
+   "ext_ok30d": 4,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 4,
+    "TIMED-OUT": 0,
+    "TOTAL": 4
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "ats-jobs-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 3,
-   "runs": 287,
+   "runs": 247,
    "ext_ok30d": 3,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -325,12 +344,12 @@
    "reviews": 0,
    "rating": 0
   },
-  "ats-jobs-scraper": {
+  "fec-campaign-finance-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 2,
-   "runs": 206,
+   "runs": 117,
    "ext_ok30d": 2,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -343,33 +362,14 @@
    "bookmarks": 0,
    "reviews": 0,
    "rating": 0
-  },
-  "fec-campaign-finance-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 1,
-   "runs": 77,
-   "ext_ok30d": 1,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 1,
-    "TIMED-OUT": 0,
-    "TOTAL": 1
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
   }
  },
  "polar": {},
  "apify_totals": {
   "public_actors": 19,
   "users": 37,
-  "runs30d": 92,
-  "ext_ok30d": 91,
+  "runs30d": 111,
+  "ext_ok30d": 110,
   "ext_bad30d": 1,
   "bookmarks": 0,
   "reviews": 0,

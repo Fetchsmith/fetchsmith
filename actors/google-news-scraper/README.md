@@ -24,6 +24,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: hea
 | `decodeUrls` | boolean | Resolve the publisher URL for each article (default true) |
 | `fetchArticleBody` | boolean | Open each publisher page and extract the full article text, author, image, keywords and section (default false) |
 | `articleBodyMaxChars` | integer | Truncate `articleBody` to this length (default 20000) |
+| `extractTickers` | boolean | Pull stock tickers into a `tickers` array from the title (and article body, if `fetchArticleBody` is on). Rule-based, no extra request, costs nothing extra (default false) |
 | `maxResults` | integer | Total cap across queries |
 | `proxyConfiguration` | object | Apify Proxy for Google/publisher requests (default: on). Rotating IPs is the real fix for Google's URL-decode rate limit — see FAQ |
 
@@ -78,6 +79,14 @@ With `fetchArticleBody: true` each item also carries:
 ```
 
 `articleFetchStatus` always tells you where the text came from or why it is missing: `ok`, `blocked` (publisher refused the request, e.g. hard paywall), `no-body` (page had no readable article text), `error` (request failed) or `no-url` (Google's redirect could not be resolved). Body extraction reads the page's Article JSON-LD first and falls back to the article paragraphs; publishers that serve different HTML to different clients are retried under several request fingerprints, and the one that works is reused for the rest of that publisher's articles.
+
+With `extractTickers: true` each item also carries:
+
+```json
+{ "tickers": ["TSLA"] }
+```
+
+Rule-based and free (no extra request): it catches a cashtag (`$TSLA`), an exchange prefix/suffix (`NASDAQ:AAPL`, `AAPL:NASDAQ`), or a capitalized name immediately followed by `(TICKER)` — the most common real convention in financial headlines, e.g. "Tesla, Inc. (TSLA)". It deliberately does **not** match a bare capitalized word (`TSLA Stock Rises`) — that would flood results with false positives from ordinary acronyms (`WSJ`, `IPO`, `EV`, `SEC`, `UN`...), which are also excluded by name when they appear in the `(XXX)` position. The tradeoff: plain-text mentions with no notation at all are missed. `tickers` is always `[]` when nothing matches, never omitted.
 
 ## Pricing
 `result` — charged per article returned. Failed feeds and duplicates are free, and full article text costs nothing extra. HTTP-only, no browser, so runs finish in seconds.

@@ -62,6 +62,7 @@ const ceid = `${gl}:${hl.split('-')[0]}`;
 const perQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), 100);
 const maxResults = Math.min(Number(input.maxResults ?? 500), 5000);
 const fetchBody = input.fetchArticleBody === true;
+const extractTickers = input.extractTickers === true;
 const decode = input.decodeUrls !== false || fetchBody; // the body lives on the publisher's page, so it needs the real URL
 const bodyMaxChars = Math.min(Math.max(Number(input.articleBodyMaxChars ?? 20000), 500), 200000);
 if (!queries.length && !rssUrls.length && !topics.length) { await Actor.fail('Provide at least one query, RSS URL or topic.'); }
@@ -137,6 +138,38 @@ function parseRss(xml) {
 }
 
 const fetchArticle = makeArticleFetcher({ http, bodyMaxChars, log });
+
+// Cheap, rule-based ticker extraction (no extra HTTP request) — deliberately narrow: only
+// explicit financial notation, never a bare capitalized word. Blind "any 2-5 uppercase letters"
+// matching floods results with false positives (WSJ, IPO, FSD, EV, AI, ...). Three signals, all
+// verified live against real Google News headlines (cycle 323): a cashtag ($TSLA), an exchange
+// prefix/suffix (NASDAQ:AAPL, AAPL:NASDAQ), or a capitalized name immediately followed by
+// "(TICKER)" (the single most common real convention, e.g. "Tesla, Inc. (TSLA)") — the third one
+// needs a blocklist since plenty of non-ticker acronyms follow the same shape ("United Nations
+// (UN)", "the Fed (Fed)"); the list below is common real offenders, not exhaustive.
+const EXCHANGES = 'NASDAQ|NYSE|AMEX|LSE|TSX|ASX|HKEX|NSE|BSE|SSE|SZSE|TSE|FWB|EPA|ETR';
+const NON_TICKER_ACRONYMS = new Set([
+  'CEO', 'CFO', 'COO', 'CTO', 'CMO', 'LLC', 'INC', 'LTD', 'LLP', 'PLC',
+  'USA', 'USD', 'EUR', 'GBP', 'UK', 'EU', 'UN', 'US', 'AI', 'EV', 'IPO',
+  'FDA', 'SEC', 'FTC', 'DOJ', 'FBI', 'CIA', 'NASA', 'GDP', 'ESG', 'API',
+  'FAQ', 'PDF', 'URL', 'HR', 'IT', 'PR', 'VP', 'OK', 'TV', 'UFO', 'WHO',
+  'ECB', 'FED', 'IMF', 'WTO', 'NATO', 'NYT', 'WSJ', 'BBC', 'CNN', 'CNBC', 'OPEC',
+]);
+const TICKER_CASHTAG_RE = /\$([A-Z]{1,5})\b/g;
+const TICKER_EXCHANGE_RE = new RegExp(`\\b(?:(${EXCHANGES})\\s*:\\s*([A-Z]{1,5})|([A-Z]{1,5})\\s*:\\s*(?:${EXCHANGES}))\\b`, 'g');
+const TICKER_PAREN_RE = /\b[A-Z][\w&.'-]*\s\(([A-Z]{2,5})\)/g;
+function extractTickersFrom(text) {
+  if (!text) return [];
+  const out = new Set();
+  let m;
+  TICKER_CASHTAG_RE.lastIndex = 0;
+  while ((m = TICKER_CASHTAG_RE.exec(text))) out.add(m[1]);
+  TICKER_EXCHANGE_RE.lastIndex = 0;
+  while ((m = TICKER_EXCHANGE_RE.exec(text))) out.add(m[2] || m[3]);
+  TICKER_PAREN_RE.lastIndex = 0;
+  while ((m = TICKER_PAREN_RE.exec(text))) { if (!NON_TICKER_ACRONYMS.has(m[1])) out.add(m[1]); }
+  return [...out];
+}
 
 // Decode Google News redirect URL -> publisher URL (batchexecute method).
 // Google rate-limits this endpoint per source IP (429) once you decode a lot in a short window;
@@ -216,7 +249,8 @@ for (const feed of feeds) {
     }
     // Rank as Google ordered it within this feed (1-based), so relevance/recency order survives
     // into the dataset even after export or sorting.
-    keepGoing = await pushResult({ ...it, url, ...article, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
+    const tickers = extractTickers ? { tickers: extractTickersFrom(`${it.title} ${article.articleBody ?? ''}`) } : {};
+    keepGoing = await pushResult({ ...it, url, ...article, ...tickers, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }
   if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.topic || feed.url);

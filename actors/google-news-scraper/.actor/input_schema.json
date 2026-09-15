@@ -116,6 +116,12 @@
       "minimum": 500,
       "maximum": 200000
     },
+    "extractTickers": {
+      "title": "Extract stock tickers",
+      "type": "boolean",
+      "description": "Pull stock tickers into a tickers array from the title (and article body, if 'Extract full article text' is on). Rule-based, no extra request, costs nothing extra. Deliberately narrow: catches $CASHTAG, EXCHANGE:TICKER, and \"Company Name (TICKER)\" notation, never a bare capitalized word — that keeps common false positives (WSJ, IPO, EV, UN, SEC...) out, at the cost of missing plain-text mentions like \"TSLA stock\".",
+      "default": false
+    },
     "maxResults": {
       "title": "Max results (total)",
       "type": "integer",

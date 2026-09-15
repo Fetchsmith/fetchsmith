@@ -143,6 +143,13 @@
         ],
         "title": "ScrapedAt",
         "example": "2026-09-12T03:04:12.766Z"
+      },
+      "tickers": {
+        "type": "array",
+        "title": "Tickers",
+        "description": "Only present when extractTickers is on. Stock tickers explicitly mentioned via $CASHTAG or EXCHANGE:TICKER notation in the title (and article body, if fetched).",
+        "items": { "type": "string" },
+        "example": ["TSLA"]
       }
     }
   },

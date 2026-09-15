@@ -97,7 +97,8 @@
         "feedUrl",
         "language",
         "country",
-        "scrapedAt"
+        "scrapedAt",
+        "tickers"
       ],
       "sample_output": {
         "title": "Apify raises new funding - TechCrunch",
@@ -106,7 +107,7 @@
         "publishedAt": "2026-09-02T07:00:00.000Z",
         "snippet": "Apify raises new funding"
       },
-      "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL. Also browse built-in sections (World, Business, Technology, Entertainment, Science, Sports, Health) with the <code>topics</code> field \u2014 no RSS URL needed. Restrict to a date window with <code>timePeriod</code> (<code>1h</code> \u2026 <code>1y</code>) or <code>publishedAfter</code>/<code>publishedBefore</code> (<code>YYYY-MM-DD</code>) \u2014 Google applies the filter, so you are not charged for articles outside the window.</p>",
+      "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL. Also browse built-in sections (World, Business, Technology, Entertainment, Science, Sports, Health) with the <code>topics</code> field \u2014 no RSS URL needed. Restrict to a date window with <code>timePeriod</code> (<code>1h</code> \u2026 <code>1y</code>) or <code>publishedAfter</code>/<code>publishedBefore</code> (<code>YYYY-MM-DD</code>) \u2014 Google applies the filter, so you are not charged for articles outside the window. Optional <code>extractTickers</code> pulls stock tickers (e.g. <code>$TSLA</code>, <code>NASDAQ:AAPL</code>, \u201cTesla, Inc. (TSLA)\u201d) into a <code>tickers</code> array, free.</p>",
       "memory_mb": 1024
     },
     {
