@@ -16,6 +16,7 @@ if (input.postedBefore) numericFilters.push(`created_at_i<${Math.floor(new Date(
 if (input.minPoints) numericFilters.push(`points>=${Number(input.minPoints)}`);
 if (input.minComments) numericFilters.push(`num_comments>=${Number(input.minComments)}`);
 const author = input.author ? String(input.author).trim() : null;
+const usernames = [...new Set((input.usernames ?? []).map((u) => String(u).trim()).filter((u) => u.length))];
 
 if (!queries.length) queries.push(''); // empty query = browse by tag/date (e.g. front page, Ask HN, Who's Hiring)
 
@@ -52,6 +53,31 @@ function mapHit(hit) {
     text: hit.comment_text || hit.story_text || null,
     createdAt: hit.created_at || null,
     query: hit._query ?? null,
+    karma: null,
+    about: null,
+    accountCreatedAt: null,
+  };
+}
+
+function mapUser(username, data) {
+  return {
+    id: data.id ?? username,
+    type: 'user',
+    title: null,
+    url: null,
+    hnUrl: `https://news.ycombinator.com/user?id=${encodeURIComponent(username)}`,
+    author: data.id ?? username,
+    points: null,
+    numComments: null,
+    storyId: null,
+    storyTitle: null,
+    storyUrl: null,
+    text: null,
+    createdAt: null,
+    query: null,
+    karma: data.karma ?? null,
+    about: data.about ?? null,
+    accountCreatedAt: data.created ? new Date(data.created * 1000).toISOString() : null,
   };
 }
 
@@ -68,6 +94,13 @@ for (const query of queries) {
   const tagParts = [...tags];
   if (author) tagParts.push(`author_${author}`);
   const wantTags = tagParts.length ? tagParts.join(',') : undefined;
+  if (!query && !wantTags) {
+    // No query and no tags means Algolia's search endpoint matches its entire ~46M-item
+    // history ranked by relevance — a silent runaway bill, not a legitimate "browse" request.
+    log.warning('No query and no tags for this iteration — skipping (set tags, e.g. ["story"], or a search query; use "usernames" alone for user-profile-only runs).');
+    emptyQueries.push(query || '<empty>');
+    continue;
+  }
   while (keepGoing && fetched < maxItemsPerQuery) {
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
     if (query) url.searchParams.set('query', query);
@@ -102,13 +135,44 @@ for (const query of queries) {
   else if (fetched === 0) emptyQueries.push(query || '<empty>');
 }
 
+const notFoundUsers = [];
+const erroredUsers = [];
+for (const username of usernames) {
+  if (!keepGoing) break;
+  let data;
+  try {
+    const res = await gotScraping({
+      url: `https://hacker-news.firebaseio.com/v0/user/${encodeURIComponent(username)}.json`,
+      timeout: { request: 30000 },
+      retry: { limit: 2 },
+      responseType: 'json',
+    });
+    data = res.body;
+  } catch (e) {
+    log.warning(`User lookup failed (${username}): ${e.message}`);
+    erroredUsers.push(username);
+    continue;
+  }
+  if (!data) {
+    log.warning(`No such HN user: ${username}`);
+    notFoundUsers.push(username);
+    continue;
+  }
+  keepGoing = await pushResult(mapUser(username, data));
+}
+
 log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}`);
-if (pushed === 0 && queries.length) {
-  const why = erroredQueries.length
-    ? `the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`
-    : `no stories/comments matched: ${emptyQueries.join(', ')} — try different tags, a wider postedAfter/postedBefore range, or a lower minPoints`;
-  await Actor.setStatusMessage(`No items returned — ${why}.`);
-} else if (emptyQueries.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. No matches for: ${emptyQueries.join(', ')}.`);
+if (pushed === 0 && (queries.length || usernames.length)) {
+  const reasons = [];
+  if (erroredQueries.length) reasons.push(`the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`);
+  if (emptyQueries.length) reasons.push(`no stories/comments matched: ${emptyQueries.join(', ')} — try different tags, a wider postedAfter/postedBefore range, or a lower minPoints`);
+  if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
+  if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
+  await Actor.setStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`);
+} else if (emptyQueries.length || notFoundUsers.length) {
+  const notes = [];
+  if (emptyQueries.length) notes.push(`no matches for: ${emptyQueries.join(', ')}`);
+  if (notFoundUsers.length) notes.push(`no such HN user: ${notFoundUsers.join(', ')}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
 }
 await Actor.exit();

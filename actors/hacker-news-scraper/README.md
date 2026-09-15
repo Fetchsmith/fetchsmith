@@ -8,6 +8,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 - Pull the newest **Who's Hiring** / **Who Wants to Be Hired** threads for job-market research
 - Feed trending tech discussions into AI agents, newsletters or dashboards
 - Build datasets of Show HN launches or Ask HN discussions by topic
+- Look up a founder's or user's HN karma, bio and account age (`usernames`)
 
 ## Input
 | Field | Type | Description |
@@ -22,6 +23,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `postedAfter` / `postedBefore` | string | ISO date bounds |
 | `maxItemsPerQuery` | integer | Cap per query (up to 1000) |
 | `maxResults` | integer | Overall cap |
+| `usernames` | array | HN usernames to fetch profile data for (karma, about, account age) — a separate lookup, not a story filter. To fetch ONLY profiles with no story search, also set `queries` and `tags` to `[]`. |
 
 ## Output (one item per story/comment)
 ```json
@@ -39,6 +41,19 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 }
 ```
 
+A `usernames` lookup returns one row per user, `type: "user"`:
+```json
+{
+  "id": "pg",
+  "type": "user",
+  "author": "pg",
+  "hnUrl": "https://news.ycombinator.com/user?id=pg",
+  "karma": 157316,
+  "about": "Bug fixer.",
+  "accountCreatedAt": "2006-10-09T19:41:32.000Z"
+}
+```
+
 ## Pricing
 `result` — charged per item returned. Empty queries and failed pages are free.
 
@@ -47,6 +62,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 - For the current "Who is hiring?" thread: set `queries` to `["Ask HN: Who is hiring"]`, `tags: ["story"]`, `sortBy: "date"`, `maxItemsPerQuery: 1` to find the thread, or use `tags: ["comment"]` with `postedAfter` set to the 1st of the month to pull all replies.
 - Use `sortBy: "date"` for a live monitoring feed of new mentions of your keyword.
 - Use `author` to pull everything a specific user has posted (e.g. track a founder's HN activity), or `minComments` to surface only high-engagement discussions.
+- Leaving both `queries` and `tags` empty is not a "browse everything" mode — it's rejected (with a warning, no charge) rather than matching HN's entire 46M+ item history by relevance. Always set at least one tag (e.g. `["story"]`, `["front_page"]`) or a search query.
 
 ## FAQ
 **Why did my run return 0 items with status SUCCEEDED?** The status message distinguishes "no matches for this query/tags/date/points filter" from "the Algolia request failed" — check it before assuming the query is wrong.
@@ -55,6 +71,8 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 **Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
 **Do I get charged for empty queries?** No — only items actually returned to the dataset are charged.
 **Is there a dedicated "top stories" or "by user" mode?** No separate mode needed — `tags: ["front_page"]` with no query returns the live front page, and `author` returns everything a given user posted, combinable with any other filter (points, comments, date range) that a fixed mode wouldn't let you apply.
+**Can I look up a user's karma or bio, not just their posts?** Yes — put their username(s) in `usernames`. It's a separate lookup (via HN's official Firebase API) that returns one row per user with `karma`, `about` and `accountCreatedAt`, independent of `author`/`queries`. To fetch profiles only, with no story search mixed in, set `queries` and `tags` to `[]` too.
+**What if a username in `usernames` doesn't exist?** It's skipped with no charge; the run's status message names which username(s) weren't found.
 
 ## Related guides
 Engineering write-ups behind this Actor:

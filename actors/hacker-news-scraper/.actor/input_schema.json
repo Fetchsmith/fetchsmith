@@ -8,6 +8,7 @@
     "minPoints": { "title": "Minimum points", "type": "integer", "description": "Only return stories/comments with at least this many points.", "minimum": 0 },
     "minComments": { "title": "Minimum comments", "type": "integer", "description": "Only return stories with at least this many comments (e.g. find high-engagement discussions).", "minimum": 0 },
     "author": { "title": "Author username", "type": "string", "description": "Only return items posted by this exact HN username.", "editor": "textfield" },
+    "usernames": { "title": "User profiles to look up", "type": "array", "description": "HN usernames to fetch profile data for (karma, about text, account creation date) — a separate lookup from the story/comment search above. To fetch ONLY user profiles with no story search, also set 'Search queries' and 'Filter by tag' to empty ([]).", "editor": "stringList" },
     "postedAfter": { "title": "Posted after (ISO date)", "type": "string", "description": "e.g. 2026-01-01", "editor": "textfield" },
     "postedBefore": { "title": "Posted before (ISO date)", "type": "string", "description": "e.g. 2026-09-01", "editor": "textfield" },
     "maxItemsPerQuery": { "title": "Max items per query", "type": "integer", "description": "Cap per search query/tag combination.", "default": 100, "minimum": 1, "maximum": 1000 },

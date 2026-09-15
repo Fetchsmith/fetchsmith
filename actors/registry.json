@@ -286,7 +286,10 @@
         "storyUrl",
         "text",
         "createdAt",
-        "query"
+        "query",
+        "karma",
+        "about",
+        "accountCreatedAt"
       ],
       "sample_output": {
         "id": "15558405",

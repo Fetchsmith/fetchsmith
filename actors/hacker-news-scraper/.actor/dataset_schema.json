@@ -112,6 +112,30 @@
           "string",
           "null"
         ]
+      },
+      "karma": {
+        "title": "Karma",
+        "example": 157316,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "about": {
+        "title": "About",
+        "example": "Bug fixer.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "accountCreatedAt": {
+        "title": "AccountCreatedAt",
+        "example": "2006-10-09T19:41:32Z",
+        "type": [
+          "string",
+          "null"
+        ]
       }
     }
   },
