@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -116,6 +117,7 @@ const orgNames = strList(input.orgNames);
 const orgStates = strList(input.orgStates).map((s) => s.toUpperCase());
 const piNames = strList(input.piNames);
 const projectNums = strList(input.projectNums);
+const watchLabel = String(input.watchLabel ?? '').trim();
 
 const amountNum = (v) => {
     const n = Number(v);
@@ -301,6 +303,49 @@ async function fetchPublications(coreNums) {
     return map;
 }
 
+// ---------------------------------------------------------------------------
+// Watch mode: a stateful "only what is new since my last run" filter, scoped to
+// ONE saved query. Distinct from `newlyAddedOnly`, which reads NIH's own stateless
+// "recently added to the index" flag and therefore still re-returns the same rows on
+// every run until they age out of that flag. Here the baseline is the buyer's own:
+// the appl_ids this label has already delivered, kept in a NAMED key-value store so it
+// survives across runs (the default KV store is per-run and would reset every time).
+const WATCH_STORE = 'fetchsmith-nih-watch';
+const SEED_CAP = 15000; // == OFFSET_WALL: the most ids one un-split query can even reach
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+// Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than
+// trusted. The criteria fingerprint is part of the key on purpose: if the buyer edits a
+// filter, that is a different question and gets its own baseline, instead of dumping
+// every row the old narrower filter happened to exclude as if it were brand new.
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Set(); // appl_ids already delivered under this label+fingerprint
+
+async function saveWatchRecord(status) {
+    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        fingerprint: watchRecord.fingerprint,
+        criteria: rootCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status,
+        runCount: (watchRecord.runCount ?? 0) + 1,
+        seenCount: ids.length,
+        seenIds: ids,
+    });
+}
+
 let pushed = 0;
 const seen = new Set(); // appl_id, so chunked queries can never double-charge for one project
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
@@ -311,9 +356,13 @@ async function pushResults(items) {
             const r = await Actor.charge({ eventName: 'result', count: 1 });
             if (r.chargedCount === 0) return false;
             await Actor.pushData(item); pushed += 1;
+            // Only a row the buyer was actually charged for counts as delivered: anything left
+            // behind by maxResults or the charge limit stays "new" and comes back next run.
+            if (watchMode && item.applId != null) watchSeen.add(String(item.applId));
             if (r.eventChargeLimitReached || pushed >= maxResults) return false;
         } else {
             await Actor.pushData(item); pushed += 1;
+            if (watchMode && item.applId != null) watchSeen.add(String(item.applId));
             if (pushed >= maxResults) return false;
         }
     }
@@ -324,18 +373,41 @@ async function pushResults(items) {
 // should stop entirely (charge limit or maxResults reached).
 async function walkChunk(criteria, total) {
     let offset = 0;
-    while (offset < Math.min(total, OFFSET_WALL) && pushed < maxResults) {
+    while (offset < Math.min(total, OFFSET_WALL) && (seeding || pushed < maxResults)) {
+        if (seeding && watchSeen.size >= SEED_CAP) return false;
         // Never over-fetch: the publications join runs on whatever a page returns, so pulling a
         // full 500 rows to satisfy a maxResults of 100 would cost ~16 pointless extra requests.
-        const limit = Math.min(PAGE_LIMIT, OFFSET_WALL - offset, Math.max(maxResults - pushed, 1));
-        const page = await apiPost('/projects/search', { criteria: assertCriteria(criteria), limit, offset });
+        // A seeding run is the exception -- it wants ids only, so it always takes full pages and
+        // asks the API for just the two id fields instead of the whole ~60-field project record.
+        const limit = seeding
+            ? Math.min(PAGE_LIMIT, OFFSET_WALL - offset)
+            : Math.min(PAGE_LIMIT, OFFSET_WALL - offset, Math.max(maxResults - pushed, 1));
+        const body = { criteria: assertCriteria(criteria), limit, offset };
+        if (seeding) body.include_fields = ['ApplId', 'ProjectNum'];
+        const page = await apiPost('/projects/search', body);
         const rows = listOf(page?.results);
         if (!rows.length) return true;
 
         const fresh = rows.filter((r) => r.appl_id == null || !seen.has(r.appl_id));
         for (const r of fresh) if (r.appl_id != null) seen.add(r.appl_id);
 
-        let items = fresh.map(normalize);
+        if (seeding) {
+            for (const r of fresh) if (r.appl_id != null) watchSeen.add(String(r.appl_id));
+            offset += rows.length;
+            if (rows.length < limit) return true;
+            continue;
+        }
+
+        // Watch mode: drop anything this label has already delivered BEFORE normalising or
+        // joining publications, so a suppressed row costs neither an extra request nor a charge.
+        const wanted = watchMode ? fresh.filter((r) => !watchSeen.has(String(r.appl_id))) : fresh;
+        if (!wanted.length) {
+            offset += rows.length;
+            if (rows.length < limit) return true;
+            continue;
+        }
+
+        let items = wanted.map(normalize);
         if (includePublications && items.length) {
             const coreNums = Array.from(new Set(items.map((i) => i.coreProjectNum).filter(Boolean)));
             const pubs = await fetchPublications(coreNums);
@@ -353,6 +425,30 @@ async function walkChunk(criteria, total) {
 }
 
 const rootCriteria = buildCriteria();
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, rootCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        for (const id of existing.seenIds) watchSeen.add(String(id));
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered project(s). Only projects NOT in that baseline will be returned and charged.`,
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline `
+            + 'run. It records which projects already match and returns ZERO results (you are charged nothing). '
+            + 'Run it again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+        );
+    }
+}
+
 log.info(
     exclusiveProjectNums
         ? `NIH RePORTER: exact project-number lookup [${projectNums.join(', ')}] (all other filters ignored).`
@@ -401,9 +497,29 @@ if (rootTotal > SPLIT_AT) {
     await walkChunk(rootCriteria, rootTotal);
 }
 
-if (pushed === 0) {
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} project(s) recorded as already-seen, `
+            + '0 results returned, 0 charged. The next run on this label and these filters returns only new projects.'
+            + (watchSeen.size >= SEED_CAP
+                ? ` NOTE: the baseline hit the ${SEED_CAP}-project cap, which is also NIH RePORTER's own paging wall. `
+                + 'Narrow the query (a fiscal year, IC or state) so the whole result set fits, or the first incremental '
+                + 'run will report older projects past the cap as new.'
+                : ''),
+        );
+    } else {
+        log.info(`Watch label "${watchLabel}": ${pushed} new project(s) since the last run; baseline now holds ${watchSeen.size}.`);
+    }
+}
+
+if (pushed === 0 && !seeding) {
     log.warning(
-        exclusiveProjectNums
+        watchMode
+            ? `Nothing new for watch label "${watchLabel}" since its last run -- every matching project had already been `
+            + 'delivered. That is the expected result most of the time; you were charged for nothing.'
+            : exclusiveProjectNums
             ? `No project found for [${projectNums.join(', ')}]. Use a full project number (5R01CA234538-06) or a core number (R01CA234538) exactly as shown on reporter.nih.gov.`
             : 'No projects matched. Most common causes: (1) all filters are ANDed -- a narrow keyword plus IC plus '
             + 'activity code often has zero real matches, drop one and retry; (2) an IC code that is not a real NIH '

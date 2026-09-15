@@ -119,6 +119,13 @@
             "description": "Only projects NIH RePORTER has added to the index recently — use this for cheap incremental pulls instead of re-scanning a whole fiscal year. Measured 2026-09-11: ~8.9k projects index-wide, almost all FY2026.",
             "default": false
         },
+        "watchLabel": {
+            "title": "Watch label (only new since last run)",
+            "type": "string",
+            "description": "Optional. Give this saved query a name (e.g. \"crispr-nci-weekly\") to turn on watch mode: the Actor remembers which projects it has already delivered under that name and returns ONLY projects that are new since the previous run. The first run on a new label is a free baseline run — it records what already matches and returns zero results; every run after that returns and charges for new projects only. Change any other filter and the label starts a fresh baseline, so \"new\" always means new for the exact query you are watching. Leave empty for a normal one-off search.",
+            "editor": "textfield",
+            "example": "crispr-nci-weekly"
+        },
         "excludeSubprojects": {
             "title": "Exclude subprojects",
             "type": "boolean",
