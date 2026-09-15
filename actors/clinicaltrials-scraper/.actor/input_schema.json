@@ -383,6 +383,12 @@
       "default": 100,
       "minimum": 1,
       "maximum": 50000
+    },
+    "watchLabel": {
+      "title": "Watch label (only new since last run)",
+      "type": "string",
+      "description": "Optional. Name a saved search (e.g. \"my-oncology-watch\") and this run returns ONLY studies not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded studies as \"new\". Ignored when nctIds is set.",
+      "editor": "textfield"
     }
   },
   "required": []

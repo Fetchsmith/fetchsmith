@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -64,6 +65,7 @@ const DATE_FILTERS = [
     { from: 'resultsFirstPostedDateFrom', to: 'resultsFirstPostedDateTo', area: 'ResultsFirstPostDate' },
 ];
 const dateRanges = [];
+const dateCriteria = {};
 for (const { from, to, area } of DATE_FILTERS) {
     const f = DATE_RE.test(input[from]) ? input[from] : '';
     const t = DATE_RE.test(input[to]) ? input[to] : '';
@@ -71,6 +73,8 @@ for (const { from, to, area } of DATE_FILTERS) {
         throw new Error(`"${from}" (${f}) is after "${to}" (${t}) — the window is empty. Swap them.`);
     }
     if (f || t) dateRanges.push(`AREA[${area}]RANGE[${f || 'MIN'},${t || 'MAX'}]`);
+    dateCriteria[from] = f || null;
+    dateCriteria[to] = t || null;
 }
 // Kept as named bindings because the run-summary log line below reports them explicitly.
 const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
@@ -118,6 +122,98 @@ const SORT_VALUES = new Set(['LastUpdatePostDate:desc', 'StudyFirstPostDate:desc
 const sortBy = SORT_VALUES.has(input.sortBy) ? input.sortBy : '';
 const rowsPerStudy = input.rowsPerStudy === 'site' ? 'site' : 'study';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
+const watchLabel = String(input.watchLabel ?? '').trim();
+const watchMode = watchLabel.length > 0 && nctIds.length === 0;
+if (input.watchLabel && nctIds.length) {
+    log.warning(
+        'watchLabel is ignored when nctIds is set -- direct-lookup mode always returns exactly the ids you '
+        + 'asked for, so there is no "new since last run" concept to track for it.',
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query. Same shape as
+// fda-recall-scraper (cycle 299) / grants-gov-scraper (cycle 298) / federal-register-scraper
+// (cycle 297) / nih-reporter-scraper (cycle 296) -- copy that design, don't reinvent it.
+//
+// The baseline is the buyer's own -- the nctIds this label has already delivered -- kept in a
+// NAMED key-value store on the buyer's own account (the default KV store is per-run and would
+// reset the baseline every run, i.e. re-charge the whole result set on every scheduled run).
+const WATCH_STORE = 'fetchsmith-clinicaltrials-watch';
+const SEED_CAP = 20000; // our own bound on a seed walk's runtime, not a server limit
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+// None of the six date-range pairs above resolve a rolling/relative default (verified against
+// `.actor/input_schema.json`: no `default` on any of them, unlike federal-register-scraper's
+// last-90-days or fda-recall-scraper's last-365-days) -- `dateCriteria` already holds the buyer's
+// own explicit input (or null), never a computed value, so fingerprinting it directly is safe.
+const watchCriteria = {
+    conditions, interventions, sponsors, locations, searchQuery, titleOrAcronym, outcomeMeasure,
+    overallStatus: [...overallStatus].sort(),
+    studyTypes: [...studyTypes].sort(),
+    phases: [...phases].sort(),
+    resultsAvailability,
+    documentTypes: [...documentTypes].sort(),
+    fdaRegulationViolation,
+    sex,
+    acceptsHealthyVolunteers,
+    funderTypes: [...funderTypes].sort(),
+    ageGroups: [...ageGroups].sort(),
+    ageRangeFromYears,
+    ageRangeToYears,
+    facilityName,
+    leadSponsorName,
+    ...dateCriteria,
+};
+
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Set(); // nctIds already delivered under this label
+
+async function saveWatchRecord(status_) {
+    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        criteria: watchCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status_,
+        runCount: (watchRecord.runCount ?? 0) + 1,
+        seenCount: ids.length,
+        seenIds: ids,
+    });
+}
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        for (const id of existing.seenIds) watchSeen.add(String(id));
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered stud(y/ies). Only studies NOT in that baseline are returned and charged.`,
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+            + 'It records which studies already match and returns ZERO results (you are charged nothing). Run it '
+            + 'again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+        );
+    }
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -310,11 +406,50 @@ log.info(nctIds.length
       + `titleOrAcronym="${titleOrAcronym}" outcomeMeasure="${outcomeMeasure}" sortBy="${sortBy}" `
       + `facilityName="${facilityName}" leadSponsorName="${leadSponsorName}" `
       + `dateRanges=[${dateRanges.join(' AND ')}] `
-      + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`);
+      + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`
+      + (watchMode ? ` watchLabel="${watchLabel}"` : ''));
 
 let scanned = 0;
 let pages = 0;
 let keepGoing = true;
+let skippedSeen = 0;
+
+// Seeding only needs ids, so it walks the search with the exact same `baseParams()`/`apiGet()`
+// pagination the real run below uses -- they can never page the underlying API differently.
+// `baseParams()` always requests `pageSize: MAX_PAGE_SIZE` (1000) regardless of `maxResults`, so
+// (unlike federal-register-scraper cycle 297 / fda-recall-scraper cycle 299) there is no separate
+// small-page-size trap to work around here; the only thing this function does differently from
+// the real run is not stop early at `maxResults` -- a baseline that stopped early would report
+// every study past the stopping point as "new" on the first incremental run.
+async function seedBaseline() {
+    let pageToken = null;
+    for (;;) {
+        const params = baseParams();
+        if (pageToken) params.pageToken = pageToken;
+        const page = await apiGet(params);
+        if (!page) break;
+        const studies = listOf(page.studies);
+        if (!studies.length) break;
+        pages += 1;
+        for (const study of studies) {
+            scanned += 1;
+            const nctId = study.protocolSection?.identificationModule?.nctId ?? null;
+            if (nctId) watchSeen.add(nctId);
+            if (watchSeen.size >= SEED_CAP) {
+                log.warning(
+                    `Watch label "${watchLabel}" seed hit the ${SEED_CAP}-study cap before scanning the whole `
+                    + 'match set. Narrow the query (fewer conditions/locations, a shorter date window) so the '
+                    + 'whole result set fits, or the first incremental run will report studies past the cap as new.',
+                );
+                log.info(`Baseline walk: ${watchSeen.size} stud(y/ies) recorded.`);
+                return;
+            }
+        }
+        pageToken = page.nextPageToken ?? null;
+        if (!pageToken) break;
+    }
+    log.info(`Baseline walk: ${watchSeen.size} stud(y/ies) recorded.`);
+}
 
 async function emitStudy(study) {
     scanned += 1;
@@ -349,6 +484,8 @@ if (nctIds.length) {
     if (notFound.length) {
         log.warning(`${notFound.length} of ${nctIds.length} nctIds were not found on ClinicalTrials.gov: ${notFound.join(', ')}`);
     }
+} else if (watchMode && seeding) {
+    await seedBaseline();
 } else {
     let pageToken = null;
     while (keepGoing) {
@@ -361,7 +498,19 @@ if (nctIds.length) {
         pages += 1;
 
         for (const study of studies) {
+            const nctId = study.protocolSection?.identificationModule?.nctId ?? null;
+            // Already delivered under this watch label: dropped before any charge, so a study
+            // is never paid for twice.
+            if (watchMode && nctId && watchSeen.has(nctId)) {
+                scanned += 1;
+                skippedSeen += 1;
+                continue;
+            }
+            const before = pushed;
             await emitStudy(study);
+            // Recorded as delivered only after the charge actually succeeded -- anything dropped
+            // by maxResults or a charge limit stays "new" for the next run.
+            if (watchMode && nctId && pushed > before) watchSeen.add(nctId);
             if (!keepGoing) break;
         }
 
@@ -370,7 +519,29 @@ if (nctIds.length) {
     }
 }
 
-if (pushed === 0) {
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} stud(y/ies) recorded as `
+            + 'already-seen, 0 results returned, 0 charged. The next run on this label and these filters '
+            + 'returns only new studies.',
+        );
+    } else {
+        log.info(
+            `Watch label "${watchLabel}": ${pushed} new stud(y/ies) since the last run (${skippedSeen} `
+            + `already-delivered stud(y/ies) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+        );
+    }
+}
+
+if (pushed === 0 && watchMode && !seeding) {
+    log.warning(
+        `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching `
+        + 'stud(y/ies) had already been delivered under this label. That is the expected result most of the '
+        + 'time; you were charged for nothing.',
+    );
+} else if (pushed === 0 && !seeding) {
     log.warning(
         nctIds.length
             ? 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.'

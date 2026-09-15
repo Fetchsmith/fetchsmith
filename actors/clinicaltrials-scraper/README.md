@@ -18,6 +18,8 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 
 **We do not ship contact people, phone numbers or emails — ever.** ClinicalTrials.gov's own API returns named individuals and personal email addresses in `centralContacts`/location `contacts` (we found a real `@gmail.com` in a live sample). Several competitor Actors resell that as a "contact finder." We deliberately drop it; `locations`/`site` carries facility, city, state, country and geo-coordinates only.
 
+Name a `watchLabel` and every later run on the same saved search returns **only studies new since the last run**, so a scheduled competitive-intelligence pull never re-delivers or re-charges for the same trial twice.
+
 ## Who uses this
 
 - **Pharma / CRO business development** tracking competitor trials by condition or sponsor.
@@ -65,6 +67,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `sortBy` | Order results before `maxResults` truncates them: most recently updated, most recently first-posted, or largest enrollment first. Default is the API's own relevance order. |
 | `rowsPerStudy` | `"study"` (default) or `"site"`. |
 | `maxResults` | Up to 50,000. Token-based paging, no offset wall. |
+| `watchLabel` | Name a saved search to get only studies new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. Ignored when `nctIds` is set. |
 
 ## Sample output (`rowsPerStudy: "study"`)
 
@@ -115,8 +118,15 @@ No, by design — see above. If you need to contact a trial's coordinator, use t
 **Is this legal?**
 Yes. ClinicalTrials.gov is run by the US National Library of Medicine and publishes this API for public reuse. All returned data (excluding the contact fields we deliberately drop) is public-interest study/sponsor/site metadata, not personal data about trial participants.
 
+**How do I get only new studies on a schedule, not the whole match set every time?**
+Set `watchLabel` to any name, e.g. `"my-oncology-watch"`. The first run under that label is a free baseline: it records every study currently matching your other filters and returns **zero rows, charged nothing**. Every later run with the same label AND the same other filters returns only studies not already recorded — new since the last run — and only those are charged. Change any filter (a condition, a status, a date window) and that combination gets its own fresh baseline, since it's now a different saved search. The baseline lives in your own Apify account, not ours, so it survives between scheduled runs. Ignored (with a warning) if `nctIds` is set — a direct-id lookup always returns exactly the ids you asked for, so there's no "new since last run" concept for it.
+
+**Does `rowsPerStudy: "site"` change what `watchLabel` tracks?**
+No — "new" is always decided per **study** (`nctId`), never per site row. A trial that was already delivered stays excluded even if `rowsPerStudy` or another display-only setting changes between runs; only filters that change which studies match start a fresh baseline.
+
 ## Related guides
 
 - [The ClinicalTrials.gov API silently caps pageSize at 1000 — and its phase filter doesn't exist where you'd look for it](https://fetchsmith.com/blog/clinicaltrials-gov-json-api)
+- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [All FetchSmith tools](https://fetchsmith.com/tools)
 - [Source code](https://github.com/Fetchsmith/fetchsmith/tree/main/actors/clinicaltrials-scraper)
