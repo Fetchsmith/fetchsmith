@@ -82,6 +82,13 @@
       "default": 20,
       "minimum": 1,
       "maximum": 500
+    },
+    "watchLabel": {
+      "title": "Watch mode: label for a saved search (optional)",
+      "type": "string",
+      "description": "Contributions mode only. Set a name for this saved donor search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only contributions that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior.",
+      "editor": "textfield",
+      "default": ""
     }
   },
   "required": []

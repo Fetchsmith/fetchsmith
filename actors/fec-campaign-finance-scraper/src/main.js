@@ -1,6 +1,7 @@
 // FEC Campaign Finance Scraper: candidates + financial totals, or individual donor contributions
 // (Schedule A), via api.open.fec.gov. Uses a personal api.data.gov key (env var FEC_API_KEY, set as
 // a secret Actor env var, not committed) with a DEMO_KEY fallback for local runs.
+import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -23,18 +24,98 @@ const electionYear = input.electionYear
   : (searchMode === 'contributions' ? currentEvenYear : undefined);
 const includeTotals = input.includeTotals ?? true;
 const maxResults = Math.min(Number(input.maxResults ?? 20), 500);
+const watchLabel = String(input.watchLabel ?? '').trim();
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
 
-async function pushResult(item) {
+// Watch mode: a stateful "only new contributions since my last run" filter, scoped to
+// contributions mode only -- candidates mode returns the same fixed roster of people, not a
+// stream of discrete new events, so "new since last time" has no natural meaning there. The
+// baseline (sub_ids already delivered under this label+filter set) lives in a NAMED
+// key-value store on the buyer's own account so it survives across runs (the default KV
+// store is per-run and would reset every time). electionYear defaults to a rolling
+// "current even year" when left empty (see the comment above); the fingerprint uses the
+// buyer's RAW input for it, not the resolved value, so a watch set up without an explicit
+// year doesn't silently re-seed every two years when the default rolls forward.
+const WATCH_STORE = 'fetchsmith-fec-watch';
+const SEED_CAP = 5000; // bound the cost of a baseline run against a broad donor/employer filter
+const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
+const WATCH_PAGE_CAP = 1000; // safety valve: a broad/unfiltered watch could otherwise page through the whole multi-hundred-thousand-row Schedule A table every run
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+let watchMode = watchLabel.length > 0;
+if (watchMode && searchMode !== 'contributions') {
+  log.warning(`watchLabel "${watchLabel}" is ignored in candidates mode -- watch mode only applies to searchMode:"contributions" (candidates mode always returns the same fixed roster, not a stream of new events).`);
+  watchMode = false;
+}
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+const watchSeen = new Set(); // sub_ids already delivered under this label+fingerprint
+
+if (watchMode) {
+  const criteria = { donorName, donorEmployer, state, minAmount: minAmount ?? null, electionYearRaw: input.electionYear ?? null };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered contribution(s). Only ones NOT in that baseline will be returned and charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline `
+      + 'run. It records which contributions already match and returns ZERO results (you are charged nothing). '
+      + 'Run it again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seenIds: ids,
+  });
+}
+
+async function pushResult(item, watchId) {
+  if (watchMode && watchId != null && seeding) {
+    watchSeen.add(String(watchId));
+    return watchSeen.size < SEED_CAP;
+  }
+  if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
+    watchSkipped += 1;
+    return true;
+  }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false;
     await Actor.pushData(item); pushed += 1;
+    if (watchMode && watchId != null) watchSeen.add(String(watchId));
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1;
+  if (watchMode && watchId != null) watchSeen.add(String(watchId));
   return pushed < maxResults;
 }
 
@@ -83,10 +164,21 @@ async function fetchTotals(candidateId) {
   }
 }
 
+let watchPageCapHit = false;
 try {
   let page = 1;
   let stop = false;
   while (!stop) {
+    if (watchMode && page > WATCH_PAGE_CAP) {
+      // A scan safety valve, not a delivery cap -- it only ever bounds how many pages of an
+      // already-mostly-seen result set one run will page through, never how many NEW rows can
+      // be delivered (that's maxResults, checked in pushResult). Distinct from the ats-jobs/
+      // hacker-news trap (cycle 332/333) where a cost cap was reused for the scan itself: this
+      // cap exists only to bound one run's request count against a broad, weakly-filtered watch.
+      watchPageCapHit = true;
+      log.warning(`Watch mode: stopped scanning after ${WATCH_PAGE_CAP} pages without exhausting the match set -- narrow donorName/donorEmployer/state/minAmount so the whole current match set fits in fewer pages.`);
+      break;
+    }
     const body = searchMode === 'contributions'
       ? await fecGet('/schedules/schedule_a/', {
         contributor_name: donorName,
@@ -95,7 +187,7 @@ try {
         min_amount: minAmount,
         two_year_transaction_period: electionYear,
         page,
-        per_page: 20,
+        per_page: watchMode ? 100 : 20,
         sort: '-contribution_receipt_date',
       })
       : await fecGet('/candidates/', {
@@ -113,7 +205,9 @@ try {
 
     for (const c of results) {
       let item;
+      let watchId;
       if (searchMode === 'contributions') {
+        watchId = c.sub_id ?? null;
         item = {
           contributorName: c.contributor_name ?? null,
           contributorEmployer: c.contributor_employer ?? null,
@@ -153,7 +247,7 @@ try {
           coverageEndDate: totals?.coverage_end_date ?? null,
         };
       }
-      const keepGoing = await pushResult(item);
+      const keepGoing = await pushResult(item, watchId);
       if (!keepGoing) { stop = true; break; }
     }
 
@@ -165,5 +259,28 @@ try {
   log.exception(err, 'Run failed');
   await Actor.fail(`Run failed: ${err.message}`);
 }
+
+if (watchMode) {
+  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  if (seeding) {
+    log.info(
+      `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded as already-seen, `
+      + '0 results returned, 0 charged. The next run on this label and these filters returns only what is new.'
+      + (watchSeen.size >= SEED_CAP
+        ? ` NOTE: the baseline hit the ${SEED_CAP}-contribution cap. Narrow donorName/donorEmployer/state/minAmount so `
+        + 'the whole current match set fits, or the first incremental run may report older contributions past the cap as new.'
+        : watchPageCapHit
+          ? ` NOTE: the baseline hit the ${WATCH_PAGE_CAP}-page scan cap before exhausting the match set. Narrow the filters.`
+          : ''),
+    );
+    await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing contribution(s) recorded, 0 charged. Run again later to get only what's new.`);
+  } else {
+    log.info(`Watch label "${watchLabel}": ${pushed} new contribution(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+    if (pushed === 0) {
+      await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+    }
+  }
+}
+
 log.info(`Done. Pushed ${pushed} results.`);
 await Actor.exit();

@@ -9,6 +9,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 - **Watchdog & transparency dashboards** — schedule a run per cycle and diff the totals to track who is raising money and how fast.
 - **Small-dollar vs. large-dollar analysis** — `individualUnitemizedContributions` (small-dollar giving as the FEC itself computes it, no subtraction required) against `individualItemizedContributions` (the >$200-aggregate subset) shows how much of a campaign's money comes from grassroots donors versus large ones.
 - **Candidate list building** — enumerate everyone who has ever filed for a given office/state/cycle, including long-shot and prior candidates.
+- **Donor alerts** — set `watchLabel` on a saved donor/employer search (contributions mode) to get only the contributions that are new since your last run, instead of re-scraping the same donors every time.
 
 ## Input
 | Field | Type | Description |
@@ -24,6 +25,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 | `electionYear` | integer | Even-numbered election cycle, e.g. `2024`. Candidates mode: optional, leave empty for all cycles. Contributions mode: required by the FEC API to keep the query fast — defaults to the current even year if left empty. |
 | `includeTotals` | boolean | Candidates mode: fetch financial totals per candidate (default `true`). Costs one extra request per candidate. |
 | `maxResults` | integer | Stop after this many rows (default `20`, max `500`). |
+| `watchLabel` | string | Contributions mode only. Set a name for this saved donor search to turn on watch mode — see "Watch mode" below. |
 
 ### Example: donor research by employer
 
@@ -138,8 +140,14 @@ One item per itemized donor contribution:
 }
 ```
 
+## Watch mode
+
+Set `watchLabel` (contributions mode only) to a name for a saved donor search, e.g. `"acme-corp-employees"`. The first run for a given label + filter combination is a **free baseline**: it records every contribution currently matching your filters and returns zero rows (charged nothing). Run the same label and filters again later — on a schedule, typically — and you get back only the contributions that are **new** since the last run; anything already delivered is skipped and not charged. Changing any filter (donor name, employer, state, minimum amount, or election year) starts a fresh baseline under that label.
+
+Not available in candidates mode: it always returns the same fixed roster of people for a given filter set, not a stream of discrete new events, so "new since last time" has no natural meaning there — setting `watchLabel` alongside `searchMode: "candidates"` logs a warning and is ignored.
+
 ## Pricing
-`result` — you are charged per row actually returned (one candidate, or one contribution in contributions mode). Starting a run is free, and a run that finds no matches costs nothing. HTTP-only (no browser), so runs are fast and cheap.
+`result` — you are charged per row actually returned (one candidate, or one contribution in contributions mode). Starting a run is free, and a run that finds no matches costs nothing (this includes every watch-mode baseline run). HTTP-only (no browser), so runs are fast and cheap.
 
 ## FAQ
 
@@ -172,6 +180,10 @@ Set `searchMode` to `"contributions"` to search individual itemized donor contri
 
 **Why does `electionYear` default to the current even year in contributions mode but not candidates mode?**
 The FEC's Schedule A endpoint times out on a full-table scan (129,000+ rows even for a single popular employer, across all years) if you don't scope it to a two-year cycle. Candidates mode has no such requirement, so it stays optional there.
+
+**How does watch mode decide what's "new"?** By the contribution's own FEC-assigned `sub_id`, which is stable and unique per itemized transaction. A baseline of ids you've already been sent is kept in a named key-value store on your own Apify account (`fetchsmith-fec-watch`) — it survives across runs even though the default per-run store does not.
+
+**My donor/employer filter is broad — will a watch run scan the whole Schedule A table every time?** It scans until it finds `maxResults` new contributions or exhausts the current match set (capped at 1000 pages, ~100,000 rows, per run — a safety valve, not something a normally-filtered watch should ever hit). A very broad, weakly-filtered watch (e.g. a common surname with no employer/state/amount filter) can page through a lot of already-seen contributions before finding something new; narrow the filters for a faster, cheaper watch.
 
 ## Notes
 Only public data from the FEC's own public disclosure API. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

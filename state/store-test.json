@@ -1,5 +1,5 @@
 {
- "ts": 1789510314,
+ "ts": 1789524764,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
@@ -111,8 +111,8 @@
   },
   "fec-campaign-finance-scraper": {
    "status": "SUCCEEDED",
-   "secs": 8,
-   "items": 20,
+   "secs": 21,
+   "items": 11,
    "pass": true
   },
   "--help": {
