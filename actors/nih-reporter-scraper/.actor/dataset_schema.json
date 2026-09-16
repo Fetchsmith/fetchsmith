@@ -362,6 +362,26 @@
           "null"
         ],
         "title": "PubMed IDs"
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": [
+          "projectEndDate"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": {
+          "projectEndDate": "2026-08-31T00:00:00"
+        },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },

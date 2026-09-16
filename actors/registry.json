@@ -1392,7 +1392,7 @@
     {
       "slug": "nih-reporter-scraper",
       "title": "NIH RePORTER Scraper – No 15k Row Cap, PubMed Join",
-      "summary": "Search NIH-funded research projects via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, organization, state, PI and award-amount filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since your last run.",
+      "summary": "Search NIH-funded research projects via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, organization, state, PI and award-amount filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since your last run; add watchChanges to also catch a no-cost extension, an administrative supplement, or a project ending on a project you already got.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "0e2Juo4bWYHr5Obby",
@@ -1453,7 +1453,9 @@
         "abstractText",
         "publicHealthRelevance",
         "publicationCount",
-        "pubmedIds"
+        "pubmedIds",
+        "_watchChangeType",
+        "_watchPrevious"
       ],
       "sample_output": {
         "applId": 10862591,

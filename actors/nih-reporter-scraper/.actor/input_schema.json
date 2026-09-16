@@ -126,6 +126,12 @@
             "editor": "textfield",
             "example": "crispr-nci-weekly"
         },
+        "watchChanges": {
+            "title": "Also alert on project changes",
+            "type": "boolean",
+            "description": "Only used with Watch label. When on, a project you were already alerted on is re-delivered (charged again) if its project end date, budget end date, award amount or active flag changes since you last saw it -- e.g. a no-cost extension pushing the end date out, an administrative supplement changing the award amount, or the project ending (active -> inactive). Tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new projects, same as before this option existed.",
+            "default": false
+        },
         "excludeSubprojects": {
             "title": "Exclude subprojects",
             "type": "boolean",

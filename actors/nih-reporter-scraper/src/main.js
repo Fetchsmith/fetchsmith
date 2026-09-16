@@ -118,6 +118,7 @@ const orgStates = strList(input.orgStates).map((s) => s.toUpperCase());
 const piNames = strList(input.piNames);
 const projectNums = strList(input.projectNums);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const watchChanges = Boolean(input.watchChanges);
 
 const amountNum = (v) => {
     const n = Number(v);
@@ -314,6 +315,41 @@ const WATCH_STORE = 'fetchsmith-nih-watch';
 const SEED_CAP = 15000; // == OFFSET_WALL: the most ids one un-split query can even reach
 const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
 
+// `watchChanges`: an already-delivered appl_id is not frozen. NIH's own no-cost-extension
+// process (verified live, cycle 355, against era.nih.gov's NCE documentation) updates the
+// SAME award record's project period end date in eRA Commons -- no new appl_id is minted for
+// an NCE, unlike a non-competing renewal which always gets a fresh appl_id (cycle 354). An
+// administrative supplement or a status change (active -> closed) can likewise land on the
+// same appl_id. These 4 fields are always present on a full (non-seeding) record, so tracking
+// them costs no extra API calls beyond what a normal run already fetches.
+function snapshotOf(row) {
+    return {
+        projectEndDate: row.project_end_date ?? null,
+        budgetEnd: row.budget_end ?? null,
+        awardAmount: row.award_amount ?? null,
+        isActive: typeof row.is_active === 'boolean' ? row.is_active : null,
+    };
+}
+
+// Same shape as snapshotOf(), read off an already-normalized item instead of a raw API row --
+// used after pushResults() delivers an item, since by then only the normalized shape is in hand.
+function snapshotFromItem(item) {
+    return { projectEndDate: item.projectEndDate, budgetEnd: item.budgetEnd, awardAmount: item.awardAmount, isActive: item.isActive };
+}
+
+function changesBetween(prev, next) {
+    if (!prev) return null;
+    const types = [];
+    const previous = {};
+    for (const field of ['projectEndDate', 'budgetEnd', 'awardAmount', 'isActive']) {
+        if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
+            types.push(field);
+            previous[field] = prev[field];
+        }
+    }
+    return types.length ? { types, previous } : null;
+}
+
 // Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than
 // trusted. The criteria fingerprint is part of the key on purpose: if the buyer edits a
 // filter, that is a different question and gets its own baseline, instead of dumping
@@ -329,10 +365,13 @@ let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
-const watchSeen = new Set(); // appl_ids already delivered under this label+fingerprint
+let changedCount = 0;
+// appl_id -> last-seen snapshot (or null, when watchChanges has never run for this label) of
+// the 4 fields that can change on an otherwise-already-delivered project.
+const watchSeen = new Map();
 
 async function saveWatchRecord(status) {
-    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -341,8 +380,14 @@ async function saveWatchRecord(status) {
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
         runCount: (watchRecord.runCount ?? 0) + 1,
-        seenCount: ids.length,
-        seenIds: ids,
+        seenCount: entries.length,
+        // Compact per-entry shape: id plus the 4 snapshot fields (short keys because WATCH_KEEP
+        // can hold up to 60,000 of these in one KV record). snap is null when watchChanges has
+        // never run for this label -- stored as a bare id in that case, same as pre-this-feature
+        // records, so a label that never turns watchChanges on keeps the smaller old format.
+        seenIds: entries.map(([id, snap]) => (snap
+            ? { i: id, e: snap.projectEndDate, b: snap.budgetEnd, a: snap.awardAmount, x: snap.isActive }
+            : id)),
     });
 }
 
@@ -358,11 +403,17 @@ async function pushResults(items) {
             await Actor.pushData(item); pushed += 1;
             // Only a row the buyer was actually charged for counts as delivered: anything left
             // behind by maxResults or the charge limit stays "new" and comes back next run.
-            if (watchMode && item.applId != null) watchSeen.add(String(item.applId));
+            if (watchMode && item.applId != null) {
+                watchSeen.set(String(item.applId), watchChanges ? snapshotFromItem(item) : null);
+                if (item._watchChangeType) changedCount += 1;
+            }
             if (r.eventChargeLimitReached || pushed >= maxResults) return false;
         } else {
             await Actor.pushData(item); pushed += 1;
-            if (watchMode && item.applId != null) watchSeen.add(String(item.applId));
+            if (watchMode && item.applId != null) {
+                watchSeen.set(String(item.applId), watchChanges ? snapshotFromItem(item) : null);
+                if (item._watchChangeType) changedCount += 1;
+            }
             if (pushed >= maxResults) return false;
         }
     }
@@ -383,7 +434,13 @@ async function walkChunk(criteria, total) {
             ? Math.min(PAGE_LIMIT, OFFSET_WALL - offset)
             : Math.min(PAGE_LIMIT, OFFSET_WALL - offset, Math.max(maxResults - pushed, 1));
         const body = { criteria: assertCriteria(criteria), limit, offset };
-        if (seeding) body.include_fields = ['ApplId', 'ProjectNum'];
+        // watchChanges needs the 4 snapshot fields even during seeding (still far lighter than
+        // the ~60-field full record); plain watchLabel keeps the original 2-field seed.
+        if (seeding) {
+            body.include_fields = watchChanges
+                ? ['ApplId', 'ProjectNum', 'ProjectEndDate', 'BudgetEnd', 'AwardAmount', 'IsActive']
+                : ['ApplId', 'ProjectNum'];
+        }
         const page = await apiPost('/projects/search', body);
         const rows = listOf(page?.results);
         if (!rows.length) return true;
@@ -392,22 +449,38 @@ async function walkChunk(criteria, total) {
         for (const r of fresh) if (r.appl_id != null) seen.add(r.appl_id);
 
         if (seeding) {
-            for (const r of fresh) if (r.appl_id != null) watchSeen.add(String(r.appl_id));
+            for (const r of fresh) if (r.appl_id != null) watchSeen.set(String(r.appl_id), watchChanges ? snapshotOf(r) : null);
             offset += rows.length;
             if (rows.length < limit) return true;
             continue;
         }
 
         // Watch mode: drop anything this label has already delivered BEFORE normalising or
-        // joining publications, so a suppressed row costs neither an extra request nor a charge.
-        const wanted = watchMode ? fresh.filter((r) => !watchSeen.has(String(r.appl_id))) : fresh;
+        // joining publications, so a suppressed row costs neither an extra request nor a charge --
+        // UNLESS watchChanges is on and the project's end date, budget end, award amount or
+        // active flag moved since we last saw it, in which case it is kept and tagged with
+        // exactly what changed. An unchanged already-seen row still gets its snapshot refreshed
+        // here (uncharged) so drift is only ever measured from the most recent state.
+        const changeById = new Map();
+        const wanted = [];
+        for (const r of fresh) {
+            const id = r.appl_id != null ? String(r.appl_id) : null;
+            if (id == null || !watchMode || !watchSeen.has(id)) { wanted.push(r); continue; }
+            const change = watchChanges ? changesBetween(watchSeen.get(id), snapshotOf(r)) : null;
+            if (change) { changeById.set(id, change); wanted.push(r); } else { watchSeen.set(id, snapshotOf(r)); }
+        }
         if (!wanted.length) {
             offset += rows.length;
             if (rows.length < limit) return true;
             continue;
         }
 
-        let items = wanted.map(normalize);
+        let items = wanted.map((r) => {
+            const it = normalize(r);
+            const change = it.applId != null ? changeById.get(String(it.applId)) : null;
+            if (change) { it._watchChangeType = change.types; it._watchPrevious = change.previous; }
+            return it;
+        });
         if (includePublications && items.length) {
             const coreNums = Array.from(new Set(items.map((i) => i.coreProjectNum).filter(Boolean)));
             const pubs = await fetchPublications(coreNums);
@@ -433,10 +506,21 @@ if (watchMode) {
     const existing = await watchStore.getValue(key);
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
-        for (const id of existing.seenIds) watchSeen.add(String(id));
+        // Pre-watchChanges records stored `seenIds` as a flat array of ids -- handled here so an
+        // existing buyer's baseline keeps working unchanged instead of needing a fresh seed the
+        // day this feature shipped. Those ids simply have no snapshot yet (null), so watchChanges
+        // only starts detecting drift from this point forward, not an artificial backlog.
+        for (const entry of existing.seenIds) {
+            if (entry && typeof entry === 'object') {
+                watchSeen.set(String(entry.i), { projectEndDate: entry.e ?? null, budgetEnd: entry.b ?? null, awardAmount: entry.a ?? null, isActive: entry.x ?? null });
+            } else {
+                watchSeen.set(String(entry), null);
+            }
+        }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-            + `${watchSeen.size} already-delivered project(s). Only projects NOT in that baseline will be returned and charged.`,
+            + `${watchSeen.size} already-delivered project(s). Only projects NOT in that baseline are returned and charged`
+            + (watchChanges ? ', plus any already-delivered project whose end date, budget end, award amount or active flag changed.' : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -510,7 +594,11 @@ if (watchMode) {
                 : ''),
         );
     } else {
-        log.info(`Watch label "${watchLabel}": ${pushed} new project(s) since the last run; baseline now holds ${watchSeen.size}.`);
+        log.info(
+            `Watch label "${watchLabel}": ${pushed - changedCount} new project(s)`
+            + (watchChanges ? ` and ${changedCount} changed project(s) (end date/budget end/award amount/active flag)` : '')
+            + ` since the last run; baseline now holds ${watchSeen.size}.`,
+        );
     }
 }
 
