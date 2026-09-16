@@ -201,6 +201,12 @@
             "default": 50,
             "minimum": 1,
             "maximum": 200
+        },
+        "watchLabel": {
+            "title": "Watch label (only-new-since-last-run alerts)",
+            "type": "string",
+            "description": "Set a name for this saved search to turn on watch mode. The first run for a given label + filter combination is a free baseline: it records every award (or sub-award, in sub-award mode) currently matching your filters and returns zero rows, charged nothing. Run the same label and filters again later — on a schedule, typically — and you get back only what is new since the last run; anything already delivered is skipped and not charged. Works in both prime and sub-award mode. Changing any filter (categories, keywords, agencies, recipients, states, NAICS/PSC codes, amount bounds, award IDs, or an explicitly-set start/end date) starts a fresh baseline under that label — leaving start/end date on their rolling defaults does not, since those move every day on their own.",
+            "editor": "textfield"
         }
     },
     "required": []

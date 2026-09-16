@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -100,6 +101,96 @@ const sortBy = Object.hasOwn(SORTS, input.sortBy) ? input.sortBy : 'awardAmount'
 const order = input.order === 'asc' ? 'asc' : 'desc';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 10000);
 const maxPagesPerCategory = Math.min(Math.max(Number(input.maxPagesPerCategory ?? 50), 1), 200);
+const watchLabel = String(input.watchLabel ?? '').trim();
+
+// Watch mode: a stateful "only new awards/sub-awards since my last run" filter. Both prime
+// and sub-award mode have a real "new since last time" concept (new awards get made, new
+// sub-awards get filed), unlike FEC's candidates mode which returns a fixed roster. The
+// baseline (award/sub-award ids already delivered under this label+filter set) lives in a
+// NAMED key-value store on the buyer's own account so it survives across runs.
+const WATCH_STORE = 'fetchsmith-usaspending-watch';
+const SEED_CAP = 20000; // bound the cost of a baseline run against a broad/unfiltered category
+const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
+// Per-category page cap used only while seeding, independent of the buyer's own
+// maxPagesPerCategory cost cap -- same fix as eu-ted-tenders/uk-find-a-tender: the buyer's
+// own scan-depth budget must never also bound how comprehensive a baseline is, or an
+// incremental run would report older, merely-unscanned awards as "new".
+const SEED_PAGE_CAP = 1000;
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+const watchSeen = new Set(); // award/sub-award ids already delivered under this label+fingerprint
+
+if (watchMode) {
+  // When awardIds is set every other filter is dropped by buildFilters (exact-ID lookup), so
+  // the fingerprint follows that override instead of also keying on filters with no effect on
+  // the actual query sent -- same rule eu-ted-tenders applies to its expertQuery override.
+  const criteria = awardIds.length
+    ? { awardLevel: isSubaward ? 'subaward' : 'prime', awardIds: [...awardIds].sort() }
+    : {
+      awardLevel: isSubaward ? 'subaward' : 'prime',
+      categories: [...categories].sort(),
+      keywords: [...keywords].sort(),
+      agencies: [...agencies].sort(),
+      fundingAgencies: [...fundingAgencies].sort(),
+      recipients: [...recipients].sort(),
+      states: [...states].sort(),
+      recipientStates: [...recipientStates].sort(),
+      naicsCodes: [...naicsCodes].sort(),
+      pscCodes: [...pscCodes].sort(),
+      minAwardAmount: minAwardAmount ?? null,
+      maxAwardAmount: maxAwardAmount ?? null,
+      // Raw buyer input, not the resolved value -- startDate/endDate default to "one year
+      // ago"/"today" and roll forward every single day, so fingerprinting the resolved value
+      // would force a fresh baseline daily (a daily version of the cycle-297 FEC electionYear
+      // trap, which only rolls every two years).
+      startDateRaw: input.startDate ?? null,
+      endDateRaw: input.endDate ?? null,
+    };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered award(s)/sub-award(s). Only ones NOT in that baseline will be returned and charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline `
+      + 'run. It records which awards/sub-awards already match and returns ZERO results (you are charged nothing). '
+      + 'Run it again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seenIds: ids,
+  });
+}
 
 function buildFilters(codes) {
     const filters = {
@@ -273,14 +364,24 @@ function normalizeSub(r, category) {
 
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item) {
+async function pushResult(item, watchId) {
+    if (watchMode && watchId != null && seeding) {
+        watchSeen.add(String(watchId));
+        return watchSeen.size < SEED_CAP;
+    }
+    if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
+        watchSkipped += 1;
+        return true;
+    }
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
         if (r.chargedCount === 0) return false;
         await Actor.pushData(item); pushed += 1;
+        if (watchMode && watchId != null) watchSeen.add(String(watchId));
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
+    if (watchMode && watchId != null) watchSeen.add(String(watchId));
     return pushed < maxResults;
 }
 
@@ -314,10 +415,16 @@ for (const category of categories) {
     const fields = isSubaward ? SUB_FIELDS : [...BASE_FIELDS, ...KIND_FIELDS[kind]];
     const sort = isSubaward ? SUB_SORTS[sortBy] : SORTS[sortBy][kind];
     const filters = buildFilters(codes);
+    // While seeding a watch baseline, scan deeper than the buyer's own maxPagesPerCategory so
+    // the baseline reflects the whole current match set, not just its first N pages. Incremental
+    // runs keep the buyer's own cap unchanged: it's an honest scan-depth cost control here (see
+    // its schema description), not a delivery limit doing double duty as one (unlike the
+    // ats-jobs/hacker-news traps), so it's the buyer's own choice for a normal run either way.
+    const pageCap = seeding ? Math.max(maxPagesPerCategory, SEED_PAGE_CAP) : maxPagesPerCategory;
 
     let page = 1;
     let categoryRows = 0;
-    while (keepGoing && pushed < maxResults && page <= maxPagesPerCategory) {
+    while (keepGoing && pushed < maxResults && page <= pageCap) {
         const body = await postPage({ filters, fields, page, limit: PAGE_SIZE, sort, order, subawards: isSubaward });
         if (!body) break;
         const results = body.results ?? [];
@@ -331,7 +438,7 @@ for (const category of categories) {
             if (seen.has(key)) continue;
             seen.add(key);
             categoryRows += 1;
-            keepGoing = await pushResult(isSubaward ? normalizeSub(row, category) : normalize(row, category, kind));
+            keepGoing = await pushResult(isSubaward ? normalizeSub(row, category) : normalize(row, category, kind), key);
             if (!keepGoing) break;
         }
         log.info(`${category} page ${page}: ${results.length} ${isSubaward ? 'sub-awards' : 'awards'} (pushed ${pushed}/${maxResults})`);
@@ -341,7 +448,28 @@ for (const category of categories) {
     log.info(`${category}: pushed ${categoryRows} ${isSubaward ? 'sub-awards' : 'awards'}.`);
 }
 
-if (pushed === 0) {
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} award(s)/sub-award(s) recorded as `
+            + 'already-seen, 0 results returned, 0 charged. The next run on this label and these filters returns '
+            + 'only what is new.'
+            + (watchSeen.size >= SEED_CAP
+                ? ` NOTE: the baseline hit the ${SEED_CAP}-record cap. Narrow the filters so the whole current match `
+                    + 'set fits, or the first incremental run may report older, merely-unscanned awards as new.'
+                : ''),
+        );
+        await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing award(s)/sub-award(s) recorded, 0 charged. Run again later to get only what's new.`);
+    } else {
+        log.info(`Watch label "${watchLabel}": ${pushed} new award(s)/sub-award(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+        if (pushed === 0) {
+            await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching award/sub-award had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+        }
+    }
+}
+
+if (pushed === 0 && !watchMode) {
     log.warning(
         `No awards matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) the filters are ANDed — a keyword plus a state plus a minimum amount over a short date window '

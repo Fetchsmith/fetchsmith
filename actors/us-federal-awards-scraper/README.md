@@ -14,6 +14,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 - **Single-award lookup** — already have a PIID/FAIN/URI from a solicitation or a news story? `awardIds` fetches that exact award, ignoring every other filter.
 - **Pass-through grant tracing** — `fundingAgencies` finds awards where the money's actual source agency differs from the agency that administers the award (common on formula/block grants routed through a state).
 - **Sub-award / subcontractor mining** — set `awardLevel` to `subaward` and get the FSRS sub-contracts and sub-grants filed *under* prime awards: who the prime contractor actually paid, how much, and for what. Every sub-award row carries the prime award's ID and URL, so you can join it straight back to a prime-level run. This is the tier-2 supplier list that never appears in prime-award data.
+- **New-award alerts** — set `watchLabel` on a saved search (any filter combination, prime or sub-award mode) to get only the awards/sub-awards that are new since your last run, instead of re-pulling the same agency/NAICS/recipient search on a schedule.
 
 ## Input
 
@@ -36,6 +37,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `order` | string | `desc` | `desc` or `asc`. |
 | `maxResults` | integer | `100` | Total across all selected categories. |
 | `maxPagesPerCategory` | integer | `50` | Depth cap, 100 awards per page. |
+| `watchLabel` | string | – | Set a name for this saved search to turn on watch mode — see [Watch mode](#watch-mode) below. |
 
 All filters are ANDed. Awards filtered out are never pushed and never charged.
 
@@ -110,6 +112,12 @@ Three things to know:
 }
 ```
 
+## Watch mode
+
+Set `watchLabel` to a name for a saved search, e.g. `"doe-solar-contracts"`. The first run for a given label + filter combination is a **free baseline**: it records every award (or sub-award, in sub-award mode) currently matching your filters and returns zero rows, charged nothing. Run the same label and filters again later — on a schedule, typically — and you get back only what's **new** since the last run; anything already delivered is skipped and not charged. Works in both `prime` and `subaward` mode: a prime-mode watch alerts on new awards matching your filter, a sub-award-mode watch alerts on new sub-contracts/sub-grants filed under it (including under an exact `awardIds` lookup, e.g. "tell me when this prime contractor subcontracts something new").
+
+Changing any filter (categories, keywords, agencies, recipients, states, NAICS/PSC codes, amount bounds, or award IDs) starts a fresh baseline under that label. Leaving `startDate`/`endDate` on their rolling defaults (last 365 days / today) does **not** — those inputs move on their own every day, so pinning the baseline to their resolved value would force a fresh baseline daily; only an *explicitly set* start or end date counts toward the fingerprint. `maxPagesPerCategory` is your own scan-depth cost cap, so it's left alone on incremental runs, but a baseline run scans deeper than it (up to 1,000 pages per category) so a small cap set for normal runs can't make the baseline miss awards that exist right now.
+
 ## Pricing
 
 Pay per result: **$0.004 per award on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0035, Silver $0.003), **no Actor-start fee**. You only pay for awards actually written to the dataset.
@@ -142,6 +150,9 @@ No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *a
 
 **Does it need a proxy?**
 No. Plain HTTPS to a public government API, so runs are fast and cheap.
+
+**Can I get alerted only when a new award appears, instead of re-pulling the same search?**
+Yes — set `watchLabel`, see [Watch mode](#watch-mode). The first run records a baseline for free; every run after that on the same label and filters returns only what's new, and skips (without charging) anything already delivered.
 
 **How does this compare to other USAspending scrapers?**
 Checked the real `pricingInfos` and depth of the top competitors on Apify Store (2026-09-10). Pricing is bimodal: the two highest-traction players — `parseforge` (25 users, the most of any competitor) at $0.012/result + $0.16 start, and `benthepythondev` (17 users, 292 runs/30d, the most active) at $0.005/result + start — are both pricier than our $0.004/result (free plan) to $0.0025/result (Gold and above), with no start fee. Re-checked 2026-09-12 by real external runs/30d: the busiest competitor charges $0.004 tapering to $0.0025 on Gold+ plus a start fee — the same schedule as ours, minus our no-start-fee advantage. Two lower-traction entrants (`copious_atoll`, 10 users; `themineworks`, 3 users) charge $0.001/result, cheaper than us on price alone — but `themineworks`' own listing advertises "18 Fields"; this Actor returns **37 typed fields across 6 award categories** (contracts, IDVs, grants, direct payments, other financial assistance, loans), each category with its own correct field mapping (loans carry `loanValue`/`subsidyCost`, not `awardAmount`) rather than one generic shape stretched across every award kind.
