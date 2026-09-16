@@ -71,9 +71,12 @@ Every row is a complete scholarship: award amount, number of awards, deadline, e
   "essayMinLength": 400,
   "essayMaxLength": 600,
   "isMultiYear": false,
+  "featured": false,
   "donorName": "Dan Branchini and the Glitter Team at Community Lutheran",
   "donorProfileUrl": "https://bold.org/profile/bruce-ewing/",
+  "donorVerified": false,
   "imageUrl": "https://static.bold.org/pamelabranchinimemorialscholarship....jpeg",
+  "winnersCount": 0,
   "publishedAt": "2026-05-06T19:31:45.646Z",
   "updatedAt": "2026-09-10T00:40:38.001Z",
   "sourceUrl": "https://bold.org/scholarships/by-major/art-scholarships/",
@@ -102,7 +105,7 @@ Yes, each run fetches the pages fresh. `updatedAt` is bold.org's own last-modifi
 Only public pages are read, and only paths that bold.org's `robots.txt` permits — it disallows query-string URLs (`Disallow: /*?*`), so this Actor never requests one. No login, no personal data about applicants: the applicant *count* is a public number on the listing page.
 
 **How does this compare to other bold.org scrapers?**
-Depth. This Actor returns ~28 typed fields per scholarship — including `numberOfAwards`, `numberOfApplicants`, `applicantsPerAward`, the essay prompt(s), judging criteria and donor — versus the 11 fields typical of other bold.org Actors, where `amount` is usually a plain string with no award-count or applicant data at all. All four filters (`searchQuery`, `minAwardAmount`, `deadlineAfter`/`deadlineBefore`, `educationLevels`) are verified against real runs: each one measurably changes which rows come back, not just a passthrough flag.
+Depth. This Actor returns 32 typed fields per scholarship — including `numberOfAwards`, `numberOfApplicants`, `applicantsPerAward`, the essay prompt(s), judging criteria, donor (with `donorVerified`) and `winnersCount` — versus the 11 fields typical of other bold.org Actors, where `amount` is usually a plain string with no award-count or applicant data at all. All four filters (`searchQuery`, `minAwardAmount`, `deadlineAfter`/`deadlineBefore`, `educationLevels`) are verified against real runs: each one measurably changes which rows come back, not just a passthrough flag.
 
 **Can I scrape one specific scholarship?**
 Yes — put its page URL in `startUrls`, e.g. `https://bold.org/scholarships/chris-jackson-scholarship/`.
