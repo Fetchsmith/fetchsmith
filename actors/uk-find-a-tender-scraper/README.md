@@ -115,6 +115,8 @@ Find a Tender carries **above-threshold** UK public contracts (the post-Brexit r
 
 **Does `searchQuery`/`buyerName` handle accented words correctly?** Yes, as of v0.1.13 — both fields and the notice text they're matched against are Unicode-normalized before comparing, so an accented word matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
 
+**Does selecting more than one `stages` value work on Find a Tender?** Yes, as of v0.1.18 — Find a Tender's own API silently returns zero results for a comma-joined multi-stage value (it wants each stage as its own repeated query parameter), so any run with `stages: ["tender", "award"]` or similar came back empty from that portal only, with no error. Fixed; Contracts Finder was never affected. Also as of v0.1.18: `watchLabel` now tracks delivery per notice (`noticeId`), not per procurement (`ocid`) — neither portal ever edits a published notice in place, so a later award or amendment always arrives as a new notice sharing the original's `ocid`, and the old ocid-keyed baseline would have silently swallowed it as "already delivered".
+
 **Why does a 10-day Find-a-Tender-only query only return ~75 notices?**
 Because that is genuinely how many there are — Find a Tender carries roughly 7–8 new tender-stage notices a day, and none on weekends. This is exactly why the Actor searches Contracts Finder too by default. Widen `updatedWithinDays` (or use `dateFrom`/`dateTo`) for a bigger set, or leave `sources` at its default.
 

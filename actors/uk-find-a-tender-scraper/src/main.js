@@ -81,7 +81,11 @@ const SOURCES = {
             // Only sent when the caller asked for an explicit upper bound. Omitting it (the
             // previous always-on behaviour) means "up to now", which is the same thing.
             if (dateToMs != null) u.searchParams.set('updatedTo', isoSeconds(windowToMs));
-            if (stages.length) u.searchParams.set('stages', stages.join(','));
+            // FTS wants each stage as its own repeated "stages" param — a single comma-joined
+            // value (which works fine on Contracts Finder, below) is silently treated as one
+            // unrecognized stage string and matches NOTHING, with no error (verified live,
+            // cycle 359: stages=tender,award -> 0 releases; stages=tender&stages=award -> 5).
+            for (const s of stages) u.searchParams.append('stages', s);
             return u.toString();
         },
         noticeUrl: (release) => (release.id ? `https://www.find-tender.service.gov.uk/Notice/${release.id}` : null),
@@ -508,7 +512,15 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
         const row = normalize(release, c.source, includeRawOcds);
         if (!matches(row)) { filtered += 1; continue; }
 
-        const watchId = watchMode ? (row.ocid ?? row.noticeId) : null;
+        // Per-publication id, not ocid: neither portal ever mutates a published release in
+        // place (verified live, cycle 359) — an award or amendment always ships as a NEW
+        // release id under the SAME ocid as the original tender notice. Keying watch identity
+        // on ocid (the pre-cycle-359 behaviour) meant that once a procurement's tender notice
+        // had been delivered once, every later award/update/amendment notice sharing that ocid
+        // was silently swallowed forever, since its ocid already looked "seen". noticeId is
+        // per-publication, so each new release event is correctly treated as new — matching
+        // eu-ted-tenders-scraper's precedent (keyed on publication-number, not procedure-id).
+        const watchId = watchMode ? (row.noticeId ?? row.ocid) : null;
         if (watchMode && !seeding && watchId && watchSeen.has(watchId)) {
             skippedSeen += 1;
             continue;
