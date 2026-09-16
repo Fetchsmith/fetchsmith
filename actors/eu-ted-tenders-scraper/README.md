@@ -21,6 +21,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `expertQuery` | string | Raw TED expert-query string — overrides all the filters above entirely. |
 | `maxResults` | integer | Stop after this many notices. Default 100. |
 | `outputLanguage` | string | Preferred language for `title`/`description`/`buyerName`/`buyerCity`/`noticeUrl` (24 EU languages, e.g. `deu`, `fra`, `spa`). Default `eng`. Falls back to English, then to whatever TED provided, if a notice has no translation into your chosen language. |
+| `watchLabel` | string | Optional. Name a saved query and get **only what is new since your last run** — see below. |
 
 ### Example: German construction/engineering notices from the last 2 weeks
 
@@ -34,6 +35,20 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 ```
 
 Multiple values within one field (e.g. two country codes) are OR'd together; different fields (country AND CPV code) are AND'd. Leave every filter empty to pull all recent notices across the whole EU/EEA.
+
+## Only what's new since last run (`watchLabel`)
+
+A bid-monitoring job is a *subscription*, not a search: you want the notices published since you last looked, not the same hundreds of rows re-delivered (and re-charged) every morning.
+
+Set `watchLabel` to a name for the query — `de-it-services`, say — and this Actor keeps track of which notices it has already given you under that name:
+
+- **The first run on a new label is a free baseline.** It records what already matches, returns **zero** results and charges **nothing**. It walks notice ids only, not full notices.
+- **Every run after that returns only the new notices.** Already-delivered rows are dropped before they are built or billed, so you never pay for the same notice twice.
+- **A notice counts as delivered only once it has actually been charged.** Anything cut off by `maxResults` or a charge limit stays "new" for the next run rather than vanishing.
+- **Changing a filter starts a fresh baseline** — a different filter is a different question, so you don't get a dump of everything the old, narrower query happened to exclude. Setting `expertQuery` also starts its own baseline, keyed on the raw query string.
+- **The rolling `publishedWithinDays` window is deliberately *not* part of that identity.** It moves every day; if it counted, a daily schedule would re-seed forever and never deliver anything. `publicationDateFrom`/`publicationDateTo`, when you set them explicitly, do count.
+
+The baseline lives in a key-value store named `fetchsmith-ted-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a TED procurement alert.
 
 ## Output
 
@@ -104,6 +119,10 @@ One row per notice:
 
 **Is `buyerEmail`/`buyerPhone` a personal contact?** No — these are the contracting authority's own published contact point for the procedure (`organisation-email-buyer`/`organisation-tel-buyer` in TED's schema), republished verbatim from an official EU government source. Most are role mailboxes (`vergabestelle@…`, `einkauf@…`); we don't enrich or cross-reference them.
 
+**Why did my first `watchLabel` run return nothing?** By design — the first run on a new label + filter combination is a baseline: it records everything currently matching so the *next* run can tell you what's new, and charges nothing.
+
+**Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-ted-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
+
 ## Notes
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
@@ -112,5 +131,6 @@ Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/eu-ted-te
 ## Related guides
 Engineering write-ups behind this Actor:
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
+- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the traps it has to avoid.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

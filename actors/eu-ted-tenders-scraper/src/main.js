@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -12,6 +13,7 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : null;
 const keywords = input.keywords ? String(input.keywords).trim() : null;
 const outputLanguage = String(input.outputLanguage ?? 'eng').toLowerCase();
+const watchLabel = String(input.watchLabel ?? '').trim();
 
 function normalizeDate(raw, label) {
   if (raw == null || raw === '') return null;
@@ -150,6 +152,87 @@ if (!query) {
 }
 log.info(`TED query: ${query}`);
 
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query. Same
+// design as federal-register-scraper/grants-gov-scraper/hacker-news-scraper:
+// baseline (publicationNumbers already delivered) kept in a NAMED key-value
+// store so it survives across scheduled runs; the default KV store is
+// per-run and would reset the baseline every time.
+const WATCH_STORE = 'fetchsmith-ted-watch';
+const SEED_CAP = 20000; // bound a seed walk against an unfiltered/very broad query
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+// publishedWithinDays is a ROLLING window (its resolved value changes every day),
+// so it is deliberately excluded from the fingerprint — same trap cycles 297/298
+// found the hard way on other Actors. publicationDateFrom/publicationDateTo are
+// only non-null when the buyer set them explicitly (see normalizeDate above), so
+// including them is safe: an explicit absolute window is a real criteria choice.
+// If expertQuery is set it replaces every other filter (see buildQuery), so the
+// fingerprint follows that override exactly instead of also keying on filters
+// that had no effect on the actual query sent.
+const watchCriteria = expertQueryInput
+  ? { expertQuery: expertQueryInput }
+  : {
+    countries: [...countries].sort(),
+    cpvCodes: [...cpvCodes].sort(),
+    noticeTypes: [...noticeTypes].sort(),
+    keywords,
+    publicationDateFrom,
+    publicationDateTo,
+  };
+
+// Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather
+// than trusted directly.
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Set(); // publicationNumbers already delivered under this label+fingerprint
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    criteria: watchCriteria,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seenIds: ids,
+  });
+}
+
+if (watchMode) {
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered notice(s). Only notices NOT in that baseline are returned and charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+      + 'It records which notices already match and returns ZERO results (you are charged nothing). Run it '
+      + 'again on the same label and filters — on a schedule, typically — to get only what is new since now.',
+    );
+  }
+}
+
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
@@ -176,32 +259,65 @@ let httpError = null;
 const TRANSIENT_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
 
-async function fetchPage(pageNum) {
-  let resp = await fetchPageOnce(pageNum);
+async function fetchPage(pageNum, fieldsOverride) {
+  let resp = await fetchPageOnce(pageNum, fieldsOverride);
   for (const fallbackMs of HTTP_RETRY_DELAYS_MS) {
     if (!TRANSIENT_STATUS.has(resp.statusCode)) break;
     const retryAfterMs = Number(resp.headers?.['retry-after']) * 1000;
     const waitMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(retryAfterMs, 30000) : fallbackMs;
     log.warning(`TED API returned ${resp.statusCode} on page ${pageNum} — retrying in ${waitMs}ms`);
     await new Promise((r) => setTimeout(r, waitMs));
-    resp = await fetchPageOnce(pageNum);
+    resp = await fetchPageOnce(pageNum, fieldsOverride);
   }
   return resp;
 }
 
-async function fetchPageOnce(pageNum) {
+async function fetchPageOnce(pageNum, fieldsOverride) {
   return gotScraping({
     url: 'https://api.ted.europa.eu/v3/notices/search',
     method: 'POST',
     responseType: 'json',
     headers: { 'content-type': 'application/json' },
-    json: { query, page: pageNum, limit: PAGE_SIZE, fields: FIELDS },
+    json: { query, page: pageNum, limit: PAGE_SIZE, fields: fieldsOverride ?? FIELDS },
     retry: { limit: 3 },
     timeout: { request: 30000 },
   });
 }
 
-while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
+// Seeding only needs the notice id, not all 21 fields — same page walk, a
+// fraction of the bytes — and it never normalizes, pushes or charges. Walks
+// the WHOLE match set (bounded only by SEED_CAP), not one page of it: a
+// baseline that stopped early would report every notice past the stopping
+// point as "new" on the first incremental run (the cycle 297/298 trap).
+let skippedSeen = 0;
+async function seedBaseline() {
+  const seedFields = ['publication-number'];
+  let seedPage = 1;
+  let seedTotal = Infinity;
+  let pagesSeeded = 0;
+  while (watchSeen.size < SEED_CAP && (seedPage - 1) * PAGE_SIZE < seedTotal) {
+    const resp = await fetchPage(seedPage, seedFields);
+    if (resp.statusCode !== 200) {
+      log.warning(`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage} — stopping baseline walk early.`);
+      break;
+    }
+    const body = resp.body;
+    seedTotal = body.totalNoticeCount ?? 0;
+    const notices = body.notices ?? [];
+    if (!notices.length) break;
+    pagesSeeded += 1;
+    for (const notice of notices) {
+      const id = notice['publication-number'];
+      if (id) watchSeen.add(String(id));
+    }
+    seedPage += 1;
+  }
+  log.info(`Baseline walk: ${watchSeen.size} notice id(s) over ${pagesSeeded} id-only page(s) (totalNoticeCount ${seedTotal}).`);
+}
+
+if (seeding) await seedBaseline();
+
+while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
   let resp = await fetchPage(page);
 
   if (resp.statusCode !== 200) {
@@ -237,12 +353,44 @@ while (keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
   }
   if (!notices.length) break;
 
+  let beforePush = pushed;
   for (const notice of notices) {
+    const id = notice['publication-number'];
+    // Already delivered under this watch label: dropped before normalize() and
+    // before any charge, so a notice is never paid for twice.
+    if (watchMode && id && watchSeen.has(String(id))) {
+      skippedSeen += 1;
+      continue;
+    }
     keepGoing = await pushResult(normalize(notice));
+    // Recorded as delivered only after the charge actually succeeded — anything
+    // dropped by maxResults or a charge limit stays "new" for the next run.
+    if (watchMode && id && pushed > beforePush) watchSeen.add(String(id));
+    beforePush = pushed;
     if (!keepGoing) break;
   }
   log.info(`page ${page}: fetched ${notices.length}, pushed ${pushed}/${maxResults} so far (totalNoticeCount ${total})`);
   page += 1;
+}
+
+if (watchMode) {
+  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  if (seeding) {
+    log.info(
+      `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} notice(s) recorded as already-seen, `
+      + '0 results returned, 0 charged. The next run on this label and these filters returns only new notices.'
+      + (watchSeen.size >= SEED_CAP
+        ? ` NOTE: the baseline stopped at the ${SEED_CAP}-notice cap. Narrow the query (a country, a CPV code, `
+        + 'a shorter publication-date window) so the whole result set fits, or the first incremental run will '
+        + 'report notices past the cap as new.'
+        : ''),
+    );
+  } else {
+    log.info(
+      `Watch label "${watchLabel}": ${pushed} new notice(s) since the last run `
+      + `(${skippedSeen} already-delivered notice(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+    );
+  }
 }
 
 // A run that scraped nothing because TED was erroring is a failure, not a quiet
@@ -252,5 +400,12 @@ if (!pushed && httpError) {
 }
 
 log.info(`Done. Pushed ${pushed} notices.`);
-if (!pushed) await Actor.setStatusMessage(`No notices matched this query (${query}). Widen publishedWithinDays, drop a filter, or check your CPV codes.`);
+if (pushed === 0 && watchMode && !seeding) {
+  log.warning(
+    `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
+    + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+  );
+} else if (!pushed && !seeding) {
+  await Actor.setStatusMessage(`No notices matched this query (${query}). Widen publishedWithinDays, drop a filter, or check your CPV codes.`);
+}
 await Actor.exit();

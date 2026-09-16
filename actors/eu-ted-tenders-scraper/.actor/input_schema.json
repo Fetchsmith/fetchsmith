@@ -72,6 +72,12 @@
       "default": "eng",
       "enum": ["eng", "deu", "fra", "ita", "spa", "pol", "nld", "por", "swe", "dan", "fin", "ces", "ell", "hun", "ron", "slk", "slv", "bul", "hrv", "est", "lav", "lit", "gle", "mlt"],
       "enumTitles": ["English", "German", "French", "Italian", "Spanish", "Polish", "Dutch", "Portuguese", "Swedish", "Danish", "Finnish", "Czech", "Greek", "Hungarian", "Romanian", "Slovak", "Slovenian", "Bulgarian", "Croatian", "Estonian", "Latvian", "Lithuanian", "Irish", "Maltese"]
+    },
+    "watchLabel": {
+      "title": "Watch mode: label",
+      "type": "string",
+      "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search.",
+      "editor": "textfield"
     }
   },
   "required": []
