@@ -8,6 +8,7 @@ Get Google Play app reviews and app details (ratings, installs, developer info) 
 - Supports country/language targeting and sort order (newest / rating / helpfulness).
 - Filter server-side by star rating (range **or** an exact set like 1★+5★), keyword(s), app version, or date range — so you're only charged for reviews you actually want, not the whole feed.
 - Reviews are de-duplicated by `reviewId`, so a repeated row from Google Play is never pushed — or charged for — twice.
+- **Watch mode** (`watchLabel`): run it on a schedule and get only the reviews posted *since your last run* instead of the same top-of-feed rows every time — a run with nothing new returns nothing and costs nothing.
 - Includes per-review **aspect ratings** (`aspectRatings`) — the sub-scores Google Play attaches to a written review for specific aspects (e.g. ad frequency, ease of use) when the reviewer filled them in. None of the leading Store competitors expose this field.
 
 ## Input
@@ -27,6 +28,21 @@ Get Google Play app reviews and app details (ratings, installs, developer info) 
 | `keywords` | array of strings | Only keep reviews containing **at least one** of these words/phrases (case-insensitive) |
 | `appVersions` | array of strings | Only keep reviews written against one of these app versions, e.g. `["9.1.78.2218"]`. Google Play leaves `version` null on roughly 1 review in 6 — those are dropped when this filter is set |
 | `sinceDate` / `untilDate` | string | Only keep reviews posted within this ISO date range |
+| `watchLabel` | string | Optional. Name a saved watch (e.g. `my-app-alerts`) to get **only reviews not delivered under that label before** — see "Watch mode" below |
+
+## Watch mode — only new reviews since the last run
+Set `watchLabel` to any name and this Actor stops re-delivering the same reviews on every scheduled run:
+
+1. **First run for a label is a free baseline.** It records which reviews already exist (walking at least 1000 per app, regardless of your `maxReviewsPerApp`, up to 5000 reviews total) and returns **zero rows — you are charged nothing**.
+2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
+
+The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-google-play-reviews-watch`, keyed by your label plus a fingerprint of the apps/search terms, country, language, sort order **and every rating, keyword, app-version and date filter**. Change any of those and you get a fresh baseline rather than a silently wrong one — otherwise widening a filter would hide the newly-matching older reviews as "already seen". Delete the record to start over; use different labels to watch several filter sets in parallel.
+
+Details worth knowing:
+- **Use `sort: "NEWEST"`** (the default). With `RATING` or `HELPFULNESS` a brand-new review isn't necessarily inside the first `maxReviewsPerApp` rows, so new reviews can be missed; the run logs a warning if you do it anyway.
+- **`maxReviewsPerApp` is your fetch-depth budget on incremental runs and is left exactly as you set it.** If every matching review inside that window turned out to be new, the run warns you (and says so in the status message) that reviews posted before the window may have been missed — raise `maxReviewsPerApp` or run the watch more often.
+- **App-details records are only returned on a run where that app actually has a new review**, so a quiet run really does cost nothing. On non-watch runs they behave as before.
+- If a `searchTerms` lookup resolves to a *different* app than last time, that app is baselined on the spot rather than having its entire back catalogue delivered as "new".
 
 ## Output
 One item per row, either an app-details record (`recordType: "app"`) or a review (`recordType: "review"`).
@@ -72,6 +88,8 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 **What is `aspectRatings`?** Google Play sometimes prompts a reviewer to rate specific aspects of the app (e.g. "Ads frequency", "Ease of use") alongside their overall star score. When present, each row's `aspectRatings` array has one `{criteria, rating}` entry per aspect the reviewer answered — verified live: ~30% of a real app's recent reviews carry at least one aspect rating. It's `[]` when the reviewer didn't answer any (most reviews). We're the only Google Play reviews Actor on the Store that surfaces this field — the top 3 competitors by users don't include it in their output schema.
 
 **Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **fetch cap**, not a match count — Google Play returns up to that many reviews (newest-first by default), and rating/keyword/appVersion/date filters are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting further back in the feed: on WhatsApp (`com.whatsapp`) with `keyword: "crash"`, `maxReviewsPerApp: 20` fetches 20 reviews and keeps 0, but raising it to `200` finds 1 — the match was always there, just never fetched. When this happens the log carries a `WARN` naming the cap and how many fetched reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
+
+**How do I get alerted about new reviews instead of re-downloading the same ones?** Set `watchLabel` and schedule the Actor (Apify Console → Schedules). The first run is a free baseline that returns nothing; every later run returns only the reviews posted since the previous run, so a scheduled hourly watch on a quiet app costs nothing at all. See "Watch mode" above for how the baseline is keyed and what to watch out for.
 
 ## Related guides
 Engineering write-ups behind this Actor:

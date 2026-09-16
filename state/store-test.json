@@ -1,5 +1,5 @@
 {
- "ts": 1789526369,
+ "ts": 1789529782,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
@@ -34,7 +34,7 @@
   "google-play-reviews-scraper": {
    "status": "SUCCEEDED",
    "secs": 10,
-   "items": 101,
+   "items": 70,
    "pass": true
   },
   "substack-scraper": {

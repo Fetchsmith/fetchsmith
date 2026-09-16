@@ -122,6 +122,12 @@
       "type": "string",
       "description": "Only keep reviews posted on/before this date (ISO 8601, e.g. 2026-06-01).",
       "editor": "datepicker"
+    },
+    "watchLabel": {
+      "title": "Watch label (only new reviews since last run)",
+      "type": "string",
+      "description": "Optional. Name a saved watch (e.g. \"my-app-alerts\") and this run returns ONLY reviews not delivered under that same label and filter set before, instead of the same top-of-feed reviews every time. The first run for a label is a free baseline: it records the reviews that already exist (walking at least 1000 per app, up to 5000 total) and returns zero rows. Run it again later — on a schedule, typically — to get only what is new. The baseline is kept in your own Apify account (a named key-value store \"fetchsmith-google-play-reviews-watch\"), keyed by label plus a fingerprint of apps/search terms/country/language/sort and every rating, keyword, app-version and date filter, so changing any of those starts a fresh baseline instead of hiding newly-matching reviews as \"already seen\". Use sort=NEWEST. App-detail records are only returned on a run where that app actually has a new review, so a run with nothing new costs nothing.",
+      "editor": "textfield"
     }
   },
   "required": []
