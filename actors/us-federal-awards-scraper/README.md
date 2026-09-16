@@ -21,6 +21,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
+| `startUrl` | string | – | Paste a usaspending.gov Advanced Search "share" link (`usaspending.gov/search?hash=...` or `usaspending.gov/search/...`) instead of picking `keywords`/`awardCategories` by hand — this resolves the site's own saved-search hash via its public `/api/v2/references/hash/` endpoint and applies its keyword and award-type filters, overriding those two inputs. Agency/location/NAICS/PSC/award-amount/date-range filters set in that search are **not** carried over yet (no live example was available to confirm their nested shapes against) — a warning in the run log names any of those it finds so you can set the matching input yourself. |
 | `awardLevel` | string | `prime` | `prime` = the federal award itself. `subaward` = the sub-contracts/sub-grants reported under prime awards. Every filter below works in both modes — see [Sub-award mode](#sub-award-mode). |
 | `awardCategories` | array | `["contracts"]` | `contracts`, `idvs`, `grants`, `direct_payments`, `other_financial_assistance`, `loans`. Pick several — each is fetched separately and merged. |
 | `startDate` / `endDate` | string | last 365 days | `YYYY-MM-DD`, filters on award action date. Nothing exists before `2007-10-01`; earlier dates are clamped. |

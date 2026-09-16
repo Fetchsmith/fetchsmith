@@ -3,6 +3,12 @@
     "type": "object",
     "schemaVersion": 1,
     "properties": {
+        "startUrl": {
+            "title": "Start from a usaspending.gov search link",
+            "type": "string",
+            "description": "Paste a usaspending.gov Advanced Search \"share\" link (usaspending.gov/search?hash=... or usaspending.gov/search/...) instead of picking \"Keywords\"/\"Award categories\" by hand — this Actor resolves the site's own saved-search hash and applies its keyword and award-type filters, overriding those two inputs. Other filters set in that search (agency, location, NAICS/PSC, award amount, custom date range) are NOT carried over yet — a warning names any of those it finds so you can set the matching input yourself. Leave empty for a normal search built from the inputs below.",
+            "editor": "textfield"
+        },
         "awardLevel": {
             "title": "Award level (prime or sub-award)",
             "type": "string",
