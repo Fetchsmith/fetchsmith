@@ -19,8 +19,8 @@ const SPLIT_AT = 14500; // leave headroom: `total` drifts slightly between the p
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function apiPost(path, body) {
-    for (let attempt = 1; attempt <= 4; attempt += 1) {
+async function apiPost(path, body, attempts = 4) {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
         let resp;
         try {
             resp = await gotScraping({
@@ -52,7 +52,7 @@ async function apiPost(path, body) {
         }
         return parsed;
     }
-    log.warning(`NIH RePORTER ${path} kept failing after 4 attempts; stopping early.`);
+    log.warning(`NIH RePORTER ${path} kept failing after ${attempts} attempts; stopping early.`);
     return null;
 }
 
@@ -120,6 +120,37 @@ const projectNums = strList(input.projectNums);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
 
+// `startUrl` -- paste RePORTER's own shared-search link instead of re-typing its filters.
+// reporter.nih.gov shares a search as `/search/<search_id>/projects`, and that id is a real
+// server-side handle, NOT a client-side token: the DOCUMENTED public API at api.reporter.nih.gov
+// accepts `{"search_id": ...}` in place of a criteria object and returns the identical total and
+// rows (verified live cycle 380 from a cookie-less curl, and `meta.properties.URL` echoes the
+// shareable link straight back). No undocumented endpoint is involved.
+// THE TRAP HERE (measured, cycle 380): when `search_id` is set the API SILENTLY IGNORES any
+// `criteria` sent alongside it -- adding fiscal_years:[2024] to a 567-row saved search still
+// returned all 567. Same silent-ignore class as the criteria allowlist above, so the other filter
+// inputs are NOT merged on top; they are named in a warning and dropped.
+const SEARCH_ID_RE = /^[A-Za-z0-9_-]{16,64}$/;
+function parseSearchId(raw) {
+    const s = String(raw ?? '').trim();
+    if (!s) return null;
+    if (SEARCH_ID_RE.test(s)) return s; // a bare search id, pasted on its own
+    let u;
+    try { u = new URL(s); } catch { throw new Error(`"startUrl" is neither a URL nor a search id: ${s}`); }
+    if (!/(^|\.)nih\.gov$/i.test(u.hostname)) {
+        throw new Error(`"startUrl" must be a reporter.nih.gov search URL (got "${u.hostname}").`);
+    }
+    const m = u.pathname.match(/\/search\/([A-Za-z0-9_-]{16,64})(?:\/|$)/);
+    if (!m) {
+        throw new Error(
+            `"startUrl" carries no search id: ${s}. Run the search on reporter.nih.gov, then copy the address bar `
+            + '(or use its Share button) -- the link looks like https://reporter.nih.gov/search/FIJedD1bG0epAlP7QhG9lw/projects.',
+        );
+    }
+    return m[1];
+}
+const searchId = parseSearchId(input.startUrl);
+
 const amountNum = (v) => {
     const n = Number(v);
     return Number.isFinite(n) && n >= 0 ? Math.min(Math.floor(n), AMOUNT_MAX_SENTINEL) : null;
@@ -150,9 +181,38 @@ if (unknownIcs.length) {
 // 123/125): when the user asks for specific project numbers, every other filter -- including a
 // fiscal-year default -- is dropped, so a narrowing filter can never silently hide the exact
 // project that was asked for by number.
-const exclusiveProjectNums = projectNums.length > 0;
+const exclusiveProjectNums = !searchId && projectNums.length > 0;
+
+// Named so the warning below can tell the buyer exactly which of their inputs the saved search
+// overrode, instead of quietly returning a result set that ignores half the form.
+// `keyword` is compared against its schema default because that default is filled in on EVERY
+// run whether or not the buyer touched the field -- warning about it unconditionally would make
+// the one warning that matters look like boilerplate.
+const KEYWORD_DEFAULT = 'cancer';
+const IGNORED_WITH_SEARCH_ID = [
+    ['keyword', keyword === KEYWORD_DEFAULT ? '' : keyword], ['fiscalYears', fiscalYears], ['agencyIcCodes', agencyIcCodes],
+    ['activityCodes', activityCodes], ['awardTypes', awardTypes], ['orgNames', orgNames],
+    ['orgStates', orgStates], ['piNames', piNames], ['projectNums', projectNums],
+    ['minAwardAmount', minAwardAmount], ['maxAwardAmount', maxAwardAmount],
+    ['activeOnly', input.activeOnly === true], ['newlyAddedOnly', input.newlyAddedOnly === true],
+];
 
 function buildCriteria() {
+    // A saved search IS the filter set -- NIH resolves it server-side and ignores anything we
+    // send beside it, so there is no criteria object to build (and nothing to allowlist-check).
+    if (searchId) {
+        const overridden = IGNORED_WITH_SEARCH_ID
+            .filter(([, v]) => (Array.isArray(v) ? v.length > 0 : v !== null && v !== false && v !== ''))
+            .map(([k]) => k);
+        if (overridden.length) {
+            log.warning(
+                `startUrl is set, so the pasted saved search decides the filters and these inputs are IGNORED: `
+                + `${overridden.join(', ')}. NIH RePORTER discards any filter sent next to a search id rather than `
+                + 'combining them, so clear startUrl if you want the form fields to apply instead.',
+            );
+        }
+        return {};
+    }
     if (exclusiveProjectNums) return assertCriteria({ project_nums: projectNums });
     const c = {};
     if (keyword) {
@@ -181,8 +241,16 @@ function buildCriteria() {
     return assertCriteria(c);
 }
 
+// Every project-search body goes through here: a saved search sends `search_id` INSTEAD of
+// `criteria` (sending both is how you get silently-ignored filters -- see parseSearchId above).
+function searchBody(criteria, extra) {
+    return searchId
+        ? { search_id: searchId, ...extra }
+        : { criteria: assertCriteria(criteria), ...extra };
+}
+
 async function countOf(criteria) {
-    const page = await apiPost('/projects/search', { criteria: assertCriteria(criteria), limit: 1, offset: 0 });
+    const page = await apiPost('/projects/search', searchBody(criteria, { limit: 1, offset: 0 }));
     return Number(page?.meta?.total ?? 0);
 }
 
@@ -376,7 +444,7 @@ async function saveWatchRecord(status) {
         ...watchRecord,
         label: watchLabel,
         fingerprint: watchRecord.fingerprint,
-        criteria: rootCriteria,
+        criteria: watchCriteria,
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
         runCount: (watchRecord.runCount ?? 0) + 1,
@@ -433,7 +501,7 @@ async function walkChunk(criteria, total) {
         const limit = seeding
             ? Math.min(PAGE_LIMIT, OFFSET_WALL - offset)
             : Math.min(PAGE_LIMIT, OFFSET_WALL - offset, Math.max(maxResults - pushed, 1));
-        const body = { criteria: assertCriteria(criteria), limit, offset };
+        const body = searchBody(criteria, { limit, offset });
         // watchChanges needs the 4 snapshot fields even during seeding (still far lighter than
         // the ~60-field full record); plain watchLabel keeps the original 2-field seed.
         if (seeding) {
@@ -498,10 +566,13 @@ async function walkChunk(criteria, total) {
 }
 
 const rootCriteria = buildCriteria();
+// With a saved search the criteria object is empty, so fingerprinting it would make every
+// different pasted URL share one baseline under the same label. The search id is the question.
+const watchCriteria = searchId ? { search_id: searchId } : rootCriteria;
 
 if (watchMode) {
     watchStore = await Actor.openKeyValueStore(WATCH_STORE);
-    const { key, fingerprint } = watchKeyFor(watchLabel, rootCriteria);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
     watchKey = key;
     const existing = await watchStore.getValue(key);
     if (existing && Array.isArray(existing.seenIds)) {
@@ -534,7 +605,10 @@ if (watchMode) {
 }
 
 log.info(
-    exclusiveProjectNums
+    searchId
+        ? `NIH RePORTER: saved search ${searchId} from startUrl (its filters live on NIH's side, not in this input) `
+        + `includePublications=${includePublications} maxResults=${maxResults}`
+        : exclusiveProjectNums
         ? `NIH RePORTER: exact project-number lookup [${projectNums.join(', ')}] (all other filters ignored).`
         : `NIH RePORTER: keyword="${keyword || '(none)'}" fiscalYears=[${fiscalYears.join(',') || 'all'}]`
         + (agencyIcCodes.length ? ` agencies=[${agencyIcCodes.join(',')}]` : '')
@@ -543,10 +617,37 @@ log.info(
         + ` includePublications=${includePublications} maxResults=${maxResults}`,
 );
 
-const rootTotal = await countOf(rootCriteria);
+// A saved search that NIH no longer recognises comes back as a plain 500 with a generic message,
+// which countOf() would read as "0 matches" and report as an empty result -- the one failure mode
+// worth spending a dedicated probe on. Two attempts, not four: a mistyped id should fail in
+// seconds, and a genuinely flaky upstream still gets one retry before the message goes out.
+let rootTotal;
+if (searchId) {
+    const probe = await apiPost('/projects/search', { search_id: searchId, limit: 1, offset: 0 }, 2);
+    if (!probe?.meta) {
+        throw new Error(
+            `NIH RePORTER would not resolve the saved search "${searchId}" from your startUrl. Saved-search links `
+            + 'are not guaranteed to live forever -- re-run the search on reporter.nih.gov and copy a fresh link. '
+            + '(If reporter.nih.gov itself is down right now, the same run will work later unchanged.)',
+        );
+    }
+    rootTotal = Number(probe.meta.total ?? 0);
+} else {
+    rootTotal = await countOf(rootCriteria);
+}
 log.info(`Matched ${rootTotal} project records before paging.`);
 
-if (rootTotal > SPLIT_AT) {
+if (searchId && rootTotal > SPLIT_AT) {
+    // The chunk-and-merge trick below rewrites the criteria object, and a saved search has none to
+    // rewrite (NIH ignores criteria sent with a search id), so the 15000-row wall is hard here.
+    log.warning(
+        `This saved search matches ${rootTotal} projects, but NIH RePORTER caps offset+limit at ${OFFSET_WALL} with no `
+        + `cursor, and a saved search cannot be split into sub-queries the way the filter inputs can. Only the first `
+        + `${OFFSET_WALL} are reachable. Narrow the search on reporter.nih.gov (a fiscal year, IC or state) and paste `
+        + 'the new link, or use this Actor\'s own filter inputs instead of startUrl.',
+    );
+    await walkChunk(rootCriteria, rootTotal);
+} else if (rootTotal > SPLIT_AT) {
     // Past the 15000-row wall: fan out across a categorical dimension and merge on appl_id.
     const chunks = splitCriteria(rootCriteria);
     if (!chunks) {
@@ -607,6 +708,9 @@ if (pushed === 0 && !seeding) {
         watchMode
             ? `Nothing new for watch label "${watchLabel}" since its last run -- every matching project had already been `
             + 'delivered. That is the expected result most of the time; you were charged for nothing.'
+            : searchId
+            ? `The saved search ${searchId} resolved, but matched no projects. That is what reporter.nih.gov itself `
+            + 'would show for this link right now -- open it in a browser to confirm, then widen the search there.'
             : exclusiveProjectNums
             ? `No project found for [${projectNums.join(', ')}]. Use a full project number (5R01CA234538-06) or a core number (R01CA234538) exactly as shown on reporter.nih.gov.`
             : 'No projects matched. Most common causes: (1) all filters are ANDed -- a narrow keyword plus IC plus '

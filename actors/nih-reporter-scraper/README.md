@@ -21,10 +21,28 @@ No API key, no login, no proxy. Public data only.
 
 - **`watchChanges` — also catch a no-cost extension, an administrative supplement, or a project ending.** Add this to `watchLabel` and a project you already have gets re-delivered (at the normal per-row price, tagged `_watchChangeType`/`_watchPrevious`) if its project end date, budget end date, award amount or active flag changes since you last saw it — not just brand-new projects. NIH itself confirms a no-cost extension updates the *same* award record's end date rather than minting a new `appl_id` (unlike a competing/non-competing renewal, which always gets a fresh `appl_id`), so this is a real, detectable signal, not a guess. Off by default so existing watches keep their current behavior.
 
+### Skip the form: paste your RePORTER search URL (`startUrl`)
+
+Build the search on reporter.nih.gov the way you normally would, then paste the address bar into `startUrl`:
+
+```
+https://reporter.nih.gov/search/FIJedD1bG0epAlP7QhG9lw/projects
+```
+
+That `search_id` in the path is a handle NIH stores on its own side, and NIH's public API accepts it in place of a criteria object — so the Actor runs *exactly* the search you built in the browser, including filters this Actor's own inputs don't expose. Any tab of a shared search works (`/projects`, `/charts`, `/publications`, …), and a bare search id on its own works too.
+
+Two things to know:
+
+- **A saved search replaces the filter fields, it does not combine with them.** NIH discards any criteria sent alongside a search id (silently — this Actor does not pass them and the run log names any you left filled in). `maxResults`, `includeAbstract`, `includePublications` and `watchLabel` still apply normally, and a `watchLabel` baseline is keyed to the specific search id, so two different pasted links never share one baseline.
+- **NIH doesn't promise a shared link lives forever.** If a link stops resolving, the run fails with a message that says so instead of returning an empty dataset. Re-run the search on reporter.nih.gov and paste the fresh link.
+
+The 15,000-row wall still applies to a pasted search and cannot be worked around: the automatic chunking below rewrites the query's filters, and a saved search doesn't expose any to rewrite. If your link matches more than that, the log says so — narrow it on reporter.nih.gov, or use the filter fields instead.
+
 ## Input
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `startUrl` | string | Paste a reporter.nih.gov search link instead of re-typing its filters — see below. **Replaces every filter field in this table** |
 | `keyword` | string | Full-text over project title, abstract and NIH terms (default `"cancer"`) |
 | `fiscalYears` | array | e.g. `[2024, 2025]`. Empty = all years |
 | `agencyIcCodes` | array | Administering institute, e.g. `["NCI","NIAID"]` |

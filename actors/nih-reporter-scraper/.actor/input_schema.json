@@ -3,6 +3,12 @@
     "type": "object",
     "schemaVersion": 1,
     "properties": {
+        "startUrl": {
+            "title": "NIH RePORTER search URL",
+            "type": "string",
+            "description": "Optional shortcut: build the search on reporter.nih.gov, then paste the address bar here — e.g. \"https://reporter.nih.gov/search/FIJedD1bG0epAlP7QhG9lw/projects\". Any tab of a shared search works (/projects, /charts, /publications …); a bare search id works too. NIH resolves the saved search on its side, so it REPLACES every filter field below (keyword, fiscal years, ICs, activity codes, org, PI, amounts, project numbers) — the run log names any you left set. Max results, abstract/publication options and the watch label still apply. Note: NIH does not promise a shared link lives forever; if it stops resolving, the run fails with a clear message and you can paste a fresh one.",
+            "editor": "textfield"
+        },
         "keyword": {
             "title": "Keyword",
             "type": "string",
