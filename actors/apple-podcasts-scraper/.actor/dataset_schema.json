@@ -241,6 +241,122 @@
         "title": "EpisodeCount",
         "example": 502
       },
+      "genres": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Genres",
+        "example": [
+          "Technology",
+          "Podcasts",
+          "Science"
+        ]
+      },
+      "latestReleaseDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "LatestReleaseDate",
+        "example": "2026-08-26T21:47:00Z"
+      },
+      "contentAdvisoryRating": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ContentAdvisoryRating",
+        "example": "Clean"
+      },
+      "reviewId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewId",
+        "example": "14514424096"
+      },
+      "content": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Content",
+        "example": "I’ve listened to Lex for many years. I tend to focus on his science and technology interviews..."
+      },
+      "rating": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Rating",
+        "example": 5
+      },
+      "author": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Author",
+        "example": "FatBoyTig"
+      },
+      "authorUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AuthorUrl",
+        "example": "https://itunes.apple.com/us/reviews/id231679389"
+      },
+      "updatedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "UpdatedAt",
+        "example": "2026-09-05T10:26:18-07:00"
+      },
+      "voteSum": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VoteSum",
+        "example": 0
+      },
+      "voteCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "VoteCount",
+        "example": 0
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Country",
+        "example": "us"
+      },
+      "searchTerm": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SearchTerm",
+        "example": "meditation"
+      },
+      "chartRank": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ChartRank",
+        "example": 1
+      },
       "scrapedAt": {
         "type": [
           "string",

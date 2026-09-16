@@ -538,7 +538,9 @@
         "scrapedAt",
         "genres",
         "latestReleaseDate",
-        "contentAdvisoryRating"
+        "contentAdvisoryRating",
+        "searchTerm",
+        "chartRank"
       ],
       "sample_output": {
         "type": "episode",
