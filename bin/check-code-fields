@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+"""Catch fields an Actor's CODE emits that its docs never declare (and vice versa).
+
+`check-registry-fields` compares registry.json <-> dataset_schema.json <-> health.json
+sample_keys. That misses a whole drift class, found by hand on google-play-reviews-scraper
+in cycle 367: both docs files can AGREE with each other and both be wrong, because neither
+is derived from src/main.js. health.json only ever shows the first 8 keys of a sample row,
+so it cannot contradict a 30-field schema either.
+
+This reads the real source instead. It statically extracts the top-level keys of every
+object literal in src/main.js, keeps the ones that look like dataset record shapes (>= MIN_OVERLAP
+keys in common with dataset_schema.json), and diffs them against the declared schema:
+
+  code-only    emitted on rows but undeclared  -> Console shows no column, product page undersells
+  schema-only  declared but no literal emits it -> stale doc, or (normal) a field built dynamically
+
+schema-only is reported as a soft warning only: several Actors assign fields conditionally
+(row.foo = x) or spread (...extra), which a literal scan legitimately cannot see.
+
+Exit 0 = no code-only drift, 1 = code-only drift found. Usage: check-code-fields [slug ...]
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MIN_OVERLAP = 2  # keys shared with dataset_schema before a literal counts as a record shape
+
+KEY_RE = re.compile(r"(?:\A|,)\s*(?:'([A-Za-z_$][\w$]*)'|\"([A-Za-z_$][\w$]*)\"|([A-Za-z_$][\w$]*))\s*:")
+
+
+BIND_RES = [
+    re.compile(r'(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*\(?\s*$'),
+    re.compile(r'function\s+([A-Za-z_$][\w$]*)\s*\([^()]*\)\s*$'),
+    re.compile(r'([A-Za-z_$][\w$]*)\s*:\s*\(?\s*$'),
+    re.compile(r'([A-Za-z_$][\w$]*)\s*=\s*\(?\s*$'),
+]
+# A literal bound to one of these names is a run fingerprint / bookkeeping object, never a
+# dataset row: watch-mode change detection hashes its criteria, and those criteria are named
+# after the input filters (clinicaltrials' studyTypes, uk-find-a-tender's sources/stages), so
+# they overlap the record schema by construction without ever being pushed.
+NON_ROW_BIND = re.compile(r'(watch|criteria|summary|fingerprint|stats|cache|opts|options|payload)', re.I)
+
+
+STMT_BIND_RE = re.compile(r'(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=')
+
+
+def binding_of(prefix):
+    """Name a literal is bound to, from the source text immediately before its `{`."""
+    tail = re.sub(r'//[^\n]*', '', prefix)
+    for rx in BIND_RES:
+        m = rx.search(tail)
+        if m:
+            return m.group(1)
+    # Fall back to the enclosing statement's binding, for literals buried in a callback:
+    # `const variants = (p.variants ?? []).map((v) => ({ sku, price, ... }))` binds to
+    # `variants`, but nothing adjacent to the `{` says so.
+    stmt = tail.rsplit(';', 1)[-1]
+    found = STMT_BIND_RE.findall(stmt)
+    return found[-1] if found else None
+
+
+def object_literals(src):
+    """(keys, binding) for every {...} literal in src, strings/comments/nesting stripped.
+
+    A frame accumulates only its OWN text: nested {}/[]/() bodies are dropped so a nested
+    literal's keys are never attributed to its parent, and the comma-or-start anchor in
+    KEY_RE keeps `cond ? a : b` value expressions from being read as keys.
+    """
+    frames = []      # open { literals, innermost last
+    out = []
+    stack = []       # every open bracket kind, to know when a frame's own text resumes
+    i, n = 0, len(src)
+    while i < n:
+        c = src[i]
+        nxt = src[i + 1] if i + 1 < n else ''
+        if c == '/' and nxt == '/':
+            i = src.find('\n', i)
+            if i < 0:
+                break
+            continue
+        if c == '/' and nxt == '*':
+            j = src.find('*/', i + 2)
+            i = n if j < 0 else j + 2
+            continue
+        if c in '"\'`':
+            q, j = c, i + 1
+            while j < n:
+                if src[j] == '\\':
+                    j += 2
+                    continue
+                if src[j] == q:
+                    break
+                j += 1
+            i = j + 1
+            continue
+        if c in '{[(':
+            if c == '{':
+                frames.append(([], binding_of(src[max(0, i - 160):i])))
+            stack.append(c)
+            i += 1
+            continue
+        if c in '}])':
+            if stack:
+                opener = stack.pop()
+                if opener == '{' and frames:
+                    chars, bind = frames.pop()
+                    out.append((''.join(chars), bind))
+            i += 1
+            continue
+        # plain char: it belongs to the innermost frame only if no non-{ bracket is open
+        # inside that frame (i.e. the innermost open bracket is the frame's own brace).
+        if frames and stack and stack[-1] == '{':
+            frames[-1][0].append(c)
+        i += 1
+    keysets = []
+    for text, bind in out:
+        keys = [a or b or c for a, b, c in KEY_RE.findall(text)]
+        if keys:
+            keysets.append((keys, bind))
+    return keysets
+
+
+def main(argv):
+    reg = json.load(open(os.path.join(ROOT, 'actors/registry.json')))
+    argv = [a for a in argv[1:] if a != '--all']
+    show_all = '--all' in sys.argv
+    wanted = set(argv)
+    drift = 0
+    for tool in reg['tools']:
+        slug = tool['slug']
+        if wanted and slug not in wanted:
+            continue
+        main_js = os.path.join(ROOT, 'actors', slug, 'src/main.js')
+        ds_path = os.path.join(ROOT, 'actors', slug, '.actor/dataset_schema.json')
+        if not (os.path.exists(main_js) and os.path.exists(ds_path)):
+            print('%-32s SKIP (missing src/main.js or dataset_schema.json)' % slug)
+            continue
+        declared = list(json.load(open(ds_path))['fields']['properties'].keys())
+        dset = set(declared)
+        advertised = set(tool.get('output_fields', []))
+
+        src = open(main_js).read()
+        # Fields the code builds for its own use and removes before pushing (ats-jobs-scraper's
+        # _rawId/_externalPath, needed to fetch the per-job detail page) are not output at all.
+        internal = set(re.findall(r'delete\s+[A-Za-z_$][\w$]*\.([A-Za-z_$][\w$]*)', src))
+
+        emitted, record_shapes, suppressed = [], 0, []
+        for keys, bind in object_literals(src):
+            if len(dset.intersection(keys)) < MIN_OVERLAP:
+                continue
+            # A literal bound to the name of a declared array/object field is that field's
+            # ELEMENT shape, not a row: shopify-products-scraper's `const variants = [...]`
+            # legitimately has sku/price inside the declared `variants` array.
+            if bind and not show_all and (bind in dset or NON_ROW_BIND.search(bind)):
+                suppressed.append(bind)
+                continue
+            record_shapes += 1
+            for k in keys:
+                if k not in emitted and k not in internal:
+                    emitted.append(k)
+        code_only = [k for k in emitted if k not in dset]
+        schema_only = [k for k in declared if k not in emitted]
+        unadvertised = [k for k in emitted if k in dset and k not in advertised]
+
+        if code_only:
+            drift += 1
+            print('%s  (%d record literal(s))' % (slug, record_shapes))
+            print('    CODE-ONLY, undeclared in dataset_schema: %s' % ', '.join(code_only))
+            if unadvertised:
+                print('    also not in registry output_fields: %s' % ', '.join(unadvertised))
+            if schema_only:
+                print('    soft: declared but no literal emits it: %s' % ', '.join(schema_only))
+        else:
+            note = ''
+            if schema_only:
+                note = ' [soft: not in any literal: %s]' % ', '.join(schema_only)
+            if suppressed:
+                note += ' [non-row literals skipped: %s]' % ', '.join(sorted(set(suppressed)))
+            print('%-32s ok (%d emitted / %d declared)%s' % (slug, len(emitted), len(declared), note))
+    print('\n%d Actor(s) with code-only field drift.' % drift)
+    return 1 if drift else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

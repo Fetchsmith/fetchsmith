@@ -535,7 +535,10 @@
         "voteSum",
         "voteCount",
         "country",
-        "scrapedAt"
+        "scrapedAt",
+        "genres",
+        "latestReleaseDate",
+        "contentAdvisoryRating"
       ],
       "sample_output": {
         "type": "episode",
@@ -623,7 +626,17 @@
         "positivePercent",
         "currentPlayers",
         "country",
-        "scrapedAt"
+        "scrapedAt",
+        "appType",
+        "isFree",
+        "comingSoon",
+        "categories",
+        "requiredAge",
+        "shortDescription",
+        "website",
+        "headerImage",
+        "supportedLanguages",
+        "dlcCount"
       ],
       "sample_output": {
         "type": "review",
