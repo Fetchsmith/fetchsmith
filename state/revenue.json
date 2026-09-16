@@ -1,21 +1,21 @@
 {
- "ts": 1789544033,
+ "ts": 1789587183,
  "date": "2026-09-16",
  "apify": {
   "google-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 7,
-   "runs": 526,
-   "ext_ok30d": 6,
+   "runs30d": 8,
+   "runs": 543,
+   "ext_ok30d": 7,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 6,
+    "SUCCEEDED": 7,
     "TIMED-OUT": 1,
-    "TOTAL": 7
+    "TOTAL": 8
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -25,16 +25,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 7,
-   "runs": 534,
-   "ext_ok30d": 7,
+   "runs30d": 8,
+   "runs": 551,
+   "ext_ok30d": 8,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 7,
+    "SUCCEEDED": 8,
     "TIMED-OUT": 0,
-    "TOTAL": 7
+    "TOTAL": 8
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -42,18 +42,18 @@
   },
   "shopify-products-scraper": {
    "public": true,
-   "users": 1,
+   "users": 2,
    "users30d": 0,
-   "runs30d": 16,
-   "runs": 545,
-   "ext_ok30d": 16,
+   "runs30d": 17,
+   "runs": 562,
+   "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 16,
+    "SUCCEEDED": 17,
     "TIMED-OUT": 0,
-    "TOTAL": 16
+    "TOTAL": 17
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -63,16 +63,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 7,
-   "runs": 516,
-   "ext_ok30d": 7,
+   "runs30d": 8,
+   "runs": 541,
+   "ext_ok30d": 8,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 7,
+    "SUCCEEDED": 8,
     "TIMED-OUT": 0,
-    "TOTAL": 7
+    "TOTAL": 8
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -82,8 +82,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 8,
+   "runs": 525,
+   "ext_ok30d": 8,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 8,
+    "TIMED-OUT": 0,
+    "TOTAL": 8
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "substack-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 7,
-   "runs": 508,
+   "runs": 538,
    "ext_ok30d": 7,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -97,39 +116,20 @@
    "reviews": 0,
    "rating": 0
   },
-  "substack-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 6,
-   "runs": 520,
-   "ext_ok30d": 6,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 6,
-    "TIMED-OUT": 0,
-    "TOTAL": 6
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "apple-podcasts-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 6,
-   "runs": 508,
-   "ext_ok30d": 6,
+   "runs30d": 7,
+   "runs": 529,
+   "ext_ok30d": 7,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 6,
+    "SUCCEEDED": 7,
     "TIMED-OUT": 0,
-    "TOTAL": 6
+    "TOTAL": 7
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -139,16 +139,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 6,
-   "runs": 514,
-   "ext_ok30d": 6,
+   "runs30d": 7,
+   "runs": 532,
+   "ext_ok30d": 7,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 6,
+    "SUCCEEDED": 7,
     "TIMED-OUT": 0,
-    "TOTAL": 6
+    "TOTAL": 7
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -158,16 +158,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 6,
-   "runs": 492,
-   "ext_ok30d": 6,
+   "runs30d": 7,
+   "runs": 511,
+   "ext_ok30d": 7,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 6,
+    "SUCCEEDED": 7,
     "TIMED-OUT": 0,
-    "TOTAL": 6
+    "TOTAL": 7
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -177,8 +177,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 7,
+   "runs": 510,
+   "ext_ok30d": 7,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 7,
+    "TIMED-OUT": 0,
+    "TOTAL": 7
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "uk-find-a-tender-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 6,
-   "runs": 491,
+   "runs": 473,
    "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -192,39 +211,20 @@
    "reviews": 0,
    "rating": 0
   },
-  "uk-find-a-tender-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 5,
-   "runs": 453,
-   "ext_ok30d": 5,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 5,
-    "TIMED-OUT": 0,
-    "TOTAL": 5
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "us-federal-awards-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
-   "runs": 452,
-   "ext_ok30d": 5,
+   "runs30d": 6,
+   "runs": 475,
+   "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 0,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -234,16 +234,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
-   "runs": 437,
-   "ext_ok30d": 5,
+   "runs30d": 6,
+   "runs": 454,
+   "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 0,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -253,16 +253,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
-   "runs": 423,
-   "ext_ok30d": 5,
+   "runs30d": 6,
+   "runs": 442,
+   "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 0,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 5,
-   "runs": 418,
+   "runs": 439,
    "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -291,16 +291,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 4,
-   "runs": 365,
-   "ext_ok30d": 4,
+   "runs30d": 5,
+   "runs": 381,
+   "ext_ok30d": 5,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 4,
+    "SUCCEEDED": 5,
     "TIMED-OUT": 0,
-    "TOTAL": 4
+    "TOTAL": 5
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -310,8 +310,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 5,
+   "runs": 369,
+   "ext_ok30d": 5,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 5,
+    "TIMED-OUT": 0,
+    "TOTAL": 5
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "ats-jobs-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 4,
-   "runs": 349,
+   "runs": 294,
    "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -325,12 +344,12 @@
    "reviews": 0,
    "rating": 0
   },
-  "ats-jobs-scraper": {
+  "fec-campaign-finance-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 3,
-   "runs": 276,
+   "runs": 164,
    "ext_ok30d": 3,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -343,33 +362,14 @@
    "bookmarks": 0,
    "reviews": 0,
    "rating": 0
-  },
-  "fec-campaign-finance-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 2,
-   "runs": 145,
-   "ext_ok30d": 2,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 2,
-    "TIMED-OUT": 0,
-    "TOTAL": 2
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
   }
  },
  "polar": {},
  "apify_totals": {
   "public_actors": 19,
-  "users": 37,
-  "runs30d": 112,
-  "ext_ok30d": 111,
+  "users": 38,
+  "runs30d": 130,
+  "ext_ok30d": 129,
   "ext_bad30d": 1,
   "bookmarks": 0,
   "reviews": 0,

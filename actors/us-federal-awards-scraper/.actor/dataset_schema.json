@@ -294,6 +294,118 @@
         "title": "Kind",
         "example": "contract"
       },
+      "awardLevel": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AwardLevel",
+        "example": "subaward"
+      },
+      "subAwardId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubAwardId",
+        "example": "200155"
+      },
+      "subAwardType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubAwardType",
+        "example": "sub-contract"
+      },
+      "subAwardDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubAwardDate",
+        "example": "2025-05-30"
+      },
+      "subAwardAmount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "SubAwardAmount",
+        "example": 1154736350
+      },
+      "subAwardDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubAwardDescription",
+        "example": "CONSTRUCTION SUBCONTRACT (CS)-111G BUILDING OUTFITTING"
+      },
+      "subRecipientName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubRecipientName",
+        "example": "KIEWIT POWER CONSTRUCTORS CO"
+      },
+      "subRecipientUei": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SubRecipientUei",
+        "example": "CFCCZHPBR445"
+      },
+      "primeAwardId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimeAwardId",
+        "example": "89233018CNR000004"
+      },
+      "primeRecipientName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimeRecipientName",
+        "example": "FLUOR MARINE PROPULSION, LLC"
+      },
+      "primeRecipientUei": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimeRecipientUei",
+        "example": "CWHMVCX7K1N6"
+      },
+      "primeRecipientId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimeRecipientId",
+        "example": "27de0316-220e-8297-411f-f99b6f60443a-C"
+      },
+      "primeAwardGeneratedInternalId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimeAwardGeneratedInternalId",
+        "example": "CONT_AWD_89233018CNR000004_8900_-NONE-_-NONE-"
+      },
+      "primeAwardUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PrimeAwardUrl",
+        "example": "https://www.usaspending.gov/award/CONT_AWD_89233018CNR000004_8900_-NONE-_-NONE-"
+      },
       "_watchChangeType": {
         "title": "_watchChangeType",
         "example": [
