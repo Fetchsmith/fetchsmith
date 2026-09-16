@@ -73,6 +73,20 @@ Google Play and the Apple App Store Actors don't fail Trap 6's test — their re
 
 The fix: hold the snapshot in memory (`pendingAppRecord`) and push it only alongside the first genuinely new review of that app in that run. A run with nothing new delivers nothing at all, snapshot included; a run with three new reviews delivers the three reviews plus exactly one snapshot row. Whether a per-target extra row needs Trap 6's reject-the-mode fix or this cycle's defer-the-row fix comes down to one question: does *anything else* in that same fetch have a genuine "new"? Steam's `games` mode has nothing else riding along, so it's Trap 6; Google Play's and the App Store's snapshot rows ride along with reviews that do, so they're Trap 7.
 
+## The one that isn't a trap: a "new id" is not the same thing as news
+
+Every trap above is about getting the *set* of new ids right. There is a separate, larger hole underneath all of them, and it isn't a bug in any implementation — it's the premise: an incremental watch keyed on ids drops an already-seen id **unconditionally**, before any filter and before any charge. That is exactly right for a forum post or a review, which never change after publication. It is quietly wrong for anything whose *record* keeps living after it's published. A grant opportunity's close date gets extended. A forecast becomes a real posting. An FDA recall goes from `Ongoing` to `Terminated`, or gets reclassified from Class II to Class I. Every one of those is the thing a buyer actually set the alert for, and every one of them arrives attached to an id they already have — so a correct, fully-tested, green watch mode delivers nothing at all.
+
+We only saw this by pricing the competition rather than reading our own code: one vendor sells *seven separate paid Actors* against a single grants API — deadline-amendment watch, funding-range-change watch, eligibility-change watch, forecast-to-posted watch, cancellation watch, document-change watch, general opportunity-change watch — which is a fairly loud market signal that "something I already have changed" is a different product from "something new appeared."
+
+The fix is one optional boolean (`watchChanges`) and a change of state shape: the baseline stops being a `Set<id>` and becomes a `Map<id, snapshot>`, where the snapshot is a handful of mutable fields. An already-seen row whose snapshot differs is re-delivered — tagged with what changed and what the previous value was (`_watchChangeType`, `_watchPrevious`) so a downstream rule can act on the transition rather than re-diffing the row — and billed like any other delivered row. Three details decide whether this is safe:
+
+- **Snapshot only fields that are always present.** Pick a field that is only populated when an `enrich`-style option is on and every run with enrichment off reads as a change, forever. The fields that work are the thin, unconditional ones (`status`, `classification`, `closeDate`).
+- **Refresh the snapshot on every scan, whether or not the flag is on.** Otherwise the first run after a buyer enables `watchChanges` re-delivers — and charges for — a backlog of drift that accumulated while nobody was watching. Turning the flag on should start detecting *future* changes, not invoice the past.
+- **Treat a pre-feature baseline as snapshot-unknown, not snapshot-empty.** Live records written before the feature existed store a flat array of bare id strings. Load code that coerces those to `{}` reports every one of them as changed on the next run. Detect the legacy shape and mark those ids `null` — no known previous value means no change event.
+
+Live on [Grants.gov](/tools/grants-gov-scraper) and [openFDA recalls](/tools/fda-recall-scraper), both off by default. Verified the same way as everything else here — on the real platform, by mutating stored state rather than trusting a unit test: seed a baseline (509 opportunities; 29 Class I recalls), `PUT` two altered snapshots straight into the key-value store via the API, rerun, and confirm that exactly those two rows come back with the right tags and that the run charged for exactly two rows. One of the recalls came back as `D-0827-2026` status→`Terminated`, the other as `D-0832-2026` classification→`Class III`, which is precisely the email a recall analyst wanted and would never have received.
+
 ## How to actually test it
 
 Unit tests do not catch any of these. All of them need real runs against the live API, and the sequence that catches most of them is three runs:
@@ -97,8 +111,8 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 
 - [NIH RePORTER Scraper](/tools/nih-reporter-scraper) — baseline keyed on `appl_id`
 - [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`
-- [Grants.gov Scraper](/tools/grants-gov-scraper) — opportunity `id`
-- [FDA Recall Scraper](/tools/fda-recall-scraper) — `recall_number`
+- [Grants.gov Scraper](/tools/grants-gov-scraper) — opportunity `id`, plus optional `watchChanges` (close-date, status and forecast-to-posted transitions on opportunities you already have)
+- [FDA Recall Scraper](/tools/fda-recall-scraper) — `recall_number`, plus optional `watchChanges` (recall `status` and `classification` changes)
 - [ClinicalTrials Scraper](/tools/clinicaltrials-scraper) — `nctId` (ignored, by design, when an exact `nctIds` lookup is set — trap 6)
 - [Hacker News Scraper](/tools/hacker-news-scraper) — `objectID`
 - [ATS Jobs Scraper](/tools/ats-jobs-scraper) — `company:jobId`
