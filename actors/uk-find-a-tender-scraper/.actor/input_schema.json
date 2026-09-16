@@ -97,6 +97,12 @@
       "type": "boolean",
       "description": "Attach the complete, unmodified OCDS 1.1 release JSON for each notice as a 'rawOcds' field, in addition to the normalized fields. Off by default — turn it on if your pipeline wants the full original government data (nested parties, all documents, amendment history) rather than just the flattened columns.",
       "default": false
+    },
+    "watchLabel": {
+      "title": "Watch mode: label",
+      "type": "string",
+      "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search.",
+      "editor": "textfield"
     }
   },
   "required": []

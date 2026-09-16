@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -57,6 +58,7 @@ const openOnly = input.openOnly === true;
 const includeRawOcds = input.includeRawOcds === true;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const maxPagesScanned = Math.min(Math.max(Number(input.maxPagesScanned ?? 50), 1), 500);
+const watchLabel = String(input.watchLabel ?? '').trim();
 
 const PAGE_SIZE = 100; // hard API cap on both portals: limit=200 returns HTTP 400
 
@@ -281,6 +283,90 @@ function matches(row) {
     return true;
 }
 
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query. Same
+// design as federal-register-scraper/grants-gov-scraper/eu-ted-tenders-scraper:
+// baseline (notice ids already delivered) kept in a NAMED key-value store so
+// it survives across scheduled runs; the default KV store is per-run and
+// would reset the baseline every time.
+const WATCH_STORE = 'fetchsmith-uk-tender-watch';
+const SEED_CAP = 20000; // bound a seed walk against an unfiltered/very broad query
+const SEED_PAGE_CAP = 1000; // pages scanned (combined across sources) during a seed walk — well above maxPagesScanned's own 500 schema max, so seeding is never less thorough than the widest normal run could be
+const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+
+// updatedWithinDays is a ROLLING window (its resolved value changes every day),
+// so it is deliberately excluded from the fingerprint — same trap cycles
+// 297/298 found the hard way on other Actors. dateFromMs/dateToMs are only
+// non-null when the buyer set an explicit bound (see parseBound above), so
+// including them is safe: an explicit absolute window is a real criteria
+// choice, not a moving target. searchQuery/buyerNameFilter are stored in
+// their already-normalized (NFC-folded, lowercased) form since that is what
+// actually drives matching, not the buyer's raw input casing.
+const watchCriteria = {
+    sources: [...sources].sort(),
+    stages: [...stages].sort(),
+    cpvCodes: [...cpvCodes].sort(),
+    searchQuery,
+    buyerName: buyerNameFilter,
+    minValueGbp,
+    maxValueGbp,
+    openOnly,
+    dateFromMs,
+    dateToMs,
+};
+
+// Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted directly.
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let skippedSeen = 0;
+const watchSeen = new Set(); // notice ids (ocid, falling back to noticeId) already delivered under this label+fingerprint
+
+async function saveWatchRecord(status) {
+    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        criteria: watchCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status,
+        runCount: (watchRecord.runCount ?? 0) + 1,
+        seenCount: ids.length,
+        seenIds: ids,
+    });
+}
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        for (const id of existing.seenIds) watchSeen.add(String(id));
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered notice(s). Only notices NOT in that baseline are returned and charged.`,
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+            + 'It records which notices already match and returns ZERO results (you are charged nothing). Run it '
+            + 'again on the same label and filters — on a schedule, typically — to get only what is new since now.',
+        );
+    }
+}
+
 // First FREE_PER_RUN matching records of every run are free (matches the leading
 // competitor's trial hook) so a buyer can see real data shape before paying for any of it.
 const FREE_PER_RUN = 25;
@@ -383,8 +469,14 @@ if (!sources.length) {
 const cursors = sources.map((key) => ({ key, source: SOURCES[key], url: SOURCES[key].buildUrl(), buffer: [], pushed: 0, done: false }));
 for (const c of cursors) log.info(`${c.source.label}: ${c.url}`);
 
+// During a seed walk the loop is bounded by SEED_CAP/SEED_PAGE_CAP, not the buyer's
+// own maxPagesScanned — see the watch-mode block above for why (a baseline that
+// stopped early would report every notice past the stopping point as "new" on
+// the first incremental run, the cycle 297/298 trap).
+const effectivePageCap = seeding ? Math.max(maxPagesScanned, SEED_PAGE_CAP) : maxPagesScanned;
+
 async function fillBuffer(c) {
-    while (!c.buffer.length && c.url && page < maxPagesScanned) {
+    while (!c.buffer.length && c.url && page < effectivePageCap) {
         const body = await fetchPage(c.url, c.source);
         if (!body) { c.url = null; break; }
         const releases = body.releases ?? [];
@@ -398,9 +490,10 @@ async function fillBuffer(c) {
     if (!c.buffer.length) c.done = true;
 }
 
-while (keepGoing && pushed < maxResults && cursors.some((c) => !c.done)) {
+while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < SEED_CAP : pushed < maxResults)) {
     for (const c of cursors) {
-        if (c.done || !keepGoing || pushed >= maxResults) continue;
+        if (c.done || !keepGoing) continue;
+        if (seeding ? watchSeen.size >= SEED_CAP : pushed >= maxResults) continue;
         if (!c.buffer.length) await fillBuffer(c);
         if (c.done || !c.buffer.length) continue;
 
@@ -414,24 +507,65 @@ while (keepGoing && pushed < maxResults && cursors.some((c) => !c.done)) {
 
         const row = normalize(release, c.source, includeRawOcds);
         if (!matches(row)) { filtered += 1; continue; }
+
+        const watchId = watchMode ? (row.ocid ?? row.noticeId) : null;
+        if (watchMode && !seeding && watchId && watchSeen.has(watchId)) {
+            skippedSeen += 1;
+            continue;
+        }
+        if (seeding) {
+            if (watchId) watchSeen.add(watchId);
+            continue;
+        }
+        const beforePush = pushed;
         keepGoing = await pushResult(row);
         c.pushed += 1;
+        // Recorded as delivered only after the charge actually succeeded — anything
+        // dropped by maxResults or a charge limit stays "new" for the next run.
+        if (watchMode && watchId && pushed > beforePush) watchSeen.add(watchId);
     }
 }
 log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, after ${page} page(s) scanned.`);
 for (const c of cursors) perSource[c.key] = c.pushed;
 
-if (pushed === 0) {
-    log.warning(
-        `No notices matched. Scanned ${scanned} releases over ${page} page(s) and filtered out ${filtered}. `
-        + 'Most common causes, in order: (1) "searchQuery" is too specific — every word must appear in the title, '
-        + 'description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — both portals use '
-        + '8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
-        + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
-        + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '
-        + 'notices are on — Find a Tender is above-threshold only and is a thin feed; Contracts Finder carries the '
-        + 'much larger sub-threshold flow. Filtered rows are never charged.',
-    );
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} notice(s) recorded as already-seen, `
+            + '0 results returned, 0 charged. The next run on this label and these filters returns only new notices.'
+            + (watchSeen.size >= SEED_CAP
+                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-notice cap. Narrow the query (a CPV code, a buyer `
+                + 'name, a shorter date window) so the whole result set fits, or the first incremental run will '
+                + 'report notices past the cap as new.'
+                : ''),
+        );
+    } else {
+        log.info(
+            `Watch label "${watchLabel}": ${pushed} new notice(s) since the last run `
+            + `(${skippedSeen} already-delivered notice(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+        );
+    }
+}
+
+if (pushed === 0 && !seeding) {
+    if (watchMode) {
+        log.warning(
+            `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
+            + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+        );
+    } else {
+        log.warning(
+            `No notices matched. Scanned ${scanned} releases over ${page} page(s) and filtered out ${filtered}. `
+            + 'Most common causes, in order: (1) "searchQuery" is too specific — every word must appear in the title, '
+            + 'description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — both portals use '
+            + '8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
+            + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
+            + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '
+            + 'notices are on — Find a Tender is above-threshold only and is a thin feed; Contracts Finder carries the '
+            + 'much larger sub-threshold flow. Filtered rows are never charged.',
+        );
+    }
 }
 
 log.info(

@@ -31,7 +31,7 @@ One row per notice, including:
 - **Bid pipeline / lead generation.** Filter to your CPV codes and `openOnly: true` and you get every live UK opportunity in your sector, with the buyer's email address attached.
 - **Competitor intelligence.** Set `stages: ["award"]` to see who is winning contracts, for how much, from which buyers.
 - **Market sizing.** Pull a year of awards for a CPV family and total the contract values.
-- **Alerting.** Run on a schedule with `updatedWithinDays: 1` and push new matches into your CRM or Slack.
+- **Alerting.** Run on a schedule with `updatedWithinDays: 1` and push new matches into your CRM or Slack, or use `watchLabel` below to get only what's new automatically.
 
 ## Input
 
@@ -49,6 +49,7 @@ One row per notice, including:
 | `maxResults` | integer | `100` | Hard stop. |
 | `maxPagesScanned` | integer | `50` | Safety cap on API pages read while looking for matches. Raise it for narrow filters over long date ranges. |
 | `includeRawOcds` | boolean | `false` | Attach the complete, unmodified OCDS 1.1 release JSON as a `rawOcds` field on every row, alongside the normalized fields — for pipelines that want the full nested government data (all parties, all documents, amendment history), not just the flattened columns. |
+| `watchLabel` | string | — | Turn this run into an **alert**: see "Watch mode" below. |
 
 ### Example
 
@@ -89,6 +90,20 @@ One row per notice, including:
 }
 ```
 
+## Only what's new since last run (`watchLabel`)
+
+A bid-monitoring job is a *subscription*, not a search: you want the notices published since you last looked, not the same hundreds of rows re-delivered (and re-charged) every morning.
+
+Set `watchLabel` to a name for the query — `nhs-cleaning`, say — and this Actor keeps track of which notices it has already given you under that name:
+
+- **The first run on a new label is a free baseline.** It scans both selected portals for everything currently matching your filters, records it, returns **zero** results and charges **nothing**.
+- **Every run after that returns only the new notices.** Already-delivered rows are dropped before they are pushed or billed, so you never pay for the same notice twice — across either portal.
+- **A notice counts as delivered only once it has actually been charged.** Anything cut off by `maxResults` or a charge limit stays "new" for the next run rather than vanishing.
+- **Changing a filter starts a fresh baseline** — a different filter is a different question, so you don't get a dump of everything the old, narrower query happened to exclude.
+- **The rolling `updatedWithinDays` window is deliberately *not* part of that identity.** It moves every day; if it counted, a daily schedule would re-seed forever and never deliver anything. `dateFrom`/`dateTo`, when you set them explicitly, do count.
+
+The baseline lives in a key-value store named `fetchsmith-uk-tender-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a UK procurement alert covering both portals.
+
 ## Pricing
 
 **The first 25 matching records of every run are free.** After that, **$0.003 per result on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0028, Silver $0.0026), no start fee. You are charged only for rows that actually land in your dataset — notices filtered out by `cpvCodes`, `searchQuery`, the value bounds or `openOnly` are **never charged**, even though the Actor had to read them from the API to decide.
@@ -115,6 +130,10 @@ No. Both portals' OCDS APIs are free, key-free and open-licensed (Open Governmen
 **Is this legal?**
 Yes — it reads two official UK government open-data APIs under the OGL v3 licence. The contact details published on a notice are organisational procurement contacts, published by the buyer for exactly this purpose.
 
+**Why did my first `watchLabel` run return nothing?** By design — the first run on a new label + filter combination is a baseline: it records everything currently matching so the *next* run can tell you what's new, and charges nothing.
+
+**Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-uk-tender-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
+
 ## Source code
 
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/uk-find-a-tender-scraper
@@ -123,5 +142,6 @@ https://github.com/Fetchsmith/fetchsmith/tree/main/actors/uk-find-a-tender-scrap
 Engineering write-ups behind this Actor:
 - [The UK publishes every public contract as OCDS JSON — and the money isn't where you'd look](https://fetchsmith.com/blog/uk-find-a-tender-ocds-json-api)
 - [When a dateTo filter silently excludes its own last day — and which government-data APIs actually do this](https://fetchsmith.com/blog/dateto-filter-silently-excludes-its-own-last-day)
+- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the traps it has to avoid.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
