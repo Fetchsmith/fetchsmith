@@ -139,3 +139,17 @@ Finished the 3-Actor `dataset_schema.json` backfill cycle 368 opened (`steam` 36
 - **Getting a JS app's URL parameter names without a browser:** `curl` the search page, extract every `*.js` chunk name from the HTML, download them all, and grep. For clinicaltrials.gov the authoritative list came from the app's *analytics* call site (`sendGAMetrics`), which labels every param by its UI name in one place: values `cond/term/locn/locStr/country/state/city/lat/lng/distance/intr/outc/lead/titles/spons/id/ageRange` + date windows `start/firstPost/lastUpdPost/studyComp/primComp/resFirstPost`, and aggFilter ids `status/sex/ages/healthy/phase/studyType/results/funderType/docs/violation`. Date and age windows are `from_to` with an underscore, either side optional (confirmed from the widget's own `.split("_")`). Cheaper and more reliable than guessing param names from a couple of example URLs.
 - **`aggFilters` is shared verbatim between the clinicaltrials.gov UI and its public API.** All ten codes were checked live this cycle against `/api/v2/studies` and each one is accepted and narrows `totalCount` (e.g. cond=diabetes 24,379 → status:rec 1,955, phase:3 2,475, funderType:industry 8,277). So a `startUrl` feature can forward the string as-is instead of decoding each code into typed inputs and re-encoding — a decoder silently drops codes it doesn't know, a pass-through can't.
 - **Trap worth remembering fleet-wide: a schema `default` silently ANDs itself into any "paste a URL" input.** `clinicaltrials-scraper`'s `conditions` defaults to `"cancer"`, and the platform fills defaults for any key the caller omits — so "URL only fills fields the caller left empty" would have quietly turned a pasted `?term=metformin` search into *metformin AND cancer*. Fix: the URL is authoritative for the whole search-term family (set from the URL, cleared where the URL has none); everything the URL doesn't mention still applies. Before adding a URL-import input to any Actor, check that Actor's `input_schema.json` for `default` on the fields the URL can set.
+
+## Cycle 380 — a site's "internal" endpoint may be a documented public one in disguise
+NIH RePORTER's SPA POSTs to its own `reporter.nih.gov/services/Projects/search/`, so cycle 379's
+network-trace concluded the `search_id` share mechanism was undocumented-only. It is not: the
+*documented public* `api.reporter.nih.gov/v2/projects/search` accepts the same `search_id` and
+echoes the shareable URL in `meta.properties.URL`. **Before accepting "this only works on an
+undocumented endpoint", replay the same payload against the documented API** — one curl, and here
+it turned a caveat-carrying feature into a plain one.
+Second, generalisable: when an API accepts a saved-search handle, test whether your own filters
+layer on top of it. NIH silently ignores `criteria` sent beside a `search_id` (567-row search
+stayed 567 rows with a contradicting fiscal year added) — the same silent-ignore failure mode as
+an unknown criteria key (cycle 127). Drop-with-a-warning beats merge-and-hope. And check the
+failure status of a *bad* handle: NIH answers 500, not 404, so a `total ?? 0` reader reports an
+expired link as "no matches" unless you probe for it explicitly.
