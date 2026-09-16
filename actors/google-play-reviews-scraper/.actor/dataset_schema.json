@@ -210,6 +210,14 @@
         "title": "UserName",
         "example": "Nikhil Rathod"
       },
+      "reviewerProfileImageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewerProfileImageUrl",
+        "example": "https://play-lh.googleusercontent.com/a-/ALV-UjWSVG8VsUocvoyTsbQ1gkfF637eyoLbY-FUM-utLG5MtStivy66aw"
+      },
       "text": {
         "type": [
           "string",
@@ -225,6 +233,14 @@
         ],
         "title": "Date",
         "example": "2026-09-08T03:01:35.135Z"
+      },
+      "language": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Language",
+        "example": "en"
       },
       "thumbsUp": {
         "type": [

@@ -315,7 +315,7 @@
     {
       "slug": "google-play-reviews-scraper",
       "title": "Google Play Reviews Scraper – Rating, Keyword & Date Filters",
-      "summary": "Google Play app reviews and full app metadata by app ID or search term: review rating, text, date, version, developer replies and per-aspect sub-ratings, plus the app's score, ratings and review counts, install range, price and currency, genre, content rating, and release/last-updated dates. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet app returns nothing and costs nothing.",
+      "summary": "Google Play app reviews and full app metadata by app ID or search term: review rating, text, date, version, reviewer name and profile photo, developer replies and per-aspect sub-ratings, plus the app's score, ratings and review counts, install range, price and currency, genre, content rating, and release/last-updated dates. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet app returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -356,8 +356,10 @@
         "url",
         "reviewId",
         "userName",
+        "reviewerProfileImageUrl",
         "text",
         "date",
+        "language",
         "thumbsUp",
         "replyText",
         "replyDate",
