@@ -5,7 +5,7 @@
     "properties": {
       "id": {
         "title": "Id",
-        "example": "49563355",
+        "example": "4058874",
         "type": [
           "string",
           "null"
@@ -21,7 +21,7 @@
       },
       "title": {
         "title": "Title",
-        "example": "Discovery of a new OpenAI agent message board",
+        "example": "HackerNews API: What if HN does not have API? Make API on the fly with APIfy",
         "type": [
           "string",
           "null"
@@ -29,7 +29,7 @@
       },
       "url": {
         "title": "Url",
-        "example": "https://collusion.wiki/",
+        "example": "http://apify.heroku.com/resources/4fca535156983f0001000002",
         "type": [
           "string",
           "null"
@@ -37,7 +37,7 @@
       },
       "hnUrl": {
         "title": "HnUrl",
-        "example": "https://news.ycombinator.com/item?id=49563355",
+        "example": "https://news.ycombinator.com/item?id=4058874",
         "type": [
           "string",
           "null"
@@ -45,7 +45,7 @@
       },
       "author": {
         "title": "Author",
-        "example": "moultano",
+        "example": "sathish316",
         "type": [
           "string",
           "null"
@@ -53,7 +53,7 @@
       },
       "points": {
         "title": "Points",
-        "example": 2293,
+        "example": 132,
         "type": [
           "number",
           "null"
@@ -61,7 +61,7 @@
       },
       "numComments": {
         "title": "NumComments",
-        "example": 1597,
+        "example": 49,
         "type": [
           "number",
           "null"
@@ -69,7 +69,7 @@
       },
       "storyId": {
         "title": "StoryId",
-        "example": 49563355,
+        "example": 4058874,
         "type": [
           "number",
           "string",
@@ -92,7 +92,7 @@
       },
       "text": {
         "title": "Text",
-        "example": "<a href=\"https:&#x2F;&#x2F;www.reuters.com&#x2F;world&#x2F;europe&#x2F;openai-agents-hijacked-german-website-previously-",
+        "example": "Hello HN,<p>I built this because I wanted to give Claude Desktop access to my Notion workspace without running a flaky l",
         "type": [
           "string",
           "null"
@@ -100,7 +100,7 @@
       },
       "createdAt": {
         "title": "CreatedAt",
-        "example": "2026-09-04T11:54:53Z",
+        "example": "2012-06-02T19:16:33Z",
         "type": [
           "string",
           "null"
@@ -108,6 +108,7 @@
       },
       "query": {
         "title": "Query",
+        "example": "apify",
         "type": [
           "string",
           "null"
@@ -115,7 +116,6 @@
       },
       "karma": {
         "title": "Karma",
-        "example": 157316,
         "type": [
           "number",
           "null"
@@ -123,7 +123,6 @@
       },
       "about": {
         "title": "About",
-        "example": "Bug fixer.",
         "type": [
           "string",
           "null"
@@ -131,9 +130,43 @@
       },
       "accountCreatedAt": {
         "title": "AccountCreatedAt",
-        "example": "2006-10-09T19:41:32Z",
         "type": [
           "string",
+          "null"
+        ]
+      },
+      "githubRepo": {
+        "title": "GithubRepo",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "githubStars": {
+        "title": "GithubStars",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "githubLanguage": {
+        "title": "GithubLanguage",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "githubPushedAt": {
+        "title": "GithubPushedAt",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "githubOpenIssues": {
+        "title": "GithubOpenIssues",
+        "type": [
+          "number",
           "null"
         ]
       }

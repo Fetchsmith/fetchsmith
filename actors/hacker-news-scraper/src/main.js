@@ -19,6 +19,7 @@ if (input.minComments) numericFilters.push(`num_comments>=${Number(input.minComm
 const author = input.author ? String(input.author).trim() : null;
 const usernames = [...new Set((input.usernames ?? []).map((u) => String(u).trim()).filter((u) => u.length))];
 const watchLabel = String(input.watchLabel ?? '').trim();
+const enrichGithubLinks = input.enrichGithubLinks === true;
 
 if (!queries.length) queries.push(''); // empty query = browse by tag/date (e.g. front page, Ask HN, Who's Hiring)
 
@@ -130,7 +131,72 @@ function mapHit(hit) {
     karma: null,
     about: null,
     accountCreatedAt: null,
+    githubRepo: null,
+    githubStars: null,
+    githubLanguage: null,
+    githubPushedAt: null,
+    githubOpenIssues: null,
   };
+}
+
+// Matches a GitHub repo reference (owner/repo) out of a URL or free text, skipping
+// GitHub's own non-repo paths (github.com/sponsors/x, /marketplace/x, etc. are not repos).
+const GITHUB_REPO_RE = /github\.com\/([A-Za-z0-9](?:[A-Za-z0-9-]){0,38})\/([A-Za-z0-9_.-]+?)(?=[/?#\s"'.)]|$)/i;
+const GITHUB_NON_REPO_OWNERS = new Set(['sponsors', 'marketplace', 'topics', 'search', 'orgs', 'settings', 'apps', 'features', 'about', 'pricing']);
+const githubCache = new Map(); // ownerRepo -> enrichment fields, or null once known-missing (avoid refetching the same repo twice in one run)
+const GITHUB_LOOKUP_CAP = 200; // bound cost against GitHub's unauthenticated 60/hr rate limit
+let githubLookups = 0;
+let githubRateLimited = false;
+
+function extractGithubRepo(item) {
+  for (const haystack of [item.url, item.storyUrl, item.text, item.title]) {
+    if (!haystack) continue;
+    const m = GITHUB_REPO_RE.exec(haystack);
+    if (m && !GITHUB_NON_REPO_OWNERS.has(m[1].toLowerCase())) {
+      return `${m[1]}/${m[2].replace(/\.git$/i, '')}`;
+    }
+  }
+  return null;
+}
+
+async function enrichGithub(item) {
+  const repoFullName = extractGithubRepo(item);
+  if (!repoFullName) return;
+  item.githubRepo = repoFullName;
+  if (githubCache.has(repoFullName)) {
+    Object.assign(item, githubCache.get(repoFullName) || {});
+    return;
+  }
+  if (githubRateLimited || githubLookups >= GITHUB_LOOKUP_CAP) return;
+  githubLookups += 1;
+  try {
+    const res = await gotScraping({
+      url: `https://api.github.com/repos/${repoFullName}`,
+      timeout: { request: 15000 },
+      retry: { limit: 0 },
+      responseType: 'json',
+      headers: { 'User-Agent': 'fetchsmith-hacker-news-scraper' },
+    });
+    const d = res.body;
+    const fields = {
+      githubStars: d.stargazers_count ?? null,
+      githubLanguage: d.language ?? null,
+      githubPushedAt: d.pushed_at ?? null,
+      githubOpenIssues: d.open_issues_count ?? null,
+    };
+    githubCache.set(repoFullName, fields);
+    Object.assign(item, fields);
+  } catch (e) {
+    const status = e.response?.statusCode;
+    if (status === 403 || status === 429) {
+      githubRateLimited = true;
+      log.warning('GitHub API rate limit reached -- remaining items in this run keep githubRepo but not star/language/pushed-at data.');
+    } else if (status === 404) {
+      githubCache.set(repoFullName, null); // repo renamed/deleted/private -- do not retry
+    } else {
+      log.warning(`GitHub lookup failed for ${repoFullName}: ${e.message}`);
+    }
+  }
 }
 
 function mapUser(username, data) {
@@ -152,6 +218,11 @@ function mapUser(username, data) {
     karma: data.karma ?? null,
     about: data.about ?? null,
     accountCreatedAt: data.created ? new Date(data.created * 1000).toISOString() : null,
+    githubRepo: null,
+    githubStars: null,
+    githubLanguage: null,
+    githubPushedAt: null,
+    githubOpenIssues: null,
   };
 }
 
@@ -211,7 +282,14 @@ for (const query of queries) {
       if (seenIds.has(hit.objectID)) { duplicates += 1; continue; }
       seenIds.add(hit.objectID);
       hit._query = query || null;
-      keepGoing = await pushResult(mapHit(hit), hit.objectID);
+      const mapped = mapHit(hit);
+      // Skip the GitHub lookup for rows that pushResult will drop uncharged anyway
+      // (seeding baseline, or already delivered under this watch label) -- those never
+      // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
+      // would only starve the rows that actually get returned.
+      const willDeliver = !(watchMode && (seeding || watchSeen.has(String(hit.objectID))));
+      if (enrichGithubLinks && willDeliver) await enrichGithub(mapped);
+      keepGoing = await pushResult(mapped, hit.objectID);
       if (!keepGoing) break;
     }
     page += 1;

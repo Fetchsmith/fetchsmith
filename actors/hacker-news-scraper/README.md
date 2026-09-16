@@ -10,6 +10,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 - Build datasets of Show HN launches or Ask HN discussions by topic
 - Look up a founder's or user's HN karma, bio and account age (`usernames`)
 - Run a scheduled keyword alert that only ever returns new mentions (`watchLabel`)
+- Spot which Show HN launches or technical discussions link to a real, active GitHub repo — with star count, language and last-push date (`enrichGithubLinks`)
 
 ## Input
 | Field | Type | Description |
@@ -26,6 +27,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `maxResults` | integer | Overall cap |
 | `usernames` | array | HN usernames to fetch profile data for (karma, about, account age) — a separate lookup, not a story filter. To fetch ONLY profiles with no story search, also set `queries` and `tags` to `[]`. |
 | `watchLabel` | string | Name a saved search to get **only story/comment/job hits new since its last run** — see below |
+| `enrichGithubLinks` | boolean | When a result links to a GitHub repo, add star count, primary language, last-push date and open-issue count (default `false`) |
 
 ## Output (one item per story/comment)
 ```json
@@ -39,9 +41,15 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
   "points": 142,
   "numComments": 38,
   "createdAt": "2026-09-01T12:00:00.000Z",
-  "query": "fetchsmith"
+  "query": "fetchsmith",
+  "githubRepo": null,
+  "githubStars": null,
+  "githubLanguage": null,
+  "githubPushedAt": null,
+  "githubOpenIssues": null
 }
 ```
+`githubRepo`/`githubStars`/`githubLanguage`/`githubPushedAt`/`githubOpenIssues` are only populated when `enrichGithubLinks: true` and the item actually links to a GitHub repo (common on Show HN); otherwise they stay `null`.
 
 A `usernames` lookup returns one row per user, `type: "user"`:
 ```json
@@ -59,8 +67,11 @@ A `usernames` lookup returns one row per user, `type: "user"`:
 ## Watch mode (`watchLabel`)
 Name a saved search — `watchLabel: "my-launch-watch"` — and the Actor keeps a per-label record of every story/comment/job hit it has already delivered under that name, so a scheduled run returns **only what is new since last time** and you are charged for nothing else. The first run on a new label is a **free baseline run**: it records what already matches (up to 5000 hits) and returns zero results. Every run after that returns only new items. Change `queries`, `tags`, `author`, `sortBy`, the date range or the point/comment thresholds and the label starts a fresh baseline, instead of dumping everything the old narrower filter excluded as "new". `usernames` profile lookups are unaffected — they run and are charged normally every time, since a profile snapshot isn't a discrete new item.
 
+## GitHub enrichment (`enrichGithubLinks`)
+When a story or comment's URL or text links to a GitHub repo, set `enrichGithubLinks: true` to look it up on GitHub's public API and add `githubStars`, `githubLanguage`, `githubPushedAt` and `githubOpenIssues` — handy for triaging Show HN launches or "what got built" threads by real traction rather than just HN points. Off by default (adds one extra request per distinct repo found). Bounded to 200 lookups per run against GitHub's unauthenticated 60/hour rate limit; a repo linked by multiple items in the same run is only looked up once. If the limit is hit mid-run, later items still get `githubRepo` (the match itself is free) but not the star/language/push data.
+
 ## Pricing
-`result` — charged per item returned. Empty queries and failed pages are free. A `watchLabel` baseline run always returns 0 rows and is charged nothing.
+`result` — charged per item returned. Empty queries and failed pages are free. A `watchLabel` baseline run always returns 0 rows and is charged nothing. GitHub enrichment adds no separate charge.
 
 ## Tips
 - Want the current front page? Set `queries` to `[]` and `tags` to `["front_page"]` — no keyword needed, returns the stories on HN's front page right now (verified against `hacker-news.firebaseio.com/v0/topstories.json`, refreshes on the same cadence as the live site).
@@ -80,6 +91,7 @@ Name a saved search — `watchLabel: "my-launch-watch"` — and the Actor keeps 
 **What if a username in `usernames` doesn't exist?** It's skipped with no charge; the run's status message names which username(s) weren't found.
 **How do I get a scheduled alert for new mentions of a keyword, not the same matches every time?** Set `watchLabel` (see above). The first run is a free baseline (0 results); schedule the same input to run again later and it returns only hits it has never delivered under that label before.
 **I set `watchLabel` and `usernames` together — why did the profile row still show up on the baseline run?** By design. `watchLabel` only tracks story/comment/job search hits (they have a stable id to dedupe on); a `usernames` profile is a snapshot, not a discrete new item, so it is charged every run regardless of watch mode.
+**Why are `githubStars`/`githubLanguage` null even though `githubRepo` is set?** Either GitHub's public API had nothing at that path (repo renamed, deleted or private — rare) or the run's 200-lookup budget or GitHub's own unauthenticated rate limit was hit; `githubRepo` itself is a free regex match against the item's own URL/text, not an API call, so it's always populated when a link is found.
 
 ## Related guides
 Engineering write-ups behind this Actor:
