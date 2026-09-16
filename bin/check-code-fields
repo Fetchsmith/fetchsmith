@@ -42,6 +42,18 @@ BIND_RES = [
 # they overlap the record schema by construction without ever being pushed.
 NON_ROW_BIND = re.compile(r'(watch|criteria|summary|fingerprint|stats|cache|opts|options|payload)', re.I)
 
+# Rule 4 (added cycle 373): a literal that gets consumed into a differently-shaped row
+# before push, never pushed itself. apple-podcasts-scraper's chart-mode `results =
+# entries.map((e) => ({id, name, url, artworkUrl100, ...}))` (main.js ~line 400) is an
+# intermediate normalization object later folded into podcastRow()-shaped fields; it has
+# no `const/let/var` binding for the bind-based suppressions above to key off (plain
+# reassignment to an already-declared `results` var). Hand-confirmed cycles 368/371/372 by
+# reading the push path, not just the scan. Keyed by exact field set, not just slug, so a
+# genuinely new code-only field on this Actor still trips the check.
+FIELD_SUPPRESS = {
+    'apple-podcasts-scraper': {'id', 'name', 'url', 'artworkUrl100'},
+}
+
 
 STMT_BIND_RE = re.compile(r'(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=')
 
@@ -160,7 +172,8 @@ def main(argv):
             for k in keys:
                 if k not in emitted and k not in internal:
                     emitted.append(k)
-        code_only = [k for k in emitted if k not in dset]
+        suppress_fields = FIELD_SUPPRESS.get(slug, set()) if not show_all else set()
+        code_only = [k for k in emitted if k not in dset and k not in suppress_fields]
         schema_only = [k for k in declared if k not in emitted]
         unadvertised = [k for k in emitted if k in dset and k not in advertised]
 
