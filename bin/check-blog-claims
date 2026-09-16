@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""Flag blog posts whose '<N> flat fields' claim about one of OUR Actors has gone stale.
+
+Added cycle 352 after two guides were found understating their own Actor by 16 and 3
+fields (Actors gain fields; the post that markets them never gets re-read).
+
+Only sentences that link to an Actor (apify.com/fetchsmith/<slug> or /tools/<slug>) are
+checked, so counts describing an UPSTREAM API's row shape are left alone.
+registry.json is the source of truth (check-registry-fields already proves it matches
+each Actor's dataset schema).
+"""
+import glob
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+reg = {t["slug"]: len(t.get("output_fields", [])) for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]}
+
+# "<N> flat fields", "<N> typed output fields", "<N> normalized fields", ...
+COUNT = re.compile(r"(\d+)\s+(?:flat|typed|normali[sz]ed)(?:\s+output)?\s+fields?")
+
+flagged = 0
+checked = 0
+for path in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
+    for lineno, line in enumerate(open(path), 1):
+        counts = COUNT.findall(line)
+        if not counts:
+            continue
+        slugs = [s for s in reg if f"fetchsmith/{s}" in line or f"/tools/{s}" in line]
+        if not slugs:
+            continue  # count is about an upstream API, not one of ours
+        checked += 1
+        for claimed in counts:
+            for slug in slugs:
+                if int(claimed) != reg[slug]:
+                    flagged += 1
+                    print(f"STALE {os.path.basename(path)}:{lineno}  claims {claimed} fields, {slug} has {reg[slug]}")
+
+print(f"check-blog-claims: {checked} Actor field-count claim(s) checked, {flagged} stale")
+sys.exit(1 if flagged else 0)

@@ -85,7 +85,19 @@ The fix is one optional boolean (`watchChanges`) and a change of state shape: th
 - **Refresh the snapshot on every scan, whether or not the flag is on.** Otherwise the first run after a buyer enables `watchChanges` re-delivers — and charges for — a backlog of drift that accumulated while nobody was watching. Turning the flag on should start detecting *future* changes, not invoice the past.
 - **Treat a pre-feature baseline as snapshot-unknown, not snapshot-empty.** Live records written before the feature existed store a flat array of bare id strings. Load code that coerces those to `{}` reports every one of them as changed on the next run. Detect the legacy shape and mark those ids `null` — no known previous value means no change event.
 
-Live on [Grants.gov](/tools/grants-gov-scraper) and [openFDA recalls](/tools/fda-recall-scraper), both off by default. Verified the same way as everything else here — on the real platform, by mutating stored state rather than trusting a unit test: seed a baseline (509 opportunities; 29 Class I recalls), `PUT` two altered snapshots straight into the key-value store via the API, rerun, and confirm that exactly those two rows come back with the right tags and that the run charged for exactly two rows. One of the recalls came back as `D-0827-2026` status→`Terminated`, the other as `D-0832-2026` classification→`Class III`, which is precisely the email a recall analyst wanted and would never have received.
+Live on [Grants.gov](/tools/grants-gov-scraper), [openFDA recalls](/tools/fda-recall-scraper) and [US federal awards](/tools/us-federal-awards-scraper), off by default on all three. Verified the same way as everything else here — on the real platform, by mutating stored state rather than trusting a unit test: seed a baseline (509 opportunities; 29 Class I recalls; 26 awards), `PUT` two altered snapshots straight into the key-value store via the API, rerun, and confirm that exactly those two rows come back with the right tags and that the run charged for exactly two rows. One of the recalls came back as `D-0827-2026` status→`Terminated`, the other as `D-0832-2026` classification→`Class III`, which is precisely the email a recall analyst wanted and would never have received.
+
+On US federal awards the snapshot rides on USAspending's own `Last Modified Date` plus the amount fields (`awardAmount`/`totalOutlays`, or `loanValue`/`subsidyCost` on loans) and the period-of-performance end date — a contract modification that raises a ceiling or extends an end date is the whole reason a buyer watches that dataset. It is deliberately scoped to prime-award mode only: sub-award rows carry no reliable per-record drift signal, so asking for `watchChanges` there logs a named warning and falls back to a plain id watch, rather than pretending to detect changes it cannot see.
+
+## The corollary nobody checks: confirm the record actually mutates
+
+Having shipped that three times, the obvious next move was a fourth — the [Federal Register](/tools/federal-register-scraper), where a rule's effective date or comment deadline visibly gets extended all the time. We had it written down as the last candidate. It is wrong, and finding out cost one hour of reading real documents instead of one hour of writing code that would never have fired.
+
+The Federal Register **never edits a published document.** Pull a real "Extension of Comment Period" notice (`2025-04129`, `2025-02237`, `2026-03798` all work), find the original rule it extends, refetch that original: its own `effective_on` and `comments_close_on` are byte-identical to the day it was published. The amendment is not a mutation of the original record, it's a *brand-new document* with its own `document_number`, whose free-text `dates`/`action` cites the original by its `"NN FR NNNNN"` citation. A snapshot diff keyed on the original's id has nothing to diff. The feature would have passed every unit test, shipped green, and silently never fired once in production — the worst failure mode on this entire page, because nothing about it looks broken.
+
+The general rule, which is cheap and which we skipped three times because the pattern had worked three times: **before porting a change-detection feature to a new host, refetch one old record and prove the field you plan to snapshot actually changes.** A publisher of record (a gazette, a court docket, a regulatory filing system) is usually append-only by statute — its whole point is that history cannot be rewritten. The mutable-record hosts (a grants portal, a recall database, an awards system) are operational systems that track a live process, and those are the ones worth snapshotting.
+
+What that host needs instead is the inverse: a way to walk *forward* from a document to the ones that amend it. So the Federal Register Actor got `referencedCitations` — every `"NN FR NNNNN"` citation extracted out of the document's own `dates`/`action` text, which for a correction or extension is almost always the original it amends. Zero extra API calls (the text is already in the response), empty on the ~90% of documents that amend nothing, and on a live `"extension of comment period"` query it resolved the correct original citation for 4 of 5 real extension documents. Watch mode delivers the amendment as the new document it genuinely is, and the field tells you what it points at.
 
 ## How to actually test it
 
@@ -110,7 +122,7 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 `watchLabel` is an optional input on 14 of our Actors — leave it unset and they behave exactly as before:
 
 - [NIH RePORTER Scraper](/tools/nih-reporter-scraper) — baseline keyed on `appl_id`
-- [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`
+- [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`, deliberately with **no** `watchChanges` (published documents are never edited; `referencedCitations` links an amendment back to what it amends instead)
 - [Grants.gov Scraper](/tools/grants-gov-scraper) — opportunity `id`, plus optional `watchChanges` (close-date, status and forecast-to-posted transitions on opportunities you already have)
 - [FDA Recall Scraper](/tools/fda-recall-scraper) — `recall_number`, plus optional `watchChanges` (recall `status` and `classification` changes)
 - [ClinicalTrials Scraper](/tools/clinicaltrials-scraper) — `nctId` (ignored, by design, when an exact `nctIds` lookup is set — trap 6)
@@ -118,7 +130,7 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 - [ATS Jobs Scraper](/tools/ats-jobs-scraper) — `company:jobId`
 - [EU TED Tenders Scraper](/tools/eu-ted-tenders-scraper) — `publication-number`
 - [UK Find a Tender Scraper](/tools/uk-find-a-tender-scraper) — `ocid`/`noticeId` across two fanned-out portals
-- [US Federal Awards Scraper](/tools/us-federal-awards-scraper) — award or sub-award id (ignored when an exact `awardIds` lookup is set — trap 6)
+- [US Federal Awards Scraper](/tools/us-federal-awards-scraper) — award or sub-award id (ignored when an exact `awardIds` lookup is set — trap 6), plus optional `watchChanges` on prime awards (last-modified date, amount/outlay and end-date changes)
 - [FEC Campaign Finance Scraper](/tools/fec-campaign-finance-scraper) — Schedule A's own `sub_id` (contributions mode only — trap 6 rules out candidates mode)
 - [Google Play Reviews Scraper](/tools/google-play-reviews-scraper) — `reviewId`, with a deferred per-app snapshot row (trap 7)
 - [App Store Reviews Scraper](/tools/app-store-reviews-scraper) — compound `appId:country:reviewId` across a two-axis app×country fanout, same deferred-snapshot pattern

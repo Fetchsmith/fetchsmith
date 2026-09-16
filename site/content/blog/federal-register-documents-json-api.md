@@ -82,6 +82,21 @@ The fix is to never send a guess. `GET /api/v1/agencies.json` returns all **472*
 
 One nice thing worth knowing while you're there: agency filtering **rolls up**. A single `conditions[agencies][]=homeland-security-department` returned Coast Guard (45/100 rows), FEMA (24), CBP (7), TSA (5) and USCIS (4) alongside the parent department. One parent slug is a whole-department filter — you don't need to enumerate children.
 
+## A document is never edited — so "did this rule's date change?" has no answer here
+
+This one only shows up when you try to build a change alert. A rule's effective date genuinely does get postponed, and comment periods genuinely do get extended — both are routine, and both are exactly what a compliance reader wants to be told about. So the obvious design is to store `effective_on` and `comments_close_on` per `document_number` and re-fetch periodically to diff them.
+
+That never fires. Pull any real amendment — `2025-04129`, `2025-02237` and `2026-03798` are all live "Extension of Comment Period" / "Postponement of Effective Date" documents — then fetch the original document it amends and compare it to what you stored. It is byte-identical. **The Federal Register is a publisher of record: it does not rewrite published documents.** An amendment is issued as a brand-new document, with its own `document_number`, its own publication date, and its own row in every query you run.
+
+What links the two is text, not a field. The new document's free-text `dates` and `action` refer to the original by its Federal Register citation — `"90 FR 12345"` — and there is no structured `amends` / `supersedes` / `parent_document` key anywhere in the schema. So the tracking you actually want is the inverse of a diff: watch for *new* documents, then resolve the citations inside them back to the originals you care about.
+
+```
+GET /api/v1/documents.json?conditions[term]=extension of comment period&order=relevance
+→ each hit's own dates/action text carries e.g. "corrections to the final rule published at 90 FR 12345"
+```
+
+The general form, worth carrying to any government source: **before building change detection, re-fetch one old record and confirm the field you plan to diff actually changes.** Append-only publishers of record (gazettes, court dockets, filing systems) are append-only on purpose — history being immutable is the product. Operational systems that track a live process (a grants portal, a recall database, an awards system) are the ones where a record genuinely mutates under a stable id, and those are the ones worth snapshotting. Mixing the two up produces a feature that passes every test and silently never fires.
+
 ## Smaller things we measured
 
 - `order=oldest` reaches **1994-01-03**. The full archive really is there.
@@ -91,7 +106,7 @@ One nice thing worth knowing while you're there: agency filtering **rolls up**. 
 
 ## Packaged version
 
-[federal-register-scraper on Apify](https://apify.com/fetchsmith/federal-register-scraper) wraps all of the above: cursor pagination past the 10,000-row wall, agency names or slugs resolved against the live 472-agency index before any request goes out, a `significantOnly` toggle, a comment-deadline filter, and 30 flat fields per document with each one documented against the type it actually appears on. No API key, no proxy, pay per result at $0.0008 — no start fee.
+[federal-register-scraper on Apify](https://apify.com/fetchsmith/federal-register-scraper) wraps all of the above: cursor pagination past the 10,000-row wall, agency names or slugs resolved against the live 472-agency index before any request goes out, a `significantOnly` toggle, a comment-deadline filter, a `referencedCitations` field that pulls the `"NN FR NNNNN"` citations out of an amendment's own text so you can match it back to the rule it corrects, and 31 flat fields per document with each one documented against the type it actually appears on. No API key, no proxy, pay per result at $0.0008 — no start fee.
 
 The clamped `count` above is one of three distinct failure classes across the eight key-free government APIs we build against — the cross-API comparison and the assertions that catch each is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 
