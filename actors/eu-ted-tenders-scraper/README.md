@@ -8,6 +8,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 - **Market-sizing** — aggregate `totalValue`/`totalValueCurrency` across CPV codes or countries to estimate how much a government is spending in a given category.
 - **Lead generation** — `buyerEmail`/`buyerPhone`/`buyerUrl` give a direct contact point for the procurement office behind each notice, most of them real role mailboxes (`einkauf@…`, `vergabestelle@…`).
 - **Deadline tracking** — `deadlineDate` (earliest of any per-lot deadline) and `deadlineReceiptRequestDate` let you build a reminder feed instead of re-checking the site.
+- **Corrigendum tracking** — a filter for `noticeTypes` plus `procedureIdentifier` lets you group a notice with any corrigenda published against the same procedure, and `changeReasonDescription` tells you in plain text what changed (deadline, specs, opening date) without opening the PDF.
 
 ## Input
 | Field | Type | Description |
@@ -50,6 +51,12 @@ Set `watchLabel` to a name for the query — `de-it-services`, say — and this 
 
 The baseline lives in a key-value store named `fetchsmith-ted-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a TED procurement alert.
 
+### Why there's no snapshot-diff `watchChanges` here — and what to use instead
+
+Some of our other Actors (grants.gov, openFDA recalls, USAspending, ClinicalTrials.gov, NIH RePORTER) offer a `watchChanges` input that re-delivers a record when a field on the *same id* mutates. TED doesn't work that way: we checked live before building anything, and TED never edits a published notice. A correction (deadline moved, specs revised, opening date pushed back) is published as a **brand-new notice with its own `publicationNumber`** — the original notice's own record never changes, so there is nothing for a snapshot diff to catch. (Confirmed on real examples: publication `493171-2026` was corrected twice, by `566391-2026` and `625075-2026`, and `493171-2026` itself never mutated — three separate publication numbers, one shared `procedureIdentifier`.)
+
+`watchLabel` already surfaces a corrigendum correctly, since it's a genuinely new `publicationNumber` your baseline hasn't seen. What's new in this version is **`changeReasonDescription`** — on a corrigendum notice, TED's own field explaining exactly what changed, e.g. *"Deadline for receipt of tenders: INSTEAD OF 24/08/2026 PLEASE READ 10/09/2026"* — and **`procedureIdentifier`**, a stable UUID shared by a notice and every corrigendum against it, so you can group them into one procurement thread instead of treating each as unrelated. Zero extra API calls: both fields ride along on the same page fetch every other field already uses.
+
 ## Output
 
 One row per notice:
@@ -68,6 +75,8 @@ One row per notice:
 | `deadlineDate`, `deadlineReceiptRequestDate` | Earliest submission deadline across all lots, and the tender-documents-request deadline. |
 | `publicationDate` | When TED published the notice. |
 | `noticeUrl` | Link to the notice's PDF (or XML) on ted.europa.eu, in your chosen language when available. |
+| `procedureIdentifier` | A stable UUID shared by a notice and every corrigendum published against it — group them into one procurement thread. |
+| `changeReasonDescription` | TED's own plain-text explanation of what changed. Only present on corrigendum notices; `null` on an original notice. |
 
 ### Sample row (real output, German construction-engineering notice)
 
@@ -95,11 +104,13 @@ One row per notice:
   "deadlineDate": "2026-09-16",
   "deadlineReceiptRequestDate": "2026-09-29",
   "publicationDate": "2026-08-31",
-  "noticeUrl": "https://ted.europa.eu/en/notice/596425-2026/pdf"
+  "noticeUrl": "https://ted.europa.eu/en/notice/596425-2026/pdf",
+  "procedureIdentifier": "8041f035-c752-48c6-8772-62de0a83aa8b",
+  "changeReasonDescription": null
 }
 ```
 
-`totalValue` is `null` here because this particular notice type doesn't carry one — see the FAQ.
+`totalValue` is `null` here because this particular notice type doesn't carry one — see the FAQ. `changeReasonDescription` is `null` because this is an original notice, not a corrigendum; on a corrigendum it reads like *"Deadline for receipt of tenders: INSTEAD OF 24/08/2026 16:00 +02:00 PLEASE READ 10/09/2026 16:00 +02:00"*.
 
 ## Pricing
 `result` — $0.003 per returned notice. The run start is free, no minimum spend.
@@ -122,6 +133,8 @@ One row per notice:
 **Why did my first `watchLabel` run return nothing?** By design — the first run on a new label + filter combination is a baseline: it records everything currently matching so the *next* run can tell you what's new, and charges nothing.
 
 **Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-ted-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
+
+**A tender I'm tracking got its deadline extended — will `watchLabel` catch that?** Yes, but as a new row, not an edited one: TED publishes the extension as a corrigendum with its own `publicationNumber`, so on your next watch run it arrives as a genuinely new notice. Match it back to the original via `procedureIdentifier` (both share it), and read `changeReasonDescription` for TED's own explanation of exactly what changed — no need to diff the two rows yourself.
 
 ## Notes
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

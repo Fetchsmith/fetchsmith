@@ -37,6 +37,7 @@ const FIELDS = [
   'contract-nature', 'classification-cpv', 'description-lot',
   'total-value', 'total-value-cur',
   'deadline-date-lot', 'deadline-receipt-request-date-lot', 'links',
+  'procedure-identifier', 'change-reason-description',
 ];
 
 function orGroup(field, values) {
@@ -117,6 +118,7 @@ function normalize(notice) {
   const [title, titleLanguage] = preferredText(notice['notice-title']);
   const [buyerName] = preferredText(notice['buyer-name']);
   const [description] = preferredText(notice['description-lot']);
+  const [changeReasonDescription] = preferredText(notice['change-reason-description']);
   const buyerCountryRaw = notice['buyer-country'];
   const buyerCityRaw = notice['buyer-city'];
   return {
@@ -143,6 +145,8 @@ function normalize(notice) {
     deadlineReceiptRequestDate: earliestDate(notice['deadline-receipt-request-date-lot']),
     publicationDate: notice['publication-date'] ? String(notice['publication-date']).split('+')[0] : null,
     noticeUrl: pickNoticeUrl(notice.links),
+    procedureIdentifier: notice['procedure-identifier'] ?? null,
+    changeReasonDescription,
   };
 }
 

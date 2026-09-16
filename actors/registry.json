@@ -733,7 +733,7 @@
       "slug": "eu-ted-tenders-scraper",
       "memory_mb": 1024,
       "title": "EU TED Tenders Scraper – Country, CPV, Date & Expert Query",
-      "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer name and contact, contract value, CPV codes, place of performance, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON. Filter by country, CPV code, notice type, full-text keywords or an absolute publication-date window. Optional watch mode (watchLabel) delivers only notices new since your last run.",
+      "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer name and contact, contract value, CPV codes, place of performance, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON. Filter by country, CPV code, notice type, full-text keywords or an absolute publication-date window. Optional watch mode (watchLabel) delivers only notices new since your last run. Every notice carries a procedureIdentifier shared with its corrigenda, plus changeReasonDescription — TED's own plain-text explanation of what changed — on corrigendum notices.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "5LxaohNcO1zA86cEp",
@@ -767,7 +767,9 @@
         "deadlineDate",
         "deadlineReceiptRequestDate",
         "publicationDate",
-        "noticeUrl"
+        "noticeUrl",
+        "procedureIdentifier",
+        "changeReasonDescription"
       ],
       "sample_output": {
         "publicationNumber": "590290-2026",
@@ -792,7 +794,9 @@
         "deadlineDate": null,
         "deadlineReceiptRequestDate": null,
         "publicationDate": "2026-08-27",
-        "noticeUrl": "https://ted.europa.eu/en/notice/590290-2026/pdf"
+        "noticeUrl": "https://ted.europa.eu/en/notice/590290-2026/pdf",
+        "procedureIdentifier": "9c33de09-a365-49a1-82bc-fff711671150",
+        "changeReasonDescription": null
       }
     },
     {

@@ -25,7 +25,9 @@
       "deadlineDate": { "type": ["string", "null"], "title": "Tender submission deadline" },
       "deadlineReceiptRequestDate": { "type": ["string", "null"], "title": "Request-to-participate deadline" },
       "publicationDate": { "type": ["string", "null"], "title": "Publication date" },
-      "noticeUrl": { "type": ["string", "null"], "title": "Notice URL" }
+      "noticeUrl": { "type": ["string", "null"], "title": "Notice URL" },
+      "procedureIdentifier": { "type": ["string", "null"], "title": "Procedure identifier (shared across a notice and its corrigenda)" },
+      "changeReasonDescription": { "type": ["string", "null"], "title": "What changed (corrigendum notices only)" }
     }
   },
   "views": {
