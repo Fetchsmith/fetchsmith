@@ -42,6 +42,7 @@ const titleKeyword = (input.titleKeyword ?? '').toLowerCase().trim();
 const titleExcludeKeyword = (input.titleExcludeKeyword ?? '').toLowerCase().trim();
 const locationKeyword = (input.locationKeyword ?? '').toLowerCase().trim();
 const locationExcludeKeyword = (input.locationExcludeKeyword ?? '').toLowerCase().trim();
+const employmentTypeKeyword = (input.employmentTypeKeyword ?? '').toLowerCase().trim();
 const hasSalary = !!input.hasSalary;
 const remoteOnly = !!input.remoteOnly;
 const postedAfter = input.postedAfter ? new Date(input.postedAfter) : null;
@@ -90,7 +91,7 @@ if (watchMode) {
   const criteria = {
     companies: companies.map((c) => `${c.ats}:${c.slug}`).sort(),
     titleKeyword, titleExcludeKeyword, locationKeyword, locationExcludeKeyword,
-    hasSalary, remoteOnly, includeDescriptions,
+    employmentTypeKeyword, hasSalary, remoteOnly, includeDescriptions,
     postedAfter: input.postedAfter ?? null,
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
@@ -555,6 +556,7 @@ function passesFilters(job) {
     if (locationKeyword && !haystack.includes(locationKeyword)) return false;
     if (locationExcludeKeyword && haystack.includes(locationExcludeKeyword)) return false;
   }
+  if (employmentTypeKeyword && !(job.employmentType ?? '').toLowerCase().includes(employmentTypeKeyword)) return false;
   if (hasSalary && job.salaryMin == null && job.salaryMax == null) return false;
   if (remoteOnly && !job.isRemote) return false;
   if (postedAfter && job.publishedAt) {

@@ -14,10 +14,15 @@ def me(): return httpx.get(f"{API}/users/me", headers=H).json()["data"]["usernam
 def get(name): return httpx.get(f"{API}/acts/{me()}~{name}", headers=H).json()["data"]
 cmd = sys.argv[1]
 if cmd == "list":
+    # /acts?my=true omits isPublic and most of stats (only totalRuns/lastRunStartedAt come
+    # through) -- confirmed live cycle 363, same finding bin/revenue worked around at cycle 172.
+    # Fetch each actor's full record instead, like bin/revenue does.
     r = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
-    for a in r:
+    acts = [get(a["name"]) for a in r]
+    for a in acts:
         s = a.get("stats", {})
-        print(f"{a['name']:40} public={str(a.get('isPublic',False)):5} users30d={s.get('totalUsers30Days',0):4} runs30d={s.get('totalRuns30Days',0):5} totalUsers={s.get('totalUsers',0):4} lastRun={str(s.get('lastRunStartedAt',''))[:10]}")
+        p = s.get("publicActorRunStats30Days") or {}
+        print(f"{a['name']:40} public={str(a.get('isPublic',False)):5} users30d={s.get('totalUsers30Days',0):4} runs30d={p.get('TOTAL',0):5} totalUsers={s.get('totalUsers',0):4} lastRun={str(s.get('lastRunStartedAt',''))[:10]}")
 elif cmd == "get":
     print(json.dumps(get(sys.argv[2]), indent=2))
 elif cmd == "publish":

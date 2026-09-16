@@ -63,6 +63,12 @@
       "description": "Drop postings whose location/city/country/secondary locations contains this text (case-insensitive), e.g. a country you don't hire in. Leave empty for no exclusion.",
       "editor": "textfield"
     },
+    "employmentTypeKeyword": {
+      "title": "Employment type filter",
+      "type": "string",
+      "description": "Only keep postings whose normalized employmentType field contains this text (case-insensitive), e.g. \"full\" for full-time or \"contract\". Leave empty for all employment types. Not every ATS publishes this field; postings where the ATS never exposes it are dropped when this filter is set.",
+      "editor": "textfield"
+    },
     "hasSalary": {
       "title": "Only postings with salary",
       "type": "boolean",

@@ -25,6 +25,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `titleExcludeKeyword` | string | Drop postings whose title contains this text, e.g. `"Senior"` to filter out senior roles. |
 | `locationKeyword` | string | Only keep postings whose location/city/country contains this text. |
 | `locationExcludeKeyword` | string | Drop postings whose location/city/country contains this text, e.g. a country you don't hire in. |
+| `employmentTypeKeyword` | string | Only keep postings whose normalized `employmentType` contains this text, e.g. `"full"` or `"contract"`. Postings where the ATS never exposes this field are dropped when set. |
 | `hasSalary` | boolean | Only keep postings where the ATS itself published a salary. Default `false`. |
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | ISO date; only keep postings published on/after it. |
