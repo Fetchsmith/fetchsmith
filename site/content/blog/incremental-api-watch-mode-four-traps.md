@@ -1,13 +1,13 @@
 ---
-title: Four ways an "only new since last run" watch mode silently stops working
-description: "New" is not a property of a public API — it's a property of your own history. Shipping incremental watch mode across four government APIs (NIH RePORTER, Federal Register, Grants.gov, openFDA) surfaced four failure modes, and every one of them keeps the run log green while delivering nothing.
+title: Seven ways an "only new since last run" watch mode silently stops working
+description: "New" is not a property of a public API — it's a property of your own history. Shipping incremental watch mode across eleven Actors (government data, forums, job boards, tenders, campaign finance) surfaced seven failure modes, and every one of them keeps the run log green while delivering nothing or delivering less than it should.
 date: 2026-09-15
 tags: webscraping, api, opendata, scheduling
 ---
 
 Almost every buyer of a public-data scraper eventually wants the same thing: *don't send me the same 18,000 rows every morning, send me what changed.* That sounds like a filter. It isn't. Every public API we work with will happily tell you what **it** thinks is recent — and none of them know what **you** already received. "New" lives in your own history, which means a watch mode is a stateful feature bolted onto a stateless scraper, and that is where it goes wrong.
 
-We shipped this mode (`watchLabel`) across four government-data Actors in four consecutive days: [NIH RePORTER](/tools/nih-reporter-scraper), the [Federal Register](/tools/federal-register-scraper), [Grants.gov](/tools/grants-gov-scraper) and [openFDA recalls](/tools/fda-recall-scraper). The state machine was the easy part — it copied across all four almost unchanged. What did not copy were the four traps below. Each one was found on a *different* API, each produces a run that exits 0 with a cheerful log line, and each delivers either zero rows forever or a silent under-count.
+We shipped this mode (`watchLabel`) across 11 Actors: five government-data hosts ([NIH RePORTER](/tools/nih-reporter-scraper), the [Federal Register](/tools/federal-register-scraper), [Grants.gov](/tools/grants-gov-scraper), [openFDA recalls](/tools/fda-recall-scraper) and [ClinicalTrials.gov](/tools/clinicaltrials-scraper)), two tender/procurement hosts ([EU TED](/tools/eu-ted-tenders-scraper) and [UK Find a Tender](/tools/uk-find-a-tender-scraper)), two money hosts ([US federal awards](/tools/us-federal-awards-scraper) and [FEC campaign finance](/tools/fec-campaign-finance-scraper)), a forum ([Hacker News](/tools/hacker-news-scraper)) and a job board aggregator ([ATS jobs](/tools/ats-jobs-scraper)). The state machine copied across all eleven almost unchanged. What did not copy were the seven traps below. Each one was found on a *different* host, each produces a run that exits 0 with a cheerful log line, and each delivers either zero rows forever or a silent under-count.
 
 ## Trap 0: the API's own "recent" flag is not your "new"
 
@@ -51,11 +51,25 @@ The check that catches both takes one line: compare your recorded seed count aga
 
 Seeding is supposed to be cheap — you only need ids, so you skip the per-row detail fetch. On Grants.gov that would have been wrong, not just cheap. Its `minAwardAmount`/`maxAwardAmount` filter can only be evaluated *after* a per-opportunity detail fetch. An opportunity whose award ceiling is not yet populated at seed time doesn't match the filter — but ceilings do get filled in later (a real, observed field-level edit on that API), at which point it legitimately becomes a match. If the thin seed had dumped every raw hit id into the baseline, that opportunity would be marked "already seen" before it ever qualified, and would never surface.
 
-So: **the seed must apply the same predicate a real run would, not a cheaper approximation of it.** Cost-cutting the seed is only safe for the parts of the filter that don't depend on an enrichment or join step. Where the filter is evaluated purely on fields the search endpoint already returns — openFDA's recall rows, for instance — an id-only seed is provably equivalent, and we checked that by reading the code rather than assuming it.
+So: **the seed must apply the same predicate a real run would, not a cheaper approximation of it.** Cost-cutting the seed is only safe for the parts of the filter that don't depend on an enrichment or join step. Where the filter is evaluated purely on fields the search endpoint already returns — openFDA's recall rows, for instance — an id-only seed is provably equivalent, and we checked that by reading the code rather than assuming it. When the filter is evaluated client-side after a full fetch — the UK Find a Tender Actor round-robins two portals and matches `cpvCodes`/`buyerName`/value bounds against the normalized row, not the raw list item — there is no cheaper seed at all: it has to run the exact same fetch-and-normalize pipeline as a real delivery, just routed into the baseline instead of the output.
+
+## Trap 5: a scan cap and a delivery cap are the same variable until they aren't
+
+This is the trap that took the longest to notice, because it doesn't break a fresh feature — it breaks watch mode by *reusing a cap that already existed and already worked*. The ATS job board Actor had `maxJobsPerCompany` (default 50), a perfectly sensible limit on a normal run: fetch a company's postings, stop after the buyer's cap of matching results. Once `watchLabel` exists, that same variable means something different. In watch mode almost every row scanned is already-delivered, so a buyer's `maxJobsPerCompany: 5` against a board with 39 currently-matching roles surfaced a new one only if it happened to sort into the first 5 — a job alert that silently misses most of what it's supposed to be watching for, on every single run, forever. The Hacker News Actor had the identical bug in a differently-shaped variable (`fetched < maxItemsPerQuery` counted items looked at, not items pushed), which is why grepping for one ternary shape didn't find both: the fix is to ask what the loop's stopping condition actually counts, not what the cap is called.
+
+The fix, applied consistently once we knew to look for it: split every such cap into a **scan cap** (how far to look — raised for watch mode, seeding *and* incremental, not just seeding) and a **delivery cap** (how many rows to actually push and charge — stays exactly as the buyer set it, counted only against rows that clear the already-seen check). An already-seen row must cost a scan slot, never a delivery slot.
+
+The corollary, found while auditing every later port for this exact bug: **not every cap needs splitting, and splitting a cap that doesn't need it is wasted risk.** A loop that already gates its stopping condition on rows *actually pushed* (`while (pushed < maxResults)`, with already-seen rows skipped before `pushed` increments) was never vulnerable — an already-seen row just costs one more free loop iteration, the scan keeps going regardless. Five of the eleven ports (TED, UK tender, FEC, US federal awards, and three of the original four) turned out to already have this shape and needed no change. And a cap can be an honestly-documented cost ceiling rather than a disguised delivery limit — US federal awards' `maxPagesPerCategory` says exactly what it does (bound how many pages a run scans, full stop) and applies identically whether or not watch mode is on; the tell is whether the cap is described as bounding *cost/reach* (leave it alone, just give the seed walk its own larger version) or is silently doing double duty as *how many results you get* (split it). Read what the variable is gating, not what it's named.
+
+## Trap 6: not every query mode has a "new"
+
+`watchLabel` presupposes the query describes a set that grows over time — new studies register, new documents publish, new stories get posted. Two of the eleven hosts have a second query mode that doesn't fit that shape at all. FEC's `candidates` search mode returns the same fixed roster of candidates for a given filter, indefinitely — there's no discrete "new candidate event" to diff against, so a baseline would either never gain anything (silently useless) or churn on irrelevant re-orderings. ClinicalTrials and US federal awards have the opposite version of the same problem: an exact `nctIds`/`awardIds` lookup returns exactly the studies or awards you named, every time, by definition — "new" has no meaning applied to a fixed id list.
+
+The fix isn't clever: detect the incompatible mode and **reject the combination out loud** — a warning naming exactly why `watchLabel` was ignored — rather than silently accepting it and doing nothing, or worse, silently seeding a baseline against a set that will never produce a delta. A buyer who sets `watchLabel` on a mode that can't support it needs to know their alert isn't going to alert, not discover it by absence three weeks later.
 
 ## How to actually test it
 
-Unit tests do not catch any of the four. All of them need real runs against the live API, and the sequence that catches them is three runs:
+Unit tests do not catch any of these. All of them need real runs against the live API, and the sequence that catches most of them is three runs:
 
 1. **Seed.** Compare the recorded id count to the API's own total for the same query. (Catches trap 3.)
 2. **Rerun the identical input.** Must return exactly zero. (Catches a broken key or a resetting store — traps 1 and 2.)
@@ -63,18 +77,27 @@ Unit tests do not catch any of the four. All of them need real runs against the 
 
 Step 3 is only a real test if you choose the ids carefully. Delete from the **tail** of the recorded set — the ids scanned on the final page — and, if you can, include the last row of page two. With the Federal Register paging bug in place, deleting three ids from the middle returns three rows and looks like a pass; deleting the last row of page two returns two of three, and still reads as a success in the log unless you are counting.
 
-Our own results, on real platform runs: NIH RePORTER 82 ids seeded → 0 on rerun → exactly 3 returned; Federal Register 51 (matching the API's `count`, which is how the off-by-one showed up); Grants.gov 18,458 on a deliberately broad `keyword=water` query; openFDA 108 Class I recalls across the food, drug and device endpoints.
+Trap 5 needs a fourth, deliberately adversarial run that the first three won't surface on their own: **seed with the buyer's cap left at its normal (small) value, delete an id that sits *past* where that cap would have stopped a scan, then rerun with the same small cap.** If the id comes back, the scan cap is correctly independent of the delivery cap. If it doesn't, you've reproduced the exact silent under-count a real buyer would never see logged. We proved this directly on US federal awards by re-running the same filter with `maxPagesPerCategory: 1`: the seed still scanned past page 1 (proving the seed override), and a real incremental run with that same small cap correctly scanned only page 1, exactly as documented.
+
+Our own results, on real platform runs: NIH RePORTER 82 ids seeded → 0 on rerun → exactly 3 returned; Federal Register 51 (matching the API's `count`, which is how the off-by-one showed up); Grants.gov 18,458 on a deliberately broad `keyword=water` query; openFDA 108 Class I recalls across the food, drug and device endpoints; ClinicalTrials, Hacker News, ATS jobs, EU TED, UK Find a Tender, US federal awards and FEC campaign finance each re-ran the same three-step sequence (plus, where relevant, the trap-5 adversarial run) with baselines ranging from 2 tenders to 31,298 matching campaign-finance rows.
 
 One last design note that is easy to get backwards: **mark a row as delivered only after the charge and the write succeed**, not when you decide to send it. A row dropped by a `maxResults` cap or a charge limit should stay "new" and come back next run, rather than being silently consumed by a run that never actually delivered it.
 
 ## Where this is live
 
-`watchLabel` is an optional input on four of our Actors — leave it unset and they behave exactly as before:
+`watchLabel` is an optional input on 11 of our Actors — leave it unset and they behave exactly as before:
 
 - [NIH RePORTER Scraper](/tools/nih-reporter-scraper) — baseline keyed on `appl_id`
 - [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`
 - [Grants.gov Scraper](/tools/grants-gov-scraper) — opportunity `id`
 - [FDA Recall Scraper](/tools/fda-recall-scraper) — `recall_number`
+- [ClinicalTrials Scraper](/tools/clinicaltrials-scraper) — `nctId` (ignored, by design, when an exact `nctIds` lookup is set — trap 6)
+- [Hacker News Scraper](/tools/hacker-news-scraper) — `objectID`
+- [ATS Jobs Scraper](/tools/ats-jobs-scraper) — `company:jobId`
+- [EU TED Tenders Scraper](/tools/eu-ted-tenders-scraper) — `publication-number`
+- [UK Find a Tender Scraper](/tools/uk-find-a-tender-scraper) — `ocid`/`noticeId` across two fanned-out portals
+- [US Federal Awards Scraper](/tools/us-federal-awards-scraper) — award or sub-award id (ignored when an exact `awardIds` lookup is set — trap 6)
+- [FEC Campaign Finance Scraper](/tools/fec-campaign-finance-scraper) — Schedule A's own `sub_id` (contributions mode only — trap 6 rules out candidates mode)
 
 The first run under a new label seeds and charges nothing. After that you pay only for rows you have never been sent before, which for a daily schedule on a slow-moving dataset is usually a rounding error against re-pulling the full set every morning.
 
