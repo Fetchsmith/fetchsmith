@@ -15,6 +15,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 - **Competitive research** — `dataType: "games"` returns price, discount, genres, developer, Metacritic score, the full review-score summary (total positive/negative, % positive) and, optionally, the **live concurrent player count**.
 - **Localised research** — `language: "schinese"`, `"russian"`, `"brazilian"` … or `"all"` for every language at once.
 - **Feed an LLM / dataset pipeline** — clean flat rows, stable `reviewId`, ISO-8601 timestamps.
+- **Alert on new reviews only** — set `watchLabel` and schedule it; see [Watch mode](#watch-mode--only-new-reviews-since-the-last-run) below.
 
 ## Input
 
@@ -38,6 +39,25 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `includeGameInfo` | boolean | `true` | Attach game name/developer/publisher/genres/release date to every review |
 | `includePlayerCount` | boolean | `false` | `games` mode: also fetch the live concurrent player count |
 | `searchLimit` | integer | `10` | Games taken from each search term |
+| `watchLabel` | string | — | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Reviews mode only. Leave empty for normal runs. |
+
+## Watch mode — only new reviews since the last run
+
+Set `watchLabel` to any name and this Actor stops re-delivering the same reviews on every scheduled run:
+
+1. **The first run for a label is a free baseline.** It records which reviews already exist for every game in your input and returns **zero rows — you are charged nothing**.
+2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
+
+The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-steam-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`searchTerms`/`searchLimit`/`country`/`language`/`reviewType`/`purchaseType`/`sortBy`/`dayRange` **and every `keyword`/`minPlaytimeHours`/`reviewsAfter`/`reviewsBefore` filter** — all of them decide what "new" means, so changing any of them gives you a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
+
+Details worth knowing:
+
+- **Use `sortBy: "recent"`** (the default). `sortBy: "all"` is Steam's helpfulness ranking, not a chronological one, so a brand-new review isn't necessarily inside the scanned window and can be missed; the run logs a warning if you watch with `all` anyway.
+- **`maxReviewsPerApp` is your scan-depth budget on incremental runs and is left exactly as you set it** — with `recent`, new reviews sort to the top, so your own cap doesn't hide them. If every matching review inside that window turned out to be new, the run warns you that reviews posted since the last run may sit further back — raise `maxReviewsPerApp` or run the watch more often.
+- `maxReviewsPerApp` and `maxResults` are **not** part of the fingerprint (they are budgets, not filters), and neither are `includeGameInfo`/`includePlayerCount` (they change a row's contents, never which reviews count as new).
+- If a `searchTerms` query resolves to a *different* game than last time, that game is baselined on the spot rather than having its entire review history delivered as "new".
+- If Steam serves an incomplete review response for a game (see the FAQ below), that game is **not** baselined and the run says so — you never end up with a baseline built from an upstream fault.
+- Watch mode applies to `dataType: "reviews"` only. In `games` mode a row is the same snapshot of the same game on every run, not a stream of new events, so `watchLabel` is ignored with a warning.
 
 ### Example input
 

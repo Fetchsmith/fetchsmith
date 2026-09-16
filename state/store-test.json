@@ -1,5 +1,5 @@
 {
- "ts": 1789529782,
+ "ts": 1789537078,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
@@ -51,8 +51,8 @@
   },
   "steam-reviews-scraper": {
    "status": "SUCCEEDED",
-   "secs": 17,
-   "items": 200,
+   "secs": 15,
+   "items": 170,
    "pass": true
   },
   "scholarship-scraper": {

@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -32,17 +33,116 @@ if (!apps.length && !searchTerms.length) {
   await Actor.fail('Provide at least one game in "apps" (Steam store URL or numeric App ID), or at least one query in "searchTerms".');
 }
 
+// ---- watch mode ------------------------------------------------------------
+// A stateful "only reviews posted since my last run" filter. A Steam review is an event with a
+// stable id (recommendationid), so "new" is well defined for dataType:"reviews". dataType:"games"
+// returns one row per game — the same snapshot every run, not a stream of events — so watch mode
+// does not apply there and is ignored with a warning rather than silently pretending to work.
+const watchLabel = String(input.watchLabel ?? '').trim();
+let watchMode = watchLabel.length > 0;
+if (watchMode && dataType === 'games') {
+  log.warning(`watchLabel "${watchLabel}" is ignored in dataType:"games" — watch mode only applies to dataType:"reviews" (a game row is a snapshot of the same game on every run, not a stream of new events).`);
+  watchMode = false;
+}
+const WATCH_STORE = 'fetchsmith-steam-reviews-watch';
+const SEED_CAP = 20000;   // bound the cost/time of a baseline run across all apps
+const WATCH_KEEP = 40000; // bound the record size; oldest ids fall off first
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+let unidentifiedSkipped = 0; // watch mode only: reviews Steam returned without a recommendationid
+const watchSeen = new Set();  // `${appId}:${reviewId}` already delivered under this label+fingerprint
+const seededApps = new Set(); // appIds already baselined under this label+fingerprint
+
+if (watchMode) {
+  // Everything that decides WHICH reviews get delivered goes into the fingerprint: Steam's
+  // server-side filters (language/review_type/purchase_type/day_range/filter) and the client-side
+  // ones (keyword/minPlaytimeHours/date window) alike. Raw `input.sortBy` is fingerprinted rather
+  // than the date-window-forced value, since that is what the buyer actually typed. Deliberately
+  // NOT fingerprinted: maxReviewsPerApp/maxResults (scan and delivery budgets, not filters) and
+  // includeGameInfo/includePlayerCount (they change a row's contents, never its identity).
+  const criteria = {
+    apps: input.apps ?? [], searchTerms: input.searchTerms ?? [], searchLimit,
+    country, language, reviewType, purchaseType, sortBy: input.sortBy ?? null, dayRange,
+    keyword, minPlaytimeHours,
+    reviewsAfter: input.reviewsAfter ?? null, reviewsBefore: input.reviewsBefore ?? null,
+  };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    for (const a of existing.seededApps ?? []) seededApps.add(String(a));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered review(s) across ${seededApps.size} app(s). Only reviews NOT in `
+      + 'that baseline will be returned and charged.',
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+      + 'It records which reviews already exist and returns ZERO rows (you are charged nothing). Run it again on '
+      + 'the same label and filters — on a schedule, typically — to get only the reviews posted since now.',
+    );
+  }
+  if (sortBy === 'all') {
+    log.warning(
+      'Watch mode with sortBy="all": that is Steam\'s most-helpful ordering, not a chronological one, so a '
+      + `brand-new review is not necessarily inside the ${perAppReviews} review(s) scanned per app and can be `
+      + 'missed. Use sortBy="recent" for reliable alerting.',
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seededApps: Array.from(seededApps),
+    seenIds: ids,
+  });
+}
+
 let pushed = 0;
 let keepGoing = true;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item) {
+async function pushResult(item, watchId = null, appSeeding = false) {
+  if (watchMode && watchId != null && appSeeding) {
+    watchSeen.add(watchId); // baseline run (or a newly-appeared app): record, never deliver, never charge
+    if (watchSeen.size >= SEED_CAP) keepGoing = false;
+    return keepGoing;
+  }
+  if (watchMode && watchId != null && watchSeen.has(watchId)) {
+    watchSkipped += 1;
+    return true; // already delivered under this label: not pushed, not charged, keep scanning
+  }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
+    if (watchMode && watchId != null) watchSeen.add(watchId);
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
+  if (watchMode && watchId != null) watchSeen.add(watchId);
   return pushed < maxResults;
 }
 
@@ -215,9 +315,17 @@ function reviewsUrl(appId, cursor) {
 const summaries = new Map();
 async function scrapeReviews(appId) {
   const info = await getGameInfo(appId);
+  // An app absent from the baseline is seeded in place rather than having its whole back
+  // catalogue delivered as "new" — this covers a searchTerms query resolving to a different game
+  // than last run, which changes the watched target set without changing the fingerprint.
+  const appSeeding = watchMode && (seeding || !seededApps.has(String(appId)));
+  if (watchMode && !seeding && appSeeding) {
+    log.info(`App ${appId}: not in the baseline for "${watchLabel}" yet — baselining it this run instead of delivering its existing reviews.`);
+  }
   let cursor = '*';
   let got = 0;
   let filteredOut = 0;
+  let newForApp = 0;
   const seen = new Set();
   let degenerate = false;
   for (let page = 0; page < 200 && got < perAppReviews && keepGoing; page++) {
@@ -248,7 +356,17 @@ async function scrapeReviews(appId) {
       // every review from here on (this page and all later pages) is also too old — stop paging.
       if (reviewsAfter && !isNaN(reviewsAfter) && new Date(item.createdAt) < reviewsAfter) { pastWindow = true; break; }
       if (!reviewPassesFilters(item)) { filteredOut += 1; continue; }
-      keepGoing = await pushResult(item);
+      if (watchMode && !item.reviewId) {
+        // No stable id means it can be neither recorded in the baseline nor recognised next run,
+        // so delivering it would re-charge for the same row on every scheduled watch run.
+        unidentifiedSkipped += 1;
+        continue;
+      }
+      const watchId = watchMode ? `${appId}:${item.reviewId}` : null;
+      // Counts reviews that passed the filters AND were not already in the baseline — the
+      // saturation signal below. Distinct from pushResult's own watchSkipped bookkeeping.
+      if (!(watchMode && !appSeeding && watchSeen.has(watchId))) newForApp += 1;
+      keepGoing = await pushResult(item, watchId, appSeeding);
     }
     if (pastWindow) break;
     const next = body.cursor;
@@ -259,7 +377,7 @@ async function scrapeReviews(appId) {
   // was hit and some scanned reviews were dropped by a filter, matching reviews may still sit
   // deeper in the feed and were never looked at.
   const capReached = got >= perAppReviews;
-  return { got, filteredOut, capReached, degenerate };
+  return { got, filteredOut, capReached, degenerate, newForApp, appSeeding };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -293,6 +411,12 @@ const upstreamDegraded = [];
 // Apps where maxReviewsPerApp was hit while the keyword/minPlaytimeHours filter was still
 // discarding reviews — reviews deeper in Steam's feed were never scanned.
 const depthCapped = [];
+// Watch mode: apps where the whole scanned window was new, i.e. the scan may not reach back far
+// enough to cover everything posted since the last run.
+const saturatedApps = [];
+// Watch mode: apps that appeared in an already-established watch (e.g. a searchTerms query that
+// now resolves to a different game) and were baselined this run instead of being delivered.
+const baselinedInPlace = [];
 if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
@@ -320,8 +444,24 @@ if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
     const before = pushed;
-    const { got, filteredOut, capReached, degenerate } = await scrapeReviews(id);
-    log.info(`${id}: ${got} reviews fetched, ${pushed - before} kept after filters.`);
+    const { got, filteredOut, capReached, degenerate, newForApp, appSeeding } = await scrapeReviews(id);
+    log.info(appSeeding
+      ? `${id}: ${got} reviews fetched, ${newForApp} recorded in the watch baseline (0 delivered, 0 charged).`
+      : watchMode
+        ? `${id}: ${got} reviews fetched, ${pushed - before} new since the last run (the rest were already delivered or filtered out).`
+        : `${id}: ${got} reviews fetched, ${pushed - before} kept after filters.`);
+    // Only mark an app baselined if its seed walk actually finished — one cut short by SEED_CAP or
+    // by a degenerate upstream response must be re-seeded, not treated as a complete baseline.
+    if (watchMode && appSeeding && keepGoing && !degenerate) {
+      seededApps.add(String(id));
+      if (!seeding) baselinedInPlace.push(id);
+    }
+    // Watch mode: every matching review inside the scanned window was new, so reviews posted since
+    // the last run may sit deeper in the feed and were never looked at.
+    if (watchMode && !appSeeding && capReached && newForApp > 0 && newForApp === got - filteredOut) {
+      saturatedApps.push(id);
+      log.warning(`App ${id}: every matching review in the ${perAppReviews} scanned was new, so reviews posted since the last run may have been missed further back — raise maxReviewsPerApp or run the watch more often.`);
+    }
     if (capReached && filteredOut > 0) {
       log.warning(
         `App ${id}: scanned the maxReviewsPerApp limit of ${perAppReviews} review(s) and ${filteredOut} of them `
@@ -347,7 +487,7 @@ if (dataType === 'games') {
   }
 }
 
-log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.`);
+log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
 // An upstream fault that produced nothing is a failed run, not an empty one: surfacing it as a
 // success would tell the user their games have no reviews, which is the opposite of the truth.
 if (pushed === 0 && upstreamDegraded.length) {
@@ -357,7 +497,29 @@ if (pushed === 0 && upstreamDegraded.length) {
     + `not a problem with your input; please re-run later.`,
   );
 }
-if (pushed === 0) {
+// The watch record is written only AFTER the upstream-fault check above, and never when that check
+// fails the run: a baseline that recorded "app seeded, 0 reviews" during a degenerate Steam window
+// would deliver — and charge for — that app's entire back catalogue on the next run.
+if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+
+// A watch status message still has to carry the upstream-fault notice when only SOME apps were
+// degraded (a fully-degraded run already failed above) — those apps were not baselined and their
+// reviews were never scanned, so "nothing new" would be a misleading thing to leave unqualified.
+const baselinedSuffix = baselinedInPlace.length
+  ? ` Newly-watched app(s) ${baselinedInPlace.join(', ')} were baselined this run instead of having their whole review history delivered — you will get their new reviews from the next run on.`
+  : '';
+const degradedSuffix = upstreamDegraded.length
+  ? ` Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; those apps were skipped, re-run them later.`
+  : '';
+if (watchMode && seeding) {
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}`);
+} else if (watchMode && pushed === 0) {
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.${baselinedSuffix}${degradedSuffix}`);
+} else if (watchMode && saturatedApps.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}`);
+} else if (watchMode) {
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new review(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).${baselinedSuffix}${degradedSuffix}`);
+} else if (pushed === 0) {
   const why = emptyIds.length
     ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
     : emptySearches.length

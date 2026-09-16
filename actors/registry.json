@@ -547,7 +547,7 @@
     {
       "slug": "steam-reviews-scraper",
       "title": "Steam Reviews Scraper – Playtime, Keyword & Language Filters",
-      "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type — plus a games mode with prices, genres, developers, review-score summaries and live player counts.",
+      "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type — plus a games mode with prices, genres, developers, review-score summaries and live player counts. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet game returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "EDfr7BDOOsO7azSOv",
