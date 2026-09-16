@@ -177,8 +177,16 @@ for (const query of queries) {
   }
   // A seeding run needs the whole current match set (up to SEED_CAP), not just the
   // buyer's usual maxItemsPerQuery slice, or the baseline would under-record and the
-  // first incremental run would misreport old matches as new.
-  const queryCap = seeding ? SEED_CAP : maxItemsPerQuery;
+  // first incremental run would misreport old matches as new. An incremental run needs
+  // the same reach, not just the seed: in watch mode almost everything scanned is
+  // already-delivered, so capping the scan at maxItemsPerQuery (default 100, a per-query
+  // COST cap for plain runs) means a query with more than 100 matches only ever surfaces
+  // a new item if it happens to sort within the first 100 -- a silent, permanent miss
+  // that still looks like a clean "nothing new" run (the ats-jobs-scraper trap, cycle 332).
+  // maxItemsPerQuery only means "cost cap" when there's no baseline to scan past; once
+  // watchLabel is set, seeding or not, the scan cap is SEED_CAP and maxResults alone
+  // governs what's actually delivered and charged.
+  const queryCap = watchMode ? SEED_CAP : maxItemsPerQuery;
   while (keepGoing && fetched < queryCap) {
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
     if (query) url.searchParams.set('query', query);
