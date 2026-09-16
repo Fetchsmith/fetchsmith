@@ -1,13 +1,29 @@
 #!/usr/bin/env python3
-"""Flag blog posts whose '<N> flat fields' claim about one of OUR Actors has gone stale.
+"""Flag blog posts whose self-describing claims about OUR Actors have gone stale.
 
-Added cycle 352 after two guides were found understating their own Actor by 16 and 3
-fields (Actors gain fields; the post that markets them never gets re-read).
+Two checks, same class of bug: a number or a list in hand-written copy whose real owner
+lives elsewhere in the repo. Tool pages self-heal (they render from registry.json);
+prose does not.
 
-Only sentences that link to an Actor (apify.com/fetchsmith/<slug> or /tools/<slug>) are
-checked, so counts describing an UPSTREAM API's row shape are left alone.
-registry.json is the source of truth (check-registry-fields already proves it matches
-each Actor's dataset schema).
+1. FIELD COUNTS (cycle 352) — '<N> flat/typed/normalized fields' vs registry.json.
+   Added after two guides were found understating their own Actor by 16 and 3 fields.
+   Only sentences that link to an Actor (apify.com/fetchsmith/<slug> or /tools/<slug>)
+   are checked, so counts describing an UPSTREAM API's row shape are left alone.
+
+2. FEATURE COVERAGE (cycle 356) — which Actors a post says ship `watchChanges` /
+   `watchLabel`, vs each Actor's own .actor/input_schema.json. Added after the same
+   post went stale on this in cycles 352, 354 and 356: every new port has to be
+   hand-added to the guide, and three cycles in a row it wasn't. Catches three shapes:
+     a. the post credits the feature to an Actor that does not have it (or explicitly
+        denies it on one that does);
+     b. the post is enumerating (3+ Actors credited) and a shipped port is missing;
+     c. a count phrase disagrees with what it is counting ('...A, B, C, D and E ...
+        off by default on all four', or 'optional input on 14 of our Actors').
+
+3. FLEET COUNTS (cycle 356) — any bare '<N> of our Actors' with no feature attached is
+   a claim about the whole catalog, so it is checked against registry.json's length.
+   Added because the first run of check 2 surfaced a guide still selling "all twelve of
+   our Actors" back when the fleet was 12; it is 19. Nothing had ever read that number.
 """
 import glob
 import json
@@ -39,4 +55,96 @@ for path in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
                     print(f"STALE {os.path.basename(path)}:{lineno}  claims {claimed} fields, {slug} has {reg[slug]}")
 
 print(f"check-blog-claims: {checked} Actor field-count claim(s) checked, {flagged} stale")
+
+# ---------------------------------------------------------------- feature coverage
+FEATURES = ("watchChanges", "watchLabel")
+WORDS = {w: i for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve thirteen "
+    "fourteen fifteen sixteen seventeen eighteen nineteen twenty".split())}
+
+
+def as_int(tok):
+    return int(tok) if tok.isdigit() else WORDS.get(tok.lower())
+
+
+def has_input(slug, prop):
+    p = os.path.join(ROOT, "actors", slug, ".actor/input_schema.json")
+    if not os.path.exists(p):
+        return False
+    return prop in json.load(open(p)).get("properties", {})
+
+
+def links_on(line):
+    return {s for s in reg if f"fetchsmith/{s}" in line or f"/tools/{s}" in line}
+
+
+truth = {f: {s for s in reg if has_input(s, f)} for f in FEATURES}
+# "no `watchChanges`", "without `watchChanges`", "deliberately with **no** `watchChanges`"
+DENY = r"(?:no|without|not)\*{0,2}\s+\*{0,2}`%s`"
+ON_N_ACTORS = re.compile(r"\bon (\d+|[a-z]+) of our Actors\b", re.I)
+ALL_N = re.compile(r"\ball (\d+|[a-z]+)\b", re.I)
+
+fchecked = 0
+for path in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
+    lines = list(enumerate(open(path), 1))
+    name = os.path.basename(path)
+    for feat in FEATURES:
+        credits, denials = {}, {}
+        for lineno, line in lines:
+            if f"`{feat}`" not in line:
+                continue
+            bucket = denials if re.search(DENY % feat, line) else credits
+            for s in links_on(line):
+                bucket.setdefault(s, lineno)
+            m = ON_N_ACTORS.search(line)
+            if m and (n := as_int(m.group(1))) is not None:
+                fchecked += 1
+                if n != len(truth[feat]):
+                    flagged += 1
+                    print(f"STALE {name}:{lineno}  says `{feat}` is on {n} Actors, real count is {len(truth[feat])}")
+        if not credits and not denials:
+            continue
+        fchecked += 1
+        for s, ln in sorted(credits.items()):
+            if s not in truth[feat]:
+                flagged += 1
+                print(f"STALE {name}:{ln}  credits `{feat}` to {s}, which does not declare it")
+        for s, ln in sorted(denials.items()):
+            if s in truth[feat]:
+                flagged += 1
+                print(f"STALE {name}:{ln}  says {s} has no `{feat}`, but it declares one")
+        # Only demand completeness of a post that is clearly enumerating the feature.
+        if len(credits) >= 3:
+            for s in sorted(truth[feat] - set(credits) - set(denials)):
+                flagged += 1
+                print(f"STALE {name}  enumerates `{feat}` ({len(credits)} Actors) but never mentions {s}, which ships it")
+
+# Fleet counts: a bare "<N> of our Actors" with no feature attached means the catalog.
+FLEET_N = re.compile(r"\b(?:all |each of )?(\d+|[a-z]+) of (?:our|the) Actors\b", re.I)
+# Self-consistency: "…A, B, C, D and E …, off by default on all four."
+for path in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
+    for lineno, line in enumerate(open(path), 1):
+        for tok in FLEET_N.findall(line):
+            n = as_int(tok)
+            if n is None or n < 2 or any(f"`{f}`" in line for f in FEATURES):
+                # "every one of our Actors" is partitive prose, not a count; and a
+                # feature-scoped count belongs to check 2, not to the fleet check.
+                continue
+            fchecked += 1
+            if n != len(reg):
+                flagged += 1
+                print(f"STALE {os.path.basename(path)}:{lineno}  says '{tok} of our Actors', fleet is {len(reg)}")
+        linked = links_on(line)
+        if len(linked) < 2 or FLEET_N.search(line):
+            continue
+        for tok in ALL_N.findall(line):
+            n = as_int(tok)
+            if n is None or n < 2:
+                continue  # "all of", "all five" only; prose words are not counts
+            fchecked += 1
+            if n != len(linked):
+                flagged += 1
+                print(f"STALE {os.path.basename(path)}:{lineno}  says 'all {tok}' but links {len(linked)} Actors")
+
+print(f"check-blog-claims: {fchecked} Actor feature-coverage claim(s) checked, {flagged} total stale")
 sys.exit(1 if flagged else 0)
