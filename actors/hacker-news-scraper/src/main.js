@@ -236,13 +236,35 @@ for (const query of queries) {
   let page = 0;
   let fetched = 0;
   let requestFailed = false;
-  const tagParts = [...tags];
+  // Algolia's tag syntax: a COMMA between tags means AND, parentheses mean OR. `tags` is a
+  // multi-select of content types, and the combinations a buyer actually picks are mutually
+  // exclusive — comma-joining them matched NOTHING, forever, with a 200 and no warning
+  // (verified live, cycle 360: tags=story,comment -> nbHits 0, tags=ask_hn,show_hn -> 0;
+  // tags=(story,comment) -> 545,027). So OR the content-type tags with each other, and AND
+  // the author refinement on top of that group: `author_pg,(story,comment)`.
+  // `includeComments:false` drops 'comment' HERE, before the group is built — the old code
+  // stripped it out of the joined string afterwards, which for tags:["comment"] left an empty
+  // `tags=` (i.e. no tag filter at all) instead of no query at all.
+  const typeTags = (includeComments ? tags : tags.filter((t) => t !== 'comment')).filter(Boolean);
+  const tagParts = [];
   if (author) tagParts.push(`author_${author}`);
+  if (typeTags.length) tagParts.push(typeTags.length > 1 ? `(${typeTags.join(',')})` : typeTags[0]);
   const wantTags = tagParts.length ? tagParts.join(',') : undefined;
-  if (!query && !wantTags) {
+  // Second half of the condition: every tag the buyer asked for was dropped (they asked for
+  // "comment" only and then set includeComments:false). Widening that to "search every content
+  // type" is the expensive wrong answer — it charges per result for rows they did not ask for —
+  // so skip the iteration and say why instead.
+  if ((!query && !wantTags) || (tags.length && !typeTags.length)) {
     // No query and no tags means Algolia's search endpoint matches its entire ~46M-item
     // history ranked by relevance — a silent runaway bill, not a legitimate "browse" request.
-    log.warning('No query and no tags for this iteration — skipping (set tags, e.g. ["story"], or a search query; use "usernames" alone for user-profile-only runs).');
+    log.warning(
+      tags.length && !typeTags.length
+        ? 'Only tag "comment" was requested but includeComments is false, so every requested tag was '
+          + 'dropped and there is nothing left to search for — skipping this iteration rather than '
+          + 'silently returning (and charging for) every other content type. '
+          + 'Set includeComments:true, or add another tag such as "story".'
+        : 'No query and no tags for this iteration — skipping (set tags, e.g. ["story"], or a search query; use "usernames" alone for user-profile-only runs).',
+    );
     emptyQueries.push(query || '<empty>');
     continue;
   }
@@ -261,7 +283,7 @@ for (const query of queries) {
   while (keepGoing && fetched < queryCap) {
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
     if (query) url.searchParams.set('query', query);
-    if (wantTags) url.searchParams.set('tags', includeComments ? wantTags : wantTags.split(',').filter((t) => t !== 'comment').join(','));
+    if (wantTags) url.searchParams.set('tags', wantTags);
     if (numericFilters.length) url.searchParams.set('numericFilters', numericFilters.join(','));
     url.searchParams.set('hitsPerPage', String(Math.min(100, queryCap - fetched)));
     url.searchParams.set('page', String(page));

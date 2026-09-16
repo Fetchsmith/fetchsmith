@@ -28,6 +28,8 @@ To actually get a union, wrap the alternatives in parentheses: `tags=(story,ask_
 
 The rule generalizes: commas at the top level of a `tags` value AND together; a parenthesized, comma-separated group ORs together the values inside it. Mixing the two lets you express queries like "(`story` or `job`) AND `author_whoishiring`" in one request instead of fetching pages and filtering client-side.
 
+A postscript worth having, because we walked into this ourselves: knowing a trap and *not shipping it* are two different things. This post went up on 2026-09-09; [Hacker News Scraper](/tools/hacker-news-scraper) went on comma-joining its own `tags` input for weeks afterwards, so asking it for `["story","comment"]` produced an AND, matched nothing, and returned a cheerful "no stories/comments matched" — a 200, no error, no charge, no clue. Fixed on 2026-09-16: the tags you list are now wrapped in the OR form for you (`(story,comment)`), and an `author` filter is still AND-ed on top of that group (`author_pg,(story,comment)` → 10,684 hits, versus 699 for pg's stories alone). If you use the raw API directly, the rule above is the one that matters; if you use the Actor, it composes the expression for you.
+
 ## How Who's Hiring threads and their replies are actually tagged
 
 The monthly "Ask HN: Who is hiring?" threads are themselves stories, but the account that owns them (`author_whoishiring`) is a queryable tag. This is real output against the live index:

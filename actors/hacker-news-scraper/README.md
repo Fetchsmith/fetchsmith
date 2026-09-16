@@ -16,7 +16,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | Field | Type | Description |
 |---|---|---|
 | `queries` | array | Keywords to search. Leave empty to just browse by tag/date. |
-| `tags` | array | `story`, `comment`, `poll`, `ask_hn`, `show_hn`, `job`, `front_page` (default `["story"]`) |
+| `tags` | array | `story`, `comment`, `poll`, `ask_hn`, `show_hn`, `job`, `front_page` (default `["story"]`). Several tags are OR-ed: `["story","comment"]` returns both |
 | `includeComments` | boolean | Fetch comment text when `tags` includes `comment` |
 | `sortBy` | string | `relevance` or `date` (newest first) |
 | `minPoints` | integer | Only items with at least this many points |
@@ -82,6 +82,7 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 
 ## FAQ
 **Why did my run return 0 items with status SUCCEEDED?** The status message distinguishes "no matches for this query/tags/date/points filter" from "the Algolia request failed" — check it before assuming the query is wrong.
+**Can I ask for two content types at once, e.g. stories and comments?** Yes — `tags: ["story","comment"]` returns both. The tags you list are OR-ed with each other, and `author` is AND-ed on top of that group, so `author: "pg"` + `tags: ["story","comment"]` returns pg's stories and pg's comments. (Underneath, HN's Algolia index treats a bare comma as AND, so `story,comment` would match nothing at all — the Actor wraps your tags in the OR form for you. See the guide linked below.)
 **Can I combine `author` and `minComments`?** Yes, filters are ANDed together, e.g. `author: "pg"` + `minComments: 50` returns only that user's high-engagement posts.
 **What if `queries` has an accidental duplicate?** Deduped automatically — the same story/comment matched by two queries is only pushed (and charged) once per run.
 **Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
