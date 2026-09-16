@@ -7,6 +7,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 - Sentiment analysis, feature-request mining, churn reasons
 - Monitoring your own app's newest reviews on a schedule
 - Feeding reviews into AI agents and dashboards
+- **Alerting on new reviews only** — set `watchLabel` and schedule it; see [Watch mode](#watch-mode--only-new-reviews-since-the-last-run) below
 
 ## Input
 | Field | Type | Description |
@@ -22,8 +23,24 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
 | `keyword` | string | Only keep reviews whose title or content contains this word/phrase (case-insensitive) |
 | `reviewsAfter` | string (ISO date) | Only keep reviews posted on or after this date. Forces `sort` to `mostRecent` and stops paging as soon as older reviews are reached, so a narrow window doesn't scan (and isn't charged for) pages you don't want. |
+| `watchLabel` | string | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Leave empty for normal runs. |
 
 Filtering happens before you're charged — you never pay for rows that got filtered out.
+
+## Watch mode — only new reviews since the last run
+Set `watchLabel` to any name and this Actor stops re-delivering the same reviews on every scheduled run:
+
+1. **First run for a label is a free baseline.** It records which reviews already exist for every `apps`/`countries` pair (always walking Apple's full 500-review ceiling per pair, regardless of `maxReviewsPerApp`) and returns **zero rows — you are charged nothing**.
+2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
+
+The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-app-store-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`appNames`/`countries`/`countryFallback`/`sort` **and every minRating/maxRating/keyword/reviewsAfter filter** (Apple's feed takes none of those server-side, so all of them decide what "new" means). Change any of those and you get a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
+
+Details worth knowing:
+- **Use `sort: "mostRecent"`** (the default). `mostHelpful` isn't date-ordered, so a brand-new review isn't necessarily inside the scanned window and can be missed; the run logs a warning if you watch with `mostHelpful` anyway.
+- **`maxReviewsPerApp` is your scan-depth budget on incremental runs and is left exactly as you set it** — with `mostRecent`, new reviews sort at the top, so your own cap doesn't hide them. If every matching review inside that window turned out to be new, the run warns you that reviews posted since the last run may sit further back — raise `maxReviewsPerApp` or run the watch more often.
+- If an `appNames` search resolves to a *different* app than last time (or a new `countries` entry appears), that app/country pair is baselined on the spot rather than having its entire review history delivered as "new".
+- `countryFallback` still applies during a watch — a baselined pair whose storefront later goes empty falls back the same way a normal run does.
+- Reviews with no id Apple can hand back (rare) are skipped in watch mode, since they can't be recognized on the next run — never charged.
 
 **`appNames` caveat, verified live:** Apple's search API almost never returns zero results — even keyboard-mash gibberish gets back an unrelated app (measured: nonsense strings matched an Arabic quiz game, an emoji trivia app, etc., every time). A naive "take the first hit" would silently resolve a typo'd name to the wrong app. This Actor only accepts a match that shares a real word with the requested name (in the app's name, developer, or bundle id); otherwise it skips the name with a "no match found" warning instead of guessing. Use a numeric app id or Store URL when you need certainty. Also note: if you pass `appNames` and leave `apps` untouched, the Actor deliberately ignores `apps`'s own example default rather than mixing an uninvited app into your results.
 

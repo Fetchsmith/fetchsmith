@@ -95,6 +95,12 @@
       "type": "string",
       "description": "Only keep reviews posted on or after this date (e.g. 2026-01-01). Forces \"sort\" to mostRecent (Apple's date-ordered feed) and stops paging as soon as older reviews are reached, so a narrow window on a high-volume app doesn't scan/charge through hundreds of pages first.",
       "editor": "textfield"
+    },
+    "watchLabel": {
+      "title": "Watch label (alert mode)",
+      "type": "string",
+      "description": "Set a name (e.g. \"my-app-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/appNames/countries/countryFallback/sort/minRating/maxRating/keyword/reviewsAfter) starts a fresh baseline. Leave empty for normal one-off runs.",
+      "editor": "textfield"
     }
   }
 }

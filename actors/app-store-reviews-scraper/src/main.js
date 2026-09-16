@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -34,6 +35,7 @@ if (input.reviewsAfter) {
   reviewsAfterDate = new Date(input.reviewsAfter);
   if (Number.isNaN(reviewsAfterDate.getTime())) await Actor.fail(`"reviewsAfter" is not a valid date: "${input.reviewsAfter}". Use an ISO date like 2026-01-01.`);
 }
+const watchLabel = String(input.watchLabel ?? '').trim();
 // Chronological early-stop (below) only works on the date-sorted feed. mostHelpful has no date
 // ordering, so a cutoff there is still applied as a plain filter but can't cut pagination short.
 if (reviewsAfterDate && requestedSort === 'mostHelpful') log.warning('"reviewsAfter" forces sort to "mostRecent" (Apple\'s "mostHelpful" feed is not date-ordered, so a historical cutoff can\'t be applied to it efficiently).');
@@ -48,16 +50,107 @@ function passesFilters(item) {
   return true;
 }
 
+// Watch mode: a stateful "only reviews posted since my last run" filter. Unlike the other
+// watchLabel ports, this Actor already merges app metadata into every review row (see `info`
+// spread below) rather than pushing a separate app-snapshot record, so there is no deferred-
+// snapshot problem here — every pushed row is a genuine review with a stable id.
+const WATCH_STORE = 'fetchsmith-app-store-reviews-watch';
+const SEED_CAP = 20000; // bound the cost/time of a baseline run across all (app,country) pairs
+const WATCH_KEEP = 40000; // bound the record size; oldest ids fall off first
+const WATCH_SCAN_CAP = 500; // Apple's own hard ceiling (10 pages x 50) — always safe to use for seeding
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+let unidentifiedSkipped = 0; // watch mode only: reviews Apple returned without a usable id
+const watchSeen = new Set(); // `${appId}:${actualCountry}:${reviewId}` already delivered under this label+fingerprint
+const seededPairs = new Set(); // `${appId}::${requestedCountry}` pairs already baselined
+
+if (watchMode) {
+  // EVERY filter that decides what gets delivered goes into the fingerprint, including the
+  // client-side ones (minRating/maxRating/keyword) — Apple's RSS feed takes no such params
+  // server-side, so passesFilters() is the only filter layer, same rule as every other
+  // client-side-filtered port. Raw "apps"/"appNames"/"sort" are fingerprinted (not the resolved
+  // app ids or the reviewsAfter-forced sort) since those are exactly what the buyer typed and
+  // neither has a rolling default.
+  const criteria = {
+    apps: input.apps ?? [], appNames: input.appNames ?? [], countries, countryFallback,
+    sort: input.sort ?? null, minRating, maxRating, keyword, reviewsAfter: input.reviewsAfter ?? null,
+  };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    for (const p of existing.seededPairs ?? []) seededPairs.add(String(p));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered review(s) across ${seededPairs.size} app/country pair(s). Only `
+      + 'reviews NOT in that baseline will be returned and charged.',
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+      + 'It records which reviews already exist and returns ZERO rows (you are charged nothing). Run it again on '
+      + 'the same label and filters -- on a schedule, typically -- to get only the reviews posted since now.',
+    );
+  }
+  if (sort === 'mostHelpful') {
+    log.warning(
+      `Watch mode with sort="mostHelpful": that feed is not date-ordered, so a brand-new review is not `
+      + `necessarily inside the first ${perApp} rows scanned. Use sort="mostRecent" for reliable alerting.`,
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seededPairs: Array.from(seededPairs),
+    seenIds: ids,
+  });
+}
+
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item) {
+async function pushResult(item, watchId = null, pairSeeding = false) {
+  if (watchMode && watchId != null && pairSeeding) {
+    watchSeen.add(watchId);
+    if (watchSeen.size >= SEED_CAP) keepGoing = false;
+    return keepGoing;
+  }
+  if (watchMode && watchId != null && watchSeen.has(watchId)) {
+    watchSkipped += 1;
+    return true; // already delivered under this label: not pushed, not charged, keep scanning
+  }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
+    if (watchMode && watchId != null) watchSeen.add(watchId);
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
+  if (watchMode && watchId != null) watchSeen.add(watchId);
   return pushed < maxResults;
 }
 const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
@@ -221,22 +314,34 @@ async function fetchPage(url, primary = 'default') {
 // served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
 // review id across pages and sorts — scanning past empty pages, the sort fallback and the
 // client-class retry can all re-serve the same review.
-async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, extra = {}) {
+async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, extra = {}, pairSeeding = false) {
   let got = 0;
   let hitCutoff = false;
   // Only "mostRecent" is date-ordered (verified live 2026-09-11: strictly descending across pages,
   // no reset at page boundaries) — so pagination can only be safely cut short under that sort.
   const canEarlyStop = reviewsAfterDate && sortBy === 'mostRecent';
-  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < perApp && keepGoing && !hitCutoff; page++) {
+  // maxReviewsPerApp is an honest scan-depth cap on incremental runs (with sort=mostRecent new
+  // reviews sort at the head, so the buyer's own cap does not hide them there — same precedent as
+  // us-federal-awards' maxPagesPerCategory). A BASELINE walk must see at least as deep as any later
+  // run can reach, or older reviews return as "new" later — Apple's own hard ceiling is only 500
+  // reviews (10 pages x 50), so seeding simply always uses that ceiling, never less.
+  const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
+  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < scanCap && keepGoing && !hitCutoff; page++) {
     const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
     const { entries, clientClass } = await fetchPage(url);
     if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
     if (clientClass !== 'default') log.info(`${appId}/${country} ${sortBy} page ${page}: empty for the default client, recovered ${entries.length} reviews under the iOS client.`);
     for (const e of entries) {
-      if (tally.got >= perApp) break;
+      if (tally.got >= scanCap) break;
       const reviewId = lbl(e.id);
       if (reviewId != null && seen.has(reviewId)) continue;
       if (reviewId != null) seen.add(reviewId);
+      if (watchMode && reviewId == null) {
+        // No stable id means it can be neither recorded in the baseline nor recognised next run,
+        // so delivering it would re-charge for the same row on every scheduled watch run.
+        unidentifiedSkipped += 1;
+        continue;
+      }
       const item = {
         reviewId, appId, country, title: lbl(e.title), content: lbl(e.content), rating: Number(lbl(e['im:rating'])) || null,
         version: lbl(e['im:version']), author: lbl(e.author?.name), authorUrl: lbl(e.author?.uri), updatedAt: lbl(e.updated),
@@ -253,7 +358,12 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
       }
       got += 1; tally.got += 1;
       if (!passesFilters(item)) { tally.filteredOut += 1; continue; }
-      keepGoing = await pushResult(item);
+      const watchId = watchMode ? `${appId}:${country}:${reviewId}` : null;
+      // Counts every matching review considered "new" this scan (not already in the baseline) --
+      // used only to detect a saturated scan window (see the saturatedPairs check below), separate
+      // from pushResult's own watchSkipped bookkeeping.
+      if (!(watchMode && !pairSeeding && watchId != null && watchSeen.has(watchId))) tally.newForPair = (tally.newForPair || 0) + 1;
+      keepGoing = await pushResult(item, watchId, pairSeeding);
       if (!keepGoing) break;
     }
   }
@@ -264,20 +374,24 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
 // "mostRecent" yet serve hundreds of reviews under "mostHelpful" (Spotify/us, 2026-09-10). Both
 // sorts return the same review pool, so if the requested one comes back empty we fall back to the
 // other rather than telling the user there are no reviews. Rows always carry `sortUsed`.
-async function scrapeAppCountry(appId, country, extra = {}) {
+async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false) {
   const seen = new Set();
   const tally = { got: 0, filteredOut: 0 };
   const info = await getAppInfo(appId, country);
-  await scrapeAppCountrySort(appId, country, sort, seen, info, tally, extra);
+  await scrapeAppCountrySort(appId, country, sort, seen, info, tally, extra, pairSeeding);
   if (tally.got === 0 && keepGoing) {
     const alt = sort === 'mostRecent' ? 'mostHelpful' : 'mostRecent';
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
-    await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra);
+    await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra, pairSeeding);
   }
   // maxReviewsPerApp (perApp) caps reviews SCANNED, before minRating/maxRating/keyword filtering
   // -- if the cap was hit and some scanned reviews were dropped by a filter, matching reviews may
   // still sit deeper in Apple's feed and were never looked at.
-  return { got: tally.got, filteredOut: tally.filteredOut, capReached: tally.got >= perApp };
+  const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
+  return {
+    got: tally.got, filteredOut: tally.filteredOut, capReached: tally.got >= scanCap,
+    newForPair: tally.newForPair || 0,
+  };
 }
 
 if (appNames.length) {
@@ -291,6 +405,9 @@ const filteredOutPairs = [];
 // Pairs where maxReviewsPerApp was hit while minRating/maxRating/keyword still discarded scanned
 // reviews -- reviews deeper in Apple's feed were never scanned.
 const depthCappedPairs = [];
+// Watch mode: every matching review inside the scanned window was new, so older new reviews
+// (posted since the last run but sorting past the window) may have been missed.
+const saturatedPairs = [];
 let keepGoing = true;
 for (const app of apps) {
   if (!keepGoing) break;
@@ -298,8 +415,18 @@ for (const app of apps) {
   if (!appId) { log.warning(`Cannot parse app id from "${app}"`); continue; }
   for (const country of countries) {
     if (!keepGoing) break;
+    const pairKey = `${appId}::${country}`;
+    // A pair not yet in the baseline is seeded in place instead of delivered, even on an otherwise
+    // incremental run. This only happens when "appNames" resolves to a different app id than last
+    // time (editing "apps"/"countries" directly changes the fingerprint, starting a fresh baseline
+    // for everything) -- without this, the newly-appearing pair would dump its whole review history
+    // as "new" and charge for all of it. Same drift guard as the google-play-reviews-scraper port.
+    const pairSeeding = watchMode && (seeding || !seededPairs.has(pairKey));
+    if (watchMode && !seeding && pairSeeding) {
+      log.info(`${pairKey}: not in the baseline for "${watchLabel}" yet (appNames resolved to a new app) — baselining it this run instead of delivering its existing reviews.`);
+    }
     const pushedBefore = pushed;
-    const { got, filteredOut, capReached } = await scrapeAppCountry(appId, country);
+    const { got, filteredOut, capReached, newForPair } = await scrapeAppCountry(appId, country, {}, pairSeeding);
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
     if (capReached && filteredOut > 0) {
       depthCappedPairs.push(`${appId}/${country}`);
@@ -309,6 +436,8 @@ for (const app of apps) {
         + `filtering — raise maxReviewsPerApp to search deeper.`,
       );
     }
+    let totalNewForPair = newForPair;
+    let totalGot = got;
     if (got === 0) {
       const alt = await probeStorefronts(appId, country);
       if (countryFallback && alt?.length) {
@@ -316,7 +445,9 @@ for (const app of apps) {
         // storefront they really came from plus `requestedCountry`, so nothing is mislabelled.
         const fb = alt[0];
         log.info(`countryFallback: "${country}" is empty for ${appId}, retrieving reviews from "${fb}" instead.`);
-        const fb2 = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true });
+        const fb2 = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true }, pairSeeding);
+        totalNewForPair += fb2.newForPair;
+        totalGot += fb2.got;
         log.info(`${appId}/${fb} (fallback): ${fb2.got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
         if (fb2.capReached && fb2.filteredOut > 0) {
           depthCappedPairs.push(`${appId}/${fb}`);
@@ -325,21 +456,40 @@ for (const app of apps) {
             + `of them were excluded by the minRating/maxRating/keyword filters — raise maxReviewsPerApp to search deeper.`,
           );
         }
-        if (fb2.got > 0) continue;
+        if (fb2.got > 0) {
+          if (watchMode && pairSeeding && keepGoing) seededPairs.add(pairKey);
+          continue;
+        }
       }
       emptyPairs.push(`${appId}/${country}`);
       const hint = alt?.length
         ? ` Apple does return reviews for this app in: ${alt.join(', ')} — set "countries" to one of those${countryFallback ? '' : ', or enable "countryFallback"'}.`
         : '';
       log.warning(`Apple's review feed for app ${appId} in storefront "${country}" is empty (this is Apple's data, not a scrape failure).${hint}`);
-    } else if (pushed === pushedBefore) {
+    } else if (pushed === pushedBefore && !watchMode) {
       filteredOutPairs.push(`${appId}/${country}`);
       log.warning(`${appId}/${country}: fetched ${got} reviews but your minRating/maxRating/keyword filters removed all of them.`);
     }
+    // Only mark a pair baselined if its seed walk actually finished -- one cut short by the global
+    // SEED_CAP (keepGoing=false) has an incomplete picture of what already exists for that pair.
+    if (watchMode && pairSeeding && keepGoing) seededPairs.add(pairKey);
+    if (watchMode && !pairSeeding && totalGot >= WATCH_SCAN_CAP && totalNewForPair > 0 && totalNewForPair === totalGot) {
+      saturatedPairs.push(pairKey);
+      log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — run the watch more often.`);
+    }
   }
 }
-log.info(`Done. Pushed ${pushed} reviews.`);
-if (pushed === 0) {
+if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+log.info(`Done. Pushed ${pushed} items.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
+if (watchMode && seeding) {
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededPairs.size} app/country pair(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
+} else if (watchMode && pushed === 0) {
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+} else if (watchMode && saturatedPairs.length) {
+  await Actor.setStatusMessage(`Pushed ${pushed} new item(s) for watch label "${watchLabel}". ${saturatedPairs.join(', ')}: every matching review in the scanned window was new — older new reviews may have been missed; run the watch more often.`);
+} else if (watchMode) {
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).`);
+} else if (pushed === 0) {
   const why = depthCappedPairs.length && !emptyPairs.length
     ? `maxReviewsPerApp (${perApp}) was hit before any review passed your minRating/maxRating/keyword filters for: ${depthCappedPairs.join(', ')} — raise maxReviewsPerApp to search deeper`
     : filteredOutPairs.length && !emptyPairs.length
