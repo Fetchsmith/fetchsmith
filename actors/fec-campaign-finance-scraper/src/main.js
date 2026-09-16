@@ -220,6 +220,8 @@ try {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
           candidateId: c.candidate_id ?? c.committee?.candidate_ids?.[0] ?? null,
+          imageNumber: c.image_number ?? null,
+          pdfUrl: c.pdf_url ?? null,
         };
       } else {
         const totals = includeTotals ? await fetchTotals(c.candidate_id) : null;

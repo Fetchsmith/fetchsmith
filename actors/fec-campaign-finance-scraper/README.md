@@ -93,6 +93,7 @@ One item per itemized donor contribution:
 | `contributorAggregateYtd` | This donor's running total given to the same committee this cycle, as computed by the FEC. |
 | `committeeId`, `committeeName` | The receiving committee. |
 | `candidateId` | The committee's associated candidate, when the committee is a candidate committee (`null` for PACs/parties). |
+| `imageNumber`, `pdfUrl` | The FEC's own scanned-image identifier for the original filing, and a direct link to that PDF page — the primary source document behind the row. |
 
 ### Sample row, contributions mode
 
@@ -108,7 +109,9 @@ One item per itemized donor contribution:
   "contributorAggregateYtd": 175.0,
   "committeeId": "C00019331",
   "committeeName": "DEMOCRATIC PARTY OF WISCONSIN FEDERAL",
-  "candidateId": null
+  "candidateId": null,
+  "imageNumber": "202609149904200417",
+  "pdfUrl": "https://docquery.fec.gov/cgi-bin/fecimg/?202609149904200417"
 }
 ```
 

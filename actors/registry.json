@@ -1526,7 +1526,9 @@
         "contributionDate",
         "contributorAggregateYtd",
         "committeeId",
-        "committeeName"
+        "committeeName",
+        "imageNumber",
+        "pdfUrl"
       ],
       "sample_output": {
         "candidateId": "S2MA00170",

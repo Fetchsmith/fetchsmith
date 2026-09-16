@@ -127,6 +127,14 @@
       "committeeName": {
         "type": ["string", "null"],
         "title": "Receiving committee name (contributions mode)"
+      },
+      "imageNumber": {
+        "type": ["string", "null"],
+        "title": "FEC scanned-image identifier for the original filing (contributions mode)"
+      },
+      "pdfUrl": {
+        "type": ["string", "null"],
+        "title": "Link to the original scanned filing PDF (contributions mode)"
       }
     }
   },
