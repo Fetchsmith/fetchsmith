@@ -67,6 +67,14 @@
           "null"
         ]
       },
+      "engagementScore": {
+        "title": "EngagementScore",
+        "example": 156.5,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "storyId": {
         "title": "StoryId",
         "example": 4058874,

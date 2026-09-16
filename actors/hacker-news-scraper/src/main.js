@@ -110,9 +110,23 @@ async function pushResult(item, watchId) {
   return pushed < maxResults;
 }
 
+// A transparent, documented engagement score (points + weighted comment count) for
+// sorting/filtering results within a batch. Deliberately NOT decayed by age: an
+// age-decayed "HN front-page style" score collapses to ~0 for anything older than a
+// few days, which would make it useless on the common case (relevance/all-time search,
+// or `sortBy:"date"` results spanning years) — the exact case most queries return.
+// null for comments, which the Algolia index never attaches points/num_comments to.
+function engagementScore(points, numComments) {
+  if (points == null) return null;
+  return Math.round((points + (numComments ?? 0) * 0.5) * 10) / 10;
+}
+
 function mapHit(hit) {
   const isComment = (hit._tags || []).includes('comment');
   const storyId = hit.story_id ?? hit.objectID;
+  const points = hit.points ?? null;
+  const numComments = hit.num_comments ?? null;
+  const createdAt = hit.created_at || null;
   return {
     id: hit.objectID,
     type: isComment ? 'comment' : (hit._tags || []).find((t) => ['story', 'job', 'poll', 'ask_hn', 'show_hn'].includes(t)) || 'story',
@@ -120,13 +134,14 @@ function mapHit(hit) {
     url: hit.url || (isComment ? null : `https://news.ycombinator.com/item?id=${hit.objectID}`) || hit.story_url || null,
     hnUrl: `https://news.ycombinator.com/item?id=${hit.objectID}`,
     author: hit.author || null,
-    points: hit.points ?? null,
-    numComments: hit.num_comments ?? null,
+    points,
+    numComments,
+    engagementScore: engagementScore(points, numComments),
     storyId: storyId ?? null,
     storyTitle: hit.story_title || null,
     storyUrl: hit.story_url || null,
     text: hit.comment_text || hit.story_text || null,
-    createdAt: hit.created_at || null,
+    createdAt,
     query: hit._query ?? null,
     karma: null,
     about: null,

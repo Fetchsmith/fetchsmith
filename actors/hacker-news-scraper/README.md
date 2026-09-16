@@ -40,6 +40,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
   "author": "someuser",
   "points": 142,
   "numComments": 38,
+  "engagementScore": 161,
   "createdAt": "2026-09-01T12:00:00.000Z",
   "query": "fetchsmith",
   "githubRepo": null,
@@ -50,6 +51,8 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 }
 ```
 `githubRepo`/`githubStars`/`githubLanguage`/`githubPushedAt`/`githubOpenIssues` are only populated when `enrichGithubLinks: true` and the item actually links to a GitHub repo (common on Show HN); otherwise they stay `null`.
+
+`engagementScore` is `points + numComments × 0.5`, rounded to 1 decimal — a single number for sorting/filtering a result set by engagement without hand-weighing two columns yourself. It is **not** decayed by age (unlike HN's own front-page ranking): an age-decayed score collapses to ~0 for anything older than a few days, which would make it useless on relevance search or `sortBy:"date"` results spanning years — the common case for a keyword search. `null` on comment rows, which never carry `points`/`numComments`.
 
 A `usernames` lookup returns one row per user, `type: "user"`:
 ```json
