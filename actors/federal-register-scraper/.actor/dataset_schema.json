@@ -197,6 +197,16 @@
         ],
         "title": "Excerpt"
       },
+      "referencedCitations": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "ReferencedCitations",
+        "example": [
+          "90 FR 60432"
+        ]
+      },
       "url": {
         "type": [
           "string",

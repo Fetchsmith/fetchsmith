@@ -6,7 +6,7 @@ No API key, no login, no proxy. Public government data only.
 
 ## What you get
 
-30 flat fields per document, including the ones most Federal Register Actors leave out:
+31 flat fields per document, including the ones most Federal Register Actors leave out:
 
 | Field | Why it matters |
 | --- | --- |
@@ -15,6 +15,7 @@ No API key, no login, no proxy. Public government data only.
 | `regulationIdNumbers` | RIN — joins a document to its entry in reginfo.gov's Unified Agenda. |
 | `docketIds` | Regulations.gov docket IDs, so you can pull the comment file. |
 | `cfrReferences` | Flattened to readable strings like `40 CFR 257`. |
+| `referencedCitations` | The Federal Register never edits a published document — a correction, comment-period extension or effective-date postponement always ships as a **separate** document that cites the original by its own `"NN FR NNNNN"` citation. This field pulls that citation out of the new document's text, so you can link it back to the original without reading `datesText` by hand. Empty on the ~90% of documents that don't amend anything. |
 | `agencyNames` / `agencySlugs` / `parentAgencyNames` | One document usually lists a department *and* the bureau that wrote it; both are kept, split by level. |
 | `fullTextUrl` | Public URL of the complete document body as plain text. Free to fetch yourself — we don't charge you a second row for it. |
 | `url`, `pdfUrl`, `citation`, `startPage`, `endPage`, `pageLength` | Cite it in a memo without a second lookup. |
@@ -66,6 +67,8 @@ Set `watchLabel` to a name for the query — `epa-air-rules`, say — and this A
 
 The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a Federal Register alert.
 
+Note: unlike some of our other government-data Actors, there is no `watchChanges` option here — a Federal Register document's own record never mutates after publication (see `referencedCitations` above for how amendments actually surface).
+
 ## Sample output
 
 ```json
@@ -79,6 +82,7 @@ The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your 
   "docketIds": ["EPA-HQ-OLEM-2026-4324", "FRL-13374-01-OLEM"],
   "cfrReferences": ["40 CFR 257"],
   "citation": "91 FR 57842",
+  "referencedCitations": [],
   "url": "https://www.federalregister.gov/documents/2026/09/11/2026-18552/wisconsin-approval-of-state-coal-combustion-residuals-permit-program",
   "fullTextUrl": "https://www.federalregister.gov/documents/full_text/text/2026/09/11/2026-18552.txt"
 }
@@ -111,6 +115,9 @@ That is what a baseline run does: it records what already matches so that "new" 
 
 **Can I reset or inspect a watch baseline?**
 Yes. It is a plain JSON record in the `fetchsmith-fedreg-watch` key-value store on your own account, keyed by your label plus a fingerprint of the filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
+
+**A rule I'm tracking got its effective date postponed — will `watchLabel` catch that?**
+Not on the original document, because the Federal Register itself never edits it. What happens instead is a brand-new document (e.g. "Postponement of Effective Date") gets published citing the original by its `"NN FR NNNNN"` citation — `watchLabel` will deliver that new document like any other, and its `referencedCitations` field will contain the citation of the rule it postpones, so you can match it back yourself.
 
 ## Related guides
 

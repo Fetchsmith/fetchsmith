@@ -290,6 +290,27 @@ function applyNext(params, nextUrl) {
     return false;
 }
 
+// A "Correction"/"Extension of comment period"/"Postponement of effective date" document never
+// mutates the original document's own record (verified live, cycle 351: refetching
+// document_number 2026-03798 shows the same effective_on/comments_close_on it was published
+// with — Federal Register treats a published document as an immutable historical record). The
+// amendment instead ships as a brand-new document whose own `dates`/`action` text cites the
+// original by its Federal Register citation, e.g. "extended to March 2, 2026" for "the December
+// 23, 2025 proposed rule (90 FR 60432)". So a snapshot-diff watchChanges (the shape used on
+// grants-gov/fda-recall/us-federal-awards) cannot work here — there is nothing on the original
+// row to diff. What IS extractable today, cheaply, from fields already fetched: which earlier
+// citations a new document references, so a buyer can link a correction/extension back to the
+// original without re-reading the free-text `dates` field by hand.
+const CITATION_RE = /\b(\d{2,3})\s+FR\s+(\d{1,6})\b/g;
+function extractCitations(...texts) {
+    const found = new Set();
+    for (const t of texts) {
+        if (!t) continue;
+        for (const m of String(t).matchAll(CITATION_RE)) found.add(`${m[1]} FR ${m[2]}`);
+    }
+    return Array.from(found);
+}
+
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 const cfrString = (r) => {
     const t = r?.title ?? '';
@@ -337,6 +358,13 @@ function normalize(d) {
         pageLength: d.page_length ?? null,
         president: d.president?.name ?? null,
         executiveOrderNumber: d.executive_order_number ?? null,
+
+        // Other Federal Register documents this one's own text cites by "NN FR NNNNN" citation —
+        // in practice almost always the earlier document a correction, extension, or postponement
+        // amends. Self-citation excluded (a document doesn't reference its own citation, but a
+        // reprint/republication occasionally repeats it in `dates`). Empty on the ~90% of
+        // documents that don't amend anything.
+        referencedCitations: extractCitations(d.dates, d.action).filter((c) => c !== d.citation),
 
         excerpt: d.excerpts ?? null,
         url: d.html_url ?? null,
