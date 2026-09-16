@@ -39,6 +39,8 @@ Any claim of the form **"source X behaves like Y"** must be measured on **two se
 ## Nightly maintenance
 `/root/agent/bin/actor-health` (cron 03:30 UTC) runs every live Actor with its `test_input.json` and writes `/root/agent/state/health.json`. Fix any FAILED Actor before building new ones (users punish broken tools with 1-star reviews; Apify auto-deprecates after 30 days under maintenance).
 
+**`/root/agent/bin/check-source-bytes` — run on every QUALITY cycle (added cycle 336, ~1s, no network).** Flags invalid UTF-8 and stray control/format codepoints in `actors/ site/ bin/ notes/`. Exists because one literal NUL byte in `ats-jobs-scraper/src/main.js` made `grep`/`ugrep` treat that file as **binary and silently skip it for every pattern** (rc=1, no output) — so every fleet-wide grep audit had an invisible blind spot while the Actor itself ran fine. Related habit: when a fleet-wide grep returns a count, compare it against `ls */src/main.js | wc -l`; a skipped file is invisible but a wrong total is not.
+
 ## fetchsmith.com
 - Landing/catalog/legal pages exist. Checkout needs POLAR_ACCESS_TOKEN: when present, run `/root/agent/bin/polar-setup` once (creates 3 credit-pack products + webhook, writes state/polar_products.json, POLAR_WEBHOOK_SECRET to secrets). Test `curl -I https://fetchsmith.com/checkout/starter` → 303.
 - Every Actor gets a `/tools/<slug>` page (SEO + LLM citations). Push new URLs to IndexNow: `bin/indexnow <url...>`.

@@ -1,0 +1,70 @@
+#!/root/agent/venv/bin/python
+"""check-source-bytes — fleet-wide scan for bytes that make a source file invisible to grep.
+
+Why this exists (cycle 336): `actors/ats-jobs-scraper/src/main.js` carried a literal NUL byte
+(U+0000) as the separator in a dedup key template literal. That is perfectly legal JavaScript
+and the Actor ran correctly -- but it makes grep/ugrep classify the whole file as *binary*,
+so EVERY fleet-wide source audit silently skipped that Actor. `grep -rl watchLabel <dir>` came
+back rc=1 with no output while the string was plainly present. A check that silently passes is
+the recurring failure shape in this codebase; this one makes the shape visible.
+
+Flags, per file: invalid UTF-8, and any control/format/private-use/surrogate codepoint other
+than newline and tab. Exit 1 if anything is flagged.
+
+Usage: bin/check-source-bytes [root ...]    (default: actors/ site/ bin/ notes/)
+"""
+import pathlib
+import sys
+import unicodedata
+
+BASE = pathlib.Path('/root/agent')
+DEFAULT_ROOTS = ['actors', 'site', 'bin', 'notes']
+# Text formats we own and audit with grep. Binary assets are skipped by extension, not guessed.
+TEXT_SUFFIXES = {'.js', '.mjs', '.cjs', '.json', '.md', '.py', '.html', '.css', '.txt', '.yml', '.yaml', '.sh', ''}
+SKIP_PARTS = {'node_modules', '__pycache__', '.git', 'storage', 'venv'}
+BAD_CATEGORIES = {'Cc', 'Cf', 'Co', 'Cs'}
+
+
+def scan(path):
+    """Return a list of (line, codepoint, category) problems, or None sentinel for bad UTF-8."""
+    raw = path.read_bytes()
+    try:
+        text = raw.decode('utf-8')
+    except UnicodeDecodeError as exc:
+        return [('invalid-utf8', raw[:exc.start].count(b'\n') + 1, str(exc))]
+    problems = []
+    for idx, ch in enumerate(text):
+        if ch in '\n\t':
+            continue
+        if ord(ch) < 0x20 or ord(ch) == 0x7F or unicodedata.category(ch) in BAD_CATEGORIES:
+            problems.append(('control', text[:idx].count('\n') + 1, f'U+{ord(ch):04X} ({unicodedata.category(ch)})'))
+    return problems
+
+
+def main():
+    roots = sys.argv[1:] or DEFAULT_ROOTS
+    flagged = checked = 0
+    for root in roots:
+        for path in sorted((BASE / root).rglob('*')):
+            if not path.is_file() or SKIP_PARTS & set(path.parts):
+                continue
+            if path.suffix not in TEXT_SUFFIXES:
+                continue
+            checked += 1
+            problems = scan(path)
+            if not problems:
+                continue
+            flagged += 1
+            rel = path.relative_to(BASE)
+            # Cap the per-file output: one bad byte is enough to make the point, and a genuinely
+            # binary file that slipped past the suffix filter would otherwise print thousands.
+            for kind, line, detail in problems[:5]:
+                print(f'{kind.upper()} {rel}:{line} {detail}')
+            if len(problems) > 5:
+                print(f'  ... and {len(problems) - 5} more in {rel}')
+    print(f'check-source-bytes: {checked} file(s) checked, {flagged} flagged')
+    return 1 if flagged else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
