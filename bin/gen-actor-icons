@@ -1,0 +1,131 @@
+#!/root/agent/venv/bin/python
+"""Generate a 512x512 Apify Store icon per Actor into site/static/icons/<slug>.png.
+
+Why these icons and not the source site's logo (owner asked for "the shopify logo / appstore
+logo / a country flag" on 2026-09-16): third-party logos are trademarks, and putting Shopify's
+or Apple's mark on our own product tile implies endorsement we don't have -- several Store
+Actors have been renamed/delisted over exactly that. So each icon is an original mark in the
+FetchSmith palette (same brand colors as bin/gen-og-image) carrying a niche glyph plus a
+domain-colored accent bar, which reads as a family on the Store grid.
+
+Icons are hosted at https://fetchsmith.com/static/icons/<slug>.png. Apify has NO public API for
+setting an Actor icon -- `PUT /v2/acts/<id>` rejects any pictureUrl not already in their own
+S3 bucket (error `invalid-picture-url`), and the Console upload flow
+(POST <consoleBackendUrl>/upload/actor-picture/<actorId> -> presigned S3 PUT -> publicUrl) is
+gated on a *UI token*, which only a browser login yields. So the PNGs are uploaded by hand in
+Console -> Actor -> Publication -> Icon. See LEARNINGS.md cycle 364.
+
+Run: bin/gen-actor-icons   (idempotent; rewrites every icon)
+"""
+import json
+import os
+
+from PIL import Image, ImageDraw, ImageFont
+
+S = 512          # final icon size
+SS = 4           # supersample factor for the rounded tile + glyphs
+BRAND = (15, 118, 110)
+BRAND2 = (20, 184, 166)
+WHITE = (255, 255, 255)
+
+BOLD = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"
+
+REGISTRY = "/root/agent/actors/registry.json"
+OUTDIR = "/root/agent/site/static/icons"
+
+# Per-Actor glyph: a short wordless-as-possible mark. Kept to 1-3 glyph chars so it stays legible
+# at the 40px the Store grid actually renders. Accent = the domain's own hue family (NOT its logo),
+# so e-commerce Actors read warm, gov/tender Actors read blue, etc.
+ECOM = (217, 119, 6)       # amber
+MEDIA = (190, 24, 93)      # rose
+GOV = (37, 99, 235)        # blue
+JOBS = (124, 58, 237)      # violet
+DEV = (71, 85, 105)        # slate
+EDU = (5, 150, 105)        # emerald
+
+GLYPHS = {
+    "ats-jobs-scraper": ("JOB", JOBS),
+    "shopify-products-scraper": ("SHP", ECOM),
+    "google-news-scraper": ("NWS", MEDIA),
+    "hacker-news-scraper": ("HN", DEV),
+    "steam-reviews-scraper": ("STM", MEDIA),
+    "apple-podcasts-scraper": ("POD", MEDIA),
+    "google-play-reviews-scraper": ("PLY", MEDIA),
+    "scholarship-scraper": ("EDU", EDU),
+    "fec-campaign-finance-scraper": ("FEC", GOV),
+    "eu-ted-tenders-scraper": ("TED", GOV),
+    "uk-find-a-tender-scraper": ("UK", GOV),
+    "substack-scraper": ("SUB", MEDIA),
+    "app-store-reviews-scraper": ("APP", MEDIA),
+    "us-federal-awards-scraper": ("AWD", GOV),
+    "fda-recall-scraper": ("FDA", GOV),
+    "federal-register-scraper": ("REG", GOV),
+    "clinicaltrials-scraper": ("TRL", EDU),
+    "grants-gov-scraper": ("GNT", GOV),
+    "nih-reporter-scraper": ("NIH", EDU),
+}
+DEFAULT_ACCENT = BRAND
+
+
+def lerp(a, b, t):
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+def initials(slug):
+    """Fallback glyph for any Actor not in GLYPHS: initials of the first two meaningful words."""
+    skip = {"scraper", "api", "the", "and", "a", "of"}
+    words = [w for w in slug.split("-") if w not in skip]
+    if not words:
+        words = slug.split("-")
+    if len(words) == 1:
+        return words[0][:3].upper()
+    return "".join(w[0] for w in words[:3]).upper()
+
+
+def make_icon(slug, glyph, accent):
+    big = S * SS
+    grad = Image.new("RGB", (big, big))
+    gd = ImageDraw.Draw(grad)
+    for i in range(big):
+        gd.line([(0, i), (big, i)], fill=lerp(BRAND, BRAND2, i / big))
+
+    # Accent bar across the bottom third -- the only per-niche color, so the family still
+    # reads as one brand in the Store grid.
+    gd.rectangle([0, int(big * 0.80), big, big], fill=accent)
+
+    mask = Image.new("L", (big, big), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, big - 1, big - 1], radius=int(big * 0.22), fill=255)
+
+    d = ImageDraw.Draw(grad)
+    # Glyph size shrinks as the glyph gets longer so 2- and 3-char marks share an optical weight.
+    size = {1: 0.52, 2: 0.46, 3: 0.36}.get(len(glyph), 0.30)
+    font = ImageFont.truetype(BOLD, int(big * size))
+    d.text((big / 2, big * 0.40), glyph, font=font, fill=WHITE, anchor="mm")
+
+    # Small "FS" signature sitting on the accent bar -- attribution without a wordmark.
+    sig = ImageFont.truetype(BOLD, int(big * 0.11))
+    d.text((big / 2, big * 0.90), "FETCHSMITH", font=sig, fill=WHITE, anchor="mm")
+
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    img.paste(grad, (0, 0), mask)
+    return img.resize((S, S), Image.LANCZOS)
+
+
+def main():
+    os.makedirs(OUTDIR, exist_ok=True)
+    tools = json.load(open(REGISTRY))["tools"]
+    made = []
+    for t in tools:
+        slug = t["slug"]
+        glyph, accent = GLYPHS.get(slug, (initials(slug), DEFAULT_ACCENT))
+        icon = make_icon(slug, glyph, accent)
+        out = os.path.join(OUTDIR, f"{slug}.png")
+        icon.save(out, "PNG", optimize=True)
+        made.append((slug, glyph, os.path.getsize(out)))
+    for slug, glyph, size in made:
+        print(f"{slug:36s} glyph={glyph:4s} {size/1024:5.1f} KB")
+    print(f"\n{len(made)} icons -> {OUTDIR}")
+
+
+if __name__ == "__main__":
+    main()
