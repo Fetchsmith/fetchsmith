@@ -15,6 +15,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 - **Pass-through grant tracing** — `fundingAgencies` finds awards where the money's actual source agency differs from the agency that administers the award (common on formula/block grants routed through a state).
 - **Sub-award / subcontractor mining** — set `awardLevel` to `subaward` and get the FSRS sub-contracts and sub-grants filed *under* prime awards: who the prime contractor actually paid, how much, and for what. Every sub-award row carries the prime award's ID and URL, so you can join it straight back to a prime-level run. This is the tier-2 supplier list that never appears in prime-award data.
 - **New-award alerts** — set `watchLabel` on a saved search (any filter combination, prime or sub-award mode) to get only the awards/sub-awards that are new since your last run, instead of re-pulling the same agency/NAICS/recipient search on a schedule.
+- **Award-change alerts** — add `watchChanges` (prime mode) to also get re-alerted when an already-delivered award's last-modified date, amount, outlays or end date moves — contract modifications, option exercises, period-of-performance extensions — instead of only ever hearing about brand-new awards.
 
 ## Input
 
@@ -38,6 +39,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `maxResults` | integer | `100` | Total across all selected categories. |
 | `maxPagesPerCategory` | integer | `50` | Depth cap, 100 awards per page. |
 | `watchLabel` | string | – | Set a name for this saved search to turn on watch mode — see [Watch mode](#watch-mode) below. |
+| `watchChanges` | boolean | `false` | Prime mode only. Also re-alert (and charge) on an already-delivered award whose last-modified date, amount, outlays or end date changed — see [Watch mode](#watch-mode). |
 
 All filters are ANDed. Awards filtered out are never pushed and never charged.
 
@@ -118,6 +120,8 @@ Set `watchLabel` to a name for a saved search, e.g. `"doe-solar-contracts"`. The
 
 Changing any filter (categories, keywords, agencies, recipients, states, NAICS/PSC codes, amount bounds, or award IDs) starts a fresh baseline under that label. Leaving `startDate`/`endDate` on their rolling defaults (last 365 days / today) does **not** — those inputs move on their own every day, so pinning the baseline to their resolved value would force a fresh baseline daily; only an *explicitly set* start or end date counts toward the fingerprint. `maxPagesPerCategory` is your own scan-depth cost cap, so it's left alone on incremental runs, but a baseline run scans deeper than it (up to 1,000 pages per category) so a small cap set for normal runs can't make the baseline miss awards that exist right now.
 
+**`watchChanges` (prime mode only)** turns on a second kind of alert: an award that was already delivered under this label is re-delivered (charged again) if it changed since you last saw it — USAspending's own `lastModifiedDate` moved, or `awardAmount`/`totalOutlays` (contracts and assistance), `loanValue`/`subsidyCost` (loans), or `endDate` differ from the stored snapshot. The re-delivered row is tagged with `_watchChangeType` (which field(s) moved) and `_watchPrevious` (their old value(s)), so you don't have to diff it against your own last-seen copy. Not offered in sub-award mode — a sub-award is a static FSRS filing with no reliable "this changed" signal to track, so setting the flag there is a no-op (logged, not silently ignored). Every award's snapshot is refreshed on every run regardless of the flag, so turning `watchChanges` on later only detects drift from that point forward, never a backlog against changes it never captured.
+
 ## Pricing
 
 Pay per result: **$0.004 per award on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0035, Silver $0.003), **no Actor-start fee**. You only pay for awards actually written to the dataset.
@@ -151,6 +155,9 @@ No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *a
 **Does it need a proxy?**
 No. Plain HTTPS to a public government API, so runs are fast and cheap.
 
+**Can I get alerted when an award I already know about changes, not just when a new one appears?**
+Yes — set `watchChanges` alongside `watchLabel` (prime mode only). An award whose last-modified date, amount, outlays or end date has moved since you last saw it is re-delivered and charged again, tagged `_watchChangeType`/`_watchPrevious` with exactly what changed. Off by default, so a plain `watchLabel` only ever alerts on brand-new awards.
+
 **Can I get alerted only when a new award appears, instead of re-pulling the same search?**
 Yes — set `watchLabel`, see [Watch mode](#watch-mode). The first run records a baseline for free; every run after that on the same label and filters returns only what's new, and skips (without charging) anything already delivered.
 
@@ -163,5 +170,6 @@ Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federa
 Engineering write-ups behind this Actor:
 - [The US publishes every federal award as JSON — but you can't ask for a contract and a grant in the same request](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — why each award type has its own field mapping, and how this Actor handles all six in one run.
 - [Grants.gov's search API never returns an error — a typo in your filter just silently returns zero results](https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api) — the pre-award side: opportunities you can still bid on, rather than awards already made.
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel`/`watchChanges` are built, and why a cheap id-only baseline still has to apply every client-side filter.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.

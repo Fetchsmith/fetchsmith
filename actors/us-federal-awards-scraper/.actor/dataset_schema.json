@@ -293,6 +293,28 @@
         ],
         "title": "Kind",
         "example": "contract"
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": [
+          "lastModifiedDate",
+          "awardAmount"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": {
+          "lastModifiedDate": "2026-06-01",
+          "awardAmount": 500000
+        },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },

@@ -207,6 +207,12 @@
             "type": "string",
             "description": "Set a name for this saved search to turn on watch mode. The first run for a given label + filter combination is a free baseline: it records every award (or sub-award, in sub-award mode) currently matching your filters and returns zero rows, charged nothing. Run the same label and filters again later — on a schedule, typically — and you get back only what is new since the last run; anything already delivered is skipped and not charged. Works in both prime and sub-award mode. Changing any filter (categories, keywords, agencies, recipients, states, NAICS/PSC codes, amount bounds, award IDs, or an explicitly-set start/end date) starts a fresh baseline under that label — leaving start/end date on their rolling defaults does not, since those move every day on their own.",
             "editor": "textfield"
+        },
+        "watchChanges": {
+            "title": "Also alert on award changes (prime mode only)",
+            "type": "boolean",
+            "description": "Only used with watchLabel, and only in prime mode (awardLevel not set to \"subaward\"). When on, an award you were already alerted on is re-delivered (charged again) if USAspending's own Last Modified Date moves, or its amount, outlays or end date changes (e.g. a contract modification, an option exercised, a period of performance extended) — tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new awards/sub-awards, same as before this option existed.",
+            "default": false
         }
     },
     "required": []

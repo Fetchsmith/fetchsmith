@@ -102,6 +102,7 @@ const order = input.order === 'asc' ? 'asc' : 'desc';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 10000);
 const maxPagesPerCategory = Math.min(Math.max(Number(input.maxPagesPerCategory ?? 50), 1), 200);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const watchChanges = Boolean(input.watchChanges);
 
 // Watch mode: a stateful "only new awards/sub-awards since my last run" filter. Both prime
 // and sub-award mode have a real "new since last time" concept (new awards get made, new
@@ -124,12 +125,57 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchMode = watchLabel.length > 0;
+// watchChanges only makes sense in prime mode: sub-award records carry no reliable
+// last-modified/amount drift signal (subAwardDate is a static filing date), unlike prime
+// awards where USAspending's own "Last Modified Date" plus amount/outlays/end-date are thin
+// fields that genuinely mutate post-publication (change orders, option exercises, extensions).
+const effectiveWatchChanges = watchChanges && !isSubaward;
+if (watchMode && watchChanges && isSubaward) {
+  log.warning(
+    '"watchChanges" is only supported in awardLevel="prime" mode -- sub-award records have no '
+    + 'reliable drift signal to compare against. Ignoring the flag; watch mode still alerts on genuinely new sub-awards.',
+  );
+}
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
-const watchSeen = new Set(); // award/sub-award ids already delivered under this label+fingerprint
+let changedCount = 0;
+// award/sub-award id -> last-seen snapshot of thin fields (already fetched, no extra API
+// calls) that can change on an otherwise-already-delivered PRIME award: lastModifiedDate
+// (USAspending's own "this record changed" signal), awardAmount/totalOutlays (contracts and
+// assistance) or loanValue/subsidyCost (loans), and endDate (period-of-performance
+// extensions). effectiveWatchChanges decides whether a change re-delivers the row; the
+// snapshot itself is always kept current so turning the flag on later detects only future
+// drift, not a backlog since the baseline.
+const watchSeen = new Map();
+
+function snapshotOf(item) {
+  return {
+    lastModifiedDate: item.lastModifiedDate ?? null,
+    awardAmount: item.awardAmount ?? null,
+    totalOutlays: item.totalOutlays ?? null,
+    loanValue: item.loanValue ?? null,
+    subsidyCost: item.subsidyCost ?? null,
+    endDate: item.endDate ?? null,
+  };
+}
+
+// A changed award is re-delivered with these fields describing exactly what moved, so a buyer
+// doesn't have to diff the row against their own last-seen copy to find out.
+function changesBetween(prev, next) {
+  if (!prev) return null;
+  const types = [];
+  const previous = {};
+  for (const field of ['lastModifiedDate', 'awardAmount', 'totalOutlays', 'loanValue', 'subsidyCost', 'endDate']) {
+    if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
+      types.push(field);
+      previous[field] = prev[field];
+    }
+  }
+  return types.length ? { types, previous } : null;
+}
 
 if (watchMode) {
   // When awardIds is set every other filter is dropped by buildFilters (exact-ID lookup), so
@@ -163,10 +209,29 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    // Pre-change-tracking records stored `seenIds` as a flat array of id strings (every
+    // record predates this feature) -- those ids get a null snapshot, so effectiveWatchChanges
+    // only starts detecting drift from this run onward, never against a backlog it never captured.
+    for (const entry of existing.seenIds) {
+      if (entry && typeof entry === 'object') {
+        watchSeen.set(String(entry.i), {
+          lastModifiedDate: entry.m ?? null,
+          awardAmount: entry.a ?? null,
+          totalOutlays: entry.o ?? null,
+          loanValue: entry.l ?? null,
+          subsidyCost: entry.s ?? null,
+          endDate: entry.e ?? null,
+        });
+      } else {
+        watchSeen.set(String(entry), {
+          lastModifiedDate: null, awardAmount: null, totalOutlays: null, loanValue: null, subsidyCost: null, endDate: null,
+        });
+      }
+    }
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-      + `${watchSeen.size} already-delivered award(s)/sub-award(s). Only ones NOT in that baseline will be returned and charged.`,
+      + `${watchSeen.size} already-delivered award(s)/sub-award(s). Only ones NOT in that baseline will be returned and charged`
+      + (effectiveWatchChanges ? ', plus any already-delivered prime award whose last-modified date, amount, outlays or end date changed.' : '.'),
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -180,15 +245,19 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
     lastRunAt: new Date().toISOString(),
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
-    seenCount: ids.length,
-    seenIds: ids,
+    seenCount: entries.length,
+    // Compact per-entry shape (id + 6 short-keyed snapshot fields) -- WATCH_KEEP can hold up
+    // to 20,000 of these in one KV record.
+    seenIds: entries.map(([id, snap]) => ({
+      i: id, m: snap.lastModifiedDate, a: snap.awardAmount, o: snap.totalOutlays, l: snap.loanValue, s: snap.subsidyCost, e: snap.endDate,
+    })),
   });
 }
 
@@ -363,25 +432,16 @@ function normalizeSub(r, category) {
 }
 
 let pushed = 0;
+let beforePush = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item, watchId) {
-    if (watchMode && watchId != null && seeding) {
-        watchSeen.add(String(watchId));
-        return watchSeen.size < SEED_CAP;
-    }
-    if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
-        watchSkipped += 1;
-        return true;
-    }
+async function pushResult(item) {
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
         if (r.chargedCount === 0) return false;
         await Actor.pushData(item); pushed += 1;
-        if (watchMode && watchId != null) watchSeen.add(String(watchId));
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
-    if (watchMode && watchId != null) watchSeen.add(String(watchId));
     return pushed < maxResults;
 }
 
@@ -438,7 +498,40 @@ for (const category of categories) {
             if (seen.has(key)) continue;
             seen.add(key);
             categoryRows += 1;
-            keepGoing = await pushResult(isSubaward ? normalizeSub(row, category) : normalize(row, category, kind), key);
+            const item = isSubaward ? normalizeSub(row, category) : normalize(row, category, kind);
+
+            if (watchMode && seeding) {
+                watchSeen.set(key, snapshotOf(item));
+                keepGoing = watchSeen.size < SEED_CAP;
+                if (!keepGoing) break;
+                continue;
+            }
+            if (watchMode && watchSeen.has(key)) {
+                // Already delivered under this watch label. Normally dropped before any charge,
+                // so an award is never paid for twice -- UNLESS effectiveWatchChanges is on and
+                // its snapshot drifted since we last saw it, in which case it is re-delivered
+                // (charged like a new row) tagged with exactly what changed.
+                const nextSnap = snapshotOf(item);
+                const change = effectiveWatchChanges ? changesBetween(watchSeen.get(key), nextSnap) : null;
+                if (!change) {
+                    // Snapshot kept current either way, so enabling the flag later detects only
+                    // drift from that point, not a backlog since the baseline.
+                    watchSeen.set(key, nextSnap);
+                    watchSkipped += 1;
+                    continue;
+                }
+                keepGoing = await pushResult({ ...item, _watchChangeType: change.types, _watchPrevious: change.previous });
+                if (pushed > beforePush) { watchSeen.set(key, nextSnap); changedCount += 1; }
+                beforePush = pushed;
+                if (!keepGoing) break;
+                continue;
+            }
+
+            keepGoing = await pushResult(item);
+            // Recorded as delivered only after the charge actually succeeded -- anything dropped
+            // by maxResults or a charge limit stays "new" for the next run.
+            if (watchMode && pushed > beforePush) watchSeen.set(key, snapshotOf(item));
+            beforePush = pushed;
             if (!keepGoing) break;
         }
         log.info(`${category} page ${page}: ${results.length} ${isSubaward ? 'sub-awards' : 'awards'} (pushed ${pushed}/${maxResults})`);
@@ -462,7 +555,11 @@ if (watchMode) {
         );
         await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing award(s)/sub-award(s) recorded, 0 charged. Run again later to get only what's new.`);
     } else {
-        log.info(`Watch label "${watchLabel}": ${pushed} new award(s)/sub-award(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+        log.info(
+            `Watch label "${watchLabel}": ${pushed - changedCount} new award(s)/sub-award(s)`
+            + (effectiveWatchChanges ? ` and ${changedCount} changed prime award(s) (last-modified/amount/outlays/end date)` : '')
+            + ` since the last run (${watchSkipped} already-delivered, unchanged hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`,
+        );
         if (pushed === 0) {
             await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching award/sub-award had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
         }
