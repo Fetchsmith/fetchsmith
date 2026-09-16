@@ -95,9 +95,10 @@ Apple's public review feed is full of holes. For one app in one storefront, page
 - **re-requests an empty page as a different client** before believing it. Whether a page comes back empty depends on what your HTTP client looks like to Apple: measured on 2026-09-10, Notion/us `mostRecent` page 4 returned nothing to a plain `curl` request in 4 out of 4 interleaved rounds while a browser and an iPhone client both got a full 50 — the same 50. Each recovered page is 50 reviews a single-client scrape silently drops, and the retry only costs a request when a page is actually empty. Rows carry `clientClass` so you can see which client served them;
 - when a storefront really is empty, probes other storefronts and **tells you which ones have reviews** for that app;
 - with `countryFallback: true`, fetches from a working storefront automatically — rows keep the real `country` plus `requestedCountry` and `fallbackUsed: true`, so nothing is mislabelled;
-- sets a run status message explaining *why* a run returned few or no rows (empty Apple feed vs. your own rating/keyword filters).
+- sets a run status message explaining *why* a run returned few or no rows (empty Apple feed vs. your own rating/keyword filters);
+- **fails loudly instead of returning a misleading empty result when the fault is Apple's, not yours.** Apple sometimes serves an empty feed for *everything* — measured 2026-09-16: every app, storefront, page, sort and client came back `HTTP 200` with zero entries. From one app's response that is indistinguishable from "this app has no reviews", so when a run ends up with no reviews at all we re-check two control apps that always have hundreds of thousands of reviews (three attempts, spaced). If those are empty too, the run **fails** with a message naming the Apple-side fault, rather than telling you no reviews matched your filters. A watch-mode baseline is never written from such a run either — otherwise the next run would treat the app's whole review history as "new" and charge you for it.
 
-You are never charged for empty pages or for retries.
+You are never charged for empty pages, for retries, or for a run that fails this way.
 
 ## FAQ
 **Why did my run return 0 reviews with status SUCCEEDED?** Check the run's status message first — it tells you whether Apple's feed was genuinely empty for that app/storefront or your own `minRating`/`maxRating`/`keyword` filters removed every row.

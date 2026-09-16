@@ -310,6 +310,42 @@ async function fetchPage(url, primary = 'default') {
   return { entries: [], clientClass: primary };
 }
 
+// An empty feed for one app/storefront is normal Apple behaviour (see the hole comments above),
+// but the whole customer-review RSS can also go dark for the CALLER: measured 2026-09-16, every
+// request to itunes.apple.com/<cc>/rss/customerreviews/... returned HTTP 200 with
+// `feed.entry: null` for every app id, storefront (us/gb/de/jp), page, sort, URL shape and client
+// class — yet the SAME three app ids fetched from Apify's network in the same minute returned full
+// feeds. So this is Apple emptying the feed per source network (rate-limit/blocklist shaped), not
+// a global Apple outage, and either way it is invisible in a single app's response: it looks
+// exactly like "this app has no reviews". When a run ends up with nothing at all we therefore
+// probe control apps that always carry hundreds of thousands of reviews; if THEY are empty too,
+// nothing that reaches this run can produce reviews, so the run is FAILED by name instead of being
+// reported to the buyer as "no reviews match your filters" / "nothing new since the last run".
+// Same shape as the steam-reviews-scraper upstream-fault check.
+const CONTROL_APPS = [
+  ['389801252', 'us'], // Instagram
+  ['324684580', 'us'], // Spotify
+];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let feedDown = null; // cached: at most one probe sweep per run
+async function reviewFeedIsDown() {
+  if (feedDown !== null) return feedDown;
+  // Spaced retries so a momentary blip is never announced as an outage (fetchPage itself already
+  // retries each request under the other client class).
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    for (const [id, cc] of CONTROL_APPS) {
+      for (const sortBy of ['mostRecent', 'mostHelpful']) {
+        const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=${sortBy}/page=1/json`);
+        if (entries.length) { feedDown = false; return false; }
+      }
+    }
+    log.warning(`Apple's review feed returned nothing for the control apps (attempt ${attempt}/3) — retrying before calling it an upstream outage.`);
+    if (attempt < 3) await sleep(5000);
+  }
+  feedDown = true;
+  return true;
+}
+
 // Scrapes one app in one storefront under one sort order. Returns how many NEW reviews Apple
 // served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
 // review id across pages and sorts — scanning past empty pages, the sort fallback and the
@@ -408,6 +444,11 @@ const depthCappedPairs = [];
 // Watch mode: every matching review inside the scanned window was new, so older new reviews
 // (posted since the last run but sorting past the window) may have been missed.
 const saturatedPairs = [];
+// Reviews Apple served this run across every pair, BEFORE filters and before watch-mode
+// de-duplication -- i.e. how much data the upstream feed produced at all. Zero here (with pairs
+// actually attempted) is what triggers the upstream-outage probe below.
+let feedServed = 0;
+let pairsAttempted = 0;
 let keepGoing = true;
 for (const app of apps) {
   if (!keepGoing) break;
@@ -426,6 +467,7 @@ for (const app of apps) {
       log.info(`${pairKey}: not in the baseline for "${watchLabel}" yet (appNames resolved to a new app) — baselining it this run instead of delivering its existing reviews.`);
     }
     const pushedBefore = pushed;
+    pairsAttempted += 1;
     const { got, filteredOut, capReached, newForPair } = await scrapeAppCountry(appId, country, {}, pairSeeding);
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
     if (capReached && filteredOut > 0) {
@@ -457,6 +499,7 @@ for (const app of apps) {
           );
         }
         if (fb2.got > 0) {
+          feedServed += totalGot;
           if (watchMode && pairSeeding && keepGoing) seededPairs.add(pairKey);
           continue;
         }
@@ -470,6 +513,7 @@ for (const app of apps) {
       filteredOutPairs.push(`${appId}/${country}`);
       log.warning(`${appId}/${country}: fetched ${got} reviews but your minRating/maxRating/keyword filters removed all of them.`);
     }
+    feedServed += totalGot;
     // Only mark a pair baselined if its seed walk actually finished -- one cut short by the global
     // SEED_CAP (keepGoing=false) has an incomplete picture of what already exists for that pair.
     if (watchMode && pairSeeding && keepGoing) seededPairs.add(pairKey);
@@ -478,6 +522,19 @@ for (const app of apps) {
       log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — run the watch more often.`);
     }
   }
+}
+// Nothing at all came out of Apple for any pair: before reporting that as an ordinary empty
+// result, check whether the feed itself is down (see reviewFeedIsDown). This runs BEFORE the watch
+// record is written on purpose — a seeding run that recorded "baselined, 0 reviews" during an
+// outage would treat the app's entire back catalogue as new on the next run and charge for it.
+if (pairsAttempted > 0 && feedServed === 0 && await reviewFeedIsDown()) {
+  await Actor.fail(
+    "Apple's customer-review RSS feed (itunes.apple.com/.../rss/customerreviews) returned an empty feed for "
+    + 'every app tried, including control apps that have hundreds of thousands of reviews — checked over 3 '
+    + 'spaced attempts. That is an Apple-side fault (an outage, or Apple refusing this run\'s network), not '
+    + 'your input and not a scrape failure: no filter, storefront or date change will help it, and nothing '
+    + 'was charged for this run. It normally clears on its own — re-run later.',
+  );
 }
 if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
 log.info(`Done. Pushed ${pushed} items.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
