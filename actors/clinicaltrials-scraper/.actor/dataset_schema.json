@@ -218,6 +218,28 @@
         ],
         "title": "StudyUrl",
         "example": "https://clinicaltrials.gov/study/NCT00001625"
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": [
+          "overallStatus",
+          "lastUpdatePostDate"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": {
+          "overallStatus": "Recruiting",
+          "lastUpdatePostDate": "2026-06-01"
+        },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },

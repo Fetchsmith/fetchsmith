@@ -124,6 +124,7 @@ const rowsPerStudy = input.rowsPerStudy === 'site' ? 'site' : 'study';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0 && nctIds.length === 0;
+const watchChanges = Boolean(input.watchChanges);
 if (input.watchLabel && nctIds.length) {
     log.warning(
         'watchLabel is ignored when nctIds is set -- direct-lookup mode always returns exactly the ids you '
@@ -176,10 +177,44 @@ let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
-const watchSeen = new Set(); // nctIds already delivered under this label
+let changedCount = 0;
+// nctId -> last-seen snapshot of thin fields (already fetched, no extra API calls) that can
+// change on an otherwise-already-delivered study: lastUpdatePostDate (ClinicalTrials.gov's own
+// "this record changed" signal), overallStatus (e.g. Recruiting -> Completed/Terminated),
+// enrollmentCount (revised target) and primaryCompletionDate/completionDate (readout date
+// slips). `watchChanges` decides whether a change re-delivers the row; the snapshot itself is
+// always kept current so turning the flag on later detects only future drift, not a backlog
+// since the baseline. Same shape as us-federal-awards-scraper's `watchChanges` (cycle 349) --
+// copy, don't reinvent.
+const watchSeen = new Map();
+
+function snapshotOf(row) {
+    return {
+        lastUpdatePostDate: row.lastUpdatePostDate ?? null,
+        overallStatus: row.overallStatus ?? null,
+        enrollmentCount: row.enrollmentCount ?? null,
+        primaryCompletionDate: row.primaryCompletionDate ?? null,
+        completionDate: row.completionDate ?? null,
+    };
+}
+
+// A changed study is re-delivered with these fields describing exactly what moved, so a buyer
+// doesn't have to diff the row against their own last-seen copy to find out.
+function changesBetween(prev, next) {
+    if (!prev) return null;
+    const types = [];
+    const previous = {};
+    for (const field of ['lastUpdatePostDate', 'overallStatus', 'enrollmentCount', 'primaryCompletionDate', 'completionDate']) {
+        if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
+            types.push(field);
+            previous[field] = prev[field];
+        }
+    }
+    return types.length ? { types, previous } : null;
+}
 
 async function saveWatchRecord(status_) {
-    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -187,8 +222,11 @@ async function saveWatchRecord(status_) {
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status_,
         runCount: (watchRecord.runCount ?? 0) + 1,
-        seenCount: ids.length,
-        seenIds: ids,
+        seenCount: entries.length,
+        // Compact per-entry shape (id + 5 short-keyed snapshot fields).
+        seenIds: entries.map(([id, snap]) => ({
+            i: id, u: snap.lastUpdatePostDate, s: snap.overallStatus, n: snap.enrollmentCount, p: snap.primaryCompletionDate, c: snap.completionDate,
+        })),
     });
 }
 
@@ -199,10 +237,29 @@ if (watchMode) {
     const existing = await watchStore.getValue(key);
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
-        for (const id of existing.seenIds) watchSeen.add(String(id));
+        // Pre-change-tracking records stored `seenIds` as a flat array of nctId strings (every
+        // record predates this feature) -- those ids get a null snapshot, so `watchChanges`
+        // only starts detecting drift from this run onward, never against a backlog it never
+        // captured.
+        for (const entry of existing.seenIds) {
+            if (entry && typeof entry === 'object') {
+                watchSeen.set(String(entry.i), {
+                    lastUpdatePostDate: entry.u ?? null,
+                    overallStatus: entry.s ?? null,
+                    enrollmentCount: entry.n ?? null,
+                    primaryCompletionDate: entry.p ?? null,
+                    completionDate: entry.c ?? null,
+                });
+            } else {
+                watchSeen.set(String(entry), {
+                    lastUpdatePostDate: null, overallStatus: null, enrollmentCount: null, primaryCompletionDate: null, completionDate: null,
+                });
+            }
+        }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-            + `${watchSeen.size} already-delivered stud(y/ies). Only studies NOT in that baseline are returned and charged.`,
+            + `${watchSeen.size} already-delivered stud(y/ies). Only studies NOT in that baseline are returned and charged`
+            + (watchChanges ? ', plus any already-delivered study whose status, last-update date, enrollment count or completion date changed.' : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -407,7 +464,7 @@ log.info(nctIds.length
       + `facilityName="${facilityName}" leadSponsorName="${leadSponsorName}" `
       + `dateRanges=[${dateRanges.join(' AND ')}] `
       + `rowsPerStudy=${rowsPerStudy} maxResults=${maxResults}`
-      + (watchMode ? ` watchLabel="${watchLabel}"` : ''));
+      + (watchMode ? ` watchLabel="${watchLabel}" watchChanges=${watchChanges}` : ''));
 
 let scanned = 0;
 let pages = 0;
@@ -434,7 +491,7 @@ async function seedBaseline() {
         for (const study of studies) {
             scanned += 1;
             const nctId = study.protocolSection?.identificationModule?.nctId ?? null;
-            if (nctId) watchSeen.add(nctId);
+            if (nctId) watchSeen.set(nctId, snapshotOf(normalizeStudy(study)));
             if (watchSeen.size >= SEED_CAP) {
                 log.warning(
                     `Watch label "${watchLabel}" seed hit the ${SEED_CAP}-study cap before scanning the whole `
@@ -451,9 +508,8 @@ async function seedBaseline() {
     log.info(`Baseline walk: ${watchSeen.size} stud(y/ies) recorded.`);
 }
 
-async function emitStudy(study) {
+async function emitStudy(row) {
     scanned += 1;
-    const row = normalizeStudy(study);
     if (rowsPerStudy === 'site') {
         const sites = row.locations.length ? row.locations : [null];
         for (const site of sites) {
@@ -477,7 +533,7 @@ if (nctIds.length) {
         notFound.push(...nf);
         pages += 1;
         for (const study of studies) {
-            await emitStudy(study);
+            await emitStudy(normalizeStudy(study));
             if (!keepGoing) break;
         }
     }
@@ -499,18 +555,35 @@ if (nctIds.length) {
 
         for (const study of studies) {
             const nctId = study.protocolSection?.identificationModule?.nctId ?? null;
-            // Already delivered under this watch label: dropped before any charge, so a study
-            // is never paid for twice.
             if (watchMode && nctId && watchSeen.has(nctId)) {
-                scanned += 1;
-                skippedSeen += 1;
+                // Already delivered under this watch label. Normally dropped before any charge,
+                // so a study is never paid for twice -- UNLESS watchChanges is on and its
+                // snapshot drifted since we last saw it, in which case it is re-delivered
+                // (charged like a new row, exploded per-site same as any other row if
+                // rowsPerStudy="site") tagged with exactly what changed.
+                const row = normalizeStudy(study);
+                const nextSnap = snapshotOf(row);
+                const change = watchChanges ? changesBetween(watchSeen.get(nctId), nextSnap) : null;
+                if (!change) {
+                    // Snapshot kept current either way, so enabling the flag later detects only
+                    // drift from that point, not a backlog since the baseline.
+                    scanned += 1;
+                    watchSeen.set(nctId, nextSnap);
+                    skippedSeen += 1;
+                    continue;
+                }
+                const before = pushed;
+                await emitStudy({ ...row, _watchChangeType: change.types, _watchPrevious: change.previous });
+                if (pushed > before) { watchSeen.set(nctId, nextSnap); changedCount += 1; }
+                if (!keepGoing) break;
                 continue;
             }
             const before = pushed;
-            await emitStudy(study);
+            const row = normalizeStudy(study);
+            await emitStudy(row);
             // Recorded as delivered only after the charge actually succeeded -- anything dropped
             // by maxResults or a charge limit stays "new" for the next run.
-            if (watchMode && nctId && pushed > before) watchSeen.add(nctId);
+            if (watchMode && nctId && pushed > before) watchSeen.set(nctId, snapshotOf(row));
             if (!keepGoing) break;
         }
 
@@ -525,12 +598,14 @@ if (watchMode) {
         log.info(
             `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} stud(y/ies) recorded as `
             + 'already-seen, 0 results returned, 0 charged. The next run on this label and these filters '
-            + 'returns only new studies.',
+            + `returns only new stud(y/ies)${watchChanges ? ' or ones whose status/last-update/enrollment/completion date changed' : ''}.`,
         );
     } else {
         log.info(
-            `Watch label "${watchLabel}": ${pushed} new stud(y/ies) since the last run (${skippedSeen} `
-            + `already-delivered stud(y/ies) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            `Watch label "${watchLabel}": ${pushed} new/changed stud(y/ies) since the last run (${skippedSeen} `
+            + `unchanged already-delivered stud(y/ies) skipped, uncharged`
+            + (watchChanges ? `, ${changedCount} of the pushed re-delivered for a change` : '')
+            + `); baseline now holds ${watchSeen.size}.`,
         );
     }
 }

@@ -1235,7 +1235,7 @@
     {
       "slug": "clinicaltrials-scraper",
       "title": "ClinicalTrials.gov Scraper – Condition, Phase & Site Mode",
-      "summary": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows (start, completion, first-posted, results). Optional one-row-per-site mode for site-selection buyers. No contact people, phones or emails shipped, ever. Optional watchLabel mode returns only studies new since your last run, so a schedule becomes a trial alert.",
+      "summary": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows (start, completion, first-posted, results). Optional one-row-per-site mode for site-selection buyers. No contact people, phones or emails shipped, ever. Optional watchLabel mode returns only studies new since your last run, so a schedule becomes a trial alert; add watchChanges to also catch status changes, protocol/enrollment updates and completion-date slips on studies you already got.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "e1d1LPdo9TQwaKsbx",
@@ -1278,7 +1278,9 @@
         "hasResults",
         "locationCount",
         "locations",
-        "studyUrl"
+        "studyUrl",
+        "_watchChangeType",
+        "_watchPrevious"
       ],
       "sample_output": {
         "nctId": "NCT04137653",

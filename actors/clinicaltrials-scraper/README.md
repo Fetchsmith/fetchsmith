@@ -18,13 +18,13 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 
 **We do not ship contact people, phone numbers or emails — ever.** ClinicalTrials.gov's own API returns named individuals and personal email addresses in `centralContacts`/location `contacts` (we found a real `@gmail.com` in a live sample). Several competitor Actors resell that as a "contact finder." We deliberately drop it; `locations`/`site` carries facility, city, state, country and geo-coordinates only.
 
-Name a `watchLabel` and every later run on the same saved search returns **only studies new since the last run**, so a scheduled competitive-intelligence pull never re-delivers or re-charges for the same trial twice.
+Name a `watchLabel` and every later run on the same saved search returns **only studies new since the last run**, so a scheduled competitive-intelligence pull never re-delivers or re-charges for the same trial twice; add `watchChanges` and it also catches a study's **status changing** (e.g. Recruiting → Completed/Terminated), a **protocol amendment updating its enrollment count**, or its **completion date slipping**.
 
 ## Who uses this
 
 - **Pharma / CRO business development** tracking competitor trials by condition or sponsor.
 - **Site-selection teams** finding which facilities run trials for a given condition (`rowsPerStudy: "site"`).
-- **Investor / market research** watching a sponsor's pipeline by phase and status.
+- **Investor / market research** watching a sponsor's pipeline by phase and status; add `watchChanges` to get alerted when a trial they already logged is upgraded, terminated, or has its readout date slip.
 - **Patient-advocacy and recruitment groups** finding actively recruiting trials near a location.
 
 ## Input
@@ -68,6 +68,7 @@ Name a `watchLabel` and every later run on the same saved search returns **only 
 | `rowsPerStudy` | `"study"` (default) or `"site"`. |
 | `maxResults` | Up to 50,000. Token-based paging, no offset wall. |
 | `watchLabel` | Name a saved search to get only studies new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. Ignored when `nctIds` is set. |
+| `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen study if its `overallStatus`, `lastUpdatePostDate`, `enrollmentCount`, `primaryCompletionDate` or `completionDate` changed (default `false`) — see FAQ. |
 
 ## Sample output (`rowsPerStudy: "study"`)
 
@@ -86,6 +87,8 @@ Name a `watchLabel` and every later run on the same saved search returns **only 
   "studyUrl": "https://clinicaltrials.gov/study/NCT04137653"
 }
 ```
+
+**Watch-mode change fields, only on a `watchChanges` re-delivery:** `_watchChangeType` (array, one or more of `overallStatus`/`lastUpdatePostDate`/`enrollmentCount`/`primaryCompletionDate`/`completionDate`), `_watchPrevious` (object with the previous value(s) for each changed field).
 
 ## The pageSize trap
 
@@ -123,6 +126,9 @@ Set `watchLabel` to any name, e.g. `"my-oncology-watch"`. The first run under th
 
 **Does `rowsPerStudy: "site"` change what `watchLabel` tracks?**
 No — "new" is always decided per **study** (`nctId`), never per site row. A trial that was already delivered stays excluded even if `rowsPerStudy` or another display-only setting changes between runs; only filters that change which studies match start a fresh baseline.
+
+**What does `watchChanges` add, and does it cost extra to turn on?**
+No extra fee — a changed study is billed at the same per-row price as a new one (exploded per-site same as any other row if `rowsPerStudy: "site"`). Plain `watchLabel` only ever tells you about studies it has never delivered before; it stays silent forever about one it already sent you, even if that trial later stops recruiting or its enrollment target changes. Set `watchChanges: true` and each run also compares every already-delivered study's `overallStatus`, `lastUpdatePostDate`, `enrollmentCount`, `primaryCompletionDate` and `completionDate` against what they looked like last time; if any moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 studies' recorded status/enrollment count directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
 
 ## Related guides
 
