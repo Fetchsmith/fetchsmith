@@ -304,6 +304,204 @@
         "title": "StoreUrl",
         "example": "https://store.steampowered.com/app/1145360/"
       },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Name",
+        "example": "Hades"
+      },
+      "appType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "AppType",
+        "example": "game"
+      },
+      "isFree": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "IsFree",
+        "example": false
+      },
+      "priceCurrency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "PriceCurrency",
+        "example": "USD"
+      },
+      "price": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Price",
+        "example": 24.99
+      },
+      "priceInitial": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PriceInitial",
+        "example": 24.99
+      },
+      "discountPercent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "DiscountPercent",
+        "example": 0
+      },
+      "comingSoon": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "ComingSoon",
+        "example": false
+      },
+      "categories": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Categories"
+      },
+      "platforms": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Platforms"
+      },
+      "metacriticScore": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "MetacriticScore",
+        "example": 93
+      },
+      "requiredAge": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "RequiredAge",
+        "example": 0
+      },
+      "shortDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ShortDescription",
+        "example": "Defy the god of the dead as you hack and slash out of the Underworld in this rogue-like dungeon crawler."
+      },
+      "website": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Website",
+        "example": "http://www.supergiantgames.com"
+      },
+      "headerImage": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "HeaderImage",
+        "example": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/header.jpg"
+      },
+      "supportedLanguages": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SupportedLanguages",
+        "example": "English, French, Italian, German, Spanish - Spain, Korean, Portuguese - Brazil"
+      },
+      "dlcCount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "DlcCount",
+        "example": 1
+      },
+      "reviewScore": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "ReviewScore",
+        "example": 9
+      },
+      "reviewScoreDesc": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ReviewScoreDesc",
+        "example": "Overwhelmingly Positive"
+      },
+      "totalReviews": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "TotalReviews",
+        "example": 153945
+      },
+      "totalPositive": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "TotalPositive",
+        "example": 151471
+      },
+      "totalNegative": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "TotalNegative",
+        "example": 2474
+      },
+      "positivePercent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PositivePercent",
+        "example": 98.4
+      },
+      "currentPlayers": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "CurrentPlayers",
+        "example": 2638
+      },
+      "country": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Country",
+        "example": "us"
+      },
       "scrapedAt": {
         "type": [
           "string",
