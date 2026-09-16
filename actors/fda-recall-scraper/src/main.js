@@ -46,6 +46,7 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000)
 const includeRiskScore = input.includeRiskScore !== false;
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0;
+const watchChanges = Boolean(input.watchChanges);
 
 // Which date the reportDateFrom/reportDateTo range and the sort both apply to. report_date
 // (FDA publication) is the long-standing default; the other two are real distinct fields on
@@ -113,10 +114,37 @@ let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
-const watchSeen = new Set(); // `${productType}:${recallNumber|event_id:product_description}` keys already delivered
+// `${productType}:${recallNumber|event_id:product_description}` -> last-seen snapshot of the 2
+// thin fields that can change on an otherwise-already-delivered recall: `status` (Ongoing ->
+// Terminated/Completed) and `classification` (FDA sometimes reclassifies a recall's severity,
+// e.g. Class II -> Class I). Both come straight off the raw API row with no extra request, so
+// tracking them costs nothing. `watchChanges` decides whether a change re-delivers the row; the
+// snapshot itself is always kept current so turning watchChanges on later works without a fresh
+// baseline. Same shape as grants-gov-scraper's `watchChanges` (cycle 346) -- copy, don't reinvent.
+const watchSeen = new Map();
+let changedCount = 0;
+
+function snapshotOf(row) {
+    return { status: row.status ?? null, classification: row.classification ?? null };
+}
+
+// A changed recall is re-delivered with these fields describing exactly what moved, so a buyer
+// doesn't have to diff the row against their own last-seen copy to find out.
+function changesBetween(prev, next) {
+    if (!prev) return null;
+    const types = [];
+    const previous = {};
+    for (const field of ['status', 'classification']) {
+        if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
+            types.push(field);
+            previous[field] = prev[field];
+        }
+    }
+    return types.length ? { types, previous } : null;
+}
 
 async function saveWatchRecord(status_) {
-    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -124,8 +152,10 @@ async function saveWatchRecord(status_) {
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status_,
         runCount: (watchRecord.runCount ?? 0) + 1,
-        seenCount: ids.length,
-        seenIds: ids,
+        seenCount: entries.length,
+        // Compact per-entry shape: id, status, classification. Kept short because WATCH_KEEP
+        // can hold up to 60,000 of these in one KV record.
+        seenIds: entries.map(([id, snap]) => ({ i: id, s: snap.status, c: snap.classification })),
     });
 }
 
@@ -136,10 +166,22 @@ if (watchMode) {
     const existing = await watchStore.getValue(key);
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
-        for (const id of existing.seenIds) watchSeen.add(String(id));
+        // Pre-change-tracking records stored `seenIds` as a flat array of plain id strings --
+        // handled here so an existing buyer's baseline keeps working unchanged instead of needing
+        // a fresh seed the day this feature shipped. Those ids simply have no snapshot yet
+        // (nulls), so watchChanges only starts detecting changes from here on, never against a
+        // backlog it never captured.
+        for (const entry of existing.seenIds) {
+            if (entry && typeof entry === 'object') {
+                watchSeen.set(String(entry.i), { status: entry.s ?? null, classification: entry.c ?? null });
+            } else {
+                watchSeen.set(String(entry), { status: null, classification: null });
+            }
+        }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-            + `${watchSeen.size} already-delivered recall(s). Only recalls NOT in that baseline are returned and charged.`,
+            + `${watchSeen.size} already-delivered recall(s). Only recalls NOT in that baseline are returned and charged`
+            + (watchChanges ? ', plus any already-delivered recall whose status or classification changed.' : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -447,7 +489,7 @@ async function seedBaseline() {
                 const limit = Math.min(MAX_LIMIT, MAX_SKIP - skip);
                 const page = await fetchPage(productType, buildSearch(w.from, w.to), limit, skip);
                 if (!page || !page.results.length) break;
-                for (const row of page.results) watchSeen.add(dedupKeyOf(productType, row));
+                for (const row of page.results) watchSeen.set(dedupKeyOf(productType, row), snapshotOf(row));
                 skip += limit;
                 if (watchSeen.size >= SEED_CAP) {
                     log.warning(
@@ -486,15 +528,36 @@ if (watchMode && seeding) {
             const key = dedupKeyOf(reader.productType, row);
             if (seen.has(key)) continue;
             seen.add(key);
-            // Already delivered under this watch label: dropped before any charge, so a recall
-            // is never paid for twice.
-            if (watchMode && watchSeen.has(key)) { skippedSeen += 1; continue; }
+            // Already delivered under this watch label: normally dropped before any charge, so a
+            // recall is never paid for twice -- UNLESS watchChanges is on and its status or
+            // classification moved since we last saw it, in which case it is re-delivered
+            // (charged like a new row) tagged with exactly what changed.
+            if (watchMode && watchSeen.has(key)) {
+                const nextSnap = snapshotOf(row);
+                const change = watchChanges ? changesBetween(watchSeen.get(key), nextSnap) : null;
+                if (!change) {
+                    // Snapshot kept current either way, so turning watchChanges on later detects
+                    // only drift from that point, not a backlog since the baseline.
+                    watchSeen.set(key, nextSnap);
+                    skippedSeen += 1;
+                    continue;
+                }
+                reader.pushed += 1;
+                const before = pushed;
+                keepGoing = await pushResult({
+                    ...normalize(row, reader.productType),
+                    _watchChangeType: change.types,
+                    _watchPrevious: change.previous,
+                });
+                if (pushed > before) { watchSeen.set(key, nextSnap); changedCount += 1; }
+                continue;
+            }
             reader.pushed += 1;
             const before = pushed;
             keepGoing = await pushResult(normalize(row, reader.productType));
             // Recorded as delivered only after the charge actually succeeded -- anything dropped
             // by maxResults or a charge limit stays "new" for the next run.
-            if (watchMode && pushed > before) watchSeen.add(key);
+            if (watchMode && pushed > before) watchSeen.set(key, snapshotOf(row));
         }
         if (!emitted) break;
     }
@@ -511,8 +574,9 @@ if (watchMode) {
         );
     } else {
         log.info(
-            `Watch label "${watchLabel}": ${pushed} new recall(s) since the last run `
-            + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            `Watch label "${watchLabel}": ${pushed - changedCount} new recall(s)`
+            + (watchChanges ? ` and ${changedCount} changed recall(s) (status/classification)` : '')
+            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
         );
     }
 }

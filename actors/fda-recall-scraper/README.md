@@ -2,14 +2,14 @@
 
 Search every US FDA product recall from the official **openFDA enforcement API** — food, drug and device — and get it back as flat, typed JSON/CSV/Excel rows.
 
-This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. Every row can also carry a `riskScore` (0-100) — a documented, deterministic severity/recency/scope formula, not a black-box "AI" claim. Name a `watchLabel` and every later run on the same saved search returns **only recalls new since the last run**, so a scheduled job never re-delivers or re-charges for the same recall twice. At **$0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee**, it undercuts every all-three-types competitor we checked — the highest-volume one charges $0.05/result for the same raw openFDA data.
+This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. Every row can also carry a `riskScore` (0-100) — a documented, deterministic severity/recency/scope formula, not a black-box "AI" claim. Name a `watchLabel` and every later run on the same saved search returns **only recalls new since the last run**, so a scheduled job never re-delivers or re-charges for the same recall twice; add `watchChanges` and it also catches a recall's **status changing** (e.g. Ongoing → Terminated) or **FDA reclassifying its severity** (e.g. Class II → Class I). At **$0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee**, it undercuts every all-three-types competitor we checked — the highest-volume one charges $0.05/result for the same raw openFDA data.
 
 No API key, no login, no browser. Public US government open data ([openFDA licence](https://open.fda.gov/license/)).
 
 ## What you can do with it
 
 - **Retailers and distributors** — pull every Class I recall for your state or category and check it against the products you carry.
-- **Compliance and QA teams** — monitor `status: "Ongoing"` recalls in your product category on a schedule, using `watchLabel` so each scheduled run returns only what's new.
+- **Compliance and QA teams** — monitor `status: "Ongoing"` recalls in your product category on a schedule, using `watchLabel` so each scheduled run returns only what's new; add `watchChanges` to also get alerted when a recall you already logged is upgraded to a more serious classification or is finally terminated.
 - **Product-liability and personal-injury firms** — search recall reasons and firm names across the full history.
 - **Pharmacy and healthcare** — match drug recalls to your inventory by **NDC or UPC**, not by fuzzy product-name matching.
 - **Insurers and risk analysts** — build a recall time series by firm, classification or distribution pattern.
@@ -36,6 +36,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `maxResults` | integer | Total rows across all selected product types. Default 100. |
 | `includeRiskScore` | boolean | Add the `riskScore` field (see Output/FAQ). Default `true`. |
 | `watchLabel` | string | Name a saved search to get only recalls new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. |
+| `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen recall if its `status` or `classification` changed (default `false`) — see FAQ. |
 
 Filters are **ANDed**. A search query plus a state plus a classification over a short date window often has zero real matches — drop one filter and retry.
 
@@ -58,6 +59,8 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
 **All product types:** `productType`, `recallNumber`, `eventId`, `status`, `classification`, `voluntaryMandated`, `initialFirmNotification`, `recallingFirm`, `city`, `state`, `country`, `productDescription`, `productQuantity`, `reasonForRecall`, `distributionPattern`, `codeInfo`, `moreCodeInfo`, `reportDate`, `recallInitiationDate`, `centerClassificationDate`, `terminationDate`, `riskScore`.
 
 **Drug recalls only** (see the FAQ): `brandName`, `genericName`, `manufacturerName`, `substanceName`, `productNdc`, `packageNdc`, `upc`, `applicationNumber`, `drugRoute`, `rxcui`, `unii`, `splSetId`.
+
+**Watch-mode change fields, only on a `watchChanges` re-delivery:** `_watchChangeType` (array, one or both of `status`/`classification`), `_watchPrevious` (object with the previous value(s) for each changed field).
 
 ### Sample row (drug recall, trimmed)
 
@@ -134,6 +137,9 @@ Set `watchLabel` to any name, e.g. `"my-class-i-watch"`. The first run under tha
 
 **Does changing `reportDateFrom`/`reportDateTo` from a rolling default break `watchLabel`?**
 No — leaving both empty (the default one-year rolling window) is treated as "no explicit date filter" for the purpose of deciding whether your search changed, not as a specific date that changes every day. A recall that only enters the rolling window on a later run is correctly reported as new then, which is exactly what a watch should do.
+
+**What does `watchChanges` add, and does it cost extra to turn on?**
+No extra fee — a changed recall is billed at the same per-row price as a new one. Plain `watchLabel` only ever tells you about recalls it has never delivered before; it stays silent forever about one it already sent you, even if that recall later gets terminated or FDA upgrades it to a more serious class. Set `watchChanges: true` and each run also compares every already-delivered recall's `status` and `classification` against what they looked like last time; if either moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 recalls' recorded status and classification directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
 
 **How does this compare to other FDA recall scrapers?**
 Checked live pricing and features again on 2026-09-15 against the highest-user leader (`benthepythondev/fda-recall-intelligence`, 11 users): they charge $0.05/result tapering to $0.035 on Diamond, **plus a per-GB Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, 10-20x cheaper at every tier. Their input set (8 fields) is a subset of ours (14 fields: three date-field choices instead of one, city, voluntary/mandated, free-text search across three fields, state, and no 1,000-row cap — ours goes to 50,000). Their one real feature, an "AI-powered intelligence score", is now matched by `riskScore` above — ours is fully documented instead of a black box. Also checked against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only, checked 2026-09-13): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — cheaper at every run size, and we cover drug and device recalls too, not just food.

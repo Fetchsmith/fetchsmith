@@ -266,6 +266,26 @@
           "string",
           "null"
         ]
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": [
+          "status"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": {
+          "status": "Ongoing"
+        },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },

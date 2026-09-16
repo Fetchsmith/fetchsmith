@@ -1052,7 +1052,7 @@
     {
       "slug": "fda-recall-scraper",
       "title": "FDA Recall Scraper — Food, Drug & Device Enforcement Reports",
-      "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 34 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. Optional watchLabel mode returns only recalls new since your last run, so a schedule becomes a recall alert.",
+      "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 34 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. Optional watchLabel mode returns only recalls new since your last run, so a schedule becomes a recall alert; add watchChanges to also catch a recall's status changing or FDA reclassifying its severity.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "Yv9DOUS61nx3xywYM",
@@ -1104,7 +1104,9 @@
         "drugRoute",
         "rxcui",
         "unii",
-        "splSetId"
+        "splSetId",
+        "_watchChangeType",
+        "_watchPrevious"
       ],
       "sample_output": {
         "productType": "drug",
