@@ -131,6 +131,6 @@ Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/eu-ted-te
 ## Related guides
 Engineering write-ups behind this Actor:
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
-- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the traps it has to avoid.
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the traps it has to avoid.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

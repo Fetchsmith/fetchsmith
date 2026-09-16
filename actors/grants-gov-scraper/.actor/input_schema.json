@@ -159,6 +159,12 @@
       "type": "string",
       "description": "Optional. Name a saved search (e.g. \"my-nsf-watch\") and this run returns ONLY opportunities not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded opportunities as \"new\". Ignored when Opportunity number is set.",
       "editor": "textfield"
+    },
+    "watchChanges": {
+      "title": "Watch mode: also alert on deadline/status/forecast changes",
+      "type": "boolean",
+      "description": "Only used together with Watch label. When on, a run also re-delivers an opportunity you already have if its closing date, forecast-vs-posted status, or opportunity status (posted/closed/archived) has changed since you last saw it -- e.g. a deadline extension, a forecast turning into a real posted opportunity, or an opportunity closing early. Charged at the same per-row price as a new opportunity. Each changed row is tagged with `_watchChangeType` (one or more of `closeDate`, `docType`, `oppStatus`) plus the previous value(s) under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
+      "default": false
     }
   },
   "required": []

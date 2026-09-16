@@ -12,6 +12,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 - **`postedFrom`/`postedTo` for a fixed calendar window** — Grants.gov's API has no absolute-date filter server-side, so this Actor applies the range client-side against each row's own open date (already present on every result, no extra detail lookups needed). Use this for historical reporting ("everything posted in Q1") where `postedWithinDays`' relative-to-today window doesn't fit. If both are set, `postedFrom`/`postedTo` wins and `postedWithinDays` is ignored (with a warning).
 - **`minAwardAmount`/`maxAwardAmount` filter on award ceiling** — forces `enrich` on since the amount only exists in the per-opportunity detail record. Grants.gov returns award amounts as strings, and roughly a third to half of posted opportunities have no ceiling set at all (the API spells this as the literal string `"none"`, not null or absent) — this Actor normalizes both into real numbers or `null`, and the amount filter correctly drops the `"none"` rows rather than treating them as zero.
 - **`watchLabel` — only what's new since your last run.** Name a saved search and every run after the first returns just the opportunities not already delivered under that label and filter combination, instead of the whole match set every time. The first run for a label is a free baseline (0 results, 0 charged); it records what already matches in a key-value store on your own Apify account, keyed by the label plus a fingerprint of your other filters, so editing a filter starts a fresh baseline instead of dumping every previously-excluded opportunity as "new". Built for a daily/weekly scheduled run.
+- **`watchChanges` — also catch a deadline extension, a status change, or a forecast turning real.** Add this to `watchLabel` and an opportunity you already have gets re-delivered (at the normal per-row price, tagged `_watchChangeType`/`_watchPrevious`) if its closing date, `docType` (forecast → posted) or `oppStatus` (posted → closed/archived) changes since you last saw it — not just brand-new opportunities. Off by default so existing watches keep their current behaviour.
 - Pay per result: charged only for rows actually returned.
 
 ## Use cases
@@ -20,6 +21,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 - **Award-size screening** — `minAwardAmount: 500000` to surface only large awards, or `maxAwardAmount` to find the small ones a single PI can realistically manage.
 - **Grants-landscape research** — filter by `agencies` (parent codes expand to every sub-agency) and `postedFrom`/`postedTo` to reconstruct a fixed historical window, e.g. everything a department posted last quarter.
 - **Enriching an existing list** — set `oppNum` to look up one opportunity by its exact number and get the full record back, even if it is closed or archived.
+- **Deadline-amendment / forecast-to-posted alerts** — `watchLabel` + `watchChanges` on a saved search flags an agency extending a deadline or a forecast finally posting, without re-fetching and diffing the whole result set yourself.
 
 ### Example input
 ```json
@@ -51,12 +53,16 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 | `maxAwardAmount` | integer | Maximum award ceiling (USD); same exclusions as `minAwardAmount` |
 | `maxResults` | integer | Stop after this many opportunities (default 100) |
 | `watchLabel` | string | Optional. Name a saved search to get only opportunities new since your last run under that label — see FAQ |
+| `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen opportunity if its closing date, `docType` or `oppStatus` changed (default `false`) — see FAQ |
 
 ## Output (thin fields, always present)
 `id`, `opportunityNumber`, `title`, `agencyCode`, `agency`, `openDate`, `closeDate`, `oppStatus`, `docType`, `cfdaList`, `url`
 
 ## Output (enriched fields, when `enrich: true`)
 `agencyName`, `agencyCode`, `topAgencyName`, `topAgencyCode`, `opportunityCategory`, `postingDate`, `responseDate`, `archiveDate`, `costSharing`, `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, `synopsisText`, `cfdas`, `fundingDescLinkUrl`, `synopsisDocumentURLs`, `assistURL`, `lastUpdatedDate`, `modComments`
+
+## Output (watch-mode change fields, only on a `watchChanges` re-delivery)
+`_watchChangeType` (array, one or more of `closeDate`/`docType`/`oppStatus`), `_watchPrevious` (object with the previous value(s) for each changed field)
 
 On a `docType: "forecast"` row, `responseDate`/`archiveDate`/`applicantEligibilityDesc`/`fundingDescLinkUrl` are `null` (a forecast has no firm deadline or eligibility writeup yet) and seven forecast-only fields are added instead: `numberOfAwards`, `estimatedFunding`, `estSynopsisPostingDate` (Grants.gov's own estimate of when the real NOFO posts), `estApplicationResponseDate`, `estAwardDate`, `estProjectStartDate`, `fiscalYear`. These are `null` on synopsis-based (posted/closed/archived) rows.
 
@@ -175,13 +181,16 @@ The first run for a label walks the whole match set (every page, not just `maxRe
 **If I change a filter, does `watchLabel` dump a pile of "new" results I've actually seen before?**
 No. The baseline key includes a fingerprint of every other filter you set, so changing `keyword`, `agencies`, `postedFrom`/`postedTo`, `minAwardAmount`, etc. starts an entirely fresh baseline (another free, zero-result seed run) under that label instead of comparing against the old filter's baseline. `oppNum` lookups ignore `watchLabel` entirely — an exact single-opportunity lookup has no "new since last time" to track.
 
+**What does `watchChanges` add, and does it cost extra to turn on?**
+No extra fee — a changed opportunity is billed at the same per-row price as a new one ($0.0015 enriched / $0.0007 thin), so you only pay when there is actually something to see. Plain `watchLabel` only ever tells you about opportunities it has never delivered before; it stays silent forever about one it already sent you, even if that agency later extends the deadline, closes it early, or turns a `forecast` into a real posted `synopsis`. Set `watchChanges: true` and each run also compares every already-delivered opportunity's `closeDate`/`docType`/`oppStatus` against what it looked like last time; if any of the three moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 opportunities' recorded closing date and doc type directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
+
 ## Notes
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 - https://fetchsmith.com/blog/nih-reporter-grants-json-api
-- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, and why a cheap id-only baseline still has to apply the award-amount filter.
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, and why a cheap id-only baseline still has to apply the award-amount filter.
 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper

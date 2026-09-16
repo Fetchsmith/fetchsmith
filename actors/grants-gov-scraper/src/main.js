@@ -64,6 +64,7 @@ const oppNum = String(input.oppNum ?? '').trim();
 const sortBy = String(input.sortBy ?? '');
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const watchChanges = Boolean(input.watchChanges);
 
 // Verified live: dateRange takes any positive integer number of days (not just the 3/7/14/...
 // preset buttons the site's own facet list advertises -- dateRange:"10" returned a real
@@ -230,19 +231,47 @@ let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
-const watchSeen = new Set(); // opportunity `id`s already delivered under this label+fingerprint
+// opportunity `id` -> last-seen snapshot of the 3 thin fields that can change on an
+// otherwise-already-delivered opportunity: closing date (deadline amendment), docType
+// (forecast turning into a real posted opportunity) and oppStatus (posted -> closed/archived
+// early). All 3 are thin fields, always present regardless of `enrich`, so tracking them costs
+// no extra API calls. `watchChanges` decides whether a change re-delivers the row; the snapshot
+// itself is always kept current so turning watchChanges on later works without a fresh baseline.
+const watchSeen = new Map();
+let changedCount = 0;
+
+function snapshotOf(item) {
+    return { closeDate: item.closeDate ?? null, docType: item.docType ?? null, oppStatus: item.oppStatus ?? null };
+}
+
+// A changed opportunity is re-delivered with these fields describing exactly what moved, so a
+// buyer doesn't have to diff the row against their own last-seen copy to find out.
+function changesBetween(prev, next) {
+    if (!prev) return null;
+    const types = [];
+    const previous = {};
+    for (const field of ['closeDate', 'docType', 'oppStatus']) {
+        if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
+            types.push(field);
+            previous[field] = prev[field];
+        }
+    }
+    return types.length ? { types, previous } : null;
+}
 
 async function saveWatchRecord(status) {
-    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
         criteria: watchCriteria,
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
+        seenCount: entries.length,
+        // Compact per-entry shape: id, closeDate, docType, oppStatus. Kept as short keys
+        // because WATCH_KEEP can hold up to 60,000 of these in one KV record.
+        seenIds: entries.map(([id, snap]) => ({ i: id, c: snap.closeDate, d: snap.docType, s: snap.oppStatus })),
         runCount: (watchRecord.runCount ?? 0) + 1,
-        seenCount: ids.length,
-        seenIds: ids,
     });
 }
 
@@ -253,10 +282,21 @@ if (watchMode) {
     const existing = await watchStore.getValue(key);
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
-        for (const id of existing.seenIds) watchSeen.add(String(id));
+        // Pre-change-tracking records stored `seenIds` as a flat array of id strings (or
+        // numbers) -- handled here so an existing buyer's baseline keeps working unchanged
+        // instead of needing a fresh seed the day this feature shipped. Those ids simply have
+        // no snapshot yet (nulls), so watchChanges only starts detecting changes from here on.
+        for (const entry of existing.seenIds) {
+            if (entry && typeof entry === 'object') {
+                watchSeen.set(String(entry.i), { closeDate: entry.c ?? null, docType: entry.d ?? null, oppStatus: entry.s ?? null });
+            } else {
+                watchSeen.set(String(entry), { closeDate: null, docType: null, oppStatus: null });
+            }
+        }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-            + `${watchSeen.size} already-delivered opportunity(ies). Only opportunities NOT in that baseline are returned and charged.`,
+            + `${watchSeen.size} already-delivered opportunity(ies). Only opportunities NOT in that baseline are returned and charged`
+            + (watchChanges ? ', plus any already-delivered opportunity whose closing date, forecast/posted status or opportunity status changed.' : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -536,7 +576,7 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
 async function seedBaseline() {
     await walkMatches(async (batch) => {
         for (const row of batch) {
-            if (row.id != null) watchSeen.add(String(row.id));
+            if (row.id != null) watchSeen.set(String(row.id), snapshotOf(row));
             if (watchSeen.size >= SEED_CAP) return false;
         }
         return true;
@@ -550,16 +590,31 @@ let beforePush = 0;
 if (!seeding) {
     await walkMatches(async (batch) => {
         for (const row of batch) {
-            // Already delivered under this watch label: dropped before any charge, so an
-            // opportunity is never paid for twice.
+            // Already delivered under this watch label. Normally dropped before any charge, so
+            // an opportunity is never paid for twice -- UNLESS watchChanges is on and its
+            // closing date, docType or oppStatus moved since we last saw it, in which case it
+            // is re-delivered (charged like a new row) tagged with exactly what changed.
             if (watchMode && row.id != null && watchSeen.has(String(row.id))) {
-                skippedSeen += 1;
+                const id = String(row.id);
+                const nextSnap = snapshotOf(row);
+                const change = watchChanges ? changesBetween(watchSeen.get(id), nextSnap) : null;
+                if (!change) {
+                    // Snapshot is kept current either way, so turning watchChanges on later
+                    // detects only drift from that point, not a backlog since the baseline.
+                    watchSeen.set(id, nextSnap);
+                    skippedSeen += 1;
+                    continue;
+                }
+                const cont = await pushResult({ ...row, _watchChangeType: change.types, _watchPrevious: change.previous });
+                if (pushed > beforePush) { watchSeen.set(id, nextSnap); changedCount += 1; }
+                beforePush = pushed;
+                if (!cont) return false;
                 continue;
             }
             const cont = await pushResult(row);
             // Recorded as delivered only after the charge actually succeeded -- anything
             // dropped by maxResults or a charge limit stays "new" for the next run.
-            if (watchMode && row.id != null && pushed > beforePush) watchSeen.add(String(row.id));
+            if (watchMode && row.id != null && pushed > beforePush) watchSeen.set(String(row.id), snapshotOf(row));
             beforePush = pushed;
             if (!cont) return false;
         }
@@ -581,8 +636,9 @@ if (watchMode) {
         );
     } else {
         log.info(
-            `Watch label "${watchLabel}": ${pushed} new opportunity(ies) since the last run `
-            + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            `Watch label "${watchLabel}": ${pushed - changedCount} new opportunity(ies)`
+            + (watchChanges ? ` and ${changedCount} changed opportunity(ies) (deadline/status/forecast)` : '')
+            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
         );
     }
 }

@@ -307,6 +307,22 @@
           "number",
           "null"
         ]
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": ["closeDate"],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": { "closeDate": "01/01/2000" },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },

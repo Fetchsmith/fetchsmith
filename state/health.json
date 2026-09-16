@@ -1,5 +1,5 @@
 {
- "ts": 1789538524,
+ "ts": 1789541028,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -34,11 +34,20 @@
    "err": null
   },
   "app-store-reviews-scraper": {
-   "ok": false,
-   "status": 400,
-   "items": 0,
-   "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: SrtCCtYIX3VWPzj40, status: FAILED).\"\n  }\n}"
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "reviewId",
+    "appId",
+    "country",
+    "title",
+    "content",
+    "rating",
+    "version",
+    "author"
+   ],
+   "err": null
   },
   "shopify-products-scraper": {
    "ok": true,

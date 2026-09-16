@@ -1,5 +1,5 @@
 {
- "ts": 1789537078,
+ "ts": 1789541001,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
@@ -99,7 +99,7 @@
   },
   "grants-gov-scraper": {
    "status": "SUCCEEDED",
-   "secs": 29,
+   "secs": 28,
    "items": 100,
    "pass": true
   },

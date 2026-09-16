@@ -143,6 +143,6 @@ Checked live pricing and features again on 2026-09-15 against the highest-user l
 - [All FetchSmith scrapers](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.
 - [The FDA publishes every product recall as JSON — but you can't page past row 25,000, and only drugs come with a barcode](https://fetchsmith.com/blog/fda-openfda-recall-json-api) — the full write-up of the 25,000-row skip cap, the date-chunking workaround and the drug-only `openfda` barcode fields.
 - [Scraping USAspending's federal awards JSON API](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — the same "US government publishes it as keyless JSON" pattern, applied to federal contracts and grants.
-- [Four ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, why the rolling 365-day default never enters the criteria fingerprint, and why the seed walk pages at 1000 regardless of `maxResults`.
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, why the rolling 365-day default never enters the criteria fingerprint, and why the seed walk pages at 1000 regardless of `maxResults`.
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/fda-recall-scraper

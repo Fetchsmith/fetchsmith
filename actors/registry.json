@@ -1296,7 +1296,7 @@
     {
       "slug": "grants-gov-scraper",
       "title": "Grants.gov Scraper – Status, Eligibility & Award Details",
-      "summary": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup. Optional watchLabel mode returns only opportunities new since your last run, so a schedule becomes a grant alert.",
+      "summary": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup. Optional watchLabel mode returns only opportunities new since your last run, so a schedule becomes a grant alert; add watchChanges to also catch deadline extensions, status changes and forecasts turning into real posted opportunities.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "Iso3mx8O6oBWJtrFr",
@@ -1347,7 +1347,9 @@
         "estApplicationResponseDate",
         "estAwardDate",
         "estProjectStartDate",
-        "fiscalYear"
+        "fiscalYear",
+        "_watchChangeType",
+        "_watchPrevious"
       ],
       "sample_output": {
         "id": "355824",
