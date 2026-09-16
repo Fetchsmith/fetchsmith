@@ -38,8 +38,18 @@ Name a `watchLabel` and every later run on the same saved search returns **only 
 }
 ```
 
+Or skip the form entirely and paste the search URL from clinicaltrials.gov:
+
+```json
+{
+  "startUrl": "https://clinicaltrials.gov/search?cond=asthma&intr=budesonide&aggFilters=status:rec,phase:3&start=2020-01-01_",
+  "maxResults": 100
+}
+```
+
 | Input | Notes |
 | --- | --- |
+| `startUrl` | Build the search on clinicaltrials.gov, copy the address bar, paste it here — the condition, other terms, intervention, sponsor, location, title, outcome, lead sponsor and study-ID boxes plus every sidebar filter (status, phase, study type, funder, sex, age, results, documents, FDAAA violations) and every date window come across as-is. An API URL (`https://clinicaltrials.gov/api/v2/studies?query.cond=asthma&...`) works too. The URL's **search terms replace** the matching fields below; anything it doesn't mention (`maxResults`, `rowsPerStudy`, `watchLabel`, and any filter below the URL doesn't carry) still applies. A non-clinicaltrials.gov URL fails fast instead of quietly scraping nothing. |
 | `nctIds` | Comma/space/newline-separated NCT IDs (e.g. `NCT04368728, NCT03854955`) for a direct lookup by ID instead of a search — what other Actors call "search by direct URL". **Exclusive mode**: when set, every filter below is ignored (so a mixed batch of unrelated trials all come back), and a malformed or nonexistent ID is dropped individually with a named warning instead of failing the whole batch. |
 | `conditions` / `interventions` / `sponsors` / `locations` | Free-text, each maps to the API's own `query.cond` / `query.intr` / `query.spons` / `query.locn`. ANDed together. |
 | `searchQuery` | General free-text search across titles, outcomes and eligibility text. |

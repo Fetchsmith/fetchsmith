@@ -5,6 +5,126 @@ import { createHash } from 'node:crypto';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+// ---------------------------------------------------------------------------
+// `startUrl` -- paste a ClinicalTrials.gov search URL instead of re-typing its filters by hand.
+// Two shapes are accepted (both verified live, cycle 376):
+//   * the search page -- https://clinicaltrials.gov/search?cond=asthma&aggFilters=status:rec,phase:3
+//   * the public API  -- https://clinicaltrials.gov/api/v2/studies?query.cond=asthma&aggFilters=...
+// The search page's parameter names are taken from the site's own search app (its analytics map
+// labels every one: cond/term/locn/intr/outc/lead/titles/spons/id, and the date windows
+// start/firstPost/lastUpdPost/studyComp/primComp/resFirstPost, each `from_to` with an underscore
+// and either side optional).
+//
+// `aggFilters` is forwarded VERBATIM rather than decoded into our typed inputs and re-encoded:
+// all ten codes the UI can emit (status, phase, studyType, funderType, sex, healthy, ages,
+// results, docs, violation) were checked live against the API this cycle and every one is accepted
+// and narrows the result count, so a pass-through cannot lose a filter the way a partial decoder
+// would silently drop an unknown one.
+//
+// Precedence: a `startUrl` is the source of truth for the filters it carries. The search-term
+// family (cond/term/intr/spons/locn/titles/outc/lead/id) is REPLACED wholesale -- set to the URL's
+// values, cleared where the URL has none -- because `conditions` has a schema default ("cancer")
+// that the platform fills in for any run that omits it, and silently AND-ing that default into a
+// pasted URL's search would quietly return the wrong studies. Every other input the URL does not
+// mention (maxResults, rowsPerStudy, watchLabel, hand-set dates/ages/status/sort) still applies.
+const urlAggFilters = new Map();
+applyStartUrl(input.startUrl);
+
+function applyStartUrl(raw) {
+    const s = String(raw ?? '').trim();
+    if (!s) return;
+    let u;
+    try { u = new URL(s); } catch { throw new Error(`"startUrl" is not a valid URL: ${s}`); }
+    if (!/(^|\.)clinicaltrials\.gov$/i.test(u.hostname)) {
+        throw new Error(`"startUrl" must be a clinicaltrials.gov search or API URL (got "${u.hostname}").`);
+    }
+    const q = u.searchParams;
+    const filled = [];
+    // Set a field from the URL. An empty URL value leaves the caller's own value alone.
+    const fill = (field, value) => {
+        if (value === undefined || value === null || value === '') return;
+        input[field] = value;
+        filled.push(field);
+    };
+
+    const UI_TEXT = {
+        cond: 'conditions',
+        term: 'searchQuery',
+        intr: 'interventions',
+        spons: 'sponsors',
+        locn: 'locations',
+        titles: 'titleOrAcronym',
+        outc: 'outcomeMeasure',
+        lead: 'leadSponsorName',
+        id: 'nctIds',
+    };
+    const API_TEXT = {
+        'query.cond': 'conditions',
+        'query.term': 'searchQuery',
+        'query.intr': 'interventions',
+        'query.spons': 'sponsors',
+        'query.locn': 'locations',
+        'query.titles': 'titleOrAcronym',
+        'query.outc': 'outcomeMeasure',
+        'filter.ids': 'nctIds',
+    };
+    // UI date-window param -> our [from, to] input pair.
+    const UI_DATES = {
+        start: ['studyStartDateFrom', 'studyStartDateTo'],
+        primComp: ['primaryCompletionDateFrom', 'primaryCompletionDateTo'],
+        studyComp: ['studyCompletionDateFrom', 'studyCompletionDateTo'],
+        firstPost: ['firstPostedDateFrom', 'firstPostedDateTo'],
+        resFirstPost: ['resultsFirstPostedDateFrom', 'resultsFirstPostedDateTo'],
+        lastUpdPost: ['lastUpdatePostedDateFrom', 'lastUpdatePostedDateTo'],
+    };
+
+    // Search-term family: replaced wholesale (see the precedence note above), so clear first.
+    for (const field of new Set([...Object.values(UI_TEXT), ...Object.values(API_TEXT)])) {
+        input[field] = '';
+    }
+    for (const [param, field] of Object.entries({ ...UI_TEXT, ...API_TEXT })) {
+        fill(field, (q.get(param) ?? '').trim());
+    }
+    for (const [param, [from, to]] of Object.entries(UI_DATES)) {
+        const [f = '', t = ''] = (q.get(param) ?? '').split('_');
+        fill(from, f.trim());
+        fill(to, t.trim());
+    }
+    // API-shaped URLs carry status as a comma list and sort as one string; both reuse the same
+    // whitelists the hand-typed inputs go through below, so a junk value can't reach the API.
+    const statusParam = (q.get('filter.overallStatus') ?? '').trim();
+    if (statusParam) fill('overallStatus', statusParam.split(/[\s,]+/).filter(Boolean));
+    fill('sortBy', (q.get('sort') ?? '').trim());
+
+    // UI age range: "18y_65y" (unit letter optional, either side optional). We filter in whole
+    // years, so a month/week/day bound is reported and skipped rather than silently rounded.
+    const [ageFrom = '', ageTo = ''] = (q.get('ageRange') ?? '').split('_');
+    for (const [rawAge, field] of [[ageFrom, 'ageRangeFromYears'], [ageTo, 'ageRangeToYears']]) {
+        const a = rawAge.trim();
+        if (!a) continue;
+        const m = /^(\d+)\s*([a-zA-Z]*)$/.exec(a);
+        if (!m || (m[2] && m[2].toLowerCase() !== 'y')) {
+            log.warning(`startUrl ageRange bound "${a}" is not a whole number of years; ignoring that bound.`);
+            continue;
+        }
+        fill(field, Number(m[1]));
+    }
+
+    for (const pair of (q.get('aggFilters') ?? '').split(',')) {
+        const idx = pair.indexOf(':');
+        if (idx <= 0) continue;
+        const key = pair.slice(0, idx).trim();
+        const value = pair.slice(idx + 1).trim();
+        if (key && value) urlAggFilters.set(key, value);
+    }
+
+    const aggDesc = urlAggFilters.size ? ` + aggFilters ${[...urlAggFilters.keys()].join('/')}` : '';
+    log.info(`startUrl parsed: filled ${filled.length ? filled.join(', ') : 'nothing'}${aggDesc}.`);
+    if (!filled.length && !urlAggFilters.size) {
+        log.warning('startUrl carried no filters this Actor understands -- the run will use the other inputs only.');
+    }
+}
+
 // ClinicalTrials.gov's own official API v2 (NIH/NLM). No API key, no auth, no proxy.
 const API = 'https://clinicaltrials.gov/api/v2/studies';
 
@@ -328,11 +448,14 @@ function baseParams() {
     // Verified live: `filter.hasResults` is rejected as unknown; `aggFilters=results:with` is
     // the real parameter name for this. Multiple aggFilters pairs are COMMA-separated and AND-ed
     // (`docs:sap,results:with` verified live: 9,559 vs 10,597 / 18,341 for each alone).
-    const agg = [];
-    if (resultsAvailability) agg.push(`results:${resultsAvailability}`);
-    if (documentTypes.length) agg.push(`docs:${documentTypes.join(' ')}`);
-    if (fdaRegulationViolation) agg.push('violation:y');
-    if (agg.length) p.aggFilters = agg.join(',');
+    // Seeded with whatever a `startUrl` carried (status/phase/studyType/... pass straight through);
+    // a typed input for the same key overwrites it, so the Map is keyed by aggFilter id to keep
+    // the pair unique -- the API takes the LAST value for a repeated key, not the intersection.
+    const agg = new Map(urlAggFilters);
+    if (resultsAvailability) agg.set('results', resultsAvailability);
+    if (documentTypes.length) agg.set('docs', documentTypes.join(' '));
+    if (fdaRegulationViolation) agg.set('violation', 'y');
+    if (agg.size) p.aggFilters = [...agg].map(([k, v]) => `${k}:${v}`).join(',');
     // studyType/phase/sex/healthyVolunteers/date-range are AREA-scoped fields, not top-level
     // filters — combine into filter.advanced. Verified live (this cycle): AREA[Sex](FEMALE),
     // AREA[HealthyVolunteers](true) and AREA[<field>]RANGE[from,to] (MIN/MAX for an open bound)

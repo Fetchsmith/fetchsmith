@@ -3,6 +3,12 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "startUrl": {
+      "title": "ClinicalTrials.gov search URL",
+      "type": "string",
+      "description": "Optional shortcut: build the search on clinicaltrials.gov, then paste the address bar here — e.g. \"https://clinicaltrials.gov/search?cond=asthma&aggFilters=status:rec,phase:3\". An API URL (\"https://clinicaltrials.gov/api/v2/studies?query.cond=asthma\") works too. The URL's search terms (condition, other terms, intervention, sponsor, location, title, outcome, lead sponsor, study IDs) REPLACE the matching fields below, and its status/phase/study-type/funder/sex/age/results/documents filters are applied as-is. Everything the URL does not mention (max results, row mode, watch label, and any filter below it doesn't carry) still applies.",
+      "editor": "textfield"
+    },
     "nctIds": {
       "title": "Specific NCT IDs (direct lookup)",
       "type": "string",
