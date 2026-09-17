@@ -10,7 +10,7 @@ Search **US federal court dockets** (the PACER/RECAP mirror) and **published cou
 
 Two CourtListener indexes, one unified table:
 
-- **Dockets (`recordType: "dockets"`)** — the RECAP archive, a free mirror of federal PACER dockets. Parties, attorneys, law firms, assigned and referred judges, nature of suit, cause of action, jurisdiction type, jury demand, bankruptcy chapter, PACER case ID, and per-filing entries (description, date filed, page count, and whether the PDF is actually available).
+- **Dockets (`recordType: "dockets"`)** — the RECAP archive, a free mirror of federal PACER dockets. Parties, attorneys, law firms, assigned and referred judges, nature of suit, cause of action, jurisdiction type, jury demand, bankruptcy chapter, PACER case ID, and per-filing entries (description, date filed, page count, whether the PDF is actually available, a **direct PDF link** and the **OCR'd text of the filing** where RECAP has it).
 - **Opinions (`recordType: "opinions"`)** — published decisions. Reported citations, cite count (how many later opinions cite this one), judge and panel, status, posture, procedural history, syllabus, opinion snippet and the download URL where CourtListener has the document.
 - **`recordType: "both"`** returns both in one run, in one schema, with type-specific fields left `null` rather than omitted — so a CSV export has stable columns.
 
@@ -58,8 +58,9 @@ Set `watchLabel` to any name and schedule the Actor. The **first** run on that l
   "pacerCaseId": "…",
   "documentCount": 3,
   "documents": [
-    { "entryNumber": 90, "description": "Order", "entryDateFiled": "2026-08-10", "pageCount": 8, "isAvailable": true, "url": "https://www.courtlistener.com/docket/…" }
+    { "documentId": 479225638, "entryNumber": 90, "description": "Order", "entryDateFiled": "2026-08-10", "pageCount": 8, "isAvailable": true, "textSnippet": "Case 1:12-cv-00854-LPS Document 13 Filed 07/07/14 Page 1 of 6 PageID #: 573\n\nIN THE UNITED STATES DISTRICT COURT…", "pdfUrl": "https://storage.courtlistener.com/recap/gov.uscourts.ded.49136/gov.uscourts.ded.49136.13.0.pdf", "url": "https://www.courtlistener.com/docket/…" }
   ],
+  "downloadUrl": "https://storage.courtlistener.com/recap/gov.uscourts.ded.49136/gov.uscourts.ded.49136.13.0.pdf",
   "url": "https://www.courtlistener.com/docket/68922376/…"
 }
 ```
@@ -99,6 +100,7 @@ All 39 fields are listed with types and examples in the **Output schema** tab.
 
 - **RECAP is a mirror of PACER, not PACER.** It holds what its contributors have purchased and donated, so coverage is deep in heavily-litigated districts and thin elsewhere. It is free; PACER is not.
 - **`documents[].isAvailable` is often false.** CourtListener frequently has a docket *entry* without the PDF behind it — 30 of 72 filing entries were available in a live N.D. Cal. sample (2026-09-17). Check the flag rather than assuming every row comes with a downloadable document.
+- **`documents[].textSnippet` is an excerpt, not the whole filing.** CourtListener's search index returns roughly the first 500 characters of a document's OCR'd text, and only for documents where `isAvailable` is true. The *complete* plain text sits behind the token-gated `/api/rest/v4/recap-documents/` endpoint (anonymous requests get `401`); this Actor needs no key, so it gives you the excerpt plus `pdfUrl` — the PDF bucket at `storage.courtlistener.com` is public and needs no token either, so you can fetch and parse the full document yourself.
 - **Dockets and opinions are separate indexes.** A case present in one is often absent from the other; use `both` when unsure.
 - The query is a **full-text search**, not a case-number lookup. For a docket number, put it in `query` as-is and widen the court filter.
 

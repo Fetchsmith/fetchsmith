@@ -153,6 +153,9 @@ function firstUrl(kind) {
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x != null && x !== '') : []);
 const blankToNull = (v) => (v === '' || v === undefined ? null : v);
 const abs = (p) => (p ? `${BASE}${p}` : null);
+// RECAP PDFs live on a public bucket, not behind the API's auth. `filepath_local` is the key.
+const PDF_BASE = 'https://storage.courtlistener.com/';
+const pdfUrl = (p) => (typeof p === 'string' && p.trim() ? `${PDF_BASE}${p.trim()}` : null);
 
 // One superset dataset shape covers both record types, the way both incumbent listings do it:
 // a buyer searching "both" gets one sortable table instead of two schemas to reconcile.
@@ -255,7 +258,10 @@ function normalizeDocket(r) {
 
         snippet: blankToNull(docs.find((d) => d.snippet)?.snippet) ?? null,
         opinionCount: null,
-        downloadUrl: null,
+        // Same meaning as on opinions: where the PDF actually lives. For dockets that is the
+        // RECAP archive copy of the first filing that has one (storage.courtlistener.com is
+        // public — no token, unlike the /recap-documents/ detail endpoint).
+        downloadUrl: docs.map((d) => pdfUrl(d.filepath_local)).find(Boolean) ?? null,
 
         docketId: r.docket_id ?? null,
         clusterId: null,
@@ -264,7 +270,11 @@ function normalizeDocket(r) {
         // Per-filing metadata the search index already returns. `isAvailable` is the honest part:
         // it is false whenever CourtListener has the docket entry but not the PDF behind it, which
         // is common — do not assume every row comes with a downloadable document.
+        // `textSnippet` is the OCR'd text of the filing as the index holds it (~500 chars, only on
+        // available documents); `pdfUrl` is the full document itself. Both come free with the search
+        // response — full plain text needs CourtListener's token-gated /recap-documents/ endpoint.
         documents: docs.map((d) => ({
+            documentId: d.id ?? null,
             entryNumber: d.entry_number ?? null,
             attachmentNumber: d.attachment_number ?? null,
             description: blankToNull(d.short_description) ?? blankToNull(d.description) ?? null,
@@ -272,6 +282,8 @@ function normalizeDocket(r) {
             pageCount: d.page_count ?? null,
             documentType: blankToNull(d.document_type) ?? null,
             isAvailable: d.is_available === true,
+            textSnippet: blankToNull(d.snippet) ?? null,
+            pdfUrl: pdfUrl(d.filepath_local),
             url: abs(blankToNull(d.absolute_url)),
         })),
 
