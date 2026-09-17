@@ -14,6 +14,7 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 |---|---|---|
 | `apps` | array | App Store URLs or numeric app IDs |
 | `appNames` | array | Free-text app names (e.g. `"Notion"`) — auto-resolved to an app id via Apple's own search API. See caveat below. |
+| `includeMacApps` | boolean | Also search the **Mac App Store** when resolving `appNames` (default `false`). Apple's app-name search is iOS-only, so Mac-only apps are invisible without it — see below. |
 | `countries` | array | Storefront codes, e.g. `us`, `gb`, `de`, `jp`, `br` (default `us`) |
 | `countryFallback` | boolean | If a storefront returns nothing, pull that app's reviews from one that works (default `false`) |
 | `sort` | string | `mostRecent` (default) or `mostHelpful` |
@@ -43,6 +44,8 @@ Details worth knowing:
 - Reviews with no id Apple can hand back (rare) are skipped in watch mode, since they can't be recognized on the next run — never charged.
 
 **`appNames` caveat, verified live:** Apple's search API almost never returns zero results — even keyboard-mash gibberish gets back an unrelated app (measured: nonsense strings matched an Arabic quiz game, an emoji trivia app, etc., every time). A naive "take the first hit" would silently resolve a typo'd name to the wrong app. This Actor only accepts a match that shares a real word with the requested name (in the app's name, developer, or bundle id); otherwise it skips the name with a "no match found" warning instead of guessing. Use a numeric app id or Store URL when you need certainty. Also note: if you pass `appNames` and leave `apps` untouched, the Actor deliberately ignores `apps`'s own example default rather than mixing an uninvited app into your results.
+
+**Mac App Store apps (`includeMacApps`), verified live 2026-09-17:** Apple's name-search entity for apps is iOS-only. Searching `"Final Cut Pro"` by name returns Final Cut Camera, iMovie and CapCut — the actual Mac app is never in the list, so before this option a name lookup would quietly hand you a *different* app. With `"includeMacApps": true` the Mac App Store is searched too and an exact title match wins over a loose one, so `"Final Cut Pro"` resolves to id `424389933` and returns its real Mac reviews. Everything after resolution is platform-agnostic: **you never needed this option if you pass a numeric id or an `apps.apple.com` URL** — the review feed and the app-metadata lookup are keyed by app id, not by platform, and have always worked for Mac apps. It is off by default so that an existing iOS-only name lookup can't start matching a same-named Mac app.
 
 ## Output (one item per review)
 ```json

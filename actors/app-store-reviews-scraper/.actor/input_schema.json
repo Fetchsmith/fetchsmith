@@ -11,13 +11,21 @@
       "prefill": [
         "https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"
       ],
-      "default": ["https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"]
+      "default": [
+        "https://apps.apple.com/us/app/notion-notes-docs-tasks/id1232780281"
+      ]
     },
     "appNames": {
       "title": "App names (auto-resolve)",
       "type": "array",
       "description": "Free-text app names, e.g. \"Notion\". Each is resolved to an app id via Apple's search API and added to \"apps\". Apple's search almost never returns zero results (even gibberish gets an unrelated hit), so a name is only accepted if it shares a real word with the matched app's name/developer/bundle id — otherwise it's skipped with a \"no match found\" warning instead of silently using the wrong app. Prefer numeric app IDs or Store URLs when you need certainty.",
       "editor": "stringList"
+    },
+    "includeMacApps": {
+      "title": "Also search the Mac App Store",
+      "type": "boolean",
+      "description": "When resolving \"appNames\", also search Mac App Store apps (Apple's app-name search is iOS-only by default, so Mac-only apps like Final Cut Pro are never found without this). Reviews for a Mac app are fetched the same way as for an iOS app. Not needed when you pass a numeric id or App Store URL in \"apps\" — those already work for Mac apps.",
+      "default": false
     },
     "countries": {
       "title": "Countries",

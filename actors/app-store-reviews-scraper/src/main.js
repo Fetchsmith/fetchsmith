@@ -24,6 +24,7 @@ const perApp = Math.min(Number(input.maxReviewsPerApp ?? 200), 500);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeInfo = input.includeAppInfo !== false;
 const countryFallback = input.countryFallback === true;
+const includeMacApps = input.includeMacApps === true;
 const minRating = input.minRating != null ? Number(input.minRating) : null;
 const maxRating = input.maxRating != null ? Number(input.maxRating) : null;
 if (minRating != null && maxRating != null && minRating > maxRating) {
@@ -85,6 +86,10 @@ if (watchMode) {
   const criteria = {
     apps: input.apps ?? [], appNames: input.appNames ?? [], countries, countryFallback,
     sort: input.sort ?? null, minRating, maxRating, keyword, reviewsAfter: input.reviewsAfter ?? null,
+    // Added only when ON, never as `false`: it changes which app a name resolves to, so it must
+    // separate baselines — but spelling it out on the default path would change the fingerprint of
+    // every watch that already exists and reset all of them once for no reason.
+    ...(includeMacApps ? { includeMacApps: true } : {}),
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
@@ -194,25 +199,43 @@ const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] |
 // if at least one significant word (>=3 chars) of the query appears in the candidate's name, bundle
 // id or developer name; otherwise this is treated as NO MATCH FOUND, not a guess.
 const searchCountry = countries[0] || 'us';
-async function resolveAppName(name) {
-  let data;
+// Mac App Store apps are NOT in `entity=software` — that entity is iOS-only. Verified live
+// 2026-09-17: searching "final cut pro" under `entity=software` returns Final Cut Camera/iMovie/
+// CapCut and never the Mac app, while `entity=macSoftware` returns it as id 424389933 with
+// `kind: "mac-software"`. Everything downstream already works for Mac apps unchanged (the review
+// RSS feed and the lookup API are both id-based, not platform-scoped — the same id returns a full
+// 50-entry feed), so `includeMacApps` only has to widen NAME RESOLUTION, nothing else.
+async function searchEntity(entity, name) {
   try {
-    data = await getJson(`https://itunes.apple.com/search?entity=software&country=${searchCountry}&limit=5&term=${encodeURIComponent(name)}`);
-  } catch (e) { log.warning(`appNames: search for "${name}" failed: ${e.message}`); return null; }
-  const results = data.results || [];
+    const data = await getJson(`https://itunes.apple.com/search?entity=${entity}&country=${searchCountry}&limit=5&term=${encodeURIComponent(name)}`);
+    return data.results || [];
+  } catch (e) { log.warning(`appNames: ${entity} search for "${name}" failed: ${e.message}`); return null; }
+}
+async function resolveAppName(name) {
+  const iosResults = await searchEntity('software', name);
+  // A failed iOS search is only fatal when it is the only search we were going to run.
+  if (iosResults === null && !includeMacApps) return null;
+  const results = [...(iosResults || [])];
+  if (includeMacApps) results.push(...((await searchEntity('macSoftware', name)) || []));
+  if (!results.length) return null;
   const qTokens = name.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((t) => t.length >= 3);
   const norm = (s) => String(s || '').toLowerCase();
   const isRelevant = (r) => {
     const hay = `${norm(r.trackName)} ${norm(r.bundleId)} ${norm(r.artistName)}`;
     return qTokens.length ? qTokens.some((t) => hay.includes(t)) : hay.includes(norm(name));
   };
-  const match = results.find(isRelevant);
+  // Exact title match wins over the loose token rule. Without this, "final cut pro" with
+  // includeMacApps on would still resolve to the iOS "Final Cut Camera" (it shares the token
+  // "final" and comes first), which is exactly the app the caller did not ask for.
+  const match = results.find((r) => norm(r.trackName) === norm(name)) || results.find(isRelevant);
   if (!match) {
     const top = results[0]?.trackName ? ` (Apple's closest hit was the unrelated "${results[0].trackName}")` : '';
-    log.warning(`appNames: NO real match found for "${name}"${top} — searched the "${searchCountry}" storefront. Apple's search API returns some app for almost any input, so an unrelated top hit is treated as no match rather than guessed. Use a numeric app id or App Store URL instead.`);
+    const where = includeMacApps ? 'iOS and Mac App Store' : 'iOS App Store';
+    log.warning(`appNames: NO real match found for "${name}"${top} — searched the ${where} in the "${searchCountry}" storefront. Apple's search API returns some app for almost any input, so an unrelated top hit is treated as no match rather than guessed.${includeMacApps ? '' : ' If this is a Mac-only app, set "includeMacApps": true.'} Use a numeric app id or App Store URL instead.`);
     return null;
   }
-  log.info(`appNames: resolved "${name}" -> "${match.trackName}" (id ${match.trackId}) in the "${searchCountry}" storefront.`);
+  const platform = match.kind === 'mac-software' ? 'Mac App Store' : `"${searchCountry}" storefront`;
+  log.info(`appNames: resolved "${name}" -> "${match.trackName}" (id ${match.trackId}) in the ${platform}.`);
   return String(match.trackId);
 }
 
