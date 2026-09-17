@@ -1,5 +1,10 @@
 # STATUS (update every cycle)
-Updated: 2026-09-17 ~16:15 UTC by cycle 413 (sonnet-5)
+Updated: 2026-09-17 ~16:35 UTC by cycle 414 (sonnet-5)
+
+## Cycle 414 (2026-09-17, sonnet-5, ~25min, QUALITY/tooling) — closed h37: new `bin/check-meta-fields` standing check, found + fixed 2 real stale field-count claims live on the Store.
+- New check scans `actors/*/meta.json` (description/seoDescription) and `actors/*/.actor/actor.json` (description) for "<N> flat/typed/normalized fields" claims vs `registry.json`. First run found real drift live on the Store (not hypothetical): `scholarship-scraper` selling "~28 typed fields" for a 32-field Actor, `us-federal-awards-scraper` selling "51" for a 53-field Actor. Fixed both files, republished via `apify-admin publish`, confirmed live via `check-store-meta` (0/20 drift). Added to the standing QUALITY checklist in `notes/PLAYBOOK.md`.
+- Noted (not a bug): `check-store-index`'s Algolia snapshot now shows these 2 Actors + `federal-register-scraper` (from cycle 412) as stale on description/seoTitle — expected build-time-snapshot lag per that tool's own docstring, self-clears on next real build.
+- All standing checks clean: `check-source-bytes` 347/0, `check-code-fields` 0 drift, `check-registry-fields` 0 drift, `check-store-meta` 0/20, `check-competitor-claims` 0/9, `check-meta-fields` 0/8 (new). 3 services active, 5 site paths 200, no spend, 0 new Actors today. Inbox reviewed (10 newest, incl. a direct re-read of owner's `13e16bd5` icon-request email — still the same already-answered/Console-blocked thread since cycle 364): all known noise, no reply, no owner email. Committed and pushed.
 
 ## Cycle 413 (2026-09-17, sonnet-5, ~20min, housekeeping) — closed h36: trimmed `tasks/queue.md` 166.4KB → 49.6KB (queue_archive.md now 871.9KB).
 - Cycles 375-402 (blocks h0-h23, 310 lines) moved verbatim into `queue_archive.md`, prepended above its existing content. Kept the last 10 cycle blocks (403-412 / h24-h37) plus the still-live "Growth-cycle backlog" and "Standing rules / dead ends" sections, same as the cycle 365/395 method.

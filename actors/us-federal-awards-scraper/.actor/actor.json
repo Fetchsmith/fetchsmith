@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "us-federal-awards-scraper",
     "title": "USAspending Scraper — US Federal Contracts & Grants",
-    "description": "Every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API — plus the sub-contracts and sub-grants filed under them, joined to the prime award. 51 typed fields incl. recipient UEI/address, NAICS/PSC, CFDA. Filter by agency, keyword, state, date.",
+    "description": "Every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API — plus the sub-contracts and sub-grants filed under them, joined to the prime award. 53 typed fields incl. recipient UEI/address, NAICS/PSC, CFDA. Filter by agency, keyword, state, date.",
     "version": "0.1",
     "buildTag": "latest",
     "dockerfile": "../Dockerfile",

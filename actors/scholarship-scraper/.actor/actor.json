@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "scholarship-scraper",
   "title": "Scholarship Scraper (bold.org)",
-  "description": "Scrape scholarship listings from bold.org to JSON/CSV: award amount, number of awards, deadline, essay prompt, criteria, education level and applicant count, with a computed applicants-per-award ratio. ~28 typed fields. Filter by free-text topic, amount, deadline window and education level.",
+  "description": "Scrape scholarship listings from bold.org to JSON/CSV: award amount, number of awards, deadline, essay prompt, criteria, education level and applicant count, with a computed applicants-per-award ratio. ~32 typed fields. Filter by free-text topic, amount, deadline window and education level.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",
