@@ -120,4 +120,5 @@ Every name in the output — parties, attorneys, law firms, judges — appears o
 
 ## Related guides
 
+- [CourtListener's court-records API needs no key — except for the one endpoint most wrapper docs point you at first](https://fetchsmith.com/blog/courtlistener-search-api-two-auth-tiers)
 - [All FetchSmith tools and APIs](https://fetchsmith.com/tools)
