@@ -21,6 +21,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `sortBy` | string | `relevance` or `date` (newest first) |
 | `minPoints` | integer | Only items with at least this many points |
 | `minComments` | integer | Only stories with at least this many comments (find high-engagement discussions) |
+| `excludeKeywords` | array | Drop any story/comment whose title or text contains any of these words/phrases (case-insensitive) — HN's search has no negative-term syntax, so this is applied client-side after fetching, before you're charged |
 | `author` | string | Only items posted by this exact HN username |
 | `postedAfter` / `postedBefore` | string | ISO date bounds |
 | `maxItemsPerQuery` | integer | Cap per query (up to 1000) |
@@ -81,6 +82,7 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 - For the current "Who is hiring?" thread: set `queries` to `["Ask HN: Who is hiring"]`, `tags: ["story"]`, `sortBy: "date"`, `maxItemsPerQuery: 1` to find the thread, or use `tags: ["comment"]` with `postedAfter` set to the 1st of the month to pull all replies.
 - Use `sortBy: "date"` for a live monitoring feed of new mentions of your keyword.
 - Use `author` to pull everything a specific user has posted (e.g. track a founder's HN activity), or `minComments` to surface only high-engagement discussions.
+- Use `excludeKeywords` to keep a broad query narrow, e.g. `queries: ["rust"]` + `excludeKeywords: ["cryptocurrency"]` keeps Rust-the-language discussions and drops mentions of an unrelated Rust-named crypto project.
 - Leaving both `queries` and `tags` empty is not a "browse everything" mode — it's rejected (with a warning, no charge) rather than matching HN's entire 46M+ item history by relevance. Always set at least one tag (e.g. `["story"]`, `["front_page"]`) or a search query.
 
 ## FAQ
@@ -96,6 +98,7 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 **How do I get a scheduled alert for new mentions of a keyword, not the same matches every time?** Set `watchLabel` (see above). The first run is a free baseline (0 results); schedule the same input to run again later and it returns only hits it has never delivered under that label before.
 **I set `watchLabel` and `usernames` together — why did the profile row still show up on the baseline run?** By design. `watchLabel` only tracks story/comment/job search hits (they have a stable id to dedupe on); a `usernames` profile is a snapshot, not a discrete new item, so it is charged every run regardless of watch mode.
 **Why are `githubStars`/`githubLanguage` null even though `githubRepo` is set?** Either GitHub's public API had nothing at that path (repo renamed, deleted or private — rare) or the run's 200-lookup budget or GitHub's own unauthenticated rate limit was hit; `githubRepo` itself is a free regex match against the item's own URL/text, not an API call, so it's always populated when a link is found.
+**Why isn't there a "NOT" or negative-term operator in `queries`?** HN's underlying Algolia search doesn't support one — `excludeKeywords` gets you the same result a different way: it fetches your normal `queries`/`tags` match set, then drops (uncharged) any item whose title or text contains one of your excluded words, so you only pay for what's left.
 
 ## Related guides
 Engineering write-ups behind this Actor:

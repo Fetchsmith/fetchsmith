@@ -20,6 +20,7 @@ const author = input.author ? String(input.author).trim() : null;
 const usernames = [...new Set((input.usernames ?? []).map((u) => String(u).trim()).filter((u) => u.length))];
 const watchLabel = String(input.watchLabel ?? '').trim();
 const enrichGithubLinks = input.enrichGithubLinks === true;
+const excludeKeywords = [...new Set((input.excludeKeywords ?? []).map((k) => String(k).trim().toLowerCase()).filter((k) => k.length))];
 
 if (!queries.length) queries.push(''); // empty query = browse by tag/date (e.g. front page, Ask HN, Who's Hiring)
 
@@ -54,6 +55,7 @@ const watchSeen = new Set(); // objectIDs already delivered under this label+fin
 
 if (watchMode) {
   const criteria = { queries, tags, sortBy, author, includeComments, numericFilters };
+  if (excludeKeywords.length) criteria.excludeKeywords = excludeKeywords;
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -241,10 +243,21 @@ function mapUser(username, data) {
   };
 }
 
+// Algolia's `query` param ranks by relevance, it has no negative-term syntax, so a buyer who
+// wants "rust but not cryptocurrency" has no way to express that server-side. Both `title` and
+// `text` are already mapped fields (mapHit), so this is the same zero-cost "filter what we
+// already fetched" pattern as the shaped-field filters on shopify-products-scraper.
+function excludedByKeyword(mapped) {
+  if (!excludeKeywords.length) return false;
+  const haystack = `${mapped.title || ''} ${mapped.text || ''}`.toLowerCase();
+  return excludeKeywords.some((k) => haystack.includes(k));
+}
+
 const emptyQueries = []; // Algolia matched nothing for this query/tags/filters combo
 const erroredQueries = []; // the HTTP request itself failed
 const seenIds = new Set(); // dedup across queries — overlapping/duplicate queries return the same objectID from Algolia
 let duplicates = 0;
+let excluded = 0;
 let keepGoing = true;
 for (const query of queries) {
   if (!keepGoing) break;
@@ -320,6 +333,7 @@ for (const query of queries) {
       seenIds.add(hit.objectID);
       hit._query = query || null;
       const mapped = mapHit(hit);
+      if (excludedByKeyword(mapped)) { excluded += 1; continue; }
       // Skip the GitHub lookup for rows that pushResult will drop uncharged anyway
       // (seeding baseline, or already delivered under this watch label) -- those never
       // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
@@ -379,7 +393,7 @@ if (watchMode) {
   }
 }
 
-log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}`);
+log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}`);
 if (pushed === 0 && watchMode && !seeding) {
   await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching item had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
 } else if (pushed === 0 && seeding) {
@@ -388,6 +402,7 @@ if (pushed === 0 && watchMode && !seeding) {
   const reasons = [];
   if (erroredQueries.length) reasons.push(`the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`);
   if (emptyQueries.length) reasons.push(`no stories/comments matched: ${emptyQueries.join(', ')} — try different tags, a wider postedAfter/postedBefore range, or a lower minPoints`);
+  if (excluded) reasons.push(`excludeKeywords (${excludeKeywords.join(', ')}) removed all ${excluded} otherwise-matching item(s)`);
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   await Actor.setStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`);
