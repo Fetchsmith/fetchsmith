@@ -12,6 +12,21 @@ const candidateName = (input.candidateName ?? 'Warren').trim();
 const donorName = (input.donorName ?? '').trim();
 const donorEmployer = (input.donorEmployer ?? '').trim();
 const minAmount = input.minAmount ? Number(input.minAmount) : undefined;
+const maxAmount = input.maxAmount ? Number(input.maxAmount) : undefined;
+function parseFecDate(s, label) {
+  const trimmed = String(s ?? '').trim();
+  if (!trimmed) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    log.warning(`Ignoring invalid ${label} "${trimmed}" (expected YYYY-MM-DD).`);
+    return undefined;
+  }
+  return trimmed;
+}
+const contributionDateFrom = parseFecDate(input.contributionDateFrom, 'contributionDateFrom');
+const contributionDateTo = parseFecDate(input.contributionDateTo, 'contributionDateTo');
+if (contributionDateFrom && contributionDateTo && contributionDateFrom > contributionDateTo) {
+  throw new Error(`contributionDateFrom (${contributionDateFrom}) is after contributionDateTo (${contributionDateTo}).`);
+}
 const state = (input.state ?? '').trim().toUpperCase();
 const office = (input.office ?? '').trim().toUpperCase();
 const party = (input.party ?? '').trim().toUpperCase();
@@ -62,7 +77,12 @@ let watchSkipped = 0;
 const watchSeen = new Set(); // sub_ids already delivered under this label+fingerprint
 
 if (watchMode) {
-  const criteria = { donorName, donorEmployer, state, minAmount: minAmount ?? null, electionYearRaw: input.electionYear ?? null };
+  const criteria = {
+    donorName, donorEmployer, state, minAmount: minAmount ?? null, electionYearRaw: input.electionYear ?? null,
+    ...(maxAmount !== undefined ? { maxAmount } : {}),
+    ...(contributionDateFrom ? { contributionDateFrom } : {}),
+    ...(contributionDateTo ? { contributionDateTo } : {}),
+  };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -176,7 +196,7 @@ try {
       // hacker-news trap (cycle 332/333) where a cost cap was reused for the scan itself: this
       // cap exists only to bound one run's request count against a broad, weakly-filtered watch.
       watchPageCapHit = true;
-      log.warning(`Watch mode: stopped scanning after ${WATCH_PAGE_CAP} pages without exhausting the match set -- narrow donorName/donorEmployer/state/minAmount so the whole current match set fits in fewer pages.`);
+      log.warning(`Watch mode: stopped scanning after ${WATCH_PAGE_CAP} pages without exhausting the match set -- narrow donorName/donorEmployer/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so the whole current match set fits in fewer pages.`);
       break;
     }
     const body = searchMode === 'contributions'
@@ -185,6 +205,9 @@ try {
         contributor_employer: donorEmployer,
         contributor_state: state,
         min_amount: minAmount,
+        max_amount: maxAmount,
+        min_date: contributionDateFrom,
+        max_date: contributionDateTo,
         two_year_transaction_period: electionYear,
         page,
         per_page: watchMode ? 100 : 20,
@@ -269,7 +292,7 @@ if (watchMode) {
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded as already-seen, `
       + '0 results returned, 0 charged. The next run on this label and these filters returns only what is new.'
       + (watchSeen.size >= SEED_CAP
-        ? ` NOTE: the baseline hit the ${SEED_CAP}-contribution cap. Narrow donorName/donorEmployer/state/minAmount so `
+        ? ` NOTE: the baseline hit the ${SEED_CAP}-contribution cap. Narrow donorName/donorEmployer/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so `
         + 'the whole current match set fits, or the first incremental run may report older contributions past the cap as new.'
         : watchPageCapHit
           ? ` NOTE: the baseline hit the ${WATCH_PAGE_CAP}-page scan cap before exhausting the match set. Narrow the filters.`

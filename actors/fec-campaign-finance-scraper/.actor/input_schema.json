@@ -39,6 +39,26 @@
       "description": "Only return contributions of at least this amount. Contributions mode only.",
       "editor": "number"
     },
+    "maxAmount": {
+      "title": "Maximum contribution amount ($)",
+      "type": "integer",
+      "description": "Only return contributions of at most this amount. Contributions mode only.",
+      "editor": "number"
+    },
+    "contributionDateFrom": {
+      "title": "Contribution date from (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only return contributions received on or after this date. Contributions mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "contributionDateTo": {
+      "title": "Contribution date to (YYYY-MM-DD)",
+      "type": "string",
+      "description": "Only return contributions received on or before this date. Contributions mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
     "state": {
       "title": "State (2-letter code)",
       "type": "string",

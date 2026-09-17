@@ -19,6 +19,8 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 | `donorName` | string | Contributions mode: donor name to search for, e.g. `"Elon Musk"`. |
 | `donorEmployer` | string | Contributions mode: filter by the donor's self-reported employer, e.g. `"Google"`. |
 | `minAmount` | integer | Contributions mode: only return contributions at or above this dollar amount. |
+| `maxAmount` | integer | Contributions mode: only return contributions at or below this dollar amount. Combine with `minAmount` for a range. |
+| `contributionDateFrom` / `contributionDateTo` | string | Contributions mode: `YYYY-MM-DD` window on the contribution receipt date. Either or both may be set; invalid dates are ignored with a warning. |
 | `state` | string | 2-letter state code, e.g. `"CA"`. Candidates or donor address, depending on mode. Optional. |
 | `office` | string | `H` (House), `S` (Senate), `P` (President). Candidates mode only. |
 | `party` | string | Party code, e.g. `DEM`, `REP`, `IND`, `LIB`. Candidates mode only. |
@@ -185,6 +187,8 @@ Set `searchMode` to `"contributions"` to search individual itemized donor contri
 The FEC's Schedule A endpoint times out on a full-table scan (129,000+ rows even for a single popular employer, across all years) if you don't scope it to a two-year cycle. Candidates mode has no such requirement, so it stays optional there.
 
 **How does watch mode decide what's "new"?** By the contribution's own FEC-assigned `sub_id`, which is stable and unique per itemized transaction. A baseline of ids you've already been sent is kept in a named key-value store on your own Apify account (`fetchsmith-fec-watch`) — it survives across runs even though the default per-run store does not.
+
+**Can I search by a specific dollar range or date window?** Yes — `minAmount`/`maxAmount` bound the contribution amount (either or both) and `contributionDateFrom`/`contributionDateTo` bound the receipt date (`YYYY-MM-DD`, either or both). Contributions mode only.
 
 **My donor/employer filter is broad — will a watch run scan the whole Schedule A table every time?** It scans until it finds `maxResults` new contributions or exhausts the current match set (capped at 1000 pages, ~100,000 rows, per run — a safety valve, not something a normally-filtered watch should ever hit). A very broad, weakly-filtered watch (e.g. a common surname with no employer/state/amount filter) can page through a lot of already-seen contributions before finding something new; narrow the filters for a faster, cheaper watch.
 
