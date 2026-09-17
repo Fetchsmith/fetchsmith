@@ -24,8 +24,13 @@ Search is full text across case names, party and attorney names, docket text and
 | `recordType` | enum | `both` (default), `opinions`, or `dockets`. |
 | `courts` | array | CourtListener court IDs — the slug in a `courtlistener.com/court/<id>/` URL: `scotus`, `ca9`, `cand`, `nysd`, `cacb`, … 400+ federal and state courts. Empty = all courts. |
 | `filedAfter` / `filedBefore` | string | `YYYY-MM-DD` filing-date bounds. |
+| `startUrl` | string | Paste a courtlistener.com search or API URL instead of filling in the fields above — see below. |
 | `maxResults` | integer | Default 100. With `both`, the budget is split evenly between the two indexes, and whatever one index leaves unused goes to the other. |
 | `watchLabel` | string | Incremental mode — see below. |
+
+### Paste a CourtListener search URL
+
+Already built the search on courtlistener.com? Paste the address bar into `startUrl` instead of re-entering the filters — e.g. `https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01`. An API URL (`https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o`) works too; both use the identical `q`/`type`/`court`/`filed_after`/`filed_before` parameters. Whatever the URL mentions replaces the matching field above; anything it doesn't mention still comes from the fields above, and `maxResults`/`watchLabel` always apply. Only Opinions (`type=o`) and RECAP (`type=r`) URLs are supported — CourtListener's Oral Arguments, Judges and Parenthetical searches are different record shapes this schema doesn't cover, and a URL for one of those logs a warning and falls back to the `recordType` field instead.
 
 ### Incremental "watch" mode
 

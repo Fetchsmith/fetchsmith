@@ -18,21 +18,21 @@ const SEARCH = `${BASE}/api/rest/v4/search/`;
 const TYPE_FOR = { opinions: 'o', dockets: 'r' };
 
 const recordTypeRaw = String(input.recordType ?? 'both').toLowerCase().trim();
-const recordTypes = recordTypeRaw === 'both'
+let recordTypes = recordTypeRaw === 'both'
     ? ['opinions', 'dockets']
     : (Object.hasOwn(TYPE_FOR, recordTypeRaw) ? [recordTypeRaw] : ['opinions', 'dockets']);
 if (!Object.hasOwn(TYPE_FOR, recordTypeRaw) && recordTypeRaw !== 'both') {
     log.warning(`Unknown recordType "${input.recordType}"; falling back to "both".`);
 }
 
-const query = String(input.query ?? '').trim();
+let query = String(input.query ?? '').trim();
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 
 // CourtListener court IDs are the short slugs in a courtlistener.com/court/<id>/ URL
 // ("scotus", "ca9", "cand", "cacb", ...). 400+ exist, so this is free text rather than an
 // enum; an unknown id is not an error upstream, it just matches nothing — warned about below.
-const courts = (Array.isArray(input.courts) ? input.courts : String(input.courts ?? '').split(','))
+let courts = (Array.isArray(input.courts) ? input.courts : String(input.courts ?? '').split(','))
     .map((c) => String(c).trim().toLowerCase())
     .filter(Boolean);
 
@@ -41,8 +41,63 @@ const normDate = (v) => {
     if (digits.length !== 8) return null;
     return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
 };
-const filedAfter = normDate(input.filedAfter);
-const filedBefore = normDate(input.filedBefore);
+let filedAfter = normDate(input.filedAfter);
+let filedBefore = normDate(input.filedBefore);
+
+// Optional shortcut: paste a CourtListener search (or API) URL and its filters replace the
+// ones above. Both URL shapes use the identical param vocabulary — verified live cycle 393:
+// the search UI's own <input name="q"|"type"|"court"|"filed_after"|"filed_before"> fields
+// post straight to this page's own query string, which is the same one /api/rest/v4/search/
+// accepts. Only "type=o" (Opinions) and "type=r" (RECAP) are supported, matching the two
+// indexes this Actor covers; CourtListener's other type values (oa/p/d/pa — oral arguments,
+// judges, RECAP-dockets-only, parentheticals) are different entity shapes this schema does
+// not model, so a URL carrying one of those is a clear warning, not a silent misparse.
+const startUrlRaw = String(input.startUrl ?? '').trim();
+if (startUrlRaw) {
+    let parsedUrl = null;
+    try { parsedUrl = new URL(startUrlRaw); } catch { /* parsedUrl stays null */ }
+    if (!parsedUrl || !/(^|\.)courtlistener\.com$/.test(parsedUrl.hostname)) {
+        throw new Error(`startUrl must be a courtlistener.com search or API URL; got "${startUrlRaw}".`);
+    }
+    const qp = parsedUrl.searchParams;
+    const ignored = [];
+
+    if (qp.has('q')) { query = qp.get('q') ?? ''; } else { ignored.push('query'); }
+
+    const rawType = qp.get('type');
+    if (rawType === 'o' || rawType === 'r') {
+        recordTypes = rawType === 'o' ? ['opinions'] : ['dockets'];
+    } else if (rawType) {
+        log.warning(
+            `startUrl has type="${rawType}", which this Actor does not support (only Opinions `
+            + '"o" and RECAP "r" are). Using the "Record type" field below instead.',
+        );
+    } else {
+        ignored.push('recordType');
+    }
+
+    // `court` is submitted as one space-joined value (our own firstUrl() builds it the same
+    // way) but the form also allows repeats, so both shapes are collected and flattened.
+    const courtValues = qp.getAll('court')
+        .flatMap((v) => v.split(/\s+/))
+        .map((c) => c.trim().toLowerCase())
+        .filter(Boolean);
+    if (courtValues.length) { courts = courtValues; } else { ignored.push('courts'); }
+
+    if (qp.has('filed_after')) { filedAfter = normDate(qp.get('filed_after')); } else { ignored.push('filedAfter'); }
+    if (qp.has('filed_before')) { filedBefore = normDate(qp.get('filed_before')); } else { ignored.push('filedBefore'); }
+
+    log.info(
+        `startUrl parsed: query=${JSON.stringify(query)} recordTypes=${JSON.stringify(recordTypes)} `
+        + `courts=${JSON.stringify(courts)} filedAfter=${filedAfter ?? '(none)'} filedBefore=${filedBefore ?? '(none)'}.`,
+    );
+    if (ignored.length) {
+        log.info(
+            `The pasted URL did not mention: ${ignored.join(', ')} — the matching field(s) below were used instead. `
+            + 'maxResults and watchLabel always apply regardless of startUrl.',
+        );
+    }
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -307,7 +362,7 @@ async function pushResult(item) {
 }
 
 log.info(
-    `CourtListener: recordType=${recordTypeRaw} query="${query || '(none)'}" maxResults=${maxResults}`
+    `CourtListener: recordType=${recordTypes.join('+')} query="${query || '(none)'}" maxResults=${maxResults}`
     + (courts.length ? ` courts=[${courts.join(',')}]` : '')
     + (filedAfter ? ` filedAfter=${filedAfter}` : '')
     + (filedBefore ? ` filedBefore=${filedBefore}` : ''),

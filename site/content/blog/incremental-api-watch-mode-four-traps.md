@@ -7,7 +7,7 @@ tags: webscraping, api, opendata, scheduling
 
 Almost every buyer of a public-data scraper eventually wants the same thing: *don't send me the same 18,000 rows every morning, send me what changed.* That sounds like a filter. It isn't. Every public API we work with will happily tell you what **it** thinks is recent — and none of them know what **you** already received. "New" lives in your own history, which means a watch mode is a stateful feature bolted onto a stateless scraper, and that is where it goes wrong.
 
-We shipped this mode (`watchLabel`) across 14 Actors: five government-data hosts ([NIH RePORTER](/tools/nih-reporter-scraper), the [Federal Register](/tools/federal-register-scraper), [Grants.gov](/tools/grants-gov-scraper), [openFDA recalls](/tools/fda-recall-scraper) and [ClinicalTrials.gov](/tools/clinicaltrials-scraper)), two tender/procurement hosts ([EU TED](/tools/eu-ted-tenders-scraper) and [UK Find a Tender](/tools/uk-find-a-tender-scraper)), two money hosts ([US federal awards](/tools/us-federal-awards-scraper) and [FEC campaign finance](/tools/fec-campaign-finance-scraper)), a forum ([Hacker News](/tools/hacker-news-scraper)), a job board aggregator ([ATS jobs](/tools/ats-jobs-scraper)) and three app/game review platforms ([Google Play](/tools/google-play-reviews-scraper), [the Apple App Store](/tools/app-store-reviews-scraper) and [Steam](/tools/steam-reviews-scraper)). The state machine copied across all fourteen almost unchanged. What did not copy were the eight traps below. Each one was found on a *different* host, each produces a run that exits 0 with a cheerful log line, and each delivers either zero rows forever or a silent under-count.
+We shipped this mode (`watchLabel`) across 15 Actors: six government-data hosts ([NIH RePORTER](/tools/nih-reporter-scraper), the [Federal Register](/tools/federal-register-scraper), [Grants.gov](/tools/grants-gov-scraper), [openFDA recalls](/tools/fda-recall-scraper), [ClinicalTrials.gov](/tools/clinicaltrials-scraper) and [court records](/tools/court-records-scraper)), two tender/procurement hosts ([EU TED](/tools/eu-ted-tenders-scraper) and [UK Find a Tender](/tools/uk-find-a-tender-scraper)), two money hosts ([US federal awards](/tools/us-federal-awards-scraper) and [FEC campaign finance](/tools/fec-campaign-finance-scraper)), a forum ([Hacker News](/tools/hacker-news-scraper)), a job board aggregator ([ATS jobs](/tools/ats-jobs-scraper)) and three app/game review platforms ([Google Play](/tools/google-play-reviews-scraper), [the Apple App Store](/tools/app-store-reviews-scraper) and [Steam](/tools/steam-reviews-scraper)). The state machine copied across all fifteen almost unchanged. What did not copy were the eight traps below. Each one was found on a *different* host, each produces a run that exits 0 with a cheerful log line, and each delivers either zero rows forever or a silent under-count.
 
 ## Trap 0: the API's own "recent" flag is not your "new"
 
@@ -125,13 +125,14 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 
 ## Where this is live
 
-`watchLabel` is an optional input on 14 of our Actors — leave it unset and they behave exactly as before:
+`watchLabel` is an optional input on 15 of our Actors — leave it unset and they behave exactly as before:
 
 - [NIH RePORTER Scraper](/tools/nih-reporter-scraper) — baseline keyed on `appl_id`, plus optional `watchChanges` (project-end-date, budget-end, award-amount and active-flag changes — a no-cost extension moves the end date on the same award record)
 - [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`, deliberately with **no** `watchChanges` (published documents are never edited; `referencedCitations` links an amendment back to what it amends instead)
 - [Grants.gov Scraper](/tools/grants-gov-scraper) — opportunity `id`, plus optional `watchChanges` (close-date, status and forecast-to-posted transitions on opportunities you already have)
 - [FDA Recall Scraper](/tools/fda-recall-scraper) — `recall_number`, plus optional `watchChanges` (recall `status` and `classification` changes)
 - [ClinicalTrials Scraper](/tools/clinicaltrials-scraper) — `nctId` (ignored, by design, when an exact `nctIds` lookup is set — trap 6), plus optional `watchChanges` (status, enrollment and completion-date changes on studies you already have)
+- [Court Records & Case Law Scraper](/tools/court-records-scraper) — docket/opinion id, keyed per query+filter fingerprint so editing a filter starts a fresh baseline instead of dumping everything an older, narrower filter had excluded
 - [Hacker News Scraper](/tools/hacker-news-scraper) — `objectID`
 - [ATS Jobs Scraper](/tools/ats-jobs-scraper) — `company:jobId`
 - [EU TED Tenders Scraper](/tools/eu-ted-tenders-scraper) — `publication-number`
