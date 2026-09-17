@@ -25,6 +25,15 @@ const onlyAvailable = !!input.onlyAvailable;
 const detailLevel = input.detailLevel === 'full' ? 'full' : 'basic';
 const searchQuery = String(input.searchQuery ?? '').normalize('NFC').trim();
 const searchWords = searchQuery ? searchQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
+// Price/sale filters work on the SHAPED row (priceMin/priceMax/isOnSale), not on raw Shopify JSON,
+// because a product's price is a range across its variants and the sale flag is derived from
+// compare-at prices — neither exists as a single field on the raw payload. They therefore run
+// after shape() but before charging, so a filtered-out product is never billed.
+const numOrNull = (v) => (v == null || v === '' || Number.isNaN(Number(v)) ? null : Number(v));
+const minPrice = numOrNull(input.minPrice);
+const maxPrice = numOrNull(input.maxPrice);
+const onSaleOnly = !!input.onSaleOnly;
+const hasShapedFilters = minPrice != null || maxPrice != null || onSaleOnly;
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeUrls entr${duplicateStoreUrls === 1 ? 'y' : 'ies'} (same endpoint already queued).`);
 
@@ -177,6 +186,20 @@ function shape(p, origin, currency) {
 // keyword search is applied client-side against products already fetched for pagination — zero
 // extra requests, works on every store this Actor can already reach, at the cost of still walking
 // the full catalog (same request budget as an unfiltered run of the same store).
+// A multi-variant product is a price RANGE, not a price, so "between minPrice and maxPrice" means
+// the product's range intersects the requested window (a $40-$120 hoodie matches maxPrice:50 —
+// there is a buyable variant at $40). Products whose price could not be determined at all
+// (priceMin/priceMax null: no variants, or every variant's price unparseable) are dropped when
+// either bound is set rather than passed through, so a price-filtered run never returns a row the
+// filter could not actually be evaluated against. Prices are in the store's own currency (see the
+// `currency` output field) — this Actor does no FX conversion, so a window means different things
+// on a USD and a EUR store.
+function passesShapedFilters(item) {
+  if (onSaleOnly && item.isOnSale !== true) return false;
+  if (minPrice != null && !(item.priceMax != null && item.priceMax >= minPrice)) return false;
+  if (maxPrice != null && !(item.priceMin != null && item.priceMin <= maxPrice)) return false;
+  return true;
+}
 function matchesSearch(p) {
   if (!searchWords.length) return true;
   const haystack = [p.title, p.vendor, p.product_type, ...(p.tags ?? [])].join(' ').normalize('NFC').toLowerCase();
@@ -308,11 +331,16 @@ for (const raw of storeUrls) {
         seenBeforeFilter = 1;
         if (!onlyAvailable || passesAvailability(p)) {
           const item = shape(p, ep.origin, currency);
-          // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
-          // route, not `.json` — so even a single-product URL (which already has `.json`) still
-          // needs the enrichment step's own fetch to pick those up.
-          if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
-          keepGoing = await pushResult(item); got++;
+          // Price/sale filters run here, before the paid `detailLevel:"full"` fetch and before
+          // pushResult() charges — enrichment only writes SEO/rating/subscription fields, never
+          // the price fields these read, so evaluating them early cannot change the verdict.
+          if (passesShapedFilters(item)) {
+            // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
+            // route, not `.json` — so even a single-product URL (which already has `.json`) still
+            // needs the enrichment step's own fetch to pick those up.
+            if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
+            keepGoing = await pushResult(item); got++;
+          }
         }
       }
     } else {
@@ -327,6 +355,7 @@ for (const raw of storeUrls) {
           if (onlyAvailable && !passesAvailability(p)) continue;
           if (!matchesSearch(p)) continue;
           const item = shape(p, ep.origin, currency);
+          if (!passesShapedFilters(item)) continue; // before enrichment/charging: never bill a filtered-out product
           if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
           keepGoing = await pushResult(item); got++;
           if (!keepGoing) break;
@@ -339,7 +368,18 @@ for (const raw of storeUrls) {
       log.warning(`${ep.origin}: Shopify returned zero products for this URL (empty store/collection, or products.json is disabled — not a scrape failure).`);
     } else if (got === 0) {
       filteredOutStores.push(ep.origin);
-      const reason = onlyAvailable && searchWords.length ? '"onlyAvailable" and/or "searchQuery" removed all of them' : onlyAvailable ? '"onlyAvailable" removed all of them (none are in stock)' : '"searchQuery" matched none of them';
+      // Name every filter that was actually set, so a zero-row run says which input to relax
+      // instead of blaming whichever one this message happened to hardcode.
+      const activeFilters = [
+        ...(onlyAvailable ? ['"onlyAvailable"'] : []),
+        ...(searchWords.length ? ['"searchQuery"'] : []),
+        ...(minPrice != null ? [`"minPrice" (${minPrice})`] : []),
+        ...(maxPrice != null ? [`"maxPrice" (${maxPrice})`] : []),
+        ...(onSaleOnly ? ['"onSaleOnly"'] : []),
+      ];
+      const reason = activeFilters.length === 1
+        ? `${activeFilters[0]} removed all of them`
+        : `${activeFilters.join(' / ')} removed all of them between them`;
       log.warning(`${ep.origin}: fetched ${seenBeforeFilter} products but ${reason}.`);
     }
   } catch (e) {
@@ -361,7 +401,7 @@ if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
   const why = erroredStores.length
     ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
     : filteredOutStores.length && !emptyStores.length
-      ? 'products were found but "onlyAvailable"/"searchQuery" removed all of them'
+      ? 'products were found but the filters you set ("onlyAvailable"/"searchQuery"/"minPrice"/"maxPrice"/"onSaleOnly") removed all of them'
       : `Shopify returned zero products for: ${emptyStores.join(', ')}`;
   await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
 } else if (pushed === 0 && timeBudgetExceeded) {
