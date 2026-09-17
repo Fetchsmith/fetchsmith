@@ -16,12 +16,13 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `dataType` | string | `episodes` (default), `reviews`, `podcasts` (show records), `charts` (today's top podcasts — no `podcasts`/`searchTerms` needed), or `publisher` (every show by a publisher/artist) |
+| `dataType` | string | `episodes` (default), `reviews`, `podcasts` (show records), `charts` (today's top shows or trending episodes, see `chartType` — no `podcasts`/`searchTerms` needed), or `publisher` (every show by a publisher/artist) |
 | `podcasts` | array | Apple Podcasts show URLs/IDs, e.g. `https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584`. For `dataType: "publisher"`, give the publisher's artist URL/ID instead, e.g. `https://podcasts.apple.com/us/artist/the-new-york-times/121664449`. **You can also paste a direct RSS/podcast feed URL** for any show — including ones not indexed by Apple at all — but only with `dataType: "episodes"`, since the feed itself has no Apple ID for reviews/search/charts |
 | `searchTerms` | array | Find shows by keyword instead of, or as well as, giving URLs |
 | `searchLimit` | integer | Shows to take per search term (default 10, max 200) |
-| `chartCount` | integer | Charts only: how many top shows to fetch (default 50, max 200) |
-| `chartGenre` | string | Charts only: restrict the chart to one category (`comedy`, `trueCrime`, `news`, `business`, ... 19 total) instead of the overall top chart. Leave empty for the overall chart |
+| `chartType` | string | Charts only: `shows` (default — Apple's Top Shows chart) or `episodes` (Apple's separate **Trending Episodes** chart: one row per episode, with audio URL, duration and release date) |
+| `chartCount` | integer | Charts only: how many chart entries to fetch (default 50). Apple caps the overall charts (Top Shows, Trending Episodes) at **100** and a genre chart at 200; higher values are clamped with a warning |
+| `chartGenre` | string | Charts only: restrict the Top Shows chart to one category (`comedy`, `trueCrime`, `news`, `business`, ... 19 total) instead of the overall top chart. Leave empty for the overall chart. Ignored for `chartType: "episodes"` — Apple publishes no per-genre episode chart |
 | `maxPodcastsPerPublisher` | integer | Publisher only: how many shows to return per publisher (default 200, max 200) |
 | `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
 | `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) — up to 20,000 with `useRssForFullArchive` |
@@ -107,7 +108,9 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 
 **`dataType: "podcasts"`** — one item per show: `collectionId`, `podcastName`, `artistName`, `podcastUrl`, `feedUrl`, `primaryGenre`, `genres`, `episodeCount`, `latestReleaseDate`, `explicit`, `contentAdvisoryRating`, `artworkUrl`, and `searchTerm` when it came from a search.
 
-**`dataType: "charts"`** — same shape as `podcasts`, plus `chartRank` (1 = #1 in the storefront). Set `includePodcastInfo:false` to skip the per-show detail lookup and get just the raw chart fields (name, artist, genre, artwork, URL) faster.
+**`dataType: "charts"`** — with the default `chartType: "shows"`, the same shape as `podcasts`, plus `chartRank` (1 = #1 in the storefront). Set `includePodcastInfo:false` to skip the per-show detail lookup and get just the raw chart fields (name, artist, genre, artwork, URL) faster.
+
+**`dataType: "charts"` + `chartType: "episodes"`** — the same shape as `episodes` (title, `releaseDate`, `durationMinutes`, `description`, direct `episodeUrl` audio file, `episodeGuid`, `feedUrl`, show metadata), plus `chartRank`. The episode filters apply here too (`explicitFilter`, `minDurationSeconds`, `minReleaseDate`/`maxReleaseDate`), and filtered-out entries are never charged, so ranks can legitimately have gaps.
 
 **`dataType: "publisher"`** — same shape as `podcasts`, plus `publisherId` (the artist ID you gave). One item per show the publisher runs.
 
@@ -127,6 +130,8 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 **Can I scrape a show that isn't on Apple Podcasts, or that I can't find by search?** Yes — paste its RSS feed URL directly into `podcasts` instead of an Apple URL/ID, with `dataType: "episodes"`. The Actor reads the feed itself, so no Apple lookup happens at all (verified live: a non-Apple-searched NPR feed returns full episode rows this way). Reviews, search and charts still need a real Apple ID, since that data only exists on Apple's side.
 
 **How fast is it?** HTTP-only, no headless browser: a show's 200 episodes come from a single request, and reviews page 50 at a time. Runs cost a few seconds of compute plus the per-result fee.
+
+**Can I chart individual episodes, not just shows?** Yes — `dataType: "charts"` with `chartType: "episodes"` returns Apple's **Trending Episodes** chart, which is a different chart from Top Shows, not a view of it (on the 2026-09-17 US chart, the #1 *show* was The Daily while the #1 *episode* was one specific Daily episode, and ranks 2-12 were episodes of eleven different shows). Each entry is enriched into a full episode row — audio URL, duration, release date, description — via one cached lookup per show. Two limits worth knowing: Apple's episode chart has no genre breakdown (`chartGenre` is ignored, with a warning), and Apple-exclusive/subscriber-only shows publish no episode list at all, so those entries arrive with `source: "chart"` and the chart's own title/artwork instead of full episode detail rather than being dropped (measured 19 of 20 entries fully enriched on a real US chart).
 
 **Can I get genre-specific charts?** Yes — set `chartGenre` (e.g. `comedy`, `trueCrime`, `business`) to get that category's own top chart instead of the overall one, using Apple's own per-genre chart feed. 19 genres are supported; an unrecognized value is ignored with a warning rather than silently returning the wrong chart.
 

@@ -483,7 +483,7 @@
     {
       "slug": "apple-podcasts-scraper",
       "title": "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers",
-      "summary": "Apple Podcasts as structured data: every episode with direct audio URL, duration and RSS feed; listener reviews with star ratings; or podcast search by keyword. Any country storefront.",
+      "summary": "Apple Podcasts as structured data: every episode with direct audio URL, duration and RSS feed; listener reviews with star ratings; keyword search; or Apple's top-shows and trending-episodes charts. Any country storefront.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "sit99YHSd0o1JhJZd",
@@ -555,7 +555,7 @@
         "episodePageUrl": "https://podcasts.apple.com/us/podcast/id1434243584?i=1000786117598",
         "feedUrl": "https://lexfridman.com/feed/podcast/"
       },
-      "description": "<p>Three modes in one Actor. <code>episodes</code> returns every episode of a show with its <strong>direct audio file URL</strong> (<code>episodeUrl</code>), duration, publish date, description and the show's RSS feed. <code>reviews</code> returns listener reviews with star rating, title, body, author and date, filterable by <code>minRating</code>/<code>maxRating</code> and by <code>keyword</code>. <code>podcasts</code> searches Apple Podcasts by keyword and can be chained straight into episodes or reviews. Accepts an Apple Podcasts URL, a bare collection ID or a search term, in any country storefront. HTTP-only: no login, no headless browser.</p>",
+      "description": "<p>Five modes in one Actor. <code>episodes</code> returns every episode of a show with its <strong>direct audio file URL</strong> (<code>episodeUrl</code>), duration, publish date, description and the show's RSS feed. <code>reviews</code> returns listener reviews with star rating, title, body, author and date, filterable by <code>minRating</code>/<code>maxRating</code> and by <code>keyword</code>. <code>podcasts</code> searches Apple Podcasts by keyword and can be chained straight into episodes or reviews. <code>charts</code> pulls Apple's Top Shows chart (overall or by genre) or its separate <strong>Trending Episodes</strong> chart, and <code>publisher</code> lists every show one publisher runs. Accepts an Apple Podcasts URL, a bare collection ID or a search term, in any country storefront. HTTP-only: no login, no headless browser.</p>",
       "memory_mb": 1024
     },
     {

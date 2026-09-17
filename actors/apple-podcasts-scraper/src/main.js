@@ -8,7 +8,23 @@ const podcasts = (input.podcasts ?? []).map((p) => String(p).trim()).filter(Bool
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
 const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
 const country = String(input.country || 'us').toLowerCase().trim();
-const chartCount = Math.min(Number(input.chartCount ?? 50), 200);
+// Apple's two chart endpoints have DIFFERENT hard caps, measured live cycle 424: the newer
+// rss.marketingtools.apple.com feed 500s for any limit >100 (101/150/199/200 all fail, 100 is
+// fine), while the older itunes.apple.com RSS Generator (the genre path) serves up to 200 and
+// 400s at 250. Before this was measured, a chartCount of 101-200 on the overall chart made the
+// whole run return 0 rows with only a warning, so the cap is now per-endpoint, not global.
+const chartCountRequested = Math.max(1, Number(input.chartCount ?? 50));
+// "shows" is Apple's Top Shows chart (podcasts.json); "episodes" is the separate Trending
+// Episodes chart (podcast-episodes.json) — a genuinely different chart, not a view of the first.
+const chartType = input.chartType === 'episodes' ? 'episodes' : 'shows';
+if (input.chartType && !['shows', 'episodes'].includes(input.chartType)) {
+  log.warning(`Unknown "chartType" value "${input.chartType}" — using "shows" (Apple's Top Shows chart). Valid values: shows, episodes.`);
+}
+// Only warn for a non-default value: the SDK fills schema defaults into the input, so
+// `input.chartType` is "shows" even on a run that never mentioned it.
+if (chartType !== 'shows' && input.dataType && input.dataType !== 'charts') {
+  log.warning(`"chartType" only applies when "What to scrape" is "charts" — ignored for dataType "${input.dataType}".`);
+}
 // Apple's newer rss.marketingtools.apple.com chart endpoint has no genre filter (/genre=<id>/
 // 404s, ?g= is ignored), but the older itunes.apple.com RSS Generator endpoint still honours
 // one — verified live cycle 217 (e.g. genre=1303 returns a Comedy-only chart, distinct from the
@@ -22,8 +38,19 @@ const CHART_GENRE_IDS = {
   science: 1533, societyCulture: 1324, sports: 1545, technology: 1318,
   trueCrime: 1488, tvFilm: 1309,
 };
-const chartGenre = input.chartGenre && CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null;
+let chartGenre = input.chartGenre && CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null;
 if (input.chartGenre && !chartGenre) log.warning(`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join(', ')}.`);
+// Only the shows chart has a genre-specific endpoint; there is no per-genre Trending Episodes
+// feed. Dropped loudly rather than silently, so nobody pays for an "overall" chart they asked
+// to have narrowed (same rule as the federal-register PI desk, cycle 412).
+if (chartGenre && chartType === 'episodes') {
+  log.warning(`"chartGenre" ("${chartGenre}") is ignored for chartType "episodes" — Apple publishes Trending Episodes only as one overall chart per storefront, with no genre breakdown. Returning the overall episode chart for "${country}".`);
+  chartGenre = null;
+}
+const chartCount = Math.min(chartCountRequested, chartGenre ? 200 : 100);
+if (chartCount < chartCountRequested) {
+  log.warning(`"chartCount" ${chartCountRequested} exceeds Apple's cap for this chart (${chartGenre ? 200 : 100}) — fetching ${chartCount}. ${chartGenre ? '' : 'Apple\'s overall chart endpoint returns an error, not a shorter list, above 100.'}`);
+}
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
 // Apple's episode lookup API caps at 200 regardless of what's requested. Enabling
 // useRssForFullArchive replaces that call with a direct fetch of the show's own RSS feed, which
@@ -67,6 +94,7 @@ function timeBudgetOk() {
 
 let pushed = 0;
 let unknownDurationKept = 0;
+let unenrichedChartEntries = 0;
 let keepGoing = true;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
@@ -303,6 +331,38 @@ async function pushEpisodeRows(rows) {
   return got;
 }
 
+// Trending-Episodes chart support. The chart feed itself carries only name/artist/artwork/url,
+// so each entry is enriched from Apple's lookup API. The episode ID is NOT independently
+// addressable there (verified live cycle 424: lookup?id=<episodeId> returns resultCount 0, with
+// or without entity=podcastEpisode) — the only way in is to look up the parent SHOW and match on
+// trackId. One request per show, cached, because a single show can hold several chart slots
+// (The Daily held #1 and #8 on the 2026-09-17 US chart).
+const showEpisodesCache = new Map();
+async function getShowEpisodeBundle(showId) {
+  if (showEpisodesCache.has(showId)) return showEpisodesCache.get(showId);
+  const bundle = { info: null, episodes: new Map() };
+  try {
+    const url = `https://itunes.apple.com/lookup?id=${showId}&country=${country}&entity=podcastEpisode&limit=200`;
+    const results = (await getJson(url)).results ?? [];
+    const show = results.find((r) => r.wrapperType === 'track' && r.kind === 'podcast') ?? null;
+    if (show && includePodcastInfo) {
+      bundle.info = {
+        podcastName: show.collectionName ?? show.trackName ?? null,
+        artistName: show.artistName ?? null,
+        podcastUrl: show.collectionViewUrl ?? show.trackViewUrl ?? null,
+        feedUrl: show.feedUrl ?? null,
+        primaryGenre: show.primaryGenreName ?? null,
+        episodeCount: show.trackCount ?? null,
+      };
+    }
+    for (const r of results) {
+      if (r.wrapperType === 'podcastEpisode' && r.trackId != null) bundle.episodes.set(String(r.trackId), r);
+    }
+  } catch (e) { log.debug(`Episode lookup failed for chart show ${showId}: ${e.message}`); }
+  showEpisodesCache.set(showId, bundle);
+  return bundle;
+}
+
 async function scrapeEpisodes(id) {
   const info = includePodcastInfo ? await getPodcastInfo(id) : null;
   let rows = null;
@@ -431,10 +491,10 @@ for (const term of searchTerms) {
 const emptyIds = [];
 const depthCapped = [];
 if (dataType === 'charts') {
-  // Rank comes from array order in both cases.
+  // Rank comes from array order in all cases.
   const url = chartGenre
     ? `https://itunes.apple.com/${country}/rss/toppodcasts/limit=${chartCount}/genre=${CHART_GENRE_IDS[chartGenre]}/json`
-    : `https://rss.marketingtools.apple.com/api/v2/${country}/podcasts/top/${chartCount}/podcasts.json`;
+    : `https://rss.marketingtools.apple.com/api/v2/${country}/podcasts/top/${chartCount}/${chartType === 'episodes' ? 'podcast-episodes' : 'podcasts'}.json`;
   let results = [];
   try {
     if (chartGenre) {
@@ -465,6 +525,39 @@ if (dataType === 'charts') {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     const r = results[i];
     const chartRank = i + 1;
+    if (chartType === 'episodes') {
+      // Chart entry URLs look like …/podcast/<slug>/id<showId>?i=<episodeId>.
+      const showId = r.url?.match(/\/id(\d{6,})/)?.[1] ?? null;
+      const episodeId = r.url?.match(/[?&]i=(\d+)/)?.[1] ?? null;
+      const bundle = showId ? await getShowEpisodeBundle(showId) : { info: null, episodes: new Map() };
+      const hit = episodeId ? bundle.episodes.get(episodeId) : null;
+      // Apple-exclusive shows (e.g. "Apple News Today", feedUrl null) expose NO episodes through
+      // the lookup API at all, so a chart slot can't always be enriched — measured 19/20 enriched
+      // on the 2026-09-17 US chart. The unenriched entry is still emitted, with the same key
+      // rectangle and the chart's own name/artwork/page URL, so chart ranks never have holes.
+      // Keep the key rectangle identical whether or not the lookup succeeded: when podcast info
+      // is on but the show wasn't in the index, every info key is still present (null), with
+      // artistName filled from the chart entry, which always carries it.
+      const fallbackInfo = includePodcastInfo
+        ? (bundle.info ?? { podcastName: null, artistName: r.artistName ?? null, podcastUrl: null, feedUrl: null, primaryGenre: null, episodeCount: null })
+        : null;
+      const row = hit ? episodeRow(hit, bundle.info) : {
+        ...episodeRow({}, fallbackInfo),
+        collectionId: showId ? Number(showId) : null,
+        episodeId: episodeId ? Number(episodeId) : null,
+        title: r.name ?? null,
+        artworkUrl: r.artworkUrl100 ?? null,
+        episodePageUrl: r.url ?? null,
+        source: 'chart',
+      };
+      if (!hit) unenrichedChartEntries += 1;
+      // Same filters as a normal episode run, applied before charging so nobody pays for rows
+      // they asked to exclude. Ranks can therefore have gaps — documented in the README.
+      if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
+      if (!episodePassesFilters(row)) continue;
+      keepGoing = await pushResult({ ...row, chartRank, scrapedAt: new Date().toISOString() });
+      continue;
+    }
     let full = null;
     if (includePodcastInfo) {
       try { full = (await getJson(`https://itunes.apple.com/lookup?id=${r.id}&country=${country}`)).results?.[0] ?? null; }
@@ -573,10 +666,19 @@ if (dataType === 'charts') {
 if (unknownDurationKept > 0) {
   log.warning(`minDurationSeconds is set: ${unknownDurationKept} episode(s) had no duration in Apple's own data and were kept rather than dropped, since an unknown duration is not evidence of a short episode.`);
 }
+if (unenrichedChartEntries > 0) {
+  log.warning(`${unenrichedChartEntries} chart entry/entries could not be enriched from Apple's lookup API (typically Apple-exclusive or subscriber-only shows, which expose no episode list). They are still in the dataset with chartRank, title and episodePageUrl, and source "chart" instead of "itunes".`);
+}
 log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publisher' ? 'podcasts' : dataType}.`);
 const timeBudgetNote = timeBudgetExceeded
   ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'
   : '';
+const episodeFiltersSet = [
+  explicitFilter !== 'all' ? `explicitFilter ("${explicitFilter}")` : null,
+  minDurationSeconds != null ? `minDurationSeconds (${minDurationSeconds})` : null,
+  input.minReleaseDate ? `minReleaseDate (${input.minReleaseDate})` : null,
+  input.maxReleaseDate ? `maxReleaseDate (${input.maxReleaseDate})` : null,
+].filter(Boolean);
 const emptySourceLabel = (list) => (list.some((x) => /^https?:\/\//i.test(x))
   ? `no episodes found for: ${list.join(', ')}`
   : `Apple returned nothing for: ${list.join(', ')} in storefront "${country}"`);
@@ -591,7 +693,9 @@ if (pushed === 0 && timeBudgetExceeded) {
         ? `maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`
         : dataType === 'reviews' && (keyword || minRating != null || maxRating != null)
           ? 'every review Apple returned was removed by your minRating/maxRating/keyword filters'
-          : 'no valid podcast IDs could be parsed from your input';
+          : dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length
+            ? `every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`
+            : 'no valid podcast IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
 } else if (depthCapped.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`);
