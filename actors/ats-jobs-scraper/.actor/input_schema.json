@@ -69,6 +69,24 @@
       "description": "Only keep postings whose normalized employmentType field contains this text (case-insensitive), e.g. \"full\" for full-time or \"contract\". Leave empty for all employment types. Not every ATS publishes this field; postings where the ATS never exposes it are dropped when this filter is set.",
       "editor": "textfield"
     },
+    "departmentKeyword": {
+      "title": "Department filter",
+      "type": "string",
+      "description": "Only keep postings whose department/team contains this text (case-insensitive), e.g. \"Engineering\" or \"Sales\". Leave empty for all departments. Not every ATS publishes a department; postings where it is missing are dropped when this filter is set.",
+      "editor": "textfield"
+    },
+    "descriptionKeyword": {
+      "title": "Description keyword filter",
+      "type": "string",
+      "description": "Only keep postings whose full job description text contains this text (case-insensitive), e.g. \"Kubernetes\" or \"visa sponsorship\" — the things a title never says. Matched against the plain text, not the HTML. Leave empty for no description filter.",
+      "editor": "textfield"
+    },
+    "descriptionExcludeKeyword": {
+      "title": "Description exclude keyword",
+      "type": "string",
+      "description": "Drop postings whose job description text contains this text (case-insensitive), e.g. \"security clearance\". Leave empty for no exclusion.",
+      "editor": "textfield"
+    },
     "hasSalary": {
       "title": "Only postings with salary",
       "type": "boolean",
@@ -87,10 +105,16 @@
       "description": "Only keep postings published on or after this date, e.g. 2026-08-01. Leave empty for no date filter.",
       "editor": "textfield"
     },
+    "postedBefore": {
+      "title": "Posted before (ISO date)",
+      "type": "string",
+      "description": "Only keep postings published on or before this date, e.g. 2026-09-01. Pair with \"Posted after\" for a date window, e.g. everything a company opened during one quarter. Leave empty for no upper bound.",
+      "editor": "textfield"
+    },
     "includeDescriptions": {
       "title": "Include job descriptions",
       "type": "boolean",
-      "description": "Include the full HTML and plain-text job description. Turn off for a smaller/faster dataset.",
+      "description": "Include the full HTML and plain-text job description. Turn off for a smaller/faster dataset. The description keyword filters still work with this off — the text is fetched, matched, then dropped from the rows.",
       "default": true
     },
     "maxJobsPerCompany": {

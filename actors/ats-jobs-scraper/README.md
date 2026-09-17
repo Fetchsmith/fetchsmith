@@ -14,7 +14,8 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 - **Recruiting/sourcing intelligence** — spot when a target company opens a new role in a specific team or location, with `department`/`team`/`location` already normalized so you can filter without per-ATS cleanup.
 - **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever and Recruitee postings that publish pay ranges.
 - **Remote-work tracking** — `remoteOnly` plus the normalized `workplaceType`/`isRemote` fields build a remote-jobs feed across every ATS at once, not just the ones with a "remote" search filter.
-- **Hiring-trend research** — `postedAfter` plus `publishedAt` let you track how fast a company (or a whole market segment) is opening new roles over time.
+- **Skill/tech-stack sourcing** — `descriptionKeyword` searches the full posting body, so you can pull every role at 50 companies that mentions `Kubernetes`, `Rust` or `visa sponsorship` — requirements that almost never appear in the job title.
+- **Hiring-trend research** — `postedAfter`/`postedBefore` plus `publishedAt` let you track how fast a company (or a whole market segment) is opening new roles over time.
 - **Job alerts / new-posting watch** — set `watchLabel` and a scheduled run returns *only* the roles that opened since the last run, not the same open-roles list every time. You are charged for new postings only (see [Watch mode](#watch-mode-only-new-postings-since-last-run)).
 
 ## Input
@@ -26,10 +27,14 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `locationKeyword` | string | Only keep postings whose location/city/country contains this text. |
 | `locationExcludeKeyword` | string | Drop postings whose location/city/country contains this text, e.g. a country you don't hire in. |
 | `employmentTypeKeyword` | string | Only keep postings whose normalized `employmentType` contains this text, e.g. `"full"` or `"contract"`. Postings where the ATS never exposes this field are dropped when set. |
+| `departmentKeyword` | string | Only keep postings whose `department`/`team` contains this text, e.g. `"Engineering"`. Postings where the ATS never exposes a department are dropped when set. |
+| `descriptionKeyword` | string | Only keep postings whose **description text** contains this text, e.g. `"Kubernetes"` or `"visa sponsorship"` — the requirements a job title never mentions. Matched against the plain text, not the HTML. |
+| `descriptionExcludeKeyword` | string | Drop postings whose description text contains this text, e.g. `"security clearance"`. |
 | `hasSalary` | boolean | Only keep postings where the ATS itself published a salary. Default `false`. |
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | ISO date; only keep postings published on/after it. |
-| `includeDescriptions` | boolean | Include full HTML + plain-text description. Default `true`. |
+| `postedBefore` | string | ISO date; only keep postings published on/before it. Pair with `postedAfter` for a date window (e.g. everything a company opened in one quarter). |
+| `includeDescriptions` | boolean | Include full HTML + plain-text description. Default `true`. The description filters still work with this off — the text is fetched, matched, then dropped from the rows. |
 | `maxJobsPerCompany` | integer | Cap on how many postings that pass your filters are kept per company — filters are applied first, then this cap. Default `50` — kept low so a run with no input at all (e.g. an API caller omitting the field) stays fast and cheap; pass a higher value explicitly for bulk pulls (up to `5000`). |
 | `maxResults` | integer | Cap total postings returned across all companies. Default `300` — same reasoning as above; pass a higher value explicitly for bulk pulls (up to `100000`). |
 | `watchLabel` | string | Optional. Name a saved job alert and return only postings not delivered under that label + filter set before. First run per label is a free baseline. See [Watch mode](#watch-mode-only-new-postings-since-last-run). |
@@ -48,7 +53,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 One row per job posting:
 `company, atsSource, jobId, title, department, team, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, salaryInterval, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
 
-**Workday's board-listing API doesn't carry `department`, `employmentType` or an exact `publishedAt` date** — those only come back from a per-job detail call, which this Actor makes automatically for every kept posting when `includeDescriptions` is `true` (the default). Set it to `false` for a faster, cheaper-in-wall-clock run and those three fields come back `null` for Workday postings only (every other ATS is unaffected either way). `department` is populated from the posting's hiring organization name (e.g. `"131 DEPARTMENT OF CORRECTIONS"`), which is what Workday boards actually expose in place of a dedicated department field.
+**Workday's board-listing API doesn't carry `department`, `employmentType` or an exact `publishedAt` date** — those only come back from a per-job detail call, which this Actor makes automatically for every kept posting when `includeDescriptions` is `true` (the default) **or when you set a filter that needs one of those fields** (`employmentTypeKeyword`, `departmentKeyword`, `postedAfter`, `postedBefore`, `descriptionKeyword`, `descriptionExcludeKeyword`) — so those filters work on Workday boards even with `includeDescriptions: false`. With descriptions off and none of those filters set, the detail call is skipped for a faster, cheaper-in-wall-clock run and those three fields come back `null` for Workday postings only (every other ATS is unaffected either way). `department` is populated from the posting's hiring organization name (e.g. `"131 DEPARTMENT OF CORRECTIONS"`), which is what Workday boards actually expose in place of a dedicated department field.
 
 ### Salary
 Pay is returned when the ATS itself publishes it, and left `null` otherwise rather than guessed — **Ashby**, **Lever** and **Recruitee** expose structured pay ranges; Greenhouse, Workable, SmartRecruiters and Workday do not carry a compensation field at all. Ashby coverage is the best of the four: on a live board of 145 postings, 138 carried a numeric range.
@@ -61,19 +66,21 @@ Set `watchLabel` to any name you like (`"backend-remote-eu"`) and the run stops 
 - **The first run for a label is a free baseline.** It records which postings are currently open (up to 5,000), returns **zero rows** and charges **nothing**. Run it again later to get what's new.
 - **Already-delivered postings are dropped before any charge**, so a run with nothing new costs you nothing.
 - **The baseline lives in your own Apify account** — a named key-value store `fetchsmith-ats-watch`, key `watch-<label>-<fingerprint>`. Nothing is kept on our side.
-- **The fingerprint covers the company list and every filter** (`titleKeyword`, `titleExcludeKeyword`, `locationKeyword`, `locationExcludeKeyword`, `hasSalary`, `remoteOnly`, `postedAfter`, `includeDescriptions`). Change any of them and you get a fresh baseline instead of a dump of postings the old filters had excluded. `maxJobsPerCompany`/`maxResults` are *not* in the fingerprint — they are cost caps, not criteria.
+- **The fingerprint covers the company list and every filter** (`titleKeyword`, `titleExcludeKeyword`, `locationKeyword`, `locationExcludeKeyword`, `employmentTypeKeyword`, `hasSalary`, `remoteOnly`, `postedAfter`, `includeDescriptions`, plus `departmentKeyword`, `descriptionKeyword`, `descriptionExcludeKeyword` and `postedBefore` when you set them). Change any of them and you get a fresh baseline instead of a dump of postings the old filters had excluded. `maxJobsPerCompany`/`maxResults` are *not* in the fingerprint — they are cost caps, not criteria.
 - **`maxJobsPerCompany` caps what is delivered, not what is checked.** In watch mode the run scans the whole match set for each company (so a new role that sorts 40th is still found) but still delivers at most `maxJobsPerCompany` new postings per company per run; the rest arrive on the following run.
 
 ## Pricing
 Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 on Gold and above** (Bronze $0.0013, Silver $0.0011), with no Actor-start fee. 1,000 postings costs $1.50 on the free plan, $1.00 on Gold. You are charged only for postings that pass your filters and actually reach your dataset.
 
 ## FAQ
-**How do `titleKeyword`, `locationKeyword`, `remoteOnly` and `postedAfter` combine?** All of them must pass (AND) — set only the ones you need, leave the rest empty/`false`.
+**How do `titleKeyword`, `locationKeyword`, `descriptionKeyword`, `remoteOnly` and the date bounds combine?** All of them must pass (AND) — set only the ones you need, leave the rest empty/`false`.
+
+**Can I filter on the description without paying for description columns?** Yes. `descriptionKeyword`/`descriptionExcludeKeyword` work with `includeDescriptions: false`: the text is fetched, matched against your keyword, then stripped from the row, so you get lean rows filtered on their full body text.
 **What if `companies` has the same `{ats, slug}` entry twice?** Deduped automatically — an exact repeat is only fetched (and charged) once per run.
 
 **Does `maxJobsPerCompany` cap before or after my filters run?** After. Filters are applied first, then up to `maxJobsPerCompany` of the *matching* postings are kept per company — so `{"titleKeyword": "engineer", "maxJobsPerCompany": 3}` returns 3 postings that actually contain "engineer", not the first 3 raw postings off the board (verified live: a real Greenhouse board run with those exact inputs returned 3/3 titles containing "Engineer"/"Engineering").
 
-**Will `postedAfter` filter out a posting that has no date?** No — if an ATS doesn't return a `publishedAt` for a posting (this happens on Workday when `includeDescriptions` is `false`, since the date only comes from the per-job detail call), that posting is kept regardless of `postedAfter`. Set `includeDescriptions: true` for Workday companies if you need the date filter to actually apply to them.
+**Will `postedAfter`/`postedBefore` filter out a posting that has no date?** No — if an ATS doesn't return a `publishedAt` for a posting, that posting is kept regardless of the date bounds. On Workday the date comes only from the per-job detail call, and setting either bound now triggers that call automatically, so the window applies to Workday boards too.
 
 **Which ATSes expose salary?** Only Ashby, Lever and Recruitee publish a structured pay range today — Greenhouse, Workable, SmartRecruiters and Workday don't carry a compensation field at all, so those come back `null` rather than guessed.
 

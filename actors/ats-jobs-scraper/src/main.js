@@ -43,10 +43,26 @@ const titleExcludeKeyword = (input.titleExcludeKeyword ?? '').toLowerCase().trim
 const locationKeyword = (input.locationKeyword ?? '').toLowerCase().trim();
 const locationExcludeKeyword = (input.locationExcludeKeyword ?? '').toLowerCase().trim();
 const employmentTypeKeyword = (input.employmentTypeKeyword ?? '').toLowerCase().trim();
+const departmentKeyword = (input.departmentKeyword ?? '').toLowerCase().trim();
+const descriptionKeyword = (input.descriptionKeyword ?? '').toLowerCase().trim();
+const descriptionExcludeKeyword = (input.descriptionExcludeKeyword ?? '').toLowerCase().trim();
 const hasSalary = !!input.hasSalary;
 const remoteOnly = !!input.remoteOnly;
 const postedAfter = input.postedAfter ? new Date(input.postedAfter) : null;
+const postedBefore = input.postedBefore ? new Date(input.postedBefore) : null;
 const includeDescriptions = input.includeDescriptions !== false;
+// A description filter needs the description text even when the buyer does not want it in the
+// output, so the fetchers key off this and the description fields are stripped at push time
+// instead. Free for the five ATSes that carry the description in the list payload; for
+// SmartRecruiters/Workday it means the same per-job detail call includeDescriptions already makes.
+const needDescriptions = includeDescriptions || !!descriptionKeyword || !!descriptionExcludeKeyword;
+// Workday's per-job detail call is the only source of employmentType, department and publishedAt
+// (its list payload has none of them), so a filter on any of those needs the detail call even when
+// nobody asked for descriptions — without it the main-loop filter would match against nulls and
+// return zero rows for every Workday board. SmartRecruiters' detail call only adds the description
+// and the referral-tagged apply URL, so `needDescriptions` is the right gate there.
+const workdayNeedsDetail = needDescriptions
+  || !!employmentTypeKeyword || !!departmentKeyword || !!postedAfter || !!postedBefore;
 const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 500), 5000);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 100000);
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -94,6 +110,14 @@ if (watchMode) {
     employmentTypeKeyword, hasSalary, remoteOnly, includeDescriptions,
     postedAfter: input.postedAfter ?? null,
   };
+  // The filters added in cycle 408 join the fingerprint ONLY when actually set, so every baseline
+  // saved before them keeps its existing key instead of silently resetting to a fresh seed run
+  // (same rule as steam-reviews-scraper's includeOffTopic). A run that does set one of them is a
+  // different match set and correctly gets its own baseline.
+  if (departmentKeyword) criteria.departmentKeyword = departmentKeyword;
+  if (descriptionKeyword) criteria.descriptionKeyword = descriptionKeyword;
+  if (descriptionExcludeKeyword) criteria.descriptionExcludeKeyword = descriptionExcludeKeyword;
+  if (input.postedBefore) criteria.postedBefore = input.postedBefore;
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -245,7 +269,7 @@ async function fetchGreenhouse(slug) {
   const jobs = body?.jobs ?? [];
   return {
     jobs: jobs.map((j) => {
-      const html = includeDescriptions ? decodeEntities(j.content) : null;
+      const html = needDescriptions ? decodeEntities(j.content) : null;
       const workplaceType = j.metadata?.find((m) => /workplace type/i.test(m.name || ''))?.value ?? null;
       return {
         company: slug, atsSource: 'greenhouse', jobId: String(j.id), title: j.title?.trim() ?? null,
@@ -256,7 +280,7 @@ async function fetchGreenhouse(slug) {
         salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
         publishedAt: j.first_published ?? null, updatedAt: j.updated_at ?? null,
         jobUrl: j.absolute_url ?? null, applyUrl: j.absolute_url ?? null,
-        descriptionHtml: html ?? null, descriptionText: includeDescriptions ? textOf(html) : null,
+        descriptionHtml: html ?? null, descriptionText: needDescriptions ? textOf(html) : null,
       };
     }),
   };
@@ -280,8 +304,8 @@ async function fetchAshby(slug) {
       salaryMin: pay.min, salaryMax: pay.max, salaryCurrency: pay.currency, salaryInterval: pay.interval,
       publishedAt: j.publishedAt ?? null, updatedAt: null,
       jobUrl: j.jobUrl ?? null, applyUrl: j.applyUrl ?? null,
-      descriptionHtml: includeDescriptions ? (j.descriptionHtml ?? null) : null,
-      descriptionText: includeDescriptions ? textOf(j.descriptionHtml) : null,
+      descriptionHtml: needDescriptions ? (j.descriptionHtml ?? null) : null,
+      descriptionText: needDescriptions ? textOf(j.descriptionHtml) : null,
       };
     }),
   };
@@ -305,8 +329,8 @@ async function fetchLever(slug) {
       salaryInterval: normalizeInterval(j.salaryRange?.interval),
       publishedAt: j.createdAt ? new Date(j.createdAt).toISOString() : null, updatedAt: null,
       jobUrl: j.hostedUrl ?? null, applyUrl: j.applyUrl ?? j.hostedUrl ?? null,
-      descriptionHtml: includeDescriptions ? (j.description ?? null) : null,
-      descriptionText: includeDescriptions ? (j.descriptionPlain ?? textOf(j.description)) : null,
+      descriptionHtml: needDescriptions ? (j.description ?? null) : null,
+      descriptionText: needDescriptions ? (j.descriptionPlain ?? textOf(j.description)) : null,
     })),
   };
 }
@@ -333,8 +357,8 @@ async function fetchRecruitee(slug) {
       salaryInterval: normalizeInterval(o.salary?.period),
       publishedAt: o.published_at ?? null, updatedAt: o.updated_at ?? null,
       jobUrl: o.careers_url ?? null, applyUrl: o.careers_apply_url ?? o.careers_url ?? null,
-      descriptionHtml: includeDescriptions ? (o.description ?? null) : null,
-      descriptionText: includeDescriptions ? textOf(o.description) : null,
+      descriptionHtml: needDescriptions ? (o.description ?? null) : null,
+      descriptionText: needDescriptions ? textOf(o.description) : null,
     })),
   };
 }
@@ -356,8 +380,8 @@ async function fetchWorkable(slug) {
       salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
       publishedAt: j.published_on ? new Date(j.published_on).toISOString() : null, updatedAt: null,
       jobUrl: j.url ?? null, applyUrl: j.application_url ?? j.url ?? null,
-      descriptionHtml: includeDescriptions ? (j.description ?? null) : null,
-      descriptionText: includeDescriptions ? textOf(j.description) : null,
+      descriptionHtml: needDescriptions ? (j.description ?? null) : null,
+      descriptionText: needDescriptions ? textOf(j.description) : null,
     })),
   };
 }
@@ -421,11 +445,11 @@ async function fetchSmartRecruiters(slug) {
 
   const kept = [];
   for (const job of mapped) {
-    if (!passesFilters(job)) continue;
+    if (!passesFilters(job, SMARTRECRUITERS_DEFERRED)) continue;
     kept.push(job);
     if (kept.length >= scanCapPerCompany) break;
   }
-  if (includeDescriptions) {
+  if (needDescriptions) {
     for (const job of kept) {
       if (!timeBudgetOk()) break;
       // An already-delivered posting will be dropped before any push/charge, so spending a
@@ -513,11 +537,11 @@ async function fetchWorkday(slug) {
 
   const kept = [];
   for (const job of mapped) {
-    if (!passesFilters(job)) continue;
+    if (!passesFilters(job, WORKDAY_DEFERRED)) continue;
     kept.push(job);
     if (kept.length >= scanCapPerCompany) break;
   }
-  if (includeDescriptions) {
+  if (workdayNeedsDetail) {
     for (const job of kept) {
       if (!timeBudgetOk()) break;
       if (watchMode && !seeding && watchSeen.has(String(watchIdFor(job)))) continue;
@@ -548,7 +572,17 @@ const FETCHERS = {
   workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters, workday: fetchWorkday,
 };
 
-function passesFilters(job) {
+// SmartRecruiters and Workday only carry a subset of the schema in their list payload; the rest
+// arrives from the per-job detail call, which runs AFTER their in-fetcher pre-filter. Checking a
+// not-yet-populated field there would drop every posting on a value the detail call was about to
+// fill (a real bug before cycle 408: employmentTypeKeyword/postedAfter silently returned zero rows
+// for every Workday board). The pre-filter therefore skips those fields and the main loop's
+// unrestricted passesFilters applies them once the job is enriched.
+const SMARTRECRUITERS_DEFERRED = ['description'];
+const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published'];
+
+function passesFilters(job, deferred = []) {
+  const ready = (field) => !deferred.includes(field);
   if (titleKeyword && !(job.title ?? '').toLowerCase().includes(titleKeyword)) return false;
   if (titleExcludeKeyword && (job.title ?? '').toLowerCase().includes(titleExcludeKeyword)) return false;
   if (locationKeyword || locationExcludeKeyword) {
@@ -556,12 +590,24 @@ function passesFilters(job) {
     if (locationKeyword && !haystack.includes(locationKeyword)) return false;
     if (locationExcludeKeyword && haystack.includes(locationExcludeKeyword)) return false;
   }
-  if (employmentTypeKeyword && !(job.employmentType ?? '').toLowerCase().includes(employmentTypeKeyword)) return false;
+  if (ready('employmentType') && employmentTypeKeyword
+    && !(job.employmentType ?? '').toLowerCase().includes(employmentTypeKeyword)) return false;
+  if (ready('department') && departmentKeyword
+    && !(job.department ?? '').toLowerCase().includes(departmentKeyword)) return false;
+  if (ready('description') && (descriptionKeyword || descriptionExcludeKeyword)) {
+    // Match the plain text, not the HTML, so a keyword can't be satisfied by a tag/class name.
+    const body = (job.descriptionText ?? '').toLowerCase();
+    if (descriptionKeyword && !body.includes(descriptionKeyword)) return false;
+    if (descriptionExcludeKeyword && body.includes(descriptionExcludeKeyword)) return false;
+  }
   if (hasSalary && job.salaryMin == null && job.salaryMax == null) return false;
   if (remoteOnly && !job.isRemote) return false;
-  if (postedAfter && job.publishedAt) {
+  if (ready('published') && (postedAfter || postedBefore) && job.publishedAt) {
     const d = new Date(job.publishedAt);
-    if (!Number.isNaN(d.getTime()) && d < postedAfter) return false;
+    if (!Number.isNaN(d.getTime())) {
+      if (postedAfter && d < postedAfter) return false;
+      if (postedBefore && d > postedBefore) return false;
+    }
   }
   return true;
 }
@@ -588,6 +634,9 @@ try {
       if (!seeding && deliveredForCompany >= deliverCapPerCompany) break;
       if (!passesFilters(job)) continue;
       scannedForCompany += 1;
+      // A description fetched only to filter on (or, on Workday, only because the detail call had
+      // to run anyway) never reaches the dataset when the buyer asked for rows without it.
+      if (!includeDescriptions) { job.descriptionHtml = null; job.descriptionText = null; }
       job.scrapedAt = new Date().toISOString();
       const before = pushed;
       const keepGoing = await pushResult(job, watchMode ? watchIdFor(job) : null);
