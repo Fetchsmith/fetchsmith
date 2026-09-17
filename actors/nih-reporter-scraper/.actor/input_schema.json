@@ -106,6 +106,18 @@
             "minimum": 0,
             "maximum": 2147483647
         },
+        "awardNoticeDateFrom": {
+            "title": "Award notice date from (YYYY-MM-DD)",
+            "type": "string",
+            "description": "Only projects whose official award/notice-of-award date is on or after this date, e.g. \"2024-06-01\". Distinct from fiscal year: a project's fiscal year rarely matches its calendar award date. Must be YYYY-MM-DD; NIH RePORTER silently ignores any other format instead of rejecting it, so this Actor rejects a malformed value up front rather than send a filter that quietly does nothing.",
+            "editor": "textfield"
+        },
+        "awardNoticeDateTo": {
+            "title": "Award notice date to (YYYY-MM-DD)",
+            "type": "string",
+            "description": "Only projects whose official award/notice-of-award date is on or before this date. Can be combined with the \"from\" date for an exact window (e.g. new awards in a given week or month).",
+            "editor": "textfield"
+        },
         "projectNums": {
             "title": "Project numbers (exact lookup)",
             "type": "array",

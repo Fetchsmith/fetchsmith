@@ -161,6 +161,26 @@ if (minAwardAmount !== null && maxAwardAmount !== null && minAwardAmount > maxAw
     throw new Error(`minAwardAmount (${minAwardAmount}) is greater than maxAwardAmount (${maxAwardAmount}); no project can match that band.`);
 }
 
+// award_notice_date is a real NIH RePORTER criteria field (verified live), but a malformed
+// value inside it is silently ignored rather than rejected -- "06/01/2024" returns the exact
+// same total as no date filter at all, same silent-ignore class as the unknown-criteria-key
+// trap above. So the format is validated up front and a bad value throws instead of quietly
+// running an unfiltered query.
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+function parseDateBound(raw, fieldName) {
+    const s = String(raw ?? '').trim();
+    if (!s) return null;
+    if (!DATE_RE.test(s)) {
+        throw new Error(`"${fieldName}" must be YYYY-MM-DD (got "${s}"). NIH RePORTER silently ignores any other format instead of rejecting it.`);
+    }
+    return s;
+}
+const awardNoticeDateFrom = parseDateBound(input.awardNoticeDateFrom, 'awardNoticeDateFrom');
+const awardNoticeDateTo = parseDateBound(input.awardNoticeDateTo, 'awardNoticeDateTo');
+if (awardNoticeDateFrom && awardNoticeDateTo && awardNoticeDateFrom > awardNoticeDateTo) {
+    throw new Error(`awardNoticeDateFrom (${awardNoticeDateFrom}) is after awardNoticeDateTo (${awardNoticeDateTo}); no project can match that window.`);
+}
+
 if (minAwardAmount !== null || maxAwardAmount !== null) {
     log.warning(
         'Award-amount filtering is active. NIH RePORTER drops projects that have no award amount recorded '
@@ -194,6 +214,7 @@ const IGNORED_WITH_SEARCH_ID = [
     ['activityCodes', activityCodes], ['awardTypes', awardTypes], ['orgNames', orgNames],
     ['orgStates', orgStates], ['piNames', piNames], ['projectNums', projectNums],
     ['minAwardAmount', minAwardAmount], ['maxAwardAmount', maxAwardAmount],
+    ['awardNoticeDateFrom', awardNoticeDateFrom], ['awardNoticeDateTo', awardNoticeDateTo],
     ['activeOnly', input.activeOnly === true], ['newlyAddedOnly', input.newlyAddedOnly === true],
 ];
 
@@ -233,6 +254,12 @@ function buildCriteria() {
         c.award_amount_range = {
             min_amount: minAwardAmount ?? AMOUNT_MIN_SENTINEL,
             max_amount: maxAwardAmount ?? AMOUNT_MAX_SENTINEL,
+        };
+    }
+    if (awardNoticeDateFrom || awardNoticeDateTo) {
+        c.award_notice_date = {
+            ...(awardNoticeDateFrom ? { from_date: awardNoticeDateFrom } : {}),
+            ...(awardNoticeDateTo ? { to_date: awardNoticeDateTo } : {}),
         };
     }
     if (input.activeOnly === true) c.include_active_projects = true;

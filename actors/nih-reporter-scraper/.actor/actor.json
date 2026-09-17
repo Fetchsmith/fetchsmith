@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "nih-reporter-scraper",
   "title": "NIH RePORTER Scraper – No 15k Row Cap, PubMed Join",
-  "description": "Search NIH-funded research projects via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, organization, state, PI and award-amount filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since your last run.",
+  "description": "Search NIH-funded research projects via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, org, state, PI, award-amount and award-date filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since last run.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

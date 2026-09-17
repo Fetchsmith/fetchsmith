@@ -2,7 +2,7 @@
   "name": "nih-reporter-scraper",
   "version": "0.1.0",
   "type": "module",
-  "description": "Scrape US federal grant opportunities from Grants.gov's official public API",
+  "description": "Scrape NIH-funded research projects from the official NIH RePORTER public API",
   "dependencies": {
     "apify": "^3.4.0",
     "got-scraping": "^4.0.0"

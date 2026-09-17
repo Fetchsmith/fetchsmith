@@ -53,6 +53,8 @@ The 15,000-row wall still applies to a pasted search and cannot be worked around
 | `piNames` | array | PI name contains, e.g. `["Doudna"]` |
 | `minAwardAmount` | integer | Only awards of at least this many dollars (e.g. `1000000`) |
 | `maxAwardAmount` | integer | Only awards of at most this many dollars — combine with the minimum for an exact band |
+| `awardNoticeDateFrom` | string | Only projects officially awarded on/after this date, `YYYY-MM-DD` — see FAQ |
+| `awardNoticeDateTo` | string | Only projects officially awarded on/before this date, `YYYY-MM-DD` — combine for an exact window |
 | `projectNums` | array | Exact lookup — **ignores every other filter** |
 | `activeOnly` | boolean | Currently active projects only |
 | `newlyAddedOnly` | boolean | Only projects recently added to RePORTER — cheap incremental pulls |
@@ -107,6 +109,8 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 **Why does one project appear several times?** NIH RePORTER records one row per *fiscal year of funding*. `R01CA234538` returns six rows for its six funded years. De-duplicate on `coreProjectNum` if you want one row per project.
 
 **Can I filter by award size?** Yes — `minAwardAmount` and `maxAwardAmount`, either alone or as a band. One caveat we measured rather than assumed: NIH RePORTER excludes projects with **no award amount recorded** from any amount-filtered query — about 2.8% of a 500-row FY2024 sample, matching a 2.6% drop in the reported total. So an amount filter is slightly narrower than "every project in that range"; the run log warns you whenever one is active.
+
+**Can I filter by the actual award date instead of fiscal year?** Yes — `awardNoticeDateFrom`/`awardNoticeDateTo`, e.g. "grants awarded in June 2024". This is a different axis from `fiscalYears`: a project's NIH fiscal year rarely lines up with its calendar award date (a project awarded late in FY2024 might carry a notice date in mid-2024 but effective dates that read like FY2025). Both fields must be `YYYY-MM-DD` — NIH RePORTER's API silently ignores any other date format rather than rejecting it, so this Actor validates the format itself and fails the run loudly instead of quietly returning an unfiltered result set.
 
 **How do I pull only what's new since my last run?** Two options. `watchLabel` is the precise one: name your query, and the Actor returns only the projects it has not already delivered under that name (first run = free baseline, zero results). `newlyAddedOnly: true` is the coarse one — RePORTER's own "recently added to the index" flag, about 8.9k projects index-wide when measured, almost all current-fiscal-year. Use `watchLabel` for a scheduled alert on a specific query; use `newlyAddedOnly` for a cheap sweep of whatever NIH just published. They combine fine.
 
