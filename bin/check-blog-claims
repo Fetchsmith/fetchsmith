@@ -34,8 +34,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 reg = {t["slug"]: len(t.get("output_fields", [])) for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]}
 
-# "<N> flat fields", "<N> typed output fields", "<N> normalized fields", ...
-COUNT = re.compile(r"(\d+)\s+(?:flat|typed|normali[sz]ed)(?:\s+output)?\s+fields?")
+# "<N> flat fields", "<N> typed output fields", "<N> normalized fields",
+# "<N> other typed fields" (cycle 374 near-miss: "~28 other typed fields" went unchecked), ...
+COUNT = re.compile(r"(\d+)\s+(?:other\s+)?(?:flat|typed|normali[sz]ed)(?:\s+output)?\s+fields?")
 
 flagged = 0
 checked = 0
