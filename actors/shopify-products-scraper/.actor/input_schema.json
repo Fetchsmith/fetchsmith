@@ -21,6 +21,18 @@
             "description": "Only return products whose title, vendor, product type or tags contain every word in this query (case-insensitive, Unicode-normalized so accented words like \"café\" match regardless of composed/decomposed input form). Applied client-side after fetching each store's catalog — Shopify's public feed has no server-side search, so this still walks the full store (same request cost as without it) but needs no collection URL guessing. Ignored for direct product URLs.",
             "editor": "textfield"
         },
+        "vendors": {
+            "title": "Vendors (any of)",
+            "type": "array",
+            "description": "Only return products whose vendor/brand contains one of these (case-insensitive, OR logic — e.g. [\"Allbirds\",\"Rothy's\"] matches either). Combines with every other filter using AND; only the entries within this list are OR'd together. Zero extra requests (vendor is already on every row). Ignored for direct product URLs.",
+            "editor": "stringList"
+        },
+        "productTypes": {
+            "title": "Product types (any of)",
+            "type": "array",
+            "description": "Only return products whose product type contains one of these (case-insensitive, OR logic), e.g. [\"Shoes\",\"Sandals\"]. Combines with every other filter using AND; only the entries within this list are OR'd together. Zero extra requests. Ignored for direct product URLs.",
+            "editor": "stringList"
+        },
         "maxProductsPerStore": {
             "title": "Max products per store",
             "type": "integer",
@@ -66,6 +78,14 @@
             "type": "boolean",
             "description": "Only return products currently discounted, i.e. where a compare-at price is set above the current price (the same condition as the `isOnSale` output field). Products a store never set a compare-at price on are excluded. Filtered-out products are never charged.",
             "default": false
+        },
+        "minDiscountPercent": {
+            "title": "Min discount %",
+            "type": "integer",
+            "description": "Only return products discounted by at least this percentage, i.e. whose `discountPercent` output field is >= this value (computed from the cheapest variant's own compare-at price). Products with no discount at all (`discountPercent: null`) are excluded, not treated as 0%. Stricter than \"On sale only\", which accepts any discount. Filtered-out products are never charged.",
+            "minimum": 0,
+            "maximum": 100,
+            "editor": "number"
         },
         "maxResults": {
             "title": "Max results (total)",

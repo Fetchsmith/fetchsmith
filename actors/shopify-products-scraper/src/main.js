@@ -33,7 +33,18 @@ const numOrNull = (v) => (v == null || v === '' || Number.isNaN(Number(v)) ? nul
 const minPrice = numOrNull(input.minPrice);
 const maxPrice = numOrNull(input.maxPrice);
 const onSaleOnly = !!input.onSaleOnly;
-const hasShapedFilters = minPrice != null || maxPrice != null || onSaleOnly;
+// Same "already computed, never filterable" shape as minPrice/maxPrice/onSaleOnly (cycle 416):
+// discountPercent is derived per-row today but a buyer wanting "at least 30% off" had no way to
+// ask for it except onSaleOnly (any discount at all). Reads the shaped item, so it runs alongside
+// the other shaped filters below, not with matchesSearch/matchesVendorType.
+const minDiscountPercent = numOrNull(input.minDiscountPercent);
+const hasShapedFilters = minPrice != null || maxPrice != null || onSaleOnly || minDiscountPercent != null;
+// OR-within-list, AND-with-everything-else — same convention as uk-find-a-tender-scraper's
+// keywordsAny/regions (cycle 415). searchQuery is AND-of-words across a combined haystack, so it
+// cannot express "vendor is Allbirds or Rothy's"; these read the raw payload (vendor/product_type
+// are already on every row) so they run alongside matchesSearch, before shape()/charging.
+const vendorsFilter = (input.vendors ?? []).map((v) => String(v).normalize('NFC').toLowerCase().trim()).filter(Boolean);
+const productTypesFilter = (input.productTypes ?? []).map((t) => String(t).normalize('NFC').toLowerCase().trim()).filter(Boolean);
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeUrls entr${duplicateStoreUrls === 1 ? 'y' : 'ies'} (same endpoint already queued).`);
 
@@ -198,12 +209,27 @@ function passesShapedFilters(item) {
   if (onSaleOnly && item.isOnSale !== true) return false;
   if (minPrice != null && !(item.priceMax != null && item.priceMax >= minPrice)) return false;
   if (maxPrice != null && !(item.priceMin != null && item.priceMin <= maxPrice)) return false;
+  // Products with no compare-at price have discountPercent:null, not 0 — dropped when a floor is
+  // set rather than treated as "0% off passes >=0", so a filtered run never returns a row that
+  // isn't actually on sale at all.
+  if (minDiscountPercent != null && !(item.discountPercent != null && item.discountPercent >= minDiscountPercent)) return false;
   return true;
 }
 function matchesSearch(p) {
   if (!searchWords.length) return true;
   const haystack = [p.title, p.vendor, p.product_type, ...(p.tags ?? [])].join(' ').normalize('NFC').toLowerCase();
   return searchWords.every((w) => haystack.includes(w));
+}
+function matchesVendorType(p) {
+  if (vendorsFilter.length) {
+    const vendor = String(p.vendor ?? '').normalize('NFC').toLowerCase();
+    if (!vendorsFilter.some((v) => vendor.includes(v))) return false;
+  }
+  if (productTypesFilter.length) {
+    const type = String(p.product_type ?? '').normalize('NFC').toLowerCase();
+    if (!productTypesFilter.some((t) => type.includes(t))) return false;
+  }
+  return true;
 }
 async function currencyFor(origin) {
   try {
@@ -354,6 +380,7 @@ for (const raw of storeUrls) {
           if (got >= perStore) break;
           if (onlyAvailable && !passesAvailability(p)) continue;
           if (!matchesSearch(p)) continue;
+          if (!matchesVendorType(p)) continue;
           const item = shape(p, ep.origin, currency);
           if (!passesShapedFilters(item)) continue; // before enrichment/charging: never bill a filtered-out product
           if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
@@ -373,9 +400,12 @@ for (const raw of storeUrls) {
       const activeFilters = [
         ...(onlyAvailable ? ['"onlyAvailable"'] : []),
         ...(searchWords.length ? ['"searchQuery"'] : []),
+        ...(vendorsFilter.length ? [`"vendors" (${vendorsFilter.join(', ')})`] : []),
+        ...(productTypesFilter.length ? [`"productTypes" (${productTypesFilter.join(', ')})`] : []),
         ...(minPrice != null ? [`"minPrice" (${minPrice})`] : []),
         ...(maxPrice != null ? [`"maxPrice" (${maxPrice})`] : []),
         ...(onSaleOnly ? ['"onSaleOnly"'] : []),
+        ...(minDiscountPercent != null ? [`"minDiscountPercent" (${minDiscountPercent})`] : []),
       ];
       const reason = activeFilters.length === 1
         ? `${activeFilters[0]} removed all of them`
@@ -401,7 +431,7 @@ if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
   const why = erroredStores.length
     ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
     : filteredOutStores.length && !emptyStores.length
-      ? 'products were found but the filters you set ("onlyAvailable"/"searchQuery"/"minPrice"/"maxPrice"/"onSaleOnly") removed all of them'
+      ? 'products were found but the filters you set ("onlyAvailable"/"searchQuery"/"vendors"/"productTypes"/"minPrice"/"maxPrice"/"onSaleOnly"/"minDiscountPercent") removed all of them'
       : `Shopify returned zero products for: ${emptyStores.join(', ')}`;
   await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
 } else if (pushed === 0 && timeBudgetExceeded) {
