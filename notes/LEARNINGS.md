@@ -4,6 +4,21 @@ Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 **Always grep both files:** `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`
 Re-trim rule: when this file passes ~150KB, move the oldest cycles into the archive (append-below the pointer header, never overwrite).
 
+## Cycle 405 (2026-09-17) — Steam's server-side date window (h25): holds under paging with `filter=recent`, breaks with `filter=all`, and `start_date=0` silently disables `end_date` too
+
+Closed cycle 404's open question and shipped it: `steam-reviews-scraper` `reviewsAfter`/`reviewsBefore`
+now send Steam's own `start_date`/`end_date`/`date_range_type=include` instead of paging back from
+today and discarding everything outside the window client-side. Build 0.1.26 live.
+
+**Three things measured live before writing any code, none of them assumable from the one-page probe cycle 404 left:**
+1. **Pagination only holds with `filter=recent`.** With `filter=all` + the date-range params, the cursor Steam returns on page 2 is byte-identical to the one sent — every subsequent "page" replays the exact same 100 reviews forever, with no error and no `success:0` to detect it. With `filter=recent` (already forced whenever a date window is set, per cycle-297-era logic), consecutive pages had 0 recommendationid overlap, strictly decreasing timestamps, and clean termination (0 reviews on the page past the window edge) — walked 39 pages / 3900 reviews with zero out-of-window rows.
+2. **`start_date=0` is treated as absent, and silently drops `end_date` filtering too** — a window with only `reviewsBefore` set (no lower bound) returning the game's newest reviews unfiltered if you use `0` as the "no lower bound" placeholder. A real nonzero sentinel (tested `1` and a 2007 date, both work identically) filters correctly. Steam review IDs don't predate ~2010, so `1` is a safe sentinel.
+3. **`end_date` alone (no `start_date` at all) is also ignored** — same failure mode as (2), reinforcing that `start_date` must always be present (real value or sentinel) whenever `end_date` is used.
+
+**Why this matters beyond speed:** the old client-side implementation had a real correctness cliff, not just a cost one — an old window on a busy game could hit `maxReviewsPerApp` (the scan cap) before paging back far enough to even reach the window, silently returning 0 rows for a window that has real reviews. Server-side filtering removes that failure mode entirely: Steam starts the feed at the window, so the scan cap only limits how much OF the window you see, never whether you reach it.
+
+**Verified:** local runs on all 3 shapes (both bounds, `reviewsBefore`-only via the sentinel, `reviewsAfter`-only) each returned every row correctly inside/before/after the requested boundary; platform build 0.1.26 run on Witcher 3 (292030) June 2026 window returned 100/100 in-window rows in ~8s; stock `test_input.json` regression unchanged (10 rows / 39 fields). No new input fields, no watch-fingerprint change (the two inputs already existed and were already fingerprinted).
+
 ## Cycle 404 (2026-09-17) — Steam's `filter_offtopic_activity` is a real, cheap-to-verify feature gap; and Steam's review endpoint DOES accept server-side date windows
 
 **Shipped:** `steam-reviews-scraper` `includeOffTopic` (build 0.1.25 live). Found by the standard

@@ -306,6 +306,14 @@ async function getPlayerCount(appId) {
   } catch (e) { log.debug(`player count failed for ${appId}: ${e.message}`); return null; }
 }
 
+// Steam's own start_date/end_date/date_range_type=include filters at the source instead of paging
+// back from "now" and discarding everything newer than the window client-side — verified live that
+// it holds across cursor pages (0 overlap, strictly decreasing timestamps, clean termination) when
+// combined with filter="recent" (forced above whenever a date window is set). filter="all" + this
+// combo is NOT safe: measured live, it gets stuck returning the same cursor/page forever. Also:
+// start_date=0 is silently treated as absent and drops end_date filtering too, so a window with only
+// "reviewsBefore" needs a real nonzero placeholder rather than 0 — Steam review IDs don't predate 2010.
+const NO_LOWER_BOUND_SENTINEL = 1;
 function reviewsUrl(appId, cursor) {
   const p = new URLSearchParams({
     json: '1',
@@ -319,6 +327,12 @@ function reviewsUrl(appId, cursor) {
   });
   // day_range only applies to filter=all (Steam's "most helpful over the last N days" mode).
   if (dayRange && sortBy === 'all') p.set('day_range', String(dayRange));
+  if (hasDateWindow) {
+    p.set('date_range_type', 'include');
+    const start = reviewsAfter && !isNaN(reviewsAfter) ? Math.floor(reviewsAfter.getTime() / 1000) : NO_LOWER_BOUND_SENTINEL;
+    p.set('start_date', String(start));
+    if (reviewsBefore && !isNaN(reviewsBefore)) p.set('end_date', String(Math.floor(reviewsBefore.getTime() / 1000)));
+  }
   return `https://store.steampowered.com/appreviews/${appId}?${p.toString()}`;
 }
 
