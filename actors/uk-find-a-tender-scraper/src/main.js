@@ -49,6 +49,20 @@ const searchQuery = input.searchQuery ? String(input.searchQuery).normalize('NFC
 // Narrower than searchQuery on purpose: searchQuery ORs across title/description/CPV/lots too,
 // so searchQuery="NHS" also returns council notices that merely mention the NHS.
 const buyerNameFilter = input.buyerName ? String(input.buyerName).normalize('NFC').toLowerCase().trim() : null;
+// OR-of-phrases variant of searchQuery: searchQuery is AND-of-words within one phrase
+// (competitor gap check, cycle 415 — ciel_labs/neverempty both expose a comma/array "any of
+// these phrases" mode, which our single AND-only searchQuery can't express: e.g. "software OR
+// cyber OR cleaning" needs 3 separate runs today). Each phrase can itself be multi-word (still
+// substring-matched as a whole phrase, not split into words) so "IT support" stays one unit.
+const keywordsAny = (input.keywordsAny ?? [])
+    .map((k) => String(k).normalize('NFC').toLowerCase().trim())
+    .filter(Boolean);
+// Regions filter (competitor gap, cycle 415 — neverempty's "regions"): OR-match against the
+// notice's own deliveryRegions/deliveryLocations arrays, both already computed for free by
+// normalize() as output fields but never filterable on until now.
+const regionFilter = (input.regions ?? [])
+    .map((r) => String(r).normalize('NFC').toLowerCase().trim())
+    .filter(Boolean);
 const minValueGbp = input.minValueGbp != null ? Number(input.minValueGbp) : null;
 const maxValueGbp = input.maxValueGbp != null ? Number(input.maxValueGbp) : null;
 if (minValueGbp != null && maxValueGbp != null && minValueGbp > maxValueGbp) {
@@ -273,11 +287,16 @@ function matches(row) {
         const hit = cpvCodes.some((wanted) => row.cpvCodes.some((have) => have.startsWith(wanted.replace(/0+$/, '')) || have === wanted));
         if (!hit) return false;
     }
-    if (searchWords.length) {
+    if (searchWords.length || keywordsAny.length) {
         const hay = [row.title, row.description, row.buyerName, row.cpvDescription, ...row.lotTitles].join(' ').normalize('NFC').toLowerCase();
-        if (!searchWords.every((w) => hay.includes(w))) return false;
+        if (searchWords.length && !searchWords.every((w) => hay.includes(w))) return false;
+        if (keywordsAny.length && !keywordsAny.some((k) => hay.includes(k))) return false;
     }
     if (buyerNameFilter && !String(row.buyerName ?? '').normalize('NFC').toLowerCase().includes(buyerNameFilter)) return false;
+    if (regionFilter.length) {
+        const hay = [...row.deliveryRegions, ...row.deliveryLocations].join(' ').normalize('NFC').toLowerCase();
+        if (!regionFilter.some((r) => hay.includes(r))) return false;
+    }
     if (minValueGbp != null && !(typeof row.valueAmount === 'number' && row.valueAmount >= minValueGbp)) return false;
     if (maxValueGbp != null && !(typeof row.valueAmount === 'number' && row.valueAmount <= maxValueGbp)) return false;
     if (openOnly) {
@@ -317,6 +336,11 @@ const watchCriteria = {
     openOnly,
     dateFromMs,
     dateToMs,
+    // keywordsAny/regionFilter (cycle 415) join the fingerprint only when set, so every watch
+    // baseline saved before this cycle keeps its existing key (same rule as every other
+    // new-filter cycle in this fleet, e.g. ats-jobs-scraper cycle 408, steam cycle 404).
+    ...(keywordsAny.length ? { keywordsAny: [...keywordsAny].sort() } : {}),
+    ...(regionFilter.length ? { regionFilter: [...regionFilter].sort() } : {}),
 };
 
 // Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted directly.

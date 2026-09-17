@@ -52,6 +52,20 @@
       "description": "Free-text filter. Every word must appear somewhere in the title, description, buyer name, CPV description or lot titles (case-insensitive, Unicode-normalized so accented words match regardless of composed/decomposed input form). E.g. \"software\" or \"nhs cleaning\".",
       "editor": "textfield"
     },
+    "keywordsAny": {
+      "title": "Any of these phrases",
+      "type": "array",
+      "description": "OR-matched alternative to 'Search text': a notice matches if it contains ANY of these phrases (each phrase can be multiple words, matched as a whole substring) in its title, description, buyer name, CPV description or lot titles. Use this to cover several unrelated opportunity types in one run, e.g. [\"software\", \"IT support\", \"cyber\"] — 'Search text' can only express AND-of-words within a single phrase, so it can't do this. Combine both if you want ANY-of-these-phrases AND all-of-those-words at once.",
+      "editor": "stringList",
+      "default": []
+    },
+    "regions": {
+      "title": "Delivery region contains",
+      "type": "array",
+      "description": "OR-matched filter on where the contract is delivered, e.g. [\"London\", \"Scotland\", \"North West\"]. Matches against the notice's own delivery region/location text (case-insensitive substring). Leave empty for all regions. Notices with no delivery-region data are excluded when this is set.",
+      "editor": "stringList",
+      "default": []
+    },
     "buyerName": {
       "title": "Buyer name contains",
       "type": "string",
