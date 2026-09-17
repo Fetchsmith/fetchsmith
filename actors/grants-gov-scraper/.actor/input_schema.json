@@ -259,6 +259,13 @@
       "description": "Only return opportunities whose application deadline (close date) falls on or before this date. Same client-side filter and same no-deadline exclusions as \"Deadline from\". Leave empty for no upper bound.",
       "editor": "textfield"
     },
+    "closesWithinDays": {
+      "title": "Closing within the next N days",
+      "type": "integer",
+      "description": "Only return opportunities whose application deadline falls within the next N days from today (resolves to today through today+N, same client-side filter and same no-deadline exclusions as \"Deadline from\"/\"Deadline to\"). Convenience for the most common cron use case -- \"what's closing soon\" -- without computing calendar dates yourself. Leave empty for no restriction. Ignored if Deadline from/to above is set (they'd otherwise double-filter in confusing ways).",
+      "editor": "number",
+      "minimum": 1
+    },
     "minAwardAmount": {
       "title": "Minimum award ceiling (USD)",
       "type": "integer",

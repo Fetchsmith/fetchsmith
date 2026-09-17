@@ -140,6 +140,31 @@ if (closeDateFrom !== null && closeDateTo !== null && closeDateFrom > closeDateT
 }
 const hasCloseDateFilter = closeDateFrom !== null || closeDateTo !== null;
 
+// closesWithinDays -- relative convenience filter on top of the absolute closeDateFrom/closeDateTo
+// range above, for the common cron use case ("what closes in the next 30 days?") without the buyer
+// computing today's date themselves. Resolved to [today, today+N] client-side, same mechanism and
+// missing-value handling as closeDateFrom/closeDateTo (they share the same filter loop below), and
+// dropped entirely -- same precedence rule as postedWithinDays vs postedFrom/postedTo -- when an
+// absolute range is also given, rather than trying to intersect the two.
+let closesWithinDays = null;
+if (input.closesWithinDays !== undefined && input.closesWithinDays !== null && input.closesWithinDays !== '') {
+    const n = Number(input.closesWithinDays);
+    if (Number.isFinite(n) && n >= 1) closesWithinDays = Math.floor(n);
+    else log.warning(`Ignoring invalid closesWithinDays "${input.closesWithinDays}" (must be a positive number of days).`);
+}
+if (hasCloseDateFilter && closesWithinDays !== null) {
+    log.warning('Both closesWithinDays and closeDateFrom/closeDateTo are set; ignoring closesWithinDays since an absolute range was given.');
+    closesWithinDays = null;
+}
+// Raw day count only goes into the watch fingerprint (see watchCriteria below), never a resolved
+// date -- same cycle-297-trap avoidance as postedWithinDays, since "today" moves every run.
+const todayUtc = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+// closesWithinDays is only ever non-null when hasCloseDateFilter is false (nulled out above
+// otherwise), so it's safe to treat the two as mutually exclusive here.
+const effectiveCloseDateFrom = closesWithinDays !== null ? todayUtc : closeDateFrom;
+const effectiveCloseDateTo = closesWithinDays !== null ? new Date(todayUtc.getTime() + closesWithinDays * 86400000) : closeDateTo;
+const hasEffectiveCloseDateFilter = effectiveCloseDateFrom !== null || effectiveCloseDateTo !== null;
+
 // awardCeiling only exists on the per-opportunity detail record (search2's thin rows have no
 // award data at all), so either bound forces enrich on regardless of the input's own "enrich"
 // value -- otherwise the filter would silently have nothing to compare against and every row
@@ -253,6 +278,7 @@ const watchCriteria = {
     // goes into the fingerprint, so the cycle-297 rolling-default trap does not apply here either.
     closeDateFrom: input.closeDateFrom ? String(input.closeDateFrom).trim() : null,
     closeDateTo: input.closeDateTo ? String(input.closeDateTo).trim() : null,
+    closesWithinDays,
     minAwardAmount,
     maxAwardAmount,
 };
@@ -527,6 +553,7 @@ log.info(
         + (postedTo !== null ? ` postedTo=${input.postedTo}` : '')
         + (closeDateFrom !== null ? ` closeDateFrom=${input.closeDateFrom}` : '')
         + (closeDateTo !== null ? ` closeDateTo=${input.closeDateTo}` : '')
+        + (closesWithinDays !== null ? ` closesWithinDays=${closesWithinDays}` : '')
         + (minAwardAmount !== null ? ` minAwardAmount=${minAwardAmount}` : '')
         + (maxAwardAmount !== null ? ` maxAwardAmount=${maxAwardAmount}` : '')
         + (watchMode ? ` watchLabel="${watchLabel}"` : ''),
@@ -540,12 +567,12 @@ if (minAwardAmount !== null || maxAwardAmount !== null) {
         + 'the rare id with no detail record returned at all.',
     );
 }
-if (hasCloseDateFilter && oppStatuses.split('|').includes('forecasted')) {
+if (hasEffectiveCloseDateFilter && oppStatuses.split('|').includes('forecasted')) {
     log.warning(
-        'closeDateFrom/closeDateTo is set while "forecasted" is in oppStatuses. A forecast has no '
-        + 'firm deadline yet -- Grants.gov returns an empty closeDate on every forecast row -- so '
-        + 'ALL forecasts will be dropped by the deadline filter (they are counted separately in the '
-        + 'final summary). Drop "forecasted" from oppStatuses to make this explicit.',
+        'closeDateFrom/closeDateTo (or closesWithinDays) is set while "forecasted" is in oppStatuses. '
+        + 'A forecast has no firm deadline yet -- Grants.gov returns an empty closeDate on every '
+        + 'forecast row -- so ALL forecasts will be dropped by the deadline filter (they are counted '
+        + 'separately in the final summary). Drop "forecasted" from oppStatuses to make this explicit.',
     );
 }
 
@@ -603,12 +630,12 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
                 return true;
             });
         }
-        if (hasCloseDateFilter && !exclusiveOppNum) {
+        if (hasEffectiveCloseDateFilter && !exclusiveOppNum) {
             batch = batch.filter((row) => {
                 const closes = parseUsDate(row.closeDate);
                 if (closes === null) { droppedNoCloseDate += 1; return false; }
-                if (closeDateFrom !== null && closes < closeDateFrom) return false;
-                if (closeDateTo !== null && closes > closeDateTo) return false;
+                if (effectiveCloseDateFrom !== null && closes < effectiveCloseDateFrom) return false;
+                if (effectiveCloseDateTo !== null && closes > effectiveCloseDateTo) return false;
                 return true;
             });
         }
