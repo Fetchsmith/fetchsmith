@@ -61,6 +61,16 @@ const fundingCategories = (input.fundingCategories ?? []).join('|');
 const fundingInstruments = (input.fundingInstruments ?? []).join('|');
 const cfda = String(input.cfda ?? '').trim();
 const oppNum = String(input.oppNum ?? '').trim();
+// Batch form of the same lookup, e.g. to enrich a list of opportunity numbers a buyer already
+// has. Verified live (curl) before coding: Grants.gov's oppNum param does NOT accept a
+// pipe/comma-joined list of numbers the way oppStatuses/agencies/etc. do -- "num1|num2" and
+// "num1,num2" both return hitCount:0 -- so a batch lookup MUST be one /search2 call per number,
+// not a single joined query. `oppNum` and `oppNums` are merged (deduped) so either or both can
+// be set; the single-`oppNum`-only case is byte-identical to before this feature (one entry,
+// same API call shape).
+const oppNums = Array.from(new Set([oppNum, ...(Array.isArray(input.oppNums) ? input.oppNums : [])]
+    .map((v) => String(v ?? '').trim())
+    .filter(Boolean)));
 const sortBy = String(input.sortBy ?? '');
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -185,9 +195,9 @@ const agencies = Array.from(new Set(resolvedAgencies)).join('|');
 // server's own default oppStatuses ("forecasted|posted"), so a bare {"oppNum": "..."} lookup of
 // a CLOSED or ARCHIVED opportunity silently returns zero rows -- indistinguishable from a typo.
 // Same class of bug as clinicaltrials-scraper's nctIds + schema-default "cancer" interaction
-// (cycle 123): when oppNum is set, every other filter is dropped and oppStatuses is forced to
-// all four values so status can never hide the exact opportunity the user asked for by number.
-const exclusiveOppNum = oppNum.length > 0;
+// (cycle 123): when oppNum/oppNums is set, every other filter is dropped and oppStatuses is
+// forced to all four values so status can never hide the exact opportunity the user asked for.
+const exclusiveOppNum = oppNums.length > 0;
 
 // ---------------------------------------------------------------------------
 // Watch mode: "only what is new since my last run", per saved query. Same shape as
@@ -207,7 +217,7 @@ const SEED_CAP = 20000; // Grants.gov's own startRecordNum paging has no wall (c
 const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
 
 if (watchLabel && exclusiveOppNum) {
-    log.warning('watchLabel is ignored when Opportunity number (oppNum) is set -- an exact single-opportunity lookup has no "new since last run" to track.');
+    log.warning('watchLabel is ignored when Opportunity number (oppNum) or Opportunity numbers (oppNums) is set -- an exact opportunity-number lookup has no "new since last run" to track.');
 }
 const watchMode = watchLabel.length > 0 && !exclusiveOppNum;
 
@@ -330,9 +340,8 @@ if (watchMode) {
 }
 
 function baseParams() {
-    if (exclusiveOppNum) {
-        return { resultType: 'json', oppNum, oppStatuses: 'forecasted|posted|closed|archived', rows: PAGE_SIZE };
-    }
+    // exclusiveOppNum never reaches here -- it uses walkOppNums (one /search2 call per number,
+    // since the API has no batch/joined form), not this filtered-search path.
     const p = {
         resultType: 'json',
         rows: PAGE_SIZE,
@@ -505,7 +514,7 @@ async function pushResult(item) {
 
 log.info(
     exclusiveOppNum
-        ? `Grants.gov: exact opportunity-number lookup "${oppNum}" (all statuses, other filters ignored).`
+        ? `Grants.gov: exact opportunity-number lookup, ${oppNums.length} number(s): ${oppNums.join(', ')} (all statuses, other filters ignored).`
         : `Grants.gov: keyword="${keyword || '(none)'}" oppStatuses=[${oppStatuses}] enrich=${enrich} maxResults=${maxResults}`
         + (agencies ? ` agencies=[${agencies}]` : '')
         + (eligibilities ? ` eligibilities=[${eligibilities}]` : '')
@@ -610,6 +619,44 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
     }
 }
 
+const notFoundOppNums = [];
+
+// Batch form of the exact-number lookup: one /search2 call per number in `oppNums`, since (see
+// the note by `oppNums` above) the API has no batch/joined form for this param. Each call is an
+// exact-match lookup across all four statuses, same as the single-oppNum path used to run
+// through walkMatches -- this reproduces that path's filtering exactly (amount filter still
+// applies, date filters never did for an exclusive lookup) so a single oppNum with no oppNums
+// set behaves byte-identically to before this feature.
+async function walkOppNums(onBatch) {
+    const needsEnrich = minAwardAmount !== null || maxAwardAmount !== null ? true : enrich;
+    for (const num of oppNums) {
+        const page = await apiPost('/search2', {
+            resultType: 'json', oppNum: num, oppStatuses: 'forecasted|posted|closed|archived', rows: PAGE_SIZE, startRecordNum: 0,
+        });
+        const hits = listOf(page?.data?.oppHits);
+        if (!hits.length) { notFoundOppNums.push(num); continue; }
+        scanned += hits.length;
+
+        const thin = hits.map(normalizeThin);
+        let batch = thin;
+        if (needsEnrich) {
+            const details = await enrichBatch(hits);
+            batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i], [ENRICHED]: true } : row));
+        }
+        if (minAwardAmount !== null || maxAwardAmount !== null) {
+            batch = batch.filter((row) => {
+                if (typeof row.awardCeiling !== 'number') { droppedNoAward += 1; return false; }
+                if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
+                if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
+                return true;
+            });
+        }
+
+        const keepGoing = await onBatch(batch);
+        if (!keepGoing) break;
+    }
+}
+
 // Seeding only needs the ids, so (outside an amount filter) it skips enrichment entirely.
 // It walks the WHOLE match set, unbounded by maxResults -- a baseline that stopped early would
 // report every opportunity past the stopping point as "new" on the first incremental run.
@@ -628,7 +675,8 @@ if (watchMode && seeding) await seedBaseline();
 
 let beforePush = 0;
 if (!seeding) {
-    await walkMatches(async (batch) => {
+    const walker = exclusiveOppNum ? walkOppNums : walkMatches;
+    await walker(async (batch) => {
         for (const row of batch) {
             // Already delivered under this watch label. Normally dropped before any charge, so
             // an opportunity is never paid for twice -- UNLESS watchChanges is on and its
@@ -688,19 +736,23 @@ if (pushed === 0 && watchMode && !seeding) {
         `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching opportunity(ies) `
         + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
     );
+} else if (pushed === 0 && !seeding && exclusiveOppNum) {
+    log.warning(`No opportunity found for any of ${oppNums.length} number(s): ${oppNums.join(', ')}. Check the exact number(s) on grants.gov/search-grants.`);
 } else if (pushed === 0 && !seeding) {
     log.warning(
-        exclusiveOppNum
-            ? `No opportunity found with number "${oppNum}". Check the exact number on grants.gov/search-grants.`
-            : 'No opportunities matched. Most common causes: (1) filters are ANDed -- a narrow '
-            + 'keyword plus agency plus eligibility often has zero real matches, drop one and retry; '
-            + '(2) oppStatuses defaults to forecasted+posted (open/upcoming only) -- add "closed" or '
-            + '"archived" to search history; (3) an unrecognised agency code is dropped with a warning '
-            + 'above, not guessed at; (4) postedWithinDays/postedFrom/postedTo are hard AND filters -- a '
-            + 'small window plus a narrow keyword can easily have zero real matches; (5) '
-            + 'minAwardAmount/maxAwardAmount excludes any row with no detail record at all, not just '
-            + 'rows outside the range.',
+        'No opportunities matched. Most common causes: (1) filters are ANDed -- a narrow '
+        + 'keyword plus agency plus eligibility often has zero real matches, drop one and retry; '
+        + '(2) oppStatuses defaults to forecasted+posted (open/upcoming only) -- add "closed" or '
+        + '"archived" to search history; (3) an unrecognised agency code is dropped with a warning '
+        + 'above, not guessed at; (4) postedWithinDays/postedFrom/postedTo are hard AND filters -- a '
+        + 'small window plus a narrow keyword can easily have zero real matches; (5) '
+        + 'minAwardAmount/maxAwardAmount excludes any row with no detail record at all, not just '
+        + 'rows outside the range.',
     );
+} else if (exclusiveOppNum && notFoundOppNums.length > 0) {
+    // Some numbers matched (pushed > 0) but not all -- a partial batch miss is easy to overlook
+    // silently if only the total-pushed count is checked, so it gets its own always-shown line.
+    log.warning(`${notFoundOppNums.length} of ${oppNums.length} number(s) had no match: ${notFoundOppNums.join(', ')}. Check the exact number(s) on grants.gov/search-grants.`);
 }
 
 log.info(

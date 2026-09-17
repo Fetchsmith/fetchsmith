@@ -190,8 +190,16 @@
     "oppNum": {
       "title": "Opportunity number",
       "type": "string",
-      "description": "Look up a single opportunity by its exact funding opportunity number, e.g. \"PD-25-275Y\". When set, all other filters are ignored.",
+      "description": "Look up a single opportunity by its exact funding opportunity number, e.g. \"PD-25-275Y\". When this or Opportunity numbers (batch) is set, all other filters are ignored.",
       "editor": "textfield"
+    },
+    "oppNums": {
+      "title": "Opportunity numbers (batch)",
+      "type": "array",
+      "description": "Look up multiple opportunities by their exact funding opportunity numbers in one run -- e.g. to enrich a list of numbers you already have. Combined with Opportunity number above if both are set (duplicates removed). Grants.gov's API has no batch lookup, so this makes one lookup call per number; each is still an exact match across all four statuses, same as a single Opportunity number. When set, all other filters are ignored.",
+      "editor": "stringList",
+      "items": { "type": "string" },
+      "uniqueItems": true
     },
     "sortBy": {
       "title": "Sort order",
