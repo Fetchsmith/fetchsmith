@@ -34,6 +34,9 @@ const classifications = (input.classifications ?? [])
     .filter((c) => CLASSIFICATIONS.includes(c));
 
 const states = (input.states ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
+const countries = (input.countries ?? []).map((c) => String(c).trim()).filter(Boolean);
+const recallNumber = String(input.recallNumber ?? '').trim();
+const eventId = String(input.eventId ?? '').trim();
 const searchQuery = String(input.searchQuery ?? '').trim();
 const status = String(input.status ?? '').trim();
 const recallingFirm = String(input.recallingFirm ?? '').trim();
@@ -65,9 +68,14 @@ const normDate = (v, fallback) => {
     const digits = String(v).replace(/[^0-9]/g, '');
     return digits.length === 8 ? digits : fallback;
 };
+// An exact recallNumber/eventId lookup can be for any date, so default the window to full
+// history instead of the usual rolling year -- cheap even though it looks wide, because
+// planWindows' first probe carries the same exact-match clause and comes back tiny (verified
+// live), never triggering the date-chunking path.
+const lookupMode = Boolean(recallNumber || eventId);
 const reportDateFrom = normDate(
     input.reportDateFrom,
-    compactDay(new Date(today.getTime() - 365 * 86400_000)),
+    lookupMode ? EARLIEST : compactDay(new Date(today.getTime() - 365 * 86400_000)),
 );
 const reportDateTo = normDate(input.reportDateTo, compactDay(today));
 
@@ -97,6 +105,9 @@ const watchCriteria = {
     reportDateTo: input.reportDateTo ? String(input.reportDateTo).trim() : null,
     classifications: [...classifications].sort(),
     states: [...states].sort(),
+    countries: [...countries].sort(),
+    recallNumber,
+    eventId,
     status,
     recallingFirm,
     city,
@@ -207,6 +218,9 @@ function buildSearch(from, to) {
     const clauses = [`${dateField}:[${from}+TO+${to}]`];
     if (classifications.length) clauses.push(orClause('classification', classifications));
     if (states.length) clauses.push(orClause('state', states));
+    if (countries.length) clauses.push(orClause('country', countries));
+    if (recallNumber) clauses.push(`recall_number:${quote(recallNumber)}`);
+    if (eventId) clauses.push(`event_id:${quote(eventId)}`);
     if (status) clauses.push(`status:${quote(status)}`);
     if (recallingFirm) clauses.push(`recalling_firm:${quote(recallingFirm)}`);
     if (city) clauses.push(`city:${quote(city)}`);
@@ -424,6 +438,9 @@ log.info(
     + `sort=${SORT} maxResults=${maxResults}`
     + (classifications.length ? ` classifications=[${classifications.join(', ')}]` : '')
     + (states.length ? ` states=[${states.join(',')}]` : '')
+    + (countries.length ? ` countries=[${countries.join(',')}]` : '')
+    + (recallNumber ? ` recallNumber="${recallNumber}"` : '')
+    + (eventId ? ` eventId="${eventId}"` : '')
     + (recallingFirm ? ` recallingFirm="${recallingFirm}"` : '')
     + (city ? ` city="${city}"` : '')
     + (voluntaryMandated ? ` voluntaryMandated="${voluntaryMandated}"` : '')

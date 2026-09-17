@@ -73,6 +73,25 @@
       "editor": "stringList",
       "uniqueItems": true
     },
+    "countries": {
+      "title": "Recalling firm countries",
+      "type": "array",
+      "description": "Country names of the RECALLING FIRM, exactly as FDA writes them (for example \"United States\", \"Canada\", \"Israel\"). Most recalls are United States firms, but FDA also lists foreign firms whose products entered the US market. Leave empty for all.",
+      "editor": "stringList",
+      "uniqueItems": true
+    },
+    "recallNumber": {
+      "title": "Recall number (exact)",
+      "type": "string",
+      "description": "Look up one recall by its exact FDA recall number, for example \"F-1233-2022\". Overrides every other filter above except productTypes (FDA recall numbers aren't unique across food/drug/device, so leave productTypes narrowed if you know which one). Leave empty for normal filtered search.",
+      "editor": "textfield"
+    },
+    "eventId": {
+      "title": "Recall event ID (exact)",
+      "type": "string",
+      "description": "Look up every product recalled under one FDA enforcement event ID, for example \"90105\" (a single recall event can cover several products, each its own row here). Overrides every other filter above except productTypes. Leave empty for normal filtered search.",
+      "editor": "textfield"
+    },
     "status": {
       "title": "Recall status",
       "type": "string",
