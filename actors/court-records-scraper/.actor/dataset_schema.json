@@ -1,0 +1,372 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "recordType": {
+        "title": "RecordType",
+        "example": "opinion",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "title": "Id",
+        "example": "o-8493216",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "caseName": {
+        "title": "CaseName",
+        "example": "Phillips v. Mike Murdock Evangelistic Ass'n",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "caseNameFull": {
+        "title": "CaseNameFull",
+        "example": "Cherie PHILLIPS v. MIKE MURDOCK EVANGELISTIC ASSOCIATION, \u2014",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "court": {
+        "title": "Court",
+        "example": "Court of Appeals for the Ninth Circuit",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "courtId": {
+        "title": "CourtId",
+        "example": "ca9",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "courtCitationString": {
+        "title": "CourtCitationString",
+        "example": "9th Cir.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "docketNumber": {
+        "title": "DocketNumber",
+        "example": "No. 08-16925",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "dateFiled": {
+        "title": "DateFiled",
+        "example": "2009-07-28",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "dateArgued": {
+        "title": "DateArgued",
+        "example": "2024-10-23",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "dateTerminated": {
+        "title": "DateTerminated",
+        "example": "2013-08-19",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "citations": {
+        "title": "Citations",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "citeCount": {
+        "title": "CiteCount",
+        "example": 0,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "lexisCite": {
+        "title": "LexisCite",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "neutralCite": {
+        "title": "NeutralCite",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "judge": {
+        "title": "Judge",
+        "example": "Schroeder, Thomas, Wardlaw",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "panelNames": {
+        "title": "PanelNames",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "attorneys": {
+        "title": "Attorneys",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "parties": {
+        "title": "Parties",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "firms": {
+        "title": "Firms",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "status": {
+        "title": "Status",
+        "example": "Published",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "posture": {
+        "title": "Posture",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "proceduralHistory": {
+        "title": "ProceduralHistory",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "syllabus": {
+        "title": "Syllabus",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "suitNature": {
+        "title": "SuitNature",
+        "example": "840 Trademark",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "cause": {
+        "title": "Cause",
+        "example": "15:1114 Trademark Infringement",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "jurisdictionType": {
+        "title": "JurisdictionType",
+        "example": "Federal Question",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "juryDemand": {
+        "title": "JuryDemand",
+        "example": "Plaintiff",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "chapter": {
+        "title": "Chapter",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "snippet": {
+        "title": "Snippet",
+        "example": "\nMEMORANDUM **\nCherie Phillips, author of the Wisdom Bible of God, appeals pro se from the district court\u2019s judgment in ",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "opinionCount": {
+        "title": "OpinionCount",
+        "example": 1,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "downloadUrl": {
+        "title": "DownloadUrl",
+        "example": "https://cdn.ca9.uscourts.gov/datastore/opinions/2024/12/27/23-2855.pdf",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "docketId": {
+        "title": "DocketId",
+        "example": 65719119,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "clusterId": {
+        "title": "ClusterId",
+        "example": 8493216,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "pacerCaseId": {
+        "title": "PacerCaseId",
+        "example": "237431",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "documentCount": {
+        "title": "DocumentCount",
+        "example": 3,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "documents": {
+        "title": "Documents",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "url": {
+        "title": "Url",
+        "example": "https://www.courtlistener.com/opinion/8493216/phillips-v-mike-murdock-evangelistic-assn/",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "dateCreated": {
+        "title": "DateCreated",
+        "example": "2022-11-05T09:05:14.710688Z",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "recordType",
+          "id",
+          "caseName",
+          "caseNameFull",
+          "court",
+          "courtId",
+          "courtCitationString",
+          "docketNumber",
+          "dateFiled",
+          "dateArgued"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "recordType": {
+            "label": "RecordType",
+            "format": "text"
+          },
+          "id": {
+            "label": "Id",
+            "format": "text"
+          },
+          "caseName": {
+            "label": "CaseName",
+            "format": "text"
+          },
+          "caseNameFull": {
+            "label": "CaseNameFull",
+            "format": "text"
+          },
+          "court": {
+            "label": "Court",
+            "format": "text"
+          },
+          "courtId": {
+            "label": "CourtId",
+            "format": "text"
+          },
+          "courtCitationString": {
+            "label": "CourtCitationString",
+            "format": "text"
+          },
+          "docketNumber": {
+            "label": "DocketNumber",
+            "format": "text"
+          },
+          "dateFiled": {
+            "label": "DateFiled",
+            "format": "text"
+          },
+          "dateArgued": {
+            "label": "DateArgued",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

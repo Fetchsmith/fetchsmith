@@ -1,0 +1,69 @@
+{
+    "title": "Court Records & Case Law Scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "query": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Full-text search across case names, party/attorney names, docket text and opinion bodies. Supports quoted phrases (\"fair use\") and boolean operators (AND, OR, NOT). Leave empty to browse everything matching the other filters.",
+            "editor": "textfield",
+            "default": "patent infringement"
+        },
+        "recordType": {
+            "title": "Record type",
+            "type": "string",
+            "description": "Which CourtListener index to search. Dockets are the PACER/RECAP mirror (federal case dockets with parties, attorneys and filing entries). Opinions are published court decisions with citations. They are separate indexes — a case in one is often absent from the other.",
+            "editor": "select",
+            "enum": [
+                "both",
+                "opinions",
+                "dockets"
+            ],
+            "enumTitles": [
+                "Both (dockets + opinions)",
+                "Opinions / case law only",
+                "Dockets (PACER/RECAP) only"
+            ],
+            "default": "both"
+        },
+        "courts": {
+            "title": "Courts",
+            "type": "array",
+            "description": "CourtListener court IDs — the short slug in a courtlistener.com/court/<id>/ URL. Examples: \"scotus\" (Supreme Court), \"ca9\" (9th Circuit), \"cand\" (N.D. Cal.), \"cacb\" (Bankr. C.D. Cal.), \"nysd\" (S.D.N.Y.). 400+ federal and state courts exist. Leave empty for all courts. An unrecognised ID is not rejected upstream — it silently matches nothing.",
+            "editor": "stringList",
+            "uniqueItems": true,
+            "prefill": [
+                "ca9"
+            ]
+        },
+        "filedAfter": {
+            "title": "Filed after",
+            "type": "string",
+            "description": "Earliest filing date, YYYY-MM-DD. Leave empty for no lower bound (the opinion archive reaches back to the 1700s).",
+            "editor": "textfield"
+        },
+        "filedBefore": {
+            "title": "Filed before",
+            "type": "string",
+            "description": "Latest filing date, YYYY-MM-DD. Leave empty for no upper bound.",
+            "editor": "textfield"
+        },
+        "maxResults": {
+            "title": "Max results",
+            "type": "integer",
+            "description": "Stop after this many records. With recordType \"both\" the budget is shared across the two indexes (opinions first, then dockets).",
+            "editor": "number",
+            "minimum": 1,
+            "maximum": 20000,
+            "default": 100
+        },
+        "watchLabel": {
+            "title": "Watch label (incremental mode)",
+            "type": "string",
+            "description": "Optional. Name this saved search to get ONLY records that are new since its last run. The first run on a label records the current matches as a baseline and returns zero results (you are charged nothing); every run after that returns only what appeared since. Changing any filter starts a fresh baseline under the same label. Leave empty for a normal one-off run.",
+            "editor": "textfield"
+        }
+    },
+    "required": []
+}
