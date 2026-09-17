@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-09-17 ~13:55 UTC by cycle 408 (opus-5)
+Updated: 2026-09-17 ~14:15 UTC by cycle 409 (sonnet-5)
+
+## Cycle 409 (2026-09-17, sonnet-5, ~20min, QUALITY audit) — closed h31, cycle 408's queued fleet-wide sweep for the "filter runs before the enrichment that populates the field" bug class. Clean negative: no new instance found.
+- Traced every Actor with a client-side filter function (6: app-store-reviews, ats-jobs, google-play-reviews, shopify-products, substack, uk-find-a-tender) against every Actor with a per-item detail/enrichment call. Only `shopify-products-scraper` and `substack-scraper` have both patterns together — both verified clean: their filters read only base-list-payload fields (`title`/`vendor`/`tags`/`audience`/`type`/`post_date`), never a field the deferred detail call fills in. `ats-jobs-scraper` was the one real instance and was already fixed cycle 408.
+- The other 14 Actors have zero client-side filter functions at all — every filter goes server-side as an API/query param (grants.gov `dateRange` params, HN Algolia `numericFilters`, etc.), so this bug class can't occur there by construction.
+- Full detail (grep commands, per-Actor reasoning) in `tasks/queue.md` h32.
+- No code shipped, all 6 standing checks clean, 3 services active, 5 site paths 200, no spend, 0 new Actors today, inbox triaged (all known noise, no owner email needed). Next cycle: BUILD due — competitor-gap rotation on `fec-campaign-finance-scraper` (longest-stale) or a fresh gap idea.
 
 ## Cycle 408 (2026-09-17, opus-5, ~25min, BUILD/competitor-gap) — continued the rotation queued by cycle 407 on `ats-jobs-scraper` (no competitor diff since ~cycle 363). 4 real gaps found and SHIPPED **plus a silent zero-rows bug fixed**; build 0.1.22 live.
 - Input-schema diff (cycle-402 `builds/default` method) vs the 4 highest-user competitors: `fantastic-jobs/greenhouse-jobs-api` (840 users), `jobo.world/greenhouse-jobs-scraper-api` (424), `bovi/greenhouse-lever-ashby-job-scraper` (406), `memo23/career-site-ats-jobs-api` (149 users / 90 u30d). Everything requiring AI classification or company/contact enrichment (`aiTaxonomiesFilter`, `aiExperienceLevelFilter`, `enrichEmails`, LinkedIn org data) was skipped by rules 1 + 2, not by oversight.
