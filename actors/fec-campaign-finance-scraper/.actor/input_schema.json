@@ -6,11 +6,66 @@
     "searchMode": {
       "title": "Search mode",
       "type": "string",
-      "description": "\"candidates\" (default): search candidates and their financial totals. \"contributions\": search individual donor contributions (Schedule A) instead — donor name, employer, occupation, amount, date, receiving committee.",
+      "description": "\"candidates\" (default): search candidates and their financial totals. \"contributions\": individual donor contributions (Schedule A) — donor name, employer, occupation, amount, date, receiving committee. \"disbursements\": committee SPENDING (Schedule B) — who a campaign paid, how much, when and what for. \"independentExpenditures\": outside spending FOR or AGAINST a candidate (Schedule E) — super PAC ads and mailers, with the support/oppose flag.",
       "editor": "select",
-      "enum": ["candidates", "contributions"],
-      "enumTitles": ["Candidates + financial totals", "Individual donor contributions"],
+      "enum": [
+        "candidates",
+        "contributions",
+        "disbursements",
+        "independentExpenditures"
+      ],
+      "enumTitles": [
+        "Candidates + financial totals",
+        "Individual donor contributions (Sched. A)",
+        "Committee spending / disbursements (Sched. B)",
+        "Independent expenditures, for/against (Sched. E)"
+      ],
       "default": "candidates"
+    },
+    "recipientName": {
+      "title": "Recipient / vendor name",
+      "type": "string",
+      "description": "Filter committee spending by who was paid (e.g. \"META\", \"ActBlue\", \"Delta Air Lines\"). Disbursements mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "payeeName": {
+      "title": "Payee name",
+      "type": "string",
+      "description": "Filter independent expenditures by the vendor paid to run the ad/mailer (e.g. \"Extreme Reach\"). Independent expenditures mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "candidateId": {
+      "title": "Candidate ID (FEC)",
+      "type": "string",
+      "description": "Only return independent expenditures naming this candidate, e.g. \"P80001571\". Find IDs with a run in candidates mode. Independent expenditures mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "supportOppose": {
+      "title": "Support or oppose",
+      "type": "string",
+      "description": "Restrict independent expenditures to money spent FOR a candidate or AGAINST them. Independent expenditures mode only.",
+      "editor": "select",
+      "enum": [
+        "",
+        "S",
+        "O"
+      ],
+      "enumTitles": [
+        "Both",
+        "Supporting the candidate",
+        "Opposing the candidate"
+      ],
+      "default": ""
+    },
+    "committeeId": {
+      "title": "Committee ID (FEC)",
+      "type": "string",
+      "description": "Only return rows filed by this committee, e.g. \"C00744946\". Disbursements and independent expenditures modes only — the FEC's Schedule A endpoint times out on this filter, so it is ignored (with a warning) in contributions mode.",
+      "editor": "textfield",
+      "default": ""
     },
     "candidateName": {
       "title": "Candidate name",
@@ -34,35 +89,35 @@
       "default": ""
     },
     "minAmount": {
-      "title": "Minimum contribution amount ($)",
+      "title": "Minimum amount ($)",
       "type": "integer",
-      "description": "Only return contributions of at least this amount. Contributions mode only.",
+      "description": "Only return rows of at least this amount. Applies to the transaction modes: contribution amount (contributions), disbursement amount (disbursements), expenditure amount (independent expenditures).",
       "editor": "number"
     },
     "maxAmount": {
-      "title": "Maximum contribution amount ($)",
+      "title": "Maximum amount ($)",
       "type": "integer",
-      "description": "Only return contributions of at most this amount. Contributions mode only.",
+      "description": "Only return rows of at most this amount. Applies to the transaction modes: contribution amount (contributions), disbursement amount (disbursements), expenditure amount (independent expenditures).",
       "editor": "number"
     },
     "contributionDateFrom": {
-      "title": "Contribution date from (YYYY-MM-DD)",
+      "title": "Transaction date from (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return contributions received on or after this date. Contributions mode only.",
+      "description": "Only return rows on or after this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode.",
       "editor": "textfield",
       "default": ""
     },
     "contributionDateTo": {
-      "title": "Contribution date to (YYYY-MM-DD)",
+      "title": "Transaction date to (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return contributions received on or before this date. Contributions mode only.",
+      "description": "Only return rows on or before this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode.",
       "editor": "textfield",
       "default": ""
     },
     "state": {
       "title": "State (2-letter code)",
       "type": "string",
-      "description": "Candidates mode: restrict to candidates running in this state. Contributions mode: restrict to donors reporting an address in this state. e.g. \"CA\", \"TX\". Leave empty for all states.",
+      "description": "Candidates mode: restrict to candidates running in this state. Contributions mode: restrict to donors reporting an address in this state. Disbursements mode: restrict to recipients/vendors in this state. e.g. \"CA\", \"TX\". Leave empty for all states. Not used in independent expenditures mode.",
       "editor": "textfield",
       "default": ""
     },
@@ -71,8 +126,18 @@
       "type": "string",
       "description": "Restrict to one office. Candidates mode only.",
       "editor": "select",
-      "enum": ["", "H", "S", "P"],
-      "enumTitles": ["All offices", "House", "Senate", "President"],
+      "enum": [
+        "",
+        "H",
+        "S",
+        "P"
+      ],
+      "enumTitles": [
+        "All offices",
+        "House",
+        "Senate",
+        "President"
+      ],
       "default": ""
     },
     "party": {
@@ -85,7 +150,7 @@
     "electionYear": {
       "title": "Election cycle year",
       "type": "integer",
-      "description": "Even-numbered election cycle, e.g. 2024. Candidates mode: leave empty for all cycles. Contributions mode: required by the FEC API to keep the query fast — defaults to the most recent even year if left empty.",
+      "description": "Even-numbered election cycle, e.g. 2024. Candidates mode: leave empty for all cycles. Contributions / disbursements / independent expenditures: required by the FEC API to keep the query fast — defaults to the most recent even year if left empty.",
       "editor": "number"
     },
     "includeTotals": {
@@ -97,7 +162,7 @@
     "maxResults": {
       "title": "Max results",
       "type": "integer",
-      "description": "Stop after this many rows (candidates or contributions, depending on searchMode).",
+      "description": "Stop after this many rows (candidates, contributions, disbursements or independent expenditures, depending on searchMode).",
       "editor": "number",
       "default": 20,
       "minimum": 1,
@@ -106,7 +171,7 @@
     "watchLabel": {
       "title": "Watch mode: label for a saved search (optional)",
       "type": "string",
-      "description": "Contributions mode only. Set a name for this saved donor search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only contributions that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior.",
+      "description": "Transaction modes only (contributions, disbursements, independentExpenditures). Set a name for this saved search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only rows that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior.",
       "editor": "textfield",
       "default": ""
     }

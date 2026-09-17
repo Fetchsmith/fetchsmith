@@ -7,10 +7,22 @@ import { gotScraping } from 'got-scraping';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
-const searchMode = input.searchMode === 'contributions' ? 'contributions' : 'candidates';
+const MODES = ['candidates', 'contributions', 'disbursements', 'independentExpenditures'];
+const searchMode = MODES.includes(input.searchMode) ? input.searchMode : 'candidates';
+// The three transaction schedules (A receipts / B disbursements / E independent expenditures)
+// share the same paging, amount-window, date-window and watch machinery -- only the endpoint,
+// the query params and the row shape differ.
+const isTxnMode = searchMode !== 'candidates';
 const candidateName = (input.candidateName ?? 'Warren').trim();
 const donorName = (input.donorName ?? '').trim();
 const donorEmployer = (input.donorEmployer ?? '').trim();
+const recipientName = (input.recipientName ?? '').trim();
+const payeeName = (input.payeeName ?? '').trim();
+const candidateId = (input.candidateId ?? '').trim().toUpperCase();
+const committeeIdInput = (input.committeeId ?? '').trim().toUpperCase();
+const supportOppose = ['S', 'O'].includes(String(input.supportOppose ?? '').trim().toUpperCase())
+  ? String(input.supportOppose).trim().toUpperCase()
+  : '';
 const minAmount = input.minAmount ? Number(input.minAmount) : undefined;
 const maxAmount = input.maxAmount ? Number(input.maxAmount) : undefined;
 function parseFecDate(s, label) {
@@ -36,7 +48,29 @@ const party = (input.party ?? '').trim().toUpperCase();
 const currentEvenYear = new Date().getUTCFullYear() - (new Date().getUTCFullYear() % 2);
 const electionYear = input.electionYear
   ? Number(input.electionYear)
-  : (searchMode === 'contributions' ? currentEvenYear : undefined);
+  : (isTxnMode ? currentEvenYear : undefined);
+
+// `committee_id` is a fast, indexed filter on Schedules B and E but reliably 504s on Schedule A
+// (confirmed live in cycle 410 on both a large and a small committee), so it is accepted only
+// where it actually works rather than silently producing a failed run.
+const committeeId = committeeIdInput && (searchMode === 'disbursements' || searchMode === 'independentExpenditures')
+  ? committeeIdInput
+  : '';
+if (committeeIdInput && !committeeId) {
+  log.warning(`Ignoring committeeId "${committeeIdInput}": it is only supported in searchMode "disbursements" and "independentExpenditures" (the FEC's Schedule A endpoint times out on this filter).`);
+}
+for (const [field, value, modes] of [
+  ['recipientName', recipientName, ['disbursements']],
+  ['payeeName', payeeName, ['independentExpenditures']],
+  ['candidateId', candidateId, ['independentExpenditures']],
+  ['supportOppose', supportOppose, ['independentExpenditures']],
+  ['donorName', donorName, ['contributions']],
+  ['donorEmployer', donorEmployer, ['contributions']],
+]) {
+  if (value && !modes.includes(searchMode)) {
+    log.warning(`Ignoring ${field} "${value}": it only applies in searchMode ${modes.map((m) => `"${m}"`).join('/')}, and this run is in "${searchMode}" mode.`);
+  }
+}
 const includeTotals = input.includeTotals ?? true;
 const maxResults = Math.min(Number(input.maxResults ?? 20), 500);
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -65,8 +99,8 @@ function watchKeyFor(label, criteria) {
 }
 
 let watchMode = watchLabel.length > 0;
-if (watchMode && searchMode !== 'contributions') {
-  log.warning(`watchLabel "${watchLabel}" is ignored in candidates mode -- watch mode only applies to searchMode:"contributions" (candidates mode always returns the same fixed roster, not a stream of new events).`);
+if (watchMode && !isTxnMode) {
+  log.warning(`watchLabel "${watchLabel}" is ignored in candidates mode -- watch mode only applies to the transaction modes ("contributions", "disbursements", "independentExpenditures"), which return a stream of discrete new filings; candidates mode always returns the same fixed roster.`);
   watchMode = false;
 }
 let watchStore = null;
@@ -82,6 +116,15 @@ if (watchMode) {
     ...(maxAmount !== undefined ? { maxAmount } : {}),
     ...(contributionDateFrom ? { contributionDateFrom } : {}),
     ...(contributionDateTo ? { contributionDateTo } : {}),
+    // Added cycle 428. Only present when NOT the original contributions mode, so every watch
+    // baseline saved before this cycle keeps its fingerprint instead of silently re-seeding
+    // (same rule as maxAmount/contributionDate* above and steam's includeOffTopic, cycle 404).
+    ...(searchMode !== 'contributions' ? { searchMode } : {}),
+    ...(recipientName ? { recipientName } : {}),
+    ...(payeeName ? { payeeName } : {}),
+    ...(candidateId ? { candidateId } : {}),
+    ...(committeeId ? { committeeId } : {}),
+    ...(supportOppose ? { supportOppose } : {}),
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
@@ -173,13 +216,13 @@ async function fecGet(path, params) {
   }
 }
 
-async function fetchTotals(candidateId) {
+async function fetchTotals(id) {
   try {
-    const body = await fecGet(`/candidate/${candidateId}/totals/`, { per_page: 1, sort: '-candidate_election_year' });
+    const body = await fecGet(`/candidate/${id}/totals/`, { per_page: 1, sort: '-candidate_election_year' });
     return body.results?.[0] ?? null;
   } catch (err) {
     if (err.isRateLimit) throw err; // fail loudly rather than emit null money columns
-    log.warning(`totals lookup failed for ${candidateId}: ${err.message}`);
+    log.warning(`totals lookup failed for ${id}: ${err.message}`);
     return null;
   }
 }
@@ -188,6 +231,13 @@ let watchPageCapHit = false;
 try {
   let page = 1;
   let stop = false;
+  // The FEC's three transaction schedules (A/B/E) are KEYSET-paginated, not offset-paginated:
+  // `page` is accepted and then ignored, so asking for page 2, 3, ... returns page 1's rows
+  // again (verified live cycle 428 on all three schedules -- identical sub_ids). The real
+  // cursor is `pagination.last_indexes`, whose keys (`last_index` plus a per-schedule sort
+  // key such as `last_contribution_receipt_date`) must be echoed back as query params on the
+  // next request. Only `/candidates/` uses normal `page` paging.
+  let cursor = null;
   while (!stop) {
     if (watchMode && page > WATCH_PAGE_CAP) {
       // A scan safety valve, not a delivery cap -- it only ever bounds how many pages of an
@@ -199,7 +249,38 @@ try {
       log.warning(`Watch mode: stopped scanning after ${WATCH_PAGE_CAP} pages without exhausting the match set -- narrow donorName/donorEmployer/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so the whole current match set fits in fewer pages.`);
       break;
     }
-    const body = searchMode === 'contributions'
+    const perPage = watchMode ? 100 : 20;
+    const body = searchMode === 'disbursements'
+      ? await fecGet('/schedules/schedule_b/', {
+        recipient_name: recipientName,
+        recipient_state: state,
+        committee_id: committeeId,
+        min_amount: minAmount,
+        max_amount: maxAmount,
+        min_date: contributionDateFrom,
+        max_date: contributionDateTo,
+        two_year_transaction_period: electionYear,
+        ...cursor,
+        per_page: perPage,
+        sort: '-disbursement_date',
+      })
+      : searchMode === 'independentExpenditures'
+      ? await fecGet('/schedules/schedule_e/', {
+        payee_name: payeeName,
+        candidate_id: candidateId,
+        committee_id: committeeId,
+        support_oppose_indicator: supportOppose,
+        min_amount: minAmount,
+        max_amount: maxAmount,
+        min_date: contributionDateFrom,
+        max_date: contributionDateTo,
+        cycle: electionYear,
+        ...cursor,
+        per_page: perPage,
+        sort: '-expenditure_date',
+        sort_nulls_last: 'true',
+      })
+      : searchMode === 'contributions'
       ? await fecGet('/schedules/schedule_a/', {
         contributor_name: donorName,
         contributor_employer: donorEmployer,
@@ -209,8 +290,8 @@ try {
         min_date: contributionDateFrom,
         max_date: contributionDateTo,
         two_year_transaction_period: electionYear,
-        page,
-        per_page: watchMode ? 100 : 20,
+        ...cursor,
+        per_page: perPage,
         sort: '-contribution_receipt_date',
       })
       : await fecGet('/candidates/', {
@@ -229,7 +310,52 @@ try {
     for (const c of results) {
       let item;
       let watchId;
-      if (searchMode === 'contributions') {
+      if (searchMode === 'disbursements') {
+        watchId = c.sub_id ?? null;
+        item = {
+          committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
+          committeeName: c.committee?.name ?? null,
+          recipientName: c.recipient_name ?? null,
+          recipientCity: c.recipient_city ?? null,
+          recipientState: c.recipient_state ?? null,
+          disbursementAmount: c.disbursement_amount ?? null,
+          disbursementDate: c.disbursement_date ?? null,
+          disbursementDescription: c.disbursement_description ?? null,
+          disbursementPurposeCategory: c.disbursement_purpose_category ?? null,
+          disbursementCategory: c.category_code_full ?? null,
+          lineNumberLabel: c.line_number_label ?? null,
+          candidateId: c.candidate_id ?? null,
+          candidateName: c.candidate_name ?? null,
+          electionCycle: c.two_year_transaction_period ?? null,
+          imageNumber: c.image_number ?? null,
+          pdfUrl: c.pdf_url ?? null,
+        };
+      } else if (searchMode === 'independentExpenditures') {
+        watchId = c.sub_id ?? null;
+        item = {
+          committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
+          committeeName: c.committee?.name ?? null,
+          candidateId: c.candidate_id ?? null,
+          candidateName: c.candidate_name ?? null,
+          candidateOffice: c.candidate_office ?? null,
+          candidateOfficeState: c.candidate_office_state ?? null,
+          candidateParty: c.candidate_party ?? null,
+          supportOppose: c.support_oppose_indicator === 'S' ? 'support' : c.support_oppose_indicator === 'O' ? 'oppose' : null,
+          payeeName: c.payee_name ?? null,
+          expenditureAmount: c.expenditure_amount ?? null,
+          expenditureDate: c.expenditure_date ?? null,
+          disseminationDate: c.dissemination_date ?? null,
+          expenditureDescription: c.expenditure_description ?? null,
+          expenditureCategory: c.category_code_full ?? null,
+          officeTotalYtd: c.office_total_ytd ?? null,
+          electionType: c.election_type_full ?? c.election_type ?? null,
+          filingForm: c.filing_form ?? null,
+          isNotice: c.is_notice ?? null,
+          electionCycle: c.election_year ?? null,
+          imageNumber: c.image_number ?? null,
+          pdfUrl: c.pdf_url ?? null,
+        };
+      } else if (searchMode === 'contributions') {
         watchId = c.sub_id ?? null;
         item = {
           contributorName: c.contributor_name ?? null,
@@ -277,7 +403,21 @@ try {
     }
 
     const pagination = body.pagination ?? {};
-    if (page >= (pagination.pages ?? 1)) break;
+    if (isTxnMode) {
+      const next = pagination.last_indexes ?? null;
+      // `sort_null_only` is a flag the API returns inside last_indexes, not a cursor value;
+      // echoing it back would ask for null-sorted rows only, so drop it.
+      const cleaned = next
+        ? Object.fromEntries(Object.entries(next).filter(([k, v]) => k !== 'sort_null_only' && v !== null && v !== undefined))
+        : {};
+      // No cursor, or a cursor identical to the one we just used, means the result set is
+      // exhausted. Without this guard the old `page`-based loop silently re-fetched (and
+      // re-charged for) the first page until maxResults was reached.
+      if (Object.keys(cleaned).length === 0 || JSON.stringify(cleaned) === JSON.stringify(cursor ?? {})) break;
+      cursor = cleaned;
+    } else {
+      if (page >= (pagination.pages ?? 1)) break; // /candidates/ pages normally via `page`
+    }
     page += 1;
   }
 } catch (err) {

@@ -1,6 +1,6 @@
-# FEC Campaign Finance Scraper – Candidates, Financial Totals & Donor Contributions
+# FEC Campaign Finance Scraper – Candidates, Donors, Committee Spending & Outside Money
 
-Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle, with each candidate's campaign financial totals — receipts, disbursements, cash on hand, individual contributions — in one row. Or switch `searchMode` to `contributions` to search individual donor contributions directly: donor name, employer, occupation, amount, date and receiving committee. Powered by the FEC's official `api.open.fec.gov` disclosure API. No login, no browser, no API key of your own required.
+Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle, with each candidate's campaign financial totals — receipts, disbursements, cash on hand, individual contributions — in one row. Or switch `searchMode` to `contributions` to search individual donor contributions directly: donor name, employer, occupation, amount, date and receiving committee. Two more modes follow the money back out again: `disbursements` (Schedule B — every payment a committee made, to whom, when and what for) and `independentExpenditures` (Schedule E — outside spending *for* or *against* a named candidate, the super-PAC ad money). Powered by the FEC's official `api.open.fec.gov` disclosure API. No login, no browser, no API key of your own required.
 
 ## Use cases
 - **Political/campaign research** — pull every Senate candidate in a state with their fundraising totals in a single dataset instead of clicking through fec.gov one candidate at a time.
@@ -9,25 +9,32 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 - **Watchdog & transparency dashboards** — schedule a run per cycle and diff the totals to track who is raising money and how fast.
 - **Small-dollar vs. large-dollar analysis** — `individualUnitemizedContributions` (small-dollar giving as the FEC itself computes it, no subtraction required) against `individualItemizedContributions` (the >$200-aggregate subset) shows how much of a campaign's money comes from grassroots donors versus large ones.
 - **Candidate list building** — enumerate everyone who has ever filed for a given office/state/cycle, including long-shot and prior candidates.
+- **Campaign vendor & burn-rate analysis** — `searchMode: "disbursements"` with `recipientName` shows who a campaign actually paid: ad buyers, consultants, payroll, venues, airlines. Filter by `committeeId` for one committee's whole ledger.
+- **Outside-money / super-PAC tracking** — `searchMode: "independentExpenditures"` with `candidateId` and `supportOppose` separates money spent *supporting* a candidate from money spent *attacking* them, with the payee, the amount and the dissemination date on every row.
 - **Donor alerts** — set `watchLabel` on a saved donor/employer search (contributions mode) to get only the contributions that are new since your last run, instead of re-scraping the same donors every time.
 
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `searchMode` | string | `"candidates"` (default) or `"contributions"`. |
+| `searchMode` | string | `"candidates"` (default), `"contributions"` (Schedule A donations), `"disbursements"` (Schedule B committee spending) or `"independentExpenditures"` (Schedule E outside spending for/against a candidate). |
 | `candidateName` | string | Candidates mode: full or partial name to search for (default `"Warren"`). Matches any part of the name — see the FAQ. |
 | `donorName` | string | Contributions mode: donor name to search for, e.g. `"Elon Musk"`. |
 | `donorEmployer` | string | Contributions mode: filter by the donor's self-reported employer, e.g. `"Google"`. |
-| `minAmount` | integer | Contributions mode: only return contributions at or above this dollar amount. |
-| `maxAmount` | integer | Contributions mode: only return contributions at or below this dollar amount. Combine with `minAmount` for a range. |
-| `contributionDateFrom` / `contributionDateTo` | string | Contributions mode: `YYYY-MM-DD` window on the contribution receipt date. Either or both may be set; invalid dates are ignored with a warning. |
+| `recipientName` | string | Disbursements mode: who was paid, e.g. `"META"`, `"ActBlue"`. |
+| `payeeName` | string | Independent expenditures mode: the vendor paid to run the ad/mailer. |
+| `candidateId` | string | Independent expenditures mode: only spending naming this FEC candidate ID, e.g. `"P80001571"`. |
+| `supportOppose` | string | Independent expenditures mode: `S` (spent supporting the candidate), `O` (spent opposing), empty for both. |
+| `committeeId` | string | Disbursements / independent expenditures modes: only rows filed by this committee, e.g. `"C00744946"`. Ignored with a warning in contributions mode — the FEC's Schedule A endpoint times out on it. |
+| `minAmount` | integer | Any transaction mode: only return rows at or above this dollar amount (contribution, disbursement or expenditure amount). |
+| `maxAmount` | integer | Any transaction mode: only return rows at or below this dollar amount. Combine with `minAmount` for a range. |
+| `contributionDateFrom` / `contributionDateTo` | string | Any transaction mode: `YYYY-MM-DD` window on the transaction date — contribution receipt date, disbursement date or expenditure date depending on the mode. Either or both may be set; invalid dates are ignored with a warning. |
 | `state` | string | 2-letter state code, e.g. `"CA"`. Candidates or donor address, depending on mode. Optional. |
 | `office` | string | `H` (House), `S` (Senate), `P` (President). Candidates mode only. |
 | `party` | string | Party code, e.g. `DEM`, `REP`, `IND`, `LIB`. Candidates mode only. |
 | `electionYear` | integer | Even-numbered election cycle, e.g. `2024`. Candidates mode: optional, leave empty for all cycles. Contributions mode: required by the FEC API to keep the query fast — defaults to the current even year if left empty. |
 | `includeTotals` | boolean | Candidates mode: fetch financial totals per candidate (default `true`). Costs one extra request per candidate. |
 | `maxResults` | integer | Stop after this many rows (default `20`, max `500`). |
-| `watchLabel` | string | Contributions mode only. Set a name for this saved donor search to turn on watch mode — see "Watch mode" below. |
+| `watchLabel` | string | Any transaction mode (contributions, disbursements, independentExpenditures). Set a name for this saved search to turn on watch mode — see "Watch mode" below. |
 
 ### Example: donor research by employer
 
@@ -57,6 +64,8 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 Leave `candidateName` empty to browse by filters alone instead of searching by name.
 
 ## Output
+
+Row shape depends on `searchMode`: one item per candidate below, per contribution, per disbursement or per independent expenditure in the three transaction modes (each documented in its own section).
 
 One item per candidate:
 
@@ -117,6 +126,79 @@ One item per itemized donor contribution:
 }
 ```
 
+### Disbursements mode output (Schedule B)
+
+`searchMode: "disbursements"` returns one row per payment a committee reported making, 16 fields:
+
+| Field | Description |
+|---|---|
+| `committeeId`, `committeeName` | The committee that made the payment. |
+| `recipientName`, `recipientCity`, `recipientState` | Who was paid, as filed. |
+| `disbursementAmount`, `disbursementDate` | Amount in USD and the date of the payment. |
+| `disbursementDescription` | The filer's own free-text purpose, e.g. `SOCIAL MEDIA ADVERTISEMENTS`. |
+| `disbursementPurposeCategory` | The FEC's normalized purpose bucket, e.g. `ADVERTISING`, `OTHER`. |
+| `disbursementCategory` | Category code decoded, when the filer supplied one (`null` is common). |
+| `lineNumberLabel` | Which line of the form it was reported on, e.g. `Operating Expenditures`. |
+| `candidateId`, `candidateName` | The candidate the payment relates to, when the filing names one. |
+| `electionCycle` | The two-year transaction period the row belongs to. |
+| `imageNumber`, `pdfUrl` | The scanned original filing and a direct link to it. |
+
+```json
+{
+  "committeeId": "C00744946",
+  "committeeName": "HARRIS VICTORY FUND",
+  "recipientName": "META PLATFORMS, INC.",
+  "recipientCity": "CHICAGO",
+  "recipientState": "IL",
+  "disbursementAmount": 5000000.0,
+  "disbursementDate": "2024-06-26",
+  "disbursementDescription": "ONLINE FUNDRAISING",
+  "disbursementPurposeCategory": "OTHER",
+  "lineNumberLabel": "Other Federal Operating Expenditures",
+  "electionCycle": 2024,
+  "pdfUrl": "https://docquery.fec.gov/cgi-bin/fecimg/?202407159661138582"
+}
+```
+
+### Independent expenditures mode output (Schedule E)
+
+`searchMode: "independentExpenditures"` returns one row per reported independent expenditure — outside money spent for or against a candidate, not coordinated with them — 21 fields:
+
+| Field | Description |
+|---|---|
+| `committeeId`, `committeeName` | The super PAC or other committee that spent the money. |
+| `candidateId`, `candidateName` | The candidate the spending is about. |
+| `candidateOffice`, `candidateOfficeState`, `candidateParty` | `H`/`S`/`P`, the state of the race, and the candidate's party. |
+| `supportOppose` | `"support"` or `"oppose"` — whether the money was spent for or against that candidate. |
+| `payeeName` | The vendor paid to produce or place the ad/mailer. |
+| `expenditureAmount` | Amount in USD. |
+| `expenditureDate` | The date as filed. Occasionally mistyped by the filer (`3024-07-18` is real FEC data) — see the FAQ. |
+| `disseminationDate` | When the communication actually ran. Usually the more reliable of the two dates. |
+| `expenditureDescription`, `expenditureCategory` | What it was, as filed, plus the decoded category code when supplied. |
+| `officeTotalYtd` | The committee's year-to-date total spent on that office, as computed by the FEC. |
+| `electionType` | Primary/general/runoff, when supplied. |
+| `filingForm`, `isNotice` | The form it arrived on (`F24` = a 24/48-hour notice, `F3X` = a periodic report), and whether this row is such a notice. |
+| `electionCycle`, `imageNumber`, `pdfUrl` | Cycle and the original scanned filing. |
+
+```json
+{
+  "committeeId": "C00804856",
+  "committeeName": "REPUBLICAN ACCOUNTABILITY PAC",
+  "candidateId": "P80001571",
+  "candidateName": "TRUMP, DONALD J",
+  "candidateOffice": "P",
+  "candidateParty": "REP",
+  "supportOppose": "oppose",
+  "payeeName": "EXTREME REACH, INC.",
+  "expenditureAmount": 100.0,
+  "disseminationDate": "2024-07-17",
+  "expenditureDescription": "ADVERTISING - EXTREMEREACH AZ",
+  "officeTotalYtd": 112395.99,
+  "filingForm": "F24",
+  "isNotice": true
+}
+```
+
 ### Sample row (real output, Elizabeth Warren, Senate)
 
 ```json
@@ -147,14 +229,23 @@ One item per itemized donor contribution:
 
 ## Watch mode
 
-Set `watchLabel` (contributions mode only) to a name for a saved donor search, e.g. `"acme-corp-employees"`. The first run for a given label + filter combination is a **free baseline**: it records every contribution currently matching your filters and returns zero rows (charged nothing). Run the same label and filters again later — on a schedule, typically — and you get back only the contributions that are **new** since the last run; anything already delivered is skipped and not charged. Changing any filter (donor name, employer, state, minimum amount, or election year) starts a fresh baseline under that label.
+Set `watchLabel` (any transaction mode: contributions, disbursements, independentExpenditures) to a name for a saved search, e.g. `"acme-corp-employees"`. The first run for a given label + filter combination is a **free baseline**: it records every contribution currently matching your filters and returns zero rows (charged nothing). Run the same label and filters again later — on a schedule, typically — and you get back only the contributions that are **new** since the last run; anything already delivered is skipped and not charged. Changing any filter — or the mode itself — starts a fresh baseline under that label.
 
 Not available in candidates mode: it always returns the same fixed roster of people for a given filter set, not a stream of discrete new events, so "new since last time" has no natural meaning there — setting `watchLabel` alongside `searchMode: "candidates"` logs a warning and is ignored.
 
 ## Pricing
-`result` — you are charged per row actually returned (one candidate, or one contribution in contributions mode). Starting a run is free, and a run that finds no matches costs nothing (this includes every watch-mode baseline run). HTTP-only (no browser), so runs are fast and cheap.
+`result` — you are charged per row actually returned (one candidate, contribution, disbursement or independent expenditure). Starting a run is free, and a run that finds no matches costs nothing (this includes every watch-mode baseline run). HTTP-only (no browser), so runs are fast and cheap.
 
 ## FAQ
+
+**Which mode should I use for "how much did this campaign spend on Facebook ads"?**
+`searchMode: "disbursements"` with `recipientName: "META"` and the committee's `committeeId`. Disbursements are money the campaign itself paid out. `independentExpenditures` is a different thing: money spent by *outside* groups for or against a candidate, which the candidate's own committee never reports.
+
+**Why is an `expenditureDate` sometimes in the year 3024?**
+Because the filer typed it that way. Schedule E dates are transcribed from the committee's own filing and the FEC publishes them as filed, typos included (`3024-07-18` on a real 2024 row). Use `disseminationDate` — when the ad actually ran — when you need a date you can sort on, and treat far-future `expenditureDate` values as data-entry errors rather than dropping the row.
+
+**Can I filter contributions by committee?**
+Not in contributions mode. `committeeId` is a fast filter on Schedules B and E and is supported there, but the FEC's Schedule A endpoint reliably times out on it (verified on both large and small committees), so it is ignored with a warning rather than producing a failed run.
 
 **Why does searching "Warren" return people who aren't named Warren?**
 The FEC's search matches the token anywhere in the filed name, including middle names. A Senate search for `Warren` returns 27 candidates, and the first ones alphabetically are `BOYANTON, RICHARD WARREN` and `BROWN, WARREN P` — not Elizabeth Warren. Search the full name (`"Elizabeth Warren"`) to narrow it: all tokens must match.

@@ -4,137 +4,411 @@
     "type": "object",
     "properties": {
       "candidateId": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Candidate ID",
         "example": "S2MA00170"
       },
       "name": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Name"
       },
       "party": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Party"
       },
       "office": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Office"
       },
       "state": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "State"
       },
       "district": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "District"
       },
       "incumbentChallenge": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Incumbent/challenger status"
       },
       "candidateStatus": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Candidate status"
       },
       "electionYears": {
-        "type": ["array", "null"],
+        "type": [
+          "array",
+          "null"
+        ],
         "title": "Election years"
       },
       "cycles": {
-        "type": ["array", "null"],
+        "type": [
+          "array",
+          "null"
+        ],
         "title": "Cycles"
       },
       "firstFileDate": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "First file date"
       },
       "fecUrl": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "FEC record URL"
       },
       "receipts": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Total receipts (USD)"
       },
       "disbursements": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Total disbursements (USD)"
       },
       "cashOnHandEnd": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Cash on hand, period end (USD)"
       },
       "individualContributions": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Individual contributions (USD)"
       },
       "individualItemizedContributions": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Individual itemized contributions (USD)"
       },
       "individualUnitemizedContributions": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Individual unitemized (small-dollar) contributions (USD)"
       },
       "refundedIndividualContributions": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Refunded individual contributions (USD)"
       },
       "coverageStartDate": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Totals coverage start"
       },
       "coverageEndDate": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Totals coverage end"
       },
       "contributorName": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Donor name (contributions mode)"
       },
       "contributorEmployer": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Donor employer (contributions mode)"
       },
       "contributorOccupation": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Donor occupation (contributions mode)"
       },
       "contributorCity": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Donor city (contributions mode)"
       },
       "contributorState": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Donor state (contributions mode)"
       },
       "contributionAmount": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Contribution amount, USD (contributions mode)"
       },
       "contributionDate": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Contribution date (contributions mode)"
       },
       "contributorAggregateYtd": {
-        "type": ["number", "null"],
+        "type": [
+          "number",
+          "null"
+        ],
         "title": "Donor's aggregate YTD giving to this committee, USD (contributions mode)"
       },
       "committeeId": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Receiving committee ID (contributions mode)"
       },
       "committeeName": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Receiving committee name (contributions mode)"
       },
       "imageNumber": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "FEC scanned-image identifier for the original filing (contributions mode)"
       },
       "pdfUrl": {
-        "type": ["string", "null"],
+        "type": [
+          "string",
+          "null"
+        ],
         "title": "Link to the original scanned filing PDF (contributions mode)"
+      },
+      "recipientName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Recipient / vendor name"
+      },
+      "recipientCity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Recipient city"
+      },
+      "recipientState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Recipient state"
+      },
+      "disbursementAmount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Disbursement amount (USD)"
+      },
+      "disbursementDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Disbursement date"
+      },
+      "disbursementDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Disbursement description"
+      },
+      "disbursementPurposeCategory": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Disbursement purpose category"
+      },
+      "disbursementCategory": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Disbursement category code"
+      },
+      "lineNumberLabel": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Form line-number label"
+      },
+      "candidateName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Candidate named on the row"
+      },
+      "electionCycle": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Election cycle"
+      },
+      "candidateOffice": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Candidate office (H/S/P)"
+      },
+      "candidateOfficeState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Candidate office state"
+      },
+      "candidateParty": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Candidate party"
+      },
+      "supportOppose": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Supports or opposes the candidate"
+      },
+      "payeeName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Payee name"
+      },
+      "expenditureAmount": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Expenditure amount (USD)"
+      },
+      "expenditureDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Expenditure date (as filed)"
+      },
+      "disseminationDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Dissemination date"
+      },
+      "expenditureDescription": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Expenditure description"
+      },
+      "expenditureCategory": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Expenditure category code"
+      },
+      "officeTotalYtd": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Committee's year-to-date total for this office"
+      },
+      "electionType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Election type"
+      },
+      "filingForm": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FEC filing form"
+      },
+      "isNotice": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Filed as a 24/48-hour notice"
       }
     }
   },
@@ -158,16 +432,46 @@
       "display": {
         "component": "table",
         "properties": {
-          "name": { "label": "Name", "format": "text" },
-          "party": { "label": "Party", "format": "text" },
-          "office": { "label": "Office", "format": "text" },
-          "state": { "label": "State", "format": "text" },
-          "candidateStatus": { "label": "Status", "format": "text" },
-          "receipts": { "label": "Receipts (USD)", "format": "number" },
-          "disbursements": { "label": "Disbursements (USD)", "format": "number" },
-          "cashOnHandEnd": { "label": "Cash on hand (USD)", "format": "number" },
-          "coverageEndDate": { "label": "Coverage end", "format": "text" },
-          "fecUrl": { "label": "FEC record", "format": "link" }
+          "name": {
+            "label": "Name",
+            "format": "text"
+          },
+          "party": {
+            "label": "Party",
+            "format": "text"
+          },
+          "office": {
+            "label": "Office",
+            "format": "text"
+          },
+          "state": {
+            "label": "State",
+            "format": "text"
+          },
+          "candidateStatus": {
+            "label": "Status",
+            "format": "text"
+          },
+          "receipts": {
+            "label": "Receipts (USD)",
+            "format": "number"
+          },
+          "disbursements": {
+            "label": "Disbursements (USD)",
+            "format": "number"
+          },
+          "cashOnHandEnd": {
+            "label": "Cash on hand (USD)",
+            "format": "number"
+          },
+          "coverageEndDate": {
+            "label": "Coverage end",
+            "format": "text"
+          },
+          "fecUrl": {
+            "label": "FEC record",
+            "format": "link"
+          }
         }
       }
     }

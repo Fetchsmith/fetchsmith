@@ -1,10 +1,17 @@
 {
-  "title": "FEC Campaign Finance Scraper - Candidates, Totals & Donors",
-  "description": "Search US federal candidates by name/state/office/party/cycle with campaign financial totals, or search individual donor contributions directly, via the official FEC open.fec.gov API. No key needed.",
-  "seoTitle": "FEC Campaign Finance Scraper - Candidates, Totals & Donors",
-  "seoDescription": "Search federal candidates by name, state, office, party or cycle with campaign financial totals, or search individual donor contributions by name/employer - from the FEC's official API.",
-  "categories": ["LEAD_GENERATION", "BUSINESS"],
+  "title": "FEC Campaign Finance Scraper - Candidates, Donors & Spending",
+  "description": "Search US federal candidates by name/state/office/party/cycle with campaign financial totals, individual donor contributions (Schedule A), committee spending (Schedule B) or independent expenditures for/against a candidate (Schedule E), via the official FEC open.fec.gov API. No key needed.",
+  "seoTitle": "FEC Scraper - Donors, Campaign Spending & Super PAC Money",
+  "seoDescription": "Scrape the FEC's official API: candidates with financial totals, itemized donor contributions, committee disbursements, and independent expenditures for or against a candidate. No API key needed.",
+  "categories": [
+    "LEAD_GENERATION",
+    "BUSINESS"
+  ],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One candidate record (with financial totals if requested) returned to the dataset.", "eventPriceUsd": 0.001 }
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One result row: a candidate record (with financial totals if requested), a donor contribution, a committee disbursement, or an independent expenditure.",
+      "eventPriceUsd": 0.001
+    }
   }
 }
