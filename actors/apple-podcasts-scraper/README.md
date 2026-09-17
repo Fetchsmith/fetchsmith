@@ -17,7 +17,7 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | Field | Type | Description |
 |---|---|---|
 | `dataType` | string | `episodes` (default), `reviews`, `podcasts` (show records), `charts` (today's top podcasts — no `podcasts`/`searchTerms` needed), or `publisher` (every show by a publisher/artist) |
-| `podcasts` | array | Apple Podcasts show URLs/IDs, e.g. `https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584`. For `dataType: "publisher"`, give the publisher's artist URL/ID instead, e.g. `https://podcasts.apple.com/us/artist/the-new-york-times/121664449` |
+| `podcasts` | array | Apple Podcasts show URLs/IDs, e.g. `https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584`. For `dataType: "publisher"`, give the publisher's artist URL/ID instead, e.g. `https://podcasts.apple.com/us/artist/the-new-york-times/121664449`. **You can also paste a direct RSS/podcast feed URL** for any show — including ones not indexed by Apple at all — but only with `dataType: "episodes"`, since the feed itself has no Apple ID for reviews/search/charts |
 | `searchTerms` | array | Find shows by keyword instead of, or as well as, giving URLs |
 | `searchLimit` | integer | Shows to take per search term (default 10, max 200) |
 | `chartCount` | integer | Charts only: how many top shows to fetch (default 50, max 200) |
@@ -123,6 +123,8 @@ Filtering happens **before** you're charged — you never pay for rows a filter 
 **Why did I get fewer reviews than `maxReviewsPerPodcast`, or exactly zero with `minRating`/`maxRating`/`keyword` set?** `maxReviewsPerPodcast` is a scan-depth cap, not a results cap — it's how many of the show's most-recent reviews get read from Apple's feed before your rating/keyword filter is applied, not how many matching reviews exist. A rare keyword can sit past the reviews you scanned. Example: The Joe Rogan Experience + `keyword:"propaganda"` returns 0 kept reviews at `maxReviewsPerPodcast:50` (only page 1 scanned) but 2 at `maxReviewsPerPodcast:100` (page 2 scanned) — the run log and status message call this out by name when it happens, telling you to raise `maxReviewsPerPodcast`.
 
 **How many episodes can I get?** Apple's endpoint exposes up to 200 of the most recent episodes per show. For the complete back catalogue, set `useRssForFullArchive: true` — the Actor fetches the show's own RSS feed directly instead (verified live on a real show: 502 episodes vs. Apple's 200-episode cap for the same ID).
+
+**Can I scrape a show that isn't on Apple Podcasts, or that I can't find by search?** Yes — paste its RSS feed URL directly into `podcasts` instead of an Apple URL/ID, with `dataType: "episodes"`. The Actor reads the feed itself, so no Apple lookup happens at all (verified live: a non-Apple-searched NPR feed returns full episode rows this way). Reviews, search and charts still need a real Apple ID, since that data only exists on Apple's side.
 
 **How fast is it?** HTTP-only, no headless browser: a show's 200 episodes come from a single request, and reviews page 50 at a time. Runs cost a few seconds of compute plus the per-result fee.
 

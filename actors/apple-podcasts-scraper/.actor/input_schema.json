@@ -15,7 +15,7 @@
     "podcasts": {
       "title": "Podcasts / publishers",
       "type": "array",
-      "description": "Apple Podcasts show URLs/IDs, e.g. https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584 or 1434243584. Leading/trailing spaces are ignored. For dataType 'publisher', give the publisher's Apple Podcasts artist URL/ID instead, e.g. https://podcasts.apple.com/us/artist/the-new-york-times/121664449.",
+      "description": "Apple Podcasts show URLs/IDs, e.g. https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584 or 1434243584. Leading/trailing spaces are ignored. For dataType 'publisher', give the publisher's Apple Podcasts artist URL/ID instead, e.g. https://podcasts.apple.com/us/artist/the-new-york-times/121664449. You can also paste a direct RSS/podcast feed URL for any show, including ones not on Apple Podcasts — works with dataType 'episodes' only, since the feed has no Apple ID for reviews/search/charts.",
       "editor": "stringList",
       "prefill": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"],
       "default": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"]

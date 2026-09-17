@@ -114,7 +114,11 @@ const lbl = (o) => (o && typeof o === 'object' && 'label' in o ? o.label : o ?? 
 // Apple Podcasts URLs and App Store URLs share the /id<digits> shape, so does a bare ID.
 // Publisher/artist URLs (…/artist/the-new-york-times/121664449) have no "id" prefix, just a
 // trailing numeric segment — checked last so it never overrides the "id<digits>" show-URL match.
-const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] || s.match(/\/(\d{6,})(?:[/?]|$)/)?.[1] || null);
+// GOTCHA (found cycle 401, adding direct-RSS-feed support): that trailing-numeric-segment
+// fallback used to run on ANY string, so a non-Apple feed URL with a numeric path segment (e.g.
+// https://feeds.npr.org/500005/podcast.xml) was silently misread as Apple ID 500005 instead of
+// being treated as a feed URL. It's gated to apple.com hosts now.
+const parseId = (s) => (s.match(/id(\d{6,})/)?.[1] || s.match(/^\d{6,}$/)?.[0] || (/apple\.com/i.test(s) ? s.match(/\/(\d{6,})(?:[/?]|$)/)?.[1] : null) || null);
 
 function podcastRow(p) {
   return {
@@ -287,6 +291,18 @@ async function getFeedUrlOnly(id) {
   return feedUrl;
 }
 
+async function pushEpisodeRows(rows) {
+  let got = 0;
+  for (const row of rows) {
+    if (!keepGoing || got >= perPodcastEpisodes) break;
+    got += 1;
+    if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
+    if (!episodePassesFilters(row)) continue;
+    keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
+  }
+  return got;
+}
+
 async function scrapeEpisodes(id) {
   const info = includePodcastInfo ? await getPodcastInfo(id) : null;
   let rows = null;
@@ -307,15 +323,34 @@ async function scrapeEpisodes(id) {
     catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return 0; }
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
-  let got = 0;
-  for (const row of rows) {
-    if (!keepGoing || got >= perPodcastEpisodes) break;
-    got += 1;
-    if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
-    if (!episodePassesFilters(row)) continue;
-    keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
+  return pushEpisodeRows(rows);
+}
+
+// Podcast shows without an Apple presence (or with one the caller didn't bother looking up) can
+// still be scraped by pasting the RSS feed URL directly into "podcasts" — the feed is the only
+// source of truth needed for episodes, so no Apple lookup happens at all. Only dataType
+// "episodes" is supported this way: reviews/charts/search/publisher all require an Apple ID.
+async function scrapeEpisodesFromFeed(feedUrl) {
+  let $;
+  try {
+    const res = await gotScraping({ url: feedUrl, timeout: { request: 30000 }, retry: { limit: 2 } });
+    $ = cheerio.load(res.body, { xml: true });
+  } catch (e) {
+    log.warning(`Could not fetch RSS feed "${feedUrl}": ${e.message}`);
+    return 0;
   }
-  return got;
+  const channel = $('channel').first();
+  const info = includePodcastInfo ? {
+    podcastName: channel.find('> title').first().text().trim() || null,
+    artistName: channel.find('itunes\\:author').first().text().trim() || null,
+    podcastUrl: channel.find('> link').first().text().trim() || null,
+    feedUrl,
+    primaryGenre: null,
+    episodeCount: null,
+    artworkUrl: channel.find('itunes\\:image').attr('href') || null,
+  } : null;
+  const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info)).get();
+  return pushEpisodeRows(rows);
 }
 
 async function scrapeReviews(id) {
@@ -362,10 +397,20 @@ async function scrapeReviews(id) {
 const ids = [];
 const seenIds = new Set();
 const addId = (id) => { if (id && !seenIds.has(id)) { seenIds.add(id); ids.push(id); } };
+// A string that isn't an Apple Podcasts URL/ID but does look like a URL is treated as a direct
+// RSS feed link (verified live cycle 401: competitors' `rssFeeds`-style input is a real, requested
+// feature for shows not indexed by Apple, or when the caller already has the feed URL in hand).
+const rawFeeds = [];
+const seenFeeds = new Set();
 for (const p of podcasts) {
   const id = parseId(p);
-  if (id) addId(id);
-  else log.warning(`Cannot parse a podcast ID from "${p}" — use an Apple Podcasts URL (…/id1434243584) or the numeric ID.`);
+  if (id) { addId(id); continue; }
+  if (/^https?:\/\//i.test(p)) { if (!seenFeeds.has(p)) { seenFeeds.add(p); rawFeeds.push(p); } }
+  else log.warning(`Cannot parse a podcast ID from "${p}" — use an Apple Podcasts URL (…/id1434243584), the numeric ID, or a direct RSS feed URL.`);
+}
+if (rawFeeds.length && dataType !== 'episodes') {
+  log.warning(`${rawFeeds.length} direct RSS feed URL(s) given, but "What to scrape" is "${dataType}" — a raw feed only contains episode data, so direct feed URLs are only usable with dataType "episodes". Skipping: ${rawFeeds.slice(0, 3).join(', ')}${rawFeeds.length > 3 ? ', …' : ''}`);
+  rawFeeds.length = 0;
 }
 
 const searchHits = [];
@@ -510,6 +555,19 @@ if (dataType === 'charts') {
         : `Apple returned no episodes for podcast ${id} in storefront "${country}" — check the ID is an Apple Podcasts ID and that the show is available in that storefront.`);
     }
   }
+  if (dataType === 'episodes') {
+    for (const feedUrl of rawFeeds) {
+      if (!keepGoing) break;
+      if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+      const before = pushed;
+      const got = await scrapeEpisodesFromFeed(feedUrl);
+      log.info(`${feedUrl}: ${got} episodes fetched, ${pushed - before} kept after filters.`);
+      if (got === 0) {
+        emptyIds.push(feedUrl);
+        log.warning(`RSS feed "${feedUrl}" returned no episodes — check it's a valid podcast RSS feed URL.`);
+      }
+    }
+  }
 }
 
 if (unknownDurationKept > 0) {
@@ -519,11 +577,14 @@ log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publ
 const timeBudgetNote = timeBudgetExceeded
   ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'
   : '';
+const emptySourceLabel = (list) => (list.some((x) => /^https?:\/\//i.test(x))
+  ? `no episodes found for: ${list.join(', ')}`
+  : `Apple returned nothing for: ${list.join(', ')} in storefront "${country}"`);
 if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No results before the run approached its time limit.${timeBudgetNote}`);
 } else if (pushed === 0) {
   const why = emptyIds.length
-    ? `Apple returned nothing for: ${emptyIds.join(', ')} in storefront "${country}"`
+    ? emptySourceLabel(emptyIds)
     : emptySearches.length
       ? `your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`
       : depthCapped.length
@@ -535,6 +596,6 @@ if (pushed === 0 && timeBudgetExceeded) {
 } else if (depthCapped.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`);
 } else if (emptyIds.length || timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` Apple returned nothing for: ${emptyIds.join(', ')}.` : ''}${timeBudgetNote}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${timeBudgetNote}`);
 }
 await Actor.exit();
