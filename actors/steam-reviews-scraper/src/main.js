@@ -26,6 +26,12 @@ const searchLimit = Math.min(Number(input.searchLimit ?? 10), 50);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeGameInfo = input.includeGameInfo !== false;
 const includePlayerCount = input.includePlayerCount === true;
+// Valve flags "off-topic review bomb" periods (a controversy, not the game) and Steam's review
+// endpoint excludes them by default (filter_offtopic_activity=1). Turning this on asks for the
+// unfiltered set, which is exactly what a buyer studying a backlash wants. Verified 2026-09-17 on
+// Total War: ROME II (214950): 88,334 reviews filtered vs 94,228 unfiltered.
+const includeOffTopic = input.includeOffTopic === true;
+const offTopicParam = includeOffTopic ? '0' : '1';
 const minPlaytimeHours = input.minPlaytimeHours != null ? Number(input.minPlaytimeHours) : null;
 const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
 
@@ -75,6 +81,9 @@ if (watchMode) {
     country, language, reviewType, purchaseType, sortBy: input.sortBy ?? null, dayRange,
     keyword, minPlaytimeHours,
     reviewsAfter: input.reviewsAfter ?? null, reviewsBefore: input.reviewsBefore ?? null,
+    // Only written when true: spelling it as `false` on the default path would change every
+    // existing watch fingerprint and reset all live baselines once, for no behaviour change.
+    ...(includeOffTopic ? { includeOffTopic: true } : {}),
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
@@ -304,6 +313,7 @@ function reviewsUrl(appId, cursor) {
     language,
     review_type: reviewType,
     purchase_type: purchaseType,
+    filter_offtopic_activity: offTopicParam,
     num_per_page: '100',
     cursor,
   });
@@ -428,10 +438,14 @@ if (dataType === 'games') {
     }
     let summary = null;
     try {
-      const body = await getJson(`https://store.steampowered.com/appreviews/${id}?json=1&num_per_page=0&language=all&purchase_type=all`);
+      // Language/purchase filters are deliberately left off so the totals are the game's own, but
+      // the off-topic flag follows the run's setting: a row whose reviewScore silently excluded a
+      // review bomb the buyer explicitly asked to include would contradict its own reviews.
+      const body = await getJson(`https://store.steampowered.com/appreviews/${id}?json=1&num_per_page=0&language=all&purchase_type=all&filter_offtopic_activity=${offTopicParam}`);
       summary = body?.query_summary ?? null;
-      // This query is always unfiltered, so a missing total_reviews is unambiguously Steam serving
-      // an incomplete body — say so instead of shipping a row with silently null review scores.
+      // Nothing here can legitimately return an empty set, so a missing total_reviews is
+      // unambiguously Steam serving an incomplete body — say so instead of shipping a row with
+      // silently null review scores.
       if (summary && summary.total_reviews === undefined) {
         log.warning(`Steam returned an incomplete review summary for app ${id} — reviewScore/totalReviews will be null in this row. Upstream fault; re-run later for those fields.`);
         summary = null;

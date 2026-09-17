@@ -12,6 +12,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 - **Find bug reports in the wild** — set `keyword` to `crash`, `stutter`, `controller` or `refund` and get only the reviews that mention it.
 - **Filter out drive-by reviews** — `minPlaytimeHours: 10` keeps only reviewers who actually played the game.
 - **Pull reviews from an exact historical window** — `reviewsAfter`/`reviewsBefore` (e.g. a specific patch, a controversy, a launch week years ago) reach any point in a game's history, not just the last year.
+- **Study a review bomb** — `includeOffTopic: true` returns the reviews Steam itself hides when Valve flags a stretch of time as off-topic activity. On War Thunder that is 125,691 reviews you cannot see anywhere on the store page.
 - **Competitive research** — `dataType: "games"` returns price, discount, genres, developer, Metacritic score, the full review-score summary (total positive/negative, % positive) and, optionally, the **live concurrent player count**.
 - **Localised research** — `language: "schinese"`, `"russian"`, `"brazilian"` … or `"all"` for every language at once.
 - **Feed an LLM / dataset pipeline** — clean flat rows, stable `reviewId`, ISO-8601 timestamps.
@@ -29,6 +30,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `language` | string | `english` | Steam language code, or `all` |
 | `reviewType` | string | `all` | `positive` / `negative` to keep only thumbs-up / thumbs-down |
 | `purchaseType` | string | `all` | `steam` excludes key activations and free weekends |
+| `includeOffTopic` | boolean | `false` | Include reviews from periods Valve flagged as **off-topic review bombs** — see below |
 | `sortBy` | string | `recent` | `recent`, `updated`, or `all` (Steam's helpfulness ranking) |
 | `dayRange` | integer | — | With `sortBy: "all"`, restrict to the last N days (1–365) |
 | `reviewsAfter` | string | — | ISO date (`2024-01-01`) — keep only reviews created on/after this date. Reaches any point in history, forces `sortBy` to `recent`. |
@@ -41,6 +43,26 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `searchLimit` | integer | `10` | Games taken from each search term |
 | `watchLabel` | string | — | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Reviews mode only. Leave empty for normal runs. |
 
+## Off-topic review bombs (`includeOffTopic`)
+
+When a game gets review-bombed over something that isn't the game — a publisher decision, a
+storefront policy, a controversy — Valve flags that stretch of time as *off-topic activity* and
+Steam hides those reviews from its own review lists and score. **That is Steam's default, so it is
+this Actor's default too.** Set `includeOffTopic: true` to get the unfiltered set instead, which is
+exactly what you want if the backlash *is* the thing you are studying.
+
+The difference is not cosmetic (checked 2026-09-17):
+
+| Game | Reviews with the flag hidden (default) | With `includeOffTopic: true` |
+|---|---|---|
+| Total War: ROME II (`214950`) | 88,334 | 94,228 |
+| War Thunder (`236390`) | 784,322 | 910,013 |
+| NARAKA: BLADEPOINT (`1203220`) | 302,783 | 343,134 |
+
+It applies to `dataType: "reviews"` **and** to the `reviewScore` / `totalReviews` fields on
+`dataType: "games"` rows, so a game row never reports a score that contradicts the reviews you
+pulled alongside it.
+
 ## Watch mode — only new reviews since the last run
 
 Set `watchLabel` to any name and this Actor stops re-delivering the same reviews on every scheduled run:
@@ -48,7 +70,7 @@ Set `watchLabel` to any name and this Actor stops re-delivering the same reviews
 1. **The first run for a label is a free baseline.** It records which reviews already exist for every game in your input and returns **zero rows — you are charged nothing**.
 2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
 
-The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-steam-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`searchTerms`/`searchLimit`/`country`/`language`/`reviewType`/`purchaseType`/`sortBy`/`dayRange` **and every `keyword`/`minPlaytimeHours`/`reviewsAfter`/`reviewsBefore` filter** — all of them decide what "new" means, so changing any of them gives you a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
+The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-steam-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`searchTerms`/`searchLimit`/`country`/`language`/`reviewType`/`purchaseType`/`includeOffTopic`/`sortBy`/`dayRange` **and every `keyword`/`minPlaytimeHours`/`reviewsAfter`/`reviewsBefore` filter** — all of them decide what "new" means, so changing any of them gives you a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
 
 Details worth knowing:
 

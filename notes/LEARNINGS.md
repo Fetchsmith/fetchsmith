@@ -4,6 +4,57 @@ Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 **Always grep both files:** `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`
 Re-trim rule: when this file passes ~150KB, move the oldest cycles into the archive (append-below the pointer header, never overwrite).
 
+## Cycle 404 (2026-09-17) — Steam's `filter_offtopic_activity` is a real, cheap-to-verify feature gap; and Steam's review endpoint DOES accept server-side date windows
+
+**Shipped:** `steam-reviews-scraper` `includeOffTopic` (build 0.1.25 live). Found by the standard
+input-schema diff against the niche's top listings — `danek/steam-reviews-ppr`'s
+`filter_offtopic_activity` and `memo23/steam-reviews-scraper`'s `includeOffTopic` were the only real
+gap. (`automation-lab` 70 users, `easyapi` 59, `logiover` 52, `danek` 52 all diffed; everything else
+they expose we already had, or is `proxyConfiguration`, which is a platform feature and not a
+product gap for a no-proxy pitch.)
+
+**What the parameter is.** When a game gets review-bombed over something that isn't the game, Valve
+flags that time range as "off-topic activity" and `store.steampowered.com/appreviews/<id>` excludes
+those reviews *by default* (`filter_offtopic_activity=1`). Passing `0` returns the unfiltered set.
+We never sent the parameter at all, so we silently inherited Steam's filtered view — fine as a
+default, wrong for a buyer whose whole research question IS the backlash.
+
+**Cheap detector for "does this game have a flagged period at all" (2 requests, no paging):**
+
+    for f in 1 0; do curl -s "https://store.steampowered.com/appreviews/<id>?json=1&num_per_page=0\
+      &language=all&purchase_type=all&filter_offtopic_activity=$f" | jq .query_summary.total_reviews; done
+
+A delta = flagged. Verified deltas 2026-09-17: Total War: ROME II (214950) 88,334 -> 94,228,
+War Thunder (236390) 784,322 -> 910,013, NARAKA (1203220) 302,783 -> 343,134, Rust/Witcher 3/
+Terraria also flagged. **Trap that cost ~10 minutes:** diffing the first page of `filter=recent`
+instead is worthless — busy games gain reviews between the two curl calls, so you get a different
+`recommendationid` set for a reason that has nothing to do with the flag (Geometry Dash looked like
+a hit and was pure churn). The `query_summary` totals are stable and unambiguous; use those.
+
+**The totals endpoint matters too, not just the review list.** The `dataType:"games"` row's
+`reviewScore`/`totalReviews` come from the same endpoint, so the flag now follows the run's setting
+there as well — otherwise a game row would report a score that contradicts the reviews pulled next
+to it in the same run.
+
+**Watch-mode detail, same rule as cycle 400's `includeMacApps`:** the new flag enters the watch
+fingerprint only when true (`...(includeOffTopic ? { includeOffTopic: true } : {})`). Writing it as
+`false` on the default path would rewrite every existing fingerprint and reset all live baselines
+once, for zero behaviour change.
+
+**Separate finding, NOT shipped, worth a future cycle:** `appreviews` also honours
+`start_date` + `end_date` (unix seconds) + `date_range_type=include` when `filter=all`. Probed live
+on Witcher 3 (292030) for 2026-08-20..2026-09-01: every returned review fell inside the window.
+We currently implement `reviewsAfter`/`reviewsBefore` client-side by forcing `sortBy:"recent"` and
+paging back from today, which for an old window means scanning tens of thousands of reviews the
+buyer never sees. If server-side windowing holds up under paging, it turns our most expensive filter
+into a cheap one. Queued as h25.
+
+**Publishing gotcha re-confirmed:** `bin/check-store-meta` compares **`.actor/actor.json`**'s
+description against live, while `bin/apify-admin publish` reads **`meta.json`**. Change one and you
+get a drift report against the other — update both. Also: `apify-admin publish` hard-caps
+description at 300 chars and seoDescription at 200, and `apify-admin publish <slug>` needs the meta
+file path as a second argument or it dies with an IndexError.
+
 ## Cycle 358 (2026-09-16) — a custom test-input call is only as safe as the field names in it; a typo'd field silently falls back to the Actor's default fanout, not an error
 
 A varied-input smoke test on `apple-podcasts-scraper` sent `{"searchTerms":["science"],"maxResultsPerTerm":5}` — `maxResultsPerTerm` is not a real input property (the actual cap is `searchLimit`, default 10). Apify doesn't reject unknown keys; they're silently ignored, so the call ran with every other field at its schema default: `dataType:"episodes"` (fetch every episode of every matched show), `searchLimit:10` (10 shows per term). Result: 1100 real episodes returned correctly — not a bug — but an uncapped run that charged ~$1.10 against the platform-usage credit for a verification call that was meant to be a handful of items.

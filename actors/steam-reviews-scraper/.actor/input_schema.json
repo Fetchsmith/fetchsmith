@@ -68,6 +68,12 @@
       "enumTitles": ["All", "Steam purchases only", "Non-Steam purchases only"],
       "editor": "select"
     },
+    "includeOffTopic": {
+      "title": "Include off-topic review bombs",
+      "type": "boolean",
+      "description": "Steam hides reviews from periods Valve flagged as off-topic review-bomb activity (a controversy rather than the game itself). Turn this on to get the unfiltered set — e.g. Total War: ROME II returns 88,334 reviews filtered vs 94,228 unfiltered. Also applies to the review totals on Game details rows.",
+      "default": false
+    },
     "sortBy": {
       "title": "Sort / selection",
       "type": "string",
@@ -140,7 +146,7 @@
     "watchLabel": {
       "title": "Watch label (alert mode)",
       "type": "string",
-      "description": "Set a name (e.g. \"my-game-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/searchTerms/searchLimit/country/language/reviewType/purchaseType/sortBy/dayRange/keyword/minPlaytimeHours/reviewsAfter/reviewsBefore) starts a fresh baseline. Reviews only — ignored when dataType is \"games\". Leave empty for normal one-off runs.",
+      "description": "Set a name (e.g. \"my-game-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/searchTerms/searchLimit/country/language/reviewType/purchaseType/includeOffTopic/sortBy/dayRange/keyword/minPlaytimeHours/reviewsAfter/reviewsBefore) starts a fresh baseline. Reviews only — ignored when dataType is \"games\". Leave empty for normal one-off runs.",
       "editor": "textfield"
     }
   }

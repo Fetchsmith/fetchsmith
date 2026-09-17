@@ -1,8 +1,8 @@
 {
-  "title": "Steam Reviews Scraper \u2013 Playtime, Keyword & Language Filters",
-  "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by minimum playtime, keyword, language or review type; games mode adds price, genres, review-score summary and live player count. No login, no browser, no key.",
+  "title": "Steam Reviews Scraper – Playtime, Keyword & Language Filters",
+  "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by playtime, keyword, language or review type, or include the off-topic review bombs Steam hides; games mode adds price, genres and live player count.",
   "seoTitle": "Steam Reviews Scraper - Game Reviews & Store Data API",
-  "seoDescription": "Scrape Steam gaming reviews to JSON/CSV: text, playtime, thumbs up/down, votes, early access flag, language and purchase-type filters, plus game prices and genres. Pay per result.",
+  "seoDescription": "Scrape Steam gaming reviews to JSON/CSV: text, playtime, thumbs up/down, votes, language and purchase-type filters, optional off-topic review-bomb reviews, plus game prices and genres. Pay per result.",
   "categories": [
     "ECOMMERCE",
     "SOCIAL_MEDIA",
@@ -13,12 +13,24 @@
       "eventTitle": "Result item",
       "eventDescription": "One review or game record returned to the dataset.",
       "eventTieredPricingUsd": {
-        "FREE": { "tieredEventPriceUsd": 0.000575 },
-        "BRONZE": { "tieredEventPriceUsd": 0.0005 },
-        "SILVER": { "tieredEventPriceUsd": 0.00039 },
-        "GOLD": { "tieredEventPriceUsd": 0.0003 },
-        "PLATINUM": { "tieredEventPriceUsd": 0.0002 },
-        "DIAMOND": { "tieredEventPriceUsd": 0.00014 }
+        "FREE": {
+          "tieredEventPriceUsd": 0.000575
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.0005
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.00039
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.0003
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.0002
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.00014
+        }
       }
     }
   }
