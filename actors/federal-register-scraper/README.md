@@ -6,7 +6,7 @@ No API key, no login, no proxy. Public government data only.
 
 ## What you get
 
-31 flat fields per document, including the ones most Federal Register Actors leave out:
+37 flat fields per document, including the ones most Federal Register Actors leave out:
 
 | Field | Why it matters |
 | --- | --- |
@@ -19,6 +19,7 @@ No API key, no login, no proxy. Public government data only.
 | `agencyNames` / `agencySlugs` / `parentAgencyNames` | One document usually lists a department *and* the bureau that wrote it; both are kept, split by level. |
 | `fullTextUrl` | Public URL of the complete document body as plain text. Free to fetch yourself — we don't charge you a second row for it. |
 | `url`, `pdfUrl`, `citation`, `startPage`, `endPage`, `pageLength` | Cite it in a memo without a second lookup. |
+| `filedAt`, `filingType`, `numPages`, `editorialNote`, `onPublicInspection` | Only on `dataset: "publicInspection"` rows (null otherwise) — see **Advance notice** below. |
 
 Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesText`, `publicationDate`, `effectiveOn`, `signingDate`, `topics`, `president`, `executiveOrderNumber`, `excerpt`, `jsonUrl`.
 
@@ -42,6 +43,7 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 
 | Input | Notes |
 | --- | --- |
+| `dataset` | `published` (default) searches the full archive back to 1994. `publicInspection` returns documents that are **filed but not published yet** — see **Advance notice** below. |
 | `documentTypes` | `RULE`, `PRORULE`, `NOTICE`, `PRESDOCU`. All four by default. |
 | `agencies` | Slug (`environmental-protection-agency`) **or** full name — both are resolved against the official 472-agency list, and anything unrecognised is reported in the log instead of silently returning zero rows. **Filtering by a parent agency includes its sub-agencies**: `homeland-security-department` also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. |
 | `publicationDateFrom` / `publicationDateTo` | `YYYY-MM-DD`. Defaults to the last 90 days; the archive goes back to **1994-01-03**. |
@@ -52,6 +54,31 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 | `order` | `newest`, `oldest` or `relevance`. |
 | `maxResults` | Up to 50,000. |
 | `watchLabel` | Optional. Name a saved query and get **only what is new since your last run** — see below. |
+
+## Advance notice: the Public Inspection desk (`dataset: "publicInspection"`)
+
+By the time a rule appears in the Federal Register it is already law of record. Before that it sits on the **Public Inspection desk** — filed by the agency, scheduled, and publicly readable **1-3 business days early**. Set `dataset: "publicInspection"` and you get those documents, with the same field names as a published row plus:
+
+| Field | Notes |
+| --- | --- |
+| `filedAt` | Exact UTC timestamp the agency filed it. |
+| `publicationDate` | The date it is **scheduled** to publish — usually the next business day. |
+| `filingType` | `regular`, or `special` when an agency asked for early public availability (about 4% of the desk). |
+| `numPages`, `editorialNote` | Page count, and the Office of the Federal Register's own note when there is one — e.g. a withdrawal request received after filing. |
+| `onPublicInspection` | `true` on these rows, `false` on published rows, so a mixed dataset stays unambiguous. |
+
+Two things to know. The desk holds **one issue at a time** (~100-150 documents, mostly notices) and is empty on weekends and federal holidays, so run it on a daily schedule with a `watchLabel` rather than expecting a hit on any single run. And it supports `documentTypes`, `agencies`, `searchQuery` and `maxResults` **only** — there is no date range, significance flag, comment deadline, CFR index or sort order on the desk, and this Actor drops those inputs with a warning in the log instead of passing them through. (That last part matters: the desk's own `available_on` parameter does not narrow a query, it *replaces* it — asking for one issue plus one agency returns the whole issue. Verified live 2026-09-17.)
+
+```json
+{
+  "dataset": "publicInspection",
+  "agencies": ["environmental-protection-agency"],
+  "watchLabel": "epa-filed-today",
+  "maxResults": 100
+}
+```
+
+A `watchLabel` used on the desk gets its own baseline, separate from the same label on published documents — a Public Inspection row and its later published row share a document number, so mixing them would silently hide the publication you switched modes to catch.
 
 ## Only what's new since last run (`watchLabel`)
 
@@ -100,6 +127,9 @@ The Federal Register API's page-based paging stops hard at 10,000 rows (`page=11
 
 **Why did I get zero rows?**
 The filters are ANDed. A `searchQuery` plus an agency plus `significantOnly` over a short date window often genuinely matches nothing — drop one filter. Also note `significantOnly` only ever matches rules and proposed rules, so pairing it with `documentTypes: ["NOTICE"]` always returns nothing. The run log spells out which cause applies.
+
+**Why did my `publicInspection` run return nothing?**
+The desk is small and resets every business day — a narrow agency or `searchQuery` legitimately matches nothing most days, and it is empty on weekends and federal holidays. Schedule it daily with a `watchLabel` instead of running it once. The log says which of these applies.
 
 **Is `significant` reliable?**
 It is reliable where it exists — on final and proposed rules. It is `null` by design on notices and presidential documents, so don't read null as "not significant" outside rules.

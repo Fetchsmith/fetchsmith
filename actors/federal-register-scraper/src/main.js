@@ -27,6 +27,20 @@ const FIELDS = [
     'html_url', 'pdf_url', 'raw_text_url', 'json_url', 'public_inspection_pdf_url',
 ];
 
+// The Public Inspection desk is a genuinely different endpoint, not a filter: documents that
+// agencies have FILED but that have not been published yet (they publish on the next business
+// day or two). It is the only place the text exists before it is law-of-record, which is the
+// whole reason a regulatory-affairs buyer watches it. Verified live (cycle 412): its rows carry
+// a different, smaller field set than /documents.json, and it rejects an unknown `fields[]`
+// entry with a clean HTTP 400 rather than silently ignoring it.
+const PI_FIELDS = [
+    'document_number', 'type', 'title', 'excerpts', 'filed_at', 'filing_type', 'publication_date',
+    'agencies', 'docket_numbers', 'editorial_note', 'num_pages', 'last_public_inspection_issue',
+    'html_url', 'pdf_url', 'raw_text_url',
+];
+const dataset = input.dataset === 'publicInspection' ? 'publicInspection' : 'published';
+const publicInspection = dataset === 'publicInspection';
+
 const documentTypes = (input.documentTypes ?? Object.keys(TYPES))
     .map((t) => String(t).toUpperCase().trim())
     .filter((t) => Object.hasOwn(TYPES, t));
@@ -147,7 +161,27 @@ if (unknownAgencies.length) {
     );
 }
 
+// Filters that exist on /documents.json but have no counterpart on the Public Inspection desk.
+// They are dropped with a loud warning rather than passed through: verified live (cycle 412),
+// `conditions[available_on]` does not narrow a Public Inspection query, it REPLACES it — asking
+// for available_on=2026-09-17 plus agencies=environmental-protection-agency returned all 116
+// rows of that issue, not the 1 EPA row. A silently-ignored filter is the worst outcome here
+// (the buyer pays per result for rows they filtered out), so say so instead.
+function piParams() {
+    const p = {
+        'fields[]': PI_FIELDS,
+        per_page: Math.min(MAX_PER_PAGE, Math.max(20, maxResults)),
+    };
+    if (documentTypes.length && documentTypes.length < Object.keys(TYPES).length) {
+        p['conditions[type][]'] = documentTypes;
+    }
+    if (agencySlugs.length) p['conditions[agencies][]'] = agencySlugs;
+    if (searchQuery) p['conditions[term]'] = searchQuery;
+    return p;
+}
+
 function baseParams() {
+    if (publicInspection) return piParams();
     const p = {
         'fields[]': FIELDS,
         per_page: Math.min(MAX_PER_PAGE, Math.max(20, maxResults)),
@@ -195,6 +229,11 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchCriteria = {
+    // In the fingerprint because a Public Inspection row and its later published row share the
+    // SAME document_number. Without this, watching the desk under a label and then switching that
+    // label to dataset="published" would silently suppress every document as already-delivered —
+    // exactly the publication the buyer switched modes to catch.
+    dataset,
     documentTypes: [...documentTypes].sort(),
     agencies: [...agencySlugs].sort(),
     searchQuery,
@@ -261,7 +300,7 @@ async function seedBaseline() {
     const params = { ...baseParams(), 'fields[]': ['document_number'], per_page: MAX_PER_PAGE };
     let pagesSeeded = 0;
     while (watchSeen.size < SEED_CAP) {
-        const page = await apiGet('/documents.json', params);
+        const page = await apiGet(publicInspection ? '/public-inspection-documents.json' : '/documents.json', params);
         if (!page) break;
         const results = listOf(page.results);
         if (!results.length) break;
@@ -372,6 +411,52 @@ function normalize(d) {
         // Free full text of the document body — no extra request charged by us, the URL is public.
         fullTextUrl: d.raw_text_url ?? null,
         jsonUrl: d.json_url ?? null,
+
+        // Public-Inspection-only facts (dataset="publicInspection"). Declared here as nulls so
+        // both modes emit the identical key set and a CSV/Excel export never shifts columns.
+        filedAt: null,
+        filingType: null,
+        lastPublicInspectionIssue: null,
+        numPages: null,
+        editorialNote: null,
+        onPublicInspection: false,
+    };
+}
+
+// A Public Inspection row is the same document seen one step earlier, so it keeps the same field
+// names wherever the same fact exists (documentNumber/type/title/agency*/pdfUrl/fullTextUrl/url),
+// and `publicationDate` is the date it is SCHEDULED to publish — in a live check it was tomorrow's
+// date on every regular filing. Everything the desk doesn't know yet (effectiveOn,
+// commentsCloseOn, citation, page numbers, topics, CFR references, significant) is null rather
+// than absent, so a dataset mixing both modes stays one rectangle.
+function normalizePI(d) {
+    const agencies = listOf(d.agencies);
+    return {
+        ...normalize({}),
+        documentNumber: d.document_number ?? null,
+        type: d.type ?? null,
+        title: d.title ?? null,
+        publicationDate: d.publication_date ?? null,
+        agencyNames: agencies.map((a) => a.name ?? a.raw_name).filter(Boolean),
+        agencySlugs: agencies.map((a) => a.slug).filter(Boolean),
+        parentAgencyNames: agencies.filter((a) => a.parent_id == null).map((a) => a.name ?? a.raw_name).filter(Boolean),
+        docketIds: listOf(d.docket_numbers),
+        excerpt: d.excerpts ?? null,
+        url: d.html_url ?? null,
+        pdfUrl: d.pdf_url ?? null,
+        fullTextUrl: d.raw_text_url ?? null,
+
+        // Public-Inspection-only facts, null on every /documents.json row.
+        filedAt: d.filed_at ?? null,
+        // "regular" = filed on the normal schedule; "special" = filed out of band because the
+        // agency asked for early public availability (5 of 116 in a live sample).
+        filingType: d.filing_type ?? null,
+        lastPublicInspectionIssue: d.last_public_inspection_issue ?? null,
+        numPages: d.num_pages ?? null,
+        // Free-text note from the Office of the Federal Register, e.g. a withdrawal request
+        // received after the document was placed on public inspection. Rare but decisive.
+        editorialNote: d.editorial_note ?? null,
+        onPublicInspection: true,
     };
 }
 
@@ -388,15 +473,42 @@ async function pushResult(item) {
     return pushed < maxResults;
 }
 
-log.info(
-    `Federal Register: types=[${documentTypes.join(',') || 'all'}] publication_date ${dateFrom}..${dateTo} `
-    + `order=${order} maxResults=${maxResults}`
-    + (agencySlugs.length ? ` agencies=[${agencySlugs.join(',')}]` : '')
-    + (searchQuery ? ` searchQuery="${searchQuery}"` : '')
-    + (significantOnly ? ' significantOnly' : '')
-    + (commentsOpenOnly ? ' commentsOpenOnly' : '')
-    + (cfrTitle != null ? ` cfr=${cfrTitle}${cfrPart ? `/${cfrPart}` : ''}` : ''),
-);
+if (publicInspection) {
+    const ignored = [
+        input.publicationDateFrom ? 'publicationDateFrom' : null,
+        input.publicationDateTo ? 'publicationDateTo' : null,
+        significantOnly ? 'significantOnly' : null,
+        commentsOpenOnly ? 'commentsOpenOnly' : null,
+        cfrTitle != null ? 'cfrTitle' : null,
+        cfrPart ? 'cfrPart' : null,
+        input.order && input.order !== 'newest' ? 'order' : null,
+    ].filter(Boolean);
+    if (ignored.length) {
+        log.warning(
+            `dataset="publicInspection" ignores ${ignored.join(', ')} — the Public Inspection desk holds only `
+            + 'the documents currently on file (today\'s issue plus anything filed early), so there is no date '
+            + 'range, no significance flag, no comment-close date, no CFR index and no sort order to apply. '
+            + 'It supports documentTypes, agencies, searchQuery and maxResults only. Switch to '
+            + 'dataset="published" to use the filters above.',
+        );
+    }
+    log.info(
+        `Federal Register PUBLIC INSPECTION desk (filed, not yet published): `
+        + `types=[${documentTypes.join(',') || 'all'}] maxResults=${maxResults}`
+        + (agencySlugs.length ? ` agencies=[${agencySlugs.join(',')}]` : '')
+        + (searchQuery ? ` searchQuery="${searchQuery}"` : ''),
+    );
+} else {
+    log.info(
+        `Federal Register: types=[${documentTypes.join(',') || 'all'}] publication_date ${dateFrom}..${dateTo} `
+        + `order=${order} maxResults=${maxResults}`
+        + (agencySlugs.length ? ` agencies=[${agencySlugs.join(',')}]` : '')
+        + (searchQuery ? ` searchQuery="${searchQuery}"` : '')
+        + (significantOnly ? ' significantOnly' : '')
+        + (commentsOpenOnly ? ' commentsOpenOnly' : '')
+        + (cfrTitle != null ? ` cfr=${cfrTitle}${cfrPart ? `/${cfrPart}` : ''}` : ''),
+    );
+}
 
 const seen = new Set();
 const walkParams = baseParams();
@@ -409,7 +521,7 @@ let beforePush = 0;
 if (seeding) await seedBaseline();
 
 while (!seeding && keepGoing && pushed < maxResults) {
-    const page = await apiGet('/documents.json', walkParams);
+    const page = await apiGet(publicInspection ? '/public-inspection-documents.json' : '/documents.json', walkParams);
     if (!page) break;
     const results = listOf(page.results);
     if (!results.length) break;
@@ -426,7 +538,7 @@ while (!seeding && keepGoing && pushed < maxResults) {
             skippedSeen += 1;
             continue;
         }
-        keepGoing = await pushResult(normalize(row));
+        keepGoing = await pushResult(publicInspection ? normalizePI(row) : normalize(row));
         // Recorded as delivered only after the charge actually succeeded — anything dropped by
         // maxResults or a charge limit stays "new" for the next run.
         if (watchMode && row.document_number && pushed > beforePush) watchSeen.add(String(row.document_number));
@@ -463,6 +575,14 @@ if (pushed === 0 && watchMode && !seeding) {
     log.warning(
         `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching document(s) `
         + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+    );
+} else if (pushed === 0 && !seeding && publicInspection) {
+    log.warning(
+        `No documents are on the Public Inspection desk for these filters. Scanned ${scanned} rows. The desk is `
+        + 'small by design — it holds one issue at a time (about 100-150 documents, mostly notices), so a narrow '
+        + 'agency or searchQuery legitimately returns nothing on most days. It is also empty on weekends and '
+        + 'federal holidays. Run it on a daily schedule with watchLabel rather than expecting a hit on any one run, '
+        + 'or switch to dataset="published" to search the full archive back to 1994.',
     );
 } else if (pushed === 0 && !seeding) {
     log.warning(

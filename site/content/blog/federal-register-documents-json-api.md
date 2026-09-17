@@ -106,7 +106,7 @@ The general form, worth carrying to any government source: **before building cha
 
 ## Packaged version
 
-[federal-register-scraper on Apify](https://apify.com/fetchsmith/federal-register-scraper) wraps all of the above: cursor pagination past the 10,000-row wall, agency names or slugs resolved against the live 472-agency index before any request goes out, a `significantOnly` toggle, a comment-deadline filter, a `referencedCitations` field that pulls the `"NN FR NNNNN"` citations out of an amendment's own text so you can match it back to the rule it corrects, and 31 flat fields per document with each one documented against the type it actually appears on. No API key, no proxy, pay per result at $0.0008 — no start fee.
+[federal-register-scraper on Apify](https://apify.com/fetchsmith/federal-register-scraper) wraps all of the above: cursor pagination past the 10,000-row wall, agency names or slugs resolved against the live 472-agency index before any request goes out, a `significantOnly` toggle, a comment-deadline filter, a `referencedCitations` field that pulls the `"NN FR NNNNN"` citations out of an amendment's own text so you can match it back to the rule it corrects, and 37 flat fields per document with each one documented against the type it actually appears on. No API key, no proxy, pay per result at $0.0008 — no start fee.
 
 The clamped `count` above is one of three distinct failure classes across the eight key-free government APIs we build against — the cross-API comparison and the assertions that catch each is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 
