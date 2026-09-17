@@ -76,6 +76,18 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000)
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
 
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
+
 // Verified live: dateRange takes any positive integer number of days (not just the 3/7/14/...
 // preset buttons the site's own facet list advertises -- dateRange:"10" returned a real
 // in-between count), but like every other param on this API a garbage value is never rejected,
@@ -791,4 +803,40 @@ log.info(
     + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : '')
     + (droppedNoCloseDate ? ` Dropped ${droppedNoCloseDate} row(s) with no close date (forecasts and rolling/continuous announcements have none) against the closeDateFrom/closeDateTo filter.` : ''),
 );
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+    const env = Actor.getEnv();
+    const payload = {
+        actorRunId: env.actorRunId ?? null,
+        defaultDatasetId: env.defaultDatasetId ?? null,
+        finishedAt: new Date().toISOString(),
+        pushed,
+        scanned,
+        enrichedCharged: pushed - thinCharged,
+        thinCharged,
+        watchLabel: watchMode ? watchLabel : null,
+        watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
+        watchChangedCount: watchMode && !seeding ? changedCount : null,
+    };
+    try {
+        const resp = await gotScraping({
+            url: webhookUrl,
+            method: 'POST',
+            responseType: 'text',
+            throwHttpErrors: false,
+            retry: { limit: 0 },
+            timeout: { request: 10000 },
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+        else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+    } catch (err) {
+        log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+    }
+}
+
 await Actor.exit();

@@ -299,6 +299,12 @@
       "type": "boolean",
       "description": "Only used together with Watch label. When on, a run also re-delivers an opportunity you already have if its closing date, forecast-vs-posted status, or opportunity status (posted/closed/archived) has changed since you last saw it -- e.g. a deadline extension, a forecast turning into a real posted opportunity, or an opportunity closing early. Charged at the same per-row price as a new opportunity. Each changed row is tagged with `_watchChangeType` (one or more of `closeDate`, `docType`, `oppStatus`) plus the previous value(s) under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
       "default": false
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes -- opportunities pushed, how many were newly enriched vs. thin, watch-label new/changed counts if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging -- it fires after every opportunity has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   },
   "required": []

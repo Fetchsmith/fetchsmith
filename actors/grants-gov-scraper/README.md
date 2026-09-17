@@ -62,6 +62,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 | `maxResults` | integer | Stop after this many opportunities (default 100) |
 | `watchLabel` | string | Optional. Name a saved search to get only opportunities new since your last run under that label — see FAQ |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen opportunity if its closing date, `docType` or `oppStatus` changed (default `false`) — see FAQ |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (pushed/scanned counts, dataset ID, watch new/changed counts) here when the run finishes — see FAQ |
 
 ## Output (thin fields, always present)
 `id`, `opportunityNumber`, `title`, `agencyCode`, `agency`, `openDate`, `closeDate`, `oppStatus`, `docType`, `cfdaList`, `url`
@@ -197,6 +198,9 @@ No. The baseline key includes a fingerprint of every other filter you set, so ch
 
 **What does `watchChanges` add, and does it cost extra to turn on?**
 No extra fee — a changed opportunity is billed at the same per-row price as a new one ($0.0015 enriched / $0.0007 thin), so you only pay when there is actually something to see. Plain `watchLabel` only ever tells you about opportunities it has never delivered before; it stays silent forever about one it already sent you, even if that agency later extends the deadline, closes it early, or turns a `forecast` into a real posted `synopsis`. Set `watchChanges: true` and each run also compares every already-delivered opportunity's `closeDate`/`docType`/`oppStatus` against what it looked like last time; if any of the three moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 opportunities' recorded closing date and doc type directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you're already living in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `pushed`, `scanned`, `enrichedCharged`, `thinCharged`, and — if `watchLabel` is set — `watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort: a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Notes
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
