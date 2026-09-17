@@ -22,6 +22,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `expertQuery` | string | Raw TED expert-query string — overrides all the filters above entirely. |
 | `maxResults` | integer | Stop after this many notices. Default 100. |
 | `outputLanguage` | string | Preferred language for `title`/`description`/`buyerName`/`buyerCity`/`noticeUrl` (24 EU languages, e.g. `deu`, `fra`, `spa`). Default `eng`. Falls back to English, then to whatever TED provided, if a notice has no translation into your chosen language. |
+| `flatten` | boolean | Default `false` (JSON arrays). Set `true` to join `cpvCodes`, `contractNature`, `placeOfPerformanceCountry` and `placeOfPerformanceCity` into a single comma-separated string per field, instead of a JSON array — cleaner for CSV/Excel export (Apify's default array export otherwise splits each into numbered `field/0`, `field/1` columns that shift between rows with different array lengths). |
 | `watchLabel` | string | Optional. Name a saved query and get **only what is new since your last run** — see below. |
 
 ### Example: German construction/engineering notices from the last 2 weeks
@@ -135,6 +136,8 @@ One row per notice:
 **Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-ted-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
 
 **A tender I'm tracking got its deadline extended — will `watchLabel` catch that?** Yes, but as a new row, not an edited one: TED publishes the extension as a corrigendum with its own `publicationNumber`, so on your next watch run it arrives as a genuinely new notice. Match it back to the original via `procedureIdentifier` (both share it), and read `changeReasonDescription` for TED's own explanation of exactly what changed — no need to diff the two rows yourself.
+
+**I'm exporting to Excel/CSV and the CPV codes column looks broken.** That's Apify's default array export splitting `cpvCodes` (and the 3 other array fields) into numbered columns like `cpvCodes/0`, `cpvCodes/1` that shift position between rows with different counts. Set `flatten: true` and re-run — those 4 fields become a single comma-separated string column instead.
 
 ## Notes
 Only public data from an official EU government API is collected — no ToS or anti-bot risk. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

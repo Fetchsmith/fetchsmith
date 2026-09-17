@@ -14,6 +14,7 @@ const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : 
 const keywords = input.keywords ? String(input.keywords).trim() : null;
 const outputLanguage = String(input.outputLanguage ?? 'eng').toLowerCase();
 const watchLabel = String(input.watchLabel ?? '').trim();
+const flatten = Boolean(input.flatten);
 
 function normalizeDate(raw, label) {
   if (raw == null || raw === '') return null;
@@ -114,6 +115,15 @@ function pickNoticeUrl(links) {
   return null;
 }
 
+// Apify's CSV/Excel export splits an array field into numbered columns
+// (field/0, field/1, ...), which is awkward to read and shifts columns
+// between rows with different array lengths. `flatten` joins these 4
+// array fields into a single comma-separated string instead, at the cost
+// of losing the ability to reference individual entries in JSON.
+function maybeFlatten(arr) {
+  return flatten ? arr.join(', ') : arr;
+}
+
 function normalize(notice) {
   const [title, titleLanguage] = preferredText(notice['notice-title']);
   const [buyerName] = preferredText(notice['buyer-name']);
@@ -134,10 +144,10 @@ function normalize(notice) {
     buyerEmail: firstValue(notice['organisation-email-buyer']),
     buyerPhone: firstValue(notice['organisation-tel-buyer']),
     buyerUrl: firstValue(notice['organisation-internet-address-buyer']),
-    placeOfPerformanceCountry: dedupe(notice['place-of-performance-country-lot']),
-    placeOfPerformanceCity: dedupe(notice['place-of-performance-city-lot']),
-    contractNature: dedupe(notice['contract-nature']),
-    cpvCodes: dedupe(notice['classification-cpv']),
+    placeOfPerformanceCountry: maybeFlatten(dedupe(notice['place-of-performance-country-lot'])),
+    placeOfPerformanceCity: maybeFlatten(dedupe(notice['place-of-performance-city-lot'])),
+    contractNature: maybeFlatten(dedupe(notice['contract-nature'])),
+    cpvCodes: maybeFlatten(dedupe(notice['classification-cpv'])),
     description,
     totalValue: (typeof notice['total-value'] === 'number' && notice['total-value'] >= 0) ? notice['total-value'] : null,
     totalValueCurrency: Array.isArray(notice['total-value-cur']) ? notice['total-value-cur'][0] ?? null : notice['total-value-cur'] ?? null,

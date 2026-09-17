@@ -73,6 +73,12 @@
       "enum": ["eng", "deu", "fra", "ita", "spa", "pol", "nld", "por", "swe", "dan", "fin", "ces", "ell", "hun", "ron", "slk", "slv", "bul", "hrv", "est", "lav", "lit", "gle", "mlt"],
       "enumTitles": ["English", "German", "French", "Italian", "Spanish", "Polish", "Dutch", "Portuguese", "Swedish", "Danish", "Finnish", "Czech", "Greek", "Hungarian", "Romanian", "Slovak", "Slovenian", "Bulgarian", "Croatian", "Estonian", "Latvian", "Lithuanian", "Irish", "Maltese"]
     },
+    "flatten": {
+      "title": "Flatten array fields for CSV/Excel",
+      "type": "boolean",
+      "description": "Join the 4 array fields (CPV codes, contract nature, place of performance country/city) into a single comma-separated string instead of a JSON array. Off by default (JSON arrays); turn on if you're exporting to CSV/Excel and want one clean column per field instead of numbered field/0, field/1 columns.",
+      "default": false
+    },
     "watchLabel": {
       "title": "Watch mode: label",
       "type": "string",
