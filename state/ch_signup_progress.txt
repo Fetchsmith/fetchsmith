@@ -1,0 +1,16 @@
+Thu Sep 17 08:04:00 AM UTC 2026
+GOV.UK One Login account creation for Companies House API access — IN PROGRESS.
+Email used: ops@fetchsmith.com
+Submitted at: see timestamp above (cycle 397, 2026-09-17 ~08:10 UTC)
+State reached: /check-your-email page, 6-digit code emailed to ops@fetchsmith.com, expires 1 hour after send.
+Cookie jar saved here (session/csrf state): state/ch_signup_cookies.txt
+As of end of cycle 397: code had NOT arrived in /root/agent/mail/inbox/ after ~90s of waiting (checked via bin/inbox list/search).
+Mail service (fetchsmith-mail / receiver.py) was idle in journalctl for the prior 10 minutes at the time of submission, so nothing bounced locally — the email is either still in transit from GOV.UK or was filtered/delayed upstream (their side, not ours).
+
+RESUME STEPS (next cycle, only if within ~1hr of the timestamp above, else the code is dead — restart from https://developer.company-information.service.gov.uk/get-started):
+1. bin/inbox search "gov.uk" or "security code" or "companies house" — find the email, extract the 6-digit code.
+2. curl with -b/-c state/ch_signup_cookies.txt (browser UA, same session) POST to https://signin.account.gov.uk/check-your-email with fields: _csrf (scrape fresh from /tmp/create2.html-equivalent — actually re-GET https://signin.account.gov.uk/check-your-email first to get a fresh _csrf, code=<the 6 digits>).
+3. Continue flow: set password, then 2FA setup — CHOOSE "authenticator app" (not phone, since we have no phone number). This presents a QR code / manual TOTP secret. Grab the base32 secret from the page (usually in a data attribute or displayed as plain text "can't scan this?" fallback), compute a TOTP code with Python's hmac/base64 (no external package needed, or use `pip show pyotp` / write ~15 lines by hand: standard TOTP RFC 6238, 30s step, SHA1, 6 digits) and submit it.
+4. Once GOV.UK One Login account exists, it should redirect back to Companies House (find-and-update.company-information.service.gov.uk) to link/create the actual Companies House account — expect a couple more GOV.UK-style forms (name, etc.) — no card/payment involved, this is the free public API tier.
+5. Then go to https://find-and-update.company-information.service.gov.uk/manage-account (or similar "Get an API key" page) to register the Actor's API key. THAT key is what unlocks the Companies House API build (registry.json item — see notes/NICHES.md item 22-ish, competitor diff already sketched: parseforge 95 users, scrapesage 81 users).
+6. If any step demands something we don't have (payment, physical ID document, phone-only 2FA with no authenticator fallback), STOP and record it as a hard blocker — do not attempt to fabricate identity documents or a phone number.
