@@ -49,10 +49,27 @@
             "description": "Latest filing date, YYYY-MM-DD. Leave empty for no upper bound.",
             "editor": "textfield"
         },
+        "opinionStatus": {
+            "title": "Opinion status",
+            "type": "string",
+            "description": "Opinions mode only. CourtListener's opinion index defaults to PUBLISHED opinions only when this is left as-is — verified live on a real query, unpublished opinions are ~26% of matches and are silently absent unless you ask for them. \"Any\" returns both.",
+            "editor": "select",
+            "enum": [
+                "published",
+                "unpublished",
+                "any"
+            ],
+            "enumTitles": [
+                "Published only (default)",
+                "Unpublished only",
+                "Any (published + unpublished)"
+            ],
+            "default": "published"
+        },
         "startUrl": {
             "title": "CourtListener search URL",
             "type": "string",
-            "description": "Optional shortcut: build the search on courtlistener.com, then paste the address bar here — e.g. \"https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01\". An API URL (\"https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o\") works too — both use the same parameters. Whatever the URL mentions (search query, court(s), filed-after/before dates) REPLACES the matching field below; anything it doesn't mention still comes from the fields below. Only Opinions (type=o) and RECAP (type=r) URLs are supported — CourtListener's Oral Arguments/Judges/Parenthetical searches are different record shapes this Actor does not cover. Max results and the watch label always apply regardless.",
+            "description": "Optional shortcut: build the search on courtlistener.com, then paste the address bar here — e.g. \"https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01\". An API URL (\"https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o\") works too — both use the same parameters. Whatever the URL mentions (search query, court(s), filed-after/before dates, stat_Published/stat_Unpublished checkboxes) REPLACES the matching field below; anything it doesn't mention still comes from the fields below. Only Opinions (type=o) and RECAP (type=r) URLs are supported — CourtListener's Oral Arguments/Judges/Parenthetical searches are different record shapes this Actor does not cover. Max results and the watch label always apply regardless.",
             "editor": "textfield"
         },
         "maxResults": {

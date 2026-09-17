@@ -29,6 +29,22 @@ let query = String(input.query ?? '').trim();
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 
+// CourtListener's opinion index defaults to Published-only when no `stat_*` param is sent —
+// verified live cycle 423: a 2024+ "climate" query returned 545 opinions with no stat param
+// (identical to `stat_Published=on` alone), 191 with `stat_Unpublished=on` alone, and the
+// true total 736 only with both set. So the API's silent default drops ~26% of real matches
+// on that query, with nothing in a normal run's output to reveal it — a competitor
+// (automation-lab/court-records-scraper) exposes this as a "Status" filter; we already emit
+// the underlying `status` field on every opinion row (line below, `normalizeOpinion`) but had
+// no way to filter or complete on it. Default "published" reproduces today's exact behavior
+// (no existing run's row count changes); "unpublished" and "any" are additive opt-ins.
+const OPINION_STAT_PARAM = { published: ['stat_Published'], unpublished: ['stat_Unpublished'], any: ['stat_Published', 'stat_Unpublished'] };
+let opinionStatus = String(input.opinionStatus ?? 'published').toLowerCase().trim();
+if (!Object.hasOwn(OPINION_STAT_PARAM, opinionStatus)) {
+    log.warning(`Unknown opinionStatus "${input.opinionStatus}"; falling back to "published".`);
+    opinionStatus = 'published';
+}
+
 // CourtListener court IDs are the short slugs in a courtlistener.com/court/<id>/ URL
 // ("scotus", "ca9", "cand", "cacb", ...). 400+ exist, so this is free text rather than an
 // enum; an unknown id is not an error upstream, it just matches nothing — warned about below.
@@ -87,9 +103,18 @@ if (startUrlRaw) {
     if (qp.has('filed_after')) { filedAfter = normDate(qp.get('filed_after')); } else { ignored.push('filedAfter'); }
     if (qp.has('filed_before')) { filedBefore = normDate(qp.get('filed_before')); } else { ignored.push('filedBefore'); }
 
+    const wantsPub = qp.get('stat_Published') === 'on';
+    const wantsUnpub = qp.get('stat_Unpublished') === 'on';
+    if (wantsPub || wantsUnpub) {
+        opinionStatus = wantsPub && wantsUnpub ? 'any' : (wantsUnpub ? 'unpublished' : 'published');
+    } else {
+        ignored.push('opinionStatus');
+    }
+
     log.info(
         `startUrl parsed: query=${JSON.stringify(query)} recordTypes=${JSON.stringify(recordTypes)} `
-        + `courts=${JSON.stringify(courts)} filedAfter=${filedAfter ?? '(none)'} filedBefore=${filedBefore ?? '(none)'}.`,
+        + `courts=${JSON.stringify(courts)} filedAfter=${filedAfter ?? '(none)'} filedBefore=${filedBefore ?? '(none)'} `
+        + `opinionStatus=${opinionStatus}.`,
     );
     if (ignored.length) {
         log.info(
@@ -147,7 +172,14 @@ function firstUrl(kind) {
     if (courts.length) qs.set('court', courts.join(' '));
     if (filedAfter) qs.set('filed_after', filedAfter);
     if (filedBefore) qs.set('filed_before', filedBefore);
+    if (kind === 'opinions') {
+        for (const p of OPINION_STAT_PARAM[opinionStatus]) qs.set(p, 'on');
+    }
     return `${SEARCH}?${qs.toString()}`;
+}
+
+if (opinionStatus !== 'published' && !recordTypes.includes('opinions')) {
+    log.warning(`opinionStatus "${opinionStatus}" is set but recordType "${recordTypeRaw}" does not include opinions — ignored.`);
 }
 
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x != null && x !== '') : []);
@@ -314,6 +346,7 @@ const watchCriteria = {
     courts: [...courts].sort(),
     filedAfter,
     filedBefore,
+    ...(opinionStatus !== 'published' ? { opinionStatus } : {}),
 };
 
 const watchMode = watchLabel.length > 0;
@@ -377,7 +410,8 @@ log.info(
     `CourtListener: recordType=${recordTypes.join('+')} query="${query || '(none)'}" maxResults=${maxResults}`
     + (courts.length ? ` courts=[${courts.join(',')}]` : '')
     + (filedAfter ? ` filedAfter=${filedAfter}` : '')
-    + (filedBefore ? ` filedBefore=${filedBefore}` : ''),
+    + (filedBefore ? ` filedBefore=${filedBefore}` : '')
+    + (recordTypes.includes('opinions') ? ` opinionStatus=${opinionStatus}` : ''),
 );
 
 const seenIdsThisRun = new Set();
