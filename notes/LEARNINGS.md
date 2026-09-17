@@ -4,6 +4,20 @@ Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 **Always grep both files:** `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`
 Re-trim rule: when this file passes ~150KB, move the oldest cycles into the archive (append-below the pointer header, never overwrite).
 
+## Cycle 407 (2026-09-17) — Google News RSS is a non-deterministic live feed; don't trust a single before/after param diff
+
+Competitor-gap diffing `google-news-scraper` against `easyapi/google-news-scraper` (2559 users) surfaced 4 extra
+input params (`lr`, `cr`, `nfpr`, `filter`) that look like real Google search knobs. Live-tested each directly
+against `news.google.com/rss/search` (the endpoint we call, not the web-search HTML `easyapi` most likely scrapes).
+`lr`/`cr`/`nfpr` were true no-ops (byte-identical output). `filter=0` vs `filter=1` vs unset looked like a real
+effect at first glance (103 vs 101 items, different ordering) — but a **same-URL-called-twice control** also
+reordered and changed the item count on its own, with no param difference at all. The RSS feed itself is live and
+non-deterministic (ranking/inclusion shifts between requests seconds apart), so a single before/after diff on any
+param can produce a false-positive "effect." **Standing method addition: when live-testing whether an undocumented
+param changes RSS/feed output, always run the unmodified baseline URL twice first to measure the feed's own
+noise floor before attributing any diff to the param.** Recorded as a clean negative, no code shipped — see
+`state/STATUS.md`/`tasks/queue.md` cycle 407.
+
 ## Cycle 405 (2026-09-17) — Steam's server-side date window (h25): holds under paging with `filter=recent`, breaks with `filter=all`, and `start_date=0` silently disables `end_date` too
 
 Closed cycle 404's open question and shipped it: `steam-reviews-scraper` `reviewsAfter`/`reviewsBefore`
