@@ -114,6 +114,22 @@ if (hasAbsoluteDateFilter && postedWithinDays !== null) {
     log.warning('Both postedWithinDays and postedFrom/postedTo are set; ignoring postedWithinDays since an absolute range was given.');
 }
 
+// Deadline (close date) range. Same client-side mechanism and the same zero-extra-request cost as
+// postedFrom/postedTo -- closeDate is on every thin search2 row too -- but a DIFFERENT missing-value
+// story, measured live before writing this: `closeDate` is the empty string (not null, not absent)
+// on 100% of `docType:"forecast"` rows (a forecast has no firm deadline yet) AND on a material
+// slice of posted ones (18/100 on an unfiltered posted sample -- continuous/rolling announcements,
+// RFIs, standing notices). Since the default oppStatuses include forecasted, a naive close-date
+// filter would silently delete roughly half the default result set, so rows with no deadline are
+// dropped with their own named counter in the final summary rather than folded into the
+// postedFrom/postedTo one.
+const closeDateFrom = parseIsoDate(input.closeDateFrom, 'closeDateFrom');
+const closeDateTo = parseIsoDate(input.closeDateTo, 'closeDateTo');
+if (closeDateFrom !== null && closeDateTo !== null && closeDateFrom > closeDateTo) {
+    throw new Error(`closeDateFrom (${input.closeDateFrom}) is after closeDateTo (${input.closeDateTo}).`);
+}
+const hasCloseDateFilter = closeDateFrom !== null || closeDateTo !== null;
+
 // awardCeiling only exists on the per-opportunity detail record (search2's thin rows have no
 // award data at all), so either bound forces enrich on regardless of the input's own "enrich"
 // value -- otherwise the filter would silently have nothing to compare against and every row
@@ -223,6 +239,10 @@ const watchCriteria = {
     postedWithinDays,
     postedFrom: input.postedFrom ? String(input.postedFrom).trim() : null,
     postedTo: input.postedTo ? String(input.postedTo).trim() : null,
+    // Literal buyer-supplied strings, same as postedFrom/postedTo -- no computed absolute date
+    // goes into the fingerprint, so the cycle-297 rolling-default trap does not apply here either.
+    closeDateFrom: input.closeDateFrom ? String(input.closeDateFrom).trim() : null,
+    closeDateTo: input.closeDateTo ? String(input.closeDateTo).trim() : null,
     minAwardAmount,
     maxAwardAmount,
 };
@@ -496,6 +516,8 @@ log.info(
         + (postedWithinDays !== null && !hasAbsoluteDateFilter ? ` postedWithinDays=${postedWithinDays}` : '')
         + (postedFrom !== null ? ` postedFrom=${input.postedFrom}` : '')
         + (postedTo !== null ? ` postedTo=${input.postedTo}` : '')
+        + (closeDateFrom !== null ? ` closeDateFrom=${input.closeDateFrom}` : '')
+        + (closeDateTo !== null ? ` closeDateTo=${input.closeDateTo}` : '')
         + (minAwardAmount !== null ? ` minAwardAmount=${minAwardAmount}` : '')
         + (maxAwardAmount !== null ? ` maxAwardAmount=${maxAwardAmount}` : '')
         + (watchMode ? ` watchLabel="${watchLabel}"` : ''),
@@ -509,10 +531,19 @@ if (minAwardAmount !== null || maxAwardAmount !== null) {
         + 'the rare id with no detail record returned at all.',
     );
 }
+if (hasCloseDateFilter && oppStatuses.split('|').includes('forecasted')) {
+    log.warning(
+        'closeDateFrom/closeDateTo is set while "forecasted" is in oppStatuses. A forecast has no '
+        + 'firm deadline yet -- Grants.gov returns an empty closeDate on every forecast row -- so '
+        + 'ALL forecasts will be dropped by the deadline filter (they are counted separately in the '
+        + 'final summary). Drop "forecasted" from oppStatuses to make this explicit.',
+    );
+}
 
 let scanned = 0;
 let droppedNoAward = 0;
 let droppedOutOfRange = 0;
+let droppedNoCloseDate = 0;
 let skippedSeen = 0;
 
 // Walks the full startRecordNum offset paging exactly once, applying enrichment and the
@@ -560,6 +591,15 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
                 if (opened === null) { droppedOutOfRange += 1; return false; }
                 if (postedFrom !== null && opened < postedFrom) return false;
                 if (postedTo !== null && opened > postedTo) return false;
+                return true;
+            });
+        }
+        if (hasCloseDateFilter && !exclusiveOppNum) {
+            batch = batch.filter((row) => {
+                const closes = parseUsDate(row.closeDate);
+                if (closes === null) { droppedNoCloseDate += 1; return false; }
+                if (closeDateFrom !== null && closes < closeDateFrom) return false;
+                if (closeDateTo !== null && closes > closeDateTo) return false;
                 return true;
             });
         }
@@ -669,6 +709,7 @@ log.info(
         ? ` Charged ${pushed - thinCharged} as enriched "result" and ${thinCharged} at the cheaper "${THIN_EVENT}" rate.`
         : '')
     + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) with no award ceiling to compare against the amount filter.` : '')
-    + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : ''),
+    + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : '')
+    + (droppedNoCloseDate ? ` Dropped ${droppedNoCloseDate} row(s) with no close date (forecasts and rolling/continuous announcements have none) against the closeDateFrom/closeDateTo filter.` : ''),
 );
 await Actor.exit();
