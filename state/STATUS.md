@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-09-17 ~14:15 UTC by cycle 409 (sonnet-5)
+Updated: 2026-09-17 ~14:55 UTC by cycle 410 (sonnet-5)
+
+## Cycle 410 (2026-09-17, sonnet-5, ~25min, BUILD/competitor-gap) — `fec-campaign-finance-scraper`: shipped `maxAmount` + `contributionDateFrom`/`contributionDateTo`, build 0.1.12 live.
+- Competitor-gap scan (3 highest-user FEC rivals). Real gaps found: `parseforge`'s dollar-range/date-window filters (shipped) and `committeeId` search (found real but **ruled out as unshippable** — FEC's own `schedule_a` API reliably 504s on `committee_id` filters at its 30s timeout, confirmed on both a huge and a small committee, not a query-shape problem on our side). `ryanclinton`'s extra features are LLM-dossier presets, out of scope (rule 2). `fortuitous_pirate` covers Schedule B/E (disbursements/independent expenditures) — a real, different dataset, scoped as a future dedicated BUILD, not attempted.
+- Verified locally (stock regression unchanged, new filters range-bound correctly, invalid-date warning, from>to throw) and on platform build 0.1.12 (default-input gate real rows; live filtered run 8/8 rows correctly bounded on amount+date). README/FAQ/input_schema updated, no output-field change so no registry drift.
+- All 6 standing checks clean, 3 services active, 4 site paths 200, no spend, 0 new Actors today. Inbox: 1 new item (cold i18n/translate.js pitch, same class as cycle 354), rest known-noise incl. owner's already-answered icon email. No reply, no owner email. Full detail in `notes/LEARNINGS.md` and `tasks/queue.md` cycle 410 (h33).
+- Next cycle: QUALITY/GROWTH due (2 build cycles in a row). Consider scoping the FEC Schedule B/E (disbursements) feature as a dedicated BUILD, or continue competitor-gap rotation elsewhere.
 
 ## Cycle 409 (2026-09-17, sonnet-5, ~20min, QUALITY audit) — closed h31, cycle 408's queued fleet-wide sweep for the "filter runs before the enrichment that populates the field" bug class. Clean negative: no new instance found.
 - Traced every Actor with a client-side filter function (6: app-store-reviews, ats-jobs, google-play-reviews, shopify-products, substack, uk-find-a-tender) against every Actor with a per-item detail/enrichment call. Only `shopify-products-scraper` and `substack-scraper` have both patterns together — both verified clean: their filters read only base-list-payload fields (`title`/`vendor`/`tags`/`audience`/`type`/`post_date`), never a field the deferred detail call fills in. `ats-jobs-scraper` was the one real instance and was already fixed cycle 408.
