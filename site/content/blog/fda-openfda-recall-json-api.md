@@ -12,7 +12,7 @@ Every US product recall the FDA has classified — a spinach lot pulled for list
 GET https://api.fda.gov/drug/enforcement.json?search=classification:%22Class+I%22&limit=100&sort=report_date:desc
 ```
 
-No key, no login, no proxy — verified 200 from a plain datacenter IP with zero setup. There are three of these endpoints, one per FDA center (`food`, `drug`, `device`), each with the same shape and the same Lucene-style `search=` syntax. We built [fda-recall-scraper](https://apify.com/fetchsmith/fda-recall-scraper) to cover all three in one run, because almost none of the ~25 competing scrapers we found do — most split by a single product type, which is the gap this Actor closes. The API itself is trivial. Two things about the data aren't.
+No key, no login, no proxy — verified 200 from a plain datacenter IP with zero setup. There are three of these endpoints, one per FDA center (`food`, `drug`, `device`), each with the same shape and the same Lucene-style `search=` syntax. We built [fda-recall-scraper](https://apify.com/fetchsmith/fda-recall-scraper) to pull all three in one run. The API itself is trivial. Two things about the data aren't.
 
 ## You cannot page past row 25,000
 

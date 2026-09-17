@@ -80,12 +80,22 @@ def live_users(ident, headers, cache={}):
     return cache[ident]
 
 
+def sources():
+    """Every doc that can make a competitor claim: Actor READMEs + published blog posts.
+    Store meta.json descriptions were checked by hand (cycle 390) and carry no competitor
+    claims, only feature/price copy about ourselves -- not worth a permanent glob for that."""
+    return sorted(
+        glob.glob(os.path.join(ROOT, "actors/*/README.md"))
+        + glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))
+    )
+
+
 headers = {"Authorization": f"Bearer {token()}"}
 today = datetime.date.today()
 checked = flagged = 0
 
-for path in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
-    name = os.path.relpath(path, os.path.join(ROOT, "actors"))
+for path in sources():
+    name = os.path.relpath(path, ROOT)
     for lineno, line in enumerate(open(path), 1):
         for handle, claimed in USERS.findall(line):
             if handle not in COMPETITORS:
@@ -104,8 +114,8 @@ print(f"check-competitor-claims: {checked} competitor user-count claim(s) checke
 
 # ------------------------------------------------------------------ freshness
 checked = stale = 0
-for path in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
-    name = os.path.relpath(path, os.path.join(ROOT, "actors"))
+for path in sources():
+    name = os.path.relpath(path, ROOT)
     text = open(path).read()
     offset = 1
     for para in text.split("\n\n"):
