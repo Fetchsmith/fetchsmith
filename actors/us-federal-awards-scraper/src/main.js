@@ -211,6 +211,43 @@ const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmoun
 if (minAwardAmount != null && maxAwardAmount != null && minAwardAmount > maxAwardAmount) {
   throw new Error(`"minAwardAmount" (${minAwardAmount}) is greater than "maxAwardAmount" (${maxAwardAmount}) — no award can ever match. Swap them.`);
 }
+const expiringWithinDays = input.expiringWithinDays != null ? Number(input.expiringWithinDays) : null;
+const expiringAfterDays = input.expiringAfterDays != null ? Number(input.expiringAfterDays) : null;
+if (expiringWithinDays != null && (!Number.isFinite(expiringWithinDays) || expiringWithinDays < 1)) {
+  throw new Error('"expiringWithinDays" must be a positive integer number of days.');
+}
+if (expiringAfterDays != null && (!Number.isFinite(expiringAfterDays) || expiringAfterDays < 0)) {
+  throw new Error('"expiringAfterDays" must be a non-negative integer number of days.');
+}
+if (expiringAfterDays != null && expiringWithinDays == null) {
+  log.warning('"expiringAfterDays" requires "expiringWithinDays" to also be set -- ignoring "expiringAfterDays".');
+}
+if (expiringAfterDays != null && expiringWithinDays != null && expiringAfterDays >= expiringWithinDays) {
+  throw new Error(`"expiringAfterDays" (${expiringAfterDays}) must be less than "expiringWithinDays" (${expiringWithinDays}) — otherwise no award can ever match.`);
+}
+if (expiringWithinDays != null && isSubaward) {
+  log.warning('"expiringWithinDays"/"expiringAfterDays" only apply in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date. Ignoring.');
+}
+// Period-of-performance end date has no server-side filter on this API (its `time_period`
+// date_type is restricted to action_date/date_signed/last_modified_date -- verified live,
+// a "period_of_performance_current_end_date" date_type is rejected with a 400 naming the
+// three valid values), so this is applied client-side against the "End Date" field this
+// Actor already fetches for every contract/assistance row -- same "filter what we already
+// have, before charging" shape as shopify's price filters.
+const TODAY_UTC = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+function daysUntilEnd(endDateStr) {
+  if (!endDateStr) return null;
+  const d = new Date(`${endDateStr}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  return Math.round((d - TODAY_UTC) / 86400000);
+}
+function passesExpiringFilter(item) {
+  if (expiringWithinDays == null || isSubaward) return true;
+  const days = daysUntilEnd(item.endDate);
+  if (days == null || days < 0 || days > expiringWithinDays) return false;
+  if (expiringAfterDays != null && days < expiringAfterDays) return false;
+  return true;
+}
 const sortBy = Object.hasOwn(SORTS, input.sortBy) ? input.sortBy : 'awardAmount';
 const order = input.order === 'asc' ? 'asc' : 'desc';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 10000);
@@ -310,6 +347,11 @@ if (watchMode) {
       pscCodes: [...pscCodes].sort(),
       minAwardAmount: minAwardAmount ?? null,
       maxAwardAmount: maxAwardAmount ?? null,
+      // Raw day counts, not resolved dates -- the countdown moves every day on its own (same
+      // rolling-default rule as startDate/endDate below), but the buyer's chosen thresholds
+      // don't, so fingerprinting the raw numbers doesn't force a fresh baseline daily.
+      expiringWithinDays: expiringWithinDays ?? null,
+      expiringAfterDays: expiringAfterDays ?? null,
       // Raw buyer input, not the resolved value -- startDate/endDate default to "one year
       // ago"/"today" and roll forward every single day, so fingerprinting the resolved value
       // would force a fresh baseline daily (a daily version of the cycle-297 FEC electionYear
@@ -613,6 +655,7 @@ for (const category of categories) {
             seen.add(key);
             categoryRows += 1;
             const item = isSubaward ? normalizeSub(row, category) : normalize(row, category, kind);
+            if (!passesExpiringFilter(item)) continue;
 
             if (watchMode && seeding) {
                 watchSeen.set(key, snapshotOf(item));
@@ -693,6 +736,10 @@ if (pushed === 0 && !watchMode) {
         + (isSubaward
             ? ' (5) awardLevel="subaward" only covers prime awards whose recipient filed FSRS sub-award reports — '
                 + 'small awards and most loans/direct payments have none; try awardLevel="prime" to confirm the prime award exists.'
+            : '')
+        + (expiringWithinDays != null
+            ? ` (${isSubaward ? 6 : 5}) "expiringWithinDays"=${expiringWithinDays}${expiringAfterDays != null ? ` with "expiringAfterDays"=${expiringAfterDays}` : ''} `
+                + 'is a narrow window and only counts contracts/grants/IDVs (not loans, which report no period-of-performance end date) — try widening it or dropping it to confirm awards exist at all first.'
             : ''),
     );
 }

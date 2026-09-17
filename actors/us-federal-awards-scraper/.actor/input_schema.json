@@ -158,6 +158,20 @@
             "editor": "number",
             "minimum": 0
         },
+        "expiringWithinDays": {
+            "title": "Expiring within (days) — recompete finder",
+            "type": "integer",
+            "description": "Only return awards whose period of performance ends within this many days from today (0 to N, never already-expired). Turns this into a recompete radar: contracts/grants/IDVs coming up for re-bid or renewal. Applied client-side after fetching — USAspending's own filters can only search by award action date, not period-of-performance end date, so a broad, mostly-expired date range plus a tight amount/agency filter narrows the scan before this cuts it further. Not supported in awardLevel=\"subaward\" mode (sub-award records carry no period-of-performance end date) or for loans (no end date reported for that category) — both are dropped with a warning, not silently charged. Leave empty for a normal award search.",
+            "editor": "number",
+            "minimum": 1
+        },
+        "expiringAfterDays": {
+            "title": "Expiring after (days) — bid lead time",
+            "type": "integer",
+            "description": "Skip awards expiring sooner than this many days out. A contract ending next week is too late to prepare a bid for; a typical lead time is 90-180 days. Requires \"Expiring within\" above to also be set — ignored (with a warning) otherwise, and must be smaller than it.",
+            "editor": "number",
+            "minimum": 0
+        },
         "sortBy": {
             "title": "Sort by",
             "type": "string",

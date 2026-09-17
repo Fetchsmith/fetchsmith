@@ -10,7 +10,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 - **Competitor tracking** — pull one recipient's full award history by exact name (`recipients`) and watch amounts, agencies and end dates (recompete timing).
 - **Grant prospecting** — filter to grants and cooperative agreements by CFDA/Assistance Listing program and state.
 - **Market sizing** — how much a given agency obligated on solar, cyber, AI or any keyword over any window since 2007.
-- **Recompete alerts** — sort by end date and find contracts about to expire in your NAICS.
+- **Recompete alerts** — `expiringWithinDays` finds contracts, grants and IDVs whose period of performance ends soon (a real re-bid/renewal radar), and `expiringAfterDays` skips anything ending too soon to realistically bid on.
 - **Single-award lookup** — already have a PIID/FAIN/URI from a solicitation or a news story? `awardIds` fetches that exact award, ignoring every other filter.
 - **Pass-through grant tracing** — `fundingAgencies` finds awards where the money's actual source agency differs from the agency that administers the award (common on formula/block grants routed through a state).
 - **Sub-award / subcontractor mining** — set `awardLevel` to `subaward` and get the FSRS sub-contracts and sub-grants filed *under* prime awards: who the prime contractor actually paid, how much, and for what. Every sub-award row carries the prime award's ID and URL, so you can join it straight back to a prime-level run. This is the tier-2 supplier list that never appears in prime-award data.
@@ -35,6 +35,8 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `naicsCodes` | array | – | NAICS industry codes, 2-6 digit prefixes (`5415` matches every 6-digit code under it). Multiple values are ORed. No effect on grants/direct payments/other financial assistance/loans — they carry no NAICS. |
 | `pscCodes` | array | – | Product or Service Codes (PSC), 1-4 character prefixes (`R425` one leaf code, `R4` every professional-services code, `R` the whole services letter, `10` every weapons product). Multiple values are ORed. Only contracts and IDVs carry a PSC, so grants/loans/direct payments return nothing. |
 | `minAwardAmount` / `maxAwardAmount` | integer | – | Obligated amount bounds in USD. |
+| `expiringWithinDays` | integer | – | Recompete finder: only awards whose period of performance ends within this many days from today. Prime mode, contracts/grants/IDVs only (not loans, not sub-awards — neither reports a period-of-performance end date). Applied after fetching, since USAspending's own filters can only search by award *action* date, not end date. |
+| `expiringAfterDays` | integer | – | Skip awards expiring sooner than this many days out — bid lead time. Requires `expiringWithinDays`, and must be smaller than it. |
 | `sortBy` | string | `awardAmount` | `awardAmount`, `lastModifiedDate`, `startDate`, `recipientName`. |
 | `order` | string | `desc` | `desc` or `asc`. |
 | `maxResults` | integer | `100` | Total across all selected categories. |
@@ -149,6 +151,9 @@ No. Loans report `loanValue` (face value) and `subsidyCost` instead of an obliga
 
 **Why does `startDate` on a row show a date decades before my search window?**
 `startDate`/`endDate` filter on the award's *action date* (when it was last modified), not on `startDate`'s own value. A long-running contract (e.g. a national-lab management contract) can have a 1978 period-of-performance start and still match a 2025-2026 filter window because it was modified this year — `lastModifiedDate` is what actually falls inside your range. Sort by `lastModifiedDate` instead of `startDate` if you want the most recently active awards first.
+
+**How do I find contracts coming up for recompete?**
+Set `expiringWithinDays` (e.g. `180`) to only get awards whose period of performance ends within that window — USAspending has no filter for this itself (its date filters only search by *action* date, not end date), so this Actor fetches normally and filters client-side on the `endDate` field it already returns for every contract/grant/IDV row, before charging. Add `expiringAfterDays` (e.g. `90`) to also skip anything ending too soon to realistically prepare a bid for. Neither applies to loans (no period-of-performance end date reported for that category) or `awardLevel: "subaward"` (sub-award records report no end date either) — both are warned and ignored rather than silently returning nothing.
 
 **Is this the same as SAM.gov?**
 No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *awards already made*. This Actor covers awards — who won, how much, which agency, and when the work ends.
