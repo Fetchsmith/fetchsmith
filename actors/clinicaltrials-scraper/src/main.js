@@ -96,18 +96,25 @@ function applyStartUrl(raw) {
     if (statusParam) fill('overallStatus', statusParam.split(/[\s,]+/).filter(Boolean));
     fill('sortBy', (q.get('sort') ?? '').trim());
 
-    // UI age range: "18y_65y" (unit letter optional, either side optional). We filter in whole
-    // years, so a month/week/day bound is reported and skipped rather than silently rounded.
+    // UI age range: "18y_65y" (unit letter optional — y/m/w/d, defaulting to years — either side
+    // optional). The letter maps onto the same unit the API takes, so "6m_" is carried through as
+    // 6 Months rather than being dropped; an unrecognised letter is reported and skipped.
+    const UI_AGE_UNITS = { y: 'Years', m: 'Months', w: 'Weeks', d: 'Days' };
     const [ageFrom = '', ageTo = ''] = (q.get('ageRange') ?? '').split('_');
-    for (const [rawAge, field] of [[ageFrom, 'ageRangeFromYears'], [ageTo, 'ageRangeToYears']]) {
+    for (const [rawAge, field, unitField] of [
+        [ageFrom, 'ageRangeFromYears', 'ageRangeFromUnit'],
+        [ageTo, 'ageRangeToYears', 'ageRangeToUnit'],
+    ]) {
         const a = rawAge.trim();
         if (!a) continue;
         const m = /^(\d+)\s*([a-zA-Z]*)$/.exec(a);
-        if (!m || (m[2] && m[2].toLowerCase() !== 'y')) {
-            log.warning(`startUrl ageRange bound "${a}" is not a whole number of years; ignoring that bound.`);
+        const unit = m && (m[2] ? UI_AGE_UNITS[m[2].toLowerCase()] : 'Years');
+        if (!unit) {
+            log.warning(`startUrl ageRange bound "${a}" has no recognised unit (y/m/w/d); ignoring that bound.`);
             continue;
         }
         fill(field, Number(m[1]));
+        fill(unitField, unit);
     }
 
     for (const pair of (q.get('aggFilters') ?? '').split(',')) {
@@ -201,16 +208,39 @@ const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? 
 const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
 const FUNDER_TYPES = new Set(['NIH', 'FED', 'OTHER_GOV', 'INDUSTRY', 'NETWORK', 'INDIV', 'OTHER', 'UNKNOWN', 'AMBIG']);
 const funderTypes = cleanList(input.funderTypes, FUNDER_TYPES);
-// Verified live: AREA[MinimumAge]/AREA[MaximumAge] RANGE take "<n> Years" (or MIN/MAX for an
+// Verified live: AREA[MinimumAge]/AREA[MaximumAge] RANGE take "<n> <Unit>" (or MIN/MAX for an
 // open bound) — same RANGE syntax as the date fields above, just a different unit string.
+// Verified live on query.cond=cancer: "0 Years" -> 115629, "6 Months" -> 114908, "3 Weeks" ->
+// 115213, "10 Days" -> 115227 — four different counts, so sub-year units really are honoured.
+// An unknown unit is a hard 400 ("No enum constant ...TimeParts.Unit"), so this must stay a
+// strict whitelist; anything else falls back to the historical Years behaviour.
+const AGE_UNITS = new Set(['Years', 'Months', 'Weeks', 'Days']);
+const ageUnit = (raw) => {
+    const u = String(raw ?? '').trim().toLowerCase();
+    for (const known of AGE_UNITS) if (known.toLowerCase() === u) return known;
+    return 'Years';
+};
+const ageRangeFromUnit = ageUnit(input.ageRangeFromUnit);
+const ageRangeToUnit = ageUnit(input.ageRangeToUnit);
 const ageRangeFromYears = Number.isInteger(input.ageRangeFromYears) && input.ageRangeFromYears >= 0 ? input.ageRangeFromYears : null;
 const ageRangeToYears = Number.isInteger(input.ageRangeToYears) && input.ageRangeToYears >= 0 ? input.ageRangeToYears : null;
-if (ageRangeFromYears !== null && ageRangeToYears !== null && ageRangeFromYears > ageRangeToYears) {
+if (ageRangeFromYears !== null && ageRangeToYears !== null && ageRangeFromYears > ageRangeToYears
+    && ageRangeFromUnit === ageRangeToUnit) {
     // Verified live: a study's own MaximumAge must be >= its own MinimumAge, so requiring
-    // MinimumAge >= ageRangeFromYears AND MaximumAge <= ageRangeToYears with from > to is a
+    // MinimumAge >= ageRangeFrom AND MaximumAge <= ageRangeTo with from > to in the SAME unit is a
     // contradiction no study can ever satisfy — confirmed empty on a real API call, not just reasoned.
+    // Across different units it is NOT a contradiction, verified live: "from 1 Years, to 12 Months"
+    // returns 13 real studies registry-wide (studies enrolling exactly one-year-olds, where the two
+    // bounds meet), so mixed units only warn rather than fail the run — throwing would have blocked
+    // a legitimate query.
     throw new Error(
-        `"ageRangeFromYears" (${ageRangeFromYears}) is greater than "ageRangeToYears" (${ageRangeToYears}) — no study's eligibility range can ever satisfy both. Swap them.`,
+        `"ageRangeFromYears" (${ageRangeFromYears} ${ageRangeFromUnit}) is greater than "ageRangeToYears" (${ageRangeToYears} ${ageRangeToUnit}) — no study's eligibility range can ever satisfy both. Swap them.`,
+    );
+}
+if (ageRangeFromYears !== null && ageRangeToYears !== null && ageRangeFromUnit !== ageRangeToUnit) {
+    log.warning(
+        `Age bounds use different units (from ${ageRangeFromYears} ${ageRangeFromUnit}, to ${ageRangeToYears} ${ageRangeToUnit}) — `
+        + 'both are sent as-is, but check the order is what you meant if the run returns 0 rows.',
     );
 }
 // Verified live: AREA[StdAge](CHILD OR OLDER_ADULT) returns exactly the same totalCount as the
@@ -282,6 +312,10 @@ const watchCriteria = {
     ageGroups: [...ageGroups].sort(),
     ageRangeFromYears,
     ageRangeToYears,
+    // Spread in only when non-default: writing "Years" on the default path would change the
+    // fingerprint of every existing watch baseline and silently reset them all once (cycle 400).
+    ...(ageRangeFromUnit !== 'Years' ? { ageRangeFromUnit } : {}),
+    ...(ageRangeToUnit !== 'Years' ? { ageRangeToUnit } : {}),
     facilityName,
     leadSponsorName,
     ...dateCriteria,
@@ -468,8 +502,8 @@ function baseParams() {
     advanced.push(...dateRanges);
     if (facilityName) advanced.push(`AREA[LocationFacility](${areaPhrase(facilityName)})`);
     if (leadSponsorName) advanced.push(`AREA[LeadSponsorName](${areaPhrase(leadSponsorName)})`);
-    if (ageRangeFromYears !== null) advanced.push(`AREA[MinimumAge]RANGE[${ageRangeFromYears} Years,MAX]`);
-    if (ageRangeToYears !== null) advanced.push(`AREA[MaximumAge]RANGE[MIN,${ageRangeToYears} Years]`);
+    if (ageRangeFromYears !== null) advanced.push(`AREA[MinimumAge]RANGE[${ageRangeFromYears} ${ageRangeFromUnit},MAX]`);
+    if (ageRangeToYears !== null) advanced.push(`AREA[MaximumAge]RANGE[MIN,${ageRangeToYears} ${ageRangeToUnit}]`);
     if (funderTypes.length) advanced.push(`AREA[LeadSponsorClass](${funderTypes.join(' OR ')})`);
     if (ageGroups.length) advanced.push(`AREA[StdAge](${ageGroups.join(' OR ')})`);
     if (advanced.length) p['filter.advanced'] = advanced.join(' AND ');
@@ -582,7 +616,8 @@ log.info(nctIds.length
       + `studyTypes=[${studyTypes.join(',')}] phases=[${phases.join(',')}] hasResultsOnly=${hasResultsOnly} `
       + `sex="${sex}" acceptsHealthyVolunteers=${acceptsHealthyVolunteers} `
       + `lastUpdatePostedDateFrom="${lastUpdatePostedDateFrom}" lastUpdatePostedDateTo="${lastUpdatePostedDateTo}" `
-      + `ageRangeFromYears=${ageRangeFromYears} ageRangeToYears=${ageRangeToYears} funderTypes=[${funderTypes.join(',')}] `
+      + `ageRangeFrom=${ageRangeFromYears === null ? 'null' : `${ageRangeFromYears} ${ageRangeFromUnit}`} `
+      + `ageRangeTo=${ageRangeToYears === null ? 'null' : `${ageRangeToYears} ${ageRangeToUnit}`} funderTypes=[${funderTypes.join(',')}] `
       + `titleOrAcronym="${titleOrAcronym}" outcomeMeasure="${outcomeMeasure}" sortBy="${sortBy}" `
       + `facilityName="${facilityName}" leadSponsorName="${leadSponsorName}" `
       + `dateRanges=[${dateRanges.join(' AND ')}] `

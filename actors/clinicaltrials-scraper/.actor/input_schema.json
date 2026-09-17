@@ -219,18 +219,36 @@
       "editor": "textfield"
     },
     "ageRangeFromYears": {
-      "title": "Minimum eligibility age from (years)",
+      "title": "Minimum eligibility age from",
       "type": "integer",
-      "description": "Only studies whose stated minimum eligibility age is at least this many years (e.g. 18 to exclude studies open to minors). Leave blank for no lower bound.",
+      "description": "Only studies whose stated minimum eligibility age is at least this much (e.g. 18 to exclude studies open to minors). Counted in years unless you change \"Minimum age unit\" below. Leave blank for no lower bound.",
       "minimum": 0,
       "maximum": 120
     },
+    "ageRangeFromUnit": {
+      "title": "Minimum age unit",
+      "type": "string",
+      "description": "Unit for \"Minimum eligibility age from\". Use Months / Weeks / Days for neonatal and infant trials (e.g. 6 Months), where a whole number of years is too coarse.",
+      "editor": "select",
+      "enum": ["Years", "Months", "Weeks", "Days"],
+      "enumTitles": ["Years", "Months", "Weeks", "Days"],
+      "default": "Years"
+    },
     "ageRangeToYears": {
-      "title": "Maximum eligibility age to (years)",
+      "title": "Maximum eligibility age to",
       "type": "integer",
-      "description": "Only studies whose stated maximum eligibility age is at most this many years (e.g. 65 to exclude studies with no senior-age cap). Leave blank for no upper bound.",
+      "description": "Only studies whose stated maximum eligibility age is at most this much (e.g. 65 to exclude studies with no senior-age cap). Counted in years unless you change \"Maximum age unit\" below. Leave blank for no upper bound.",
       "minimum": 0,
       "maximum": 120
+    },
+    "ageRangeToUnit": {
+      "title": "Maximum age unit",
+      "type": "string",
+      "description": "Unit for \"Maximum eligibility age to\". E.g. 18 Months isolates paediatric studies that stop enrolling before the second birthday.",
+      "editor": "select",
+      "enum": ["Years", "Months", "Weeks", "Days"],
+      "enumTitles": ["Years", "Months", "Weeks", "Days"],
+      "default": "Years"
     },
     "funderTypes": {
       "title": "Funder / lead sponsor type",
