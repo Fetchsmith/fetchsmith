@@ -1,0 +1,129 @@
+#!/root/agent/venv/bin/python
+"""Flag Actor-README claims ABOUT COMPETITORS that have gone stale.
+
+Same bug class as bin/check-blog-claims, one step further out: a number in our own
+hand-written copy whose real owner lives somewhere we don't control. check-blog-claims
+covers claims about OUR Actors (owner = registry.json). This covers claims about THEIR
+Actors (owner = the live Apify API), which rot faster and are worse to get wrong — a
+false comparison in a Store listing is a marketing claim we can't back up.
+
+Added cycle 388, after three separate findings:
+  - cycle 387: shopify README still said "some competitors charge ~$0.10 just to start
+    a run"; no current top listing had charged that since April 2026.
+  - cycle 388: us-federal-awards README said the busiest competitor charged
+    "$0.004 tapering to $0.0025 on Gold+" — no competitor in the niche has ever had
+    that schedule, and the sentence contradicted the one before it.
+  - cycle 388: user counts hardcoded in two READMEs had drifted (25->28, 2583->2644).
+
+Two checks:
+
+1. USER COUNTS — "`handle` (N users" / "`handle` N users" vs the competitor's live
+   stats.totalUsers. Tolerance is 10%: these tick up continuously, so exact-match would
+   be permanent noise, but a claim that is 10%+ off is one we should not be printing.
+
+2. FRESHNESS — every paragraph that names a competitor must carry a verification date
+   ("verified|checked|re-verified ... YYYY-MM-DD") within MAX_AGE_DAYS. This is the
+   part that actually prevents the cycle-387/388 findings: a price claim's text can't
+   be machine-diffed against pricingInfos (our prices and theirs appear in the same
+   sentence), but we CAN force it to be re-checked on a schedule and dated in public.
+
+Adding a competitor: put its handle in COMPETITORS below, mapped to its full
+<user>~<name> id. Handles are matched only when backticked, so ordinary prose is safe.
+"""
+import datetime
+import glob
+import os
+import re
+import sys
+
+import httpx
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MAX_AGE_DAYS = 45
+USER_TOLERANCE = 0.10
+
+# handle as it appears in our READMEs -> the real Apify Actor it refers to
+COMPETITORS = {
+    "parseforge": "parseforge/usaspending-scraper",
+    "benthepythondev": "benthepythondev/usaspending-contracts-intelligence",
+    "copious_atoll": "copious_atoll/usaspending-contracts",
+    "themineworks": "themineworks/usaspending-federal-awards",
+    "thewolves": "thewolves/google-play-reviews-scraper",
+    "theagents": "theagents/googleplay-reviews",
+    "neatrat": "neatrat/google-play-store-reviews-scraper",
+    "trovevault": "trovevault/shopify-products-scraper",
+}
+
+USERS = re.compile(r"`([a-z][a-z0-9_]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
+DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
+TOKEN = re.compile(r"`([a-z][a-z0-9_]{2,})`")
+# A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
+# and makes a comparison we could be held to. "Competitor price monitoring" as a use-case
+# bullet matches the first half only and is correctly ignored.
+RIVALS = re.compile(r"competitor|competing|rival|other Actors|every .{0,20}Actor we", re.I)
+COMPARISON = re.compile(r"\$[0-9]|charges?\b|cheaper|prici|undercut|more expensive|none of (?:the|them)|only .{0,30}on the Store", re.I)
+
+
+def token():
+    for line in open(os.path.join(ROOT, "secrets/env")):
+        if line.startswith("APIFY_TOKEN"):
+            return line.split("=", 1)[1].strip().strip('"')
+    sys.exit("check-competitor-claims: no APIFY_TOKEN in secrets/env")
+
+
+def live_users(ident, headers, cache={}):
+    """stats.totalUsers for <user>/<name>, or None if the listing is gone."""
+    if ident not in cache:
+        u, n = ident.split("/")
+        r = httpx.get(f"https://api.apify.com/v2/acts/{u}~{n}", headers=headers, timeout=30)
+        cache[ident] = r.json()["data"]["stats"]["totalUsers"] if r.status_code == 200 else None
+    return cache[ident]
+
+
+headers = {"Authorization": f"Bearer {token()}"}
+today = datetime.date.today()
+checked = flagged = 0
+
+for path in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
+    name = os.path.relpath(path, os.path.join(ROOT, "actors"))
+    for lineno, line in enumerate(open(path), 1):
+        for handle, claimed in USERS.findall(line):
+            if handle not in COMPETITORS:
+                continue
+            checked += 1
+            claimed = int(claimed.replace(",", ""))
+            actual = live_users(COMPETITORS[handle], headers)
+            if actual is None:
+                flagged += 1
+                print(f"STALE {name}:{lineno}  `{handle}` -> {COMPETITORS[handle]} is gone from the Store")
+            elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
+                flagged += 1
+                print(f"STALE {name}:{lineno}  claims {handle} has {claimed} users, live is {actual}")
+
+print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, {flagged} stale")
+
+# ------------------------------------------------------------------ freshness
+checked = stale = 0
+for path in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
+    name = os.path.relpath(path, os.path.join(ROOT, "actors"))
+    text = open(path).read()
+    offset = 1
+    for para in text.split("\n\n"):
+        lineno = offset
+        offset += para.count("\n") + 2
+        named = sorted({h for h in TOKEN.findall(para) if h in COMPETITORS})
+        if not named and not (RIVALS.search(para) and COMPARISON.search(para)):
+            continue
+        what = ", ".join(named) if named else "an unnamed competitor"
+        checked += 1
+        dates = [datetime.date.fromisoformat(d) for d in DATED.findall(para)]
+        newest = max(dates) if dates else None
+        if newest is None:
+            stale += 1
+            print(f"UNDATED {name}:{lineno}  compares against {what} with no 'verified YYYY-MM-DD'")
+        elif (today - newest).days > MAX_AGE_DAYS:
+            stale += 1
+            age = (today - newest).days
+            print(f"STALE {name}:{lineno}  compares against {what}, last verified {newest} ({age}d ago)")
+
+print(f"check-competitor-claims: {checked} competitor paragraph(s) checked, {stale} undated/stale")
