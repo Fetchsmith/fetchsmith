@@ -56,6 +56,19 @@ if (!Object.hasOwn(OPINION_STAT_PARAM, opinionStatus)) {
     opinionStatus = 'published';
 }
 
+// Sort order. `order_by=dateFiled asc|desc` is a real server-side sort — verified live cycle
+// 458 against the anonymous search endpoint on BOTH indexes: same total count as unsorted,
+// just reordered (an opinion from 1746 first vs. one from today first). `citeCount` sort,
+// tempting since we already emit `citeCount`, is opinions-only and returned an Internal Server
+// Error (not a 400, not a silent ignore) when sent to the docket index — confirmed twice, not
+// a fluke — so it is deliberately not exposed; only the field proven safe on both indexes is.
+const SORT_PARAM = { relevance: null, datefileddesc: 'dateFiled desc', datefiledasc: 'dateFiled asc' };
+let sortByRaw = String(input.sortBy ?? 'relevance').toLowerCase().trim();
+if (!Object.hasOwn(SORT_PARAM, sortByRaw)) {
+    log.warning(`Unknown sortBy "${input.sortBy}"; falling back to "relevance".`);
+    sortByRaw = 'relevance';
+}
+
 // CourtListener court IDs are the short slugs in a courtlistener.com/court/<id>/ URL
 // ("scotus", "ca9", "cand", "cacb", ...). 400+ exist, so this is free text rather than an
 // enum; an unknown id is not an error upstream, it just matches nothing — warned about below.
@@ -142,6 +155,22 @@ if (startUrlRaw) {
         opinionStatus = wantsPub && wantsUnpub ? 'any' : (wantsUnpub ? 'unpublished' : 'published');
     } else {
         ignored.push('opinionStatus');
+    }
+
+    if (qp.has('order_by')) {
+        const norm = (qp.get('order_by') ?? '').toLowerCase().replace(/\s+/g, '');
+        if (norm === 'scoredesc' || norm === '') {
+            sortByRaw = 'relevance';
+        } else if (Object.hasOwn(SORT_PARAM, norm)) {
+            sortByRaw = norm;
+        } else {
+            log.warning(
+                `startUrl has order_by="${qp.get('order_by')}", which this Actor does not support (only Filing date `
+                + 'asc/desc, or the default relevance sort). Using the "Sort by" field below instead.',
+            );
+        }
+    } else {
+        ignored.push('sortBy');
     }
 
     log.info(
@@ -275,11 +304,24 @@ function firstUrl(kind) {
         if (judge) qs.set('judge', judge);
         for (const p of OPINION_STAT_PARAM[opinionStatus]) qs.set(p, 'on');
     }
+    if (SORT_PARAM[sortByRaw]) qs.set('order_by', SORT_PARAM[sortByRaw]);
     return `${SEARCH}?${qs.toString()}`;
 }
 
 if (opinionStatus !== 'published' && !recordTypes.includes('opinions')) {
     log.warning(`opinionStatus "${opinionStatus}" is set but recordType "${recordTypeRaw}" does not include opinions — ignored.`);
+}
+
+// Each index is sorted independently; the two streams are never merged into one combined
+// order. With recordType "both" the walk already visits opinions to their share of maxResults
+// before starting dockets (see roundTarget below), so a non-default sort just reorders within
+// each of those two chunks, not across the whole output — worth a heads-up since a buyer might
+// otherwise expect a single globally-sorted table.
+if (sortByRaw !== 'relevance' && recordTypes.length > 1) {
+    log.info(
+        `sortBy "${sortByRaw}" applies within each index separately — recordType "both" returns opinions `
+        + '(sorted) up to their share of maxResults, then dockets (sorted), not one table sorted end to end.',
+    );
 }
 
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x != null && x !== '') : []);
@@ -454,6 +496,8 @@ const watchCriteria = {
     ...(attorneyName ? { attorneyName } : {}),
     ...(docketNumber ? { docketNumber } : {}),
     ...(judge ? { judge } : {}),
+    // sortBy is deliberately NOT here: it reorders the same match set, it never changes WHICH
+    // records match, so editing it should not throw away a baseline (unlike everything above).
 };
 
 const watchMode = watchLabel.length > 0;
@@ -482,6 +526,19 @@ if (watchMode) {
             `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
             + 'It records which records already match and returns ZERO results (you are charged nothing). Run it again '
             + 'on the same label and filters — on a schedule, typically — to get only what is new since now.',
+        );
+    }
+    if (!seeding && sortByRaw === 'datefiledasc') {
+        // Filing-date-ascending walks from the OLDEST match forward. On an established watch
+        // label most of that oldest end is already in the baseline, so an incremental run can
+        // spend its whole page budget skipping long-delivered records before it ever reaches
+        // anything genuinely new near the recent end — wasted API calls, not a billing risk
+        // (skipped rows are never charged), but a real reason to prefer "newest first" here.
+        log.warning(
+            'sortBy is "Filing date, oldest first" together with Watch label: an incremental run walks from the '
+            + 'oldest match forward, so on a large result set it may page through a long run of already-delivered '
+            + 'records before reaching anything new. "Filing date, newest first" or the default relevance sort do '
+            + 'not have this problem, since a newly-added record is far more likely to appear near the front either way.',
         );
     }
 }
@@ -518,7 +575,8 @@ log.info(
     + (courts.length ? ` courts=[${courts.join(',')}]` : '')
     + (filedAfter ? ` filedAfter=${filedAfter}` : '')
     + (filedBefore ? ` filedBefore=${filedBefore}` : '')
-    + (recordTypes.includes('opinions') ? ` opinionStatus=${opinionStatus}` : ''),
+    + (recordTypes.includes('opinions') ? ` opinionStatus=${opinionStatus}` : '')
+    + (sortByRaw !== 'relevance' ? ` sortBy=${sortByRaw}` : ''),
 );
 
 const seenIdsThisRun = new Set();

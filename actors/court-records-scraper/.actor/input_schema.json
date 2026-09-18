@@ -90,6 +90,23 @@
       ],
       "default": "published"
     },
+    "sortBy": {
+      "title": "Sort by",
+      "type": "string",
+      "description": "Server-side sort, verified live: \"dateFiled asc\"/\"desc\" return the identical total count as no sort, just reordered (an opinion from 1746 first vs. today first). Restricted to Filing date because it is the one sort field confirmed to work correctly on BOTH indexes — CourtListener's citation-count sort is opinions-only and returns a server error on the docket index. With record type \"both\", each index is sorted on its own; the two streams are not merged into one combined order (opinions come first, then dockets, per Max results). Not recommended together with Watch label set to \"Oldest first\": an incremental run then walks from the oldest match forward and may have to page through a long run of already-delivered records before reaching anything new.",
+      "editor": "select",
+      "enum": [
+        "relevance",
+        "dateFiledDesc",
+        "dateFiledAsc"
+      ],
+      "enumTitles": [
+        "Relevance (default)",
+        "Filing date, newest first",
+        "Filing date, oldest first"
+      ],
+      "default": "relevance"
+    },
     "startUrl": {
       "title": "CourtListener search URL",
       "type": "string",

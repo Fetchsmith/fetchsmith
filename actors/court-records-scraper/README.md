@@ -29,6 +29,7 @@ Search is full text across case names, party and attorney names, docket text and
 | `judge` | string | Opinions only. Server-side search over the authoring judge(s), e.g. `Posner`. |
 | `filedAfter` / `filedBefore` | string | `YYYY-MM-DD` filing-date bounds. |
 | `opinionStatus` | enum | Opinions mode only. `published` (default), `unpublished`, or `any`. See below — the default silently excludes a real chunk of matches unless you know to change it. |
+| `sortBy` | enum | `relevance` (default), `dateFiledDesc`, or `dateFiledAsc`. Real server-side sort, verified live — see below. |
 | `startUrl` | string | Paste a courtlistener.com search or API URL instead of filling in the fields above — see below. |
 | `maxResults` | integer | Default 100. With `both`, the budget is split evenly between the two indexes, and whatever one index leaves unused goes to the other. |
 | `watchLabel` | string | Incremental mode — see below. |
@@ -56,9 +57,13 @@ If a `docketNumber` returns nothing, try it without the office prefix (`20-cv-03
 
 CourtListener's opinion index defaults to **published** opinions unless you say otherwise — verified live: a 2024+ "climate" query returned 545 published opinions, 191 unpublished, and the true total (736) only when both are requested. That's roughly 26% of real matches silently absent from a plain search, with no indication in the response that anything was left out. Set `opinionStatus` to `"any"` to get the complete set, or `"unpublished"` to see only opinions courts didn't designate for publication (often the more interesting ones — sanctions orders, informal rulings, unusual fact patterns). Ignored (with a warning) when `recordType` is `"dockets"`, since RECAP dockets have no publication-status concept. Every opinion row already carries a `status` field either way, so you can always tell which bucket a row came from.
 
+### Sort by filing date
+
+`sortBy` defaults to relevance, the same order a plain search has always returned. Set it to `dateFiledDesc` or `dateFiledAsc` to sort by filing date instead — a real server-side sort verified live (identical total match count either way, just reordered). It's restricted to filing date because that's the one sort field confirmed to behave correctly on **both** indexes; CourtListener's citation-count sort is opinions-only and returns a server error when sent to the docket index. With `recordType: "both"`, each index is sorted on its own — opinions (sorted) up to their share of `maxResults`, then dockets (sorted) — not merged into one table sorted end to end. Avoid `dateFiledAsc` together with `watchLabel`: an incremental run walks from the oldest match forward, so on an established watch label it may page through a long run of already-delivered records before reaching anything new. `dateFiledDesc` or the default relevance sort don't have that problem.
+
 ### Incremental "watch" mode
 
-Set `watchLabel` to any name and schedule the Actor. The **first** run on that label records the current match set as a baseline, returns **zero** results and charges you **nothing**. Every run after that returns only records that appeared since — so a daily watch on `court: ["cand"], query: "trade secret"` costs you a couple of rows a day instead of the whole back catalogue every morning. Changing any filter starts a fresh baseline under the same label, so you never get flooded with rows an older, narrower filter had excluded.
+Set `watchLabel` to any name and schedule the Actor. The **first** run on that label records the current match set as a baseline, returns **zero** results and charges you **nothing**. Every run after that returns only records that appeared since — so a daily watch on `court: ["cand"], query: "trade secret"` costs you a couple of rows a day instead of the whole back catalogue every morning. Changing any filter starts a fresh baseline under the same label, so you never get flooded with rows an older, narrower filter had excluded. `sortBy` does not affect the baseline — it reorders the same matches, it never changes which records match, so switching it doesn't start a fresh baseline.
 
 ### Webhook notification on completion
 
