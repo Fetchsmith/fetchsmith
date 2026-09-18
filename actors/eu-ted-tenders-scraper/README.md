@@ -14,7 +14,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | Field | Type | Description |
 |---|---|---|
 | `countries` | array | ISO 3166-1 alpha-3 buyer country codes (e.g. `DEU`, `FRA`). Empty = all. |
-| `cpvCodes` | array | 8-digit CPV codes to filter by (e.g. `72000000` for IT services). Empty = all. |
+| `cpvCodes` | array | 8-digit CPV codes to filter by (e.g. `72000000` for IT services). Empty = all. A division-level code ending in zeros (like `72000000`) matches every narrower code under it (`72416000`, `72262000`, …) per the official CPV hierarchy — use a fully-specified code (e.g. `72267000`) for an exact match. |
 | `noticeTypes` | array | TED notice-type codes (e.g. `cn-standard`, `can-standard`, `pin-standard`). Empty = all. |
 | `procedureType` | array | TED procedure-type codes (e.g. `open`, `restricted`, `neg-w-call`, `neg-wo-call`, `comp-dial`). Empty = all. Server-side filter, same OR-group as `noticeTypes`. |
 | `publishedWithinDays` | integer | Only notices published in the last N days. Default 7. Ignored if `publicationDateFrom`/`publicationDateTo` is set. |
