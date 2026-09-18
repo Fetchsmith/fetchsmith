@@ -4,13 +4,16 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 
 ## What you get
 
-25 flat fields per study, including the ones most ClinicalTrials.gov Actors skip:
+34 flat fields per study, including the ones most ClinicalTrials.gov Actors skip:
 
 | Field | Why it matters |
 | --- | --- |
 | `rowsPerStudy: "site"` mode | One row per **trial site** instead of one per study — facility name, city, state, country and lat/lon, so a site-selection or patient-recruitment buyer doesn't have to explode the array themselves. A study averages 5 sites (max seen: 110), so this mode returns roughly 5x more billable rows for the same query. |
 | `phases`, `studyType`, `overallStatus` | Filterable and returned flat, not nested. |
-| `enrollmentCount`, `sex`, `minimumAge`, `maximumAge`, `healthyVolunteers` | The eligibility snapshot without parsing free-text criteria. |
+| `enrollmentCount`, `sex`, `minimumAge`, `maximumAge`, `healthyVolunteers`, `standardAges` | The eligibility snapshot without parsing free-text criteria. `enrollmentType` says whether that count is `ACTUAL` or `ESTIMATED` — an estimate on a running trial is a target, not a headcount. `standardAges` is the registry's own `CHILD`/`ADULT`/`OLDER_ADULT` bucketing, the same vocabulary the `ageGroups` filter uses. |
+| `eligibilityCriteria` | The full inclusion/exclusion text as the registry publishes it. We deliberately **don't** pre-split it into separate inclusion and exclusion lists the way some competitors do: the split is a guess at prose with no fixed format, and mislabelling an exclusion criterion as an inclusion one is the one error a trial-screening buyer cannot afford. |
+| `primaryOutcomes`, `secondaryOutcomes` | What the trial actually measures — `measure`, `timeFrame` and `description` per endpoint. These are what the `outcomeMeasure` filter searches, so you can see which endpoint matched your query instead of taking the filter on faith (the API searches the description too, not just the measure title). |
+| `resultsFirstPostDate` | When the results section was first posted — the field the `resultsFirstPostedDateFrom`/`To` window ranges over. Null until a trial actually posts results. |
 | `leadSponsorClass` | The lead sponsor's organization type (`NIH`, `INDUSTRY`, `FED`, etc.) — filterable via `funderTypes`. |
 | `hasResults` | Whether the trial has posted a results section — filterable via `resultsAvailability` (with **or** without). |
 | `interventions` | Type + name for every drug/device/procedure arm. |
@@ -92,9 +95,14 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
   "studyType": "INTERVENTIONAL",
   "phases": ["PHASE3"],
   "enrollmentCount": 1498,
+  "enrollmentType": "ESTIMATED",
   "leadSponsor": "Shengjing Hospital",
   "conditions": ["Breast Cancer"],
   "interventions": [{"type": "DRUG", "name": "nab-Paclitaxel+carboplatin"}],
+  "primaryOutcomes": [{"measure": "Pathologic complete response (PCR)", "timeFrame": "1 year", "description": "Pathologic complete remission refers to no invasive tumor cell remnants in the pathological examination of the primary mammary gland and axillary lymph nodes surgically removed..."}],
+  "standardAges": ["ADULT", "OLDER_ADULT"],
+  "eligibilityCriteria": "Inclusion Criteria:\n\n* breast cancer is confirmed by the mammography, and the im...",
+  "resultsFirstPostDate": null,
   "locationCount": 1,
   "studyUrl": "https://clinicaltrials.gov/study/NCT04137653"
 }

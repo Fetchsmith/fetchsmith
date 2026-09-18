@@ -65,6 +65,14 @@
         "title": "EnrollmentCount",
         "example": 480
       },
+      "enrollmentType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EnrollmentType",
+        "example": "ESTIMATED"
+      },
       "startDate": {
         "type": [
           "string",
@@ -95,6 +103,14 @@
         ],
         "title": "StudyFirstPostDate",
         "example": "1999-11-04"
+      },
+      "resultsFirstPostDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ResultsFirstPostDate",
+        "example": "2019-03-14"
       },
       "lastUpdatePostDate": {
         "type": [
@@ -148,6 +164,20 @@
         ],
         "title": "Interventions"
       },
+      "primaryOutcomes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "PrimaryOutcomes"
+      },
+      "secondaryOutcomes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "SecondaryOutcomes"
+      },
       "briefSummary": {
         "type": [
           "string",
@@ -187,6 +217,24 @@
         ],
         "title": "HealthyVolunteers",
         "example": false
+      },
+      "standardAges": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "StandardAges",
+        "example": [
+          "ADULT",
+          "OLDER_ADULT"
+        ]
+      },
+      "eligibilityCriteria": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "EligibilityCriteria"
       },
       "hasResults": {
         "type": [

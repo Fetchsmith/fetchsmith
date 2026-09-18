@@ -560,6 +560,12 @@ const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 // Every field/location contact carries a real person's name, phone and/or personal email
 // (verified live, incl. an @gmail.com in the sample) — CLAUDE.md rule 1 bans shipping PII, so
 // contacts[] is deliberately never read. Location rows keep only facility/geo/status data.
+const outcomeOf = (o) => ({
+    measure: o.measure ?? null,
+    timeFrame: o.timeFrame ?? null,
+    description: o.description ?? null,
+});
+
 function normalizeStudy(study) {
     const p = study.protocolSection ?? {};
     const id = p.identificationModule ?? {};
@@ -569,6 +575,7 @@ function normalizeStudy(study) {
     const desc = p.descriptionModule ?? {};
     const cond = p.conditionsModule ?? {};
     const arms = p.armsInterventionsModule ?? {};
+    const out = p.outcomesModule ?? {};
     const elig = p.eligibilityModule ?? {};
     const locs = listOf(p.contactsLocationsModule?.locations);
 
@@ -593,10 +600,17 @@ function normalizeStudy(study) {
         // observational studies. Never advertised as guaranteed.
         phases: listOf(design.phases),
         enrollmentCount: design.enrollmentInfo?.count ?? null,
+        // ACTUAL vs ESTIMATED — enrollmentCount alone is ambiguous, and an "estimated" count on a
+        // not-yet-completed trial is a target, not a headcount. Present on 20/20 of a live sample.
+        enrollmentType: design.enrollmentInfo?.type ?? null,
         startDate: status.startDateStruct?.date ?? null,
         primaryCompletionDate: status.primaryCompletionDateStruct?.date ?? null,
         completionDate: status.completionDateStruct?.date ?? null,
         studyFirstPostDate: status.studyFirstPostDateStruct?.date ?? null,
+        // Only set once results are posted (4/20 on a live sample) — this is the field the
+        // resultsFirstPostedDateFrom/To filters range over, so a buyer filtering on it could not
+        // previously see the value they filtered by.
+        resultsFirstPostDate: status.resultsFirstPostDateStruct?.date ?? null,
         lastUpdatePostDate: status.lastUpdatePostDateStruct?.date ?? null,
         leadSponsor: sponsor.leadSponsor?.name ?? null,
         leadSponsorClass: sponsor.leadSponsor?.class ?? null,
@@ -605,6 +619,17 @@ function normalizeStudy(study) {
         conditions: listOf(cond.conditions),
         keywords: listOf(cond.keywords),
         interventions: listOf(arms.interventions).map((i) => ({ type: i.type ?? null, name: i.name ?? null })),
+        // What the trial actually measures. The `outcomeMeasure` input already searches these
+        // (query.outc), so until now a buyer could filter on an outcome and never see which one
+        // matched. timeFrame is kept because "6-month HbA1c" and "5-year HbA1c" are different
+        // trials to anyone screening endpoints. Primary present on 19/20, secondary on 14/20
+        // of a live sample; both are [] when the study declares none.
+        // `description` is included because query.outc searches it too, not just `measure`:
+        // verified live this cycle, 2 of 8 hits for outcomeMeasure="HbA1c" matched ONLY in the
+        // description, so dropping it would leave those rows looking like false positives.
+        // Present on 132/170 outcomes sampled, median 114 chars — cheap.
+        primaryOutcomes: listOf(out.primaryOutcomes).map(outcomeOf),
+        secondaryOutcomes: listOf(out.secondaryOutcomes).map(outcomeOf),
         briefSummary: desc.briefSummary ?? null,
         sex: elig.sex ?? null,
         minimumAge: elig.minimumAge ?? null,
@@ -612,6 +637,14 @@ function normalizeStudy(study) {
         // upper age bound.
         maximumAge: elig.maximumAge ?? null,
         healthyVolunteers: typeof elig.healthyVolunteers === 'boolean' ? elig.healthyVolunteers : null,
+        // The registry's own CHILD/ADULT/OLDER_ADULT buckets — the exact vocabulary the
+        // `ageGroups` input filters on, so the filtered value is now visible on the row.
+        standardAges: listOf(elig.stdAges),
+        // Free text, as the registry publishes it (median ~1.3 KB, max ~13 KB on a live sample).
+        // Deliberately NOT split into inclusion/exclusion: that split is a heuristic on prose with
+        // no fixed format, and mislabelling an exclusion criterion as an inclusion one is exactly
+        // the error a trial-screening buyer cannot afford. Ship the source text instead.
+        eligibilityCriteria: elig.eligibilityCriteria ?? null,
         hasResults: study.hasResults === true,
         locationCount: facilities.length,
         // Site facility/city/state/country/geo only — no contact person, phone or email, ever.
