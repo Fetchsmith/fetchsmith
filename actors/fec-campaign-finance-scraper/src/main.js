@@ -18,6 +18,7 @@ const donorName = (input.donorName ?? '').trim();
 const donorEmployer = (input.donorEmployer ?? '').trim();
 const donorOccupation = (input.donorOccupation ?? '').trim();
 const donorCity = (input.donorCity ?? '').trim();
+const donorZip = (input.donorZip ?? '').trim();
 const recipientName = (input.recipientName ?? '').trim();
 const payeeName = (input.payeeName ?? '').trim();
 const candidateId = (input.candidateId ?? '').trim().toUpperCase();
@@ -70,6 +71,7 @@ for (const [field, value, modes] of [
   ['donorEmployer', donorEmployer, ['contributions']],
   ['donorOccupation', donorOccupation, ['contributions']],
   ['donorCity', donorCity, ['contributions']],
+  ['donorZip', donorZip, ['contributions']],
 ]) {
   if (value && !modes.includes(searchMode)) {
     log.warning(`Ignoring ${field} "${value}": it only applies in searchMode ${modes.map((m) => `"${m}"`).join('/')}, and this run is in "${searchMode}" mode.`);
@@ -132,6 +134,8 @@ if (watchMode) {
     // a watch baseline saved before this cycle keeps its fingerprint instead of silently re-seeding.
     ...(donorOccupation ? { donorOccupation } : {}),
     ...(donorCity ? { donorCity } : {}),
+    // Added cycle 461. Only present when set, same rule as donorOccupation/donorCity above.
+    ...(donorZip ? { donorZip } : {}),
     ...(maxAmount !== undefined ? { maxAmount } : {}),
     ...(contributionDateFrom ? { contributionDateFrom } : {}),
     ...(contributionDateTo ? { contributionDateTo } : {}),
@@ -265,7 +269,7 @@ try {
       // hacker-news trap (cycle 332/333) where a cost cap was reused for the scan itself: this
       // cap exists only to bound one run's request count against a broad, weakly-filtered watch.
       watchPageCapHit = true;
-      log.warning(`Watch mode: stopped scanning after ${WATCH_PAGE_CAP} pages without exhausting the match set -- narrow donorName/donorEmployer/donorOccupation/donorCity/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so the whole current match set fits in fewer pages.`);
+      log.warning(`Watch mode: stopped scanning after ${WATCH_PAGE_CAP} pages without exhausting the match set -- narrow donorName/donorEmployer/donorOccupation/donorCity/donorZip/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so the whole current match set fits in fewer pages.`);
       break;
     }
     const perPage = watchMode ? 100 : 20;
@@ -305,6 +309,7 @@ try {
         contributor_employer: donorEmployer,
         contributor_occupation: donorOccupation,
         contributor_city: donorCity,
+        contributor_zip: donorZip,
         contributor_state: state,
         min_amount: minAmount,
         max_amount: maxAmount,
@@ -383,6 +388,7 @@ try {
           contributorEmployer: c.contributor_employer ?? null,
           contributorOccupation: c.contributor_occupation ?? null,
           contributorCity: c.contributor_city ?? null,
+          contributorZip: c.contributor_zip ?? null,
           contributorState: c.contributor_state ?? null,
           contributionAmount: c.contribution_receipt_amount ?? null,
           contributionDate: c.contribution_receipt_date ?? null,
@@ -453,7 +459,7 @@ if (watchMode) {
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded as already-seen, `
       + '0 results returned, 0 charged. The next run on this label and these filters returns only what is new.'
       + (watchSeen.size >= SEED_CAP
-        ? ` NOTE: the baseline hit the ${SEED_CAP}-contribution cap. Narrow donorName/donorEmployer/donorOccupation/donorCity/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so `
+        ? ` NOTE: the baseline hit the ${SEED_CAP}-contribution cap. Narrow donorName/donorEmployer/donorOccupation/donorCity/donorZip/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo so `
         + 'the whole current match set fits, or the first incremental run may report older contributions past the cap as new.'
         : watchPageCapHit
           ? ` NOTE: the baseline hit the ${WATCH_PAGE_CAP}-page scan cap before exhausting the match set. Narrow the filters.`

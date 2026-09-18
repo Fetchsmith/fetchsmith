@@ -186,6 +186,13 @@
         ],
         "title": "Donor state (contributions mode)"
       },
+      "contributorZip": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Donor ZIP code (contributions mode)"
+      },
       "contributionAmount": {
         "type": [
           "number",
