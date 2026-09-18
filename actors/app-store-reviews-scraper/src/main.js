@@ -55,6 +55,17 @@ if (reviewsAfterDate && reviewsBeforeDate && reviewsAfterDate > reviewsBeforeDat
   throw new Error(`"reviewsAfter" (${input.reviewsAfter}) is later than "reviewsBefore" (${input.reviewsBefore}) — no review can ever match. Swap them.`);
 }
 const watchLabel = String(input.watchLabel ?? '').trim();
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
 // Chronological early-stop (below) only works on the date-sorted feed. mostHelpful has no date
 // ordering, so a cutoff there is still applied as a plain filter but can't cut pagination short.
 if (reviewsAfterDate && requestedSort === 'mostHelpful') log.warning('"reviewsAfter" forces sort to "mostRecent" (Apple\'s "mostHelpful" feed is not date-ordered, so a historical cutoff can\'t be applied to it efficiently).');
@@ -614,4 +625,38 @@ if (watchMode && seeding) {
 } else if (emptyPairs.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} reviews. Empty Apple feed for: ${emptyPairs.join(', ')}.`);
 }
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    watchLabel: watchMode ? watchLabel : null,
+    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchSkipped: watchMode ? watchSkipped : null,
+    watchSeeding: watchMode ? seeding : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 await Actor.exit();

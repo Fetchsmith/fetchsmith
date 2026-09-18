@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { Actor, log } from 'apify';
 import gplay from 'google-play-scraper';
+import { gotScraping } from 'got-scraping';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -48,6 +49,17 @@ const minReviewLength = input.minReviewLength != null ? Number(input.minReviewLe
 const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;
 const untilDate = input.untilDate ? new Date(input.untilDate) : null;
 const watchLabel = String(input.watchLabel ?? '').trim();
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
 
 function passesFilters(r) {
   if (minScore != null && r.score < minScore) return false;
@@ -430,4 +442,38 @@ if (watchMode && seeding) {
 } else if (emptyApps.length || filteredOutApps.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
 }
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    watchLabel: watchMode ? watchLabel : null,
+    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchSkipped: watchMode ? watchSkipped : null,
+    watchSeeding: watchMode ? seeding : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 await Actor.exit();

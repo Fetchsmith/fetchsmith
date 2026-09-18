@@ -32,6 +32,7 @@ Get Google Play app reviews and app details (ratings, installs, developer info) 
 | `minReviewLength` | integer | Only keep reviews whose text is at least this many characters — filters out one-word/emoji-only reviews |
 | `sinceDate` / `untilDate` | string | Only keep reviews posted within this ISO date range |
 | `watchLabel` | string | Optional. Name a saved watch (e.g. `my-app-alerts`) to get **only reviews not delivered under that label before** — see "Watch mode" below |
+| `webhookUrl` | string | Optional. An http(s) URL to POST a small JSON completion summary to when the run finishes — see FAQ. |
 
 ## Watch mode — only new reviews since the last run
 Set `watchLabel` to any name and this Actor stops re-delivering the same reviews on every scheduled run:
@@ -95,6 +96,8 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 **Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **fetch cap**, not a match count — Google Play returns up to that many reviews (newest-first by default), and rating/keyword/appVersion/date filters are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting further back in the feed: on WhatsApp (`com.whatsapp`) with `keyword: "crash"`, `maxReviewsPerApp: 20` fetches 20 reviews and keeps 0, but raising it to `200` finds 1 — the match was always there, just never fetched. When this happens the log carries a `WARN` naming the cap and how many fetched reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
 
 **How do I get alerted about new reviews instead of re-downloading the same ones?** Set `watchLabel` and schedule the Actor (Apify Console → Schedules). The first run is a free baseline that returns nothing; every later run returns only the reviews posted since the previous run, so a scheduled hourly watch on a quiet app costs nothing at all. See "Watch mode" above for how the baseline is keyed and what to watch out for.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?** Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkipped`) once the run finishes and every review has already been pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Related guides
 Engineering write-ups behind this Actor:

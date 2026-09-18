@@ -149,6 +149,12 @@
       "type": "string",
       "description": "Optional. Name a saved watch (e.g. \"my-app-alerts\") and this run returns ONLY reviews not delivered under that same label and filter set before, instead of the same top-of-feed reviews every time. The first run for a label is a free baseline: it records the reviews that already exist (walking at least 1000 per app, up to 5000 total) and returns zero rows. Run it again later — on a schedule, typically — to get only what is new. The baseline is kept in your own Apify account (a named key-value store \"fetchsmith-google-play-reviews-watch\"), keyed by label plus a fingerprint of apps/search terms/country/language/sort and every rating, keyword, app-version and date filter, so changing any of those starts a fresh baseline instead of hiding newly-matching reviews as \"already seen\". Use sort=NEWEST. App-detail records are only returned on a run where that app actually has a new review, so a run with nothing new costs nothing.",
       "editor": "textfield"
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — reviews pushed, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every review has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   },
   "required": []

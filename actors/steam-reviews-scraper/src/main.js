@@ -55,6 +55,17 @@ if (!apps.length && !searchTerms.length) {
 // returns one row per game — the same snapshot every run, not a stream of events — so watch mode
 // does not apply there and is ignored with a warning rather than silently pretending to work.
 const watchLabel = String(input.watchLabel ?? '').trim();
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
 let watchMode = watchLabel.length > 0;
 if (watchMode && dataType === 'games') {
   log.warning(`watchLabel "${watchLabel}" is ignored in dataType:"games" — watch mode only applies to dataType:"reviews" (a game row is a snapshot of the same game on every run, not a stream of new events).`);
@@ -629,4 +640,38 @@ if (watchMode && seeding) {
 } else if (emptyIds.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. Steam returned nothing for: ${emptyIds.join(', ')}.`);
 }
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    watchLabel: watchMode ? watchLabel : null,
+    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchSkipped: watchMode ? watchSkipped : null,
+    watchSeeding: watchMode ? seeding : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 await Actor.exit();

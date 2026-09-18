@@ -44,6 +44,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `includeOwnerEstimates` | boolean | `false` | `games` mode: add estimated owner range, peak concurrent players yesterday, and Steam's crowd-voted tags with vote counts — see below |
 | `searchLimit` | integer | `10` | Games taken from each search term |
 | `watchLabel` | string | — | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Reviews mode only. Leave empty for normal runs. |
+| `webhookUrl` | string | — | Optional. An http(s) URL to POST a small JSON completion summary to when the run finishes — see FAQ. |
 
 ## Off-topic review bombs (`includeOffTopic`)
 
@@ -211,6 +212,9 @@ Yes — the Actor paginates with Steam's review cursor. Set `maxReviewsPerApp` (
 
 **I searched for an accented word (like "très" or "café") and got zero results even though I can see matching reviews in the Steam UI — why?**
 This was a real bug, fixed in v0.1.16. `keyword` is matched with a plain substring check, and Unicode represents the same accented letter two different ways — "composed" (`é` as one code point) and "decomposed" (`e` + a separate accent mark) — which look identical but don't string-match each other. Verified live on CS2 (appId `730`, French reviews): searching `"très"` typed in composed form returned 24 matches, the same query typed in decomposed form returned 0, even though both are the same word. `keyword` (and the review text it's matched against) are now Unicode-normalized before comparing, so it no longer matters which form you type.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkipped`) once the run finishes and every row has already been pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 **Does `dayRange` work with the "most recent" sort?**
 No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. For any other historical window, use `reviewsAfter`/`reviewsBefore` instead — the Actor forces chronological order and sends the window straight to Steam's own date filter, so it works arbitrarily far back, not just the last 365 days.

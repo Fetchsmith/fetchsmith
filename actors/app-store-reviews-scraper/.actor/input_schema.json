@@ -133,6 +133,12 @@
       "type": "string",
       "description": "Set a name (e.g. \"my-app-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/appNames/countries/countryFallback/sort/minRating/maxRating/keyword/minReviewLength/reviewsAfter/reviewsBefore/minVoteSum/minVoteCount) starts a fresh baseline. Leave empty for normal one-off runs.",
       "editor": "textfield"
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — reviews pushed, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every review has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   }
 }

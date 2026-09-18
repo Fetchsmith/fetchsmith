@@ -35,6 +35,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 | `includeTotals` | boolean | Candidates mode: fetch financial totals per candidate (default `true`). Costs one extra request per candidate. |
 | `maxResults` | integer | Stop after this many rows (default `20`, max `500`). |
 | `watchLabel` | string | Any transaction mode (contributions, disbursements, independentExpenditures). Set a name for this saved search to turn on watch mode — see "Watch mode" below. |
+| `webhookUrl` | string | Optional. An http(s) URL to POST a small JSON completion summary to when the run finishes — see FAQ. |
 
 ### Example: donor research by employer
 
@@ -237,6 +238,9 @@ Not available in candidates mode: it always returns the same fixed roster of peo
 `result` — you are charged per row actually returned (one candidate, contribution, disbursement or independent expenditure). Starting a run is free, and a run that finds no matches costs nothing (this includes every watch-mode baseline run). HTTP-only (no browser), so runs are fast and cheap.
 
 ## FAQ
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkipped`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 **Which mode should I use for "how much did this campaign spend on Facebook ads"?**
 `searchMode: "disbursements"` with `recipientName: "META"` and the committee's `committeeId`. Disbursements are money the campaign itself paid out. `independentExpenditures` is a different thing: money spent by *outside* groups for or against a candidate, which the candidate's own committee never reports.

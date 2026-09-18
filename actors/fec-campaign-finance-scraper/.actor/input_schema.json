@@ -174,6 +174,12 @@
       "description": "Transaction modes only (contributions, disbursements, independentExpenditures). Set a name for this saved search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only rows that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior.",
       "editor": "textfield",
       "default": ""
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — results pushed, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every result has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   },
   "required": []
