@@ -10,6 +10,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - **Comments included.** The whole thread, flattened, with `parentCommentId` so you can rebuild the tree.
 - **Custom domains just work.** `bigtechnology.com`, `astralcodexten.com` — redirects from `<handle>.substack.com` are followed automatically.
 - **Discover newsletters by category — no URL list needed.** Give `discoverCategories` a topic like `technology` or `finance` and the Actor pulls the top publications from Substack's own category leaderboard and scrapes them in the same run.
+- **Or skip post scraping entirely and pull the leaderboard itself.** `leaderboardOnly: true` returns one row per publication — rank, subscriber counts, author, subscription prices — straight from Substack's overall/free/paid leaderboard (`leaderboardTier`). No archive walk, no per-post request. Built for newsletter-market research, not article content.
 - **Search inside a publication.** `searchQuery` filters the archive server-side instead of downloading everything.
 - **Publication profile on every row** (`includePublicationInfo`): free subscriber count, paid-subscriber band, bestseller tier, author name/handle/bio, the actual monthly/annual/founding subscription prices, podcast flag, language and first-post date. One extra request per publication — cached, so it costs the same whether you pull 5 posts or 5,000.
 - **Many publications per run**, plus direct post URLs.
@@ -22,6 +23,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 - Media monitoring: search several publications for a keyword and get every matching post.
 - Audience research: pull comment threads to see what readers actually argue about.
 - Archive your own Substack (posts + comments) as a backup.
+- Newsletter market research: rank the top paid newsletters in a niche by subscriber count and price with `leaderboardOnly`, no article scraping needed.
 
 ## Input
 
@@ -32,6 +34,8 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 | `discoverCategories` | array | `[]` | **Start from a topic, not a URL list.** Substack category slugs (`technology`, `business`, `finance`, `culture`, `us-politics`, `food`, …, plus subcategory slugs). Publications come back in Substack's own leaderboard order. |
 | `maxPublicationsPerCategory` | integer | `10` | How many top publications to take from each discovered category. |
 | `discoverType` | string | `all` | Restrict discovery to `newsletter` or `podcast` publications. |
+| `leaderboardTier` | string | `all` | Which leaderboard ranking `discoverCategories` reads from: `all` (overall), `free`, or `paid`. |
+| `leaderboardOnly` | boolean | `false` | Return leaderboard rows only (rank, subscriber counts, pricing) — no post scraping. Requires `discoverCategories`; `publicationUrls`/`postUrls` are ignored. |
 | `searchQuery` | string | — | Only return posts matching this keyword within each publication's archive. |
 | `includeBodyText` | boolean | `true` | Fetch the full body and return clean plain text (one extra request per post). |
 | `includeBodyHtml` | boolean | `false` | Also return the original HTML body. |
@@ -57,7 +61,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 
 ## Output
 
-Two record shapes, distinguished by `type`.
+Three record shapes, distinguished by `type`.
 
 **`type: "post"`**
 
@@ -134,6 +138,40 @@ Only when `includePublicationInfo: true` (values below from a real run on `bigte
 }
 ```
 
+**`type: "leaderboard"`** (only when `leaderboardOnly: true` — real row from `discoverCategories: ["technology"], leaderboardTier: "paid"`)
+
+| Field | Example |
+|---|---|
+| `rank` | `1` — position on that category's leaderboard |
+| `category`, `leaderboardTier` | `technology`, `paid` |
+| `name`, `publicationUrl`, `handle`, `customDomain` | `SemiAnalysis`, `https://newsletter.semianalysis.com`, `semianalysis`, `newsletter.semianalysis.com` |
+| `publicationSubscriberCount`, `publicationSubscriberCountLabel` | `316000`, `Over 316,000 subscribers` |
+| `publicationPaidSubscribersLabel` | `Thousands of paid subscribers` |
+| `publicationBestsellerTier` | `1000` |
+| `publicationAuthorName`, `publicationAuthorHandle`, `publicationAuthorBio` | `Dylan Patel`, `semianalysis`, `Bridging the gap between business and the world's most important industry.` |
+| `publicationPlans` | `[{"interval":"month","amount":50,"currency":"USD","name":"$50 a month"}, {"interval":"year","amount":500,"currency":"USD","name":"$500 a year"}]` |
+| `publicationType`, `publicationLanguage`, `publicationFirstPostDate` | `newsletter`, `en`, `2020-05-22T21:26:00.000Z` |
+| `publicationHasPodcast`, `publicationInviteOnly`, `publicationPaymentsEnabled` | `false`, `false`, `true` |
+| `publicationDescription`, `publicationLogoUrl` | tagline and logo, same fields `includePublicationInfo` adds to post rows |
+
+```json
+{
+  "type": "leaderboard",
+  "rank": 1,
+  "category": "technology",
+  "leaderboardTier": "paid",
+  "name": "SemiAnalysis",
+  "publicationUrl": "https://newsletter.semianalysis.com",
+  "publicationSubscriberCount": 316000,
+  "publicationPaidSubscribersLabel": "Thousands of paid subscribers",
+  "publicationAuthorName": "Dylan Patel",
+  "publicationPlans": [
+    {"interval": "month", "amount": 50, "currency": "USD", "name": "$50 a month"},
+    {"interval": "year", "amount": 500, "currency": "USD", "name": "$500 a year"}
+  ]
+}
+```
+
 ## Pricing
 
 Pay per result, split by item type so metadata-only and comment-heavy runs aren't billed at full-article rates. **No Actor-start fee** — a 5-post run costs 5 results, not 5 results plus a fixed charge.
@@ -143,9 +181,11 @@ Pay per result, split by item type so metadata-only and comment-heavy runs aren'
 | Post with article text | $0.002 | $0.0018 | $0.0015 | $0.00078 |
 | Post, metadata only | $0.00112 | $0.00098 | $0.00076 | $0.00039 |
 | Comment | $0.00056 | $0.00049 | $0.00038 | $0.00019 |
+| Leaderboard row (`leaderboardOnly`) | $0.0015 | $0.0013 | $0.001 | $0.0005 |
 
 - **Metadata-only** is charged automatically whenever `includeBodyText` and `includeBodyHtml` are both off. You still get all 20+ non-body fields (title, subtitle, dates, audience/paywall status, reactions, restacks, comment counts, tags, section, podcast URL and duration, cover image). Turn the body off when you only need an index of a publication's archive — it's also much faster, because no per-post request is made.
 - **Comments** are only charged when `includeComments` is on.
+- **Leaderboard rows** are the only event charged when `leaderboardOnly` is on — no article/detail requests happen in this mode at all.
 
 `maxResults` is a hard cap across every event type, so a run can never cost more than `maxResults × $0.002`. Nothing is charged for items that are filtered out or for failed requests.
 
@@ -157,6 +197,8 @@ Pay per result, split by item type so metadata-only and comment-heavy runs aren'
 **Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way.
 
 **Why are comments optional?** They're charged like posts, and a popular post can have hundreds. Turn them on with `includeComments` and bound them with `maxCommentsPerPost`.
+
+**What's the difference between `leaderboardOnly` and `discoverCategories` + `includePublicationInfo`?** Both read the same Substack leaderboard data, but `discoverCategories` alone uses the leaderboard only to find publications, then scrapes their posts (charged per post). `leaderboardOnly: true` skips the post scraping and returns the leaderboard rows themselves — rank, subscriber counts, pricing — as the entire result, at a fraction of the cost of a post-scraping run. Use it for "who are the top 20 paid tech newsletters and what do they charge", not "give me their articles".
 
 **How far back can it go?** The whole archive — `maxPostsPerPublication` up to 5,000 posts per publication, paginated 50 at a time.
 

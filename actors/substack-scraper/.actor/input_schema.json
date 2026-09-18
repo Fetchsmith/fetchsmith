@@ -53,6 +53,29 @@
         "Podcasts only"
       ]
     },
+    "leaderboardTier": {
+      "title": "Leaderboard ranking",
+      "type": "string",
+      "description": "Which Substack leaderboard ranking to pull publications from for discoverCategories: overall, free-only, or paid-only (Substack ranks these as separate lists, e.g. substack.com/leaderboard/technology/paid).",
+      "editor": "select",
+      "default": "all",
+      "enum": [
+        "all",
+        "free",
+        "paid"
+      ],
+      "enumTitles": [
+        "Overall leaderboard",
+        "Free leaderboard",
+        "Paid leaderboard"
+      ]
+    },
+    "leaderboardOnly": {
+      "title": "Leaderboard only (no post scraping)",
+      "type": "boolean",
+      "description": "Return one row per publication from the discoverCategories leaderboard itself — rank, subscriber counts, author, subscription prices — instead of scraping any posts. Cheaper and faster than a full run when you only want market-research / newsletter-discovery data, not article content. Requires discoverCategories; publicationUrls/postUrls are ignored in this mode.",
+      "default": false
+    },
     "searchQuery": {
       "title": "Search within the publication",
       "type": "string",

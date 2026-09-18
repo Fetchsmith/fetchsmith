@@ -59,6 +59,54 @@
           "null"
         ]
       },
+      "rank": {
+        "title": "Rank",
+        "example": 1,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "category": {
+        "title": "Category",
+        "example": "technology",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "leaderboardTier": {
+        "title": "LeaderboardTier",
+        "example": "paid",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "name": {
+        "title": "Name",
+        "example": "SemiAnalysis",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "handle": {
+        "title": "Handle",
+        "example": "semianalysis",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "customDomain": {
+        "title": "CustomDomain",
+        "example": "newsletter.semianalysis.com",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "publicationId": {
         "title": "PublicationId",
         "example": 46510,

@@ -46,6 +46,8 @@ const publishedBefore = input.publishedBefore ? new Date(input.publishedBefore) 
 const discoverCategories = (input.discoverCategories ?? []).map((c) => String(c ?? '').trim()).filter(Boolean);
 const maxPublicationsPerCategory = Math.min(Number(input.maxPublicationsPerCategory ?? 10), 100);
 const discoverType = ['all', 'newsletter', 'podcast'].includes(input.discoverType) ? input.discoverType : 'all';
+const leaderboardTier = ['all', 'free', 'paid'].includes(input.leaderboardTier) ? input.leaderboardTier : 'all';
+const leaderboardOnly = input.leaderboardOnly === true;
 
 // Posts that come back without an article body are cheaper for us (no per-post detail request)
 // and are billed on their own, cheaper event — see the Pricing section of README.md.
@@ -374,11 +376,15 @@ async function resolveCategoryIds(wanted) {
   return out;
 }
 
+// Substack ranks publications in 3 separate lists per category (overall/free/paid) at
+// category/public/<id>/<tier> — same publication object shape as the homepage's window._preloads
+// (verified live), so a leaderboard hit is also a complete, free includePublicationInfo profile.
 async function discoverPublications(cat) {
   const found = [];
+  const entries = [];
   const pageSize = 25;
   for (let page = 0; found.length < maxPublicationsPerCategory && timeBudgetOk(); page += 1) {
-    const url = `https://substack.com/api/v1/category/public/${cat.id}/all?page=${page}&limit=${pageSize}`;
+    const url = `https://substack.com/api/v1/category/public/${cat.id}/${leaderboardTier}?page=${page}&limit=${pageSize}`;
     let body;
     try {
       body = await getJson(url);
@@ -388,17 +394,33 @@ async function discoverPublications(cat) {
     }
     const pubs = body?.publications;
     if (!Array.isArray(pubs) || !pubs.length) break;
-    for (const p of pubs) {
-      if (discoverType !== 'all' && p.type && p.type !== discoverType) continue;
+    pubs.forEach((p, i) => {
+      const rank = page * pageSize + i + 1;
+      if (discoverType !== 'all' && p.type && p.type !== discoverType) return;
       const host = p.custom_domain || (p.subdomain ? `${p.subdomain}.substack.com` : null);
-      if (!host) continue;
-      found.push({ origin: `https://${host}`, postSlug: null, name: p.name, category: cat.slug });
-      if (found.length >= maxPublicationsPerCategory) break;
-    }
+      if (!host) return;
+      if (found.length >= maxPublicationsPerCategory) return;
+      found.push({ origin: `https://${host}`, postSlug: null, pubName: p.name });
+      entries.push({ rank, category: cat.slug, tier: leaderboardTier, origin: `https://${host}`, pub: p });
+    });
     if (!body.more) break;
   }
-  log.info(`Category "${cat.slug}": discovered ${found.length} publication(s)${found.length ? ` — ${found.slice(0, 5).map((f) => f.name).join(', ')}${found.length > 5 ? ', …' : ''}` : ''}`);
-  return found;
+  log.info(`Category "${cat.slug}" (${leaderboardTier}): discovered ${found.length} publication(s)${found.length ? ` — ${found.slice(0, 5).map((f) => f.pubName).join(', ')}${found.length > 5 ? ', …' : ''}` : ''}`);
+  return { found, entries };
+}
+
+function mapLeaderboardEntry(e) {
+  return {
+    type: 'leaderboard',
+    rank: e.rank,
+    category: e.category,
+    leaderboardTier: e.tier,
+    name: e.pub.name ?? null,
+    publicationUrl: e.origin,
+    handle: e.pub.subdomain ?? null,
+    customDomain: e.pub.custom_domain ?? null,
+    ...mapPublicationInfo(e.pub),
+  };
 }
 
 const publicationTargets = [];
@@ -413,13 +435,34 @@ for (const raw of input.postUrls ?? []) {
   else if (t) publicationTargets.push(t);
 }
 let unknownCategories = false;
+const leaderboardEntries = [];
 if (discoverCategories.length) {
   const cats = await resolveCategoryIds(discoverCategories);
   unknownCategories = cats.length === 0;
   for (const cat of cats) {
     if (!timeBudgetOk()) break;
-    publicationTargets.push(...(await discoverPublications(cat)));
+    const { found, entries } = await discoverPublications(cat);
+    publicationTargets.push(...found);
+    leaderboardEntries.push(...entries);
   }
+}
+
+if (leaderboardOnly) {
+  if (!leaderboardEntries.length) {
+    const why = unknownCategories
+      ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
+      : discoverCategories.length
+        ? 'category discovery returned no publications — try a different category, leaderboardTier or raise maxPublicationsPerCategory'
+        : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
+    log.warning(`Nothing to do — ${why}.`);
+    await Actor.setStatusMessage(`No items returned — ${why}.`);
+  } else {
+    for (const e of leaderboardEntries) {
+      if (!(await pushResult(mapLeaderboardEntry(e), 'leaderboard-row'))) break;
+    }
+    await Actor.setStatusMessage(`Pushed ${pushed} leaderboard row(s) across ${discoverCategories.length} categor${discoverCategories.length === 1 ? 'y' : 'ies'}.`);
+  }
+  await Actor.exit();
 }
 // A publication can be reached by handle and by custom domain, and can sit in two categories.
 const seenOrigins = new Set();
