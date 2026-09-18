@@ -548,6 +548,7 @@ function normalize(r, category, kind) {
         awardId: r['Award ID'] ?? null,
         awardUrl: gid ? `https://www.usaspending.gov/award/${encodeURIComponent(gid)}` : null,
         generatedInternalId: gid,
+        awardLevel: 'prime',
         awardCategory: category,
         awardType: r['Contract Award Type'] ?? r['Award Type'] ?? null,
 

@@ -55,6 +55,7 @@ One flat row per award:
 |---|---|
 | `awardId` | `89243425FEE000489` |
 | `awardUrl` | `https://www.usaspending.gov/award/CONT_AWD_89243425FEE000489_8900_…` |
+| `awardLevel` | `prime` — lets you tell a prime row apart from a `subaward` row (below) after merging runs from both modes into one table. |
 | `awardCategory` / `awardType` | `contracts` / `BPA CALL` |
 | `recipientName`, `recipientUei`, `recipientId` | `ENERGY TECHNOLOGY ALLIANCE LLC`, `WDTLX4NKRKC8` |
 | `recipientAddress`, `recipientCity`, `recipientState`, `recipientCountry` | `920 NW BOND ST STE 204`, `BEND`, `OR`, `UNITED STATES` |
