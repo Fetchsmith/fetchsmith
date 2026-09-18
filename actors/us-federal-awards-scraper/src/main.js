@@ -210,6 +210,7 @@ const recipients = (input.recipients ?? []).map((r) => String(r).trim()).filter(
 const awardIds = (input.awardIds ?? []).map((a) => String(a).trim()).filter(Boolean);
 const states = (input.placeOfPerformanceStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
 const recipientStates = (input.recipientStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);
+const recipientTypes = (input.recipientTypes ?? []).map((t) => String(t).trim().toLowerCase()).filter(Boolean);
 const naicsCodes = (input.naicsCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
 // The API rejects anything but 1-4 uppercase alphanumerics with a 422, so uppercase here
 // (buyers type "r425") and fail fast on the rest with a message that names the bad code.
@@ -369,6 +370,7 @@ if (watchMode) {
       recipients: [...recipients].sort(),
       states: [...states].sort(),
       recipientStates: [...recipientStates].sort(),
+      recipientTypes: [...recipientTypes].sort(),
       naicsCodes: [...naicsCodes].sort(),
       pscCodes: [...pscCodes].sort(),
       minAwardAmount: minAwardAmount ?? null,
@@ -471,6 +473,7 @@ function buildFilters(codes) {
     if (recipientStates.length) {
         filters.recipient_locations = recipientStates.map((state) => ({ country: 'USA', state }));
     }
+    if (recipientTypes.length) filters.recipient_type_names = recipientTypes;
     if (minAwardAmount != null || maxAwardAmount != null) {
         const bound = {};
         if (minAwardAmount != null) bound.lower_bound = minAwardAmount;

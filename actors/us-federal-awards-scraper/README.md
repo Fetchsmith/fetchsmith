@@ -32,6 +32,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `awardIds` | array | – | Exact PIID/FAIN/URI values, e.g. `N0001917C0001`. **Exclusive mode**: set this and every other filter (including the date window) is ignored so the exact award can never be hidden by an unrelated filter. |
 | `placeOfPerformanceStates` | array | – | Two-letter USPS codes for where the work happens (`CA`, `TX`). |
 | `recipientStates` | array | – | Two-letter USPS codes for the recipient's own address. |
+| `recipientTypes` | array | – | USAspending business-type categories, e.g. `small_business`, `woman_owned_business`, `veteran_owned_business`, `minority_owned_business`, `nonprofit`, `higher_education`, `sole_proprietorship`, `manufacturer_of_goods` (live-verified 2026-09-18; USAspending has more categories beyond these). Multiple values are ORed. A misspelled category returns zero rows silently — check spelling against USAspending's advanced search if a run comes back empty. |
 | `naicsCodes` | array | – | NAICS industry codes, 2-6 digit prefixes (`5415` matches every 6-digit code under it). Multiple values are ORed. No effect on grants/direct payments/other financial assistance/loans — they carry no NAICS. |
 | `pscCodes` | array | – | Product or Service Codes (PSC), 1-4 character prefixes (`R425` one leaf code, `R4` every professional-services code, `R` the whole services letter, `10` every weapons product). Multiple values are ORed. Only contracts and IDVs carry a PSC, so grants/loans/direct payments return nothing. |
 | `minAwardAmount` / `maxAwardAmount` | integer | – | Obligated amount bounds in USD. |
@@ -88,7 +89,7 @@ With `awardLevel: "subaward"` the same six categories, the same date window and 
 
 Three things to know:
 
-- **Filters retarget to the sub-recipient.** `recipients` and `recipientStates` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates`, `naicsCodes`, `pscCodes` and the amount bounds work as usual (matching the **prime** award's NAICS/PSC, since sub-awards carry neither of their own). `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
+- **Filters retarget to the sub-recipient.** `recipients`, `recipientStates` and `recipientTypes` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates`, `naicsCodes`, `pscCodes` and the amount bounds work as usual (matching the **prime** award's NAICS/PSC, since sub-awards carry neither of their own). `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to.
 - **`sortBy: lastModifiedDate` falls back to the sub-award date**, because sub-award records carry no last-modified timestamp.
 - **Coverage is narrower than prime awards.** Only prime recipients required to file FSRS reports have sub-awards, so small awards, most loans and most direct payments return nothing here. An empty sub-award result does not mean the prime award doesn't exist — re-run with `awardLevel: "prime"` to confirm.
 

@@ -126,6 +126,15 @@
             "description": "Two-letter USPS state codes for the recipient's own address, e.g. NY, VA.",
             "editor": "stringList"
         },
+        "recipientTypes": {
+            "title": "Recipient business types",
+            "type": "array",
+            "description": "Filter to recipients matching one or more USAspending business-type categories, e.g. small_business, woman_owned_business, veteran_owned_business, minority_owned_business, nonprofit, higher_education, sole_proprietorship, manufacturer_of_goods (live-verified 2026-09-18; USAspending has more categories beyond these). Multiple values are ORed. A misspelled category returns zero rows rather than an error — double-check spelling against USAspending's own advanced search if a run comes back empty.",
+            "editor": "stringList",
+            "example": [
+                "small_business"
+            ]
+        },
         "naicsCodes": {
             "title": "NAICS codes",
             "type": "array",
