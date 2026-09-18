@@ -33,6 +33,24 @@
       "description": "Latest date, YYYY-MM-DD or YYYYMMDD, for whichever field dateField selects (report date by default). Defaults to today.",
       "editor": "textfield"
     },
+    "brandName": {
+      "title": "Brand name (drug recalls only)",
+      "type": "string",
+      "description": "Filter to recalls whose drug brand name matches, for example \"Nurtec\". Phrase-matched against openFDA's cross-referenced openfda.brand_name field, which only drug recalls carry — food and device recalls will never match this filter, so combine it with productTypes:[\"drug\"] (or leave productTypes at its default; the other two types just return nothing for this field). Leave empty for all.",
+      "editor": "textfield"
+    },
+    "genericName": {
+      "title": "Generic name (drug recalls only)",
+      "type": "string",
+      "description": "Filter to recalls whose drug generic/active-ingredient name matches, for example \"ibuprofen\". Same drug-only field as brandName above — see that description. Leave empty for all.",
+      "editor": "textfield"
+    },
+    "manufacturerName": {
+      "title": "Manufacturer name (drug recalls only)",
+      "type": "string",
+      "description": "Filter to recalls whose drug manufacturer name matches, for example \"Pfizer\". Same drug-only field as brandName above (not to be confused with recallingFirm, which is the firm that issued the recall and applies to all three product types). Leave empty for all.",
+      "editor": "textfield"
+    },
     "recallingFirm": {
       "title": "Recalling firm",
       "type": "string",

@@ -41,6 +41,11 @@ const searchQuery = String(input.searchQuery ?? '').trim();
 const status = String(input.status ?? '').trim();
 const recallingFirm = String(input.recallingFirm ?? '').trim();
 const city = String(input.city ?? '').trim();
+// Drug-only cross-referenced fields (see the openfda comment near normalize() below) --
+// filterable at zero extra cost since openFDA's own search index already carries them.
+const brandName = String(input.brandName ?? '').trim();
+const genericName = String(input.genericName ?? '').trim();
+const manufacturerName = String(input.manufacturerName ?? '').trim();
 const VOLUNTARY_MANDATED = ['Voluntary: Firm initiated', 'FDA Mandated'];
 const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMandated ?? '').trim())
     ? String(input.voluntaryMandated).trim()
@@ -127,6 +132,9 @@ const watchCriteria = {
     city,
     voluntaryMandated,
     searchQuery,
+    brandName,
+    genericName,
+    manufacturerName,
 };
 
 function watchKeyFor(label, criteria) {
@@ -238,6 +246,12 @@ function buildSearch(from, to) {
     if (status) clauses.push(`status:${quote(status)}`);
     if (recallingFirm) clauses.push(`recalling_firm:${quote(recallingFirm)}`);
     if (city) clauses.push(`city:${quote(city)}`);
+    // Valid on all three endpoints' index mappings but only ever populated on drug rows --
+    // food/device rows simply never match, same as any other filter with no data behind it,
+    // verified live (not a 400, a normal empty match set).
+    if (brandName) clauses.push(`openfda.brand_name:${quote(brandName)}`);
+    if (genericName) clauses.push(`openfda.generic_name:${quote(genericName)}`);
+    if (manufacturerName) clauses.push(`openfda.manufacturer_name:${quote(manufacturerName)}`);
     if (voluntaryMandated) clauses.push(`voluntary_mandated:${quote(voluntaryMandated)}`);
     if (searchQuery) {
         // Free text spans the three fields a buyer actually searches on.
@@ -639,7 +653,9 @@ if (pushed === 0 && watchMode && !seeding) {
         + '(3) "states" must be the 2-letter code of the RECALLING FIRM\'s state, not where the '
         + 'product was distributed; use distributionPattern in the output for distribution instead. '
         + '(4) searchQuery is a phrase match over product description, recall reason and firm name — '
-        + 'a long phrase rarely matches; try one distinctive word.',
+        + 'a long phrase rarely matches; try one distinctive word. '
+        + '(5) brandName/genericName/manufacturerName only ever match drug recalls (openFDA cross-'
+        + 'references those fields for drugs only) — they will zero out a food- or device-only search.',
     );
 }
 
