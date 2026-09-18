@@ -88,6 +88,101 @@
         "title": "Url",
         "example": "https://www.reedsmith.com/our-insights/blogs/technology-law-dispatch/102nbqu/edpb-web-scraping-guidelines-for-ai-making-"
       },
+      "articleBody": {
+        "title": "ArticleBody",
+        "example": "The free online event will be broadcast on September 16th\nLithuania, Vilnius — September 14, 2026: Oxylabs, an industry-",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleBodyTruncated": {
+        "title": "ArticleBodyTruncated",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "articleWordCount": {
+        "title": "ArticleWordCount",
+        "example": 737,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "articleBodySource": {
+        "title": "ArticleBodySource",
+        "example": "html",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleAuthor": {
+        "title": "ArticleAuthor",
+        "example": "Oxylabs",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleImage": {
+        "title": "ArticleImage",
+        "example": "https://media.zenfs.com/en/globenewswire.com/c2aa0e5646f0a8a690991d1173bfbf29.png",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleKeywords": {
+        "title": "ArticleKeywords",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "articleSection": {
+        "title": "ArticleSection",
+        "example": "AI",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleDescription": {
+        "title": "ArticleDescription",
+        "example": "The free online event will be broadcast on September 16th Lithuania, Vilnius — September 14, 2026: Oxylabs, an industry-",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articlePublishedAt": {
+        "title": "ArticlePublishedAt",
+        "example": "2026-09-14T12:26:00Z",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleModifiedAt": {
+        "title": "ArticleModifiedAt",
+        "example": "2026-09-14T12:26:00Z",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "articleFetchStatus": {
+        "title": "ArticleFetchStatus",
+        "example": "ok",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "position": {
         "type": [
           "integer",
@@ -148,8 +243,12 @@
         "type": "array",
         "title": "Tickers",
         "description": "Only present when extractTickers is on. Stock tickers explicitly mentioned via $CASHTAG or EXCHANGE:TICKER notation in the title (and article body, if fetched).",
-        "items": { "type": "string" },
-        "example": ["TSLA"]
+        "items": {
+          "type": "string"
+        },
+        "example": [
+          "TSLA"
+        ]
       }
     }
   },

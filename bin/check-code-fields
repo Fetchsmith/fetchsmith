@@ -19,6 +19,7 @@ schema-only is reported as a soft warning only: several Actors assign fields con
 
 Exit 0 = no code-only drift, 1 = code-only drift found. Usage: check-code-fields [slug ...]
 """
+import glob
 import json
 import os
 import re
@@ -153,7 +154,14 @@ def main(argv):
         dset = set(declared)
         advertised = set(tool.get('output_fields', []))
 
-        src = open(main_js).read()
+        # Read EVERY src/*.js, not just main.js (cycle 448): google-news-scraper builds its 12
+        # article* fields in src/article.js and spreads the result into the pushed row, so a
+        # main.js-only scan declared it clean while the Console was missing 12 real columns.
+        # It is the only multi-file Actor today; concatenating is cheap and future-proofs the check.
+        src = '\n'.join(
+            open(p).read()
+            for p in sorted(glob.glob(os.path.join(ROOT, 'actors', slug, 'src/*.js')))
+        )
         # Fields the code builds for its own use and removes before pushing (ats-jobs-scraper's
         # _rawId/_externalPath, needed to fetch the per-job detail page) are not output at all.
         internal = set(re.findall(r'delete\s+[A-Za-z_$][\w$]*\.([A-Za-z_$][\w$]*)', src))
