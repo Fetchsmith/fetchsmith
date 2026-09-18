@@ -42,6 +42,9 @@ const ratingFilter = (input.ratingFilter ?? [])
   .map((s) => Number(String(s).trim()))
   .filter((n) => Number.isFinite(n));
 const appVersions = (input.appVersions ?? []).map((s) => String(s).trim()).filter(Boolean);
+const minThumbsUp = input.minThumbsUp != null ? Number(input.minThumbsUp) : null;
+const replyFilter = String(input.replyFilter ?? 'any').trim();
+const minReviewLength = input.minReviewLength != null ? Number(input.minReviewLength) : null;
 const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;
 const untilDate = input.untilDate ? new Date(input.untilDate) : null;
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -56,6 +59,10 @@ function passesFilters(r) {
   // Google Play leaves `version` null on many reviews; a version filter must drop those
   // rather than silently letting them through as "unknown".
   if (appVersions.length && !appVersions.includes(String(r.version ?? ''))) return false;
+  if (minThumbsUp != null && Number(r.thumbsUp ?? 0) < minThumbsUp) return false;
+  if (replyFilter === 'hasReply' && !r.replyText) return false;
+  if (replyFilter === 'noReply' && r.replyText) return false;
+  if (minReviewLength != null && String(r.text ?? '').length < minReviewLength) return false;
   const d = r.date ? new Date(r.date) : null;
   if (sinceDate && (!d || d < sinceDate)) return false;
   if (untilDate && (!d || d > untilDate)) return false;
@@ -99,6 +106,10 @@ if (watchMode) {
     appIds: input.appIds ?? [], searchTerms: input.searchTerms ?? [], country, lang, sort: sortName,
     minScore, maxScore, ratingFilter, keyword, keywords, appVersions,
     sinceDate: input.sinceDate ?? null, untilDate: input.untilDate ?? null,
+    // Only added when set, so every watch baseline saved before this cycle keeps its key.
+    ...(minThumbsUp != null ? { minThumbsUp } : {}),
+    ...(replyFilter !== 'any' ? { replyFilter } : {}),
+    ...(minReviewLength != null ? { minReviewLength } : {}),
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
@@ -255,9 +266,9 @@ if (!resolvedAppIds.length) {
 }
 
 const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
-const filteredOutApps = []; // reviews existed but rating/keyword/appVersion/date filters removed all of them
+const filteredOutApps = []; // reviews existed but rating/keyword/appVersion/thumbsUp/reply/length/date filters removed all of them
 // Apps where maxReviewsPerApp was hit (gplay.reviews() returned exactly that many) while the
-// rating/keyword/appVersion/date filters were still dropping some of them -- maxReviewsPerApp
+// rating/keyword/appVersion/thumbsUp/reply/length/date filters were still dropping some of them -- maxReviewsPerApp
 // caps reviews FETCHED, before filtering, so matching reviews may sit further back in Google
 // Play's feed and were never fetched at all.
 const depthCappedApps = [];
@@ -316,7 +327,7 @@ for (const appId of resolvedAppIds) {
       depthCappedApps.push(appId);
       log.warning(
         `${appId}: maxReviewsPerApp (${fetchNum}) was reached and ${data.length - passCount} of the `
-        + `fetched reviews were removed by your rating/keyword/appVersion/date filters. The cap counts reviews `
+        + `fetched reviews were removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters. The cap counts reviews `
         + `fetched, before filtering -- raise maxReviewsPerApp to search deeper in the feed.`,
       );
     }
@@ -368,7 +379,7 @@ for (const appId of resolvedAppIds) {
       log.warning(`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}" (try a different country/language, not a scrape failure).`);
     } else if (data.length > 0 && passCount === 0) {
       filteredOutApps.push(appId);
-      log.warning(`${appId}: fetched ${data.length} reviews but your rating/keyword/appVersion/date filters removed all of them.`);
+      log.warning(`${appId}: fetched ${data.length} reviews but your rating/keyword/appVersion/thumbsUp/reply/length/date filters removed all of them.`);
     }
   } catch (e) {
     erroredApps.push(appId);
@@ -409,9 +420,9 @@ if (watchMode && seeding) {
     : erroredApps.length
     ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
     : depthCappedApps.length && !emptyApps.length
-      ? `maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/date filters for: ${depthCappedApps.join(', ')} — raise maxReviewsPerApp to search deeper`
+      ? `maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')} — raise maxReviewsPerApp to search deeper`
     : filteredOutApps.length && !emptyApps.length
-      ? 'reviews were found but every one was removed by your rating/keyword/appVersion/date filters'
+      ? 'reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters'
       : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
   await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedApps.length) {

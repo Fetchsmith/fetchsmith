@@ -111,6 +111,27 @@
       "editor": "stringList",
       "default": []
     },
+    "minThumbsUp": {
+      "title": "Minimum thumbs up",
+      "type": "integer",
+      "description": "Only keep reviews with at least this many \"helpful\" votes (thumbs up) from other users. Google Play always reports this as 0 on a review with no votes, never null, so no reviews are dropped for missing data the way an app-version filter can drop null versions.",
+      "minimum": 0
+    },
+    "replyFilter": {
+      "title": "Developer reply",
+      "type": "string",
+      "description": "\"Has a reply\" finds reviews the developer already responded to (e.g. to audit response quality). \"No reply\" finds reviews still waiting for a response — the common support-queue use case.",
+      "editor": "select",
+      "enum": ["any", "hasReply", "noReply"],
+      "enumTitles": ["Any (default, no filter)", "Has a developer reply", "No developer reply"],
+      "default": "any"
+    },
+    "minReviewLength": {
+      "title": "Minimum review text length",
+      "type": "integer",
+      "description": "Only keep reviews whose text is at least this many characters long. Filters out low-effort one-word/emoji-only reviews. A review with no text at all (title-only, or a bare star rating) is always dropped once this is set, since it can never meet a length floor above 0.",
+      "minimum": 1
+    },
     "sinceDate": {
       "title": "Since date",
       "type": "string",

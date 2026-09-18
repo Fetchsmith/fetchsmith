@@ -27,6 +27,9 @@ Get Google Play app reviews and app details (ratings, installs, developer info) 
 | `keyword` | string | Only keep reviews whose title or text contains this word/phrase (case-insensitive) |
 | `keywords` | array of strings | Only keep reviews containing **at least one** of these words/phrases (case-insensitive) |
 | `appVersions` | array of strings | Only keep reviews written against one of these app versions, e.g. `["9.1.78.2218"]`. Google Play leaves `version` null on roughly 1 review in 6 — those are dropped when this filter is set |
+| `minThumbsUp` | integer | Only keep reviews with at least this many "helpful" votes from other users |
+| `replyFilter` | string | `any` (default), `hasReply` (only reviews the developer already responded to), or `noReply` (only reviews still waiting for a response — the support-queue use case) |
+| `minReviewLength` | integer | Only keep reviews whose text is at least this many characters — filters out one-word/emoji-only reviews |
 | `sinceDate` / `untilDate` | string | Only keep reviews posted within this ISO date range |
 | `watchLabel` | string | Optional. Name a saved watch (e.g. `my-app-alerts`) to get **only reviews not delivered under that label before** — see "Watch mode" below |
 
@@ -36,7 +39,7 @@ Set `watchLabel` to any name and this Actor stops re-delivering the same reviews
 1. **First run for a label is a free baseline.** It records which reviews already exist (walking at least 1000 per app, regardless of your `maxReviewsPerApp`, up to 5000 reviews total) and returns **zero rows — you are charged nothing**.
 2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
 
-The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-google-play-reviews-watch`, keyed by your label plus a fingerprint of the apps/search terms, country, language, sort order **and every rating, keyword, app-version and date filter**. Change any of those and you get a fresh baseline rather than a silently wrong one — otherwise widening a filter would hide the newly-matching older reviews as "already seen". Delete the record to start over; use different labels to watch several filter sets in parallel.
+The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-google-play-reviews-watch`, keyed by your label plus a fingerprint of the apps/search terms, country, language, sort order **and every rating, keyword, app-version, thumbs-up, reply and date filter**. Change any of those and you get a fresh baseline rather than a silently wrong one — otherwise widening a filter would hide the newly-matching older reviews as "already seen". Delete the record to start over; use different labels to watch several filter sets in parallel.
 
 Details worth knowing:
 - **Use `sort: "NEWEST"`** (the default). With `RATING` or `HELPFULNESS` a brand-new review isn't necessarily inside the first `maxReviewsPerApp` rows, so new reviews can be missed; the run logs a warning if you do it anyway.
@@ -84,6 +87,8 @@ Sample app-details row includes: `title`, `developer`, `score`, `ratings`, `revi
 **Can I filter to just negative or just recent reviews?** Yes — set `maxScore` (e.g. 2) for negative-only, `ratingFilter: [1, 5]` for only the extremes, or `sinceDate`/`untilDate` for a date window; filtering happens before you're charged, so you never pay for rows you filtered out.
 
 **Can I see what broke in a specific release?** Set `appVersions` to the version string(s) you care about (they match the `version` field on each review row) and, if you want, combine it with `maxScore: 2` and `keywords` to isolate the complaints. Reviews where Google Play reports no version are excluded rather than guessed at.
+
+**Can I find reviews my support team hasn't answered yet, or check response quality on the ones we have?** Yes — `replyFilter: "noReply"` returns only reviews with no developer response (combine with `maxScore: 2` for an unanswered-complaints queue); `replyFilter: "hasReply"` returns only the ones you already responded to, e.g. to audit response quality or turnaround. `minThumbsUp` and `minReviewLength` are the same idea applied to helpfulness votes and review length — e.g. `minThumbsUp: 5` surfaces the reviews other users found worth upvoting, and `minReviewLength: 100` filters out one-word/emoji-only noise. All three were already computed on every review row (`thumbsUp`, `replyText`, `text`) but unfilterable before this — live-verified on a real app (Discord) that 21/50 recent reviews had a developer reply and the other 29 didn't, split exactly by `replyFilter`.
 
 **What is `aspectRatings`?** Google Play sometimes prompts a reviewer to rate specific aspects of the app (e.g. "Ads frequency", "Ease of use") alongside their overall star score. When present, each row's `aspectRatings` array has one `{criteria, rating}` entry per aspect the reviewer answered — verified live: ~30% of a real app's recent reviews carry at least one aspect rating. It's `[]` when the reviewer didn't answer any (most reviews). We're the only Google Play reviews Actor on the Store that surfaces this field — the top 3 competitors by users don't include it in their output schema (re-verified 2026-09-17).
 
