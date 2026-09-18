@@ -63,6 +63,7 @@ GLYPHS = {
     "clinicaltrials-scraper": ("TRL", EDU),
     "grants-gov-scraper": ("GNT", GOV),
     "nih-reporter-scraper": ("NIH", EDU),
+    "court-records-scraper": ("CRT", GOV),
 }
 DEFAULT_ACCENT = BRAND
 

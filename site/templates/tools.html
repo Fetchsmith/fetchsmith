@@ -5,7 +5,7 @@
 {% if tools %}
 <div class="cards">
 {% for t in tools %}
-  <a class="card" href="/tools/{{ t.slug }}"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span><div class="meta"><span class="pill">{{ t.credits_per_result or 1 }} credit / result</span>{% if t.status == 'beta' %}<span class="pill gray">beta</span>{% endif %}</div></a>
+  <a class="card" href="/tools/{{ t.slug }}"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="36" height="36" loading="lazy"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span><div class="meta"><span class="pill">{{ t.credits_per_result or 1 }} credit / result</span>{% if t.status == 'beta' %}<span class="pill gray">beta</span>{% endif %}</div></a>
 {% endfor %}
 </div>
 {% else %}
