@@ -60,6 +60,7 @@ The 15,000-row wall still applies to a pasted search and cannot be worked around
 | `newlyAddedOnly` | boolean | Only projects recently added to RePORTER — cheap incremental pulls |
 | `watchLabel` | string | Name a saved query to get **only projects new since its last run** — see below |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen project if its end date, budget end, award amount or active flag changed (default `false`) — see FAQ |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (projects pushed, watch new/changed counts, dataset ID) here when the run finishes — see FAQ. |
 | `excludeSubprojects` | boolean | Drop P01/U54 subproject duplicates (default `true`) |
 | `includePublications` | boolean | Join linked PubMed PMIDs (default `true`) |
 | `includeAbstract` | boolean | Include abstract + public-health relevance (default `true`) |
@@ -119,6 +120,9 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 **Where is the watch baseline kept, and can I reset it?** In a named key-value store, `fetchsmith-nih-watch`, **on your own Apify account** — one record per label + filter combination, holding the `appl_id`s already sent plus the last run time. Delete the record (or just use a new label) to start over. Nothing about your saved queries leaves your account. Two caveats worth knowing: a project that was skipped because it fell outside `maxResults` is *not* marked as delivered, so it comes back on the next run; and a baseline caps at 15,000 projects (RePORTER's own paging wall), so watch a query narrow enough to fit under that — the run log warns you if it doesn't.
 
 **Is any personal contact data collected?** No. The NIH RePORTER schema contains no email or phone field at all. PI and program-officer **names** are included because they are statutory public disclosure, published on every reporter.nih.gov project page — the same class of data as a federal contract awardee's name.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Pricing
 

@@ -86,6 +86,12 @@
             "type": "string",
             "description": "Optional. Name this saved search to get ONLY records that are new since its last run. The first run on a label records the current matches as a baseline and returns zero results (you are charged nothing); every run after that returns only what appeared since. Changing any filter starts a fresh baseline under the same label. Leave empty for a normal one-off run.",
             "editor": "textfield"
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — records pushed, rows scanned, pages fetched, CourtListener's own reported total, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every record has already been pushed and charged. Leave empty to skip.",
+            "editor": "textfield"
         }
     },
     "required": []

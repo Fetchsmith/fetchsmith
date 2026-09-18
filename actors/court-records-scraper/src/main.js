@@ -28,6 +28,17 @@ if (!Object.hasOwn(TYPE_FOR, recordTypeRaw) && recordTypeRaw !== 'both') {
 let query = String(input.query ?? '').trim();
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
 
 // CourtListener's opinion index defaults to Published-only when no `stat_*` param is sent —
 // verified live cycle 423: a 2024+ "climate" query returned 545 opinions with no stat param
@@ -548,4 +559,40 @@ log.info(
     `Done. Pushed ${pushed} record(s) over ${pages} page(s) (scanned ${scanned} rows; `
     + `CourtListener reported ${totalReported} total matches across the selected index(es)).`,
 );
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+    const env = Actor.getEnv();
+    const payload = {
+        actorRunId: env.actorRunId ?? null,
+        defaultDatasetId: env.defaultDatasetId ?? null,
+        finishedAt: new Date().toISOString(),
+        pushed,
+        scanned,
+        pages,
+        totalReported,
+        watchLabel: watchMode ? watchLabel : null,
+        watchNewCount: watchMode && !seeding ? pushed : null,
+        watchSeeding: watchMode ? seeding : null,
+    };
+    try {
+        const resp = await gotScraping({
+            url: webhookUrl,
+            method: 'POST',
+            responseType: 'text',
+            throwHttpErrors: false,
+            retry: { limit: 0 },
+            timeout: { request: 10000 },
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+        else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+    } catch (err) {
+        log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+    }
+}
+
 await Actor.exit();

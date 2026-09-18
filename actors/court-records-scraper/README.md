@@ -28,6 +28,7 @@ Search is full text across case names, party and attorney names, docket text and
 | `startUrl` | string | Paste a courtlistener.com search or API URL instead of filling in the fields above — see below. |
 | `maxResults` | integer | Default 100. With `both`, the budget is split evenly between the two indexes, and whatever one index leaves unused goes to the other. |
 | `watchLabel` | string | Incremental mode — see below. |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (records pushed, rows scanned, pages, CourtListener's reported total, dataset ID) here when the run finishes — see FAQ. |
 
 ### Paste a CourtListener search URL
 
@@ -40,6 +41,10 @@ CourtListener's opinion index defaults to **published** opinions unless you say 
 ### Incremental "watch" mode
 
 Set `watchLabel` to any name and schedule the Actor. The **first** run on that label records the current match set as a baseline, returns **zero** results and charges you **nothing**. Every run after that returns only records that appeared since — so a daily watch on `court: ["cand"], query: "trade secret"` costs you a couple of rows a day instead of the whole back catalogue every morning. Changing any filter starts a fresh baseline under the same label, so you never get flooded with rows an older, narrower filter had excluded.
+
+### Webhook notification on completion
+
+Set `webhookUrl` to an http(s) URL and this Actor POSTs a small JSON summary there when the run finishes — `actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, `totalReported`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`. This is a plain input field, not an Apify platform webhook (those are configured separately per Task/Actor via the Console or Webhooks API) — set it on the run itself for a quick completion ping without extra setup. It's best-effort: a failed or slow webhook only logs a warning, fired after every record is already pushed and charged, so it never affects the result set or your bill.
 
 ## Sample row (docket)
 
