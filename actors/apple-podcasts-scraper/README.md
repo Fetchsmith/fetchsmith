@@ -37,8 +37,20 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | `minDurationSeconds` | integer | Episodes only: drop episodes shorter than this (e.g. exclude trailers/ads). **Apple omits duration for ~half of episodes on some shows regardless of actual length** (measured on a real 20-episode sample) — episodes with unknown duration are always kept, never assumed short |
 | `explicitFilter` | string | Episodes only: `all` (default), `clean` (exclude Explicit-flagged), or `explicitOnly`. **The flag is read from whichever source the run uses** — Apple's Store rating by default, or the feed's own `<itunes:explicit>` tag (per episode, else show-level) when `useRssForFullArchive` is on. Real feeds disagree with Apple: the Lex Fridman feed carries no per-episode tag at all and declares the show `false` at channel level, while Apple rates those same episodes Explicit, so `explicitOnly` returns rows via Apple and none via RSS (measured 2026-09-18). The run log warns when this applies |
 | `webhookUrl` | string | Optional http(s) URL to POST a small JSON completion summary to (items pushed, dataType, dataset ID) — a convenience ping without setting up an Apify platform webhook. Best-effort: a failed or slow webhook is logged as a warning and never affects the run or your bill |
+| `watchLabel` | string | Episodes only: name a saved watch (e.g. `"daily-check"`) and this run returns **only episodes not delivered under that label before**, instead of every episode every time. The first run for a label is a free baseline (0 rows, 0 charged) that records what already exists; run it again later — on a schedule — to get only what's new. Changing any other filter starts a fresh baseline instead of re-delivering previously-excluded episodes as "new" |
 
 Filtering happens **before** you're charged — you never pay for rows a filter removed.
+
+### Example: get notified only about new episodes (run on a schedule)
+```json
+{
+  "podcasts": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"],
+  "dataType": "episodes",
+  "watchLabel": "lex-daily",
+  "webhookUrl": "https://your-server.example.com/new-episode"
+}
+```
+The first run seeds the baseline (0 rows, 0 charged). Every run after that returns only episodes published since the previous run — pair with `webhookUrl` to get pinged the moment a new episode lands, without polling the full archive yourself.
 
 ### Example: every 1- and 2-star review for the top 5 "meditation" podcasts
 ```json

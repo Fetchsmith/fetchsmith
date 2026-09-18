@@ -172,6 +172,12 @@
       "type": "string",
       "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — items pushed, dataType, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every item has already been pushed and charged. Leave empty to skip.",
       "editor": "textfield"
+    },
+    "watchLabel": {
+      "title": "Watch label (only new episodes since last run)",
+      "type": "string",
+      "description": "Optional, dataType \"episodes\" only. Name a saved watch (e.g. \"my-daily-check\") and this run returns ONLY episodes not delivered under that same label and filter set before, instead of every episode every time. The first run for a label is a free baseline: it records which episodes already exist and returns zero rows. Run it again later — on a schedule, typically — to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded episodes as \"new\". Ignored for dataType other than \"episodes\".",
+      "editor": "textfield"
     }
   }
 }

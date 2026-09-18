@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 import * as cheerio from 'cheerio';
@@ -84,6 +85,82 @@ if ((minReleaseDate && Number.isNaN(minReleaseDate.getTime())) || (maxReleaseDat
 }
 const minDurationSeconds = input.minDurationSeconds != null ? Number(input.minDurationSeconds) : null;
 const explicitFilter = ['all', 'clean', 'explicitOnly'].includes(input.explicitFilter) ? input.explicitFilter : 'all';
+
+// Watch mode: a stateful "only episodes published since my last run" filter, same recipe as
+// app-store-reviews-scraper's watchLabel (copy, don't reinvent). Restricted to dataType
+// "episodes" — it's the only dataType here whose items are naturally append-only and uniquely
+// keyed (a chart is a daily snapshot with no stable identity across runs; reviews/podcasts/
+// publisher would need their own port, not attempted this cycle).
+const watchLabelRaw = String(input.watchLabel ?? '').trim();
+if (watchLabelRaw && dataType !== 'episodes') {
+  log.warning(`"watchLabel" only applies to dataType "episodes" — ignored for dataType "${dataType}".`);
+}
+const watchLabel = dataType === 'episodes' ? watchLabelRaw : '';
+const watchMode = watchLabel.length > 0;
+const WATCH_STORE = 'fetchsmith-apple-podcasts-watch';
+const WATCH_KEEP = 60000; // bound the record size; oldest keys fall off first
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+const watchSeen = new Set(); // `${collectionId}:${episodeId|episodeGuid|title}` already delivered under this label+fingerprint
+
+if (watchMode) {
+  // Every filter that decides what an episode run returns goes into the fingerprint — raw
+  // "podcasts"/"searchTerms" (what the buyer typed, not resolved ids), not resolved ones.
+  const watchCriteria = {
+    podcasts: input.podcasts ?? [],
+    searchTerms: input.searchTerms ?? [],
+    country,
+    useRssForFullArchive: rssFullArchive,
+    maxEpisodesPerPodcast: input.maxEpisodesPerPodcast ?? null,
+    minDurationSeconds,
+    minReleaseDate: input.minReleaseDate ?? null,
+    maxReleaseDate: input.maxReleaseDate ?? null,
+    explicitFilter,
+  };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered episode(s). Only episodes NOT in that baseline will be returned and charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+      + 'It records which episodes already exist and returns ZERO rows (you are charged nothing). Run it again on '
+      + 'the same label and filters — on a schedule, typically — to get only the episodes published since now.',
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seenIds: ids,
+  });
+}
 
 if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
   await Actor.fail('Provide at least one podcast or publisher (Apple Podcasts show/artist URL, or numeric ID) in "podcasts", or at least one query in "searchTerms".');
@@ -351,6 +428,15 @@ async function pushEpisodeRows(rows) {
     got += 1;
     if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
     if (!episodePassesFilters(row)) continue;
+    if (watchMode) {
+      const watchId = `${row.collectionId ?? 'feed'}:${row.episodeId ?? row.episodeGuid ?? row.title ?? ''}`;
+      if (seeding) { watchSeen.add(watchId); continue; } // baseline: record, never push/charge
+      if (watchSeen.has(watchId)) { watchSkipped += 1; continue; } // already delivered under this label
+      const beforePush = pushed;
+      keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
+      if (pushed > beforePush) watchSeen.add(watchId); // only record if actually pushed/charged, not if budget was exhausted
+      continue;
+    }
     keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
   }
   return got;
@@ -699,6 +785,7 @@ if (unenrichedChartEntries > 0) {
   log.warning(`${unenrichedChartEntries} chart entry/entries could not be enriched from Apple's lookup API (typically Apple-exclusive or subscriber-only shows, which expose no episode list). They are still in the dataset with chartRank, title and episodePageUrl, and source "chart" instead of "itunes".`);
 }
 log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publisher' ? 'podcasts' : dataType}.`);
+if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
 const timeBudgetNote = timeBudgetExceeded
   ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'
   : '';
@@ -711,7 +798,13 @@ const episodeFiltersSet = [
 const emptySourceLabel = (list) => (list.some((x) => /^https?:\/\//i.test(x))
   ? `no episodes found for: ${list.join(', ')}`
   : `Apple returned nothing for: ${list.join(', ')} in storefront "${country}"`);
-if (pushed === 0 && timeBudgetExceeded) {
+if (watchMode && seeding) {
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}`);
+} else if (watchMode && pushed === 0) {
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${timeBudgetNote}`);
+} else if (watchMode) {
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${timeBudgetNote}`);
+} else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No results before the run approached its time limit.${timeBudgetNote}`);
 } else if (pushed === 0) {
   const why = emptyIds.length
