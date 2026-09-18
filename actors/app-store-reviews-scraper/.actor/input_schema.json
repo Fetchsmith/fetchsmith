@@ -59,7 +59,7 @@
     "maxReviewsPerApp": {
       "title": "Max reviews per app per country",
       "type": "integer",
-      "description": "Apple exposes up to 500 (10 pages of 50). Counted before minRating/maxRating/keyword filters are applied — a low cap combined with a narrow filter can miss matches deeper in the feed (see README FAQ).",
+      "description": "Apple exposes up to 500 (10 pages of 50). Counted before the review filters (rating/keyword/length/votes/date) are applied — a low cap combined with a narrow filter can miss matches deeper in the feed (see README FAQ).",
       "default": 200,
       "minimum": 1,
       "maximum": 500
@@ -98,16 +98,40 @@
       "description": "Only keep reviews whose title or content contains this word/phrase (case-insensitive). Leading/trailing spaces are ignored. Accented letters are Unicode-normalized before matching, so \"café\" matches regardless of which Unicode form (composed or decomposed) you typed it in.",
       "editor": "textfield"
     },
+    "minReviewLength": {
+      "title": "Minimum review length (characters)",
+      "type": "integer",
+      "description": "Only keep reviews whose body text is at least this many characters. Counts the review body only (the title is a separate field), so one-word \"Great!\" reviews are dropped without discarding a short review that happens to have a long headline.",
+      "minimum": 0
+    },
     "reviewsAfter": {
       "title": "Reviews after (ISO date)",
       "type": "string",
       "description": "Only keep reviews posted on or after this date (e.g. 2026-01-01). Forces \"sort\" to mostRecent (Apple's date-ordered feed) and stops paging as soon as older reviews are reached, so a narrow window on a high-volume app doesn't scan/charge through hundreds of pages first.",
       "editor": "textfield"
     },
+    "reviewsBefore": {
+      "title": "Reviews before (ISO date)",
+      "type": "string",
+      "description": "Only keep reviews posted on or before this date (e.g. 2026-06-01). A bare date includes the whole of that day. Combine with \"Reviews after\" for a date range. Unlike \"Reviews after\" this cannot cut pagination short (the newest reviews sort first), so it filters rather than saves scanning.",
+      "editor": "textfield"
+    },
+    "minVoteSum": {
+      "title": "Minimum helpful votes (net)",
+      "type": "integer",
+      "description": "Only keep reviews with at least this many net helpful votes (Apple's im:voteSum). NOTE: Apple only populates vote counts on the \"mostHelpful\" feed — under sort \"mostRecent\" every review returns 0 votes, so set sort to mostHelpful when using this.",
+      "minimum": 0
+    },
+    "minVoteCount": {
+      "title": "Minimum total votes",
+      "type": "integer",
+      "description": "Only keep reviews with at least this many total helpfulness votes (Apple's im:voteCount, helpful + unhelpful). Same caveat as \"Minimum helpful votes\": populated on the \"mostHelpful\" feed only.",
+      "minimum": 0
+    },
     "watchLabel": {
       "title": "Watch label (alert mode)",
       "type": "string",
-      "description": "Set a name (e.g. \"my-app-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/appNames/countries/countryFallback/sort/minRating/maxRating/keyword/reviewsAfter) starts a fresh baseline. Leave empty for normal one-off runs.",
+      "description": "Set a name (e.g. \"my-app-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/appNames/countries/countryFallback/sort/minRating/maxRating/keyword/minReviewLength/reviewsAfter/reviewsBefore/minVoteSum/minVoteCount) starts a fresh baseline. Leave empty for normal one-off runs.",
       "editor": "textfield"
     }
   }

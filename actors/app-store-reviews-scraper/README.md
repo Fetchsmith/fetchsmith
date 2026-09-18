@@ -18,12 +18,15 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `countries` | array | Storefront codes, e.g. `us`, `gb`, `de`, `jp`, `br` (default `us`) |
 | `countryFallback` | boolean | If a storefront returns nothing, pull that app's reviews from one that works (default `false`) |
 | `sort` | string | `mostRecent` (default) or `mostHelpful` |
-| `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) — counted before minRating/maxRating/keyword filtering, see FAQ |
+| `maxReviewsPerApp` | integer | Up to 500 per app per country (Apple's limit) — counted before the review filters (rating/keyword/length/votes/date), see FAQ |
 | `includeAppInfo` | boolean | Attach app name, developer, average rating, rating count and the per-star `ratingBreakdown` (default `true`) |
 | `maxResults` | integer | Total cap |
 | `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
 | `keyword` | string | Only keep reviews whose title or content contains this word/phrase (case-insensitive) |
 | `reviewsAfter` | string (ISO date) | Only keep reviews posted on or after this date. Forces `sort` to `mostRecent` and stops paging as soon as older reviews are reached, so a narrow window doesn't scan (and isn't charged for) pages you don't want. |
+| `reviewsBefore` | string (ISO date) | Only keep reviews posted on or before this date (a bare date includes the whole of that day). Pair it with `reviewsAfter` for a date range. |
+| `minReviewLength` | integer | Only keep reviews whose **body text** is at least this many characters — drops one-word "Great!" ratings without discarding a short review that happens to have a long title. |
+| `minVoteSum` / `minVoteCount` | integer | Only keep reviews with at least this many net helpful votes / total helpfulness votes. Requires `sort: mostHelpful` — see FAQ. |
 | `watchLabel` | string | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Leave empty for normal runs. |
 
 Filtering happens before you're charged — you never pay for rows that got filtered out.
@@ -34,7 +37,7 @@ Set `watchLabel` to any name and this Actor stops re-delivering the same reviews
 1. **First run for a label is a free baseline.** It records which reviews already exist for every `apps`/`countries` pair (always walking Apple's full 500-review ceiling per pair, regardless of `maxReviewsPerApp`) and returns **zero rows — you are charged nothing**.
 2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
 
-The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-app-store-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`appNames`/`countries`/`countryFallback`/`sort` **and every minRating/maxRating/keyword/reviewsAfter filter** (Apple's feed takes none of those server-side, so all of them decide what "new" means). Change any of those and you get a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
+The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-app-store-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`appNames`/`countries`/`countryFallback`/`sort` **and every review filter (`minRating`/`maxRating`/`keyword`/`minReviewLength`/`reviewsAfter`/`reviewsBefore`/`minVoteSum`/`minVoteCount`)** (Apple's feed takes none of those server-side, so all of them decide what "new" means). Change any of those and you get a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
 
 Details worth knowing:
 - **Use `sort: "mostRecent"`** (the default). `mostHelpful` isn't date-ordered, so a brand-new review isn't necessarily inside the scanned window and can be missed; the run logs a warning if you watch with `mostHelpful` anyway.
@@ -104,14 +107,16 @@ Apple's public review feed is full of holes. For one app in one storefront, page
 You are never charged for empty pages, for retries, or for a run that fails this way.
 
 ## FAQ
-**Why did my run return 0 reviews with status SUCCEEDED?** Check the run's status message first — it tells you whether Apple's feed was genuinely empty for that app/storefront or your own `minRating`/`maxRating`/`keyword` filters removed every row.
+**Why did my run return 0 reviews with status SUCCEEDED?** Check the run's status message first — it tells you whether Apple's feed was genuinely empty for that app/storefront or your own review filters (rating/keyword/length/votes/date) removed every row.
 **Can I get more than 500 reviews for one app?** No — Apple's public feed caps at 500 most-recent reviews per app per country. Run on a schedule and deduplicate by `reviewId` to build a larger archive over time. Note that `totalRatings`/`ratingBreakdown` are **not** capped: they cover every rating the app has ever received in that storefront, so you still get the full-population distribution even though only 500 written reviews are reachable.
 **Why is `totalRatings` different from `ratingCount`?** They come from two different Apple sources and are both real. `ratingCount` is Apple's lookup API figure; `totalRatings` is the sum of the per-star histogram shown on the App Store product page, which updates on a slightly different schedule. Expect them to agree to within a fraction of a percent — if you need the number that matches `ratingBreakdown` exactly, use `totalRatings`.
 **Does `keyword` handle accented words correctly?** Yes, as of v0.1.29 — `keyword` and the review text it's matched against are Unicode-normalized before comparing, so an accented word (e.g. "café") matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
 **Is `reviewUrl` unique per review?** No, and it isn't presented as such. It's Apple's own "related" link from the feed entry, which points at the app's review page for that storefront — the same URL for every review of that app in that country. Apple does not publish a per-review permalink; use `reviewId` as the unique key.
 **Does `countryFallback` change the `country` field on rows I already have?** No — fallback rows are clearly tagged with `fallbackUsed: true` and keep both the real `country` they came from and the `requestedCountry` you asked for.
 **Do I get charged for empty pages or retries?** No — only reviews actually returned to the dataset are charged.
-**Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **scan cap**, not a match count — it stops paging Apple's feed after that many reviews have been looked at, and `minRating`/`maxRating`/`keyword` are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting deeper in the feed: on Spotify (`324684580`) with `maxRating: 1`, `maxReviewsPerApp: 5` scans 5 reviews and keeps 0, but raising it to `100` finds 12 — the matches were always there, just unscanned. When this happens the log carries a `WARN` naming the cap and how many scanned reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
+**Why does `minVoteSum` return nothing?** Apple only populates helpfulness votes (`voteSum`/`voteCount`) on its **mostHelpful** feed. Every review served by the `mostRecent` feed comes back with `0` votes — that is real data (new reviews genuinely have no votes yet), not a gap we can fill, and it is why `reviewsAfter` (which forces `mostRecent`) can't be combined with a vote floor above 0. Set `sort: "mostHelpful"` and the filter works as expected; the run log warns you when it can't.
+
+**Why did I get fewer reviews than `maxReviewsPerApp`?** `maxReviewsPerApp` is a **scan cap**, not a match count — it stops paging Apple's feed after that many reviews have been looked at, and the review filters (rating/keyword/length/votes/date) are applied *after* that, per review. A narrow filter combined with a low cap can miss real matches sitting deeper in the feed: on Spotify (`324684580`) with `maxRating: 1`, `maxReviewsPerApp: 5` scans 5 reviews and keeps 0, but raising it to `100` finds 12 — the matches were always there, just unscanned. When this happens the log carries a `WARN` naming the cap and how many scanned reviews were dropped, and the run's status message says the same — raise `maxReviewsPerApp` to search deeper. Filtered-out reviews are **not** charged either way.
 
 ## Notes
 Apple exposes the most recent 500 reviews per app per country. For historical archives, run on a schedule and deduplicate by `reviewId`.

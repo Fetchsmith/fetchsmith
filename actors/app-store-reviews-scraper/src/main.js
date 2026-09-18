@@ -31,16 +31,37 @@ if (minRating != null && maxRating != null && minRating > maxRating) {
   throw new Error(`"minRating" (${minRating}) is greater than "maxRating" (${maxRating}) — no review can ever match. Swap them.`);
 }
 const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
+const minReviewLength = input.minReviewLength != null ? Number(input.minReviewLength) : null;
+// Apple only populates im:voteSum/im:voteCount on the "mostHelpful" feed; every review served by
+// "mostRecent" carries a flat 0 (verified live 2026-09-18 across 4 apps, both sorts). That is real
+// data, not a hole -- recent reviews genuinely have no votes yet -- but a helpfulness floor on the
+// mostRecent feed would drop every row, so it is warned about below rather than silently applied.
+const minVoteSum = input.minVoteSum != null ? Number(input.minVoteSum) : null;
+const minVoteCount = input.minVoteCount != null ? Number(input.minVoteCount) : null;
 let reviewsAfterDate = null;
 if (input.reviewsAfter) {
   reviewsAfterDate = new Date(input.reviewsAfter);
   if (Number.isNaN(reviewsAfterDate.getTime())) await Actor.fail(`"reviewsAfter" is not a valid date: "${input.reviewsAfter}". Use an ISO date like 2026-01-01.`);
+}
+let reviewsBeforeDate = null;
+if (input.reviewsBefore) {
+  reviewsBeforeDate = new Date(input.reviewsBefore);
+  if (Number.isNaN(reviewsBeforeDate.getTime())) await Actor.fail(`"reviewsBefore" is not a valid date: "${input.reviewsBefore}". Use an ISO date like 2026-06-01.`);
+  // A bare date parses as midnight UTC, which would exclude the whole named day; make the bound
+  // inclusive of it, matching how buyers read "reviews before 2026-06-01 .. up to that date".
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(input.reviewsBefore).trim())) reviewsBeforeDate = new Date(reviewsBeforeDate.getTime() + 24 * 60 * 60 * 1000 - 1);
+}
+if (reviewsAfterDate && reviewsBeforeDate && reviewsAfterDate > reviewsBeforeDate) {
+  throw new Error(`"reviewsAfter" (${input.reviewsAfter}) is later than "reviewsBefore" (${input.reviewsBefore}) — no review can ever match. Swap them.`);
 }
 const watchLabel = String(input.watchLabel ?? '').trim();
 // Chronological early-stop (below) only works on the date-sorted feed. mostHelpful has no date
 // ordering, so a cutoff there is still applied as a plain filter but can't cut pagination short.
 if (reviewsAfterDate && requestedSort === 'mostHelpful') log.warning('"reviewsAfter" forces sort to "mostRecent" (Apple\'s "mostHelpful" feed is not date-ordered, so a historical cutoff can\'t be applied to it efficiently).');
 const sort = reviewsAfterDate ? 'mostRecent' : requestedSort;
+if ((minVoteSum != null || minVoteCount != null) && sort === 'mostRecent') {
+  log.warning('"minVoteSum"/"minVoteCount" filter on Apple\'s helpfulness votes, which are only populated on the "mostHelpful" feed — under sort "mostRecent" every review comes back with 0 votes, so a floor above 0 will keep nothing. Set sort to "mostHelpful" (and drop "reviewsAfter", which forces mostRecent) to use them.');
+}
 if (!apps.length && !appNames.length) await Actor.fail('Provide at least one app URL/ID in "apps" or a name in "appNames".');
 
 function passesFilters(item) {
@@ -48,6 +69,12 @@ function passesFilters(item) {
   if (maxRating != null && item.rating > maxRating) return false;
   if (keyword && !`${item.title || ''} ${item.content || ''}`.normalize('NFC').toLowerCase().includes(keyword)) return false;
   if (reviewsAfterDate && item.updatedAt && new Date(item.updatedAt) < reviewsAfterDate) return false;
+  if (reviewsBeforeDate && item.updatedAt && new Date(item.updatedAt) > reviewsBeforeDate) return false;
+  // Body text only: the title is a separate field and padding one short line with a long headline
+  // is not the "substantial review" buyers are filtering for.
+  if (minReviewLength != null && (item.content || '').trim().length < minReviewLength) return false;
+  if (minVoteSum != null && item.voteSum < minVoteSum) return false;
+  if (minVoteCount != null && item.voteCount < minVoteCount) return false;
   return true;
 }
 
@@ -78,7 +105,7 @@ const seededPairs = new Set(); // `${appId}::${requestedCountry}` pairs already 
 
 if (watchMode) {
   // EVERY filter that decides what gets delivered goes into the fingerprint, including the
-  // client-side ones (minRating/maxRating/keyword) — Apple's RSS feed takes no such params
+  // client-side ones (rating/keyword/length/votes/date) — Apple's RSS feed takes no such params
   // server-side, so passesFilters() is the only filter layer, same rule as every other
   // client-side-filtered port. Raw "apps"/"appNames"/"sort" are fingerprinted (not the resolved
   // app ids or the reviewsAfter-forced sort) since those are exactly what the buyer typed and
@@ -86,6 +113,12 @@ if (watchMode) {
   const criteria = {
     apps: input.apps ?? [], appNames: input.appNames ?? [], countries, countryFallback,
     sort: input.sort ?? null, minRating, maxRating, keyword, reviewsAfter: input.reviewsAfter ?? null,
+    // Added only when set, for the same reason includeMacApps is: spelling these out as nulls on
+    // the default path would change the fingerprint of every watch that already exists.
+    ...(input.reviewsBefore ? { reviewsBefore: input.reviewsBefore } : {}),
+    ...(minReviewLength != null ? { minReviewLength } : {}),
+    ...(minVoteSum != null ? { minVoteSum } : {}),
+    ...(minVoteCount != null ? { minVoteCount } : {}),
     // Added only when ON, never as `false`: it changes which app a name resolves to, so it must
     // separate baselines — but spelling it out on the default path would change the fingerprint of
     // every watch that already exists and reset all of them once for no reason.
@@ -443,7 +476,7 @@ async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false)
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
     await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra, pairSeeding);
   }
-  // maxReviewsPerApp (perApp) caps reviews SCANNED, before minRating/maxRating/keyword filtering
+  // maxReviewsPerApp (perApp) caps reviews SCANNED, before review filtering (rating/keyword/length/votes/date)
   // -- if the cap was hit and some scanned reviews were dropped by a filter, matching reviews may
   // still sit deeper in Apple's feed and were never looked at.
   const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
@@ -461,7 +494,7 @@ if (!apps.length) await Actor.fail('None of the given "apps"/"appNames" resolved
 
 const emptyPairs = [];
 const filteredOutPairs = [];
-// Pairs where maxReviewsPerApp was hit while minRating/maxRating/keyword still discarded scanned
+// Pairs where maxReviewsPerApp was hit while the review filters still discarded scanned
 // reviews -- reviews deeper in Apple's feed were never scanned.
 const depthCappedPairs = [];
 // Watch mode: every matching review inside the scanned window was new, so older new reviews
@@ -497,7 +530,7 @@ for (const app of apps) {
       depthCappedPairs.push(`${appId}/${country}`);
       log.warning(
         `${appId}/${country}: scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${filteredOut} of them `
-        + `were excluded by the minRating/maxRating/keyword filters. The cap counts reviews scanned, before `
+        + `were excluded by the review filters (rating/keyword/length/votes/date). The cap counts reviews scanned, before `
         + `filtering — raise maxReviewsPerApp to search deeper.`,
       );
     }
@@ -518,7 +551,7 @@ for (const app of apps) {
           depthCappedPairs.push(`${appId}/${fb}`);
           log.warning(
             `${appId}/${fb} (fallback): scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${fb2.filteredOut} `
-            + `of them were excluded by the minRating/maxRating/keyword filters — raise maxReviewsPerApp to search deeper.`,
+            + `of them were excluded by the review filters (rating/keyword/length/votes/date) — raise maxReviewsPerApp to search deeper.`,
           );
         }
         if (fb2.got > 0) {
@@ -534,7 +567,7 @@ for (const app of apps) {
       log.warning(`Apple's review feed for app ${appId} in storefront "${country}" is empty (this is Apple's data, not a scrape failure).${hint}`);
     } else if (pushed === pushedBefore && !watchMode) {
       filteredOutPairs.push(`${appId}/${country}`);
-      log.warning(`${appId}/${country}: fetched ${got} reviews but your minRating/maxRating/keyword filters removed all of them.`);
+      log.warning(`${appId}/${country}: fetched ${got} reviews but your review filters (rating/keyword/length/votes/date) removed all of them.`);
     }
     feedServed += totalGot;
     // Only mark a pair baselined if its seed walk actually finished -- one cut short by the global
@@ -571,9 +604,9 @@ if (watchMode && seeding) {
   await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).`);
 } else if (pushed === 0) {
   const why = depthCappedPairs.length && !emptyPairs.length
-    ? `maxReviewsPerApp (${perApp}) was hit before any review passed your minRating/maxRating/keyword filters for: ${depthCappedPairs.join(', ')} — raise maxReviewsPerApp to search deeper`
+    ? `maxReviewsPerApp (${perApp}) was hit before any review passed your review filters (rating/keyword/length/votes/date) for: ${depthCappedPairs.join(', ')} — raise maxReviewsPerApp to search deeper`
     : filteredOutPairs.length && !emptyPairs.length
-    ? 'reviews were found but every one was removed by your minRating/maxRating/keyword filters'
+    ? 'reviews were found but every one was removed by your review filters (rating/keyword/length/votes/date)'
     : `Apple's review feed returned nothing for: ${emptyPairs.join(', ')} (try another storefront in "countries")`;
   await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedPairs.length) {
