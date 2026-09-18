@@ -43,6 +43,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `maxPagesPerCategory` | integer | `50` | Depth cap, 100 awards per page. |
 | `watchLabel` | string | – | Set a name for this saved search to turn on watch mode — see [Watch mode](#watch-mode) below. |
 | `watchChanges` | boolean | `false` | Prime mode only. Also re-alert (and charge) on an already-delivered award whose last-modified date, amount, outlays or end date changed — see [Watch mode](#watch-mode). |
+| `webhookUrl` | string | – | Optional. POST a small JSON completion summary (awards/sub-awards pushed, rows scanned, dataset ID, watch new/changed counts) here when the run finishes — see FAQ. |
 
 All filters are ANDed. Awards filtered out are never pushed and never charged.
 
@@ -169,6 +170,9 @@ Yes — set `watchLabel`, see [Watch mode](#watch-mode). The first run records a
 
 **How does this compare to other USAspending scrapers?**
 Checked against every competitor's real live `pricingInfos`, re-verified 2026-09-17. The two highest-traction players are both pricier than us at every buyer plan tier: `parseforge` (the most users of any competitor) charges **$0.012/result plus a $0.16 run-start fee** on the free plan ($0.008 + $0.05 on Gold and above), and `benthepythondev` charges **$0.005/result** on the free plan, tapering to $0.004 on Gold and $0.0035 on Diamond, plus a small start fee on every run. Ours is **$0.004/result on the free plan, $0.0025 on Gold and above, and no start fee at all**. Two low-traction entrants are cheaper per row — `copious_atoll` at $0.001/result and `themineworks` at $0.001 tapering to $0.0006 — but `themineworks` has already scheduled a **$0.005 run-start fee** to take effect 2026-09-22, and its own listing advertises "18 Fields"; this Actor returns **37 typed fields across 6 award categories** (contracts, IDVs, grants, direct payments, other financial assistance, loans), each category with its own correct field mapping (loans carry `loanValue`/`subsidyCost`, not `awardAmount`) rather than one generic shape stretched across every award kind.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federal-awards-scraper
 

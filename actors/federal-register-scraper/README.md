@@ -54,6 +54,7 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 | `order` | `newest`, `oldest` or `relevance`. |
 | `maxResults` | Up to 50,000. |
 | `watchLabel` | Optional. Name a saved query and get **only what is new since your last run** — see below. |
+| `webhookUrl` | Optional. POST a small JSON completion summary (documents pushed, rows scanned, pages walked, dataset ID, watch new-count) here when the run finishes — see FAQ. |
 
 ## Advance notice: the Public Inspection desk (`dataset: "publicInspection"`)
 
@@ -148,6 +149,9 @@ Yes. It is a plain JSON record in the `fetchsmith-fedreg-watch` key-value store 
 
 **A rule I'm tracking got its effective date postponed — will `watchLabel` catch that?**
 Not on the original document, because the Federal Register itself never edits it. What happens instead is a brand-new document (e.g. "Postponement of Effective Date") gets published citing the original by its `"NN FR NNNNN"` citation — `watchLabel` will deliver that new document like any other, and its `referencedCitations` field will contain the citation of the rule it postpones, so you can match it back yourself.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Related guides
 

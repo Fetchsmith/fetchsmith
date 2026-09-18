@@ -233,6 +233,12 @@
             "type": "boolean",
             "description": "Only used with watchLabel, and only in prime mode (awardLevel not set to \"subaward\"). When on, an award you were already alerted on is re-delivered (charged again) if USAspending's own Last Modified Date moves, or its amount, outlays or end date changes (e.g. a contract modification, an option exercised, a period of performance extended) — tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new awards/sub-awards, same as before this option existed.",
             "default": false
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — awards/sub-awards pushed, rows scanned, and watch-label new/changed counts if Watch label is set. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every row has already been pushed and charged. Leave empty to skip.",
+            "editor": "textfield"
         }
     },
     "required": []

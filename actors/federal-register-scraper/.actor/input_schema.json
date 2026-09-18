@@ -131,6 +131,12 @@
             "description": "Optional. Name this saved query \u2014 e.g. \"epa-air-rules\" \u2014 and the Actor remembers which documents it has already delivered under that name, so a scheduled run returns ONLY what is new since last time. The first run with a new label is a free baseline: it records what already matches, returns zero results and charges nothing; every run after that returns just the new documents. Changing a filter starts a fresh baseline (a different filter is a different question). The default rolling 90-day date window is deliberately NOT part of that identity, so a daily schedule keeps one stable baseline. The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account.",
             "editor": "textfield",
             "example": "epa-air-rules"
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — documents pushed, rows scanned, pages walked, and watch-label new-since-last-run counts if Watch label is set. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every document has already been pushed and charged. Leave empty to skip.",
+            "editor": "textfield"
         }
     },
     "required": []

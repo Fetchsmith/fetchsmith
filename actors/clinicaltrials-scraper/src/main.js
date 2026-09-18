@@ -275,6 +275,20 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000)
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0 && nctIds.length === 0;
 const watchChanges = Boolean(input.watchChanges);
+
+// Convenience completion ping (same shape as grants-gov-scraper, cycle 421). A bad value is
+// warned and ignored rather than thrown -- this is a notification nicety, not core function.
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
 if (input.watchLabel && nctIds.length) {
     log.warning(
         'watchLabel is ignored when nctIds is set -- direct-lookup mode always returns exactly the ids you '
@@ -788,4 +802,40 @@ if (pushed === 0 && watchMode && !seeding) {
 }
 
 log.info(`Done. Pushed ${pushed} rows over ${pages} page(s) (scanned ${scanned} studies, mode=${rowsPerStudy}).`);
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+    const env = Actor.getEnv();
+    const payload = {
+        actorRunId: env.actorRunId ?? null,
+        defaultDatasetId: env.defaultDatasetId ?? null,
+        finishedAt: new Date().toISOString(),
+        pushed,
+        scanned,
+        pages,
+        watchLabel: watchMode ? watchLabel : null,
+        watchSeeding: watchMode ? seeding : null,
+        watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
+        watchChangedCount: watchMode && !seeding ? changedCount : null,
+    };
+    try {
+        const resp = await gotScraping({
+            url: webhookUrl,
+            method: 'POST',
+            responseType: 'text',
+            throwHttpErrors: false,
+            retry: { limit: 0 },
+            timeout: { request: 10000 },
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+        else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+    } catch (err) {
+        log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+    }
+}
+
 await Actor.exit();

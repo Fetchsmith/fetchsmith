@@ -419,6 +419,12 @@
       "type": "boolean",
       "description": "Only used with watchLabel. When on, a study you were already alerted on is re-delivered (charged again) if ClinicalTrials.gov's own Last Update Posted date moves, or its overall status, enrollment count, primary completion date or completion date changes (e.g. Recruiting -> Completed, a protocol amendment, a readout date slipping) -- tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new studies, same as before this option existed.",
       "default": false
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes -- rows pushed, studies scanned, pages walked, and watch-label new/changed counts if Watch label is set. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging -- it fires after every row has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   },
   "required": []
