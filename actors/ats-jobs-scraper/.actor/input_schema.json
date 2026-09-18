@@ -151,6 +151,12 @@
       "description": "Optional. Name a saved job alert (e.g. \"backend-remote-eu\") and this run returns ONLY postings that were not delivered under that same label and filter set before, instead of the whole open-roles list every time. The first run for a label is a free baseline: it records which postings are already open (up to 5000) and returns zero rows, charging nothing. Run it again later -- on a schedule, typically -- to get only the roles that opened since then. The baseline lives in your own Apify account (a named key-value store, \"fetchsmith-ats-watch\"), keyed by the label plus a fingerprint of the company list and every filter, so changing any of those starts a fresh baseline instead of dumping previously-excluded postings as \"new\".",
       "editor": "textfield"
     },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — job postings pushed, companies scanned and how many boards errored, plus watch-label new/skipped counts if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every posting has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
+    },
     "proxyConfiguration": {
       "title": "Proxy configuration",
       "type": "object",

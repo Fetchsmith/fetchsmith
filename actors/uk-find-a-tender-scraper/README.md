@@ -52,6 +52,7 @@ One row per notice, including:
 | `maxPagesScanned` | integer | `50` | Safety cap on API pages read while looking for matches. Raise it for narrow filters over long date ranges. |
 | `includeRawOcds` | boolean | `false` | Attach the complete, unmodified OCDS 1.1 release JSON as a `rawOcds` field on every row, alongside the normalized fields — for pipelines that want the full nested government data (all parties, all documents, amendment history), not just the flattened columns. |
 | `watchLabel` | string | — | Turn this run into an **alert**: see "Watch mode" below. |
+| `webhookUrl` | string | — | Optional. POST a small JSON completion summary (notices pushed, releases scanned/filtered, pages, dataset ID, watch new count) here when the run finishes — see FAQ. |
 
 ### Example
 
@@ -139,6 +140,9 @@ Yes — it reads two official UK government open-data APIs under the OGL v3 lice
 **Why did my first `watchLabel` run return nothing?** By design — the first run on a new label + filter combination is a baseline: it records everything currently matching so the *next* run can tell you what's new, and charges nothing.
 
 **Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-uk-tender-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `filtered`, `pagesScanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel` on a scheduled run: your endpoint gets told how many brand-new notices landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Source code
 

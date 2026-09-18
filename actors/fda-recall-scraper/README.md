@@ -40,6 +40,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `includeRiskScore` | boolean | Add the `riskScore` field (see Output/FAQ). Default `true`. |
 | `watchLabel` | string | Name a saved search to get only recalls new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen recall if its `status` or `classification` changed (default `false`) — see FAQ. |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (recalls pushed, rows scanned, dataset ID, watch new/changed counts) here when the run finishes — see FAQ. |
 
 Filters are **ANDed**. A search query plus a state plus a classification over a short date window often has zero real matches — drop one filter and retry.
 
@@ -149,6 +150,9 @@ No extra fee — a changed recall is billed at the same per-row price as a new o
 
 **How does this compare to other FDA recall scrapers?**
 Checked live pricing and features again on 2026-09-15 against the highest-user leader (`benthepythondev/fda-recall-intelligence`, 11 users): they charge $0.05/result tapering to $0.035 on Diamond, **plus a per-GB Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, 10-20x cheaper at every tier. Their input set (8 fields) is a subset of ours (17 fields: three date-field choices instead of one, city, voluntary/mandated, free-text search across three fields, state and country, exact recall-number/event-ID lookup, and no 1,000-row cap — ours goes to 50,000). Their one real feature, an "AI-powered intelligence score", is now matched by `riskScore` above — ours is fully documented instead of a black box. Also checked against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only, checked 2026-09-13, input-schema re-diffed 2026-09-17): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — cheaper at every run size, and we cover drug and device recalls too, not just food. The 2026-09-17 re-check found `country`/`recallNumber`/`eventId` filters we lacked (they were already present as *output* fields, just not filterable on) — closed as `countries`, `recallNumber`, `eventId` above, so no remaining input-parity gap against either competitor.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel`: your endpoint gets told how many brand-new or changed recalls landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Related guides
 

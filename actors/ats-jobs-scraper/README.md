@@ -39,6 +39,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `maxJobsPerCompany` | integer | Cap on how many postings that pass your filters are kept per company — filters are applied first, then this cap. Default `50` — kept low so a run with no input at all (e.g. an API caller omitting the field) stays fast and cheap; pass a higher value explicitly for bulk pulls (up to `5000`). |
 | `maxResults` | integer | Cap total postings returned across all companies. Default `300` — same reasoning as above; pass a higher value explicitly for bulk pulls (up to `100000`). |
 | `watchLabel` | string | Optional. Name a saved job alert and return only postings not delivered under that label + filter set before. First run per label is a free baseline. See [Watch mode](#watch-mode-only-new-postings-since-last-run). |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (postings pushed, companies scanned/errored, dataset ID, watch new/skipped counts) here when the run finishes — see FAQ. |
 | `proxyConfiguration` | object | Apify Proxy config. Default: Apify Proxy on. |
 
 ### Finding a company's slug
@@ -96,6 +97,9 @@ Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 o
 **One of my boards failed during the baseline run — what happens?** That board contributes nothing to the baseline, so its currently-open postings will come back as "new" (and billable) on the next run. The baseline run logs a loud warning naming any board that failed, so you can re-seed before scheduling it.
 
 **Why did a company I listed return zero postings?** Either it's genuinely down to 0 open roles, or it has migrated off that ATS — the run logs (not a failure) list any company that 404s so you can find its new slug/ATS instead of getting a silently empty result.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `companiesScanned`, `companiesErrored`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkippedCount`) once the run finishes and every posting is already pushed and charged. Especially useful with `watchLabel` on a scheduled job alert: your endpoint gets told how many new postings landed without polling the dataset, and `companiesErrored` warns you when a board failed to answer. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Notes
 Only public, no-login job-board data is collected — the same postings anyone can see on the company's own careers page. Job descriptions occasionally include a named recruiter contact the company itself chose to publish; this Actor does not extract or highlight individual contact data as a feature. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

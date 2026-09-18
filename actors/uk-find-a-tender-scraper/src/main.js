@@ -74,6 +74,20 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const maxPagesScanned = Math.min(Math.max(Number(input.maxPagesScanned ?? 50), 1), 500);
 const watchLabel = String(input.watchLabel ?? '').trim();
 
+// Convenience completion ping (same shape as grants-gov-scraper, cycle 421). A bad value is
+// warned and ignored rather than thrown -- this is a notification nicety, not core function.
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+    try {
+        const parsed = new URL(webhookUrlRaw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+        else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+    } catch {
+        log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+    }
+}
+
 const PAGE_SIZE = 100; // hard API cap on both portals: limit=200 returns HTTP 400
 
 // The two official UK procurement portals. Find a Tender carries above-threshold notices
@@ -608,4 +622,40 @@ log.info(
     `Done. Scanned ${scanned} releases over ${page} page(s), pushed ${pushed} `
     + `(${sources.map((s) => `${SOURCES[s].label}: ${perSource[s] ?? 0}`).join(', ')}).`,
 );
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+    const env = Actor.getEnv();
+    const payload = {
+        actorRunId: env.actorRunId ?? null,
+        defaultDatasetId: env.defaultDatasetId ?? null,
+        finishedAt: new Date().toISOString(),
+        pushed,
+        scanned,
+        filtered,
+        pagesScanned: page,
+        watchLabel: watchMode ? watchLabel : null,
+        watchSeeding: watchMode ? seeding : null,
+        watchNewCount: watchMode && !seeding ? pushed : null,
+    };
+    try {
+        const resp = await gotScraping({
+            url: webhookUrl,
+            method: 'POST',
+            responseType: 'text',
+            throwHttpErrors: false,
+            retry: { limit: 0 },
+            timeout: { request: 10000 },
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+        else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+    } catch (err) {
+        log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+    }
+}
+
 await Actor.exit();
