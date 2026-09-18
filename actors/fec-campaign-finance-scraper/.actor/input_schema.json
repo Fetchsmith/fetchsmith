@@ -88,6 +88,20 @@
       "editor": "textfield",
       "default": ""
     },
+    "donorOccupation": {
+      "title": "Donor occupation",
+      "type": "string",
+      "description": "Filter contributions by the donor's self-reported occupation (e.g. \"Physician\", \"Software Engineer\"). Contributions mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "donorCity": {
+      "title": "Donor city",
+      "type": "string",
+      "description": "Filter contributions by the donor's self-reported city (e.g. \"Seattle\"). Contributions mode only.",
+      "editor": "textfield",
+      "default": ""
+    },
     "minAmount": {
       "title": "Minimum amount ($)",
       "type": "integer",

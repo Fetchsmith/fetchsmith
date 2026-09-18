@@ -1532,7 +1532,7 @@
     {
       "slug": "fec-campaign-finance-scraper",
       "title": "FEC Campaign Finance Scraper - Candidates, Donors & Spending",
-      "summary": "Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle via the FEC's official open.fec.gov API, with each candidate's campaign financial totals (receipts, disbursements, cash on hand, individual contributions) included. Three transaction modes cover the money itself: donor contributions (Schedule A) by donor name or employer, committee spending (Schedule B) by vendor/recipient, and independent expenditures (Schedule E) for or against a named candidate. No API key needed, no login required. Optional watch mode (watchLabel) delivers only rows new since your last run in any transaction mode.",
+      "summary": "Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle via the FEC's official open.fec.gov API, with each candidate's campaign financial totals (receipts, disbursements, cash on hand, individual contributions) included. Three transaction modes cover the money itself: donor contributions (Schedule A) by donor name, employer, occupation or city, committee spending (Schedule B) by vendor/recipient, and independent expenditures (Schedule E) for or against a named candidate. No API key needed, no login required. Optional watch mode (watchLabel) delivers only rows new since your last run in any transaction mode.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "MbmObp7bpnEJaHcC5",

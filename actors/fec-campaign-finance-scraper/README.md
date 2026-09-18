@@ -4,7 +4,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 
 ## Use cases
 - **Political/campaign research** — pull every Senate candidate in a state with their fundraising totals in a single dataset instead of clicking through fec.gov one candidate at a time.
-- **Donor research** — search by donor name or employer (`searchMode: "contributions"`) to see every itemized federal contribution someone or some company's employees have made, with amount, date and receiving committee.
+- **Donor research** — search by donor name, employer, occupation or city (`searchMode: "contributions"`) to see every itemized federal contribution someone, some company's employees, or a whole profession has made, with amount, date and receiving committee.
 - **Journalism & fact-checking** — compare receipts, burn rate (`disbursements` vs `receipts`) and war chests (`cashOnHandEnd`) across a race, with the FEC page URL attached to each row for citation.
 - **Watchdog & transparency dashboards** — schedule a run per cycle and diff the totals to track who is raising money and how fast.
 - **Small-dollar vs. large-dollar analysis** — `individualUnitemizedContributions` (small-dollar giving as the FEC itself computes it, no subtraction required) against `individualItemizedContributions` (the >$200-aggregate subset) shows how much of a campaign's money comes from grassroots donors versus large ones.
@@ -20,6 +20,8 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 | `candidateName` | string | Candidates mode: full or partial name to search for (default `"Warren"`). Matches any part of the name — see the FAQ. |
 | `donorName` | string | Contributions mode: donor name to search for, e.g. `"Elon Musk"`. |
 | `donorEmployer` | string | Contributions mode: filter by the donor's self-reported employer, e.g. `"Google"`. |
+| `donorOccupation` | string | Contributions mode: filter by the donor's self-reported occupation, e.g. `"Physician"`, `"Software Engineer"`. |
+| `donorCity` | string | Contributions mode: filter by the donor's self-reported city, e.g. `"Seattle"`. |
 | `recipientName` | string | Disbursements mode: who was paid, e.g. `"META"`, `"ActBlue"`. |
 | `payeeName` | string | Independent expenditures mode: the vendor paid to run the ad/mailer. |
 | `candidateId` | string | Independent expenditures mode: only spending naming this FEC candidate ID, e.g. `"P80001571"`. |
