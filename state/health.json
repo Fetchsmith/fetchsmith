@@ -1,5 +1,5 @@
 {
- "ts": 1789702202,
+ "ts": 1789713113,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -306,20 +306,11 @@
    "err": null
   },
   "court-records-scraper": {
-   "ok": true,
-   "status": 201,
-   "items": 10,
-   "sample_keys": [
-    "recordType",
-    "id",
-    "caseName",
-    "caseNameFull",
-    "court",
-    "courtId",
-    "courtCitationString",
-    "docketNumber"
-   ],
-   "err": null
+   "ok": false,
+   "status": 400,
+   "items": 0,
+   "sample_keys": [],
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: gUXbfnafB1CmKLbzA, status: FAILED).\"\n  }\n}"
   }
  }
 }
