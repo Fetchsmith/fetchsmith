@@ -7,6 +7,17 @@ const input = (await Actor.getInput()) ?? {};
 const podcasts = (input.podcasts ?? []).map((p) => String(p).trim()).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
 const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+  try {
+    const parsed = new URL(webhookUrlRaw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+    else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+  } catch {
+    log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+  }
+}
 const country = String(input.country || 'us').toLowerCase().trim();
 // Apple's two chart endpoints have DIFFERENT hard caps, measured live cycle 424: the newer
 // rss.marketingtools.apple.com feed 500s for any limit >100 (101/150/199/200 all fail, 100 is
@@ -702,4 +713,35 @@ if (pushed === 0 && timeBudgetExceeded) {
 } else if (emptyIds.length || timeBudgetExceeded) {
   await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${timeBudgetNote}`);
 }
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error.
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    dataType,
+    pushed,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 await Actor.exit();

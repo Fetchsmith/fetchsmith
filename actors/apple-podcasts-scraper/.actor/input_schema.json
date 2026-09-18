@@ -166,6 +166,12 @@
       "enum": ["all", "clean", "explicitOnly"],
       "enumTitles": ["All episodes", "Clean only", "Explicit only"],
       "editor": "select"
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — items pushed, dataType, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every item has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   }
 }
