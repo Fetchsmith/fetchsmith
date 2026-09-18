@@ -14,6 +14,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 - **Pull reviews from an exact historical window** — `reviewsAfter`/`reviewsBefore` (e.g. a specific patch, a controversy, a launch week years ago) reach any point in a game's history, not just the last year.
 - **Study a review bomb** — `includeOffTopic: true` returns the reviews Steam itself hides when Valve flags a stretch of time as off-topic activity. On War Thunder that is 125,691 reviews you cannot see anywhere on the store page.
 - **Competitive research** — `dataType: "games"` returns price, discount, genres, developer, Metacritic score, the full review-score summary (total positive/negative, % positive) and, optionally, the **live concurrent player count**.
+- **Size a market, not just a game** — `includeOwnerEstimates: true` adds an estimated owner range, peak concurrent players yesterday and Steam's **crowd-voted tags with vote counts** to every game row. Those tags are what players actually call a game (Hades: `Action Roguelike`, `Rogue-lite`, `Hack and Slash`) rather than the three broad genres the store API returns (`Action`, `Indie`, `RPG`).
 - **Localised research** — `language: "schinese"`, `"russian"`, `"brazilian"` … or `"all"` for every language at once.
 - **Feed an LLM / dataset pipeline** — clean flat rows, stable `reviewId`, ISO-8601 timestamps.
 - **Alert on new reviews only** — set `watchLabel` and schedule it; see [Watch mode](#watch-mode--only-new-reviews-since-the-last-run) below.
@@ -40,6 +41,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `country` | string | `us` | Two-letter code for store prices and availability |
 | `includeGameInfo` | boolean | `true` | Attach game name/developer/publisher/genres/release date to every review |
 | `includePlayerCount` | boolean | `false` | `games` mode: also fetch the live concurrent player count |
+| `includeOwnerEstimates` | boolean | `false` | `games` mode: add estimated owner range, peak concurrent players yesterday, and Steam's crowd-voted tags with vote counts — see below |
 | `searchLimit` | integer | `10` | Games taken from each search term |
 | `watchLabel` | string | — | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Reviews mode only. Leave empty for normal runs. |
 
@@ -173,7 +175,30 @@ Details worth knowing:
 }
 ```
 
+### Owner estimates & tags (`includeOwnerEstimates: true`)
+
+Six extra fields are added to each game row. Real output for Hades (`1145360`):
+
+```json
+{
+  "ownersEstimate": "5,000,000 .. 10,000,000",
+  "ownersMin": 5000000,
+  "ownersMax": 10000000,
+  "peakConcurrentYesterday": 2253,
+  "steamSpyTags": ["Action Roguelike", "Rogue-lite", "Hack and Slash", "Indie", "Mythology"],
+  "steamSpyTagVotes": { "Action Roguelike": 1330, "Rogue-lite": 954, "Hack and Slash": 936 }
+}
+```
+
+`steamSpyTags` is ordered by vote count, highest first, and `steamSpyTagVotes` gives the raw votes behind it. These come from the free public [SteamSpy](https://steamspy.com) API — Steam's own store API exposes none of them. One extra request per game, paced to SteamSpy's 1 request/second limit, and **no extra charge**: the fields ride along on the game row you are already paying for.
+
 ## FAQ
+
+**How accurate are the owner estimates, and why is there no playtime estimate?**
+`ownersEstimate` is a bucketed range (e.g. `"5,000,000 .. 10,000,000"`), not a precise number — that is how SteamSpy publishes it, and `ownersMin`/`ownersMax` are just that string parsed into integers so you can sort and filter on it. There is deliberately **no playtime estimate**: SteamSpy's `average_forever` / `median_forever` / 2-week playtime fields return a flat `0` for every game we checked (verified 2026-09-18 across Dota 2, CS:GO, Cyberpunk 2077, Stardew Valley, Monster Hunter Wilds, Call of Duty MWII and Schedule I), because Valve stopped exposing the profile data they were derived from. We don't ship a field that is always zero. If you want real playtime, use `dataType: "reviews"` — `playtimeForeverHours` and `playtimeAtReviewHours` are per-reviewer numbers that come straight from Steam.
+
+**Some rows came back with `ownersEstimate: null` — why?**
+SteamSpy didn't have that app. The rest of the row is unaffected — every Steam-sourced field is still complete — and the run log names the App IDs that were missing. It is most common for unreleased apps, non-game items and very new releases. Note that `"0 .. 20,000"` is a **real** bucket for a genuinely small game, not a "no data" marker; when SteamSpy has nothing the Actor returns `null` rather than passing that floor through as if it were an estimate.
 
 **Do I need a Steam API key or a proxy?**
 No. This Actor only reads Steam's public store endpoints over plain HTTP. No login, no key, no residential proxy, so runs are fast and cheap.

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "steam-reviews-scraper",
   "title": "Steam Reviews Scraper – Playtime, Keyword & Language Filters",
-  "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by playtime, keyword, language or review type, or include the off-topic review bombs Steam hides; games mode adds price, genres and live player count.",
+  "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by playtime, keyword, language or review type, or include the off-topic review bombs Steam hides; games mode adds price, genres, player count, owner estimates and tags.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

@@ -494,6 +494,61 @@
         "title": "CurrentPlayers",
         "example": 2638
       },
+      "ownersEstimate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "OwnersEstimate",
+        "example": "5,000,000 .. 10,000,000"
+      },
+      "ownersMin": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "OwnersMin",
+        "example": 5000000
+      },
+      "ownersMax": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "OwnersMax",
+        "example": 10000000
+      },
+      "peakConcurrentYesterday": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "PeakConcurrentYesterday",
+        "example": 2253
+      },
+      "steamSpyTags": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "SteamSpyTags",
+        "example": [
+          "Action Roguelike",
+          "Rogue-lite",
+          "Hack and Slash"
+        ]
+      },
+      "steamSpyTagVotes": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "title": "SteamSpyTagVotes",
+        "example": {
+          "Action Roguelike": 5063,
+          "Rogue-lite": 3841
+        }
+      },
       "country": {
         "type": [
           "string",

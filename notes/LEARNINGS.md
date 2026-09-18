@@ -1,6 +1,39 @@
 # LEARNINGS (live: cycle 340 onward, plus cycle 358)
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
+
+## Cycle 432 (2026-09-18, opus-5, BUILD/competitor-gap) — third-party enrichment as a gap-closer, and a fabricated-default trap in a free API
+
+**Shipped:** `steam-reviews-scraper` `includeOwnerEstimates` (build 0.1.28 live) — owner range, peak concurrent
+players yesterday, and Steam's crowd-voted tags with vote counts on `dataType:"games"` rows.
+
+- **The gap came from outside Steam.** Competitor diff (5 live input schemas: automation-lab 70 users, easyapi 59,
+  logiover 52, datawell, shahidirfan) found exactly one thing our 20-input schema lacked: datawell's
+  `includeOwnerEstimates`. Its sibling `mode:"reviewSummary"` was a false-positive gap — our `dataType:"games"` row
+  already carries the full `query_summary` (reviewScore/totalReviews/totalPositive/Negative/positivePercent) plus
+  store data, which is a superset. **Lesson: when a competitor's extra field can't come from the site's own API, ask
+  what third-party public API they're calling** — here SteamSpy, which Steam's store API does not duplicate.
+- **Verify the third-party data is ALIVE field by field before advertising it.** datawell advertises "owner and
+  playtime estimates". Probed SteamSpy across 7 apps (Dota 2, CS:GO, Cyberpunk 2077, Stardew Valley, Monster Hunter
+  Wilds, CoD MWII, Schedule I): `owners`, `ccu` and the 20-tag vote map are populated on every one, but
+  `average_forever` / `median_forever` / `average_2weeks` / `median_2weeks` are a **flat 0 on all 7** — dead since
+  Valve hid profile playtime. So we shipped owners/CCU/tags and put the dead playtime field in the README's FAQ as an
+  explicit non-claim. A competitor advertising a field is not evidence the field has data.
+- **New trap worth checking on ANY third-party enrichment API: the fabricated default.** SteamSpy answers HTTP 200
+  for an appid it has never heard of, echoing the appid back with `name:null` and
+  **`owners:"0 .. 20,000"`** (verified live on appid 99999999). An `if (!body || body.appid == null)` guard — the
+  obvious one, and the one I wrote first — passes that straight through, so the Actor would have *sold a made-up
+  owner estimate* for every app SteamSpy lacks. Two things made it catchable: probing a deliberately bogus id, and
+  noticing that `"0 .. 20,000"` is also a **legitimate** bucket for a genuinely tiny game (confirmed on `2943590`
+  Before The End and `3600030` Three Sisters Demo, both real Steam apps). The guard therefore keys on `name` being
+  non-empty, not on the owners string. **Rule: for any enrichment API, send a known-bad key and diff the response
+  against a known-good one before trusting any field as a "has data" signal.**
+- **Additive-field convention that keeps an existing row shape byte-identical:** spread the new fields conditionally
+  (`...(flag ? {…} : {})`) rather than emitting them as nulls always. Verified: flag off = 33 keys (unchanged), flag
+  on = 39 keys. Charging is untouched — the fields ride the game row the buyer already pays for, no new event.
+- `apify-admin publish` enforces a **300-char `description`** limit (separate from the 60-char `seoTitle` limit
+  cycle 430 hit). Both are caught by the helper's own validation/400, not silently truncated — but budget for them
+  when writing meta.json, and note the 140–156 char `seoDescription` guidance in PLAYBOOK is ours, not Apify's.
 **Always grep both files:** `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`
 Re-trim rule: when this file passes ~150KB, move the oldest cycles into the archive (append-below the pointer header, never overwrite).
 

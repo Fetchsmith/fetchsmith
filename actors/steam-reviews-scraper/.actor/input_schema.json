@@ -8,8 +8,14 @@
       "type": "string",
       "description": "reviews = player reviews for the given games; games = the store record for each game (price, genres, developer, review score summary, optional live player count).",
       "default": "reviews",
-      "enum": ["reviews", "games"],
-      "enumTitles": ["Player reviews", "Game / store details"],
+      "enum": [
+        "reviews",
+        "games"
+      ],
+      "enumTitles": [
+        "Player reviews",
+        "Game / store details"
+      ],
       "editor": "select"
     },
     "apps": {
@@ -17,8 +23,12 @@
       "type": "array",
       "description": "Steam store URLs or numeric App IDs, e.g. https://store.steampowered.com/app/1145360/Hades/ or 1145360. Leading/trailing spaces are ignored.",
       "editor": "stringList",
-      "prefill": ["https://store.steampowered.com/app/1145360/Hades/"],
-      "default": ["https://store.steampowered.com/app/1145360/Hades/"]
+      "prefill": [
+        "https://store.steampowered.com/app/1145360/Hades/"
+      ],
+      "default": [
+        "https://store.steampowered.com/app/1145360/Hades/"
+      ]
     },
     "searchTerms": {
       "title": "Search terms",
@@ -55,8 +65,16 @@
       "type": "string",
       "description": "positive = thumbs-up reviews only, negative = thumbs-down only.",
       "default": "all",
-      "enum": ["all", "positive", "negative"],
-      "enumTitles": ["All reviews", "Positive only", "Negative only"],
+      "enum": [
+        "all",
+        "positive",
+        "negative"
+      ],
+      "enumTitles": [
+        "All reviews",
+        "Positive only",
+        "Negative only"
+      ],
       "editor": "select"
     },
     "purchaseType": {
@@ -64,8 +82,16 @@
       "type": "string",
       "description": "steam = reviews from players who bought the game on Steam (excludes key activations and free weekends).",
       "default": "all",
-      "enum": ["all", "steam", "non_steam_purchase"],
-      "enumTitles": ["All", "Steam purchases only", "Non-Steam purchases only"],
+      "enum": [
+        "all",
+        "steam",
+        "non_steam_purchase"
+      ],
+      "enumTitles": [
+        "All",
+        "Steam purchases only",
+        "Non-Steam purchases only"
+      ],
       "editor": "select"
     },
     "includeOffTopic": {
@@ -79,8 +105,16 @@
       "type": "string",
       "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking. Note: Steam itself defaults 'all' to only the last 30 days unless you also set 'Last N days' below.",
       "default": "recent",
-      "enum": ["recent", "updated", "all"],
-      "enumTitles": ["Most recent", "Recently updated", "Most helpful"],
+      "enum": [
+        "recent",
+        "updated",
+        "all"
+      ],
+      "enumTitles": [
+        "Most recent",
+        "Recently updated",
+        "Most helpful"
+      ],
       "editor": "select"
     },
     "dayRange": {
@@ -133,6 +167,12 @@
       "title": "Include live player count",
       "type": "boolean",
       "description": "Game details only: also fetch the current concurrent player count for each game (one extra request per game).",
+      "default": false
+    },
+    "includeOwnerEstimates": {
+      "title": "Include owner estimates & tags",
+      "type": "boolean",
+      "description": "Game details only: adds estimated owner range (ownersMin/ownersMax), peak concurrent players yesterday and Steam's crowd-voted tags with vote counts, from the free public SteamSpy API (one extra request per game, paced to 1/second). Steam's own store API exposes none of these.",
       "default": false
     },
     "searchLimit": {

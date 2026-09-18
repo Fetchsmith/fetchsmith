@@ -26,6 +26,16 @@ const searchLimit = Math.min(Number(input.searchLimit ?? 10), 50);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeGameInfo = input.includeGameInfo !== false;
 const includePlayerCount = input.includePlayerCount === true;
+// Owner estimates + crowd-voted tags come from SteamSpy, a free public API — Steam's own store API
+// exposes neither. Verified live 2026-09-18 across 7 apps (Dota 2, CS:GO, Cyberpunk 2077, Stardew
+// Valley, Monster Hunter Wilds, CoD MWII, Schedule I): owners, ccu and the 20-tag vote map are
+// populated on all of them, while SteamSpy's playtime fields (average_forever / median_forever /
+// *_2weeks) are a flat 0 on every single one — dead since Valve hid profile playtime. So this ships
+// owners/peak-CCU/tags and deliberately does NOT claim playtime estimates.
+const includeOwnerEstimates = input.includeOwnerEstimates === true;
+if (includeOwnerEstimates && dataType !== 'games') {
+  log.warning('includeOwnerEstimates is ignored for dataType:"reviews" — owner estimates and tags describe a game, not a review. Set dataType:"games" to get them.');
+}
 // Valve flags "off-topic review bomb" periods (a controversy, not the game) and Steam's review
 // endpoint excludes them by default (filter_offtopic_activity=1). Turning this on asks for the
 // unfiltered set, which is exactly what a buyer studying a backlash wants. Verified 2026-09-17 on
@@ -176,7 +186,7 @@ const parseAppId = (s) => (s.match(/\/app\/(\d+)/)?.[1] || s.match(/^\d{1,8}$/)?
 const iso = (t) => (t ? new Date(Number(t) * 1000).toISOString() : null);
 const cents = (v) => (typeof v === 'number' ? Math.round(v) / 100 : null);
 
-function gameRow(appId, d, summary, players) {
+function gameRow(appId, d, summary, players, owners) {
   const price = d?.price_overview ?? null;
   return {
     type: 'game',
@@ -213,6 +223,19 @@ function gameRow(appId, d, summary, players) {
       ? Math.round((summary.total_positive / summary.total_reviews) * 1000) / 10
       : null,
     currentPlayers: players ?? null,
+    // SteamSpy enrichment (includeOwnerEstimates). Present as explicit nulls when the flag is on but
+    // SteamSpy had no data, absent entirely when the flag is off, so an unenriched row keeps its
+    // existing shape exactly.
+    ...(includeOwnerEstimates
+      ? {
+        ownersEstimate: owners?.ownersEstimate ?? null,
+        ownersMin: owners?.ownersMin ?? null,
+        ownersMax: owners?.ownersMax ?? null,
+        peakConcurrentYesterday: owners?.peakConcurrentYesterday ?? null,
+        steamSpyTags: owners?.steamSpyTags ?? null,
+        steamSpyTagVotes: owners?.steamSpyTagVotes ?? null,
+      }
+      : {}),
     country,
   };
 }
@@ -297,6 +320,33 @@ async function getAppDetails(appId) {
   } catch (e) { log.warning(`appdetails failed for ${appId}: ${e.message}`); }
   detailsCache.set(appId, d);
   return d;
+}
+
+// SteamSpy asks for at most 1 appdetails request per second; the games loop paces itself with a
+// sleep between calls. A failure here degrades the row to null estimate fields, it never fails the
+// run — the Steam-sourced half of the row is still complete and worth delivering.
+const OWNERS_RE = /^\s*([\d,]+)\s*\.\.\s*([\d,]+)\s*$/;
+async function getOwnerEstimates(appId) {
+  try {
+    const s = await getJson(`https://steamspy.com/api.php?request=appdetails&appid=${appId}`);
+    // SteamSpy answers 200 for an appid it does not know, echoing the appid back with name:null and
+    // a FABRICATED owners:"0 .. 20,000" floor (verified live on appid 99999999). Delivering that as
+    // an estimate would be selling a made-up number, so name:null is the "no data" signal.
+    if (!s || s.appid == null || !s.name) return null;
+    const m = OWNERS_RE.exec(String(s.owners ?? ''));
+    const tagVotes = (s.tags && !Array.isArray(s.tags) && typeof s.tags === 'object') ? s.tags : null;
+    return {
+      ownersEstimate: s.owners || null,
+      ownersMin: m ? Number(m[1].replace(/,/g, '')) : null,
+      ownersMax: m ? Number(m[2].replace(/,/g, '')) : null,
+      peakConcurrentYesterday: typeof s.ccu === 'number' ? s.ccu : null,
+      steamSpyTags: tagVotes ? Object.keys(tagVotes).sort((a, b) => tagVotes[b] - tagVotes[a]) : null,
+      steamSpyTagVotes: tagVotes,
+    };
+  } catch (e) {
+    log.warning(`SteamSpy owner estimates failed for ${appId}: ${e.message} — ownersEstimate/steamSpyTags will be null in this row.`);
+    return null;
+  }
 }
 
 async function getPlayerCount(appId) {
@@ -441,6 +491,8 @@ const saturatedApps = [];
 // Watch mode: apps that appeared in an already-established watch (e.g. a searchTerms query that
 // now resolves to a different game) and were baselined this run instead of being delivered.
 const baselinedInPlace = [];
+let ownersCalls = 0;
+const ownersMissing = [];
 if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
@@ -466,7 +518,14 @@ if (dataType === 'games') {
       }
     } catch (e) { log.debug(`review summary failed for ${id}: ${e.message}`); }
     const players = includePlayerCount ? await getPlayerCount(id) : null;
-    keepGoing = await pushResult({ ...gameRow(id, d, summary, players), scrapedAt: new Date().toISOString() });
+    let owners = null;
+    if (includeOwnerEstimates) {
+      if (ownersCalls > 0) await sleep(1100); // SteamSpy: max 1 appdetails request/second
+      ownersCalls += 1;
+      owners = await getOwnerEstimates(id);
+      if (!owners) ownersMissing.push(id);
+    }
+    keepGoing = await pushResult({ ...gameRow(id, d, summary, players, owners), scrapedAt: new Date().toISOString() });
   }
 } else {
   for (const id of ids) {
@@ -515,6 +574,9 @@ if (dataType === 'games') {
   }
 }
 
+if (ownersMissing.length) {
+  log.warning(`SteamSpy had no owner estimates for ${ownersMissing.length} app(s): ${ownersMissing.slice(0, 10).join(', ')}${ownersMissing.length > 10 ? ', …' : ''}. Those rows still carry every Steam-sourced field; ownersEstimate/peakConcurrentYesterday/steamSpyTags are null. SteamSpy typically lacks unreleased apps, non-game items (DLC, soundtracks, software) and very new releases.`);
+}
 log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
 // An upstream fault that produced nothing is a failed run, not an empty one: surfacing it as a
 // success would tell the user their games have no reviews, which is the opposite of the truth.
