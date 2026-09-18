@@ -162,6 +162,36 @@
       "description": "e.g. 2026-09-01. Posts newer than this are skipped.",
       "editor": "textfield"
     },
+    "minReactionCount": {
+      "title": "Min reactions (likes)",
+      "type": "integer",
+      "description": "Only return posts with at least this many reactions. Read directly from the archive listing, so it costs nothing extra and applies before any post is charged.",
+      "minimum": 0
+    },
+    "minCommentCount": {
+      "title": "Min comments",
+      "type": "integer",
+      "description": "Only return posts with at least this many comments. Useful for finding a publication's most-discussed posts.",
+      "minimum": 0
+    },
+    "minRestackCount": {
+      "title": "Min restacks",
+      "type": "integer",
+      "description": "Only return posts with at least this many restacks (Substack's share/reshare action).",
+      "minimum": 0
+    },
+    "minWordCount": {
+      "title": "Min word count",
+      "type": "integer",
+      "description": "Only return posts with at least this many words.",
+      "minimum": 0
+    },
+    "maxWordCount": {
+      "title": "Max word count",
+      "type": "integer",
+      "description": "Only return posts with at most this many words. Useful for finding short posts/links roundups vs. long essays.",
+      "minimum": 0
+    },
     "maxPostsPerPublication": {
       "title": "Max posts per publication",
       "type": "integer",

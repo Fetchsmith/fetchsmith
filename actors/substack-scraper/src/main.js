@@ -43,6 +43,11 @@ const audienceFilter = ['all', 'free', 'paid'].includes(input.audienceFilter) ? 
 const contentType = ['all', 'newsletter', 'podcast', 'thread'].includes(input.contentType) ? input.contentType : 'all';
 const publishedAfter = input.publishedAfter ? new Date(input.publishedAfter) : null;
 const publishedBefore = input.publishedBefore ? new Date(input.publishedBefore) : null;
+const minReactionCount = input.minReactionCount != null ? Number(input.minReactionCount) : null;
+const minCommentCount = input.minCommentCount != null ? Number(input.minCommentCount) : null;
+const minRestackCount = input.minRestackCount != null ? Number(input.minRestackCount) : null;
+const minWordCount = input.minWordCount != null ? Number(input.minWordCount) : null;
+const maxWordCount = input.maxWordCount != null ? Number(input.maxWordCount) : null;
 const discoverCategories = (input.discoverCategories ?? []).map((c) => String(c ?? '').trim()).filter(Boolean);
 const maxPublicationsPerCategory = Math.min(Number(input.maxPublicationsPerCategory ?? 10), 100);
 const discoverType = ['all', 'newsletter', 'podcast'].includes(input.discoverType) ? input.discoverType : 'all';
@@ -57,7 +62,8 @@ const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
 let excludedByFilters = 0;
-const filtersActive = audienceFilter !== 'all' || contentType !== 'all' || !!publishedAfter || !!publishedBefore;
+const filtersActive = audienceFilter !== 'all' || contentType !== 'all' || !!publishedAfter || !!publishedBefore
+  || minReactionCount != null || minCommentCount != null || minRestackCount != null || minWordCount != null || maxWordCount != null;
 
 async function pushResult(item, eventName = 'result') {
   if (isPPE) {
@@ -196,6 +202,21 @@ function matchesDate(post) {
   return true;
 }
 
+// reaction/comment/restack/word counts are all already on the archive-listing object itself
+// (Substack includes them in the list response, not just the per-post detail endpoint), so these
+// filters apply before any post is fetched or charged — same cost as no filter at all.
+function matchesEngagement(post) {
+  if (minReactionCount != null && (post.reaction_count ?? 0) < minReactionCount) return false;
+  if (minCommentCount != null && (post.comment_count ?? 0) < minCommentCount) return false;
+  if (minRestackCount != null && (post.restacks ?? 0) < minRestackCount) return false;
+  const wc = post.wordcount;
+  if ((minWordCount != null || maxWordCount != null) && typeof wc === 'number') {
+    if (minWordCount != null && wc < minWordCount) return false;
+    if (maxWordCount != null && wc > maxWordCount) return false;
+  }
+  return true;
+}
+
 function mapPost(post, origin, detail, pubInfo) {
   const full = detail ?? post;
   const bodyHtml = full.body_html || null;
@@ -276,7 +297,7 @@ async function fetchDetail(origin, slug) {
 }
 
 async function handlePost(post, origin, preloadedDetail = null) {
-  if (!matchesAudience(post) || !matchesContentType(post) || !matchesDate(post)) { excludedByFilters += 1; return true; }
+  if (!matchesAudience(post) || !matchesContentType(post) || !matchesDate(post) || !matchesEngagement(post)) { excludedByFilters += 1; return true; }
   const needDetail = includeBodyText || includeBodyHtml;
   const detail = preloadedDetail ?? (needDetail && post.slug ? await fetchDetail(origin, post.slug) : null);
   const pubInfo = await fetchPublicationInfo(origin);
@@ -299,7 +320,7 @@ async function handlePost(post, origin, preloadedDetail = null) {
 }
 
 // Returns 'ok' | 'empty' (archive has no matching posts) | 'filtered' (posts exist but
-// audienceFilter/contentType/publishedAfter/publishedBefore excluded all of them) | 'error' (archive request failed).
+// audienceFilter/contentType/date/engagement filters excluded all of them) | 'error' (archive request failed).
 async function scrapePublication(origin) {
   log.info(`Publication: ${origin}${searchQuery ? ` (search: "${searchQuery}")` : ''}`);
   let offset = 0;
@@ -338,7 +359,7 @@ async function scrapePublication(origin) {
     const dropped = excludedByFilters - excludedBefore;
     log.warning(
       `${origin}: scanned the maxPostsPerPublication limit of ${maxPostsPerPublication} post(s) and `
-      + `${dropped} of them were excluded by audienceFilter/contentType/publishedAfter/publishedBefore. `
+      + `${dropped} of them were excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters. `
       + `The cap counts posts scanned, before filtering — raise maxPostsPerPublication to search deeper.`,
     );
     depthCapped.push(origin);
@@ -527,7 +548,7 @@ if (!publicationTargets.length && !postTargets.length) {
       : errored.length
         ? `the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`
         : filtered.length && !empty.length
-          ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore — try widening those filters`
+          ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`
           : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
     await Actor.setStatusMessage(`No items returned — ${why}.`);
   } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote) {
