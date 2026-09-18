@@ -469,6 +469,13 @@ if (discoverCategories.length) {
 }
 
 if (leaderboardOnly) {
+  // Leaderboard rows are publication summaries, not posts — audience/contentType/date/engagement
+  // filters only ever run inside the post-scraping path below this block, which leaderboardOnly
+  // skips entirely (Actor.exit() a few lines down). Without this warning a buyer combining e.g.
+  // minReactionCount with leaderboardOnly would see it silently do nothing.
+  if (filtersActive) {
+    log.warning('leaderboardOnly is on — audienceFilter/contentType/publishedAfter/publishedBefore/minReactionCount/minCommentCount/minRestackCount/minWordCount/maxWordCount only apply to post scraping and are ignored for leaderboard rows.');
+  }
   if (!leaderboardEntries.length) {
     const why = unknownCategories
       ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
