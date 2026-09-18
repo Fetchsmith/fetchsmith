@@ -106,6 +106,7 @@ function timeBudgetOk() {
 let pushed = 0;
 let unknownDurationKept = 0;
 let unenrichedChartEntries = 0;
+let rssItemsWithoutExplicit = 0;
 let keepGoing = true;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
@@ -210,6 +211,16 @@ function episodeRow(e, info) {
   };
 }
 
+// itunes:explicit is "yes"/"no" in the spec but "true"/"false"/"explicit"/"clean" all appear in
+// real feeds. Returns null (not false) when the tag is absent, so a missing per-episode tag can
+// fall back to the show-level one instead of silently reading as "not explicit" — see the
+// channelExplicit argument of rssEpisodeRow.
+function parseItunesExplicit(s) {
+  const t = String(s || '').trim().toLowerCase();
+  if (!t) return null;
+  return ['yes', 'true', 'explicit'].includes(t);
+}
+
 // itunes:duration is "HH:MM:SS", "MM:SS", or bare seconds — all three appear in real feeds.
 function parseItunesDuration(s) {
   const t = String(s || '').trim();
@@ -223,8 +234,10 @@ function parseItunesDuration(s) {
 // Built from a show's own RSS 2.0 / Podcast-namespace feed (useRssForFullArchive), not Apple's
 // lookup API — this is the only way to get episodes beyond Apple's ~200-episode cap, plus fields
 // Apple's JSON never exposes at all (episodeType, full HTML show notes, file size, transcript).
-function rssEpisodeRow($, el, collectionId, info) {
+function rssEpisodeRow($, el, collectionId, info, channelExplicit = null) {
   const $el = $(el);
+  const itemExplicit = parseItunesExplicit($el.find('itunes\\:explicit').text());
+  if (itemExplicit == null) rssItemsWithoutExplicit += 1;
   const enclosure = $el.find('enclosure');
   const episodeUrl = enclosure.attr('url')?.split('?')[0] || enclosure.attr('url') || null;
   const durationMs = parseItunesDuration($el.find('itunes\\:duration').text());
@@ -247,7 +260,7 @@ function rssEpisodeRow($, el, collectionId, info) {
     episodeFileExtension: episodeUrl ? (episodeUrl.split('.').pop() || null) : null,
     episodeContentType: enclosure.attr('type') || null,
     episodeGuid: $el.find('guid').text().trim() || null,
-    explicit: ['yes', 'true', 'explicit'].includes($el.find('itunes\\:explicit').text().trim().toLowerCase()),
+    explicit: itemExplicit ?? channelExplicit ?? false,
     artworkUrl: $el.find('itunes\\:image').attr('href') || info?.artworkUrl || null,
     episodePageUrl: $el.find('link').text().trim() || null,
     feedUrl: info?.feedUrl ?? null,
@@ -263,7 +276,8 @@ function rssEpisodeRow($, el, collectionId, info) {
 async function scrapeRssFeed(feedUrl, collectionId, info) {
   const res = await gotScraping({ url: feedUrl, timeout: { request: 30000 }, retry: { limit: 2 } });
   const $ = cheerio.load(res.body, { xml: true });
-  return $('item').map((_, el) => rssEpisodeRow($, el, collectionId, info)).get();
+  const channelExplicit = parseItunesExplicit($('channel').first().find('> itunes\\:explicit').first().text());
+  return $('item').map((_, el) => rssEpisodeRow($, el, collectionId, info, channelExplicit)).get();
 }
 
 function reviewPassesFilters(item) {
@@ -420,7 +434,8 @@ async function scrapeEpisodesFromFeed(feedUrl) {
     episodeCount: null,
     artworkUrl: channel.find('itunes\\:image').attr('href') || null,
   } : null;
-  const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info)).get();
+  const channelExplicit = parseItunesExplicit(channel.find('> itunes\\:explicit').first().text());
+  const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info, channelExplicit)).get();
   return pushEpisodeRows(rows);
 }
 
@@ -676,6 +691,9 @@ if (dataType === 'charts') {
 
 if (unknownDurationKept > 0) {
   log.warning(`minDurationSeconds is set: ${unknownDurationKept} episode(s) had no duration in Apple's own data and were kept rather than dropped, since an unknown duration is not evidence of a short episode.`);
+}
+if (rssItemsWithoutExplicit > 0 && explicitFilter !== 'all') {
+  log.warning(`explicitFilter is set while "useRssForFullArchive" is on: ${rssItemsWithoutExplicit} episode(s) carried no per-episode <itunes:explicit> tag, so the show-level flag from the feed was used (or false when the feed has none). A feed's own flag can disagree with Apple's Store rating for the same episode — if this run returned fewer rows than expected, turn "useRssForFullArchive" off to filter on Apple's rating instead.`);
 }
 if (unenrichedChartEntries > 0) {
   log.warning(`${unenrichedChartEntries} chart entry/entries could not be enriched from Apple's lookup API (typically Apple-exclusive or subscriber-only shows, which expose no episode list). They are still in the dataset with chartRank, title and episodePageUrl, and source "chart" instead of "itunes".`);

@@ -155,13 +155,13 @@
     "minDurationSeconds": {
       "title": "Minimum episode duration (seconds)",
       "type": "integer",
-      "description": "Episodes only: drop episodes shorter than this — useful for excluding trailers, ads or short teasers. Leave empty to keep all lengths.",
+      "description": "Episodes only: drop episodes shorter than this — useful for excluding trailers, ads or short teasers. Apple omits the duration for a large share of episodes on some shows regardless of their real length; those episodes are always kept, never assumed short (the run log reports how many). Leave empty to keep all lengths.",
       "minimum": 0
     },
     "explicitFilter": {
       "title": "Explicit content filter",
       "type": "string",
-      "description": "Episodes only: 'all' keeps everything (default), 'clean' excludes episodes flagged Explicit, 'explicitOnly' keeps only episodes flagged Explicit.",
+      "description": "Episodes only: 'all' keeps everything (default), 'clean' excludes episodes flagged Explicit, 'explicitOnly' keeps only episodes flagged Explicit. The flag comes from whichever source the run uses: Apple's Store rating by default, or the show's own <itunes:explicit> tag when 'Use RSS for full archive' is on (falling back to the show-level tag for episodes that carry none). The two can disagree for the same episode, so a filter that returns nothing under one source may return rows under the other.",
       "default": "all",
       "enum": ["all", "clean", "explicitOnly"],
       "enumTitles": ["All episodes", "Clean only", "Explicit only"],
