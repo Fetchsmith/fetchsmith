@@ -63,6 +63,22 @@ let courts = (Array.isArray(input.courts) ? input.courts : String(input.courts ?
     .map((c) => String(c).trim().toLowerCase())
     .filter(Boolean);
 
+// Field searches CourtListener's index supports alongside the free-text `q`. These are real
+// server-side fields, not full-text — verified live cycle 456 against the anonymous search
+// endpoint (a bogus param leaves the result count untouched; each of these changes it):
+// party_name "Google LLC" 6,498 vs 2,110,970 baseline on RECAP, atty_name "Smith" 65,978,
+// docket_number "1:20-cv-03590" 6, judge "Posner" 8,411 on opinions.
+//
+// The catch that shapes the whole design below: an index that does not carry a field does NOT
+// reject it, it IGNORES it — `type=o&party_name=...` returns 8,313,056 rows, i.e. the entire
+// opinion corpus, because the only filter sent was dropped on the floor. Silently billing a
+// buyer for a whole corpus is the worst possible failure here, so a filter that one index
+// cannot honour narrows the run to the index that can (below), instead of being sent blind.
+let partyName = String(input.partyName ?? '').trim();
+let attorneyName = String(input.attorneyName ?? '').trim();
+let docketNumber = String(input.docketNumber ?? '').trim();
+let judge = String(input.judge ?? '').trim();
+
 const normDate = (v) => {
     const digits = String(v ?? '').replace(/[^0-9]/g, '');
     if (digits.length !== 8) return null;
@@ -111,6 +127,12 @@ if (startUrlRaw) {
         .filter(Boolean);
     if (courtValues.length) { courts = courtValues; } else { ignored.push('courts'); }
 
+    // The advanced-search form posts these under the same names the API reads them under.
+    if (qp.has('party_name')) { partyName = (qp.get('party_name') ?? '').trim(); } else { ignored.push('partyName'); }
+    if (qp.has('atty_name')) { attorneyName = (qp.get('atty_name') ?? '').trim(); } else { ignored.push('attorneyName'); }
+    if (qp.has('docket_number')) { docketNumber = (qp.get('docket_number') ?? '').trim(); } else { ignored.push('docketNumber'); }
+    if (qp.has('judge')) { judge = (qp.get('judge') ?? '').trim(); } else { ignored.push('judge'); }
+
     if (qp.has('filed_after')) { filedAfter = normDate(qp.get('filed_after')); } else { ignored.push('filedAfter'); }
     if (qp.has('filed_before')) { filedBefore = normDate(qp.get('filed_before')); } else { ignored.push('filedBefore'); }
 
@@ -123,6 +145,10 @@ if (startUrlRaw) {
     }
 
     log.info(
+        `startUrl parsed: party=${partyName || '(none)'} attorney=${attorneyName || '(none)'} `
+        + `docketNumber=${docketNumber || '(none)'} judge=${judge || '(none)'}.`,
+    );
+    log.info(
         `startUrl parsed: query=${JSON.stringify(query)} recordTypes=${JSON.stringify(recordTypes)} `
         + `courts=${JSON.stringify(courts)} filedAfter=${filedAfter ?? '(none)'} filedBefore=${filedBefore ?? '(none)'} `
         + `opinionStatus=${opinionStatus}.`,
@@ -133,6 +159,50 @@ if (startUrlRaw) {
             + 'maxResults and watchLabel always apply regardless of startUrl.',
         );
     }
+}
+
+// Narrow the indexes to the ones that can actually honour the field searches that are set —
+// see the note above `partyName`: the other index would ignore the filter and return its whole
+// corpus, which the buyer would be charged for row by row.
+const docketOnlyFilters = [partyName && 'partyName', attorneyName && 'attorneyName'].filter(Boolean);
+const opinionOnlyFilters = [judge && 'judge'].filter(Boolean);
+if (docketOnlyFilters.length && opinionOnlyFilters.length) {
+    throw new Error(
+        `Cannot combine ${docketOnlyFilters.join('/')} (RECAP dockets only — the opinion index has no party or `
+        + `attorney data) with ${opinionOnlyFilters.join('/')} (opinions only — the docket index has no authoring `
+        + 'judge). No single CourtListener index carries both, so this combination can never match anything. '
+        + 'Run it as two separate runs, or drop one of the two filters.',
+    );
+}
+if (docketOnlyFilters.length && recordTypes.includes('opinions')) {
+    if (recordTypes.length === 1) {
+        throw new Error(
+            `${docketOnlyFilters.join('/')} searches RECAP dockets, but recordType is "opinions" — CourtListener's `
+            + 'opinion index carries no party or attorney data and would silently ignore the filter (returning the '
+            + 'entire opinion corpus). Set recordType to "dockets" or "both".',
+        );
+    }
+    recordTypes = recordTypes.filter((t) => t !== 'opinions');
+    log.warning(
+        `${docketOnlyFilters.join('/')} is set, so this run covers RECAP dockets only. CourtListener's opinion index `
+        + 'has no party/attorney data and ignores the filter entirely — searching it anyway would return (and charge '
+        + 'for) every opinion matching the remaining filters, so it is skipped.',
+    );
+}
+if (opinionOnlyFilters.length && recordTypes.includes('dockets')) {
+    if (recordTypes.length === 1) {
+        throw new Error(
+            'judge searches the opinion index, but recordType is "dockets" — the RECAP docket index has no authoring-'
+            + 'judge field and would silently ignore the filter (returning the entire docket corpus). Set recordType '
+            + 'to "opinions" or "both".',
+        );
+    }
+    recordTypes = recordTypes.filter((t) => t !== 'dockets');
+    log.warning(
+        'judge is set, so this run covers opinions only. The RECAP docket index has no authoring-judge field and '
+        + 'ignores the filter entirely — searching it anyway would return (and charge for) every docket matching the '
+        + 'remaining filters, so it is skipped.',
+    );
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -194,7 +264,15 @@ function firstUrl(kind) {
     if (courts.length) qs.set('court', courts.join(' '));
     if (filedAfter) qs.set('filed_after', filedAfter);
     if (filedBefore) qs.set('filed_before', filedBefore);
+    // Field searches, each sent only to the index that carries the field (see the narrowing
+    // block above — by this point the other index has already been dropped from the run).
+    if (docketNumber) qs.set('docket_number', docketNumber);
+    if (kind === 'dockets') {
+        if (partyName) qs.set('party_name', partyName);
+        if (attorneyName) qs.set('atty_name', attorneyName);
+    }
     if (kind === 'opinions') {
+        if (judge) qs.set('judge', judge);
         for (const p of OPINION_STAT_PARAM[opinionStatus]) qs.set(p, 'on');
     }
     return `${SEARCH}?${qs.toString()}`;
@@ -369,6 +447,13 @@ const watchCriteria = {
     filedAfter,
     filedBefore,
     ...(opinionStatus !== 'published' ? { opinionStatus } : {}),
+    // Each of these changes what the server returns, exactly like `query`/`courts`, so a run
+    // that edits one must start a fresh baseline rather than inherit the old filter's "seen"
+    // set. Omitted when empty so existing watch labels keep their current key.
+    ...(partyName ? { partyName } : {}),
+    ...(attorneyName ? { attorneyName } : {}),
+    ...(docketNumber ? { docketNumber } : {}),
+    ...(judge ? { judge } : {}),
 };
 
 const watchMode = watchLabel.length > 0;
@@ -550,8 +635,11 @@ if (pushed === 0 && watchMode && !seeding) {
         + '("scotus", "ca9", "cand", "cacb") — an unrecognised id is not rejected upstream, it silently matches nothing. '
         + '(3) recordType matters: RECAP dockets ("dockets") and published opinions ("opinions") are separate indexes, '
         + 'and a case present in one is often absent from the other. Use "both" when unsure. '
-        + '(4) the query is a full-text search over case text and metadata, not a case-number lookup — for a docket '
-        + 'number, put it in the query as-is and widen the court filter.',
+        + '(4) the query is a full-text search over case text and metadata, not a case-number lookup — use the '
+        + 'dedicated docketNumber field for a case number, and if that returns nothing try it without the office '
+        + 'prefix ("20-cv-03590" rather than "1:20-cv-03590"), since the format varies by court. '
+        + '(5) partyName/attorneyName match the parties and attorneys recorded on a RECAP docket — a name that only '
+        + 'appears in the body text of an opinion will not match; put that in the query instead.',
     );
 }
 

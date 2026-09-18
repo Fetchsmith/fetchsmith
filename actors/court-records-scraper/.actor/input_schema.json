@@ -1,98 +1,122 @@
 {
-    "title": "Court Records & Case Law Scraper input",
-    "type": "object",
-    "schemaVersion": 1,
-    "properties": {
-        "query": {
-            "title": "Search query",
-            "type": "string",
-            "description": "Full-text search across case names, party/attorney names, docket text and opinion bodies. Supports quoted phrases (\"fair use\") and boolean operators (AND, OR, NOT). Leave empty to browse everything matching the other filters.",
-            "editor": "textfield",
-            "default": "patent infringement"
-        },
-        "recordType": {
-            "title": "Record type",
-            "type": "string",
-            "description": "Which CourtListener index to search. Dockets are the PACER/RECAP mirror (federal case dockets with parties, attorneys and filing entries). Opinions are published court decisions with citations. They are separate indexes — a case in one is often absent from the other.",
-            "editor": "select",
-            "enum": [
-                "both",
-                "opinions",
-                "dockets"
-            ],
-            "enumTitles": [
-                "Both (dockets + opinions)",
-                "Opinions / case law only",
-                "Dockets (PACER/RECAP) only"
-            ],
-            "default": "both"
-        },
-        "courts": {
-            "title": "Courts",
-            "type": "array",
-            "description": "CourtListener court IDs — the short slug in a courtlistener.com/court/<id>/ URL. Examples: \"scotus\" (Supreme Court), \"ca9\" (9th Circuit), \"cand\" (N.D. Cal.), \"cacb\" (Bankr. C.D. Cal.), \"nysd\" (S.D.N.Y.). 400+ federal and state courts exist. Leave empty for all courts. An unrecognised ID is not rejected upstream — it silently matches nothing.",
-            "editor": "stringList",
-            "uniqueItems": true,
-            "prefill": [
-                "ca9"
-            ]
-        },
-        "filedAfter": {
-            "title": "Filed after",
-            "type": "string",
-            "description": "Earliest filing date, YYYY-MM-DD. Leave empty for no lower bound (the opinion archive reaches back to the 1700s).",
-            "editor": "textfield"
-        },
-        "filedBefore": {
-            "title": "Filed before",
-            "type": "string",
-            "description": "Latest filing date, YYYY-MM-DD. Leave empty for no upper bound.",
-            "editor": "textfield"
-        },
-        "opinionStatus": {
-            "title": "Opinion status",
-            "type": "string",
-            "description": "Opinions mode only. CourtListener's opinion index defaults to PUBLISHED opinions only when this is left as-is — verified live on a real query, unpublished opinions are ~26% of matches and are silently absent unless you ask for them. \"Any\" returns both.",
-            "editor": "select",
-            "enum": [
-                "published",
-                "unpublished",
-                "any"
-            ],
-            "enumTitles": [
-                "Published only (default)",
-                "Unpublished only",
-                "Any (published + unpublished)"
-            ],
-            "default": "published"
-        },
-        "startUrl": {
-            "title": "CourtListener search URL",
-            "type": "string",
-            "description": "Optional shortcut: build the search on courtlistener.com, then paste the address bar here — e.g. \"https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01\". An API URL (\"https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o\") works too — both use the same parameters. Whatever the URL mentions (search query, court(s), filed-after/before dates, stat_Published/stat_Unpublished checkboxes) REPLACES the matching field below; anything it doesn't mention still comes from the fields below. Only Opinions (type=o) and RECAP (type=r) URLs are supported — CourtListener's Oral Arguments/Judges/Parenthetical searches are different record shapes this Actor does not cover. Max results and the watch label always apply regardless.",
-            "editor": "textfield"
-        },
-        "maxResults": {
-            "title": "Max results",
-            "type": "integer",
-            "description": "Stop after this many records. With recordType \"both\" the budget is shared across the two indexes (opinions first, then dockets).",
-            "editor": "number",
-            "minimum": 1,
-            "maximum": 20000,
-            "default": 100
-        },
-        "watchLabel": {
-            "title": "Watch label (incremental mode)",
-            "type": "string",
-            "description": "Optional. Name this saved search to get ONLY records that are new since its last run. The first run on a label records the current matches as a baseline and returns zero results (you are charged nothing); every run after that returns only what appeared since. Changing any filter starts a fresh baseline under the same label. Leave empty for a normal one-off run.",
-            "editor": "textfield"
-        },
-        "webhookUrl": {
-            "title": "Webhook URL (notify on completion)",
-            "type": "string",
-            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — records pushed, rows scanned, pages fetched, CourtListener's own reported total, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every record has already been pushed and charged. Leave empty to skip.",
-            "editor": "textfield"
-        }
+  "title": "Court Records & Case Law Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search query",
+      "type": "string",
+      "description": "Full-text search across case names, party/attorney names, docket text and opinion bodies. Supports quoted phrases (\"fair use\") and boolean operators (AND, OR, NOT). Leave empty to browse everything matching the other filters.",
+      "editor": "textfield",
+      "default": "patent infringement"
     },
-    "required": []
+    "recordType": {
+      "title": "Record type",
+      "type": "string",
+      "description": "Which CourtListener index to search. Dockets are the PACER/RECAP mirror (federal case dockets with parties, attorneys and filing entries). Opinions are published court decisions with citations. They are separate indexes — a case in one is often absent from the other.",
+      "editor": "select",
+      "enum": [
+        "both",
+        "opinions",
+        "dockets"
+      ],
+      "enumTitles": [
+        "Both (dockets + opinions)",
+        "Opinions / case law only",
+        "Dockets (PACER/RECAP) only"
+      ],
+      "default": "both"
+    },
+    "courts": {
+      "title": "Courts",
+      "type": "array",
+      "description": "CourtListener court IDs — the short slug in a courtlistener.com/court/<id>/ URL. Examples: \"scotus\" (Supreme Court), \"ca9\" (9th Circuit), \"cand\" (N.D. Cal.), \"cacb\" (Bankr. C.D. Cal.), \"nysd\" (S.D.N.Y.). 400+ federal and state courts exist. Leave empty for all courts. An unrecognised ID is not rejected upstream — it silently matches nothing.",
+      "editor": "stringList",
+      "uniqueItems": true,
+      "prefill": [
+        "ca9"
+      ]
+    },
+    "partyName": {
+      "title": "Party name",
+      "type": "string",
+      "description": "RECAP dockets only. Server-side search over the parties named on a docket (plaintiff, defendant, intervenor, ...). Quote a full name for an exact match (\"Google LLC\") and combine with OR for several (\"Google LLC\" OR \"Apple Inc\"). CourtListener's OPINION index does not carry party data at all and silently ignores this field, so setting it restricts the run to dockets — the Actor says so in the log rather than returning unfiltered opinions.",
+      "editor": "textfield"
+    },
+    "attorneyName": {
+      "title": "Attorney name",
+      "type": "string",
+      "description": "RECAP dockets only. Server-side search over the attorneys of record on a docket. Same quoting/OR rules as Party name. Also restricts the run to dockets for the same reason (the opinion index has no attorney data).",
+      "editor": "textfield"
+    },
+    "docketNumber": {
+      "title": "Docket number",
+      "type": "string",
+      "description": "Case/docket number lookup, e.g. \"1:20-cv-03590\". Works on BOTH indexes and is a real field search, not full-text — much more precise than putting the number in the search query. Formats vary by court; if you get nothing, try without the office prefix (\"20-cv-03590\").",
+      "editor": "textfield"
+    },
+    "judge": {
+      "title": "Judge",
+      "type": "string",
+      "description": "Opinions only. Server-side search over the authoring judge(s) of an opinion (\"Posner\", \"Sotomayor\"). The RECAP docket index ignores this field, so setting it restricts the run to opinions.",
+      "editor": "textfield"
+    },
+    "filedAfter": {
+      "title": "Filed after",
+      "type": "string",
+      "description": "Earliest filing date, YYYY-MM-DD. Leave empty for no lower bound (the opinion archive reaches back to the 1700s).",
+      "editor": "textfield"
+    },
+    "filedBefore": {
+      "title": "Filed before",
+      "type": "string",
+      "description": "Latest filing date, YYYY-MM-DD. Leave empty for no upper bound.",
+      "editor": "textfield"
+    },
+    "opinionStatus": {
+      "title": "Opinion status",
+      "type": "string",
+      "description": "Opinions mode only. CourtListener's opinion index defaults to PUBLISHED opinions only when this is left as-is — verified live on a real query, unpublished opinions are ~26% of matches and are silently absent unless you ask for them. \"Any\" returns both.",
+      "editor": "select",
+      "enum": [
+        "published",
+        "unpublished",
+        "any"
+      ],
+      "enumTitles": [
+        "Published only (default)",
+        "Unpublished only",
+        "Any (published + unpublished)"
+      ],
+      "default": "published"
+    },
+    "startUrl": {
+      "title": "CourtListener search URL",
+      "type": "string",
+      "description": "Optional shortcut: build the search on courtlistener.com, then paste the address bar here — e.g. \"https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01\". An API URL (\"https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o\") works too — both use the same parameters. Whatever the URL mentions (search query, court(s), filed-after/before dates, stat_Published/stat_Unpublished checkboxes) REPLACES the matching field below; anything it doesn't mention still comes from the fields below. Only Opinions (type=o) and RECAP (type=r) URLs are supported — CourtListener's Oral Arguments/Judges/Parenthetical searches are different record shapes this Actor does not cover. Max results and the watch label always apply regardless.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many records. With recordType \"both\" the budget is shared across the two indexes (opinions first, then dockets).",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20000,
+      "default": 100
+    },
+    "watchLabel": {
+      "title": "Watch label (incremental mode)",
+      "type": "string",
+      "description": "Optional. Name this saved search to get ONLY records that are new since its last run. The first run on a label records the current matches as a baseline and returns zero results (you are charged nothing); every run after that returns only what appeared since. Changing any filter starts a fresh baseline under the same label. Leave empty for a normal one-off run.",
+      "editor": "textfield"
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — records pushed, rows scanned, pages fetched, CourtListener's own reported total, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every record has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
+    }
+  },
+  "required": []
 }

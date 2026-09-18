@@ -23,6 +23,10 @@ Search is full text across case names, party and attorney names, docket text and
 | `query` | string | Full-text query. Default `"patent infringement"`. Leave empty to browse by filters alone. |
 | `recordType` | enum | `both` (default), `opinions`, or `dockets`. |
 | `courts` | array | CourtListener court IDs — the slug in a `courtlistener.com/court/<id>/` URL: `scotus`, `ca9`, `cand`, `nysd`, `cacb`, … 400+ federal and state courts. Empty = all courts. |
+| `partyName` | string | RECAP dockets only. Server-side search over the parties on a docket. Quote for an exact name (`"Google LLC"`), combine with `OR` for several. |
+| `attorneyName` | string | RECAP dockets only. Server-side search over the attorneys of record. Same quoting/`OR` rules. |
+| `docketNumber` | string | Case-number lookup, e.g. `1:20-cv-03590`. Real field search on **both** indexes, not full text. |
+| `judge` | string | Opinions only. Server-side search over the authoring judge(s), e.g. `Posner`. |
 | `filedAfter` / `filedBefore` | string | `YYYY-MM-DD` filing-date bounds. |
 | `opinionStatus` | enum | Opinions mode only. `published` (default), `unpublished`, or `any`. See below — the default silently excludes a real chunk of matches unless you know to change it. |
 | `startUrl` | string | Paste a courtlistener.com search or API URL instead of filling in the fields above — see below. |
@@ -32,7 +36,21 @@ Search is full text across case names, party and attorney names, docket text and
 
 ### Paste a CourtListener search URL
 
-Already built the search on courtlistener.com? Paste the address bar into `startUrl` instead of re-entering the filters — e.g. `https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01`. An API URL (`https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o`) works too; both use the identical `q`/`type`/`court`/`filed_after`/`filed_before` parameters. Whatever the URL mentions replaces the matching field above; anything it doesn't mention still comes from the fields above, and `maxResults`/`watchLabel` always apply. Only Opinions (`type=o`) and RECAP (`type=r`) URLs are supported — CourtListener's Oral Arguments, Judges and Parenthetical searches are different record shapes this schema doesn't cover, and a URL for one of those logs a warning and falls back to the `recordType` field instead.
+Already built the search on courtlistener.com? Paste the address bar into `startUrl` instead of re-entering the filters — e.g. `https://www.courtlistener.com/?q=patent&type=r&court=cand&filed_after=2024-01-01`. An API URL (`https://www.courtlistener.com/api/rest/v4/search/?q=patent&type=o`) works too; both use the identical `q`/`type`/`court`/`filed_after`/`filed_before`/`party_name`/`atty_name`/`docket_number`/`judge` parameters. Whatever the URL mentions replaces the matching field above; anything it doesn't mention still comes from the fields above, and `maxResults`/`watchLabel` always apply. Only Opinions (`type=o`) and RECAP (`type=r`) URLs are supported — CourtListener's Oral Arguments, Judges and Parenthetical searches are different record shapes this schema doesn't cover, and a URL for one of those logs a warning and falls back to the `recordType` field instead.
+
+### Search by party, attorney, docket number or judge
+
+`query` is full text over case bodies and metadata; these four are **field** searches, which is a different and much sharper thing — "every case where Google LLC is a party" is a question full text answers badly (it also matches every opinion that merely cites Google) and a party search answers exactly. All four are applied server-side, so you are never charged for rows that get filtered out afterwards.
+
+They are not interchangeable across the two indexes, and this matters:
+
+- `partyName` and `attorneyName` exist only on **RECAP dockets**. The opinion index carries no party or attorney data.
+- `judge` exists only on **opinions**. RECAP dockets record an assigned judge but the index doesn't search on it.
+- `docketNumber` works on both.
+
+CourtListener doesn't reject a field the index can't honour — it ignores it. A `type=o&party_name=…` search therefore returns the *entire* opinion corpus rather than an error. So when you set a docket-only filter with `recordType: "both"`, this Actor drops the opinion half of the run (and says so in the log) instead of sending the filter blind and billing you for 8 million unfiltered rows; `judge` does the same in reverse. Setting a filter against the one index it can't work on (`partyName` with `recordType: "opinions"`) is an upfront error, as is combining `partyName`/`attorneyName` with `judge` — no single index carries both, so that search can never match anything.
+
+If a `docketNumber` returns nothing, try it without the office prefix (`20-cv-03590` rather than `1:20-cv-03590`) — the format varies by court.
 
 ### Opinion status: the default hides ~1 in 4 real matches
 
