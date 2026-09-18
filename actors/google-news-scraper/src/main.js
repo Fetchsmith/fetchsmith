@@ -24,6 +24,22 @@ const topics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()).f
 const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
 
+// Restrict/exclude results by publisher domain via Google's own `site:` search operator — verified
+// live (2026-09-18) that a single `site:nytimes.com`, an OR-group `(site:a.com OR site:b.com)` for
+// multiple sites, and `-site:x.com` for exclusion all genuinely narrow the RSS feed (checked against
+// the returned `<source>` per item, not just result-count deltas — the noise-floor trap from cycle
+// 407's `lr`/`cr`/`nfpr` probe). Client-side domain filtering was considered and rejected: it would
+// silently under-deliver `maxItemsPerQuery` (Google already applies the restriction server-side, at
+// no extra cost, before results are even paged).
+const cleanDomain = (d) => String(d).trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
+const siteFilter = (input.siteFilter ?? []).map(cleanDomain).filter(Boolean);
+const excludeSites = (input.excludeSites ?? []).map(cleanDomain).filter(Boolean);
+let siteSuffix = '';
+if (siteFilter.length === 1) siteSuffix += ` site:${siteFilter[0]}`;
+else if (siteFilter.length > 1) siteSuffix += ` (${siteFilter.map((d) => `site:${d}`).join(' OR ')})`;
+siteSuffix += excludeSites.map((d) => ` -site:${d}`).join('');
+if (siteSuffix && !queries.length) log.warning('siteFilter/excludeSites were set but there are no search queries — they do not apply to topics or custom RSS URLs, which are fixed feeds.');
+
 // Date filtering is done by Google itself, via search operators appended to the query — no extra
 // requests and no client-side discarding of articles the customer already paid to fetch.
 // Only the h/d/y units work on the RSS search endpoint: `when:1m` and `when:12m` return an EMPTY
@@ -217,7 +233,7 @@ async function decodeUrl(gnUrl) {
 }
 
 const feeds = [
-  ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix + (hasOwnTimeOp(q) ? '' : timeSuffix))}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
+  ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix + siteSuffix + (hasOwnTimeOp(q) ? '' : timeSuffix))}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
   ...rssUrls.map((u) => ({ query: null, topic: null, url: u })),
   ...topics.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/headlines/section/topic/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
 ];

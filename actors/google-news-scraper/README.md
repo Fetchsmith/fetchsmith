@@ -15,6 +15,8 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: hea
 | `rssUrls` | array | Optional Google News RSS feed URLs (topics, sections, publications) |
 | `topics` | array | Optional: browse Google News' built-in sections without knowing an RSS URL — `WORLD`, `NATION`, `BUSINESS`, `TECHNOLOGY`, `ENTERTAINMENT`, `SCIENCE`, `SPORTS`, `HEALTH` |
 | `excludeWords` | array | Words/phrases to drop from every query, e.g. `["iphone"]` on a query `apple` removes iPhone coverage. Same effect as typing `-word` yourself, just a manageable list. Does not apply to `rssUrls` (fixed feeds, not search terms) |
+| `siteFilter` | array | Restrict every query to these publisher domains, e.g. `["nytimes.com", "reuters.com"]` (OR'd, filtered by Google itself — no extra requests, no under-filled results). Applies to `queries` only |
+| `excludeSites` | array | Drop results from these publisher domains, e.g. `["pinterest.com"]`. Applies to `queries` only |
 | `timePeriod` | string | Only articles published within this window: `1h`, `6h`, `12h`, `1d`, `7d`, `30d`, `90d`, `1y`. Filtered by Google itself, so it costs no extra requests and you are never charged for articles outside the window. Applies to `queries` only |
 | `publishedAfter` | string | `YYYY-MM-DD` — only articles published on or after this date. Overrides `timePeriod`. Applies to `queries` only |
 | `publishedBefore` | string | `YYYY-MM-DD` — only articles published before this date. Overrides `timePeriod`. Applies to `queries` only |
@@ -106,6 +108,7 @@ Rule-based and free (no extra request): it catches a cashtag (`$TSLA`), an excha
 **Does `fetchArticleBody` cost more?** No — you pay once per article returned whether or not the body was fetched.
 **Why does `articleFetchStatus` say `blocked` or `no-body`?** The publisher likely paywalls the article or serves it without readable paragraph text; both are reported explicitly instead of a silently empty `articleBody`.
 **Why did a run return 0 articles with status SUCCEEDED?** The status message distinguishes "Google returned nothing for this query" from "every result was a duplicate of another feed" from "the request failed" — check it before assuming your query is wrong.
+**What's the difference between `siteFilter` and typing `site:` into `queries`?** None functionally — `siteFilter` just OR's multiple domains together (`site:a.com OR site:b.com`) and applies them to every query in your list, so you don't have to hand-append the operator to each one.
 
 ## Related guides
 Engineering write-ups behind this Actor:

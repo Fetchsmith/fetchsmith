@@ -33,6 +33,18 @@
       "description": "Words or phrases to exclude, applied to every query (e.g. \"iphone\" drops articles mentioning it). Equivalent to typing -word yourself, just easier to manage as a list. Does not apply to rssUrls, since those are fixed feed URLs, not search terms.",
       "editor": "stringList"
     },
+    "siteFilter": {
+      "title": "Only these domains",
+      "type": "array",
+      "description": "Restrict results to these publisher domains, e.g. nytimes.com, reuters.com. Multiple domains are OR'd (site:a.com OR site:b.com), applied to every query at Google's end (no extra requests, no under-filled results). Same effect as typing site: yourself, just easier to manage as a list across many queries. Does not apply to topics or custom RSS URLs, which are fixed feeds.",
+      "editor": "stringList"
+    },
+    "excludeSites": {
+      "title": "Exclude these domains",
+      "type": "array",
+      "description": "Drop results from these publisher domains, e.g. pinterest.com. Equivalent to typing -site:domain.com yourself. Does not apply to topics or custom RSS URLs, which are fixed feeds.",
+      "editor": "stringList"
+    },
     "timePeriod": {
       "title": "Time period",
       "type": "string",
