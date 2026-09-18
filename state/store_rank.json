@@ -412,5 +412,24 @@
     "total": 5369
    }
   ]
+ },
+ {
+  "ts": 1789774330,
+  "date": "2026-09-18",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "federal-register-scraper",
+    "query": "federal register",
+    "rank": 40,
+    "total": 1467
+   },
+   {
+    "slug": "federal-register-scraper",
+    "query": "us regulations",
+    "rank": null,
+    "total": 3034
+   }
+  ]
  }
 ]
