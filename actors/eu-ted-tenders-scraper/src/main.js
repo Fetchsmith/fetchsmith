@@ -8,6 +8,7 @@ const input = (await Actor.getInput()) ?? {};
 const countries = (input.countries ?? []).map((c) => String(c).toUpperCase().trim()).filter(Boolean);
 const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
 const noticeTypes = (input.noticeTypes ?? []).map((c) => String(c).trim()).filter(Boolean);
+const procedureType = (input.procedureType ?? []).map((c) => String(c).trim()).filter(Boolean);
 const publishedWithinDays = Math.min(Math.max(Number(input.publishedWithinDays ?? 7), 1), 365);
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : null;
@@ -81,6 +82,7 @@ function buildQuery() {
     orGroup('buyer-country', countries),
     orGroup('classification-cpv', cpvCodes),
     orGroup('notice-type', noticeTypes),
+    orGroup('procedure-type', procedureType),
     keywords ? `FT~"${keywords.replace(/"/g, '\\"')}"` : null,
     dateClause(),
   ].filter(Boolean);
@@ -206,6 +208,7 @@ const watchCriteria = expertQueryInput
     countries: [...countries].sort(),
     cpvCodes: [...cpvCodes].sort(),
     noticeTypes: [...noticeTypes].sort(),
+    procedureType: [...procedureType].sort(),
     keywords,
     publicationDateFrom,
     publicationDateTo,

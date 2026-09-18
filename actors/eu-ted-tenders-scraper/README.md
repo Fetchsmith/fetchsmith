@@ -16,6 +16,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `countries` | array | ISO 3166-1 alpha-3 buyer country codes (e.g. `DEU`, `FRA`). Empty = all. |
 | `cpvCodes` | array | 8-digit CPV codes to filter by (e.g. `72000000` for IT services). Empty = all. |
 | `noticeTypes` | array | TED notice-type codes (e.g. `cn-standard`, `can-standard`, `pin-standard`). Empty = all. |
+| `procedureType` | array | TED procedure-type codes (e.g. `open`, `restricted`, `neg-w-call`, `neg-wo-call`, `comp-dial`). Empty = all. Server-side filter, same OR-group as `noticeTypes`. |
 | `publishedWithinDays` | integer | Only notices published in the last N days. Default 7. Ignored if `publicationDateFrom`/`publicationDateTo` is set. |
 | `publicationDateFrom` / `publicationDateTo` | string | Absolute date window, `YYYYMMDD` or `YYYY-MM-DD`. Either or both — overrides `publishedWithinDays`. |
 | `keywords` | string | Free-text search across the notice's title, description and buyer name (TED's `FT~` operator). |
@@ -122,6 +123,8 @@ One row per notice:
 **Why not just call the TED API myself?** You can — it's free and public. What you get here is normalization: TED's raw fields are multilingual maps and duplicated per-lot arrays, which are painful to consume directly. This Actor gives you one flat row per notice with an English-preferred title, a deduplicated CPV list and a single deadline date.
 
 **Does this cover contract value?** Yes, when TED has it (`totalValue`/`totalValueCurrency`) — not every notice type carries a value (e.g. prior-information notices often don't). Use `minValue`/`maxValue` to filter on it directly instead of filtering the output yourself; notices with no value are dropped whenever either is set.
+
+**Can I filter by procedure type (open vs. restricted vs. negotiated)?** Yes — set `procedureType` to any TED procedure-type codes (e.g. `open`, `restricted`, `neg-w-call`). It's a server-side filter sent straight to TED alongside `noticeTypes`/`cpvCodes`/`countries`, so it doesn't cost extra requests. About 90% of notices carry this field in a recent live sample; the rest have no procedure-type recorded by TED and are excluded from any `procedureType` match the same way an unset value would exclude them from any other filter.
 
 **Can I search full text?** Yes — set `keywords` (e.g. `"cloud hosting"`), which is sent as TED's `FT~` full-text operator against title/description/buyer name. For anything beyond that, `expertQuery` gives raw access to TED's expert-search syntax.
 

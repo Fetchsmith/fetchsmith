@@ -24,6 +24,13 @@
       "editor": "stringList",
       "default": []
     },
+    "procedureType": {
+      "title": "Procedure types",
+      "type": "array",
+      "description": "TED procedure-type codes to filter by, e.g. open, restricted, neg-w-call (negotiated with prior call), neg-wo-call (negotiated without prior call), comp-dial (competitive dialogue), innovation, oth-mult, oth-single, exp-int-rest. Leave empty for all. Server-side filter, same OR-group as noticeTypes.",
+      "editor": "stringList",
+      "default": []
+    },
     "publishedWithinDays": {
       "title": "Published within (days)",
       "type": "integer",
