@@ -47,6 +47,14 @@ const departmentKeyword = (input.departmentKeyword ?? '').toLowerCase().trim();
 const descriptionKeyword = (input.descriptionKeyword ?? '').toLowerCase().trim();
 const descriptionExcludeKeyword = (input.descriptionExcludeKeyword ?? '').toLowerCase().trim();
 const hasSalary = !!input.hasSalary;
+// Range-overlap on the salaryMin/salaryMax already emitted on every job (same shape as
+// shopify-products-scraper's minPrice/maxPrice): a job posting $80k-$120k matches both
+// minSalary:100000 and maxSalary:90000. Deliberately NOT normalized across currency or pay
+// interval (salaryCurrency/salaryInterval vary — year/month/week/day/hour, see normalizeInterval
+// below) — same "compare what's actually posted, no FX" caveat as shopify's price filters.
+// A job with neither bound (no salary posted at all) never matches either filter.
+const minSalary = input.minSalary != null && input.minSalary !== '' ? Number(input.minSalary) : null;
+const maxSalary = input.maxSalary != null && input.maxSalary !== '' ? Number(input.maxSalary) : null;
 const remoteOnly = !!input.remoteOnly;
 const postedAfter = input.postedAfter ? new Date(input.postedAfter) : null;
 const postedBefore = input.postedBefore ? new Date(input.postedBefore) : null;
@@ -118,6 +126,8 @@ if (watchMode) {
   if (descriptionKeyword) criteria.descriptionKeyword = descriptionKeyword;
   if (descriptionExcludeKeyword) criteria.descriptionExcludeKeyword = descriptionExcludeKeyword;
   if (input.postedBefore) criteria.postedBefore = input.postedBefore;
+  if (minSalary != null) criteria.minSalary = minSalary;
+  if (maxSalary != null) criteria.maxSalary = maxSalary;
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -601,6 +611,13 @@ function passesFilters(job, deferred = []) {
     if (descriptionExcludeKeyword && body.includes(descriptionExcludeKeyword)) return false;
   }
   if (hasSalary && job.salaryMin == null && job.salaryMax == null) return false;
+  if ((minSalary != null || maxSalary != null)) {
+    if (job.salaryMin == null && job.salaryMax == null) return false;
+    const jobMin = job.salaryMin ?? job.salaryMax;
+    const jobMax = job.salaryMax ?? job.salaryMin;
+    if (minSalary != null && jobMax < minSalary) return false;
+    if (maxSalary != null && jobMin > maxSalary) return false;
+  }
   if (remoteOnly && !job.isRemote) return false;
   if (ready('published') && (postedAfter || postedBefore) && job.publishedAt) {
     const d = new Date(job.publishedAt);

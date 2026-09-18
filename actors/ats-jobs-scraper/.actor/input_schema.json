@@ -93,6 +93,18 @@
       "description": "Only keep postings where the ATS itself published a salaryMin or salaryMax (Ashby, Lever, Recruitee). Postings from ATSes that never carry a compensation field (Greenhouse, Workable, SmartRecruiters, Workday) are always dropped when this is on.",
       "default": false
     },
+    "minSalary": {
+      "title": "Min salary",
+      "type": "integer",
+      "description": "Only keep postings whose salary range overlaps this floor or higher, e.g. 100000. Compared against the number as the ATS posted it — no currency conversion and no pay-interval normalization (salaryInterval varies: year, month, week, day, hour — check salaryCurrency/salaryInterval on the output row). Postings with no salary at all never match. Leave empty for no floor.",
+      "minimum": 0
+    },
+    "maxSalary": {
+      "title": "Max salary",
+      "type": "integer",
+      "description": "Only keep postings whose salary range overlaps this ceiling or lower. Same currency/interval caveat as Min salary. Leave empty for no ceiling.",
+      "minimum": 0
+    },
     "remoteOnly": {
       "title": "Remote only",
       "type": "boolean",

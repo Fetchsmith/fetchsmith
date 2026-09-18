@@ -31,6 +31,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `descriptionKeyword` | string | Only keep postings whose **description text** contains this text, e.g. `"Kubernetes"` or `"visa sponsorship"` — the requirements a job title never mentions. Matched against the plain text, not the HTML. |
 | `descriptionExcludeKeyword` | string | Drop postings whose description text contains this text, e.g. `"security clearance"`. |
 | `hasSalary` | boolean | Only keep postings where the ATS itself published a salary. Default `false`. |
+| `minSalary` / `maxSalary` | integer | Only keep postings whose salary range overlaps this floor/ceiling, e.g. `minSalary:150000`. Compared against the number as posted — no currency conversion, no pay-interval normalization (check `salaryCurrency`/`salaryInterval` on the row, since ranges mix year/month/week/day/hour). Postings with no salary never match either. |
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | ISO date; only keep postings published on/after it. |
 | `postedBefore` | string | ISO date; only keep postings published on/before it. Pair with `postedAfter` for a date window (e.g. everything a company opened in one quarter). |
@@ -66,7 +67,7 @@ Set `watchLabel` to any name you like (`"backend-remote-eu"`) and the run stops 
 - **The first run for a label is a free baseline.** It records which postings are currently open (up to 5,000), returns **zero rows** and charges **nothing**. Run it again later to get what's new.
 - **Already-delivered postings are dropped before any charge**, so a run with nothing new costs you nothing.
 - **The baseline lives in your own Apify account** — a named key-value store `fetchsmith-ats-watch`, key `watch-<label>-<fingerprint>`. Nothing is kept on our side.
-- **The fingerprint covers the company list and every filter** (`titleKeyword`, `titleExcludeKeyword`, `locationKeyword`, `locationExcludeKeyword`, `employmentTypeKeyword`, `hasSalary`, `remoteOnly`, `postedAfter`, `includeDescriptions`, plus `departmentKeyword`, `descriptionKeyword`, `descriptionExcludeKeyword` and `postedBefore` when you set them). Change any of them and you get a fresh baseline instead of a dump of postings the old filters had excluded. `maxJobsPerCompany`/`maxResults` are *not* in the fingerprint — they are cost caps, not criteria.
+- **The fingerprint covers the company list and every filter** (`titleKeyword`, `titleExcludeKeyword`, `locationKeyword`, `locationExcludeKeyword`, `employmentTypeKeyword`, `hasSalary`, `remoteOnly`, `postedAfter`, `includeDescriptions`, plus `departmentKeyword`, `descriptionKeyword`, `descriptionExcludeKeyword`, `postedBefore`, `minSalary` and `maxSalary` when you set them). Change any of them and you get a fresh baseline instead of a dump of postings the old filters had excluded. `maxJobsPerCompany`/`maxResults` are *not* in the fingerprint — they are cost caps, not criteria.
 - **`maxJobsPerCompany` caps what is delivered, not what is checked.** In watch mode the run scans the whole match set for each company (so a new role that sorts 40th is still found) but still delivers at most `maxJobsPerCompany` new postings per company per run; the rest arrive on the following run.
 
 ## Pricing
@@ -83,6 +84,8 @@ Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 o
 **Will `postedAfter`/`postedBefore` filter out a posting that has no date?** No — if an ATS doesn't return a `publishedAt` for a posting, that posting is kept regardless of the date bounds. On Workday the date comes only from the per-job detail call, and setting either bound now triggers that call automatically, so the window applies to Workday boards too.
 
 **Which ATSes expose salary?** Only Ashby, Lever and Recruitee publish a structured pay range today — Greenhouse, Workable, SmartRecruiters and Workday don't carry a compensation field at all, so those come back `null` rather than guessed.
+
+**Does `minSalary`/`maxSalary` compare against an annual salary?** Not necessarily — it compares the raw number as the ATS posted it, in whatever `salaryInterval` that posting uses (year, month, week, day or hour all appear in the wild). Mixing companies on very different intervals in one run means the filter isn't apples-to-apples; check `salaryInterval`/`salaryCurrency` on each row if that matters to you.
 
 **A company I need isn't on any of these 7 ATSes — can it still be scraped?** Only if it uses one of the 7 (or a client-side board no ATS API backs, which this Actor can't reach). Message support@fetchsmith.com with the company's careers URL if you're unsure which ATS it runs on.
 
