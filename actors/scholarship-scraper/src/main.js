@@ -269,9 +269,20 @@ try {
     const seen = new Set();
     let filteredOut = 0;
     let more = true;
+    const erroredUrls = [];
     for (const url of urls) {
         if (!more) break;
-        const html = await fetchHtml(url);
+        let html;
+        try {
+            html = await fetchHtml(url);
+        } catch (e) {
+            // A network-level failure (timeout/ECONNRESET/DNS) here must not fail the whole run —
+            // scholarships from earlier URLs in this loop are already pushed and charged, so one
+            // bad page is skipped instead of losing the rest of the crawl.
+            log.warning(`${url} — request failed (${e.message}), skipping this page.`);
+            erroredUrls.push(url);
+            continue;
+        }
         if (!html) continue;
         const raw = scholarshipsFromHtml(html);
         if (!raw.length) {
@@ -291,6 +302,7 @@ try {
         }
         log.info(`${url} -> ${raw.length} records, ${newOnPage} new after dedupe/filters (total pushed ${pushed}).`);
     }
+    if (erroredUrls.length) log.warning(`Fetch errors (skipped, run not failed): ${erroredUrls.join(', ')}`);
 
     if (pushed === 0) {
         log.warning(
