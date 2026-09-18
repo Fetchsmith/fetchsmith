@@ -450,14 +450,25 @@ async function apiGet(params, { quiet = false } = {}) {
     }
     const url = `${API}?${qs.toString()}`;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
-        const resp = await gotScraping({
-            url,
-            responseType: 'text',
-            throwHttpErrors: false,
-            retry: { limit: 0 },
-            timeout: { request: 60000 },
-            headers: { accept: 'application/json' },
-        });
+        let resp;
+        try {
+            resp = await gotScraping({
+                url,
+                responseType: 'text',
+                throwHttpErrors: false,
+                retry: { limit: 0 },
+                timeout: { request: 60000 },
+                headers: { accept: 'application/json' },
+            });
+        } catch (err) {
+            // A network-level failure (timeout, ECONNRESET, DNS) throws instead of resolving with
+            // a status code — without this catch it crashes the whole run instead of retrying like
+            // a 429/5xx does, even though the same backoff is exactly as valid here.
+            const waitS = attempt * 10;
+            if (!quiet) log.warning(`ClinicalTrials.gov API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
+            await sleep(waitS * 1000);
+            continue;
+        }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`ClinicalTrials.gov API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
