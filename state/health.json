@@ -1,5 +1,5 @@
 {
- "ts": 1789724324,
+ "ts": 1789740117,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -146,20 +146,11 @@
    "err": null
   },
   "scholarship-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
-   "sample_keys": [
-    "name",
-    "slug",
-    "url",
-    "description",
-    "category",
-    "deadline",
-    "isRollingDeadline",
-    "announcementDate"
-   ],
-   "err": null
+   "items": 0,
+   "sample_keys": [],
+   "err": "[]"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,

@@ -218,7 +218,17 @@ function keep(item) {
 // --- category discovery ---------------------------------------------------------
 
 async function discoverCategoryUrls(types) {
-    const res = await gotScraping({ url: `${BASE}/sitemap.xml`, timeout: { request: 60000 }, retry: { limit: 2 } });
+    const res = await gotScraping({ url: `${BASE}/sitemap.xml`, timeout: { request: 60000 }, retry: { limit: 2 }, throwHttpErrors: false });
+    if (res.statusCode !== 200) {
+        // bold.org sits behind Vercel's bot-protection layer, which answers a blocked request with
+        // a 429 + an HTML challenge page (not a normal empty/missing sitemap) — matchAll below would
+        // just find 0 <loc> tags and print the generic "pick a category" message, which sends a
+        // buyer chasing an input change for a problem no input can fix.
+        log.warning(`bold.org's sitemap request returned HTTP ${res.statusCode} instead of the sitemap XML` +
+            `${res.headers['x-vercel-mitigated'] ? ` (x-vercel-mitigated: ${res.headers['x-vercel-mitigated']})` : ''}` +
+            ' — this looks like a site-side bot-protection block, not a bad input. Try again later; startUrls will hit the same block if the whole site is affected.');
+        return [];
+    }
     const locs = [...res.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     const byType = new Map(types.map((t) => [t, []]));
     for (const u of locs) {
