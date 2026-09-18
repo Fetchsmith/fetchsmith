@@ -15,6 +15,11 @@ const keywords = input.keywords ? String(input.keywords).trim() : null;
 const outputLanguage = String(input.outputLanguage ?? 'eng').toLowerCase();
 const watchLabel = String(input.watchLabel ?? '').trim();
 const flatten = Boolean(input.flatten);
+const minValue = input.minValue != null && input.minValue !== '' ? Number(input.minValue) : null;
+const maxValue = input.maxValue != null && input.maxValue !== '' ? Number(input.maxValue) : null;
+if (minValue != null && maxValue != null && minValue > maxValue) {
+  throw new Error(`"minValue" (${minValue}) is greater than "maxValue" (${maxValue}).`);
+}
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -314,7 +319,16 @@ async function fetchPageOnce(pageNum, fieldsOverride) {
 // the WHOLE match set (bounded only by SEED_CAP), not one page of it: a
 // baseline that stopped early would report every notice past the stopping
 // point as "new" on the first incremental run (the cycle 297/298 trap).
+function passesValueFilter(item) {
+  if (minValue == null && maxValue == null) return true;
+  if (item.totalValue == null) return false;
+  if (minValue != null && item.totalValue < minValue) return false;
+  if (maxValue != null && item.totalValue > maxValue) return false;
+  return true;
+}
+
 let skippedSeen = 0;
+let filteredOutValue = 0;
 async function seedBaseline() {
   const seedFields = ['publication-number'];
   let seedPage = 1;
@@ -387,7 +401,12 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
       skippedSeen += 1;
       continue;
     }
-    keepGoing = await pushResult(normalize(notice));
+    const normalized = normalize(notice);
+    if (!passesValueFilter(normalized)) {
+      filteredOutValue += 1;
+      continue;
+    }
+    keepGoing = await pushResult(normalized);
     // Recorded as delivered only after the charge actually succeeded — anything
     // dropped by maxResults or a charge limit stays "new" for the next run.
     if (watchMode && id && pushed > beforePush) watchSeen.add(String(id));
@@ -425,11 +444,16 @@ if (!pushed && httpError) {
 }
 
 log.info(`Done. Pushed ${pushed} notices.`);
+if (filteredOutValue > 0) {
+  log.info(`${filteredOutValue} matching notice(s) were dropped by minValue/maxValue (no value data, or value outside the range).`);
+}
 if (pushed === 0 && watchMode && !seeding) {
   log.warning(
     `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
     + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
   );
+} else if (!pushed && !seeding && filteredOutValue > 0 && !skippedSeen) {
+  await Actor.setStatusMessage(`No notices matched: ${filteredOutValue} notice(s) matched your query but were dropped by minValue/maxValue. Widen or remove that filter.`);
 } else if (!pushed && !seeding) {
   await Actor.setStatusMessage(`No notices matched this query (${query}). Widen publishedWithinDays, drop a filter, or check your CPV codes.`);
 }

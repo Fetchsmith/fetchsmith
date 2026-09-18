@@ -21,6 +21,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `keywords` | string | Free-text search across the notice's title, description and buyer name (TED's `FT~` operator). |
 | `expertQuery` | string | Raw TED expert-query string — overrides all the filters above entirely. |
 | `maxResults` | integer | Stop after this many notices. Default 100. |
+| `minValue` / `maxValue` | integer | Only keep notices whose `totalValue` falls in this range. Compares the raw number regardless of currency (TED reports EUR, CZK, RON, SEK, etc. per notice — check `totalValueCurrency`). Roughly half of all notices carry no value at all; those are dropped whenever either is set. |
 | `outputLanguage` | string | Preferred language for `title`/`description`/`buyerName`/`buyerCity`/`noticeUrl` (24 EU languages, e.g. `deu`, `fra`, `spa`). Default `eng`. Falls back to English, then to whatever TED provided, if a notice has no translation into your chosen language. |
 | `flatten` | boolean | Default `false` (JSON arrays). Set `true` to join `cpvCodes`, `contractNature`, `placeOfPerformanceCountry` and `placeOfPerformanceCity` into a single comma-separated string per field, instead of a JSON array — cleaner for CSV/Excel export (Apify's default array export otherwise splits each into numbered `field/0`, `field/1` columns that shift between rows with different array lengths). |
 | `watchLabel` | string | Optional. Name a saved query and get **only what is new since your last run** — see below. |
@@ -120,7 +121,7 @@ One row per notice:
 ## FAQ
 **Why not just call the TED API myself?** You can — it's free and public. What you get here is normalization: TED's raw fields are multilingual maps and duplicated per-lot arrays, which are painful to consume directly. This Actor gives you one flat row per notice with an English-preferred title, a deduplicated CPV list and a single deadline date.
 
-**Does this cover contract value?** Yes, when TED has it (`totalValue`/`totalValueCurrency`) — not every notice type carries a value (e.g. prior-information notices often don't).
+**Does this cover contract value?** Yes, when TED has it (`totalValue`/`totalValueCurrency`) — not every notice type carries a value (e.g. prior-information notices often don't). Use `minValue`/`maxValue` to filter on it directly instead of filtering the output yourself; notices with no value are dropped whenever either is set.
 
 **Can I search full text?** Yes — set `keywords` (e.g. `"cloud hosting"`), which is sent as TED's `FT~` full-text operator against title/description/buyer name. For anything beyond that, `expertQuery` gives raw access to TED's expert-search syntax.
 

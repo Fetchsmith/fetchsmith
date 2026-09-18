@@ -264,5 +264,122 @@
     "total": 42
    }
   ]
+ },
+ {
+  "ts": 1789732823,
+  "date": "2026-09-18",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 13,
+    "total": 147
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih grants",
+    "rank": 25,
+    "total": 157
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 28,
+    "total": 5775
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam games",
+    "rank": null,
+    "total": 5367
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "grants.gov",
+    "rank": 30,
+    "total": 244
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "government grants",
+    "rank": null,
+    "total": 579
+   }
+  ]
+ },
+ {
+  "ts": 1789732831,
+  "date": "2026-09-18",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 13,
+    "total": 147
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih grants",
+    "rank": 25,
+    "total": 157
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 28,
+    "total": 5775
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam games",
+    "rank": null,
+    "total": 5367
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "grants.gov",
+    "rank": 30,
+    "total": 244
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "government grants",
+    "rank": null,
+    "total": 579
+   }
+  ]
+ },
+ {
+  "ts": 1789734638,
+  "date": "2026-09-18",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 13,
+    "total": 147
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih grants",
+    "rank": 25,
+    "total": 157
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 28,
+    "total": 5789
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam games",
+    "rank": null,
+    "total": 5368
+   }
+  ]
  }
 ]

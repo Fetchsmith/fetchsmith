@@ -73,6 +73,16 @@
       "enum": ["eng", "deu", "fra", "ita", "spa", "pol", "nld", "por", "swe", "dan", "fin", "ces", "ell", "hun", "ron", "slk", "slv", "bul", "hrv", "est", "lav", "lit", "gle", "mlt"],
       "enumTitles": ["English", "German", "French", "Italian", "Spanish", "Polish", "Dutch", "Portuguese", "Swedish", "Danish", "Finnish", "Czech", "Greek", "Hungarian", "Romanian", "Slovak", "Slovenian", "Bulgarian", "Croatian", "Estonian", "Latvian", "Lithuanian", "Irish", "Maltese"]
     },
+    "minValue": {
+      "title": "Min contract value",
+      "type": "integer",
+      "description": "Only keep notices whose estimated/total contract value (the 'totalValue' output field) is at least this number. Compares the raw numeric value regardless of currency (TED reports EUR, CZK, RON, SEK etc. per notice — check 'totalValueCurrency' before comparing across countries). Roughly half of all TED notices carry no value at all; those are dropped whenever this filter is set. Leave empty for no minimum."
+    },
+    "maxValue": {
+      "title": "Max contract value",
+      "type": "integer",
+      "description": "Only keep notices whose estimated/total contract value is at most this number. Same currency caveat as 'Min contract value'. Leave empty for no maximum."
+    },
     "flatten": {
       "title": "Flatten array fields for CSV/Excel",
       "type": "boolean",
