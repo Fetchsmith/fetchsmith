@@ -1,0 +1,118 @@
+#!/root/agent/venv/bin/python
+"""check-real-fields (added cycle 449)
+
+One-off audit closing check-code-fields' MIN_OVERLAP blind spot (see h70/cycle 448
+queue note): that check diffs *code* against dataset_schema.json with a
+MIN_OVERLAP=2 heuristic, so a literal that shares <2 keys with the declared
+schema (e.g. a wholly-undeclared field group, like google-news-scraper's 12
+article* fields before cycle 448) is invisible to it. This script instead reads
+REAL pushed rows from each Actor's own most recent SUCCEEDED run and diffs
+those actual keys against dataset_schema.json -- no static-analysis blind spot,
+but only sees fields that happened to be populated (non-null) in that run's
+input, so a clean result here is not a full guarantee for conditional fields
+that need a specific input flag (e.g. fetchArticleBody) to appear.
+
+Uses existing runs only -- never launches a new one, so this costs nothing and
+is fast. Set N_RUNS>1 to union keys across more than one recent run per Actor
+if a single run's input looks thin.
+
+Usage: bin/check-real-fields [--verbose]
+"""
+import json
+import sys
+
+import httpx
+
+env = dict(
+    l.rstrip("\n").split("=", 1)
+    for l in open("/root/agent/secrets/env")
+    if "=" in l and not l.startswith("#")
+)
+T = env["APIFY_TOKEN"]
+API = "https://api.apify.com/v2"
+H = {"Authorization": f"Bearer {T}"}
+VERBOSE = "--verbose" in sys.argv
+N_RUNS = 3
+
+user = httpx.get(f"{API}/users/me", headers=H, timeout=30).json()["data"]["username"]
+reg = json.load(open("/root/agent/actors/registry.json")).get("tools", [])
+
+
+def declared_fields(slug):
+    p = f"/root/agent/actors/{slug}/.actor/dataset_schema.json"
+    try:
+        return set(json.load(open(p)).get("fields", {}).get("properties", {}))
+    except FileNotFoundError:
+        return None
+
+
+def recent_succeeded_runs(slug, n):
+    r = httpx.get(
+        f"{API}/acts/{user}~{slug}/runs",
+        headers=H,
+        params={"desc": "true", "limit": 20, "status": "SUCCEEDED"},
+        timeout=30,
+    )
+    if r.status_code != 200:
+        return []
+    return [d["id"] for d in r.json()["data"]["items"][:n]]
+
+
+def dataset_keys(run_id):
+    d = httpx.get(f"{API}/actor-runs/{run_id}", headers=H, timeout=30).json()["data"]
+    ds_id = d.get("defaultDatasetId")
+    if not ds_id:
+        return set(), 0
+    items = httpx.get(
+        f"{API}/datasets/{ds_id}/items", headers=H, params={"limit": 20}, timeout=30
+    ).json()
+    keys = set()
+    for it in items:
+        if isinstance(it, dict):
+            keys.update(it.keys())
+    return keys, len(items)
+
+
+def main():
+    problems = 0
+    checked = 0
+    for t in reg:
+        slug = t["slug"]
+        if t.get("status") not in ("live", "beta"):
+            continue
+        declared = declared_fields(slug)
+        if declared is None:
+            print(f"SKIP {slug}: no dataset_schema.json")
+            continue
+        run_ids = recent_succeeded_runs(slug, N_RUNS)
+        if not run_ids:
+            print(f"SKIP {slug}: no recent SUCCEEDED run found")
+            continue
+        real_keys = set()
+        total_items = 0
+        for rid in run_ids:
+            k, n = dataset_keys(rid)
+            real_keys |= k
+            total_items += n
+        if not real_keys:
+            print(f"SKIP {slug}: {len(run_ids)} run(s) had 0 dataset items")
+            continue
+        checked += 1
+        undeclared = sorted(real_keys - declared)
+        if VERBOSE:
+            print(
+                f"  ok {slug}: {total_items} items across {len(run_ids)} run(s), "
+                f"{len(real_keys)} real keys, {len(undeclared)} undeclared"
+            )
+        for k in undeclared:
+            problems += 1
+            print(
+                f"DRIFT {slug}: real dataset row has '{k}' -- not declared in "
+                f"dataset_schema.json"
+            )
+    print(f"check-real-fields: {checked} actors checked, {problems} drift")
+    return 1 if problems else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
