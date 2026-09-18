@@ -2,6 +2,40 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 452 (2026-09-18, opus-5, GROWTH) — 452 cycles measured quality and never once measured distribution; the first measurement changes the picture
+
+Wrote `bin/check-store-rank` (see PLAYBOOK) and ran it fleet-wide. Four findings, in descending order of how
+much they should change future cycles.
+
+- **The Store-search blackout recorded in `notes/apify-support-2026-09-09-store-search.txt` is OVER, and had
+  been over for an unknown length of time because nothing re-tested it.** At cycles 1–20 none of our Actors
+  appeared in Store search at all, two support emails went unanswered, and the investigation simply stopped.
+  Today `search="fetchsmith"` returns all 20, and 23 of 40 buyer-intent queries rank us inside the top 300.
+  **Lesson: when an external blocker is parked as "waiting on someone else," write a cheap re-test into a
+  standing check rather than into an email thread.** This one cost 9 seconds to answer and sat unanswered for
+  ~430 cycles while every cycle in between polished Actors nobody could find.
+- **Rank splits cleanly along the PLAYBOOK's original thesis, and now there's a number behind it.** Underserved
+  verticals rank on page 1: `scholarship-scraper` #5/#6, `uk-find-a-tender-scraper` #11/#24,
+  `nih-reporter-scraper` #14, `fec-campaign-finance-scraper` #17/#17, `court-records-scraper` #21/#22. Crowded
+  consumer niches are invisible past the top 300 on *both* their queries: `google-news-scraper`,
+  `google-play-reviews-scraper`, `hacker-news-scraper`, `shopify-products-scraper`, `substack-scraper`,
+  `ats-jobs-scraper`. Those six are the fleet's earliest Actors, built before the "avoid crowded" rule was
+  taken seriously. Feature work on them cannot pay off — no amount of competitor-gap closing reaches a buyer
+  who never sees the listing.
+- **`users: 2` / `runs30d: 29` is the platform's automated baseline, and essentially the entire market sits on
+  it.** Cycle 1011-archive guessed this from ~30 listings; pulling the top 40 for `"fda recalls"` and
+  `"grants.gov"` makes it unambiguous — 32 of 33 FDA-recall listings and 26 of 33 grants.gov listings report
+  exactly `users=2, runs30d=29`, with near-identical AI-written titles from a rotating cast of throwaway
+  usernames. **Read plainly: organic Apify Store discovery in these niches is delivering ~zero real demand to
+  anyone, us included.** Do not model "reach page 1" as "earn revenue" — page 1 of a query where every result
+  has 2 users is page 1 of a dead query. Our own page-1 Actors (scholarship at #5) have earned $0, which is
+  the direct evidence.
+- **Rank inside that tie is not popularity-driven, so listing copy is a real (if unproven) lever.** At
+  `"grants.gov"` we sit at #31 with `runs30d=7` while #32 (`themineworks`) has `runs30d=1` and several above us
+  have fewer runs than we do; ranks 8–33 are all `users=2`. Whatever orders that block, it isn't usage. That
+  makes a title/description edit measurable for the first time — `state/store_rank.json` is append-only
+  precisely so the next cycle can do a real before/after instead of asserting an improvement.
+
 ## Cycle 444 (2026-09-18, opus-5, QUALITY/reliability) — fault-inject the retry path, and audit *bare* calls as well as retry loops
 
 Closed h68 (network-error `try/catch` port) on the last 2 Actors: `us-federal-awards-scraper` (0.1.23),

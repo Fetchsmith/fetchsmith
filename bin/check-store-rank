@@ -1,0 +1,147 @@
+#!/root/agent/venv/bin/python
+"""Measure where each of our Actors ranks in Apify Store search for the queries a
+buyer would actually type.
+
+Why this exists (cycle 452): the business has 20 published Actors, 0 bookmarks,
+0 reviews and $0 booked. Every prior cycle measured *quality* (field drift, README
+accuracy, competitor feature gaps) and none ever measured *distribution* — whether
+a buyer searching the Store can find us at all. The cycle 1-20 support thread
+(notes/apify-support-2026-09-09-store-search.txt) recorded a total search blackout;
+nothing since re-tested it, so nobody knew it had lifted.
+
+Read-only: hits GET /v2/store?search=... only. Launches no runs, costs no compute.
+
+Usage:
+  bin/check-store-rank                 # all Actors, both queries each
+  bin/check-store-rank <slug> [...]    # only these Actors
+  bin/check-store-rank --scan 500      # paginate deeper (default 300)
+
+Writes state/store_rank.json (append-only history) so rank can be trended after a
+title/description change, the same way bin/usage-trend trends usage.
+"""
+import json
+import os
+import sys
+import time
+
+import httpx
+
+API = "https://api.apify.com/v2"
+ROOT = "/root/agent"
+HIST = f"{ROOT}/state/store_rank.json"
+PAGE = 100
+DEFAULT_SCAN = 300
+
+# Buyer-intent queries per Actor: what someone who wants this data would type into
+# Store search, NOT our slug. Two per Actor — one broad ("court records"), one
+# narrower/branded ("pacer court") — because they rank very differently.
+QUERIES = {
+    "ats-jobs-scraper": ["greenhouse jobs", "lever jobs"],
+    "apple-podcasts-scraper": ["apple podcasts", "podcast charts"],
+    "app-store-reviews-scraper": ["app store reviews", "ios app reviews"],
+    "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
+    "court-records-scraper": ["court records", "pacer court"],
+    "eu-ted-tenders-scraper": ["eu tenders", "ted tenders"],
+    "fda-recall-scraper": ["fda recalls", "food recall"],
+    "fec-campaign-finance-scraper": ["fec campaign finance", "political donations"],
+    "federal-register-scraper": ["federal register", "us regulations"],
+    "google-news-scraper": ["google news", "news scraper"],
+    "google-play-reviews-scraper": ["google play reviews", "android app reviews"],
+    "grants-gov-scraper": ["grants.gov", "government grants"],
+    "hacker-news-scraper": ["hacker news", "hn scraper"],
+    "nih-reporter-scraper": ["nih reporter", "nih grants"],
+    "scholarship-scraper": ["scholarships", "scholarship search"],
+    "shopify-products-scraper": ["shopify products", "shopify store"],
+    "steam-reviews-scraper": ["steam reviews", "steam games"],
+    "substack-scraper": ["substack", "newsletter scraper"],
+    "uk-find-a-tender-scraper": ["uk tenders", "find a tender"],
+    "us-federal-awards-scraper": ["usaspending", "federal contracts"],
+}
+
+
+def env():
+    with open(f"{ROOT}/secrets/env") as fh:
+        for line in fh:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k, v.strip().strip('"').strip("'"))
+
+
+def rank_for(client, query, slug, scan):
+    """Return (rank, total) — rank is 0-based position of fetchsmith/<slug>, or None."""
+    total = None
+    for offset in range(0, scan, PAGE):
+        r = client.get(
+            f"{API}/store",
+            params={"search": query, "limit": PAGE, "offset": offset},
+            timeout=45,
+        )
+        r.raise_for_status()
+        data = r.json()["data"]
+        total = data["total"]
+        for i, item in enumerate(data["items"]):
+            if item.get("username") == "fetchsmith" and item.get("name") == slug:
+                return offset + i, total
+        if len(data["items"]) < PAGE:
+            break
+    return None, total
+
+
+def main():
+    env()
+    args = [a for a in sys.argv[1:]]
+    scan = DEFAULT_SCAN
+    if "--scan" in args:
+        i = args.index("--scan")
+        scan = int(args[i + 1])
+        del args[i : i + 2]
+    slugs = args or sorted(QUERIES)
+    unknown = [s for s in slugs if s not in QUERIES]
+    if unknown:
+        sys.exit(f"no queries defined for: {', '.join(unknown)} (add them to QUERIES)")
+
+    headers = {"Authorization": f"Bearer {os.environ['APIFY_TOKEN']}"}
+    rows = []
+    with httpx.Client(headers=headers) as client:
+        for slug in slugs:
+            for query in QUERIES[slug]:
+                rank, total = rank_for(client, query, slug, scan)
+                rows.append(
+                    {"slug": slug, "query": query, "rank": rank, "total": total}
+                )
+                # page 1 of the Store UI is ~24 tiles; that is the line that matters
+                where = (
+                    f"#{rank + 1}" + (" (PAGE 1)" if rank < 24 else "")
+                    if rank is not None
+                    else f"NOT IN TOP {scan}"
+                )
+                print(f"{slug:32s} {query:24s} {where:14s} of {total}")
+
+    found = [r for r in rows if r["rank"] is not None]
+    page1 = [r for r in found if r["rank"] < 24]
+    print(
+        f"\n{len(found)}/{len(rows)} queries rank us within top {scan}; "
+        f"{len(page1)} on store page 1 (top 24)."
+    )
+    near = sorted(
+        (r for r in found if 24 <= r["rank"] < 60), key=lambda r: r["rank"]
+    )
+    if near:
+        print("Near-miss (rank 25-60, a listing-copy change could reach page 1):")
+        for r in near:
+            print(f"  #{r['rank'] + 1:<4d} {r['slug']} <- {r['query']!r}")
+
+    snapshot = {"ts": int(time.time()), "date": time.strftime("%Y-%m-%d"), "scan": scan, "rows": rows}
+    history = []
+    if os.path.exists(HIST):
+        with open(HIST) as fh:
+            history = json.load(fh)
+    history.append(snapshot)
+    with open(HIST, "w") as fh:
+        json.dump(history, fh, indent=1)
+    print(f"appended snapshot to {HIST} ({len(history)} total)")
+
+
+if __name__ == "__main__":
+    main()
