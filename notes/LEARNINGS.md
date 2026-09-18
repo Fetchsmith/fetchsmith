@@ -2,6 +2,36 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 444 (2026-09-18, opus-5, QUALITY/reliability) — fault-inject the retry path, and audit *bare* calls as well as retry loops
+
+Closed h68 (network-error `try/catch` port) on the last 2 Actors: `us-federal-awards-scraper` (0.1.23),
+`uk-find-a-tender-scraper` (0.1.21). Two durable lessons, both about verification rather than the fix itself.
+
+- **Prove the catch block is reachable, not just that the happy path still works.** Cycles 442/443 verified this
+  same fix six times by re-running the stock regression and confirming the row count was unchanged — which proves
+  nothing about the new code, since the new code only runs when the network fails. Cheap fix: copy `src/main.js` to
+  a throwaway `src/netfail.tmp.mjs` with `sed` replacing only the API host with `http://127.0.0.1:9/` (nothing
+  listens on port 9, so connects fail with an *instant* ECONNREFUSED instead of burning the 45-60s request
+  timeout), run it, and read the log. Both Actors emitted all four `request failed (connect ECONNREFUSED
+  127.0.0.1:9); retrying in 10/20/30/40s (N/4)` warnings, then their existing stop-early + zero-rows guidance, and
+  **exited 0** — the whole point of the fix, and previously untested. ~100s per Actor, ~40s of that real sleeping.
+  Delete the temp file and `ls src/` before pushing (Apify would ship it; it is dead code but it is still bytes in
+  the image and would trip `check-source-bytes`).
+- **An audit scoped to one code shape misses the same bug in another shape.** The h68 audit searched for
+  hand-rolled retry loops (`for (let attempt = 1; attempt <= 4; …)`) whose `await gotScraping(...)` lacked a
+  `try/catch`, and declared the fleet clean after 8 fixes. But `us-federal-awards-scraper` also resolves a
+  `startUrl` saved-search hash through a **bare one-shot** `await gotScraping(...)` with no loop at all — same
+  crash-on-timeout defect, invisible to a loop-shaped grep. Triage by blast radius, not uniformly: that call runs
+  before any row is pushed or charged, so a clear thrown message ("network-level failure, not a bad link -- re-run;
+  nothing was charged") is the right fix and a retry would be over-engineering; a bare call *mid-run*, after rows
+  are charged, would need a real retry because a crash there silently truncates what the buyer paid to collect.
+  Queued as h69: `grep -n "await gotScraping" actors/*/src/main.js` and check each hit for an enclosing
+  try/catch-or-loop.
+- **Reword an error message when its loop gains a new exit cause.** `uk-find-a-tender-scraper`'s post-exhaustion
+  log said "Still rate-limited by X after 4 retries" — true before this change, wrong half the time after it, and
+  exactly the line a buyer would paste into a support mail. Adding a retry cause to a loop means re-reading every
+  log line that loop can emit.
+
 ## Cycle 432 (2026-09-18, opus-5, BUILD/competitor-gap) — third-party enrichment as a gap-closer, and a fabricated-default trap in a free API
 
 **Shipped:** `steam-reviews-scraper` `includeOwnerEstimates` (build 0.1.28 live) — owner range, peak concurrent

@@ -458,14 +458,25 @@ async function fetchPage(pageUrl, source) {
         }
         requestTimes.push(Date.now());
 
-        const resp = await gotScraping({
-            url: pageUrl,
-            responseType: 'text',
-            throwHttpErrors: false,
-            headers: { accept: 'application/json' },
-            retry: { limit: 0 },
-            timeout: { request: 45000 },
-        });
+        let resp;
+        try {
+            resp = await gotScraping({
+                url: pageUrl,
+                responseType: 'text',
+                throwHttpErrors: false,
+                headers: { accept: 'application/json' },
+                retry: { limit: 0 },
+                timeout: { request: 45000 },
+            });
+        } catch (err) {
+            // A network-level failure (timeout, ECONNRESET, DNS) throws instead of resolving with
+            // a status code — without this catch it crashes the whole run instead of retrying like
+            // a 429/5xx does, even though the same backoff is exactly as valid here.
+            const waitS = attempt * 10;
+            log.warning(`${source.label} request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
+            await sleep(waitS * 1000);
+            continue;
+        }
 
         if (resp.statusCode === 429) {
             const retryAfter = Number(resp.headers['retry-after']) || 120;
@@ -484,7 +495,9 @@ async function fetchPage(pageUrl, source) {
             return null;
         }
     }
-    log.warning(`Still rate-limited by ${source.label} after 4 retries; stopping that source early rather than returning a partial page silently.`);
+    // Reached after 4 failed attempts from either cause — a 429 or a network-level error — so the
+    // wording must not claim rate-limiting specifically.
+    log.warning(`${source.label} kept rate-limiting/failing after 4 retries; stopping that source early rather than returning a partial page silently.`);
     return null;
 }
 

@@ -97,13 +97,25 @@ if (startUrlInput) {
     );
   }
   const hash = hashMatch[1].toLowerCase();
-  const resolveResp = await gotScraping({
-    url: 'https://api.usaspending.gov/api/v2/references/hash/',
-    method: 'POST',
-    json: { hash },
-    responseType: 'json',
-    throwHttpErrors: false,
-  });
+  let resolveResp;
+  try {
+    resolveResp = await gotScraping({
+      url: 'https://api.usaspending.gov/api/v2/references/hash/',
+      method: 'POST',
+      json: { hash },
+      responseType: 'json',
+      throwHttpErrors: false,
+    });
+  } catch (err) {
+    // Same network-level failure mode as postPage's retry loop, but this is a single pre-flight
+    // call before any row is pushed or charged, so fail fast with a message that says what to do
+    // instead of letting a raw TimeoutError surface as an unexplained crash.
+    throw new Error(
+      `"startUrl"'s saved-search hash (${hash}) could not be resolved: the request to `
+      + `api.usaspending.gov failed (${err.message}). This is a network-level failure, not a bad `
+      + 'link -- re-run the Actor; nothing was charged.',
+    );
+  }
   if (resolveResp.statusCode !== 200 || !resolveResp.body?.filter?.filters) {
     throw new Error(
       `"startUrl"'s saved-search hash (${hash}) could not be resolved (HTTP ${resolveResp.statusCode}). `
@@ -480,16 +492,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function postPage(body) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
-        const resp = await gotScraping({
-            url: API,
-            method: 'POST',
-            json: body,
-            responseType: 'text', // error bodies are not always JSON; parse explicitly
-            throwHttpErrors: false,
-            retry: { limit: 0 },
-            timeout: { request: 60000 },
-            headers: { accept: 'application/json', 'content-type': 'application/json' },
-        });
+        let resp;
+        try {
+            resp = await gotScraping({
+                url: API,
+                method: 'POST',
+                json: body,
+                responseType: 'text', // error bodies are not always JSON; parse explicitly
+                throwHttpErrors: false,
+                retry: { limit: 0 },
+                timeout: { request: 60000 },
+                headers: { accept: 'application/json', 'content-type': 'application/json' },
+            });
+        } catch (err) {
+            // A network-level failure (timeout, ECONNRESET, DNS) throws instead of resolving with
+            // a status code — without this catch it crashes the whole run instead of retrying like
+            // a 429/5xx does, even though the same backoff is exactly as valid here.
+            const waitS = attempt * 10;
+            log.warning(`USAspending request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
+            await sleep(waitS * 1000);
+            continue;
+        }
 
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
