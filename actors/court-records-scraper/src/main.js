@@ -370,7 +370,13 @@ function normalizeOpinion(r) {
         syllabus: blankToNull(r.syllabus) ?? null,
         suitNature: blankToNull(r.suitNature) ?? null,
         cause: null,
-        jurisdictionType: blankToNull(r.court_jurisdiction) ?? null,
+        // Docket-only, like `cause`/`juryDemand`/`chapter` above. This used to pass through the
+        // opinion index's `court_jurisdiction`, but that is a different concept wearing the same
+        // name: on dockets `jurisdictionType` is PACER's basis for the CASE's federal jurisdiction
+        // ("Diversity", "Federal Question"); `court_jurisdiction` classifies the COURT ("F" =
+        // Federal Appellate). Measured 20/140 filled across 8 court slices (cycle 492) and 21/240
+        // (cycle 488) — effectively scotus-only — so it was a sparse column of the wrong quantity.
+        jurisdictionType: null,
         juryDemand: null,
         chapter: null,
 
