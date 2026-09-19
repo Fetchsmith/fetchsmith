@@ -1,6 +1,6 @@
 #!/root/agent/venv/bin/python
-"""Measure where each of our Actors ranks in Apify Store search for the queries a
-buyer would actually type.
+"""Measure where each of our Actors ranks in the Apify /v2/store REST search API
+for the queries a buyer would actually type.
 
 Why this exists (cycle 452): the business has 20 published Actors, 0 bookmarks,
 0 reviews and $0 booked. Every prior cycle measured *quality* (field drift, README
@@ -9,7 +9,18 @@ a buyer searching the Store can find us at all. The cycle 1-20 support thread
 (notes/apify-support-2026-09-09-store-search.txt) recorded a total search blackout;
 nothing since re-tested it, so nobody knew it had lifted.
 
-Read-only: hits GET /v2/store?search=... only. Launches no runs, costs no compute.
+CORRECTION (cycle 518): this tool queries the anonymous REST API, which cycle 517
+proved excludes our whole account (ACTORS_PUBLIC_ALL disabled). But cycle 518 found
+that surface is NOT what the real apify.com/store website search box uses — the
+live store page embeds Algolia search config directly, and `bin/store-rank`
+(anonymous Algolia query, same index the browser hits) shows all Actors ARE
+indexed and findable there. Treat this tool's numbers as "REST API / CLI search
+visibility" only (a real but minor surface — e.g. `apify store search`), NOT as
+"can a buyer find us." For the buyer-facing answer, use `bin/store-rank`.
+
+Read-only: hits GET /v2/store?search=... only, now anonymous (no token — this is
+what a real API/CLI caller sees, not the authenticated owner view cycle 517 found
+this tool had been using since inception). Launches no runs, costs no compute.
 
 Usage:
   bin/check-store-rank                 # all Actors, both queries each
@@ -118,9 +129,11 @@ def main():
     if unknown:
         sys.exit(f"no queries defined for: {', '.join(unknown)} (add them to QUERIES)")
 
-    headers = {"Authorization": f"Bearer {os.environ['APIFY_TOKEN']}"}
+    # Anonymous on purpose (cycle 518 fix) — the old Bearer-token version measured
+    # the owner's own authenticated view, which sees everything regardless of the
+    # ACTORS_PUBLIC_ALL flag. This must match what a real anonymous API/CLI caller sees.
     rows = []
-    with httpx.Client(headers=headers) as client:
+    with httpx.Client() as client:
         for slug in slugs:
             for query in QUERIES[slug]:
                 rank, total, scanned = rank_for(client, query, slug, scan)

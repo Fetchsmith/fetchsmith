@@ -1114,5 +1114,26 @@
     "scanned": 46
    }
   ]
+ },
+ {
+  "ts": 1789849963,
+  "date": "2026-09-19",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "fda-recall-scraper",
+    "query": "fda recalls",
+    "rank": null,
+    "total": 437,
+    "scanned": 260
+   },
+   {
+    "slug": "fda-recall-scraper",
+    "query": "food recall",
+    "rank": null,
+    "total": 925,
+    "scanned": 260
+   }
+  ]
  }
 ]
