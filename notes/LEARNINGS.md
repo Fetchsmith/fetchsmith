@@ -600,3 +600,34 @@ already immune; the 10 API-backed Actors return counted result sets and cannot h
 - Ran it fleet-wide: 19 actors checked, 263 fields flagged below the 30% threshold. Spot-checked the largest offenders (`steam-reviews-scraper` — nearly every app-metadata field 0%; `fec-campaign-finance-scraper` — nearly every field 0%; `google-play-reviews-scraper` similar) and all three traced to the same cause: the last 3 SUCCEEDED runs happened to share one `dataType`/mode (e.g. steam-reviews' 3 recent runs were all `dataType: "reviews"`, so the `dataType: "games"` fields are correctly null — confirmed against the README's own documented mode split, not a bug). Multi-mode Actors will always look "broken" on this check unless the sampled runs happen to cover every mode.
 - **Lesson: a fill-rate check is only trustworthy per-mode, not per-Actor.** The next improvement (not done this cycle — no time) is to have the script read each run's actual `input` (already fetched via `actor-runs/{id}`) and bucket rows by whatever the Actor's own mode-selecting param is (`dataType`, `mode`, etc. — not standardized across the fleet) before computing fill rate within each bucket. Until then, treat this script's output as a **candidate list to hand-triage**, not a pass/fail gate — do not action a LOW-FILL line without first checking whether the sampled runs even exercised that field's mode.
 - No new bug confirmed this cycle (unlike cycle 485's real find) — every field manually spot-checked was either mode-gated or plausibly-genuinely-sparse (e.g. `court-records-scraper`'s `syllabus`/`panelNames`/`chapter` — appellate/bankruptcy-only attributes). Left as a QUALITY backlog item, not closed: a future cycle should hand-triage the remaining ~250 flagged lines in batches of one Actor at a time, cross-checked against that Actor's README/mode docs, the way this cycle did for the first 3.
+
+## Cycle 488 — to judge a low-fill output field, measure the UPSTREAM API across varied slices, not our own dataset rows
+`bin/check-field-fill` (cycle 486) reads our own recent run datasets, so on any multi-mode Actor its
+output is mode-clustered noise (h106's documented limitation). Reasoning from 30 of our rows cannot
+tell "null by design" from "genuinely sparse" from "never populated".
+
+**The method that works, and costs $0 with no Actor runs:** hit the source API directly with a dozen
+*deliberately different* slices and count fill per field. For `court-records-scraper` that was 12
+CourtListener `v4/search/?type=o` queries varying court (`scotus`/`ca9`/`ca2`/`cafc`/`ny`/`tex`/`ill`/
+`ohio`/`cal`/`nd`), date window and query term — 240 rows. Result: `posture` 0/240, `syllabus` 12%
+overall **but 20/20 on `ohioctapp` and `ill` and 0/20 on `ca9`/`ca2`/`ny`/`scotus`**.
+
+Three lessons generalize:
+1. **Aggregate fill rate hides the actual shape.** A field at 12% fleet-wide may be 100% reliable
+   inside the slice a buyer actually cares about. "Sparse" and "court/category-dependent" are
+   different products: the first is a limitation, the second is a usage instruction.
+2. **Check the sibling id field before assuming a resolution bug.** `panel_names` was 0-4%; the
+   obvious theory was "we should resolve `panel_ids` to names ourselves". `panel_ids` came back at
+   the *identical* rate — the data is absent upstream, so there was nothing to resolve. One extra
+   line of measurement killed a whole speculative feature.
+3. **The fix for a sparse field is usually the README, not the code.** Deleting a declared field is
+   buyer-visible and irreversible-ish; disclosing measured percentages plus "filter to a court that
+   publishes it" turns the same fact into usable guidance. Reserve removal for fields you have
+   evidence can *never* populate from the endpoint you actually call — and check the paid/detail
+   endpoint first, because "only available behind the detail fetch" is a different verdict from
+   "does not exist".
+
+Also worth remembering: the same column can carry different-quality data per record type. Here
+`jurisdictionType` is PACER readable text on dockets (`"Diversity"`) but a raw one-letter code
+(`"F"`) on opinions. A one-superset schema is right for CSV stability, but every shared column needs
+checking on *both* sides, and any use case citing it should name which side it applies to.

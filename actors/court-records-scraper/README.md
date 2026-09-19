@@ -11,7 +11,7 @@ Search **US federal court dockets** (the PACER/RECAP mirror) and **published cou
 Two CourtListener indexes, one unified table:
 
 - **Dockets (`recordType: "dockets"`)** — the RECAP archive, a free mirror of federal PACER dockets. Parties, attorneys, law firms, assigned and referred judges, nature of suit, cause of action, jurisdiction type, jury demand, bankruptcy chapter, PACER case ID, and per-filing entries (description, date filed, page count, whether the PDF is actually available, a **direct PDF link** and the **OCR'd text of the filing** where RECAP has it).
-- **Opinions (`recordType: "opinions"`)** — published decisions. Reported citations, cite count (how many later opinions cite this one), judge and panel, status, posture, procedural history, syllabus, opinion snippet and the download URL where CourtListener has the document.
+- **Opinions (`recordType: "opinions"`)** — published decisions. Reported citations, cite count (how many later opinions cite this one), authoring judge, status, opinion snippet and the download URL where CourtListener has the document. Editorial extras — `syllabus`, `posture`, `proceduralHistory`, `panelNames`, `neutralCite`, `lexisCite` — are emitted when the court publishes them, which is a minority of rows; see **Honest limitations** for measured rates before you build on them.
 - **`recordType: "both"`** returns both in one run, in one schema, with type-specific fields left `null` rather than omitted — so a CSV export has stable columns.
 
 Search is full text across case names, party and attorney names, docket text and opinion bodies, with quoted phrases (`"fair use"`) and boolean operators (`AND`, `OR`, `NOT`).
@@ -127,13 +127,15 @@ All 39 fields are listed with types and examples in the **Output schema** tab.
 - **Law-firm business development** — pull the firms and attorneys appearing opposite a target client, by court and nature of suit.
 - **Bankruptcy and credit risk** — filter `recordType: "dockets"` on a bankruptcy court (`cacb`, `nysb`, `deb`) and read `chapter`, `dateFiled` and `dateTerminated` straight off the row.
 - **Legal research pipelines** — pull opinions by query and court, sort by `citeCount` to find the load-bearing precedents, and follow `downloadUrl` for the full text.
-- **Docket analytics** — nature-of-suit and cause-of-action distributions by court and year, from `suitNature`, `cause` and `jurisdictionType`.
+- **Docket analytics** — nature-of-suit and cause-of-action distributions by court and year, from `suitNature`, `cause` and `jurisdictionType` (all three are docket-row fields; run with `recordType: "dockets"`).
 
 ## Honest limitations
 
 - **RECAP is a mirror of PACER, not PACER.** It holds what its contributors have purchased and donated, so coverage is deep in heavily-litigated districts and thin elsewhere. It is free; PACER is not.
 - **`documents[].isAvailable` is often false.** CourtListener frequently has a docket *entry* without the PDF behind it — 30 of 72 filing entries were available in a live N.D. Cal. sample (2026-09-17). Check the flag rather than assuming every row comes with a downloadable document.
 - **`documents[].textSnippet` is an excerpt, not the whole filing.** CourtListener's search index returns roughly the first 500 characters of a document's OCR'd text, and only for documents where `isAvailable` is true. The *complete* plain text sits behind the token-gated `/api/rest/v4/recap-documents/` endpoint (anonymous requests get `401`); this Actor needs no key, so it gives you the excerpt plus `pdfUrl` — the PDF bucket at `storage.courtlistener.com` is public and needs no token either, so you can fetch and parse the full document yourself.
+- **Several opinion fields are sparse, and how sparse depends on the court.** CourtListener's search index returns these fields for every opinion row, but the value is empty unless the publishing court supplied it. Measured over 240 live opinion rows across 12 court/date slices (2026-09-19): `neutralCite` **25%**, `judge` **16%**, `syllabus` **12%**, `panelNames` **4%**, `lexisCite` **2%**, `proceduralHistory` **<1%**, `posture` **0%**. The distribution is strongly court-dependent rather than random — Ohio and Illinois appellate rows carried `syllabus`/`neutralCite` on **20/20**, while `ca9`, `ca2`, `ny` and `scotus` carried none. If your pipeline needs one of these, filter `courts` to a court that publishes it and check a small run first. Nothing is dropped or charged differently because a field is empty — you always pay $0.002 per row returned.
+- **`jurisdictionType` is a docket field.** On docket rows it is PACER's readable text (`"Diversity"`, `"Federal Question"`). On opinion rows it carries CourtListener's raw one-letter court code (`"F"`) and is null on ~91% of rows — use it for docket analytics, not opinion analytics.
 - **Dockets and opinions are separate indexes.** A case present in one is often absent from the other; use `both` when unsure.
 - The query is a **full-text search**, not a case-number lookup. For a docket number, put it in `query` as-is and widen the court filter.
 
