@@ -1,0 +1,1202 @@
+{
+"acca": {
+"full_name": "Army Court of Criminal Appeals",
+"jurisdiction": "MA",
+"short_name": "Army Court of Criminal Appeals"
+},
+"afcca": {
+"full_name": "United States Air Force Court of Criminal Appeals",
+"jurisdiction": "MA",
+"short_name": "Air Force Court of Criminal Appeals"
+},
+"akb": {
+"full_name": "United States Bankruptcy Court, D. Alaska",
+"jurisdiction": "FB",
+"short_name": "D. Alaska"
+},
+"akd": {
+"full_name": "District Court, D. Alaska",
+"jurisdiction": "FD",
+"short_name": "D. Alaska"
+},
+"almb": {
+"full_name": "United States Bankruptcy Court, M.D. Alabama",
+"jurisdiction": "FB",
+"short_name": "M.D. Alabama"
+},
+"almd": {
+"full_name": "District Court, M.D. Alabama",
+"jurisdiction": "FD",
+"short_name": "M.D. Alabama"
+},
+"alnb": {
+"full_name": "United States Bankruptcy Court, N.D. Alabama",
+"jurisdiction": "FB",
+"short_name": "N.D. Alabama"
+},
+"alnd": {
+"full_name": "District Court, N.D. Alabama",
+"jurisdiction": "FD",
+"short_name": "N.D. Alabama"
+},
+"alsb": {
+"full_name": "United States Bankruptcy Court, S.D. Alabama",
+"jurisdiction": "FB",
+"short_name": "S.D. Alabama"
+},
+"alsd": {
+"full_name": "District Court, S.D. Alabama",
+"jurisdiction": "FD",
+"short_name": "S.D. Alabama"
+},
+"arb": {
+"full_name": "United States Bankruptcy Court, D. Arizona",
+"jurisdiction": "FB",
+"short_name": "D. Arizona"
+},
+"areb": {
+"full_name": "United States Bankruptcy Court, E.D. Arkansas",
+"jurisdiction": "FB",
+"short_name": "E.D. Arkansas"
+},
+"ared": {
+"full_name": "District Court, E.D. Arkansas",
+"jurisdiction": "FD",
+"short_name": "E.D. Arkansas"
+},
+"armfor": {
+"full_name": "Court of Appeals for the Armed Forces",
+"jurisdiction": "MA",
+"short_name": "Court of Appeals for the Armed Forces"
+},
+"arwb": {
+"full_name": "United States Bankruptcy Court, W.D. Arkansas",
+"jurisdiction": "FB",
+"short_name": "W.D. Arkansas"
+},
+"arwd": {
+"full_name": "District Court, W.D. Arkansas",
+"jurisdiction": "FD",
+"short_name": "W.D. Arkansas"
+},
+"asbca": {
+"full_name": "Armed Services Board of Contract Appeals",
+"jurisdiction": "FS",
+"short_name": "Armed Services Board of Contract Appeals"
+},
+"azd": {
+"full_name": "District Court, D. Arizona",
+"jurisdiction": "FD",
+"short_name": "D. Arizona"
+},
+"bap1": {
+"full_name": "Bankruptcy Appellate Panel of the First Circuit",
+"jurisdiction": "FBP",
+"short_name": "First Circuit"
+},
+"bap10": {
+"full_name": "Bankruptcy Appellate Panel of the Tenth Circuit",
+"jurisdiction": "FBP",
+"short_name": "Tenth Circuit"
+},
+"bap2": {
+"full_name": "Bankruptcy Appellate Panel of the Second Circuit",
+"jurisdiction": "FBP",
+"short_name": "Second Circuit"
+},
+"bap6": {
+"full_name": "Bankruptcy Appellate Panel of the Sixth Circuit",
+"jurisdiction": "FBP",
+"short_name": "Sixth Circuit"
+},
+"bap8": {
+"full_name": "United States Bankruptcy Appellate Panel for the Eighth Circuit",
+"jurisdiction": "FBP",
+"short_name": "Eighth Circuit"
+},
+"bap9": {
+"full_name": "United States Bankruptcy Appellate Panel for the Ninth Circuit",
+"jurisdiction": "FBP",
+"short_name": "Ninth Circuit"
+},
+"bapma": {
+"full_name": "Bankruptcy Appellate Panel of Massachusetts",
+"jurisdiction": "FBP",
+"short_name": "Massachusetts"
+},
+"bapme": {
+"full_name": "Bankruptcy Appellate Panel, D. Maine",
+"jurisdiction": "FBP",
+"short_name": "D. Maine"
+},
+"bia": {
+"full_name": "Board of Immigration Appeals",
+"jurisdiction": "FS",
+"short_name": "Board of Immigration Appeals"
+},
+"bta": {
+"full_name": "United States Board of Tax Appeals",
+"jurisdiction": "FS",
+"short_name": "Board of Tax Appeals"
+},
+"bva": {
+"full_name": "Board of Veterans' Appeals",
+"jurisdiction": "FS",
+"short_name": "Board of Veterans' Appeals"
+},
+"ca1": {
+"full_name": "Court of Appeals for the First Circuit",
+"jurisdiction": "F",
+"short_name": "First Circuit"
+},
+"ca10": {
+"full_name": "Court of Appeals for the Tenth Circuit",
+"jurisdiction": "F",
+"short_name": "Tenth Circuit"
+},
+"ca11": {
+"full_name": "Court of Appeals for the Eleventh Circuit",
+"jurisdiction": "F",
+"short_name": "Eleventh Circuit"
+},
+"ca2": {
+"full_name": "Court of Appeals for the Second Circuit",
+"jurisdiction": "F",
+"short_name": "Second Circuit"
+},
+"ca3": {
+"full_name": "Court of Appeals for the Third Circuit",
+"jurisdiction": "F",
+"short_name": "Third Circuit"
+},
+"ca4": {
+"full_name": "Court of Appeals for the Fourth Circuit",
+"jurisdiction": "F",
+"short_name": "Fourth Circuit"
+},
+"ca5": {
+"full_name": "Court of Appeals for the Fifth Circuit",
+"jurisdiction": "F",
+"short_name": "Fifth Circuit"
+},
+"ca6": {
+"full_name": "Court of Appeals for the Sixth Circuit",
+"jurisdiction": "F",
+"short_name": "Sixth Circuit"
+},
+"ca7": {
+"full_name": "Court of Appeals for the Seventh Circuit",
+"jurisdiction": "F",
+"short_name": "Seventh Circuit"
+},
+"ca8": {
+"full_name": "Court of Appeals for the Eighth Circuit",
+"jurisdiction": "F",
+"short_name": "Eighth Circuit"
+},
+"ca9": {
+"full_name": "Court of Appeals for the Ninth Circuit",
+"jurisdiction": "F",
+"short_name": "Ninth Circuit"
+},
+"cacb": {
+"full_name": "United States Bankruptcy Court, C.D. California",
+"jurisdiction": "FB",
+"short_name": "C.D. California"
+},
+"cacd": {
+"full_name": "District Court, C.D. California",
+"jurisdiction": "FD",
+"short_name": "C.D. California"
+},
+"cadc": {
+"full_name": "Court of Appeals for the D.C. Circuit",
+"jurisdiction": "F",
+"short_name": "D.C. Circuit"
+},
+"caeb": {
+"full_name": "United States Bankruptcy Court, E.D. California",
+"jurisdiction": "FB",
+"short_name": "E.D. California"
+},
+"caed": {
+"full_name": "District Court, E.D. California",
+"jurisdiction": "FD",
+"short_name": "E.D. California"
+},
+"cafc": {
+"full_name": "Court of Appeals for the Federal Circuit",
+"jurisdiction": "F",
+"short_name": "Federal Circuit"
+},
+"californiad": {
+"full_name": "District Court, D. California",
+"jurisdiction": "FD",
+"short_name": "D. California"
+},
+"canb": {
+"full_name": "United States Bankruptcy Court, N.D. California",
+"jurisdiction": "FB",
+"short_name": "N.D. California"
+},
+"cand": {
+"full_name": "District Court, N.D. California",
+"jurisdiction": "FD",
+"short_name": "N.D. California"
+},
+"casb": {
+"full_name": "United States Bankruptcy Court, S.D. California",
+"jurisdiction": "FB",
+"short_name": "S.D. California"
+},
+"casd": {
+"full_name": "District Court, S.D. California",
+"jurisdiction": "FD",
+"short_name": "S.D. California"
+},
+"cavc": {
+"full_name": "United States Court of Appeals for Veterans Claims",
+"jurisdiction": "FS",
+"short_name": "Veterans Claims"
+},
+"cc": {
+"full_name": "United States Court of Claims",
+"jurisdiction": "FS",
+"short_name": "Court of Claims"
+},
+"ccpa": {
+"full_name": "Court of Customs and Patent Appeals",
+"jurisdiction": "FS",
+"short_name": "Customs and Patent Appeals"
+},
+"cgcomilrev": {
+"full_name": "U S Coast Guard Court of Military Review",
+"jurisdiction": "MA",
+"short_name": "U S Coast Guard Court of Military Review"
+},
+"cit": {
+"full_name": "United States Court of International Trade",
+"jurisdiction": "FS",
+"short_name": "Court of International Trade"
+},
+"cma": {
+"full_name": "United States Court of Military Appeals",
+"jurisdiction": "MA",
+"short_name": "United States Court of Military Appeals"
+},
+"cob": {
+"full_name": "United States Bankruptcy Court, D. Colorado",
+"jurisdiction": "FB",
+"short_name": "D. Colorado"
+},
+"cod": {
+"full_name": "District Court, D. Colorado",
+"jurisdiction": "FD",
+"short_name": "D. Colorado"
+},
+"com": {
+"full_name": "Commerce Court",
+"jurisdiction": "FS",
+"short_name": "Commerce Court"
+},
+"ctb": {
+"full_name": "United States Bankruptcy Court, D. Connecticut",
+"jurisdiction": "FB",
+"short_name": "D. Connecticut"
+},
+"ctd": {
+"full_name": "District Court, D. Connecticut",
+"jurisdiction": "FD",
+"short_name": "D. Connecticut"
+},
+"cusc": {
+"full_name": "United States Customs Court",
+"jurisdiction": "FS",
+"short_name": "U.S. Customs Court"
+},
+"dcb": {
+"full_name": "United States Bankruptcy Court, District of Columbia",
+"jurisdiction": "FB",
+"short_name": "District of Columbia"
+},
+"dcd": {
+"full_name": "District Court, District of Columbia",
+"jurisdiction": "FD",
+"short_name": "District of Columbia"
+},
+"deb": {
+"full_name": "United States Bankruptcy Court, D. Delaware",
+"jurisdiction": "FB",
+"short_name": "D. Delaware"
+},
+"ded": {
+"full_name": "District Court, D. Delaware",
+"jurisdiction": "FD",
+"short_name": "D. Delaware"
+},
+"eca": {
+"full_name": "Emergency Court of Appeals",
+"jurisdiction": "FS",
+"short_name": "Emergency Court of Appeals"
+},
+"fisc": {
+"full_name": "Foreign Intelligence Surveillance Court",
+"jurisdiction": "FS",
+"short_name": "Foreign Intelligence Surveillance Court"
+},
+"fiscr": {
+"full_name": "Foreign Intelligence Surveillance Court of Review",
+"jurisdiction": "FS",
+"short_name": "Foreign Intelligence Surveillance Court of Review"
+},
+"flmb": {
+"full_name": "United States Bankruptcy Court, M.D. Florida",
+"jurisdiction": "FB",
+"short_name": "M.D. Florida"
+},
+"flmd": {
+"full_name": "District Court, M.D. Florida",
+"jurisdiction": "FD",
+"short_name": "M.D. Florida"
+},
+"flnb": {
+"full_name": "United States Bankruptcy Court, N.D. Florida",
+"jurisdiction": "FB",
+"short_name": "N.D. Florida"
+},
+"flnd": {
+"full_name": "District Court, N.D. Florida",
+"jurisdiction": "FD",
+"short_name": "N.D. Florida"
+},
+"flsb": {
+"full_name": "United States Bankruptcy Court, S.D. Florida.",
+"jurisdiction": "FB",
+"short_name": "S.D. Florida"
+},
+"flsd": {
+"full_name": "District Court, S.D. Florida",
+"jurisdiction": "FD",
+"short_name": "S.D. Florida"
+},
+"gamb": {
+"full_name": "United States Bankruptcy Court, M.D. Georgia",
+"jurisdiction": "FB",
+"short_name": "M.D. Georgia"
+},
+"gamd": {
+"full_name": "District Court, M.D. Georgia",
+"jurisdiction": "FD",
+"short_name": "M.D. Georgia"
+},
+"ganb": {
+"full_name": "United States Bankruptcy Court, N.D. Georgia",
+"jurisdiction": "FB",
+"short_name": "N.D. Georgia"
+},
+"gand": {
+"full_name": "District Court, N.D. Georgia",
+"jurisdiction": "FD",
+"short_name": "N.D. Georgia"
+},
+"gasb": {
+"full_name": "United States Bankruptcy Court, S.D. Georgia",
+"jurisdiction": "FB",
+"short_name": "S.D. Georgia"
+},
+"gasd": {
+"full_name": "District Court, S.D. Georgia",
+"jurisdiction": "FD",
+"short_name": "S.D. Georgia"
+},
+"gub": {
+"full_name": "United States Bankruptcy Court, D. Guam",
+"jurisdiction": "FB",
+"short_name": "D. Guam"
+},
+"hib": {
+"full_name": "United States Bankruptcy Court, D. Hawaii",
+"jurisdiction": "FB",
+"short_name": "D. Hawaii"
+},
+"hid": {
+"full_name": "District Court, D. Hawaii",
+"jurisdiction": "FD",
+"short_name": "D. Hawaii"
+},
+"ianb": {
+"full_name": "United States Bankruptcy Court, N.D. Iowa",
+"jurisdiction": "FB",
+"short_name": "N.D. Iowa"
+},
+"iand": {
+"full_name": "District Court, N.D. Iowa",
+"jurisdiction": "FD",
+"short_name": "N.D. Iowa"
+},
+"iasb": {
+"full_name": "United States Bankruptcy Court, S.D. Iowa",
+"jurisdiction": "FB",
+"short_name": "S.D. Iowa"
+},
+"iasd": {
+"full_name": "District Court, S.D. Iowa",
+"jurisdiction": "FD",
+"short_name": "S.D. Iowa"
+},
+"idb": {
+"full_name": "United States Bankruptcy Court, D. Idaho",
+"jurisdiction": "FB",
+"short_name": "D. Idaho"
+},
+"idd": {
+"full_name": "District Court, D. Idaho",
+"jurisdiction": "FD",
+"short_name": "D. Idaho"
+},
+"ilcb": {
+"full_name": "United States Bankruptcy Court, C.D. Illinois",
+"jurisdiction": "FB",
+"short_name": "C.D. Illinois"
+},
+"ilcd": {
+"full_name": "District Court, C.D. Illinois",
+"jurisdiction": "FD",
+"short_name": "C.D. Illinois"
+},
+"illinoisd": {
+"full_name": "District Court, D. Illinois",
+"jurisdiction": "FD",
+"short_name": "D. Illinois"
+},
+"illinoised": {
+"full_name": "District Court, E.D. Illinois",
+"jurisdiction": "FD",
+"short_name": "E.D. Illinois"
+},
+"ilnb": {
+"full_name": "United States Bankruptcy Court, N.D. Illinois",
+"jurisdiction": "FB",
+"short_name": "N.D. Illinois"
+},
+"ilnd": {
+"full_name": "District Court, N.D. Illinois",
+"jurisdiction": "FD",
+"short_name": "N.D. Illinois"
+},
+"ilsb": {
+"full_name": "United States Bankruptcy Court, S.D. Illinois",
+"jurisdiction": "FB",
+"short_name": "S.D. Illinois"
+},
+"ilsd": {
+"full_name": "District Court, S.D. Illinois",
+"jurisdiction": "FD",
+"short_name": "S.D. Illinois"
+},
+"indianad": {
+"full_name": "District Court, D. Indiana",
+"jurisdiction": "FD",
+"short_name": "D. Indiana"
+},
+"innb": {
+"full_name": "United States Bankruptcy Court, N.D. Indiana",
+"jurisdiction": "FB",
+"short_name": "N.D. Indiana"
+},
+"innd": {
+"full_name": "District Court, N.D. Indiana",
+"jurisdiction": "FD",
+"short_name": "N.D. Indiana"
+},
+"insb": {
+"full_name": "United States Bankruptcy Court, S.D. Indiana",
+"jurisdiction": "FB",
+"short_name": "S.D. Indiana"
+},
+"insd": {
+"full_name": "District Court, S.D. Indiana",
+"jurisdiction": "FD",
+"short_name": "S.D. Indiana"
+},
+"ksb": {
+"full_name": "United States Bankruptcy Court, D. Kansas",
+"jurisdiction": "FB",
+"short_name": "D. Kansas"
+},
+"ksd": {
+"full_name": "District Court, D. Kansas",
+"jurisdiction": "FD",
+"short_name": "D. Kansas"
+},
+"kyeb": {
+"full_name": "United States Bankruptcy Court, E.D. Kentucky",
+"jurisdiction": "FB",
+"short_name": "E.D. Kentucky"
+},
+"kyed": {
+"full_name": "District Court, E.D. Kentucky",
+"jurisdiction": "FD",
+"short_name": "E.D. Kentucky"
+},
+"kywb": {
+"full_name": "United States Bankruptcy Court, W.D. Kentucky",
+"jurisdiction": "FB",
+"short_name": "W.D. Kentucky"
+},
+"kywd": {
+"full_name": "District Court, W.D. Kentucky",
+"jurisdiction": "FD",
+"short_name": "W.D. Kentucky"
+},
+"laeb": {
+"full_name": "United States Bankruptcy Court, E.D. Louisiana",
+"jurisdiction": "FB",
+"short_name": "E.D. Louisiana"
+},
+"laed": {
+"full_name": "District Court, E.D. Louisiana",
+"jurisdiction": "FD",
+"short_name": "E.D. Louisiana"
+},
+"lamb": {
+"full_name": "United States Bankruptcy Court, M.D. Louisiana",
+"jurisdiction": "FB",
+"short_name": "M.D. Louisiana"
+},
+"lamd": {
+"full_name": "District Court, M.D. Louisiana",
+"jurisdiction": "FD",
+"short_name": "M.D. Louisiana"
+},
+"lawb": {
+"full_name": "United States Bankruptcy Court, W.D. Louisiana",
+"jurisdiction": "FB",
+"short_name": "W.D. Louisiana"
+},
+"lawd": {
+"full_name": "District Court, W.D. Louisiana",
+"jurisdiction": "FD",
+"short_name": "W.D. Louisiana"
+},
+"mab": {
+"full_name": "United States Bankruptcy Court, D. Massachusetts",
+"jurisdiction": "FB",
+"short_name": "D. Massachusetts"
+},
+"mad": {
+"full_name": "District Court, D. Massachusetts",
+"jurisdiction": "FD",
+"short_name": "D. Massachusetts"
+},
+"mc": {
+"full_name": "United States Court of Military Commission Review",
+"jurisdiction": "MA",
+"short_name": "Military Commission Review"
+},
+"mdb": {
+"full_name": "United States Bankruptcy Court, D. Maryland",
+"jurisdiction": "FB",
+"short_name": "D. Maryland"
+},
+"mdd": {
+"full_name": "District Court, D. Maryland",
+"jurisdiction": "FD",
+"short_name": "D. Maryland"
+},
+"meb": {
+"full_name": "United States Bankruptcy Court, D. Maine",
+"jurisdiction": "FB",
+"short_name": "D. Maine"
+},
+"med": {
+"full_name": "District Court, D. Maine",
+"jurisdiction": "FD",
+"short_name": "D. Maine"
+},
+"mieb": {
+"full_name": "United States Bankruptcy Court, E.D. Michigan",
+"jurisdiction": "FB",
+"short_name": "E.D. Michigan"
+},
+"mied": {
+"full_name": "District Court, E.D. Michigan",
+"jurisdiction": "FD",
+"short_name": "E.D. Michigan"
+},
+"miwb": {
+"full_name": "United States Bankruptcy Court, W.D. Michigan",
+"jurisdiction": "FB",
+"short_name": "W.D. Michigan"
+},
+"miwd": {
+"full_name": "District Court, W.D. Michigan",
+"jurisdiction": "FD",
+"short_name": "W.D. Michigan"
+},
+"mnb": {
+"full_name": "United States Bankruptcy Court, D. Minnesota",
+"jurisdiction": "FB",
+"short_name": "D. Minnesota"
+},
+"mnd": {
+"full_name": "District Court, D. Minnesota",
+"jurisdiction": "FD",
+"short_name": "D. Minnesota"
+},
+"moeb": {
+"full_name": "United States Bankruptcy Court, E.D. Missouri",
+"jurisdiction": "FB",
+"short_name": "E.D. Missouri"
+},
+"moed": {
+"full_name": "District Court, E.D. Missouri",
+"jurisdiction": "FD",
+"short_name": "E.D. Missouri"
+},
+"mowb": {
+"full_name": "United States Bankruptcy Court, W.D. Missouri",
+"jurisdiction": "FB",
+"short_name": "W.D. Missouri"
+},
+"mowd": {
+"full_name": "District Court, W.D. Missouri",
+"jurisdiction": "FD",
+"short_name": "W.D. Missouri"
+},
+"msnb": {
+"full_name": "United States Bankruptcy Court, N.D. Mississippi",
+"jurisdiction": "FB",
+"short_name": "N.D. Mississippi"
+},
+"msnd": {
+"full_name": "District Court, N.D. Mississippi",
+"jurisdiction": "FD",
+"short_name": "N.D. Mississippi"
+},
+"mspb": {
+"full_name": "Merit Systems Protection Board",
+"jurisdiction": "FS",
+"short_name": "Merit Systems Protection Board"
+},
+"mssb": {
+"full_name": "United States Bankruptcy Court, S.D. Mississippi",
+"jurisdiction": "FB",
+"short_name": "S.D. Mississippi"
+},
+"mssd": {
+"full_name": "District Court, S.D. Mississippi",
+"jurisdiction": "FD",
+"short_name": "S.D. Mississippi"
+},
+"mtb": {
+"full_name": "United States Bankruptcy Court, D. Montana",
+"jurisdiction": "FB",
+"short_name": "D. Montana"
+},
+"mtd": {
+"full_name": "District Court, D. Montana",
+"jurisdiction": "FD",
+"short_name": "D. Montana"
+},
+"nceb": {
+"full_name": "United States Bankruptcy Court, E.D. North Carolina",
+"jurisdiction": "FB",
+"short_name": "E.D. North Carolina"
+},
+"nced": {
+"full_name": "District Court, E.D. North Carolina",
+"jurisdiction": "FD",
+"short_name": "E.D. North Carolina"
+},
+"ncmb": {
+"full_name": "United States Bankruptcy Court, M.D. North Carolina",
+"jurisdiction": "FB",
+"short_name": "M.D. North Carolina"
+},
+"ncmd": {
+"full_name": "District Court, M.D. North Carolina",
+"jurisdiction": "FD",
+"short_name": "M.D. North Carolina"
+},
+"ncwb": {
+"full_name": "United States Bankruptcy Court, W.D. North Carolina",
+"jurisdiction": "FB",
+"short_name": "W.D. North Carolina"
+},
+"ncwd": {
+"full_name": "District Court, W.D. North Carolina",
+"jurisdiction": "FD",
+"short_name": "W.D. North Carolina"
+},
+"ndb": {
+"full_name": "United States Bankruptcy Court, D. North Dakota",
+"jurisdiction": "FB",
+"short_name": "D. North Dakota"
+},
+"ndd": {
+"full_name": "District Court, D. North Dakota",
+"jurisdiction": "FD",
+"short_name": "D. North Dakota"
+},
+"nebraskab": {
+"full_name": "United States Bankruptcy Court, D. Nebraska",
+"jurisdiction": "FB",
+"short_name": "D. Nebraska"
+},
+"ned": {
+"full_name": "District Court, D. Nebraska",
+"jurisdiction": "FD",
+"short_name": "D. Nebraska"
+},
+"nhb": {
+"full_name": "United States Bankruptcy Court, D. New Hampshire",
+"jurisdiction": "FB",
+"short_name": "D. New Hampshire"
+},
+"nhd": {
+"full_name": "District Court, D. New Hampshire",
+"jurisdiction": "FD",
+"short_name": "D. New Hampshire"
+},
+"njb": {
+"full_name": "United States Bankruptcy Court, D. New Jersey",
+"jurisdiction": "FB",
+"short_name": "D. New Jersey"
+},
+"njd": {
+"full_name": "District Court, D. New Jersey",
+"jurisdiction": "FD",
+"short_name": "D. New Jersey"
+},
+"nmb": {
+"full_name": "United States Bankruptcy Court, D. New Mexico",
+"jurisdiction": "FB",
+"short_name": "D. New Mexico"
+},
+"nmcca": {
+"full_name": "Navy-Marine Corps Court of Criminal Appeals",
+"jurisdiction": "MA",
+"short_name": "Navy-Marine Corps Court of Criminal Appeals"
+},
+"nmd": {
+"full_name": "District Court, D. New Mexico",
+"jurisdiction": "FD",
+"short_name": "D. New Mexico"
+},
+"nmib": {
+"full_name": "United States Bankruptcy Court, Northern Mariana Islands",
+"jurisdiction": "FB",
+"short_name": "Northern Mariana Islands"
+},
+"nvb": {
+"full_name": "United States Bankruptcy Court, D. Nevada",
+"jurisdiction": "FB",
+"short_name": "D. Nevada"
+},
+"nvd": {
+"full_name": "District Court, D. Nevada",
+"jurisdiction": "FD",
+"short_name": "D. Nevada"
+},
+"nyeb": {
+"full_name": "United States Bankruptcy Court, E.D. New York",
+"jurisdiction": "FB",
+"short_name": "E.D. New York"
+},
+"nyed": {
+"full_name": "District Court, E.D. New York",
+"jurisdiction": "FD",
+"short_name": "E.D. New York"
+},
+"nynb": {
+"full_name": "United States Bankruptcy Court, N.D. New York",
+"jurisdiction": "FB",
+"short_name": "N.D. New York"
+},
+"nynd": {
+"full_name": "District Court, N.D. New York",
+"jurisdiction": "FD",
+"short_name": "N.D. New York"
+},
+"nysb": {
+"full_name": "United States Bankruptcy Court, S.D. New York",
+"jurisdiction": "FB",
+"short_name": "S.D. New York"
+},
+"nysd": {
+"full_name": "District Court, S.D. New York",
+"jurisdiction": "FD",
+"short_name": "S.D. New York"
+},
+"nywb": {
+"full_name": "United States Bankruptcy Court, W.D. New York",
+"jurisdiction": "FB",
+"short_name": "W.D. New York"
+},
+"nywd": {
+"full_name": "District Court, W.D. New York",
+"jurisdiction": "FD",
+"short_name": "W.D. New York"
+},
+"ohiod": {
+"full_name": "District Court, D. Ohio",
+"jurisdiction": "FD",
+"short_name": "D. Ohio"
+},
+"ohnb": {
+"full_name": "United States Bankruptcy Court, N.D. Ohio",
+"jurisdiction": "FB",
+"short_name": "N.D. Ohio"
+},
+"ohnd": {
+"full_name": "District Court, N.D. Ohio",
+"jurisdiction": "FD",
+"short_name": "N.D. Ohio"
+},
+"ohsb": {
+"full_name": "United States Bankruptcy Court, S.D. Ohio",
+"jurisdiction": "FB",
+"short_name": "S.D. Ohio"
+},
+"ohsd": {
+"full_name": "District Court, S.D. Ohio",
+"jurisdiction": "FD",
+"short_name": "S.D. Ohio"
+},
+"okeb": {
+"full_name": "United States Bankruptcy Court, E.D. Oklahoma",
+"jurisdiction": "FB",
+"short_name": "E.D. Oklahoma"
+},
+"oked": {
+"full_name": "District Court, E.D. Oklahoma",
+"jurisdiction": "FD",
+"short_name": "E.D. Oklahoma"
+},
+"oknb": {
+"full_name": "United States Bankruptcy Court, N.D. Oklahoma",
+"jurisdiction": "FB",
+"short_name": "N.D. Oklahoma"
+},
+"oknd": {
+"full_name": "District Court, N.D. Oklahoma",
+"jurisdiction": "FD",
+"short_name": "N.D. Oklahoma"
+},
+"okwb": {
+"full_name": "United States Bankruptcy Court, W.D. Oklahoma",
+"jurisdiction": "FB",
+"short_name": "W.D. Oklahoma"
+},
+"okwd": {
+"full_name": "District Court, W.D. Oklahoma",
+"jurisdiction": "FD",
+"short_name": "W.D. Oklahoma"
+},
+"olc": {
+"full_name": "Department of Justice Office of Legal Counsel",
+"jurisdiction": "FS",
+"short_name": "Office of Legal Counsel"
+},
+"orb": {
+"full_name": "United States Bankruptcy Court, D. Oregon",
+"jurisdiction": "FB",
+"short_name": "D. Oregon"
+},
+"ord": {
+"full_name": "District Court, D. Oregon",
+"jurisdiction": "FD",
+"short_name": "D. Oregon"
+},
+"orld": {
+"full_name": "District Court, Orleans",
+"jurisdiction": "FD",
+"short_name": "Orleans District Court"
+},
+"paeb": {
+"full_name": "United States Bankruptcy Court, E.D. Pennsylvania",
+"jurisdiction": "FB",
+"short_name": "E.D. Pennsylvania"
+},
+"paed": {
+"full_name": "District Court, E.D. Pennsylvania",
+"jurisdiction": "FD",
+"short_name": "E.D. Pennsylvania"
+},
+"pamb": {
+"full_name": "United States Bankruptcy Court, M.D. Pennsylvania",
+"jurisdiction": "FB",
+"short_name": "M.D. Pennsylvania"
+},
+"pamd": {
+"full_name": "District Court, M.D. Pennsylvania",
+"jurisdiction": "FD",
+"short_name": "M.D. Pennsylvania"
+},
+"pawb": {
+"full_name": "United States Bankruptcy Court, W.D. Pennsylvania",
+"jurisdiction": "FB",
+"short_name": "W.D. Pennsylvania"
+},
+"pawd": {
+"full_name": "District Court, W.D. Pennsylvania",
+"jurisdiction": "FD",
+"short_name": "W.D. Pennsylvania"
+},
+"pennsylvaniad": {
+"full_name": "District Court, D. Pennsylvania",
+"jurisdiction": "FD",
+"short_name": "D. Pennsylvania"
+},
+"prb": {
+"full_name": "United States Bankruptcy Court, D. Puerto Rico",
+"jurisdiction": "FB",
+"short_name": "D. Puerto Rico"
+},
+"reglrailreorgct": {
+"full_name": "Special Court under the Regional Rail Reorganization Act",
+"jurisdiction": "FS",
+"short_name": "Special Court under the Regional Rail Reorganization Act"
+},
+"rib": {
+"full_name": "United States Bankruptcy Court, D. Rhode Island",
+"jurisdiction": "FB",
+"short_name": "D. Rhode Island"
+},
+"rid": {
+"full_name": "District Court, D. Rhode Island",
+"jurisdiction": "FD",
+"short_name": "D. Rhode Island"
+},
+"scb": {
+"full_name": "United States Bankruptcy Court, D. South Carolina",
+"jurisdiction": "FB",
+"short_name": "D. South Carolina"
+},
+"scd": {
+"full_name": "District Court, D. South Carolina",
+"jurisdiction": "FD",
+"short_name": "D. South Carolina"
+},
+"scotus": {
+"full_name": "Supreme Court of the United States",
+"jurisdiction": "F",
+"short_name": "Supreme Court"
+},
+"sdb": {
+"full_name": "United States Bankruptcy Court, D. South Dakota",
+"jurisdiction": "FB",
+"short_name": "D. South Dakota"
+},
+"sdd": {
+"full_name": "District Court, D. South Dakota",
+"jurisdiction": "FD",
+"short_name": "D. South Dakota"
+},
+"southcarolinaed": {
+"full_name": "District Court, E.D. South Carolina",
+"jurisdiction": "FD",
+"short_name": "E.D. South Carolina"
+},
+"southcarolinawd": {
+"full_name": "District Court, W.D. South Carolina",
+"jurisdiction": "FD",
+"short_name": "W.D. South Carolina"
+},
+"tax": {
+"full_name": "United States Tax Court",
+"jurisdiction": "FS",
+"short_name": "U.S. Tax Court"
+},
+"tecoa": {
+"full_name": "Temporary Emergency Court of Appeals",
+"jurisdiction": "FS",
+"short_name": "Temporary Emergency Court of Appeals"
+},
+"tennessed": {
+"full_name": "District Court, D. Tennessee",
+"jurisdiction": "FD",
+"short_name": "D. Tennessee"
+},
+"tennesseeb": {
+"full_name": "United States Bankruptcy Court, D. Tennessee",
+"jurisdiction": "FB",
+"short_name": "D. Tennessee"
+},
+"tneb": {
+"full_name": "United States Bankruptcy Court, E.D. Tennessee",
+"jurisdiction": "FB",
+"short_name": "E.D. Tennessee"
+},
+"tned": {
+"full_name": "District Court, E.D. Tennessee",
+"jurisdiction": "FD",
+"short_name": "E.D. Tennessee"
+},
+"tnmb": {
+"full_name": "United States Bankruptcy Court, M.D. Tennessee",
+"jurisdiction": "FB",
+"short_name": "M.D. Tennessee"
+},
+"tnmd": {
+"full_name": "District Court, M.D. Tennessee",
+"jurisdiction": "FD",
+"short_name": "M.D. Tennessee"
+},
+"tnwb": {
+"full_name": "United States Bankruptcy Court, W.D. Tennessee",
+"jurisdiction": "FB",
+"short_name": "W.D. Tennessee"
+},
+"tnwd": {
+"full_name": "District Court, W.D. Tennessee",
+"jurisdiction": "FD",
+"short_name": "W.D. Tennessee"
+},
+"ttab": {
+"full_name": "Trademark Trial and Appeal Board",
+"jurisdiction": "FS",
+"short_name": "Trademark Trial and Appeal Board"
+},
+"txeb": {
+"full_name": "United States Bankruptcy Court, E.D. Texas",
+"jurisdiction": "FB",
+"short_name": "E.D. Texas"
+},
+"txed": {
+"full_name": "District Court, E.D. Texas",
+"jurisdiction": "FD",
+"short_name": "E.D. Texas"
+},
+"txnb": {
+"full_name": "United States Bankruptcy Court, N.D. Texas",
+"jurisdiction": "FB",
+"short_name": "N.D. Texas"
+},
+"txnd": {
+"full_name": "District Court, N.D. Texas",
+"jurisdiction": "FD",
+"short_name": "N.D. Texas"
+},
+"txsb": {
+"full_name": "United States Bankruptcy Court, S.D. Texas",
+"jurisdiction": "FB",
+"short_name": "S.D. Texas"
+},
+"txsd": {
+"full_name": "District Court, S.D. Texas",
+"jurisdiction": "FD",
+"short_name": "S.D. Texas"
+},
+"txwb": {
+"full_name": "United States Bankruptcy Court, W.D. Texas",
+"jurisdiction": "FB",
+"short_name": "W.D. Texas"
+},
+"txwd": {
+"full_name": "District Court, W.D. Texas",
+"jurisdiction": "FD",
+"short_name": "W.D. Texas"
+},
+"usafctmilrev": {
+"full_name": "U S Air Force Court of Military Review",
+"jurisdiction": "MA",
+"short_name": "U S Air Force Court of Military Review"
+},
+"usarmymilrev": {
+"full_name": "U.S. Army Court of Military Review",
+"jurisdiction": "MA",
+"short_name": "U.S. Army Court of Military Review"
+},
+"uscfc": {
+"full_name": "United States Court of Federal Claims",
+"jurisdiction": "FS",
+"short_name": "Federal Claims"
+},
+"uscgcoca": {
+"full_name": "U S Coast Guard Court of Criminal Appeals",
+"jurisdiction": "MA",
+"short_name": "U S Coast Guard Court of Criminal Appeals"
+},
+"usnmcmilrev": {
+"full_name": "U.S. Navy-Marine Corps Court of Military Review",
+"jurisdiction": "MA",
+"short_name": "U.S. Navy-Marine Corps Court of Military Review"
+},
+"utb": {
+"full_name": "United States Bankruptcy Court, D. Utah",
+"jurisdiction": "FB",
+"short_name": "D. Utah"
+},
+"utd": {
+"full_name": "District Court, D. Utah",
+"jurisdiction": "FD",
+"short_name": "D. Utah"
+},
+"vaeb": {
+"full_name": "United States Bankruptcy Court, E.D. Virginia",
+"jurisdiction": "FB",
+"short_name": "E.D. Virginia"
+},
+"vaed": {
+"full_name": "District Court, E.D. Virginia",
+"jurisdiction": "FD",
+"short_name": "E.D. Virginia"
+},
+"vawb": {
+"full_name": "United States Bankruptcy Court, W.D. Virginia",
+"jurisdiction": "FB",
+"short_name": "W.D. Virginia"
+},
+"vib": {
+"full_name": "United States Bankruptcy Court, D. Virgin Islands",
+"jurisdiction": "FB",
+"short_name": "D. Virgin Islands"
+},
+"vtb": {
+"full_name": "United States Bankruptcy Court, D. Vermont",
+"jurisdiction": "FB",
+"short_name": "D. Vermont"
+},
+"vtd": {
+"full_name": "District Court, D. Vermont",
+"jurisdiction": "FD",
+"short_name": "D. Vermont"
+},
+"waeb": {
+"full_name": "United States Bankruptcy Court, E.D. Washington",
+"jurisdiction": "FB",
+"short_name": "E.D. Washington"
+},
+"wawb": {
+"full_name": "United States Bankruptcy Court, W.D. Washington",
+"jurisdiction": "FB",
+"short_name": "W.D. Washington"
+},
+"wieb": {
+"full_name": "United States Bankruptcy Court, E.D. Wisconsin",
+"jurisdiction": "FB",
+"short_name": "E.D. Wisconsin"
+},
+"wiwb": {
+"full_name": "United States Bankruptcy Court, W.D. Wisconsin",
+"jurisdiction": "FB",
+"short_name": "W.D. Wisconsin"
+},
+"wvnb": {
+"full_name": "United States Bankruptcy Court, N.D. West Virginia",
+"jurisdiction": "FB",
+"short_name": "N.D. West Virginia"
+},
+"wvsb": {
+"full_name": "United States Bankruptcy Court, S.D. West Virginia",
+"jurisdiction": "FB",
+"short_name": "S.D. West Virginia"
+},
+"wyb": {
+"full_name": "United States Bankruptcy Court, D. Wyoming",
+"jurisdiction": "FB",
+"short_name": "D. Wyoming"
+}
+}
