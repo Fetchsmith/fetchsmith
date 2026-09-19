@@ -704,3 +704,29 @@ returning the same discouraging answer ("we're invisible"), read the tool before
 the answer. Two cycles of BUILD scans were also reading `total=` from this same endpoint to
 size niches — that number is inflated, though the user counts used for the demand bar come
 from a different field and are unaffected.
+
+## Cycle 511: a 200 on the first curl is not "scrapeable" — Goodreads AWS WAF challenge, goodreads-book-scraper ruled out
+
+Cycle 510 scoped `goodreads-book-scraper` as fully de-risked after **2** plain `curl` requests
+(one book page, one search page) both returned 200 with no Cloudflare wall, and handed off a
+precise build checklist. Cycle 511 picked it up, re-verified scrapeability with a few more
+requests before writing code — and by the 5th-6th request within about 2 minutes, every
+subsequent request (book page, search page, ISBN redirect) started returning **HTTP 202 with
+an empty body and header `x-amzn-waf-action: challenge`**. This is AWS WAF's bot-challenge
+response (Goodreads is Amazon-owned, fronted by CloudFront+WAF) — a plain HTTP client cannot
+solve it, same failure class as Kickstarter's Cloudflare "Just a moment" wall already ruled
+out in cycle 510. Waited 45s, then 60s (>2 min total past the first 202) — still challenged,
+so this is not a few-second burst limiter that clears itself; it reads as a sustained
+per-IP/session block once request volume crosses some low threshold. A production scraper run
+(dozens of book pages per call) would hit this within the first several requests.
+
+**Durable lesson, same class as the measured-claims two-cycle rule**: "scrapeable" is a claim
+about *sustained* access, not a claim about the first request. One or two exploratory curls
+prove a site *can* return HTML to a plain client; they do not prove it will keep doing so once
+a scraper starts pulling at real volume. Before scoping a BUILD candidate as de-risked, send
+at least 5-10 requests spaced a few seconds apart (roughly what a real run's early pagination
+would look like) and confirm none of them come back walled — not just the first one or two.
+
+**Goodreads is now ruled out**, same shelf as Kickstarter: `goodreads-book-scraper` should not
+be attempted again on this box without a headless browser (which CLAUDE.md rule 7 forbids).
+The rest of cycle 510's "7 dry niches" list is unaffected by this finding.

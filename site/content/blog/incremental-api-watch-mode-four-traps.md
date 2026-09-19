@@ -1,13 +1,13 @@
 ---
 title: Eight ways an "only new since last run" watch mode silently stops working
-description: "New" is not a property of a public API — it's a property of your own history. Shipping incremental watch mode across fourteen Actors (government data, forums, job boards, tenders, campaign finance, app/game reviews) surfaced eight failure modes, and every one of them keeps the run log green while delivering nothing or delivering less than it should.
+description: "New" is not a property of a public API — it's a property of your own history. Shipping incremental watch mode across sixteen Actors (government data, forums, job boards, tenders, campaign finance, app/game/podcast platforms) surfaced eight failure modes, and every one of them keeps the run log green while delivering nothing or delivering less than it should.
 date: 2026-09-16
 tags: webscraping, api, opendata, scheduling
 ---
 
 Almost every buyer of a public-data scraper eventually wants the same thing: *don't send me the same 18,000 rows every morning, send me what changed.* That sounds like a filter. It isn't. Every public API we work with will happily tell you what **it** thinks is recent — and none of them know what **you** already received. "New" lives in your own history, which means a watch mode is a stateful feature bolted onto a stateless scraper, and that is where it goes wrong.
 
-We shipped this mode (`watchLabel`) across 15 Actors: six government-data hosts ([NIH RePORTER](/tools/nih-reporter-scraper), the [Federal Register](/tools/federal-register-scraper), [Grants.gov](/tools/grants-gov-scraper), [openFDA recalls](/tools/fda-recall-scraper), [ClinicalTrials.gov](/tools/clinicaltrials-scraper) and [court records](/tools/court-records-scraper)), two tender/procurement hosts ([EU TED](/tools/eu-ted-tenders-scraper) and [UK Find a Tender](/tools/uk-find-a-tender-scraper)), two money hosts ([US federal awards](/tools/us-federal-awards-scraper) and [FEC campaign finance](/tools/fec-campaign-finance-scraper)), a forum ([Hacker News](/tools/hacker-news-scraper)), a job board aggregator ([ATS jobs](/tools/ats-jobs-scraper)) and three app/game review platforms ([Google Play](/tools/google-play-reviews-scraper), [the Apple App Store](/tools/app-store-reviews-scraper) and [Steam](/tools/steam-reviews-scraper)). The state machine copied across all fifteen almost unchanged. What did not copy were the eight traps below. Each one was found on a *different* host, each produces a run that exits 0 with a cheerful log line, and each delivers either zero rows forever or a silent under-count.
+We shipped this mode (`watchLabel`) across 16 Actors: six government-data hosts ([NIH RePORTER](/tools/nih-reporter-scraper), the [Federal Register](/tools/federal-register-scraper), [Grants.gov](/tools/grants-gov-scraper), [openFDA recalls](/tools/fda-recall-scraper), [ClinicalTrials.gov](/tools/clinicaltrials-scraper) and [court records](/tools/court-records-scraper)), two tender/procurement hosts ([EU TED](/tools/eu-ted-tenders-scraper) and [UK Find a Tender](/tools/uk-find-a-tender-scraper)), two money hosts ([US federal awards](/tools/us-federal-awards-scraper) and [FEC campaign finance](/tools/fec-campaign-finance-scraper)), a forum ([Hacker News](/tools/hacker-news-scraper)), a job board aggregator ([ATS jobs](/tools/ats-jobs-scraper)) and four app/game/podcast platforms ([Google Play](/tools/google-play-reviews-scraper), [the Apple App Store](/tools/app-store-reviews-scraper), [Steam](/tools/steam-reviews-scraper) and [Apple Podcasts](/tools/apple-podcasts-scraper)). The state machine copied across all sixteen almost unchanged. What did not copy were the eight traps below. Each one was found on a *different* host, each produces a run that exits 0 with a cheerful log line, and each delivers either zero rows forever or a silent under-count.
 
 ## Trap 0: the API's own "recent" flag is not your "new"
 
@@ -125,7 +125,7 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 
 ## Where this is live
 
-`watchLabel` is an optional input on 15 of our Actors — leave it unset and they behave exactly as before:
+`watchLabel` is an optional input on 16 of our Actors — leave it unset and they behave exactly as before:
 
 - [NIH RePORTER Scraper](/tools/nih-reporter-scraper) — baseline keyed on `appl_id`, plus optional `watchChanges` (project-end-date, budget-end, award-amount and active-flag changes — a no-cost extension moves the end date on the same award record)
 - [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`, deliberately with **no** `watchChanges` (published documents are never edited; `referencedCitations` links an amendment back to what it amends instead)
@@ -142,6 +142,7 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 - [Google Play Reviews Scraper](/tools/google-play-reviews-scraper) — `reviewId`, with a deferred per-app snapshot row (trap 7)
 - [App Store Reviews Scraper](/tools/app-store-reviews-scraper) — compound `appId:country:reviewId` across a two-axis app×country fanout, same deferred-snapshot pattern
 - [Steam Reviews Scraper](/tools/steam-reviews-scraper) — `appId:recommendationid` (the Actor's separate snapshot-only `games` data type rejects `watchLabel` outright — trap 6)
+- [Apple Podcasts Scraper](/tools/apple-podcasts-scraper) — `collectionId:episodeId`, restricted to `dataType: "episodes"` (charts/reviews/podcasts/publisher modes are snapshot-only, same rule as trap 6)
 
 The first run under a new label seeds and charges nothing. After that you pay only for rows you have never been sent before, which for a daily schedule on a slow-moving dataset is usually a rounding error against re-pulling the full set every morning.
 
