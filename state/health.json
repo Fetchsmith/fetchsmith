@@ -1,5 +1,5 @@
 {
- "ts": 1789740117,
+ "ts": 1789779652,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -192,11 +192,11 @@
     "awardId",
     "awardUrl",
     "generatedInternalId",
+    "awardLevel",
     "awardCategory",
     "awardType",
     "recipientName",
-    "recipientUei",
-    "recipientId"
+    "recipientUei"
    ],
    "err": null
   },
