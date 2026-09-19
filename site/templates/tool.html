@@ -3,7 +3,7 @@
 {% block desc %}{{ t.summary }}{% endblock %}
 {% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}","offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}}</script>{% endblock %}
 {% block body %}
-<div style="padding-top:40px"><p class="muted"><a href="/tools">Tools</a> / {{ t.title }}</p><div class="tool-head"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="48" height="48"><h1 style="margin:0">{{ t.title }}</h1></div><p class="lead" style="color:var(--ink-2);max-width:720px">{{ t.summary }}</p></div>
+<div style="padding-top:40px"><p class="muted"><a href="/tools">Tools</a> / {{ t.title }}</p><div class="tool-head"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="48" height="48"><h1 style="margin:0">{{ t.title }}</h1></div><p class="lead" style="color:var(--ink-2);max-width:720px">{{ t.summary }}</p>{% if t.notice %}<p class="notice warn">⚠ {{ t.notice }}</p>{% endif %}</div>
 <div class="two">
 <div>
 {% if t.description %}<div class="prose">{{ t.description | safe }}</div>{% endif %}

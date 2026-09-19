@@ -695,6 +695,7 @@
       "title": "Scholarship Scraper (bold.org)",
       "summary": "Scholarship listings from bold.org as structured data: award amount, number of awards, deadline, essay prompt, judging criteria, education levels, donor and the live applicant count \u2014 plus a computed applicants-per-award competitiveness ratio.",
       "status": "live",
+      "notice": "Currently blocked: bold.org has put its entire site behind bot-protection that returns an error before any page loads. Runs fail fast and are not charged. We re-check nightly and will remove this notice the moment it clears.",
       "credits_per_result": 1,
       "apify_actor_id": "nT9KnaY4AwTVzXwoI",
       "example_input": {

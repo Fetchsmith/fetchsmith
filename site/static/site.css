@@ -34,7 +34,8 @@ main{min-height:60vh}
 .card .meta{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:6px}
 .card .icon{width:36px;height:36px;border-radius:9px;display:block;margin-bottom:2px}
 .tool-head{display:flex;align-items:center;gap:14px}.tool-head .icon{width:48px;height:48px;border-radius:11px;display:block;flex:none}
-.pill{display:inline-block;font-size:.74rem;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}.pill.gray{background:var(--bg-2);color:var(--muted)}
+.pill{display:inline-block;font-size:.74rem;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}.pill.gray{background:var(--bg-2);color:var(--muted)}.pill.amber{background:#fef3c7;color:#92400e}
+.notice.warn{background:#fef3c7;border-color:#fde68a;color:#92400e}
 .notice{background:var(--brand-soft);border:1px solid #a7f3d0;padding:14px 16px;border-radius:10px;margin:24px 0;color:#065f46}
 .two{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start;margin-top:8px}
 .side{position:sticky;top:80px;border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:var(--bg-2)}.side .price{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}.side .price small{font-size:.85rem;font-weight:500;color:var(--muted)}
