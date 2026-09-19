@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "app-store-reviews-scraper",
   "title": "App Store Reviews Scraper – Any App, Any Country",
-  "description": "Extract Apple App Store reviews for any iOS or Mac app and country storefront: rating, title, text, version, author, date, app metadata and the per-star ratings breakdown. Pay per review.",
+  "description": "Extract Apple App Store reviews for any iOS or Mac app and country storefront: rating, title, text, version, author, date, app metadata, per-star ratings breakdown, and sort by most recent, most helpful, favorable or critical. Pay per review.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

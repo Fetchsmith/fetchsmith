@@ -1,6 +1,6 @@
 {
   "title": "App Store Reviews Scraper – Any App, Any Country",
-  "description": "Extract Apple App Store reviews for any iOS or Mac app and country storefront: rating, title, text, version, author, date, app metadata and the per-star ratings breakdown. Pay per review.",
+  "description": "Extract Apple App Store reviews for any iOS or Mac app and country storefront: rating, title, text, version, author, date, app metadata, per-star ratings breakdown, and sort by most recent, most helpful, favorable or critical. Pay per review.",
   "seoTitle": "App Store Reviews Scraper – iOS App Reviews to JSON/CSV",
   "seoDescription": "Scrape Apple App Store reviews for any iOS or Mac app and country: rating, title, text, version, author, date, plus the per-star ratings distribution. Pay per review.",
   "categories": [

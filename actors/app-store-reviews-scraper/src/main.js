@@ -19,6 +19,12 @@ if (appNames.length && apps.length === DEFAULT_APPS.length && apps.every((a, i) 
   apps = [];
 }
 const countries = (input.countries?.length ? input.countries : ['us']).map((c) => c.toLowerCase().trim());
+// favorable/critical are not real Apple feed orders -- there is no server-side "sort by rating".
+// They mean "scan under mostRecent, then buffer the whole per-pair scan and re-emit it sorted by
+// rating before pushing" (see ratingSort below). requestedSort stays mostRecent/mostHelpful only;
+// it is the underlying feed order actually requested from Apple.
+const RATING_SORTS = new Set(['favorable', 'critical']);
+const ratingSort = RATING_SORTS.has(input.sort) ? input.sort : null;
 const requestedSort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const perApp = Math.min(Number(input.maxReviewsPerApp ?? 200), 500);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
@@ -69,7 +75,9 @@ if (webhookUrlRaw) {
 // Chronological early-stop (below) only works on the date-sorted feed. mostHelpful has no date
 // ordering, so a cutoff there is still applied as a plain filter but can't cut pagination short.
 if (reviewsAfterDate && requestedSort === 'mostHelpful') log.warning('"reviewsAfter" forces sort to "mostRecent" (Apple\'s "mostHelpful" feed is not date-ordered, so a historical cutoff can\'t be applied to it efficiently).');
-const sort = reviewsAfterDate ? 'mostRecent' : requestedSort;
+// ratingSort always scans under mostRecent: it needs the whole per-pair result set buffered
+// anyway, and mostRecent is the only feed order that also supports reviewsAfter's early-stop.
+const sort = (reviewsAfterDate || ratingSort) ? 'mostRecent' : requestedSort;
 if ((minVoteSum != null || minVoteCount != null) && sort === 'mostRecent') {
   log.warning('"minVoteSum"/"minVoteCount" filter on Apple\'s helpfulness votes, which are only populated on the "mostHelpful" feed — under sort "mostRecent" every review comes back with 0 votes, so a floor above 0 will keep nothing. Set sort to "mostHelpful" (and drop "reviewsAfter", which forces mostRecent) to use them.');
 }
@@ -105,6 +113,14 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchMode = watchLabel.length > 0;
+if (watchMode && ratingSort) {
+  await Actor.fail(
+    `"sort": "${ratingSort}" cannot be combined with "watchLabel". Rating sort buffers a whole app/country `
+    + 'scan and re-orders it before delivery; watchLabel\'s "only what\'s new since last run" semantics depend on '
+    + 'scanning and delivering in the feed\'s own order. Drop watchLabel to use rating sort, or use sort '
+    + '"mostRecent"/"mostHelpful" with watchLabel.',
+  );
+}
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -181,16 +197,11 @@ async function saveWatchRecord(status) {
 
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item, watchId = null, pairSeeding = false) {
-  if (watchMode && watchId != null && pairSeeding) {
-    watchSeen.add(watchId);
-    if (watchSeen.size >= SEED_CAP) keepGoing = false;
-    return keepGoing;
-  }
-  if (watchMode && watchId != null && watchSeen.has(watchId)) {
-    watchSkipped += 1;
-    return true; // already delivered under this label: not pushed, not charged, keep scanning
-  }
+// ratingSort buffers one (app,country) pair's whole passing-filter scan here instead of pushing
+// immediately, so it can be re-ordered by rating before delivery. Reset per pair (see the main
+// pair loop below) -- buffering globally would let one huge app dominate memory/ordering.
+let pairBuffer = [];
+async function chargeAndPush(item, watchId = null) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
@@ -201,6 +212,46 @@ async function pushResult(item, watchId = null, pairSeeding = false) {
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
   if (watchMode && watchId != null) watchSeen.add(watchId);
   return pushed < maxResults;
+}
+// Sorts everything currently buffered for one (app,country) pair by rating and charges/pushes it
+// in that order, then empties the buffer. Ties keep newest-first, matching the mostRecent scan
+// order used underneath. Called right after each scrapeAppCountry() call (primary and, if it
+// runs, the countryFallback retry) -- BEFORE the "N kept after filters" log line that follows, so
+// `pushed` is accurate by the time that line reads it.
+async function flushPairBuffer() {
+  if (!pairBuffer.length) return;
+  const buffered = pairBuffer;
+  pairBuffer = [];
+  buffered.sort((a, b) => {
+    const ra = a.item.rating ?? 0;
+    const rb = b.item.rating ?? 0;
+    const byRating = ratingSort === 'favorable' ? rb - ra : ra - rb;
+    if (byRating !== 0) return byRating;
+    return new Date(b.item.updatedAt || 0) - new Date(a.item.updatedAt || 0);
+  });
+  for (const { item, watchId } of buffered) {
+    keepGoing = await chargeAndPush(item, watchId);
+    if (!keepGoing) break;
+  }
+}
+async function pushResult(item, watchId = null, pairSeeding = false) {
+  if (watchMode && watchId != null && pairSeeding) {
+    watchSeen.add(watchId);
+    if (watchSeen.size >= SEED_CAP) keepGoing = false;
+    return keepGoing;
+  }
+  if (watchMode && watchId != null && watchSeen.has(watchId)) {
+    watchSkipped += 1;
+    return true; // already delivered under this label: not pushed, not charged, keep scanning
+  }
+  if (ratingSort) {
+    // Not charged/pushed yet -- just buffered. maxReviewsPerApp/reviewsAfter early-stop still
+    // apply to the SCAN (tally.got / canEarlyStop in scrapeAppCountrySort, both unaffected by
+    // this), so the scan depth is identical to a non-rating-sort run; only the push order defers.
+    pairBuffer.push({ item, watchId });
+    return true;
+  }
+  return chargeAndPush(item, watchId);
 }
 const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
 
@@ -536,6 +587,7 @@ for (const app of apps) {
     const pushedBefore = pushed;
     pairsAttempted += 1;
     const { got, filteredOut, capReached, newForPair } = await scrapeAppCountry(appId, country, {}, pairSeeding);
+    if (ratingSort) await flushPairBuffer();
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
     if (capReached && filteredOut > 0) {
       depthCappedPairs.push(`${appId}/${country}`);
@@ -555,6 +607,7 @@ for (const app of apps) {
         const fb = alt[0];
         log.info(`countryFallback: "${country}" is empty for ${appId}, retrieving reviews from "${fb}" instead.`);
         const fb2 = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true }, pairSeeding);
+        if (ratingSort) await flushPairBuffer();
         totalNewForPair += fb2.newForPair;
         totalGot += fb2.got;
         log.info(`${appId}/${fb} (fallback): ${fb2.got} reviews fetched, ${pushed - pushedBefore} kept after filters`);

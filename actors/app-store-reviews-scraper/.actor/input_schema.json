@@ -48,11 +48,13 @@
     "sort": {
       "title": "Sort",
       "type": "string",
-      "description": "mostRecent or mostHelpful. Apple's feed is sometimes empty for one sort order and full for the other on the very same app — if the sort you pick returns nothing, the Actor automatically retries under the other one, and every row records which order it came from in 'sortUsed'.",
+      "description": "mostRecent or mostHelpful scan Apple's feed in that order and deliver rows as found. favorable/critical scan under mostRecent, then buffer and re-order the whole scanned set by star rating before delivery (favorable = 5-to-1, critical = 1-to-5, newest first within a tied rating) — cannot be combined with watchLabel. Apple's feed is sometimes empty for one sort order and full for the other on the very same app — if mostRecent/mostHelpful returns nothing, the Actor automatically retries under the other one, and every row records which order it came from in 'sortUsed'.",
       "default": "mostRecent",
       "enum": [
         "mostRecent",
-        "mostHelpful"
+        "mostHelpful",
+        "favorable",
+        "critical"
       ],
       "editor": "select"
     },
