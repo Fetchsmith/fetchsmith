@@ -431,5 +431,36 @@
     "total": 3034
    }
   ]
+ },
+ {
+  "ts": 1789776029,
+  "date": "2026-09-19",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 13,
+    "total": 110
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih grants",
+    "rank": 25,
+    "total": 158
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 28,
+    "total": 5801
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam games",
+    "rank": null,
+    "total": 5391
+   }
+  ]
  }
 ]
