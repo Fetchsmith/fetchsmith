@@ -1,0 +1,32 @@
+{
+  "_source": "freelawproject/courtlistener cl/search/models.py Court.JURISDICTIONS",
+  "_source_commit": "36323189cb23f56e031dd56c34394ed01c05feab",
+  "_source_commit_date": "2026-09-17T16:32:06Z",
+  "_fetched": "2026-09-19T11:35Z (cycle 500)",
+  "_verified": "all 8 codes present in the 260 live-API-harvested courts (FD,FB,FS,F,MA,FBP,SA,S) appear here; pending 1-request OPTIONS /api/rest/v4/courts/ confirmation once the CourtListener throttle clears",
+  "codes": {
+    "F": "Federal Appellate",
+    "FD": "Federal District",
+    "FB": "Federal Bankruptcy",
+    "FBP": "Federal Bankruptcy Panel",
+    "FS": "Federal Special",
+    "S": "State Supreme",
+    "SA": "State Appellate",
+    "ST": "State Trial",
+    "SS": "State Special",
+    "TRS": "Tribal Supreme",
+    "TRA": "Tribal Appellate",
+    "TRT": "Tribal Trial",
+    "TRX": "Tribal Special",
+    "TS": "Territory Supreme",
+    "TA": "Territory Appellate",
+    "TT": "Territory Trial",
+    "TSP": "Territory Special",
+    "SAG": "State Attorney General",
+    "MA": "Military Appellate",
+    "MT": "Military Trial",
+    "C": "Committee",
+    "I": "International",
+    "T": "Testing"
+  }
+}
