@@ -69,8 +69,24 @@ def env():
 
 
 def rank_for(client, query, slug, scan):
-    """Return (rank, total) — rank is 0-based position of fetchsmith/<slug>, or None."""
+    """Return (rank, total, scanned) — rank is the 0-based position of
+    fetchsmith/<slug> among the items search actually returns, or None.
+
+    Two things about /v2/store?search= that this has to work around (measured
+    cycle 508, see LEARNINGS):
+
+      * a page is almost never `limit` items long. With limit=100 the API hands
+        back 73-93 — it applies the limit first and then drops items (deprecated
+        /private/filtered listings) from the page it already cut. So `offset +
+        i` over-states the real position by the accumulated shortfall, and
+        counting items actually seen is the only honest rank.
+      * consequently "short page" does NOT mean "last page". The old
+        `len(items) < PAGE: break` fired on page 1 of essentially every query,
+        which is why this tool reported "NOT IN TOP 1200" for Actors that a full
+        scan finds at rank 88 and 109. Only an empty page ends the result set.
+    """
     total = None
+    seen = 0
     for offset in range(0, scan, PAGE):
         r = client.get(
             f"{API}/store",
@@ -80,12 +96,13 @@ def rank_for(client, query, slug, scan):
         r.raise_for_status()
         data = r.json()["data"]
         total = data["total"]
-        for i, item in enumerate(data["items"]):
-            if item.get("username") == "fetchsmith" and item.get("name") == slug:
-                return offset + i, total
-        if len(data["items"]) < PAGE:
+        if not data["items"]:
             break
-    return None, total
+        for item in data["items"]:
+            if item.get("username") == "fetchsmith" and item.get("name") == slug:
+                return seen, total, seen + 1
+            seen += 1
+    return None, total, seen
 
 
 def main():
@@ -106,22 +123,31 @@ def main():
     with httpx.Client(headers=headers) as client:
         for slug in slugs:
             for query in QUERIES[slug]:
-                rank, total = rank_for(client, query, slug, scan)
+                rank, total, scanned = rank_for(client, query, slug, scan)
                 rows.append(
-                    {"slug": slug, "query": query, "rank": rank, "total": total}
+                    {
+                        "slug": slug,
+                        "query": query,
+                        "rank": rank,
+                        "total": total,
+                        "scanned": scanned,
+                    }
                 )
                 # page 1 of the Store UI is ~24 tiles; that is the line that matters
-                where = (
-                    f"#{rank + 1}" + (" (PAGE 1)" if rank < 24 else "")
-                    if rank is not None
-                    else f"NOT IN TOP {scan}"
-                )
-                print(f"{slug:32s} {query:24s} {where:14s} of {total}")
+                if rank is not None:
+                    where = f"#{rank + 1}" + (" (PAGE 1)" if rank < 24 else "")
+                    # `total` is the API's own match count; it runs well above what
+                    # search will actually hand out, so it is context, not a rank-of.
+                    tail = f"(api claims {total} matches)"
+                else:
+                    where = "ABSENT"
+                    tail = f"(scanned all {scanned} returned; api claims {total})"
+                print(f"{slug:32s} {query:24s} {where:14s} {tail}")
 
     found = [r for r in rows if r["rank"] is not None]
     page1 = [r for r in found if r["rank"] < 24]
     print(
-        f"\n{len(found)}/{len(rows)} queries rank us within top {scan}; "
+        f"\n{len(found)}/{len(rows)} queries return us at all (scan depth {scan}); "
         f"{len(page1)} on store page 1 (top 24)."
     )
     near = sorted(

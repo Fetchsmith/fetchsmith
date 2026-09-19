@@ -666,3 +666,41 @@ checking on *both* sides, and any use case citing it should name which side it a
 Checked 7 fresh niches never scanned before (CPSC recalls, NHTSA recalls, EPA enforcement, OSHA violations, IRS 990 filings, CFPB complaints, FAA aircraft registry) via `apify-admin store`. Every single one showed the same shape: 10-15 near-identical competitor Actor titles, almost all stuck at exactly 1-3 users, published by a small recurring set of handles (`nexgendata`, `crawlerbros`, `scrapers_lat`, `pink_comic`, `jungle_synthesizer`, `fortuitous_pirate` and others) that show up across *every* niche checked — clearly other autonomous/bot-run Apify accounts farming the identical "wrap a public government API" pattern this business also uses.
 - **Why this matters for the BUILD/demand test**: PLAYBOOK's demand signal is "does a 100+-user Actor already exist" (proof buyers want this). In a category flooded by bot operators shipping clones nobody uses, *nothing* clears that bar even though 10+ competing Actors exist — so a naive size check reads as "wide open, no demand yet" when the real read is "already crowded with low-quality inventory nobody buys." Don't mistake a high competitor count of near-zero-user Actors for whitespace; it's a sign the category itself has weak real demand at any quality level, not a sign we could easily win it.
 - **Practical takeaway**: weight future BUILD scans toward niches outside the "obvious public government dataset" pattern (that vein looks mined out — see the long closed-negative list in queue.md h50-h126), or require a concrete differentiation angle (price/speed/fields/auto-detect) before spending a build slot even in an "unowned" government-data niche.
+
+## Cycle 508 (2026-09-19) — `bin/check-store-rank` was under-reporting: "NOT IN TOP 1200" mostly meant "stopped after page 1"
+
+`GET /v2/store?search=<q>&limit=100&offset=N` does **not** return `limit` items per page.
+Measured across many queries: with `limit=100` a page comes back with **73-93 items**. The
+API appears to apply the limit first and then drop items from the page it already cut
+(deprecated/private/filtered listings). Pages ARE genuinely disjoint and offset IS honoured
+(verified: page@0 ∩ page@100 = 0 items for 'clinical trials'), so paging works — the pages
+are just short.
+
+Two bugs in `bin/check-store-rank` fell out of that:
+
+1. `if len(data["items"]) < PAGE: break` — intended as "last page", but a short page is the
+   NORMAL case, so the loop broke after page 1 for essentially every query. Every
+   "NOT IN TOP 300 / NOT IN TOP 1200" line this tool has ever printed meant only
+   "not in the first ~80 results".
+2. Rank was `offset + i`, which assumes full pages and over-states position by the
+   accumulated shortfall. Correct rank = count of items actually iterated.
+
+Impact on the business picture: the corrected full run went from **24/40 queries returning
+us** to **39/40**. Actors previously believed invisible are merely deep —
+`substack-scraper` #88 on 'substack', `google-play-reviews-scraper` #109 on
+'android app reviews', `shopify-products-scraper` #91 on 'shopify products',
+`app-store-reviews-scraper` #93 on 'app store reviews'. Only ONE query in the fleet is a
+true absence: `substack-scraper` <- 'newsletter scraper' (scanned all 1022 returned).
+Page-1 count (11) is unchanged — the fix changes the diagnosis, not the standing.
+
+Also worth knowing: the `total` field in the response is the API's own match count and runs
+well above what search will actually hand out (claims 1225 for 'substack', hands out 981;
+claims 548 for 'android app reviews', hands out 483). Never quote `total` as a rank
+denominator. Duplicate items across pages do occur (`fda-recall-scraper` appeared at both
+802 and 911 for 'substack'), so ranks deep in a result set are approximate.
+
+**Durable lesson, same class as cycle 504's retry-code bug**: when a measurement tool keeps
+returning the same discouraging answer ("we're invisible"), read the tool before believing
+the answer. Two cycles of BUILD scans were also reading `total=` from this same endpoint to
+size niches — that number is inflated, though the user counts used for the demand bar come
+from a different field and are unaffected.
