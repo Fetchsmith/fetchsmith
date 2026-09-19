@@ -831,3 +831,40 @@ The rest of cycle 510's "7 dry niches" list is unaffected by this finding.
 **Still open for a future GROWTH cycle** (verified-genuine, not yet acted on): `steam api` on `steam-reviews-scraper` (p213→~p7 predicted), `substack api` on `substack-scraper` (p9→~p5, already page 1, lower priority), `who's hiring` on `hacker-news-scraper` (title-match block was reported empty by the naive tokenizer due to the apostrophe — same class of bug as cycle 522's dotted-query caveat — but a direct raw check found a real p1 competitor match on `"Who Is Hiring"` wording; our title uses the contracted `"Who's Hiring"` instead, so whether our exact wording would title-match is unverified and needs a fresh raw check, not a guess, before editing).
 
 **Reusable rule:** `_highlightResult.matchLevel` on Algolia hits is only real data for the first ~6 positions of any query's result set, independent of `hitsPerPage`. Never use it to verify a hit ranked below p6 — check the top-ranked member of whatever cohort you're trying to validate instead, since that member is guaranteed to be within the reliable window whenever the cohort is genuinely small (which is exactly the case worth verifying).
+
+## Cycle 524 (2026-09-19) — Algolia PROXIMITY beats everything `--attr` models; it decided every Store-rank win we have
+**The finding, from a real two-publish controlled experiment on one Actor** (`google-news-scraper`, same index, same storePosition 53755, only the word order of the title changed):
+
+| live title | `google news api` | `google news rss` |
+|---|---|---|
+| `Google News Scraper – RSS & API, Real URLs, Any Language` | **p255** | **p4** |
+| `Google News API Scraper – RSS, Real URLs, Any Language`   | **p6**   | **p128** |
+
+Both queries word-match the title in BOTH titles. The only variable is how many words
+separate the query's tokens. Moving `API` from 3 words after `News` to directly after it
+is worth ~250 ranks — an order of magnitude more than the entire storePosition spread
+that `bin/store-rank --attr` models. Algolia's `proximity` criterion runs before the
+custom `storePosition` tiebreaker, so joining the title-match block is **necessary but
+not sufficient**.
+
+**Why this hid for 5 cycles:** every win the `--attr` method has produced (`recruitee`,
+`tmview`, `super pac`, `nice classification`, `hn api` p2, `steam api` p2) happened to be
+written as an exact contiguous phrase, so the naive model's predictions kept landing.
+The first non-contiguous edit (this cycle's interim `RSS & API` wording) missed its ~p16
+prediction by 240 ranks — that miss is what exposed the mechanism.
+
+**Rules now encoded in `bin/store-rank`:**
+1. A title can realistically win **one** multi-word query. Choose it deliberately; a
+   second multi-word query in the same title pays the proximity penalty.
+2. Write the target query as a literal adjacent, in-query-order phrase in the title.
+3. `--attr` now prints the measured **token span** (0 = contiguous) for any query already
+   in our title, and flags "LIKELY PROXIMITY DEMOTION" when span > 0 and rank > 20. The
+   span helper scores the *tightest* occurrence, because a token can appear twice
+   (`Steam Reviews Scraper – Steam API…` scores span 0 via the second "Steam", which is
+   exactly why it sits at p2).
+4. Prediction lines now carry an explicit "VALID ONLY IF the new title spells this query
+   contiguously" caveat. Do not publish off a prediction without a phrasing that satisfies it.
+
+**Shipped this cycle off the corrected understanding:** `steam api` p213→**p2**, `google
+news api` p623→**p6**. Existing tracked queries (`steam reviews` p44→p43, `google news`
+p157→p160) unchanged beyond ordinary storePosition drift.

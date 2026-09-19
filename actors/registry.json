@@ -65,7 +65,7 @@
     },
     {
       "slug": "google-news-scraper",
-      "title": "Google News Scraper \u2013 Real URLs, Any Language",
+      "title": "Google News API Scraper \u2013 RSS, Real URLs, Any Language",
       "summary": "Search Google News by keyword, topic or publisher and get articles with the headline (raw and with the \" - Publisher\" suffix stripped), source name and domain, date, feed rank and the resolved publisher URL \u2014 plus related coverage of the same story and optional full article text, author, image and keywords. Any language or country.",
       "status": "live",
       "credits_per_result": 1,
@@ -578,7 +578,7 @@
     },
     {
       "slug": "steam-reviews-scraper",
-      "title": "Steam Reviews Scraper \u2013 Playtime, Keyword & Language Filters",
+      "title": "Steam Reviews Scraper \u2013 Steam API, Playtime & Language Filters",
       "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type \u2014 plus a games mode with prices, genres, developers, review-score summaries, live player counts and optional SteamSpy owner estimates, peak concurrent players and crowd-voted tags. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet game returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,

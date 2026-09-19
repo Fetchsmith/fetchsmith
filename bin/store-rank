@@ -64,9 +64,13 @@ TERMS = {
     "uk-find-a-tender-scraper": ["find a tender", "uk tenders"],
     "substack-scraper": ["substack"],
     "apple-podcasts-scraper": ["apple podcasts"],
-    "steam-reviews-scraper": ["steam reviews"],
+    "steam-reviews-scraper": ["steam reviews", "steam api"],  # cycle 524: "steam api" p213->p2 after title edit
     "hacker-news-scraper": ["hacker news", "hn api"],  # cycle 523: "hn api" p227->p2 after title edit
-    "google-news-scraper": ["google news"],
+    # cycle 524: "google news api" p623->p6 after the title was rewritten to spell it
+    # contiguously. "google news rss" is the same Actor's runner-up and was measured at
+    # p4 with the interim "Scraper - RSS & API" wording, then fell back to p128 when API
+    # was moved next to News — one title cannot win both (proximity, see attr() docstring).
+    "google-news-scraper": ["google news", "google news api", "google news rss"],
     "app-store-reviews-scraper": ["app store reviews"],
     "google-play-reviews-scraper": ["google play reviews"],
     "shopify-products-scraper": ["shopify products"],
@@ -178,6 +182,27 @@ def attr(query, slug):
     contains "ClinicalTrials.gov", inexplicably sits at p61 rather than inside that
     top cluster; this specific anomaly is still unexplained and is a good target for
     a future investigation, separate from the general cutoff bug documented here).
+
+    CAVEAT 2 (cycle 524) — **PROXIMITY, and it dominates everything below it.**
+    Joining the title-match block is necessary but NOT sufficient: Algolia's
+    `proximity` criterion (how many words apart the query's tokens sit in the title,
+    in query order) is applied BEFORE `storePosition`, so the prediction printed
+    below only holds if the edited title puts the query's tokens ADJACENT and IN
+    QUERY ORDER. Measured directly on `google-news-scraper` (one Actor, one index,
+    same storePosition 53755, only the word order changed between two real publishes):
+        title "Google News Scraper - RSS & API, ..."   -> 'google news rss' p4,   'google news api' p255
+        title "Google News API Scraper - RSS, ..."     -> 'google news api' p6,   'google news rss' p128
+    A token three words downstream instead of one costs ~250 ranks — far more than
+    the whole storePosition spread this function models. Both queries were in-title
+    in both titles, so `query in our title: True` alone means nothing.
+    Practical rules: (a) one title can realistically win ONE multi-word query — pick
+    it; (b) write the query as a literal contiguous phrase in the title ("Steam API
+    Scraper", "Hacker News (HN) API Scraper" — both measured p2) rather than
+    scattering its words; (c) every confirmed win this method has produced
+    (`recruitee`, `tmview`, `super pac`, `nice classification`, `hn api`, `steam api`)
+    was an exact contiguous phrase, which is why the naive model looked accurate
+    until a non-contiguous edit was tried.
+
     **Correct verification: check the matchLevel of the TOP-RANKED member of the
     title-match block instead of our own hit** — the top block member sits at or
     near position 1, safely inside the reliable window. If real Algolia agrees that
@@ -193,6 +218,30 @@ def attr(query, slug):
     # Opinions ... Scraper". Treat a record as a title-matcher when every query token
     # prefixes some word of its title.
     tokens = query.lower().split()
+
+    def token_span(title, toks):
+        """Extra words between the query's tokens in `title`, matched in query order.
+
+        0 == contiguous phrase (what Algolia's proximity criterion rewards). None ==
+        the tokens do not appear in query order at all (worst case for proximity).
+        """
+        words = "".join(c if c.isalnum() else " " for c in title.lower()).split()
+        best = None
+        # A token can occur more than once ("Steam Reviews Scraper - Steam API..."),
+        # and Algolia scores the tightest occurrence, so try every start position for
+        # the first token and keep the minimum span, not the first match found.
+        for first in (i for i, w in enumerate(words) if w.startswith(toks[0])):
+            idxs = [first]
+            for t in toks[1:]:
+                hit = next((i for i in range(idxs[-1] + 1, len(words)) if words[i].startswith(t)), None)
+                if hit is None:
+                    idxs = None
+                    break
+                idxs.append(hit)
+            if idxs:
+                span = (idxs[-1] - idxs[0]) - (len(toks) - 1)
+                best = span if best is None else min(best, span)
+        return best
 
     def title_match(h):
         words = "".join(c if c.isalnum() else " " for c in (h.get("title") or "").lower()).split()
@@ -239,10 +288,24 @@ def attr(query, slug):
                 "match for this query. DO NOT publish a title edit off this prediction."
             )
     if in_title:
-        print("  -> already in the title block; only storePosition (real usage) can move us.")
+        span = token_span(rec.get("title") or "", tokens)
+        print(f"  -> already in the title block; our title's token span for this query: {span}")
+        if span is not None and span > 0 and pos > 20:
+            print(
+                "  -> LIKELY PROXIMITY DEMOTION (cycle 524): the tokens are in the title but not "
+                f"contiguous ({span} extra word(s) between them). Rewriting the title so the query "
+                "reads as a literal adjacent phrase is worth ~hundreds of ranks — but it will cost "
+                "you whichever other query currently sits closer together. See docstring CAVEAT 2."
+            )
+        else:
+            print("  -> only storePosition (real usage) can move us further on this query.")
     else:
         print(f"  -> {len(ahead)} title-matchers have a better storePosition than us")
         print(f"  -> predicted rank if we join the title block: ~p{len(ahead) + 1} (from p{pos})")
+        print(
+            "  -> VALID ONLY IF the new title spells this query as a contiguous, in-order phrase "
+            "(cycle 524 proximity finding — see docstring CAVEAT 2). A scattered match ranks far worse."
+        )
     return 0
 
 

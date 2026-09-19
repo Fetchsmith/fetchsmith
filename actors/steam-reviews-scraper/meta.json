@@ -1,5 +1,5 @@
 {
-  "title": "Steam Reviews Scraper – Playtime, Keyword & Language Filters",
+  "title": "Steam Reviews Scraper – Steam API, Playtime & Language Filters",
   "description": "Steam player reviews and store data to JSON/CSV: review text, playtime, thumbs up/down, helpfulness votes, purchase type. Filter by playtime, keyword, language or review type, or include the off-topic review bombs Steam hides; games mode adds price, genres, player count, owner estimates and tags.",
   "seoTitle": "Steam Reviews Scraper - Game Reviews & Store Data API",
   "seoDescription": "Scrape Steam reviews to JSON/CSV: text, playtime, votes, language and purchase filters, plus game prices, genres, owner estimates and tags. Pay per result.",
