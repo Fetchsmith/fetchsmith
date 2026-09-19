@@ -400,8 +400,10 @@ function normalize(d) {
         signingDate: d.signing_date ?? null,
         datesText: d.dates ?? null,
 
-        // `significant` is only ever set on rules and proposed rules (43%/40% of a 200-row
-        // sample); it is null on every notice and presidential document, by design.
+        // Non-null only on rules/proposed rules, and even there it's null more often than not:
+        // live sample of 200 RULE + 200 PRORULE (2025-01 to 2026-09) measured true/false present
+        // on only ~45%/40% of them — a null on a rule is NOT "not significant", most rules are
+        // simply never submitted for EO 12866 review. Always null on notices/presidential docs.
         significant: typeof d.significant === 'boolean' ? d.significant : null,
 
         // Flattened the same way TED/UK-FTS flatten buyer names, and split parent vs. sub-agency

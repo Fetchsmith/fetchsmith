@@ -11,7 +11,7 @@ No API key, no login, no proxy. Public government data only.
 | Field | Why it matters |
 | --- | --- |
 | `commentsCloseOn` | The public-comment deadline — **when you have to act by**. Present on 92% of proposed rules and about a third of notices (measured on a live 200-row sample per type). |
-| `significant` | The Executive Order 12866 "significant rule" flag. Set on final and proposed rules only (~40% of them); always null on notices and presidential documents. |
+| `significant` | The Executive Order 12866 "significant rule" flag. Only ever non-null on final and proposed rules, and even there it's present on just ~45%/40% of them (measured, see FAQ) — always null on notices and presidential documents. |
 | `regulationIdNumbers` | RIN — joins a document to its entry in reginfo.gov's Unified Agenda. |
 | `docketIds` | Regulations.gov docket IDs, so you can pull the comment file. |
 | `cfrReferences` | Flattened to readable strings like `40 CFR 257`. |
@@ -133,7 +133,7 @@ The filters are ANDed. A `searchQuery` plus an agency plus `significantOnly` ove
 The desk is small and resets every business day — a narrow agency or `searchQuery` legitimately matches nothing most days, and it is empty on weekends and federal holidays. Schedule it daily with a `watchLabel` instead of running it once. The log says which of these applies.
 
 **Is `significant` reliable?**
-It is reliable where it exists — on final and proposed rules. It is `null` by design on notices and presidential documents, so don't read null as "not significant" outside rules.
+Where it's non-null, yes — but non-null is rarer than you'd expect. Measured live on 200 final rules and 200 proposed rules (2025-01 through 2026-09): only **~45% of rules and ~40% of proposed rules** carry an explicit `true`/`false`; the rest are `null`. A `null` on a rule does **not** mean "not significant" — most rules are simply never submitted for EO 12866 review, so the flag was never assigned to them. If you need confirmed-significant documents, use `significantOnly` (which filters server-side to `true` only) rather than reading `significant` yourself and treating `null` as a negative. It is always `null` by design on notices and presidential documents.
 
 **Does it fetch the full document text?**
 No. Each row carries `fullTextUrl`, the public plain-text URL, so you fetch bodies only for the documents you care about instead of paying for text on every row.
