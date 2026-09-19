@@ -1,0 +1,107 @@
+#!/root/agent/venv/bin/python
+"""Diff each public Actor's local meta.json charge-event prices against the LIVE Apify
+pricingInfos record. This is the only check that compares a price against the platform
+rather than against another of our own files -- a wrong or missing live price means we
+charge the wrong amount, or nothing at all, on every external run.
+
+Two traps this handles, both learned the hard way (cycle 480):
+  1. A charge event carries EITHER a flat `eventPriceUsd` OR a per-plan
+     `eventTieredPricingUsd` {FREE,BRONZE,SILVER,GOLD,PLATINUM,DIAMOND}. 9 of the 20
+     Actors are on the tiered shape, 11 are flat. Code that only reads `eventPriceUsd`
+     silently sees None for nearly half the fleet and reads as "no price set".
+  2. `pricingInfos` is a history list whose LAST entry may be future-dated and NOT yet
+     in effect (LEARNINGS cycle 388). Filter by `startedAt <= now` before quoting
+     anything as the current price.
+
+Read-only: launches no runs, costs no compute. Exit 1 on any drift.
+"""
+import datetime
+import glob
+import json
+import os
+import sys
+
+import httpx
+
+API = "https://api.apify.com/v2"
+
+
+def token():
+    env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env")
+               if "=" in l and not l.startswith("#"))
+    return env["APIFY_TOKEN"]
+
+
+def price_of(event):
+    """(price, shape) for one charge event, handling both pricing shapes.
+
+    For the tiered shape the FREE tier is the headline price -- it is what a Store
+    visitor on no paid plan is quoted, and it is the tier every competitor comparison
+    in notes/ is written against."""
+    if event is None:
+        return None, "missing"
+    if "eventPriceUsd" in event:
+        return event["eventPriceUsd"], "flat"
+    tiers = event.get("eventTieredPricingUsd") or {}
+    free = (tiers.get("FREE") or {}).get("tieredEventPriceUsd")
+    return free, "tiered"
+
+
+def effective(pricing_infos, now):
+    """The pricing entry actually in effect right now, or None."""
+    live = [p for p in (pricing_infos or [])
+            if p.get("startedAt")
+            and datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    return live[-1] if live else None
+
+
+def main():
+    H = {"Authorization": "Bearer " + token()}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    drift = actors = events = 0
+
+    for path in sorted(glob.glob("/root/agent/actors/*/meta.json")):
+        slug = os.path.basename(os.path.dirname(path))
+        r = httpx.get(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30).json()
+        act = r.get("data")
+        if not act or not act.get("isPublic"):
+            continue
+        actors += 1
+        local_events = (json.load(open(path)).get("events") or {})
+        cur = effective(act.get("pricingInfos"), now)
+        if cur is None:
+            drift += 1
+            print(f"{slug}: NO pricing in effect (all {len(act.get('pricingInfos') or [])} "
+                  f"entries are future-dated) -- external runs are charging nothing")
+            continue
+        if cur.get("pricingModel") != "PAY_PER_EVENT":
+            drift += 1
+            print(f"{slug}: live pricingModel is {cur.get('pricingModel')}, expected PAY_PER_EVENT")
+            continue
+        live_events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+
+        for name in sorted(set(local_events) | set(live_events)):
+            events += 1
+            lp, lshape = price_of(local_events.get(name))
+            rp, rshape = price_of(live_events.get(name))
+            if rshape == "missing":
+                drift += 1
+                print(f"{slug}/{name}: in meta.json (${lp}) but NOT live -- never published")
+            elif lshape == "missing":
+                drift += 1
+                print(f"{slug}/{name}: live at ${rp} but absent from meta.json -- "
+                      f"a republish would delete this charge event")
+            elif lshape != rshape:
+                drift += 1
+                print(f"{slug}/{name}: SHAPE drift, meta.json is {lshape} but live is {rshape} "
+                      f"-- publishing would overwrite the live pricing shape")
+            elif rp is None or lp is None or abs(lp - rp) > 1e-12:
+                drift += 1
+                print(f"{slug}/{name}: PRICE drift, meta.json ${lp} vs live ${rp} ({rshape})")
+
+    print(f"check-pricing: {actors} public Actors, {events} charge events, {drift} drift(s)")
+    return 1 if drift else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
