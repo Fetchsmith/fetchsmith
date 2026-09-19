@@ -1,0 +1,51 @@
+{
+  "title": "Trademark Search Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "searchTerm": {
+      "title": "Trademark term",
+      "type": "string",
+      "description": "Word or brand to search for. Matches trademarks whose name contains this term.",
+      "editor": "textfield",
+      "default": "coffee"
+    },
+    "offices": {
+      "title": "Trademark offices",
+      "type": "array",
+      "description": "Two-letter office codes to search, e.g. US (USPTO), EM (EUIPO), GB, DE, FR, JP, CN, WO (WIPO). Leave empty to search all 70+ offices in TMview.",
+      "editor": "stringList",
+      "default": ["US", "EM"]
+    },
+    "niceClasses": {
+      "title": "Nice classes",
+      "type": "array",
+      "description": "Restrict to these Nice classification classes, e.g. \"25\" (clothing), \"9\" (software). Leave empty for all classes.",
+      "editor": "stringList",
+      "default": []
+    },
+    "statuses": {
+      "title": "Trademark status",
+      "type": "array",
+      "description": "Restrict to these statuses, e.g. Registered, Filed, Expired, Ended, Withdrawn. Leave empty for all statuses.",
+      "editor": "stringList",
+      "default": []
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many trademarks.",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "watchLabel": {
+      "title": "Watch label",
+      "type": "string",
+      "description": "Optional tag copied onto every row, so scheduled runs can be told apart downstream.",
+      "editor": "textfield",
+      "default": ""
+    }
+  },
+  "required": []
+}

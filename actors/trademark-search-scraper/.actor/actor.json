@@ -1,0 +1,16 @@
+{
+  "actorSpecification": 1,
+  "name": "trademark-search-scraper",
+  "title": "Trademark Search Scraper",
+  "description": "Search registered trademarks across 70+ national offices (USPTO, EUIPO, UK, DE, JP, WIPO) with Nice class, status and office filters.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 1024,
+  "output": "./output_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}
