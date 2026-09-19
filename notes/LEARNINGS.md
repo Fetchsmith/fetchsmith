@@ -563,3 +563,28 @@ A varied-input platform check on `clinicaltrials-scraper` asked for `leadSponsor
 - **The fix (build 0.1.40)**: only page 1 of a store/collection is ambiguous (a later page legitimately running out is real), so zero-on-page-1 is now re-confirmed up to 2 extra times with 2s/4s backoff before being believed. Each attempt gets a fresh proxy IP for free, because `proxyUrlFor()` is already called per request with no session id. Costs nothing on the normal path. The empty-store warning now says "on 3 separate attempts" — but only for the paged route, since the single-product route makes no retries and must not claim them.
 - **Generalizable rule for the fleet**: for any source where an empty-but-valid response is indistinguishable from a real "no results," **re-confirm zero before reporting it**, and never let a zero-result message assert a cause the code did not actually verify. Worth auditing the other Actors for the same shape — a bare `if (!items.length) break;` on the first page of a paged source is the signature.
 - **Verification recipe that worked here** (reusable): copy `src/main.js` to `src/main.fault.js`, `sed` the one response line to inject the fault, prepend a flag, run with `CRAWLEE_STORAGE_DIR=./storage`, then `rm` the copy — main.js is never touched, so there is no restore step to forget. Tested both polarities: always-empty (3 attempts, honest message, 0 rows, 0 charged) and empty-once (recovers, 10 rows) — the latter reproduces the exact health-check failure and shows it now self-heals.
+
+## Cycle 484 — "retry the request" and "re-confirm the answer" are different hardening layers
+Generalizes the cycle-483 shopify finding after auditing the whole fleet for it.
+
+`apple-podcasts-scraper` *already had* a retry layer on empty review feeds: 4 `RSS_VARIANTS`
+fingerprints rotated on the first page, added because Apple's review shards genuinely disagree
+about the same URL. It still had the bug, because all four requests fire back-to-back inside ~1
+second. That defeats a *per-client* cause (shard disagreement) and is blind to a *per-moment* cause
+(stale edge cache, a rate-limited IP answering 200-with-nothing). **Rotating the client is not the
+same as spacing the attempt in time — an empty-but-valid 200 that decides the whole run needs
+both.** When reviewing an Actor for this shape, "it already retries" is not an answer; ask what
+varies between the attempts.
+
+Second half, which cost nothing to fix and is worth grepping for everywhere: **a zero-result
+message must only assert the cause the code actually established.** `apple-podcasts-scraper` said
+Apple's feed "is empty (that is Apple's data, not a scrape failure)" on a path that also ran when
+the fetch had *thrown*. Three functions returned a bare `0` for both "source really has nothing"
+and "the request broke", collapsing two different answers into one number. Fix shape: return
+`{ got, failed }`, keep a `failedIds` list separate from `emptyIds`, and say "re-run it" instead of
+diagnosing the buyer's input.
+
+Fleet audit result for the record: `app-store-reviews-scraper` (continues past empty pages instead
+of breaking) and `steam-reviews-scraper` (`looksDegenerate` + spaced retries on page 0) were
+already immune; the 10 API-backed Actors return counted result sets and cannot have the shape;
+`substack`/`ats-jobs`/`hacker-news` still have it but are h75-invisible (see h104).

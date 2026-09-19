@@ -211,7 +211,11 @@ const RSS_VARIANTS = [
   { headerGeneratorOptions: { browsers: ['safari'], devices: ['mobile'], operatingSystems: ['ios'] } },
 ];
 let preferredVariant = 0; // the fingerprint that last worked; tried first to keep requests at 1/page
-async function fetchEntries(url, rotate = true) {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// A full pass over the fingerprints. Every variant is requested back-to-back, so this only
+// defeats the shard disagreement above — not a transient (stale edge cache, or a rate-limited
+// IP answered 200-with-an-empty-feed) that is the same for all four within the same second.
+async function fetchEntriesOnce(url, rotate) {
   const order = rotate
     ? [preferredVariant, ...RSS_VARIANTS.keys()].filter((v, i, a) => a.indexOf(v) === i)
     : [preferredVariant]; // mid-pagination an empty feed just means "no more reviews"
@@ -224,6 +228,23 @@ async function fetchEntries(url, rotate = true) {
     } catch (e) { lastError = e; }
   }
   if (lastError) throw lastError;
+  return [];
+}
+// An empty FIRST page decides the whole podcast's result and is reported to the buyer as
+// "Apple has no reviews for this show", so it has to be re-confirmed over time before it is
+// believed — a single empty-but-valid 200 is not evidence of no data (see shopify-products-scraper
+// build 0.1.40 / LEARNINGS cycle 483 for the same defect shape). Later pages are left alone:
+// running out there is legitimate.
+const EMPTY_RECONFIRM_DELAYS_MS = [2000, 4000];
+async function fetchEntries(url, firstPage = true) {
+  let entries = await fetchEntriesOnce(url, firstPage);
+  if (entries.length || !firstPage) return entries;
+  for (const [i, delay] of EMPTY_RECONFIRM_DELAYS_MS.entries()) {
+    log.warning(`Apple's review feed came back empty on the first page — re-checking in ${delay / 1000}s (attempt ${i + 2}/${EMPTY_RECONFIRM_DELAYS_MS.length + 1}) before reporting no reviews.`);
+    await sleep(delay);
+    entries = await fetchEntriesOnce(url, true);
+    if (entries.length) return entries;
+  }
   return [];
 }
 
@@ -491,10 +512,10 @@ async function scrapeEpisodes(id) {
     const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcastEpisode&limit=${Math.min(perPodcastEpisodes, 200)}`;
     let results = [];
     try { results = (await getJson(url)).results ?? []; }
-    catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return 0; }
+    catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return { got: 0, failed: true }; }
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
-  return pushEpisodeRows(rows);
+  return { got: await pushEpisodeRows(rows), failed: false };
 }
 
 // Podcast shows without an Apple presence (or with one the caller didn't bother looking up) can
@@ -508,7 +529,7 @@ async function scrapeEpisodesFromFeed(feedUrl) {
     $ = cheerio.load(res.body, { xml: true });
   } catch (e) {
     log.warning(`Could not fetch RSS feed "${feedUrl}": ${e.message}`);
-    return 0;
+    return { got: 0, failed: true };
   }
   const channel = $('channel').first();
   const info = includePodcastInfo ? {
@@ -522,20 +543,21 @@ async function scrapeEpisodesFromFeed(feedUrl) {
   } : null;
   const channelExplicit = parseItunesExplicit(channel.find('> itunes\\:explicit').first().text());
   const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info, channelExplicit)).get();
-  return pushEpisodeRows(rows);
+  return { got: await pushEpisodeRows(rows), failed: false };
 }
 
 async function scrapeReviews(id) {
   const info = await getPodcastInfo(id);
   let got = 0;
   let filteredOut = 0;
+  let failed = false; // a fetch that threw is NOT evidence that Apple has no reviews
   for (let page = 1; page <= 10 && got < perPodcastReviews && keepGoing; page++) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     let entries = [];
     try {
       const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${id}/sortBy=${sort}/page=${page}/json`;
       entries = await fetchEntries(url, got === 0);
-    } catch (e) { log.warning(`review page ${page} failed for ${id}: ${e.message}`); break; }
+    } catch (e) { log.warning(`review page ${page} failed for ${id}: ${e.message}`); failed = got === 0; break; }
     if (!entries.length) break;
     for (const e of entries) {
       if (got >= perPodcastReviews) break;
@@ -562,7 +584,7 @@ async function scrapeReviews(id) {
     }
   }
   const capReached = got >= perPodcastReviews;
-  return { got, filteredOut, capReached };
+  return { got, filteredOut, capReached, failed };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -601,6 +623,7 @@ for (const term of searchTerms) {
 
 // ---- run -------------------------------------------------------------------
 const emptyIds = [];
+const failedIds = []; // sources that returned nothing because the request broke, not because they are empty
 const depthCapped = [];
 if (dataType === 'charts') {
   // Rank comes from array order in all cases.
@@ -738,9 +761,11 @@ if (dataType === 'charts') {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     const before = pushed;
     let got;
+    let failed;
     if (dataType === 'reviews') {
       const r = await scrapeReviews(id);
       got = r.got;
+      failed = r.failed;
       if (r.capReached && r.filteredOut > 0) {
         log.warning(
           `Podcast ${id}: scanned the maxReviewsPerPodcast limit of ${perPodcastReviews} review(s) and ${r.filteredOut} of them `
@@ -750,13 +775,18 @@ if (dataType === 'charts') {
         depthCapped.push(id);
       }
     } else {
-      got = await scrapeEpisodes(id);
+      ({ got, failed } = await scrapeEpisodes(id));
     }
     log.info(`${id}: ${got} ${dataType} fetched, ${pushed - before} kept after filters.`);
-    if (got === 0) {
+    // Zero rows because the request itself failed is a DIFFERENT answer from zero rows because
+    // Apple has nothing, and must never be reported as the latter (LEARNINGS cycle 484).
+    if (got === 0 && failed) {
+      failedIds.push(id);
+      log.warning(`Could not read ${dataType} for podcast ${id} from Apple — the request failed (see the warning above), so this is NOT evidence that Apple has no ${dataType} for this show. Re-run it.`);
+    } else if (got === 0) {
       emptyIds.push(id);
       log.warning(dataType === 'reviews'
-        ? `Apple's review feed for podcast ${id} in storefront "${country}" is empty (that is Apple's data, not a scrape failure) — try another "country", or check the ID is an Apple Podcasts ID.`
+        ? `Apple's review feed for podcast ${id} in storefront "${country}" came back empty on ${EMPTY_RECONFIRM_DELAYS_MS.length + 1} separate attempts across ${RSS_VARIANTS.length} request fingerprints, so this is Apple's data rather than a scrape failure — try another "country", or check the ID is an Apple Podcasts ID.`
         : `Apple returned no episodes for podcast ${id} in storefront "${country}" — check the ID is an Apple Podcasts ID and that the show is available in that storefront.`);
     }
   }
@@ -765,11 +795,14 @@ if (dataType === 'charts') {
       if (!keepGoing) break;
       if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
       const before = pushed;
-      const got = await scrapeEpisodesFromFeed(feedUrl);
+      const { got, failed } = await scrapeEpisodesFromFeed(feedUrl);
       log.info(`${feedUrl}: ${got} episodes fetched, ${pushed - before} kept after filters.`);
-      if (got === 0) {
+      if (got === 0 && failed) {
+        failedIds.push(feedUrl);
+        log.warning(`Could not fetch RSS feed "${feedUrl}" (see the warning above) — that is a fetch failure, not evidence that the feed has no episodes. Re-run it.`);
+      } else if (got === 0) {
         emptyIds.push(feedUrl);
-        log.warning(`RSS feed "${feedUrl}" returned no episodes — check it's a valid podcast RSS feed URL.`);
+        log.warning(`RSS feed "${feedUrl}" was fetched successfully but contains no <item> episodes — check it's a valid podcast RSS feed URL.`);
       }
     }
   }
@@ -807,7 +840,9 @@ if (watchMode && seeding) {
 } else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No results before the run approached its time limit.${timeBudgetNote}`);
 } else if (pushed === 0) {
-  const why = emptyIds.length
+  const why = failedIds.length
+    ? `the request to Apple failed for: ${failedIds.join(', ')} — that is a fetch failure, not proof there is no data. Re-run it`
+    : emptyIds.length
     ? emptySourceLabel(emptyIds)
     : emptySearches.length
       ? `your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`
@@ -821,8 +856,9 @@ if (watchMode && seeding) {
   await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
 } else if (depthCapped.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`);
-} else if (emptyIds.length || timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${timeBudgetNote}`);
+} else if (emptyIds.length || failedIds.length || timeBudgetExceeded) {
+  const failedNote = failedIds.length ? ` The request to Apple failed for: ${failedIds.join(', ')} — re-run to get those.` : '';
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${failedNote}${timeBudgetNote}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never

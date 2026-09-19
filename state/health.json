@@ -1,5 +1,5 @@
 {
- "ts": 1789785190,
+ "ts": 1789788601,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -50,11 +50,20 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": false,
+   "ok": true,
    "status": 201,
-   "items": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "currency"
+   ],
+   "err": null
   },
   "hacker-news-scraper": {
    "ok": true,
