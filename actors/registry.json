@@ -818,30 +818,31 @@
         "changeReasonDescription"
       ],
       "sample_output": {
-        "publicationNumber": "590290-2026",
-        "noticeType": "can-standard",
+        "publicationNumber": "629162-2026",
+        "noticeType": "cn-standard",
         "procedureType": "open",
-        "title": "France – Construction work – Opération de construction du Pôle logistique du CEA Grenoble",
+        "title": "France – Refuse and waste related services – Traitement des déchets issus des déchetteries de Saint-Antoine-du-Rocher, de Pernay et de Saint-Paterne-Racan - Relance du lot n°3 « Traitement déchets verts et souches »",
         "titleLanguage": "eng",
-        "buyerName": "CEA - Grenoble",
+        "buyerName": "Communauté de Communes Gâtine-Racan",
         "buyerCountry": "FRA",
-        "buyerCity": "Grenoble",
+        "buyerCity": "Saint-Antoine-Du-Rocher",
         "contractNature": [
-          "works"
+          "services"
         ],
         "cpvCodes": [
-          "45000000",
-          "45213220",
-          "45260000"
+          "90500000",
+          "90513000"
         ],
-        "description": "Travaux de Couverture / Bardage dans le cadre de l'opération de construction du Pôle logistique située sur le site du CEA Grenoble",
-        "totalValue": 834262,
+        "description": "La présente consultation a pour objet le traitement des déchets issus des déchetteries de Saint-Antoine-du-Rocher, de Pernay et de Saint-Paterne-Racan - Lot n°3 « Traitement des déchets verts et souches ».",
+        "totalValue": 435000,
         "totalValueCurrency": "EUR",
-        "deadlineDate": null,
+        "deadlineDate": "2026-10-14",
+        "deadlineType": "tender",
+        "daysUntilDeadline": 25,
         "deadlineReceiptRequestDate": null,
-        "publicationDate": "2026-08-27",
-        "noticeUrl": "https://ted.europa.eu/en/notice/590290-2026/pdf",
-        "procedureIdentifier": "9c33de09-a365-49a1-82bc-fff711671150",
+        "publicationDate": "2026-09-14",
+        "noticeUrl": "https://ted.europa.eu/en/notice/629162-2026/pdf",
+        "procedureIdentifier": "26272159-01fb-40c6-a514-0bc8851a9ec8",
         "changeReasonDescription": null
       }
     },
