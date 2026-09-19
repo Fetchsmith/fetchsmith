@@ -64,6 +64,7 @@ GLYPHS = {
     "grants-gov-scraper": ("GNT", GOV),
     "nih-reporter-scraper": ("NIH", EDU),
     "court-records-scraper": ("CRT", GOV),
+    "trademark-search-scraper": ("TM", GOV),
 }
 DEFAULT_ACCENT = BRAND
 
