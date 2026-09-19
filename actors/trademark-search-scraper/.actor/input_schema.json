@@ -42,7 +42,7 @@
     "watchLabel": {
       "title": "Watch label",
       "type": "string",
-      "description": "Optional tag copied onto every row, so scheduled runs can be told apart downstream.",
+      "description": "Optional label that turns on watch mode: the first run under a label seeds a baseline and returns nothing (charged nothing); every run after that returns and charges only marks not already delivered under that label. Leave unset for a plain, repeatable search.",
       "editor": "textfield",
       "default": ""
     }

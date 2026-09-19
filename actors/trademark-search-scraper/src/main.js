@@ -1,5 +1,6 @@
 // Trademark Search Scraper — TMview (EUIPO/TMDN) public search API, 70+ national offices.
 // HTTP-only JSON API, no headless browser. Charges 'result' per pushed row.
+import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -31,14 +32,87 @@ try {
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
 
-async function pushResult(item) {
+// Watch mode: "only what's new since my last run on this label+search" -- distinct from a
+// plain search, which returns the same matching marks every time. Baseline (ST13 ids already
+// delivered under this label+criteria) lives in a NAMED key-value store on the buyer's own
+// account so it survives across runs (the default KV store is per-run and would reset).
+// Same pattern as hacker-news-scraper/eu-ted-tenders-scraper etc. No watchChanges here (unlike
+// fda-recall-scraper/grants-gov-scraper): TMview's own status field can move Pending->Registered,
+// but tracking that transition needs re-querying every known id, out of scope for this pass --
+// new-matches-only is still the core "opposition watch" value (catching new filings early).
+const WATCH_STORE = 'fetchsmith-trademark-watch';
+const SEED_CAP = 5000;
+const WATCH_KEEP = 20000;
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+const watchSeen = new Set();
+
+if (watchMode) {
+  const criteria = { searchTerm, offices, niceClasses, statuses };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    for (const id of existing.seenIds) watchSeen.add(String(id));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered mark(s). Only marks NOT in that baseline will be returned and charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and search, so this is a baseline run. `
+      + 'It records which marks already match and returns ZERO results (charged nothing). Run it again on the '
+      + 'same label/search -- on a schedule, typically -- to get only marks that are new since now.',
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seenIds: ids,
+  });
+}
+
+async function pushResult(item, watchId) {
+  if (watchMode && watchId != null && seeding) {
+    watchSeen.add(String(watchId));
+    return watchSeen.size < SEED_CAP;
+  }
+  if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
+    watchSkipped += 1;
+    return true;
+  }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
+    if (watchMode && watchId != null) watchSeen.add(String(watchId));
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1;
+  if (watchMode && watchId != null) watchSeen.add(String(watchId));
   return pushed < maxResults;
 }
 
@@ -115,7 +189,7 @@ try {
 
     while (keepGoing && batch.length) {
       for (const tm of batch) {
-        keepGoing = await pushResult(normalize(tm));
+        keepGoing = await pushResult(normalize(tm), tm.ST13 ?? null);
         if (!keepGoing) break;
       }
       if (!keepGoing || page >= totalPages) break;
@@ -127,6 +201,26 @@ try {
 } catch (err) {
   log.exception(err, 'Run failed');
   await Actor.fail(`Run failed: ${err.message}`);
+}
+
+if (watchMode) {
+  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  if (seeding) {
+    log.info(
+      `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} mark(s) recorded as already-seen, `
+      + '0 results returned, 0 charged. The next run on this label and search returns only new marks.'
+      + (watchSeen.size >= SEED_CAP
+        ? ` NOTE: the baseline hit the ${SEED_CAP}-mark cap. Narrow the search (tighter term, offices, class or `
+        + 'status) so the whole current match set fits, or the first incremental run may report older marks past the cap as new.'
+        : ''),
+    );
+    await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing mark(s) recorded, 0 charged. Run again later to get only what's new.`);
+  } else {
+    log.info(`Watch label "${watchLabel}": ${pushed} new mark(s) since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+    if (pushed === 0) {
+      await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+    }
+  }
 }
 
 log.info(`Done. Pushed ${pushed} results.${watchLabel ? ` Watch label: ${watchLabel}` : ''}`);
