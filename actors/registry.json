@@ -1539,7 +1539,7 @@
     },
     {
       "slug": "fec-campaign-finance-scraper",
-      "title": "FEC Campaign Finance Scraper - Candidates, Donors & Spending",
+      "title": "FEC Campaign Finance Scraper - Super PAC, Candidates & Donors",
       "summary": "Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle via the FEC's official open.fec.gov API, with each candidate's campaign financial totals (receipts, disbursements, cash on hand, individual contributions) included. Three transaction modes cover the money itself: donor contributions (Schedule A) by donor name, employer, occupation, city or ZIP code, committee spending (Schedule B) by vendor/recipient, and independent expenditures (Schedule E) for or against a named candidate. No API key needed, no login required. Optional watch mode (watchLabel) delivers only rows new since your last run in any transaction mode.",
       "status": "live",
       "credits_per_result": 1,
@@ -1691,7 +1691,7 @@
     },
     {
       "slug": "trademark-search-scraper",
-      "title": "Trademark Search Scraper \u2014 USPTO, EUIPO & 70+ Offices (TMview)",
+      "title": "Trademark Scraper \u2014 USPTO, EUIPO, Nice Classification (TMview)",
       "summary": "Search registered trademarks across 70+ national and regional trademark offices \u2014 USPTO (US), EUIPO (EM), UK, DE, FR, JP, CN, WIPO (WO) and more \u2014 in one call via the official TMview database. 18 fields incl. trademark name, status, type, application/registration numbers and dates, applicant names, Nice classes, Vienna codes (figurative marks), territories and mark image URL. Filter by office, Nice class and status; results are deduplicated and paginated with no overlap verified up to 359 pages deep.",
       "status": "live",
       "credits_per_result": 1,

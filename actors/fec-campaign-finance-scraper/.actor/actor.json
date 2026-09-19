@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "fec-campaign-finance-scraper",
-  "title": "FEC Campaign Finance Scraper - Candidates, Donors & Spending",
+  "title": "FEC Campaign Finance Scraper - Super PAC, Candidates & Donors",
   "description": "Search US federal candidates by name/state/office/party/cycle with campaign financial totals, individual donor contributions (Schedule A), committee spending (Schedule B) or independent expenditures for/against a candidate (Schedule E), via the official FEC open.fec.gov API. No key needed.",
   "version": "0.1",
   "buildTag": "latest",
