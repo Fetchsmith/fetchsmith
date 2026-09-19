@@ -19,6 +19,36 @@
 "jurisdiction": "FD",
 "short_name": "D. Alaska"
 },
+"ala": {
+"full_name": "Supreme Court of Alabama",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Alabama"
+},
+"alacivapp": {
+"full_name": "Court of Civil Appeals of Alabama",
+"jurisdiction": "SA",
+"short_name": "Court of Civil Appeals of Alabama"
+},
+"alacrimapp": {
+"full_name": "Court of Criminal Appeals of Alabama",
+"jurisdiction": "SA",
+"short_name": "Court of Criminal Appeals of Alabama"
+},
+"alactapp": {
+"full_name": "Alabama Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Alabama Court of Appeals"
+},
+"alaska": {
+"full_name": "Alaska Supreme Court",
+"jurisdiction": "S",
+"short_name": "Alaska Supreme Court"
+},
+"alaskactapp": {
+"full_name": "Court of Appeals of Alaska",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Alaska"
+},
 "almb": {
 "full_name": "United States Bankruptcy Court, M.D. Alabama",
 "jurisdiction": "FB",
@@ -63,6 +93,11 @@
 "full_name": "District Court, E.D. Arkansas",
 "jurisdiction": "FD",
 "short_name": "E.D. Arkansas"
+},
+"ariz": {
+"full_name": "Arizona Supreme Court",
+"jurisdiction": "S",
+"short_name": "Arizona Supreme Court"
 },
 "armfor": {
 "full_name": "Court of Appeals for the Armed Forces",
@@ -233,6 +268,11 @@
 "full_name": "District Court, D. California",
 "jurisdiction": "FD",
 "short_name": "D. California"
+},
+"canalzoned": {
+"full_name": "District Court, Canal Zone",
+"jurisdiction": "FD",
+"short_name": "District Court, Canal Zone"
 },
 "canb": {
 "full_name": "United States Bankruptcy Court, N.D. California",
@@ -412,6 +452,11 @@
 "gub": {
 "full_name": "United States Bankruptcy Court, D. Guam",
 "jurisdiction": "FB",
+"short_name": "D. Guam"
+},
+"gud": {
+"full_name": "District Court, D. Guam",
+"jurisdiction": "FD",
 "short_name": "D. Guam"
 },
 "hib": {
@@ -789,6 +834,11 @@
 "jurisdiction": "FB",
 "short_name": "Northern Mariana Islands"
 },
+"nmid": {
+"full_name": "District Court, Northern Mariana Islands",
+"jurisdiction": "FD",
+"short_name": "Northern Mariana Islands"
+},
 "nvb": {
 "full_name": "United States Bankruptcy Court, D. Nevada",
 "jurisdiction": "FB",
@@ -952,6 +1002,11 @@
 "prb": {
 "full_name": "United States Bankruptcy Court, D. Puerto Rico",
 "jurisdiction": "FB",
+"short_name": "D. Puerto Rico"
+},
+"prd": {
+"full_name": "District Court, D. Puerto Rico",
+"jurisdiction": "FD",
 "short_name": "D. Puerto Rico"
 },
 "reglrailreorgct": {
@@ -1149,10 +1204,20 @@
 "jurisdiction": "FB",
 "short_name": "W.D. Virginia"
 },
+"vawd": {
+"full_name": "District Court, W.D. Virginia",
+"jurisdiction": "FD",
+"short_name": "W.D. Virginia"
+},
 "vib": {
 "full_name": "United States Bankruptcy Court, D. Virgin Islands",
 "jurisdiction": "FB",
 "short_name": "D. Virgin Islands"
+},
+"vid": {
+"full_name": "District Court, Virgin Islands",
+"jurisdiction": "FD",
+"short_name": "Virgin Islands"
 },
 "vtb": {
 "full_name": "United States Bankruptcy Court, D. Vermont",
@@ -1169,9 +1234,19 @@
 "jurisdiction": "FB",
 "short_name": "E.D. Washington"
 },
+"waed": {
+"full_name": "District Court, E.D. Washington",
+"jurisdiction": "FD",
+"short_name": "E.D. Washington"
+},
 "wawb": {
 "full_name": "United States Bankruptcy Court, W.D. Washington",
 "jurisdiction": "FB",
+"short_name": "W.D. Washington"
+},
+"wawd": {
+"full_name": "District Court, W.D. Washington",
+"jurisdiction": "FD",
 "short_name": "W.D. Washington"
 },
 "wieb": {
@@ -1179,9 +1254,19 @@
 "jurisdiction": "FB",
 "short_name": "E.D. Wisconsin"
 },
+"wied": {
+"full_name": "District Court, E.D. Wisconsin",
+"jurisdiction": "FD",
+"short_name": "E.D. Wisconsin"
+},
 "wiwb": {
 "full_name": "United States Bankruptcy Court, W.D. Wisconsin",
 "jurisdiction": "FB",
+"short_name": "W.D. Wisconsin"
+},
+"wiwd": {
+"full_name": "District Court, W.D. Wisconsin",
+"jurisdiction": "FD",
 "short_name": "W.D. Wisconsin"
 },
 "wvnb": {
@@ -1189,14 +1274,29 @@
 "jurisdiction": "FB",
 "short_name": "N.D. West Virginia"
 },
+"wvnd": {
+"full_name": "District Court, N.D. West Virginia",
+"jurisdiction": "FD",
+"short_name": "N.D. West Virginia"
+},
 "wvsb": {
 "full_name": "United States Bankruptcy Court, S.D. West Virginia",
 "jurisdiction": "FB",
 "short_name": "S.D. West Virginia"
 },
+"wvsd": {
+"full_name": "District Court, S.D. West Virginia",
+"jurisdiction": "FD",
+"short_name": "S.D. West Virginia"
+},
 "wyb": {
 "full_name": "United States Bankruptcy Court, D. Wyoming",
 "jurisdiction": "FB",
+"short_name": "D. Wyoming"
+},
+"wyd": {
+"full_name": "District Court, D. Wyoming",
+"jurisdiction": "FD",
 "short_name": "D. Wyoming"
 }
 }
