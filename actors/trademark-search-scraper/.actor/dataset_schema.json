@@ -3,12 +3,95 @@
   "fields": {
     "type": "object",
     "properties": {
+      "id": {
+        "title": "Id",
+        "example": "004176283",
+        "type": ["string", "null"]
+      },
+      "st13": {
+        "title": "St13",
+        "example": "004176283",
+        "type": ["string", "null"]
+      },
       "url": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "URL"
+        "title": "Url",
+        "example": "https://www.tmdn.org/tmview/#/tmview/detail/EM500000004176283",
+        "type": ["string", "null"]
+      },
+      "trademarkName": {
+        "title": "TrademarkName",
+        "example": "SOLARWINDS",
+        "type": ["string", "null"]
+      },
+      "office": {
+        "title": "Office",
+        "example": "EM",
+        "type": ["string", "null"]
+      },
+      "status": {
+        "title": "Status",
+        "example": "Registered",
+        "type": ["string", "null"]
+      },
+      "trademarkType": {
+        "title": "TrademarkType",
+        "example": "Word",
+        "type": ["string", "null"]
+      },
+      "applicationNumber": {
+        "title": "ApplicationNumber",
+        "example": "004176283",
+        "type": ["string", "null"]
+      },
+      "registrationNumber": {
+        "title": "RegistrationNumber",
+        "example": "004176283",
+        "type": ["string", "null"]
+      },
+      "applicationDate": {
+        "title": "ApplicationDate",
+        "example": "2004-11-22",
+        "type": ["string", "null"]
+      },
+      "registrationDate": {
+        "title": "RegistrationDate",
+        "example": "2005-08-30",
+        "type": ["string", "null"]
+      },
+      "applicantNames": {
+        "title": "ApplicantNames",
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "niceClasses": {
+        "title": "NiceClasses",
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "viennaCodes": {
+        "title": "ViennaCodes",
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "territories": {
+        "title": "Territories",
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "markImageUrl": {
+        "title": "MarkImageUrl",
+        "example": "https://www.tmdn.org/tmview/image/EM/004176283/0",
+        "type": ["string", "null"]
+      },
+      "detailImageUrl": {
+        "title": "DetailImageUrl",
+        "example": "https://www.tmdn.org/tmview/image/EM/004176283/0",
+        "type": ["string", "null"]
+      },
+      "watchLabel": {
+        "title": "WatchLabel",
+        "example": "portfolio-2026",
+        "type": ["string", "null"]
       }
     }
   },
@@ -17,16 +100,31 @@
       "title": "Overview",
       "transformation": {
         "fields": [
+          "trademarkName",
+          "office",
+          "status",
+          "trademarkType",
+          "applicationNumber",
+          "registrationNumber",
+          "applicationDate",
+          "niceClasses",
+          "applicantNames",
           "url"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": {
-            "label": "URL",
-            "format": "link"
-          }
+          "trademarkName": { "label": "Trademark", "format": "text" },
+          "office": { "label": "Office", "format": "text" },
+          "status": { "label": "Status", "format": "text" },
+          "trademarkType": { "label": "Type", "format": "text" },
+          "applicationNumber": { "label": "App #", "format": "text" },
+          "registrationNumber": { "label": "Reg #", "format": "text" },
+          "applicationDate": { "label": "Applied", "format": "date" },
+          "niceClasses": { "label": "Nice classes", "format": "array" },
+          "applicantNames": { "label": "Applicant(s)", "format": "array" },
+          "url": { "label": "URL", "format": "link" }
         }
       }
     }

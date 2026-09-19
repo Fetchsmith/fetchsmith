@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trademark-search-scraper",
-  "title": "Trademark Search Scraper",
-  "description": "Search registered trademarks across 70+ national offices (USPTO, EUIPO, UK, DE, JP, WIPO) with Nice class, status and office filters.",
+  "title": "Trademark Search Scraper — USPTO, EUIPO & 70+ Offices (TMview)",
+  "description": "Search registered trademarks across 70+ national and regional offices (USPTO, EUIPO, UK, DE, JP, WIPO and more) via the official TMview database. 18 fields incl. status, Nice classes, applicant, dates and mark image. From $0.002/result, no start fee.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

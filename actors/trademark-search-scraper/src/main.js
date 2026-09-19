@@ -17,6 +17,17 @@ const statuses = (Array.isArray(input.statuses) ? input.statuses : []).filter(Bo
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 
+// TMview times out/resets on requests from Apify's default datacenter egress (verified cycle 513:
+// works from this box directly, fails 3/3 on-platform without a proxy) — route through Apify Proxy.
+let proxyUrl;
+try {
+  const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
+  if (proxyConfiguration) {
+    proxyUrl = await proxyConfiguration.newUrl();
+    log.info('Using Apify Proxy for TMview requests.');
+  }
+} catch (e) { log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`); }
+
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
 
@@ -52,10 +63,10 @@ function normalize(tm) {
     registrationNumber: tm.registrationNumber ?? null,
     applicationDate: toDate(tm.applicationDate),
     registrationDate: toDate(tm.registrationDate),
-    applicantNames: Array.isArray(tm.applicantName) ? tm.applicantName : [],
-    niceClasses: Array.isArray(tm.niceClass) ? tm.niceClass : [],
-    viennaCodes: Array.isArray(tm.viennaCodes) ? tm.viennaCodes : [],
-    territories: Array.isArray(tm.tProtection) ? tm.tProtection : [],
+    applicantNames: Array.isArray(tm.applicantName) ? tm.applicantName.map(String) : [],
+    niceClasses: Array.isArray(tm.niceClass) ? tm.niceClass.map(String) : [],
+    viennaCodes: Array.isArray(tm.viennaCodes) ? tm.viennaCodes.map(String) : [],
+    territories: Array.isArray(tm.tProtection) ? tm.tProtection.map(String) : [],
     markImageUrl: tm.markImageURI ?? null,
     detailImageUrl: tm.detailImageURI ?? null,
     ...(watchLabel ? { watchLabel } : {}),
@@ -81,6 +92,7 @@ async function fetchPage(page) {
     timeout: { request: 30000 },
     retry: { limit: 2 },
     throwHttpErrors: false,
+    proxyUrl,
   });
   if (res.statusCode !== 200) {
     throw new Error(`TMview returned HTTP ${res.statusCode}: ${JSON.stringify(res.body).slice(0, 300)}`);

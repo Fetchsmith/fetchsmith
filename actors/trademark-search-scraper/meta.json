@@ -1,10 +1,10 @@
 {
-  "title": "TITLE",
-  "description": "DESCRIPTION (one sentence, what site, what fields)",
-  "seoTitle": "TITLE (40-50 chars)",
-  "seoDescription": "SEO description 140-156 characters describing the data returned and who it's for.",
-  "categories": ["OTHER"],
+  "title": "Trademark Search Scraper — USPTO, EUIPO & 70+ Offices (TMview)",
+  "description": "Search registered trademarks across 70+ national and regional offices (USPTO, EUIPO, UK, DE, JP, WIPO and more) via the official TMview database. 18 fields incl. status, Nice classes, applicant, dates and mark image. From $0.002/result, no start fee.",
+  "seoTitle": "Trademark Search Scraper — USPTO, EUIPO, 70+ Offices API",
+  "seoDescription": "Search trademarks across USPTO, EUIPO and 70+ national offices via TMview. Status, Nice classes, applicant, application/registration dates, mark image. From $0.002/result.",
+  "categories": ["BUSINESS", "LEAD_GENERATION"],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One extracted record returned to the dataset.", "eventPriceUsd": 0.002 }
+    "result": { "eventTitle": "Result item", "eventDescription": "One trademark record returned to the dataset.", "eventPriceUsd": 0.002 }
   }
 }
