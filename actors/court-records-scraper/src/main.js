@@ -366,7 +366,6 @@ function normalizeOpinion(r) {
         firms: [],
 
         status: blankToNull(r.status) ?? null,
-        posture: blankToNull(r.posture) ?? null,
         proceduralHistory: blankToNull(r.procedural_history) ?? null,
         syllabus: blankToNull(r.syllabus) ?? null,
         suitNature: blankToNull(r.suitNature) ?? null,
@@ -420,7 +419,6 @@ function normalizeDocket(r) {
         firms: listOf(r.firm),
 
         status: null,
-        posture: null,
         proceduralHistory: null,
         syllabus: null,
         suitNature: blankToNull(r.suitNature) ?? null,
