@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "ats-jobs-scraper",
   "title": "ATS Jobs Scraper – Greenhouse, Ashby, Lever & More",
-  "description": "Live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday company career boards, normalized into one schema with location, remote status and salary where available.",
+  "description": "Live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday company career boards — auto-detects the ATS from just a company slug — normalized into one schema with location, remote status and salary where available.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

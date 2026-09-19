@@ -6,7 +6,7 @@
     "companies": {
       "title": "Companies",
       "type": "array",
-      "description": "List of {\"ats\": \"greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Example: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive); Workday uses \"<host>/<site>\" from the board's own URL, e.g. \"okgov.wd1.myworkdayjobs.com/okgovjobs\".",
+      "description": "List of {\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Omit \"ats\" or set it to \"auto\" to auto-detect the platform from the slug alone (tries all 6 non-Workday platforms and keeps whichever one actually has a board there) \u2014 useful when you know a company's slug but not which ATS they use. Examples when you do know the platform: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive); Workday uses \"<host>/<site>\" from the board's own URL, e.g. \"okgov.wd1.myworkdayjobs.com/okgovjobs\" \u2014 Workday cannot be auto-detected and always needs an explicit \"ats\": \"workday\".",
       "editor": "json",
       "default": [
         {
@@ -78,7 +78,7 @@
     "descriptionKeyword": {
       "title": "Description keyword filter",
       "type": "string",
-      "description": "Only keep postings whose full job description text contains this text (case-insensitive), e.g. \"Kubernetes\" or \"visa sponsorship\" — the things a title never says. Matched against the plain text, not the HTML. Leave empty for no description filter.",
+      "description": "Only keep postings whose full job description text contains this text (case-insensitive), e.g. \"Kubernetes\" or \"visa sponsorship\" \u2014 the things a title never says. Matched against the plain text, not the HTML. Leave empty for no description filter.",
       "editor": "textfield"
     },
     "descriptionExcludeKeyword": {
@@ -96,7 +96,7 @@
     "minSalary": {
       "title": "Min salary",
       "type": "integer",
-      "description": "Only keep postings whose salary range overlaps this floor or higher, e.g. 100000. Compared against the number as the ATS posted it — no currency conversion and no pay-interval normalization (salaryInterval varies: year, month, week, day, hour — check salaryCurrency/salaryInterval on the output row). Postings with no salary at all never match. Leave empty for no floor.",
+      "description": "Only keep postings whose salary range overlaps this floor or higher, e.g. 100000. Compared against the number as the ATS posted it \u2014 no currency conversion and no pay-interval normalization (salaryInterval varies: year, month, week, day, hour \u2014 check salaryCurrency/salaryInterval on the output row). Postings with no salary at all never match. Leave empty for no floor.",
       "minimum": 0
     },
     "maxSalary": {
@@ -126,7 +126,7 @@
     "includeDescriptions": {
       "title": "Include job descriptions",
       "type": "boolean",
-      "description": "Include the full HTML and plain-text job description. Turn off for a smaller/faster dataset. The description keyword filters still work with this off — the text is fetched, matched, then dropped from the rows.",
+      "description": "Include the full HTML and plain-text job description. Turn off for a smaller/faster dataset. The description keyword filters still work with this off \u2014 the text is fetched, matched, then dropped from the rows.",
       "default": true
     },
     "maxJobsPerCompany": {
@@ -154,7 +154,7 @@
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",
-      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — job postings pushed, companies scanned and how many boards errored, plus watch-label new/skipped counts if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every posting has already been pushed and charged. Leave empty to skip.",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes \u2014 job postings pushed, companies scanned and how many boards errored, plus watch-label new/skipped counts if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging \u2014 it fires after every posting has already been pushed and charged. Leave empty to skip.",
       "editor": "textfield"
     },
     "proxyConfiguration": {

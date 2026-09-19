@@ -10,6 +10,10 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
 const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday'];
+// Workday's slug is "<host>/<site>", not a bare company name, so it can't be guessed from a slug
+// alone and is excluded from auto-detection. Order is a fixed priority for the rare case where the
+// same slug string happens to exist as a real, populated board on more than one platform.
+const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters'];
 const DEFAULT_COMPANIES = [
   { ats: 'greenhouse', slug: 'airbnb' },
   { ats: 'ashby', slug: 'ramp' },
@@ -21,8 +25,10 @@ const DEFAULT_COMPANIES = [
 ];
 const seenCompanies = new Set();
 const companies = (Array.isArray(input.companies) && input.companies.length ? input.companies : DEFAULT_COMPANIES)
-  .map((c) => ({ ats: String(c.ats || '').toLowerCase().trim(), slug: String(c.slug || '').trim() }))
-  .filter((c) => c.slug && SUPPORTED_ATS.includes(c.ats))
+  // Omitted/blank `ats` means "auto" — the buyer doesn't have to know which of the 7 platforms a
+  // company uses, only its slug. Workday is excluded from auto-detection (see AUTO_DETECT_ATS).
+  .map((c) => ({ ats: String(c.ats || 'auto').toLowerCase().trim(), slug: String(c.slug || '').trim() }))
+  .filter((c) => c.slug && (c.ats === 'auto' || SUPPORTED_ATS.includes(c.ats)))
   // dedup exact (ats, slug) repeats — slug case is left as-is (some ATS slugs are case-sensitive
   // in their API URL), so this only catches literal duplicates, not near-duplicates.
   .filter((c) => {
@@ -36,7 +42,7 @@ const companies = (Array.isArray(input.companies) && input.companies.length ? in
     seenCompanies.add(key);
     return true;
   });
-if (!companies.length) await Actor.fail(`Provide at least one company as {"ats": "${SUPPORTED_ATS.join('|')}", "slug": "<company-slug>"}.`);
+if (!companies.length) await Actor.fail(`Provide at least one company as {"ats": "auto|${SUPPORTED_ATS.join('|')}", "slug": "<company-slug>"} — omit "ats" or set it to "auto" to auto-detect the platform.`);
 
 const titleKeyword = (input.titleKeyword ?? '').toLowerCase().trim();
 const titleExcludeKeyword = (input.titleExcludeKeyword ?? '').toLowerCase().trim();
@@ -596,6 +602,31 @@ const FETCHERS = {
   workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters, workday: fetchWorkday,
 };
 
+// Tries every auto-detectable platform for one slug in parallel and keeps the first (in
+// AUTO_DETECT_ATS priority order) that actually found a board there. A slug existing as an empty
+// board on one platform and a populated one on another (rare, but real — generic slugs like "demo")
+// resolves to whichever platform has jobs; if none do, the first non-404 board wins so an existing-
+// but-currently-empty board is still reported honestly rather than as "not found anywhere".
+async function fetchAuto(slug) {
+  const settled = await Promise.allSettled(AUTO_DETECT_ATS.map((ats) => FETCHERS[ats](slug)));
+  const hits = AUTO_DETECT_ATS
+    .map((ats, i) => ({ ats, outcome: settled[i] }))
+    .filter((h) => h.outcome.status === 'fulfilled' && !h.outcome.value.notFound);
+  // SmartRecruiters' postings endpoint returns 200 with an empty page for a company slug that
+  // doesn't exist at all (no 404, unlike the other 5) — so an empty SmartRecruiters hit alone isn't
+  // trustworthy evidence the slug is a real board there versus not on any platform. Only count it
+  // when it actually has jobs; the other 5 fetchers all 404/non-200 on a truly unknown slug, so an
+  // empty hit from one of those is a genuine (real board, zero current openings) signal.
+  const trustworthy = hits.filter((h) => h.ats !== 'smartrecruiters' || h.outcome.value.jobs.length > 0);
+  if (!trustworthy.length) return { jobs: [], notFound: true };
+  const withJobs = trustworthy.find((h) => h.outcome.value.jobs.length > 0);
+  const chosen = withJobs ?? trustworthy[0];
+  if (trustworthy.length > 1) {
+    log.info(`${slug} — auto-detect matched on multiple platforms (${trustworthy.map((h) => h.ats).join(', ')}), using ${chosen.ats}.`);
+  }
+  return { ...chosen.outcome.value, detectedAts: chosen.ats };
+}
+
 // SmartRecruiters and Workday only carry a subset of the schema in their list payload; the rest
 // arrives from the per-job detail call, which runs AFTER their in-fetcher pre-filter. Checking a
 // not-yet-populated field there would drop every posting on a value the detail call was about to
@@ -651,13 +682,14 @@ try {
     if (!timeBudgetOk()) { log.warning('Time budget nearly exhausted — stopping before remaining companies.'); break; }
     let result;
     try {
-      result = await FETCHERS[ats](slug);
+      result = ats === 'auto' ? await fetchAuto(slug) : await FETCHERS[ats](slug);
     } catch (e) {
       log.warning(`${ats}:${slug} — fetch failed (${e.message}), skipping this company.`);
       erroredCompanies.push({ ats, slug, error: e.message });
       continue;
     }
     if (result.notFound) { notFoundCompanies.push({ ats, slug }); continue; }
+    if (result.detectedAts) log.info(`${slug} — auto-detected as ${result.detectedAts}.`);
     let scannedForCompany = 0;
     let deliveredForCompany = 0;
     for (const job of result.jobs) {

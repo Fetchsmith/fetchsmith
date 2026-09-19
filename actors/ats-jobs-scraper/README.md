@@ -4,6 +4,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 
 ## What it does
 - Fetches each company's public job-board API directly (no browser, no login) for **Greenhouse**, **Ashby**, **Lever**, **Recruitee**, **Workable**, **SmartRecruiters** and **Workday** — the ATS behind 10,000+ career sites, including many large employers no other field in this list reaches.
+- **Don't know which ATS a company uses?** Leave `ats` off (or set it to `"auto"`) and give just the slug — the Actor checks all 6 non-Workday platforms for you and uses whichever one is real. See [Don't know which ATS a company uses?](#dont-know-which-ats-a-company-uses-use-ats-auto).
 - Normalizes every posting into one shared schema (title, department, team, employment type, workplace type, remote flag, location, salary where the ATS exposes it, timestamps, apply URL, description).
 - Client-side filters (title keyword + exclude, location keyword + exclude, remote-only, has-salary, posted-after date) are applied **before** charging, so you only pay for postings you actually want.
 - Companies that have migrated off an ATS (very common for Lever) are skipped with a warning, not a failed run.
@@ -21,7 +22,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `companies` | array | `[{"ats": "greenhouse\|ashby\|lever\|recruitee\|workable\|smartrecruiters\|workday", "slug": "<company-slug>"}]`. The slug is the company identifier in their career-board URL, e.g. `jobs.ashbyhq.com/ramp` → `{"ats":"ashby","slug":"ramp"}`. **Workday's slug is `"<host>/<site>"`** (see below) since a Workday board has no single short identifier. |
+| `companies` | array | `[{"ats": "auto\|greenhouse\|ashby\|lever\|recruitee\|workable\|smartrecruiters\|workday", "slug": "<company-slug>"}]`. The slug is the company identifier in their career-board URL, e.g. `jobs.ashbyhq.com/ramp` → `{"ats":"ashby","slug":"ramp"}`. **Omit `ats` or set it to `"auto"` to skip knowing which platform a company uses** — the Actor tries all 6 non-Workday platforms for that slug and keeps whichever one actually has a board. **Workday's slug is `"<host>/<site>"`** (see below) since a Workday board has no single short identifier, and it always needs an explicit `"ats":"workday"` — it cannot be auto-detected. |
 | `titleKeyword` | string | Only keep postings whose title contains this text. |
 | `titleExcludeKeyword` | string | Drop postings whose title contains this text, e.g. `"Senior"` to filter out senior roles. |
 | `locationKeyword` | string | Only keep postings whose location/city/country contains this text. |
@@ -41,6 +42,9 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `watchLabel` | string | Optional. Name a saved job alert and return only postings not delivered under that label + filter set before. First run per label is a free baseline. See [Watch mode](#watch-mode-only-new-postings-since-last-run). |
 | `webhookUrl` | string | Optional. POST a small JSON completion summary (postings pushed, companies scanned/errored, dataset ID, watch new/skipped counts) here when the run finishes — see FAQ. |
 | `proxyConfiguration` | object | Apify Proxy config. Default: Apify Proxy on. |
+
+### Don't know which ATS a company uses? Use `"ats": "auto"`
+If you only have a guess at the slug (e.g. the company's own name, lowercased) and not the platform, pass `{"slug": "<slug>"}` with no `ats`, or `{"ats": "auto", "slug": "<slug>"}`. The Actor tries Greenhouse, Ashby, Lever, Recruitee, Workable and SmartRecruiters for that exact slug in parallel and keeps whichever platform actually has a board there — `atsSource` on the returned rows shows what it found. If the same slug happens to be a real, populated board on more than one platform (rare, but generic slugs like `demo` can collide), it keeps the one with postings; if more than one has postings, it logs the ambiguity and picks by a fixed priority order. If no platform has that slug at all, the company is skipped and reported the same as a wrong explicit `ats` guess (see below) — nothing is charged for it. Auto-detect costs the same as specifying the platform directly: only the postings actually returned are charged. **Workday is never auto-detected** — its slug format is `"<host>/<site>"`, not a bare company name, so there's nothing to guess; always pass `"ats": "workday"` explicitly for it.
 
 ### Finding a company's slug
 - **Greenhouse**: `boards.greenhouse.io/<slug>` or the `gh_jid`-style URL on their careers page.
