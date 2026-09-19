@@ -1,6 +1,20 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+// courtId -> human-readable jurisdiction label ("Federal District", "State Supreme", ...).
+// Harvested from CourtListener's own /courts/?in_use=true (all 472 in-use courts) with the
+// code->label table taken from the OPTIONS endpoint's jurisdiction choices, so both halves
+// are the API's own values rather than hand-written. Courts absent from the map (historical
+// / not-in-use) stay null by design. readFileSync + import.meta.url rather than an import
+// attribute: the apify/actor-node:20 image's exact patch level isn't guaranteed >= 20.10.
+const JURISDICTIONS = JSON.parse(readFileSync(new URL('./court-jurisdictions.json', import.meta.url), 'utf8'));
+
+function jurisdictionFor(courtId) {
+    if (!courtId) return null;
+    return JURISDICTIONS.codes[JURISDICTIONS.courts[courtId]] ?? null;
+}
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -365,6 +379,7 @@ function normalizeOpinion(r) {
         caseNameFull: blankToNull(r.caseNameFull) ?? null,
         court: blankToNull(r.court) ?? null,
         courtId: blankToNull(r.court_id) ?? null,
+        courtJurisdiction: jurisdictionFor(blankToNull(r.court_id)),
         courtCitationString: blankToNull(r.court_citation_string) ?? null,
         docketNumber: blankToNull(r.docketNumber) ?? null,
 
@@ -428,6 +443,7 @@ function normalizeDocket(r) {
         caseNameFull: blankToNull(r.case_name_full) ?? null,
         court: blankToNull(r.court) ?? null,
         courtId: blankToNull(r.court_id) ?? null,
+        courtJurisdiction: jurisdictionFor(blankToNull(r.court_id)),
         courtCitationString: blankToNull(r.court_citation_string) ?? null,
         docketNumber: blankToNull(r.docketNumber) ?? null,
 

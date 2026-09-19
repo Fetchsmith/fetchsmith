@@ -79,6 +79,16 @@
 "jurisdiction": "FD",
 "short_name": "S.D. Alabama"
 },
+"amsamoa": {
+"full_name": "High Court of American Samoa",
+"jurisdiction": "TS",
+"short_name": "High Court of American Samoa"
+},
+"amsamoatc": {
+"full_name": "American Samoa District Court",
+"jurisdiction": "TT",
+"short_name": "American Samoa District Court"
+},
 "arb": {
 "full_name": "United States Bankruptcy Court, D. Arizona",
 "jurisdiction": "FB",
@@ -98,6 +108,36 @@
 "full_name": "Arizona Supreme Court",
 "jurisdiction": "S",
 "short_name": "Arizona Supreme Court"
+},
+"arizctapp": {
+"full_name": "Court of Appeals of Arizona",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Arizona"
+},
+"ariztaxct": {
+"full_name": "Arizona Tax Court",
+"jurisdiction": "SS",
+"short_name": "Arizona Tax Court"
+},
+"ark": {
+"full_name": "Supreme Court of Arkansas",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Arkansas"
+},
+"arkag": {
+"full_name": "Arkansas Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Arkansas Attorney General Reports"
+},
+"arkctapp": {
+"full_name": "Court of Appeals of Arkansas",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Arkansas"
+},
+"arkworkcompcom": {
+"full_name": "Arkansas Workers' Compensation Commission",
+"jurisdiction": "SS",
+"short_name": "Arkansas Workers' Compensation Commission"
 },
 "armfor": {
 "full_name": "Court of Appeals for the Armed Forces",
@@ -264,6 +304,26 @@
 "jurisdiction": "F",
 "short_name": "Federal Circuit"
 },
+"cal": {
+"full_name": "California Supreme Court",
+"jurisdiction": "S",
+"short_name": "California Supreme Court"
+},
+"calag": {
+"full_name": "California Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "California Attorney General Reports"
+},
+"calappdeptsuper": {
+"full_name": "Appellate Division of the Superior Court of California",
+"jurisdiction": "SA",
+"short_name": "Appellate Division of the Superior Court of California"
+},
+"calctapp": {
+"full_name": "California Court of Appeal",
+"jurisdiction": "SA",
+"short_name": "California Court of Appeal"
+},
 "californiad": {
 "full_name": "District Court, D. California",
 "jurisdiction": "FD",
@@ -314,15 +374,50 @@
 "jurisdiction": "MA",
 "short_name": "U S Coast Guard Court of Military Review"
 },
+"cherokee": {
+"full_name": "Cherokee Nation Supreme Court",
+"jurisdiction": "TRS",
+"short_name": "Cherokee Nation Supreme Court"
+},
+"cherokeeapp": {
+"full_name": "Cherokee Nation Judicial Appeals Tribunal",
+"jurisdiction": "TRA",
+"short_name": "Cherokee Nation Judicial Appeals Tribunal"
+},
+"cherokeetribct": {
+"full_name": "Cherokee Indian Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Cherokee Indian Trib. Ct."
+},
+"cheyrsiouxctapp": {
+"full_name": "Cheyenne River Sioux Tribal Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Cheyenne River Sioux Tribal Court of Appeals"
+},
 "cit": {
 "full_name": "United States Court of International Trade",
 "jurisdiction": "FS",
 "short_name": "Court of International Trade"
 },
+"cjdpa": {
+"full_name": "Court of Judicial Discipline of Pennsylvania",
+"jurisdiction": "SS",
+"short_name": "Judicial Discipline of Pennsylvania"
+},
 "cma": {
 "full_name": "United States Court of Military Appeals",
 "jurisdiction": "MA",
 "short_name": "United States Court of Military Appeals"
+},
+"cnmisuperct": {
+"full_name": "Northern Mariana Islands Commonwealth Superior Court",
+"jurisdiction": "TT",
+"short_name": "Northern Mariana Islands Commonwealth Superior Court"
+},
+"cnmitrialct": {
+"full_name": "Northern Mariana Islands Commonwealth Trial Court",
+"jurisdiction": "TT",
+"short_name": "Northern Mariana Islands Commonwealth Trial Court"
 },
 "cob": {
 "full_name": "United States Bankruptcy Court, D. Colorado",
@@ -334,10 +429,60 @@
 "jurisdiction": "FD",
 "short_name": "D. Colorado"
 },
+"colo": {
+"full_name": "Supreme Court of Colorado",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Colorado"
+},
+"coloag": {
+"full_name": "Colorado Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Colorado Attorney General Reports"
+},
+"coloctapp": {
+"full_name": "Colorado Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Colorado Court of Appeals"
+},
+"coloworkcompcom": {
+"full_name": "Colorado Industrial Claim Appeals Office",
+"jurisdiction": "SS",
+"short_name": "Colorado Industrial Claim Appeals Office"
+},
+"colvctapp": {
+"full_name": "Colville Confederated Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Colville Confederated Court of Appeals"
+},
 "com": {
 "full_name": "Commerce Court",
 "jurisdiction": "FS",
 "short_name": "Commerce Court"
+},
+"conn": {
+"full_name": "Supreme Court of Connecticut",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Connecticut"
+},
+"connappct": {
+"full_name": "Connecticut Appellate Court",
+"jurisdiction": "SA",
+"short_name": "Connecticut Appellate Court"
+},
+"connsuperct": {
+"full_name": "Connecticut Superior Court",
+"jurisdiction": "SA",
+"short_name": "Connecticut Superior Court"
+},
+"connworkcompcom": {
+"full_name": "Connecticut Compensation Review Board",
+"jurisdiction": "SS",
+"short_name": "Connecticut Compensation Review Board"
+},
+"coquct": {
+"full_name": "Coquille Indian Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Coquille Indian Tribal Court"
 },
 "ctb": {
 "full_name": "United States Bankruptcy Court, D. Connecticut",
@@ -353,6 +498,11 @@
 "full_name": "United States Customs Court",
 "jurisdiction": "FS",
 "short_name": "U.S. Customs Court"
+},
+"dc": {
+"full_name": "District of Columbia Court of Appeals",
+"jurisdiction": "S",
+"short_name": "District of Columbia Court of Appeals"
 },
 "dcb": {
 "full_name": "United States Bankruptcy Court, District of Columbia",
@@ -374,10 +524,55 @@
 "jurisdiction": "FD",
 "short_name": "D. Delaware"
 },
+"del": {
+"full_name": "Supreme Court of Delaware",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Delaware"
+},
+"delch": {
+"full_name": "Court of Chancery of Delaware",
+"jurisdiction": "SA",
+"short_name": "Court of Chancery of Delaware"
+},
+"delctcompl": {
+"full_name": "Delaware Court of Common Pleas",
+"jurisdiction": "SS",
+"short_name": "Delaware Court of Common Pleas"
+},
+"delfamct": {
+"full_name": "Delaware Family Court",
+"jurisdiction": "SS",
+"short_name": "Delaware Family Court"
+},
+"deljudct": {
+"full_name": "Court on the Judiciary of Delaware.",
+"jurisdiction": "SS",
+"short_name": "Court on the Judiciary of Delaware"
+},
+"delorphct": {
+"full_name": "Orphan's Court of Delaware",
+"jurisdiction": "SA",
+"short_name": "Delaware Orphan's Court"
+},
+"delsuperct": {
+"full_name": "Superior Court of Delaware",
+"jurisdiction": "SA",
+"short_name": "Superior Court of Delaware"
+},
 "eca": {
 "full_name": "Emergency Court of Appeals",
 "jurisdiction": "FS",
 "short_name": "Emergency Court of Appeals"
+},
+"echerkokee": {
+"full_name": "Eastern Band of Cherokee Indians Supreme Court",
+"jurisdiction": "TRS",
+"short_name": "Eastern Band of Cherokee Indians Supreme Court"
+},
+"echerokeect": {
+"full_name": "Eastern Band of Cherokee Indians Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Eastern Band of Cherokee Indians Tribal Court"
 },
 "fisc": {
 "full_name": "Foreign Intelligence Surveillance Court",
@@ -388,6 +583,21 @@
 "full_name": "Foreign Intelligence Surveillance Court of Review",
 "jurisdiction": "FS",
 "short_name": "Foreign Intelligence Surveillance Court of Review"
+},
+"fla": {
+"full_name": "Supreme Court of Florida",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Florida"
+},
+"flaag": {
+"full_name": "Florida Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Florida Attorney General Reports"
+},
+"fladistctapp": {
+"full_name": "District Court of Appeal of Florida",
+"jurisdiction": "SA",
+"short_name": "District Court of Appeal of Florida"
 },
 "flmb": {
 "full_name": "United States Bankruptcy Court, M.D. Florida",
@@ -419,6 +629,36 @@
 "jurisdiction": "FD",
 "short_name": "S.D. Florida"
 },
+"ftmcdowctapp": {
+"full_name": "Fort McDowell Yavapai Nation Tribal Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Fort McDowell Yavapai Nation Tribal Court of Appeals"
+},
+"ftmcdowell": {
+"full_name": "Fort McDowell Supreme Court",
+"jurisdiction": "TRS",
+"short_name": "Fort McDowell Supreme Court"
+},
+"ftpeckctapp": {
+"full_name": "Fort Peck Appellate Court",
+"jurisdiction": "TRA",
+"short_name": "Fort Peck Appellate Court"
+},
+"ftpecktrialct": {
+"full_name": "Fort Peck Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Fort Peck Tribal Court"
+},
+"ga": {
+"full_name": "Supreme Court of Georgia",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Georgia"
+},
+"gactapp": {
+"full_name": "Court of Appeals of Georgia",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Georgia"
+},
 "gamb": {
 "full_name": "United States Bankruptcy Court, M.D. Georgia",
 "jurisdiction": "FB",
@@ -449,6 +689,31 @@
 "jurisdiction": "FD",
 "short_name": "S.D. Georgia"
 },
+"grrondect": {
+"full_name": "Grand Ronde Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Grand Ronde Tribal Court"
+},
+"grrondectapp": {
+"full_name": "Grand Ronde Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Grand Ronde Court of Appeals"
+},
+"grtravbandct": {
+"full_name": "Grand Traverse Band of Ottawa and Chippewa Indians Tribal Court",
+"jurisdiction": "TRA",
+"short_name": "Grand Traverse Band of Ottawa and Chippewa Indians Tribal Court"
+},
+"grtravbandctapp": {
+"full_name": "Grand Traverse Band of Ottawa & Chippewa Indians Tribal Appellate Court",
+"jurisdiction": "TRA",
+"short_name": "Grand Traverse Band of Ottawa & Chippewa Indians Tribal Appellate Court"
+},
+"guam": {
+"full_name": "Supreme Court of Guam",
+"jurisdiction": "TS",
+"short_name": "Supreme Court of Guam"
+},
 "gub": {
 "full_name": "United States Bankruptcy Court, D. Guam",
 "jurisdiction": "FB",
@@ -459,6 +724,16 @@
 "jurisdiction": "FD",
 "short_name": "D. Guam"
 },
+"haw": {
+"full_name": "Hawaii Supreme Court",
+"jurisdiction": "S",
+"short_name": "Hawaii Supreme Court"
+},
+"hawapp": {
+"full_name": "Hawaii Intermediate Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Hawaii Intermediate Court of Appeals"
+},
 "hib": {
 "full_name": "United States Bankruptcy Court, D. Hawaii",
 "jurisdiction": "FB",
@@ -468,6 +743,21 @@
 "full_name": "District Court, D. Hawaii",
 "jurisdiction": "FD",
 "short_name": "D. Hawaii"
+},
+"hochunk": {
+"full_name": "Ho-Chunk Nation Supreme Court",
+"jurisdiction": "TRS",
+"short_name": "Ho-Chunk Nation Supreme Court"
+},
+"hochunkct": {
+"full_name": "Ho-Chunk Nation Trial Court",
+"jurisdiction": "TRT",
+"short_name": "Ho-Chunk Nation Trial Court"
+},
+"hopiappct": {
+"full_name": "Hopi Appellate Court",
+"jurisdiction": "TRA",
+"short_name": "Hopi Appellate Court"
 },
 "ianb": {
 "full_name": "United States Bankruptcy Court, N.D. Iowa",
@@ -489,6 +779,16 @@
 "jurisdiction": "FD",
 "short_name": "S.D. Iowa"
 },
+"idaho": {
+"full_name": "Idaho Supreme Court",
+"jurisdiction": "S",
+"short_name": "Idaho Supreme Court"
+},
+"idahoctapp": {
+"full_name": "Idaho Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Idaho Court of Appeals"
+},
 "idb": {
 "full_name": "United States Bankruptcy Court, D. Idaho",
 "jurisdiction": "FB",
@@ -508,6 +808,16 @@
 "full_name": "District Court, C.D. Illinois",
 "jurisdiction": "FD",
 "short_name": "C.D. Illinois"
+},
+"ill": {
+"full_name": "Illinois Supreme Court",
+"jurisdiction": "S",
+"short_name": "Illinois Supreme Court"
+},
+"illappct": {
+"full_name": "Appellate Court of Illinois",
+"jurisdiction": "SA",
+"short_name": "Appellate Court of Illinois"
 },
 "illinoisd": {
 "full_name": "District Court, D. Illinois",
@@ -539,10 +849,25 @@
 "jurisdiction": "FD",
 "short_name": "S.D. Illinois"
 },
+"ind": {
+"full_name": "Indiana Supreme Court",
+"jurisdiction": "S",
+"short_name": "Indiana Supreme Court"
+},
+"indctapp": {
+"full_name": "Indiana Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Indiana Court of Appeals"
+},
 "indianad": {
 "full_name": "District Court, D. Indiana",
 "jurisdiction": "FD",
 "short_name": "D. Indiana"
+},
+"indtc": {
+"full_name": "Indiana Tax Court",
+"jurisdiction": "SS",
+"short_name": "Indiana Tax Court"
 },
 "innb": {
 "full_name": "United States Bankruptcy Court, N.D. Indiana",
@@ -564,6 +889,41 @@
 "jurisdiction": "FD",
 "short_name": "S.D. Indiana"
 },
+"iowa": {
+"full_name": "Supreme Court of Iowa",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Iowa"
+},
+"iowactapp": {
+"full_name": "Court of Appeals of Iowa",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Iowa"
+},
+"jpml": {
+"full_name": "United States Judicial Panel on Multidistrict Litigation",
+"jurisdiction": "FS",
+"short_name": "Judicial Panel on Multidistrict Litigation"
+},
+"kan": {
+"full_name": "Supreme Court of Kansas",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Kansas"
+},
+"kanag": {
+"full_name": "Kansas Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Kansas Attorney General Reports"
+},
+"kanctapp": {
+"full_name": "Court of Appeals of Kansas",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Kansas"
+},
+"kingsbench": {
+"full_name": "Court of King's Bench",
+"jurisdiction": "I",
+"short_name": "Court of King's Bench"
+},
 "ksb": {
 "full_name": "United States Bankruptcy Court, D. Kansas",
 "jurisdiction": "FB",
@@ -573,6 +933,21 @@
 "full_name": "District Court, D. Kansas",
 "jurisdiction": "FD",
 "short_name": "D. Kansas"
+},
+"ky": {
+"full_name": "Kentucky Supreme Court",
+"jurisdiction": "S",
+"short_name": "Kentucky Supreme Court"
+},
+"kyctapp": {
+"full_name": "Court of Appeals of Kentucky",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Kentucky"
+},
+"kyctapphigh": {
+"full_name": "Court of Appeals of Kentucky (pre-1976)",
+"jurisdiction": "S",
+"short_name": "Court of Appeals of Kentucky (pre-1976)"
 },
 "kyeb": {
 "full_name": "United States Bankruptcy Court, E.D. Kentucky",
@@ -593,6 +968,21 @@
 "full_name": "District Court, W.D. Kentucky",
 "jurisdiction": "FD",
 "short_name": "W.D. Kentucky"
+},
+"la": {
+"full_name": "Supreme Court of Louisiana",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Louisiana"
+},
+"laag": {
+"full_name": "Louisiana Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Louisiana Attorney General Reports"
+},
+"lactapp": {
+"full_name": "Louisiana Court of Appeal",
+"jurisdiction": "SA",
+"short_name": "Louisiana Court of Appeal"
 },
 "laeb": {
 "full_name": "United States Bankruptcy Court, E.D. Louisiana",
@@ -624,6 +1014,21 @@
 "jurisdiction": "FD",
 "short_name": "W.D. Louisiana"
 },
+"leechojibtr": {
+"full_name": "Leech Lake Band of Ojibwe Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Leech Lake Band of Ojibwe Tribal Court"
+},
+"lrbottawact": {
+"full_name": "Little River Band of Ottawa Indians Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Little River Band of Ottawa Indians Tribal Court"
+},
+"lrbottawactapp": {
+"full_name": "Little River Band of Ottawa Indians Tribal Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Little River Band of Ottawa Indians Tribal Court of Appeals"
+},
 "mab": {
 "full_name": "United States Bankruptcy Court, D. Massachusetts",
 "jurisdiction": "FB",
@@ -634,20 +1039,75 @@
 "jurisdiction": "FD",
 "short_name": "D. Massachusetts"
 },
+"mass": {
+"full_name": "Massachusetts Supreme Judicial Court",
+"jurisdiction": "S",
+"short_name": "Massachusetts Supreme Judicial Court"
+},
+"massappct": {
+"full_name": "Massachusetts Appeals Court",
+"jurisdiction": "SA",
+"short_name": "Massachusetts Appeals Court"
+},
+"massdistct": {
+"full_name": "Massachusetts District Court",
+"jurisdiction": "SA",
+"short_name": "Massachusetts District Court"
+},
+"masslandct": {
+"full_name": "Massachusetts Land Court",
+"jurisdiction": "SS",
+"short_name": "Massachusetts Land Court"
+},
+"masssuperct": {
+"full_name": "Massachusetts Superior Court",
+"jurisdiction": "SA",
+"short_name": "Massachusetts Superior Court"
+},
+"maworkcompcom": {
+"full_name": "Massachusetts Department of Industrial Accidents",
+"jurisdiction": "SS",
+"short_name": "Massachusetts Department of Industrial Accidents"
+},
 "mc": {
 "full_name": "United States Court of Military Commission Review",
 "jurisdiction": "MA",
 "short_name": "Military Commission Review"
+},
+"md": {
+"full_name": "Court of Appeals of Maryland",
+"jurisdiction": "S",
+"short_name": "Court of Appeals of Maryland"
+},
+"mdag": {
+"full_name": "Maryland Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Maryland Attorney General Reports"
 },
 "mdb": {
 "full_name": "United States Bankruptcy Court, D. Maryland",
 "jurisdiction": "FB",
 "short_name": "D. Maryland"
 },
+"mdch": {
+"full_name": "High Court of Chancery of Maryland",
+"jurisdiction": "SA",
+"short_name": "Maryland Chancery Ct"
+},
+"mdctspecapp": {
+"full_name": "Court of Special Appeals of Maryland",
+"jurisdiction": "SA",
+"short_name": "Court of Special Appeals of Maryland"
+},
 "mdd": {
 "full_name": "District Court, D. Maryland",
 "jurisdiction": "FD",
 "short_name": "D. Maryland"
+},
+"me": {
+"full_name": "Supreme Judicial Court of Maine",
+"jurisdiction": "S",
+"short_name": "Supreme Judicial Court of Maine"
 },
 "meb": {
 "full_name": "United States Bankruptcy Court, D. Maine",
@@ -659,6 +1119,21 @@
 "jurisdiction": "FD",
 "short_name": "D. Maine"
 },
+"mesuperct": {
+"full_name": "Superior Court of Maine",
+"jurisdiction": "ST",
+"short_name": "Maine Superior"
+},
+"mich": {
+"full_name": "Michigan Supreme Court",
+"jurisdiction": "S",
+"short_name": "Michigan Supreme Court"
+},
+"michctapp": {
+"full_name": "Michigan Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Michigan Court of Appeals"
+},
 "mieb": {
 "full_name": "United States Bankruptcy Court, E.D. Michigan",
 "jurisdiction": "FB",
@@ -668,6 +1143,31 @@
 "full_name": "District Court, E.D. Michigan",
 "jurisdiction": "FD",
 "short_name": "E.D. Michigan"
+},
+"minn": {
+"full_name": "Supreme Court of Minnesota",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Minnesota"
+},
+"minnag": {
+"full_name": "Minnesota Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Minnesota Attorney General Reports"
+},
+"minnctapp": {
+"full_name": "Court of Appeals of Minnesota",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Minnesota"
+},
+"miss": {
+"full_name": "Mississippi Supreme Court",
+"jurisdiction": "S",
+"short_name": "Mississippi Supreme Court"
+},
+"missctapp": {
+"full_name": "Court of Appeals of Mississippi",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Mississippi"
 },
 "miwb": {
 "full_name": "United States Bankruptcy Court, W.D. Michigan",
@@ -689,6 +1189,21 @@
 "jurisdiction": "FD",
 "short_name": "D. Minnesota"
 },
+"mo": {
+"full_name": "Supreme Court of Missouri",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Missouri"
+},
+"moag": {
+"full_name": "Missouri Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Missouri Attorney General Reports"
+},
+"moctapp": {
+"full_name": "Missouri Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Missouri Court of Appeals"
+},
 "moeb": {
 "full_name": "United States Bankruptcy Court, E.D. Missouri",
 "jurisdiction": "FB",
@@ -698,6 +1213,46 @@
 "full_name": "District Court, E.D. Missouri",
 "jurisdiction": "FD",
 "short_name": "E.D. Missouri"
+},
+"moheganct": {
+"full_name": "Mohegan Trial Court",
+"jurisdiction": "TRT",
+"short_name": "Mohegan Trial Court"
+},
+"moheganctapp": {
+"full_name": "Mohegan Tribal Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Mohegan Tribal Court of Appeals"
+},
+"moheganelders": {
+"full_name": "Council of Elders of the Mohegan Tribe",
+"jurisdiction": "TRX",
+"short_name": "Council of Elders of the Mohegan Tribe"
+},
+"mohegangct": {
+"full_name": "Mohegan Gaming Disputes Trial Court",
+"jurisdiction": "TRX",
+"short_name": "Mohegan Gaming Disputes Trial Court"
+},
+"mohegangctapp": {
+"full_name": "Mohegan Gaming Disputes Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Mohegan Gaming Disputes Court of Appeals"
+},
+"mont": {
+"full_name": "Montana Supreme Court",
+"jurisdiction": "S",
+"short_name": "Montana Supreme Court"
+},
+"montag": {
+"full_name": "Montana Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Montana Attorney General Reports"
+},
+"monttc": {
+"full_name": "Montana Tax Appeal Board",
+"jurisdiction": "SS",
+"short_name": "Montana Tax Appeal Board"
 },
 "mowb": {
 "full_name": "United States Bankruptcy Court, W.D. Missouri",
@@ -744,6 +1299,41 @@
 "jurisdiction": "FD",
 "short_name": "D. Montana"
 },
+"navajo": {
+"full_name": "Navajo Nation Supreme Court",
+"jurisdiction": "TRS",
+"short_name": "Navajo Nation Supreme Court"
+},
+"navajochildct": {
+"full_name": "Navajo Nation Children's Court",
+"jurisdiction": "TRX",
+"short_name": "Navajo Nation Children's Court"
+},
+"navajoctapp": {
+"full_name": "Navajo Nation Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Navajo Nation Ct. App."
+},
+"navajofamct": {
+"full_name": "Navajo Nation Family Court",
+"jurisdiction": "TRX",
+"short_name": "Navajo Nation Family Court"
+},
+"nc": {
+"full_name": "Supreme Court of North Carolina",
+"jurisdiction": "S",
+"short_name": "Supreme Court of North Carolina"
+},
+"ncbizct": {
+"full_name": "North Carolina Business Court",
+"jurisdiction": "SS",
+"short_name": "North Carolina Business Court"
+},
+"ncctapp": {
+"full_name": "Court of Appeals of North Carolina",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of North Carolina"
+},
 "nceb": {
 "full_name": "United States Bankruptcy Court, E.D. North Carolina",
 "jurisdiction": "FB",
@@ -764,6 +1354,11 @@
 "jurisdiction": "FD",
 "short_name": "M.D. North Carolina"
 },
+"ncsuperct": {
+"full_name": "Superior Court of North Carolina",
+"jurisdiction": "SA",
+"short_name": "Superior Court of North Carolina"
+},
 "ncwb": {
 "full_name": "United States Bankruptcy Court, W.D. North Carolina",
 "jurisdiction": "FB",
@@ -774,15 +1369,45 @@
 "jurisdiction": "FD",
 "short_name": "W.D. North Carolina"
 },
+"ncworkcompcom": {
+"full_name": "North Carolina Industrial Commission",
+"jurisdiction": "SS",
+"short_name": "North Carolina Industrial Commission"
+},
+"nd": {
+"full_name": "North Dakota Supreme Court",
+"jurisdiction": "S",
+"short_name": "North Dakota Supreme Court"
+},
 "ndb": {
 "full_name": "United States Bankruptcy Court, D. North Dakota",
 "jurisdiction": "FB",
 "short_name": "D. North Dakota"
 },
+"ndctapp": {
+"full_name": "North Dakota Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "North Dakota Court of Appeals"
+},
 "ndd": {
 "full_name": "District Court, D. North Dakota",
 "jurisdiction": "FD",
 "short_name": "D. North Dakota"
+},
+"neb": {
+"full_name": "Nebraska Supreme Court",
+"jurisdiction": "S",
+"short_name": "Nebraska Supreme Court"
+},
+"nebag": {
+"full_name": "Nebraska Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Nebraska Attorney General Reports"
+},
+"nebctapp": {
+"full_name": "Nebraska Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Nebraska Court of Appeals"
 },
 "nebraskab": {
 "full_name": "United States Bankruptcy Court, D. Nebraska",
@@ -794,6 +1419,21 @@
 "jurisdiction": "FD",
 "short_name": "D. Nebraska"
 },
+"nev": {
+"full_name": "Nevada Supreme Court",
+"jurisdiction": "S",
+"short_name": "Nevada Supreme Court"
+},
+"nevapp": {
+"full_name": "Court of Appeals of Nevada",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Nevada"
+},
+"nh": {
+"full_name": "Supreme Court of New Hampshire",
+"jurisdiction": "S",
+"short_name": "Supreme Court of New Hampshire"
+},
 "nhb": {
 "full_name": "United States Bankruptcy Court, D. New Hampshire",
 "jurisdiction": "FB",
@@ -804,15 +1444,45 @@
 "jurisdiction": "FD",
 "short_name": "D. New Hampshire"
 },
+"nj": {
+"full_name": "Supreme Court of New Jersey",
+"jurisdiction": "S",
+"short_name": "Supreme Court of New Jersey"
+},
 "njb": {
 "full_name": "United States Bankruptcy Court, D. New Jersey",
 "jurisdiction": "FB",
 "short_name": "D. New Jersey"
 },
+"njch": {
+"full_name": "New Jersey Court of Chancery",
+"jurisdiction": "SA",
+"short_name": "New Jersey Court of Chancery"
+},
 "njd": {
 "full_name": "District Court, D. New Jersey",
 "jurisdiction": "FD",
 "short_name": "D. New Jersey"
+},
+"njsuperctappdiv": {
+"full_name": "New Jersey Superior Court Appellate Division",
+"jurisdiction": "SA",
+"short_name": "New Jersey Superior Court App Division"
+},
+"njtaxct": {
+"full_name": "New Jersey Tax Court",
+"jurisdiction": "SS",
+"short_name": "New Jersey Tax Court"
+},
+"nm": {
+"full_name": "New Mexico Supreme Court",
+"jurisdiction": "S",
+"short_name": "New Mexico Supreme Court"
+},
+"nmariana": {
+"full_name": "Supreme Court of The Commonwealth of The Northern Mariana Islands",
+"jurisdiction": "TS",
+"short_name": "Sup. Ct. of the Comm. of the N. Mariana Islands"
 },
 "nmb": {
 "full_name": "United States Bankruptcy Court, D. New Mexico",
@@ -823,6 +1493,11 @@
 "full_name": "Navy-Marine Corps Court of Criminal Appeals",
 "jurisdiction": "MA",
 "short_name": "Navy-Marine Corps Court of Criminal Appeals"
+},
+"nmctapp": {
+"full_name": "New Mexico Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "New Mexico Court of Appeals"
 },
 "nmd": {
 "full_name": "District Court, D. New Mexico",
@@ -849,6 +1524,46 @@
 "jurisdiction": "FD",
 "short_name": "D. Nevada"
 },
+"ny": {
+"full_name": "New York Court of Appeals",
+"jurisdiction": "S",
+"short_name": "New York Court of Appeals"
+},
+"nyag": {
+"full_name": "New York Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "New York Attorney General Reports"
+},
+"nyappdiv": {
+"full_name": "Appellate Division of the Supreme Court of the State of New York",
+"jurisdiction": "SA",
+"short_name": "Appellate Division of the Supreme Court of New York"
+},
+"nyappterm": {
+"full_name": "Appellate Terms of the Supreme Court of New York",
+"jurisdiction": "SA",
+"short_name": "Appellate Terms of the Supreme Court of New York"
+},
+"nycivct": {
+"full_name": "Civil Court of the City of New York",
+"jurisdiction": "SS",
+"short_name": "Civil Court of the City of New York"
+},
+"nycountyct": {
+"full_name": "New York County Courts",
+"jurisdiction": "ST",
+"short_name": "New York County Courts"
+},
+"nycrimct": {
+"full_name": "Criminal Court of the City of New York",
+"jurisdiction": "SS",
+"short_name": "Criminal Court of the City of New York"
+},
+"nydistct": {
+"full_name": "New York District Court",
+"jurisdiction": "ST",
+"short_name": "New York District Court"
+},
 "nyeb": {
 "full_name": "United States Bankruptcy Court, E.D. New York",
 "jurisdiction": "FB",
@@ -858,6 +1573,16 @@
 "full_name": "District Court, E.D. New York",
 "jurisdiction": "FD",
 "short_name": "E.D. New York"
+},
+"nyfamct": {
+"full_name": "New York Family Court",
+"jurisdiction": "SS",
+"short_name": "New York Family Court"
+},
+"nyjustct": {
+"full_name": "New York Justice Court",
+"jurisdiction": "ST",
+"short_name": "New York Town and Village Courts"
 },
 "nynb": {
 "full_name": "United States Bankruptcy Court, N.D. New York",
@@ -879,6 +1604,16 @@
 "jurisdiction": "FD",
 "short_name": "S.D. New York"
 },
+"nysupct": {
+"full_name": "New York Supreme Court",
+"jurisdiction": "ST",
+"short_name": "New York Supreme Court"
+},
+"nysurct": {
+"full_name": "New York Surrogate's Court",
+"jurisdiction": "SS",
+"short_name": "New York Surrogate's Court"
+},
 "nywb": {
 "full_name": "United States Bankruptcy Court, W.D. New York",
 "jurisdiction": "FB",
@@ -888,6 +1623,26 @@
 "full_name": "District Court, W.D. New York",
 "jurisdiction": "FD",
 "short_name": "W.D. New York"
+},
+"odawactapp": {
+"full_name": "Little Traverse Bay Bands of Odawa Indians Tribal Appellate Court",
+"jurisdiction": "TRA",
+"short_name": "Little Traverse Bay Bands of Odawa Indians Tribal Appellate Court"
+},
+"ohio": {
+"full_name": "Ohio Supreme Court",
+"jurisdiction": "S",
+"short_name": "Ohio Supreme Court"
+},
+"ohioctapp": {
+"full_name": "Ohio Court of Appeals",
+"jurisdiction": "SA",
+"short_name": "Ohio Court of Appeals"
+},
+"ohioctcl": {
+"full_name": "Ohio Court of Claims",
+"jurisdiction": "SS",
+"short_name": "Ohio Court of Claims"
 },
 "ohiod": {
 "full_name": "District Court, D. Ohio",
@@ -924,6 +1679,36 @@
 "jurisdiction": "FD",
 "short_name": "E.D. Oklahoma"
 },
+"okla": {
+"full_name": "Supreme Court of Oklahoma",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Oklahoma"
+},
+"oklaag": {
+"full_name": "Oklahoma Attorney General Reports",
+"jurisdiction": "SS",
+"short_name": "Oklahoma Attorney General Reports"
+},
+"oklacivapp": {
+"full_name": "Court of Civil Appeals of Oklahoma",
+"jurisdiction": "SA",
+"short_name": "Court of Civil Appeals of Oklahoma"
+},
+"oklacoj": {
+"full_name": "Court on the Judiciary of Oklahoma",
+"jurisdiction": "SS",
+"short_name": "Court on the Judiciary of Oklahoma"
+},
+"oklacrimapp": {
+"full_name": "Court of Criminal Appeals of Oklahoma",
+"jurisdiction": "SA",
+"short_name": "Court of Criminal Appeals of Oklahoma"
+},
+"oklajeap": {
+"full_name": "Oklahoma Judicial Ethics Advisory Panel",
+"jurisdiction": "SS",
+"short_name": "Oklahoma Judicial Ethics Advisory Panel"
+},
 "oknb": {
 "full_name": "United States Bankruptcy Court, N.D. Oklahoma",
 "jurisdiction": "FB",
@@ -949,10 +1734,30 @@
 "jurisdiction": "FS",
 "short_name": "Office of Legal Counsel"
 },
+"oneidactapp": {
+"full_name": "Oneida Appellate Court",
+"jurisdiction": "TRA",
+"short_name": "Oneida Appellate Court"
+},
+"oneidatrialct": {
+"full_name": "Oneida Tribal Judicial System, Trial Court",
+"jurisdiction": "TRT",
+"short_name": "Oneida Tribal Judicial System, Trial Court"
+},
+"or": {
+"full_name": "Oregon Supreme Court",
+"jurisdiction": "S",
+"short_name": "Oregon Supreme Court"
+},
 "orb": {
 "full_name": "United States Bankruptcy Court, D. Oregon",
 "jurisdiction": "FB",
 "short_name": "D. Oregon"
+},
+"orctapp": {
+"full_name": "Court of Appeals of Oregon",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Oregon"
 },
 "ord": {
 "full_name": "District Court, D. Oregon",
@@ -963,6 +1768,21 @@
 "full_name": "District Court, Orleans",
 "jurisdiction": "FD",
 "short_name": "Orleans District Court"
+},
+"ortc": {
+"full_name": "Oregon Tax Court",
+"jurisdiction": "SS",
+"short_name": "Oregon Tax Court"
+},
+"pa": {
+"full_name": "Supreme Court of Pennsylvania",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Pennsylvania"
+},
+"pacommwct": {
+"full_name": "Commonwealth Court of Pennsylvania",
+"jurisdiction": "SA",
+"short_name": "Commonwealth Court of Pennsylvania"
 },
 "paeb": {
 "full_name": "United States Bankruptcy Court, E.D. Pennsylvania",
@@ -984,6 +1804,11 @@
 "jurisdiction": "FD",
 "short_name": "M.D. Pennsylvania"
 },
+"pasuperct": {
+"full_name": "Superior Court of Pennsylvania",
+"jurisdiction": "SA",
+"short_name": "Superior Court of Pennsylvania"
+},
 "pawb": {
 "full_name": "United States Bankruptcy Court, W.D. Pennsylvania",
 "jurisdiction": "FB",
@@ -999,6 +1824,11 @@
 "jurisdiction": "FD",
 "short_name": "D. Pennsylvania"
 },
+"prapp": {
+"full_name": "Tribunal De Apelaciones De Puerto Rico/Court of Appeals of Puerto Rico",
+"jurisdiction": "TA",
+"short_name": "Tribunal De Apelaciones De Puerto Rico/Court of Appeals of Puerto Rico"
+},
 "prb": {
 "full_name": "United States Bankruptcy Court, D. Puerto Rico",
 "jurisdiction": "FB",
@@ -1009,10 +1839,20 @@
 "jurisdiction": "FD",
 "short_name": "D. Puerto Rico"
 },
+"prsupreme": {
+"full_name": "Supreme Court of Puerto Rico",
+"jurisdiction": "TS",
+"short_name": "Supreme Court of Puerto Rico"
+},
 "reglrailreorgct": {
 "full_name": "Special Court under the Regional Rail Reorganization Act",
 "jurisdiction": "FS",
 "short_name": "Special Court under the Regional Rail Reorganization Act"
+},
+"ri": {
+"full_name": "Supreme Court of Rhode Island",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Rhode Island"
 },
 "rib": {
 "full_name": "United States Bankruptcy Court, D. Rhode Island",
@@ -1024,10 +1864,40 @@
 "jurisdiction": "FD",
 "short_name": "D. Rhode Island"
 },
+"risuperct": {
+"full_name": "Superior Court of Rhode Island",
+"jurisdiction": "SA",
+"short_name": "Superior Court of Rhode Island"
+},
+"sacfoxdistct": {
+"full_name": "Sac and Fox Nation District Court",
+"jurisdiction": "TRT",
+"short_name": "Sac and Fox Nation District Court"
+},
+"sacfoxsupct": {
+"full_name": "Sac and Fox Nation Supreme Court",
+"jurisdiction": "TRS",
+"short_name": "Sac and Fox Nation Supreme Court"
+},
+"salishctapp": {
+"full_name": "Confederated Salish & Kootenai Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Confederated Salish & Kootenai Court of Appeals"
+},
+"sc": {
+"full_name": "Supreme Court of South Carolina",
+"jurisdiction": "S",
+"short_name": "Supreme Court of South Carolina"
+},
 "scb": {
 "full_name": "United States Bankruptcy Court, D. South Carolina",
 "jurisdiction": "FB",
 "short_name": "D. South Carolina"
+},
+"scctapp": {
+"full_name": "Court of Appeals of South Carolina",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of South Carolina"
 },
 "scd": {
 "full_name": "District Court, D. South Carolina",
@@ -1039,6 +1909,11 @@
 "jurisdiction": "F",
 "short_name": "Supreme Court"
 },
+"sd": {
+"full_name": "South Dakota Supreme Court",
+"jurisdiction": "S",
+"short_name": "South Dakota Supreme Court"
+},
 "sdb": {
 "full_name": "United States Bankruptcy Court, D. South Dakota",
 "jurisdiction": "FB",
@@ -1048,6 +1923,11 @@
 "full_name": "District Court, D. South Dakota",
 "jurisdiction": "FD",
 "short_name": "D. South Dakota"
+},
+"shoaraphotr": {
+"full_name": "Shoshone and Arapaho Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Shoshone and Arapaho Tribal Court"
 },
 "southcarolinaed": {
 "full_name": "District Court, E.D. South Carolina",
@@ -1059,6 +1939,21 @@
 "jurisdiction": "FD",
 "short_name": "W.D. South Carolina"
 },
+"superctguam": {
+"full_name": "Superior Court of Guam",
+"jurisdiction": "TA",
+"short_name": "Superior Court of Guam"
+},
+"swinomishappct": {
+"full_name": "Swinomish Tribal Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Swinomish Tribal Court of Appeals"
+},
+"swinomishtr": {
+"full_name": "Swinomish Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "Swinomish Tribal Court"
+},
 "tax": {
 "full_name": "United States Tax Court",
 "jurisdiction": "FS",
@@ -1069,6 +1964,21 @@
 "jurisdiction": "FS",
 "short_name": "Temporary Emergency Court of Appeals"
 },
+"tenn": {
+"full_name": "Tennessee Supreme Court",
+"jurisdiction": "S",
+"short_name": "Tennessee Supreme Court"
+},
+"tenncrimapp": {
+"full_name": "Court of Criminal Appeals of Tennessee",
+"jurisdiction": "SA",
+"short_name": "Court of Criminal Appeals of Tennessee"
+},
+"tennctapp": {
+"full_name": "Court of Appeals of Tennessee",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Tennessee"
+},
 "tennessed": {
 "full_name": "District Court, D. Tennessee",
 "jurisdiction": "FD",
@@ -1078,6 +1988,56 @@
 "full_name": "United States Bankruptcy Court, D. Tennessee",
 "jurisdiction": "FB",
 "short_name": "D. Tennessee"
+},
+"tennsuperct": {
+"full_name": "Tennessee Superior Court for Law and Equity",
+"jurisdiction": "SA",
+"short_name": "Tennessee Superior Court for Law and Equity"
+},
+"tennworkcompapp": {
+"full_name": "Tennessee Workers' Compensation Appeals Board",
+"jurisdiction": "SS",
+"short_name": "Tennessee Workers' Comp. Appeals Board"
+},
+"tennworkcompcl": {
+"full_name": "Tennessee Court of Workers' Compensation Claims",
+"jurisdiction": "SS",
+"short_name": "Tennessee Court of Workers' Comp. Claims"
+},
+"tex": {
+"full_name": "Texas Supreme Court",
+"jurisdiction": "S",
+"short_name": "Texas Supreme Court"
+},
+"texag": {
+"full_name": "Texas Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Texas Attorney General Reports"
+},
+"texapp": {
+"full_name": "Court of Appeals of Texas",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Texas"
+},
+"texbizct": {
+"full_name": "Texas Business Court",
+"jurisdiction": "ST",
+"short_name": "Texas Business Court"
+},
+"texcrimapp": {
+"full_name": "Court of Criminal Appeals of Texas",
+"jurisdiction": "S",
+"short_name": "Court of Criminal Appeals of Texas"
+},
+"texjpml": {
+"full_name": "Texas Judicial Panel on Multidistrict Litigation",
+"jurisdiction": "SA",
+"short_name": "Texas Judicial Panel on Multidistrict Litigation"
+},
+"texreview": {
+"full_name": "Texas Special Court of Review",
+"jurisdiction": "SS",
+"short_name": "Texas Special Court of Review"
 },
 "tneb": {
 "full_name": "United States Bankruptcy Court, E.D. Tennessee",
@@ -1113,6 +2073,11 @@
 "full_name": "Trademark Trial and Appeal Board",
 "jurisdiction": "FS",
 "short_name": "Trademark Trial and Appeal Board"
+},
+"tulalipctapp": {
+"full_name": "Tulalip Court of Appeals",
+"jurisdiction": "TRA",
+"short_name": "Tulalip Court of Appeals"
 },
 "txeb": {
 "full_name": "United States Bankruptcy Court, E.D. Texas",
@@ -1174,10 +2139,25 @@
 "jurisdiction": "MA",
 "short_name": "U S Coast Guard Court of Criminal Appeals"
 },
+"usjc": {
+"full_name": "United States Judicial Conference Committee",
+"jurisdiction": "C",
+"short_name": "U.S. Judicial Conference Committee"
+},
 "usnmcmilrev": {
 "full_name": "U.S. Navy-Marine Corps Court of Military Review",
 "jurisdiction": "MA",
 "short_name": "U.S. Navy-Marine Corps Court of Military Review"
+},
+"utah": {
+"full_name": "Utah Supreme Court",
+"jurisdiction": "S",
+"short_name": "Utah Supreme Court"
+},
+"utahctapp": {
+"full_name": "Court of Appeals of Utah",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Utah"
 },
 "utb": {
 "full_name": "United States Bankruptcy Court, D. Utah",
@@ -1188,6 +2168,16 @@
 "full_name": "District Court, D. Utah",
 "jurisdiction": "FD",
 "short_name": "D. Utah"
+},
+"va": {
+"full_name": "Supreme Court of Virginia",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Virginia"
+},
+"vactapp": {
+"full_name": "Court of Appeals of Virginia",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Virginia"
 },
 "vaeb": {
 "full_name": "United States Bankruptcy Court, E.D. Virginia",
@@ -1219,6 +2209,16 @@
 "jurisdiction": "FD",
 "short_name": "Virgin Islands"
 },
+"virginislands": {
+"full_name": "Supreme Court of The Virgin Islands",
+"jurisdiction": "TS",
+"short_name": "Supreme Court of The Virgin Islands"
+},
+"vt": {
+"full_name": "Supreme Court of Vermont",
+"jurisdiction": "S",
+"short_name": "Supreme Court of Vermont"
+},
 "vtb": {
 "full_name": "United States Bankruptcy Court, D. Vermont",
 "jurisdiction": "FB",
@@ -1228,6 +2228,11 @@
 "full_name": "District Court, D. Vermont",
 "jurisdiction": "FD",
 "short_name": "D. Vermont"
+},
+"vtsuperct": {
+"full_name": "Vermont Superior Court",
+"jurisdiction": "SA",
+"short_name": "Vermont Superior Court"
 },
 "waeb": {
 "full_name": "United States Bankruptcy Court, E.D. Washington",
@@ -1239,6 +2244,26 @@
 "jurisdiction": "FD",
 "short_name": "E.D. Washington"
 },
+"wash": {
+"full_name": "Washington Supreme Court",
+"jurisdiction": "S",
+"short_name": "Washington Supreme Court"
+},
+"washag": {
+"full_name": "Washington Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Washington Attorney General Reports"
+},
+"washctapp": {
+"full_name": "Court of Appeals of Washington",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Washington"
+},
+"washterr": {
+"full_name": "Washington Territory",
+"jurisdiction": "SS",
+"short_name": "Washington Territory"
+},
 "wawb": {
 "full_name": "United States Bankruptcy Court, W.D. Washington",
 "jurisdiction": "FB",
@@ -1248,6 +2273,11 @@
 "full_name": "District Court, W.D. Washington",
 "jurisdiction": "FD",
 "short_name": "W.D. Washington"
+},
+"webchippewatr": {
+"full_name": "White Earth Band of Chippewa Tribal Court",
+"jurisdiction": "TRT",
+"short_name": "White Earth Band of Chippewa Tribal Court"
 },
 "wieb": {
 "full_name": "United States Bankruptcy Court, E.D. Wisconsin",
@@ -1259,6 +2289,21 @@
 "jurisdiction": "FD",
 "short_name": "E.D. Wisconsin"
 },
+"wis": {
+"full_name": "Wisconsin Supreme Court",
+"jurisdiction": "S",
+"short_name": "Wisconsin Supreme Court"
+},
+"wisag": {
+"full_name": "Wisconsin Attorney General Reports",
+"jurisdiction": "SAG",
+"short_name": "Wisconsin Attorney General Reports"
+},
+"wisctapp": {
+"full_name": "Court of Appeals of Wisconsin",
+"jurisdiction": "SA",
+"short_name": "Court of Appeals of Wisconsin"
+},
 "wiwb": {
 "full_name": "United States Bankruptcy Court, W.D. Wisconsin",
 "jurisdiction": "FB",
@@ -1268,6 +2313,16 @@
 "full_name": "District Court, W.D. Wisconsin",
 "jurisdiction": "FD",
 "short_name": "W.D. Wisconsin"
+},
+"wva": {
+"full_name": "West Virginia Supreme Court",
+"jurisdiction": "S",
+"short_name": "West Virginia Supreme Court"
+},
+"wvactapp": {
+"full_name": "Intermediate Court of Appeals of West Virginia",
+"jurisdiction": "SA",
+"short_name": "Int. Ct. of App. of W.Va."
 },
 "wvnb": {
 "full_name": "United States Bankruptcy Court, N.D. West Virginia",
@@ -1298,5 +2353,10 @@
 "full_name": "District Court, D. Wyoming",
 "jurisdiction": "FD",
 "short_name": "D. Wyoming"
+},
+"wyo": {
+"full_name": "Wyoming Supreme Court",
+"jurisdiction": "S",
+"short_name": "Wyoming Supreme Court"
 }
 }

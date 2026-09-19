@@ -1,5 +1,5 @@
 {
- "ts": 1789803015,
+ "ts": 1789805254,
  "date": "2026-09-19",
  "apify": {
   "google-news-scraper": {
@@ -330,7 +330,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 6,
-   "runs": 333,
+   "runs": 334,
    "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -368,7 +368,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 2,
-   "runs": 49,
+   "runs": 51,
    "ext_ok30d": 2,
    "ext_bad30d": 0,
    "ext_stats30d": {

@@ -12,6 +12,7 @@ Two CourtListener indexes, one unified table:
 
 - **Dockets (`recordType: "dockets"`)** — the RECAP archive, a free mirror of federal PACER dockets. Parties, attorneys, law firms, assigned and referred judges, nature of suit, cause of action, jurisdiction type, jury demand, bankruptcy chapter, PACER case ID, and per-filing entries (description, date filed, page count, whether the PDF is actually available, a **direct PDF link** and the **OCR'd text of the filing** where RECAP has it).
 - **Opinions (`recordType: "opinions"`)** — published decisions. Reported citations, cite count (how many later opinions cite this one), authoring judge, status, opinion snippet and the download URL where CourtListener has the document. Editorial extras — `syllabus`, `proceduralHistory`, `panelNames`, `neutralCite`, `lexisCite` — are emitted when the court publishes them, which is a minority of rows; see **Honest limitations** for measured rates before you build on them.
+- **Court jurisdiction on every row** — `courtJurisdiction` gives the court's tier as a readable label (`Federal District`, `Federal Appellate`, `Federal Bankruptcy`, `State Supreme`, `State Appellate`, `Tribal Appellate`, `Military Appellate`, ...) on **both** dockets and opinions, so you can group or filter federal vs. state vs. bankruptcy without keeping a court-code lookup table of your own.
 - **`recordType: "both"`** returns both in one run, in one schema, with type-specific fields left `null` rather than omitted — so a CSV export has stable columns.
 
 Search is full text across case names, party and attorney names, docket text and opinion bodies, with quoted phrases (`"fair use"`) and boolean operators (`AND`, `OR`, `NOT`).
@@ -78,6 +79,7 @@ Set `webhookUrl` to an http(s) URL and this Actor POSTs a small JSON summary the
   "caseName": "Gen Digital, Inc. v. Sycomp, a Technology Company, Inc.",
   "court": "District Court, N.D. California",
   "courtId": "cand",
+  "courtJurisdiction": "Federal District",
   "docketNumber": "3:24-cv-04106",
   "dateFiled": "2024-07-08",
   "judge": "Charles R. Breyer",
@@ -107,6 +109,7 @@ Set `webhookUrl` to an http(s) URL and this Actor POSTs a small JSON summary the
   "caseName": "Phillips v. Mike Murdock Evangelistic Ass'n",
   "court": "Court of Appeals for the Ninth Circuit",
   "courtId": "ca9",
+  "courtJurisdiction": "Federal Appellate",
   "docketNumber": "No. 08-16925",
   "dateFiled": "2009-07-28",
   "citations": ["329 F. App'x 775"],
@@ -119,7 +122,7 @@ Set `webhookUrl` to an http(s) URL and this Actor POSTs a small JSON summary the
 }
 ```
 
-All 38 fields are listed with types and examples in the **Output schema** tab.
+All 39 fields are listed with types and examples in the **Output schema** tab.
 
 ## Use cases
 
@@ -127,7 +130,7 @@ All 38 fields are listed with types and examples in the **Output schema** tab.
 - **Law-firm business development** — pull the firms and attorneys appearing opposite a target client, by court and nature of suit.
 - **Bankruptcy and credit risk** — filter `recordType: "dockets"` on a bankruptcy court (`cacb`, `nysb`, `deb`) and read `chapter`, `dateFiled` and `dateTerminated` straight off the row.
 - **Legal research pipelines** — pull opinions by query and court, sort by `citeCount` to find the load-bearing precedents, and follow `downloadUrl` for the full text.
-- **Docket analytics** — nature-of-suit and cause-of-action distributions by court and year, from `suitNature`, `cause` and `jurisdictionType` (all three are docket-only fields — they are `null` on opinion rows, so run with `recordType: "dockets"`).
+- **Docket analytics** — nature-of-suit and cause-of-action distributions by court and year, from `suitNature`, `cause` and `jurisdictionType` (all three are docket-only fields — they are `null` on opinion rows, so run with `recordType: "dockets"`). For splits that should span **both** record types — federal vs. state vs. bankruptcy caseload, or appellate-vs-trial mix — group on `courtJurisdiction` instead: it is populated on opinion and docket rows alike.
 
 ## Honest limitations
 
@@ -136,8 +139,9 @@ All 38 fields are listed with types and examples in the **Output schema** tab.
 - **`documents[].textSnippet` is an excerpt, not the whole filing.** CourtListener's search index returns roughly the first 500 characters of a document's OCR'd text, and only for documents where `isAvailable` is true. The *complete* plain text sits behind the token-gated `/api/rest/v4/recap-documents/` endpoint (anonymous requests get `401`); this Actor needs no key, so it gives you the excerpt plus `pdfUrl` — the PDF bucket at `storage.courtlistener.com` is public and needs no token either, so you can fetch and parse the full document yourself.
 - **Several opinion fields are sparse, and how sparse depends on the court.** CourtListener's search index returns these fields for every opinion row, but the value is empty unless the publishing court supplied it. Measured over 240 live opinion rows across 12 court/date slices (2026-09-19): `neutralCite` **25%**, `judge` **16%**, `syllabus` **12%**, `panelNames` **4%**, `lexisCite` **2%**, `proceduralHistory` **<1%**. The distribution is strongly court-dependent rather than random — Ohio and Illinois appellate rows carried `syllabus`/`neutralCite` on **20/20**, while `ca9`, `ca2`, `ny` and `scotus` carried none. If your pipeline needs one of these, filter `courts` to a court that publishes it and check a small run first. Nothing is dropped or charged differently because a field is empty — you always pay $0.002 per row returned.
 - **`posture` was removed from the schema (2026-09-19)**, not just left sparse. It measured 0% across 320 opinion rows spanning 13 court/date slices — including pre-1970 SCOTUS opinions and a recent-SCOTUS control — so age and court choice don't explain it. CourtListener does carry procedural posture on its authenticated `/clusters/` detail endpoint, but that endpoint 401s without a CourtListener API key, and this Actor is deliberately anonymous/keyless (see above) — so the field was permanently empty for every buyer, not just sparse. Dropped rather than kept as a column that can never have a value.
-- **`jurisdictionType` is now docket-only (changed 2026-09-19).** On docket rows it is PACER's readable text for the basis of the court's jurisdiction over the *case* — `"Diversity"`, `"Federal Question"`. It previously also carried a value on opinion rows, but that value was a **different quantity under the same name**: CourtListener's `court_jurisdiction`, which classifies the *court* (`"F"` = Federal Appellate, `"FD"` = Federal District, `"S"` = State Supreme). Mixing the two in one column meant a `recordType: "both"` run produced a field you could not group on. It was also near-empty — 20/140 opinion rows across 8 court slices, and 21/240 across 12 slices, essentially SCOTUS-only. Opinion rows now return `jurisdictionType: null`, the same as the other docket-only columns (`cause`, `juryDemand`, `chapter`). Run with `recordType: "dockets"` for jurisdiction analytics.
+- **`jurisdictionType` is now docket-only (changed 2026-09-19).** On docket rows it is PACER's readable text for the basis of the court's jurisdiction over the *case* — `"Diversity"`, `"Federal Question"`. It previously also carried a value on opinion rows, but that value was a **different quantity under the same name**: CourtListener's `court_jurisdiction`, which classifies the *court* (`"F"` = Federal Appellate, `"FD"` = Federal District, `"S"` = State Supreme). Mixing the two in one column meant a `recordType: "both"` run produced a field you could not group on. It was also near-empty — 20/140 opinion rows across 8 court slices, and 21/240 across 12 slices, essentially SCOTUS-only. Opinion rows now return `jurisdictionType: null`, the same as the other docket-only columns (`cause`, `juryDemand`, `chapter`). Run with `recordType: "dockets"` for case-jurisdiction analytics — and use the new **`courtJurisdiction`** field (below) for the court-classification quantity, which is now available on *every* row rather than SCOTUS-only.
 - **`jurisdictionType` casing is normalized (changed 2026-09-19).** PACER's own data is inconsistent across courts — the same category comes back as `"Federal Question"` from one court and `"Federal question"` from another (measured live: 429 rows across 20 districts turned up both, plus `"U.S. Government Defendant"` vs `"Government plaintiff"`). This Actor now title-cases every value so grouping by `jurisdictionType` doesn't silently split into duplicate buckets for the same category. It does **not** merge genuinely different upstream phrasings — `"Diversity"` and `"Diversity of citizenship"` stay separate, since collapsing those would be a guess about PACER's own categorization, not a casing fix.
+- **`courtJurisdiction` covers in-use courts, and is `null` for the rest (added 2026-09-19).** The label comes from a static map of all **472** courts CourtListener currently marks in-use, harvested from its own `/courts/` API, with the 23 code->label pairs taken from that endpoint's `OPTIONS` schema — so both halves are CourtListener's values, not our guesses. It measured **100% fill** on a live `recordType: "both"` run. Rows from *historical* courts (abolished or renamed, not in the in-use set) return `null` rather than a stale guess. The map is a snapshot: a court added upstream after that date reads `null` until the map is refreshed.
 - **Dockets and opinions are separate indexes.** A case present in one is often absent from the other; use `both` when unsure.
 - The query is a **full-text search**, not a case-number lookup. For a docket number, put it in `query` as-is and widen the court filter.
 

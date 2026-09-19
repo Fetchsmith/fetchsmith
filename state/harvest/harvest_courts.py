@@ -25,12 +25,14 @@ API says "MA". Using it would bake wrong values into the Actor.
 """
 import json
 import os
+import re
 import sys
 import time
 
 import requests
 
 UA = {'User-Agent': 'FetchSmith/1.0'}
+MAX_WAIT = 240  # seconds; longer than this means the budget is hours out, so stop and re-run later
 OUT = '/root/agent/state/harvest/courts_partial.json'
 PAGES = 24  # 472 in_use courts / 20 per page, rounded up
 URL = 'https://www.courtlistener.com/api/rest/v4/courts/?in_use=true&page={}'
@@ -48,6 +50,22 @@ def save(rows):
         json.dump(rows, fh, indent=0, sort_keys=True)
 
 
+def retry_after(resp, default):
+    """CourtListener's 429 body states the exact wait: 'Expected available in N seconds.'
+
+    Honouring it beats a fixed backoff — cycles 496-499 burned whole runs retrying every
+    15s against a multi-hour budget. Capped so one huge number can't hang a cycle.
+    """
+    try:
+        detail = resp.json().get('detail', '')
+    except Exception:  # noqa: BLE001 - non-JSON error body, fall back
+        return default
+    m = re.search(r'in (\d+) seconds', detail)
+    if not m:
+        return default
+    return min(int(m.group(1)) + 2, MAX_WAIT)
+
+
 def fetch_page(page, attempts=8, delay=15):
     """Return the page's results, or None if the rate limiter never let us through."""
     for attempt in range(attempts):
@@ -59,8 +77,13 @@ def fetch_page(page, attempts=8, delay=15):
             continue
         if r.status_code == 200:
             return r.json()['results']
-        print(f'p{page} a{attempt} {r.status_code}', flush=True)
-        time.sleep(delay)
+        wait = retry_after(r, delay) if r.status_code == 429 else delay
+        print(f'p{page} a{attempt} {r.status_code} wait={wait}s', flush=True)
+        if wait >= MAX_WAIT:
+            # Budget is hours out, not seconds - give up now instead of sleeping the cycle away.
+            print(f'p{page} LONG-THROTTLE ({wait}s) - abandoning run, re-run later', flush=True)
+            return None
+        time.sleep(wait)
     return None
 
 

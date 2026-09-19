@@ -1,6 +1,6 @@
 {
   "title": "Court Records & Case Law Scraper — Dockets + Opinions",
-  "description": "Search US federal court dockets (PACER/RECAP mirror) and published opinions via CourtListener free API — no key, no registration. 38 flat fields incl. parties, attorneys, judge, citations, filed-date range, unpublished-opinion filter. Incremental watch mode. $0.002/result, no start fee.",
+  "description": "Search US federal court dockets (PACER/RECAP mirror) and published opinions via CourtListener free API — no key, no registration. 39 flat fields incl. parties, attorneys, judge, citations, filed-date range, unpublished-opinion filter. Incremental watch mode. $0.002/result, no start fee.",
   "seoTitle": "Court Records Scraper — US Dockets & Case Law API",
   "seoDescription": "Scrape US federal court dockets and published opinions via CourtListener free API. Parties, attorneys, firms, judges, citations, unpublished-opinion filter. No API key, no start fee.",
   "categories": [

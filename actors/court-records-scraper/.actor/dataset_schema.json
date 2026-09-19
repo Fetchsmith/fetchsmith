@@ -51,6 +51,14 @@
           "null"
         ]
       },
+      "courtJurisdiction": {
+        "title": "CourtJurisdiction",
+        "example": "Federal District",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "courtCitationString": {
         "title": "CourtCitationString",
         "example": "9th Cir.",
@@ -309,6 +317,7 @@
           "caseNameFull",
           "court",
           "courtId",
+          "courtJurisdiction",
           "courtCitationString",
           "docketNumber",
           "dateFiled",
@@ -340,6 +349,10 @@
           },
           "courtId": {
             "label": "CourtId",
+            "format": "text"
+          },
+          "courtJurisdiction": {
+            "label": "CourtJurisdiction",
             "format": "text"
           },
           "courtCitationString": {
