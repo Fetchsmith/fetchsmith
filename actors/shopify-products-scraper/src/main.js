@@ -100,6 +100,24 @@ const http = async (url) => {
 };
 const textOf = (html) => (html ? cheerio.load(html).text().replace(/\s+/g, ' ').trim() : null);
 
+// A 200 carrying `{"products":[]}` is ambiguous: it is exactly what a genuinely empty store or a
+// disabled endpoint returns, but Shopify's edge also serves it transiently (stale empty page cache,
+// or a rate-limited datacenter IP answered 200-with-nothing instead of 429). The nightly health
+// check hit that on allbirds.com — a store with 250+ live products — and the run told the customer
+// "empty store". Only page 1 is ambiguous (a later page legitimately runs out), so re-confirm zero
+// there before believing it. Costs nothing on the normal path, and each attempt gets a fresh proxy
+// IP because proxyUrlFor() is called per request with no session id.
+const EMPTY_PAGE_RETRIES = 2;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const fetchProductsPage = async (ep, page) => {
+  for (let attempt = 0; ; attempt++) {
+    const products = JSON.parse((await http(`${ep.url}?limit=250&page=${page}`)).body).products ?? [];
+    if (products.length || page !== 1 || attempt >= EMPTY_PAGE_RETRIES) return products;
+    log.warning(`${ep.origin}: zero products on page 1 — re-checking (attempt ${attempt + 2}/${EMPTY_PAGE_RETRIES + 1}) in case Shopify served a transient empty response.`);
+    await sleep(2000 * (attempt + 1));
+  }
+};
+
 function endpointFor(raw) {
   const u = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
   const origin = `${u.protocol}//${u.host}`;
@@ -372,8 +390,7 @@ for (const raw of storeUrls) {
     } else {
       for (let page = 1; got < perStore && keepGoing; page++) {
         if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
-        const res = await http(`${ep.url}?limit=250&page=${page}`);
-        const products = JSON.parse(res.body).products ?? [];
+        const products = await fetchProductsPage(ep, page);
         if (!products.length) break;
         seenBeforeFilter += products.length;
         for (const p of products) {
@@ -392,7 +409,10 @@ for (const raw of storeUrls) {
     }
     if (seenBeforeFilter === 0) {
       emptyStores.push(ep.origin);
-      log.warning(`${ep.origin}: Shopify returned zero products for this URL (empty store/collection, or products.json is disabled — not a scrape failure).`);
+      // Only the paged store/collection route re-confirms an empty first page; don't claim retries
+      // that the single-product route never made.
+      const attempts = ep.kind === 'product' ? '' : ` on ${EMPTY_PAGE_RETRIES + 1} separate attempts`;
+      log.warning(`${ep.origin}: Shopify returned zero products for this URL${attempts} (empty store/collection, or products.json is disabled — not a scrape failure).`);
     } else if (got === 0) {
       filteredOutStores.push(ep.origin);
       // Name every filter that was actually set, so a zero-row run says which input to relax
