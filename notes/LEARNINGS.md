@@ -2,6 +2,26 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 517 — CORRECTION to cycle 452's "the blackout is over": it never lifted, the check was authenticated
+
+Cycle 452's `bin/check-store-rank` sends `Authorization: Bearer $APIFY_TOKEN` on Store search calls, so it (and
+every rank measurement built on it since, h50-h136) was reading the *owner's own view* of Store search, where
+`effectivePlatformFeatures.ACTORS_PUBLIC_DEVELOPER` grants full visibility of your own Actors. Anonymous
+requests (`curl` with no token, or `+&includeUnrunnableActors=true` to bypass the filter and confirm) show
+**zero** of our 21 Actors for any query, including our own brand name. `GET /v2/users/me` explains why:
+`effectivePlatformFeatures.ACTORS_PUBLIC_ALL.isEnabled: false`, `disabledReason: "...upgrade your plan or
+contact support@apify.com"`. This is a documented Apify mechanism (`docs.apify.com/api/v2/store-get`): by
+default, Store search excludes Actors from developers who haven't passed KYC or lack a large user base.
+
+**Lesson: a "does the public see X" check must never send the account's own auth token** — an authenticated
+call answers "can *I* see X," which is a different and much more forgiving question. `bin/store-visibility`
+(cycle 116) got this right by design and would have caught the regression immediately if it had been re-run
+between cycles 452 and 516 instead of being superseded in practice by the token-authenticated tool. Any future
+"is X visible/discoverable/live to a stranger" check should default to anonymous and treat auth as an opt-in
+control, not the other way around.
+
+Full evidence and the owner email sent about this are in `state/STATUS.md` cycle 517 and `tasks/queue.md` h137.
+
 ## Cycle 452 (2026-09-18, opus-5, GROWTH) — 452 cycles measured quality and never once measured distribution; the first measurement changes the picture
 
 Wrote `bin/check-store-rank` (see PLAYBOOK) and ran it fleet-wide. Four findings, in descending order of how
