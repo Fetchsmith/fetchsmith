@@ -20,6 +20,8 @@ No API key, no login, no proxy. Public government data only.
 | `fullTextUrl` | Public URL of the complete document body as plain text. Free to fetch yourself — we don't charge you a second row for it. |
 | `url`, `pdfUrl`, `citation`, `startPage`, `endPage`, `pageLength` | Cite it in a memo without a second lookup. |
 | `filedAt`, `filingType`, `numPages`, `editorialNote`, `onPublicInspection` | Only on `dataset: "publicInspection"` rows (null otherwise) — see **Advance notice** below. |
+| `subtype`, `signingDate` | Only on `documentTypes: ["PRESDOCU"]` rows (proclamations, executive orders, memoranda) — measured 100% filled on 40 live presidential documents, 0% on 40 each of rules/proposed rules/notices. Always null when you don't ask for presidential documents. |
+| `executiveOrderNumber` | A further subset of presidential documents — only executive orders get a number (proclamations and memoranda don't). Measured ~28% of presidential documents (11/40 live sample). |
 
 Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesText`, `publicationDate`, `effectiveOn`, `signingDate`, `topics`, `president`, `executiveOrderNumber`, `excerpt`, `jsonUrl`.
 
