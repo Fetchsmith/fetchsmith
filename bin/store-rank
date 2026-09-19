@@ -154,6 +154,19 @@ def attr(query, slug):
     This prints the title-match block, where we currently sit, and what rank we would
     land at if the title were edited to match: one past every title-matcher whose
     storePosition already beats ours.
+
+    CAVEAT (cycle 522): this heuristic splits the QUERY only on whitespace but splits
+    TITLES on every non-alnum char, so a query containing a glued-together non-alnum
+    char (e.g. "clinicaltrials.gov") can be wrongly judged a title mismatch even when
+    the literal phrase already sits in the title word-for-word. Worse, "fixing" the
+    query-side split to match the title-side one is NOT reliably correct either: real
+    Algolia's own `_highlightResult[...].matchLevel` for "clinicaltrials.gov" against
+    `clinicaltrials-scraper` (whose title literally reads "ClinicalTrials.gov Scraper...")
+    came back "none" on both title AND description, meaning Algolia's real tokenizer
+    disagrees with a naive non-alnum split too. Before spending a publish slot on any
+    query containing punctuation glued to letters, verify with the raw Algolia hit's
+    `_highlightResult` (matchLevel/matchedWords per attribute) instead of trusting this
+    function's verdict. Plain-word queries (the common case) are unaffected.
     """
     r = search(query)
     hits = r["hits"]
