@@ -12,7 +12,15 @@ tot_users = tot_runs = tot_ok = tot_bad = tot_bm = tot_rev = 0
 # code read it with a .get() default of 0, so `runs30d` printed a hardcoded zero for ~170 cycles.
 # The real field is `publicActorRunStats30Days` = {SUCCEEDED,FAILED,ABORTED,TIMED-OUT,TOTAL},
 # which counts runs of the PUBLIC listing by other accounts (our own API/CLI health runs number
-# 44-195 per Actor per 30d and do not appear in it). Treat TOTAL as external demand.
+# 44-195 per Actor per 30d and do not appear in it).
+# NOTE (cycle 516): do NOT read `users`/`runs30d` as buyer demand -- measured fleet-wide, they are
+# platform artifacts. `totalUsers` is pinned at exactly 2 on all 21 Actors, INCLUDING one published
+# hours earlier with zero public runs (`publicActorRunStats30Days` absent entirely), so it cannot be
+# a count of distinct external buyers. `runs30d` tracks days-since-createdAt at ~1/day on every
+# listing regardless of niche (09-09 Actors 10-11, 09-13 Actor 7, 09-17 Actor 3), i.e. an automated
+# per-listing probe, not organic usage -- sole outlier is shopify-products-scraper at ~2/day.
+# The only signals here that require a human action and are therefore real: bookmarks, reviews,
+# Polar orders, and site traffic (bin/traffic). Gate owner email on THOSE, never on users/runs30d.
 for a in acts:
     s = a.get("stats", {}); p = s.get("publicActorRunStats30Days") or {}
     bad = p.get("FAILED", 0) + p.get("ABORTED", 0) + p.get("TIMED-OUT", 0)
@@ -27,7 +35,10 @@ for a in acts:
         tot_bm += s.get("bookmarkCount", 0); tot_rev += s.get("actorReviewCount", 0)
 snap["apify_totals"] = {"public_actors": sum(1 for a in acts if a.get("isPublic")), "users": tot_users,
     "runs30d": tot_runs, "ext_ok30d": tot_ok, "ext_bad30d": tot_bad, "bookmarks": tot_bm, "reviews": tot_rev,
-    "metric": "runs30d=publicActorRunStats30Days.TOTAL (external runs); pre-cycle-172 history had a false 0 here"}
+    "metric": "runs30d=publicActorRunStats30Days.TOTAL; pre-cycle-172 history had a false 0 here",
+    "caveat": "cycle 516: users/runs30d are NOT buyer demand -- users is pinned at 2/Actor incl. a "
+              "same-day listing with zero public runs; runs30d tracks listing age at ~1/day. Real "
+              "signals = bookmarks, reviews, polar.orders, bin/traffic."}
 # Polar orders
 pt = env.get("POLAR_ACCESS_TOKEN")
 if pt:
@@ -38,14 +49,21 @@ if pt:
         snap["polar"] = {"error": str(e)[:200]}
 hist_p = "/root/agent/state/revenue_history.json"
 hist = json.load(open(hist_p)) if os.path.exists(hist_p) else []
-prev_users = hist[-1]["apify_totals"]["users"] if hist else 0
 hist.append(snap); json.dump(hist[-400:], open(hist_p, "w"))
 json.dump(snap, open("/root/agent/state/revenue.json", "w"), indent=1)
 def notify(subj, body, key): subprocess.run(["/root/agent/bin/notify", subj, body, "--once", key])
-if tot_users > 0 and prev_users == 0:
-    notify("[FetchSmith] First users on Apify Store", f"Public Actors now have {tot_users} distinct users (runs by other accounts). Apify credits earnings monthly; the first payout invoice is generated on the 11th of next month and paid ~21st-25th. Snapshot:\n{json.dumps(snap['apify'], indent=1)}", "first_apify_users")
+# cycle 516: the old gate here was `tot_users > 0 and prev_users == 0` -- tot_users is the pinned-at-2
+# artifact described above, so this was a first-money email keyed on a constant. Gate on bookmarks /
+# reviews instead: both require a real human to act on the Store listing, and neither can be produced
+# by the automated per-listing probe that inflates users/runs30d.
+if tot_bm + tot_rev > 0:
+    notify("[FetchSmith] First real Apify Store signal (bookmark/review)", f"A human acted on our Store listings: {tot_bm} bookmark(s), {tot_rev} review(s) across {snap['apify_totals']['public_actors']} public Actors. This is the first non-artifact demand signal (users/runs30d are platform artifacts). Apify credits earnings monthly; payout invoices generate on the 11th and pay ~21st-25th -- worth checking Console -> Insights -> Payouts. Snapshot:\n{json.dumps(snap['apify'], indent=1)}", "first_real_store_signal")
 if snap["polar"].get("orders", 0) > 0:
     notify("[FetchSmith] Revenue: Polar orders", f"Polar orders so far: {snap['polar']['orders']}, gross ${snap['polar']['gross_usd']:.2f}, net ${snap['polar']['net_usd']:.2f}.", f"polar_orders_{snap['polar']['orders']}")
-if time.strftime("%d") == "11" and snap["apify_totals"]["users"] > 0:
-    notify(f"[FetchSmith] Apify payout invoice day ({snap['date']})", f"Apify generates developer payout invoices on the 11th. Check Apify Console → Insights → Payouts. Current public actors: {snap['apify_totals']['public_actors']}, total users: {tot_users}, runs30d: {tot_runs}.", f"payout_day_{time.strftime('%Y-%m')}")
+# cycle 516: this used to fire EVERY month gated only on `users > 0` (always true -- the pinned-at-2
+# artifact), so it sent the owner a routine "go check Payouts" report with zero evidence of earnings.
+# It fired once, 2026-09-11, and would have re-fired 2026-10-11. CLAUDE.md rule 3 forbids routine
+# reports; only revenue/cash events qualify. Now gated on an actual buyer signal existing at all.
+if time.strftime("%d") == "11" and (tot_bm + tot_rev > 0 or snap["polar"].get("orders", 0) > 0):
+    notify(f"[FetchSmith] Apify payout invoice day ({snap['date']})", f"Apify generates developer payout invoices on the 11th, and we have real buyer signal ({tot_bm} bookmark(s), {tot_rev} review(s), {snap['polar'].get('orders', 0)} Polar order(s)). Check Apify Console → Insights → Payouts -- earnings are not visible from the server. Public actors: {snap['apify_totals']['public_actors']}.", f"payout_day_{time.strftime('%Y-%m')}")
 print(json.dumps(snap["apify_totals"]), json.dumps(snap["polar"]))

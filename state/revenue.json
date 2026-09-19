@@ -1,5 +1,5 @@
 {
- "ts": 1789839020,
+ "ts": 1789846465,
  "date": "2026-09-19",
  "apify": {
   "google-news-scraper": {
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 8,
-   "runs": 489,
+   "runs": 490,
    "ext_ok30d": 8,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -381,17 +381,31 @@
    "bookmarks": 0,
    "reviews": 0,
    "rating": 0
+  },
+  "trademark-search-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 0,
+   "runs": 11,
+   "ext_ok30d": 0,
+   "ext_bad30d": 0,
+   "ext_stats30d": {},
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   }
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 20,
-  "users": 40,
+  "public_actors": 21,
+  "users": 42,
   "runs30d": 190,
   "ext_ok30d": 189,
   "ext_bad30d": 1,
   "bookmarks": 0,
   "reviews": 0,
-  "metric": "runs30d=publicActorRunStats30Days.TOTAL (external runs); pre-cycle-172 history had a false 0 here"
+  "metric": "runs30d=publicActorRunStats30Days.TOTAL; pre-cycle-172 history had a false 0 here",
+  "caveat": "cycle 516: users/runs30d are NOT buyer demand -- users is pinned at 2/Actor incl. a same-day listing with zero public runs; runs30d tracks listing age at ~1/day. Real signals = bookmarks, reviews, polar.orders, bin/traffic."
  }
 }

@@ -119,3 +119,8 @@ print(f"\n{'TOTAL':34} {t['runs30d']:>5} "
       f"{t['runs30d']-first['apify_totals']['runs30d']:>+5d} "
       f"{t['users']:>6} {t['bookmarks']:>5} {t['reviews']:>4}")
 print(f"ext_ok30d={t['ext_ok30d']} ext_bad30d={t['ext_bad30d']} public_actors={t['public_actors']}")
+# cycle 516: loud caveat -- the runs30d/users columns above are NOT buyer demand. Measured fleet-wide:
+# users is pinned at exactly 2 on every Actor (incl. one published the same day with zero public runs)
+# and runs30d tracks days-since-publication at ~1/day regardless of niche. Only bkmk/rev are human.
+print("NOTE: runs30d/users are platform artifacts (users pinned at 2/Actor; runs30d ~= listing age)."
+      " Real demand = bkmk/rev columns (both 0), Polar orders, and bin/traffic. See LEARNINGS c516.")
