@@ -65,7 +65,7 @@ TERMS = {
     "substack-scraper": ["substack"],
     "apple-podcasts-scraper": ["apple podcasts"],
     "steam-reviews-scraper": ["steam reviews"],
-    "hacker-news-scraper": ["hacker news"],
+    "hacker-news-scraper": ["hacker news", "hn api"],  # cycle 523: "hn api" p227->p2 after title edit
     "google-news-scraper": ["google news"],
     "app-store-reviews-scraper": ["app store reviews"],
     "google-play-reviews-scraper": ["google play reviews"],
@@ -155,18 +155,36 @@ def attr(query, slug):
     land at if the title were edited to match: one past every title-matcher whose
     storePosition already beats ours.
 
-    CAVEAT (cycle 522): this heuristic splits the QUERY only on whitespace but splits
-    TITLES on every non-alnum char, so a query containing a glued-together non-alnum
-    char (e.g. "clinicaltrials.gov") can be wrongly judged a title mismatch even when
-    the literal phrase already sits in the title word-for-word. Worse, "fixing" the
-    query-side split to match the title-side one is NOT reliably correct either: real
-    Algolia's own `_highlightResult[...].matchLevel` for "clinicaltrials.gov" against
-    `clinicaltrials-scraper` (whose title literally reads "ClinicalTrials.gov Scraper...")
-    came back "none" on both title AND description, meaning Algolia's real tokenizer
-    disagrees with a naive non-alnum split too. Before spending a publish slot on any
-    query containing punctuation glued to letters, verify with the raw Algolia hit's
-    `_highlightResult` (matchLevel/matchedWords per attribute) instead of trusting this
-    function's verdict. Plain-word queries (the common case) are unaffected.
+    CAVEAT (cycle 522) + CORRECTED cycle 523: cycle 522 checked Algolia's own
+    `_highlightResult.matchLevel` on OUR hit to catch cases where this function's
+    naive word-prefix check disagrees with real Algolia matching, and concluded
+    "clinicaltrials.gov" was a false positive because our hit showed matchLevel
+    "none". Cycle 523 tried the same check on "recruitee" and "tmview" — both
+    CONFIRMED real wins from cycles 520/522 — and got `matchLevel: "none"` on those
+    too, which would wrongly invalidate confirmed-good edits. Investigating the
+    contradiction found the real mechanism: **Algolia only computes real
+    `_highlightResult` data for the first 6 hits of a query's response, full stop**
+    — verified by re-requesting the same query at hitsPerPage 3/20/100 and seeing
+    positions 1-6 always real (full/partial/none per genuine content) and position
+    7+ always hard-coded "none", even for a hit whose title is byte-identical to a
+    position-3 hit that DOES show "full". So **checking OUR OWN hit's matchLevel is
+    useless whenever we rank below position 6** (always true pre-edit — that's
+    exactly the case this function exists to evaluate). A "none" there proves
+    nothing either way; cycle 522's specific verdict on "clinicaltrials.gov" was
+    reached this same unreliable way and should be treated as UNRESOLVED, not
+    confirmed-fake (re-checking cycle 523: other developers' clinicaltrials-scraper
+    records DO score real matchLevel "full" at position 1 for that query — a genuine
+    title-match block exists — but our own record, whose title also literally
+    contains "ClinicalTrials.gov", inexplicably sits at p61 rather than inside that
+    top cluster; this specific anomaly is still unexplained and is a good target for
+    a future investigation, separate from the general cutoff bug documented here).
+    **Correct verification: check the matchLevel of the TOP-RANKED member of the
+    title-match block instead of our own hit** — the top block member sits at or
+    near position 1, safely inside the reliable window. If real Algolia agrees that
+    record is a genuine title match, the block concept holds for this query and the
+    naive word-prefix heuristic can be trusted enough to size the opportunity; if
+    Algolia says "none" even for the block's nominal #1, don't trust the block at
+    all. This function checks that automatically below and prints the verdict.
     """
     r = search(query)
     hits = r["hits"]
@@ -201,6 +219,25 @@ def attr(query, slug):
     print(f"query {query!r}  nbHits={r['nbHits']}")
     print(f"  {slug}: rank p{pos}, storePosition {sp}, query in our title: {in_title}")
     print(f"  title-match block: {len(titled)} records at ranks {ranks[:3]}..{ranks[-3:] if ranks else []}")
+    if titled:
+        top_rank = ranks[0]
+        top_hit = titled[0]
+        top_hl = top_hit.get("_highlightResult", {}).get("title", {})
+        top_ml = top_hl.get("matchLevel")
+        if top_rank > 6:
+            print(
+                f"  cannot verify block: top member is at p{top_rank}, past Algolia's real-highlight "
+                "cutoff (positions 1-6 only, see docstring) — matchLevel there is meaningless. Do not "
+                "trust this block without independently confirming a real match some other way."
+            )
+        elif top_ml in ("full", "partial"):
+            print(f"  verified: block's #1 (p{top_rank}) has real Algolia matchLevel {top_ml!r} — block is genuine.")
+        else:
+            print(
+                f"  -> WARNING: block's own #1 (p{top_rank}) has real Algolia matchLevel {top_ml!r}, not "
+                "full/partial — this naive word-prefix block does NOT correspond to a genuine Algolia title "
+                "match for this query. DO NOT publish a title edit off this prediction."
+            )
     if in_title:
         print("  -> already in the title block; only storePosition (real usage) can move us.")
     else:
