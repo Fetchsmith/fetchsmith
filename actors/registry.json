@@ -2,7 +2,7 @@
   "tools": [
     {
       "slug": "ats-jobs-scraper",
-      "title": "ATS Jobs Scraper \u2013 Greenhouse, Ashby, Lever & More",
+      "title": "ATS Jobs Scraper \u2013 Greenhouse, Ashby, Lever, Recruitee",
       "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday career board, normalized into one schema with location, remote status and salary where the ATS exposes it. Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
       "status": "live",
       "credits_per_result": 1,
