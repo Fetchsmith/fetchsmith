@@ -23,6 +23,8 @@
       "totalValue": { "type": ["number", "null"], "title": "Total value" },
       "totalValueCurrency": { "type": ["string", "null"], "title": "Currency" },
       "deadlineDate": { "type": ["string", "null"], "title": "Tender submission deadline" },
+      "deadlineType": { "type": ["string", "null"], "title": "Which TED deadline field this date came from (tender / generic / expressions)" },
+      "daysUntilDeadline": { "type": ["integer", "null"], "title": "Whole days until the submission deadline (negative = already closed)" },
       "deadlineReceiptRequestDate": { "type": ["string", "null"], "title": "Request-to-participate deadline" },
       "publicationDate": { "type": ["string", "null"], "title": "Publication date" },
       "noticeUrl": { "type": ["string", "null"], "title": "Notice URL" },
@@ -35,7 +37,7 @@
       "title": "Overview",
       "transformation": {
         "fields": [
-          "publicationDate", "title", "buyerName", "buyerCountry", "totalValue", "totalValueCurrency", "deadlineDate", "noticeUrl"
+          "publicationDate", "title", "buyerName", "buyerCountry", "totalValue", "totalValueCurrency", "deadlineDate", "daysUntilDeadline", "noticeUrl"
         ]
       },
       "display": {
@@ -48,6 +50,7 @@
           "totalValue": { "label": "Value" },
           "totalValueCurrency": { "label": "Currency" },
           "deadlineDate": { "label": "Deadline" },
+          "daysUntilDeadline": { "label": "Days left" },
           "noticeUrl": { "label": "URL", "format": "link" }
         }
       }

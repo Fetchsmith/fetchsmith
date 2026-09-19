@@ -21,6 +21,10 @@ const maxValue = input.maxValue != null && input.maxValue !== '' ? Number(input.
 if (minValue != null && maxValue != null && minValue > maxValue) {
   throw new Error(`"minValue" (${minValue}) is greater than "maxValue" (${maxValue}).`);
 }
+const onlyOpenDeadlines = Boolean(input.onlyOpenDeadlines);
+const minDaysUntilDeadline = input.minDaysUntilDeadline != null && input.minDaysUntilDeadline !== ''
+  ? Math.max(Number(input.minDaysUntilDeadline), 0)
+  : null;
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -54,7 +58,8 @@ const FIELDS = [
   'place-of-performance-country-lot', 'place-of-performance-city-lot',
   'contract-nature', 'classification-cpv', 'description-lot',
   'total-value', 'total-value-cur',
-  'deadline-date-lot', 'deadline-receipt-request-date-lot', 'links',
+  'deadline-date-lot', 'deadline-receipt-tender-date-lot', 'deadline-receipt-expressions-date-lot',
+  'deadline-receipt-request-date-lot', 'links',
   'procedure-identifier', 'change-reason-description',
 ];
 
@@ -118,6 +123,23 @@ function earliestDate(arr) {
   return sorted[0];
 }
 
+// Whole days from today (UTC) to the submission deadline: 0 = closes today,
+// negative = already closed, null = TED published no deadline on this notice
+// (common on award/result notices, which have nothing left to bid on).
+// deadlineDate is already "+offset"-stripped by earliestDate, but can still
+// carry a time component ("2026-08-24T16:00:00"), so only the date part is used
+// — a deadline at 16:00 local is still "today", not "-1 day".
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const day = String(dateStr).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const then = Date.parse(`${day}T00:00:00Z`);
+  if (!Number.isFinite(then)) return null;
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.round((then - today) / 86400000);
+}
+
 function pickNoticeUrl(links) {
   if (!links || typeof links !== 'object') return null;
   const preferredUpper = outputLanguage.toUpperCase();
@@ -142,7 +164,28 @@ function maybeFlatten(arr) {
   return flatten ? arr.join(', ') : arr;
 }
 
+// TED carries the submission deadline in THREE different fields depending on the
+// procedure, and `deadline-date-lot` — the only one this Actor read before — is the
+// rarest: measured live 2026-09-19 on 10 fresh FRA cn-standard notices, 9 had
+// `deadline-receipt-tender-date-lot` and only 1 had `deadline-date-lot`, so
+// `deadlineDate` was null for almost every buyer. Prefer the tender-receipt
+// deadline, then the generic one, then the expressions-of-interest deadline used by
+// two-stage procedures, and say in `deadlineType` which one the row came from.
+const DEADLINE_SOURCES = [
+  ['deadline-receipt-tender-date-lot', 'tender'],
+  ['deadline-date-lot', 'generic'],
+  ['deadline-receipt-expressions-date-lot', 'expressions'],
+];
+function pickDeadline(notice) {
+  for (const [field, type] of DEADLINE_SOURCES) {
+    const date = earliestDate(notice[field]);
+    if (date) return [date, type];
+  }
+  return [null, null];
+}
+
 function normalize(notice) {
+  const [deadlineDate, deadlineType] = pickDeadline(notice);
   const [title, titleLanguage] = preferredText(notice['notice-title']);
   const [buyerName] = preferredText(notice['buyer-name']);
   const [description] = preferredText(notice['description-lot']);
@@ -169,7 +212,9 @@ function normalize(notice) {
     description,
     totalValue: (typeof notice['total-value'] === 'number' && notice['total-value'] >= 0) ? notice['total-value'] : null,
     totalValueCurrency: Array.isArray(notice['total-value-cur']) ? notice['total-value-cur'][0] ?? null : notice['total-value-cur'] ?? null,
-    deadlineDate: earliestDate(notice['deadline-date-lot']),
+    deadlineDate,
+    deadlineType,
+    daysUntilDeadline: daysUntil(deadlineDate),
     deadlineReceiptRequestDate: earliestDate(notice['deadline-receipt-request-date-lot']),
     publicationDate: notice['publication-date'] ? String(notice['publication-date']).split('+')[0] : null,
     noticeUrl: pickNoticeUrl(notice.links),
@@ -330,8 +375,22 @@ function passesValueFilter(item) {
   return true;
 }
 
+// Deadline filtering is post-fetch for the same reason the value filter is: TED's
+// expert-query grammar has no reliable deadline-date operator (deadline-date-lot is
+// a per-lot array, so a server-side comparison would match a notice on ANY of its
+// lots), and a notice can carry no deadline at all. A notice dropped here is never
+// normalized into the dataset and never charged.
+function passesDeadlineFilter(item) {
+  if (!onlyOpenDeadlines && minDaysUntilDeadline == null) return true;
+  if (item.daysUntilDeadline == null) return false; // no deadline published = can't prove it's still open
+  if (onlyOpenDeadlines && item.daysUntilDeadline < 0) return false;
+  if (minDaysUntilDeadline != null && item.daysUntilDeadline < minDaysUntilDeadline) return false;
+  return true;
+}
+
 let skippedSeen = 0;
 let filteredOutValue = 0;
+let filteredOutDeadline = 0;
 async function seedBaseline() {
   const seedFields = ['publication-number'];
   let seedPage = 1;
@@ -409,6 +468,10 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
       filteredOutValue += 1;
       continue;
     }
+    if (!passesDeadlineFilter(normalized)) {
+      filteredOutDeadline += 1;
+      continue;
+    }
     keepGoing = await pushResult(normalized);
     // Recorded as delivered only after the charge actually succeeded — anything
     // dropped by maxResults or a charge limit stays "new" for the next run.
@@ -450,13 +513,26 @@ log.info(`Done. Pushed ${pushed} notices.`);
 if (filteredOutValue > 0) {
   log.info(`${filteredOutValue} matching notice(s) were dropped by minValue/maxValue (no value data, or value outside the range).`);
 }
+if (filteredOutDeadline > 0) {
+  log.info(
+    `${filteredOutDeadline} matching notice(s) were dropped by onlyOpenDeadlines/minDaysUntilDeadline `
+    + '(deadline already passed, too soon, or TED published no deadline on the notice — award and result '
+    + 'notices usually have none). None of them were charged.',
+  );
+}
 if (pushed === 0 && watchMode && !seeding) {
   log.warning(
     `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
     + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
   );
-} else if (!pushed && !seeding && filteredOutValue > 0 && !skippedSeen) {
-  await Actor.setStatusMessage(`No notices matched: ${filteredOutValue} notice(s) matched your query but were dropped by minValue/maxValue. Widen or remove that filter.`);
+} else if (!pushed && !seeding && (filteredOutValue > 0 || filteredOutDeadline > 0) && !skippedSeen) {
+  // Name only the filter(s) that actually dropped something — claiming a cause the
+  // run did not observe is the defect cycles 483/484 fixed elsewhere in the fleet.
+  const dropped = [
+    filteredOutValue > 0 ? `${filteredOutValue} by minValue/maxValue` : null,
+    filteredOutDeadline > 0 ? `${filteredOutDeadline} by onlyOpenDeadlines/minDaysUntilDeadline` : null,
+  ].filter(Boolean).join(' and ');
+  await Actor.setStatusMessage(`No notices matched: ${filteredOutValue + filteredOutDeadline} notice(s) matched your TED query but were dropped after fetching (${dropped}). Widen or remove that filter.`);
 } else if (!pushed && !seeding) {
   await Actor.setStatusMessage(`No notices matched this query (${query}). Widen publishedWithinDays, drop a filter, or check your CPV codes.`);
 }

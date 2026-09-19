@@ -1,113 +1,175 @@
 {
-  "title": "Input",
-  "type": "object",
-  "schemaVersion": 1,
-  "properties": {
-    "countries": {
-      "title": "Buyer countries",
-      "type": "array",
-      "description": "ISO 3166-1 alpha-3 codes of the buyer's country (e.g. DEU, FRA, ITA, ESP, NLD). Leave empty for all EU/EEA countries.",
-      "editor": "stringList",
-      "default": []
+    "title": "Input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "countries": {
+            "title": "Buyer countries",
+            "type": "array",
+            "description": "ISO 3166-1 alpha-3 codes of the buyer's country (e.g. DEU, FRA, ITA, ESP, NLD). Leave empty for all EU/EEA countries.",
+            "editor": "stringList",
+            "default": []
+        },
+        "cpvCodes": {
+            "title": "CPV codes",
+            "type": "array",
+            "description": "Common Procurement Vocabulary codes to filter by (e.g. 72000000 for IT services, 45000000 for construction). Exact 8-digit codes only. Leave empty for all.",
+            "editor": "stringList",
+            "default": []
+        },
+        "noticeTypes": {
+            "title": "Notice types",
+            "type": "array",
+            "description": "TED notice-type codes to filter by, e.g. cn-standard (contract notice), can-standard (contract award notice), pin-standard (prior information). Leave empty for all types.",
+            "editor": "stringList",
+            "default": []
+        },
+        "procedureType": {
+            "title": "Procedure types",
+            "type": "array",
+            "description": "TED procedure-type codes to filter by, e.g. open, restricted, neg-w-call (negotiated with prior call), neg-wo-call (negotiated without prior call), comp-dial (competitive dialogue), innovation, oth-mult, oth-single, exp-int-rest. Leave empty for all. Server-side filter, same OR-group as noticeTypes.",
+            "editor": "stringList",
+            "default": []
+        },
+        "publishedWithinDays": {
+            "title": "Published within (days)",
+            "type": "integer",
+            "description": "Only return notices published in the last N days. Ignored if publicationDateFrom or publicationDateTo is set.",
+            "default": 7,
+            "minimum": 1,
+            "maximum": 365
+        },
+        "publicationDateFrom": {
+            "title": "Published from (absolute date)",
+            "type": "string",
+            "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)' with an absolute historical window. Leave empty for no lower bound (with publicationDateTo set).",
+            "editor": "textfield"
+        },
+        "publicationDateTo": {
+            "title": "Published to (absolute date)",
+            "type": "string",
+            "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)'. Leave empty for no upper bound (with publicationDateFrom set).",
+            "editor": "textfield"
+        },
+        "keywords": {
+            "title": "Keywords (full-text)",
+            "type": "string",
+            "description": "Free-text search across the notice's title, description and buyer name (TED's FT~ full-text operator). Example: \"cloud hosting\". Leave empty to match everything in your other filters.",
+            "editor": "textfield"
+        },
+        "expertQuery": {
+            "title": "Expert query (advanced, overrides the filters above)",
+            "type": "string",
+            "description": "Raw TED expert-query string (same syntax as the TED website's expert search), e.g. \"buyer-country=DEU AND classification-cpv=72000000 AND publication-date>=today(-30)\". If set, this replaces countries/cpvCodes/noticeTypes/publishedWithinDays entirely.",
+            "editor": "textfield"
+        },
+        "maxResults": {
+            "title": "Max results",
+            "type": "integer",
+            "description": "Stop after this many notices.",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 5000
+        },
+        "outputLanguage": {
+            "title": "Output language",
+            "type": "string",
+            "description": "Preferred language for localized fields (title, description, buyer name, notice link). Falls back to English, then to whichever language TED provided, if this notice has no translation into the chosen language.",
+            "editor": "select",
+            "default": "eng",
+            "enum": [
+                "eng",
+                "deu",
+                "fra",
+                "ita",
+                "spa",
+                "pol",
+                "nld",
+                "por",
+                "swe",
+                "dan",
+                "fin",
+                "ces",
+                "ell",
+                "hun",
+                "ron",
+                "slk",
+                "slv",
+                "bul",
+                "hrv",
+                "est",
+                "lav",
+                "lit",
+                "gle",
+                "mlt"
+            ],
+            "enumTitles": [
+                "English",
+                "German",
+                "French",
+                "Italian",
+                "Spanish",
+                "Polish",
+                "Dutch",
+                "Portuguese",
+                "Swedish",
+                "Danish",
+                "Finnish",
+                "Czech",
+                "Greek",
+                "Hungarian",
+                "Romanian",
+                "Slovak",
+                "Slovenian",
+                "Bulgarian",
+                "Croatian",
+                "Estonian",
+                "Latvian",
+                "Lithuanian",
+                "Irish",
+                "Maltese"
+            ]
+        },
+        "minValue": {
+            "title": "Min contract value",
+            "type": "integer",
+            "description": "Only keep notices whose estimated/total contract value (the 'totalValue' output field) is at least this number. Compares the raw numeric value regardless of currency (TED reports EUR, CZK, RON, SEK etc. per notice — check 'totalValueCurrency' before comparing across countries). Roughly half of all TED notices carry no value at all; those are dropped whenever this filter is set. Leave empty for no minimum."
+        },
+        "maxValue": {
+            "title": "Max contract value",
+            "type": "integer",
+            "description": "Only keep notices whose estimated/total contract value is at most this number. Same currency caveat as 'Min contract value'. Leave empty for no maximum."
+        },
+        "onlyOpenDeadlines": {
+            "title": "Only tenders still open for bids",
+            "type": "boolean",
+            "description": "Keep only notices whose submission deadline ('deadlineDate') is today or later, i.e. ones you can still bid on. Notices where TED published no deadline at all are dropped while this is on — award/result notices and many prior-information notices carry none, and an absent deadline cannot be shown to be open. Off by default (every matching notice, open or closed). Filtered-out notices are not charged.",
+            "default": false
+        },
+        "minDaysUntilDeadline": {
+            "title": "Minimum days until deadline",
+            "type": "integer",
+            "description": "Keep only notices with at least this many whole days left before the submission deadline, counted in UTC ('daysUntilDeadline' in the output). Use it to skip tenders you cannot realistically prepare a bid for: 14 drops anything closing inside two weeks. Implies the open-deadline filter (a passed deadline is negative), and drops notices with no published deadline. Leave empty for no deadline floor.",
+            "minimum": 0
+        },
+        "flatten": {
+            "title": "Flatten array fields for CSV/Excel",
+            "type": "boolean",
+            "description": "Join the 4 array fields (CPV codes, contract nature, place of performance country/city) into a single comma-separated string instead of a JSON array. Off by default (JSON arrays); turn on if you're exporting to CSV/Excel and want one clean column per field instead of numbered field/0, field/1 columns.",
+            "default": false
+        },
+        "watchLabel": {
+            "title": "Watch mode: label",
+            "type": "string",
+            "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search.",
+            "editor": "textfield"
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — notices pushed, pages scanned, TED's own reported total, watch-label new count if Watch mode label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every notice has already been pushed and charged. Leave empty to skip.",
+            "editor": "textfield"
+        }
     },
-    "cpvCodes": {
-      "title": "CPV codes",
-      "type": "array",
-      "description": "Common Procurement Vocabulary codes to filter by (e.g. 72000000 for IT services, 45000000 for construction). Exact 8-digit codes only. Leave empty for all.",
-      "editor": "stringList",
-      "default": []
-    },
-    "noticeTypes": {
-      "title": "Notice types",
-      "type": "array",
-      "description": "TED notice-type codes to filter by, e.g. cn-standard (contract notice), can-standard (contract award notice), pin-standard (prior information). Leave empty for all types.",
-      "editor": "stringList",
-      "default": []
-    },
-    "procedureType": {
-      "title": "Procedure types",
-      "type": "array",
-      "description": "TED procedure-type codes to filter by, e.g. open, restricted, neg-w-call (negotiated with prior call), neg-wo-call (negotiated without prior call), comp-dial (competitive dialogue), innovation, oth-mult, oth-single, exp-int-rest. Leave empty for all. Server-side filter, same OR-group as noticeTypes.",
-      "editor": "stringList",
-      "default": []
-    },
-    "publishedWithinDays": {
-      "title": "Published within (days)",
-      "type": "integer",
-      "description": "Only return notices published in the last N days. Ignored if publicationDateFrom or publicationDateTo is set.",
-      "default": 7,
-      "minimum": 1,
-      "maximum": 365
-    },
-    "publicationDateFrom": {
-      "title": "Published from (absolute date)",
-      "type": "string",
-      "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)' with an absolute historical window. Leave empty for no lower bound (with publicationDateTo set).",
-      "editor": "textfield"
-    },
-    "publicationDateTo": {
-      "title": "Published to (absolute date)",
-      "type": "string",
-      "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)'. Leave empty for no upper bound (with publicationDateFrom set).",
-      "editor": "textfield"
-    },
-    "keywords": {
-      "title": "Keywords (full-text)",
-      "type": "string",
-      "description": "Free-text search across the notice's title, description and buyer name (TED's FT~ full-text operator). Example: \"cloud hosting\". Leave empty to match everything in your other filters.",
-      "editor": "textfield"
-    },
-    "expertQuery": {
-      "title": "Expert query (advanced, overrides the filters above)",
-      "type": "string",
-      "description": "Raw TED expert-query string (same syntax as the TED website's expert search), e.g. \"buyer-country=DEU AND classification-cpv=72000000 AND publication-date>=today(-30)\". If set, this replaces countries/cpvCodes/noticeTypes/publishedWithinDays entirely.",
-      "editor": "textfield"
-    },
-    "maxResults": {
-      "title": "Max results",
-      "type": "integer",
-      "description": "Stop after this many notices.",
-      "default": 100,
-      "minimum": 1,
-      "maximum": 5000
-    },
-    "outputLanguage": {
-      "title": "Output language",
-      "type": "string",
-      "description": "Preferred language for localized fields (title, description, buyer name, notice link). Falls back to English, then to whichever language TED provided, if this notice has no translation into the chosen language.",
-      "editor": "select",
-      "default": "eng",
-      "enum": ["eng", "deu", "fra", "ita", "spa", "pol", "nld", "por", "swe", "dan", "fin", "ces", "ell", "hun", "ron", "slk", "slv", "bul", "hrv", "est", "lav", "lit", "gle", "mlt"],
-      "enumTitles": ["English", "German", "French", "Italian", "Spanish", "Polish", "Dutch", "Portuguese", "Swedish", "Danish", "Finnish", "Czech", "Greek", "Hungarian", "Romanian", "Slovak", "Slovenian", "Bulgarian", "Croatian", "Estonian", "Latvian", "Lithuanian", "Irish", "Maltese"]
-    },
-    "minValue": {
-      "title": "Min contract value",
-      "type": "integer",
-      "description": "Only keep notices whose estimated/total contract value (the 'totalValue' output field) is at least this number. Compares the raw numeric value regardless of currency (TED reports EUR, CZK, RON, SEK etc. per notice — check 'totalValueCurrency' before comparing across countries). Roughly half of all TED notices carry no value at all; those are dropped whenever this filter is set. Leave empty for no minimum."
-    },
-    "maxValue": {
-      "title": "Max contract value",
-      "type": "integer",
-      "description": "Only keep notices whose estimated/total contract value is at most this number. Same currency caveat as 'Min contract value'. Leave empty for no maximum."
-    },
-    "flatten": {
-      "title": "Flatten array fields for CSV/Excel",
-      "type": "boolean",
-      "description": "Join the 4 array fields (CPV codes, contract nature, place of performance country/city) into a single comma-separated string instead of a JSON array. Off by default (JSON arrays); turn on if you're exporting to CSV/Excel and want one clean column per field instead of numbered field/0, field/1 columns.",
-      "default": false
-    },
-    "watchLabel": {
-      "title": "Watch mode: label",
-      "type": "string",
-      "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search.",
-      "editor": "textfield"
-    },
-    "webhookUrl": {
-      "title": "Webhook URL (notify on completion)",
-      "type": "string",
-      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — notices pushed, pages scanned, TED's own reported total, watch-label new count if Watch mode label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every notice has already been pushed and charged. Leave empty to skip.",
-      "editor": "textfield"
-    }
-  },
-  "required": []
+    "required": []
 }
