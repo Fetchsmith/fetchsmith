@@ -331,6 +331,28 @@ const abs = (p) => (p ? `${BASE}${p}` : null);
 const PDF_BASE = 'https://storage.courtlistener.com/';
 const pdfUrl = (p) => (typeof p === 'string' && p.trim() ? `${PDF_BASE}${p.trim()}` : null);
 
+// PACER's `jurisdictionType` free-text field comes back with inconsistent casing across courts
+// for what is otherwise the same value — e.g. "Federal Question" (nysd) vs "Federal question"
+// (ilnd), confirmed live cycle 494 (429 rows / 20 courts: also "U.S. Government Defendant" vs
+// "Government plaintiff"). Title-case every word so a buyer grouping on this field doesn't get
+// split buckets for a casing accident. This does NOT merge genuinely different upstream text
+// (e.g. "Diversity" vs "Diversity of citizenship", or the presence/absence of a "U.S." prefix)
+// — those are real content differences, left as-is rather than guessed at.
+const normalizeJurisdictionTypeCasing = (v) => {
+    if (typeof v !== 'string' || !v.trim()) return null;
+    const LOWER_WORDS = new Set(['of', 'the', 'and']);
+    return v
+        .trim()
+        .split(/\s+/)
+        .map((word, i) => {
+            if (/^u\.s\.?$/i.test(word)) return 'U.S.';
+            const lower = word.toLowerCase();
+            if (i > 0 && LOWER_WORDS.has(lower)) return lower;
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join(' ');
+};
+
 // One superset dataset shape covers both record types, the way both incumbent listings do it:
 // a buyer searching "both" gets one sortable table instead of two schemas to reconcile.
 // Fields that only exist on one side are null on the other, never omitted.
@@ -429,7 +451,7 @@ function normalizeDocket(r) {
         syllabus: null,
         suitNature: blankToNull(r.suitNature) ?? null,
         cause: blankToNull(r.cause) ?? null,
-        jurisdictionType: blankToNull(r.jurisdictionType) ?? null,
+        jurisdictionType: normalizeJurisdictionTypeCasing(blankToNull(r.jurisdictionType)),
         juryDemand: blankToNull(r.juryDemand) ?? null,
         // Bankruptcy chapter (7/11/13) — present only on bankruptcy dockets.
         chapter: blankToNull(r.chapter) ?? null,
