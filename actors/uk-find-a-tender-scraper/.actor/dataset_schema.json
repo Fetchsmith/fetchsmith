@@ -144,13 +144,6 @@
         ],
         "title": "Submission deadline"
       },
-      "tenderStartDate": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Tender period start"
-      },
       "awardPeriodStart": {
         "type": [
           "string",

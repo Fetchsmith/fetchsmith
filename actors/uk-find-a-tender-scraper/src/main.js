@@ -253,7 +253,6 @@ function normalize(release, source, includeRaw) {
         valueCurrency: tender.value?.currency ?? null,
 
         deadlineDate: tender.tenderPeriod?.endDate ?? null,
-        tenderStartDate: tender.tenderPeriod?.startDate ?? null,
         awardPeriodStart: tender.awardPeriod?.startDate ?? null,
         // Contracts Finder has no lots and carries the period on tender.contractPeriod instead.
         contractStartDate: firstAward?.contractPeriod?.startDate ?? lots[0]?.contractPeriod?.startDate ?? tender.contractPeriod?.startDate ?? null,

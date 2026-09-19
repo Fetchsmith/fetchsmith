@@ -131,6 +131,9 @@ Newest-first within each portal, but the two portals are interleaved row-by-row 
 **Why is `awardValueAmount` sometimes missing on award notices?**
 Because the buyer did not publish a value. Where a value exists it is usually attached to the signed contract rather than the award, so this Actor reads `contracts[].value` and totals it (`contractCount` tells you how many contracts were summed, and `awardValueSource` says whether the number came from the award or the contracts).
 
+**Why isn't there a `tenderStartDate` field?**
+It used to exist (`tender.tenderPeriod.startDate` in the raw OCDS feed) but was removed as of v0.1.22 — measured 0/808 filled across 9 independent live slices spanning 2025-01 through 2026-08, on both Find a Tender and Contracts Finder, tender-stage and award-stage alike. UK buyers publish a submission deadline (`deadlineDate`) but essentially never publish a tender-window start date on either portal. `deadlineDate` remains, unaffected.
+
 **Do you need a proxy or an API key?**
 No. Both portals' OCDS APIs are free, key-free and open-licensed (Open Government Licence v3). The Actor self-throttles per portal to stay under each API's rate limit and backs off politely if it still hits one.
 
