@@ -299,30 +299,55 @@ let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
-// opportunity `id` -> last-seen snapshot of the 3 thin fields that can change on an
-// otherwise-already-delivered opportunity: closing date (deadline amendment), docType
-// (forecast turning into a real posted opportunity) and oppStatus (posted -> closed/archived
-// early). All 3 are thin fields, always present regardless of `enrich`, so tracking them costs
-// no extra API calls. `watchChanges` decides whether a change re-delivers the row; the snapshot
-// itself is always kept current so turning watchChanges on later works without a fresh baseline.
+// opportunity `id` -> last-seen snapshot of the fields that can change on an otherwise-
+// already-delivered opportunity: closing date (deadline amendment), docType (forecast turning
+// into a real posted opportunity), oppStatus (posted -> closed/archived/withdrawn early),
+// awardCeiling/awardFloor (funding range revised) and lastUpdatedDate (Grants.gov's own
+// "something on this synopsis/forecast changed" timestamp -- the generic catch-all for document
+// edits we have no more specific field for). closeDate/docType/oppStatus are thin fields, always
+// present regardless of `enrich`, so tracking them costs no extra API calls; the other 3 (plus
+// applicantEligibilityDesc, hashed below) only populate -- and therefore only get watched -- when
+// `enrich` is on, which is the default, so this costs no extra calls either in the common case.
+// `watchChanges` decides whether a change re-delivers the row; the snapshot itself is always kept
+// current so turning watchChanges on later works without a fresh baseline.
 const watchSeen = new Map();
 let changedCount = 0;
 
+// applicantEligibilityDesc can be a multi-KB free-text field and WATCH_KEEP persists up to 60,000
+// snapshots in one KV record, so the full text is never stored -- only an 8-char md5 fingerprint,
+// enough to detect that the text changed without risking the record's size budget.
+function eligHashOf(desc) {
+    return desc ? createHash('md5').update(desc).digest('hex').slice(0, 8) : null;
+}
+
 function snapshotOf(item) {
-    return { closeDate: item.closeDate ?? null, docType: item.docType ?? null, oppStatus: item.oppStatus ?? null };
+    return {
+        closeDate: item.closeDate ?? null,
+        docType: item.docType ?? null,
+        oppStatus: item.oppStatus ?? null,
+        awardCeiling: typeof item.awardCeiling === 'number' ? item.awardCeiling : null,
+        awardFloor: typeof item.awardFloor === 'number' ? item.awardFloor : null,
+        lastUpdatedDate: item.lastUpdatedDate ?? null,
+        eligHash: eligHashOf(item.applicantEligibilityDesc),
+    };
 }
 
 // A changed opportunity is re-delivered with these fields describing exactly what moved, so a
-// buyer doesn't have to diff the row against their own last-seen copy to find out.
+// buyer doesn't have to diff the row against their own last-seen copy to find out. eligHash is
+// compared separately since its "previous" value (a hash) isn't meaningful to show a buyer.
 function changesBetween(prev, next) {
     if (!prev) return null;
     const types = [];
     const previous = {};
-    for (const field of ['closeDate', 'docType', 'oppStatus']) {
+    for (const field of ['closeDate', 'docType', 'oppStatus', 'awardCeiling', 'awardFloor', 'lastUpdatedDate']) {
         if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
             types.push(field);
             previous[field] = prev[field];
         }
+    }
+    if (prev.eligHash !== undefined && prev.eligHash !== null && prev.eligHash !== next.eligHash) {
+        types.push('applicantEligibilityDesc');
+        previous.applicantEligibilityDesc = '(changed; only a fingerprint of the eligibility text is retained, not the previous text)';
     }
     return types.length ? { types, previous } : null;
 }
@@ -336,9 +361,13 @@ async function saveWatchRecord(status) {
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
         seenCount: entries.length,
-        // Compact per-entry shape: id, closeDate, docType, oppStatus. Kept as short keys
-        // because WATCH_KEEP can hold up to 60,000 of these in one KV record.
-        seenIds: entries.map(([id, snap]) => ({ i: id, c: snap.closeDate, d: snap.docType, s: snap.oppStatus })),
+        // Compact per-entry shape: id, closeDate, docType, oppStatus, awardCeiling, awardFloor,
+        // lastUpdatedDate, eligHash. Kept as short keys because WATCH_KEEP can hold up to 60,000
+        // of these in one KV record; eligHash is already an 8-char fingerprint, not the full text.
+        seenIds: entries.map(([id, snap]) => ({
+            i: id, c: snap.closeDate, d: snap.docType, s: snap.oppStatus,
+            ac: snap.awardCeiling, af: snap.awardFloor, lu: snap.lastUpdatedDate, eh: snap.eligHash,
+        })),
         runCount: (watchRecord.runCount ?? 0) + 1,
     });
 }
@@ -351,20 +380,31 @@ if (watchMode) {
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
         // Pre-change-tracking records stored `seenIds` as a flat array of id strings (or
-        // numbers) -- handled here so an existing buyer's baseline keeps working unchanged
-        // instead of needing a fresh seed the day this feature shipped. Those ids simply have
-        // no snapshot yet (nulls), so watchChanges only starts detecting changes from here on.
+        // numbers), and records from before the funding/eligibility/lastUpdatedDate fields
+        // existed only carry `c`/`d`/`s` -- both handled here so an existing buyer's baseline
+        // keeps working unchanged instead of needing a fresh seed each time this feature grows.
+        // Missing fields simply have no snapshot yet (nulls/undefined), so watchChanges only
+        // starts detecting changes on those fields from here on, same pattern as the original.
         for (const entry of existing.seenIds) {
             if (entry && typeof entry === 'object') {
-                watchSeen.set(String(entry.i), { closeDate: entry.c ?? null, docType: entry.d ?? null, oppStatus: entry.s ?? null });
+                watchSeen.set(String(entry.i), {
+                    closeDate: entry.c ?? null, docType: entry.d ?? null, oppStatus: entry.s ?? null,
+                    awardCeiling: typeof entry.ac === 'number' ? entry.ac : null,
+                    awardFloor: typeof entry.af === 'number' ? entry.af : null,
+                    lastUpdatedDate: entry.lu ?? null,
+                    eligHash: entry.eh ?? null,
+                });
             } else {
-                watchSeen.set(String(entry), { closeDate: null, docType: null, oppStatus: null });
+                watchSeen.set(String(entry), {
+                    closeDate: null, docType: null, oppStatus: null,
+                    awardCeiling: null, awardFloor: null, lastUpdatedDate: null, eligHash: null,
+                });
             }
         }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
             + `${watchSeen.size} already-delivered opportunity(ies). Only opportunities NOT in that baseline are returned and charged`
-            + (watchChanges ? ', plus any already-delivered opportunity whose closing date, forecast/posted status or opportunity status changed.' : '.'),
+            + (watchChanges ? ', plus any already-delivered opportunity whose closing date, forecast/posted status, opportunity status, award ceiling/floor, last-updated date or eligibility text changed.' : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -764,7 +804,7 @@ if (watchMode) {
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new opportunity(ies)`
-            + (watchChanges ? ` and ${changedCount} changed opportunity(ies) (deadline/status/forecast)` : '')
+            + (watchChanges ? ` and ${changedCount} changed opportunity(ies) (deadline/status/forecast/funding/eligibility/last-updated)` : '')
             + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
         );
     }

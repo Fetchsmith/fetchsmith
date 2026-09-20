@@ -53,6 +53,10 @@ NON_ROW_BIND = re.compile(r'(watch|criteria|summary|fingerprint|stats|cache|opts
 # genuinely new code-only field on this Actor still trips the check.
 FIELD_SUPPRESS = {
     'apple-podcasts-scraper': {'id', 'name', 'url', 'artworkUrl100'},
+    # eligHash is an internal watch-snapshot fingerprint (KV store only, cycle 534) -- never
+    # pushed to the dataset. Flagged because snapshotOf()'s `return {...}` shares 6/7 keys with
+    # real dataset fields, so it reads as a row shape rather than a suppressed non-row literal.
+    'grants-gov-scraper': {'eligHash'},
 }
 
 

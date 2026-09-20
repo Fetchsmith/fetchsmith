@@ -933,3 +933,34 @@ Actor sitting at the top of the queue as an untriaged `[hard]` item for ~76 cycl
   (`registry.json` → `tool.html` renders `.notice.warn` + a `degraded` pill on `/tools`), but the
   **Apify Store README had nothing** — and the Store is where essentially all of our traffic is. When
   marking a product degraded, do both, and date the banner.
+
+## Cycle 534 (2026-09-20, sonnet-5, BUILD/competitor-gap audit — grants-gov-scraper)
+- **A competitor's distribution strategy exposed a real feature gap.** `apify-admin store "grants.gov"`
+  still shows the same tiny/saturated niche as cycle 471 (leaders `solidcode`/`alizarin` at 7 users,
+  no growth) — normally a clean-negative, don't-rescan signal. But one publisher, `nexgenwatch`, has
+  split the same underlying idea into **7 separate narrow "watch" Actor listings** (new opportunity,
+  cancellation, document change, funding-range change, forecast-to-posted transition, eligibility
+  change), each with only 2 users but together ~14 — a real SEO/positioning tactic (one Actor per
+  buyer-intent query) worth remembering as a pattern (see also cycle 526's MCP-server-packaging idea).
+- **The real finding: our own `watchChanges` (`grants-gov-scraper/src/main.js`) only tracked 3 of the
+  6 change types nexgenwatch markets** — `closeDate`/`docType`/`oppStatus`, but never `awardCeiling`/
+  `awardFloor` (their "funding range change" product) or `applicantEligibilityDesc` (their
+  "eligibility change" product). Fixed for free: `enrich` (default on) already merges these fields
+  into the row before the watch-diff check runs, so tracking them costs zero extra API calls — the
+  gap was a missed `snapshotOf`/`changesBetween` field list, not a missing data source.
+- **`applicantEligibilityDesc` is too big to snapshot verbatim at scale** (WATCH_KEEP holds up to
+  60,000 entries in one KV record) — stored an 8-char `createHash('md5')` fingerprint instead of the
+  full text, and don't show the buyer a fake "previous text" (a hash isn't readable); a fixed
+  explanatory string is honest instead.
+- **Verified locally by mutating a real seeded baseline's stored snapshot fields directly** (same
+  method as the original `watchChanges` cycle) — 2 opportunities got their `ac`/`lu`+`eh` fields
+  changed, rerun correctly re-delivered exactly those 2 with the right `_watchChangeType`, a third
+  unchanged rerun after that returned 0. Confirmed on the platform too (build 0.1.21, real
+  `apify call` baseline seed, 774 opportunities, 0 charged, no crash).
+- **`bin/check-code-fields`'s row-shape heuristic false-positived on an internal-only field**:
+  `snapshotOf()`'s `return {...}` shares 6/7 keys with real dataset fields (closeDate, docType,
+  oppStatus, awardCeiling, awardFloor, lastUpdatedDate all really are output fields) so it reads as
+  a row shape, and the new `eligHash` key inside it got flagged as "code-only, undeclared". Not a
+  bug — `eligHash` never reaches the dataset, only the watch KV store. Fixed via the existing
+  `FIELD_SUPPRESS` per-slug allowlist (same mechanism already used for `apple-podcasts-scraper`),
+  not by touching the schema.
