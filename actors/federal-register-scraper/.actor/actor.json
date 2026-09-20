@@ -1,7 +1,7 @@
 {
     "actorSpecification": 1,
     "name": "federal-register-scraper",
-    "title": "Federal Register Scraper \u2013 Agency, Type & Comment Deadlines",
+    "title": "Federal Register Scraper \u2013 Public Inspection, Comment Deadlines",
     "description": "Scrape the US Federal Register from its official government API: rules, proposed rules, notices and presidential documents. 37 flat fields incl. comment-close deadline, EO 12866 significance, RIN and CFR refs. Also reads the Public Inspection desk \u2014 a rule 1-3 days before it publishes. No start fee.",
     "version": "0.1",
     "buildTag": "latest",

@@ -69,7 +69,7 @@ TERMS = {
     "fda-recall-scraper": ["fda recall", "food recall", "drug recall"],
     "eu-ted-tenders-scraper": ["ted tenders", "eu tenders", "public procurement"],
     "nih-reporter-scraper": ["nih reporter", "nih grants"],  # p20 p17 (cycle 544; 'nih grants' was #26 at h74's 2026-09-19 verdict)
-    "federal-register-scraper": ["federal register"],
+    "federal-register-scraper": ["federal register", "public inspection", "comment deadline"],  # cycle 546: title -> "...Public Inspection, Comment Deadlines" joined "public inspection" p3->p1 (0 title-matchers pre-edit, exact contiguous phrase). "comment deadline" p2 (unchanged, span 0 preserved) and "federal register" p57 (unchanged, span 0 preserved) both confirmed no regression post-reindex.
     "grants-gov-scraper": ["grants.gov", "government grants"],
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
     "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)

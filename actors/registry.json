@@ -1216,7 +1216,7 @@
     },
     {
       "slug": "federal-register-scraper",
-      "title": "Federal Register Scraper – Agency, Type & Comment Deadlines",
+      "title": "Federal Register Scraper – Public Inspection, Comment Deadlines",
       "summary": "Scrape the US Federal Register's official government API: final rules, proposed rules, notices and presidential documents. 37 flat fields incl. comment-close deadline, EO 12866 significance, RIN, docket IDs, CFR references and referencedCitations (auto-links a correction/extension/postponement document back to the original it amends), with cursor paging past the API's own 10,000-row wall. Optional watchLabel mode returns only documents published since your last run, so a schedule becomes a rule alert.",
       "status": "live",
       "credits_per_result": 1,

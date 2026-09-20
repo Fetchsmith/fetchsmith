@@ -1,4 +1,4 @@
-# Federal Register Scraper – Agency, Type & Comment Deadlines
+# Federal Register Scraper – Public Inspection, Comment Deadlines
 
 Pulls US **Federal Register** documents — final rules, proposed rules, notices and presidential documents — from the Federal Register's own official public API (federalregister.gov, run by NARA and the GPO) and returns them as one flat, typed dataset.
 
