@@ -62,7 +62,10 @@ TERMS = {
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
     "us-federal-awards-scraper": ["usaspending", "federal contracts"],
     "uk-find-a-tender-scraper": ["find a tender", "uk tenders"],
-    "substack-scraper": ["substack"],
+    # "substack api" added cycle 531: title changed "Substack Scraper" -> "Substack
+    # API Scraper" (contiguous, in-order), measured p9->p3. "substack" unaffected
+    # (single word, no proximity lever) at p109 (storePosition-driven, unchanged shape).
+    "substack-scraper": ["substack", "substack api"],
     "apple-podcasts-scraper": ["apple podcasts"],
     "steam-reviews-scraper": ["steam reviews", "steam api"],  # cycle 524: "steam api" p213->p2 after title edit
     "hacker-news-scraper": ["hacker news", "hn api"],  # cycle 523: "hn api" p227->p2 after title edit
