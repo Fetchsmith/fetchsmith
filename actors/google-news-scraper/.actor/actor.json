@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "google-news-scraper",
-  "title": "Google News API Scraper \u2013 RSS, Real URLs, Any Language",
+  "title": "Google News API Scraper \u2013 RSS, Real URLs, News Monitoring",
   "description": "Search Google News by keyword, topic or publisher and get structured articles: headline (raw and with the \" - Publisher\" suffix stripped), publisher name and domain, date, feed rank, resolved publisher URL, related coverage of the same story, and optional full article text. Pay per article.",
   "version": "0.1",
   "buildTag": "latest",

@@ -228,7 +228,25 @@ TERMS = {
     # contiguously. "google news rss" is the same Actor's runner-up and was measured at
     # p4 with the interim "Scraper - RSS & API" wording, then fell back to p128 when API
     # was moved next to News — one title cannot win both (proximity, see attr() docstring).
-    "google-news-scraper": ["google news", "google news api", "google news rss"],
+    "google-news-scraper": ["google news", "google news api", "google news rss", "news monitoring"],
+    # cycle 566: shipped the "news monitoring" win sized (probe-only) in cycle 564.
+    # Title "Google News API Scraper – RSS, Real URLs, Any Language" (54/63) ->
+    # "...RSS, Real URLs, News Monitoring" (57/63), swapping the last two words for
+    # a second "News" placed directly before "Monitoring" (duplicate-head-word
+    # technique, same mechanism as cycles 557/558). token_span simulated locally
+    # BEFORE publishing against all 5 known-matching queries + the target — only
+    # "news monitoring" span changed (None -> 0); "google news api"/"news api"/
+    # "google news" stayed span 0, "google news rss"/"google news scraper" stayed
+    # span 2/1 unchanged, because the edit only appends a second "news" at the end,
+    # never touching the head "Google News API Scraper" phrase all five others sit
+    # inside. Published (`apify-admin publish` + `apify push --force`, build 0.1.35),
+    # measured ~75s post-reindex: "news monitoring" (nbHits 16982, verified genuine
+    # 17/18-record block, matchLevel full) p945 -> **p4**, beating the ~p11
+    # prediction. All 5 protected queries byte-identical rank+span post-publish
+    # (storePosition drifted 53755->53998 fleet-wide, organic, not span-related).
+    # "Any Language" dropped from the Store title only — was never in the README H1
+    # ("Google News Scraper") or body copy, so no information loss, and the Actor's
+    # language-filter input/feature is unchanged.
     # "itunes reviews" added cycle 527: title changed to "...iTunes Reviews, Any App
     # & Country" (span 0 for both queries), measured p170->p3. "app store reviews"
     # unaffected (span 0 before/after). "app store scraper"/"app store api"/"ios app
