@@ -90,6 +90,16 @@ TERMS = {
     "grants-gov-scraper": ["grants.gov", "government grants"],
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
     "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
+    # cycle 549 second-rotation competitor-gap audit: no feature/pricing gap (25 input
+    # fields incl. subaward mode/watchChanges/recompete-alerts/pass-through-tracing vs
+    # leader parseforge/usaspending-scraper's 14 fields at $0.16 start + $0.012/result;
+    # we charge $0.004/result, no start fee). --attr found 2 real, VERIFIED (genuine
+    # matchLevel 'full') candidates -- "federal award data" (nbHits 762, p98,
+    # predicted ~p4) and "usaspending api" (nbHits 424, p98, predicted ~p10) -- but
+    # title is already 62/63 chars with 0 room, and both require breaking the word
+    # order of the already-won "federal contracts" span-0 block to become contiguous.
+    # No safe edit exists this cycle; do not re-derive, re-probe only if the title
+    # gets freed up (e.g. "federal contracts" win is ever judged lower-value).
     "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders"],
     # "public sector tenders" added cycle 545: title changed "UK Public Contracts —
     # Find a Tender + Contracts Finder" -> "UK Public Sector Tenders — Find a Tender
