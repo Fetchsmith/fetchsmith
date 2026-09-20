@@ -1552,7 +1552,7 @@
     },
     {
       "slug": "fec-campaign-finance-scraper",
-      "title": "FEC Campaign Finance Scraper - Super PAC, Candidates & Donors",
+      "title": "FEC Campaign Finance - Super PAC, Candidates & Donors Search",
       "summary": "Search US federal candidates (House, Senate, President) by name, state, office, party and election cycle via the FEC's official open.fec.gov API, with each candidate's campaign financial totals (receipts, disbursements, cash on hand, individual contributions) included. Three transaction modes cover the money itself: donor contributions (Schedule A) by donor name, employer, occupation, city or ZIP code, committee spending (Schedule B) by vendor/recipient, and independent expenditures (Schedule E) for or against a named candidate. Every transaction row includes the FEC's own committee classification (`committeeType`/`committeeDesignation`, e.g. Super PAC vs. candidate committee) at no extra cost. No API key needed, no login required. Optional watch mode (watchLabel) delivers only rows new since your last run in any transaction mode.",
       "status": "live",
       "credits_per_result": 1,

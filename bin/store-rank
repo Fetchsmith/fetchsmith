@@ -319,7 +319,45 @@ TERMS = {
     # their buyer-facing rank had never once been measured. Terms picked the cycle-200
     # way — by measuring ~11 candidates each and keeping the ones where we actually
     # place, not by guessing. Measured ranks at time of adding, for drift comparison:
-    "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance"],  # p5 p6 p12 p19
+    "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance", "donor search"],  # p5 p6 p12 p19 (cycle 520 baseline)
+    # cycle 571 (first --attr BATCH probe on this Actor, 15 new queries). Title
+    # "FEC Campaign Finance Scraper - Super PAC, Candidates & Donors" (61/63) ->
+    # "FEC Campaign Finance - Super PAC, Candidates & Donors Search" (60/63): dropped
+    # "Scraper" (kept in full in README H1/body, same trade cycles 554/557 made) and
+    # appended "Search" after "Donors" -- "Donors".startswith("donor") already
+    # satisfies query token "donor" via the tokenizer's prefix match, so one new word
+    # wins a 2-token phrase. token_span simulated locally BEFORE publishing against
+    # all 7 known/tracked queries: only "donor search" span changed (None -> 0);
+    # "super pac"/"campaign finance" stayed span 0, "campaign donors" held span
+    # (5 -> 4, free improvement), "candidate finance" held span None (unordered
+    # match, unaffected -- "Candidates" position untouched), "fec api"/"fec filings"
+    # were never title matches before or after (rely on description-only match).
+    # Published + apify push --force (build 0.1.20), measured ~90s post-reindex:
+    #   donor search (nbHits 1065, verified genuine 1-record block, matchLevel full)
+    #       p6 -> **p1**, span None -> 0.
+    # Zero regression, byte-identical or organic-only drift on all 6 others: super
+    # pac p1, campaign donors p1 (span 5->4), candidate finance p11, fec api p6,
+    # campaign finance p20->p22 / fec filings p23->p24 (both organic storePosition
+    # drift 49458->52690 fleet-wide per h74, neither was a title match to begin with).
+    # Also sized and NOT taken this cycle (title now 60/63, only 3 spare chars):
+    #   election finance (nbHits 2092, 0 title-matchers, predicted ~p1 -- BIGGEST
+    #       volume found, but needs "Election"+"Finance" contiguous, which requires
+    #       either a second "Finance" (no room) or reordering that breaks "campaign
+    #       finance"'s existing span-0 win -- bad trade, not pursued)
+    #   committee spending (nbHits 278, 0 title-matchers, predicted ~p1 -- already
+    #       documented in README H1 "Committee Spending", just not in the Store
+    #       title; smaller volume than donor search, no room this cycle)
+    #   fec search (nbHits 87, 0 title-matchers, predicted ~p1 -- smallest volume)
+    #   fec data (nbHits 101, 4 matchers, predicted ~p5), campaign finance data
+    #       (nbHits 355, 3 matchers, predicted ~p4), campaign contributions
+    #       (nbHits 174, 3 matchers, predicted ~p4), pac filings (nbHits 40, 0
+    #       matchers, predicted ~p1, small), candidate fundraising (nbHits 41, 0
+    #       matchers, predicted ~p1, small), donor contributions (nbHits 82, 0
+    #       matchers, predicted ~p1, small), independent expenditures (nbHits 48,
+    #       1 matcher, predicted ~p2, small) -- all smaller than donor search or
+    #       already crowded, none pursued. "political action committee": 0 hits at
+    #       all, not a lever. "political donations" (nbHits 65, 2 matchers,
+    #       predicted ~p3) also smaller, not pursued.
     "court-records-scraper": ["docket scraper", "case law", "court records", "party name search"],
     # cycle 559 competitor-gap audit: no feature/pricing gap vs. the top 2 competitors by
     # users -- automation-lab (69 users) has only 7 input fields (mode/query/court/dateFrom/
