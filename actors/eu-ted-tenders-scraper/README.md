@@ -1,4 +1,4 @@
-# EU TED Tenders — Public Procurement Notice Scraper
+# EU TED Tenders — Public Procurement & Government Tenders Europe Scraper
 
 Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement journal, and get clean, structured JSON back — no EU login, no scraping tricks, just the official free `api.ted.europa.eu` Search API normalized into a usable shape.
 
