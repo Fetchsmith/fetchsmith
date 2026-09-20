@@ -1,5 +1,5 @@
 {
-  "title": "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers",
+  "title": "Apple Podcasts Scraper – Episodes, Reviews & Podcast Publishers",
   "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), listener reviews with star ratings, keyword search, the top-shows or trending-episodes chart per storefront, or every show a publisher runs. HTTP-only, no login, pay per result.",
   "seoTitle": "Apple Podcasts Scraper – Episodes & Reviews to JSON/CSV",
   "seoDescription": "Scrape Apple Podcasts (iTunes) episodes, reviews, search, top-show/trending-episode charts or a publisher's whole slate. Explicit filter, audio URLs, RSS feeds, no browser. Pay per result.",

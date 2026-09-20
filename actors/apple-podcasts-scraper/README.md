@@ -1,4 +1,4 @@
-# Apple Podcasts Scraper — Episodes, Reviews, Search, Charts & Publishers
+# Apple Podcasts Scraper — Episodes, Reviews, Search, Charts & Podcast Publishers
 
 Scrape Apple Podcasts without a browser or login: **every episode** of a show (title, release date, duration, description, direct audio URL, RSS feed), **listener reviews** with star ratings, **search Apple's podcast catalogue** by keyword, pull **today's top-charts** for any storefront, or list **every show a publisher runs**. Export to JSON, CSV or Excel. Pay only per row returned.
 

@@ -102,7 +102,29 @@ TERMS = {
     # API Scraper" (contiguous, in-order), measured p9->p3. "substack" unaffected
     # (single word, no proximity lever) at p109 (storePosition-driven, unchanged shape).
     "substack-scraper": ["substack", "substack api"],
-    "apple-podcasts-scraper": ["apple podcasts"],
+    "apple-podcasts-scraper": ["apple podcasts", "podcast publishers", "podcast reviews", "podcast episodes"],
+    # cycle 548 (first --attr brainstorm on this Actor; 13 queries probed). Title
+    # "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers" ->
+    # "... – Episodes, Reviews & Podcast Publishers" (63/63 chars). Measured after
+    # publish + push --force (build 0.1.32) + confirmed reindex:
+    #   podcast publishers  (nbHits 611) p31 -> **p1**   span 4 -> 0
+    #   podcast publisher   (nbHits 714) p31 -> **p1**   span 4 -> 0
+    #   podcast reviews     (nbHits 689) p26 -> p9       span 2 (unchanged) -- free
+    #       side-gain, presumably the second "Podcast" occurrence adding word hits
+    #   podcast charts      (nbHits 255) p45 -> p36      dropped from title entirely
+    #       (the deliberate trade); still description-matched, rank went UP anyway
+    #   apple podcasts p44, podcast scraper p62, podcast episodes p19,
+    #       apple podcast reviews p17 -- all four byte-unchanged, as simulated
+    # WHY this query and not the bigger one: `podcast api` (nbHits 1129, our p286)
+    # has a verified 9-record title block with only 7 better storePositions, so
+    # --attr predicts ~p8 if joined -- the largest single predicted jump found. It
+    # was NOT taken because the only 63-char arrangement that makes "Podcast API"
+    # contiguous also drops "Publishers", which would have cost BOTH p1s above
+    # (611+714 nbHits combined, and we are the ONLY title-matcher on either). Two p1s
+    # beat one ~p8. Do not re-take `podcast api` unless the publisher wins decay.
+    # Also sized and rejected: podcast rss (416, ~p21), podcast search (863, ~p17),
+    # top podcasts (524, ~p3 but a 3-record block whose top member is at p6, past the
+    # highlight cutoff -- unverifiable), itunes podcast (217, ~p17, negligible gain).
     # cycle 524: "steam api" p213->p2 after title edit. cycle 536: added "steam player count"
     # (nbHits 2047, real buyer intent, and `includePlayerCount` genuinely ships it) — title
     # gained a second contiguous "Steam Player Count" phrase, p29 -> p5 (predicted ~p9).
@@ -395,6 +417,14 @@ def attr(query, slug):
                 "reads as a literal adjacent phrase is worth ~hundreds of ranks — but it will cost "
                 "you whichever other query currently sits closer together. See docstring CAVEAT 2."
             )
+            if len(titled) == 1:
+                print(
+                    "  -> *** HIGHEST-VALUE SHAPE (cycle 548): we are the ONLY title-matcher on this "
+                    "query, so nothing outranks us on the `attribute` criterion — the whole gap is "
+                    "proximity. Measured instance: 'podcast publisher(s)' (nbHits 714/611), sole "
+                    "title-matcher, span 4 -> p31; span 0 -> **p1**. Prefer this shape over a bigger "
+                    "predicted jump into a CROWDED block, where storePosition still caps you."
+                )
         else:
             print("  -> only storePosition (real usage) can move us further on this query.")
     else:

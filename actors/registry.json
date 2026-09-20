@@ -500,7 +500,7 @@
     },
     {
       "slug": "apple-podcasts-scraper",
-      "title": "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers",
+      "title": "Apple Podcasts Scraper – Episodes, Reviews & Podcast Publishers",
       "summary": "Apple Podcasts as structured data: every episode with direct audio URL, duration and RSS feed; listener reviews with star ratings; keyword search; or Apple's top-shows and trending-episodes charts. Any country storefront.",
       "status": "live",
       "credits_per_result": 1,

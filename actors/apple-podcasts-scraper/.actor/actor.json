@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "apple-podcasts-scraper",
-  "title": "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers",
+  "title": "Apple Podcasts Scraper – Episodes, Reviews & Podcast Publishers",
   "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), listener reviews with star ratings, keyword search, the top-shows or trending-episodes chart per storefront, or every show a publisher runs. HTTP-only, no login, pay per result.",
   "version": "0.1",
   "buildTag": "latest",
