@@ -11,6 +11,7 @@ Scrape live US federal contracting opportunities from SAM.gov — presolicitatio
 - `activeOnly` (default on) restricts to opportunities still open for response. Turn it off for historical and award research.
 - Pay per result: charged only for rows actually returned, **with no Actor-start fee** — a search that matches nothing costs nothing.
 - **`watchLabel` — only what's new since your last run.** Name a saved search and every run after the first returns just the opportunities not already delivered under that label and filter combination. The first run for a label is a free baseline (0 results, 0 charged); it records what already matches in a key-value store on your own Apify account, keyed by the label plus a fingerprint of your other filters, so editing a filter starts a fresh baseline instead of dumping every previously-excluded opportunity as "new". Built for a daily/weekly scheduled run.
+- **`description` is the full solicitation text**, not a truncated snippet — the same original HTML SAM.gov itself stores, which can run to several thousand characters on a detailed notice.
 - **`watchChanges` — also catch a deadline extension, a lifecycle transition, or an award landing.** Add this to `watchLabel` and an opportunity you already have gets re-delivered (at the normal per-row price, tagged `_watchChangeType`/`_watchPrevious`) if its `isActive` flag, `noticeTypeCode` (a presolicitation turning into a solicitation, or a solicitation turning into an award), `responseDate` (deadline moved), `modifiedDate`, `modificationsCount` or `awardeeName` (an award landing) has changed since you last saw it — not just brand-new opportunities. Off by default so existing watches keep their current behaviour.
 
 ## Use cases
@@ -85,7 +86,7 @@ Scrape live US federal contracting opportunities from SAM.gov — presolicitatio
 
 **Is there a posted-date range filter?** Not on this backend — it exposes no `postedFrom`/`postedTo` equivalent. Use `activeOnly` to separate open from closed opportunities, and filter on the `publishDate` / `modifiedDate` fields on each row afterwards. (`responseDate` is the deadline.)
 
-**Is `description` the full notice text?** No — the search row carries a truncated description (roughly 250 characters, with the original HTML markup preserved). No full-text field was found on either the search or the detail record, so for the complete statement of work follow `sourceUrl` to the notice page on sam.gov, where the attachments also live.
+**Is `description` the full notice text?** Yes — the full solicitation description as SAM.gov itself stores it (original HTML markup preserved), not a truncated snippet; it can run to several thousand characters on a detailed notice. Any attachments (drawings, full statements of work as separate documents) still live only on the notice page, linked via `sourceUrl`.
 
 **How deep can a search go?** The backend caps paging at 10,000 rows per query, so a very broad keyword will stop there. Narrow with `naicsCodes`, `noticeTypes` or `states` rather than trying to page past it.
 

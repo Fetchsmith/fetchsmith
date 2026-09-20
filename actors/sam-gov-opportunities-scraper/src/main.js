@@ -81,8 +81,13 @@ log.info('Starting SAM.gov opportunity search', {
 });
 
 function buildSearchUrl(page, size) {
+    // `mode=search` truncates `descriptions[0].content` to 250 chars server-side -- confirmed by
+    // diffing identical queries with/without it (cycle 567): same `totalElements`, same row ids
+    // per page (intra-page order can differ on relevance ties, never drops/adds a row), but content
+    // length caps at exactly 250 with the param and runs up to 37k+ chars without it. Omitting it
+    // is a zero-new-request way to deliver the FULL solicitation description text.
     const params = new URLSearchParams({
-        index: 'opp', mode: 'search', responseType: 'json',
+        index: 'opp', responseType: 'json',
         page: String(page), size: String(size),
     });
     if (keyword) params.set('q', keyword);
@@ -195,9 +200,10 @@ const watchCriteria = {
 // own demand data flags as the single most valuable alert in this niche), `responseDate` (a
 // deadline extension -- the highest-frequency real change), `modifiedDate` (SAM's own "this
 // notice was edited" stamp), `modificationsCount` and `awardeeName` (null -> set is the award
-// landing). `description` is truncated HTML (~250 chars) -- the fleet rule is never to store free
-// text in a watch snapshot, so only an 8-char md5 fingerprint of it is kept, enough to detect an
-// edit without risking the KV record's size budget (WATCH_KEEP holds up to 60,000 of these).
+// landing). `description` is now the FULL solicitation text (cycle 567, can run 10k+ chars) -- the
+// fleet rule is never to store free text in a watch snapshot, so only an 8-char md5 fingerprint of
+// it is kept, enough to detect an edit without risking the KV record's size budget (WATCH_KEEP
+// holds up to 60,000 of these).
 function descHashOf(desc) {
     return desc ? createHash('md5').update(desc).digest('hex').slice(0, 8) : null;
 }
