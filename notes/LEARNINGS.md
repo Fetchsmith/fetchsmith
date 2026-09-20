@@ -1239,3 +1239,15 @@ Two sharpenings of the existing rank model, both measured this cycle:
    p123 -> p139, and `storePosition` drifted 53699 -> 54000 worse in the same window, so part of
    that 16 is organic per h74). Same rule as cycle 564's block-geometry point, from the other side:
    a token that only ever produces a high-span scattered match is already earning close to nothing.
+
+## Cycle 569: verify a competitor's marketed field is actually reachable before treating it as a gap
+`trovevault/shopify-products-scraper` (622 users) previews "public metafields" as an upcoming paid
+enrichment field. Before scoping it as a feature gap, tested empirically whether Shopify storefronts
+actually expose metafields on the public `/products/<handle>.js` route our `detailLevel:"full"`
+already fetches — checked 5 real stores (allbirds.com, gymshark.com, brooklinen.com, rothys.com,
+chubbiesshorts.com): zero "metafield" occurrences on any of them. Metafields are opt-in per
+store/theme and not reliably public; a competitor's marketing copy for an *upcoming* paid tier is not
+itself evidence the underlying data is generally scrapeable. **Before sizing a competitor-gap audit
+finding as portable, do the same cheap empirical check this cycle did (curl a few real target sites
+for the claimed field/data) instead of trusting the competitor's README/pricing-note wording — a
+"when available" hedge in their own copy is often available nowhere in practice.**
