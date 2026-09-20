@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "nih-reporter-scraper",
-  "title": "NIH RePORTER Grants Scraper – No 15k Row Cap",
+  "title": "NIH RePORTER Grants Scraper – Federal Research Funding",
   "description": "Search NIH grants via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, org, state, PI, award-amount and award-date filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since last run.",
   "version": "0.1",
   "buildTag": "latest",

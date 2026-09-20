@@ -1,4 +1,4 @@
-# NIH RePORTER Scraper – No 15k Row Cap, PubMed Join
+# NIH RePORTER Scraper – Federal Research Funding, No 15k Row Cap, PubMed Join
 
 Export **every NIH-funded research project** from the official [NIH RePORTER](https://reporter.nih.gov) API — 2.9M+ project records going back to 1985 — filtered by keyword, fiscal year, institute (IC), activity code, organization, state or principal investigator. Each project comes back with its award amounts, PI and program officer, institution, study section and congressional district, plus an optional join to **the PubMed papers that project produced**.
 

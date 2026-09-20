@@ -1,5 +1,5 @@
 {
-  "title": "NIH RePORTER Grants Scraper – No 15k Row Cap",
+  "title": "NIH RePORTER Grants Scraper – Federal Research Funding",
   "description": "Search NIH grants via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, org, state, PI, award-amount and award-date filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since last run.",
   "seoTitle": "NIH Grants Scraper — RePORTER Grant & Award Data",
   "seoDescription": "Export NIH grants and NIH-funded biomedical research projects via the official NIH RePORTER API. Award amounts, PIs, institutions, study sections and linked PubMed publications.",
