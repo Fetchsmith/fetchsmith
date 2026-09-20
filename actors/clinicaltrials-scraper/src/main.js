@@ -557,6 +557,21 @@ async function resolveIdsChunk(ids) {
 
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 
+// eligibilityCriteria is the only field in this API confirmed to carry undecoded HTML entities
+// (measured live: 7 hits / 100 studies sampled with this Actor's own filters, kinds &gt;/&lt;/
+// &amp;/&#39; — e.g. "Age &gt; 18"; zero raw tags, so this is a decode fix, not a strip fix, same
+// class of bug as grants-gov-scraper cycle 556). All other free-text fields (briefSummary,
+// outcome measure/description, titles) came back clean on the same 100-study sample.
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
+    if (e[0] === '#') {
+        const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return Number.isFinite(cp) && cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
+    }
+    const key = e.toLowerCase();
+    return Object.prototype.hasOwnProperty.call(ENTITIES, key) ? ENTITIES[key] : m; // unknown entity: leave verbatim
+});
+
 // Every field/location contact carries a real person's name, phone and/or personal email
 // (verified live, incl. an @gmail.com in the sample) — CLAUDE.md rule 1 bans shipping PII, so
 // contacts[] is deliberately never read. Location rows keep only facility/geo/status data.
@@ -644,7 +659,7 @@ function normalizeStudy(study) {
         // Deliberately NOT split into inclusion/exclusion: that split is a heuristic on prose with
         // no fixed format, and mislabelling an exclusion criterion as an inclusion one is exactly
         // the error a trial-screening buyer cannot afford. Ship the source text instead.
-        eligibilityCriteria: elig.eligibilityCriteria ?? null,
+        eligibilityCriteria: elig.eligibilityCriteria ? decodeEntities(elig.eligibilityCriteria) : null,
         hasResults: study.hasResults === true,
         locationCount: facilities.length,
         // Site facility/city/state/country/geo only — no contact person, phone or email, ever.
