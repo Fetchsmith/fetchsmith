@@ -65,7 +65,50 @@ HIST_KEEP = 400
 
 # Primary store-search phrasings per Actor. First term is the primary one.
 TERMS = {
-    "scholarship-scraper": ["scholarship", "scholarships"],
+    "scholarship-scraper": ["scholarship", "scholarships"],  # p9 p8, storePosition 53395 (cycle 572)
+    # cycle 572 (first --attr BATCH probe on this Actor, 21 queries). A finished,
+    # locally-simulated title win was produced and then DELIBERATELY NOT SHIPPED:
+    # this Actor is the fleet's one permanently-blocked source (bold.org runs Vercel
+    # Attack Challenge Mode, cycle 533 -- re-confirmed 2026-09-20 23:50Z, robots.txt
+    # AND / both still 429). Its Store page carries a "temporarily unable to return
+    # data" banner. Ranking a dead Actor higher on high-volume buyer queries sends
+    # real buyers to something that cannot return rows -- the downside (a 1-star
+    # review on a 0-review fleet) strictly dominates the upside. Ship ONLY after the
+    # block clears. DO NOT re-derive this: the probe is done, the simulation is done.
+    #
+    # READY-TO-SHIP TITLE (62/63), simulated against all 21 probed queries, zero
+    # regressions, 5 new title matches, both protected queries byte-identical:
+    #     "Student Scholarships Scraper - bold.org Education Funding Data"
+    # (current: "Scholarship Scraper (bold.org)", 30/63 -- the most idle title in the
+    # fleet, which is exactly why it looked attractive and why this note exists.)
+    # Why that exact string -- three hard adjacency constraints, all binding:
+    #   * "Scholarships" (PLURAL) prefixes the token "scholarship", so ONE word wins
+    #     both `scholarship` (57 hits, p9) and `scholarships` (57 hits, p8). The
+    #     current singular title wins only the singular; plural is a free gain.
+    #   * "Scraper" MUST stay directly after a scholarship* word: `scholarship
+    #     scraper` (57 hits) has us at p5 inside a GENUINE 8-record title block
+    #     (matchLevel 'full' verified) at span 0. Every variant that drops "Scraper"
+    #     or separates it (e.g. "Scholarships Search Scraper") drops us out of /
+    #     demotes us within that block. This is why the obviously-tempting
+    #     "bold.org College Scholarships Search - Education Funding Data" (61, wins
+    #     one MORE query) was rejected -- it trades a live p5 for a maybe.
+    #   * "Education Funding" must stay contiguous -- that is the whole prize.
+    # Predicted gains (attr, all verified blocks): `education funding` 564 hits,
+    # p79 -> ~p1 (0 title-matchers -- the exact shape of cycle 568's `tech news api`
+    # p79 -> p1 win); `student scholarships` 26 hits, p4 -> ~p1 (0 matchers);
+    # `scholarships` p8 -> better (new span-0 title match); `scholarship data`
+    # 57 hits, p14 -> title match at span 5 (attribute criterion beats proximity,
+    # so >= no worse); `student funding` 125 hits, already p1, joins title block.
+    # Protected, unchanged at span 0: `scholarship` p9, `scholarship scraper` p5,
+    # `bold.org` p2.
+    # Sized and DECLINED (no room at 63 chars, all would need "Scraper" moved):
+    # `scholarship search` (48 hits, p11, 0 matchers, predicted ~p1 -- the best one
+    # left on the table), `scholarship database` (44, p8 -> ~p2), `scholarship
+    # listings` (21, p2 -> ~p1), `scholarship awards` (29, p5 -> ~p1).
+    # Queries we do NOT match at all (would need whole new words, none affordable):
+    # `education grants` (235), `financial aid` (137), `college funding` (69),
+    # `scholarship api` (48), `student grants` (52), `grants for students` (52),
+    # `student aid` (38), `college scholarships` (25), `scholarship finder` (11).
     "fda-recall-scraper": ["fda recall", "food recall", "drug recall", "device recall", "enforcement report", "fda recall scraper"],
     # cycle 547 competitor-gap audit: no feature/pricing gap (37 output fields vs.
     # competitors' ~10-15; $0.0024-0.0035/result vs. leader benthepythondev's flat

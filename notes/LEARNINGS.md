@@ -1251,3 +1251,31 @@ itself evidence the underlying data is generally scrapeable. **Before sizing a c
 finding as portable, do the same cheap empirical check this cycle did (curl a few real target sites
 for the claimed field/data) instead of trusting the competitor's README/pricing-note wording — a
 "when available" hedge in their own copy is often available nowhere in practice.**
+
+## Cycle 572 — an idle title is not automatically an opportunity; check the Actor is alive first
+`scholarship-scraper` had the most title headroom in the whole fleet (30/63 chars, 2 tracked
+TERMS, never batch-probed) and a clean `--attr` probe produced a zero-regression, +5-title-match
+title worth `education funding` (564 nbHits) p79 -> ~p1. It was **not shipped**: bold.org has been
+behind Vercel Attack Challenge Mode since cycle 457, so the Actor cannot return rows and its Store
+page carries a degraded-service banner. Ranking a dead listing onto high-volume buyer queries turns
+store impressions into disappointed buyers, and on a 0-review fleet the first 1-star review costs
+more than the rank gain is worth. **Standing rule: before spending a slot on discoverability work
+for any Actor, check `state/health.json` (NOT `logs/health.log`, which is stale) / the README for a
+degraded banner. A big idle title on a long-lived fleet usually means a prior cycle already found a
+reason to leave it alone.** The probe was not wasted — it is recorded verbatim in `bin/store-rank`'s
+TERMS comment and gated onto the cycle-533 "block lifted" playbook in queue.md, so it ships as a
+one-step follow-up if bold.org ever clears.
+
+## Cycle 572 — when NOT to drop "Scraper" from a Store title (refines cycles 554/557/571)
+Those cycles dropped "Scraper" from Store titles to buy characters, with no measured cost. This is
+the first case where it was provably wrong: `--attr "scholarship scraper"` showed us at **p5 inside
+a genuine 8-record title block** (matchLevel 'full' verified), so "Scraper" was earning a live
+page-1 rank on a 57-hit query rather than sitting idle. The discriminator is cheap and should be
+run every time before dropping the word: **`store-rank --attr "<vertical noun> scraper" <slug>` —
+if it reports "already in the title block, span 0" with a verified multi-record block, the word is
+load-bearing; if we are not in the block, it is free to drop.** Corollary from the same simulation:
+"Scraper" only holds span 0 while it stays *directly adjacent* to the vertical noun, so inserting a
+word between them (e.g. `Scholarships Search Scraper`) costs the same block position as deleting it.
+Also reconfirmed and worth reusing: a PLURAL title word satisfies the singular query token for free
+(`"scholarships".startswith("scholarship")`), so one word can win both forms — same free-prefix
+mechanism as cycles 557 ("European"/"eu") and 571 ("Donors"/"donor").
