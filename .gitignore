@@ -3,6 +3,9 @@ data/
 logs/
 mail/inbox/
 venv/
+__pycache__/
+**/__pycache__/
+*.pyc
 **/node_modules/
 **/storage/
 state/notified.json

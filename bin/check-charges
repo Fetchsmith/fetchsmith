@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Catch an Actor that is priced PAY_PER_EVENT but never actually calls Actor.charge().
+
+Cycle 542: `sam-gov-opportunities-scraper` was published PPE ($0.0015/row) and stayed
+live for 2 full cycles calling only `Actor.pushData()` -- every real buyer since publish
+would have gotten every row free. None of the standing checks caught it: `check-pricing`
+diffs the PRICE meta.json declares against the live API, `check-registry-fields` diffs
+output FIELDS, but nothing diffed "is this Actor priced" against "does its code ever
+charge for that price". A platform test that "succeeds with correct row shape" looks
+identical whether or not a charge fired -- that's exactly how the bug hid at ship time.
+
+This is deliberately a static, read-only source check (no platform runs, no cost):
+  priced   actors/<slug>/meta.json has a non-empty "events" object (PPE pricing exists)
+  charges  actors/<slug>/src/main.js contains a literal "Actor.charge(" call
+
+A priced Actor with zero charge calls is a drift. The inverse (charge call with no
+pricing) is not flagged -- that's a local/dev no-op path, not a revenue leak.
+
+This does NOT prove every push path is charged (e.g. a charge call gated behind a
+condition that's always false), only that the capability exists in the source at all --
+it is a cheap first-line trip-wire, not a substitute for the live chargedEventCounts
+spot-check cycle 542 did by hand after any watch-mode or charging-logic change.
+
+Exit 0 = clean, 1 = drift found. Usage: check-charges [slug ...]
+"""
+import json
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def load(path, default=None):
+    try:
+        with open(os.path.join(ROOT, path)) as fh:
+            return json.load(fh)
+    except (FileNotFoundError, ValueError):
+        return default
+
+
+def main(argv):
+    wanted = set(argv[1:])
+    drift = 0
+    checked = 0
+
+    actors_dir = os.path.join(ROOT, "actors")
+    for slug in sorted(os.listdir(actors_dir)):
+        if slug == "_template" or slug.startswith("."):
+            continue
+        if wanted and slug not in wanted:
+            continue
+        adir = os.path.join(actors_dir, slug)
+        if not os.path.isdir(adir):
+            continue
+        meta = load(f"actors/{slug}/meta.json")
+        if meta is None:
+            continue
+        priced = bool(meta.get("events"))
+        if not priced:
+            continue
+        checked += 1
+        main_js = os.path.join(adir, "src", "main.js")
+        try:
+            src = open(main_js).read()
+        except FileNotFoundError:
+            print(f"DRIFT {slug}: priced PAY_PER_EVENT but src/main.js not found")
+            drift += 1
+            continue
+        if "Actor.charge(" not in src:
+            print(f"DRIFT {slug}: priced PAY_PER_EVENT ({list(meta['events'])}) but "
+                  f"src/main.js never calls Actor.charge()")
+            drift += 1
+
+    if drift == 0:
+        print(f"check-charges: {checked} priced Actors checked, 0 missing Actor.charge()")
+    return 1 if drift else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
