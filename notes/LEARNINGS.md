@@ -997,3 +997,54 @@ Actor sitting at the top of the queue as an untriaged `[hard]` item for ~76 cycl
   `storePosition` moved 53371 -> 51071 on its own, and `steam api` (p2->p1) and `steam reviews` (p43->p39)
   both improved without their title tokens changing. Only the query whose `query in our title` flipped
   False -> True is causally clean. Record the storePosition on both sides of any rank measurement.
+
+## Cycle 538 (2026-09-20) — SAM.gov opportunities ARE scrapeable with no API key: `sam.gov/api/prod/sgs/v1/search` is a public, unauthenticated backend
+
+Cycle 532 flagged a SAM.gov opportunities Actor as "the single best-evidenced new-Actor
+candidate in the backlog" (pre-award govcon demand is ~4x post-award USAspending demand,
+per that cycle's Store numbers) but blocked it on a feasibility check: the **official**
+`api.sam.gov/opportunities/v2/search` (documented at open.gsa.gov) requires a free API key
+tied to a SAM.gov account. This cycle ran that check.
+
+- **The official documented API needs a key, confirmed via open.gsa.gov's own docs**: "User of
+  this public API must provide an API key." Base `https://api.sam.gov/opportunities/v2/search`,
+  params `postedFrom`/`postedTo` (mandatory, max 1-year span), `ptype`, `ncode` (NAICS),
+  `typeOfSetAside`, `title`, `solnum`, `state`, `zip`, `limit`/`offset`. Rate limits exist but are
+  undocumented exactly ("based on federal/non-federal/general roles").
+- **But sam.gov's own public search page runs on a separate, undocumented, unauthenticated
+  backend that needs no key at all**: `GET https://sam.gov/api/prod/sgs/v1/search/?index=opp&...`.
+  This is the exact same class of finding as cycle 512's TMview endpoint for
+  `trademark-search-scraper` — a public site's own search-page API, not the vendor's registered
+  developer API, fronting the same underlying data with no auth wall. Same legal footing: public
+  government data, no login, no ToS click-through, `robots.txt` does not disallow the `/api/`
+  path (it only covers the Drupal CMS paths — `/admin/`, `/search/`, `/user/*` etc. — the search
+  microservice is unlisted, not forbidden).
+- **Verified working this cycle** (2026-09-20): 5 requests spaced 3s apart against `q=solar`,
+  varying `page=0..4`, all **200 in ~0.17s each**, no 403/429/challenge, no degradation — same
+  "5-10 spaced requests, not 1-2" scrapeability check as cycle 511. Pagination is real (25/25
+  unique `_id`s across 5 pages, `page.totalElements`/`page.totalPages` present, `maxAllowedRecords:
+  10000` — a hard depth cap to design pagination/date-windowing around, same shape as TED's paging
+  wall on `eu-ted-tenders-scraper`).
+- **Filters confirmed real by result-count deltas** (unfiltered `is_active=true` baseline =
+  50,292): `naics=541511` -> 607 (narrows), `set_aside=SBA` -> 13,914 (narrows), `organization_id=
+  100000000` -> 32,268 (narrows). **Unrecognized param names are silently ignored, not errored** —
+  `ptype=o` and `typeOfSetAside=SBA` (the *official* API's param names) both returned the
+  unfiltered 50,292, proving this internal endpoint uses **its own different param vocabulary**,
+  not the documented one. `state=CA` returned 0 — either the real param name is different or needs
+  a different value shape; unresolved, needs more probing before the build cycle relies on it.
+- **Search-result rows are summary-only** (`title`, `solicitationNumber`, `type`, `publishDate`/
+  `modifiedDate`, `isActive`/`isCanceled`, `responseDate(Actual)`, `organizationHierarchy` (dept/
+  agency/office nesting), `award.awardee` when applicable, `descriptions[].content` truncated
+  HTML). **No `naicsCode`, `placeOfPerformance`, `setAside`, or attachment/document links on the
+  search row itself** — a per-opportunity detail call is needed for the full field set a buyer
+  would pay for. Guessed detail path `/api/prod/opps/v3/opportunities/<id>` returned 404 — the
+  real detail endpoint is still unknown, find it by watching the real sam.gov opportunity-detail
+  page's network calls (can't be done headlessly from this box — try guessing the sibling of the
+  search endpoint's own `_links.self`, or check if `_embedded.results[].descriptions[0].content`
+  is actually already the full description via a follow-up `content`-length check across a few
+  records before assuming it's truncated).
+- **Verdict: BUILD IS FEASIBLE, no user-supplied key needed, no headless browser needed.** This
+  unblocks cycle 532's SAM.gov candidate. Full implementation spec left in `tasks/queue.md`
+  (h157) for the next BUILD slot — finding exact param names for notice-type/state/keyword and
+  the detail endpoint (or confirming search rows carry enough for v1) is the first job of that
+  cycle, budget real time for it (this cycle's probing was necessarily incomplete).
