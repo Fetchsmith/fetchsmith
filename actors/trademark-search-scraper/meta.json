@@ -1,6 +1,6 @@
 {
   "title": "Trademark Scraper — USPTO, EUIPO, Nice Classification (TMview)",
-  "description": "Search registered trademarks across 70+ national and regional offices (USPTO, EUIPO, UK, DE, JP, WIPO and more) via the official TMview database. 18 fields incl. status, Nice classes, applicant, dates and mark image. From $0.002/result, no start fee.",
+  "description": "Search registered trademarks across 70+ national and regional offices (USPTO, EUIPO, UK, DE, JP, WIPO and more) via the official TMview database. 22 fields incl. status, Nice classes, applicant, expiration & opposition dates, seniority claim and mark image. From $0.002/result, no start fee.",
   "seoTitle": "Trademark Search Scraper — USPTO, EUIPO, 70+ Offices API",
   "seoDescription": "Search trademarks across USPTO, EUIPO and 70+ national offices via TMview. Status, Nice classes, applicant, application/registration dates, mark image. From $0.002/result.",
   "categories": ["BUSINESS", "LEAD_GENERATION"],

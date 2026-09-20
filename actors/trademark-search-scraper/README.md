@@ -18,7 +18,7 @@ Search registered trademarks across **70+ national and regional trademark office
 | `watchLabel` | string | Optional watch-mode label. The first run under a label seeds a baseline (0 rows returned, 0 charged); every later run on the same label + search returns and charges only marks not already delivered — a scheduled "alert me on new filings" feed instead of the same full result set every time. Leave unset for a plain, repeatable search. |
 
 ## Output
-One item per trademark with **18 fields**: `id`, `st13`, `url` (link to the office's own record), `trademarkName`, `office`, `status`, `trademarkType`, `applicationNumber`, `registrationNumber`, `applicationDate`, `registrationDate`, `applicantNames`, `niceClasses`, `viennaCodes`, `territories`, `markImageUrl`, `detailImageUrl`, and `watchLabel` when set.
+One item per trademark with **22 fields**: `id`, `st13`, `url` (link to the office's own record), `trademarkName`, `office`, `status`, `trademarkType`, `applicationNumber`, `registrationNumber`, `applicationDate`, `registrationDate`, `expirationDate`, `oppositionPeriodStart`, `oppositionDeadline`, `seniorityClaimed`, `applicantNames`, `niceClasses`, `viennaCodes`, `territories`, `markImageUrl`, `detailImageUrl`, and `watchLabel` when set.
 
 Sample row:
 ```json
@@ -34,6 +34,10 @@ Sample row:
   "registrationNumber": "004176283",
   "applicationDate": "2004-11-22",
   "registrationDate": "2005-08-30",
+  "expirationDate": "2034-11-22",
+  "oppositionPeriodStart": "2005-01-15",
+  "oppositionDeadline": "2005-04-15",
+  "seniorityClaimed": false,
   "applicantNames": ["SolarWinds Worldwide, LLC"],
   "niceClasses": ["9", "42"],
   "viennaCodes": [],
@@ -57,9 +61,13 @@ No. This is a fast screening tool over TMview's public index. For legal clearanc
 **How does `watchLabel` decide what's "new"?**
 It keys a baseline by `st13` (the stable per-record id) against the exact combination of `searchTerm`/`offices`/`niceClasses`/`statuses` you pass — change any of those and the label starts a fresh baseline. It tracks new-to-the-baseline marks (e.g. a fresh filing that now matches your search), not field-level changes on marks you've already seen (e.g. a status moving from `Filed` to `Registered` on a mark already delivered won't re-appear).
 
+**Why are `expirationDate`, `oppositionPeriodStart`, `oppositionDeadline` and `seniorityClaimed` null on some rows?**
+Not every office publishes every date through TMview — a US record, for example, rarely carries `expirationDate` while a UK or EU record almost always does, and `oppositionDeadline` only exists once a mark has actually passed through publication (an application still pending examination has no opposition window yet). `seniorityClaimed` is `null` when the office doesn't expose the field at all, and `false`/`true` when it does. Treat `null` as "not published for this office/record," not a data error.
+
 ## Use cases
 - **Brand clearance screening** — check a proposed name against 70+ offices before filing, in one search instead of dozens.
-- **Opposition watch** — set `watchLabel` and re-run a competitor's or your own portfolio's search on a schedule to get alerted only on newly-filed marks matching it, instead of re-downloading and re-paying for the same result set every run.
+- **Opposition watch** — set `watchLabel` and re-run a competitor's or your own portfolio's search on a schedule to get alerted only on newly-filed marks matching it, instead of re-downloading and re-paying for the same result set every run. `oppositionPeriodStart`/`oppositionDeadline` tell you the exact window still open on each newly-filed mark.
+- **Renewal tracking** — filter your own portfolio search to `Registered` marks and sort by `expirationDate` to see which registrations need renewing next, per office.
 - **Competitor portfolio mapping** — pull every mark an applicant holds by searching their brand name and reviewing `applicantNames`/`office`/`niceClasses` across results.
 
 ## Pricing

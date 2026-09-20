@@ -58,6 +58,26 @@
         "example": "2005-08-30",
         "type": ["string", "null"]
       },
+      "expirationDate": {
+        "title": "ExpirationDate",
+        "example": "2034-11-22",
+        "type": ["string", "null"]
+      },
+      "oppositionPeriodStart": {
+        "title": "OppositionPeriodStart",
+        "example": "2005-01-15",
+        "type": ["string", "null"]
+      },
+      "oppositionDeadline": {
+        "title": "OppositionDeadline",
+        "example": "2005-04-15",
+        "type": ["string", "null"]
+      },
+      "seniorityClaimed": {
+        "title": "SeniorityClaimed",
+        "example": false,
+        "type": ["boolean", "null"]
+      },
       "applicantNames": {
         "title": "ApplicantNames",
         "type": "array",
@@ -107,6 +127,7 @@
           "applicationNumber",
           "registrationNumber",
           "applicationDate",
+          "expirationDate",
           "niceClasses",
           "applicantNames",
           "url"
@@ -122,6 +143,7 @@
           "applicationNumber": { "label": "App #", "format": "text" },
           "registrationNumber": { "label": "Reg #", "format": "text" },
           "applicationDate": { "label": "Applied", "format": "date" },
+          "expirationDate": { "label": "Expires", "format": "date" },
           "niceClasses": { "label": "Nice classes", "format": "array" },
           "applicantNames": { "label": "Applicant(s)", "format": "array" },
           "url": { "label": "URL", "format": "link" }

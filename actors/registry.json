@@ -1703,7 +1703,7 @@
     {
       "slug": "trademark-search-scraper",
       "title": "Trademark Scraper — USPTO, EUIPO, Nice Classification (TMview)",
-      "summary": "Search registered trademarks across 70+ national and regional trademark offices — USPTO (US), EUIPO (EM), UK, DE, FR, JP, CN, WIPO (WO) and more — in one call via the official TMview database. 18 fields incl. trademark name, status, type, application/registration numbers and dates, applicant names, Nice classes, Vienna codes (figurative marks), territories and mark image URL. Filter by office, Nice class and status; results are deduplicated and paginated with no overlap verified up to 359 pages deep.",
+      "summary": "Search registered trademarks across 70+ national and regional trademark offices — USPTO (US), EUIPO (EM), UK, DE, FR, JP, CN, WIPO (WO) and more — in one call via the official TMview database. 22 fields incl. trademark name, status, type, application/registration numbers and dates, expiration date, opposition window (start + deadline), seniority claim, applicant names, Nice classes, Vienna codes (figurative marks), territories and mark image URL. Filter by office, Nice class and status; results are deduplicated and paginated with no overlap verified up to 359 pages deep.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "v2xvlHrMZfZIfASML",
@@ -1734,6 +1734,10 @@
         "registrationNumber",
         "applicationDate",
         "registrationDate",
+        "expirationDate",
+        "oppositionPeriodStart",
+        "oppositionDeadline",
+        "seniorityClaimed",
         "applicantNames",
         "niceClasses",
         "viennaCodes",
@@ -1754,6 +1758,10 @@
         "registrationNumber": "4956702",
         "applicationDate": "2014-09-23",
         "registrationDate": "2016-05-10",
+        "expirationDate": "2036-05-10",
+        "oppositionPeriodStart": null,
+        "oppositionDeadline": null,
+        "seniorityClaimed": false,
         "applicantNames": [
           "TBC Trademarks, LLC"
         ],
