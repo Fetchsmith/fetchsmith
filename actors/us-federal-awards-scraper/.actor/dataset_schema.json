@@ -427,6 +427,14 @@
           "object",
           "null"
         ]
+      },
+      "opportunityScore": {
+        "title": "OpportunityScore",
+        "example": 73,
+        "type": [
+          "integer",
+          "null"
+        ]
       }
     }
   },

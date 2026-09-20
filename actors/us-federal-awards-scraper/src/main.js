@@ -241,6 +241,11 @@ if (expiringAfterDays != null && expiringWithinDays != null && expiringAfterDays
 if (expiringWithinDays != null && isSubaward) {
   log.warning('"expiringWithinDays"/"expiringAfterDays" only apply in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date. Ignoring.');
 }
+const includeOpportunityScore = Boolean(input.includeOpportunityScore);
+if (includeOpportunityScore && isSubaward) {
+  log.warning('"includeOpportunityScore" only applies in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date to score recompete urgency from. Ignoring.');
+}
+const effectiveIncludeOpportunityScore = includeOpportunityScore && !isSubaward;
 // Period-of-performance end date has no server-side filter on this API (its `time_period`
 // date_type is restricted to action_date/date_signed/last_modified_date -- verified live,
 // a "period_of_performance_current_end_date" date_type is rejected with a 400 naming the
@@ -260,6 +265,40 @@ function passesExpiringFilter(item) {
   if (days == null || days < 0 || days > expiringWithinDays) return false;
   if (expiringAfterDays != null && days < expiringAfterDays) return false;
   return true;
+}
+
+// Deterministic (non-LLM) 0-100 "how worth pursuing is this" score, modeled on a smaller
+// competitor's published "AI Opportunity Scoring" feature (confirmed cycle 549 to itself be a
+// plain weighted formula, not an actual model call) -- every weight below is also spelled out
+// in the README so it reads as a transparent heuristic, not a black box, matching this fleet's
+// honesty standard for e.g. expiringWithinDays above.
+const PRIORITY_TECH_TERMS = [
+  'artificial intelligence', ' ai ', 'machine learning', 'cyber', 'cybersecurity', 'cloud computing',
+  'cloud', 'solar', 'renewable energy', 'clean energy', 'quantum', 'robotics', 'autonomous',
+  'biotechnology', 'biotech', 'semiconductor', 'data analytics',
+];
+// IDVs/BPAs are an ongoing multi-year vehicle (a relationship to pursue, not a one-off), so they
+// score above a one-time definitive contract; grants/assistance/loans score lowest since this
+// formula is aimed at recompete/bid-style opportunities, not funding awards.
+const CATEGORY_TYPE_SCORE = { idvs: 15, contracts: 12, grants: 8, other_financial_assistance: 6, direct_payments: 5, loans: 4 };
+function opportunityScore(item) {
+  // 1) Award size, log-scaled 0-40 so a $50M+ mega-award doesn't swamp every other factor the
+  //    way a linear scale would.
+  const amount = item.awardAmount ?? 0;
+  const amountScore = amount > 0 ? Math.min(40, (Math.log10(amount + 1) / Math.log10(50_000_000)) * 40) : 0;
+  // 2) Tech/priority-sector keyword match, 0-25. Prefers the buyer's own "keywords" input (it
+  //    already searched on them, so a hit there is the more relevant signal) and falls back to
+  //    a fixed priority-sector list otherwise.
+  const haystack = `${item.description ?? ''} ${item.naicsDescription ?? ''} ${item.pscDescription ?? ''}`.toLowerCase();
+  const termList = keywords.length ? keywords.map((k) => k.toLowerCase()) : PRIORITY_TECH_TERMS;
+  const keywordScore = termList.some((t) => haystack.includes(t)) ? 25 : 0;
+  // 3) Award category, 0-15 (see CATEGORY_TYPE_SCORE comment above).
+  const typeScore = CATEGORY_TYPE_SCORE[item.awardCategory] ?? 5;
+  // 4) Recompete urgency, 0-20: higher the sooner the period of performance ends, 0 past 365
+  //    days out or already expired -- same daysUntilEnd() used by expiringWithinDays above.
+  const days = daysUntilEnd(item.endDate);
+  const urgencyScore = (days != null && days >= 0 && days <= 365) ? Math.round(20 * (1 - days / 365)) : 0;
+  return Math.round(Math.min(100, amountScore + keywordScore + typeScore + urgencyScore));
 }
 const sortBy = Object.hasOwn(SORTS, input.sortBy) ? input.sortBy : 'awardAmount';
 const order = input.order === 'asc' ? 'asc' : 'desc';
@@ -696,6 +735,7 @@ for (const category of categories) {
             seen.add(key);
             categoryRows += 1;
             const item = isSubaward ? normalizeSub(row, category) : normalize(row, category, kind);
+            if (effectiveIncludeOpportunityScore) item.opportunityScore = opportunityScore(item);
             if (!passesExpiringFilter(item)) continue;
 
             if (watchMode && seeding) {

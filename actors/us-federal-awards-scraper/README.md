@@ -16,6 +16,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 - **Sub-award / subcontractor mining** — set `awardLevel` to `subaward` and get the FSRS sub-contracts and sub-grants filed *under* prime awards: who the prime contractor actually paid, how much, and for what. Every sub-award row carries the prime award's ID and URL, so you can join it straight back to a prime-level run. This is the tier-2 supplier list that never appears in prime-award data.
 - **New-award alerts** — set `watchLabel` on a saved search (any filter combination, prime or sub-award mode) to get only the awards/sub-awards that are new since your last run, instead of re-pulling the same agency/NAICS/recipient search on a schedule.
 - **Award-change alerts** — add `watchChanges` (prime mode) to also get re-alerted when an already-delivered award's last-modified date, amount, outlays or end date moves — contract modifications, option exercises, period-of-performance extensions — instead of only ever hearing about brand-new awards.
+- **Opportunity triage** — set `includeOpportunityScore` to add a 0-100 score to every row so you can sort a big pull by "worth pursuing" instead of just amount — see [Opportunity score](#opportunity-score).
 
 ## Input
 
@@ -44,6 +45,7 @@ No API key, no login, no proxy: this Actor uses the US government's public open-
 | `maxPagesPerCategory` | integer | `50` | Depth cap, 100 awards per page. |
 | `watchLabel` | string | – | Set a name for this saved search to turn on watch mode — see [Watch mode](#watch-mode) below. |
 | `watchChanges` | boolean | `false` | Prime mode only. Also re-alert (and charge) on an already-delivered award whose last-modified date, amount, outlays or end date changed — see [Watch mode](#watch-mode). |
+| `includeOpportunityScore` | boolean | `false` | Prime mode only. Adds a 0-100 `opportunityScore` field to every row — see [Opportunity score](#opportunity-score). |
 | `webhookUrl` | string | – | Optional. POST a small JSON completion summary (awards/sub-awards pushed, rows scanned, dataset ID, watch new/changed counts) here when the run finishes — see FAQ. |
 
 All filters are ANDed. Awards filtered out are never pushed and never charged.
@@ -128,6 +130,19 @@ Changing any filter (categories, keywords, agencies, recipients, states, NAICS/P
 
 **`watchChanges` (prime mode only)** turns on a second kind of alert: an award that was already delivered under this label is re-delivered (charged again) if it changed since you last saw it — USAspending's own `lastModifiedDate` moved, or `awardAmount`/`totalOutlays` (contracts and assistance), `loanValue`/`subsidyCost` (loans), or `endDate` differ from the stored snapshot. The re-delivered row is tagged with `_watchChangeType` (which field(s) moved) and `_watchPrevious` (their old value(s)), so you don't have to diff it against your own last-seen copy. Not offered in sub-award mode — a sub-award is a static FSRS filing with no reliable "this changed" signal to track, so setting the flag there is a no-op (logged, not silently ignored). Every award's snapshot is refreshed on every run regardless of the flag, so turning `watchChanges` on later only detects drift from that point forward, never a backlog against changes it never captured.
 
+## Opportunity score
+
+Set `includeOpportunityScore` (prime mode only) to add a 0-100 `opportunityScore` field — a fixed, published formula, **never an AI/LLM call**, so it's fully reproducible from the row's own fields:
+
+| Factor | Max points | How it's scored |
+|---|---|---|
+| Award size | 40 | Log-scaled on `awardAmount`, so a $50M+ mega-award doesn't swamp every other factor the way a linear scale would. $0 scores 0; $50M+ scores the full 40. |
+| Tech/priority-sector keyword match | 25 | 25 if `description`/`naicsDescription`/`pscDescription` contains one of your own `keywords` (if you set any — it already searched on them), otherwise a fixed list: AI, machine learning, cyber(security), cloud, solar/renewable/clean energy, quantum, robotics, autonomous, biotech, semiconductor, data analytics. Otherwise 0. |
+| Award category | 15 / 12 / 8 / 6 / 5 / 4 | IDVs (15) and contracts (12) score highest — an ongoing multi-year vehicle or a re-biddable contract is a real business-development target; grants (8), other financial assistance (6), direct payments (5) and loans (4) score lower since this formula is aimed at pursue/recompete opportunities, not funding awards. |
+| Recompete urgency | 20 | Scales from 20 (ending today) down to 0 (365+ days out, or already past its end date), same `endDate` math as `expiringWithinDays` above. |
+
+Off by default, so it never changes the default row shape. Prime mode only — sub-award records report no period-of-performance end date to score urgency from, so setting the flag in `awardLevel: "subaward"` mode is a no-op (logged, not silently ignored), same pattern as `expiringWithinDays`.
+
 ## Pricing
 
 Pay per result: **$0.004 per award on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0035, Silver $0.003), **no Actor-start fee**. You only pay for awards actually written to the dataset.
@@ -157,6 +172,9 @@ No. Loans report `loanValue` (face value) and `subsidyCost` instead of an obliga
 
 **How do I find contracts coming up for recompete?**
 Set `expiringWithinDays` (e.g. `180`) to only get awards whose period of performance ends within that window — USAspending has no filter for this itself (its date filters only search by *action* date, not end date), so this Actor fetches normally and filters client-side on the `endDate` field it already returns for every contract/grant/IDV row, before charging. Add `expiringAfterDays` (e.g. `90`) to also skip anything ending too soon to realistically prepare a bid for. Neither applies to loans (no period-of-performance end date reported for that category) or `awardLevel: "subaward"` (sub-award records report no end date either) — both are warned and ignored rather than silently returning nothing.
+
+**Is `opportunityScore` an AI/LLM score?**
+No. It's a fixed formula over fields this Actor already returns — award size (log-scaled), a tech/priority-sector keyword match, award category, and recompete urgency from `endDate` — spelled out in full in [Opportunity score](#opportunity-score) above so you can reproduce or re-weight it yourself. No external call is made to compute it.
 
 **Is this the same as SAM.gov?**
 No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *awards already made*. This Actor covers awards — who won, how much, which agency, and when the work ends.

@@ -181,6 +181,12 @@
             "editor": "number",
             "minimum": 0
         },
+        "includeOpportunityScore": {
+            "title": "Include opportunity score (0-100)",
+            "type": "boolean",
+            "description": "Adds an `opportunityScore` field (0-100, higher = more worth pursuing) to every row, computed by a fixed, documented formula — never an AI/LLM call. Weights: award size (0-40, log-scaled so a $50M+ mega-award doesn't swamp everything), a tech/priority-sector keyword match in the description/NAICS/PSC text (0-25 — checked against your own \"Keywords\" input if set, else a fixed list: AI, cyber, cloud, solar, biotech, quantum, etc.), award category (0-15 — IDVs/BPAs score highest as an ongoing multi-year vehicle, then contracts, then grants/assistance/loans), and recompete urgency (0-20 — higher the sooner the period of performance ends, 0 past 365 days out or already expired). See the README for the exact formula. Prime mode only (awardLevel=\"prime\") — ignored with a warning in sub-award mode, which has no period-of-performance end date to score urgency from. Off by default so it never changes the default output shape.",
+            "default": false
+        },
         "sortBy": {
             "title": "Sort by",
             "type": "string",
