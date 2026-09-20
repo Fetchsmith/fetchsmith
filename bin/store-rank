@@ -71,7 +71,11 @@ TERMS = {
     # p4 with the interim "Scraper - RSS & API" wording, then fell back to p128 when API
     # was moved next to News — one title cannot win both (proximity, see attr() docstring).
     "google-news-scraper": ["google news", "google news api", "google news rss"],
-    "app-store-reviews-scraper": ["app store reviews"],
+    # "itunes reviews" added cycle 527: title changed to "...iTunes Reviews, Any App
+    # & Country" (span 0 for both queries), measured p170->p3. "app store reviews"
+    # unaffected (span 0 before/after). "app store scraper"/"app store api"/"ios app
+    # reviews" probed same cycle but declined — see queue.md h147.
+    "app-store-reviews-scraper": ["app store reviews", "itunes reviews"],
     "google-play-reviews-scraper": ["google play reviews"],
     "shopify-products-scraper": ["shopify products"],
     # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
