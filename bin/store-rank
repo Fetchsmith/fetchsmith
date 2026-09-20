@@ -68,7 +68,18 @@ TERMS = {
     "substack-scraper": ["substack", "substack api"],
     "apple-podcasts-scraper": ["apple podcasts"],
     "steam-reviews-scraper": ["steam reviews", "steam api"],  # cycle 524: "steam api" p213->p2 after title edit
-    "hacker-news-scraper": ["hacker news", "hn api"],  # cycle 523: "hn api" p227->p2 after title edit
+    # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
+    # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
+    # full). Confirmed the h143/h145(b) apostrophe caveat: querying "who's hiring"
+    # (with apostrophe) still shows a FALSE "0 title-matchers" block per this
+    # script's naive tokenizer (it splits "who's" into query token "who's" but
+    # strips the apostrophe from title WORDS, so "who" never startswith "who's") —
+    # but real Algolia treats the apostrophe-s as droppable and DOES title-match us
+    # now (p57->p30 after this edit, confirmed via raw hitsPerPage requests, not via
+    # this script). Track the apostrophe-free phrasing here since that's what this
+    # tool can verify; do not trust `--attr "who's hiring"`'s "0 records" verdict for
+    # ANY slug — it is a tokenizer bug, not a real absence of a title-match block.
+    "hacker-news-scraper": ["hacker news", "hn api", "who is hiring"],  # cycle 523: "hn api" p227->p2 after title edit
     # cycle 524: "google news api" p623->p6 after the title was rewritten to spell it
     # contiguously. "google news rss" is the same Actor's runner-up and was measured at
     # p4 with the interim "Scraper - RSS & API" wording, then fell back to p128 when API
