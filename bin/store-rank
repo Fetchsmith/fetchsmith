@@ -88,7 +88,32 @@ TERMS = {
     "nih-reporter-scraper": ["nih reporter", "nih grants"],  # p20 p17 (cycle 544; 'nih grants' was #26 at h74's 2026-09-19 verdict)
     "federal-register-scraper": ["federal register", "public inspection", "comment deadline"],  # cycle 546: title -> "...Public Inspection, Comment Deadlines" joined "public inspection" p3->p1 (0 title-matchers pre-edit, exact contiguous phrase). "comment deadline" p2 (unchanged, span 0 preserved) and "federal register" p57 (unchanged, span 0 preserved) both confirmed no regression post-reindex.
     "grants-gov-scraper": ["grants.gov", "government grants"],
-    "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
+    "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov", "patient recruitment", "nct id"],
+    # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
+    # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
+    # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full
+    # 364-hit leaderboard showed ranks 1..60 are ALL genuine title-matchers whose
+    # storePosition rises monotonically 7335 -> 54023, and ours is 54494. p61 is exactly
+    # where storePosition ordering puts us. The niche is simply saturated: 81 title-matchers
+    # on "clinicaltrials.gov", 58 on "clinical trials". No title edit can win either, ever
+    # (only real cumulative usage moves storePosition). Do not re-derive this.
+    # SO the slot went to the long tail instead, hunting the cycle-548 zero/tiny-block shape.
+    # Probed 20 new candidate queries; two had ZERO title-matchers in the whole index
+    # (verified via matchLevel on the top-5 window, which is the reliable one):
+    #   patient recruitment (nbHits 126) p25 -> **p1**   0 title-matchers, span 0
+    #   nct id              (nbHits 127) p90 -> **p1**   0 title-matchers, span 0
+    # Title: "...– Condition, Phase & Site Mode" -> "...– Patient Recruitment & NCT IDs"
+    # (58/63 chars, both phrases contiguous). Both new queries are honest: `nctIds` is a
+    # real input ("Specific NCT IDs (direct lookup)") and recruiting-status + site/facility
+    # filters are exactly the patient-recruitment planning dataset (still no contact PII).
+    # Measured cost, accepted deliberately: "condition scraper" p3 -> p18 (nbHits 6146) and
+    # "site mode" p1 -> p5 (nbHits 27478) — both were accidental wins on queries no clinical
+    # buyer types; and "clinical trial sites" p38 -> p67. Unaffected/slightly better:
+    # "clinicaltrials.gov" p61 -> p57, "clinical trials" p95 -> p88, "oncology trials" p31,
+    # "trial conditions" p40. REJECTED candidates (recorded so they aren't re-derived):
+    # "clinical trial sites"/"recruiting trials"/"oncology trials" all need "clinical trial(s)"
+    # as contiguous tokens, impossible while the title leads with "ClinicalTrials.gov"
+    # (Algolia tokenizes that as clinicaltrials+gov, NOT clinical+trials).
     "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
     # cycle 549 second-rotation competitor-gap audit: no feature/pricing gap (25 input
     # fields incl. subaward mode/watchChanges/recompete-alerts/pass-through-tracing vs
@@ -296,8 +321,14 @@ def attr(query, slug):
     records DO score real matchLevel "full" at position 1 for that query — a genuine
     title-match block exists — but our own record, whose title also literally
     contains "ClinicalTrials.gov", inexplicably sits at p61 rather than inside that
-    top cluster; this specific anomaly is still unexplained and is a good target for
-    a future investigation, separate from the general cutoff bug documented here).
+    top cluster. **RESOLVED cycle 552 — there was never an anomaly.** Dumping the whole
+    364-hit leaderboard showed ranks 1..60 are ALL genuine title-matchers and their
+    `storePosition` rises monotonically 7335 -> 54023 against our 54494: p61 is exactly
+    where the storePosition tiebreaker puts us INSIDE the block, not outside it. The
+    block is just 81 records deep because the niche is saturated. The lesson that
+    generalizes: when `--attr` reports "already in the title block, span 0" and the rank
+    still looks bad, that is not a bug to investigate — it is storePosition, and the only
+    fix is real cumulative usage. Verify by printing the block's storePosition sequence.)
 
     CAVEAT 2 (cycle 524) — **PROXIMITY, and it dominates everything below it.**
     Joining the title-match block is necessary but NOT sufficient: Algolia's

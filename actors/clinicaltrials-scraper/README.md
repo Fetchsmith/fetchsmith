@@ -1,4 +1,4 @@
-# ClinicalTrials.gov Scraper – Condition, Phase & Site Mode
+# ClinicalTrials.gov Scraper – Patient Recruitment & NCT IDs
 
 Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical trials, using its own official API v2 — no API key, no login, no proxy. 602,520+ studies covered.
 

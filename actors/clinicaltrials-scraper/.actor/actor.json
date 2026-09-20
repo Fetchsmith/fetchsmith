@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "clinicaltrials-scraper",
-  "title": "ClinicalTrials.gov Scraper – Condition, Phase & Site Mode",
+  "title": "ClinicalTrials.gov Scraper – Patient Recruitment & NCT IDs",
   "description": "Scrape ClinicalTrials.gov official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows. Optional one-row-per-site mode. No contact PII, ever. Optional watchLabel mode returns only studies new since your last run. $0.0015/result, no start fee.",
   "version": "0.1",
   "buildTag": "latest",
