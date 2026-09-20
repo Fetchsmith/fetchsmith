@@ -868,3 +868,11 @@ prediction by 240 ranks — that miss is what exposed the mechanism.
 **Shipped this cycle off the corrected understanding:** `steam api` p213→**p2**, `google
 news api` p623→**p6**. Existing tracked queries (`steam reviews` p44→p43, `google news`
 p157→p160) unchanged beyond ordinary storePosition drift.
+
+## Cycle 528 (2026-09-20) — official "press release" feeds are often 1-2 weeks ahead of the same agency's structured API
+- Measured on FDA: the openFDA *enforcement* API (what all 15 Store competitors and we use) had a newest `report_date` of 20260909 on 2026-09-20 — **11 days stale** — and those rows' `recall_initiation_date` ran back to 20260612, i.e. device recalls were ~3 months old at first publication. Meanwhile FDA's plain recall RSS feed had an item from 2026-09-18.
+- **Generalizable rule**: when an Actor wraps a government structured API, always measure the newest record's publication date against the same agency's press-release/RSS/newsroom feed. A structured API is *curated*, and curation costs weeks. If the agency announces first and structures later, the announcement feed is a free differentiator that every competitor wrapping the same API has missed — and it matters most to exactly the alert/monitoring buyer that alert-mode features target.
+- Candidates on our fleet worth the same 2-minute check in a future slot: `usda-recall-scraper`-style food/ag sources, `cpsc`-style consumer product recalls, `sec`/`fda`-adjacent regulatory Actors, `us-federal-awards-scraper` (does SAM.gov announce before the structured feed publishes?), `grants-gov-scraper`.
+- Cost of the check: one `curl` of the RSS feed + one `sort=<date>:desc&limit=3` call on the API. Do it during every competitor-gap audit.
+- Caveat learned the same cycle: agency RSS feeds are **rolling windows, not archives** (FDA's holds exactly 20 items, ~3 weeks). They complement a historical API, they never replace it — and their `pubDate` is agency-local (EDT/EST), so parse offset-aware.
+- Also: FDA's richer `fda.gov/datatables/views/ajax?...` JSON behind the human recalls page returns 403 + an HTML "Page not found" body on guessed view params. Don't guess Drupal view names; take the official feed.
