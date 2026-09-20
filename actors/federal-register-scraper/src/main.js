@@ -375,6 +375,37 @@ function extractCitations(...texts) {
     return Array.from(found);
 }
 
+// The Federal Register API hands back GPO typesetting markup inside otherwise-plain free text —
+// the README sells `abstract`/`title`/`action`/`datesText` as prose, so shipping it raw is a data
+// defect (same class as grants-gov's undecoded entities, cycle 556). Measured live over 1000 docs
+// across 5 agencies (cycle 560): 88 tags, ALL of them in `abstract`, and only two kinds —
+// `<INF>`/`</INF>` (86, subscript) and `<bullet>` (2). No entities appeared in that sample.
+// `<INF>` sits INSIDE a word ("NO<INF>X</INF>" = NOx), so grants-gov's blanket tag -> space rule
+// would corrupt it into "NO X". Inline formatting tags therefore drop to the empty string and
+// everything else drops to a space; `<bullet>` is block-level, so a space is right for it.
+const INLINE_TAGS = new Set(['inf', 'sup', 'sub', 'e', 'i', 'b', 'em', 'strong', 'span']);
+const ENTITIES = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '–', mdash: '—',
+    lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', hellip: '…',
+    bull: '•', deg: '°', plusmn: '±', micro: 'µ', times: '×',
+    frac12: '½', reg: '®', copy: '©', trade: '™', sect: '§',
+};
+const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
+    if (e[0] === '#') {
+        const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return Number.isFinite(cp) && cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
+    }
+    const key = e.toLowerCase();
+    return Object.prototype.hasOwnProperty.call(ENTITIES, key) ? ENTITIES[key] : m; // unknown: verbatim
+});
+// Plain-text cleanup for one free-text field: drop markup, decode entities, collapse whitespace.
+const cleanText = (v) => {
+    if (v == null || v === '') return null;
+    const stripped = String(v).replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)(?:\s[^<>]*)?\/?>/g,
+        (m, tag) => (INLINE_TAGS.has(tag.toLowerCase()) ? '' : ' '));
+    return decodeEntities(stripped).replace(/\s+/g, ' ').trim() || null;
+};
+
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 const cfrString = (r) => {
     const t = r?.title ?? '';
@@ -388,9 +419,9 @@ function normalize(d) {
         documentNumber: d.document_number ?? null,
         type: d.type ?? null,
         subtype: d.subtype ?? null,
-        title: d.title ?? null,
-        abstract: d.abstract ?? null,
-        action: d.action ?? null,
+        title: cleanText(d.title),
+        abstract: cleanText(d.abstract),
+        action: cleanText(d.action),
 
         publicationDate: d.publication_date ?? null,
         effectiveOn: d.effective_on ?? null,
@@ -398,7 +429,7 @@ function normalize(d) {
         // 200 per type) — the field a regulatory-affairs buyer actually acts on.
         commentsCloseOn: d.comments_close_on ?? null,
         signingDate: d.signing_date ?? null,
-        datesText: d.dates ?? null,
+        datesText: cleanText(d.dates),
 
         // Non-null only on rules/proposed rules, and even there it's null more often than not:
         // live sample of 200 RULE + 200 PRORULE (2025-01 to 2026-09) measured true/false present
@@ -432,7 +463,7 @@ function normalize(d) {
         // documents that don't amend anything.
         referencedCitations: extractCitations(d.dates, d.action).filter((c) => c !== d.citation),
 
-        excerpt: d.excerpts ?? null,
+        excerpt: cleanText(d.excerpts),
         url: d.html_url ?? null,
         pdfUrl: d.pdf_url ?? null,
         // Free full text of the document body — no extra request charged by us, the URL is public.
@@ -462,13 +493,13 @@ function normalizePI(d) {
         ...normalize({}),
         documentNumber: d.document_number ?? null,
         type: d.type ?? null,
-        title: d.title ?? null,
+        title: cleanText(d.title),
         publicationDate: d.publication_date ?? null,
         agencyNames: agencies.map((a) => a.name ?? a.raw_name).filter(Boolean),
         agencySlugs: agencies.map((a) => a.slug).filter(Boolean),
         parentAgencyNames: agencies.filter((a) => a.parent_id == null).map((a) => a.name ?? a.raw_name).filter(Boolean),
         docketIds: listOf(d.docket_numbers),
-        excerpt: d.excerpts ?? null,
+        excerpt: cleanText(d.excerpts),
         url: d.html_url ?? null,
         pdfUrl: d.pdf_url ?? null,
         fullTextUrl: d.raw_text_url ?? null,

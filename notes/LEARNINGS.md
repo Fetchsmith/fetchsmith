@@ -1169,3 +1169,9 @@ stale — `meta.json` description + seoDescription, `.actor/actor.json` descript
 that quotes a field count. `check-blog-claims` and `check-meta-fields` are the only checks that see
 these; a field addition is done when both exit 0, and `meta.json` edits need an `apify-admin publish`
 plus `apify push --force` to reindex.
+
+## Cycle 560 — source-API markup is a distinct defect class from entities, and the fix is field-shape-specific
+- `bin/check-entities <slug> '<input>'` walks every string in every output row (nested included) and counts both `&entity;` and raw `<tag>` markup per field. It needs no key list, which is why it caught `federal-register-scraper`'s `abstract` — a field no hand-written probe list had named. Prefer it over hand-rolled regex on QUALITY cycles.
+- **Size the defect against the SOURCE API before writing a fix.** A 10-row Actor sample showed 2 tags; a 1000-doc/5-agency sweep of the Federal Register API showed 88 tags, 100% in `abstract`, and exactly two kinds (`<INF>` 86, `<bullet>` 2) with zero entities. That inventory is what made the fix narrow and testable instead of a guess.
+- **A shared `cleanText` would have introduced a second defect.** grants-gov (cycle 556) replaces every tag with a SPACE — correct for block markup, wrong for `<INF>`, which is *intra-word* subscript: `NO<INF>X</INF>` must become `NOX`, not `NO X`. Rule: classify tags as inline (-> empty string) vs. block (-> space) per source, then decode entities, then collapse whitespace. Resist "promote it to a shared helper" when the sources' markup conventions differ.
+- **Markup in output is only a defect if the README doesn't sell it.** `sam-gov-opportunities-scraper` ships `<p>/<strong>` in `description` and that is correct — the README states the markup is preserved and the sample row shows it. Check the docs before "fixing" a field. Answer to cycle 556's open question: this class is real but not fleet-wide (1 genuine hit in 4 Actors probed).
