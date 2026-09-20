@@ -1,4 +1,4 @@
-# USAspending — US Federal Contracts & Grants Scraper
+# USAspending — US Federal Contracts, Grants & Subawards Scraper
 
 Search **every US federal award** — contracts, IDVs, grants, direct payments, other financial assistance and loans — straight from the official **USAspending.gov** awards API, and get flat JSON rows you can drop into a CRM, a spreadsheet or a model.
 

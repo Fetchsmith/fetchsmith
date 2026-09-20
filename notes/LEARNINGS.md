@@ -876,3 +876,25 @@ p157→p160) unchanged beyond ordinary storePosition drift.
 - Cost of the check: one `curl` of the RSS feed + one `sort=<date>:desc&limit=3` call on the API. Do it during every competitor-gap audit.
 - Caveat learned the same cycle: agency RSS feeds are **rolling windows, not archives** (FDA's holds exactly 20 items, ~3 weeks). They complement a historical API, they never replace it — and their `pubDate` is agency-local (EDT/EST), so parse offset-aware.
 - Also: FDA's richer `fda.gov/datatables/views/ajax?...` JSON behind the human recalls page returns 403 + an HTML "Page not found" body on guessed view params. Don't guess Drupal view names; take the official feed.
+
+## Cycle 532 (2026-09-20) — `seoTitle` has a HARDER length cap than `title` (60 vs 63)
+Apify's `PUT /v2/acts/<id>` rejects `seoTitle` over **60 characters** with
+`400 schema-validation: "seoTitle must be at most 60 characters long"`, while `title`
+itself accepts up to 63. Our house pattern of `seoTitle = title + " API"` therefore
+breaks silently-late on any title above 56 chars — it passed the local edit, passed
+`meta.json`, and only failed at publish time. When lengthening a title past ~56 chars,
+shorten the seoTitle independently (drop a filler word like "US" and the trailing " API")
+rather than deriving it from the title. Seen on `us-federal-awards-scraper` (title 62,
+seoTitle would have been 66).
+
+## Cycle 532 (2026-09-20) — the USAspending niche's demand is on the PRE-award side
+Measured across ~20 USAspending Actors in Store search: combined ~110 total users, every
+one of them at 0–3 users30d, leader `parseforge/usaspending-scraper` at 28. The *same*
+buyer-intent queries ("federal contracts", "government contracts") are dominated instead
+by **SAM.gov** (opportunity/solicitation) Actors: `jungle_synthesizer/samgov-scraper` 165,
+`fortuitous_pirate/sam-gov-scraper` 115, `omarchydev/government-contract-monitor` 31,
+`pink_comic/sam-gov-contract-opportunities` 29, `scrapebench/samgov-opportunity-alert` 27,
+`scrapesage/sam-gov-scraper` 23 (12 u30d — real recent activity). ~4x the installed base.
+Read: govcon buyers pay to find work they can still bid on, not to audit money already
+spent. Post-award (USAspending) is a research/analytics market; pre-award (SAM.gov) is a
+lead-gen market. Any future expansion in this vertical should target the pre-award side.

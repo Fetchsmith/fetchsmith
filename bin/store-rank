@@ -60,7 +60,7 @@ TERMS = {
     "federal-register-scraper": ["federal register"],
     "grants-gov-scraper": ["grants.gov", "government grants"],
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
-    "us-federal-awards-scraper": ["usaspending", "federal contracts"],
+    "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
     "uk-find-a-tender-scraper": ["find a tender", "uk tenders"],
     # "substack api" added cycle 531: title changed "Substack Scraper" -> "Substack
     # API Scraper" (contiguous, in-order), measured p9->p3. "substack" unaffected

@@ -1,5 +1,5 @@
 {
- "ts": 1789788601,
+ "ts": 1789875001,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -205,14 +205,14 @@
    "status": 201,
    "items": 10,
    "sample_keys": [
+    "source",
     "productType",
     "recallNumber",
     "eventId",
     "status",
     "classification",
     "voluntaryMandated",
-    "initialFirmNotification",
-    "recallingFirm"
+    "initialFirmNotification"
    ],
    "err": null
   },
@@ -307,8 +307,24 @@
     "caseNameFull",
     "court",
     "courtId",
-    "courtCitationString",
-    "docketNumber"
+    "courtJurisdiction",
+    "courtCitationString"
+   ],
+   "err": null
+  },
+  "trademark-search-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "st13",
+    "url",
+    "trademarkName",
+    "office",
+    "status",
+    "trademarkType",
+    "applicationNumber"
    ],
    "err": null
   }
