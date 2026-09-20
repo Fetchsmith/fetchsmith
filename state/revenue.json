@@ -1,5 +1,5 @@
 {
- "ts": 1789884001,
+ "ts": 1789896617,
  "date": "2026-09-20",
  "apify": {
   "google-news-scraper": {
@@ -368,7 +368,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 3,
-   "runs": 55,
+   "runs": 56,
    "ext_ok30d": 3,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -400,12 +400,25 @@
    "bookmarks": 0,
    "reviews": 0,
    "rating": 0
+  },
+  "sam-gov-opportunities-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 0,
+   "runs": 6,
+   "ext_ok30d": 0,
+   "ext_bad30d": 0,
+   "ext_stats30d": {},
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   }
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 21,
-  "users": 41,
+  "public_actors": 22,
+  "users": 43,
   "runs30d": 193,
   "ext_ok30d": 192,
   "ext_bad30d": 1,

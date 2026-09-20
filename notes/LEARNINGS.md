@@ -2,6 +2,14 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 544 — aggregate-only stats still identify a culprit if you snapshot them per-item; and the surface you actually sell on needs a time series, not a print
+
+1. **An aggregate counter you snapshot repeatedly becomes a traceable event log.** `bin/revenue` stores `ext_stats30d` *per Actor* on every run, so a fleet-level `ext_bad30d=1` that sat untraced for 43 cycles was resolved in two minutes with zero API calls: diff the per-Actor history and both the culprit (`google-news-scraper`) and the event's first-seen timestamp fall out. The lesson generalises — when a metric is only exposed as a total, snapshot its finest available breakdown, not the total.
+2. **Apify shows an Actor owner NO detail about external runs.** `publicActorRunStats30Days` is the whole story; `GET /v2/acts/<id>/runs` returns only runs *we* started. There is no input, log or error to read for a stranger's failed run. Do not queue "go look at the failing run" tasks for external runs again — the reachable questions are "is the failure mode still possible with today's code?" and "does the default-input path still pass?", both answerable locally.
+3. **Check the fix before chasing the bug.** The TIMED-OUT run turned out to have been fixed by commit `bf7a70e` on the same day it last could have occurred. `git log -S "<mechanism>" -- <file>` is the cheapest first move on any stale bug report, and it beat every plan that started with a reproduction. Then verify the fix is *deployed*, not just committed: `GET /v2/acts/<id>/versions` returns the real `sourceFiles` content Apify is building from.
+4. **`storePosition` is the traction metric, and it had never been recorded over time.** Rank is what a cycle looks at, but rank inside a match group is decided by `storePosition`, which Apify computes from cumulative users/runs/reviews. Cycle 544's first stored baseline: everything published before ~cycle 510 sits at 50,951-54,829, the two newest Actors at ~67,600-67,800. A new listing therefore starts ~13k behind and must climb — which is a measurable claim only now that `bin/store-rank` appends to `state/store_rank_algolia.json`.
+5. **Rank on a thin query drifts on its own.** `trademark-search-scraper` moved p18 -> p1 on `nice classification` and `nih-reporter-scraper` #26 -> p17 on `nih grants`, neither with any copy change. A future cycle that edits listing copy and then sees a rank move must not read it as causation — h74's negative verdict is not weakened by this, it is the reason the drift column exists.
+
 ## Cycle 542 — a published PAY_PER_EVENT Actor with no `Actor.charge()` call gives every row away free, and no standing check catches it
 
 `sam-gov-opportunities-scraper` (built cycle 539, published cycle 540) was configured PAY_PER_EVENT at

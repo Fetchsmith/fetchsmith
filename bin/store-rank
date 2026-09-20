@@ -43,7 +43,9 @@ Usage:
 Exit 0 always (informational); prints a summary line.
 """
 import json
+import os
 import sys
+import time
 import urllib.parse
 import urllib.request
 
@@ -51,12 +53,22 @@ APP = "OW0O5I3QO7"
 KEY = "0ecccd09f50396a4dbbe5dbfb17f4525"
 IDX = "prod_PUBLIC_STORE"
 
+# Cycle 544: a full-fleet run (no args) appends its rows here so buyer-facing rank
+# and `storePosition` become a TIME SERIES, not a one-off print. Until now the only
+# record of an Algolia measurement was a hand-written trailing comment in TERMS, so
+# nothing could answer "is storePosition improving as usage accrues?" — which matters
+# because storePosition is Apify's own cumulative-usage tiebreaker and is therefore
+# the closest thing to a traction metric we have. `state/store_rank.json` is a
+# DIFFERENT file owned by `bin/check-store-rank` (the REST/CLI surface); do not mix.
+HIST = "/root/agent/state/store_rank_algolia.json"
+HIST_KEEP = 400
+
 # Primary store-search phrasings per Actor. First term is the primary one.
 TERMS = {
     "scholarship-scraper": ["scholarship", "scholarships"],
     "fda-recall-scraper": ["fda recall", "food recall", "drug recall"],
     "eu-ted-tenders-scraper": ["ted tenders", "eu tenders", "public procurement"],
-    "nih-reporter-scraper": ["nih reporter", "nih grants"],
+    "nih-reporter-scraper": ["nih reporter", "nih grants"],  # p20 p17 (cycle 544; 'nih grants' was #26 at h74's 2026-09-19 verdict)
     "federal-register-scraper": ["federal register"],
     "grants-gov-scraper": ["grants.gov", "government grants"],
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
@@ -115,7 +127,10 @@ TERMS = {
     # place, not by guessing. Measured ranks at time of adding, for drift comparison:
     "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance"],  # p5 p6 p12 p19
     "court-records-scraper": ["docket scraper", "federal dockets", "case law", "court records"],  # p6 p16 p18 p20
-    "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo"],  # p5 p12 p18 p20
+    # cycle 544 re-measure: p5 p12 p1 p20 — 'nice classification' moved p18 -> p1 (sole
+    # title-match, verified matchLevel 'full'), with no copy edit since publish. Rank on a
+    # thin query moves on its own; do not read it back as evidence a past edit worked.
+    "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo"],  # p5 p12 p1 p20 (cycle 544)
     # cycle 541: first --attr baseline for this Actor (h158 follow-up). Title
     # "SAM.gov Opportunities Scraper - US Federal Contracts, Bids" already wins TWO
     # contiguous span-0 queries ("sam.gov opportunities" p9, "sam gov opportunities"
@@ -368,6 +383,50 @@ def attr(query, slug):
     return 0
 
 
+def prev_snapshot():
+    """Rows of the most recent full-fleet snapshot, keyed (slug, query)."""
+    if not os.path.exists(HIST):
+        return {}
+    try:
+        hist = json.load(open(HIST))
+    except (ValueError, OSError):
+        return {}
+    if not hist:
+        return {}
+    return {(r["slug"], r["query"]): r for r in hist[-1]["rows"]}
+
+
+def save_snapshot(rows):
+    hist = []
+    if os.path.exists(HIST):
+        try:
+            hist = json.load(open(HIST))
+        except (ValueError, OSError):
+            hist = []
+    hist.append({"ts": int(time.time()), "date": time.strftime("%Y-%m-%d"), "rows": rows})
+    json.dump(hist[-HIST_KEEP:], open(HIST, "w"), indent=1)
+
+
+def drift(old, pos, sp):
+    """One compact cell: rank change then storePosition change vs the last full run.
+
+    Both are 'lower is better', so an improvement is printed with a minus sign and
+    the word better/worse is spelled out — cycle 453's noise-floor check means a
+    1-2 place rank wiggle is not signal, but a storePosition move is Apify's own
+    batch rescoring and is the number actually worth watching.
+    """
+    if not old:
+        return "new"
+    out = []
+    if old.get("rank") != pos:
+        a, b = old.get("rank"), pos
+        out.append(f"rank {'p'+str(a) if a else '>1000'}->{'p'+str(b) if b else '>1000'}")
+    if sp is not None and old.get("storePosition") is not None and old["storePosition"] != sp:
+        d = sp - old["storePosition"]
+        out.append(f"storePos {d:+d} ({'better' if d < 0 else 'worse'})")
+    return ", ".join(out) if out else "="
+
+
 def main():
     args = sys.argv[1:]
     if args and args[0] == "--attr":
@@ -387,9 +446,11 @@ def main():
         return 2
     only = bool(args)
 
+    prev = prev_snapshot() if not only else {}
     top20 = 0
     total = 0
-    print(f"{'actor':32} {'query':24} {'nbHits':>7} {'rank':>14} {'storePos':>9}")
+    rows = []
+    print(f"{'actor':32} {'query':24} {'nbHits':>7} {'rank':>14} {'storePos':>9}  drift")
     for slug, terms in sorted(targets.items()):
         for term in (terms if only else terms[:1]):
             pos, nb, sp = rank_of(slug, term)
@@ -397,7 +458,14 @@ def main():
             if pos and pos <= 20:
                 top20 += 1
             shown = f"p{pos}" if pos else ">1000"
-            print(f"{slug:32} {term!r:24} {nb:>7} {shown:>14} {str(sp):>9}")
+            rows.append({"slug": slug, "query": term, "rank": pos, "nbHits": nb, "storePosition": sp})
+            # A slug-filtered run probes every term, not just the primary one, so its
+            # shape does not line up with the stored full-fleet snapshot — print "-"
+            # rather than a misleading "new" on rows we simply did not compare.
+            cell = "-" if only else drift(prev.get((slug, term)), pos, sp)
+            print(f"{slug:32} {term!r:24} {nb:>7} {shown:>14} {str(sp):>9}  {cell}")
+    if not only:
+        save_snapshot(rows)
     print(
         f"\nIndexed and retrievable in the real store search: yes (that is the point).\n"
         f"Top-20 on {top20}/{total} probed queries. Within a match group rank is driven\n"
