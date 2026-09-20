@@ -66,7 +66,24 @@ HIST_KEEP = 400
 # Primary store-search phrasings per Actor. First term is the primary one.
 TERMS = {
     "scholarship-scraper": ["scholarship", "scholarships"],
-    "fda-recall-scraper": ["fda recall", "food recall", "drug recall"],
+    "fda-recall-scraper": ["fda recall", "food recall", "drug recall", "device recall", "enforcement report", "fda recall scraper"],
+    # cycle 547 competitor-gap audit: no feature/pricing gap (37 output fields vs.
+    # competitors' ~10-15; $0.0024-0.0035/result vs. leader benthepythondev's flat
+    # $0.05/result; we already have watchLabel/watchChanges + riskScore + press
+    # releases none of the ~17 competitors combine). --attr brainstorm found 2 real
+    # new-query candidates -- "recall alerts" (nbHits 360, p183, predicted ~p18 if
+    # joined) and "fda recall alerts" (nbHits 207, p73, predicted ~p7) -- but every
+    # title rewrite tried that makes "Recall"+"Alerts" contiguous costs at least one
+    # of two stronger ALREADY-WON span-0 blocks: "enforcement report" (p6, 7-record
+    # block) or "fda recall scraper" (p19, 33-record block). No arrangement fit both
+    # new wins plus both existing wins inside the 63-char title limit without either
+    # dropping "Food, Drug & Device" (breaks 3 more established matches) or
+    # duplicating "Recall" (adds ~7-13 chars, still didn't fit alongside "Enforcement
+    # Reports"). Per the cycle-524/541 proximity rule, no edit beats keeping the two
+    # established wins. Not pursued -- do not re-attempt without a materially
+    # different title structure or evidence "enforcement report"/"fda recall
+    # scraper" stopped mattering. "openfda" (p165, 84-block, predicted ~p57) sized
+    # too but weaker still, same trade-off, also not pursued.
     "eu-ted-tenders-scraper": ["ted tenders", "eu tenders", "public procurement"],
     "nih-reporter-scraper": ["nih reporter", "nih grants"],  # p20 p17 (cycle 544; 'nih grants' was #26 at h74's 2026-09-19 verdict)
     "federal-register-scraper": ["federal register", "public inspection", "comment deadline"],  # cycle 546: title -> "...Public Inspection, Comment Deadlines" joined "public inspection" p3->p1 (0 title-matchers pre-edit, exact contiguous phrase). "comment deadline" p2 (unchanged, span 0 preserved) and "federal register" p57 (unchanged, span 0 preserved) both confirmed no regression post-reindex.
