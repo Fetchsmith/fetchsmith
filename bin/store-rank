@@ -250,7 +250,36 @@ TERMS = {
     # way — by measuring ~11 candidates each and keeping the ones where we actually
     # place, not by guessing. Measured ranks at time of adding, for drift comparison:
     "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance"],  # p5 p6 p12 p19
-    "court-records-scraper": ["docket scraper", "federal dockets", "case law", "court records"],  # p6 p16 p18 p20
+    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search"],
+    # cycle 559 competitor-gap audit: no feature/pricing gap vs. the top 2 competitors by
+    # users -- automation-lab (69 users) has only 7 input fields (mode/query/court/dateFrom/
+    # dateTo/status/maxResults) vs. our 15, and charges $0.005 start + $0.0008-0.0023/result
+    # tiered (FREE tier $0.0023); nexgendata (59 users) has only 3 fields and charges a flat
+    # $0.10/result (50x our $0.002/result, no start fee). Both strict subsets, both pricier.
+    # --attr brainstorm on 15 new candidate queries found "party name search" (nbHits 10331,
+    # 0 title-matchers, real p7 via description-only match already) as the standout: bigger
+    # volume than either existing tracked win and a totally free block to claim. Local
+    # token_span simulation (per standing practice) confirmed a title keeping "Scraper" +
+    # "Dockets" (both needed for "docket scraper"'s existing p6 unordered-token membership)
+    # plus adding "Party Name Search" contiguous fits in 61/63 chars, at the cost of dropping
+    # "Opinions" and "+" -- checked first that "opinions scraper"/"court opinions scraper"
+    # (nbHits 12797/6324) were real but modest wins (p24/p28 via unordered token presence,
+    # not span-0), a smaller trade than the "party name search" gain. Shipped title
+    # "Court Records & Case Law Scraper — Dockets, Party Name Search" (61/63 chars), published
+    # + apify push --force (build 0.1.19), measured ~75s post-reindex: "party name search"
+    # **p7 -> p1** (verified genuine block, matchLevel full). Zero regression on the 3 kept
+    # wins: "docket scraper" p6->p5 (span None preserved, organic storePosition drift),
+    # "case law" p18->p16 (span 0 preserved), "court records" p20->p20 (span 0 preserved).
+    # Accepted cost, confirmed live not just predicted: "opinions scraper" p24->p34 and
+    # "court opinions scraper" p28->p28 both dropped OUT of the title block (now description-
+    # only matches) as expected -- mild drift, not catastrophic, and neither was tracked here
+    # before. "federal dockets" (nbHits 244, 1-matcher block, predicted ~p2) and "docket
+    # lookup" (nbHits 1114, 0-matcher, predicted ~p1) both sized but not pursued -- no spare
+    # characters left in the 61/63 title; a future slot could weigh dropping "Case Law" (case
+    # law's span-0 win, nbHits 10816) for one of these if "Case Law" is ever judged the
+    # weaker of the two. "case parties" (nbHits 4049, 1-matcher, predicted ~p2) and "case
+    # filings" (nbHits 1776, 1-matcher unverified, predicted ~p2) also sized, smaller/weaker
+    # than the ones above, not pursued.
     # cycle 544 re-measure: p5 p12 p1 p20 — 'nice classification' moved p18 -> p1 (sole
     # title-match, verified matchLevel 'full'), with no copy edit since publish. Rank on a
     # thin query moves on its own; do not read it back as evidence a past edit worked.
