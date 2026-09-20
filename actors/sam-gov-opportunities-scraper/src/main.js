@@ -85,14 +85,16 @@ function buildSearchUrl(page, size) {
     if (keyword) params.set('q', keyword);
     if (activeOnly) params.set('is_active', 'true');
     if (organizationId) params.set('organization_id', organizationId);
-    // Multi-value params: the endpoint's own UI sends these repeated, not comma-joined --
-    // verified for naics/set_aside cycle 538 (result-count deltas, single-value only). Repeating
-    // the key is the standard SAM.gov UI behavior; not yet verified multi-value live (see README
-    // known-gaps note) so treat OR-across-multiple as best-effort.
-    for (const c of naicsCodes) params.append('naics', c);
-    for (const s of setAsideTypes) params.append('set_aside', s);
-    for (const nt of noticeTypes) params.append('notice_type', nt);
-    for (const s of states) params.append('pop_state', s);
+    // Multi-value params must be COMMA-JOINED, not repeated. Measured live cycle 540 by
+    // result-count arithmetic: `naics=541511`->607 and `naics=541512`->312, but repeating the key
+    // (`naics=541511&naics=541512`) returns 607 -- silently first-wins, dropping the rest -- while
+    // `naics=541511,541512` returns exactly 919 = 607+312, a true OR. Same confirmed for
+    // pop_state (TX 592 + CA 767 = TX,CA 1359) and notice_type (p 4016 + o 8281 = p,o 12297).
+    // Repeating the key fails OPEN (plausible-looking under-count, no error), so never go back.
+    if (naicsCodes.length) params.set('naics', naicsCodes.join(','));
+    if (setAsideTypes.length) params.set('set_aside', setAsideTypes.join(','));
+    if (noticeTypes.length) params.set('notice_type', noticeTypes.join(','));
+    if (states.length) params.set('pop_state', states.join(','));
     return `${SEARCH_API}?${params.toString()}`;
 }
 

@@ -2,7 +2,7 @@
   "tools": [
     {
       "slug": "ats-jobs-scraper",
-      "title": "ATS Jobs Scraper \u2013 Greenhouse, Ashby, Lever, Recruitee",
+      "title": "ATS Jobs Scraper – Greenhouse, Ashby, Lever, Recruitee",
       "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday career board, normalized into one schema with location, remote status and salary where the ATS exposes it. Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
       "status": "live",
       "credits_per_result": 1,
@@ -60,13 +60,13 @@
         "isRemote": false,
         "jobUrl": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
       },
-      "description": "<p>Give it a list of companies as <code>{\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API \u2014 no browser, no login. Omit <code>ats</code> or set it to <code>\"auto\"</code> and it tries all 6 non-Workday platforms for that slug and keeps whichever one is real \u2014 you only need to know the company, not the ATS. Seven ATSes normalized into one schema \u2014 the only one of these seven to also include Recruitee. Supports <code>titleKeyword</code>/<code>titleExcludeKeyword</code>, <code>locationKeyword</code>/<code>locationExcludeKeyword</code>, <code>hasSalary</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
+      "description": "<p>Give it a list of companies as <code>{\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API — no browser, no login. Omit <code>ats</code> or set it to <code>\"auto\"</code> and it tries all 6 non-Workday platforms for that slug and keeps whichever one is real — you only need to know the company, not the ATS. Seven ATSes normalized into one schema — the only one of these seven to also include Recruitee. Supports <code>titleKeyword</code>/<code>titleExcludeKeyword</code>, <code>locationKeyword</code>/<code>locationExcludeKeyword</code>, <code>hasSalary</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
       "memory_mb": 1024
     },
     {
       "slug": "google-news-scraper",
-      "title": "Google News API Scraper \u2013 RSS, Real URLs, Any Language",
-      "summary": "Search Google News by keyword, topic or publisher and get articles with the headline (raw and with the \" - Publisher\" suffix stripped), source name and domain, date, feed rank and the resolved publisher URL \u2014 plus related coverage of the same story and optional full article text, author, image and keywords. Any language or country.",
+      "title": "Google News API Scraper – RSS, Real URLs, Any Language",
+      "summary": "Search Google News by keyword, topic or publisher and get articles with the headline (raw and with the \" - Publisher\" suffix stripped), source name and domain, date, feed rank and the resolved publisher URL — plus related coverage of the same story and optional full article text, author, image and keywords. Any language or country.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -119,12 +119,12 @@
         "publishedAt": "2026-09-02T07:00:00.000Z",
         "snippet": "Apify raises new funding"
       },
-      "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL. Also browse built-in sections (World, Business, Technology, Entertainment, Science, Sports, Health) with the <code>topics</code> field \u2014 no RSS URL needed. Restrict to a date window with <code>timePeriod</code> (<code>1h</code> \u2026 <code>1y</code>) or <code>publishedAfter</code>/<code>publishedBefore</code> (<code>YYYY-MM-DD</code>) \u2014 Google applies the filter, so you are not charged for articles outside the window. <code>siteFilter</code>/<code>excludeSites</code> restrict or exclude publisher domains across every query with no extra requests. Optional <code>extractTickers</code> pulls stock tickers (e.g. <code>$TSLA</code>, <code>NASDAQ:AAPL</code>, \u201cTesla, Inc. (TSLA)\u201d) into a <code>tickers</code> array, free.</p>",
+      "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL. Also browse built-in sections (World, Business, Technology, Entertainment, Science, Sports, Health) with the <code>topics</code> field — no RSS URL needed. Restrict to a date window with <code>timePeriod</code> (<code>1h</code> … <code>1y</code>) or <code>publishedAfter</code>/<code>publishedBefore</code> (<code>YYYY-MM-DD</code>) — Google applies the filter, so you are not charged for articles outside the window. <code>siteFilter</code>/<code>excludeSites</code> restrict or exclude publisher domains across every query with no extra requests. Optional <code>extractTickers</code> pulls stock tickers (e.g. <code>$TSLA</code>, <code>NASDAQ:AAPL</code>, “Tesla, Inc. (TSLA)”) into a <code>tickers</code> array, free.</p>",
       "memory_mb": 1024
     },
     {
       "slug": "app-store-reviews-scraper",
-      "title": "App Store Reviews Scraper \u2013 iTunes Reviews, Any App & Country",
+      "title": "App Store Reviews Scraper – iTunes Reviews, Any App & Country",
       "summary": "Apple App Store reviews for any iOS or Mac App Store app and country storefront: rating, title, text, author (with profile URL), version, vote counts, sort/client diagnostics, plus full app metadata (developer, bundle id, genre, current version, store URL). Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet app returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,
@@ -207,7 +207,7 @@
     },
     {
       "slug": "shopify-products-scraper",
-      "title": "Shopify Products Data Scraper \u2013 Full Catalog, Any Store",
+      "title": "Shopify Products Data Scraper – Full Catalog, Any Store",
       "summary": "Full product catalog of any Shopify store or collection: prices, compare-at prices, discount %, every variant with SKU, options, stock and image, plus tags, images, plain-text and HTML descriptions. Filter by price window (minPrice/maxPrice, matched against each product's own variant price range), discount depth (onSaleOnly/minDiscountPercent), brand or product type (vendors/productTypes, OR-matched lists) or keyword before any row is charged. Optional Apify Proxy routing for rate-limited or geo-priced stores. Optional detailLevel:\"full\" adds each product's SEO title/description, star-rating summary, per-variant quantity rules (min/max/case-pack) and subscription plans (one extra request/product, priced separately).",
       "status": "live",
       "credits_per_result": 1,
@@ -272,7 +272,7 @@
     },
     {
       "slug": "hacker-news-scraper",
-      "title": "Hacker News (HN) API Scraper \u2013 Who Is Hiring, Jobs",
+      "title": "Hacker News (HN) API Scraper – Who Is Hiring, Jobs",
       "summary": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API, with points, date and exclude-keyword filters. Watch mode returns only what's new since your last run. Optional GitHub enrichment adds stars, language and last-push date for any linked repo.",
       "status": "live",
       "credits_per_result": 1,
@@ -315,7 +315,7 @@
       "sample_output": {
         "id": "15558405",
         "type": "story",
-        "title": "Show HN: Apify \u2013 Turn any website into an API",
+        "title": "Show HN: Apify – Turn any website into an API",
         "url": "https://www.apify.com/",
         "author": "jancurn",
         "points": 45,
@@ -328,7 +328,7 @@
     },
     {
       "slug": "google-play-reviews-scraper",
-      "title": "Google Play Reviews Scraper \u2013 Rating, Keyword & Date Filters",
+      "title": "Google Play Reviews Scraper – Rating, Keyword & Date Filters",
       "summary": "Google Play app reviews and full app metadata by app ID or search term: review rating, text, date, version, reviewer name and profile photo, developer replies and per-aspect sub-ratings, plus the app's score, ratings and review counts, install range, price and currency, genre, content rating, and release/last-updated dates. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet app returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,
@@ -399,8 +399,8 @@
     },
     {
       "slug": "substack-scraper",
-      "title": "Substack API Scraper \u2013 Posts, Full Text & Comments",
-      "summary": "Any Substack publication as structured data: posts with full article text, engagement stats (reactions, comments, restacks), podcast episodes with duration, section and cover image, plus threaded comments. Optional publication profile \u2014 subscriber count, subscription plan prices, author and bestseller tier. Custom domains supported.",
+      "title": "Substack API Scraper – Posts, Full Text & Comments",
+      "summary": "Any Substack publication as structured data: posts with full article text, engagement stats (reactions, comments, restacks), podcast episodes with duration, section and cover image, plus threaded comments. Optional publication profile — subscriber count, subscription plan prices, author and bestseller tier. Custom domains supported.",
       "status": "live",
       "credits_per_result": 2,
       "apify_actor_id": "bIpBH8qvOYQKSN8dB",
@@ -493,14 +493,14 @@
         "wordCount": 4695,
         "reactionCount": 199,
         "commentCount": 118,
-        "bodyText": "The Story So Far\nMechanistic interpretability is the science of \u201creading an AI\u2019s mind\u201d\u2026"
+        "bodyText": "The Story So Far\nMechanistic interpretability is the science of “reading an AI’s mind”…"
       },
-      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record \u2014 including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
+      "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record — including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
       "memory_mb": 1024
     },
     {
       "slug": "apple-podcasts-scraper",
-      "title": "Apple Podcasts Scraper \u2013 Episodes, Reviews, Charts & Publishers",
+      "title": "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers",
       "summary": "Apple Podcasts as structured data: every episode with direct audio URL, duration and RSS feed; listener reviews with star ratings; keyword search; or Apple's top-shows and trending-episodes charts. Any country storefront.",
       "status": "live",
       "credits_per_result": 1,
@@ -578,8 +578,8 @@
     },
     {
       "slug": "steam-reviews-scraper",
-      "title": "Steam Reviews Scraper \u2013 Steam API, Steam Player Count, Playtime",
-      "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type \u2014 plus a games mode with prices, genres, developers, review-score summaries, live player counts and optional SteamSpy owner estimates, peak concurrent players and crowd-voted tags. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet game returns nothing and costs nothing.",
+      "title": "Steam Reviews Scraper – Steam API, Steam Player Count, Playtime",
+      "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type — plus a games mode with prices, genres, developers, review-score summaries, live player counts and optional SteamSpy owner estimates, peak concurrent players and crowd-voted tags. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet game returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "EDfr7BDOOsO7azSOv",
@@ -687,13 +687,13 @@
         ],
         "reviewUrl": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/"
       },
-      "description": "<p>Two modes in one Actor. <code>reviews</code> returns Steam player reviews with the full text, the reviewer's <strong>playtime at review and total</strong>, whether they recommend the game, helpfulness votes, comment count and whether it was a genuine Steam purchase \u2014 filterable by <code>language</code>, <code>reviewType</code> (positive/negative), <code>purchaseType</code>, <code>minPlaytimeHours</code> and a text <code>keyword</code>. Set <code>includeOffTopic</code> to also return the reviews Steam hides when Valve flags a stretch of time as an off-topic review bomb \u2014 94,228 reviews for Total War: ROME II instead of 88,334. <code>games</code> returns the store record for each game: price and discount in any country's currency, release date, developers, publishers, genres, platforms, Metacritic score, the full review-score summary (total positive/negative and % positive) and optionally the <strong>live concurrent player count</strong>. Accepts Steam store URLs, numeric App IDs or plain game names to search. HTTP-only: no login, no API key, no headless browser.</p>",
+      "description": "<p>Two modes in one Actor. <code>reviews</code> returns Steam player reviews with the full text, the reviewer's <strong>playtime at review and total</strong>, whether they recommend the game, helpfulness votes, comment count and whether it was a genuine Steam purchase — filterable by <code>language</code>, <code>reviewType</code> (positive/negative), <code>purchaseType</code>, <code>minPlaytimeHours</code> and a text <code>keyword</code>. Set <code>includeOffTopic</code> to also return the reviews Steam hides when Valve flags a stretch of time as an off-topic review bomb — 94,228 reviews for Total War: ROME II instead of 88,334. <code>games</code> returns the store record for each game: price and discount in any country's currency, release date, developers, publishers, genres, platforms, Metacritic score, the full review-score summary (total positive/negative and % positive) and optionally the <strong>live concurrent player count</strong>. Accepts Steam store URLs, numeric App IDs or plain game names to search. HTTP-only: no login, no API key, no headless browser.</p>",
       "memory_mb": 1024
     },
     {
       "slug": "scholarship-scraper",
       "title": "Scholarship Scraper (bold.org)",
-      "summary": "Scholarship listings from bold.org as structured data: award amount, number of awards, deadline, essay prompt, judging criteria, education levels, donor and the live applicant count \u2014 plus a computed applicants-per-award competitiveness ratio.",
+      "summary": "Scholarship listings from bold.org as structured data: award amount, number of awards, deadline, essay prompt, judging criteria, education levels, donor and the live applicant count — plus a computed applicants-per-award competitiveness ratio.",
       "status": "live",
       "notice": "Currently blocked: bold.org has put its entire site behind bot-protection that returns an error before any page loads. Runs fail fast and are not charged. We re-check nightly and will remove this notice the moment it clears.",
       "credits_per_result": 1,
@@ -770,14 +770,14 @@
         "donorName": "Dan Branchini and the Glitter Team at Community Lutheran",
         "updatedAt": "2026-09-10T00:40:38.001Z"
       },
-      "description": "<p>Every scholarship listed on <strong>bold.org</strong> as a clean row: the award amount and how many awards are given, the deadline (with rolling deadlines flagged), the actual <strong>essay question</strong> as plain text with its word limits, the judging criteria, which education levels can apply, the donor, and bold.org's <strong>live applicant count</strong>. From those last two numbers we compute <code>applicantsPerAward</code>, so you can rank a list by how winnable each award actually is rather than by headline dollar amount.</p><p>Crawls the <code>by-major</code>, <code>by-state</code>, <code>by-type</code>, <code>by-demographics</code> and <code>by-year</code> category families (discovered from bold.org's own sitemap \u2014 never a query-string URL, which its robots.txt disallows), returning about 30 complete records per HTTP request and de-duplicating across categories. Filter by minimum award, deadline window, education level, or open-only. HTTP-only: no login, no headless browser, no proxy.</p>",
+      "description": "<p>Every scholarship listed on <strong>bold.org</strong> as a clean row: the award amount and how many awards are given, the deadline (with rolling deadlines flagged), the actual <strong>essay question</strong> as plain text with its word limits, the judging criteria, which education levels can apply, the donor, and bold.org's <strong>live applicant count</strong>. From those last two numbers we compute <code>applicantsPerAward</code>, so you can rank a list by how winnable each award actually is rather than by headline dollar amount.</p><p>Crawls the <code>by-major</code>, <code>by-state</code>, <code>by-type</code>, <code>by-demographics</code> and <code>by-year</code> category families (discovered from bold.org's own sitemap — never a query-string URL, which its robots.txt disallows), returning about 30 complete records per HTTP request and de-duplicating across categories. Filter by minimum award, deadline window, education level, or open-only. HTTP-only: no login, no headless browser, no proxy.</p>",
       "memory_mb": 1024
     },
     {
       "slug": "eu-ted-tenders-scraper",
       "memory_mb": 1024,
-      "title": "EU Tenders & TED Tenders Scraper \u2013 Country, CPV, Date Filters",
-      "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer name and contact, contract value, CPV codes, place of performance, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON. Filter by country, CPV code, notice type, procedure type (open/restricted/negotiated), full-text keywords, contract value range (minValue/maxValue), submission-deadline window (onlyOpenDeadlines / minDaysUntilDeadline, so you only get tenders you can still bid on) or an absolute publication-date window. Optional watch mode (watchLabel) delivers only notices new since your last run, and an optional flatten mode joins the array fields into comma-separated strings for clean CSV/Excel export. Every notice carries a procedureIdentifier shared with its corrigenda, plus changeReasonDescription \u2014 TED's own plain-text explanation of what changed \u2014 on corrigendum notices.",
+      "title": "EU Tenders & TED Tenders Scraper – Country, CPV, Date Filters",
+      "summary": "EU public-procurement notices from TED (Tenders Electronic Daily), the EU's official journal: buyer name and contact, contract value, CPV codes, place of performance, deadlines and notice link, normalized from TED's raw multilingual/duplicated-array format into flat English-preferred JSON. Filter by country, CPV code, notice type, procedure type (open/restricted/negotiated), full-text keywords, contract value range (minValue/maxValue), submission-deadline window (onlyOpenDeadlines / minDaysUntilDeadline, so you only get tenders you can still bid on) or an absolute publication-date window. Optional watch mode (watchLabel) delivers only notices new since your last run, and an optional flatten mode joins the array fields into comma-separated strings for clean CSV/Excel export. Every notice carries a procedureIdentifier shared with its corrigenda, plus changeReasonDescription — TED's own plain-text explanation of what changed — on corrigendum notices.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "5LxaohNcO1zA86cEp",
@@ -821,9 +821,9 @@
         "publicationNumber": "629162-2026",
         "noticeType": "cn-standard",
         "procedureType": "open",
-        "title": "France \u2013 Refuse and waste related services \u2013 Traitement des d\u00e9chets issus des d\u00e9chetteries de Saint-Antoine-du-Rocher, de Pernay et de Saint-Paterne-Racan - Relance du lot n\u00b03 \u00ab Traitement d\u00e9chets verts et souches \u00bb",
+        "title": "France – Refuse and waste related services – Traitement des déchets issus des déchetteries de Saint-Antoine-du-Rocher, de Pernay et de Saint-Paterne-Racan - Relance du lot n°3 « Traitement déchets verts et souches »",
         "titleLanguage": "eng",
-        "buyerName": "Communaut\u00e9 de Communes G\u00e2tine-Racan",
+        "buyerName": "Communauté de Communes Gâtine-Racan",
         "buyerCountry": "FRA",
         "buyerCity": "Saint-Antoine-Du-Rocher",
         "contractNature": [
@@ -833,7 +833,7 @@
           "90500000",
           "90513000"
         ],
-        "description": "La pr\u00e9sente consultation a pour objet le traitement des d\u00e9chets issus des d\u00e9chetteries de Saint-Antoine-du-Rocher, de Pernay et de Saint-Paterne-Racan - Lot n\u00b03 \u00ab Traitement des d\u00e9chets verts et souches \u00bb.",
+        "description": "La présente consultation a pour objet le traitement des déchets issus des déchetteries de Saint-Antoine-du-Rocher, de Pernay et de Saint-Paterne-Racan - Lot n°3 « Traitement des déchets verts et souches ».",
         "totalValue": 435000,
         "totalValueCurrency": "EUR",
         "deadlineDate": "2026-10-14",
@@ -848,8 +848,8 @@
     },
     {
       "slug": "uk-find-a-tender-scraper",
-      "title": "UK Public Contracts \u2014 Find a Tender + Contracts Finder",
-      "summary": "UK public-sector tenders and contract awards from BOTH official portals \u2014 Find a Tender (above threshold) and Contracts Finder (sub threshold) \u2014 in one deduplicated feed. Filter by CPV, value, keyword (AND or OR mode), delivery region and open deadline. Flat JSON with buyer email, phone, address, value and deadlines. First 25 records of every run are free. Set watchLabel to turn a search into an alert that only returns notices new since your last run.",
+      "title": "UK Public Contracts — Find a Tender + Contracts Finder",
+      "summary": "UK public-sector tenders and contract awards from BOTH official portals — Find a Tender (above threshold) and Contracts Finder (sub threshold) — in one deduplicated feed. Filter by CPV, value, keyword (AND or OR mode), delivery region and open deadline. Flat JSON with buyer email, phone, address, value and deadlines. First 25 records of every run are free. Set watchLabel to turn a search into an alert that only returns notices new since your last run.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "bEjI8uL0d1edUfeh2",
@@ -925,7 +925,7 @@
         "publishedDate": "2026-09-10T16:39:42+01:00",
         "language": "en",
         "title": "Maryhill Housing Association - Heating Maintenance 2026 - 2031",
-        "description": "Maryhill Housing Association (MHA) seeks to appoint a qualified and experienced contractor to deliver a programme of:\nGas servicing + reactive repairs\nBoiler Replacements\nASHP serv \u2026",
+        "description": "Maryhill Housing Association (MHA) seeks to appoint a qualified and experienced contractor to deliver a programme of:\nGas servicing + reactive repairs\nBoiler Replacements\nASHP serv …",
         "status": "active",
         "procurementMethod": "open",
         "procurementMethodDetails": "Open procedure",
@@ -988,8 +988,8 @@
     },
     {
       "slug": "us-federal-awards-scraper",
-      "title": "USAspending Scraper \u2014 US Federal Contracts, Grants & Subawards",
-      "summary": "Every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API \u2014 plus the sub-contracts and sub-grants filed under them (awardLevel=subaward), joined back to the prime award. 6 award categories, 53 typed output fields incl. recipient UEI/address, NAICS/PSC, CFDA program and place of performance. Filter by agency, keyword, NAICS code, state, date range and amount. Optional watch mode (watchLabel) delivers only awards or sub-awards new since your last run, and watchChanges (prime mode) also re-alerts when an already-delivered award's amount, outlays, end date or last-modified date moves.",
+      "title": "USAspending Scraper — US Federal Contracts, Grants & Subawards",
+      "summary": "Every US federal contract, IDV, grant, loan and direct payment from the official USAspending.gov awards API — plus the sub-contracts and sub-grants filed under them (awardLevel=subaward), joined back to the prime award. 6 award categories, 53 typed output fields incl. recipient UEI/address, NAICS/PSC, CFDA program and place of performance. Filter by agency, keyword, NAICS code, state, date range and amount. Optional watch mode (watchLabel) delivers only awards or sub-awards new since your last run, and watchChanges (prime mode) also re-alerts when an already-delivered award's amount, outlays, end date or last-modified date moves.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "YjwD7Y4NigFFjaLMP",
@@ -1107,7 +1107,7 @@
     },
     {
       "slug": "fda-recall-scraper",
-      "title": "FDA Recalls Scraper \u2014 Food, Drug & Device Enforcement Reports",
+      "title": "FDA Recalls Scraper — Food, Drug & Device Enforcement Reports",
       "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 37 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. Optional includePressReleases adds FDA's own recall press-release feed, up to 9 days faster than the enforcement API. Optional watchLabel mode returns only recalls new since your last run, so a schedule becomes a recall alert; add watchChanges to also catch a recall's status changing or FDA reclassifying its severity.",
       "status": "live",
       "credits_per_result": 3,
@@ -1216,7 +1216,7 @@
     },
     {
       "slug": "federal-register-scraper",
-      "title": "Federal Register Scraper \u2013 Agency, Type & Comment Deadlines",
+      "title": "Federal Register Scraper – Agency, Type & Comment Deadlines",
       "summary": "Scrape the US Federal Register's official government API: final rules, proposed rules, notices and presidential documents. 37 flat fields incl. comment-close deadline, EO 12866 significance, RIN, docket IDs, CFR references and referencedCitations (auto-links a correction/extension/postponement document back to the original it amends), with cursor paging past the API's own 10,000-row wall. Optional watchLabel mode returns only documents published since your last run, so a schedule becomes a rule alert.",
       "status": "live",
       "credits_per_result": 1,
@@ -1295,7 +1295,7 @@
     },
     {
       "slug": "clinicaltrials-scraper",
-      "title": "ClinicalTrials.gov Scraper \u2013 Condition, Phase & Site Mode",
+      "title": "ClinicalTrials.gov Scraper – Condition, Phase & Site Mode",
       "summary": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows (start, completion, first-posted, results). Optional one-row-per-site mode for site-selection buyers. Eligibility-age bounds accept months, weeks or days as well as whole years, so neonatal and paediatric searches land. No contact people, phones or emails shipped, ever. Optional watchLabel mode returns only studies new since your last run, so a schedule becomes a trial alert; add watchChanges to also catch status changes, protocol/enrollment updates and completion-date slips on studies you already got.",
       "status": "live",
       "credits_per_result": 1,
@@ -1374,7 +1374,7 @@
     },
     {
       "slug": "grants-gov-scraper",
-      "title": "Grants.gov Scraper \u2013 Status, Eligibility & Award Details",
+      "title": "Grants.gov Scraper – Status, Eligibility & Award Details",
       "summary": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus optional award ceiling/floor, eligibility text and full synopsis via detail lookup. Optional watchLabel mode returns only opportunities new since your last run, so a schedule becomes a grant alert; add watchChanges to also catch deadline extensions, status changes, funding-range revisions, eligibility rewrites and forecasts turning into real posted opportunities.",
       "status": "live",
       "credits_per_result": 1,
@@ -1458,7 +1458,7 @@
     },
     {
       "slug": "nih-reporter-scraper",
-      "title": "NIH RePORTER Grants Scraper \u2013 No 15k Row Cap",
+      "title": "NIH RePORTER Grants Scraper – No 15k Row Cap",
       "summary": "Search NIH-funded research projects via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, organization, state, PI, award-amount and award-notice-date filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since your last run; add watchChanges to also catch a no-cost extension, an administrative supplement, or a project ending on a project you already got.",
       "status": "live",
       "credits_per_result": 1,
@@ -1639,8 +1639,8 @@
     },
     {
       "slug": "court-records-scraper",
-      "title": "Court Records & Case Law Scraper \u2014 Dockets + Opinions",
-      "summary": "Search US federal court dockets (the free PACER/RECAP mirror) and published court opinions through CourtListener's public API \u2014 no API key, no registration, no login. Dockets return parties, attorneys, law firms, assigned judge, nature of suit, cause of action, jurisdiction type, bankruptcy chapter and per-filing entries with a direct PDF link and the filing's OCR'd text where RECAP has it; opinions return reported citations, cite count, judge and panel, status and an opinion snippet, with an opinionStatus filter (published/unpublished/any \u2014 the default silently drops ~1 in 4 real matches unless set to 'any'). Both indexes come back in one unified schema. Server-side field searches \u2014 partyName, attorneyName, docketNumber and judge \u2014 narrow by who is on a case or by case number instead of relying on full text, and are only ever sent to the index that actually carries the field. Sort by filing date (newest or oldest first) or leave it at relevance. Optional watch mode (watchLabel) delivers only records new since your last run.",
+      "title": "Court Records & Case Law Scraper — Dockets + Opinions",
+      "summary": "Search US federal court dockets (the free PACER/RECAP mirror) and published court opinions through CourtListener's public API — no API key, no registration, no login. Dockets return parties, attorneys, law firms, assigned judge, nature of suit, cause of action, jurisdiction type, bankruptcy chapter and per-filing entries with a direct PDF link and the filing's OCR'd text where RECAP has it; opinions return reported citations, cite count, judge and panel, status and an opinion snippet, with an opinionStatus filter (published/unpublished/any — the default silently drops ~1 in 4 real matches unless set to 'any'). Both indexes come back in one unified schema. Server-side field searches — partyName, attorneyName, docketNumber and judge — narrow by who is on a case or by case number instead of relying on full text, and are only ever sent to the index that actually carries the field. Sort by filing date (newest or oldest first) or leave it at relevance. Optional watch mode (watchLabel) delivers only records new since your last run.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "ZJJN4343amzlz3HaR",
@@ -1697,8 +1697,8 @@
     },
     {
       "slug": "trademark-search-scraper",
-      "title": "Trademark Scraper \u2014 USPTO, EUIPO, Nice Classification (TMview)",
-      "summary": "Search registered trademarks across 70+ national and regional trademark offices \u2014 USPTO (US), EUIPO (EM), UK, DE, FR, JP, CN, WIPO (WO) and more \u2014 in one call via the official TMview database. 18 fields incl. trademark name, status, type, application/registration numbers and dates, applicant names, Nice classes, Vienna codes (figurative marks), territories and mark image URL. Filter by office, Nice class and status; results are deduplicated and paginated with no overlap verified up to 359 pages deep.",
+      "title": "Trademark Scraper — USPTO, EUIPO, Nice Classification (TMview)",
+      "summary": "Search registered trademarks across 70+ national and regional trademark offices — USPTO (US), EUIPO (EM), UK, DE, FR, JP, CN, WIPO (WO) and more — in one call via the official TMview database. 18 fields incl. trademark name, status, type, application/registration numbers and dates, applicant names, Nice classes, Vienna codes (figurative marks), territories and mark image URL. Filter by office, Nice class and status; results are deduplicated and paginated with no overlap verified up to 359 pages deep.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "v2xvlHrMZfZIfASML",
@@ -1761,6 +1761,92 @@
         ],
         "markImageUrl": "https://www.tmdn.org/tmview/api/trademark/thumbnail/US500000086403823",
         "detailImageUrl": "https://www.tmdn.org/tmview/api/trademark/image/US500000086403823"
+      }
+    },
+    {
+      "slug": "sam-gov-opportunities-scraper",
+      "title": "SAM.gov Opportunities Scraper – US Federal Contracts, Bids",
+      "summary": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with no API key and no login. Filter by keyword, NAICS code, set-aside, notice type, place-of-performance state and issuing organization (multi-value filters OR correctly), and optionally enrich each row with the contracting officer's contact details, NAICS codes, set-aside and place of performance from the per-opportunity record.",
+      "status": "live",
+      "credits_per_result": 1,
+      "apify_actor_id": "fvj24xj2wL6VpYJEK",
+      "memory_mb": 1024,
+      "example_input": {
+        "keyword": "solar",
+        "naicsCodes": [
+          "221122"
+        ],
+        "maxResults": 15,
+        "enrichDetail": true
+      },
+      "output_fields": [
+        "opportunityId",
+        "title",
+        "solicitationNumber",
+        "noticeTypeCode",
+        "noticeType",
+        "isActive",
+        "isCanceled",
+        "publishDate",
+        "modifiedDate",
+        "responseDate",
+        "responseDateActual",
+        "responseTimeZone",
+        "department",
+        "agency",
+        "office",
+        "description",
+        "awardeeName",
+        "awardeeUeiSAM",
+        "modificationsCount",
+        "sourceUrl",
+        "naicsCodes",
+        "setAside",
+        "placeOfPerformanceState",
+        "placeOfPerformanceCountry",
+        "pointOfContact"
+      ],
+      "sample_output": {
+        "opportunityId": "c8092b56b2c14be9bea3ac6081207963",
+        "title": "This is a sources sought to identify contractors who possess the capabilities to provide CFE and associated EACs produced using domestically-manufactured solar panel systems.",
+        "solicitationNumber": "47PA0723SS0001",
+        "noticeTypeCode": "r",
+        "noticeType": "Sources Sought",
+        "isActive": true,
+        "isCanceled": false,
+        "publishDate": "2023-07-12T19:23:54+00:00",
+        "modifiedDate": "2023-07-12T19:23:54+00:00",
+        "responseDate": "2023-06-27T20:00:00+00:00",
+        "responseDateActual": "2023-06-27T16:00:00-04:00",
+        "responseTimeZone": "America/New_York",
+        "department": "GENERAL SERVICES ADMINISTRATION",
+        "agency": "PUBLIC BUILDINGS SERVICE",
+        "office": "PBS R00 CPF CLEAN ENERGY",
+        "description": "<p><strong>THIS IS A SOURCES SOUGHT ANNOUNCEMENT ONLY - </strong>A solicitation is not available at this time. This notice does not constitute a commitment by the Government. In support of the goals e",
+        "awardeeName": null,
+        "awardeeUeiSAM": null,
+        "modificationsCount": 0,
+        "sourceUrl": "https://sam.gov/opp/c8092b56b2c14be9bea3ac6081207963/view",
+        "naicsCodes": [
+          "221122"
+        ],
+        "setAside": null,
+        "placeOfPerformanceState": null,
+        "placeOfPerformanceCountry": "USA",
+        "pointOfContact": [
+          {
+            "name": "Bonnie Bueter",
+            "email": "bonnie.bueter@gsa.gov",
+            "phone": "202-227-1635",
+            "type": "primary"
+          },
+          {
+            "name": "Ky Nguyen-Zubroski",
+            "email": "ky-giao.nguyen-zubroski@gsa.gov",
+            "phone": "8178508479",
+            "type": "secondary"
+          }
+        ]
       }
     }
   ]

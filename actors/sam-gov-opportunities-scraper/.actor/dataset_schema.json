@@ -3,12 +3,180 @@
   "fields": {
     "type": "object",
     "properties": {
-      "url": {
+      "opportunityId": {
         "type": [
           "string",
           "null"
         ],
-        "title": "URL"
+        "title": "Opportunity ID"
+      },
+      "title": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Title"
+      },
+      "solicitationNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Solicitation number"
+      },
+      "noticeTypeCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Notice type code"
+      },
+      "noticeType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Notice type"
+      },
+      "isActive": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Active"
+      },
+      "isCanceled": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Canceled"
+      },
+      "publishDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Published"
+      },
+      "modifiedDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Last modified"
+      },
+      "responseDate": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Response deadline (UTC)"
+      },
+      "responseDateActual": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Response deadline (local)"
+      },
+      "responseTimeZone": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Response time zone"
+      },
+      "department": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Department"
+      },
+      "agency": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Agency"
+      },
+      "office": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Office"
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Description (truncated)"
+      },
+      "awardeeName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Awardee name"
+      },
+      "awardeeUeiSAM": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Awardee UEI (SAM)"
+      },
+      "modificationsCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Modifications count"
+      },
+      "sourceUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "SAM.gov URL"
+      },
+      "naicsCodes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "NAICS codes"
+      },
+      "setAside": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Set-aside"
+      },
+      "placeOfPerformanceState": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Place of performance (state)"
+      },
+      "placeOfPerformanceCountry": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Place of performance (country)"
+      },
+      "pointOfContact": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Points of contact"
       }
     }
   },
@@ -17,14 +185,58 @@
       "title": "Overview",
       "transformation": {
         "fields": [
-          "url"
+          "title",
+          "noticeType",
+          "solicitationNumber",
+          "agency",
+          "office",
+          "publishDate",
+          "responseDate",
+          "isActive",
+          "setAside",
+          "naicsCodes",
+          "placeOfPerformanceState",
+          "sourceUrl"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": {
-            "label": "URL",
+          "title": {
+            "label": "Title"
+          },
+          "noticeType": {
+            "label": "Notice type"
+          },
+          "solicitationNumber": {
+            "label": "Solicitation #"
+          },
+          "agency": {
+            "label": "Agency"
+          },
+          "office": {
+            "label": "Office"
+          },
+          "publishDate": {
+            "label": "Published"
+          },
+          "responseDate": {
+            "label": "Deadline"
+          },
+          "isActive": {
+            "label": "Active"
+          },
+          "setAside": {
+            "label": "Set-aside"
+          },
+          "naicsCodes": {
+            "label": "NAICS"
+          },
+          "placeOfPerformanceState": {
+            "label": "PoP state"
+          },
+          "sourceUrl": {
+            "label": "SAM.gov",
             "format": "link"
           }
         }
