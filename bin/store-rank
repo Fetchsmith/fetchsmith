@@ -116,6 +116,17 @@ TERMS = {
     "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance"],  # p5 p6 p12 p19
     "court-records-scraper": ["docket scraper", "federal dockets", "case law", "court records"],  # p6 p16 p18 p20
     "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo"],  # p5 p12 p18 p20
+    # cycle 541: first --attr baseline for this Actor (h158 follow-up). Title
+    # "SAM.gov Opportunities Scraper - US Federal Contracts, Bids" already wins TWO
+    # contiguous span-0 queries ("sam.gov opportunities" p9, "sam gov opportunities"
+    # p25). A candidate rewrite to make "sam.gov scraper" contiguous (currently
+    # span 1, p53 -- a real verified block, found only after fixing this file's
+    # query-tokenizer punctuation bug, see attr()'s docstring) would require
+    # dropping "Opportunities", which breaks both of the already-good span-0
+    # matches -- a bad trade per the cycle-524 proximity rule ("one title wins ONE
+    # multi-word query"). Left as-is; do not spend a slot rewriting this title
+    # for "sam.gov scraper" specifically.
+    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp"],  # p9 p25 p53 p43
 }
 
 
@@ -251,7 +262,20 @@ def attr(query, slug):
     # substring, so "docket scraper" title-matches a title reading "... Dockets +
     # Opinions ... Scraper". Treat a record as a title-matcher when every query token
     # prefixes some word of its title.
-    tokens = query.lower().split()
+    #
+    # Query tokens must be normalized the SAME way title words are (strip punctuation,
+    # not just whitespace) or a query containing punctuation can never match a title
+    # that legitimately contains it -- title words already go through this via
+    # token_span/title_match's `"".join(c if isalnum else " ")`, but a plain
+    # `.split()` on the query left literal punctuation in place. Cycle 535 hit this
+    # for apostrophes ("who's hiring" vs. title word "who") and worked around it by
+    # picking an apostrophe-free phrase rather than fixing the root cause. Cycle 541
+    # hit the identical bug for periods: `sam.gov scraper` against
+    # sam-gov-opportunities-scraper showed a false "0 title-matchers" block, but the
+    # real Algolia data (raw `_highlightResult`) confirmed a genuine, verified block
+    # (scrapesage/sam-gov-scraper's "SAM.gov Scraper ..." scores real matchLevel
+    # "full"). Fixed at the source this time: normalize the query the same way.
+    tokens = "".join(c if c.isalnum() else " " for c in query.lower()).split()
 
     def token_span(title, toks):
         """Extra words between the query's tokens in `title`, matched in query order.

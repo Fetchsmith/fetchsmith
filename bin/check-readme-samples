@@ -37,6 +37,24 @@ from pathlib import Path
 ACTORS = Path("/root/agent/actors")
 VERBOSE = "--verbose" in sys.argv
 
+# Bare JSON literals, never field names -- a bold lead-in legitimately mixes
+# a real field's backtick with an unrelated backtick literal, e.g.
+# "`courtJurisdiction` ... and is `null` for the rest" (court-records-scraper
+# README:144, found cycle 541). Skip these outright rather than flagging them.
+JSON_LITERALS = {"null", "true", "false"}
+
+# Per-slug allowlist (same pattern as check-code-fields' FIELD_SUPPRESS) for
+# prose bullets that name a field *because it no longer exists* -- e.g.
+# "`posture` was removed from the schema" -- rather than because the README
+# is stale. Keyed by slug -> the removed field names its README legitimately
+# still mentions.
+PROSE_SUPPRESS = {
+    # court-records-scraper README:141 explains `posture` was dropped
+    # (0% fill, no keyless source) -- the mention is the documentation of
+    # the removal, not a stale leftover. Found/confirmed cycle 541 (h160).
+    "court-records-scraper": {"posture"},
+}
+
 # Headings whose json blocks are output rows. A block under a heading matching
 # SKIP_RE is something else (input example, webhook payload) and is not checked.
 OUTPUT_RE = re.compile(r"output|sample row|result row", re.I)
@@ -105,7 +123,7 @@ def prose_field_mentions(readme):
             continue
         for bt in BACKTICK_RE.finditer(b.group(1)):
             m = IDENT_RE.match(bt.group(1))
-            if m:
+            if m and m.group(0) not in JSON_LITERALS:
                 yield lineno, m.group(0)
 
 
@@ -130,9 +148,10 @@ def main():
             known |= set(
                 json.loads(input_schema.read_text()).get("properties", {})
             )
+        suppressed_names = PROSE_SUPPRESS.get(actor_dir.name, set())
         for lineno, name in prose_field_mentions(readme):
             checked_bullets += 1
-            ok = name in known
+            ok = name in known or name in suppressed_names
             if VERBOSE:
                 print(f"  {'ok' if ok else '? '} {actor_dir.name}:{lineno} prose bullet names '{name}'")
             if not ok:
