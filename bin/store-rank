@@ -73,7 +73,14 @@ TERMS = {
     "grants-gov-scraper": ["grants.gov", "government grants"],
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov"],
     "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
-    "uk-find-a-tender-scraper": ["find a tender", "uk tenders"],
+    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders"],
+    # "public sector tenders" added cycle 545: title changed "UK Public Contracts —
+    # Find a Tender + Contracts Finder" -> "UK Public Sector Tenders — Find a Tender
+    # & Contracts Finder" (contiguous, in-order for all 3 phrases). Measured p16->p2
+    # (block had 0 title-matchers before the edit, so we became the sole/top match).
+    # "find a tender"/"contracts finder" unaffected (still span 0, same ranks modulo
+    # organic storePosition drift 54308->53322). "uk tenders" still span 2 (not a
+    # targeted phrase, no regression — was already non-contiguous before the edit).
     # "substack api" added cycle 531: title changed "Substack Scraper" -> "Substack
     # API Scraper" (contiguous, in-order), measured p9->p3. "substack" unaffected
     # (single word, no proximity lever) at p109 (storePosition-driven, unchanged shape).

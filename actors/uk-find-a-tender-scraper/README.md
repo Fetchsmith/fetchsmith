@@ -1,4 +1,4 @@
-# UK Public Contracts — Find a Tender + Contracts Finder (OCDS API)
+# UK Public Sector Tenders — Find a Tender & Contracts Finder (OCDS API)
 
 Search **UK public-sector procurement notices** — live tender opportunities, contract awards and pipeline notices — from **both official UK portals**, and get them back as flat, ready-to-use JSON rows in one merged, deduplicated feed.
 

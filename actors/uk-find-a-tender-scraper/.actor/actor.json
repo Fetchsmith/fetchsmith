@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "uk-find-a-tender-scraper",
-  "title": "UK Public Contracts — Find a Tender + Contracts Finder",
+  "title": "UK Public Sector Tenders — Find a Tender & Contracts Finder",
   "description": "Search UK public-sector tenders and contract awards from BOTH official portals — Find a Tender (above threshold) and Contracts Finder (sub threshold) — in one deduplicated feed. Filter by CPV, value, keyword, region and deadline. Flat JSON with buyer email, phone, address, value and deadlines.",
   "version": "0.1",
   "buildTag": "latest",
