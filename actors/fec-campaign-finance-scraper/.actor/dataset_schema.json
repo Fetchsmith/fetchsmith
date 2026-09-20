@@ -228,6 +228,20 @@
         ],
         "title": "Receiving committee name (contributions mode)"
       },
+      "committeeType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FEC's own committee classification, e.g. \"Super PAC (Independent Expenditure-Only)\", \"PAC - Qualified\", \"House\" (contributions/disbursements/independentExpenditures modes)"
+      },
+      "committeeDesignation": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FEC's own committee designation, e.g. \"Principal campaign committee\", \"Unauthorized\", \"Joint fundraiser\" (contributions/disbursements/independentExpenditures modes)"
+      },
       "imageNumber": {
         "type": [
           "string",

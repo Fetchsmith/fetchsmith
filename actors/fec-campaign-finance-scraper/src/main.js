@@ -239,6 +239,18 @@ async function fecGet(path, params) {
   }
 }
 
+// FEC's own official committee classification, straight off the `committee` sub-object the
+// transaction schedules already embed -- e.g. "Super PAC (Independent Expenditure-Only)",
+// "PAC - Qualified", "House" (a candidate's principal campaign committee). Not a heuristic:
+// these are the FEC's own committee_type/designation codes, spelled out.
+function committeeClassification(c) {
+  const committee = c.committee ?? {};
+  return {
+    committeeType: committee.committee_type_full ?? null,
+    committeeDesignation: committee.designation_full ?? null,
+  };
+}
+
 async function fetchTotals(id) {
   try {
     const body = await fecGet(`/candidate/${id}/totals/`, { per_page: 1, sort: '-candidate_election_year' });
@@ -341,6 +353,7 @@ try {
         item = {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
+          ...committeeClassification(c),
           recipientName: c.recipient_name ?? null,
           recipientCity: c.recipient_city ?? null,
           recipientState: c.recipient_state ?? null,
@@ -361,6 +374,7 @@ try {
         item = {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
+          ...committeeClassification(c),
           candidateId: c.candidate_id ?? null,
           candidateName: c.candidate_name ?? null,
           candidateOffice: c.candidate_office ?? null,
@@ -395,6 +409,7 @@ try {
           contributorAggregateYtd: c.contributor_aggregate_ytd ?? null,
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
+          ...committeeClassification(c),
           candidateId: c.candidate_id ?? c.committee?.candidate_ids?.[0] ?? null,
           imageNumber: c.image_number ?? null,
           pdfUrl: c.pdf_url ?? null,

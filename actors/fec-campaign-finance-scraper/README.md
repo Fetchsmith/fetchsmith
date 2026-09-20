@@ -12,6 +12,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 - **Campaign vendor & burn-rate analysis** — `searchMode: "disbursements"` with `recipientName` shows who a campaign actually paid: ad buyers, consultants, payroll, venues, airlines. Filter by `committeeId` for one committee's whole ledger.
 - **Outside-money / super-PAC tracking** — `searchMode: "independentExpenditures"` with `candidateId` and `supportOppose` separates money spent *supporting* a candidate from money spent *attacking* them, with the payee, the amount and the dissemination date on every row.
 - **Donor alerts** — set `watchLabel` on a saved donor/employer search (contributions mode) to get only the contributions that are new since your last run, instead of re-scraping the same donors every time.
+- **PAC vs. candidate-committee classification** — every contribution, disbursement and independent-expenditure row includes `committeeType`/`committeeDesignation`, the FEC's own official classification (e.g. `"Super PAC (Independent Expenditure-Only)"` vs. `"House"`), so you can tell what kind of committee moved the money without a separate lookup.
 
 ## Input
 | Field | Type | Description |
@@ -107,6 +108,7 @@ One item per itemized donor contribution:
 | `contributionAmount`, `contributionDate` | Amount in USD and the date the committee received it. |
 | `contributorAggregateYtd` | This donor's running total given to the same committee this cycle, as computed by the FEC. |
 | `committeeId`, `committeeName` | The receiving committee. |
+| `committeeType`, `committeeDesignation` | The FEC's own committee classification, e.g. `"Super PAC (Independent Expenditure-Only)"`, `"PAC - Qualified"`, `"House"` (a candidate's principal committee) and `"Unauthorized"`/`"Principal campaign committee"`/`"Joint fundraiser"`. Straight from the FEC's own codes, not a guess — see the FAQ. |
 | `candidateId` | The committee's associated candidate, when the committee is a candidate committee (`null` for PACs/parties). |
 | `imageNumber`, `pdfUrl` | The FEC's own scanned-image identifier for the original filing, and a direct link to that PDF page — the primary source document behind the row. |
 
@@ -125,6 +127,8 @@ One item per itemized donor contribution:
   "contributorAggregateYtd": 175.0,
   "committeeId": "C00019331",
   "committeeName": "DEMOCRATIC PARTY OF WISCONSIN FEDERAL",
+  "committeeType": "Party - Qualified",
+  "committeeDesignation": "Unauthorized",
   "candidateId": null,
   "imageNumber": "202609149904200417",
   "pdfUrl": "https://docquery.fec.gov/cgi-bin/fecimg/?202609149904200417"
@@ -133,11 +137,12 @@ One item per itemized donor contribution:
 
 ### Disbursements mode output (Schedule B)
 
-`searchMode: "disbursements"` returns one row per payment a committee reported making, 16 fields:
+`searchMode: "disbursements"` returns one row per payment a committee reported making, 18 fields:
 
 | Field | Description |
 |---|---|
 | `committeeId`, `committeeName` | The committee that made the payment. |
+| `committeeType`, `committeeDesignation` | The FEC's own classification of that committee, e.g. `"House"`/`"Principal campaign committee"` for a candidate committee, `"PAC - Nonqualified"` for a PAC. |
 | `recipientName`, `recipientCity`, `recipientState` | Who was paid, as filed. |
 | `disbursementAmount`, `disbursementDate` | Amount in USD and the date of the payment. |
 | `disbursementDescription` | The filer's own free-text purpose, e.g. `SOCIAL MEDIA ADVERTISEMENTS`. |
@@ -152,6 +157,8 @@ One item per itemized donor contribution:
 {
   "committeeId": "C00744946",
   "committeeName": "HARRIS VICTORY FUND",
+  "committeeType": "PAC - Nonqualified",
+  "committeeDesignation": "Joint fundraising committee",
   "recipientName": "META PLATFORMS, INC.",
   "recipientCity": "CHICAGO",
   "recipientState": "IL",
@@ -167,11 +174,12 @@ One item per itemized donor contribution:
 
 ### Independent expenditures mode output (Schedule E)
 
-`searchMode: "independentExpenditures"` returns one row per reported independent expenditure — outside money spent for or against a candidate, not coordinated with them — 21 fields:
+`searchMode: "independentExpenditures"` returns one row per reported independent expenditure — outside money spent for or against a candidate, not coordinated with them — 23 fields:
 
 | Field | Description |
 |---|---|
 | `committeeId`, `committeeName` | The super PAC or other committee that spent the money. |
+| `committeeType`, `committeeDesignation` | The FEC's own classification — this is how you tell a `"Super PAC (Independent Expenditure-Only)"` from a `"Hybrid PAC"` or any other filer type without guessing from the name. |
 | `candidateId`, `candidateName` | The candidate the spending is about. |
 | `candidateOffice`, `candidateOfficeState`, `candidateParty` | `H`/`S`/`P`, the state of the race, and the candidate's party. |
 | `supportOppose` | `"support"` or `"oppose"` — whether the money was spent for or against that candidate. |
@@ -189,6 +197,8 @@ One item per itemized donor contribution:
 {
   "committeeId": "C00804856",
   "committeeName": "REPUBLICAN ACCOUNTABILITY PAC",
+  "committeeType": "Super PAC (Independent Expenditure-Only)",
+  "committeeDesignation": "Unauthorized",
   "candidateId": "P80001571",
   "candidateName": "TRUMP, DONALD J",
   "candidateOffice": "P",
@@ -251,6 +261,9 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 
 **Why is an `expenditureDate` sometimes in the year 3024?**
 Because the filer typed it that way. Schedule E dates are transcribed from the committee's own filing and the FEC publishes them as filed, typos included (`3024-07-18` on a real 2024 row). Use `disseminationDate` — when the ad actually ran — when you need a date you can sort on, and treat far-future `expenditureDate` values as data-entry errors rather than dropping the row.
+
+**Is `committeeType` computed by this Actor, or is it real FEC data?**
+It's the FEC's own official classification, read straight off the `committee` object every transaction schedule already embeds (`committee_type_full`/`designation_full`) — not a name-pattern guess. So `"Super PAC (Independent Expenditure-Only)"`, `"PAC - Qualified"`, `"Hybrid PAC (with Non-Contribution Account)"`, `"House"`/`"Senate"`/`"Presidential"` (candidate committees) and `"Party - Qualified"` are all values the FEC itself assigns when a committee registers, available in contributions, disbursements and independent expenditures modes.
 
 **Can I filter contributions by committee?**
 Not in contributions mode. `committeeId` is a fast filter on Schedules B and E and is supported there, but the FEC's Schedule A endpoint reliably times out on it (verified on both large and small committees), so it is ignored with a warning rather than producing a failed run.
