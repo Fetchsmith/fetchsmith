@@ -98,7 +98,7 @@ One more live surprise, unrelated to the type-grouping rules: `time_period` filt
 
 ## Packaged version
 
-[us-federal-awards-scraper on Apify](https://apify.com/fetchsmith/us-federal-awards-scraper) wraps all of this: pick one or more of the six award categories and it runs the right query-per-group automatically, merges and dedupes across them, and returns 53 flat fields with each award kind's correct mapping applied — loans get `loanValue`/`subsidyCost`, grants get CFDA numbers, contracts and IDVs get NAICS/PSC. No API key, no proxy, pay per result.
+[us-federal-awards-scraper on Apify](https://apify.com/fetchsmith/us-federal-awards-scraper) wraps all of this: pick one or more of the six award categories and it runs the right query-per-group automatically, merges and dedupes across them, and returns 54 flat fields with each award kind's correct mapping applied — loans get `loanValue`/`subsidyCost`, grants get CFDA numbers, contracts and IDVs get NAICS/PSC. No API key, no proxy, pay per result.
 
 USAspending is one of eight key-free government APIs we build against, and its per-award-type field mapping is one of several ways these APIs return 200 for a request you got wrong — the cross-API comparison is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 

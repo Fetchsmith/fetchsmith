@@ -437,7 +437,29 @@ function baseParams() {
     return p;
 }
 
-const stripHtml = (html) => (html ? String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : null);
+// Grants.gov double-encodes its free text: the API returns HTML entities even in fields that
+// carry no tags at all. Measured live (cycle 556) on a 10-row enriched sample: 131 entities,
+// `&nbsp;` x120 plus `&amp;`/`&rsquo;`/`&ldquo;`/`&rdquo;`, and ZERO tags in synopsisText /
+// applicantEligibilityDesc. stripHtml removed tags but never decoded, so every enriched row has
+// been shipping `&nbsp;` noise into a field the README documents as plain prose. Decode after
+// tag removal, before the whitespace collapse, so a decoded `&nbsp;` folds into normal spacing.
+const ENTITIES = {
+    nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ndash: '–', mdash: '—',
+    rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', hellip: '…',
+    bull: '•', middot: '·', deg: '°', reg: '®', copy: '©', trade: '™',
+};
+const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
+    if (e[0] === '#') {
+        const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        // Reject non-characters/out-of-range rather than throwing out of String.fromCodePoint.
+        return Number.isFinite(cp) && cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
+    }
+    const key = e.toLowerCase();
+    return Object.prototype.hasOwnProperty.call(ENTITIES, key) ? ENTITIES[key] : m; // unknown entity: leave verbatim
+});
+// Plain-text cleanup for a free-text field: drop tags, decode entities, collapse whitespace.
+const cleanText = (v) => (v ? decodeEntities(String(v).replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim() || null : null);
+const stripHtml = cleanText;
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 
 // awardCeiling/awardFloor come back as STRINGS, not numbers, and -- found while testing the new
@@ -456,7 +478,7 @@ function normalizeThin(row) {
     return {
         id: row.id ?? null,
         opportunityNumber: row.number ?? null,
-        title: row.title ?? null,
+        title: cleanText(row.title),
         agencyCode: row.agencyCode ?? null,
         agency: row.agency ?? null,
         openDate: row.openDate || null,
@@ -509,7 +531,7 @@ function normalizeEnriched(detail) {
         costSharing: typeof sub.costSharing === 'boolean' ? sub.costSharing : null,
         awardCeiling: parseMoney(sub.awardCeiling),
         awardFloor: parseMoney(sub.awardFloor),
-        applicantEligibilityDesc: sub.applicantEligibilityDesc || null,
+        applicantEligibilityDesc: cleanText(sub.applicantEligibilityDesc),
         applicantTypes: listOf(sub.applicantTypes).map((t) => t.description).filter(Boolean),
         fundingInstruments: listOf(sub.fundingInstruments).map((t) => t.description).filter(Boolean),
         fundingActivityCategories: listOf(sub.fundingActivityCategories).map((t) => t.description).filter(Boolean),
@@ -519,7 +541,7 @@ function normalizeEnriched(detail) {
         synopsisDocumentURLs: listOf(detail.synopsisDocumentURLs).map((d) => ({ url: d.docUrl ?? null, description: d.description ?? null })).filter((d) => d.url),
         assistURL: detail.assistURL || null,
         lastUpdatedDate: sub.lastUpdatedDate ?? null,
-        modComments: sub.modComments || null,
+        modComments: cleanText(sub.modComments),
         // Forecast-only: Grants.gov's own estimate of when the real NOFO posts, the application
         // deadline, the award date, and project start -- all genuinely new information not
         // derivable from anything else on a forecast's thin row. null on synopsis-based rows.
