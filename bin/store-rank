@@ -96,7 +96,15 @@ TERMS = {
     # reviews" probed same cycle but declined — see queue.md h147.
     "app-store-reviews-scraper": ["app store reviews", "itunes reviews"],
     "google-play-reviews-scraper": ["google play reviews"],
-    "shopify-products-scraper": ["shopify products"],
+    # cycle 537: "shopify product data" added — title "Shopify Products Scraper" ->
+    # "Shopify Products Data Scraper" (inserted "Data" between "Products" and
+    # "Scraper", keeping "Products" plural so "shopify products" stays span 0).
+    # Verified-genuine block (top #1 real matchLevel full), measured p277 -> p1
+    # (beat the ~p4 prediction). "shopify products" unaffected, still span 0
+    # (p130 -> p119, storePosition drift only). Cost: "shopify scraper" span 1->2
+    # and "shopify catalog" span 3->4 (neither was a targeted query, both already
+    # deep in the ranks either way).
+    "shopify-products-scraper": ["shopify products", "shopify product data"],
     # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
@@ -190,13 +198,16 @@ def attr(query, slug):
     CONFIRMED real wins from cycles 520/522 — and got `matchLevel: "none"` on those
     too, which would wrongly invalidate confirmed-good edits. Investigating the
     contradiction found the real mechanism: **Algolia only computes real
-    `_highlightResult` data for the first 6 hits of a query's response, full stop**
+    `_highlightResult` data for the first 5 hits of a query's response, full stop**
     — verified by re-requesting the same query at hitsPerPage 3/20/100 and seeing
-    positions 1-6 always real (full/partial/none per genuine content) and position
+    positions 1-6 apparently real (full/partial/none per genuine content) and position
     7+ always hard-coded "none", even for a hit whose title is byte-identical to a
-    position-3 hit that DOES show "full". So **checking OUR OWN hit's matchLevel is
-    useless whenever we rank below position 6** (always true pre-edit — that's
-    exactly the case this function exists to evaluate). A "none" there proves
+    position-3 hit that DOES show "full". **CORRECTED cycle 535**: a closer check
+    (hitsPerPage 5/6/7 on "who's hiring") found position 6 is ALSO hard-coded "none",
+    even for a title textually identical in pattern to position 2's genuine "full"
+    match — the real reliable window is positions **1-5**, not 1-6. So **checking OUR
+    OWN hit's matchLevel is useless whenever we rank below position 5** (always true
+    pre-edit — that's exactly the case this function exists to evaluate). A "none" there proves
     nothing either way; cycle 522's specific verdict on "clinicaltrials.gov" was
     reached this same unreliable way and should be treated as UNRESOLVED, not
     confirmed-fake (re-checking cycle 523: other developers' clinicaltrials-scraper
@@ -296,11 +307,12 @@ def attr(query, slug):
         top_hit = titled[0]
         top_hl = top_hit.get("_highlightResult", {}).get("title", {})
         top_ml = top_hl.get("matchLevel")
-        if top_rank > 6:
+        if top_rank > 5:
             print(
                 f"  cannot verify block: top member is at p{top_rank}, past Algolia's real-highlight "
-                "cutoff (positions 1-6 only, see docstring) — matchLevel there is meaningless. Do not "
-                "trust this block without independently confirming a real match some other way."
+                "cutoff (positions 1-5 only, see docstring — corrected cycle 535) — matchLevel there is "
+                "meaningless. Do not trust this block without independently confirming a real match some "
+                "other way."
             )
         elif top_ml in ("full", "partial"):
             print(f"  verified: block's #1 (p{top_rank}) has real Algolia matchLevel {top_ml!r} — block is genuine.")

@@ -1,7 +1,7 @@
 {
     "actorSpecification": 1,
     "name": "shopify-products-scraper",
-    "title": "Shopify Products Scraper – Full Catalog, Any Store",
+    "title": "Shopify Products Data Scraper – Full Catalog, Any Store",
     "description": "Extract every product from any Shopify store or collection: prices, variants, SKUs, barcodes, inventory counts, availability, images, tags and descriptions. Filter by price range, sale status, brand, product type, keyword or stock before you pay. No browser, no login. Pay per product.",
     "version": "0.1",
     "buildTag": "latest",

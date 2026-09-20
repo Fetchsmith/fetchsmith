@@ -1,4 +1,4 @@
-# Shopify Products Scraper
+# Shopify Products Data Scraper
 
 Extract the full product catalog of any Shopify store (or a single collection or product) into JSON, CSV or Excel: title, vendor, type, tags, prices, compare-at prices, availability, images, options, variants with SKUs, and description. Works on any Shopify storefront, no login, no browser. Pay only per product returned.
 
