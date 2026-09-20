@@ -4,6 +4,8 @@ Search every US FDA product recall from the official **openFDA enforcement API**
 
 This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. Every row can also carry a `riskScore` (0-100) — a documented, deterministic severity/recency/scope formula, not a black-box "AI" claim. Name a `watchLabel` and every later run on the same saved search returns **only recalls new since the last run**, so a scheduled job never re-delivers or re-charges for the same recall twice; add `watchChanges` and it also catches a recall's **status changing** (e.g. Ongoing → Terminated) or **FDA reclassifying its severity** (e.g. Class II → Class I). At **$0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee**, it undercuts every all-three-types competitor we checked — the highest-volume one charges $0.05/result for the same raw openFDA data (their live pricing re-verified 2026-09-17).
 
+The openFDA enforcement API above is complete but slow — its newest reports typically lag the real recall announcement by **over a week** (measured 11 days on 2026-09-20), a gap every FDA-recall Actor on the Store shares, us included, because everyone reads the same lagging API. Set `includePressReleases: true` and this Actor also fetches FDA's own recall press-release feed, which had an item **9 days ahead** of the enforcement API in that same measurement — the recall the day FDA announces it, not the day the enforcement paperwork catches up.
+
 No API key, no login, no browser. Public US government open data ([openFDA licence](https://open.fda.gov/license/)).
 
 ## What you can do with it
@@ -41,6 +43,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `order` | string | `desc` (newest first, default) or `asc` — sorts by whichever field `dateField` selects. |
 | `maxResults` | integer | Total rows across all selected product types. Default 100. |
 | `includeRiskScore` | boolean | Add the `riskScore` field (see Output/FAQ). Default `true`. |
+| `includePressReleases` | boolean | Also fetch FDA's recall press-release feed — up to 9 days ahead of the enforcement API, but only a rolling ~20-item/few-weeks window (see FAQ). Default `false`. Automatically skipped, with a log warning, if you also set a filter the feed can't support (see FAQ). |
 | `watchLabel` | string | Name a saved search to get only recalls new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen recall if its `status` or `classification` changed (default `false`) — see FAQ. |
 | `webhookUrl` | string | Optional. POST a small JSON completion summary (recalls pushed, rows scanned, dataset ID, watch new/changed counts) here when the run finishes — see FAQ. |
@@ -61,11 +64,13 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
 
 ## Output
 
-34 fields per row. Every date is converted from openFDA's `YYYYMMDD` strings to ISO `YYYY-MM-DD`.
+37 fields per row. Every date is converted from openFDA's `YYYYMMDD` strings (or the press-release feed's RFC-822 timestamp) to ISO `YYYY-MM-DD`.
 
-**All product types:** `productType`, `recallNumber`, `eventId`, `status`, `classification`, `voluntaryMandated`, `initialFirmNotification`, `recallingFirm`, `city`, `state`, `country`, `productDescription`, `productQuantity`, `reasonForRecall`, `distributionPattern`, `codeInfo`, `moreCodeInfo`, `reportDate`, `recallInitiationDate`, `centerClassificationDate`, `terminationDate`, `riskScore`.
+**All product types:** `source` (`"enforcement"` or `"press_release"`, see below), `productType`, `recallNumber`, `eventId`, `status`, `classification`, `voluntaryMandated`, `initialFirmNotification`, `recallingFirm`, `city`, `state`, `country`, `productDescription`, `productQuantity`, `reasonForRecall`, `distributionPattern`, `codeInfo`, `moreCodeInfo`, `reportDate`, `recallInitiationDate`, `centerClassificationDate`, `terminationDate`, `riskScore`.
 
 **Drug recalls only** (see the FAQ): `brandName`, `genericName`, `manufacturerName`, `substanceName`, `productNdc`, `packageNdc`, `upc`, `applicationNumber`, `drugRoute`, `rxcui`, `unii`, `splSetId`.
+
+**`includePressReleases` rows only** (`source: "press_release"`, see FAQ): `pressReleaseTitle` (the FDA headline, also duplicated into `productDescription`), `sourceUrl` (link to the FDA press release). Every field above that the feed doesn't carry — `recallNumber`, `classification`, `eventId`, `status`, `distributionPattern`, all drug-only fields, `riskScore` — is explicit `null` on these rows, never guessed.
 
 **Watch-mode change fields, only on a `watchChanges` re-delivery:** `_watchChangeType` (array, one or both of `status`/`classification`), `_watchPrevious` (object with the previous value(s) for each changed field).
 
@@ -73,6 +78,7 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
 
 ```json
 {
+  "source": "enforcement",
   "productType": "drug",
   "recallNumber": "D-0785-2026",
   "eventId": "99584",
@@ -105,9 +111,33 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
   "drugRoute": ["ORAL"],
   "rxcui": ["892246", "892251"],
   "unii": ["9J765S329G"],
-  "splSetId": "a6233381-3043-4e9a-aaa6-a6b105e5142b"
+  "splSetId": "a6233381-3043-4e9a-aaa6-a6b105e5142b",
+  "pressReleaseTitle": null,
+  "sourceUrl": null
 }
 ```
+
+### Sample row (`includePressReleases: true`, trimmed)
+
+```json
+{
+  "source": "press_release",
+  "productType": null,
+  "recallNumber": null,
+  "classification": null,
+  "status": null,
+  "recallingFirm": null,
+  "productDescription": "GF Blends Recalls Truly AIP All Purpose Flour and Bread Mix, and EAT G.A.N.G.S.T.E.R. Flat Bread Pizza Mix Due to Potential Undeclared Wheat Gluten",
+  "reasonForRecall": "GF Blends is recalling Truly AIP All Purpose Flour and Bread Mix and EAT G.A.N.G.S.T.E.R. Flat Bread Pizza Mix listed below due to potential undeclared wheat gluten. ...",
+  "distributionPattern": null,
+  "reportDate": "2026-09-18",
+  "riskScore": null,
+  "pressReleaseTitle": "GF Blends Recalls Truly AIP All Purpose Flour and Bread Mix, and EAT G.A.N.G.S.T.E.R. Flat Bread Pizza Mix Due to Potential Undeclared Wheat Gluten",
+  "sourceUrl": "http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/gf-blends-recalls-truly-aip-all-purpose-flour-and-bread-mix-and-eat-gangster-flat-bread-pizza-mix"
+}
+```
+
+This press release was live in the feed on 2026-09-18 — 2 days before this Actor's enforcement-API rows for the same window were captured, and well before the recall would typically clear openFDA's own pipeline.
 
 ## Pricing
 
@@ -154,8 +184,17 @@ No — leaving both empty (the default one-year rolling window) is treated as "n
 **What does `watchChanges` add, and does it cost extra to turn on?**
 No extra fee — a changed recall is billed at the same per-row price as a new one. Plain `watchLabel` only ever tells you about recalls it has never delivered before; it stays silent forever about one it already sent you, even if that recall later gets terminated or FDA upgrades it to a more serious class. Set `watchChanges: true` and each run also compares every already-delivered recall's `status` and `classification` against what they looked like last time; if either moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 recalls' recorded status and classification directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
 
+**What is `includePressReleases` and when should I turn it on?**
+The openFDA enforcement API (everything else in this README) is the authoritative historical record, but it is slow: FDA finishes the paperwork and publishes the structured enforcement report anywhere from days to months after the recall is first announced (measured 11 days stale for the newest report on 2026-09-20). FDA's own recall press-release RSS feed carries the announcement itself, and had an item 9 days ahead of the enforcement API in that same check. Set `includePressReleases: true` to also pull that feed. Two things to know: (1) it's a **rolling window of the ~20 most recent press releases** (a few weeks of history), not an archive — use it for freshness, layered on top of the enforcement API's completeness, not as a replacement; (2) the same recall typically shows up **twice**, once as `source: "press_release"` within days of the announcement and again as `source: "enforcement"` weeks later once openFDA catches up — that is intentional (see the next question), not a duplicate-data bug, since there's no reliable shared key to merge them on.
+
+**Why doesn't `includePressReleases` deduplicate against the enforcement rows?**
+A press release and its later enforcement report share no common identifier — no recall number, no event ID, nothing but a firm name and a product description in free text, and fuzzy-matching those reliably enough to auto-merge risked silently dropping a real, distinct recall. We chose the safe failure mode: you may see the same real-world recall twice, tagged with two different `source` values and two different dates, rather than risk it being incorrectly merged away. Filter or dedupe downstream by firm/product text if your use case needs one row per recall.
+
+**Why is `includePressReleases` sometimes skipped even when I turn it on?**
+The press-release feed is unstructured — it has no classification, state/country, firm name field, drug identifiers, or product-type split (one feed covers food, drug and device announcements together). If you also set a filter that field depends on (`classifications`, `states`, `countries`, `status`, `recallingFirm`, `city`, `voluntaryMandated`, `brandName`/`genericName`/`manufacturerName`, an exact `recallNumber`/`eventId` lookup, `productTypes` narrowed to fewer than all three, or `dateField` set to anything but the default `report_date`), the Actor skips the press-release source entirely for that run and logs exactly which filter caused it, rather than silently returning zero press releases and letting you think none matched.
+
 **How does this compare to other FDA recall scrapers?**
-Checked live pricing and features again on 2026-09-15 against the highest-user leader (`benthepythondev/fda-recall-intelligence`, 11 users): they charge $0.05/result tapering to $0.035 on Diamond, **plus a per-GB Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, 10-20x cheaper at every tier. Their input set (8 fields) is a subset of ours (20 fields: three date-field choices instead of one, city, voluntary/mandated, free-text search across three fields, state and country, exact recall-number/event-ID lookup, drug-specific brand/generic/manufacturer name filters, and no 1,000-row cap — ours goes to 50,000). Their one real feature, an "AI-powered intelligence score", is now matched by `riskScore` above — ours is fully documented instead of a black box. Also checked against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only, checked 2026-09-13, input-schema re-diffed 2026-09-17): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — cheaper at every run size, and we cover drug and device recalls too, not just food. The 2026-09-17 re-check found `country`/`recallNumber`/`eventId` filters we lacked (they were already present as *output* fields, just not filterable on) — closed as `countries`, `recallNumber`, `eventId` above; a 2026-09-18 re-check of the same benthepythondev listing found `brandName`/`genericName`/`manufacturerName` were the same "computed-but-unfilterable" gap, closed the same way, so no remaining input-parity gap against either competitor.
+Checked live pricing and features again on 2026-09-15 against the highest-user leader (`benthepythondev/fda-recall-intelligence`, 11 users): they charge $0.05/result tapering to $0.035 on Diamond, **plus a per-GB Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, 10-20x cheaper at every tier. Their input set (8 fields) is a subset of ours (20 fields: three date-field choices instead of one, city, voluntary/mandated, free-text search across three fields, state and country, exact recall-number/event-ID lookup, drug-specific brand/generic/manufacturer name filters, and no 1,000-row cap — ours goes to 50,000). Their one real feature, an "AI-powered intelligence score", is now matched by `riskScore` above — ours is fully documented instead of a black box. Also checked against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only, checked 2026-09-13, input-schema re-diffed 2026-09-17): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — cheaper at every run size, and we cover drug and device recalls too, not just food. The 2026-09-17 re-check found `country`/`recallNumber`/`eventId` filters we lacked (they were already present as *output* fields, just not filterable on) — closed as `countries`, `recallNumber`, `eventId` above; a 2026-09-18 re-check of the same benthepythondev listing found `brandName`/`genericName`/`manufacturerName` were the same "computed-but-unfilterable" gap, closed the same way, so no remaining input-parity gap against either competitor. A 2026-09-20 audit found every FDA-recall Actor on the Store, including our own prior version, reads only the same lagging openFDA enforcement API — `includePressReleases` (above) is the one feature none of them currently has: the recall the week FDA announces it, not the week the enforcement paperwork catches up.
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
 Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel`: your endpoint gets told how many brand-new or changed recalls landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.

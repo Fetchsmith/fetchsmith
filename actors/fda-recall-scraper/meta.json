@@ -1,8 +1,8 @@
 {
   "title": "FDA Recalls Scraper — Food, Drug & Device Enforcement Reports",
-  "description": "Search and track FDA recalls — food, drug and device — from the official openFDA enforcement API in one Actor. 34 fields incl. severity, a documented 0-100 riskScore (not AI), recalling firm, ISO dates, plus NDC/UPC/brand on drug recalls. From $0.0024/result, no start fee.",
+  "description": "Search and track FDA recalls — food, drug and device — from openFDA, plus an optional press-release feed up to 9 days faster. 37 fields incl. severity, a documented 0-100 riskScore (not AI), recalling firm, ISO dates, NDC/UPC/brand on drug recalls. From $0.0024/result, no start fee.",
   "seoTitle": "FDA Recalls Scraper — Food, Drug & Device Recalls API",
-  "seoDescription": "Scrape US FDA recalls from openFDA: food, drug, device. 34 fields incl. severity, a documented 0-100 riskScore, firm, NDC/UPC, voluntary/mandated flag. From $0.0024/result.",
+  "seoDescription": "Scrape US FDA recalls from openFDA, plus an optional press-release feed up to 9 days faster. 37 fields, a documented 0-100 riskScore, firm, NDC/UPC, voluntary/mandated flag. From $0.0024/result.",
   "categories": [
     "LEAD_GENERATION",
     "BUSINESS"

@@ -148,6 +148,12 @@
       "description": "Add a riskScore field (0-100) to every row: a documented, deterministic formula (not AI) combining Class I/II/III severity (45%), how recent the recall is (30%, linear decay to 0 at two years old), and distribution scope parsed from distributionPattern (25%: nationwide/international text or count of US state codes mentioned). Useful for sorting/triaging a large result set. On by default; set false to skip the computation.",
       "default": true
     },
+    "includePressReleases": {
+      "title": "Also include FDA press releases (faster than the enforcement API)",
+      "type": "boolean",
+      "description": "Off by default. The openFDA enforcement API above is complete but slow: newest reports typically lag the real recall announcement by over a week (measured 11 days on 2026-09-20). Turning this on additionally fetches FDA's own recall press-release RSS feed, which had items up to 9 days ahead of the enforcement API in that same measurement. It's a rolling ~20-item window (a few weeks of history, not an archive), so use it for freshness, not completeness. These rows are tagged source:\"press_release\" and carry only productDescription, reasonForRecall, reportDate and sourceUrl — recallNumber, classification, status, distributionPattern and every drug-only field are null (the press release simply doesn't state them; the same recall usually appears again later, tagged source:\"enforcement\", once openFDA catches up — that's expected, not a duplicate bug). Automatically skipped (with a log warning) if you also set a filter the feed can't support: dateField other than report date, productTypes narrowed to fewer than all three, classifications, states, countries, status, recallingFirm, city, voluntaryMandated, brandName, genericName, manufacturerName, or an exact recallNumber/eventId lookup.",
+      "default": false
+    },
     "watchLabel": {
       "title": "Watch label (only new since last run)",
       "type": "string",

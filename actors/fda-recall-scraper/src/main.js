@@ -52,6 +52,7 @@ const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMand
     : '';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 const includeRiskScore = input.includeRiskScore !== false;
+const includePressReleases = Boolean(input.includePressReleases);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0;
 const watchChanges = Boolean(input.watchChanges);
@@ -98,6 +99,36 @@ const reportDateFrom = normDate(
 );
 const reportDateTo = normDate(input.reportDateTo, compactDay(today));
 
+// The FDA press-release RSS feed (see fetchPressReleases below) has none of the structured
+// fields openFDA's enforcement API has -- no classification, state/country, firm, NDC, etc,
+// and no product-type split (one feed covers food + drug + device recalls together). A filter
+// on any of those fields would silently return zero press-release rows every time rather than
+// the buyer's intended "narrow the enforcement rows AND also check press releases" -- so instead
+// the whole source is skipped with one clear log line naming why, same policy the openFDA side
+// already uses for e.g. brandName on a food-only search (see comment near buildSearch()).
+const RSS_UNSUPPORTED_REASONS = [];
+if (dateField !== 'report_date') RSS_UNSUPPORTED_REASONS.push(`dateField="${dateField}" (the feed only carries a publish date)`);
+if (productTypes.length < 3) RSS_UNSUPPORTED_REASONS.push('productTypes (the feed does not separate food/drug/device)');
+if (classifications.length) RSS_UNSUPPORTED_REASONS.push('classifications');
+if (states.length) RSS_UNSUPPORTED_REASONS.push('states');
+if (countries.length) RSS_UNSUPPORTED_REASONS.push('countries');
+if (status) RSS_UNSUPPORTED_REASONS.push('status');
+if (recallingFirm) RSS_UNSUPPORTED_REASONS.push('recallingFirm');
+if (city) RSS_UNSUPPORTED_REASONS.push('city');
+if (voluntaryMandated) RSS_UNSUPPORTED_REASONS.push('voluntaryMandated');
+if (brandName) RSS_UNSUPPORTED_REASONS.push('brandName');
+if (genericName) RSS_UNSUPPORTED_REASONS.push('genericName');
+if (manufacturerName) RSS_UNSUPPORTED_REASONS.push('manufacturerName');
+if (lookupMode) RSS_UNSUPPORTED_REASONS.push('recallNumber/eventId');
+const runPressReleases = includePressReleases && RSS_UNSUPPORTED_REASONS.length === 0;
+if (includePressReleases && !runPressReleases) {
+    log.warning(
+        `includePressReleases is on but was skipped this run: incompatible with ${RSS_UNSUPPORTED_REASONS.join(', ')} `
+        + '(the FDA press-release feed does not carry the field(s) needed to apply that filter). Remove the filter, '
+        + 'or turn includePressReleases off, to stop seeing this warning.',
+    );
+}
+
 // ---------------------------------------------------------------------------
 // Watch mode: "only what is new since my last run", per saved query. Same shape as
 // grants-gov-scraper (cycle 298) / federal-register-scraper (cycle 297) / nih-reporter-scraper
@@ -135,6 +166,7 @@ const watchCriteria = {
     brandName,
     genericName,
     manufacturerName,
+    includePressReleases,
 };
 
 function watchKeyFor(label, criteria) {
@@ -413,6 +445,7 @@ function normalize(r, productType) {
     const first = (v) => (Array.isArray(v) ? (v[0] ?? null) : (v ?? null));
     const list = (v) => (Array.isArray(v) ? Array.from(new Set(v.filter(Boolean))) : []);
     return {
+        source: 'enforcement',
         productType,
         recallNumber: r.recall_number ?? null,
         eventId: r.event_id != null ? String(r.event_id) : null,
@@ -456,6 +489,135 @@ function normalize(r, productType) {
         rxcui: list(o.rxcui),
         unii: list(o.unii),
         splSetId: first(o.spl_set_id),
+
+        // Only ever populated on source:"press_release" rows -- see normalizePressRelease below.
+        pressReleaseTitle: null,
+        sourceUrl: null,
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Optional 2nd source: FDA's own recall press-release RSS feed. openFDA's enforcement API (the
+// only source above, and every other FDA-recall Actor on the Store) lags real recall announcements
+// by over a week -- measured live 2026-09-20: newest enforcement report_date was 11 days stale,
+// while this feed already had an item from 9 days ahead of that. It is a rolling ~20-item window
+// (roughly 3 weeks), not an archive, so it complements the enforcement history rather than
+// replacing it -- hence includePressReleases defaults to false and is purely additive.
+const PRESS_RELEASE_RSS_URL = 'https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml';
+
+function decodeXmlEntities(s) {
+    return String(s ?? '')
+        .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+        .replace(/&amp;/g, '&')
+        .trim();
+}
+
+// Deliberately a small hand-rolled regex parser, not a real XML library: the feed's shape is
+// fixed and simple (verified live, cycle 528/529 -- exactly title/link/description/pubDate/
+// dc:creator/guid per <item>, no nesting), and this box avoids extra dependencies where a few
+// lines of regex do the job (see standing memory-budget rule).
+function parseRssItems(xml) {
+    const items = [];
+    const itemRe = /<item>([\s\S]*?)<\/item>/g;
+    let m;
+    while ((m = itemRe.exec(xml))) {
+        const block = m[1];
+        const grab = (tag) => {
+            const r = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`).exec(block);
+            return r ? decodeXmlEntities(r[1]) : null;
+        };
+        const title = grab('title');
+        const link = grab('link');
+        const description = grab('description');
+        const pubDateRaw = grab('pubDate');
+        const guid = grab('guid') ?? link;
+        if (!title || !link) continue; // malformed item; skip rather than emit a broken row
+        // RFC-822 with an EDT/EST zone abbreviation -- Node's Date parser resolves these to the
+        // correct UTC offset natively (verified live: "...17:48:00 EDT" -> ...21:48:00.000Z).
+        const pubDateMs = pubDateRaw ? Date.parse(pubDateRaw) : NaN;
+        items.push({
+            title,
+            link,
+            description,
+            guid,
+            pubDateIso: Number.isFinite(pubDateMs) ? new Date(pubDateMs).toISOString() : null,
+        });
+    }
+    return items;
+}
+
+async function fetchPressReleases() {
+    let resp;
+    try {
+        resp = await gotScraping({
+            url: PRESS_RELEASE_RSS_URL,
+            responseType: 'text',
+            throwHttpErrors: false,
+            retry: { limit: 1 },
+            timeout: { request: 20000 },
+            headers: { accept: 'application/rss+xml, application/xml, text/xml' },
+        });
+    } catch (err) {
+        log.warning(`FDA press-release RSS feed request failed (${err.message}); skipping press releases this run.`);
+        return [];
+    }
+    if (resp.statusCode !== 200) {
+        log.warning(`FDA press-release RSS feed returned ${resp.statusCode}; skipping press releases this run.`);
+        return [];
+    }
+    const items = parseRssItems(resp.body);
+    if (!items.length) log.warning('FDA press-release RSS feed returned 200 but no parseable <item> entries.');
+    return items;
+}
+
+// classification is always null for these rows (the feed doesn't carry one), so severityPoints
+// has no input to score -- riskScore is left null rather than silently scoring press releases on
+// a different, undocumented scale than enforcement rows.
+function normalizePressRelease(item) {
+    const reportDate = item.pubDateIso ? item.pubDateIso.slice(0, 10) : null;
+    return {
+        source: 'press_release',
+        productType: null,
+        recallNumber: null,
+        eventId: null,
+        status: null,
+        classification: null,
+        voluntaryMandated: null,
+        initialFirmNotification: null,
+        recallingFirm: null,
+        city: null,
+        state: null,
+        country: null,
+        productDescription: item.title,
+        productQuantity: null,
+        reasonForRecall: item.description,
+        distributionPattern: null,
+        codeInfo: null,
+        moreCodeInfo: null,
+        reportDate,
+        recallInitiationDate: null,
+        centerClassificationDate: null,
+        terminationDate: null,
+        riskScore: null,
+        brandName: null,
+        genericName: null,
+        manufacturerName: null,
+        substanceName: [],
+        productNdc: [],
+        packageNdc: [],
+        upc: [],
+        applicationNumber: null,
+        drugRoute: [],
+        rxcui: [],
+        unii: [],
+        splSetId: null,
+        pressReleaseTitle: item.title,
+        sourceUrl: item.link,
     };
 }
 
@@ -484,7 +646,8 @@ log.info(
     + (city ? ` city="${city}"` : '')
     + (voluntaryMandated ? ` voluntaryMandated="${voluntaryMandated}"` : '')
     + (searchQuery ? ` searchQuery="${searchQuery}"` : '')
-    + (watchMode ? ` watchLabel="${watchLabel}"` : ''),
+    + (watchMode ? ` watchLabel="${watchLabel}"` : '')
+    + (includePressReleases ? ` includePressReleases=${runPressReleases}${runPressReleases ? '' : ' (skipped, see warning above)'}` : ''),
 );
 
 // recall_number is unique per recall; event_id groups several products in one event and is the
@@ -560,6 +723,11 @@ async function seedBaseline() {
             }
         }
     }
+    if (runPressReleases) {
+        const items = await fetchPressReleases();
+        for (const item of items) watchSeen.set(`press_release:${item.guid}`, { status: null, classification: null });
+        log.info(`Baseline walk: +${items.length} FDA press release(s) recorded.`);
+    }
     log.info(`Baseline walk: ${watchSeen.size} recall id(s) recorded.`);
 }
 
@@ -619,6 +787,36 @@ if (watchMode && seeding) {
     }
 
     for (const reader of readers) log.info(`${reader.productType}: pushed ${reader.pushed} recalls.`);
+
+    if (runPressReleases && pushed < maxResults) {
+        const items = await fetchPressReleases();
+        scanned += items.length;
+        let prPushed = 0;
+        for (const item of items) {
+            if (pushed >= maxResults) break;
+            if (searchQuery) {
+                const hay = `${item.title} ${item.description ?? ''}`.toLowerCase();
+                if (!hay.includes(searchQuery.toLowerCase())) continue;
+            }
+            const day = item.pubDateIso ? item.pubDateIso.slice(0, 10).replace(/-/g, '') : null;
+            if (day && (day < reportDateFrom || day > reportDateTo)) continue;
+            const key = `press_release:${item.guid}`;
+            // watchChanges is a no-op for press releases (spec: they have no status/classification
+            // to change), so an already-seen guid is always just skipped, never re-delivered.
+            if (watchMode && watchSeen.has(key)) {
+                skippedSeen += 1;
+                continue;
+            }
+            const before = pushed;
+            const keep = await pushResult(normalizePressRelease(item));
+            if (pushed > before) {
+                prPushed += 1;
+                if (watchMode) watchSeen.set(key, { status: null, classification: null });
+            }
+            if (!keep) break;
+        }
+        log.info(`press_release: pushed ${prPushed} FDA press release(s) (${items.length} fetched from the feed).`);
+    }
 }
 
 if (watchMode) {

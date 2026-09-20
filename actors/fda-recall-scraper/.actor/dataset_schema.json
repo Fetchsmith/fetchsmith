@@ -267,6 +267,30 @@
           "null"
         ]
       },
+      "source": {
+        "title": "Source",
+        "example": "enforcement",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pressReleaseTitle": {
+        "title": "PressReleaseTitle",
+        "example": "GF Blends Recalls Truly AIP All Purpose Flour and Bread Mix Due to Potential Undeclared Wheat Gluten",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "sourceUrl": {
+        "title": "SourceUrl",
+        "example": "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/gf-blends-recalls-truly-aip-all-purpose-flour-and-bread-mix",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "_watchChangeType": {
         "title": "_watchChangeType",
         "example": [
@@ -294,6 +318,7 @@
       "title": "Overview",
       "transformation": {
         "fields": [
+          "source",
           "productType",
           "recallNumber",
           "eventId",
@@ -309,6 +334,10 @@
       "display": {
         "component": "table",
         "properties": {
+          "source": {
+            "label": "Source",
+            "format": "text"
+          },
           "productType": {
             "label": "ProductType",
             "format": "text"

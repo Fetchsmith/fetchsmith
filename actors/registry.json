@@ -1108,7 +1108,7 @@
     {
       "slug": "fda-recall-scraper",
       "title": "FDA Recalls Scraper \u2014 Food, Drug & Device Enforcement Reports",
-      "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 34 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. Optional watchLabel mode returns only recalls new since your last run, so a schedule becomes a recall alert; add watchChanges to also catch a recall's status changing or FDA reclassifying its severity.",
+      "summary": "Search every US FDA product recall from the official openFDA enforcement API. Food, drug and device in one Actor and schema, 37 typed fields incl. Class I/II/III severity, a documented (non-AI) 0-100 riskScore, recalling firm, reason, ISO dates, plus NDC/UPC/brand/substance on drug recalls. Optional includePressReleases adds FDA's own recall press-release feed, up to 9 days faster than the enforcement API. Optional watchLabel mode returns only recalls new since your last run, so a schedule becomes a recall alert; add watchChanges to also catch a recall's status changing or FDA reclassifying its severity.",
       "status": "live",
       "credits_per_result": 3,
       "apify_actor_id": "Yv9DOUS61nx3xywYM",
@@ -1127,6 +1127,7 @@
         "maxResults": 12
       },
       "output_fields": [
+        "source",
         "productType",
         "recallNumber",
         "eventId",
@@ -1161,10 +1162,13 @@
         "rxcui",
         "unii",
         "splSetId",
+        "pressReleaseTitle",
+        "sourceUrl",
         "_watchChangeType",
         "_watchPrevious"
       ],
       "sample_output": {
+        "source": "enforcement",
         "productType": "drug",
         "recallNumber": "D-0785-2026",
         "eventId": "99584",
@@ -1205,7 +1209,9 @@
         "drugRoute": [],
         "rxcui": [],
         "unii": [],
-        "splSetId": null
+        "splSetId": null,
+        "pressReleaseTitle": null,
+        "sourceUrl": null
       }
     },
     {
