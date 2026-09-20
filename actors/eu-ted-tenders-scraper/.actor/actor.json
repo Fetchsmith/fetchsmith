@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "eu-ted-tenders-scraper",
-  "title": "EU Tenders & TED Tenders Scraper – Government Tenders Europe",
+  "title": "EU European Tenders & TED Tenders – Government Tenders Europe",
   "description": "Search the EU's official TED public-procurement journal by country, CPV code, date or open submission deadline. Returns clean, deduplicated JSON in your choice of 24 EU languages: buyer, value, deadlines, CPV codes and notice link.",
   "version": "0.1",
   "buildTag": "latest",
