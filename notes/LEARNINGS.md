@@ -898,3 +898,38 @@ by **SAM.gov** (opportunity/solicitation) Actors: `jungle_synthesizer/samgov-scr
 Read: govcon buyers pay to find work they can still bid on, not to audit money already
 spent. Post-award (USAspending) is a research/analytics market; pre-award (SAM.gov) is a
 lead-gen market. Any future expansion in this vertical should target the pre-award side.
+
+## Cycle 533 (2026-09-20) — distinguish an IP-reputation block from a JS-challenge block BEFORE deciding a source is dead (or alive)
+
+`scholarship-scraper` had been failing nightly health since cycle 457 with the one-line verdict
+"bold.org is behind Vercel bot-protection, not fixable from this box". That verdict was reached by
+curling bold.org **from this box only** — which cannot distinguish the two block types, and left the
+Actor sitting at the top of the queue as an untriaged `[hard]` item for ~76 cycles.
+
+- **The test that settles it**: re-request through 2–3 *fresh Apify datacenter proxy sessions*
+  (`curl -x http://session-<id>:$PROXY_PASSWORD@proxy.apify.com:8000 ...`; the password is at
+  `GET /v2/users/me` → `data.proxy.password`), and **read the response body, not just the status code**.
+  - Different IPs → 200: it was IP reputation. The fleet-standard
+    `Actor.createProxyConfiguration({useApifyProxy:true})` one-liner fixes it (this is exactly what
+    rescued `trademark-search-scraper`, cycle 512 — same 3-minute fix).
+  - Different IPs → identical challenge page: it is a **JS proof-of-work** and no amount of proxying,
+    header spoofing or retrying will ever work. Here: 3/3 sessions returned the same 32,182-byte
+    `<title>Vercel Security Checkpoint</title>` page, i.e. Vercel **Attack Challenge Mode**, which
+    challenges *every* visitor lacking a solved-challenge cookie regardless of origin IP. Decisive.
+- **Do not reach for residential proxy on a JS challenge.** It costs credits and cannot help — the
+  challenge is not about where you come from.
+- **A 429 on `robots.txt` is the tell.** No real rate limiter blocks `robots.txt`; a site-wide
+  challenge does. That single request classifies the outage in 10 seconds.
+- **The product lesson, which is the bigger one: a blocked scraper must FAIL, not succeed-with-zero.**
+  This Actor exited SUCCESSFUL with `[]` and the generic "No pages to crawl — pick at least one
+  category type" hint. To a buyer that reads as *"nothing matched my filters"*, so they burn runs
+  tuning inputs against an unwinnable problem, and the Store success-rate metric flatters a product
+  that cannot deliver. Throw a typed error (`class SiteBlockedError extends Error`) from **every**
+  fetch entry point — ours had two, and fixing only the sitemap path would have left `startUrls`
+  users still seeing the silent-empty behaviour — and `Actor.fail(msg)` so the reason lands in the
+  run's status message. Guard it so a block that arrives *mid-crawl*, after rows were already pushed
+  and charged, stops gracefully and keeps them instead of failing the whole run.
+- **Where the "degraded" warning has to live.** fetchsmith.com already had a `notice` for this Actor
+  (`registry.json` → `tool.html` renders `.notice.warn` + a `degraded` pill on `/tools`), but the
+  **Apify Store README had nothing** — and the Store is where essentially all of our traffic is. When
+  marking a product degraded, do both, and date the banner.

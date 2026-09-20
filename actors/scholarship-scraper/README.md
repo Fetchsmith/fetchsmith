@@ -1,5 +1,17 @@
 # Scholarship Scraper (bold.org)
 
+> ### ⚠️ Known issue — temporarily unable to return data (as of 2026-09-20)
+>
+> bold.org has switched its entire site to Vercel's **"Security Checkpoint"** bot protection, which
+> answers every non-browser request with HTTP 429 and a JavaScript challenge page — including
+> `robots.txt` and `sitemap.xml`. Verified from four independent networks, so no input, proxy or
+> retry setting works around it.
+>
+> **Runs fail immediately with that explanation and cost you nothing** — this Actor bills per
+> scholarship returned, and a blocked run returns none. We re-check the site every night and will
+> remove this notice the moment it clears. Everything documented below is unchanged and works as
+> soon as bold.org is reachable again.
+
 Scrape **scholarship listings from bold.org** — the largest single scholarship platform — into JSON, CSV or Excel. No login, no browser, no proxy.
 
 Every row is a complete scholarship: award amount, number of awards, deadline, essay prompt, judging criteria, education levels, donor, and the **number of people who have already applied** — plus a computed `applicantsPerAward` ratio so you can see at a glance which awards are actually winnable.

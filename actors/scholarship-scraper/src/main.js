@@ -57,6 +57,27 @@ async function pushResult(item) {
     return pushed < maxResults;
 }
 
+/**
+ * bold.org runs Vercel's Attack Challenge Mode, which answers *every* request that has no
+ * solved-challenge cookie with `429 + <title>Vercel Security Checkpoint</title>`. It is a
+ * browser JS proof-of-work, not an IP reputation block: verified cycle 533 from this box and
+ * from three separate fresh Apify datacenter proxy IPs — all four got the identical checkpoint.
+ * So no proxy, header or retry fixes it, and a buyer must be told that plainly rather than
+ * shown an empty dataset that looks like "nothing matched your filters".
+ */
+class SiteBlockedError extends Error {}
+
+const BLOCKED_MSG = 'bold.org is currently serving Vercel\'s "Security Checkpoint" (HTTP 429) to every '
+    + 'non-browser request, so no scholarship data can be read right now. This is a change on bold.org\'s '
+    + 'side, not a problem with your input — no input, proxy or retry setting works around it, and you have '
+    + 'not been charged (this Actor bills per scholarship returned). Please check back later.';
+
+function isCheckpoint(res) {
+    return res.statusCode === 429
+        || Boolean(res.headers['x-vercel-mitigated'])
+        || (typeof res.body === 'string' && res.body.includes('Vercel Security Checkpoint'));
+}
+
 async function fetchHtml(url) {
     const res = await gotScraping({
         url,
@@ -65,6 +86,7 @@ async function fetchHtml(url) {
         headers: { accept: 'text/html,application/xhtml+xml' },
         throwHttpErrors: false,
     });
+    if (isCheckpoint(res)) throw new SiteBlockedError(BLOCKED_MSG);
     if (res.statusCode !== 200) {
         log.warning(`HTTP ${res.statusCode} for ${url} — skipped.`);
         return null;
@@ -219,14 +241,13 @@ function keep(item) {
 
 async function discoverCategoryUrls(types) {
     const res = await gotScraping({ url: `${BASE}/sitemap.xml`, timeout: { request: 60000 }, retry: { limit: 2 }, throwHttpErrors: false });
+    // A blocked sitemap must abort the run, not return [] — otherwise main() falls through to the
+    // generic "No pages to crawl. Pick at least one category type" message and exits SUCCESSFUL with
+    // an empty dataset, which sends a buyer chasing an input change for a problem no input can fix.
+    if (isCheckpoint(res)) throw new SiteBlockedError(BLOCKED_MSG);
     if (res.statusCode !== 200) {
-        // bold.org sits behind Vercel's bot-protection layer, which answers a blocked request with
-        // a 429 + an HTML challenge page (not a normal empty/missing sitemap) — matchAll below would
-        // just find 0 <loc> tags and print the generic "pick a category" message, which sends a
-        // buyer chasing an input change for a problem no input can fix.
-        log.warning(`bold.org's sitemap request returned HTTP ${res.statusCode} instead of the sitemap XML` +
-            `${res.headers['x-vercel-mitigated'] ? ` (x-vercel-mitigated: ${res.headers['x-vercel-mitigated']})` : ''}` +
-            ' — this looks like a site-side bot-protection block, not a bad input. Try again later; startUrls will hit the same block if the whole site is affected.');
+        log.warning(`bold.org's sitemap request returned HTTP ${res.statusCode} instead of the sitemap XML`
+            + ' — this looks like a site-side problem, not a bad input. Try again later.');
         return [];
     }
     const locs = [...res.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
@@ -286,6 +307,14 @@ try {
         try {
             html = await fetchHtml(url);
         } catch (e) {
+            // A site-wide block is not a per-page problem: every remaining URL will hit the same
+            // checkpoint. Abort outright if we have nothing yet (so the run FAILS with the real
+            // reason); stop the crawl but keep what we have if results were already pushed.
+            if (e instanceof SiteBlockedError) {
+                if (pushed === 0) throw e;
+                log.warning(`${BLOCKED_MSG} Stopping early and keeping the ${pushed} scholarship(s) already returned.`);
+                break;
+            }
             // A network-level failure (timeout/ECONNRESET/DNS) here must not fail the whole run —
             // scholarships from earlier URLs in this loop are already pushed and charged, so one
             // bad page is skipped instead of losing the rest of the crawl.
@@ -314,7 +343,7 @@ try {
     }
     if (erroredUrls.length) log.warning(`Fetch errors (skipped, run not failed): ${erroredUrls.join(', ')}`);
 
-    if (pushed === 0) {
+    if (pushed === 0 && filteredOut > 0) {
         log.warning(
             `0 scholarships pushed. ${seen.size} record(s) were found but every one was removed by your filters `
             + `(${filteredOut} filtered out). Try clearing searchQuery / minAwardAmount / deadlineBefore / deadlineAfter / educationLevels, `
@@ -322,8 +351,15 @@ try {
         );
     }
 } catch (err) {
-    log.exception(err, 'Run failed');
-    await Actor.fail(`Run failed: ${err.message}`);
+    // A site-side block is an expected, fully-diagnosed outcome, not a crash — report it as a
+    // plain one-line reason so the buyer reads the explanation instead of a stack trace.
+    if (err instanceof SiteBlockedError) {
+        log.error(err.message);
+        await Actor.fail(err.message);
+    } else {
+        log.exception(err, 'Run failed');
+        await Actor.fail(`Run failed: ${err.message}`);
+    }
 }
 
 log.info(`Done. Pushed ${pushed} scholarships.`);
