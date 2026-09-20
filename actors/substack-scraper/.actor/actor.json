@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "substack-scraper",
-  "title": "Substack API Scraper \u2013 Posts, Full Text & Comments",
+  "title": "Substack API Scraper \u2013 Full Text, Comments, Newsletter API",
   "description": "Scrape any Substack newsletter into JSON/CSV: posts with full text, comments, or the category leaderboard itself (rank, subscriber counts, pricing), no post scraping needed. No login, no browser, no start fee. Full text from $0.002, leaderboard rows from $0.0005.",
   "version": "0.1",
   "buildTag": "latest",

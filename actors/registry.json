@@ -399,7 +399,7 @@
     },
     {
       "slug": "substack-scraper",
-      "title": "Substack API Scraper – Posts, Full Text & Comments",
+      "title": "Substack API Scraper – Full Text, Comments, Newsletter API",
       "summary": "Any Substack publication as structured data: posts with full article text, engagement stats (reactions, comments, restacks), podcast episodes with duration, section and cover image, plus threaded comments. Optional publication profile — subscriber count, subscription plan prices, author and bestseller tier. Custom domains supported.",
       "status": "live",
       "credits_per_result": 2,

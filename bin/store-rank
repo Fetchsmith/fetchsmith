@@ -153,7 +153,36 @@ TERMS = {
     # "substack api" added cycle 531: title changed "Substack Scraper" -> "Substack
     # API Scraper" (contiguous, in-order), measured p9->p3. "substack" unaffected
     # (single word, no proximity lever) at p109 (storePosition-driven, unchanged shape).
-    "substack-scraper": ["substack", "substack api"],
+    # cycle 564 (first --attr BATCH probe on this Actor; 12 new queries). Title
+    # "Substack API Scraper – Posts, Full Text & Comments" ->
+    # "Substack API Scraper – Full Text, Comments, Newsletter API" (58/63 chars).
+    # Published + apify push --force (build 0.1.29), measured post-reindex (~75s):
+    #   newsletter api  (nbHits 2058) p265 -> **p3**   span None -> 0; genuine
+    #       6-record block, only 4 better storePositions, predicted ~p5 -- BEAT it.
+    #   substack comments  (nbHits 419) p6 -> p5   span 5 -> 4 (free side-gain)
+    #   substack full text (nbHits 438) p1 -> p1   span 3 -> 2, already top
+    #   substack api p3 -> p3 (span 0 kept: "Substack API" still leads the title)
+    #   substack     p109 -> p109 (single word, no proximity lever)
+    # THE DELIBERATE TRADE: "Posts" was dropped from the Store title, so
+    # "substack posts" lost its title match. Measured cost was ZERO (p71 -> p71),
+    # but storePosition also drifted 53695 -> 51229 in the same window, so read that
+    # as "no cost observed", not "proven free". It was the right word to spend: at
+    # p71 in a 61-record block with 41 better storePositions, joining was only ever
+    # worth ~p42 -- the weakest title slot the Actor had. Posts remain fully
+    # documented in the README H1/body and the Store description.
+    # Also sized and NOT taken this cycle (title now 58/63, ~5 chars left):
+    #   newsletter data     (nbHits 2129) p792, 5-record block, predicted ~p5 --
+    #       needs a SECOND "Newsletter" occurrence to keep "Newsletter API" span 0
+    #       (they share the head word); simulated "…Newsletter API & Data" gives
+    #       "newsletter data" span 1, not 0, AND costs "Comments". Revisit only if
+    #       a 63-char arrangement with two "Newsletter"s is found.
+    #   substack archive    (nbHits 205) p50, 9-record block, predicted ~p9
+    #   substack publication(nbHits 274) p114, 15-record block, predicted ~p8
+    #   substack leaderboard(nbHits  46) p17, 7-record block, predicted ~p7 (thin volume)
+    # Do not re-probe: "substack export"/"substack rss"/"newsletter scraper" -- we
+    # are not in the first 163/484/1000 hits at all, so no title edit reaches them.
+    # "substack subscribers" already p3 without a title match; leave it alone.
+    "substack-scraper": ["substack", "substack api", "newsletter api", "substack comments"],
     "apple-podcasts-scraper": ["apple podcasts", "podcast publishers", "podcast reviews", "podcast episodes"],
     # cycle 548 (first --attr brainstorm on this Actor; 13 queries probed). Title
     # "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers" ->
