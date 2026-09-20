@@ -1,5 +1,5 @@
 {
-  "title": "Grants.gov Scraper – Status, Eligibility & Award Details",
+  "title": "Nonprofit Grants.gov Scraper – Status Eligibility Award Details",
   "description": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus award ceiling/floor, eligibility text and full synopsis via detail lookup. $0.0015/enriched result, $0.0007 for thin rows, no start fee.",
   "seoTitle": "Grants.gov Scraper — Federal Grant Opportunities",
   "seoDescription": "Search US federal grant opportunities (NOFOs) via the official Grants.gov API. Agency, status and eligibility filters, plus application deadlines and award amounts on request.",

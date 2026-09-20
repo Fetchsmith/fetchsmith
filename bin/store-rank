@@ -87,7 +87,24 @@ TERMS = {
     "eu-ted-tenders-scraper": ["ted tenders", "eu tenders", "public procurement"],
     "nih-reporter-scraper": ["nih reporter", "nih grants"],  # p20 p17 (cycle 544; 'nih grants' was #26 at h74's 2026-09-19 verdict)
     "federal-register-scraper": ["federal register", "public inspection", "comment deadline"],  # cycle 546: title -> "...Public Inspection, Comment Deadlines" joined "public inspection" p3->p1 (0 title-matchers pre-edit, exact contiguous phrase). "comment deadline" p2 (unchanged, span 0 preserved) and "federal register" p57 (unchanged, span 0 preserved) both confirmed no regression post-reindex.
-    "grants-gov-scraper": ["grants.gov", "government grants"],
+    "grants-gov-scraper": ["grants.gov", "government grants", "nonprofit grants", "grant eligibility", "award details", "status eligibility", "grants gov scraper", "grants.gov scraper"],
+    # cycle 553: title "Grants.gov Scraper – Status, Eligibility & Award Details" (56 chars)
+    # -> "Nonprofit Grants.gov Scraper – Status Eligibility Award Details" (63/63 chars).
+    # Local token_span simulation (per standing practice) against ALL known-matching queries
+    # BEFORE publishing caught that "Nonprofit " naively prepended (66 chars, over budget)
+    # would force cutting words -- and the words that looked droppable ("Scraper", "Status",
+    # "Award Details") were each protecting a REAL pre-existing span-0 win never before
+    # tracked here: "award details" p2, "status eligibility" p2, "grants gov scraper" p25,
+    # "grants.gov scraper" p20 (all verified genuine blocks). Final title keeps every token,
+    # only trims punctuation (dash->none extra, drops the Oxford comma/&) to fit exactly 63.
+    # Shipped (build 0.1.22) + reindexed: "nonprofit grants" (nbHits 198, 0 title-matchers
+    # pre-edit) p136 -> **p1**. All 6 pre-existing queries re-measured post-reindex: byte-
+    # identical rank AND span to pre-edit (grants.gov p60/0, grant eligibility p28/3, award
+    # details p2/0, status eligibility p2/0, grants gov scraper p25/0, grants.gov scraper
+    # p20/0) -- zero regression. "government grants" (7-record block, predicted ~p8 if
+    # joined) NOT pursued: no spare characters and no arrangement makes it contiguous
+    # without re-breaking one of the above; leave for a future slot only if "nonprofit
+    # grants" or the scraper/details/eligibility wins are ever judged lower-value.
     "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov", "patient recruitment", "nct id"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not

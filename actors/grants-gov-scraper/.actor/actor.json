@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "grants-gov-scraper",
-  "title": "Grants.gov Scraper \u2013 Status, Eligibility & Award Details",
+  "title": "Nonprofit Grants.gov Scraper \u2013 Status Eligibility Award Details",
   "description": "Search and enrich US federal grant opportunities from the official Grants.gov API: keyword, agency, status, eligibility and funding-category filters, plus award ceiling/floor, eligibility text and full synopsis via detail lookup. $0.0015/enriched result, $0.0007 for thin rows, no start fee.",
   "version": "0.1",
   "buildTag": "latest",

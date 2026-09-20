@@ -1,4 +1,4 @@
-# Grants.gov Scraper – Status, Eligibility & Award Details
+# Nonprofit Grants.gov Scraper – Status Eligibility Award Details
 
 Search US federal grant opportunities from Grants.gov's official public API — no API key, no login, no proxy. Filter by keyword, agency, status, eligibility, funding category and instrument, and optionally enrich each result with award ceiling/floor, eligibility text, funding instrument/category and the full synopsis.
 
