@@ -1216,3 +1216,26 @@ Actor code to a competitor's field list, grep the Actor's own normalize/pickX fu
 rich nested object gets collapsed to one scalar** (`?.`, `[0]`, a `for...return` loop over sub-keys) —
 that collapse point is the first place to check, cheaper than re-deriving the source API's full shape
 from scratch.
+
+## Cycle 568 — when an Actor's own niche is saturated, the title headroom is in the GENERIC vertical query
+First `--attr` batch probe on `hacker-news-scraper` (16 queries). Every HN-specific phrase probed
+(`hacker news api`, `hn scraper`, `hacker news scraper`, `hn jobs`, `hacker news jobs`) was ALREADY
+title-matching — the Actor's name necessarily contains the site name, so the site-name queries are
+the ones with nothing left to win; they are pinned by `storePosition`, which a title edit cannot move.
+The real headroom sat in the *generic vertical* phrases the title never spelled: `tech news api`
+(nbHits 4162) p79 -> **p1**, `tech news` (4763) p47 -> **p10**, `tech news scraper` (4324) p217 -> p61.
+**On a site-named Actor, probe the category noun the site belongs to ("tech news", "job board",
+"code repo"), not more phrasings of the site name** — the site name is already spent.
+
+Two sharpenings of the existing rank model, both measured this cycle:
+1. **Span 0 is not always worth taking.** `news api` (nbHits 34,655) went span 1 -> 0 and measured
+   p31 -> p32, i.e. flat. `--attr` had shown a 72-record title block with us sitting deep inside it;
+   once a block is that crowded, `storePosition` dominates and the proximity criterion has no room
+   left to act. Contrast `tech news api`'s 2-record block, where span 0 bought p79 -> p1. **Block
+   size, not query volume, predicts whether a span improvement converts** — the 34k-hit query was
+   worth less than the 4k-hit one.
+2. **A "proximity-demoted" query is a cheap word to sacrifice.** Dropping "Jobs" removed the title
+   match from `hn jobs` (span 5, p54 -> p54, no cost observed) and `hacker news jobs` (span 6,
+   p123 -> p139, and `storePosition` drifted 53699 -> 54000 worse in the same window, so part of
+   that 16 is organic per h74). Same rule as cycle 564's block-geometry point, from the other side:
+   a token that only ever produces a high-span scattered match is already earning close to nothing.
