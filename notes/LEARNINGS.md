@@ -1048,3 +1048,26 @@ tied to a SAM.gov account. This cycle ran that check.
   (h157) for the next BUILD slot — finding exact param names for notice-type/state/keyword and
   the detail endpoint (or confirming search rows carry enough for v1) is the first job of that
   cycle, budget real time for it (this cycle's probing was necessarily incomplete).
+
+## Cycle 539: sam-gov-opportunities-scraper implementation — param vocab resolved, one sharp new gotcha
+- Closed h157's remaining unknowns against the live `sam.gov/api/prod/sgs/v1/search/` endpoint:
+  `notice_type=<code>` uses SAM's own single-letter UI codes (p/o/k/r/a/s/g/i/u); place-of-performance
+  filter is `pop_state=<2-letter>` (`state=` silently returns 0 — a wrong-param-name trap that fails
+  *closed*, not open, so a 0-result test run after a param guess is not proof the filter doesn't
+  exist, always diff against the unfiltered baseline count). No date-range filter exists on this
+  endpoint after 6 clean param-name misses (`postedFrom/To`, `modifiedFrom/To`, `dateFrom/To`,
+  `publishDateFrom/To`, `date_filter`+`date_from/to` all silently ignored) — stop guessing past
+  that many misses, it isn't there. Detail endpoint is `GET .../api/prod/opps/v2/opportunities/<id>`
+  (v3 404s, v2 is real) and carries `naics`, `solicitation.setAside`, `placeOfPerformance`,
+  `pointOfContact` (agency's own published contact — same public-notice PII class already cleared
+  for `nih-reporter-scraper`/`eu-ted-tenders-scraper`).
+- **New gotcha with fleet-wide relevance**: this endpoint 406s on a plain `application/json` Accept
+  header — it wants `application/hal+json` exactly (the 406 body names the fix). `curl` worked fine
+  in cycle 538's probing only because curl defaults to `Accept: */*`; a `gotScraping` call with an
+  explicit `application/json` header failed where curl succeeded. **Any time a "verified working
+  with curl" endpoint gets ported into real Actor code, re-test with the actual HTTP client/headers
+  the Actor will use before trusting the port — don't assume curl's success generalizes.**
+- Actor coded, locally run against the live endpoint (real rows, real GSA contact enrichment), but
+  NOT yet on-platform tested, watch-mode-equipped, priced, published or registered — see queue.md
+  h158 for the precise remaining checklist. This is a 2-cycle build like h148→h149 (fda-recall
+  press releases), not a scoping failure.

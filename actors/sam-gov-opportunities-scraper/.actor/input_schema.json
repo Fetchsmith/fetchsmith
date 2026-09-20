@@ -1,0 +1,74 @@
+{
+    "title": "SAM.gov Opportunities Scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "keyword": {
+            "title": "Keyword",
+            "type": "string",
+            "description": "Searched against opportunity title/description. Defaults to \"contract\" so a first test run never returns 0 rows.",
+            "editor": "textfield",
+            "default": "contract"
+        },
+        "naicsCodes": {
+            "title": "NAICS codes",
+            "type": "array",
+            "description": "Filter to one or more 6-digit NAICS codes, e.g. 541511.",
+            "editor": "stringList"
+        },
+        "setAsideTypes": {
+            "title": "Set-aside types",
+            "type": "array",
+            "description": "Filter to SAM.gov set-aside codes, e.g. SBA (total small business).",
+            "editor": "stringList"
+        },
+        "noticeTypes": {
+            "title": "Notice types",
+            "type": "array",
+            "description": "Which SAM.gov notice types to include. All types if left empty.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": ["p", "o", "k", "r", "a", "s", "g", "i", "u"],
+                "enumTitles": [
+                    "Presolicitation", "Solicitation", "Combined Synopsis/Solicitation",
+                    "Sources Sought", "Award Notice", "Special Notice", "Sale of Surplus",
+                    "Intent to Bundle", "Justification"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "states": {
+            "title": "Place of performance state(s)",
+            "type": "array",
+            "description": "2-letter US state codes, e.g. CA.",
+            "editor": "stringList"
+        },
+        "organizationId": {
+            "title": "Organization ID",
+            "type": "string",
+            "description": "SAM.gov internal organization ID to filter to one agency/office (advanced; find via a search result's organizationHierarchy).",
+            "editor": "textfield"
+        },
+        "activeOnly": {
+            "title": "Active opportunities only",
+            "type": "boolean",
+            "description": "Only return opportunities SAM.gov currently flags active.",
+            "default": true
+        },
+        "enrichDetail": {
+            "title": "Enrich with detail call",
+            "type": "boolean",
+            "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower.",
+            "default": false
+        },
+        "maxResults": {
+            "title": "Max results",
+            "type": "integer",
+            "description": "Stop after this many opportunities. SAM.gov's own search backend caps result depth at 10,000 for any single query — narrow keyword/filters to go deeper.",
+            "default": 200,
+            "minimum": 1,
+            "maximum": 10000
+        }
+    }
+}

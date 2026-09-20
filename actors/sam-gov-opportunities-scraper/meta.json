@@ -1,0 +1,17 @@
+{
+  "title": "SAM.gov Opportunities Scraper – US Federal Contracts, Bids",
+  "description": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, sources sought and awards — with no API key, no login. NAICS, set-aside, notice type and place-of-performance filters, plus optional per-opportunity enrichment (contacts, NAICS, place of performance).",
+  "seoTitle": "SAM.gov Opportunities Scraper — Federal Bids API",
+  "seoDescription": "Scrape live SAM.gov federal contracting opportunities — no API key needed. NAICS, set-aside, notice type filters, contact enrichment. No start fee.",
+  "categories": [
+    "LEAD_GENERATION",
+    "BUSINESS"
+  ],
+  "events": {
+    "result": {
+      "eventTitle": "Result item",
+      "eventDescription": "One normalized SAM.gov opportunity returned to the dataset.",
+      "eventPriceUsd": 0.0015
+    }
+  }
+}
