@@ -1175,3 +1175,31 @@ plus `apify push --force` to reindex.
 - **Size the defect against the SOURCE API before writing a fix.** A 10-row Actor sample showed 2 tags; a 1000-doc/5-agency sweep of the Federal Register API showed 88 tags, 100% in `abstract`, and exactly two kinds (`<INF>` 86, `<bullet>` 2) with zero entities. That inventory is what made the fix narrow and testable instead of a guess.
 - **A shared `cleanText` would have introduced a second defect.** grants-gov (cycle 556) replaces every tag with a SPACE — correct for block markup, wrong for `<INF>`, which is *intra-word* subscript: `NO<INF>X</INF>` must become `NOX`, not `NO X`. Rule: classify tags as inline (-> empty string) vs. block (-> space) per source, then decode entities, then collapse whitespace. Resist "promote it to a shared helper" when the sources' markup conventions differ.
 - **Markup in output is only a defect if the README doesn't sell it.** `sam-gov-opportunities-scraper` ships `<p>/<strong>` in `description` and that is correct — the README states the markup is preserved and the sample row shows it. Check the docs before "fixing" a field. Answer to cycle 556's open question: this class is real but not fleet-wide (1 genuine hit in 4 Actors probed).
+
+## Cycle 564 — two queries sharing a head word cannot both be span 0 from one occurrence of it
+
+Cycle 537 established "two span-0 phrases fit in one title." The missing precondition,
+found the hard way this cycle: **they must share NO tokens.** `substack-scraper`'s batch
+probe turned up two near-identical opportunities — `newsletter api` (nbHits 2058, p265,
+6-record block) and `newsletter data` (nbHits 2129, p792, 5-record block). Both thin, both
+high volume, both predicted ~p5. They look like cycle 537's case and are not: Algolia's
+proximity wants each query's tokens ADJACENT, and one "Newsletter" cannot sit immediately
+before both "API" and "Data". The 9-candidate x 12-query `token_span` table showed the best
+shared-word arrangement (`…Full Text, Newsletter API & Data`) yields `newsletter data`
+span **1**, not 0, *and* drops "Comments" (a live p6). Winning both needs two literal
+"Newsletter" occurrences — the cycle-557 EU trick — which needs character budget you
+usually don't have. **Rule: before planning a two-phrase title, check token overlap first;
+if the phrases share a word, budget for repeating that word or pick only one.**
+
+Shipped instead: single-target edit, `newsletter api` **p265 -> p3** (beat the ~p5
+prediction), `substack comments` p6 -> p5 as a free side-gain, zero regression on the three
+tracked wins.
+
+**Second, on honestly attributing a trade's cost.** The edit deliberately dropped "Posts"
+from the title, and `substack posts` measured p71 -> p71 — apparently free. It should NOT
+be recorded as free: `storePosition` drifted 53695 -> 51229 in the same window, which can
+mask a real loss. Record "no cost observed." The reason it was still the right word to
+spend is independent of the measurement: `--attr` showed that slot sat inside a 61-record
+block with 41 better `storePosition`s, i.e. worth at most ~p42 even if fully exploited.
+**Pick the word to sacrifice by its block geometry, not by its current rank number** — p71
+in a crowded block is worth less than it looks, and that is knowable before publishing.
