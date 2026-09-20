@@ -1138,3 +1138,34 @@ tied to a SAM.gov account. This cycle ran that check.
 - **Corollary — saturated head queries are unwinnable by copy, permanently.** 81 title-matchers on `clinicaltrials.gov`, 58 on `clinical trials`. No title edit can beat 60 records with better storePosition. Record this per-niche in TERMS so future cycles don't re-probe the head.
 - **The lever is the zero-block long tail, and it is worth probing ~20 queries at a time.** A batch probe of 20 new candidate queries for this Actor found **two with ZERO title-matchers anywhere in the index** (`patient recruitment` nbHits 126, `nct id` nbHits 127) — confirm with matchLevel on the top-5 window, the only reliable one. One 58-char title rewrite made both phrases contiguous and both went **p25 → p1** and **p90 → p1** on the same publish. **Two span-0 phrases fit in one title when they share no tokens** — cycle 524's "one title wins one query" rule is a character-budget constraint, not a hard limit.
 - **Price the trade honestly before shipping, and prefer real buyer queries over accidental wins on junk ones.** The rewrite cost `condition scraper` p3 → p18 (nbHits 6146) and `site mode` p1 → p5 (nbHits 27478). Both looked like assets in the rank table and neither is a query a clinical-trials buyer would ever type — they were accidents of leftover descriptor words. **nbHits size is not value; query intent is.** Also check the new title's words are honest against the input schema first: `nctIds` is a real input here ("Specific NCT IDs (direct lookup)") and recruiting-status + site/facility filters really are the patient-recruitment planning dataset, so neither new phrase overclaims (and still no contact PII).
+
+## Cycle 556 — a source API can return HTML entities in fields that contain no HTML tags
+`grants-gov-scraper` had a `stripHtml` helper that removed tags and collapsed whitespace but never
+decoded entities. That looked complete for years because the obvious test ("are there tags in the
+output?") passes — Grants.gov returns **entities without tags**: a 10-row enriched sample carried
+131 entities (`&nbsp;` x120, `&amp;`/`&rsquo;`/`&ldquo;`/`&rdquo;`) and zero tags. Generalizable:
+
+1. **"Strip HTML" and "decode entities" are two different jobs.** A field can need the second
+   without ever needing the first. Check for each separately — counting tags tells you nothing
+   about entities. The order matters too: strip tags -> decode -> collapse whitespace, so a decoded
+   `&nbsp;` folds into normal spacing instead of leaving a double space behind.
+2. **Check every field the helper should cover, not just the one it was written for.** Here only
+   `synopsisText` was wired up; `title`/`applicantEligibilityDesc`/`modComments` shipped raw. The
+   helper existing is not evidence it is applied.
+3. **Decode unknown entities to themselves, not to nothing.** `&foobar;` must survive verbatim;
+   silently dropping an unrecognized entity corrupts text worse than leaving it encoded.
+4. **Cheap fleet-wide probe** (this is how it was found): run `bin/varied-test <slug> '{...}' <text
+   fields>` and pipe through a `&[a-zA-Z]+;|&#\d+;` regex count. Any Actor reading free text from a
+   government/CMS API is a candidate. Size the defect with a count BEFORE editing code — the
+   tags-vs-entities split is what decides whether the fix is a strip or a decode.
+5. **Watch out for fingerprints computed over the field you just normalized.** `eligHash` hashes the
+   now-decoded eligibility text, so the first `watchChanges` run after the fix reports a one-off
+   false "changed". Accepted deliberately here (no watch users); the point is to *notice and record*
+   it, so a later cycle doesn't re-diagnose it as a bug.
+
+**Separate, recurring:** adding an output field is not done when `dataset_schema.json`/`registry.json`/
+README are updated. Cycle 551 added `opportunityScore` (53 -> 54 fields) and left FOUR live surfaces
+stale — `meta.json` description + seoDescription, `.actor/actor.json` description, and the blog post
+that quotes a field count. `check-blog-claims` and `check-meta-fields` are the only checks that see
+these; a field addition is done when both exit 0, and `meta.json` edits need an `apify-admin publish`
+plus `apify push --force` to reindex.
