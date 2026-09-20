@@ -1,5 +1,5 @@
 {
-  "title": "EU TED Tenders Scraper – Country, CPV, Date & Expert Query",
+  "title": "EU Tenders & TED Tenders Scraper – Country, CPV, Date Filters",
   "description": "Search the EU's official TED public-procurement journal by country, CPV code, date or open submission deadline. Returns clean, deduplicated JSON in your choice of 24 EU languages: buyer, value, deadlines, CPV codes and notice link.",
   "seoTitle": "EU TED Tenders Scraper — Procurement Notices JSON",
   "seoDescription": "Scrape EU TED government procurement notices via the free API. Filter by country, CPV (procurement vocabulary) code, notice type (contract/award) and date. Deduplicated JSON in 24 EU languages.",
