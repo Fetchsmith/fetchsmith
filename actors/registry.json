@@ -207,7 +207,7 @@
     },
     {
       "slug": "shopify-products-scraper",
-      "title": "Shopify Products Data Scraper – Full Catalog, Any Store",
+      "title": "Shopify Products Data Scraper – Full Catalog, Shopify CSV",
       "summary": "Full product catalog of any Shopify store or collection: prices, compare-at prices, discount %, every variant with SKU, options, stock and image, plus tags, images, plain-text and HTML descriptions. Filter by price window (minPrice/maxPrice, matched against each product's own variant price range), discount depth (onSaleOnly/minDiscountPercent), brand or product type (vendors/productTypes, OR-matched lists) or keyword before any row is charged. Optional Apify Proxy routing for rate-limited or geo-priced stores. Optional detailLevel:\"full\" adds each product's SEO title/description, star-rating summary, per-variant quantity rules (min/max/case-pack) and subscription plans (one extra request/product, priced separately).",
       "status": "live",
       "credits_per_result": 1,

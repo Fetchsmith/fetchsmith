@@ -214,7 +214,33 @@ TERMS = {
     # (p130 -> p119, storePosition drift only). Cost: "shopify scraper" span 1->2
     # and "shopify catalog" span 3->4 (neither was a targeted query, both already
     # deep in the ranks either way).
-    "shopify-products-scraper": ["shopify products", "shopify product data"],
+    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv"],
+    # cycle 558: first --attr batch probe on this Actor since cycle 537 (13 new
+    # candidates). Title "Shopify Products Data Scraper – Full Catalog, Any Store"
+    # (55/63 chars) -> "...Full Catalog, Shopify CSV" (57/63), swapping "Any Store"
+    # for "Shopify CSV" -- README already documents "JSON, CSV or Excel" export, so
+    # the claim is honest, not new. Used the cycle-557 duplicate-word technique: a
+    # SECOND "Shopify" placed directly before "CSV" wins "shopify csv" at span 0
+    # while the FIRST "Shopify...Products...Data" occurrence keeps both pre-existing
+    # queries' span untouched (token_span tries every occurrence of the first token
+    # and keeps the minimum span, so one title can host two independent phrases this
+    # way -- verified locally before publishing, not just eyeballed).
+    # Measured post-reindex (build 0.1.42): "shopify csv" (nbHits 1752, verified
+    # genuine 13-record block, matchLevel full) p61 -> **p10**. Zero regression:
+    # "shopify product data" stayed p1 exactly; "shopify products" p137->p141 is
+    # organic storePosition drift (53696->54651 fleet-wide, not span-related, per
+    # h74) -- was never span 0 -> p-top anyway (2249-hit saturated niche).
+    # Deliberately dropped "Any Store" (generic 27872-nbHits phrase, not a real
+    # buyer search pattern, previously an untracked accidental span-0 win at p12 --
+    # sized before editing and judged not worth protecting over the real distinctive
+    # "shopify csv" gain). Other candidates probed, not pursued (title has only
+    # 6 spare chars after this edit): "shopify product feed" (nbHits 1891, 5-block,
+    # predicted ~p6 -- but forces "Data" out of contiguity with "Products", which
+    # is currently a genuine p1 win worth more, so not a good trade); "shopify sku"
+    # (nbHits 576, 4-block, predicted ~p4, smaller volume); "shopify collection
+    # scraper" (nbHits 762, 10-block, predicted ~p10, redundant value vs csv).
+    # "shopify inventory"/"ecommerce scraper"/"shopify api"/"shopify data export":
+    # 0 hits or far too crowded, not real levers.
     # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
