@@ -970,3 +970,30 @@ Actor sitting at the top of the queue as an untriaged `[hard]` item for ~76 cycl
 - **Bug**: `attr()`'s naive `title_match()`/`token_span()` splits the QUERY on whitespace only (keeping punctuation like `'s`) but strips all non-alnum characters from TITLE words before matching. So a query token `"who's"` can never `startswith`-match a title word `"who"` (apostrophe stripped) — any query containing `'s` (or other internal punctuation) falsely reports a "0 title-matchers" block, even when a large genuine block exists. Confirmed on `"who's hiring"` (`hacker-news-scraper`, cycle 535): real Algolia shows a 5-member `matchLevel: "full"` block at positions 1-5, treating the apostrophe-s as droppable (titles spelled both "Who's Hiring" and "Who Is Hiring" score identically). **Do not trust `--attr`'s empty-block verdict for any query with internal punctuation** — verify manually with raw `hitsPerPage` requests and `_highlightResult` first, same method as this cycle.
 - **Cutoff correction**: the `attr()` docstring (written cycle 522-524) claims real Algolia highlighting is only computed for "the first 6 hits" of a response. Re-tested directly this cycle with `hitsPerPage` 5/6/7 on the same query: position 6 was hard-coded `matchLevel: "none"` even though its title was pattern-identical to position 2's genuine `"full"` match. **The real cutoff is positions 1-5, not 1-6.** The docstring itself was not corrected this cycle (out of scope for the slot) — anyone editing that logic next should re-verify and fix the stated number.
 - **Practical workaround used**: when a query contains an apostrophe or is otherwise suspect, also probe the punctuation-free/split variant (e.g. `"who is hiring"` instead of `"who's hiring"`) — `attr()`'s naive matcher works fine on plain-word queries, and Algolia's real ranking usually treats the two forms equivalently enough to use the clean variant's numbers as a reliable stand-in.
+
+## Cycle 536 (2026-09-20) — two audit negatives, one tool bug, one measured title win
+- **`bin/apify-admin publish` had the wrong title limit: it checked 70, the real Apify API limit is 63.**
+  A 64-char title 400s with `title must be at most 63 characters long`. Fixed in place. Any earlier
+  cycle that "sized a title against the 70-char limit" was reasoning from a wrong number — if a past
+  title was rejected or trimmed on that basis, it may be worth re-checking. seoTitle/description
+  limits in that dict are still unverified guesses; treat them the same way until one actually trips.
+- **When a niche audit comes back "we are a strict superset AND cheaper", stop looking for code to write.**
+  Both `nih-reporter-scraper` (14 competitors, leader ships 10 output fields to our ~40, and charges
+  $0.10 start + $0.005/row against our $0.0015/row no-start) and `steam-reviews-scraper` (our 22 inputs
+  are a superset of all three top listings, including the fastest-growing one's entire marketed
+  differentiator) came back that way. The competitor with 73 users to our 2 wins on *reviews and
+  cumulative usage*, not features. That is the third consecutive audit (532, 534-partially, 536) to land
+  here — the staleness-ordered audit rotation is now exhausted and has low expected value on a second pass.
+- **The `--attr` long-tail probe is the reliable value in a "no gap" audit.** Both Actors were already
+  inside a verified title-match block with span 0 on their head queries (no lever there), but probing 5
+  *long-tail* buyer queries on `steam-reviews-scraper` surfaced `steam player count` (nbHits 2047, p29,
+  outside the block) — a real feature we shipped but never named in the title. p29 -> p5 after the edit,
+  beating the ~p9 prediction. Head queries tell you nothing once you are in the block; probe long-tail.
+- **Repeating a word in a title is sometimes correct.** To keep `steam reviews`, `steam api` AND
+  `steam player count` all contiguous and in-order (cycle 524's proximity rule), the title has to spell
+  "Steam" three times: `Steam Reviews Scraper – Steam API, Steam Player Count, Playtime`. It reads
+  slightly repetitive but each phrase is a genuine, separately-ranked entry point. Contiguity beats prose.
+- **Watch the confound when attributing a rank move to a title edit.** In the same window as this edit,
+  `storePosition` moved 53371 -> 51071 on its own, and `steam api` (p2->p1) and `steam reviews` (p43->p39)
+  both improved without their title tokens changing. Only the query whose `query in our title` flipped
+  False -> True is causally clean. Record the storePosition on both sides of any rank measurement.

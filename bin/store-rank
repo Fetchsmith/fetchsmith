@@ -67,7 +67,12 @@ TERMS = {
     # (single word, no proximity lever) at p109 (storePosition-driven, unchanged shape).
     "substack-scraper": ["substack", "substack api"],
     "apple-podcasts-scraper": ["apple podcasts"],
-    "steam-reviews-scraper": ["steam reviews", "steam api"],  # cycle 524: "steam api" p213->p2 after title edit
+    # cycle 524: "steam api" p213->p2 after title edit. cycle 536: added "steam player count"
+    # (nbHits 2047, real buyer intent, and `includePlayerCount` genuinely ships it) — title
+    # gained a second contiguous "Steam Player Count" phrase, p29 -> p5 (predicted ~p9).
+    # "steam reviews" p43->p39 and "steam api" p2->p1 in the same window, but storePosition
+    # also moved 53371->51071 on its own, so only the player-count jump is causally clean.
+    "steam-reviews-scraper": ["steam reviews", "steam api", "steam player count"],
     # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
     # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
     # full). Confirmed the h143/h145(b) apostrophe caveat: querying "who's hiring"

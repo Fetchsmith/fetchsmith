@@ -578,7 +578,7 @@
     },
     {
       "slug": "steam-reviews-scraper",
-      "title": "Steam Reviews Scraper \u2013 Steam API, Playtime & Language Filters",
+      "title": "Steam Reviews Scraper \u2013 Steam API, Steam Player Count, Playtime",
       "summary": "Steam player reviews as structured data: full review text, reviewer playtime, thumbs up/down, helpfulness votes and purchase type \u2014 plus a games mode with prices, genres, developers, review-score summaries, live player counts and optional SteamSpy owner estimates, peak concurrent players and crowd-voted tags. Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet game returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,
