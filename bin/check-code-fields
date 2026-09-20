@@ -57,6 +57,10 @@ FIELD_SUPPRESS = {
     # pushed to the dataset. Flagged because snapshotOf()'s `return {...}` shares 6/7 keys with
     # real dataset fields, so it reads as a row shape rather than a suppressed non-row literal.
     'grants-gov-scraper': {'eligHash'},
+    # descHash is the same internal watch-snapshot fingerprint pattern (KV store only, cycle 543)
+    # -- never pushed to the dataset. snapshotOf()'s `return {...}` shares 6/7 keys with real
+    # dataset fields for the same reason as grants-gov-scraper above.
+    'sam-gov-opportunities-scraper': {'descHash'},
 }
 
 

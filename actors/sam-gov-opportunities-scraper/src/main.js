@@ -1,5 +1,6 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { createHash } from 'node:crypto';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -72,9 +73,11 @@ const organizationId = String(input.organizationId ?? '').trim();
 const activeOnly = input.activeOnly !== false; // default true
 const enrichDetail = input.enrichDetail === true;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 200), 1), 10000); // 10k = confirmed backend depth cap (cycle 538)
+const watchLabel = String(input.watchLabel ?? '').trim();
+const watchChanges = Boolean(input.watchChanges);
 
 log.info('Starting SAM.gov opportunity search', {
-    keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail,
+    keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail, watchLabel,
 });
 
 function buildSearchUrl(page, size) {
@@ -154,6 +157,152 @@ async function enrichOne(item) {
     return item;
 }
 
+// ---------------------------------------------------------------------------
+// Watch mode: "only what is new since my last run", per saved query. Same shape as
+// grants-gov-scraper/federal-register-scraper (cycle 297+) -- copy that design, don't reinvent it.
+//
+// The baseline is the buyer's own -- the opportunity ids this label has already delivered -- kept
+// in a NAMED key-value store so it survives across runs (the default per-run KV store would reset
+// the baseline every run, i.e. re-charge the whole result set every time). `opportunityId` (SAM's
+// `_id`) is the stable identity: it's what the detail endpoint and the public /opp/<id>/view URL
+// key off, whereas `solicitationNumber` is an agency-entered label that can in principle repeat.
+const WATCH_STORE = 'fetchsmith-samgov-watch';
+const SEED_CAP = 10000; // same as SAM.gov's own hard backend depth cap -- a seed walk can never
+// need to go deeper than the platform itself allows for one query.
+const WATCH_KEEP = 60000; // bound the KV record size; oldest ids fall off first
+
+const watchMode = watchLabel.length > 0;
+
+// Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted. The
+// criteria fingerprint is part of the key on purpose: if the buyer edits a filter, that's a
+// different question and gets its own baseline, instead of dumping every opportunity the old
+// narrower filter happened to exclude as if it were brand new. `enrichDetail` is deliberately left
+// out -- it changes output richness, not which opportunities match, same reasoning as `enrich` on
+// grants-gov-scraper's watchCriteria.
+function watchKeyFor(label, criteria) {
+    const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const watchCriteria = {
+    keyword, naicsCodes: [...naicsCodes].sort(), setAsideTypes: [...setAsideTypes].sort(),
+    noticeTypes: [...noticeTypes].sort(), states: [...states].sort(), organizationId, activeOnly,
+};
+
+// Snapshot of the fields that can change on an already-delivered opportunity: `isActive`/
+// `noticeTypeCode` (the presolicitation -> solicitation -> award lifecycle transition SAM.gov's
+// own demand data flags as the single most valuable alert in this niche), `responseDate` (a
+// deadline extension -- the highest-frequency real change), `modifiedDate` (SAM's own "this
+// notice was edited" stamp), `modificationsCount` and `awardeeName` (null -> set is the award
+// landing). `description` is truncated HTML (~250 chars) -- the fleet rule is never to store free
+// text in a watch snapshot, so only an 8-char md5 fingerprint of it is kept, enough to detect an
+// edit without risking the KV record's size budget (WATCH_KEEP holds up to 60,000 of these).
+function descHashOf(desc) {
+    return desc ? createHash('md5').update(desc).digest('hex').slice(0, 8) : null;
+}
+function snapshotOf(item) {
+    return {
+        isActive: item.isActive ?? null,
+        noticeTypeCode: item.noticeTypeCode ?? null,
+        responseDate: item.responseDate ?? null,
+        modifiedDate: item.modifiedDate ?? null,
+        modificationsCount: typeof item.modificationsCount === 'number' ? item.modificationsCount : null,
+        awardeeName: item.awardeeName ?? null,
+        descHash: descHashOf(item.description),
+    };
+}
+
+// A changed opportunity is re-delivered tagged with exactly what moved, so a buyer doesn't have to
+// diff the row against their own last-seen copy to find out. descHash is compared separately since
+// its "previous" value (a hash) isn't meaningful to show a buyer.
+function changesBetween(prev, next) {
+    if (!prev) return null;
+    const types = [];
+    const previous = {};
+    for (const field of ['isActive', 'noticeTypeCode', 'responseDate', 'modifiedDate', 'modificationsCount', 'awardeeName']) {
+        if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
+            types.push(field);
+            previous[field] = prev[field];
+        }
+    }
+    if (prev.descHash !== undefined && prev.descHash !== null && prev.descHash !== next.descHash) {
+        types.push('description');
+        previous.description = '(changed; only a fingerprint of the description is retained, not the previous text)';
+    }
+    return types.length ? { types, previous } : null;
+}
+
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+const watchSeen = new Map(); // opportunityId -> last-seen snapshot
+let changedCount = 0;
+let skippedSeen = 0;
+
+async function saveWatchRecord(status) {
+    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+    await watchStore.setValue(watchKey, {
+        ...watchRecord,
+        label: watchLabel,
+        criteria: watchCriteria,
+        lastRunAt: new Date().toISOString(),
+        lastRunStatus: status,
+        seenCount: entries.length,
+        // Compact per-entry shape so WATCH_KEEP's 60,000 entries stay inside the KV record's size
+        // budget: i(d), a(isActive), n(noticeTypeCode), r(responseDate), m(modifiedDate),
+        // c(modificationsCount), w(awardeeName), h(descHash).
+        seenIds: entries.map(([id, snap]) => ({
+            i: id, a: snap.isActive, n: snap.noticeTypeCode, r: snap.responseDate, m: snap.modifiedDate,
+            c: snap.modificationsCount, w: snap.awardeeName, h: snap.descHash,
+        })),
+        runCount: (watchRecord.runCount ?? 0) + 1,
+    });
+}
+
+if (watchMode) {
+    watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    watchKey = key;
+    const existing = await watchStore.getValue(key);
+    if (existing && Array.isArray(existing.seenIds)) {
+        watchRecord = existing;
+        // Backward-compatible reader: a record from before this feature existed would only ever
+        // be a fresh baseline (this is the Actor's first watch-mode build), but kept defensive the
+        // same way the fleet's other watch actors are, in case a future field is added later and
+        // an older record is missing it -- missing fields just have no snapshot yet.
+        for (const entry of existing.seenIds) {
+            if (entry && typeof entry === 'object') {
+                watchSeen.set(String(entry.i), {
+                    isActive: entry.a ?? null, noticeTypeCode: entry.n ?? null, responseDate: entry.r ?? null,
+                    modifiedDate: entry.m ?? null,
+                    modificationsCount: typeof entry.c === 'number' ? entry.c : null,
+                    awardeeName: entry.w ?? null, descHash: entry.h ?? null,
+                });
+            } else {
+                watchSeen.set(String(entry), {
+                    isActive: null, noticeTypeCode: null, responseDate: null, modifiedDate: null,
+                    modificationsCount: null, awardeeName: null, descHash: null,
+                });
+            }
+        }
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+            + `${watchSeen.size} already-delivered opportunity(ies). Only opportunities NOT in that baseline are returned and charged`
+            + (watchChanges ? ', plus any already-delivered opportunity whose active/notice-type status, response deadline, modified date, modification count, awardee or description changed.' : '.'),
+        );
+    } else {
+        watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+        seeding = true;
+        log.info(
+            `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+            + 'It records which opportunities already match and returns ZERO results (you are charged nothing). Run it '
+            + 'again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
+        );
+    }
+}
+
 // This Actor is published PAY_PER_EVENT ($0.0015/row, single "result" event, see meta.json) but
 // until this fix it only ever called Actor.pushData(results) in one bulk call at the end -- never
 // Actor.charge(). Every other PPE Actor in the fleet routes pushes through a pushResult() that
@@ -176,39 +325,109 @@ async function pushResult(item) {
 }
 
 const PAGE_SIZE = 100;
-const results = [];
-let page = 0;
-let total = Infinity;
 
-while (results.length < maxResults && results.length < total) {
-    const url = buildSearchUrl(page, PAGE_SIZE);
-    const data = await apiGet(url);
-    if (!data) { log.warning(`Page ${page} failed after retries; stopping.`); break; }
-    total = Math.min(data.page?.totalElements ?? 0, 10000);
-    const rows = data._embedded?.results ?? [];
-    if (rows.length === 0) break;
-    for (const row of rows) {
-        results.push(normalizeRow(row));
-        if (results.length >= maxResults) break;
+// Pulled out so the real run and a watch-mode baseline seed walk share the exact same paging
+// logic and can never drift out of sync -- only the `limit` differs (maxResults vs. SEED_CAP).
+async function fetchRows(limit) {
+    const rows = [];
+    let page = 0;
+    let total = Infinity;
+    while (rows.length < limit && rows.length < total) {
+        const url = buildSearchUrl(page, PAGE_SIZE);
+        const data = await apiGet(url);
+        if (!data) { log.warning(`Page ${page} failed after retries; stopping.`); break; }
+        total = Math.min(data.page?.totalElements ?? 0, 10000);
+        const pageRows = data._embedded?.results ?? [];
+        if (pageRows.length === 0) break;
+        for (const row of pageRows) {
+            rows.push(normalizeRow(row));
+            if (rows.length >= limit) break;
+        }
+        log.info(`Page ${page}: +${pageRows.length} rows (total so far ${rows.length}/${Math.min(total, limit)})`);
+        page += 1;
+        if (page * PAGE_SIZE >= 10000) { log.warning('Hit SAM.gov\'s 10,000-row backend depth cap; narrow keyword/filters for more.'); break; }
+        await sleep(300); // stay well under any rate limit; verified spacing from the feasibility check
     }
-    log.info(`Page ${page}: +${rows.length} rows (total so far ${results.length}/${Math.min(total, maxResults)})`);
-    page += 1;
-    if (page * PAGE_SIZE >= 10000) { log.warning('Hit SAM.gov\'s 10,000-row backend depth cap; narrow keyword/filters for more.'); break; }
-    await sleep(300); // stay well under any rate limit; verified spacing from the feasibility check
+    return rows;
 }
 
-if (enrichDetail) {
-    log.info(`Enriching ${results.length} rows with detail-call fields (naics, set-aside, place of performance, contacts)...`);
+// Seeding only needs ids + the watched fields, both already on the thin search row, so it never
+// needs enrichDetail on -- unlike grants-gov-scraper's award-amount filter, nothing this Actor
+// watches lives only on the detail record. It walks the WHOLE match set (up to SEED_CAP, the same
+// as SAM.gov's own hard depth cap), unbounded by maxResults -- a baseline that stopped early would
+// report every opportunity past the stopping point as "new" on the first incremental run.
+if (watchMode && seeding) {
+    const baselineRows = await fetchRows(SEED_CAP);
+    for (const row of baselineRows) {
+        if (row.opportunityId) watchSeen.set(row.opportunityId, snapshotOf(row));
+    }
+    log.info(`Baseline walk: ${watchSeen.size} opportunity id(s) recorded.`);
+}
+
+let results = [];
+if (!seeding) {
+    results = await fetchRows(maxResults);
+    if (enrichDetail) {
+        log.info(`Enriching ${results.length} rows with detail-call fields (naics, set-aside, place of performance, contacts)...`);
+        for (const item of results) {
+            await enrichOne(item);
+            await sleep(200);
+        }
+    }
+
+    let beforePush = 0;
     for (const item of results) {
-        await enrichOne(item);
-        await sleep(200);
+        if (watchMode && item.opportunityId && watchSeen.has(item.opportunityId)) {
+            const id = item.opportunityId;
+            const nextSnap = snapshotOf(item);
+            // Already delivered under this watch label. Normally dropped before any charge, so an
+            // opportunity is never paid for twice -- UNLESS watchChanges is on and one of the
+            // watched fields moved since we last saw it, in which case it's re-delivered (charged
+            // like a new row) tagged with exactly what changed.
+            const change = watchChanges ? changesBetween(watchSeen.get(id), nextSnap) : null;
+            if (!change) {
+                // Snapshot is kept current either way, so turning watchChanges on later detects
+                // only drift from that point, not a backlog since the baseline.
+                watchSeen.set(id, nextSnap);
+                skippedSeen += 1;
+                continue;
+            }
+            const cont = await pushResult({ ...item, _watchChangeType: change.types, _watchPrevious: change.previous });
+            if (pushed > beforePush) { watchSeen.set(id, nextSnap); changedCount += 1; }
+            beforePush = pushed;
+            if (!cont) break;
+            continue;
+        }
+        const cont = await pushResult(item);
+        // Recorded as delivered only after the charge actually succeeded -- anything dropped by
+        // maxResults or a charge limit stays "new" for the next run.
+        if (watchMode && item.opportunityId && pushed > beforePush) watchSeen.set(item.opportunityId, snapshotOf(item));
+        beforePush = pushed;
+        if (!cont) break; // maxResults reached or a per-run charge limit hit
     }
 }
 
-for (const item of results) {
-    const cont = await pushResult(item);
-    if (!cont) break; // maxResults reached or a per-run charge limit hit
+if (watchMode) {
+    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    if (seeding) {
+        log.info(
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} opportunity(ies) recorded as already-seen, `
+            + '0 results returned, 0 charged. The next run on this label and these filters returns only new opportunities.'
+            + (watchSeen.size >= SEED_CAP
+                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-opportunity cap. Narrow the query (a keyword, a `
+                + 'NAICS code, a set-aside/notice type) so the whole result set fits, or the first incremental run '
+                + 'will report opportunities past the cap as new.'
+                : ''),
+        );
+    } else {
+        log.info(
+            `Watch label "${watchLabel}": ${pushed - changedCount} new opportunity(ies)`
+            + (watchChanges ? ` and ${changedCount} changed opportunity(ies) (active/notice-type status, response deadline, modified date, modification count, awardee or description)` : '')
+            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+        );
+    }
 }
+
 log.info(`Done. Pushed ${pushed} opportunities.`);
 
 await Actor.exit();

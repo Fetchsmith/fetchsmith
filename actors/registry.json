@@ -1766,7 +1766,7 @@
     {
       "slug": "sam-gov-opportunities-scraper",
       "title": "SAM.gov Opportunities Scraper – US Federal Contracts, Bids",
-      "summary": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with no API key and no login. Filter by keyword, NAICS code, set-aside, notice type, place-of-performance state and issuing organization (multi-value filters OR correctly), and optionally enrich each row with the contracting officer's contact details, NAICS codes, set-aside and place of performance from the per-opportunity record.",
+      "summary": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with no API key and no login. Filter by keyword, NAICS code, set-aside, notice type, place-of-performance state and issuing organization (multi-value filters OR correctly), and optionally enrich each row with the contracting officer's contact details, NAICS codes, set-aside and place of performance from the per-opportunity record. Optional watchLabel mode returns only opportunities new since your last run, so a schedule becomes a solicitation alert; add watchChanges to also catch a presolicitation turning into a solicitation, an award landing, a deadline extension, or a modified/updated notice.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "fvj24xj2wL6VpYJEK",
@@ -1804,7 +1804,9 @@
         "setAside",
         "placeOfPerformanceState",
         "placeOfPerformanceCountry",
-        "pointOfContact"
+        "pointOfContact",
+        "_watchChangeType",
+        "_watchPrevious"
       ],
       "sample_output": {
         "opportunityId": "c8092b56b2c14be9bea3ac6081207963",

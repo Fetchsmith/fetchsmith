@@ -177,6 +177,22 @@
           "null"
         ],
         "title": "Points of contact"
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": ["isActive"],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": { "isActive": true },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },

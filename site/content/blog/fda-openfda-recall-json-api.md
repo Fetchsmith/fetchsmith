@@ -60,7 +60,7 @@ One more gotcha worth knowing before you filter by date: `report_date` — the f
 
 ## Packaged version
 
-[fda-recall-scraper on Apify](https://apify.com/fetchsmith/fda-recall-scraper) wraps all three endpoints into one schema: pick `food`, `drug` and/or `device` (interleaved, not one type after another), filter by classification, state, status or free text, and get back 36 flat fields with dates normalized to ISO and the drug-only `openfda` identifiers already flattened where they exist. The 25,000-row cap and its date-chunking workaround are handled internally — you just get more rows back on a wide query, automatically. No API key, no proxy, pay per result.
+[fda-recall-scraper on Apify](https://apify.com/fetchsmith/fda-recall-scraper) wraps all three endpoints into one schema: pick `food`, `drug` and/or `device` (interleaved, not one type after another), filter by classification, state, status or free text, and get back 39 flat fields with dates normalized to ISO and the drug-only `openfda` identifiers already flattened where they exist. The 25,000-row cap and its date-chunking workaround are handled internally — you just get more rows back on a wide query, automatically. No API key, no proxy, pay per result.
 
 openFDA's 25,000-row skip cap is the same silent-truncation class we hit on ClinicalTrials.gov, NIH RePORTER and Contracts Finder — the cross-API comparison across all eight key-free government APIs we build against is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 
