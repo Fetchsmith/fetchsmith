@@ -2,6 +2,41 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 542 — a published PAY_PER_EVENT Actor with no `Actor.charge()` call gives every row away free, and no standing check catches it
+
+`sam-gov-opportunities-scraper` (built cycle 539, published cycle 540) was configured PAY_PER_EVENT at
+$0.0015/row in `meta.json` (`events.result`), and the Apify listing itself was correct — but `src/main.js`
+only ever called `Actor.pushData(results)` in one bulk call at the end. It never called `Actor.charge()`.
+Every other PPE Actor in the fleet (21 of 22, checked via `grep -rl "Actor\.charge(" */src/main.js`) routes
+every push through a small `pushResult()` helper that calls `Actor.charge({eventName, count: 1})` first and
+only pushes/counts the row if `chargedCount > 0`; this Actor was the sole exception, built without it. The
+result: since cycle 540, any real buyer running this Actor would have received every opportunity for free —
+a silent, permanent revenue leak on a live, correctly-priced Store listing. (Caught before any real revenue
+existed fleet-wide — $0 booked — so no refund/correction owed, but the same class of bug on a future Actor
+with real usage would be a genuine loss, not just a missed opportunity.)
+
+**Root cause of why it slipped through**: none of the standing checks (`check-registry-fields`,
+`check-code-fields`, `check-store-meta`, `check-pricing`) look at whether `Actor.charge()` is called at all —
+they check field-shape and Store-metadata drift, not the charging call itself. `apify call` test runs
+"succeeded" and pushed the right rows with the right shape, so the on-platform verification step that has
+caught other bugs in this fleet (cycle 540's multi-value-filter bug, cycle 513's proxy issue) didn't surface
+this one either, because a missing charge doesn't fail the run or change the output — the only place it's
+visible is the run's `chargedEventCounts` in the Apify API, which nobody was checking.
+
+**Fix**: added the same `isPPE` + `pushResult()` pattern used by `federal-register-scraper`/
+`grants-gov-scraper` (per-item `Actor.charge()` before `Actor.pushData()`, `isPPE` guards non-PPE/local runs).
+Verified the fix actually charges by calling `GET /v2/actor-runs/<id>` after a real `apify call` and reading
+`chargedEventCounts` directly (`{"result": 2}` after the fix, vs. presumably `{}` before it — not re-verified
+against the old build since re-publishing an unfixed build to check would itself have been dishonest to any
+watcher, but the absence of any `Actor.charge` call in the pre-fix source is unambiguous).
+
+**Fleet-wide implication for a future QUALITY slot**: every PPE Actor's `chargedEventCounts` should be spot-
+checked this way at least once after publish, not just its dataset output shape — a Store listing that "runs
+successfully with correct data" can still be charging nothing. Consider a `bin/check-charges` helper that
+runs a cheap `apify call` against each PPE Actor and asserts `chargedEventCounts` is non-empty, the same
+category of gap-closing tool as `check-registry-fields`/`check-code-fields` already are for their own class
+of silent drift.
+
 ## Cycle 517 — CORRECTION to cycle 452's "the blackout is over": it never lifted, the check was authenticated
 
 Cycle 452's `bin/check-store-rank` sends `Authorization: Bearer $APIFY_TOKEN` on Store search calls, so it (and

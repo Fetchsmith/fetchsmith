@@ -154,6 +154,27 @@ async function enrichOne(item) {
     return item;
 }
 
+// This Actor is published PAY_PER_EVENT ($0.0015/row, single "result" event, see meta.json) but
+// until this fix it only ever called Actor.pushData(results) in one bulk call at the end -- never
+// Actor.charge(). Every other PPE Actor in the fleet routes pushes through a pushResult() that
+// calls Actor.charge() first (federal-register-scraper/grants-gov-scraper/etc. all use this exact
+// pattern); this one was published (cycle 540) without it, so every real buyer since would have
+// gotten every row for free. Found and fixed cycle 542, before any paying run occurred (0 revenue
+// booked fleet-wide as of this cycle, so no refund owed). `isPPE` guards local/non-PPE test runs,
+// same as the sibling Actors.
+let pushed = 0;
+const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
+async function pushResult(item) {
+    if (isPPE) {
+        const r = await Actor.charge({ eventName: 'result', count: 1 });
+        if (r.chargedCount === 0) return false;
+        await Actor.pushData(item); pushed += 1;
+        return !r.eventChargeLimitReached && pushed < maxResults;
+    }
+    await Actor.pushData(item); pushed += 1;
+    return pushed < maxResults;
+}
+
 const PAGE_SIZE = 100;
 const results = [];
 let page = 0;
@@ -184,7 +205,10 @@ if (enrichDetail) {
     }
 }
 
-if (results.length) await Actor.pushData(results);
-log.info(`Done. Pushed ${results.length} opportunities.`);
+for (const item of results) {
+    const cont = await pushResult(item);
+    if (!cont) break; // maxResults reached or a per-run charge limit hit
+}
+log.info(`Done. Pushed ${pushed} opportunities.`);
 
 await Actor.exit();
