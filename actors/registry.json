@@ -814,6 +814,9 @@
         "deadlineReceiptRequestDate",
         "publicationDate",
         "noticeUrl",
+        "pdfUrl",
+        "htmlUrl",
+        "xmlUrl",
         "procedureIdentifier",
         "changeReasonDescription"
       ],
@@ -842,6 +845,9 @@
         "deadlineReceiptRequestDate": null,
         "publicationDate": "2026-09-14",
         "noticeUrl": "https://ted.europa.eu/en/notice/629162-2026/pdf",
+        "pdfUrl": "https://ted.europa.eu/en/notice/629162-2026/pdf",
+        "htmlUrl": "https://ted.europa.eu/en/notice/-/detail/629162-2026",
+        "xmlUrl": "https://ted.europa.eu/en/notice/629162-2026/xml",
         "procedureIdentifier": "26272159-01fb-40c6-a514-0bc8851a9ec8",
         "changeReasonDescription": null
       }

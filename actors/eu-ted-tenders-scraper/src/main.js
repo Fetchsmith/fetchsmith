@@ -140,19 +140,26 @@ function daysUntil(dateStr) {
   return Math.round((then - today) / 86400000);
 }
 
-function pickNoticeUrl(links) {
+// TED's `links` object carries a separate sub-object per format (pdf/xml/html), each
+// keyed by language. Picks one URL for a single format using the same language
+// preference every field on this Actor already uses (output language, else ENG,
+// else MUL, else whatever's there).
+function pickLink(links, kind) {
   if (!links || typeof links !== 'object') return null;
+  const byLang = links[kind];
+  if (!byLang) return null;
   const preferredUpper = outputLanguage.toUpperCase();
-  for (const kind of ['pdf', 'xml']) {
-    const byLang = links[kind];
-    if (!byLang) continue;
-    if (preferredUpper !== 'ENG' && byLang[preferredUpper]) return byLang[preferredUpper];
-    if (byLang.ENG) return byLang.ENG;
-    if (byLang.MUL) return byLang.MUL;
-    const firstKey = Object.keys(byLang)[0];
-    if (firstKey) return byLang[firstKey];
-  }
-  return null;
+  if (preferredUpper !== 'ENG' && byLang[preferredUpper]) return byLang[preferredUpper];
+  if (byLang.ENG) return byLang.ENG;
+  if (byLang.MUL) return byLang.MUL;
+  const firstKey = Object.keys(byLang)[0];
+  return firstKey ? byLang[firstKey] : null;
+}
+
+// Kept for backward compatibility with existing users of `noticeUrl`: same
+// pdf-then-xml preference this field has always had.
+function pickNoticeUrl(links) {
+  return pickLink(links, 'pdf') ?? pickLink(links, 'xml');
 }
 
 // Apify's CSV/Excel export splits an array field into numbered columns
@@ -218,6 +225,9 @@ function normalize(notice) {
     deadlineReceiptRequestDate: earliestDate(notice['deadline-receipt-request-date-lot']),
     publicationDate: notice['publication-date'] ? String(notice['publication-date']).split('+')[0] : null,
     noticeUrl: pickNoticeUrl(notice.links),
+    pdfUrl: pickLink(notice.links, 'pdf'),
+    htmlUrl: pickLink(notice.links, 'html'),
+    xmlUrl: pickLink(notice.links, 'xml'),
     procedureIdentifier: notice['procedure-identifier'] ?? null,
     changeReasonDescription,
   };

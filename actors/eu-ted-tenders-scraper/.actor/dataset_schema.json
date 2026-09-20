@@ -27,7 +27,10 @@
       "daysUntilDeadline": { "type": ["integer", "null"], "title": "Whole days until the submission deadline (negative = already closed)" },
       "deadlineReceiptRequestDate": { "type": ["string", "null"], "title": "Request-to-participate deadline" },
       "publicationDate": { "type": ["string", "null"], "title": "Publication date" },
-      "noticeUrl": { "type": ["string", "null"], "title": "Notice URL" },
+      "noticeUrl": { "type": ["string", "null"], "title": "Notice URL (PDF, falls back to XML)" },
+      "pdfUrl": { "type": ["string", "null"], "title": "Notice PDF URL" },
+      "htmlUrl": { "type": ["string", "null"], "title": "Notice HTML page URL" },
+      "xmlUrl": { "type": ["string", "null"], "title": "Notice XML URL" },
       "procedureIdentifier": { "type": ["string", "null"], "title": "Procedure identifier (shared across a notice and its corrigenda)" },
       "changeReasonDescription": { "type": ["string", "null"], "title": "What changed (corrigendum notices only)" }
     }

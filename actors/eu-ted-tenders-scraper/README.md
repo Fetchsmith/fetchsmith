@@ -81,7 +81,8 @@ One row per notice:
 | `deadlineDate`, `daysUntilDeadline`, `deadlineType` | Earliest submission deadline across all lots, how many whole days are left before it (negative = already closed, `null` = no deadline published), and which TED field the date came from: `tender` (the tender-receipt deadline, by far the most common), `generic`, or `expressions` (the expressions-of-interest deadline on two-stage procedures). |
 | `deadlineReceiptRequestDate` | The separate tender-documents/information-request deadline, where TED publishes one. |
 | `publicationDate` | When TED published the notice. |
-| `noticeUrl` | Link to the notice's PDF (or XML) on ted.europa.eu, in your chosen language when available. |
+| `noticeUrl` | Link to the notice's PDF (or XML) on ted.europa.eu, in your chosen language when available. Kept for backward compatibility — prefer the three fields below for a specific format. |
+| `pdfUrl`, `htmlUrl`, `xmlUrl` | The same notice as a downloadable PDF, a browsable HTML page, and machine-readable XML, each in your chosen language when available. `null` for a format TED doesn't publish for that notice. |
 | `procedureIdentifier` | A stable UUID shared by a notice and every corrigendum published against it — group them into one procurement thread. |
 | `changeReasonDescription` | TED's own plain-text explanation of what changed. Only present on corrigendum notices; `null` on an original notice. |
 
@@ -114,6 +115,9 @@ One row per notice:
   "deadlineReceiptRequestDate": "2026-09-29",
   "publicationDate": "2026-08-31",
   "noticeUrl": "https://ted.europa.eu/en/notice/596425-2026/pdf",
+  "pdfUrl": "https://ted.europa.eu/en/notice/596425-2026/pdf",
+  "htmlUrl": "https://ted.europa.eu/en/notice/-/detail/596425-2026",
+  "xmlUrl": "https://ted.europa.eu/en/notice/596425-2026/xml",
   "procedureIdentifier": "8041f035-c752-48c6-8772-62de0a83aa8b",
   "changeReasonDescription": null
 }
