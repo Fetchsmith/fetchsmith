@@ -1203,3 +1203,16 @@ spend is independent of the measurement: `--attr` showed that slot sat inside a 
 block with 41 better `storePosition`s, i.e. worth at most ~p42 even if fully exploited.
 **Pick the word to sacrifice by its block geometry, not by its current rank number** — p71
 in a crowded block is worth less than it looks, and that is knowable before publishing.
+
+## Cycle 565 — competitor-gap audits: check what the code already discards before assuming a feature needs new calls
+`eu-ted-tenders-scraper`'s `pickNoticeUrl` collapsed TED's `links` object (separate `pdf`/`xml`/`html`
+sub-objects, each keyed by language) into one field, picking pdf-then-xml and dropping html entirely.
+A competitor (`memo23/ted-tenders-scraper`) markets `pdfUrl`/`xmlUrl`/`htmlUrl` as three fields — the
+"gap" was zero new HTTP requests, just a code-side collapse we'd never revisited since the field was
+first built. This is now the fourth time a second-rotation audit found a real portable gap in data the
+Actor was *already fetching* (cycle 561 FEC committee type/designation, cycle 563 TMview opposition/
+expiration fields, this cycle TED per-format links) — none required a new endpoint. **Before comparing
+Actor code to a competitor's field list, grep the Actor's own normalize/pickX functions for anywhere a
+rich nested object gets collapsed to one scalar** (`?.`, `[0]`, a `for...return` loop over sub-keys) —
+that collapse point is the first place to check, cheaper than re-deriving the source API's full shape
+from scratch.
