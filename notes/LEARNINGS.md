@@ -1560,3 +1560,30 @@ Corollary on selling a fix: a billing guarantee that exists only in code earns n
 - **The thousands separator is not stable within one source.** airbnb prints `€71.000` (= 71000) and figma `$32.50` (= 32.5) — the same Actor sees `.` mean both. Decide by the SIZE of the group after the last separator (3 digits = thousands, 1-2 = decimal), never by the character. `parseMoney` in `ats-jobs-scraper/src/main.js` is the reusable implementation.
 - **Check a fill-rate fix on several sources of the same type before believing it.** Greenhouse boards split hard: airbnb 84%, databricks 54%, figma 65%, but stripe and discord 0% because they never enabled pay transparency. One board would have supported either "it works" or "it doesn't".
 - **Gate the derived field separately from the expensive one.** Salary now parses out of `content` on every run while `descriptionHtml` stays behind `includeDescriptions` — otherwise a bandwidth-saving flag silently costs the buyer a different field.
+
+## Cycle 606 (2026-09-21) — a build that widens a filter's reach makes the INPUT SCHEMA lie, not just the README
+
+Cycle 605 taught `ats-jobs-scraper` to read Greenhouse pay-transparency ranges out of
+the posting body. It carefully corrected the README in three places. It never touched
+`.actor/input_schema.json`, where `hasSalary` still said Greenhouse postings are
+**"always dropped"** when the filter is on — true the day it was written, false the
+moment 605 shipped.
+
+That text is worse than a stale README: it renders in the Apify console **next to the
+checkbox**, i.e. at the exact moment a buyer decides whether to use the feature. A
+buyer reading it would conclude the Actor's best new capability does not exist.
+
+**Durable rule: any build that changes what an Actor CAN do must re-read that Actor's
+`input_schema.json` property descriptions, not only its README.** No drift check can
+catch this — `check-code-fields` and `check-registry-fields` compare *field lists*,
+never prose. The cheap grep before finishing such a cycle:
+`grep -n "<the-thing-that-changed>" .actor/input_schema.json README.md .actor/actor.json meta.json`
+
+Two smaller things confirmed the same cycle:
+- **`check-store-index` has a settle lag like `chargedEventCounts`.** It read "2 stale
+  field(s)" seconds after `apify push --force` and "0 stale" a minute later. Re-run it
+  before concluding a publish failed.
+- **Correcting a claim is not the same as proving the correction.** The new `hasSalary`
+  text was verified on the live build in both directions before it shipped: airbnb
+  (transparency on) → 5/5 rows with ranges in GBP/EUR/USD; stripe (never enabled) → 0
+  rows. The negative case is the one that makes the sentence honest.
