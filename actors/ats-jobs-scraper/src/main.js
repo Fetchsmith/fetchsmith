@@ -656,19 +656,29 @@ async function fetchWorkday(slug) {
   // List-level fields only (title, locationsText, a relative "Posted N Days Ago" string, and the
   // requisition id in bulletFields) — no department, employment type, exact date or description
   // without a per-job detail call, same tradeoff `fetchSmartRecruiters` already makes above.
-  const mapped = raw.map((p) => ({
-    company: tenant, atsSource: 'workday', jobId: (p.bulletFields ?? [])[0] || p.externalPath || null,
-    title: p.title?.trim() ?? null,
-    department: null, team: null, employmentType: null, workplaceType: null,
-    isRemote: /remote/i.test(p.locationsText ?? ''),
-    location: p.locationsText ?? null, secondaryLocations: [],
-    country: null, region: null, city: null,
-    salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
-    publishedAt: null, updatedAt: null,
-    jobUrl: `https://${host}/${site}${p.externalPath}`, applyUrl: `https://${host}/${site}${p.externalPath}`,
-    descriptionHtml: null, descriptionText: null,
-    _externalPath: p.externalPath,
-  }));
+  // Workday publishes NO structured geography in the list payload — `locationsText` is the only
+  // place field there (measured cycle 609 across 5 live boards: the list keys are exactly title,
+  // externalPath, locationsText, postedOn, bulletFields). But its text follows board conventions
+  // `parseLocation` already handles ("US, CA, Santa Clara", "France - Paris", "Canada, Toronto"),
+  // so city/region/country fill here WITHOUT the per-job detail call. Strings that are not places
+  // — Workday's "3 Locations" multi-site placeholder, "Statewide", and okgov's county names —
+  // parse to null by design rather than becoming a bogus city.
+  const mapped = raw.map((p) => {
+    const geo = parseLocation(p.locationsText);
+    return {
+      company: tenant, atsSource: 'workday', jobId: (p.bulletFields ?? [])[0] || p.externalPath || null,
+      title: p.title?.trim() ?? null,
+      department: null, team: null, employmentType: null, workplaceType: null,
+      isRemote: /remote/i.test(p.locationsText ?? ''),
+      location: p.locationsText ?? null, secondaryLocations: [],
+      country: geo.country, region: geo.region, city: geo.city,
+      salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+      publishedAt: null, updatedAt: null,
+      jobUrl: `https://${host}/${site}${p.externalPath}`, applyUrl: `https://${host}/${site}${p.externalPath}`,
+      descriptionHtml: null, descriptionText: null,
+      _externalPath: p.externalPath,
+    };
+  });
 
   const kept = [];
   for (const job of mapped) {
@@ -687,7 +697,28 @@ async function fetchWorkday(slug) {
         job.descriptionText = textOf(info.jobDescription);
         job.employmentType = info.timeType ?? null;
         job.location = info.jobRequisitionLocation?.descriptor ?? info.location ?? job.location;
-        job.country = info.country?.descriptor ?? null;
+        // The detail call is the ONE place Workday publishes structured geography, and only for
+        // country — there is no city/region field at any depth (measured cycle 609). Two rules:
+        // (1) normalise the descriptor through the same vocabulary the parsed sources use, because
+        // Workday writes "United States of America" where Greenhouse/Ashby rows say "United
+        // States" — shipping both spellings would silently break the cross-source country grouping
+        // the listing sells; (2) never let it blank a country the list text already gave us, and
+        // never touch city/region, which only `locationsText` can supply.
+        const descriptor = info.country?.descriptor ?? null;
+        const structured = descriptor ? parseLocation(descriptor).country : null;
+        job.country = structured ?? descriptor ?? job.country;
+        // The detail call also RESOLVES the list-level placeholder: a posting listed as
+        // "3 Locations" carries its real single place here ("California - San Francisco"),
+        // and the line above has just moved it into `job.location`. Re-parse that better
+        // string to fill city/region the placeholder could never yield. Fills nulls only,
+        // so a value already derived from the list text is never overwritten, and okgov's
+        // street-address descriptors ("Stringtown - 13001 N Highway 69") still parse to
+        // null rather than inventing a city.
+        if (!job.city || !job.region) {
+          const fromDetail = parseLocation(job.location);
+          job.city ??= fromDetail.city;
+          job.region ??= fromDetail.region;
+        }
         job.publishedAt = info.startDate ? new Date(info.startDate).toISOString() : null;
         job.jobUrl = info.externalUrl ?? job.jobUrl;
         job.applyUrl = info.externalUrl ?? job.applyUrl;

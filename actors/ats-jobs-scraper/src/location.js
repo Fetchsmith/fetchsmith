@@ -250,6 +250,25 @@ function stripRemote(s) {
   // Only a bare leading "Remote" is dropped here. "Remote - California" keeps its
   // dash so the tokenizer can split it; eating the dash would leave "- California".
   out = norm(out).replace(/^remote\s+(?:in\s+(?:the\s+)?)?(?=[A-Za-z0-9(])/i, '');
+  // A trailing "Remote" after a SPACED dash must take the dash with it. Dropping the
+  // word alone left a dangling separator ("Florida - Remote" -> "Florida -"), and the
+  // tokenizer only splits a dash with space on BOTH sides, so the string then matched
+  // nothing — Workday's "<place> - Remote" convention (salesforce, adobe) lost the place
+  // entirely. Verified cycle 609: "Florida - Remote", "California - Remote", "Japan -
+  // Remote" all parsed to three nulls before this.
+  // Two guards, both measured over 1,910 live Greenhouse postings rather than assumed —
+  // each one was added only after a wider version of this rule shipped wrong data in test:
+  //   * the space before the dash is REQUIRED. An UNspaced "CC-Remote" is the country-
+  //     prefix convention the tokenizer splits on its own, and eating that dash corrupted
+  //     multi-city lists: "Chicago, US-Remote, Canada-Remote" became "Chicago, US-Remote,
+  //     Canada" and resolved to city "US-Remote" in Canada. 7 distinct strings regressed.
+  //   * a comma list is left alone. In "NYC, SF, Seattle, US - Remote" the trailing "US"
+  //     is the country of the WHOLE list, so removing the dash promoted the last-listed
+  //     city (Seattle) over the primary one (NYC), against the leftmost-wins rule above.
+  //     Keeping the dangling dash there preserves the pre-existing fallback that gets it
+  //     right. Only the simple "<place> - Remote" form — which is what Workday's
+  //     salesforce/adobe boards actually write — is rewritten.
+  if (!out.includes(',')) out = norm(out).replace(/\s+[-–—]\s+remote$/i, '');
   out = norm(out).replace(/\s+remote$/i, '');
   return norm(out);
 }
