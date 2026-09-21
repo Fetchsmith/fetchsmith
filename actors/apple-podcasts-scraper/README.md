@@ -149,6 +149,8 @@ The first run seeds the baseline (0 rows, 0 charged). Every run after that retur
 
 **Can I get genre-specific charts?** Yes — set `chartGenre` (e.g. `comedy`, `trueCrime`, `business`) to get that category's own top chart instead of the overall one, using Apple's own per-genre chart feed. 19 genres are supported; an unrecognized value is ignored with a warning rather than silently returning the wrong chart.
 
+**What happens if Apple's endpoint has a transient blip mid-run?** Every lookup, search, review-feed and RSS request is retried up to 3 times on a connection-level failure (measured at roughly 1 fresh connection in 4 for HTTP/2 faults across this fleet, 2026-09-21) before it is given up on and named in the log. A single blip no longer costs you a whole show's episodes, a page of reviews, or — with `useRssForFullArchive: true` — a silent downgrade back to Apple's 200-episode cap. A real HTTP error from Apple (e.g. a wrong storefront code) still fails immediately with the explanation instead of being retried.
+
 **Is this legal?** It only reads public, unauthenticated Apple endpoints — the same data any visitor sees on podcasts.apple.com. No personal data beyond the public reviewer nicknames Apple itself publishes.
 
 ## Pricing

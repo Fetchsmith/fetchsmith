@@ -278,8 +278,32 @@ async function pushResult(item, watchId = null, pairSeeding = false) {
 // So the customer's own typo surfaced as a missing app or a JSON stack trace. Check the status
 // before parsing and say what is actually wrong. Same defect class as the 0.1.43 Shopify fix.
 const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match(/itunes\.apple\.com\/([^/]+)\/rss/)?.[1] ?? null;
+// got's own `retry` only covers a fixed errorCodes list that excludes the connection-establishment
+// faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on this got-scraping version in
+// cycle 616 — about 1 in 4 fresh connections. Without an outer retry a single blip reads as
+// "Apple has nothing": a review page throws and the app is recorded as failed, and the ratings
+// histogram quietly comes back null. The run still SUCCEEDS, just with less than the buyer paid to
+// query. Retry connection-level throws before believing them. Only exceptions reach here — an HTTP
+// 4xx/5xx is a returned response (got-scraping does not throw on status) and is classified by
+// getJson below, so a wrong storefront code still fails on attempt 1 instead of looping.
+const requestWithRetry = async (url, opts = {}) => {
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) {
+        log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw lastErr;
+};
+
 const getJson = async (url, opts = {}) => {
-  const resp = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  const resp = await requestWithRetry(url, opts);
   if (resp.statusCode >= 400) {
     let detail = '';
     try { detail = String(JSON.parse(resp.body)?.errorMessage ?? ''); } catch { /* empty or HTML body */ }
@@ -416,7 +440,7 @@ async function probeStorefronts(appId, skip) {
 // This is app-level, not review-level: one fetch per (app, country), only when includeAppInfo is on.
 async function getRatingBreakdown(appId, country) {
   try {
-    const html = (await gotScraping({ url: `https://apps.apple.com/${country}/app/id${appId}`, timeout: { request: 30000 }, retry: { limit: 1 } })).body;
+    const html = (await requestWithRetry(`https://apps.apple.com/${country}/app/id${appId}`, { retry: { limit: 1 } })).body;
     const m = html.match(/<script type="application\/json" id="serialized-server-data">(.*?)<\/script>/s);
     if (!m) return null;
     let node = null;

@@ -220,8 +220,34 @@ async function pushResult(item) {
 // So the customer's own typo surfaced as an empty result or a JSON stack trace. Check the status
 // before parsing and say what is actually wrong. Same defect class as the 0.1.43 Shopify fix.
 const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match(/itunes\.apple\.com\/([^/]+)\/rss/)?.[1] ?? null;
+
+// got's own `retry` only covers a fixed errorCodes list that excludes the connection-establishment
+// faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on this got-scraping version in
+// cycle 616 — about 1 in 4 fresh connections. Without an outer retry a single blip is indistinct
+// from "Apple has nothing": a reviews page throws and the caller records `failed`, an episode
+// lookup drops that whole show, and a direct RSS feed url is abandoned entirely. Every case leaves
+// the run SUCCEEDED with a smaller dataset than the buyer paid to query. Retry connection-level
+// throws before believing them. Only exceptions reach here — an HTTP 4xx/5xx is a returned
+// response (throwHttpErrors is off by default in got-scraping) and is handled by getJson below,
+// so a genuine "bad storefront code" 400 still fails on the first attempt instead of looping.
+const requestWithRetry = async (url, opts = {}) => {
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) {
+        log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw lastErr;
+};
+
 const getJson = async (url, opts = {}) => {
-  const resp = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  const resp = await requestWithRetry(url, opts);
   if (resp.statusCode >= 400) {
     let detail = '';
     try { detail = String(JSON.parse(resp.body)?.errorMessage ?? ''); } catch { /* empty or HTML body */ }
@@ -413,7 +439,7 @@ function rssEpisodeRow($, el, collectionId, info, channelExplicit = null) {
 }
 
 async function scrapeRssFeed(feedUrl, collectionId, info) {
-  const res = await gotScraping({ url: feedUrl, timeout: { request: 30000 }, retry: { limit: 2 } });
+  const res = await requestWithRetry(feedUrl);
   const $ = cheerio.load(res.body, { xml: true });
   const channelExplicit = parseItunesExplicit($('channel').first().find('> itunes\\:explicit').first().text());
   return $('item').map((_, el) => rssEpisodeRow($, el, collectionId, info, channelExplicit)).get();
@@ -566,7 +592,7 @@ async function scrapeEpisodes(id) {
 async function scrapeEpisodesFromFeed(feedUrl) {
   let $;
   try {
-    const res = await gotScraping({ url: feedUrl, timeout: { request: 30000 }, retry: { limit: 2 } });
+    const res = await requestWithRetry(feedUrl);
     $ = cheerio.load(res.body, { xml: true });
   } catch (e) {
     log.warning(`Could not fetch RSS feed "${feedUrl}": ${e.message}`);
