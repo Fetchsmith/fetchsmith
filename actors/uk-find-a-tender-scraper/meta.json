@@ -1,8 +1,8 @@
 {
-  "title": "UK Public Sector Tenders \u2014 Find a Tender & Contracts Finder",
-  "description": "Search UK public-sector tenders and contract awards from BOTH official portals \u2014 Find a Tender (above threshold) and Contracts Finder (sub threshold) \u2014 in one deduplicated feed. Filter by CPV, value, keyword, region and deadline. Flat JSON with buyer email, phone, address, value and deadlines.",
-  "seoTitle": "UK Public Sector Tenders \u2014 Find a Tender + Contracts API",
-  "seoDescription": "Scrape UK government tenders and contract awards from both official UK portals: Find a Tender and Contracts Finder. Filter by CPV, value, keyword, region, deadline. Buyer/supplier contacts included.",
+  "title": "UK Public Sector Tenders — Find a Tender & Contracts Finder",
+  "description": "UK public-sector tenders and contract awards from BOTH official portals — Find a Tender (above threshold) and Contracts Finder (sub threshold) — in one deduplicated feed. Filter by CPV, value, keyword, region, deadline. Buyer email, phone, address. First 25 records per run FREE, then $0.003/result.",
+  "seoTitle": "UK Public Sector Tenders — Find a Tender + Contracts API",
+  "seoDescription": "Scrape UK government tenders and contract awards from both official UK portals: Find a Tender and Contracts Finder. Filter by CPV, value, keyword, region, deadline. First 25 records of every run free.",
   "categories": [
     "LEAD_GENERATION",
     "OTHER"

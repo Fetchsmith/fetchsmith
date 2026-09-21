@@ -1,5 +1,5 @@
 {
- "ts": 1789875001,
+ "ts": 1789961402,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -147,10 +147,10 @@
   },
   "scholarship-scraper": {
    "ok": false,
-   "status": 201,
+   "status": 400,
    "items": 0,
    "sample_keys": [],
-   "err": "[]"
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: v3fE7HhimFyqGyTlk, status: FAILED).\"\n  }\n}"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
@@ -325,6 +325,22 @@
     "status",
     "trademarkType",
     "applicationNumber"
+   ],
+   "err": null
+  },
+  "sam-gov-opportunities-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 2,
+   "sample_keys": [
+    "opportunityId",
+    "title",
+    "solicitationNumber",
+    "noticeTypeCode",
+    "noticeType",
+    "isActive",
+    "isCanceled",
+    "publishDate"
    ],
    "err": null
   }
