@@ -3,7 +3,7 @@
     {
       "slug": "ats-jobs-scraper",
       "title": "ATS Jobs Openings Scraper – Greenhouse, Ashby, Lever, Recruitee",
-      "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday career board, normalized into one schema with city/region/country, remote status and salary wherever the board publishes it — including Greenhouse boards, where the pay range is printed in the posting rather than exposed as an API field (139 of 166 live airbnb postings carry one). Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
+      "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday career board, normalized into one schema with city/region/country, remote status and salary wherever the board publishes it — including Greenhouse boards, where the pay range is printed in the posting rather than exposed as an API field (139 of 166 live airbnb postings carry one). Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department or team, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -31,6 +31,7 @@
         "title",
         "department",
         "team",
+        "departmentPath",
         "employmentType",
         "workplaceType",
         "isRemote",
@@ -55,7 +56,13 @@
         "company": "airbnb",
         "atsSource": "greenhouse",
         "title": "Account Manager",
-        "department": "Business Development",
+        "department": "2. Business",
+        "team": "Business Development",
+        "departmentPath": [
+          "2. Business",
+          "Sales & Partnerships",
+          "Business Development"
+        ],
         "location": "London, United Kingdom",
         "city": "London",
         "region": "England",
@@ -67,7 +74,7 @@
         "salaryInterval": "year",
         "jobUrl": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
       },
-      "description": "<p>Give it a list of companies as <code>{\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API — no browser, no login. Omit <code>ats</code> or set it to <code>\"auto\"</code> and it tries all 6 non-Workday platforms for that slug and keeps whichever one is real — you only need to know the company, not the ATS. Seven ATSes normalized into one schema — the only one of these seven to also include Recruitee. Hand-typed board locations are normalized into <code>city</code>/<code>region</code>/<code>country</code>, so you can group or filter by country without writing a location parser — neither Greenhouse nor Workday publishes usable structured geography, and the same normaliser fills <code>country</code> on 95% of 1,914 live Greenhouse postings and on 100% of Workday postings once descriptions are fetched (35% from the cheap list call alone). Measured on 800 live Workday postings, <code>locationKeyword: &quot;United States&quot;</code> matched <strong>0</strong> of them before and matches <strong>89</strong> now; on Greenhouse the same filter matches a posting whose own text only reads &quot;San Francisco, CA&quot;. Supports <code>titleKeyword</code>/<code>titleExcludeKeyword</code>, <code>locationKeyword</code>/<code>locationExcludeKeyword</code>, <code>hasSalary</code>/<code>minSalary</code>/<code>maxSalary</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged — a salary floor costs you nothing on the postings it rejects. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
+      "description": "<p>Give it a list of companies as <code>{\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API — no browser, no login. Omit <code>ats</code> or set it to <code>\"auto\"</code> and it tries all 6 non-Workday platforms for that slug and keeps whichever one is real — you only need to know the company, not the ATS. Seven ATSes normalized into one schema — the only one of these seven to also include Recruitee. Hand-typed board locations are normalized into <code>city</code>/<code>region</code>/<code>country</code>, so you can group or filter by country without writing a location parser — neither Greenhouse nor Workday publishes usable structured geography, and the same normaliser fills <code>country</code> on 95% of 1,914 live Greenhouse postings and on 100% of Workday postings once descriptions are fetched (35% from the cheap list call alone). Measured on 800 live Workday postings, <code>locationKeyword: &quot;United States&quot;</code> matched <strong>0</strong> of them before and matches <strong>89</strong> now; on Greenhouse the same filter matches a posting whose own text only reads &quot;San Francisco, CA&quot;. Greenhouse returns only the <em>leaf</em> department, and on 76% of 1,909 live postings that leaf is a nested internal name, so <code>department</code> used to report an internal cost-centre code: one Stripe board showed <strong>191</strong> distinct “departments”. Since 0.1.36 the board's department tree is resolved once per company, so <code>department</code> is the real top-level department (<strong>191 → 4</strong> on Stripe, 44 → 13 on Databricks, 29 → 3 on Airbnb), <code>team</code> is the sub-team it sits under (filled on 76% of Greenhouse postings, previously always empty) and <code>departmentPath</code> is the whole chain. <code>departmentKeyword</code> matches any level of that chain, so a filter written against either the top-level name or the leaf keeps working. Supports <code>titleKeyword</code>/<code>titleExcludeKeyword</code>, <code>locationKeyword</code>/<code>locationExcludeKeyword</code>, <code>hasSalary</code>/<code>minSalary</code>/<code>maxSalary</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged — a salary floor costs you nothing on the postings it rejects. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
       "memory_mb": 1024
     },
     {

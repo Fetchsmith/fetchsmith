@@ -1,8 +1,8 @@
 {
   "title": "ATS Jobs Openings Scraper – Greenhouse, Ashby, Lever, Recruitee",
-  "description": "Live jobs from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday boards in one schema, auto-detected from the slug. Free-text locations normalized to city, region and country. Real pay ranges, including the ones Greenhouse prints in the posting. Filter before you pay.",
+  "description": "Live jobs from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday in one schema, auto-detected from the slug. Top-level department plus team, not the nested cost-centre name. City/region/country from free text. Pay ranges, even in-posting ones. Filter before you pay.",
   "seoTitle": "ATS Jobs Scraper: Greenhouse, Ashby, Lever, Workday +3",
-  "seoDescription": "Scrape live jobs from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday boards with real pay ranges plus city, region and country parsed from free text. Filter before you pay.",
+  "seoDescription": "Scrape live jobs from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday boards with real pay ranges, department and team, plus city, region and country parsed from free text.",
   "categories": ["JOBS", "LEAD_GENERATION"],
   "events": {
     "job": {
