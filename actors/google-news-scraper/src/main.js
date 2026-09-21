@@ -108,7 +108,27 @@ try {
     log.info('Using Apify Proxy for Google/publisher requests.');
   }
 } catch (e) { log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`); }
-const http = async (url, opts = {}) => gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, headers: { 'accept-language': hl }, proxyUrl: await proxyUrlFor(), ...opts });
+// got's own `retry` only fires for a fixed errorCodes list that does not include the
+// connection-establishment faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on
+// this same got-scraping version in cycle 616 — about 1 in 4 fresh connections. Without an
+// outer retry, one blip on a feed request drops that whole feed into `erroredFeeds` (see the
+// feed loop below), silently under-delivering a paid run instead of erroring loudly. Retry
+// connection-level throws a handful of times before giving up.
+const http = async (url, opts = {}) => {
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, headers: { 'accept-language': hl }, proxyUrl: await proxyUrlFor(), ...opts });
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) {
+        log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw lastErr;
+};
 
 // Google News RSS titles always arrive as "Headline - Publisher" (verified live on 204/204 items
 // across two search feeds, cycle 264), which is noise once `source` already carries the publisher.

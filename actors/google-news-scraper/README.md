@@ -109,6 +109,7 @@ Rule-based and free (no extra request): it catches a cashtag (`$TSLA`), an excha
 **Why does `articleFetchStatus` say `blocked` or `no-body`?** The publisher likely paywalls the article or serves it without readable paragraph text; both are reported explicitly instead of a silently empty `articleBody`.
 **Why did a run return 0 articles with status SUCCEEDED?** The status message distinguishes "Google returned nothing for this query" from "every result was a duplicate of another feed" from "the request failed" — check it before assuming your query is wrong.
 **What's the difference between `siteFilter` and typing `site:` into `queries`?** None functionally — `siteFilter` just OR's multiple domains together (`site:a.com OR site:b.com`) and applies them to every query in your list, so you don't have to hand-append the operator to each one.
+**What happens if Google's RSS feed has a transient blip mid-run?** Every feed and article-URL-decoding request is retried up to 3 times on a connection-level failure (measured at roughly 1 fresh request in 4 for HTTP/2 faults across this fleet, 2026-09-21) before that feed is given up on and named in the status message — a single blip no longer silently empties a query's results into `erroredFeeds`.
 
 ## Related guides
 Engineering write-ups behind this Actor:
