@@ -42,7 +42,7 @@
     "cpvCodes": {
       "title": "CPV codes",
       "type": "array",
-      "description": "Common Procurement Vocabulary codes to filter by, e.g. 72000000 (IT services), 45000000 (construction), 85000000 (health). Trailing zeros are treated as a prefix, so 72000000 matches every 72xxxxxx code. Leave empty for all.",
+      "description": "Common Procurement Vocabulary codes to filter by, e.g. 72000000 (IT services), 45000000 (construction), 80000000 (education). A code matches its whole CPV subtree and nothing outside it: 72000000 matches every 72xxxxxx code, 72267000 also matches its children 72267100/72267200, and 80000000 matches 80xxxxxx only — never 85xxxxxx health. Matched against every CPV on the notice (headline plus all lot and item codes), not just the headline one, so a notice qualifies if any one of its codes is in the subtree. Leave empty for all.",
       "editor": "stringList",
       "default": []
     },

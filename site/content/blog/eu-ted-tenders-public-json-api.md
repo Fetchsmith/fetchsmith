@@ -71,6 +71,8 @@ It isn't. `classification-cpv=<code>` matches the code **and every descendant of
 
 The rest are children. A `72000000` search returns notices tagged `72260000` and `72500000`; a `72267000` search returns notices tagged `72267100` and `72267200`. Every one of those rows is a correct match *by TED's rules* — which is exactly why this is easy to miss. A naive test that asserts "every row contains the code I sent" scores 3/10 and reports a bug in your own client that doesn't exist, and a test that just checks the row count is non-zero never notices anything at all.
 
+If you implement subtree matching yourself instead of leaning on a server that does it for you — as you must on the UK portals, which have no server-side CPV filter — there's a further trap in the prefix arithmetic: [stripping trailing zeros silently over-matches ten divisions at once](/blog/uk-find-a-tender-ocds-json-api) for any division code whose second digit is a zero, so `80000000` (education) returns health notices.
+
 Two consequences worth designing around. If you need true exact-code matching, TED cannot give it to you — post-filter the returned `classification-cpv` array yourself (after deduplicating it). And if you're comparing "how much did the EU spend on software maintenance", be explicit about whether your number is the code or the subtree, because the API will hand you the subtree either way and never mention it.
 
 ## `total-value` sometimes means "not disclosed" — and once meant literally `-1`

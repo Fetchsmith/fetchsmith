@@ -74,6 +74,21 @@ Two smaller gotchas came out of the same integration:
 - **The notice URL needs trimming.** An OCDS release `id` on Contracts Finder looks like `<guid>-<internal-number>`, but the public notice page only resolves at `.../notice/<guid>` — the full id with its trailing `-<digits>` renders a "You have been signed out" page at a friendly-looking `HTTP 200`. The fix strips the suffix before building the link.
 - **There are no lots.** Find a Tender carries SME/VCSE suitability and the contract period per lot; Contracts Finder has no lot structure at all and puts the same two facts directly on `tender.suitability` and `tender.contractPeriod`. Before that field-mapping fix, those four fields were empty on 100% of Contracts Finder rows even though everything else — buyer email, value, CPV codes — was already correct, which is the kind of "looks fine, just quietly missing a third of the fields on half your sources" gap that's easy to ship by accident.
 
+## Filtering by CPV: strip trailing zeros and you can lose a digit too many
+
+Neither portal filters by CPV server-side, so you do it yourself against the codes on each notice — and CPV's shape makes that easy to get subtly wrong. A CPV code is hierarchical: the first 2 digits are the division, then group, class and category, and trailing zeros are padding rather than data. So matching a code means matching its whole subtree, and the obvious implementation is to strip the trailing zeros and use what's left as a prefix. `72000000` → `72`, matching every `72xxxxxx` IT-services code. `72267000` → `72267`, which correctly also picks up its children `72267100` and `72267200`. (This subtree-matching behaviour isn't unique to a hand-rolled filter — [EU TED does the same thing server-side](/blog/eu-ted-tenders-public-json-api), with no exact-code mode at all.)
+
+The trap is the divisions whose second digit is a zero. `80000000` is education, but stripping *all* trailing zeros leaves `8` — a one-character prefix that matches divisions 80 through 89, so an education filter happily returns `85xxxxxx` health and social-work notices. We shipped exactly this bug and measured it on live UK data before fixing it: `cpvCodes: ["80000000"]` returned **9 of its 10 rows with no education CPV anywhere on them** — health services, medical practice services, social work, rehabilitation. `["70000000"]` (real estate) was worse, returning **0 of 10** rows in division 70: engineering design, interpretation, R&D, urban planning, payroll. After the fix, the same real-estate query over a 120-day window returns 5 of 5 rows genuinely carrying `70xxxxxx` codes.
+
+Nine of the ten CPV divisions ending in a zero are real and commonly used — `30000000` office and computing machinery, `50000000` repair and maintenance, `60000000` transport, `70000000` real estate, `80000000` education, `90000000` sewage and refuse — and every one of them is broken by the naive strip. Codes whose second digit is non-zero (`45000000`, `72000000`, `85000000`) look completely fine throughout, which is why the bug survives casual testing. The fix is to floor the prefix at the division:
+
+```js
+const stripped = code.replace(/0+$/, '');
+const prefix = stripped.length >= 2 ? stripped : code.slice(0, 2);
+```
+
+One more thing worth deciding explicitly: match against *every* CPV on the notice, not just the headline one. UK notices scatter codes across `tender.items[].additionalClassifications[]` and per-lot classifications, and a notice whose headline code is `85312110` (child daycare) can legitimately carry `80110000` on a lot — so a daycare notice is a true positive for an education search. Filtering on the headline code alone silently drops those.
+
 ## Packaged version
 
 [uk-find-a-tender-scraper on Apify](https://apify.com/fetchsmith/uk-find-a-tender-scraper) wraps both portals: filter by CPV code, free-text query, value range and open/closed status, and get back one flat, deduplicated row per notice regardless of which portal it came from — buyer email/phone/URL, a value that's actually populated, deduplicated CPV codes gathered from every lot and item, named winning suppliers on award notices, and a `source`/`sourceName` field so you always know which portal a row came from. HTTP-only, no browser, no proxy, pay per result, and every filtered-out row is free.

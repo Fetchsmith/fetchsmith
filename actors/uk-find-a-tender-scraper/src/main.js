@@ -45,6 +45,15 @@ const windowFromMs = dateFromMs ?? (Date.now() - updatedWithinDays * 86400_000);
 // Upper bound: explicit dateTo, else "now" (which is what both portals already did).
 const windowToMs = dateToMs ?? Date.now();
 const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
+// CPV subtree prefix for a wanted code. Trailing zeros are padding, so stripping them
+// gives the subtree ("72267000" -> "72267" also matches 72267100/72267200). But a division
+// whose second digit is 0 must NOT collapse to one digit: "80000000" -> "8" would match all
+// of 80-89, i.e. an education filter returning 85xxxxxx health notices (measured: 9 of 10 rows).
+// The division is the shortest meaningful CPV prefix, so never go below 2 digits.
+const cpvPrefixes = cpvCodes.map((c) => {
+    const stripped = c.replace(/0+$/, '');
+    return stripped.length >= 2 ? stripped : c.slice(0, 2);
+});
 const searchQuery = input.searchQuery ? String(input.searchQuery).normalize('NFC').toLowerCase().trim() : null;
 // Narrower than searchQuery on purpose: searchQuery ORs across title/description/CPV/lots too,
 // so searchQuery="NHS" also returns council notices that merely mention the NHS.
@@ -297,7 +306,7 @@ function normalize(release, source, includeRaw) {
 // so anything else has to be applied to the fetched page.
 function matches(row) {
     if (cpvCodes.length) {
-        const hit = cpvCodes.some((wanted) => row.cpvCodes.some((have) => have.startsWith(wanted.replace(/0+$/, '')) || have === wanted));
+        const hit = cpvPrefixes.some((prefix) => row.cpvCodes.some((have) => have.startsWith(prefix)));
         if (!hit) return false;
     }
     if (searchWords.length || keywordsAny.length) {
