@@ -116,3 +116,7 @@ If you want all four represented, ask for at least 50 results. If you want a gua
 - [Six ATS job-board JSON APIs and their shapes](/blog/ats-job-board-json-apis-six-shapes)
 - [Workday's public career-site API](/blog/workday-career-site-json-api)
 - [All FetchSmith Actors](/tools)
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

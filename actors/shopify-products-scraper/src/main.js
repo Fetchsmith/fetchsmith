@@ -379,6 +379,12 @@ function shape(p, origin, currency, sourceUrl) {
   const discountPercent = cheapest?.compareAtPrice > priceMin
     ? Math.round(((cheapest.compareAtPrice - priceMin) / cheapest.compareAtPrice) * 1000) / 10
     : null;
+  // Same rule as discountPercent, applied to the boolean: a product is on sale when SOME single
+  // variant is marked down, never when the catalog-wide min compare-at happens to sit above the
+  // catalog-wide min price — those two numbers can belong to different variants, so that form can
+  // report a sale no variant is actually running (a stale compare-at left below a raised price).
+  // Strict > is required: stores do ship variants with compare_at_price EQUAL to price.
+  const onSaleVariants = variants.filter((v) => v.compareAtPrice != null && v.compareAtPrice > v.price);
   // Unknown (null) rather than false when no variant's availability could be determined at all,
   // for the same reason `totalInventory` does it: a store that doesn't publish stock must stay
   // distinguishable from one whose products are genuinely sold out.
@@ -388,7 +394,7 @@ function shape(p, origin, currency, sourceUrl) {
     currency: currency ?? null,
     priceMin, priceMax: prices.length ? Math.max(...prices) : null,
     compareAtPriceMin, compareAtPriceMax: comparePrices[comparePrices.length - 1] ?? null,
-    isOnSale: !!(compareAtPriceMin != null && priceMin != null && compareAtPriceMin > priceMin), discountPercent,
+    isOnSale: onSaleVariants.length > 0, discountPercent,
     available: availabilityUnknown ? null : variants.some((v) => v.available === true), availableVariantCount: availabilityUnknown ? null : variants.filter((v) => v.available === true).length, variantCount: variants.length,
     totalInventory: totalInventoryOf(variants),
     images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null, imageCount: (p.images ?? []).length,
