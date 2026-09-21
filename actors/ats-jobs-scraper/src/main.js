@@ -111,7 +111,8 @@ const needDescriptions = includeDescriptions || !!descriptionKeyword || !!descri
 // return zero rows for every Workday board. SmartRecruiters' detail call only adds the description
 // and the referral-tagged apply URL, so `needDescriptions` is the right gate there.
 const workdayNeedsDetail = needDescriptions
-  || !!employmentTypeKeyword || !!departmentKeyword || !!postedAfter || !!postedBefore;
+  || !!employmentTypeKeyword || !!departmentKeyword || !!postedAfter || !!postedBefore
+  || !!locationKeyword || !!locationExcludeKeyword;
 const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 500), 5000);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 100000);
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -822,13 +823,22 @@ async function fetchAuto(slug) {
 // for every Workday board). The pre-filter therefore skips those fields and the main loop's
 // unrestricted passesFilters applies them once the job is enriched.
 const SMARTRECRUITERS_DEFERRED = ['description'];
-const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published'];
+// `location` is deferred for Workday only: its list payload resolves country/city/region from
+// free text on countable boards ("US, CA, Santa Clara") but NOT on the ones that need the detail
+// call — county-government boards with no place name at all ("Craig County"), and the "N
+// Locations" placeholder. Checking locationKeyword in the pre-filter (before that enrichment
+// runs) silently dropped every such posting even though the post-enrichment value would have
+// matched — the exact bug class this deferred-list pattern exists to prevent (cycle 408's
+// employmentType/department precedent), just never extended to location when 609 added Workday
+// geography. Reproduced live: okgov (bare county names) went from 10/10 rows with
+// `country: "United States"` unfiltered to 0 rows with `locationKeyword: "United States"` set.
+const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published', 'location'];
 
 function passesFilters(job, deferred = []) {
   const ready = (field) => !deferred.includes(field);
   if (titleKeyword && !(job.title ?? '').toLowerCase().includes(titleKeyword)) return false;
   if (titleExcludeKeyword && (job.title ?? '').toLowerCase().includes(titleExcludeKeyword)) return false;
-  if (locationKeyword || locationExcludeKeyword) {
+  if (ready('location') && (locationKeyword || locationExcludeKeyword)) {
     const haystack = `${job.location ?? ''} ${(job.secondaryLocations ?? []).join(' ')} ${job.city ?? ''} ${job.region ?? ''} ${job.country ?? ''}`.toLowerCase();
     if (locationKeyword && !haystack.includes(locationKeyword)) return false;
     if (locationExcludeKeyword && haystack.includes(locationExcludeKeyword)) return false;
