@@ -391,6 +391,19 @@ TERMS = {
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
     "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper"],
+    # cycle 593: published today. 12 buyer phrasings probed the cycle-200 way; we place
+    # ONLY on the three thin board-brand queries, and nowhere on any generic phrasing:
+    #   jobicy    nbHits=265  -> p22      remote jobs           nbHits=6165 -> not in results
+    #   arbeitnow nbHits=204  -> p32      remote jobs api       nbHits=5331 -> not in results
+    #   remotive  nbHits=9534 -> p35      remote job listings   nbHits=4469 -> not in results
+    #   remoteok  nbHits=5804 -> not in results (crowded, despite being in our title)
+    #   also absent: work from home jobs, remote jobs scraper, job board aggregator,
+    #   remote work jobs scraper, job postings scraper
+    # CAVEAT: storePosition is still the sentinel 999999 (Apify has not scored it yet),
+    # so every tiebreaker is currently lost by default — these ranks are a FLOOR, not a
+    # verdict. Re-measure after ~48h (>= 2026-09-23) before concluding anything, same as
+    # trademark-search-scraper in cycle 520.
+    "remote-jobs-scraper": ["jobicy", "arbeitnow", "remotive"],
     # cycle 520: these 3 were published after cycle 200 and were never added here, so
     # their buyer-facing rank had never once been measured. Terms picked the cycle-200
     # way — by measuring ~11 candidates each and keeping the ones where we actually

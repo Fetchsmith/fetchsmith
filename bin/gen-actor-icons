@@ -45,6 +45,7 @@ EDU = (5, 150, 105)        # emerald
 
 GLYPHS = {
     "ats-jobs-scraper": ("JOB", JOBS),
+    "remote-jobs-scraper": ("RMT", JOBS),
     "shopify-products-scraper": ("SHP", ECOM),
     "google-news-scraper": ("NWS", MEDIA),
     "hacker-news-scraper": ("HN", DEV),

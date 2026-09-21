@@ -1869,6 +1869,74 @@
           }
         ]
       }
+    },
+    {
+      "slug": "remote-jobs-scraper",
+      "title": "Remote Jobs Scraper – Remotive, Remote OK, Jobicy, Arbeitnow",
+      "summary": "Scrape remote job postings from four public job boards — Remotive, Remote OK, Jobicy and Arbeitnow — into one normalized schema with no API key and no login. Results come back newest-first and are de-duplicated across boards before you are charged, so the same job syndicated to two sites is billed once and carries an alsoOn list of the other boards it appeared on. Filter by keyword, company, location, remote type, salary presence and posted-date window; every row carries the board it came from, a link to the original posting and parsed salary min/max/currency/period where the board publishes one.",
+      "status": "live",
+      "credits_per_result": 1,
+      "apify_actor_id": "FJWJfcQplVDS6wQKi",
+      "memory_mb": 1024,
+      "example_input": {
+        "sources": [
+          "remotive",
+          "remoteok",
+          "jobicy",
+          "arbeitnow"
+        ],
+        "keyword": "python",
+        "maxResults": 25
+      },
+      "output_fields": [
+        "source",
+        "sourceSite",
+        "sourceJobId",
+        "title",
+        "company",
+        "companyLogo",
+        "url",
+        "location",
+        "remote",
+        "jobType",
+        "category",
+        "tags",
+        "salaryText",
+        "salaryMin",
+        "salaryMax",
+        "salaryCurrency",
+        "salaryPeriod",
+        "descriptionHtml",
+        "publishedAt",
+        "alsoOn",
+        "duplicateUrls",
+        "scrapedAt"
+      ],
+      "sample_output": {
+        "source": "jobicy",
+        "sourceSite": "https://jobicy.com",
+        "sourceJobId": "151195",
+        "title": "Customer Support Engineer (Tier 1)",
+        "company": "Tailscale",
+        "companyLogo": "https://jobicy.com/data/server-nyc0409/galaxy/mercury/2025/06/d3fa2e99-221.png",
+        "url": "https://jobicy.com/jobs/151195-customer-support-engineer-tier-1",
+        "location": "UK",
+        "remote": true,
+        "jobType": "Full-Time",
+        "category": "Technical Support",
+        "tags": [
+          "Senior"
+        ],
+        "salaryText": null,
+        "salaryMin": 49770,
+        "salaryMax": 78210,
+        "salaryCurrency": "GBP",
+        "salaryPeriod": "yearly",
+        "publishedAt": "2026-09-21T03:10:28.000Z",
+        "alsoOn": [],
+        "duplicateUrls": [],
+        "scrapedAt": "2026-09-21T10:01:41.871Z"
+      }
     }
   ]
 }

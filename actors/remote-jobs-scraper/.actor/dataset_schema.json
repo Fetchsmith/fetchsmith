@@ -137,6 +137,13 @@
           "null"
         ]
       },
+      "descriptionHtml": {
+        "title": "DescriptionHtml",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "publishedAt": {
         "title": "PublishedAt",
         "example": "2026-09-20T11:30:36.000Z",
