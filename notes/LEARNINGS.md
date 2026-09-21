@@ -1613,3 +1613,10 @@ Two supporting habits this confirmed:
   `"Georgia"` is equally the US state and the country; bare `"Cambridge"` is UK or
   Massachusetts. A null is honest, a coin flip is a wrong answer that no
   downstream check will ever catch.
+
+## Cycle 608 — a QUALITY cycle that rewrites what an Actor *advertises* must re-read the code that implements it
+`h226(a)` says a BUILD cycle that widens a filter's reach must re-read `input_schema.json`. The mirror is now proven too: writing Store copy that sells `city`/`region`/`country` sent me to `src/main.js` to check the filter that makes those fields useful, and the haystack omitted `region` — 14 of 15 genuinely-Californian airbnb postings were unreachable by `locationKeyword: "California"`, while the README claimed all four fields matched. **Selling a capability is the cheapest audit of it: the copy states a promise in buyer terms, and the promise is testable.**
+
+Two reusable bits: (1) `git show HEAD:<path> > src/main.old.js` and run it side by side in the same `CRAWLEE_STORAGE_DIR` — a same-input row-count delta (1 vs 15) is stronger proof than any assertion about the diff; (2) for an *exclude* filter, prove complementarity, not just the drop — 163 = 148 kept + 15 excluded, with 0 kept rows carrying the excluded value, rules out both over- and under-dropping in one run.
+
+**Gap worth closing:** no check compares a filter's actual haystack against the field names its README/input_schema claim it matches. `check-code-fields`/`check-registry-fields` compare field *lists* and are blind to prose. A `check-filter-reach` over the ~6 Actors with keyword filters on normalised fields would have caught this automatically. (Also: `bin/apify-admin publish <slug> <path/to/meta.json>` — the meta path is a required second argument, not inferred from the slug.)
