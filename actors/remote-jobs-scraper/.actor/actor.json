@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "remote-jobs-scraper",
   "title": "Remote Jobs Scraper \u2013 Remotive, Remote OK, Jobicy, Arbeitnow",
-  "description": "Remote job postings from four public job-board APIs (Remotive, Remote OK, Jobicy, Arbeitnow) in one normalized schema, de-duplicated across boards so the same job is never billed twice. Keyword, company, location, salary and posted-date filters.",
+  "description": "Remote job postings from four public job boards (Remotive, Remote OK, Jobicy, Arbeitnow) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and posted date; every row links back to the original posting.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

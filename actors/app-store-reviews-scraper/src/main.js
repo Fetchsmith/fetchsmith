@@ -526,7 +526,11 @@ async function reviewFeedIsDown() {
 // served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
 // review id across pages and sorts — scanning past empty pages, the sort fallback and the
 // client-class retry can all re-serve the same review.
-async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, extra = {}, pairSeeding = false) {
+// `getInfo` is a memoised thunk, not a resolved value: the app-level metadata (itunes lookup +
+// ratings histogram, 2 requests) is only worth buying once this pair has proven it answers at all.
+// It is called after the first page that actually returned entries, so a storefront Apple refuses
+// (`zz`, or an app absent from that storefront) now costs 1 request instead of 3.
+async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally, extra = {}, pairSeeding = false) {
   let got = 0;
   let hitCutoff = false;
   // Only "mostRecent" is date-ordered (verified live 2026-09-11: strictly descending across pages,
@@ -554,6 +558,8 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
     }
     if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
     if (clientClass !== 'default') log.info(`${appId}/${country} ${sortBy} page ${page}: empty for the default client, recovered ${entries.length} reviews under the iOS client.`);
+    // Memoised: one fetch per (app, country) across both sorts, resolved value reused every page.
+    const info = await getInfo();
     for (const e of entries) {
       if (tally.got >= scanCap) break;
       const reviewId = lbl(e.id);
@@ -600,14 +606,17 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
 async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false) {
   const seen = new Set();
   const tally = { got: 0, filteredOut: 0 };
-  const info = await getAppInfo(appId, country);
-  await scrapeAppCountrySort(appId, country, sort, seen, info, tally, extra, pairSeeding);
+  // Deferred until a page actually returns reviews (see scrapeAppCountrySort), and memoised so the
+  // alternate-sort retry below reuses the same metadata rather than buying it twice.
+  let infoPromise;
+  const getInfo = () => (infoPromise ??= getAppInfo(appId, country));
+  await scrapeAppCountrySort(appId, country, sort, seen, getInfo, tally, extra, pairSeeding);
   // The alternate-sort fallback exists for Apple's per-sort feed HOLES; a 4xx is not a hole, it is
   // the whole (app, storefront) being unanswerable, so the other sort would only repeat the fault.
   if (tally.got === 0 && keepGoing && !tally.storefrontError) {
     const alt = sort === 'mostRecent' ? 'mostHelpful' : 'mostRecent';
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
-    await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra, pairSeeding);
+    await scrapeAppCountrySort(appId, country, alt, seen, getInfo, tally, extra, pairSeeding);
   }
   // maxReviewsPerApp (perApp) caps reviews SCANNED, before review filtering (rating/keyword/length/votes/date)
   // -- if the cap was hit and some scanned reviews were dropped by a filter, matching reviews may
