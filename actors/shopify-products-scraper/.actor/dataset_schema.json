@@ -231,6 +231,14 @@
                 "title": "Store",
                 "example": "https://www.allbirds.com"
             },
+            "sourceUrl": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "SourceUrl",
+                "example": "https://www.allbirds.com/collections/mens"
+            },
             "scrapedAt": {
                 "type": [
                     "string",
@@ -245,7 +253,7 @@
                     "null"
                 ],
                 "title": "SeoTitle",
-                "example": "Men’s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
+                "example": "Men\u2019s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
             },
             "seoDescription": {
                 "type": [
@@ -253,7 +261,7 @@
                     "null"
                 ],
                 "title": "SeoDescription",
-                "example": "Discover the Men’s Dasher NZ—lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
+                "example": "Discover the Men\u2019s Dasher NZ\u2014lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
             },
             "ratingValue": {
                 "type": [

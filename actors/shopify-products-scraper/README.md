@@ -60,6 +60,7 @@ Extract the full product catalog of any Shopify store (or a single collection or
   "createdAt": "2025-01-10T12:00:00Z",
   "updatedAt": "2026-08-01T09:30:00Z",
   "store": "https://www.allbirds.com",
+  "sourceUrl": "https://www.allbirds.com/collections/mens",
   "seoTitle": "Men's Wool Runner Shoes | Allbirds",
   "seoDescription": "Our best-selling sneaker, made from sustainably sourced merino wool.",
   "ratingValue": 4.6,
@@ -107,6 +108,7 @@ A `delisted` row means a product that was in the baseline is no longer in the st
 ## FAQ
 **Does it work on custom domains, not just `*.myshopify.com`?** Yes — pass any storefront domain that runs Shopify; no need to resolve it to the `myshopify.com` backend first.
 **What if the same store ends up in `storeUrls` twice?** Deduped automatically by the resolved endpoint (so `https://store.com` and `https://store.com/` count as one) — you're never charged twice for the same store.
+**What if I pass several collections that share products?** Overlapping collections are normal — `/collections/all` plus a category, or two categories with the same product in both. **Each product is returned, and charged, once per run**, under the first URL that returned it; the repeats are skipped before any filter, before watch mode and before billing, and the log says how many there were. Every row carries `sourceUrl`, the input URL it came from, so several collections of one store stay distinguishable (`store` is the same for all of them). In watch mode this also means a product that merely left one collection but is still in another of your URLs is **not** reported as `delisted`.
 **Can I tell which products are on sale?** Yes, each item includes `isOnSale` (true when `compareAtPriceMin` is above `priceMin`) and `discountPercent` — the percentage off the cheapest variant's own list price, so it never mixes two different variants — plus store `currency`.
 **Does `searchQuery` handle accented words correctly?** Yes, as of v0.1.29 — the query and the product text it's matched against are Unicode-normalized before comparing, so an accented word (e.g. "café") matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
 **Do I get the description as HTML?** Both: `description` is plain text and `descriptionHtml` is the store's raw `body_html`, so you can keep the formatting when re-publishing a catalog.

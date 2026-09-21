@@ -89,6 +89,15 @@ function watchKeyFor(label) {
   const safe = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'watch';
   return { key: `watch-${safe}-${fp}`, fingerprint: fp };
 }
+// Overlapping input URLs are normal, not a mistake: "/collections/all" plus "/collections/mens",
+// or two categories that share products, put the SAME product in two feeds. Each result is a
+// billable event, so a product must be returned — and charged — once per run. Keyed by
+// origin + id, never by id alone: two different stores are two different products even in the
+// (practically impossible) case that Shopify hands them the same id.
+const seenProducts = new Map(); // `${origin}\n${id}` -> the input URL that delivered it first
+const productKey = (origin, id) => `${origin}\n${id}`;
+let duplicateProducts = 0;
+const rawForEndpoint = new Map(); // endpoint URL -> the input URL the buyer actually typed
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -358,7 +367,7 @@ function availableOf(v) {
 // Unknown availability must not be filtered out as "not available" — the list route always ships
 // the flag, so this is identical to the old `some((v) => v.available)` there.
 const passesAvailability = (p) => (p.variants ?? []).some((v) => availableOf(v) !== false);
-function shape(p, origin, currency) {
+function shape(p, origin, currency, sourceUrl) {
   const variants = (p.variants ?? []).map((v) => ({ id: v.id, title: v.title, sku: v.sku || null, price: Number(v.price), compareAtPrice: v.compare_at_price ? Number(v.compare_at_price) : null, available: availableOf(v), option1: v.option1, option2: v.option2, option3: v.option3, grams: v.grams, requiresShipping: v.requires_shipping, taxable: v.taxable ?? null, position: v.position ?? null, featuredImage: v.featured_image?.src ?? null, ...inventoryFieldsOf(v) }));
   const prices = variants.map((v) => v.price).filter((n) => !Number.isNaN(n));
   const priceMin = prices.length ? Math.min(...prices) : null;
@@ -385,7 +394,12 @@ function shape(p, origin, currency) {
     images: (p.images ?? []).map((i) => ({ src: i.src, alt: i.alt || null })), imageUrl: p.images?.[0]?.src ?? null, imageCount: (p.images ?? []).length,
     options: (p.options ?? []).map((o) => ({ name: o.name, values: o.values })),
     ...(withVariants ? { variants } : {}), ...(withDesc ? { description: textOf(p.body_html), descriptionHtml: p.body_html || null } : {}),
-    createdAt: p.created_at, updatedAt: p.updated_at, publishedAt: p.published_at, store: origin, scrapedAt: new Date().toISOString(),
+    createdAt: p.created_at, updatedAt: p.updated_at, publishedAt: p.published_at, store: origin,
+    // Which input URL this row came from. With several collections of one store in `storeUrls`,
+    // `store` is the same for every row, so this is the only way to tell them apart. A product
+    // that appears in more than one of them is returned once, under the FIRST URL that yielded it.
+    sourceUrl: sourceUrl ?? null,
+    scrapedAt: new Date().toISOString(),
   };
 }
 // Shopify's public products.json has no full-text query param — there is no server-side
@@ -544,7 +558,9 @@ for (const raw of storeUrls) {
   if (!keepGoing) break;
   if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
   let ep; try { ep = endpointFor(raw); } catch { log.warning(`Bad URL: ${raw}`); continue; }
+  rawForEndpoint.set(ep.url, raw);
   let got = 0;
+  let dupThisUrl = 0; // products this URL returned that an earlier URL in this run already delivered
   let seenBeforeFilter = 0;
   // A store URL that isn't in this label's baseline yet (first run, or a URL added to an existing
   // label) is recorded, not delivered — otherwise adding one store to a watch would bill the
@@ -559,10 +575,17 @@ for (const raw of storeUrls) {
     const currency = await currencyFor(ep.origin);
     if (ep.kind === 'product') {
       const p = JSON.parse(throwIfStorefrontError(await http(ep.url)).body).product;
-      if (p) {
+      if (p && seenProducts.has(productKey(ep.origin, p.id))) {
+        // The product exists — it was just already delivered by an earlier URL. Count it as seen,
+        // or this URL would be reported as an empty store ("products.json disabled") instead.
         seenBeforeFilter = 1;
+        duplicateProducts += 1; dupThisUrl += 1;
+        log.info(`${raw}: already returned by ${seenProducts.get(productKey(ep.origin, p.id))} in this run — not returned again, not charged again.`);
+      } else if (p) {
+        seenBeforeFilter = 1;
+        seenProducts.set(productKey(ep.origin, p.id), raw);
         if (!onlyAvailable || passesAvailability(p)) {
-          const item = shape(p, ep.origin, currency);
+          const item = shape(p, ep.origin, currency, raw);
           // Price/sale filters run here, before the paid `detailLevel:"full"` fetch and before
           // pushResult() charges — enrichment only writes SEO/rating/subscription fields, never
           // the price fields these read, so evaluating them early cannot change the verdict.
@@ -597,10 +620,16 @@ for (const raw of storeUrls) {
         for (const p of products) {
           seenAllIds.add(String(p.id)); // coverage is measured BEFORE the filters, never after
           if (!watchMode && got >= perStore) break;
+          // Before every filter, before watch mode and before charging: a product an earlier URL
+          // in this run already delivered is skipped outright, so overlapping collections cost
+          // one result per product, not one per collection it appears in.
+          const key = productKey(ep.origin, p.id);
+          if (seenProducts.has(key)) { duplicateProducts += 1; dupThisUrl += 1; continue; }
+          seenProducts.set(key, raw);
           if (onlyAvailable && !passesAvailability(p)) continue;
           if (!matchesSearch(p)) continue;
           if (!matchesVendorType(p)) continue;
-          const item = shape(p, ep.origin, currency);
+          const item = shape(p, ep.origin, currency, raw);
           if (!passesShapedFilters(item)) continue; // before enrichment/charging: never bill a filtered-out product
           const verdict = watchMode ? watchVerdict(item, storeSeeding, ep.url) : {};
           if (!verdict) continue; // watch mode: recorded in the baseline, never pushed, never charged
@@ -625,6 +654,11 @@ for (const raw of storeUrls) {
       log.info(storeSeeding
         ? `${ep.origin}: recorded ${seenBeforeFilter} products as the baseline for "${watchLabel}" (nothing delivered, nothing charged).`
         : `${ep.origin}: scanned ${seenBeforeFilter} products, no changes matching "${[...watchEvents].join(', ')}" since the last run under "${watchLabel}".`);
+    } else if (got === 0 && dupThisUrl >= seenBeforeFilter) {
+      // Every product behind this URL was already delivered by an earlier URL in this run. That is
+      // a correct and complete result for this URL, so it must not be reported as "filters removed
+      // everything" (which would send the buyer off relaxing filters that did nothing).
+      log.info(`${ep.origin}: every product for this URL (${seenBeforeFilter}) was already returned by an earlier URL in this run — nothing new to return or charge.`);
     } else if (got === 0) {
       filteredOutStores.push(ep.origin);
       // Name every filter that was actually set, so a zero-row run says which input to relax
@@ -678,7 +712,10 @@ if (watchMode && watchEvents.has('delisted') && watchStoreSweeps.size && keepGoi
     for (const [id, v] of watchPrev) {
       if (v.store !== storeUrl) continue; // incl. legacy records with no attribution yet
       baselineForStore += 1;
-      if (!seen.has(id)) gone.push([id, v]);
+      // Missing from THIS URL's feed but returned by another URL of the same store this run means
+      // it left a collection, not the store — reporting that as "delisted" would be a wrong (and
+      // billed) verdict. Its attribution stays with the URL that saw it this run.
+      if (!seen.has(id) && !seenProducts.has(productKey(origin, id))) gone.push([id, v]);
     }
     if (!gone.length) continue;
     if (gone.length > DELIST_SUSPICIOUS_MIN && gone.length > baselineForStore * DELIST_SUSPICIOUS_SHARE) {
@@ -699,6 +736,7 @@ if (watchMode && watchEvents.has('delisted') && watchStoreSweeps.size && keepGoi
         // URL 404s by definition — it is there to identify the product, not to visit).
         url: v.handle ? `${origin}/products/${v.handle}` : null,
         store: origin,
+        sourceUrl: rawForEndpoint.get(storeUrl) ?? storeUrl,
         priceMin: null,
         available: null,
         watchLabel,
@@ -724,6 +762,13 @@ if (watchMode) {
   await saveWatchRecord();
   const breakdown = WATCH_EVENTS.filter((e) => watchCounts[e]).map((e) => `${e}: ${watchCounts[e]}`).join(', ') || 'none';
   log.info(`Watch "${watchLabel}": ${breakdown}. Unchanged and not charged: ${watchUnchanged}.${watchEventsFiltered ? ` Changed but excluded by watchEvents: ${watchEventsFiltered}.` : ''}${watchSeededThisRun ? ` Baselined this run: ${watchSeededThisRun}.` : ''}`);
+}
+if (duplicateProducts) {
+  log.info(
+    `${duplicateProducts} product(s) appeared in more than one of your storeUrls (e.g. a product in both `
+    + '"/collections/all" and a category collection). Each product is returned once per run, under the first URL that '
+    + 'returned it (see the "sourceUrl" field) — the repeats were not pushed and not charged.',
+  );
 }
 log.info(`Done. Pushed ${pushed} products.`);
 const timeBudgetNote = timeBudgetExceeded ? ' Stopped early: approaching the run time limit — reduce storeUrls / maxProductsPerStore to get a complete run.' : '';
@@ -755,6 +800,7 @@ if (webhookUrl) {
     defaultDatasetId: env.defaultDatasetId ?? null,
     finishedAt: new Date().toISOString(),
     pushed,
+    duplicateProducts,
     storesScraped: storeUrls.length,
     erroredStores,
     watchLabel: watchMode ? watchLabel : null,
