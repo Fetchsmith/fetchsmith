@@ -21,12 +21,26 @@ const usernames = [...new Set((input.usernames ?? []).map((u) => String(u).trim(
 const watchLabel = String(input.watchLabel ?? '').trim();
 const enrichGithubLinks = input.enrichGithubLinks === true;
 const excludeKeywords = [...new Set((input.excludeKeywords ?? []).map((k) => String(k).trim().toLowerCase()).filter((k) => k.length))];
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+  try {
+    const parsed = new URL(webhookUrlRaw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+    else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+  } catch {
+    log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+  }
+}
 
 if (!queries.length) queries.push(''); // empty query = browse by tag/date (e.g. front page, Ask HN, Who's Hiring)
 
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
+// Hits read off Algolia this run (including ones watch mode drops before charging) -- the
+// webhook's "how much did we look at" number, distinct from `pushed` ("how much did you pay for").
+let scanned = 0;
 
 // Watch mode: a stateful "only what is new since my last run" filter over the query/tag
 // search, distinct from a plain search which returns the same matches every time. The
@@ -329,6 +343,7 @@ for (const query of queries) {
     if (!hits.length) break;
     for (const hit of hits) {
       fetched += 1;
+      scanned += 1;
       if (seenIds.has(hit.objectID)) { duplicates += 1; continue; }
       seenIds.add(hit.objectID);
       hit._query = query || null;
@@ -394,6 +409,43 @@ if (watchMode) {
 }
 
 log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}`);
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error. Watch mode here drops already-seen hits BEFORE the push loop, so
+// `watchNewCount` is `pushed` and there is no change-detection counter to report (cycle 441 lesson,
+// same shape as trademark-search-scraper).
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    scanned,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 if (pushed === 0 && watchMode && !seeding) {
   await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching item had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
 } else if (pushed === 0 && seeding) {
