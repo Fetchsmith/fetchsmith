@@ -176,7 +176,28 @@ async function pushResult(item, watchId = null, appSeeding = false) {
   return pushed < maxResults;
 }
 
-const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
+// got-scraping does NOT throw on 4xx/5xx, so without a status check an error page reaches
+// JSON.parse and the customer gets a raw `Unexpected token '<'` (HTML) or `Unexpected end of JSON
+// input` (empty body) with no idea which host failed. Measured 2026-09-21: Steam itself is
+// forgiving on bad INPUT (an unknown appid, a non-numeric appid and a bogus language all answer
+// 200 with an empty/`{"success":2}` body, handled downstream), so what this guard is really for is
+// the transport-level failures a long review pull does hit — 429 rate-limiting and Steam's HTML
+// maintenance/error pages. Same defect class as the 0.1.43 Shopify fix.
+const getJson = async (url, opts = {}) => {
+  const resp = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  const host = new URL(url).hostname;
+  if (resp.statusCode >= 400) {
+    const hint = resp.statusCode === 429
+      ? ` ${host} is rate-limiting this run; wait a few minutes, or lower "maxResults"/the number of apps per run.`
+      : (resp.statusCode >= 500 ? ` ${host} is having a server-side problem; this is usually temporary.` : '');
+    throw new Error(`${host} returned HTTP ${resp.statusCode}.${hint}`);
+  }
+  try {
+    return JSON.parse(resp.body);
+  } catch {
+    throw new Error(`${host} returned HTTP ${resp.statusCode} with a body that is not JSON (${resp.body ? `starts with ${JSON.stringify(String(resp.body).slice(0, 60))}` : 'empty body'}) — usually a Steam error or maintenance page.`);
+  }
+};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Steam serves a COMPLETE query_summary (review_score_desc / total_reviews / total_positive / …) on

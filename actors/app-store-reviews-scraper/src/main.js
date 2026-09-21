@@ -19,6 +19,22 @@ if (appNames.length && apps.length === DEFAULT_APPS.length && apps.every((a, i) 
   apps = [];
 }
 const countries = (input.countries?.length ? input.countries : ['us']).map((c) => c.toLowerCase().trim());
+// Storefronts are ISO-3166-1 alpha-2, and "countries" is a free-text list, so the commonest input
+// mistake by far is "uk" (the UK storefront is "gb"). Apple's answer to a bad code is silent in
+// three different ways -- see the getJson comment below -- so catch the recognisable wrong codes
+// here, before any request is made, and name the right one.
+const STOREFRONT_FIX = {
+  uk: 'gb', usa: 'us', gbr: 'gb', deu: 'de', fra: 'fr', jpn: 'jp', can: 'ca', aus: 'au',
+  ind: 'in', bra: 'br', uae: 'ae', esp: 'es', ita: 'it', mex: 'mx', kor: 'kr', chn: 'cn', nld: 'nl',
+};
+const badStorefronts = countries.filter((c) => STOREFRONT_FIX[c] || !/^[a-z]{2}$/.test(c));
+if (badStorefronts.length) {
+  await Actor.fail(
+    `Not an App Store storefront code: ${badStorefronts.map((c) => `"${c}"`).join(', ')}. `
+    + `Storefronts are two-letter ISO-3166-1 alpha-2 codes (us, gb, de, jp, ...)`
+    + `${badStorefronts.some((c) => STOREFRONT_FIX[c]) ? ` — you probably want ${badStorefronts.filter((c) => STOREFRONT_FIX[c]).map((c) => `"${STOREFRONT_FIX[c]}" instead of "${c}"`).join(', ')}` : ''}.`,
+  );
+}
 // favorable/critical are not real Apple feed orders -- there is no server-side "sort by rating".
 // They mean "scan under mostRecent, then buffer the whole per-pair scan and re-emit it sorted by
 // rating before pushing" (see ratingSort below). requestedSort stays mostRecent/mostHelpful only;
@@ -253,7 +269,34 @@ async function pushResult(item, watchId = null, pairSeeding = false) {
   }
   return chargeAndPush(item, watchId);
 }
-const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
+// got-scraping does NOT throw on 4xx, and Apple's error bodies parse as three different kinds of
+// nonsense (all measured live 2026-09-21 with the storefront code "uk", which is not a storefront):
+//   - lookup/search: 400 with VALID JSON `{"errorMessage":"Invalid value(s) for key(s): [country]"}`
+//     and no `results` key, so it parsed fine and read downstream as "app not found";
+//   - review RSS feed: 400 with an EMPTY body -> raw `Unexpected end of JSON input`;
+//   - a malformed storefront segment (e.g. "USA"): 404 HTML -> `Unexpected token '<'`.
+// So the customer's own typo surfaced as a missing app or a JSON stack trace. Check the status
+// before parsing and say what is actually wrong. Same defect class as the 0.1.43 Shopify fix.
+const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match(/itunes\.apple\.com\/([^/]+)\/rss/)?.[1] ?? null;
+const getJson = async (url, opts = {}) => {
+  const resp = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  if (resp.statusCode >= 400) {
+    let detail = '';
+    try { detail = String(JSON.parse(resp.body)?.errorMessage ?? ''); } catch { /* empty or HTML body */ }
+    const cc = storefrontOf(url);
+    const hint = resp.statusCode === 429
+      ? ' Apple is rate-limiting this run; try again in a few minutes or lower "maxResults".'
+      : (cc && (resp.statusCode === 400 || resp.statusCode === 404)
+        ? ` The storefront code in this request was "${cc}" — storefronts are two-letter ISO-3166-1 alpha-2 codes (the UK is "gb", not "uk").`
+        : '');
+    throw new Error(`Apple returned HTTP ${resp.statusCode}${detail ? ` (${detail})` : ''}.${hint}`);
+  }
+  try {
+    return JSON.parse(resp.body);
+  } catch {
+    throw new Error(`Apple returned HTTP ${resp.statusCode} with a body that is not JSON (${resp.body ? `starts with ${JSON.stringify(String(resp.body).slice(0, 60))}` : 'empty body'}).`);
+  }
+};
 
 // Apple's review RSS has holes: for a given (app, country, sortBy) some page numbers return a
 // well-formed but EMPTY feed while later pages return a full 50 (verified 2026-09-10 — Spotify/us

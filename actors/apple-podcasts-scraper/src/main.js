@@ -20,6 +20,20 @@ if (webhookUrlRaw) {
   }
 }
 const country = String(input.country || 'us').toLowerCase().trim();
+// "country" is a free-text field and storefronts are ISO-3166-1 alpha-2, so the commonest mistake
+// by far is "uk" (the UK storefront is "gb"). Apple answers a bad code with a 4xx that parses as
+// three different kinds of nonsense (see getJson below), so catch the recognisable wrong codes here
+// — before any request, before anything is charged — and name the right one.
+const STOREFRONT_FIX = {
+  uk: 'gb', usa: 'us', gbr: 'gb', deu: 'de', fra: 'fr', jpn: 'jp', can: 'ca', aus: 'au',
+  ind: 'in', bra: 'br', uae: 'ae', esp: 'es', ita: 'it', mex: 'mx', kor: 'kr', chn: 'cn', nld: 'nl',
+};
+if (STOREFRONT_FIX[country] || !/^[a-z]{2}$/.test(country)) {
+  await Actor.fail(
+    `"${country}" is not an Apple Podcasts storefront code. Storefronts are two-letter ISO-3166-1 `
+    + `alpha-2 codes (us, gb, de, jp, ...)${STOREFRONT_FIX[country] ? ` — you probably want "${STOREFRONT_FIX[country]}"` : ''}.`,
+  );
+}
 // Apple's two chart endpoints have DIFFERENT hard caps, measured live cycle 424: the newer
 // rss.marketingtools.apple.com feed 500s for any limit >100 (101/150/199/200 all fail, 100 is
 // fine), while the older itunes.apple.com RSS Generator (the genre path) serves up to 200 and
@@ -197,7 +211,34 @@ async function pushResult(item) {
   return pushed < maxResults;
 }
 
-const getJson = async (url, opts = {}) => JSON.parse((await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts })).body);
+// got-scraping does NOT throw on 4xx, and Apple's error bodies parse as three different kinds of
+// nonsense (all measured live 2026-09-21 with the storefront code "uk", which is not a storefront):
+//   - lookup/search: 400 with VALID JSON `{"errorMessage":"Invalid value(s) for key(s): [country]"}`
+//     and no `results` key, so it parsed fine and read downstream as "nothing found";
+//   - the itunes.apple.com RSS feeds: 400 with an EMPTY body -> raw `Unexpected end of JSON input`;
+//   - a malformed storefront segment (e.g. "USA"): 404 HTML -> `Unexpected token '<'`.
+// So the customer's own typo surfaced as an empty result or a JSON stack trace. Check the status
+// before parsing and say what is actually wrong. Same defect class as the 0.1.43 Shopify fix.
+const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match(/itunes\.apple\.com\/([^/]+)\/rss/)?.[1] ?? null;
+const getJson = async (url, opts = {}) => {
+  const resp = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  if (resp.statusCode >= 400) {
+    let detail = '';
+    try { detail = String(JSON.parse(resp.body)?.errorMessage ?? ''); } catch { /* empty or HTML body */ }
+    const cc = storefrontOf(url);
+    const hint = resp.statusCode === 429
+      ? ' Apple is rate-limiting this run; try again in a few minutes or lower "maxResults".'
+      : (cc && (resp.statusCode === 400 || resp.statusCode === 404)
+        ? ` The storefront code in this request was "${cc}" — storefronts are two-letter ISO-3166-1 alpha-2 codes (the UK is "gb", not "uk").`
+        : '');
+    throw new Error(`Apple returned HTTP ${resp.statusCode}${detail ? ` (${detail})` : ''}.${hint}`);
+  }
+  try {
+    return JSON.parse(resp.body);
+  } catch {
+    throw new Error(`Apple returned HTTP ${resp.statusCode} with a body that is not JSON (${resp.body ? `starts with ${JSON.stringify(String(resp.body).slice(0, 60))}` : 'empty body'}).`);
+  }
+};
 
 // Apple's review RSS is served by shards that disagree: for a given id the SAME url returns
 // 50 reviews under one header fingerprint and an empty feed under another (see

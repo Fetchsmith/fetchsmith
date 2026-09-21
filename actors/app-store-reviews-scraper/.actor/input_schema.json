@@ -30,7 +30,7 @@
     "countries": {
       "title": "Countries",
       "type": "array",
-      "description": "Storefront country codes to pull reviews from (each has its own reviews).",
+      "description": "Storefront country codes to pull reviews from (each has its own reviews). Two-letter ISO-3166-1 alpha-2 codes — the UK is \"gb\", not \"uk\"; a code that isn't one fails the run immediately instead of returning nothing.",
       "editor": "stringList",
       "default": [
         "us"

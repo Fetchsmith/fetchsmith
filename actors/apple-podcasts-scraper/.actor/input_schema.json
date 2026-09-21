@@ -8,8 +8,20 @@
       "type": "string",
       "description": "episodes = every episode of the given shows; reviews = listener reviews and star ratings; podcasts = the show records themselves (use with Search terms to discover shows); charts = today's top podcasts in a storefront (no podcasts/search terms needed); publisher = every show published by a given publisher/artist.",
       "default": "episodes",
-      "enum": ["episodes", "reviews", "podcasts", "charts", "publisher"],
-      "enumTitles": ["Episodes", "Listener reviews", "Podcasts (search / show info)", "Top charts", "All shows by a publisher"],
+      "enum": [
+        "episodes",
+        "reviews",
+        "podcasts",
+        "charts",
+        "publisher"
+      ],
+      "enumTitles": [
+        "Episodes",
+        "Listener reviews",
+        "Podcasts (search / show info)",
+        "Top charts",
+        "All shows by a publisher"
+      ],
       "editor": "select"
     },
     "podcasts": {
@@ -17,8 +29,12 @@
       "type": "array",
       "description": "Apple Podcasts show URLs/IDs, e.g. https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584 or 1434243584. Leading/trailing spaces are ignored. For dataType 'publisher', give the publisher's Apple Podcasts artist URL/ID instead, e.g. https://podcasts.apple.com/us/artist/the-new-york-times/121664449. You can also paste a direct RSS/podcast feed URL for any show, including ones not on Apple Podcasts — works with dataType 'episodes' only, since the feed has no Apple ID for reviews/search/charts.",
       "editor": "stringList",
-      "prefill": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"],
-      "default": ["https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"]
+      "prefill": [
+        "https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"
+      ],
+      "default": [
+        "https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"
+      ]
     },
     "searchTerms": {
       "title": "Search terms",
@@ -32,8 +48,14 @@
       "type": "string",
       "description": "Charts only: which Apple chart to pull. \"Top Shows\" ranks podcasts; \"Trending Episodes\" is Apple's separate chart of individual episodes (one row per episode, with audio URL, duration and release date). Trending Episodes has no genre breakdown, so \"Chart genre\" is ignored for it.",
       "editor": "select",
-      "enum": ["shows", "episodes"],
-      "enumTitles": ["Top Shows (podcasts)", "Trending Episodes"],
+      "enum": [
+        "shows",
+        "episodes"
+      ],
+      "enumTitles": [
+        "Top Shows (podcasts)",
+        "Trending Episodes"
+      ],
       "default": "shows"
     },
     "chartCount": {
@@ -49,8 +71,50 @@
       "type": "string",
       "description": "Charts only: restrict the Top Shows chart to one Apple Podcasts category instead of the overall top chart. Leave empty for the overall chart. Ignored when \"Chart\" is Trending Episodes (Apple publishes no per-genre episode chart).",
       "editor": "select",
-      "enum": ["", "arts", "business", "comedy", "education", "fiction", "government", "healthFitness", "history", "kidsFamily", "leisure", "music", "news", "religionSpirituality", "science", "societyCulture", "sports", "technology", "trueCrime", "tvFilm"],
-      "enumTitles": ["Overall top chart", "Arts", "Business", "Comedy", "Education", "Fiction", "Government", "Health & Fitness", "History", "Kids & Family", "Leisure", "Music", "News", "Religion & Spirituality", "Science", "Society & Culture", "Sports", "Technology", "True Crime", "TV & Film"],
+      "enum": [
+        "",
+        "arts",
+        "business",
+        "comedy",
+        "education",
+        "fiction",
+        "government",
+        "healthFitness",
+        "history",
+        "kidsFamily",
+        "leisure",
+        "music",
+        "news",
+        "religionSpirituality",
+        "science",
+        "societyCulture",
+        "sports",
+        "technology",
+        "trueCrime",
+        "tvFilm"
+      ],
+      "enumTitles": [
+        "Overall top chart",
+        "Arts",
+        "Business",
+        "Comedy",
+        "Education",
+        "Fiction",
+        "Government",
+        "Health & Fitness",
+        "History",
+        "Kids & Family",
+        "Leisure",
+        "Music",
+        "News",
+        "Religion & Spirituality",
+        "Science",
+        "Society & Culture",
+        "Sports",
+        "Technology",
+        "True Crime",
+        "TV & Film"
+      ],
       "default": ""
     },
     "searchLimit": {
@@ -64,7 +128,7 @@
     "country": {
       "title": "Country storefront",
       "type": "string",
-      "description": "Two-letter storefront code (us, gb, de, ...). Availability, charts and reviews differ per storefront.",
+      "description": "Two-letter ISO-3166-1 alpha-2 storefront code (us, gb, de, ...) — the UK is \"gb\", not \"uk\". Availability, charts and reviews differ per storefront.",
       "default": "us",
       "editor": "textfield"
     },
@@ -97,7 +161,10 @@
       "type": "string",
       "description": "Only applies to reviews.",
       "default": "mostRecent",
-      "enum": ["mostRecent", "mostHelpful"],
+      "enum": [
+        "mostRecent",
+        "mostHelpful"
+      ],
       "editor": "select"
     },
     "includePodcastInfo": {
@@ -163,8 +230,16 @@
       "type": "string",
       "description": "Episodes only: 'all' keeps everything (default), 'clean' excludes episodes flagged Explicit, 'explicitOnly' keeps only episodes flagged Explicit. The flag comes from whichever source the run uses: Apple's Store rating by default, or the show's own <itunes:explicit> tag when 'Use RSS for full archive' is on (falling back to the show-level tag for episodes that carry none). The two can disagree for the same episode, so a filter that returns nothing under one source may return rows under the other.",
       "default": "all",
-      "enum": ["all", "clean", "explicitOnly"],
-      "enumTitles": ["All episodes", "Clean only", "Explicit only"],
+      "enum": [
+        "all",
+        "clean",
+        "explicitOnly"
+      ],
+      "enumTitles": [
+        "All episodes",
+        "Clean only",
+        "Explicit only"
+      ],
       "editor": "select"
     },
     "webhookUrl": {
