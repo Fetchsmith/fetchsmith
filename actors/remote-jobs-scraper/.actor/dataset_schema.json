@@ -1,0 +1,236 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "source": {
+        "title": "Source",
+        "example": "jobicy",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "sourceSite": {
+        "title": "SourceSite",
+        "example": "https://jobicy.com",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "sourceJobId": {
+        "title": "SourceJobId",
+        "example": "153765",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "title": {
+        "title": "Title",
+        "example": "Manager, Enterprise Business Development - APJ",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "company": {
+        "title": "Company",
+        "example": "Chainguard",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "companyLogo": {
+        "title": "CompanyLogo",
+        "example": "https://jobicy.com/data/server-nyc0409/galaxy/mercury/2025/06/e4b6aacf-221.jpeg",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "url": {
+        "title": "Url",
+        "example": "https://jobicy.com/jobs/153765-manager-enterprise-business-development-apj",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "location": {
+        "title": "Location",
+        "example": "APAC",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "remote": {
+        "title": "Remote",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "jobType": {
+        "title": "JobType",
+        "example": "Full-Time",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "category": {
+        "title": "Category",
+        "example": "Business Development",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tags": {
+        "title": "Tags",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "salaryText": {
+        "title": "SalaryText",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "salaryMin": {
+        "title": "SalaryMin",
+        "example": 45000,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "salaryMax": {
+        "title": "SalaryMax",
+        "example": 104650,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "salaryCurrency": {
+        "title": "SalaryCurrency",
+        "example": "USD",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "salaryPeriod": {
+        "title": "SalaryPeriod",
+        "example": "yearly",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "publishedAt": {
+        "title": "PublishedAt",
+        "example": "2026-09-20T11:30:36.000Z",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "alsoOn": {
+        "title": "AlsoOn",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "duplicateUrls": {
+        "title": "DuplicateUrls",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "scrapedAt": {
+        "title": "ScrapedAt",
+        "example": "2026-09-21T09:35:26.833Z",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": [
+          "source",
+          "sourceSite",
+          "sourceJobId",
+          "title",
+          "company",
+          "companyLogo",
+          "url",
+          "location",
+          "remote",
+          "jobType"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "source": {
+            "label": "Source",
+            "format": "text"
+          },
+          "sourceSite": {
+            "label": "SourceSite",
+            "format": "text"
+          },
+          "sourceJobId": {
+            "label": "SourceJobId",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "company": {
+            "label": "Company",
+            "format": "text"
+          },
+          "companyLogo": {
+            "label": "CompanyLogo",
+            "format": "text"
+          },
+          "url": {
+            "label": "Url",
+            "format": "link"
+          },
+          "location": {
+            "label": "Location",
+            "format": "text"
+          },
+          "remote": {
+            "label": "Remote",
+            "format": "boolean"
+          },
+          "jobType": {
+            "label": "JobType",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

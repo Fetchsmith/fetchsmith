@@ -1,0 +1,85 @@
+{
+  "title": "Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "sources": {
+      "title": "Job boards",
+      "type": "array",
+      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned). Leave empty for all four. An unknown name fails the run rather than being silently ignored.",
+      "editor": "select",
+      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow"] },
+      "default": ["remotive", "remoteok", "jobicy", "arbeitnow"]
+    },
+    "searchKeyword": {
+      "title": "Keyword",
+      "type": "string",
+      "description": "Only keep postings whose title, company, category or tags contain this text (case-insensitive), e.g. \"python\" or \"customer support\". It is also passed to Remotive's and Jobicy's own search parameters, so those two boards filter server-side as well. Leave empty for all postings.",
+      "editor": "textfield"
+    },
+    "titleExcludeKeyword": {
+      "title": "Title exclude keyword",
+      "type": "string",
+      "description": "Drop postings whose title contains this text (case-insensitive), e.g. \"Senior\" to exclude senior roles. Leave empty for no exclusion.",
+      "editor": "textfield"
+    },
+    "companyKeyword": {
+      "title": "Company filter",
+      "type": "string",
+      "description": "Only keep postings whose company name contains this text (case-insensitive). Leave empty for all companies.",
+      "editor": "textfield"
+    },
+    "locationKeyword": {
+      "title": "Location / region filter",
+      "type": "string",
+      "description": "Only keep postings whose location field contains this text (case-insensitive), e.g. \"USA\", \"Europe\", \"Germany\". Note that remote boards store a hiring REGION (\"USA, Canada\", \"Worldwide\", \"UK\") rather than a city, and some rows have no location at all — those are dropped when this filter is set. Leave empty for all locations.",
+      "editor": "textfield"
+    },
+    "postedAfter": {
+      "title": "Posted on or after",
+      "type": "string",
+      "description": "Only keep postings published on or after this date, in YYYY-MM-DD (UTC). The whole day is included. A value that is not a real YYYY-MM-DD calendar date FAILS the run with an explanatory error — it is never ignored, because ignoring it would return and charge for jobs outside your window. Rows with no publication date are dropped when this filter is set.",
+      "editor": "textfield"
+    },
+    "postedBefore": {
+      "title": "Posted on or before",
+      "type": "string",
+      "description": "Only keep postings published on or before this date, in YYYY-MM-DD (UTC). The whole day is included (ends 23:59:59.999Z). Same strict parsing as \"Posted on or after\": a typo fails the run instead of silently widening the result set.",
+      "editor": "textfield"
+    },
+    "salaryOnly": {
+      "title": "Only postings with salary info",
+      "type": "boolean",
+      "description": "Keep only postings that carry a salary range or salary text. Remote OK and Jobicy supply numeric ranges on many rows; Remotive supplies a free-text range; Arbeitnow supplies none, so enabling this drops all Arbeitnow rows.",
+      "default": false
+    },
+    "dedupe": {
+      "title": "De-duplicate across boards",
+      "type": "boolean",
+      "description": "Fold postings that appear on more than one board into a single row (matched on normalized company + job title, newest kept). The row then lists the other boards in \"alsoOn\" and their links in \"duplicateUrls\". De-duplication happens BEFORE charging, so you are never billed twice for one job. Turn off to get one row per board copy.",
+      "default": true
+    },
+    "includeDescription": {
+      "title": "Include job description HTML",
+      "type": "boolean",
+      "description": "Add the board's full job description HTML as \"descriptionHtml\". Off by default because descriptions are large and most pipelines only need the structured fields plus the link.",
+      "default": false
+    },
+    "maxPagesPerSource": {
+      "title": "Max pages per source",
+      "type": "integer",
+      "description": "Only affects Arbeitnow, the one paginated source (250 postings per page). The other three boards return their whole feed in one request.",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 20
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Stop after this many unique postings have been pushed (and charged).",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
+    }
+  }
+}
