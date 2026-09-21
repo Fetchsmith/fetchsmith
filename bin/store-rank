@@ -318,7 +318,40 @@ TERMS = {
     # unaffected (span 0 before/after). "app store scraper"/"app store api"/"ios app
     # reviews" probed same cycle but declined — see queue.md h147.
     "app-store-reviews-scraper": ["app store reviews", "itunes reviews"],  # cycle 554 batch probe (10 new queries): niche is saturated, no free win found -- every real candidate ("ios app reviews" 32-block, "apple app reviews"/"apple store reviews" 61-66-block, "app store review scraper" 223-block, "app ratings scraper"/"app review data" 14-57-block) has a large pre-existing title-match block, so joining it lands mid-pack (p8-p30+ predicted), not a free top win like the zero/one-matcher shape found elsewhere. "mobile app reviews"/"customer feedback app": 0 hits, we don't match at all. Do not re-probe this Actor for the zero-block shape without a genuinely new phrase; the obvious buyer language is already crowded.
-    "google-play-reviews-scraper": ["google play reviews"],
+    "google-play-reviews-scraper": ["google play reviews", "play store scraper"],
+    # cycle 574 (first --attr BATCH probe on this Actor since publish; 19 queries).
+    # Title was "Google Play Reviews Scraper - Rating, Keyword & Date Filters"
+    # (60/63) -- `google play reviews` already span 0 (our one prior tracked term,
+    # p115), but nothing else in the title formed a contiguous phrase. The two
+    # highest-volume candidates found, `app reviews` (nbHits 7903) and `play store
+    # scraper` (nbHits 22636), both need a word placed directly after "Play" --
+    # a structural conflict with the existing "Google Play Reviews" anchor (same
+    # shared-head-word class as cycle 564's `newsletter api`/`newsletter data`:
+    # only one word can follow "Play"). Resolved by repeating "Play" rather than
+    # picking one: new title "Google Play Reviews & Play Store Scraper - Ratings,
+    # Dates" (57/63) gives both phrases their own contiguous "Play ... " span
+    # without removing either. Published + rebuilt (build 0.1.29), measured
+    # ~100s post-reindex: `play store scraper` span None -> **span 0, p625 -> p46**
+    # (beat the ~p95 naive prediction -- storePosition also drifted 53706->51418
+    # in the window, same direction as the fleet baseline). `google play reviews`
+    # held span 0, p115 -> p104 (unregressed, same storePosition drift).
+    # Honest cost: `google play scraper` (nbHits 14148, untracked, was ALREADY a
+    # proximity-demoted span-1 match at p135) went to span 3, p135 -> p209 -- a
+    # real regression, but on a query that was never a confirmed win (span>0,
+    # pos>20 already flagged "likely proximity demotion" before this edit).
+    # Queries probed and NOT matched at all (would need a whole new word, no
+    # room at 63 chars): `android reviews` (708, would predict ~p13 if fit),
+    # `android app reviews` (567, ~p10), `app reviews` (7903, ~p209 -- lower
+    # priority than play store scraper despite similar volume, would also need
+    # to break the Play-Reviews anchor), `app review scraper` (6920, ~p191),
+    # `app store reviews` (5803, ~p169 -- also risks confusion with the
+    # separate `apple-app-store-reviews-scraper` Actor's own niche), `play
+    # store reviews` (12789, already ranks p58 WITHOUT a title match -- joining
+    # the block predicted ~p64, i.e. no better, so not worth a word), `play
+    # store data` (22275, block unverified -- top member past the p5 highlight
+    # cutoff, do not trust), `review monitoring`/`app review data`/`review
+    # sentiment`/`review data api`/`google play api`/`app ratings` -- no match
+    # at all, none affordable without dropping an existing win.
     # cycle 537: "shopify product data" added — title "Shopify Products Scraper" ->
     # "Shopify Products Data Scraper" (inserted "Data" between "Products" and
     # "Scraper", keeping "Products" plural so "shopify products" stays span 0).

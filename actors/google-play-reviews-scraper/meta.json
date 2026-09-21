@@ -1,5 +1,5 @@
 {
-  "title": "Google Play Reviews Scraper – Rating, Keyword & Date Filters",
+  "title": "Google Play Reviews & Play Store Scraper – Ratings, Dates",
   "description": "Google Play reviews and app details by package ID or app-name search. Filter by star rating, keyword, reply status, helpfulness votes or date range, so you are only charged for the rows you want. Country/language targeting, HTTP-only: no browser, no proxy, no login.",
   "seoTitle": "Google Play Reviews Scraper API – Filter by Rating & Date",
   "seoDescription": "Extract Google Play Store reviews and app details for any Android app, by package ID or search term. Ratings, review text, dates, replies, localized by country/language. Pay per result, no browser.",
