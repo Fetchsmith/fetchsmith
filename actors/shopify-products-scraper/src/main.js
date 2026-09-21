@@ -48,6 +48,130 @@ const productTypesFilter = (input.productTypes ?? []).map((t) => String(t).norma
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeUrls entr${duplicateStoreUrls === 1 ? 'y' : 'ies'} (same endpoint already queued).`);
 
+// ---- watch mode -----------------------------------------------------------
+// A Shopify catalog is a SNAPSHOT, not a stream of events (unlike reviews/tenders, where the
+// house watch pattern can key on "id we have never delivered"). Re-running the same store daily
+// returns the same rows and re-charges for all of them, so the useful watch here is a DIFF: what
+// is new, what changed price, what came back in stock. The baseline therefore stores a small
+// value per product (price + availability), not just an id.
+const watchLabel = String(input.watchLabel ?? '').trim();
+const watchMode = watchLabel.length > 0;
+const WATCH_EVENTS = ['new', 'priceDrop', 'priceIncrease', 'backInStock', 'outOfStock'];
+const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
+if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
+const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
+if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
+if (!watchMode && watchEventsInput.length) log.warning('"watchEvents" only applies when "watchLabel" is set — this run is a normal one-off scrape and returns every matching product.');
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+  try {
+    const parsed = new URL(webhookUrlRaw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+    else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+  } catch {
+    log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+  }
+}
+const WATCH_STORE = 'fetchsmith-shopify-products-watch';
+const WATCH_KEEP = 30000; // bound the record size; least-recently-seen products fall off first
+// Only the filters that decide WHICH products a run can see belong in the fingerprint. Changing
+// one of them means a different watched set, so it must start its own baseline; detailLevel /
+// includeDescription / includeVariants only change the shape of a delivered row and must not
+// reset anyone's baseline. storeUrls is deliberately NOT in here — adding a store to an existing
+// label baselines that one store (below) instead of throwing away the whole history.
+function watchKeyFor(label) {
+  const criteria = JSON.stringify([onlyAvailable, searchQuery, vendorsFilter, productTypesFilter, minPrice, maxPrice, onSaleOnly, minDiscountPercent]);
+  let h = 5381;
+  for (let i = 0; i < criteria.length; i++) h = ((h * 33) ^ criteria.charCodeAt(i)) >>> 0;
+  const fp = h.toString(36);
+  const safe = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'watch';
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+const watchPrev = new Map(); // productId -> { price, avail } as of the last run under this label
+const watchNow = new Map(); // productId -> { price, avail } seen in THIS run
+const seededStores = new Set(); // endpoint URLs already baselined under this label
+let watchUnchanged = 0;
+let watchEventsFiltered = 0; // a real change the buyer's watchEvents list excluded
+let watchSeededThisRun = 0; // rows recorded as baseline instead of delivered
+const watchCounts = Object.fromEntries(WATCH_EVENTS.map((e) => [e, 0]));
+if (watchMode) {
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.products)) {
+    watchRecord = existing;
+    for (const [id, price, avail] of existing.products) watchPrev.set(String(id), { price: price ?? null, avail: avail == null ? null : !!avail });
+    for (const s of existing.seededStores ?? []) seededStores.add(String(s));
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchPrev.size} product(s) across ${seededStores.size} store URL(s). This run returns only products that are new `
+      + `or whose price/availability changed (events: ${[...watchEvents].join(', ')}); unchanged products are not pushed and not charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
+      + 'It records each product\'s price and availability and returns NOTHING (nothing is charged). The next run under '
+      + 'the same label returns the differences.',
+    );
+  }
+}
+async function saveWatchRecord() {
+  if (!watchMode || !watchStore) return;
+  // Products not seen this run (deeper than the scan cap, filtered out, or delisted) keep their
+  // old baseline — a truncated sweep must not make the next run re-announce them as "new".
+  const merged = [];
+  for (const [id, v] of watchPrev) if (!watchNow.has(id)) merged.push([id, v.price, v.avail == null ? null : v.avail ? 1 : 0]);
+  for (const [id, v] of watchNow) merged.push([id, v.price, v.avail == null ? null : v.avail ? 1 : 0]);
+  const kept = merged.slice(-WATCH_KEEP);
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    fingerprint: watchRecord.fingerprint,
+    lastRunAt: new Date().toISOString(),
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seededStores: [...seededStores],
+    productCount: kept.length,
+    products: kept,
+  });
+  if (merged.length > kept.length) log.warning(`Watch baseline capped at ${WATCH_KEEP} products — ${merged.length - kept.length} least-recently-seen product(s) dropped; they may be reported as "new" if they reappear.`);
+}
+// Records the product in this run's baseline and decides whether it is a deliverable change.
+// Returns null for "record it, do not push and do not charge".
+function watchVerdict(item, storeSeeding) {
+  const id = String(item.id);
+  watchNow.set(id, { price: item.priceMin, avail: item.available });
+  if (storeSeeding) { watchSeededThisRun += 1; return null; }
+  const prev = watchPrev.get(id);
+  const changes = [];
+  if (!prev) changes.push('new');
+  else {
+    // Unknown price or unknown availability (null) is "we could not tell", never an event —
+    // same rule the rest of this Actor uses for null availability.
+    if (prev.price != null && item.priceMin != null && prev.price !== item.priceMin) changes.push(item.priceMin < prev.price ? 'priceDrop' : 'priceIncrease');
+    if (prev.avail === false && item.available === true) changes.push('backInStock');
+    if (prev.avail === true && item.available === false) changes.push('outOfStock');
+  }
+  if (!changes.length) { watchUnchanged += 1; return null; }
+  const wanted = changes.filter((c) => watchEvents.has(c));
+  if (!wanted.length) { watchEventsFiltered += 1; return null; }
+  for (const c of wanted) watchCounts[c] += 1;
+  return {
+    watchLabel,
+    watchChange: wanted[0],
+    watchChanges: wanted,
+    previousPriceMin: prev?.price ?? null,
+    previousAvailable: prev ? prev.avail : null,
+    priceChange: prev?.price != null && item.priceMin != null ? Math.round((item.priceMin - prev.price) * 100) / 100 : null,
+  };
+}
+
 // Some storefronts rate-limit or geo-gate products.json by IP, and the platform's shared egress
 // IPs get hit first. Route through Apify Proxy when the run has access to it; if the account has
 // no proxy access the run must still work, so fall back to a direct connection instead of failing.
@@ -390,6 +514,11 @@ for (const raw of storeUrls) {
   let ep; try { ep = endpointFor(raw); } catch { log.warning(`Bad URL: ${raw}`); continue; }
   let got = 0;
   let seenBeforeFilter = 0;
+  // A store URL that isn't in this label's baseline yet (first run, or a URL added to an existing
+  // label) is recorded, not delivered — otherwise adding one store to a watch would bill the
+  // buyer for that store's entire catalog as "new products".
+  const storeSeeding = watchMode && !seededStores.has(ep.url);
+  if (storeSeeding && watchRecord?.runCount) log.info(`${ep.origin}: not in the baseline for "${watchLabel}" yet — baselining this store this run instead of reporting its whole catalog as new.`);
   try {
     const currency = await currencyFor(ep.origin);
     if (ep.kind === 'product') {
@@ -402,33 +531,48 @@ for (const raw of storeUrls) {
           // pushResult() charges — enrichment only writes SEO/rating/subscription fields, never
           // the price fields these read, so evaluating them early cannot change the verdict.
           if (passesShapedFilters(item)) {
-            // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
-            // route, not `.json` — so even a single-product URL (which already has `.json`) still
-            // needs the enrichment step's own fetch to pick those up.
-            if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
-            keepGoing = await pushResult(item); got++;
+            // Watch mode runs on the shaped row (it compares priceMin/available) but before the
+            // paid `detailLevel:"full"` fetch and before pushResult() charges, so an unchanged
+            // product costs the buyer nothing at all.
+            const verdict = watchMode ? watchVerdict(item, storeSeeding) : {};
+            if (verdict) {
+              Object.assign(item, verdict);
+              // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
+              // route, not `.json` — so even a single-product URL (which already has `.json`) still
+              // needs the enrichment step's own fetch to pick those up.
+              if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
+              keepGoing = await pushResult(item); got++;
+            }
           }
         }
       }
     } else {
-      for (let page = 1; got < perStore && keepGoing; page++) {
+      // In watch mode almost every product is unchanged, so `got` (rows delivered) stops being a
+      // usable page cap — the sweep has to walk the catalog to find the changes. maxProductsPerStore
+      // therefore caps products SCANNED per store in watch mode, and products RETURNED otherwise.
+      const scanCapped = () => (watchMode ? seenBeforeFilter >= perStore : got >= perStore);
+      for (let page = 1; !scanCapped() && keepGoing; page++) {
         if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
         const products = await fetchProductsPage(ep, page);
         if (!products.length) break;
         seenBeforeFilter += products.length;
         for (const p of products) {
-          if (got >= perStore) break;
+          if (!watchMode && got >= perStore) break;
           if (onlyAvailable && !passesAvailability(p)) continue;
           if (!matchesSearch(p)) continue;
           if (!matchesVendorType(p)) continue;
           const item = shape(p, ep.origin, currency);
           if (!passesShapedFilters(item)) continue; // before enrichment/charging: never bill a filtered-out product
+          const verdict = watchMode ? watchVerdict(item, storeSeeding) : {};
+          if (!verdict) continue; // watch mode: recorded in the baseline, never pushed, never charged
+          Object.assign(item, verdict);
           if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
           keepGoing = await pushResult(item); got++;
           if (!keepGoing) break;
         }
         if (products.length < 250) break;
       }
+      if (watchMode && seenBeforeFilter >= perStore) log.warning(`${ep.origin}: stopped after scanning ${seenBeforeFilter} products (maxProductsPerStore = ${perStore}). In watch mode that cap limits how deep the diff looks — raise it to cover the whole catalog, or changes to products further down the feed will be missed.`);
     }
     if (seenBeforeFilter === 0) {
       emptyStores.push(ep.origin);
@@ -436,6 +580,11 @@ for (const raw of storeUrls) {
       // that the single-product route never made.
       const attempts = ep.kind === 'product' ? '' : ` on ${EMPTY_PAGE_RETRIES + 1} separate attempts`;
       log.warning(`${ep.origin}: Shopify returned zero products for this URL${attempts} (empty store/collection, or products.json is disabled — not a scrape failure).`);
+    } else if (got === 0 && watchMode) {
+      // The normal, healthy watch outcome — not a filter problem, so it must not be reported as one.
+      log.info(storeSeeding
+        ? `${ep.origin}: recorded ${seenBeforeFilter} products as the baseline for "${watchLabel}" (nothing delivered, nothing charged).`
+        : `${ep.origin}: scanned ${seenBeforeFilter} products, no changes matching "${[...watchEvents].join(', ')}" since the last run under "${watchLabel}".`);
     } else if (got === 0) {
       filteredOutStores.push(ep.origin);
       // Name every filter that was actually set, so a zero-row run says which input to relax
@@ -468,11 +617,23 @@ for (const raw of storeUrls) {
         : `${e.message} (store may not be Shopify or has products.json disabled)`;
     log.warning(`${ep.origin}: ${reason}`);
   }
+  // Only a store that actually answered joins the baseline. A store that errored stays unseeded,
+  // so the next run baselines it properly instead of announcing its whole catalog as "new".
+  if (watchMode && seenBeforeFilter > 0) seededStores.add(ep.url);
   log.info(`${ep.origin}: ${got} products`);
+}
+if (watchMode) {
+  await saveWatchRecord();
+  const breakdown = WATCH_EVENTS.filter((e) => watchCounts[e]).map((e) => `${e}: ${watchCounts[e]}`).join(', ') || 'none';
+  log.info(`Watch "${watchLabel}": ${breakdown}. Unchanged and not charged: ${watchUnchanged}.${watchEventsFiltered ? ` Changed but excluded by watchEvents: ${watchEventsFiltered}.` : ''}${watchSeededThisRun ? ` Baselined this run: ${watchSeededThisRun}.` : ''}`);
 }
 log.info(`Done. Pushed ${pushed} products.`);
 const timeBudgetNote = timeBudgetExceeded ? ' Stopped early: approaching the run time limit — reduce storeUrls / maxProductsPerStore to get a complete run.' : '';
-if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
+if (watchMode && pushed === 0 && !erroredStores.length && !timeBudgetExceeded) {
+  await Actor.setStatusMessage(watchSeededThisRun
+    ? `Baseline run for watch "${watchLabel}": recorded ${watchSeededThisRun} products, returned 0, charged 0. Re-run under the same label to get only what changed.`
+    : `Watch "${watchLabel}": no changes since the last run (${watchUnchanged} products unchanged, 0 charged).`);
+} else if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
   const why = erroredStores.length
     ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
     : filteredOutStores.length && !emptyStores.length
@@ -484,4 +645,41 @@ if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
 } else if (emptyStores.length || filteredOutStores.length || erroredStores.length || timeBudgetExceeded) {
   await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`)].join(', ')}.${timeBudgetNote}`);
 }
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error. A run that ends in Actor.fail() sends nothing, so this answers
+// "what did this run find", not "did it run".
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    storesScraped: storeUrls.length,
+    erroredStores,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? watchSeededThisRun > 0 : null,
+    watchChangeCounts: watchMode ? watchCounts : null,
+    watchUnchanged: watchMode ? watchUnchanged : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 await Actor.exit();

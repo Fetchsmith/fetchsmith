@@ -1,5 +1,5 @@
 {
- "ts": 1789961402,
+ "ts": 1789992687,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -150,7 +150,7 @@
    "status": 400,
    "items": 0,
    "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: v3fE7HhimFyqGyTlk, status: FAILED).\"\n  }\n}"
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: TVcIUjN6YFhiMz3EQ, status: FAILED).\"\n  }\n}"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
@@ -341,6 +341,22 @@
     "isActive",
     "isCanceled",
     "publishDate"
+   ],
+   "err": null
+  },
+  "remote-jobs-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "source",
+    "sourceSite",
+    "sourceJobId",
+    "title",
+    "company",
+    "companyLogo",
+    "url",
+    "location"
    ],
    "err": null
   }

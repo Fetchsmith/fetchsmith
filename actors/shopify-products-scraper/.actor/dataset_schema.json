@@ -1,360 +1,424 @@
 {
-  "actorSpecification": 1,
-  "fields": {
-    "type": "object",
-    "properties": {
-      "id": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "Id",
-        "example": 7205191974992
-      },
-      "title": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Title",
-        "example": "Men's Dasher NZ - Anthracite (Dark Anthracite Sole)"
-      },
-      "handle": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Handle",
-        "example": "mens-dasher-nz-anthracite"
-      },
-      "url": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Url",
-        "example": "https://www.allbirds.com/products/mens-dasher-nz-anthracite"
-      },
-      "vendor": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Vendor",
-        "example": "Allbirds"
-      },
-      "productType": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ProductType",
-        "example": "Shoes"
-      },
-      "tags": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "Tags"
-      },
-      "currency": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Currency",
-        "example": "USD"
-      },
-      "priceMin": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "PriceMin",
-        "example": 140
-      },
-      "priceMax": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "PriceMax",
-        "example": 140
-      },
-      "compareAtPriceMin": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "CompareAtPriceMin",
-        "example": 125
-      },
-      "compareAtPriceMax": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "CompareAtPriceMax",
-        "example": 125
-      },
-      "isOnSale": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "IsOnSale",
-        "example": false
-      },
-      "discountPercent": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "DiscountPercent",
-        "example": 21.6
-      },
-      "available": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "Available",
-        "example": true
-      },
-      "availableVariantCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "AvailableVariantCount",
-        "example": 8
-      },
-      "variantCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "VariantCount",
-        "example": 13
-      },
-      "totalInventory": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "TotalInventory",
-        "example": 0
-      },
-      "images": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "Images"
-      },
-      "imageUrl": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ImageUrl",
-        "example": "https://cdn.shopify.com/s/files/1/1104/4168/files/A12416_26Q1_Dasher-NZ-Anthracite-Dark-Anthr_PDP_LEFT.png?v=1768948005"
-      },
-      "imageCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "ImageCount",
-        "example": 5
-      },
-      "options": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "Options"
-      },
-      "variants": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "Variants"
-      },
-      "description": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Description",
-        "example": "A new take on our fan-favorite Dasher, made for busy days and spontaneous plans. Lightweight, breathable comfort keeps y"
-      },
-      "descriptionHtml": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "DescriptionHtml",
-        "example": "<p>A new take on our fan-favorite Dasher, made for busy days and spontaneous plans. Lightweight, breathable comfort keep"
-      },
-      "createdAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "CreatedAt",
-        "example": "2025-08-06T18:54:33-07:00"
-      },
-      "updatedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "UpdatedAt",
-        "example": "2026-09-12T12:05:37-07:00"
-      },
-      "publishedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "PublishedAt",
-        "example": "2026-08-24T09:53:01-07:00"
-      },
-      "store": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Store",
-        "example": "https://www.allbirds.com"
-      },
-      "scrapedAt": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "ScrapedAt",
-        "example": "2026-09-12T19:05:37.865Z"
-      },
-      "seoTitle": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "SeoTitle",
-        "example": "Men’s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
-      },
-      "seoDescription": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "SeoDescription",
-        "example": "Discover the Men’s Dasher NZ—lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
-      },
-      "ratingValue": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "RatingValue",
-        "example": 4.6
-      },
-      "reviewCount": {
-        "type": [
-          "number",
-          "null"
-        ],
-        "title": "ReviewCount",
-        "example": 51
-      },
-      "hasSubscriptionOption": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "HasSubscriptionOption",
-        "example": false
-      },
-      "subscriptionPlans": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "SubscriptionPlans"
-      }
-    }
-  },
-  "views": {
-    "overview": {
-      "title": "Overview",
-      "transformation": {
-        "fields": [
-          "id",
-          "title",
-          "handle",
-          "url",
-          "vendor",
-          "productType",
-          "currency",
-          "totalInventory",
-          "priceMin",
-          "priceMax",
-          "compareAtPriceMin"
-        ]
-      },
-      "display": {
-        "component": "table",
+    "actorSpecification": 1,
+    "fields": {
+        "type": "object",
         "properties": {
-          "id": {
-            "label": "Id",
-            "format": "number"
-          },
-          "title": {
-            "label": "Title",
-            "format": "text"
-          },
-          "handle": {
-            "label": "Handle",
-            "format": "text"
-          },
-          "url": {
-            "label": "Url",
-            "format": "link"
-          },
-          "vendor": {
-            "label": "Vendor",
-            "format": "text"
-          },
-          "productType": {
-            "label": "ProductType",
-            "format": "text"
-          },
-          "currency": {
-            "label": "Currency",
-            "format": "text"
-          },
-          "priceMin": {
-            "label": "PriceMin",
-            "format": "number"
-          },
-          "priceMax": {
-            "label": "PriceMax",
-            "format": "number"
-          },
-          "compareAtPriceMin": {
-            "label": "CompareAtPriceMin",
-            "format": "number"
-          },
-          "totalInventory": {
-            "label": "TotalInventory",
-            "format": "number"
-          }
+            "id": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "Id",
+                "example": 7205191974992
+            },
+            "title": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Title",
+                "example": "Men's Dasher NZ - Anthracite (Dark Anthracite Sole)"
+            },
+            "handle": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Handle",
+                "example": "mens-dasher-nz-anthracite"
+            },
+            "url": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Url",
+                "example": "https://www.allbirds.com/products/mens-dasher-nz-anthracite"
+            },
+            "vendor": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Vendor",
+                "example": "Allbirds"
+            },
+            "productType": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "ProductType",
+                "example": "Shoes"
+            },
+            "tags": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "title": "Tags"
+            },
+            "currency": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Currency",
+                "example": "USD"
+            },
+            "priceMin": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "PriceMin",
+                "example": 140
+            },
+            "priceMax": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "PriceMax",
+                "example": 140
+            },
+            "compareAtPriceMin": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "CompareAtPriceMin",
+                "example": 125
+            },
+            "compareAtPriceMax": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "CompareAtPriceMax",
+                "example": 125
+            },
+            "isOnSale": {
+                "type": [
+                    "boolean",
+                    "null"
+                ],
+                "title": "IsOnSale",
+                "example": false
+            },
+            "discountPercent": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "DiscountPercent",
+                "example": 21.6
+            },
+            "available": {
+                "type": [
+                    "boolean",
+                    "null"
+                ],
+                "title": "Available",
+                "example": true
+            },
+            "availableVariantCount": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "AvailableVariantCount",
+                "example": 8
+            },
+            "variantCount": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "VariantCount",
+                "example": 13
+            },
+            "totalInventory": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "TotalInventory",
+                "example": 0
+            },
+            "images": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "title": "Images"
+            },
+            "imageUrl": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "ImageUrl",
+                "example": "https://cdn.shopify.com/s/files/1/1104/4168/files/A12416_26Q1_Dasher-NZ-Anthracite-Dark-Anthr_PDP_LEFT.png?v=1768948005"
+            },
+            "imageCount": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "ImageCount",
+                "example": 5
+            },
+            "options": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "title": "Options"
+            },
+            "variants": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "title": "Variants"
+            },
+            "description": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Description",
+                "example": "A new take on our fan-favorite Dasher, made for busy days and spontaneous plans. Lightweight, breathable comfort keeps y"
+            },
+            "descriptionHtml": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "DescriptionHtml",
+                "example": "<p>A new take on our fan-favorite Dasher, made for busy days and spontaneous plans. Lightweight, breathable comfort keep"
+            },
+            "createdAt": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "CreatedAt",
+                "example": "2025-08-06T18:54:33-07:00"
+            },
+            "updatedAt": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "UpdatedAt",
+                "example": "2026-09-12T12:05:37-07:00"
+            },
+            "publishedAt": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "PublishedAt",
+                "example": "2026-08-24T09:53:01-07:00"
+            },
+            "store": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "Store",
+                "example": "https://www.allbirds.com"
+            },
+            "scrapedAt": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "ScrapedAt",
+                "example": "2026-09-12T19:05:37.865Z"
+            },
+            "seoTitle": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "SeoTitle",
+                "example": "Men’s Dasher NZ Shoes | Lightweight Everyday Sneakers | Allbirds"
+            },
+            "seoDescription": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "SeoDescription",
+                "example": "Discover the Men’s Dasher NZ—lightweight, breathable sneakers designed for walking, commuting, and everyday comfort. Mad"
+            },
+            "ratingValue": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "RatingValue",
+                "example": 4.6
+            },
+            "reviewCount": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "ReviewCount",
+                "example": 51
+            },
+            "hasSubscriptionOption": {
+                "type": [
+                    "boolean",
+                    "null"
+                ],
+                "title": "HasSubscriptionOption",
+                "example": false
+            },
+            "subscriptionPlans": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "title": "SubscriptionPlans"
+            },
+            "watchLabel": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "WatchLabel",
+                "example": "my-competitor-prices"
+            },
+            "watchChange": {
+                "type": [
+                    "string",
+                    "null"
+                ],
+                "title": "WatchChange",
+                "example": "priceDrop"
+            },
+            "watchChanges": {
+                "type": [
+                    "array",
+                    "null"
+                ],
+                "title": "WatchChanges",
+                "example": [
+                    "priceDrop"
+                ]
+            },
+            "previousPriceMin": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "PreviousPriceMin",
+                "example": 280
+            },
+            "previousAvailable": {
+                "type": [
+                    "boolean",
+                    "null"
+                ],
+                "title": "PreviousAvailable",
+                "example": true
+            },
+            "priceChange": {
+                "type": [
+                    "number",
+                    "null"
+                ],
+                "title": "PriceChange",
+                "example": -140
+            }
         }
-      }
+    },
+    "views": {
+        "overview": {
+            "title": "Overview",
+            "transformation": {
+                "fields": [
+                    "id",
+                    "title",
+                    "handle",
+                    "url",
+                    "vendor",
+                    "productType",
+                    "currency",
+                    "totalInventory",
+                    "priceMin",
+                    "priceMax",
+                    "compareAtPriceMin",
+                    "watchChange",
+                    "previousPriceMin",
+                    "priceChange"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "id": {
+                        "label": "Id",
+                        "format": "number"
+                    },
+                    "title": {
+                        "label": "Title",
+                        "format": "text"
+                    },
+                    "handle": {
+                        "label": "Handle",
+                        "format": "text"
+                    },
+                    "url": {
+                        "label": "Url",
+                        "format": "link"
+                    },
+                    "vendor": {
+                        "label": "Vendor",
+                        "format": "text"
+                    },
+                    "productType": {
+                        "label": "ProductType",
+                        "format": "text"
+                    },
+                    "currency": {
+                        "label": "Currency",
+                        "format": "text"
+                    },
+                    "priceMin": {
+                        "label": "PriceMin",
+                        "format": "number"
+                    },
+                    "priceMax": {
+                        "label": "PriceMax",
+                        "format": "number"
+                    },
+                    "compareAtPriceMin": {
+                        "label": "CompareAtPriceMin",
+                        "format": "number"
+                    },
+                    "totalInventory": {
+                        "label": "TotalInventory",
+                        "format": "number"
+                    },
+                    "watchChange": {
+                        "label": "WatchChange"
+                    },
+                    "previousPriceMin": {
+                        "label": "PreviousPriceMin",
+                        "format": "number"
+                    },
+                    "priceChange": {
+                        "label": "PriceChange",
+                        "format": "number"
+                    }
+                }
+            }
+        }
     }
-  }
 }

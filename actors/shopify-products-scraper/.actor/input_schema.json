@@ -39,7 +39,7 @@
             "default": 500,
             "minimum": 1,
             "maximum": 100000,
-            "description": "Stop after this many products for each store URL."
+            "description": "Stop after this many products for each store URL. In watch mode (\"Watch label\" set) this caps how many products are SCANNED per store instead — unchanged products aren't returned, so the diff has to walk the feed; raise it above your store's catalog size or changes further down the feed are missed."
         },
         "includeDescription": {
             "title": "Include description",
@@ -118,6 +118,42 @@
                 "Full (+ barcodes, inventory counts, SEO + rating)"
             ],
             "default": "basic"
+        },
+        "watchLabel": {
+            "title": "Watch label (change alerts)",
+            "type": "string",
+            "description": "Set a name (e.g. \"my-competitor-prices\") to turn this run into a catalog watch. The FIRST run under a given label + filter set records each product's price and availability and returns NOTHING (0 products charged). Every run after that returns ONLY products that are new, changed price, went out of stock or came back in stock — so you can schedule this Actor daily and pay only for what actually moved, instead of re-buying the whole catalog. Each returned row carries watchChange / watchChanges / previousPriceMin / previousAvailable / priceChange alongside the normal product fields. Adding a store URL to an existing label baselines just that store; changing a filter (onlyAvailable / searchQuery / vendors / productTypes / minPrice / maxPrice / onSaleOnly / minDiscountPercent) starts a fresh baseline. Leave empty for a normal one-off scrape.",
+            "editor": "textfield"
+        },
+        "watchEvents": {
+            "title": "Watch events to report",
+            "type": "array",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "new",
+                    "priceDrop",
+                    "priceIncrease",
+                    "backInStock",
+                    "outOfStock"
+                ],
+                "enumTitles": [
+                    "New product",
+                    "Price drop",
+                    "Price increase",
+                    "Back in stock",
+                    "Out of stock"
+                ]
+            },
+            "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Price drop\" alone to build a discount tracker and never pay for anything else. Leave empty for all five. Ignored when \"Watch label\" is empty.",
+            "default": []
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — products pushed, the per-change-type counts if a watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without configuring an Apify platform webhook per Task. Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging. Leave empty to skip.",
+            "editor": "textfield"
         }
     },
     "required": [
