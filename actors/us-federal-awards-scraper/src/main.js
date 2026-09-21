@@ -811,7 +811,9 @@ if (pushed === 0 && !watchMode) {
         + 'often has zero real matches; drop one filter and retry. '
         + '(2) "agencies" must be the exact top-tier agency name as USAspending spells it '
         + '(e.g. "Department of Energy", not "DOE" or "Energy"). '
-        + '(3) the date window filters on award action date — widen "startDate"/"endDate" '
+        + '(3) the date window is USAspending\'s award-level time_period filter, a coarse recency '
+        + 'bound rather than a strict window — widen "startDate"/"endDate", and move the END date, '
+        + 'which is what actually changes the result set '
         + '(dates before 2007-10-01 are not supported by the API and are clamped). '
         + '(4) state codes must be 2-letter USPS codes (CA, TX). Rows that match nothing are never charged.'
         + (isSubaward
