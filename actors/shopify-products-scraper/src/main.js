@@ -109,9 +109,32 @@ const textOf = (html) => (html ? cheerio.load(html).text().replace(/\s+/g, ' ').
 // IP because proxyUrlFor() is called per request with no session id.
 const EMPTY_PAGE_RETRIES = 2;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ...but a zero-product result is only ambiguous on a 2xx. Measured 2026-09-21 against real hosts:
+// Shopify's status code already says exactly what is wrong, and got-scraping does NOT throw on 4xx.
+// Two of those bodies are valid JSON with no `products` key (402 -> `{"errors":"Unavailable Shop"}`,
+// 404 -> `{"errors":"Not Found"}`), so they used to parse cleanly, yield [], and reach the customer
+// as "Shopify returned zero products ... empty store/collection ... not a scrape failure" — after
+// two pointless retries and 6s of sleeps. A typo'd domain was reported as an empty store. A 401
+// sends an EMPTY body, which surfaced as a raw "Unexpected end of JSON input". Check the status
+// first and say the actual reason.
+const STOREFRONT_STATUS = {
+  401: 'this storefront is password-protected (Shopify 401) — the merchant has an "Opening soon"/password page up, so products.json is not public. Ask them for the storefront password, or drop this URL.',
+  402: 'this store is frozen or closed (Shopify 402 "Unavailable Shop") — the merchant\'s plan lapsed. There is nothing to scrape, and this is not a failure on our end.',
+  403: 'this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. Re-run with proxyConfiguration enabled (residential group) to get a different IP.',
+  404: 'there is no Shopify store at this URL (404 "Not Found") — check the domain/handle for a typo, or the store has been deleted.',
+  429: 'this storefront rate-limited us (429). Re-run with fewer storeUrls, or with proxyConfiguration enabled so each request comes from a different IP.',
+};
+const throwIfStorefrontError = (res) => {
+  const code = res.statusCode;
+  if (code >= 200 && code < 300) return res;
+  const e = new Error(STOREFRONT_STATUS[code] ?? `this storefront answered HTTP ${code} instead of product JSON.`);
+  e.storefrontStatus = code;
+  throw e;
+};
 const fetchProductsPage = async (ep, page) => {
   for (let attempt = 0; ; attempt++) {
-    const products = JSON.parse((await http(`${ep.url}?limit=250&page=${page}`)).body).products ?? [];
+    const products = JSON.parse(throwIfStorefrontError(await http(`${ep.url}?limit=250&page=${page}`)).body).products ?? [];
     if (products.length || page !== 1 || attempt >= EMPTY_PAGE_RETRIES) return products;
     log.warning(`${ep.origin}: zero products on page 1 — re-checking (attempt ${attempt + 2}/${EMPTY_PAGE_RETRIES + 1}) in case Shopify served a transient empty response.`);
     await sleep(2000 * (attempt + 1));
@@ -370,7 +393,7 @@ for (const raw of storeUrls) {
   try {
     const currency = await currencyFor(ep.origin);
     if (ep.kind === 'product') {
-      const p = JSON.parse((await http(ep.url)).body).product;
+      const p = JSON.parse(throwIfStorefrontError(await http(ep.url)).body).product;
       if (p) {
         seenBeforeFilter = 1;
         if (!onlyAvailable || passesAvailability(p)) {
@@ -438,9 +461,11 @@ for (const raw of storeUrls) {
     // (e.g. Shopify Hydrogen/Oxygen, which has no classic Liquid products.json route) or a
     // bot-check page shows up here as a JSON.parse SyntaxError, not a request-level error —
     // give that its own message instead of surfacing the raw "Unexpected token '<'".
-    const reason = e instanceof SyntaxError && /Unexpected token '<'/.test(e.message)
-      ? 'this URL returned an HTML page instead of JSON — likely a headless/custom storefront (e.g. Shopify Hydrogen) without the classic products.json endpoint, or a bot-check page. Not a failure on our end.'
-      : `${e.message} (store may not be Shopify or has products.json disabled)`;
+    const reason = e.storefrontStatus
+      ? e.message // already a customer-ready sentence naming the real cause; don't bolt "may not be Shopify" onto it
+      : e instanceof SyntaxError && /Unexpected token '<'/.test(e.message)
+        ? 'this URL returned an HTML page instead of JSON — likely a headless/custom storefront (e.g. Shopify Hydrogen) without the classic products.json endpoint, or a bot-check page. Not a failure on our end.'
+        : `${e.message} (store may not be Shopify or has products.json disabled)`;
     log.warning(`${ep.origin}: ${reason}`);
   }
   log.info(`${ep.origin}: ${got} products`);
