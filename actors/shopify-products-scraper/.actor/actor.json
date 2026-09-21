@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "shopify-products-scraper",
     "title": "Shopify Products Data Scraper – Full Catalog, Shopify CSV",
-    "description": "Extract every product from any Shopify store or collection: prices, variants, SKUs, barcodes, inventory counts, availability, images, tags. Filter by price, sale status, brand, type or stock. Or set watchLabel to buy only the diff: price drops, restocks, new, delisted. No browser. Pay per product.",
+    "description": "Every product from any Shopify store or collection: prices, variants, SKUs, barcodes, stock counts, availability, images, tags. Filter by price, sale, brand, type or stock. Overlapping collections deduped: one row, one charge per product. Watch a store: drops, restocks, new, delisted. No browser.",
     "version": "0.1",
     "buildTag": "latest",
     "dockerfile": "../Dockerfile",
