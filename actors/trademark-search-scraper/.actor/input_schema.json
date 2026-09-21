@@ -45,6 +45,12 @@
       "description": "Optional label that turns on watch mode: the first run under a label seeds a baseline and returns nothing (charged nothing); every run after that returns and charges only marks not already delivered under that label. Leave unset for a plain, repeatable search.",
       "editor": "textfield",
       "default": ""
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — marks pushed, marks scanned, and (when Watch label is set) whether this was a baseline run plus the new/skipped counts, along with the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every mark has already been pushed and charged. Leave empty to skip.",
+      "editor": "textfield"
     }
   },
   "required": []

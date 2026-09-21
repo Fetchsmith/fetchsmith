@@ -17,6 +17,17 @@ const niceClasses = (Array.isArray(input.niceClasses) ? input.niceClasses : [])
 const statuses = (Array.isArray(input.statuses) ? input.statuses : []).filter(Boolean);
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+  try {
+    const parsed = new URL(webhookUrlRaw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+    else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+  } catch {
+    log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+  }
+}
 
 // TMview times out/resets on requests from Apify's default datacenter egress (verified cycle 513:
 // works from this box directly, fails 3/3 on-platform without a proxy) — route through Apify Proxy.
@@ -31,6 +42,9 @@ try {
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
+// Marks read off TMview this run (including ones dropped by watch mode) -- the webhook's
+// "how much did we look at" number, distinct from `pushed` ("how much did you pay for").
+let scanned = 0;
 
 // Watch mode: "only what's new since my last run on this label+search" -- distinct from a
 // plain search, which returns the same matching marks every time. Baseline (ST13 ids already
@@ -193,6 +207,7 @@ try {
 
     while (keepGoing && batch.length) {
       for (const tm of batch) {
+        scanned += 1;
         keepGoing = await pushResult(normalize(tm), tm.ST13 ?? null);
         if (!keepGoing) break;
       }
@@ -228,4 +243,41 @@ if (watchMode) {
 }
 
 log.info(`Done. Pushed ${pushed} results.${watchLabel ? ` Watch label: ${watchLabel}` : ''}`);
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
+// a warning not a thrown error. Watch mode here drops already-seen marks BEFORE the push loop
+// (the Actor's own summary line says "N new mark(s)"), so `watchNewCount` is `pushed` and there
+// is no change-detection counter to report (cycle 441 lesson).
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    scanned,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
+}
+
 await Actor.exit();

@@ -16,6 +16,7 @@ Search registered trademarks across **70+ national and regional trademark office
 | `statuses` | array | Restrict to statuses, e.g. `Registered`, `Filed`, `Expired`, `Ended`, `Withdrawn`. Leave empty for all. |
 | `maxResults` | integer | Stop after this many trademarks (default 50, max 5000). |
 | `watchLabel` | string | Optional watch-mode label. The first run under a label seeds a baseline (0 rows returned, 0 charged); every later run on the same label + search returns and charges only marks not already delivered — a scheduled "alert me on new filings" feed instead of the same full result set every time. Leave unset for a plain, repeatable search. |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (marks pushed, marks scanned, dataset ID, watch new/skipped counts) here when the run finishes — see FAQ. |
 
 ## Output
 One item per trademark with **22 fields**: `id`, `st13`, `url` (link to the office's own record), `trademarkName`, `office`, `status`, `trademarkType`, `applicationNumber`, `registrationNumber`, `applicationDate`, `registrationDate`, `expirationDate`, `oppositionPeriodStart`, `oppositionDeadline`, `seniorityClaimed`, `applicantNames`, `niceClasses`, `viennaCodes`, `territories`, `markImageUrl`, `detailImageUrl`, and `watchLabel` when set.
@@ -63,6 +64,9 @@ It keys a baseline by `st13` (the stable per-record id) against the exact combin
 
 **Why are `expirationDate`, `oppositionPeriodStart`, `oppositionDeadline` and `seniorityClaimed` null on some rows?**
 Not every office publishes every date through TMview — a US record, for example, rarely carries `expirationDate` while a UK or EU record almost always does, and `oppositionDeadline` only exists once a mark has actually passed through publication (an application still pending examination has no opposition window yet). `seniorityClaimed` is `null` when the office doesn't expose the field at all, and `false`/`true` when it does. Treat `null` as "not published for this office/record," not a data error.
+
+**How is `webhookUrl` different from Apify's own platform webhooks?**
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkippedCount`) once the run finishes and every mark is already pushed and charged. Especially useful with `watchLabel` on a scheduled filing alert: your endpoint is told how many new marks landed without polling the dataset, and `watchSeeding: true` distinguishes "this was the free baseline run" from "your watch is live and quiet" — both report zero new marks otherwise. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Use cases
 - **Brand clearance screening** — check a proposed name against 70+ offices before filing, in one search instead of dozens.
