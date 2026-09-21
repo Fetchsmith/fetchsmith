@@ -13,7 +13,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 ## Use cases
 - **Job-board aggregation** — pull live openings from every company you track across 7 different ATSes into one feed, instead of maintaining 7 separate scrapers.
 - **Recruiting/sourcing intelligence** — spot when a target company opens a new role in a specific team or location, with `department`/`team`/`location` already normalized so you can filter without per-ATS cleanup.
-- **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever and Recruitee postings that publish pay ranges.
+- **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever, Recruitee and Greenhouse postings that publish pay ranges.
 - **Remote-work tracking** — `remoteOnly` plus the normalized `workplaceType`/`isRemote` fields build a remote-jobs feed across every ATS at once, not just the ones with a "remote" search filter.
 - **Skill/tech-stack sourcing** — `descriptionKeyword` searches the full posting body, so you can pull every role at 50 companies that mentions `Kubernetes`, `Rust` or `visa sponsorship` — requirements that almost never appear in the job title.
 - **Hiring-trend research** — `postedAfter`/`postedBefore` plus `publishedAt` let you track how fast a company (or a whole market segment) is opening new roles over time.
@@ -62,7 +62,13 @@ One row per job posting:
 **Workday's board-listing API doesn't carry `department`, `employmentType` or an exact `publishedAt` date** — those only come back from a per-job detail call, which this Actor makes automatically for every kept posting when `includeDescriptions` is `true` (the default) **or when you set a filter that needs one of those fields** (`employmentTypeKeyword`, `departmentKeyword`, `postedAfter`, `postedBefore`, `descriptionKeyword`, `descriptionExcludeKeyword`) — so those filters work on Workday boards even with `includeDescriptions: false`. With descriptions off and none of those filters set, the detail call is skipped for a faster, cheaper-in-wall-clock run and those three fields come back `null` for Workday postings only (every other ATS is unaffected either way). `department` is populated from the posting's hiring organization name (e.g. `"131 DEPARTMENT OF CORRECTIONS"`), which is what Workday boards actually expose in place of a dedicated department field.
 
 ### Salary
-Pay is returned when the ATS itself publishes it, and left `null` otherwise rather than guessed — **Ashby**, **Lever** and **Recruitee** expose structured pay ranges; Greenhouse, Workable, SmartRecruiters and Workday do not carry a compensation field at all. Ashby coverage is the best of the four: on a live board of 145 postings, 138 carried a numeric range.
+Pay is returned when the board itself publishes it, and left `null` otherwise rather than guessed — **Ashby**, **Lever** and **Recruitee** expose structured pay ranges in their APIs, and **Greenhouse** boards with pay transparency switched on render the range as a structured block in the posting itself, which this Actor reads. Workable, SmartRecruiters and Workday carry no compensation data at all, so those stay `null`.
+
+Coverage measured on live boards (September 2026): Ashby `ramp` 141/148 postings, Greenhouse `airbnb` 139/166, `databricks` 472/874, `figma` 99/152. Greenhouse boards that never turned pay transparency on (`stripe`, `discord`) return `null` — there is nothing in their payload to read.
+
+Two Greenhouse specifics worth knowing. **The currency comes from the ISO code the board prints, not from the symbol** — 17 of airbnb's ranges pay in CAD and still show `$`, so reading the symbol would mislabel them USD; where a board prints a bare `$` with no code, `salaryCurrency` stays `null` instead of guessing. **A salary printed in prose is not parsed** — only Greenhouse's structured pay block is read, so a sentence like "the base salary range for this position is $196,000 to $220,500" buried in the description is left alone rather than risk picking up some other number from the text.
+
+`salaryMin`/`salaryMax` are also filled on Greenhouse when `includeDescriptions` is `false` — the pay block is read out of the payload either way, so switching descriptions off to save bandwidth does not cost you the salary.
 
 `salaryInterval` says what the number actually means — `year`, `month`, `week`, `day` or `hour`. Each ATS spells its period differently (`1 YEAR`, `monthly`, `per-year-salary`); they are normalized to one vocabulary so an hourly rate and an annual salary are never silently compared.
 
@@ -90,7 +96,7 @@ Pay per result: **$0.0015 per job posting on the free plan, dropping to $0.001 o
 
 **Will `postedAfter`/`postedBefore` filter out a posting that has no date?** No — if an ATS doesn't return a `publishedAt` for a posting, that posting is kept regardless of the date bounds. On Workday the date comes only from the per-job detail call, and setting either bound now triggers that call automatically, so the window applies to Workday boards too.
 
-**Which ATSes expose salary?** Only Ashby, Lever and Recruitee publish a structured pay range today — Greenhouse, Workable, SmartRecruiters and Workday don't carry a compensation field at all, so those come back `null` rather than guessed.
+**Which ATSes expose salary?** Ashby, Lever and Recruitee publish a structured pay range in their API, and Greenhouse boards with pay transparency on print one in the posting body, which this Actor parses (139/166 postings on a live airbnb board, 472/874 on databricks). Workable, SmartRecruiters and Workday carry no compensation data at all, so those come back `null` rather than guessed.
 
 **Does `minSalary`/`maxSalary` compare against an annual salary?** Not necessarily — it compares the raw number as the ATS posted it, in whatever `salaryInterval` that posting uses (year, month, week, day or hour all appear in the wild). Mixing companies on very different intervals in one run means the filter isn't apples-to-apples; check `salaryInterval`/`salaryCurrency` on each row if that matters to you.
 

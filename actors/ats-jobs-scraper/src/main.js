@@ -305,6 +305,69 @@ function normalizeInterval(raw) {
   return s === 'none' ? null : s;
 }
 
+// Pay figures arrive as display strings on the boards that print rather than publish them, and the
+// thousands separator is not a constant: airbnb's euro ranges read "€71.000" (dot = thousands) while
+// its dollar ranges read "$123,000" (comma = thousands), and an hourly range reads "$32.50". So the
+// separator character cannot decide — the size of the group after the LAST separator does: exactly
+// three digits is a thousands group, one or two is a decimal fraction.
+function parseMoney(raw) {
+  const m = String(raw ?? '').replace(/\s+/g, '').match(/\d[\d.,]*\d|\d/);
+  if (!m) return null;
+  const s = m[0];
+  const last = Math.max(s.lastIndexOf(','), s.lastIndexOf('.'));
+  const tail = last < 0 ? '' : s.slice(last + 1);
+  const n = tail.length > 0 && tail.length < 3
+    ? Number(`${s.slice(0, last).replace(/[.,]/g, '')}.${tail}`)
+    : Number(s.replace(/[.,]/g, ''));
+  return Number.isFinite(n) ? n : null;
+}
+
+// A pay period is only ever read from a word the board itself printed — never inferred from the
+// magnitude of the numbers, which is the false-claim class cycles 583-591 kept having to undo.
+function periodWord(text) {
+  const m = String(text ?? '').match(/annualiz\w*|annual|yearly|per\s+year|hourly|per\s+hour|monthly|per\s+month|weekly|per\s+week|daily|per\s+day/i);
+  if (!m) return null;
+  const w = m[0].toLowerCase();
+  if (w.startsWith('annual')) return 'year';
+  if (w.startsWith('daily')) return 'day';
+  return normalizeInterval(w);
+}
+
+// Greenhouse's board API carries no salary field at all, but a board with pay transparency switched
+// on renders the range as structured markup inside `content`:
+//   div.content-pay-transparency > div.pay-input
+//     > div.description  (the employer's boilerplate; sometimes states the period)
+//     > div.title        ("Pay Range" | "Canada Annual Pay Range" | "Mexico Monthly Pay Range")
+//     > div.pay-range    > span(min) + span.divider + span(max + trailing ISO code)
+// Measured live on boards-api airbnb (cycle 605): 139 of 166 postings carry exactly one such block,
+// none carried two, so the data was fetched on every run since cycle 212 and then thrown away.
+// The trailing ISO code is authoritative and must beat the symbol — 17 of those postings pay in CAD
+// and still print "$", so reading the symbol alone would mislabel them USD.
+function greenhouseSalary(html) {
+  const none = { min: null, max: null, currency: null, interval: null };
+  if (!html || !html.includes('pay-range')) return none;
+  const $ = cheerio.load(html);
+  const block = $('.pay-input').filter((_, el) => $(el).find('.pay-range').length > 0).first();
+  if (!block.length) return none;
+  const spans = block.find('.pay-range span').filter((_, el) => !$(el).hasClass('divider'));
+  const minText = spans.eq(0).text().trim();
+  // A board that publishes a single figure rather than a range renders one span; report it as both
+  // bounds rather than half a range, which is what the ATSes with numeric fields do too.
+  const maxText = spans.length > 1 ? spans.eq(1).text().trim() : minText;
+  const min = parseMoney(minText);
+  const max = parseMoney(maxText);
+  if (min == null && max == null) return none;
+  const isoCode = (t) => (t.match(/\b([A-Z]{3})\b/) || [])[1] ?? null;
+  // "$" (USD/CAD/AUD/...) and "¥" (JPY/CNY) are shared by several currencies: when the board prints
+  // no ISO code, those stay null rather than becoming a guess the buyer would have to re-check.
+  const bySymbol = { '£': 'GBP', '€': 'EUR', '₹': 'INR' };
+  const currency = isoCode(maxText) || isoCode(minText)
+    || bySymbol[(maxText.match(/[^\d\s.,]/) || [])[0]] || null;
+  const interval = periodWord(block.find('.title').first().text())
+    || periodWord(block.find('.description').first().text());
+  return { min, max, currency, interval };
+}
+
 // Ashby publishes structured pay when a board turns compensation on: `compensation.summaryComponents[]`
 // (and the same shape nested under `compensationTiers[].components[]`) carries real numeric
 // `minValue`/`maxValue` plus `currencyCode` and `interval`. Several component types share the array
@@ -333,7 +396,10 @@ async function fetchGreenhouse(slug) {
   const jobs = body?.jobs ?? [];
   return {
     jobs: jobs.map((j) => {
-      const html = needDescriptions ? decodeEntities(j.content) : null;
+      // Decoded on every run, not only when descriptions are requested: the pay-transparency block
+      // lives in `content`, so salary would otherwise be null for anyone scraping without them.
+      const html = decodeEntities(j.content);
+      const pay = greenhouseSalary(html);
       const workplaceType = j.metadata?.find((m) => /workplace type/i.test(m.name || ''))?.value ?? null;
       return {
         company: slug, atsSource: 'greenhouse', jobId: String(j.id), title: j.title?.trim() ?? null,
@@ -341,10 +407,10 @@ async function fetchGreenhouse(slug) {
         workplaceType, isRemote: /remote/i.test(j.location?.name ?? '') || (workplaceType ? /remote/i.test(workplaceType) : null),
         location: j.location?.name ?? null, secondaryLocations: (j.offices ?? []).slice(1).map((o) => o.name),
         country: null, region: null, city: null,
-        salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+        salaryMin: pay.min, salaryMax: pay.max, salaryCurrency: pay.currency, salaryInterval: pay.interval,
         publishedAt: j.first_published ?? null, updatedAt: j.updated_at ?? null,
         jobUrl: j.absolute_url ?? null, applyUrl: j.absolute_url ?? null,
-        descriptionHtml: html ?? null, descriptionText: needDescriptions ? textOf(html) : null,
+        descriptionHtml: needDescriptions ? html : null, descriptionText: needDescriptions ? textOf(html) : null,
       };
     }),
   };
