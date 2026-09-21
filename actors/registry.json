@@ -3,7 +3,7 @@
     {
       "slug": "ats-jobs-scraper",
       "title": "ATS Jobs Openings Scraper – Greenhouse, Ashby, Lever, Recruitee",
-      "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday career board, normalized into one schema with location, remote status and salary wherever the board publishes it — including Greenhouse boards, where the pay range is printed in the posting rather than exposed as an API field (139 of 166 live airbnb postings carry one). Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
+      "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday career board, normalized into one schema with city/region/country, remote status and salary wherever the board publishes it — including Greenhouse boards, where the pay range is printed in the posting rather than exposed as an API field (139 of 166 live airbnb postings carry one). Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -57,6 +57,9 @@
         "title": "Account Manager",
         "department": "Business Development",
         "location": "London, United Kingdom",
+        "city": "London",
+        "region": "England",
+        "country": "United Kingdom",
         "isRemote": false,
         "salaryMin": 46000,
         "salaryMax": 54000,

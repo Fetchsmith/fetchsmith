@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import * as cheerio from 'cheerio';
 import { gotScraping } from 'got-scraping';
+import { parseLocation } from './location.js';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
@@ -401,12 +402,16 @@ async function fetchGreenhouse(slug) {
       const html = decodeEntities(j.content);
       const pay = greenhouseSalary(html);
       const workplaceType = j.metadata?.find((m) => /workplace type/i.test(m.name || ''))?.value ?? null;
+      // Greenhouse has no structured geography: `location.name` is hand-typed free
+      // text, and `offices[]` is NOT used as a fallback because it contradicts the
+      // posting on some boards (see src/location.js).
+      const geo = parseLocation(j.location?.name);
       return {
         company: slug, atsSource: 'greenhouse', jobId: String(j.id), title: j.title?.trim() ?? null,
         department: j.departments?.[0]?.name ?? null, team: null, employmentType: null,
         workplaceType, isRemote: /remote/i.test(j.location?.name ?? '') || (workplaceType ? /remote/i.test(workplaceType) : null),
         location: j.location?.name ?? null, secondaryLocations: (j.offices ?? []).slice(1).map((o) => o.name),
-        country: null, region: null, city: null,
+        country: geo.country, region: geo.region, city: geo.city,
         salaryMin: pay.min, salaryMax: pay.max, salaryCurrency: pay.currency, salaryInterval: pay.interval,
         publishedAt: j.first_published ?? null, updatedAt: j.updated_at ?? null,
         jobUrl: j.absolute_url ?? null, applyUrl: j.absolute_url ?? null,
