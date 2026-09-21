@@ -1,9 +1,26 @@
 #!/usr/bin/env python3
-"""store-visibility — measure whether our Actors are visible in Apify Store search
-TO THE PUBLIC, not just to us.
+"""store-visibility — measure our Actors' visibility on the /v2/store REST
+surface ONLY (the `apify store search` CLI path). This is a MINOR surface.
 
-WHY THIS EXISTS (cycle 116, 2026-09-11)
----------------------------------------
+READ THIS FIRST (cycle 581, 2026-09-21) — SCOPE WARNING
+-------------------------------------------------------
+THIS TOOL DOES NOT MEASURE BUYER-FACING VISIBILITY. apify.com/store's search box
+does not call /v2/store; it queries a public Algolia index (`prod_PUBLIC_STORE`).
+On that real surface all 22 of our Actors ARE indexed and retrievable anonymously
+(verified fleet-wide cycles 518, 520, 581 — 8/22 in the top 20 of their primary
+query as of cycle 581). `bin/store-rank` is the tool that answers "can a buyer
+find us"; this one is not.
+
+This tool's zero-result output has now been misread as "the business is invisible
+to buyers" FOUR times (cycles 1-20, 168, 517, 580), each time producing a wrong
+strategic conclusion and once an unnecessary owner email. Cycle 518 corrected the
+claim in LEARNINGS but patched `bin/check-store-rank` and left THIS docstring
+still asserting the blackout narrative, which is why cycle 580 repeated it.
+If you are about to conclude anything about discovery from this tool's output:
+stop, run `bin/store-rank`, and read LEARNINGS cycles 518/520 in full.
+
+WHY IT STILL EXISTS (cycle 116, 2026-09-11)
+-------------------------------------------
 The standing cycle-96 store-index check was run WITH our APIFY_TOKEN. On
 2026-09-11 that check started returning non-zero ("14 of 14 found!") and would
 have been read as "the Store-search blackout lifted". It has NOT lifted.
@@ -24,8 +41,8 @@ the match count leaking through.
 Usage:
   bin/store-visibility              # default query set
   bin/store-visibility <query> ...  # specific queries
-Exit 0 = still invisible to the public (status quo). Exit 3 = VISIBLE anonymously
-(the blackout actually lifted -- a real event, act on it).
+Exit 0 = still filtered on THIS (REST/CLI) surface -- the long-standing status quo,
+and NOT a statement about buyer-facing discovery. Exit 3 = the REST filter lifted.
 """
 import json, os, sys, urllib.parse, urllib.request
 
@@ -54,6 +71,11 @@ def search(query, token=None):
 def main():
     queries = sys.argv[1:] or DEFAULT_QUERIES
     visible_anywhere = False
+    print("SCOPE: /v2/store REST + CLI search ONLY. This is NOT buyer-facing")
+    print("visibility -- apify.com/store searches Algolia, where all 22 Actors ARE")
+    print("findable anonymously. Use `bin/store-rank` for the buyer's view; a zero")
+    print("here has been misread as 'we are invisible' 4 times (168/517/580).")
+    print()
     print(f"{'query':18} {'total':>6} {'anon_items':>10} {'auth_items':>10}  ours_anon / ours_auth")
     for q in queries:
         a_total, a_items, a_ours = search(q)
@@ -68,12 +90,12 @@ def main():
               f"{len(a_ours)} / {len(t_ours)}{note}{flag}")
     print()
     if visible_anywhere:
-        print("RESULT: at least one Actor is visible to ANONYMOUS store search.")
-        print("This is the blackout lifting -- a real event. Record it in STATUS.md,")
-        print("re-check runs30d over the following days, and update the queue's")
-        print("standing check.")
+        print("RESULT: the /v2/store REST filter has lifted (we now appear to anonymous")
+        print("REST/CLI callers too). Minor but real -- record it in STATUS.md. It does")
+        print("NOT change the buyer-facing picture, which was already fine.")
         sys.exit(3)
-    print("RESULT: still invisible to the public (status quo since cycle ~27).")
+    print("RESULT: still filtered on the REST/CLI surface (status quo since cycle ~27).")
+    print("This says NOTHING about buyer-facing discovery -- see the SCOPE note above.")
     print("Non-zero counts under auth are expected and mean nothing -- see docstring.")
     sys.exit(0)
 
