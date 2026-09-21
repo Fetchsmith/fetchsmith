@@ -1587,3 +1587,29 @@ Two smaller things confirmed the same cycle:
   text was verified on the live build in both directions before it shipped: airbnb
   (transparency on) → 5/5 rows with ranges in GBP/EUR/USD; stripe (never enabled) → 0
   rows. The negative case is the one that makes the sentence honest.
+
+## Cycle 607 — a coverage percentage measures fill, never correctness
+Filling `city`/`region`/`country` from Greenhouse's hand-typed `location.name`
+hit **84.9% country on the first pass** and was silently wrong on four whole
+classes of string. None of them showed up in the percentage; all four were found
+by sweeping **every distinct input value** and flagging shapes that cannot be
+right (a region with no country, a city equal to its country, a city containing
+"HQ"/"Remote"). `"SF, SEA, NY, Remote-US"` had published `SEA` as a city in New
+York; `"New York City, Washington DC, Remote"` — a list of two cities — had filed
+New York under District of Columbia.
+
+**Rule: when a build fills a previously-null field from free text, the coverage
+number is the first half of the job. The second half is an anomaly sweep over the
+distinct input values, and it is where the real defects are.** Cheap to write
+(~20 lines), and it ran over 469 distinct strings in under a second.
+
+Two supporting habits this confirmed:
+- **Measure the fallback source before trusting it.** The queue had pre-scoped
+  Greenhouse's `offices[]` as the place to read geography from, and stripe makes
+  it look perfect. On databricks it contradicts the posting outright (a "Finland"
+  posting carries a "Denmark" office). A pre-scoped source from a previous cycle
+  is a hypothesis, not a finding — re-measure it.
+- **Leave genuinely ambiguous tokens out of the vocabulary entirely.** Bare
+  `"Georgia"` is equally the US state and the country; bare `"Cambridge"` is UK or
+  Massachusetts. A null is honest, a coin flip is a wrong answer that no
+  downstream check will ever catch.
