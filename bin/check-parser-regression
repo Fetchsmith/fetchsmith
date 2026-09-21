@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Diff a pure parser function's output BEFORE vs AFTER an edit, over a real corpus.
+
+WHY THIS EXISTS (cycle 609). `parseLocation` was edited so Workday's "Florida - Remote"
+would stop returning three nulls. Every hand spot-check passed. The edit still silently
+regressed 7 live Greenhouse strings (an unspaced dash ate the "CC-Remote" country-prefix
+convention, so "Chicago, US-Remote, Canada-Remote" became city "US-Remote" in Canada),
+and the second attempt regressed 1 more ("NYC, SF, Seattle, US - Remote" promoted the
+last-listed city over the primary one). The ONLY thing that caught either was importing
+`git show HEAD:src/location.js` beside the working copy and diffing both over ~1,900 real
+upstream strings. That was a throwaway in /tmp; this is it as a tool.
+
+A shared normaliser is the highest-risk code in the Actor: it runs on every row of every
+source, so a fix aimed at one ATS silently rewrites the others. Spot-checks cannot see
+that. A corpus diff can, and it costs one command.
+
+    check-parser-regression <actor-slug> <module> <export> <corpus> [--ref HEAD] [--show N]
+
+      module   path to the ESM module, relative to the Actor dir (e.g. src/location.js)
+      export   named export to call, one string argument in (e.g. parseLocation)
+      corpus   file of raw input strings, one per line (blank lines and '#' comments
+               skipped, duplicates collapsed); or '-' for stdin
+      --ref    git ref to take the BEFORE version from (default HEAD, i.e. the last
+               commit -> your uncommitted working-copy edit is what gets judged)
+      --show   max changed strings to print per bucket (default 20, 0 = all)
+
+Output buckets, which are NOT symmetric on purpose:
+
+    REGRESSION   a field that had a value now has a different value, or is now null
+    GAIN         a field that was null now has a value
+    RESHAPE      changed some other way (new/removed key)
+
+REGRESSION is the one that blocks: filling a null is what the edit was for, overwriting
+a correct answer is the thing you did not mean to do. Exit 0 = no regressions, 1 = some,
+2 = usage/setup error. Judge the gains by reading them; the tool cannot know if a newly
+filled country is the RIGHT country.
+
+Corpora live in actors/<slug>/corpus/*.txt and are captured from live upstream, not
+invented -- a hand-written corpus only contains the cases you already thought of, which
+are exactly the cases the spot-check already passed.
+"""
+import json
+import os
+import subprocess
+import sys
+import tempfile
+
+AGENT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RUNNER = """
+import { %(export)s as fn } from '%(mod)s';
+import { readFileSync } from 'node:fs';
+const lines = JSON.parse(readFileSync('%(corpus)s', 'utf8'));
+const out = {};
+for (const s of lines) {
+  try { out[s] = fn(s); } catch (e) { out[s] = { __error: String(e && e.message || e) }; }
+}
+process.stdout.write(JSON.stringify(out));
+"""
+
+
+def die(msg, code=2):
+    print(f"check-parser-regression: {msg}", file=sys.stderr)
+    sys.exit(code)
+
+
+def run_side(tmp, tag, module_path, export, corpus_json):
+    runner = os.path.join(tmp, f"run-{tag}.mjs")
+    with open(runner, "w") as f:
+        f.write(RUNNER % {"export": export, "mod": module_path, "corpus": corpus_json})
+    p = subprocess.run(["node", runner], capture_output=True, text=True)
+    if p.returncode != 0:
+        die(f"{tag} side failed to run:\n{p.stderr.strip()}")
+    return json.loads(p.stdout)
+
+
+def classify(before, after):
+    """-> (bucket, [field notes]). Buckets: regression, gain, reshape."""
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return ("reshape", [f"{before!r} -> {after!r}"]) if before != after else (None, [])
+    keys = sorted(set(before) | set(after))
+    notes, worst = [], None
+    for k in keys:
+        b, a = before.get(k, "<missing>"), after.get(k, "<missing>")
+        if b == a:
+            continue
+        notes.append(f"{k}: {b!r} -> {a!r}")
+        if b == "<missing>" or a == "<missing>":
+            bucket = "reshape"
+        elif b is None:
+            bucket = "gain"
+        else:
+            bucket = "regression"  # had a value; now different or null
+        order = {"regression": 3, "reshape": 2, "gain": 1}
+        if worst is None or order[bucket] > order[worst]:
+            worst = bucket
+    return worst, notes
+
+
+def main(argv):
+    args, ref, show = [], "HEAD", 20
+    it = iter(argv)
+    for a in it:
+        if a == "--ref":
+            ref = next(it, None) or die("--ref needs a value")
+        elif a == "--show":
+            show = int(next(it, "20"))
+        elif a in ("-h", "--help"):
+            print(__doc__)
+            return 0
+        else:
+            args.append(a)
+    if len(args) != 4:
+        die("usage: check-parser-regression <actor-slug> <module> <export> <corpus> "
+            "[--ref HEAD] [--show N]")
+    slug, module, export, corpus = args
+
+    actor_dir = os.path.join(AGENT, "actors", slug)
+    if not os.path.isdir(actor_dir):
+        die(f"no such Actor dir: {actor_dir}")
+    work_mod = os.path.join(actor_dir, module)
+    if not os.path.exists(work_mod):
+        die(f"no such module: {work_mod}")
+
+    raw = sys.stdin.read() if corpus == "-" else open(
+        corpus if os.path.exists(corpus) else os.path.join(actor_dir, corpus)).read()
+    # Lines are passed VERBATIM, not stripped: 39 of the 468 captured Greenhouse
+    # strings carry a trailing space the board typed, and how the parser handles
+    # that is part of what is under test. Only blank/comment lines are dropped.
+    seen, lines = set(), []
+    for ln in raw.splitlines():
+        if not ln.strip() or ln.lstrip().startswith("#") or ln in seen:
+            continue
+        seen.add(ln)
+        lines.append(ln)
+    if not lines:
+        die("corpus is empty")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        corpus_json = os.path.join(tmp, "corpus.json")
+        with open(corpus_json, "w") as f:
+            json.dump(lines, f)
+
+        # BEFORE: the committed version, written beside the working copy so any
+        # sibling imports it has still resolve.
+        rel = os.path.relpath(work_mod, AGENT)
+        p = subprocess.run(["git", "-C", AGENT, "show", f"{ref}:{rel}"],
+                           capture_output=True, text=True)
+        if p.returncode != 0:
+            die(f"git show {ref}:{rel} failed: {p.stderr.strip()}")
+        base, ext = os.path.splitext(work_mod)
+        old_mod = f"{base}.__before__{ext}"
+        with open(old_mod, "w") as f:
+            f.write(p.stdout)
+        try:
+            before = run_side(tmp, "before", old_mod, export, corpus_json)
+        finally:
+            os.unlink(old_mod)
+        after = run_side(tmp, "after", work_mod, export, corpus_json)
+
+    buckets = {"regression": [], "gain": [], "reshape": []}
+    for s in lines:
+        bucket, notes = classify(before.get(s), after.get(s))
+        if bucket:
+            buckets[bucket].append((s, notes))
+
+    print(f"corpus: {len(lines)} distinct strings | {slug}/{module}:{export} | "
+          f"before = {ref}, after = working copy\n")
+    for name, label in (("regression", "REGRESSION"), ("reshape", "RESHAPE"), ("gain", "GAIN")):
+        rows = buckets[name]
+        print(f"{label}: {len(rows)}")
+        for s, notes in (rows if show == 0 else rows[:show]):
+            print(f"  {s!r}")
+            for n in notes:
+                print(f"      {n}")
+        if show and len(rows) > show:
+            print(f"  ... {len(rows) - show} more (--show 0 for all)")
+        print()
+
+    n = len(buckets["regression"])
+    print(f"check-parser-regression: {n} regression(s), "
+          f"{len(buckets['reshape'])} reshape(s), {len(buckets['gain'])} gain(s)")
+    return 1 if n else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

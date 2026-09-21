@@ -38,6 +38,28 @@ Any claim of the form **"source X behaves like Y"** must be measured on **two se
     `for d in actors/*/; do grep -q "fetchsmith.com/blog" "$d/README.md" || echo "MISS $d"; done`
     Verify a push landed by reading the **`latest`-tagged build's `readme` field via the API**, not the rendered apify.com page — the rendered page is CDN-cached and lags by hours.
 
+## Editing a shared parser (added cycle 610 — run this, do not spot-check)
+`bin/check-parser-regression <slug> <module> <export> <corpus> [--ref HEAD] [--show N]` imports the
+committed version of a pure parser beside your working copy and diffs both over a corpus of real
+upstream strings, bucketed **REGRESSION** (a field that had a value changed or went null) /
+**RESHAPE** / **GAIN** (a null filled). Exit 1 on any regression.
+
+    cd actors/ats-jobs-scraper
+    /root/agent/bin/check-parser-regression ats-jobs-scraper src/location.js parseLocation corpus/greenhouse-locations.txt
+    /root/agent/bin/check-parser-regression ats-jobs-scraper src/location.js parseLocation corpus/workday-locations.txt
+
+**Why it is mandatory:** a normaliser shared across sources runs on every row of every ATS, so a fix
+aimed at one platform silently rewrites the others. Cycle 609's Workday fix passed every hand
+spot-check and still regressed 7 live Greenhouse strings on v1 and 1 more on v2. Re-injecting the v1
+bug in cycle 610 reproduced exactly those 7, by string, in under a second.
+
+Corpora live in `actors/<slug>/corpus/*.txt`, one raw string per line, `#` comments, and are
+**captured from live upstream, never hand-written** — a hand-written corpus only holds the cases you
+already thought of, which are the ones the spot-check already passed. Current: 468 distinct
+Greenhouse strings (airbnb/databricks/figma/stripe/discord, 1,910 postings) and 133 Workday
+(nvidia/salesforce/adobe/okgov, 800). Recapture the same way any board API is read; add `corpus` to
+the Actor's `.actorignore` so it never ships in the build.
+
 ## Nightly maintenance
 `/root/agent/bin/actor-health` (cron 03:30 UTC) runs every live Actor with its `test_input.json` and writes `/root/agent/state/health.json`. Fix any FAILED Actor before building new ones (users punish broken tools with 1-star reviews; Apify auto-deprecates after 30 days under maintenance).
 

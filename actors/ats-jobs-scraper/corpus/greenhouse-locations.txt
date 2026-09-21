@@ -1,0 +1,470 @@
+# Captured from live boards (airbnb, databricks, figma, stripe, discord) on 2026-09-21, cycle 610.
+# 1910 postings -> 468 distinct strings. Raw upstream text, not hand-written.
+(San Francisco, Chicago, NYC)
+AMER
+Aarhus, Denmark
+Amsterdam, Netherlands
+Arizona; California; Utah
+Atlanta
+Atlanta, Chicago, US-Remote 
+Atlanta, Georgia
+Atlanta, Georgia; Boston, Massachusetts; Chicago, Illinois; Dallas, Texas; New York City, New York; San Francisco, California; Seattle, Washington
+Atlanta, Georgia; Central - United States; Remote - North Carolina; West Coast - United States
+Atlanta, Georgia; Chicago, Illinois
+Atlanta, Georgia; Chicago, Illinois; Dallas, Texas; Phoenix, Arizona; Portland, Oregon; Remote - California; Remote - North Carolina; Seattle, Washington
+Atlanta, Georgia; Denver, Colorado
+Auckland
+Auckland, New Zealand
+Austin, Texas
+Australian Capital Territory, Australia
+Bangalore
+Bangalore 
+Bangalore, India
+Bangkok
+Bangkok, Thailand
+Barcelona
+Barcelona, Spain
+Belgrade, Serbia
+Bellevue, Washington
+Bellevue, Washington; Boston, Massachusetts; Chicago, Illinois; Denver, Colorado; Seattle, Washington
+Bellevue, Washington; Boston, Massachusetts; Chicago, Illinois; Denver, Colorado; Seattle, Washington; Washington, D.C.
+Bellevue, Washington; Boston, Massachusetts; Seattle, Washington; Washington, D.C.
+Bellevue, Washington; Chicago, Illinois; Denver, Colorado; Mountain View, California; New York City, New York; San Francisco, California; Seattle, Washington; Washington, D.C.
+Bellevue, Washington; Denver, Colorado; Seattle, Washington; Washington, D.C.
+Bellevue, Washington; Mountain View, California; New York City, New York; San Francisco, California; Seattle, Washington
+Bellevue, Washington; Mountain View, California; New York City, New York; San Francisco, California; Seattle, Washington; Washington, D.C.
+Bellevue, Washington; Mountain View, California; San Francisco, California
+Bellevue, Washington; Mountain View, California; San Francisco, California; Seattle, Washington
+Bellevue, Washington; San Francisco, California
+Bellevue, Washington; Seattle, Washington
+Bellevue, Washington; Seattle, Washington; Washington, D.C.
+Bengaluru
+Bengaluru, India
+Bengaluru, India; Delhi, India; India; Mumbai, India
+Bengaluru, India; Mumbai, India
+Berkeley, California; California; Connecticut; Los Angeles, California; Massachusetts; New Hampshire; New Jersey; New York; Pennsylvania; Rhode Island; San Diego, California; Washington
+Berlin
+Berlin, Germany
+Berlin, Germany 
+Berlin, Germany; Munich, Germany
+Boston, Massachusetts
+Boston, Massachusetts; California; Chicago, Illinois; New York City, New York
+Boston, Massachusetts; Delaware; Maryland; Remote - California; Remote - New York; Remote - Washington D.C.; Virginia; West Virginia
+Boston, Massachusetts; Kentucky; United States
+Boston, Massachusetts; New Jersey; New York City, New York
+Brazil
+Brisbane, Australia; Melbourne, Australia; Western Australia, Australia
+British Columbia, Canada; Calgary, Canada
+Bucharest
+Bucharest, Romania
+CDMX
+CHI and DUB
+CHI, ATL
+CHI, ATL, US-REM
+Calgary, Canada; Vancouver, Canada
+Canada
+Canada 
+Central - United States
+Central - United States; Northeast - United States; Southeast - United States
+Central - United States; Northeast - United States; Southeast - United States; United States; West Coast - United States
+Central - United States; West Coast - United States
+Charlotte, North Carolina
+Charlotte, North Carolina; Raleigh, North Carolina; Remote - North Carolina
+Chicago
+Chicago and NYC
+Chicago or NYC
+Chicago, Atlanta, Remote
+Chicago, IL
+Chicago, IL 
+Chicago, IL; Atlanta, GA
+Chicago, IL; Atlanta, GA; San Francisco, CA; Seattle, WA; New York, NY
+Chicago, Illinois
+Chicago, Illinois; Connecticut; New Jersey; Remote - New York; Remote - Washington D.C.; San Francisco, California
+Chicago, Illinois; Dallas, Texas; Denver, Colorado; Los Angeles, California; Portland, Oregon; San Francisco, California; Seattle, Washington
+Chicago, Illinois; Indiana
+Chicago, Illinois; Massachusetts; New Jersey; New York
+Chicago, New York 
+Chicago, New York, San Francisco
+Chicago, Seattle, NYC, San Francisco, Remote 
+Chicago, US
+Chicago, US-Remote
+Chicago, US-Remote, Canada-Remote
+China
+Colorado; Denver, Colorado; Remote - Colorado
+Colorado; Remote - California; Remote - Oregon; Remote - Washington
+Connecticut; Massachusetts; New York; North Carolina; St. Louis, Missouri; Washington, D.C.
+Costa Rica
+DC, SF, NYC
+Dallas, Texas
+Dallas, Texas; Missouri; Remote - Missouri; Remote - Texas; St. Louis, Missouri; Texas; United States
+Dallas, Texas; New Jersey; New York
+Delaware; Maryland; Virginia; Washington, D.C.
+Delhi, India
+Denmark
+Denver, Colorado
+Denver, Colorado; West Coast - United States
+Dubai, United Arab Emirates
+Dublin
+Dublin 
+Dublin OR London
+Dublin or Berlin
+Dublin or London
+Dublin, Ireland
+Dublin, Ireland 
+Dublin, London
+EMEA
+EMEA; Germany; London, United Kingdom; Paris, France; Remote - Netherlands
+Finland; Remote - Denmark; Stockholm, Sweden
+Florida, United States
+Florida; Remote - Massachusetts; Remote - New York; Remote - North Carolina; Remote - Pennsylvania; Remote - Virginia
+Georgia; Illinois; Massachusetts; New York; North Carolina; Texas; Virginia; Washington, D.C.
+Georgia; Illinois; Massachusetts; New York; North Carolina; Washington, D.C.
+Georgia; Illinois; New York; Texas; Washington, D.C.
+Georgia; Massachusetts; New York; North Carolina
+Germany
+Germany 
+Gurugram, India
+Heredia, Costa Rica
+Herzliya, Israel
+Hesse, Germany
+Hong Kong , Singapore
+IN - Bengaluru
+IN-Bengaluru
+Illinois; Massachusetts; New Jersey; New York; Washington, D.C.
+Illinois; Massachusetts; New York; Washington, D.C.
+Illinois; Michigan; Minnesota
+India
+India, Bangalore 
+Ireland
+Ireland / United Kingdom
+Israel
+Israel 
+Japan
+Japan, Tokyo
+Korea
+LOCATION
+London
+London - United Kingdom
+London or Dublin
+London, Dublin
+London, Dublin, UK-Remote
+London, England
+London, UK
+London, United Kingdom
+London, United Kingdom; Paris, France
+Los Angeles, California
+Los Angeles, California, United States
+Luxembourg
+MX- Mexico City
+Madrid
+Madrid 
+Madrid; Milan, Italy; Paris, France
+Manila, Philippines
+Maryland; McLean, Virginia; Washington, D.C.
+Maryland; Philadelphia, Pennsylvania
+Maryland; Remote - Virginia; Remote - Washington D.C.
+Maryland; Virginia; Washington, D.C.
+McLean, Virginia
+McLean, Virginia; Washington, D.C.
+Melbourne, Australia
+Melbourne, Australia; Queensland, Australia
+Melbourne, Australia; Sydney, Australia
+Mexico
+Mexico CIty
+Mexico City
+Mexico City 
+Mexico City, Mexico
+Milan
+Milan, Italy
+Montréal, Canada
+Montréal, Canada; Toronto, Canada
+Mountain View, California
+Mountain View, California; Plano, Texas; San Francisco, California
+Mountain View, California; Remote - North Carolina; San Francisco, California
+Mountain View, California; San Francisco, California
+Mountain View, California; San Francisco, California; Seattle, Washington
+Mumbai, India
+Munich, Germany
+N/A
+NY or SF
+NY, SF, Chicago, Remote
+NYC
+NYC or Remote
+NYC, Chicago, Seattle, San Francisco
+NYC, SEA, San Francisco
+NYC, SF
+NYC, SF, Chi, Remote
+NYC, SF, Seattle, US
+NYC, SF, Seattle, US - Remote
+NYC, San Francisco, Seattle
+NYC, Sea, SF, Tor
+NYC, Seattle, SF, Remote
+NYC-Privy
+Nevada
+Nevada; Remote - Arizona; Remote - California; Remote - Colorado; Remote - Oregon; Remote - Washington
+Nevada; Remote - California; Remote - Colorado; Remote - Oregon; Remote - Washington
+Nevada; Remote - California; Remote - Colorado; Remote - Washington
+New Jersey
+New Orleans or Baton Rouge, Louisiana, United States, Atlanta, Georgia, United States
+New York
+New York 
+New York City
+New York City 
+New York City, New York
+New York City, New York; San Francisco, California
+New York City, New York; San Francisco, California; Seattle, Washington
+New York City, San Francisco 
+New York City, San Francisco, US-Remote
+New York City, Toronto, Chicago, or Remote
+New York City, Washington DC, Remote
+New York Privy HQ
+New York or San Francisco
+New York, NY
+New York, NY 
+New York, NY • United States
+New York, NY; San Francisco, CA
+New York, NY; San Francisco, CA; Seattle, WA; Chicago, IL
+New York, NY; Seattle, WA; San Francisco, CA; Chicago, IL; Atlanta, GA
+New York, New York
+New York, New York 
+New York, San Francisco, Chicago, Seattle
+New York, San Francisco, Seattle, Atlanta, Chicago
+New York, San Francisco, Seattle, Chicago
+New York, Seattle, San Francisco
+New York, US - Remote, Toronto
+New York; San Francisco
+Northeast - United States
+Northeast - United States; Southeast - United States
+Ontario, Canada
+Paris
+Paris, France
+Philadelphia, Pennsylvania
+Philadelphia, Pennsylvania; Remote - North Carolina
+Plano, Texas
+Poland - Remote OR Romania - Remote
+Pune, India
+Queensland, Australia
+Raleigh, North Carolina
+Remote
+Remote (U.S.)
+Remote - Bangalore, India
+Remote - California
+Remote - California; Remote - Colorado; Remote - Illinois; Remote - Massachusetts; Remote - New York; Remote - Oregon; Remote - Pennsylvania; Remote - Texas; Remote - Washington
+Remote - California; Remote - Colorado; Remote - Illinois; Remote - Massachusetts; Remote - New York; Remote - Oregon; Remote - Texas; Remote - Washington
+Remote - California; Remote - Colorado; Remote - Oregon; Remote - Washington
+Remote - California; Remote - Oregon; Remote - Washington
+Remote - California; San Francisco, California
+Remote - Denmark
+Remote - Georgia
+Remote - Georgia; Remote - Texas
+Remote - Georgia; Remote - Texas; San Francisco, California
+Remote - Illinois
+Remote - Illinois; Remote - Michigan; Remote - New York
+Remote - India
+Remote - Massachusetts; Remote - New York; Tennessee
+Remote - Mexico 
+Remote - New York
+Remote - North Carolina
+Remote - Ohio
+Remote - Pennsylvania
+Remote - Texas
+Remote - US
+Remote - USA
+Remote - United Kingdom
+Remote - Virginia; Remote - Washington D.C.
+Remote - Washington D.C.
+Remote - Washington D.C.; Washington, D.C.
+Remote - Washington; Seattle, Washington
+Remote US
+Remote USA 
+Remote from the US
+Remote in the US
+Remote in the US, Chicago, Atlanta
+Remote in the US, Chicago, Toronto
+Remote in the US, Remote in Canada
+Remote, US
+Riyadh, Saudi Arabia 
+SEA, SF, NY, Toronto
+SEA, SF, NYC, CHI
+SF
+SF, NY, Remote
+SF, NY, SEA, Remote-US
+SF, NYC
+SF, NYC, SEA
+SF, NYC, SEA, CHI
+SF, NYC, Seattle, Remote
+SF, NYC, remote
+SF, New York, Seattle
+SF, SEA, NY, Remote-US
+SF, SEA, NYC, CHI, ATL
+SF, SEA, NYC, Remote
+SF, SEA, NYC, US-Rem
+SF, Seattle, NYC, Chicago
+SF, Seattle, NYC, Chicago, Remote in the US
+SF, Seattle, NYC, Chicago, Toronto, Remote in the US
+San Francisco
+San Francisco 
+San Francisco Bay Area
+San Francisco Bay Area 
+San Francisco Bay Area or Los Angeles Area
+San Francisco Bay Area or Remote (U.S.)
+San Francisco Bay Area, Los Angeles, New York, Washington D.C., or Austin 
+San Francisco Or New York
+San Francisco or New York
+San Francisco or Seattle
+San Francisco, CA
+San Francisco, CA 
+San Francisco, CA • New York, NY
+San Francisco, CA • New York, NY • United States
+San Francisco, CA, Chicago, IL, New York, NY
+San Francisco, CA, Seattle WA, New York, NY
+San Francisco, CA; Chicago, IL & New York, NY
+San Francisco, CA; Chicago, IL; Seattle, WA; New York, NY 
+San Francisco, CA; New York, NY
+San Francisco, California
+San Francisco, California, United States
+San Francisco, California; United States
+San Francisco, Chicago, New York City or Seattle
+San Francisco, NY, Seattle
+San Francisco, NYC
+San Francisco, NYC, Seattle, Chicago, Remote
+San Francisco, New York City
+San Francisco, New York City, Chicago, Seattle
+San Francisco, New York City, Seattle
+San Francisco, New York City, Seattle, Chicago, US-Remote
+San Francisco, New York, Seattle, Chicago, Atlanta, Remote in the US
+San Francisco, New York, Seattle, Chicago, Atlanta, Toronto, Remote in the US, Remote in Canada
+San Francisco, New York, Seattle, Chicago, Remote, Toronto
+San Francisco, New-York, Seattle
+San Francisco, Seattle
+San Francisco, Seattle 
+San Francisco, Seattle, NYC, Chicago, Remote in the US, Toronto
+San Francisco, Seattle, New York
+San Francisco, Seattle, New York City
+San Francisco, Seattle, New York, Chicago
+San Francisco, Seattle, New York, Chicago, Atlanta, Remote
+San Francisco, Seattle, New York, Chicago, Atlanta, Remote in the US
+San Francisco, Seattle, New York, Chicago, Remote in the US
+San Francisco, United States
+San Francisco, United States 
+San Francisco; New York
+Sao Paulo
+Sao Paulo, Brazil
+Seattle
+Seattle, New York, San Francisco
+Seattle, New-York, San Francisco
+Seattle, SF, NYC, Chicago
+Seattle, SF, NYC, Chicago, Atlanta, Remote in the US
+Seattle, SF, NYC, Remote in the US
+Seattle, San Francisco
+Seattle, San Francisco, New York
+Seattle, San Francisco, New York City
+Seattle, San Francisco, New York, Chicago 
+Seattle, San Francisco, New York, US - Remote
+Seattle, San Francisco, or New York
+Seattle, WA
+Seattle, WA OR New York, NY OR Remote North America
+Seattle, WA, Remote-US
+Seattle, Washington
+Seattle, Washington, United States
+Seoul, Korea
+Seoul, South Korea
+Seoul, South Korea; Singapore; Tokyo, Japan
+Singapore
+Singapore, Dublin
+Singapore, Sydney
+South San Francisco HQ, New York, Remote US
+South San Francisco HQ, Seattle
+South San Francisco, CA
+South San Francisco, CA 
+South San Francisco, CA , New York, NY
+South San Francisco, New York City
+Southeast - United States
+Spain
+Stockholm, Sweden
+Sweden
+Sydney
+Sydney Or Melbourne
+Sydney or Melbourne
+Sydney, Australia
+Sydney, Australia • Melbourne, Australia
+São Paulo, Brazil
+Taipei City
+Taipei, Taiwan
+Taipei,Taiwan
+Tel Aviv, Israel
+Tokyo
+Tokyo, Japan
+Toronto
+Toronto, Canada
+Toronto, Canada 
+Toronto, Canada Remote
+Toronto, NY, SEA, SF
+Toronto, New York, San Francisco
+Toronto, Ontario, Canada
+Toronto, Remote Canada 
+Toronto, Remote-Canada 
+Toronto, Vancouver, Canada-Remote
+US
+US - Remote
+US / Canada
+US / Cananda
+US Remote
+US Remote 
+US Remote National
+US Remote, Chicago, SF, Seattle, NYC
+US Remote, Toronto
+US Remote,Toronto, CA-Remote-Ontario
+US Remote; Chicago, Atlanta, Canada
+US remote
+US, Canada
+US, Remote
+US-ATL, US-CHI, US-Remote
+US-Chicago
+US-Chicago, US-New York
+US-Chicago, US-Remote, US-Seattle, US-San Francisco
+US-NY
+US-NYC or US-SF 
+US-NYC; US-San Francisco
+US-NYC; US-San Francisco; US-Seattle; US-Remote; US- Chicago; US-Atlanta; Canada-Toronto; Canada-Remote
+US-REM
+US-Remote
+US-Remote, Atlanta, Chicago
+US-Remote, Chicago
+US-Remote, Chicago, Seattle, San Francisco
+US-Remote, US-Chicago
+US-Remote-CA, US-San Francisco, US-Seattle
+US-Remote; US- Chicago; US-Atlanta; Canada-Toronto; Canada-Remote
+US-SEA, US-SF, US-NYC, US-Remote
+US-SF
+US-SF, US-NYC, US-Seattle, US-Remote
+US-SF, US-SEA
+US-SF, US-Seattle, US-NYC, US-Atlanta, US-Chicago
+US-SF, US-Seattle, US-NYC, US-Chicago, US-Georgia or US-Remote
+US-SF-HQ
+US-SF-HQ, US-NYC, US-CHI, US-SEA
+US-San Francisco
+US-San Francisco, US-Seattle, US-West Coast (Remote) 
+US-San Francisco; US-NYC; US-Seattle; US-Remote; US-Chicago; US-Atlanta
+US-San Francisco; US-New York City; US-Seattle; US-Remote; US-Chicago
+US-San Francisco; US-New York City; US-Seattle; US-Remote; US-Chicago; CA-Toronto; CA-Remote
+US-remote
+US: SF Bay Area, Seattle, New York, US Remote; Canada
+USA
+USA 
+USCA
+United Kingdom
+United States
+United States 
+United States or Canada
+Vancouver, Canada
+Vietnam
+Virginia
+Warsaw, Poland
+Washington, D.C.
+Washington, DC
+West Coast - United States
+Western Australia, Australia
+Zürich, Switzerland
+n/a
+na

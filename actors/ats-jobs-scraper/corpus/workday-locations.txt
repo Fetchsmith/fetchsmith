@@ -1,0 +1,135 @@
+# Captured from live boards (nvidia, salesforce, adobe, okgov) on 2026-09-21, cycle 610.
+# 800 postings -> 133 distinct strings. Raw upstream text, not hand-written.
+11 Locations
+12 Locations
+13 Locations
+16 Locations
+2 Locations
+20 Locations
+3 Locations
+4 Locations
+5 Locations
+6 Locations
+7 Locations
+8 Locations
+9 Locations
+Alfalfa County
+Argentina - Buenos Aires
+Atoka County
+Australia - Sydney
+Australia, Remote
+Bangalore
+Belgium - Brussels
+Brazil - Sao Paulo
+Bucharest
+Caddo County
+California - Remote
+California - San Francisco
+Canada - Montreal
+Canada - Toronto
+Canada, Remote
+Canada, Toronto
+Canadian County
+Carter County
+China, Beijing
+China, Shanghai
+Cleveland County
+Comanche County
+Craig County
+Custer County
+Delaware County
+Finland - Espoo
+Florida - Remote
+France - Paris
+Garfield County
+Georgia - Atlanta
+Germany - Munich
+Germany, Munich
+Germany, Stuttgart
+Greer County
+Hong Kong
+Hughes County
+Illinois - Chicago
+India - Bangalore
+India - Gurgaon
+India - Hyderabad
+India, Bengaluru
+India, Mumbai
+Indiana - Indianapolis
+Ireland - Dublin
+Israel, Beer Sheva
+Israel, Raanana
+Israel, Tel Aviv
+Israel, Yokneam
+Italy - Milan
+Italy - Rome
+Jackson County
+Japan - Remote
+Japan - Tokyo
+Kay County
+Kiowa County
+Korea, Seoul
+Le Flore County
+Lehi
+Lincoln County
+London
+Los Angeles
+Mayes County
+McClain County
+McCurtain County
+McLean
+Mexico - Mexico City
+Murray County
+Muskogee County
+Netherlands - Amsterdam
+New Jersey - New York City Metro - Remote
+New York
+New York - New York
+New Zealand - Auckland
+Noida
+Okfuskee County
+Oklahoma City - 200 NE 21st St
+Oklahoma City - 6015 N Classen Blvd
+Oklahoma County
+Osage County
+Paris
+Payne County
+Philippines - Metro Manila
+Pittsburg County
+Pontotoc County
+Portugal - Lisbon
+Pottawatomie County
+Reading
+Remote California
+Remote Illinois
+Remote India
+Riyadh
+Rogers County
+San Francisco
+San Jose
+Sao Paulo
+Seattle
+Seoul
+Sequoyah County
+Singapore - Singapore
+Singapore, Singapore-Suntec Tower
+South Africa - Remote
+Spain - Madrid
+Statewide
+Stephens County
+Taiwan, Taipei
+Thailand - Bangkok
+Tokyo
+Toronto
+Tulsa County
+UK, Remote
+US, CA, Santa Clara
+US, SC, Remote
+United Arab Emirates - Dubai
+United Kingdom - England - Remote
+United Kingdom - London
+Vietnam, Remote
+Virginia - Mclean
+Washington - Bellevue
+Woods County
+Woodward County

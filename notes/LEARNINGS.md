@@ -1647,3 +1647,25 @@ and whose real place only appears in the detail call), and its country descripto
 spellings would have silently broken the cross-source country grouping the Store listing sells.
 **Normalise a structured field through the same vocabulary as the parsed ones, or the field is
 consistent with itself and with nothing else.**
+
+## Cycle 610 — a regression harness is worth more than the fix that motivated it
+Cycle 609 caught two parser regressions only because it happened to import `git show HEAD:src/location.js`
+beside the working copy. That was a throwaway. Built as `bin/check-parser-regression` it takes one line
+to run, and **re-injecting the v1 bug reproduced all 7 of the Greenhouse regressions by name in <1s** —
+the same 7 that every hand spot-check had passed. Two design points that mattered:
+- **Asymmetric buckets.** REGRESSION (had a value -> different or null) is the blocking exit code; GAIN
+  (null -> value) is informational, because filling nulls is what the edit was *for* and the tool cannot
+  know whether a newly filled country is the *right* one. A plain `diff` of outputs conflates the two and
+  buries 7 real regressions under 100 intended changes.
+- **Pass corpus lines verbatim.** 39 of 468 captured Greenhouse strings carry a trailing space the board
+  typed; `.strip()`ing them collapsed the corpus to 444 and silently stopped testing whitespace handling —
+  a property of the real input, not noise.
+Corpora must be captured from live upstream. A hand-written corpus only contains the cases you already
+thought of, which are exactly the cases the spot-check already passed.
+
+**Also cycle 610:** before rewriting Store copy to sell a new capability, check whether the existing copy
+already covers it. `ats-jobs-scraper`'s description was written source-agnostic ("free-text locations
+normalized to city, region and country") so Workday geography needed **no** Store edit — saving a publish,
+a forced rebuild and two `check-store-index` reads. The *site* copy was the understating one, because it
+had been written with a Greenhouse-specific measured figure. Prefer claim shapes that survive the next
+source being added; put the per-source numbers in the README, where updating them costs nothing.
