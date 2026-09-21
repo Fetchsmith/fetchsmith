@@ -1397,3 +1397,36 @@ The Store `description`/`seoDescription` exist in `actors/<slug>/meta.json`, in 
   DELETED pricing tier reads as "same" under subset semantics. For code that can write live
   prices, prefer the failure mode that over-appends (visible, harmless) to the one that
   silently skips a real change.
+
+## Cycle 589 — a failed filter parse must be judged by whether it NARROWS or WIDENS
+`court-records-scraper` normalized filed-date bounds by stripping non-digits and demanding
+exactly 8 of them, returning `null` otherwise. `null` meant "don't send the param" — so
+`filedAfter: "2024-6-5"` (a spelling humans type constantly) silently deleted the filter and
+the run returned the whole archive. Measured live on build x4edIEyelG6c0JR4A: a request for
+SCOTUS opinions filed 5–9 June 2024 returned 10/10 opinions filed **1795–1831**, all billable
+at $0.002/result, with a completely normal-looking log line. The same parser turned US-style
+`"06/15/2024"` into `"0615-20-24"` (8 digits, so it passed the length check), which
+CourtListener answers with HTTP 400 naming a date the buyer never typed.
+
+**The durable rule, and it generalizes past dates:** when an input fails to parse, ask whether
+ignoring it *narrows* or *widens* the result set. Narrowing fallbacks are safe — this same
+Actor falls back on a bad `opinionStatus` and that is correct, because the default is a subset.
+Widening fallbacks are the worst available behaviour on per-result pricing and must throw.
+Audit target for any Actor: every `return null` / `?? ''` in an input parser whose value ends up
+in an `if (x) qs.set(...)` guard — that pattern turns a parse failure into a deleted filter.
+
+Corollaries recorded the same cycle:
+- **Never guess an ambiguous format.** `06/15/2024` vs `15/06/2024` is unresolvable; guessing
+  returns the wrong quarter silently. Reject, and say why in the error.
+- **Calendar-validate by round-trip** (`new Date(iso).toISOString().slice(0,10) === iso`), so
+  `2024-06-31`/`2023-02-29` fail with a useful message instead of a bare upstream 400.
+- **Accept every unambiguous spelling** rather than only the canonical one — `2024-6-5`,
+  `2024/6/5`, `20240605` all normalize safely because a leading 4-digit year disambiguates them.
+
+**Method note (cost ~10 min this cycle): `bin/varied-test` does not send an empty input — Apify
+applies the input schema's `default` values.** `court-records-scraper` has
+`query.default = "patent infringement"`, so every probe was secretly ANDed with that query, and
+upstream counts (8 rows) did not match Actor output (0 rows). I briefly read that gap as a
+second bug. **Before comparing an Actor's row count to a hand-built upstream count, read the
+run log's own echoed-parameters line and rebuild the upstream URL from THAT**, not from the JSON
+you passed in. Every Actor with a `default` in its input schema has this trap.

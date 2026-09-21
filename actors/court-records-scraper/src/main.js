@@ -106,13 +106,44 @@ let attorneyName = String(input.attorneyName ?? '').trim();
 let docketNumber = String(input.docketNumber ?? '').trim();
 let judge = String(input.judge ?? '').trim();
 
-const normDate = (v) => {
-    const digits = String(v ?? '').replace(/[^0-9]/g, '');
-    if (digits.length !== 8) return null;
-    return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+// A filed-date bound that fails to parse must never be dropped silently. Unlike the
+// opinionStatus fallback above — which NARROWS the run and is therefore safe — losing a date
+// bound WIDENS it to the whole corpus, and every extra row is billed at the per-result price.
+// Measured on build x4edIEyelG6c0JR4A (cycle 589) with the old digit-counting parser:
+// filedAfter "2024-6-5" / filedBefore "2024-6-9" stripped to 6 digits each, both returned null,
+// both filters vanished, and the run returned 10/10 SCOTUS opinions filed 1795-1831. The same
+// parser turned the US-style "06/15/2024" into the nonsense "0615-20-24", which CourtListener
+// answers with HTTP 400 ("The date entered has an invalid format") — so the buyer saw a
+// retry-then-give-up failure naming a date they never typed.
+//
+// So: accept every unambiguous spelling of an ISO date, and abort loudly on anything else
+// rather than guessing. Day-first vs. month-first ("06/15/2024") is deliberately NOT guessed.
+const normDate = (v, field) => {
+    const s = String(v ?? '').trim();
+    if (!s) return null;
+    // YYYY-MM-DD, YYYY-M-D, YYYY/M/D, YYYY.M.D and bare YYYYMMDD. The leading 4-digit year is
+    // what makes this unambiguous: "06/15/2024" cannot match it and is rejected below.
+    const m = /^(\d{4})\D?(\d{1,2})\D?(\d{1,2})$/.exec(s);
+    const bad = (why) => new Error(
+        `${field} "${s}" ${why}. Use an ISO date, YYYY-MM-DD — for example "2024-06-05". `
+        + 'Stopping instead of ignoring the filter: a filed-date bound that is dropped widens '
+        + 'the search to the whole archive (back to the 1700s) and you would be charged for '
+        + 'every one of those rows. US-style dates like "06/15/2024" are rejected on purpose, '
+        + 'because 06/15 and 15/06 cannot be told apart.',
+    );
+    if (!m) throw bad('is not a date I can read');
+    const [y, mo, d] = [m[1], m[2].padStart(2, '0'), m[3].padStart(2, '0')];
+    const iso = `${y}-${mo}-${d}`;
+    // Calendar-validate by round-trip: "2024-06-31" parses fine above but CourtListener
+    // answers it with HTTP 400, so catch it here where the message can be useful.
+    const dt = new Date(`${iso}T00:00:00Z`);
+    if (Number.isNaN(dt.getTime()) || dt.toISOString().slice(0, 10) !== iso) {
+        throw bad('is not a real calendar date');
+    }
+    return iso;
 };
-let filedAfter = normDate(input.filedAfter);
-let filedBefore = normDate(input.filedBefore);
+let filedAfter = normDate(input.filedAfter, 'filedAfter');
+let filedBefore = normDate(input.filedBefore, 'filedBefore');
 
 // Optional shortcut: paste a CourtListener search (or API) URL and its filters replace the
 // ones above. Both URL shapes use the identical param vocabulary — verified live cycle 393:
@@ -160,8 +191,8 @@ if (startUrlRaw) {
     if (qp.has('docket_number')) { docketNumber = (qp.get('docket_number') ?? '').trim(); } else { ignored.push('docketNumber'); }
     if (qp.has('judge')) { judge = (qp.get('judge') ?? '').trim(); } else { ignored.push('judge'); }
 
-    if (qp.has('filed_after')) { filedAfter = normDate(qp.get('filed_after')); } else { ignored.push('filedAfter'); }
-    if (qp.has('filed_before')) { filedBefore = normDate(qp.get('filed_before')); } else { ignored.push('filedBefore'); }
+    if (qp.has('filed_after')) { filedAfter = normDate(qp.get('filed_after'), 'startUrl filed_after'); } else { ignored.push('filedAfter'); }
+    if (qp.has('filed_before')) { filedBefore = normDate(qp.get('filed_before'), 'startUrl filed_before'); } else { ignored.push('filedBefore'); }
 
     const wantsPub = qp.get('stat_Published') === 'on';
     const wantsUnpub = qp.get('stat_Unpublished') === 'on';

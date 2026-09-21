@@ -28,7 +28,7 @@ Search is full text across case names, party and attorney names, docket text and
 | `attorneyName` | string | RECAP dockets only. Server-side search over the attorneys of record. Same quoting/`OR` rules. |
 | `docketNumber` | string | Case-number lookup, e.g. `1:20-cv-03590`. Real field search on **both** indexes, not full text. |
 | `judge` | string | Opinions only. Server-side search over the authoring judge(s), e.g. `Posner`. |
-| `filedAfter` / `filedBefore` | string | `YYYY-MM-DD` filing-date bounds. |
+| `filedAfter` / `filedBefore` | string | `YYYY-MM-DD` filing-date bounds, both **inclusive**. Strictly parsed — an unreadable date stops the run rather than being ignored. See below. |
 | `opinionStatus` | enum | Opinions mode only. `published` (default), `unpublished`, or `any`. See below — the default silently excludes a real chunk of matches unless you know to change it. |
 | `sortBy` | enum | `relevance` (default), `dateFiledDesc`, or `dateFiledAsc`. Real server-side sort, verified live — see below. |
 | `startUrl` | string | Paste a courtlistener.com search or API URL instead of filling in the fields above — see below. |
@@ -57,6 +57,14 @@ If a `docketNumber` returns nothing, try it without the office prefix (`20-cv-03
 ### Opinion status: the default hides ~1 in 4 real matches
 
 CourtListener's opinion index defaults to **published** opinions unless you say otherwise — verified live: a 2024+ "climate" query returned 545 published opinions, 191 unpublished, and the true total (736) only when both are requested. That's roughly 26% of real matches silently absent from a plain search, with no indication in the response that anything was left out. Set `opinionStatus` to `"any"` to get the complete set, or `"unpublished"` to see only opinions courts didn't designate for publication (often the more interesting ones — sanctions orders, informal rulings, unusual fact patterns). Ignored (with a warning) when `recordType` is `"dockets"`, since RECAP dockets have no publication-status concept. Every opinion row already carries a `status` field either way, so you can always tell which bucket a row came from.
+
+### Filing dates: both bounds inclusive, and a bad date stops the run
+
+`filedAfter` and `filedBefore` are both **inclusive**. Verified live against CourtListener: `filedAfter` and `filedBefore` both set to `2024-06-13` returns the 6 SCOTUS opinions filed that day, `2024-06-14` alone returns 9, and `2024-06-13 .. 2024-06-14` returns 15 — 6 + 9, so neither endpoint is dropped.
+
+Write them as `YYYY-MM-DD`. `2024-6-5`, `2024/6/5`, `2024.06.05` and bare `20240605` are all accepted and normalized for you. **Anything else stops the run with an error** — it is not quietly ignored. That is deliberate, and it is the opposite of how `opinionStatus` behaves: a bad `opinionStatus` falls back to the default, which *narrows* your results, whereas a dropped date bound *widens* the search to the entire archive — back to the 1700s — and you would be charged for every one of those rows. This Actor used to do exactly that: `filedAfter: "2024-6-5"`, `filedBefore: "2024-6-9"` lost both filters and returned ten SCOTUS opinions filed between **1795 and 1831**, all billable, with nothing in the log to say the window had been discarded. Fixed in v0.1.20.
+
+US-style `06/15/2024` is rejected on purpose rather than guessed at, because `06/15` and `15/06` cannot be told apart and guessing wrong would silently return the wrong quarter. Impossible calendar dates (`2024-06-31`, `2023-02-29`) are rejected here too, with a useful message — CourtListener itself answers them with a bare HTTP 400.
 
 ### Sort by filing date
 

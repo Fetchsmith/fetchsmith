@@ -64,13 +64,13 @@
     "filedAfter": {
       "title": "Filed after",
       "type": "string",
-      "description": "Earliest filing date, YYYY-MM-DD. Leave empty for no lower bound (the opinion archive reaches back to the 1700s).",
+      "description": "Earliest filing date, YYYY-MM-DD (e.g. \"2024-06-05\"). Leave empty for no lower bound (the opinion archive reaches back to the 1700s). Both bounds are INCLUSIVE — verified live: a filedAfter=filedBefore=2024-06-13 window returns the 6 SCOTUS opinions filed that day. \"2024-6-5\", \"2024/6/5\" and \"20240605\" are all accepted and normalized. Anything else STOPS the run with an error instead of being ignored, because a dropped date bound would silently widen the search to the whole archive and bill you for it; US-style \"06/15/2024\" is rejected on purpose since 06/15 and 15/06 cannot be told apart.",
       "editor": "textfield"
     },
     "filedBefore": {
       "title": "Filed before",
       "type": "string",
-      "description": "Latest filing date, YYYY-MM-DD. Leave empty for no upper bound.",
+      "description": "Latest filing date, YYYY-MM-DD (e.g. \"2024-06-09\"). Leave empty for no upper bound. Inclusive, and parsed exactly as strictly as Filed after — see that field.",
       "editor": "textfield"
     },
     "opinionStatus": {

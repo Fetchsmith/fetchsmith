@@ -64,6 +64,27 @@ One smaller trap, worth a line: RECAP is a *mirror* of documents its contributor
 
 `is_available` is a real field on every filing entry, and it's `false` on a meaningful share of them — 30 of 72 filing entries in a live N.D. Cal. sample we measured. Nothing about the rest of the row hints at this; the description and page count are populated identically whether or not the PDF exists. Check the flag before assuming a downloadable document is behind every entry you got back.
 
+## `filed_after` is inclusive — and a malformed date is dropped, not rejected
+
+Two things worth knowing before you filter by filing date.
+
+**Both bounds are inclusive.** Not documented either way, so we measured it on SCOTUS opinions: `filed_after=2024-06-13&filed_before=2024-06-13` returns **6**, the same window on `2024-06-14` returns **9**, and `2024-06-13 .. 2024-06-14` returns **15**. 6 + 9 = 15, so neither endpoint is being trimmed. Build your windows as closed intervals.
+
+**The dangerous half.** CourtListener *does* reject a date it can't parse — `filed_after=2024-06-31` and `filed_after=0615-20-24` both come back `HTTP 400 {"detail":"The date entered has an invalid format."}`. The risk isn't upstream, it's in whatever normalizes the date before it gets there. Our own client used to do this:
+
+```js
+const digits = String(v).replace(/[^0-9]/g, '');
+if (digits.length !== 8) return null;   // <- silently drops the filter
+```
+
+That looks defensive and is the opposite. `"2024-6-5"` — a date a human types constantly — strips to six digits, returns `null`, and the filter is simply never sent. The request still succeeds, so nothing anywhere reports a problem. Asking for SCOTUS opinions filed 5–9 June 2024 returned ten opinions filed between **1795 and 1831**: the whole archive, unfiltered, in a response that looks completely normal. On a per-result pricing model every one of those rows is billable.
+
+The same parser mangles `"06/15/2024"` into `"0615-20-24"` — eight digits, so it passes the length check — and the user gets a 400 naming a date they never typed.
+
+The general rule: **when a filter fails to parse, ask whether dropping it narrows the result set or widens it.** A dropped `stat_Published` narrows (you get the default), and falling back is fine. A dropped `filed_after` widens to the entire corpus, so falling back is the worst available option — fail loudly instead. The fix is to parse strictly, accept every *unambiguous* spelling (`2024-6-5`, `2024/6/5`, `20240605` all normalize to `2024-06-05`), calendar-validate by round-trip so `2023-02-29` never reaches the wire, and throw on anything left — including `06/15/2024`, because `06/15` and `15/06` can't be told apart and guessing wrong silently returns the wrong quarter.
+
+This is the same shape as [the CPV prefix trap](/blog/uk-find-a-tender-ocds-json-api) in our UK tender client: a filter that quietly stops filtering is far more expensive than one that errors.
+
 ## Packaged version
 
 [court-records-scraper on Apify](https://apify.com/fetchsmith/court-records-scraper) is built directly on the anonymous search index — no account, no token, no captcha — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
