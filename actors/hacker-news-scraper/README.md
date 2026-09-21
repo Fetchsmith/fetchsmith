@@ -88,6 +88,7 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 
 ## FAQ
 **Why did my run return 0 items with status SUCCEEDED?** The status message distinguishes "no matches for this query/tags/date/points filter" from "the Algolia request failed" — check it before assuming the query is wrong.
+**What happens if Algolia's API has a transient blip mid-run?** Each page request is retried up to 3 times on a connection-level failure (measured on `remote-jobs-scraper`'s upstream boards at roughly 1 fresh request in 4 for HTTP/2 faults, 2026-09-21) before that query is given up on and named in the status message — a single blip no longer silently truncates a query to whatever page it reached.
 **Can I ask for two content types at once, e.g. stories and comments?** Yes — `tags: ["story","comment"]` returns both. The tags you list are OR-ed with each other, and `author` is AND-ed on top of that group, so `author: "pg"` + `tags: ["story","comment"]` returns pg's stories and pg's comments. (Underneath, HN's Algolia index treats a bare comma as AND, so `story,comment` would match nothing at all — the Actor wraps your tags in the OR form for you. See the guide linked below.)
 **Can I combine `author` and `minComments`?** Yes, filters are ANDed together, e.g. `author: "pg"` + `minComments: 50` returns only that user's high-engagement posts.
 **What if `queries` has an accidental duplicate?** Deduped automatically — the same story/comment matched by two queries is only pushed (and charged) once per run.

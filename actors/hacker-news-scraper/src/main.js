@@ -331,11 +331,28 @@ for (const query of queries) {
     url.searchParams.set('page', String(page));
     log.info(`Fetching: ${url.toString()}`);
     let body;
-    try {
-      const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
-      body = res.body;
-    } catch (e) {
-      log.warning(`Query failed (${query || '<none>'}, page ${page}): ${e.message}`);
+    let lastErr;
+    // got's own `retry` only fires for a fixed errorCodes list that does not include the
+    // connection-establishment faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on
+    // this same got-scraping version in cycle 616 — about 1 in 4 fresh connections. Without an
+    // outer retry, one blip drops the rest of this query's pages, distinguishable from
+    // "genuinely 0 hits" only by the erroredQueries note. Retry a handful of times before giving up.
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      try {
+        const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
+        body = res.body;
+        lastErr = null;
+        break;
+      } catch (e) {
+        lastErr = e;
+        if (attempt < 3) {
+          log.warning(`Query failed (${query || '<none>'}, page ${page}), attempt ${attempt}/3: ${e.message} — retrying.`);
+          await new Promise((r) => setTimeout(r, attempt * 1000));
+        }
+      }
+    }
+    if (lastErr) {
+      log.warning(`Query failed (${query || '<none>'}, page ${page}) after 3 attempts: ${lastErr.message}`);
       requestFailed = true;
       break;
     }
