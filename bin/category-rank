@@ -1,0 +1,115 @@
+#!/root/agent/venv/bin/python
+"""category-rank -- where our Actors land in apify.com/store CATEGORY BROWSE.
+
+SCOPE: this measures the BROWSE surface (store sidebar category -> list), which is a
+different surface from `bin/store-rank` (the search BOX). Both are the public Algolia
+index `prod_PUBLIC_STORE`; neither is `bin/store-visibility` (/v2/store REST, NOT
+buyer-facing -- see that tool's scope banner).
+
+Mechanics (cycle 581 measured, cycle 582 validated end-to-end): category browse with an
+empty query is ordered by `storePosition` ascending, so an Actor's browse rank inside a
+category is exactly:
+
+    rank = count(listings in that category with storePosition < ours) + 1
+
+which is one Algolia call with `numericFilters` -- O(1), no paging. Validated twice
+against the real ordered listing: `scholarship-scraper` predicted p206/390 in EDUCATION
+and measured p206; `steam-reviews-scraper` predicted p81/110 in GAMES and, after the
+category was actually shipped, measured p81. Trust the prediction.
+
+`categories` lives in `actors/<slug>/meta.json` (not in `.actor/actor.json`), ships with
+`apify-admin publish`, and is a free field we fully control -- unlike `storePosition`,
+which is Apify-computed from cumulative usage. So filing an Actor in a SMALL category is
+the one browse-side lever we have. Caveat on expected value: a good browse rank in a
+109-listing category makes us reachable by someone who browses that category, not
+featured. Ship, then watch `users30d` before recategorizing the whole fleet.
+
+NOTE: the index takes ~1-2 minutes to reflect a category change after
+`apify-admin publish` + `apify push --force`. A query run immediately after can still
+show the old category set and the old facet count; re-run before concluding anything.
+
+Usage:
+  bin/category-rank                 # every registry Actor: rank in each of its categories
+  bin/category-rank <slug>          # one Actor
+  bin/category-rank --all <slug>    # also score every OTHER category (what-if table)
+  bin/category-rank --facets        # just the store-wide category sizes, smallest first
+"""
+import sys, json, urllib.request
+
+APP, KEY, IDX = "OW0O5I3QO7", "0ecccd09f50396a4dbbe5dbfb17f4525", "prod_PUBLIC_STORE"
+REG = "/root/agent/actors/registry.json"
+
+
+def algolia(body):
+    req = urllib.request.Request(
+        f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query",
+        data=json.dumps(body).encode(),
+        headers={"X-Algolia-Application-Id": APP, "X-Algolia-API-Key": KEY,
+                 "Content-Type": "application/json"})
+    return json.load(urllib.request.urlopen(req))
+
+
+def facet_sizes():
+    r = algolia({"query": "", "hitsPerPage": 0, "facets": ["categories"],
+                 "maxValuesPerFacet": 100})
+    return r["facets"]["categories"], r["nbHits"]
+
+
+def rank_in(cat, store_position):
+    """Browse rank of an Actor with this storePosition inside `cat`, and the category size."""
+    total = algolia({"query": "", "hitsPerPage": 0,
+                     "facetFilters": [[f"categories:{cat}"]]})["nbHits"]
+    better = algolia({"query": "", "hitsPerPage": 0,
+                      "facetFilters": [[f"categories:{cat}"]],
+                      "numericFilters": [f"storePosition<{store_position}"]})["nbHits"]
+    return better + 1, total
+
+
+def our_records():
+    """Indexed Algolia record per fetchsmith Actor (has storePosition + live categories)."""
+    r = algolia({"query": "fetchsmith", "hitsPerPage": 1000})
+    return {h["name"]: h for h in r["hits"] if h.get("username") == "fetchsmith"}
+
+
+def main():
+    args = sys.argv[1:]
+    show_all = "--all" in args
+    only = [a for a in args if not a.startswith("-")]
+
+    sizes, store_total = facet_sizes()
+
+    if "--facets" in args:
+        print(f"store-wide: {store_total} listings\n")
+        for cat, n in sorted(sizes.items(), key=lambda kv: kv[1]):
+            print(f"{n:7d}  {cat}")
+        return
+
+    recs = our_records()
+    slugs = only or [a["slug"] for a in json.load(open(REG))["tools"]]
+
+    for slug in slugs:
+        h = recs.get(slug)
+        if not h:
+            print(f"{slug}: NOT IN SEARCH INDEX")
+            continue
+        sp = h.get("storePosition", 999999)
+        mine = h.get("categories") or []
+        print(f"\n{slug}  storePosition={sp}")
+        for cat in mine:
+            r, t = rank_in(cat, sp)
+            pct = 100.0 * r / t if t else 0
+            print(f"    {cat:<20} p{r} of {t}   (top {pct:.0f}%)")
+        if show_all:
+            print("    -- what-if (categories we are NOT in, best first) --")
+            rows = []
+            for cat in sizes:
+                if cat in mine:
+                    continue
+                r, t = rank_in(cat, sp)
+                rows.append((r, t, cat))
+            for r, t, cat in sorted(rows)[:8]:
+                print(f"    {cat:<20} p{r} of {t}")
+
+
+if __name__ == "__main__":
+    main()
