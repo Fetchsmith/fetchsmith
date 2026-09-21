@@ -279,8 +279,31 @@ async function pushResult(item, watchId) {
   return pushed < maxResults;
 }
 
+// got's own `retry` only fires for a fixed errorCodes list that does not include the
+// connection-establishment faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on
+// this same got-scraping version in cycle 616 (remote-jobs-scraper, ~1 in 4 fresh connections).
+// Without an outer retry, one blip on any ATS request skips that whole company for the run
+// (see the per-company catch below) — the same "silently emptier dataset" class fixed on
+// hacker-news-scraper (617) and shopify-products-scraper (618). Retry connection-level throws
+// a handful of times before letting the company-level catch report it as errored.
+async function requestWithRetry(opts) {
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await gotScraping(opts);
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) {
+        log.warning(`${opts.url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 async function getJson(url) {
-  const res = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), responseType: 'json' });
+  const res = await requestWithRetry({ url, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), responseType: 'json' });
   return { status: res.statusCode, body: res.body };
 }
 
@@ -492,7 +515,7 @@ async function fetchAshby(slug) {
 }
 
 async function fetchLever(slug) {
-  const res = await gotScraping({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
+  const res = await requestWithRetry({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
   // Most well-known "Lever companies" have migrated to another ATS and now 404 here — that is
   // expected, not a failure, and must not fail the whole run (confirmed cycle 196: plaid, brex,
   // ramp, figma, huggingface, cohere, eventbrite, kickstarter all 404).
@@ -516,7 +539,7 @@ async function fetchLever(slug) {
 }
 
 async function fetchRecruitee(slug) {
-  const res = await gotScraping({ url: `https://${encodeURIComponent(slug)}.recruitee.com/api/offers/`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
+  const res = await requestWithRetry({ url: `https://${encodeURIComponent(slug)}.recruitee.com/api/offers/`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
   if (res.statusCode !== 200 || !Array.isArray(res.body?.offers)) return { jobs: [], notFound: true };
   return {
     jobs: res.body.offers.map((o) => ({
@@ -682,7 +705,7 @@ async function fetchWorkday(slug) {
   let total = null;
   let notFoundFlag = false;
   while (raw.length < rawCap && timeBudgetOk()) {
-    const res = await gotScraping({
+    const res = await requestWithRetry({
       url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`, method: 'POST',
       json: { appliedFacets: {}, limit: pageSize, offset, searchText: '' },
       timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(),
