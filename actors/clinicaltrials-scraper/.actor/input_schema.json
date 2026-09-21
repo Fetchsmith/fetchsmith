@@ -1,431 +1,451 @@
 {
-  "title": "ClinicalTrials.gov Scraper input",
-  "type": "object",
-  "schemaVersion": 1,
-  "properties": {
-    "startUrl": {
-      "title": "ClinicalTrials.gov search URL",
-      "type": "string",
-      "description": "Optional shortcut: build the search on clinicaltrials.gov, then paste the address bar here — e.g. \"https://clinicaltrials.gov/search?cond=asthma&aggFilters=status:rec,phase:3\". An API URL (\"https://clinicaltrials.gov/api/v2/studies?query.cond=asthma\") works too. The URL's search terms (condition, other terms, intervention, sponsor, location, title, outcome, lead sponsor, study IDs) REPLACE the matching fields below, and its status/phase/study-type/funder/sex/age/results/documents filters are applied as-is. Everything the URL does not mention (max results, row mode, watch label, and any filter below it doesn't carry) still applies.",
-      "editor": "textfield"
+    "title": "ClinicalTrials.gov Scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "startUrl": {
+            "title": "ClinicalTrials.gov search URL",
+            "type": "string",
+            "description": "Optional shortcut: build the search on clinicaltrials.gov, then paste the address bar here — e.g. \"https://clinicaltrials.gov/search?cond=asthma&aggFilters=status:rec,phase:3\". An API URL (\"https://clinicaltrials.gov/api/v2/studies?query.cond=asthma\") works too. The URL's search terms (condition, other terms, intervention, sponsor, location, title, outcome, lead sponsor, study IDs) REPLACE the matching fields below, and its status/phase/study-type/funder/sex/age/results/documents filters are applied as-is. Everything the URL does not mention (max results, row mode, watch label, and any filter below it doesn't carry) still applies.",
+            "editor": "textfield"
+        },
+        "nctIds": {
+            "title": "Specific NCT IDs (direct lookup)",
+            "type": "string",
+            "description": "One or more ClinicalTrials.gov study IDs (e.g. \"NCT04368728, NCT03854955\" — comma, space or newline separated). When set, this is an EXCLUSIVE lookup mode: every other filter below (conditions, status, phase, etc.) is ignored, so a mixed batch of trials on unrelated topics still all come back. Malformed or nonexistent ids are dropped individually with a named warning instead of failing the whole run.",
+            "editor": "textarea"
+        },
+        "conditions": {
+            "title": "Conditions / diseases",
+            "type": "string",
+            "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty with a search query or overallStatus filter, or every study since 1999 matches.",
+            "editor": "textfield",
+            "prefill": "breast cancer",
+            "default": "cancer"
+        },
+        "interventions": {
+            "title": "Interventions / treatments",
+            "type": "string",
+            "description": "Drug, device or procedure name, e.g. \"pembrolizumab\". Maps to query.intr.",
+            "editor": "textfield"
+        },
+        "sponsors": {
+            "title": "Sponsor / collaborator name",
+            "type": "string",
+            "description": "Lead sponsor or collaborator organization name. Maps to query.spons.",
+            "editor": "textfield"
+        },
+        "locations": {
+            "title": "Location (city, state or country)",
+            "type": "string",
+            "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn.",
+            "editor": "textfield"
+        },
+        "searchQuery": {
+            "title": "Free-text search",
+            "type": "string",
+            "description": "General search term across titles, outcomes and eligibility text. Maps to query.term.",
+            "editor": "textfield"
+        },
+        "overallStatus": {
+            "title": "Recruitment status",
+            "type": "array",
+            "description": "Filter by recruitment status. Leave empty for all statuses.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "RECRUITING",
+                    "NOT_YET_RECRUITING",
+                    "ENROLLING_BY_INVITATION",
+                    "ACTIVE_NOT_RECRUITING",
+                    "COMPLETED",
+                    "TERMINATED",
+                    "WITHDRAWN",
+                    "SUSPENDED",
+                    "UNKNOWN",
+                    "WITHHELD",
+                    "AVAILABLE",
+                    "NO_LONGER_AVAILABLE",
+                    "APPROVED_FOR_MARKETING",
+                    "TEMPORARILY_NOT_AVAILABLE"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "studyTypes": {
+            "title": "Study type",
+            "type": "array",
+            "description": "Interventional, observational or expanded-access. Leave empty for all.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "INTERVENTIONAL",
+                    "OBSERVATIONAL",
+                    "EXPANDED_ACCESS"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "phases": {
+            "title": "Phase",
+            "type": "array",
+            "description": "Trial phase. Only meaningful for interventional studies; ~19% of all studies have no phase at all (observational studies, device trials). Leave empty for all. A study is matched if the phase is anywhere in its phase list, so \"Phase 2\" also returns combined PHASE1/PHASE2 trials.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "EARLY_PHASE1",
+                    "PHASE1",
+                    "PHASE2",
+                    "PHASE3",
+                    "PHASE4",
+                    "NA"
+                ],
+                "enumTitles": [
+                    "Early Phase 1",
+                    "Phase 1",
+                    "Phase 2",
+                    "Phase 3",
+                    "Phase 4",
+                    "Not Applicable"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "resultsAvailability": {
+            "title": "Posted results",
+            "type": "string",
+            "description": "Filter on whether the study has posted a results section on ClinicalTrials.gov. \"With results\" is the endpoint set for outcome/efficacy analysis; \"without results\" finds completed trials that never reported (an FDAAA-compliance use case).",
+            "editor": "select",
+            "enum": [
+                "",
+                "with",
+                "without"
+            ],
+            "enumTitles": [
+                "Any (default)",
+                "Only studies WITH posted results",
+                "Only studies WITHOUT posted results"
+            ],
+            "default": ""
+        },
+        "hasResultsOnly": {
+            "title": "Only studies with posted results (legacy)",
+            "type": "boolean",
+            "description": "Deprecated — use \"Posted results\" above instead. Kept so older saved inputs keep working; equivalent to setting \"Posted results\" to \"with\". Ignored if \"Posted results\" is set.",
+            "default": false
+        },
+        "ageGroups": {
+            "title": "Age group",
+            "type": "array",
+            "description": "Restrict to studies enrolling these standard age groups (child = birth–17, adult = 18–64, older adult = 65+). A study can belong to several. Leave empty for all.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "CHILD",
+                    "ADULT",
+                    "OLDER_ADULT"
+                ],
+                "enumTitles": [
+                    "Child (0–17)",
+                    "Adult (18–64)",
+                    "Older adult (65+)"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "documentTypes": {
+            "title": "Has study document",
+            "type": "array",
+            "description": "Only studies that have uploaded one of these documents to ClinicalTrials.gov (multiple selections are OR-ed). Roughly 9% of studies have any — useful when you need the actual protocol or analysis plan, not just the registry summary.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "prot",
+                    "sap",
+                    "icf"
+                ],
+                "enumTitles": [
+                    "Study protocol",
+                    "Statistical analysis plan (SAP)",
+                    "Informed consent form (ICF)"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "fdaRegulationViolation": {
+            "title": "Only studies with an FDAAA violation notice",
+            "type": "boolean",
+            "description": "Restrict to the small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — currently a few dozen registry-wide. Leave off for normal searches.",
+            "default": false
+        },
+        "sex": {
+            "title": "Eligible sex",
+            "type": "string",
+            "description": "Restrict to studies whose eligibility criteria specify this sex. Leave blank for all (most studies are open to all).",
+            "editor": "select",
+            "enum": [
+                "",
+                "FEMALE",
+                "MALE"
+            ],
+            "enumTitles": [
+                "All",
+                "Female",
+                "Male"
+            ],
+            "default": ""
+        },
+        "acceptsHealthyVolunteers": {
+            "title": "Accepts healthy volunteers",
+            "type": "boolean",
+            "description": "Restrict to studies that accept healthy volunteers (not just patients with the condition).",
+            "default": false
+        },
+        "lastUpdatePostedDateFrom": {
+            "title": "Last updated from",
+            "type": "string",
+            "description": "Only studies whose ClinicalTrials.gov record was last updated on or after this date (YYYY-MM-DD). Useful for a repeatable \"what changed since I last pulled\" run.",
+            "editor": "textfield"
+        },
+        "lastUpdatePostedDateTo": {
+            "title": "Last updated to",
+            "type": "string",
+            "description": "Only studies whose ClinicalTrials.gov record was last updated on or before this date (YYYY-MM-DD).",
+            "editor": "textfield"
+        },
+        "ageRangeFromYears": {
+            "title": "Minimum eligibility age from",
+            "type": "integer",
+            "description": "Only studies whose stated minimum eligibility age is at least this much (e.g. 18 to exclude studies open to minors). Counted in years unless you change \"Minimum age unit\" below. Leave blank for no lower bound.",
+            "minimum": 0,
+            "maximum": 120
+        },
+        "ageRangeFromUnit": {
+            "title": "Minimum age unit",
+            "type": "string",
+            "description": "Unit for \"Minimum eligibility age from\". Use Months / Weeks / Days for neonatal and infant trials (e.g. 6 Months), where a whole number of years is too coarse.",
+            "editor": "select",
+            "enum": [
+                "Years",
+                "Months",
+                "Weeks",
+                "Days"
+            ],
+            "enumTitles": [
+                "Years",
+                "Months",
+                "Weeks",
+                "Days"
+            ],
+            "default": "Years"
+        },
+        "ageRangeToYears": {
+            "title": "Maximum eligibility age to",
+            "type": "integer",
+            "description": "Only studies whose stated maximum eligibility age is at most this much (e.g. 65 to exclude studies with no senior-age cap). Counted in years unless you change \"Maximum age unit\" below. Leave blank for no upper bound.",
+            "minimum": 0,
+            "maximum": 120
+        },
+        "ageRangeToUnit": {
+            "title": "Maximum age unit",
+            "type": "string",
+            "description": "Unit for \"Maximum eligibility age to\". E.g. 18 Months isolates paediatric studies that stop enrolling before the second birthday.",
+            "editor": "select",
+            "enum": [
+                "Years",
+                "Months",
+                "Weeks",
+                "Days"
+            ],
+            "enumTitles": [
+                "Years",
+                "Months",
+                "Weeks",
+                "Days"
+            ],
+            "default": "Years"
+        },
+        "funderTypes": {
+            "title": "Funder / lead sponsor type",
+            "type": "array",
+            "description": "Restrict to studies whose lead sponsor is this type of organization. Leave empty for all.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "NIH",
+                    "FED",
+                    "OTHER_GOV",
+                    "INDUSTRY",
+                    "NETWORK",
+                    "INDIV",
+                    "OTHER",
+                    "UNKNOWN",
+                    "AMBIG"
+                ],
+                "enumTitles": [
+                    "NIH",
+                    "Other U.S. federal agency",
+                    "Other government (non-U.S. or non-federal)",
+                    "Industry",
+                    "Network",
+                    "Individual",
+                    "Other (academic/nonprofit)",
+                    "Unknown",
+                    "Ambiguous"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "titleOrAcronym": {
+            "title": "Title or acronym contains",
+            "type": "string",
+            "description": "Search only the study's official/brief title and acronym (not eligibility text or outcomes). Maps to query.titles. Narrower than the general free-text search above.",
+            "editor": "textfield"
+        },
+        "outcomeMeasure": {
+            "title": "Outcome measure contains",
+            "type": "string",
+            "description": "Search only the study's stated outcome measures, e.g. \"progression-free survival\" or \"overall survival\". Maps to query.outc.",
+            "editor": "textfield"
+        },
+        "studyStartDateFrom": {
+            "title": "Study start from",
+            "type": "string",
+            "description": "Only studies whose start date is on or after this date (YYYY-MM-DD). Maps to AREA[StartDate]. Sponsor-entered dates are often month-precision (e.g. \"2026-06\"); ClinicalTrials.gov treats those as the 1st of that month, so a window that starts after the 1st silently skips them — see the README FAQ.",
+            "editor": "textfield"
+        },
+        "studyStartDateTo": {
+            "title": "Study start to",
+            "type": "string",
+            "description": "Only studies whose start date is on or before this date (YYYY-MM-DD). Maps to AREA[StartDate]. Sponsor-entered dates are often month-precision (e.g. \"2026-06\"); ClinicalTrials.gov treats those as the 1st of that month, so a window that starts after the 1st silently skips them — see the README FAQ.",
+            "editor": "textfield"
+        },
+        "primaryCompletionDateFrom": {
+            "title": "Primary completion from",
+            "type": "string",
+            "description": "Only studies whose primary completion date is on or after this date (YYYY-MM-DD). Maps to AREA[PrimaryCompletionDate]. Sponsor-entered dates are often month-precision (e.g. \"2026-06\"); ClinicalTrials.gov treats those as the 1st of that month, so a window that starts after the 1st silently skips them — see the README FAQ.",
+            "editor": "textfield"
+        },
+        "primaryCompletionDateTo": {
+            "title": "Primary completion to",
+            "type": "string",
+            "description": "Only studies whose primary completion date is on or before this date (YYYY-MM-DD). Maps to AREA[PrimaryCompletionDate]. Sponsor-entered dates are often month-precision (e.g. \"2026-06\"); ClinicalTrials.gov treats those as the 1st of that month, so a window that starts after the 1st silently skips them — see the README FAQ.",
+            "editor": "textfield"
+        },
+        "studyCompletionDateFrom": {
+            "title": "Study completion from",
+            "type": "string",
+            "description": "Only studies whose overall completion date is on or after this date (YYYY-MM-DD). Maps to AREA[CompletionDate]. Sponsor-entered dates are often month-precision (e.g. \"2026-06\"); ClinicalTrials.gov treats those as the 1st of that month, so a window that starts after the 1st silently skips them — see the README FAQ.",
+            "editor": "textfield"
+        },
+        "studyCompletionDateTo": {
+            "title": "Study completion to",
+            "type": "string",
+            "description": "Only studies whose overall completion date is on or before this date (YYYY-MM-DD). Maps to AREA[CompletionDate]. Sponsor-entered dates are often month-precision (e.g. \"2026-06\"); ClinicalTrials.gov treats those as the 1st of that month, so a window that starts after the 1st silently skips them — see the README FAQ.",
+            "editor": "textfield"
+        },
+        "firstPostedDateFrom": {
+            "title": "First posted from",
+            "type": "string",
+            "description": "Only studies first posted to ClinicalTrials.gov on or after this date (YYYY-MM-DD). Use this to find newly registered trials. Maps to AREA[StudyFirstPostDate].",
+            "editor": "textfield"
+        },
+        "firstPostedDateTo": {
+            "title": "First posted to",
+            "type": "string",
+            "description": "Only studies first posted to ClinicalTrials.gov on or before this date (YYYY-MM-DD). Maps to AREA[StudyFirstPostDate].",
+            "editor": "textfield"
+        },
+        "resultsFirstPostedDateFrom": {
+            "title": "Results first posted from",
+            "type": "string",
+            "description": "Only studies whose results were first posted on or after this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
+            "editor": "textfield"
+        },
+        "resultsFirstPostedDateTo": {
+            "title": "Results first posted to",
+            "type": "string",
+            "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
+            "editor": "textfield"
+        },
+        "facilityName": {
+            "title": "Facility name",
+            "type": "string",
+            "description": "Only studies running at a facility whose name matches this text, e.g. \"Mayo Clinic\". This is the site/hospital name, not the city — use \"Location\" above for a city/state/country. Maps to AREA[LocationFacility].",
+            "editor": "textfield"
+        },
+        "leadSponsorName": {
+            "title": "Lead sponsor name (exact field)",
+            "type": "string",
+            "description": "Only studies whose LEAD sponsor name matches this text, e.g. \"Pfizer\". Unlike \"Sponsor / collaborator name\" above (which also matches collaborators and other free-text sponsor fields), this restricts to the lead sponsor only. Maps to AREA[LeadSponsorName].",
+            "editor": "textfield"
+        },
+        "sortBy": {
+            "title": "Sort order",
+            "type": "string",
+            "description": "How ClinicalTrials.gov orders results (before maxResults truncates them). Default is the API's own relevance order.",
+            "editor": "select",
+            "enum": [
+                "",
+                "LastUpdatePostDate:desc",
+                "StudyFirstPostDate:desc",
+                "EnrollmentCount:desc"
+            ],
+            "enumTitles": [
+                "Relevance (default)",
+                "Most recently updated first",
+                "Most recently first-posted first",
+                "Largest enrollment first"
+            ],
+            "default": ""
+        },
+        "rowsPerStudy": {
+            "title": "Row mode",
+            "type": "string",
+            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. A single study averages 5 sites (max seen: 110), so site mode returns roughly 5x more billable rows for the same query.",
+            "editor": "select",
+            "enum": [
+                "study",
+                "site"
+            ],
+            "enumTitles": [
+                "One row per study",
+                "One row per trial site"
+            ],
+            "default": "study"
+        },
+        "maxResults": {
+            "title": "Max results",
+            "type": "integer",
+            "description": "Stop after this many rows (studies, or sites if rowsPerStudy=\"site\"). Token-based paging has no offset wall.",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 50000
+        },
+        "watchLabel": {
+            "title": "Watch label (only new since last run)",
+            "type": "string",
+            "description": "Optional. Name a saved search (e.g. \"my-oncology-watch\") and this run returns ONLY studies not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded studies as \"new\". Ignored when nctIds is set.",
+            "editor": "textfield"
+        },
+        "watchChanges": {
+            "title": "Also alert on study changes",
+            "type": "boolean",
+            "description": "Only used with watchLabel. When on, a study you were already alerted on is re-delivered (charged again) if ClinicalTrials.gov's own Last Update Posted date moves, or its overall status, enrollment count, primary completion date or completion date changes (e.g. Recruiting -> Completed, a protocol amendment, a readout date slipping) -- tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new studies, same as before this option existed.",
+            "default": false
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes -- rows pushed, studies scanned, pages walked, and watch-label new/changed counts if Watch label is set. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging -- it fires after every row has already been pushed and charged. Leave empty to skip.",
+            "editor": "textfield"
+        }
     },
-    "nctIds": {
-      "title": "Specific NCT IDs (direct lookup)",
-      "type": "string",
-      "description": "One or more ClinicalTrials.gov study IDs (e.g. \"NCT04368728, NCT03854955\" — comma, space or newline separated). When set, this is an EXCLUSIVE lookup mode: every other filter below (conditions, status, phase, etc.) is ignored, so a mixed batch of trials on unrelated topics still all come back. Malformed or nonexistent ids are dropped individually with a named warning instead of failing the whole run.",
-      "editor": "textarea"
-    },
-    "conditions": {
-      "title": "Conditions / diseases",
-      "type": "string",
-      "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty with a search query or overallStatus filter, or every study since 1999 matches.",
-      "editor": "textfield",
-      "prefill": "breast cancer",
-      "default": "cancer"
-    },
-    "interventions": {
-      "title": "Interventions / treatments",
-      "type": "string",
-      "description": "Drug, device or procedure name, e.g. \"pembrolizumab\". Maps to query.intr.",
-      "editor": "textfield"
-    },
-    "sponsors": {
-      "title": "Sponsor / collaborator name",
-      "type": "string",
-      "description": "Lead sponsor or collaborator organization name. Maps to query.spons.",
-      "editor": "textfield"
-    },
-    "locations": {
-      "title": "Location (city, state or country)",
-      "type": "string",
-      "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn.",
-      "editor": "textfield"
-    },
-    "searchQuery": {
-      "title": "Free-text search",
-      "type": "string",
-      "description": "General search term across titles, outcomes and eligibility text. Maps to query.term.",
-      "editor": "textfield"
-    },
-    "overallStatus": {
-      "title": "Recruitment status",
-      "type": "array",
-      "description": "Filter by recruitment status. Leave empty for all statuses.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "RECRUITING",
-          "NOT_YET_RECRUITING",
-          "ENROLLING_BY_INVITATION",
-          "ACTIVE_NOT_RECRUITING",
-          "COMPLETED",
-          "TERMINATED",
-          "WITHDRAWN",
-          "SUSPENDED",
-          "UNKNOWN",
-          "WITHHELD",
-          "AVAILABLE",
-          "NO_LONGER_AVAILABLE",
-          "APPROVED_FOR_MARKETING",
-          "TEMPORARILY_NOT_AVAILABLE"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "studyTypes": {
-      "title": "Study type",
-      "type": "array",
-      "description": "Interventional, observational or expanded-access. Leave empty for all.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "INTERVENTIONAL",
-          "OBSERVATIONAL",
-          "EXPANDED_ACCESS"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "phases": {
-      "title": "Phase",
-      "type": "array",
-      "description": "Trial phase. Only meaningful for interventional studies; ~19% of all studies have no phase at all (observational studies, device trials). Leave empty for all.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "EARLY_PHASE1",
-          "PHASE1",
-          "PHASE2",
-          "PHASE3",
-          "PHASE4",
-          "NA"
-        ],
-        "enumTitles": [
-          "Early Phase 1",
-          "Phase 1",
-          "Phase 2",
-          "Phase 3",
-          "Phase 4",
-          "Not Applicable"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "resultsAvailability": {
-      "title": "Posted results",
-      "type": "string",
-      "description": "Filter on whether the study has posted a results section on ClinicalTrials.gov. \"With results\" is the endpoint set for outcome/efficacy analysis; \"without results\" finds completed trials that never reported (an FDAAA-compliance use case).",
-      "editor": "select",
-      "enum": [
-        "",
-        "with",
-        "without"
-      ],
-      "enumTitles": [
-        "Any (default)",
-        "Only studies WITH posted results",
-        "Only studies WITHOUT posted results"
-      ],
-      "default": ""
-    },
-    "hasResultsOnly": {
-      "title": "Only studies with posted results (legacy)",
-      "type": "boolean",
-      "description": "Deprecated — use \"Posted results\" above instead. Kept so older saved inputs keep working; equivalent to setting \"Posted results\" to \"with\". Ignored if \"Posted results\" is set.",
-      "default": false
-    },
-    "ageGroups": {
-      "title": "Age group",
-      "type": "array",
-      "description": "Restrict to studies enrolling these standard age groups (child = birth–17, adult = 18–64, older adult = 65+). A study can belong to several. Leave empty for all.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "CHILD",
-          "ADULT",
-          "OLDER_ADULT"
-        ],
-        "enumTitles": [
-          "Child (0–17)",
-          "Adult (18–64)",
-          "Older adult (65+)"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "documentTypes": {
-      "title": "Has study document",
-      "type": "array",
-      "description": "Only studies that have uploaded one of these documents to ClinicalTrials.gov (multiple selections are OR-ed). Roughly 9% of studies have any — useful when you need the actual protocol or analysis plan, not just the registry summary.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "prot",
-          "sap",
-          "icf"
-        ],
-        "enumTitles": [
-          "Study protocol",
-          "Statistical analysis plan (SAP)",
-          "Informed consent form (ICF)"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "fdaRegulationViolation": {
-      "title": "Only studies with an FDAAA violation notice",
-      "type": "boolean",
-      "description": "Restrict to the small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — currently a few dozen registry-wide. Leave off for normal searches.",
-      "default": false
-    },
-    "sex": {
-      "title": "Eligible sex",
-      "type": "string",
-      "description": "Restrict to studies whose eligibility criteria specify this sex. Leave blank for all (most studies are open to all).",
-      "editor": "select",
-      "enum": [
-        "",
-        "FEMALE",
-        "MALE"
-      ],
-      "enumTitles": [
-        "All",
-        "Female",
-        "Male"
-      ],
-      "default": ""
-    },
-    "acceptsHealthyVolunteers": {
-      "title": "Accepts healthy volunteers",
-      "type": "boolean",
-      "description": "Restrict to studies that accept healthy volunteers (not just patients with the condition).",
-      "default": false
-    },
-    "lastUpdatePostedDateFrom": {
-      "title": "Last updated from",
-      "type": "string",
-      "description": "Only studies whose ClinicalTrials.gov record was last updated on or after this date (YYYY-MM-DD). Useful for a repeatable \"what changed since I last pulled\" run.",
-      "editor": "textfield"
-    },
-    "lastUpdatePostedDateTo": {
-      "title": "Last updated to",
-      "type": "string",
-      "description": "Only studies whose ClinicalTrials.gov record was last updated on or before this date (YYYY-MM-DD).",
-      "editor": "textfield"
-    },
-    "ageRangeFromYears": {
-      "title": "Minimum eligibility age from",
-      "type": "integer",
-      "description": "Only studies whose stated minimum eligibility age is at least this much (e.g. 18 to exclude studies open to minors). Counted in years unless you change \"Minimum age unit\" below. Leave blank for no lower bound.",
-      "minimum": 0,
-      "maximum": 120
-    },
-    "ageRangeFromUnit": {
-      "title": "Minimum age unit",
-      "type": "string",
-      "description": "Unit for \"Minimum eligibility age from\". Use Months / Weeks / Days for neonatal and infant trials (e.g. 6 Months), where a whole number of years is too coarse.",
-      "editor": "select",
-      "enum": ["Years", "Months", "Weeks", "Days"],
-      "enumTitles": ["Years", "Months", "Weeks", "Days"],
-      "default": "Years"
-    },
-    "ageRangeToYears": {
-      "title": "Maximum eligibility age to",
-      "type": "integer",
-      "description": "Only studies whose stated maximum eligibility age is at most this much (e.g. 65 to exclude studies with no senior-age cap). Counted in years unless you change \"Maximum age unit\" below. Leave blank for no upper bound.",
-      "minimum": 0,
-      "maximum": 120
-    },
-    "ageRangeToUnit": {
-      "title": "Maximum age unit",
-      "type": "string",
-      "description": "Unit for \"Maximum eligibility age to\". E.g. 18 Months isolates paediatric studies that stop enrolling before the second birthday.",
-      "editor": "select",
-      "enum": ["Years", "Months", "Weeks", "Days"],
-      "enumTitles": ["Years", "Months", "Weeks", "Days"],
-      "default": "Years"
-    },
-    "funderTypes": {
-      "title": "Funder / lead sponsor type",
-      "type": "array",
-      "description": "Restrict to studies whose lead sponsor is this type of organization. Leave empty for all.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "NIH",
-          "FED",
-          "OTHER_GOV",
-          "INDUSTRY",
-          "NETWORK",
-          "INDIV",
-          "OTHER",
-          "UNKNOWN",
-          "AMBIG"
-        ],
-        "enumTitles": [
-          "NIH",
-          "Other U.S. federal agency",
-          "Other government (non-U.S. or non-federal)",
-          "Industry",
-          "Network",
-          "Individual",
-          "Other (academic/nonprofit)",
-          "Unknown",
-          "Ambiguous"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "titleOrAcronym": {
-      "title": "Title or acronym contains",
-      "type": "string",
-      "description": "Search only the study's official/brief title and acronym (not eligibility text or outcomes). Maps to query.titles. Narrower than the general free-text search above.",
-      "editor": "textfield"
-    },
-    "outcomeMeasure": {
-      "title": "Outcome measure contains",
-      "type": "string",
-      "description": "Search only the study's stated outcome measures, e.g. \"progression-free survival\" or \"overall survival\". Maps to query.outc.",
-      "editor": "textfield"
-    },
-    "studyStartDateFrom": {
-      "title": "Study start from",
-      "type": "string",
-      "description": "Only studies whose start date is on or after this date (YYYY-MM-DD). Maps to AREA[StartDate].",
-      "editor": "textfield"
-    },
-    "studyStartDateTo": {
-      "title": "Study start to",
-      "type": "string",
-      "description": "Only studies whose start date is on or before this date (YYYY-MM-DD). Maps to AREA[StartDate].",
-      "editor": "textfield"
-    },
-    "primaryCompletionDateFrom": {
-      "title": "Primary completion from",
-      "type": "string",
-      "description": "Only studies whose primary completion date is on or after this date (YYYY-MM-DD). Maps to AREA[PrimaryCompletionDate].",
-      "editor": "textfield"
-    },
-    "primaryCompletionDateTo": {
-      "title": "Primary completion to",
-      "type": "string",
-      "description": "Only studies whose primary completion date is on or before this date (YYYY-MM-DD). Maps to AREA[PrimaryCompletionDate].",
-      "editor": "textfield"
-    },
-    "studyCompletionDateFrom": {
-      "title": "Study completion from",
-      "type": "string",
-      "description": "Only studies whose overall completion date is on or after this date (YYYY-MM-DD). Maps to AREA[CompletionDate].",
-      "editor": "textfield"
-    },
-    "studyCompletionDateTo": {
-      "title": "Study completion to",
-      "type": "string",
-      "description": "Only studies whose overall completion date is on or before this date (YYYY-MM-DD). Maps to AREA[CompletionDate].",
-      "editor": "textfield"
-    },
-    "firstPostedDateFrom": {
-      "title": "First posted from",
-      "type": "string",
-      "description": "Only studies first posted to ClinicalTrials.gov on or after this date (YYYY-MM-DD). Use this to find newly registered trials. Maps to AREA[StudyFirstPostDate].",
-      "editor": "textfield"
-    },
-    "firstPostedDateTo": {
-      "title": "First posted to",
-      "type": "string",
-      "description": "Only studies first posted to ClinicalTrials.gov on or before this date (YYYY-MM-DD). Maps to AREA[StudyFirstPostDate].",
-      "editor": "textfield"
-    },
-    "resultsFirstPostedDateFrom": {
-      "title": "Results first posted from",
-      "type": "string",
-      "description": "Only studies whose results were first posted on or after this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
-      "editor": "textfield"
-    },
-    "resultsFirstPostedDateTo": {
-      "title": "Results first posted to",
-      "type": "string",
-      "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
-      "editor": "textfield"
-    },
-    "facilityName": {
-      "title": "Facility name",
-      "type": "string",
-      "description": "Only studies running at a facility whose name matches this text, e.g. \"Mayo Clinic\". This is the site/hospital name, not the city — use \"Location\" above for a city/state/country. Maps to AREA[LocationFacility].",
-      "editor": "textfield"
-    },
-    "leadSponsorName": {
-      "title": "Lead sponsor name (exact field)",
-      "type": "string",
-      "description": "Only studies whose LEAD sponsor name matches this text, e.g. \"Pfizer\". Unlike \"Sponsor / collaborator name\" above (which also matches collaborators and other free-text sponsor fields), this restricts to the lead sponsor only. Maps to AREA[LeadSponsorName].",
-      "editor": "textfield"
-    },
-    "sortBy": {
-      "title": "Sort order",
-      "type": "string",
-      "description": "How ClinicalTrials.gov orders results (before maxResults truncates them). Default is the API's own relevance order.",
-      "editor": "select",
-      "enum": [
-        "",
-        "LastUpdatePostDate:desc",
-        "StudyFirstPostDate:desc",
-        "EnrollmentCount:desc"
-      ],
-      "enumTitles": [
-        "Relevance (default)",
-        "Most recently updated first",
-        "Most recently first-posted first",
-        "Largest enrollment first"
-      ],
-      "default": ""
-    },
-    "rowsPerStudy": {
-      "title": "Row mode",
-      "type": "string",
-      "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. A single study averages 5 sites (max seen: 110), so site mode returns roughly 5x more billable rows for the same query.",
-      "editor": "select",
-      "enum": [
-        "study",
-        "site"
-      ],
-      "enumTitles": [
-        "One row per study",
-        "One row per trial site"
-      ],
-      "default": "study"
-    },
-    "maxResults": {
-      "title": "Max results",
-      "type": "integer",
-      "description": "Stop after this many rows (studies, or sites if rowsPerStudy=\"site\"). Token-based paging has no offset wall.",
-      "default": 100,
-      "minimum": 1,
-      "maximum": 50000
-    },
-    "watchLabel": {
-      "title": "Watch label (only new since last run)",
-      "type": "string",
-      "description": "Optional. Name a saved search (e.g. \"my-oncology-watch\") and this run returns ONLY studies not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded studies as \"new\". Ignored when nctIds is set.",
-      "editor": "textfield"
-    },
-    "watchChanges": {
-      "title": "Also alert on study changes",
-      "type": "boolean",
-      "description": "Only used with watchLabel. When on, a study you were already alerted on is re-delivered (charged again) if ClinicalTrials.gov's own Last Update Posted date moves, or its overall status, enrollment count, primary completion date or completion date changes (e.g. Recruiting -> Completed, a protocol amendment, a readout date slipping) -- tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new studies, same as before this option existed.",
-      "default": false
-    },
-    "webhookUrl": {
-      "title": "Webhook URL (notify on completion)",
-      "type": "string",
-      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes -- rows pushed, studies scanned, pages walked, and watch-label new/changed counts if Watch label is set. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging -- it fires after every row has already been pushed and charged. Leave empty to skip.",
-      "editor": "textfield"
-    }
-  },
-  "required": []
+    "required": []
 }

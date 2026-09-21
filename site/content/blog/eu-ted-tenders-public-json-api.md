@@ -57,6 +57,22 @@ A single notice's `classification-cpv` (the EU's standard product/service classi
 
 Four distinct codes, each listed twice. TED's schema is per-lot, and a multi-lot notice repeats shared metadata once per lot rather than deduplicating it — we've seen the same CPV code repeated close to 20 times on notices with many lots. If you're counting "how many contracts mention CPV 72700000" or building a facet count from the raw array length, you will overcount by whatever the lot count happens to be. Deduplicate before you count anything.
 
+## Searching a CPV code searches its whole subtree — there is no exact-code mode
+
+The counting trap above has a sharper cousin on the query side. CPV is a hierarchy: `72000000` is the IT-services division, `72220000` is systems consultancy inside it, `72267000` is software maintenance and repair. The natural assumption — and one we shipped in our own docs before measuring it — is that a short code is a broad search and a fully-specified eight-digit code is an exact one.
+
+It isn't. `classification-cpv=<code>` matches the code **and every descendant of it**, at every level. Over a fixed March-2025 publication window, ten notices per query, counting how many returned rows actually carry the literal code you asked for:
+
+| Query | Total notices | Rows carrying the literal code |
+|---|---|---|
+| `classification-cpv=72000000` | 4,224 | **3 / 10** |
+| `classification-cpv=72220000` | 450 | **4 / 10** |
+| `classification-cpv=72267000` | 365 | **5 / 10** |
+
+The rest are children. A `72000000` search returns notices tagged `72260000` and `72500000`; a `72267000` search returns notices tagged `72267100` and `72267200`. Every one of those rows is a correct match *by TED's rules* — which is exactly why this is easy to miss. A naive test that asserts "every row contains the code I sent" scores 3/10 and reports a bug in your own client that doesn't exist, and a test that just checks the row count is non-zero never notices anything at all.
+
+Two consequences worth designing around. If you need true exact-code matching, TED cannot give it to you — post-filter the returned `classification-cpv` array yourself (after deduplicating it). And if you're comparing "how much did the EU spend on software maintenance", be explicit about whether your number is the code or the subtree, because the API will hand you the subtree either way and never mention it.
+
 ## `total-value` sometimes means "not disclosed" — and once meant literally `-1`
 
 Not every notice discloses a contract value; plenty of rows simply omit `total-value` and `total-value-cur` entirely, which is a normal, honest "we don't know." But one live notice in our sample returned:

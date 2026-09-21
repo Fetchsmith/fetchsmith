@@ -58,7 +58,7 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 | `searchQuery` | General free-text search across titles, outcomes and eligibility text. |
 | `overallStatus` | e.g. `RECRUITING`, `COMPLETED`, `TERMINATED`. All 14 official values supported. |
 | `studyTypes` | `INTERVENTIONAL`, `OBSERVATIONAL`, `EXPANDED_ACCESS`. |
-| `phases` | `EARLY_PHASE1`..`PHASE4`, `NA`. Only meaningful for interventional studies — about 1 in 5 studies overall have no phase at all. |
+| `phases` | `EARLY_PHASE1`..`PHASE4`, `NA`. Only meaningful for interventional studies — about 1 in 5 studies overall have no phase at all. A study matches if the phase is anywhere in its phase list, so `["PHASE2"]` also returns combined `["PHASE1","PHASE2"]` trials. |
 | `resultsAvailability` | `with` = only studies that posted a results section; `without` = only studies that never reported (the FDAAA-compliance question). Blank = both. Supersedes the older boolean `hasResultsOnly`, which still works. |
 | `ageGroups` | Standard age groups the study enrols: `CHILD` (0–17), `ADULT` (18–64), `OLDER_ADULT` (65+). Multiple = OR. Coarser and more reliable than `ageRangeFromYears`/`ageRangeToYears`, which only match studies that state a numeric bound. |
 | `documentTypes` | Only studies that uploaded one of these documents: `prot` (study protocol), `sap` (statistical analysis plan), `icf` (informed consent form). Multiple = OR. About 9% of studies have any. |
@@ -68,9 +68,9 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 | `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. Setting `From` after `To` fails fast with an error instead of silently returning 0 rows. |
 | `ageRangeFromYears` / `ageRangeToYears` | Only studies whose stated minimum/maximum eligibility age falls in this range, either bound optional. E.g. `ageRangeToYears: 65` excludes studies with no senior-age cap. Setting `From` above `To` in the same unit fails fast with an error instead of silently returning 0 rows. |
 | `ageRangeFromUnit` / `ageRangeToUnit` | Unit for the two bounds above: `Years` (default), `Months`, `Weeks`, `Days`. Whole years are too coarse for neonatal and infant trials — `ageRangeToYears: 18` + `ageRangeToUnit: "Months"` finds the studies that stop enrolling before the second birthday (108 alongside a cancer query, vs 2,229 for the 18-**years** reading of the same number). Each bound carries its own unit. |
-| `studyStartDateFrom` / `studyStartDateTo` | Absolute `YYYY-MM-DD` window on the study's **start date**. Either bound optional. |
-| `primaryCompletionDateFrom` / `primaryCompletionDateTo` | Window on the **primary completion** date — the readout date a competitive-intelligence pull is usually actually about. |
-| `studyCompletionDateFrom` / `studyCompletionDateTo` | Window on the **overall completion** date. |
+| `studyStartDateFrom` / `studyStartDateTo` | Absolute `YYYY-MM-DD` window on the study's **start date**. Either bound optional. Month-precision dates anchor to the 1st — see the partial-date FAQ below. |
+| `primaryCompletionDateFrom` / `primaryCompletionDateTo` | Window on the **primary completion** date — the readout date a competitive-intelligence pull is usually actually about. Month-precision dates anchor to the 1st — see the partial-date FAQ below. |
+| `studyCompletionDateFrom` / `studyCompletionDateTo` | Window on the **overall completion** date. Month-precision dates anchor to the 1st — see the partial-date FAQ below. |
 | `firstPostedDateFrom` / `firstPostedDateTo` | Window on the date the study was **first posted** to ClinicalTrials.gov — the "newly registered trials" query. |
 | `resultsFirstPostedDateFrom` / `resultsFirstPostedDateTo` | Window on the date **results** were first posted. Pairs with `resultsAvailability: "with"`. |
 | `facilityName` | Only studies running at a facility whose name matches, e.g. `Mayo Clinic`. This is the **site/hospital name**, not the city — `locations` is the city/state/country field. Multi-word values are matched as a phrase, not as loose terms. |
@@ -129,11 +129,16 @@ Filters are ANDed — combining a narrow condition, sponsor and location at once
 **There are six date filters — which one do I want?**
 `firstPosted*` = when the trial was registered (new-trial alerts). `studyStart*` = when dosing/enrolment begins. `primaryCompletion*` = the primary-endpoint readout date, which is the one most competitive-intelligence pulls actually mean. `studyCompletion*` = last visit of the last patient. `resultsFirstPosted*` = when results were published. `lastUpdatePosted*` = when the record changed at all, which is the right one for an incremental "what's new since my last pull" job. Every pair is independent, ANDed with the rest, and either bound can be left blank for an open range.
 
+**Why did a date window skip trials whose date looks like it's inside it?**
+Because ClinicalTrials.gov lets sponsors enter a **month without a day**, and a month-precision date behaves as the **1st of that month** in every date window. Measured live (lung cancer, recruiting, Phase 2): `primaryCompletionDateFrom: "2026-06-01"` / `To: "2026-06-04"` — a four-day window — returns the trials whose `primaryCompletionDate` is the bare string `"2026-06"` (NCT05902988, NCT05913089), while `From: "2026-06-05"` / `To: "2026-06-25"` returns **only** full-date rows and drops them. So a "second half of June" query silently misses every June trial that never stated a day.
+
+Which fields this hits: the three **sponsor-entered** dates — `startDate`, `primaryCompletionDate`, `completionDate` — are frequently month-only (on one live 10-row recruiting sample: `completionDate` 6/10, `startDate` 1/10). The three **registry-generated** dates — `studyFirstPostDate`, `lastUpdatePostDate`, `resultsFirstPostDate` — were full `YYYY-MM-DD` on 10/10 of that same sample, so `firstPostedDate*`, `lastUpdatePostedDate*` and `resultsFirstPostedDate*` windows are exact. Workaround for the sponsor-entered three: start the window on the **1st of the month** (widening it at most to the start of that month) and filter the rows yourself afterwards, since the row carries the date exactly as the registry publishes it.
+
 **What's the difference between `facilityName` and `locations`?**
 `locations` is the city/state/country text ("Boston, Massachusetts"); `facilityName` is the site name ("Mayo Clinic"). Use `facilityName` for site-selection and KOL work where you care which institution is running the trial, not where it sits. Multi-word values are sent as a quoted phrase, so `Mayo Clinic` does not also match a study at "Cleveland Clinic" in Mayo, Florida.
 
 **Are `phases`, `maximumAge` and `collaborators` always present?**
-No. Measured on a live 50-study sample: `phases` populated on ~70%, `maximumAge` on ~48%, `collaborators` on ~24%. Don't treat a missing value as a scraping error — most studies genuinely don't set these fields.
+No. Measured on a live 50-study sample: `phases` populated on ~70%, `maximumAge` on ~48%, `collaborators` on ~24%. Don't treat a missing value as a scraping error — most studies genuinely don't set these fields. `phases` is also a **list**, and the filter matches if your value is anywhere in it: filtering `["PHASE2"]` legitimately returns rows reading `["PHASE1","PHASE2"]` (2 of 10 on a live lung-cancer run), because ClinicalTrials.gov tags a combined Phase 1/2 trial with both.
 
 **Does this return contact names, phone numbers or emails?**
 No, by design — see above. If you need to contact a trial's coordinator, use the `studyUrl` to view the listing directly on ClinicalTrials.gov.
