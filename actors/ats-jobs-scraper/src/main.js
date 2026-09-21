@@ -740,7 +740,15 @@ async function fetchWorkday(slug) {
         job.descriptionHtml = info.jobDescription ?? null;
         job.descriptionText = textOf(info.jobDescription);
         job.employmentType = info.timeType ?? null;
-        job.location = info.jobRequisitionLocation?.descriptor ?? info.location ?? job.location;
+        // `info.location` is Workday's own resolved single place for this requisition (it already
+        // turns a list-level "2 Locations" into a real single value, e.g. okgov's
+        // "Muskogee County") and is preferred over `jobRequisitionLocation.descriptor`, which on
+        // county-government boards is a specific facility's street address, not a place name
+        // ("Muskogee - 3031 N 32nd St" for that same posting) — measured live on okgov, h229(d).
+        // Falling back to the descriptor only when `info.location` is absent keeps the "3
+        // Locations" -> single-place resolution this line exists for, without downgrading a clean
+        // county/city name to a street address on boards that publish one.
+        job.location = info.location ?? info.jobRequisitionLocation?.descriptor ?? job.location;
         // The detail call is the ONE place Workday publishes structured geography, and only for
         // country — there is no city/region field at any depth (measured cycle 609). Two rules:
         // (1) normalise the descriptor through the same vocabulary the parsed sources use, because
