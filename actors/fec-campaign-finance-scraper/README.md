@@ -31,7 +31,7 @@ Search US federal candidates (House, Senate, President) by name, state, office, 
 | `committeeId` | string | Disbursements / independent expenditures modes: only rows filed by this committee, e.g. `"C00744946"`. Ignored with a warning in contributions mode — the FEC's Schedule A endpoint times out on it. |
 | `minAmount` | integer | Any transaction mode: only return rows at or above this dollar amount (contribution, disbursement or expenditure amount). |
 | `maxAmount` | integer | Any transaction mode: only return rows at or below this dollar amount. Combine with `minAmount` for a range. |
-| `contributionDateFrom` / `contributionDateTo` | string | Any transaction mode: `YYYY-MM-DD` window on the transaction date — contribution receipt date, disbursement date or expenditure date depending on the mode. Either or both may be set; invalid dates are ignored with a warning. |
+| `contributionDateFrom` / `contributionDateTo` | string | Any transaction mode: `YYYY-MM-DD` window on the transaction date — contribution receipt date, disbursement date or expenditure date depending on the mode. Either or both may be set. A value that is not a real `YYYY-MM-DD` calendar date **stops the run** with an error naming it, rather than being ignored — ignoring a date bound would widen the search to every matching row and charge you for the difference. |
 | `state` | string | 2-letter state code, e.g. `"CA"`. Candidates or donor address, depending on mode. Optional. |
 | `office` | string | `H` (House), `S` (Senate), `P` (President). Candidates mode only. |
 | `party` | string | Party code, e.g. `DEM`, `REP`, `IND`, `LIB`. Candidates mode only. |
@@ -301,6 +301,8 @@ The FEC's Schedule A endpoint times out on a full-table scan (129,000+ rows even
 **How does watch mode decide what's "new"?** By the contribution's own FEC-assigned `sub_id`, which is stable and unique per itemized transaction. A baseline of ids you've already been sent is kept in a named key-value store on your own Apify account (`fetchsmith-fec-watch`) — it survives across runs even though the default per-run store does not.
 
 **Can I search by a specific dollar range or date window?** Yes — `minAmount`/`maxAmount` bound the contribution amount (either or both) and `contributionDateFrom`/`contributionDateTo` bound the receipt date (`YYYY-MM-DD`, either or both). Contributions mode only.
+
+**What happens if I typo a date?** The run stops immediately with an error naming the bad value, before any row is fetched or charged. This is deliberate: a date bound that cannot be parsed used to be dropped with a warning, which quietly turned "contributions in June 2024" into "every contribution ever" — a bigger, wrong, fully billable result set that looks normal in the log. Only strict `YYYY-MM-DD` is accepted, and it must be a real calendar date: `2024-02-30`, `2024-13-01`, `06/15/2024` and `2024-6-5` are all rejected rather than guessed at.
 
 **My donor/employer filter is broad — will a watch run scan the whole Schedule A table every time?** It scans until it finds `maxResults` new contributions or exhausts the current match set (capped at 1000 pages, ~100,000 rows, per run — a safety valve, not something a normally-filtered watch should ever hit). A very broad, weakly-filtered watch (e.g. a common surname with no employer/state/amount filter) can page through a lot of already-seen contributions before finding something new; narrow the filters for a faster, cheaper watch.
 

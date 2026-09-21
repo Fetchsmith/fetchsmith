@@ -28,12 +28,25 @@ const supportOppose = ['S', 'O'].includes(String(input.supportOppose ?? '').trim
   : '';
 const minAmount = input.minAmount ? Number(input.minAmount) : undefined;
 const maxAmount = input.maxAmount ? Number(input.maxAmount) : undefined;
+// A bad date bound THROWS (cycle 591). It used to warn and return undefined, which deleted the
+// bound from the query entirely: the run then succeeded, returned the whole unfiltered set, and
+// billed per result for rows the caller never asked for. Judge a failed parse by whether ignoring
+// it narrows or widens the result set -- widening under per-result pricing must stop the run, and
+// a log.warning in an otherwise-successful run is not a fix because nobody reads it.
 function parseFecDate(s, label) {
   const trimmed = String(s ?? '').trim();
   if (!trimmed) return undefined;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    log.warning(`Ignoring invalid ${label} "${trimmed}" (expected YYYY-MM-DD).`);
-    return undefined;
+  // The ISO round-trip is what rejects calendar-invalid dates that the regex accepts: V8 silently
+  // rolls "2024-02-30" over to March 1 (even in the full ISO form), so comparing the normalized
+  // date back to the input is the only cheap check that catches it.
+  const shaped = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+  const d = shaped ? new Date(`${trimmed}T00:00:00.000Z`) : null;
+  if (!shaped || Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== trimmed) {
+    throw new Error(
+      `"${label}" is not a valid date: "${trimmed}". Use YYYY-MM-DD (e.g. 2024-01-31). `
+      + 'The run stops instead of ignoring the bound, because dropping it would widen the search '
+      + 'to every matching row and charge you for the difference.',
+    );
   }
   return trimmed;
 }

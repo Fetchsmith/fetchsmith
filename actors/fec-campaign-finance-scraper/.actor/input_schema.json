@@ -124,14 +124,14 @@
     "contributionDateFrom": {
       "title": "Transaction date from (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return rows on or after this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode.",
+      "description": "Only return rows on or after this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference.",
       "editor": "textfield",
       "default": ""
     },
     "contributionDateTo": {
       "title": "Transaction date to (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return rows on or before this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode.",
+      "description": "Only return rows on or before this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference.",
       "editor": "textfield",
       "default": ""
     },

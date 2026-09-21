@@ -107,6 +107,20 @@ S2MA00139 | WARREN, SETTI     | DEMOCRATIC PARTY | [2012]
 
 Given the N+1 above, filtering hard on `state`/`office`/`party` isn't a nicety — every candidate you fail to filter out is another request off your quota, spent on someone you didn't want.
 
+## `min_date=2026-6-5` is not an error — and that's the expensive part
+
+One last trap, and it's in your code rather than the FEC's. The date bounds are `min_date`/`max_date` on `/schedules/schedule_a/`, both `YYYY-MM-DD`. Every wrapper we've seen — ours included, until we audited it — validates them like this:
+
+```js
+if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) { log.warning(`Ignoring invalid ${label}`); return undefined; }
+```
+
+Then the bound is spread into the query only when it's set: `...(min_date ? { min_date } : {})`. Read those two lines together and you get the actual behaviour: **a date that fails to parse deletes the filter.** Asking for five days in June 2026 with the slightly-wrong spelling `2026-6-5` returned us contributions receipted `2026-08-31` — not an error, not an empty result, just a *different and much larger* question answered. The run succeeds. The log looks normal. If you're paying per row, you pay for all of it.
+
+The rule we now apply everywhere: judge a failed input parse by whether ignoring it **narrows or widens** the result set. A widening fallback must stop the run. The same three-line shape was live in our Grants.gov filter (`postedFrom` dropped, so "posted in Q1 2024" quietly returned rows opened in 2026), in our CourtListener filter — where a June-2024 window came back with opinions filed in [1795](/blog/courtlistener-search-api-two-auth-tiers) — and in our ATS job-board filter, where `new Date("last week")` is an Invalid Date that is [truthy and compares false against everything](/blog/ats-job-board-json-apis-six-shapes). Four different APIs, four different parsers, one bug.
+
+Two things make the strict version non-obvious. A regex alone isn't enough: `2026-02-30` matches `\d{4}-\d{2}-\d{2}` perfectly, and V8 rolls it over to March 1 rather than rejecting it, so you need an ISO round-trip (`new Date(s + 'T00:00:00.000Z').toISOString().slice(0,10) === s`) to catch it. And a `log.warning` is not a fix — it is a comment addressed to nobody, written into a successful run that already charged. Throw, name the offending value, and say why you stopped.
+
 ## The packaged version
 
 Everything above is why we didn't ship this on `DEMO_KEY`: the quota is shared per egress IP, so one user's 20-candidate run would exhaust it for everyone else on that host, and `Retry-After` then says come back in 16 hours. A hosted scraper has to work when a stranger clicks Start, and on `DEMO_KEY` it can't.

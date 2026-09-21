@@ -238,25 +238,25 @@
     "postedFrom": {
       "title": "Posted from (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return opportunities with an open (posted) date on or after this date. Unlike \"Posted within the last N days\" (which counts back from today), this is a fixed calendar date -- for pulling a specific historical window, e.g. everything posted in Q1. Grants.gov's own API has no server-side absolute-date filter, so this is applied client-side against each row's own open date (already present on every thin result row, no extra detail lookups needed). Leave empty for no lower bound.",
+      "description": "Only return opportunities with an open (posted) date on or after this date. Unlike \"Posted within the last N days\" (which counts back from today), this is a fixed calendar date -- for pulling a specific historical window, e.g. everything posted in Q1. Grants.gov's own API has no server-side absolute-date filter, so this is applied client-side against each row's own open date (already present on every thin result row, no extra detail lookups needed). Leave empty for no lower bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
       "editor": "textfield"
     },
     "postedTo": {
       "title": "Posted to (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound.",
+      "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
       "editor": "textfield"
     },
     "closeDateFrom": {
       "title": "Deadline from (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return opportunities whose application deadline (close date) falls on or after this date. Use with \"Deadline to\" to answer the question grant seekers actually ask -- \"what closes in the next 30 days?\" -- instead of filtering on when something was posted. Applied client-side against each row's own close date (already present on every thin result row, no extra detail lookups). NOTE: forecasted opportunities have no firm deadline yet and Grants.gov returns an empty close date for them, as it also does for rolling/continuous announcements and RFIs -- those rows are dropped by this filter and counted separately in the run summary. Leave empty for no lower bound.",
+      "description": "Only return opportunities whose application deadline (close date) falls on or after this date. Use with \"Deadline to\" to answer the question grant seekers actually ask -- \"what closes in the next 30 days?\" -- instead of filtering on when something was posted. Applied client-side against each row's own close date (already present on every thin result row, no extra detail lookups). NOTE: forecasted opportunities have no firm deadline yet and Grants.gov returns an empty close date for them, as it also does for rolling/continuous announcements and RFIs -- those rows are dropped by this filter and counted separately in the run summary. Leave empty for no lower bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
       "editor": "textfield"
     },
     "closeDateTo": {
       "title": "Deadline to (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return opportunities whose application deadline (close date) falls on or before this date. Same client-side filter and same no-deadline exclusions as \"Deadline from\". Leave empty for no upper bound.",
+      "description": "Only return opportunities whose application deadline (close date) falls on or before this date. Same client-side filter and same no-deadline exclusions as \"Deadline from\". Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
       "editor": "textfield"
     },
     "closesWithinDays": {

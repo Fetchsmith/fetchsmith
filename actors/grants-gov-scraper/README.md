@@ -53,7 +53,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 | `sortBy` | string | `openDate\|desc`, `openDate\|asc`, `closeDate\|desc`, `closeDate\|asc` |
 | `enrich` | boolean | Join each row with award/eligibility/synopsis detail (default `true`) |
 | `postedWithinDays` | integer | Only opportunities posted in the last N days — cheap incremental pull |
-| `postedFrom` | string | Only opportunities opened on/after this date (`YYYY-MM-DD`); overrides `postedWithinDays` |
+| `postedFrom` | string | Only opportunities opened on/after this date (strict `YYYY-MM-DD`, a bad date stops the run); overrides `postedWithinDays` |
 | `postedTo` | string | Only opportunities opened on/before this date (`YYYY-MM-DD`); overrides `postedWithinDays` |
 | `closeDateFrom` | string | Only opportunities whose deadline falls on/after this date (`YYYY-MM-DD`); excludes rows with no deadline |
 | `closeDateTo` | string | Only opportunities whose deadline falls on/before this date (`YYYY-MM-DD`); same exclusions |
@@ -181,6 +181,9 @@ Yes — set `oppNums` (array) instead of, or alongside, `oppNum`. Grants.gov's A
 
 **What's the difference between `closesWithinDays` and `closeDateFrom`/`closeDateTo`?**
 Same filter, two ways to express it. `closesWithinDays: 30` resolves to today through 30 days from now at run time, so a scheduled cron doesn't need to compute a fresh calendar date every time it runs — same tradeoff as `postedWithinDays` vs `postedFrom`/`postedTo`. Set `closeDateFrom`/`closeDateTo` instead for a fixed window (e.g. a specific fiscal quarter) that shouldn't shift with the run date. If both are set, the absolute range wins and `closesWithinDays` is ignored, with a warning in the run log.
+
+**What happens if I typo one of the date filters?**
+The run stops immediately with an error naming the bad value, before anything is fetched or charged. Only strict `YYYY-MM-DD` is accepted and it has to be a real calendar date, so `2024-02-30`, `2024-13-01`, `06/15/2024` and `2024-6-5` are all rejected rather than guessed at. This applies to `postedFrom`, `postedTo`, `closeDateFrom` and `closeDateTo`, and an unusable `postedWithinDays`/`closesWithinDays` day count (`"seven"`, `0`, `-5`) stops the run the same way. It is deliberate: an unparseable bound used to be dropped with a warning, which turned "posted in Q1" into "posted at any time" — a larger, wrong, fully billable result set with a completely normal-looking run log. Precedence between a valid relative window and a valid absolute range is unchanged: the absolute range still wins, with a warning, because both were things you asked for.
 
 **Why did my run return zero results?**
 Every filter is ANDed, and Grants.gov's API never reports a bad value — a typo'd code returns "success" with zero hits. Most common causes, in order: `oppStatuses` defaults to forecasted + posted, so history needs `closed`/`archived` added; a narrow keyword plus agency plus eligibility often genuinely has no matches; a small `postedWithinDays`/`postedFrom` window is a hard filter; and the award-amount filters drop every row with no ceiling set. The run log names which one applied.

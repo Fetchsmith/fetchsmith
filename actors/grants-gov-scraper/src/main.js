@@ -97,7 +97,10 @@ let postedWithinDays = null;
 if (input.postedWithinDays !== undefined && input.postedWithinDays !== null && input.postedWithinDays !== '') {
     const n = Number(input.postedWithinDays);
     if (Number.isFinite(n) && n >= 1) postedWithinDays = Math.floor(n);
-    else log.warning(`Ignoring invalid postedWithinDays "${input.postedWithinDays}" (must be a positive number of days).`);
+    // Throws rather than warns (cycle 591), same reason as parseIsoDate below: this branch only
+    // runs when the caller explicitly set a value, and ignoring it leaves NO date filter at all,
+    // so the run would return (and bill for) the whole unfiltered set the caller was narrowing.
+    else throw new Error(`"postedWithinDays" is not a valid day count: "${input.postedWithinDays}". Use a positive whole number of days (e.g. 7). The run stops instead of ignoring it, because dropping the window would return every matching opportunity and charge you for the difference.`);
 }
 
 // Grants.gov's API has no absolute-date filter at all (verified live: posting a
@@ -106,17 +109,27 @@ if (input.postedWithinDays !== undefined && input.postedWithinDays !== null && i
 // though (even archived ones), so an absolute range is applied client-side after fetch --
 // zero extra requests, same cost as no filter at all. Parsed once here as real Date objects
 // so the per-row filter below is a cheap comparison, not a re-parse every iteration.
+// A bad date bound THROWS (cycle 591). It used to warn and return null, and null means "no bound"
+// everywhere downstream -- so a typo deleted the filter, flipped `hasAbsoluteDateFilter` false
+// (silently re-arming postedWithinDays, or leaving no date filter at all), and billed per result
+// for the whole unfiltered set. Judge a failed parse by whether ignoring it narrows or widens the
+// result set: widening under per-result pricing must stop the run, and a log.warning inside an
+// otherwise-successful run is not a fix because nobody reads it.
 function parseIsoDate(s, label) {
     if (s === undefined || s === null || s === '') return null;
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s).trim());
-    if (!m) {
-        log.warning(`Ignoring invalid ${label} "${s}" (expected YYYY-MM-DD).`);
-        return null;
-    }
-    const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
-    if (Number.isNaN(d.getTime())) {
-        log.warning(`Ignoring invalid ${label} "${s}" (expected YYYY-MM-DD).`);
-        return null;
+    const trimmed = String(s).trim();
+    if (!trimmed) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    const d = m ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) : null;
+    // Date.UTC does NOT reject an out-of-range month or day, it rolls it over (2024-02-30 becomes
+    // March 1, 2024-13-01 becomes 2025-01-01), so the ISO round-trip back to the input string is
+    // the check that actually catches a calendar-invalid date.
+    if (!m || Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== trimmed) {
+        throw new Error(
+            `"${label}" is not a valid date: "${trimmed}". Use YYYY-MM-DD (e.g. 2024-01-31). `
+            + 'The run stops instead of ignoring the bound, because dropping it would widen the '
+            + 'result set to every matching opportunity and charge you for the difference.',
+        );
     }
     return d;
 }
@@ -162,7 +175,9 @@ let closesWithinDays = null;
 if (input.closesWithinDays !== undefined && input.closesWithinDays !== null && input.closesWithinDays !== '') {
     const n = Number(input.closesWithinDays);
     if (Number.isFinite(n) && n >= 1) closesWithinDays = Math.floor(n);
-    else log.warning(`Ignoring invalid closesWithinDays "${input.closesWithinDays}" (must be a positive number of days).`);
+    // Throws for the same reason as postedWithinDays above: a dropped deadline window widens the
+    // billable result set instead of narrowing it.
+    else throw new Error(`"closesWithinDays" is not a valid day count: "${input.closesWithinDays}". Use a positive whole number of days (e.g. 30). The run stops instead of ignoring it, because dropping the window would return every matching opportunity and charge you for the difference.`);
 }
 if (hasCloseDateFilter && closesWithinDays !== null) {
     log.warning('Both closesWithinDays and closeDateFrom/closeDateTo are set; ignoring closesWithinDays since an absolute range was given.');
