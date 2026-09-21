@@ -258,7 +258,28 @@ async function pushResult(item) {
 // got-scraping's header generator always adds one, so send an explicit empty value to suppress
 // it — omitting the key lets the generator put its own back. Without this, `compareAtPrice`
 // and `isOnSale` are silently wrong (null/false) on affected stores.
-const request = async (url, headers) => gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers } });
+// got's own `retry` only fires for a fixed errorCodes list that does not include the
+// connection-establishment faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on
+// this same got-scraping version in cycle 616 — about 1 in 4 fresh connections. Without an
+// outer retry, one blip drops the rest of a store's pages (see fetchProductsPage), silently
+// truncating a paid catalog instead of erroring loudly. Retry connection-level throws a
+// handful of times before giving up; a thrown storefront HTTP status (throwIfStorefrontError,
+// called by the caller after this resolves) is a separate, later step and is never retried here.
+const request = async (url, headers) => {
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers } });
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 3) {
+        log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw lastErr;
+};
 const http = async (url) => {
   try { return await request(url, { 'accept-language': '' }); }
   catch (e) { return request(url, {}); } // a store that rejects the empty header still gets served, just without sale prices
