@@ -1,6 +1,6 @@
 ---
 title: Eight ways an "only new since last run" watch mode silently stops working
-description: "New" is not a property of a public API — it's a property of your own history. Shipping incremental watch mode across seventeen Actors (government data, forums, job boards, tenders, campaign finance, trademarks, app/game/podcast platforms) surfaced eight failure modes, and every one of them keeps the run log green while delivering nothing or delivering less than it should.
+description: "New" is not a property of a public API — it's a property of your own history. Shipping incremental watch mode across eighteen Actors (government data, forums, job boards, tenders, campaign finance, trademarks, app/game/podcast platforms) surfaced eight failure modes, and every one of them keeps the run log green while delivering nothing or delivering less than it should.
 date: 2026-09-16
 tags: webscraping, api, opendata, scheduling
 ---

@@ -81,4 +81,6 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 Only public data from the official TMview database is collected. Respect the source's terms of use when using the output. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
-See more tools like this at [fetchsmith.com/tools](https://fetchsmith.com/tools).
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how this Actor's `watchLabel` mode keys its baseline on TMview's own `st13` id, and what it does and does not track
+- [FetchSmith blog](https://fetchsmith.com/blog) — data-source guides and API notes
+- See more tools like this at [fetchsmith.com/tools](https://fetchsmith.com/tools).

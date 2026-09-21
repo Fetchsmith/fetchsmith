@@ -94,6 +94,8 @@ Pay per result: you are charged once per **unique** posting pushed to the datase
 
 **How are duplicates detected?** Normalized company name + normalized job title (lowercased, punctuation collapsed). That catches the common syndication case ("Acme, Inc." on one board and "Acme Inc" on another). It will not merge two genuinely different openings that share a title at the same company — those stay separate rows.
 
+**I set a small `maxResults` and got rows from only one board — is that a bug?** No. The merge is global newest-first across all four boards, so a small cap samples *recency*, not *boards*: whichever board happened to publish the freshest postings that minute fills the cap. Ask for at least 50 results to see all four represented, or run once per board with `sources` set to a single board if you need a guaranteed per-board slice.
+
 **What if one board is down?** The run continues with the others and logs a warning naming the failed board. You are only charged for rows you actually receive.
 
 **Does this need a login, API key or proxy?** No. All four endpoints are public and documented, and the Actor is HTTP-only — no headless browser.
@@ -111,5 +113,6 @@ All four APIs are public and ask for credit in return. This Actor puts the sourc
 
 ## Related guides
 
+- [Four public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds) — measured feed sizes, Remotive's decorative `limit`, Remote OK's legal-notice row, and why the four boards don't overlap
 - [FetchSmith blog](https://fetchsmith.com/blog) — data-source guides and API notes
 - [All FetchSmith Actors](https://fetchsmith.com/tools)
