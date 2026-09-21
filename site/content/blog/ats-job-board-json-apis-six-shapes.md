@@ -64,6 +64,22 @@ Three fields turned out to need real normalization work, not just renaming:
 - **Remote/location.** `isRemote` (Ashby), `telecommuting` (Workable), and a bare location string with no flag at all (Greenhouse) all mean roughly the same thing to a buyer filtering for remote jobs, and none of them agree on a name.
 - **Dead companies.** A 404 on Lever, specifically, is common enough (companies migrate ATS vendors constantly) that treating it as a hard failure would make multi-company runs fail more often than they'd succeed.
 
+## The seventh shape nobody warns you about: `new Date()` on a user-supplied bound
+
+None of the six APIs offers a server-side date filter, so a posted-after/posted-before window has to be applied client-side, after fetch. The obvious JavaScript is one line:
+
+```js
+const postedAfter = input.postedAfter ? new Date(input.postedAfter) : null;
+...
+if (postedAfter && d < postedAfter) return false;   // drop postings before the bound
+```
+
+That line has a hole in it, and we shipped it. `new Date("last week")` — or `"2026-13-01"`, or `"2026-08-01T"` — returns an **Invalid Date**, which is a real object and therefore **truthy**, whose `.getTime()` is `NaN`. Every relational comparison against `NaN` is `false`, so `d < postedAfter` is false for every row, nothing is ever dropped, and the date filter silently ceases to exist. Measured live against Stripe's Greenhouse board before we fixed it: `postedAfter: "last week"` returned postings dated `2026-07-22`, `2026-08-11`, `2026-08-19` and `2026-08-21` — months outside any reading of "last week", with a normal-looking run log and no warning. On a pay-per-result Actor, every one of those rows is billed.
+
+Two narrower traps sit next to it. `new Date("2026-02-30")` doesn't fail — V8 rolls it over to March 1, even in ISO form, so a typo becomes a different, plausible-looking window. And `new Date("06/15/2026")` parses fine but means something else entirely to a buyer who writes dates day-first.
+
+The general rule, which we now apply to every filter input in the fleet: **judge a failed input parse by whether ignoring it narrows or widens the result set.** A narrowing fallback is safe — you return a subset of what was asked for and the buyer sees it immediately. A *widening* fallback is the worst possible behaviour under per-result pricing: the buyer pays for rows they explicitly asked to exclude, and nothing in the output looks wrong. So a bound that can't be parsed now stops the run with an error naming the offending input, and both bounds are inclusive whole days in UTC (`postedAfter` from `00:00:00.000`, `postedBefore` through `23:59:59.999`) so a one-month window is actually one month. We found the identical bug shape in a [date filter on CourtListener](/blog/courtlistener-search-api-two-auth-tiers) and in [CPV code matching on UK tenders](/blog/uk-find-a-tender-ocds-json-api) — different APIs, same failure: a filter that couldn't be honoured was deleted instead of refused.
+
 [ats-jobs-scraper](https://apify.com/fetchsmith/ats-jobs-scraper) wraps all six APIs behind one schema — company, ATS source, title, department, team, employment type, workplace type, remote flag, location, normalized salary (min/max/currency/**interval**), timestamps, apply URL and description — and skips companies that have moved off an ATS instead of failing the run. Pay per job posting returned, no start fee, no browser required for any of the six.
 
 ---

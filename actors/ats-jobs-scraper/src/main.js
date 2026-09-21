@@ -62,8 +62,42 @@ const hasSalary = !!input.hasSalary;
 const minSalary = input.minSalary != null && input.minSalary !== '' ? Number(input.minSalary) : null;
 const maxSalary = input.maxSalary != null && input.maxSalary !== '' ? Number(input.maxSalary) : null;
 const remoteOnly = !!input.remoteOnly;
-const postedAfter = input.postedAfter ? new Date(input.postedAfter) : null;
-const postedBefore = input.postedBefore ? new Date(input.postedBefore) : null;
+// A date bound that fails to parse must STOP the run, never be dropped. `new Date("2024-13-01")`
+// is an Invalid Date, which is TRUTHY, and every comparison against its NaN time is false — so
+// `if (postedAfter && d < postedAfter) return false` never rejects anything and the whole date
+// filter silently disappears while the buyer pays per row for the unfiltered set. Same
+// widening-vs-narrowing rule as court-records-scraper's normDate (cycle 589): a parse failure
+// that WIDENS the result set is the worst possible behaviour under per-result pricing.
+// `new Date()` also rolls over out-of-range days (2024-02-30 -> 2024-03-01) even in ISO form,
+// so date-only bounds are calendar-checked by ISO round-trip rather than trusted.
+function parseDateBound(raw, label, endOfDay) {
+  if (raw == null || String(raw).trim() === '') return null;
+  const s = String(raw).trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (m) {
+    // Date-only bounds are whole days in UTC: "posted after" starts at 00:00:00.000 and
+    // "posted before" ends at 23:59:59.999, so both bounds are INCLUSIVE of the day named,
+    // which is what both schema descriptions promise ("on or after" / "on or before").
+    const d = new Date(`${s}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z`);
+    if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== s) {
+      throw new Error(`"${label}" is not a real calendar date: ${JSON.stringify(raw)}. Use YYYY-MM-DD, e.g. 2026-08-01.`);
+    }
+    return d;
+  }
+  // Also accept a full ISO datetime (same as uk-find-a-tender-scraper's parseBound) for buyers
+  // who want a sub-day bound. Anything else — "06/15/2024", "last week", "2026-8-1" — throws
+  // rather than being silently reinterpreted or dropped.
+  const d = new Date(s);
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(s) || Number.isNaN(d.getTime())) {
+    throw new Error(`"${label}" is not a valid date: ${JSON.stringify(raw)}. Use YYYY-MM-DD (e.g. 2026-08-01) or a full ISO datetime (e.g. 2026-08-01T12:00:00Z). US-style and partial dates are rejected on purpose — accepting them would silently change or delete your date filter and you would be billed for the rows it should have removed.`);
+  }
+  return d;
+}
+const postedAfter = parseDateBound(input.postedAfter, 'postedAfter', false);
+const postedBefore = parseDateBound(input.postedBefore, 'postedBefore', true);
+if (postedAfter && postedBefore && postedAfter > postedBefore) {
+  throw new Error(`postedAfter (${input.postedAfter}) is after postedBefore (${input.postedBefore}); no posting can match that window.`);
+}
 const includeDescriptions = input.includeDescriptions !== false;
 // A description filter needs the description text even when the buyer does not want it in the
 // output, so the fetchers key off this and the description fields are stripped at push time
