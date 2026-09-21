@@ -129,6 +129,7 @@ The first run seeds the baseline (0 rows, 0 charged). Every run after that retur
 
 ## FAQ
 
+**What country codes does `country` take?** Apple storefronts are two-letter ISO-3166-1 **alpha-2** codes — the UK is `gb`, not `uk`, and there is no `usa`/`uk`/`eng`. A wrong code used to look like a show that doesn't exist (Apple answers `uk` with `HTTP 400` carrying valid JSON and no results, and the review feed with an empty body); now a recognisable wrong code fails the run in about a second, before the first request and before any charge, and names the code you should have used.
 **How do I find a publisher's artist ID?** It's the trailing number on their "See All" / artist page on podcasts.apple.com (e.g. `.../artist/the-new-york-times/121664449`), or run `dataType: "podcasts"` for any one of their shows first — the search/lookup result carries `artistId` even though this Actor doesn't surface it by default on `podcasts` rows (open a request if you need it added).
 **Does `keyword` handle accented words correctly?** Yes, as of v0.1.16 — `keyword` and the text it's matched against are Unicode-normalized before comparing, so an accented word (e.g. "café") matches regardless of which of Unicode's two equivalent representations (composed vs. decomposed) you typed it in.
 

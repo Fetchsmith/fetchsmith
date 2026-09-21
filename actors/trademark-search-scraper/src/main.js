@@ -31,14 +31,31 @@ if (webhookUrlRaw) {
 
 // TMview times out/resets on requests from Apify's default datacenter egress (verified cycle 513:
 // works from this box directly, fails 3/3 on-platform without a proxy) — route through Apify Proxy.
+let proxyConfiguration;
 let proxyUrl;
 try {
-  const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
+  proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
   if (proxyConfiguration) {
     proxyUrl = await proxyConfiguration.newUrl();
     log.info('Using Apify Proxy for TMview requests.');
   }
 } catch (e) { log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`); }
+
+// A single exit node that cannot reach TMview kills the whole run: measured 2026-09-21, every
+// request came back `The proxy responded with 590 UPSTREAM502` (a CONNECT-level failure, so
+// `throwHttpErrors:false` does not catch it and the run died on a raw stack trace) while the SAME
+// query answered HTTP 200 directly from outside Apify — i.e. TMview was up, that exit node was not.
+// So a transport failure now rotates to a fresh exit node before giving up, and only after every
+// node has failed do we try direct (cycle 513 measured direct as unreliable from Apify's own
+// egress, so it is a last resort, not the default).
+const PROXY_ROTATIONS = 3;
+async function rotateProxy() {
+  if (!proxyConfiguration) return false;
+  try {
+    proxyUrl = await proxyConfiguration.newUrl(`s${Date.now()}${Math.floor(Math.random() * 1e6)}`);
+    return true;
+  } catch (e) { log.warning(`Could not get another proxy session (${e.message}).`); return false; }
+}
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
@@ -176,20 +193,50 @@ async function fetchPage(page) {
   if (niceClasses.length) body.fNiceClass = niceClasses;
   if (statuses.length) body.fTMStatus = statuses;
 
-  const res = await gotScraping({
-    url: API,
-    method: 'POST',
-    json: body,
-    responseType: 'json',
-    timeout: { request: 30000 },
-    retry: { limit: 2 },
-    throwHttpErrors: false,
-    proxyUrl,
-  });
-  if (res.statusCode !== 200) {
-    throw new Error(`TMview returned HTTP ${res.statusCode}: ${JSON.stringify(res.body).slice(0, 300)}`);
+  // attempt 0 uses the session we already have; each later attempt rotates to a fresh exit node,
+  // and the final one drops the proxy entirely.
+  let lastErr;
+  for (let attempt = 0; attempt <= PROXY_ROTATIONS; attempt += 1) {
+    if (attempt > 0) {
+      const rotated = attempt < PROXY_ROTATIONS && await rotateProxy();
+      if (!rotated) {
+        if (!proxyUrl) break; // already direct and it still failed — nothing left to try
+        log.warning('Every Apify Proxy session tried failed to reach TMview — retrying once on a direct connection.');
+        proxyUrl = undefined;
+      } else {
+        log.warning(`TMview request failed through the proxy (${lastErr.message}) — retrying on a different proxy session (${attempt}/${PROXY_ROTATIONS}).`);
+      }
+    }
+    let res;
+    try {
+      res = await gotScraping({
+        url: API,
+        method: 'POST',
+        json: body,
+        responseType: 'json',
+        timeout: { request: 30000 },
+        retry: { limit: 2 },
+        throwHttpErrors: false,
+        proxyUrl,
+      });
+    } catch (e) {
+      // Transport-level (proxy CONNECT refused/590, socket reset, DNS, timeout): no statusCode
+      // exists, so this never reaches the check below. Rotate and try again.
+      lastErr = e;
+      continue;
+    }
+    if (res.statusCode !== 200) {
+      throw new Error(`TMview returned HTTP ${res.statusCode}: ${JSON.stringify(res.body).slice(0, 300)}`);
+    }
+    return res.body ?? {};
   }
-  return res.body ?? {};
+  await Actor.fail(
+    'Could not reach TMview (tmdn.org) through any network path this run: '
+    + `${PROXY_ROTATIONS} Apify Proxy session(s) and a direct connection all failed transport-level — last error: ${lastErr?.message}. `
+    + 'TMview itself is frequently reachable when this happens, so it is usually the proxy route rather than an outage: '
+    + 're-run in a few minutes, or set "proxyConfiguration" to a residential group. Nothing was scraped and nothing was charged.',
+  );
+  throw lastErr;
 }
 
 try {

@@ -1,5 +1,5 @@
 {
- "ts": 1789992687,
+ "ts": 1789994142,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -150,7 +150,7 @@
    "status": 400,
    "items": 0,
    "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: TVcIUjN6YFhiMz3EQ, status: FAILED).\"\n  }\n}"
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: tbZREZmQJLofcR3XM, status: FAILED).\"\n  }\n}"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
@@ -313,20 +313,11 @@
    "err": null
   },
   "trademark-search-scraper": {
-   "ok": true,
-   "status": 201,
-   "items": 10,
-   "sample_keys": [
-    "id",
-    "st13",
-    "url",
-    "trademarkName",
-    "office",
-    "status",
-    "trademarkType",
-    "applicationNumber"
-   ],
-   "err": null
+   "ok": false,
+   "status": 400,
+   "items": 0,
+   "sample_keys": [],
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: Pe6glLJNQEqPHeaqE, status: FAILED).\"\n  }\n}"
   },
   "sam-gov-opportunities-scraper": {
    "ok": true,

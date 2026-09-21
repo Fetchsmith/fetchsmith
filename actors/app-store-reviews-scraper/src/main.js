@@ -289,12 +289,17 @@ const getJson = async (url, opts = {}) => {
       : (cc && (resp.statusCode === 400 || resp.statusCode === 404)
         ? ` The storefront code in this request was "${cc}" — storefronts are two-letter ISO-3166-1 alpha-2 codes (the UK is "gb", not "uk").`
         : '');
-    throw new Error(`Apple returned HTTP ${resp.statusCode}${detail ? ` (${detail})` : ''}.${hint}`);
+    // Tagged so callers can tell a permanent input fault (4xx: this storefront/app will never
+    // answer) from a transient one (429/5xx: retrying the other client class is worth it).
+    throw Object.assign(new Error(`Apple returned HTTP ${resp.statusCode}${detail ? ` (${detail})` : ''}.${hint}`), { httpStatus: resp.statusCode });
   }
   try {
     return JSON.parse(resp.body);
   } catch {
-    throw new Error(`Apple returned HTTP ${resp.statusCode} with a body that is not JSON (${resp.body ? `starts with ${JSON.stringify(String(resp.body).slice(0, 60))}` : 'empty body'}).`);
+    throw Object.assign(
+      new Error(`Apple returned HTTP ${resp.statusCode} with a body that is not JSON (${resp.body ? `starts with ${JSON.stringify(String(resp.body).slice(0, 60))}` : 'empty body'}).`),
+      { httpStatus: resp.statusCode },
+    );
   }
 };
 
@@ -460,12 +465,22 @@ async function getAppInfo(appId, country) {
 
 // Fetches one page, retrying an empty result under the other client class (see CLIENT_CLASSES).
 // Returns the entries plus the class that actually served them, so rows are never mislabelled.
-async function fetchPage(url, primary = 'default') {
+// A 4xx that is not a rate limit is a permanent fault in the REQUEST (a storefront code that is
+// well-formed but not a real Apple storefront, e.g. "zz", or an app id that does not exist there):
+// no client class and no later page will ever answer it, so it is rethrown immediately instead of
+// being warned about 20 times while the sweep walks pages 1-10 under both classes. `tolerateAll`
+// keeps reviewFeedIsDown()'s control probes on the old behaviour — an outage probe must be allowed
+// to come back empty rather than throwing out of the run.
+async function fetchPage(url, primary = 'default', tolerateAll = false) {
   for (const clientClass of [primary, primary === 'default' ? 'ios' : 'default']) {
     let entries;
     try {
       entries = await fetchEntries(url, clientClass);
-    } catch (e) { log.warning(`${url} failed (${clientClass}): ${e.message}`); continue; }
+    } catch (e) {
+      if (!tolerateAll && e.httpStatus >= 400 && e.httpStatus < 500 && e.httpStatus !== 429) throw e;
+      log.warning(`${url} failed (${clientClass}): ${e.message}`);
+      continue;
+    }
     if (entries.length) return { entries, clientClass };
   }
   return { entries: [], clientClass: primary };
@@ -496,7 +511,7 @@ async function reviewFeedIsDown() {
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     for (const [id, cc] of CONTROL_APPS) {
       for (const sortBy of ['mostRecent', 'mostHelpful']) {
-        const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=${sortBy}/page=1/json`);
+        const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=${sortBy}/page=1/json`, 'default', true);
         if (entries.length) { feedDown = false; return false; }
       }
     }
@@ -525,7 +540,18 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, info, tally, e
   const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
   for (let page = 1; page <= MAX_RSS_PAGE && tally.got < scanCap && keepGoing && !hitCutoff; page++) {
     const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
-    const { entries, clientClass } = await fetchPage(url);
+    let entries;
+    let clientClass;
+    try {
+      ({ entries, clientClass } = await fetchPage(url));
+    } catch (e) {
+      // Permanent 4xx (see fetchPage): end this (app, country) pair here rather than requesting
+      // the remaining pages, the other client class and the alternate sort, all of which are
+      // guaranteed to fail the same way. The caller reports the message verbatim.
+      tally.storefrontError = e.message;
+      log.warning(`${appId}/${country} ${sortBy}: ${e.message} Stopping this app/storefront pair instead of requesting the remaining pages.`);
+      break;
+    }
     if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
     if (clientClass !== 'default') log.info(`${appId}/${country} ${sortBy} page ${page}: empty for the default client, recovered ${entries.length} reviews under the iOS client.`);
     for (const e of entries) {
@@ -576,7 +602,9 @@ async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false)
   const tally = { got: 0, filteredOut: 0 };
   const info = await getAppInfo(appId, country);
   await scrapeAppCountrySort(appId, country, sort, seen, info, tally, extra, pairSeeding);
-  if (tally.got === 0 && keepGoing) {
+  // The alternate-sort fallback exists for Apple's per-sort feed HOLES; a 4xx is not a hole, it is
+  // the whole (app, storefront) being unanswerable, so the other sort would only repeat the fault.
+  if (tally.got === 0 && keepGoing && !tally.storefrontError) {
     const alt = sort === 'mostRecent' ? 'mostHelpful' : 'mostRecent';
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
     await scrapeAppCountrySort(appId, country, alt, seen, info, tally, extra, pairSeeding);
@@ -587,7 +615,7 @@ async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false)
   const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
   return {
     got: tally.got, filteredOut: tally.filteredOut, capReached: tally.got >= scanCap,
-    newForPair: tally.newForPair || 0,
+    newForPair: tally.newForPair || 0, storefrontError: tally.storefrontError || null,
   };
 }
 
@@ -598,6 +626,10 @@ if (appNames.length) {
 if (!apps.length) await Actor.fail('None of the given "apps"/"appNames" resolved to a usable app id — see the warnings above.');
 
 const emptyPairs = [];
+// Pairs Apple answered with a permanent 4xx (bad storefront code, or an app id absent from that
+// storefront). Distinct from emptyPairs: those are real Apple data, these are a rejected request.
+const storefrontErrorPairs = [];
+const storefrontErrorMessages = [];
 const filteredOutPairs = [];
 // Pairs where maxReviewsPerApp was hit while the review filters still discarded scanned
 // reviews -- reviews deeper in Apple's feed were never scanned.
@@ -629,8 +661,18 @@ for (const app of apps) {
     }
     const pushedBefore = pushed;
     pairsAttempted += 1;
-    const { got, filteredOut, capReached, newForPair } = await scrapeAppCountry(appId, country, {}, pairSeeding);
+    const { got, filteredOut, capReached, newForPair, storefrontError } = await scrapeAppCountry(appId, country, {}, pairSeeding);
     if (ratingSort) await flushPairBuffer();
+    if (storefrontError) {
+      // Apple refused this (app, storefront) outright. Report the fault verbatim and move on: do
+      // NOT run probeStorefronts, do NOT count it as "Apple's feed is empty" (it is not), and —
+      // same invariant as the errored-store rule in shopify-products-scraper — never mark the pair
+      // baselined, or the next watch run would treat its whole review history as already delivered.
+      storefrontErrorPairs.push(`${appId}/${country}`);
+      if (!storefrontErrorMessages.includes(storefrontError)) storefrontErrorMessages.push(storefrontError);
+      feedServed += got;
+      continue;
+    }
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
     if (capReached && filteredOut > 0) {
       depthCappedPairs.push(`${appId}/${country}`);
@@ -686,6 +728,16 @@ for (const app of apps) {
     }
   }
 }
+// Every pair we tried was REFUSED by Apple (not empty — refused). That is always the input, so say
+// so by name and fail, instead of falling through to the outage probe (which would spend ~12 more
+// requests on control apps that are fine) or reporting it to the buyer as "no reviews found".
+if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted) {
+  await Actor.fail(
+    `Apple refused every app/storefront pair in this run (${storefrontErrorPairs.join(', ')}): ${storefrontErrorMessages.join(' ')} `
+    + 'Nothing was scraped and nothing was charged. Check "countries" (two-letter ISO-3166-1 alpha-2 storefront '
+    + 'codes — the UK is "gb", not "uk") and that the app ids really exist in those storefronts.',
+  );
+}
 // Nothing at all came out of Apple for any pair: before reporting that as an ordinary empty
 // result, check whether the feed itself is down (see reviewFeedIsDown). This runs BEFORE the watch
 // record is written on purpose — a seeding run that recorded "baselined, 0 reviews" during an
@@ -701,7 +753,15 @@ if (pairsAttempted > 0 && feedServed === 0 && await reviewFeedIsDown()) {
 }
 if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
 log.info(`Done. Pushed ${pushed} items.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
-if (watchMode && seeding) {
+if (watchMode && storefrontErrorPairs.length) {
+  // Said first in watch mode: a scheduled run whose storefront is broken must not be summarised as
+  // the reassuring "nothing new since the last run" — those pairs delivered nothing because Apple
+  // refused them, and they were deliberately left out of the baseline.
+  await Actor.setStatusMessage(
+    `Apple refused ${storefrontErrorPairs.length} app/storefront pair(s) in this run (${storefrontErrorPairs.join(', ')}) — they were NOT baselined and nothing was charged for them. `
+    + `${storefrontErrorMessages.join(' ')} Watch label "${watchLabel}": ${pushed} item(s) returned from the pairs that did answer.`,
+  );
+} else if (watchMode && seeding) {
   await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededPairs.size} app/country pair(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
 } else if (watchMode && pushed === 0) {
   await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
@@ -710,7 +770,9 @@ if (watchMode && seeding) {
 } else if (watchMode) {
   await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).`);
 } else if (pushed === 0) {
-  const why = depthCappedPairs.length && !emptyPairs.length
+  const why = storefrontErrorPairs.length && !emptyPairs.length
+    ? `Apple refused these app/storefront pairs: ${storefrontErrorPairs.join(', ')} — ${storefrontErrorMessages.join(' ')}`
+    : depthCappedPairs.length && !emptyPairs.length
     ? `maxReviewsPerApp (${perApp}) was hit before any review passed your review filters (rating/keyword/length/votes/date) for: ${depthCappedPairs.join(', ')} — raise maxReviewsPerApp to search deeper`
     : filteredOutPairs.length && !emptyPairs.length
     ? 'reviews were found but every one was removed by your review filters (rating/keyword/length/votes/date)'
@@ -718,8 +780,11 @@ if (watchMode && seeding) {
   await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedPairs.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} reviews. maxReviewsPerApp (${perApp}) was hit while filtering: ${depthCappedPairs.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
-} else if (emptyPairs.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} reviews. Empty Apple feed for: ${emptyPairs.join(', ')}.`);
+} else if (emptyPairs.length || storefrontErrorPairs.length) {
+  await Actor.setStatusMessage(
+    `Pushed ${pushed} reviews.${emptyPairs.length ? ` Empty Apple feed for: ${emptyPairs.join(', ')}.` : ''}`
+    + `${storefrontErrorPairs.length ? ` Apple refused: ${storefrontErrorPairs.join(', ')} (check the storefront code and the app id).` : ''}`,
+  );
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
