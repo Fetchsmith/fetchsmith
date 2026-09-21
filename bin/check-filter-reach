@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Catch a filter whose input-schema description promises more fields than its code reads.
+
+The bug class, found by hand twice and never by any check:
+
+  cycle 608  `locationKeyword` advertised "location/city/region/country" but the haystack
+             was `location` + `city` + `country` — every filter written against `region`
+             silently returned zero rows.
+  cycle 611  `departmentKeyword` advertised department/team/path after 0.1.36 moved the
+             leaf name out of `department`, but the code still read `job.department` only,
+             so any pre-0.1.36 filter written against a leaf name went to zero rows.
+
+Both are invisible to every other check: the schema is valid, the code runs, the run
+SUCCEEDS, and the dataset is simply emptier than the buyer was told it would be. A filter
+that is too NARROW cannot be distinguished from "no postings matched".
+
+How it works, statically, no network:
+
+  1. Every `*Keyword` / `*Query` / `*Filter` string property in .actor/input_schema.json is
+     a filter. Its `description` is the promise.
+  2. From that description, extract the dataset fields it names: backticked `identifiers`,
+     bare words that are a dataset_schema.json field name, and adjacent word pairs that
+     camelCase into one ("department path" -> departmentPath). This is the ADVERTISED set.
+  3. In src/*.js, find the lines that mention the filter variable (skipping its `const x =
+     input.x` declaration and pure plumbing lines), and widen each to its enclosing brace
+     block. That union is the filter's REACH.
+  4. Any advertised field the reach never reads is a MISS.
+
+A MISS is a claim the code does not keep. Exit 1 on any. Usage: check-filter-reach [slug ...]
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ACTORS = os.path.join(ROOT, "actors")
+
+FILTER_SUFFIX = re.compile(r"(Keyword|Query|Filter)$")
+# plumbing lines: the declaration, and lines that only forward the variable onwards
+PLUMBING = re.compile(r"^\s*(const|let|var)\s|criteria\.|log\.|console\.")
+MAX_BLOCK = 25  # a filter block longer than this is not a haystack, don't drag in neighbours
+
+
+def load(path):
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
+def advertised_fields(desc, fields):
+    """Dataset fields named in a filter's description."""
+    lower = {f.lower(): f for f in fields}
+    found = set()
+    for tick in re.findall(r"`([A-Za-z_][A-Za-z0-9_.]*)`", desc):
+        head = tick.split(".")[0]
+        if head.lower() in lower:
+            found.add(lower[head.lower()])
+    words = re.findall(r"[A-Za-z][A-Za-z0-9]*", desc)
+    for i, w in enumerate(words):
+        if w.lower() in lower:
+            found.add(lower[w.lower()])
+        if i + 1 < len(words):
+            pair = (w + words[i + 1][:1].upper() + words[i + 1][1:]).lower()
+            if pair in lower:
+                found.add(lower[pair])
+    return found
+
+
+def aliases(src_lines, var):
+    """`var` plus anything derived from it in one hop (searchQuery -> searchWords)."""
+    out = {var}
+    word = re.compile(r"\b" + re.escape(var) + r"\b")
+    for line in src_lines:
+        m = re.match(r"\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=", line)
+        if m and word.search(line):
+            out.add(m.group(1))
+    return out
+
+
+def reach_text(src_lines, var):
+    """Union of the enclosing brace block of every non-plumbing mention of `var`.
+
+    Widened BACKWARDS as well as forwards: the haystack a filter matches against is
+    almost always built on a line above the `if (...)` that mentions the variable
+    (`const hay = ...` then `if (kw && !hay.includes(kw))`), so a forward-only window
+    reads the guard and misses the fields it actually reaches.
+    """
+    names = aliases(src_lines, var)
+    word = re.compile(r"\b(" + "|".join(re.escape(n) for n in names) + r")\b")
+    hits = []
+    for i, line in enumerate(src_lines):
+        if not word.search(line) or PLUMBING.match(line):
+            continue
+        lo, depth = i, 0
+        while lo > 0 and i - lo < MAX_BLOCK:
+            depth += src_lines[lo].count("}") - src_lines[lo].count("{")
+            if depth < 0:
+                break  # walked out through the opening brace of the enclosing block
+            lo -= 1
+        hi, depth = i, 0
+        while hi < len(src_lines) - 1 and hi - i < MAX_BLOCK:
+            depth += src_lines[hi].count("{") - src_lines[hi].count("}")
+            if depth < 0:
+                break
+            hi += 1
+        hits += src_lines[lo:hi + 1]
+    return "\n".join(hits)
+
+
+def check_actor(slug):
+    adir = os.path.join(ACTORS, slug)
+    schema = load(os.path.join(adir, ".actor", "input_schema.json"))
+    dataset = load(os.path.join(adir, ".actor", "dataset_schema.json"))
+    if not schema or not dataset:
+        return None
+    props = (dataset.get("fields") or {}).get("properties") or {}
+    fields = set(props)
+    if not fields:
+        return None
+    src = []
+    srcdir = os.path.join(adir, "src")
+    for name in sorted(os.listdir(srcdir)) if os.path.isdir(srcdir) else []:
+        if name.endswith(".js"):
+            with open(os.path.join(srcdir, name)) as fh:
+                src += fh.read().split("\n")
+    if not src:
+        return None
+
+    misses, n_filters = [], 0
+    ignored = load_ignores(adir)
+    for prop, spec in (schema.get("properties") or {}).items():
+        if not FILTER_SUFFIX.search(prop) or spec.get("type") != "string":
+            continue
+        want = advertised_fields(spec.get("description", ""), fields)
+        if not want:
+            continue
+        text = reach_text(src, prop)
+        # Only LOCAL filters have a haystack to be too narrow. A filter that is forwarded
+        # upstream as a query parameter (`qs.set('q', searchQuery)`) reads no row at all,
+        # and the fields its description names are the SERVER's index, not ours — flagging
+        # those produced 25 of this check's first 27 flags and all of its noise.
+        if not re.search(r"\b(?:job|row|item|record|entry|result)\.\w", text):
+            continue
+        n_filters += 1
+        for field in sorted(want):
+            if (prop, field) in ignored:
+                continue
+            if not re.search(r"\b" + re.escape(field) + r"\b", text):
+                misses.append((prop, field))
+    return n_filters, misses
+
+
+def load_ignores(adir):
+    """`<prop> <field>  # why` lines in actors/<slug>/.filter-reach-ignore.
+
+    Two false-positive classes need this and neither can be fixed by a better regex:
+      * a description mentions a word that happens to also be a dataset field name
+        ("remote boards store a REGION" -> `remote`);
+      * a filter forwarded UPSTREAM as a query parameter, where the server searches the
+        advertised fields for us, in an Actor that also filters a second source locally.
+    Every entry must carry a reason, so the baseline stays honest and auditable.
+    """
+    out = set()
+    path = os.path.join(adir, ".filter-reach-ignore")
+    if not os.path.exists(path):
+        return out
+    with open(path) as fh:
+        for line in fh:
+            line = line.split("#")[0].split()
+            if len(line) == 2:
+                out.add((line[0], line[1]))
+    return out
+
+
+def main():
+    slugs = sys.argv[1:] or sorted(
+        d for d in os.listdir(ACTORS)
+        if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith("_")
+    )
+    total_filters, total_miss = 0, 0
+    for slug in slugs:
+        res = check_actor(slug)
+        if res is None:
+            continue
+        n_filters, misses = res
+        total_filters += n_filters
+        if misses:
+            total_miss += len(misses)
+            print(f"{slug}")
+            for prop, field in misses:
+                print(f"    {prop}: advertises `{field}`, code never reads it")
+        else:
+            print(f"{slug:32} ok ({n_filters} filter(s))")
+    print(f"\ncheck-filter-reach: {len(slugs)} Actor(s), {total_filters} filter(s), "
+          f"{total_miss} unreachable claim(s).")
+    return 1 if total_miss else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

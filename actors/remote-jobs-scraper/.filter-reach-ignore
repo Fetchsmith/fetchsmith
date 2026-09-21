@@ -1,0 +1,4 @@
+# <inputProperty> <datasetField>  # why the claim is not actually unreachable
+locationKeyword remote  # prose, not a promise: the description explains that "remote boards
+# store a hiring REGION rather than a city". The word `remote` there is English, and the
+# `remote` dataset field (always true on this Actor) is not something this filter reads.

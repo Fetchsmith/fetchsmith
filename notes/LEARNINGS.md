@@ -1681,3 +1681,20 @@ source being added; put the per-source numbers in the README, where updating the
 - **`/v1/boards/<slug>/departments` returns every node FLAT** (not nested — "roots" == total), each with `parent_id`, and resolved **100%** of job leaf ids on all 5 boards. One request per company, not per job. Walk `parent_id` with a visited set, not a depth cap: hand-edited boards can carry a cyclic parent.
 - **When a field's semantics change, widen the filter that reads it in the same commit.** `departmentKeyword` matched `job.department` only; after the change a pre-existing filter on a leaf name ("Security Analytics") would have silently returned zero rows. Matching `department + team + departmentPath` makes it strictly wider than before on every source. This is h228(c)'s `check-filter-reach` concern, handled by hand — the check still isn't written.
 - Not every board's root is pretty: Airbnb's are sort-prefixed (`"1. Technical"`, `"2. Business"`). That is the board's own naming and we pass it through rather than guess at cleanup.
+
+## Cycle 612 — a static check for "the filter advertises more than it reads"
+`bin/check-filter-reach`. Two design decisions did all the work, both found by running it:
+- **v1 flagged 27 claims across 10 Actors and 25 were noise**, all one class: `searchQuery` on
+  Actors that forward the filter to an upstream API (openFDA, Shopify search, federal-register),
+  where the fields the description names are the SERVER's index, not a haystack of ours. Gating on
+  "the filter's code reach actually dereferences a row object" cut 27 -> 2.
+- **A forward-only source window cannot see a haystack**, because the haystack is built on the line
+  ABOVE the `if (kw && !hay.includes(kw))` that mentions the variable. Widen the block backwards
+  too, and follow one hop of aliasing (`searchQuery` -> `searchWords`).
+The remaining 2 flags were both real false positives worth writing down rather than regexing away:
+a description can mention a word that happens to be a field name ("remote boards store a REGION"),
+and an Actor can forward a filter upstream on its main path while filtering a *second* source
+locally (fda's press-release RSS). Both now sit in `.filter-reach-ignore` with a written reason.
+**General lesson, third time now (550 charges, 610 parser-regression, 612 this):** a new check is
+only worth keeping if its fleet baseline is 0. Get there by suppressing with recorded reasons, not
+by loosening the rule — a check that prints 27 lines every cycle is read once and then never again.

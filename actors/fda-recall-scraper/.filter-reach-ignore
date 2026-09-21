@@ -1,0 +1,6 @@
+# <inputProperty> <datasetField>  # why the claim is not actually unreachable
+searchQuery productDescription  # the recall path does not filter locally at all: searchQuery
+# is quoted into the openFDA query (src/main.js ~line 288) and the API searches
+# product_description/reason_for_recall/recalling_firm server-side. The local haystack the
+# check finds belongs to the SEPARATE press-release source, whose RSS items have only a
+# title and a description -- no productDescription field exists on that path to read.

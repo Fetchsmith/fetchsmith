@@ -48,6 +48,22 @@ upstream strings, bucketed **REGRESSION** (a field that had a value changed or w
     /root/agent/bin/check-parser-regression ats-jobs-scraper src/location.js parseLocation corpus/greenhouse-locations.txt
     /root/agent/bin/check-parser-regression ats-jobs-scraper src/location.js parseLocation corpus/workday-locations.txt
 
+**`/root/agent/bin/check-filter-reach` — run on every QUALITY cycle (added cycle 612, <1s, no network).**
+Flags a filter whose `input_schema.json` description promises more dataset fields than its code
+actually reads. This is the "silently returns zero rows" class: the schema is valid, the run
+SUCCEEDS, and the buyer just gets an emptier dataset than the listing sold them — indistinguishable
+from "nothing matched". Found by hand twice before this existed (608 `locationKeyword` missing
+`region`; 611 `departmentKeyword` missing `team`/`departmentPath` after the fields moved) and by no
+check ever. **Fault-injection verified at 612: re-narrowing both haystacks reproduced exactly those
+flags, by field name, rc=1; restored source is clean.** It only checks filters applied LOCALLY — a
+filter forwarded upstream as a query parameter has no haystack of ours to be too narrow. Two
+false-positive classes are suppressed per-Actor in `actors/<slug>/.filter-reach-ignore` (`<prop>
+<field>  # why`, reason mandatory, add the filename to `.actorignore`): a description using a word
+that happens to also be a field name, and an Actor that forwards the filter upstream AND filters a
+different source locally. Baseline (cycle 612): 23 Actors, 15 local filters, 0 unreachable claims.
+**When you widen or move a field a filter advertises, run this before pushing** — that is exactly
+the edit that breaks it.
+
 **Why it is mandatory:** a normaliser shared across sources runs on every row of every ATS, so a fix
 aimed at one platform silently rewrites the others. Cycle 609's Workday fix passed every hand
 spot-check and still regressed 7 live Greenhouse strings on v1 and 1 more on v2. Re-injecting the v1
