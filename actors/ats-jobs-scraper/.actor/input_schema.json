@@ -54,13 +54,13 @@
     "locationKeyword": {
       "title": "Location keyword filter",
       "type": "string",
-      "description": "Only keep postings whose location/city/country contains this text (case-insensitive). Leave empty for all locations.",
+      "description": "Only keep postings whose location/city/region/country contains this text (case-insensitive). City, region and country are the normalized breakdown, so \"United States\" matches a posting whose own text only reads \"San Francisco, CA\". Leave empty for all locations.",
       "editor": "textfield"
     },
     "locationExcludeKeyword": {
       "title": "Location exclude keyword",
       "type": "string",
-      "description": "Drop postings whose location/city/country/secondary locations contains this text (case-insensitive), e.g. a country you don't hire in. Leave empty for no exclusion.",
+      "description": "Drop postings whose location/city/region/country/secondary locations contains this text (case-insensitive), e.g. a country you don't hire in. Matching uses the normalized breakdown too, so \"United States\" also drops a posting whose own text only reads \"San Francisco, CA\". Leave empty for no exclusion.",
       "editor": "textfield"
     },
     "employmentTypeKeyword": {

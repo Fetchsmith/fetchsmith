@@ -746,7 +746,7 @@ function passesFilters(job, deferred = []) {
   if (titleKeyword && !(job.title ?? '').toLowerCase().includes(titleKeyword)) return false;
   if (titleExcludeKeyword && (job.title ?? '').toLowerCase().includes(titleExcludeKeyword)) return false;
   if (locationKeyword || locationExcludeKeyword) {
-    const haystack = `${job.location ?? ''} ${(job.secondaryLocations ?? []).join(' ')} ${job.city ?? ''} ${job.country ?? ''}`.toLowerCase();
+    const haystack = `${job.location ?? ''} ${(job.secondaryLocations ?? []).join(' ')} ${job.city ?? ''} ${job.region ?? ''} ${job.country ?? ''}`.toLowerCase();
     if (locationKeyword && !haystack.includes(locationKeyword)) return false;
     if (locationExcludeKeyword && haystack.includes(locationExcludeKeyword)) return false;
   }
