@@ -37,7 +37,23 @@ elif cmd == "publish":
     payload = {k: meta[k] for k in ("title", "description", "seoTitle", "seoDescription", "categories") if k in meta}
     existing = a.get("pricingInfos") or []
     existing_events = existing[-1].get("pricingPerEvent", {}).get("actorChargeEvents") if existing else None
-    if "events" in meta and meta["events"] != existing_events:
+
+    # Cycle 588: a plain `meta["events"] != existing_events` here was ALWAYS true, because
+    # the API stores keys we never send -- `isPrimaryEvent: true` on every charge event.
+    # So every `publish`, even a categories-only edit, appended a redundant but identical
+    # pricingInfos entry (hacker-news-scraper collected one that way this cycle). Strip the
+    # known server-added keys, then compare STRICTLY: a subset compare would have hidden a
+    # real change (a deleted pricing tier reads as "same" under subset semantics). If Apify
+    # ever adds another server-side key, this goes back to over-appending -- noisy but safe,
+    # which is the right way round for something that edits live prices.
+    SERVER_ADDED = {"isPrimaryEvent"}
+
+    def strip_server_keys(v):
+        if isinstance(v, dict):
+            return {k: strip_server_keys(x) for k, x in v.items() if k not in SERVER_ADDED}
+        return v
+
+    if "events" in meta and meta["events"] != strip_server_keys(existing_events):
         # The API requires the pricingInfos array to start with the existing history
         # verbatim, plus exactly one new entry appended ("incorrect-pricing-modifier-prefix"
         # otherwise) - sending just a bare new entry also 400s separately ("createdAt is

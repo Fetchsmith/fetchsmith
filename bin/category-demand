@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""category-demand — which Store categories actually convert a cold-start Actor into users?
+
+Added cycle 588. Answers a question `bin/category-rank` cannot: that tool tells you
+where an Actor SITS in a category's browse order; this one tells you whether sitting
+in that category is worth anything at all.
+
+METHOD (all counts come from the public Algolia index `prod_PUBLIC_STORE`, the same
+one apify.com/store's search box queries; no token, no paging, O(1) per number):
+
+  COHORT   = totalUsers between 2 and 20  -- Actors with almost no cumulative traction,
+             i.e. the band every one of our 22 Actors is in (all sit at totalUsers=2).
+             This is the control. Comparing raw category averages instead would just
+             rediscover that big old Actors have lots of users.
+  CONVERTS = cohort members whose stats.totalUsers30Days is >= the --min threshold
+             (default 2: at least one user in the last 30 days who is NOT the owner --
+             our own Actors all read exactly 1, and that 1 is us).
+  rate     = CONVERTS / COHORT, per category.
+
+CAVEAT THAT MUST BE PRINTED WITH ANY NUMBER FROM HERE: Algolia returns
+`exhaustiveNbHits=false` for large result sets -- counts over ~10k are APPROXIMATE
+(repeat runs of the same query drift ~3%). Small categories come back exhaustive.
+The `ex` column carries this per row. The ordering below is a 2-3x spread, far outside
+that noise, but do not quote a single rate to a tenth of a percent unless ex=yes.
+
+Cycle 588 baseline (min=2), categorized cohort base rate 25.4%:
+  best   SPORTS 30.3  MCP_SERVERS 29.7  SOCIAL_MEDIA 29.4  MARKETING 25.2
+  ours   LEAD_GENERATION 18.1  BUSINESS 14.7  DEVELOPER_TOOLS 15.6  AI 15.9
+  worst  GAMES 10.1  OPEN_SOURCE 8.6  EDUCATION 5.4
+Uncategorized Actors (399 of the cohort) convert at 97% -- those are Apify's own
+official listings, which carry no store category. They are excluded from the base rate.
+
+Usage:
+  bin/category-demand              # full table, min=2
+  bin/category-demand --min 3      # stricter threshold (ordering held at 3 in cycle 588)
+  bin/category-demand --json
+Exit 0 always (informational).
+"""
+import json
+import sys
+import time
+import urllib.parse
+import urllib.request
+
+APP = "OW0O5I3QO7"
+KEY = "0ecccd09f50396a4dbbe5dbfb17f4525"
+IDX = "prod_PUBLIC_STORE"
+HIST = "/root/agent/state/category_demand_history.json"
+
+# Cohort bounds: our whole fleet sits at totalUsers=2, so the band is chosen around it.
+COHORT = ["totalUsers>=2", "totalUsers<=20"]
+
+CATS = ["AUTOMATION", "DEVELOPER_TOOLS", "LEAD_GENERATION", "ECOMMERCE", "SOCIAL_MEDIA",
+        "AI", "OTHER", "BUSINESS", "JOBS", "REAL_ESTATE", "SEO_TOOLS", "NEWS", "AGENTS",
+        "VIDEOS", "INTEGRATIONS", "TRAVEL", "MCP_SERVERS", "MARKETING", "OPEN_SOURCE",
+        "EDUCATION", "SPORTS", "FOR_CREATORS", "GAMES"]
+
+
+def query(params):
+    url = f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query"
+    body = json.dumps({"params": urllib.parse.urlencode(params)}).encode()
+    req = urllib.request.Request(url, data=body, headers={
+        "X-Algolia-Application-Id": APP, "X-Algolia-API-Key": KEY,
+        "Content-Type": "application/json"})
+    d = json.load(urllib.request.urlopen(req, timeout=40))
+    return d["nbHits"], bool(d.get("exhaustiveNbHits"))
+
+
+def count(extra_numeric=(), cat=None):
+    p = {"query": "", "hitsPerPage": 0,
+         "numericFilters": json.dumps(COHORT + list(extra_numeric))}
+    if cat:
+        p["facetFilters"] = json.dumps([f"categories:{cat}"])
+    return query(p)
+
+
+def main():
+    args = sys.argv[1:]
+    as_json = "--json" in args
+    minu = 2
+    if "--min" in args:
+        minu = int(args[args.index("--min") + 1])
+    thresh = [f"stats.totalUsers30Days>={minu}"]
+
+    base_n, base_ex = count()
+    base_k, _ = count(thresh)
+    rows = []
+    for c in CATS:
+        n, nex = count(cat=c)
+        k, _ = count(thresh, cat=c)
+        rows.append({"category": c, "cohort": n, "converts": k,
+                     "rate": round(k / n * 100, 1) if n else 0.0, "exhaustive": nex})
+    rows.sort(key=lambda r: -r["rate"])
+    out = {"measured": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "min_users30d": minu,
+           "cohort": "totalUsers 2..20", "base_cohort": base_n, "base_converts": base_k,
+           "base_rate": round(base_k / base_n * 100, 1), "rows": rows}
+
+    if as_json:
+        print(json.dumps(out, indent=2))
+    else:
+        print(f"category-demand: cohort=totalUsers 2..20, converts=totalUsers30Days>={minu}")
+        print("counts over ~10k are APPROXIMATE (ex=no); ordering is 2-3x, well outside that noise\n")
+        print(f"{'category':18} {'cohort':>7} {'conv':>6} {'rate':>6}  ex")
+        for r in rows:
+            print(f"{r['category']:18} {r['cohort']:7} {r['converts']:6} {r['rate']:5.1f}%  "
+                  f"{'yes' if r['exhaustive'] else 'no'}")
+        print(f"\n{'ALL (incl. uncategorized)':26} {base_n:7} {base_k:6} {out['base_rate']:5.1f}%")
+
+    try:
+        hist = json.load(open(HIST))
+    except Exception:
+        hist = []
+    hist.append(out)
+    json.dump(hist, open(HIST, "w"), indent=1)
+
+
+main()

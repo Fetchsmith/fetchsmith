@@ -1,0 +1,173 @@
+[
+ {
+  "measured": "2026-09-21T07:34:15Z",
+  "min_users30d": 2,
+  "cohort": "totalUsers 2..20",
+  "base_cohort": 34629,
+  "base_converts": 9080,
+  "base_rate": 26.2,
+  "rows": [
+   {
+    "category": "SPORTS",
+    "cohort": 185,
+    "converts": 56,
+    "rate": 30.3,
+    "exhaustive": true
+   },
+   {
+    "category": "MCP_SERVERS",
+    "cohort": 1155,
+    "converts": 343,
+    "rate": 29.7,
+    "exhaustive": true
+   },
+   {
+    "category": "SOCIAL_MEDIA",
+    "cohort": 5988,
+    "converts": 1762,
+    "rate": 29.4,
+    "exhaustive": true
+   },
+   {
+    "category": "MARKETING",
+    "cohort": 1536,
+    "converts": 387,
+    "rate": 25.2,
+    "exhaustive": true
+   },
+   {
+    "category": "VIDEOS",
+    "cohort": 1948,
+    "converts": 467,
+    "rate": 24.0,
+    "exhaustive": true
+   },
+   {
+    "category": "TRAVEL",
+    "cohort": 1754,
+    "converts": 403,
+    "rate": 23.0,
+    "exhaustive": true
+   },
+   {
+    "category": "JOBS",
+    "cohort": 4311,
+    "converts": 938,
+    "rate": 21.8,
+    "exhaustive": true
+   },
+   {
+    "category": "REAL_ESTATE",
+    "cohort": 3515,
+    "converts": 742,
+    "rate": 21.1,
+    "exhaustive": true
+   },
+   {
+    "category": "SEO_TOOLS",
+    "cohort": 2957,
+    "converts": 592,
+    "rate": 20.0,
+    "exhaustive": true
+   },
+   {
+    "category": "INTEGRATIONS",
+    "cohort": 1986,
+    "converts": 397,
+    "rate": 20.0,
+    "exhaustive": true
+   },
+   {
+    "category": "AGENTS",
+    "cohort": 2555,
+    "converts": 509,
+    "rate": 19.9,
+    "exhaustive": true
+   },
+   {
+    "category": "FOR_CREATORS",
+    "cohort": 197,
+    "converts": 38,
+    "rate": 19.3,
+    "exhaustive": true
+   },
+   {
+    "category": "NEWS",
+    "cohort": 2928,
+    "converts": 547,
+    "rate": 18.7,
+    "exhaustive": true
+   },
+   {
+    "category": "AUTOMATION",
+    "cohort": 21086,
+    "converts": 3837,
+    "rate": 18.2,
+    "exhaustive": false
+   },
+   {
+    "category": "LEAD_GENERATION",
+    "cohort": 16827,
+    "converts": 3032,
+    "rate": 18.0,
+    "exhaustive": false
+   },
+   {
+    "category": "ECOMMERCE",
+    "cohort": 10219,
+    "converts": 1785,
+    "rate": 17.5,
+    "exhaustive": true
+   },
+   {
+    "category": "AI",
+    "cohort": 6489,
+    "converts": 1034,
+    "rate": 15.9,
+    "exhaustive": true
+   },
+   {
+    "category": "OTHER",
+    "cohort": 5775,
+    "converts": 913,
+    "rate": 15.8,
+    "exhaustive": true
+   },
+   {
+    "category": "DEVELOPER_TOOLS",
+    "cohort": 17878,
+    "converts": 2772,
+    "rate": 15.5,
+    "exhaustive": false
+   },
+   {
+    "category": "BUSINESS",
+    "cohort": 5966,
+    "converts": 879,
+    "rate": 14.7,
+    "exhaustive": true
+   },
+   {
+    "category": "GAMES",
+    "cohort": 99,
+    "converts": 10,
+    "rate": 10.1,
+    "exhaustive": true
+   },
+   {
+    "category": "OPEN_SOURCE",
+    "cohort": 706,
+    "converts": 61,
+    "rate": 8.6,
+    "exhaustive": true
+   },
+   {
+    "category": "EDUCATION",
+    "cohort": 331,
+    "converts": 18,
+    "rate": 5.4,
+    "exhaustive": true
+   }
+  ]
+ }
+]

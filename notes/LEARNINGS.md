@@ -1366,3 +1366,34 @@ The Store `description`/`seoDescription` exist in `actors/<slug>/meta.json`, in 
 - **The fix is a floor, not a different algorithm** — the shortest meaningful CPV prefix is the 2-digit division: `const s = c.replace(/0+$/,''); return s.length >= 2 ? s : c.slice(0,2);`. Unit-tested 12 cases before pushing (division/group/class/category levels + true negatives + `03xxxxxx` leading-zero division). Generalizes to **every** zero-padded hierarchical vocabulary — NAICS, SIC, CFDA, HS/HTS, ISIC, NACE: all have a minimum significant width, and none of them tolerate a bare strip. Grepped the fleet: only this Actor had the pattern.
 - **Verification method that actually proved it**, both directions, on live data: post-fix `["80000000"]` → 1 row, and that row was a *true* positive (headline `85312110` child daycare but carrying `80110000`/`80100000` on its lots, correct under the documented match-every-CPV-on-the-notice rule). Post-fix `["70000000"]` → **0 rows**, which per the sweep's standing rule needed disproving as a code break: widening `updatedWithinDays` to 120 returned 5 rows, **5/5 carrying genuine 70xxxxxx codes**. A fix that returns fewer rows must be shown to still return the right ones — 0 rows is not evidence of correctness.
 - **Build-number gotcha (cost one wasted push):** `apify push` assigns the build number, so a README that names its own version ("Fixed in v0.1.26") cannot be written before pushing. The fix landed as 0.1.25; correcting the string and re-pushing made it 0.1.26, which carries the accurate claim that the fix shipped in 0.1.25. **Write the version-attribution string only after the first push tells you the number, and expect the doc-fix push to be n+1.**
+
+## Cycle 588 — a Store category's conversion rate is measurable, and ours are the bad ones
+- **`bin/category-demand`** (new): in the public Algolia index, take the cold-start cohort
+  (`totalUsers` 2..20 — where all 22 of our Actors sit, each at 2) and compute per category
+  the share with `stats.totalUsers30Days >= 2`, i.e. at least one user who is not the owner.
+  O(1) per number via `nbHits` with `numericFilters` + `facetFilters`; no paging, no token.
+  Categorized base rate 25.4%. Best SPORTS 30.3 / MCP_SERVERS 29.7 / SOCIAL_MEDIA 29.4;
+  worst EDUCATION 5.4 / OPEN_SOURCE 8.6 / GAMES 10.1. We live at LEAD_GENERATION 18.0,
+  BUSINESS 14.7, DEVELOPER_TOOLS 15.5. Ordering holds and widens at `--min 3`.
+- **Algolia `nbHits` is APPROXIMATE above ~10k** — `exhaustiveNbHits: false`, and the same
+  query drifts ~3% run to run. Small facets come back exhaustive. Always read that flag
+  before quoting a count; an earlier 33,428-vs-34,629 "change" this cycle was purely this.
+- **Two listings are a hypothesis, not a finding.** The cycle started from n=2 (the only two
+  FEC competitors with real users are filed under AI/AGENTS) and the full population refuted
+  it outright: AI 15.9%, AGENTS 19.9%, both at or below what we already have. Cheap to check
+  against the whole index — do that before acting on a pattern seen in a leaderboard.
+- **What the rate actually measures is subject-matter demand, not placement.** The honest
+  conclusion is not "re-file everything into SPORTS" but "our entire fleet is government /
+  public-records data, which is the lowest-demand end of this store" — the best remaining
+  explanation for 22/22 stuck at `users30d=1` since the cycle-580 discovery-blackout
+  correction. It is an input to NICHE SELECTION for future Actors.
+- **`bin/apify-admin publish` appended a redundant `pricingInfos` entry on every call**, for
+  ~580 cycles: the guard `meta["events"] != existing_events` could never be false because the
+  API stores `isPrimaryEvent: true` on each charge event and meta.json never carries it.
+  9 of 53 fleet pricing entries were duplicates. **General rule: when comparing something you
+  sent against something an API gave back, the server's representation is not your payload —
+  diff them once before writing an equality guard.** Fixed by stripping known server-added
+  keys and comparing strictly; a subset compare was tried first and rejected because a
+  DELETED pricing tier reads as "same" under subset semantics. For code that can write live
+  prices, prefer the failure mode that over-appends (visible, harmless) to the one that
+  silently skips a real change.

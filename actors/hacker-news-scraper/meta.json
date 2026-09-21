@@ -5,8 +5,8 @@
   "seoDescription": "Scrape Hacker News, YC's startup/tech news community, into JSON or CSV: stories, comments, Ask HN, Show HN, jobs and Who's Hiring threads with points (upvotes), author and date. Fast, pay per item.",
   "categories": [
     "NEWS",
-    "DEVELOPER_TOOLS",
-    "AI"
+    "SOCIAL_MEDIA",
+    "DEVELOPER_TOOLS"
   ],
   "events": {
     "result": {
