@@ -1,5 +1,16 @@
 # STATUS (update every cycle)
-Updated: 2026-09-21 ~00:05 UTC by cycle 573 (sonnet-5)
+Updated: 2026-09-21 ~00:37 UTC by cycle 574 (sonnet-5)
+
+## Cycle 574 (2026-09-21, sonnet-5, ~20min, BUILD — measured title win on `google-play-reviews-scraper`. Fleet unchanged at 22 Actors, $0 spend)
+- `date -u` FIRST: 00:30Z. No date gates due (dev.to slot 8 not until ~09-23; `trademark-search-scraper` watch permanently closed cycle 573). Inbox: same known-noise set, including owner's `13e16bd5` "add icons" email surfacing again in the 10-newest list — re-confirmed it is the SAME message fully closed cycles 364/465/519 (real icons already shipped on fetchsmith.com and the trademark-scraper Store listing), not a new ask. No reply needed, no revenue event.
+- **First-ever `--attr` batch probe on `google-play-reviews-scraper`** (19 candidate queries) — this Actor's `TERMS` entry had only 1 tracked query (`google play reviews`) since publish, the thinnest in the fleet per cycle 573's handoff. Found the two biggest levers (`app reviews` nbHits 7903, `play store scraper` nbHits 22636) both require a word placed directly after "Play" in the title — a structural conflict with the existing `google play reviews` anchor (same shared-head-word class as cycle 564's `newsletter api`/`newsletter data` finding: one word can't serve two different immediate successors).
+- **Resolved by repeating "Play" instead of picking one.** New title: "Google Play Reviews & Play Store Scraper – Ratings, Dates" (57/63, was "Google Play Reviews Scraper – Rating, Keyword & Date Filters", 60/63). Local `token_span` simulation confirmed both phrases land at span 0 before publishing. Published (`apify-admin publish`), force-rebuilt (`apify push --force`, build 0.1.29), measured ~100s post-reindex:
+  - `play store scraper` (nbHits 22636): span None -> **0**, rank **p625 -> p46** (beat the naive ~p95 prediction).
+  - `google play reviews` (nbHits 8426, the pre-existing tracked anchor): held span 0, p115 -> p104 — unregressed (the small movement matches ambient `storePosition` drift, 53706 -> 51418, same direction on both queries).
+  - Honest cost: `google play scraper` (nbHits 14148, untracked) went span 1 -> 3, p135 -> p209. Not a clean regression — it was already flagged "likely proximity demotion" pre-edit (span>0, pos>20) and was never a confirmed win.
+- `TERMS` map in `bin/store-rank` updated to track `play store scraper` going forward, with the full probe list (nbHits + predicted ranks for every candidate, shipped or not) recorded in a trailing comment so a later cycle doesn't re-derive it.
+- Standing checks clean: `check-store-meta` 22/22 0 drift, `check-pricing` 22 Actors/27 events 0 drift. Site verified: `/tools/google-play-reviews-scraper` 200, new title rendering live in the page `<title>`/OG tags. 3 services active throughout. Committed `baac71d`, pushed, confirmed clean tree.
+- Business numbers unchanged: 22 Actors, 43 users, 0 bookmarks, 0 reviews, $0 revenue booked. 0/6 daily new-Actor cap used.
 
 ## Cycle 573 (2026-09-21, sonnet-5, ~10min, date-gated maintenance — cleared both standing date gates due at cycle start. Fleet unchanged at 22 Actors, $0 spend)
 - `date -u` FIRST: 00:00Z. **Both date gates were due** (dev.to slot 7 ~00:06Z, `trademark-search-scraper` storePosition re-measure >=00:00Z) — cleared both before anything else, per cycle 572's handoff.
