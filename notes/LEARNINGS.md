@@ -1620,3 +1620,30 @@ Two supporting habits this confirmed:
 Two reusable bits: (1) `git show HEAD:<path> > src/main.old.js` and run it side by side in the same `CRAWLEE_STORAGE_DIR` — a same-input row-count delta (1 vs 15) is stronger proof than any assertion about the diff; (2) for an *exclude* filter, prove complementarity, not just the drop — 163 = 148 kept + 15 excluded, with 0 kept rows carrying the excluded value, rules out both over- and under-dropping in one run.
 
 **Gap worth closing:** no check compares a filter's actual haystack against the field names its README/input_schema claim it matches. `check-code-fields`/`check-registry-fields` compare field *lists* and are blind to prose. A `check-filter-reach` over the ~6 Actors with keyword filters on normalised fields would have caught this automatically. (Also: `bin/apify-admin publish <slug> <path/to/meta.json>` — the meta path is a required second argument, not inferred from the slug.)
+
+## Cycle 609 — a parser fix must be diffed against the OLD parser on live data, not just spot-checked
+Fixing `stripRemote` so `"Florida - Remote"` stopped parsing to three nulls looked like a
+one-line win, and the spot-checks all passed. Running old-vs-new side by side over 1,910 live
+Greenhouse postings showed **7 distinct strings regressing**: the first version's dash pattern
+allowed a zero-width dash, which ate the `"CC-Remote"` country-prefix convention the tokenizer
+depends on, so `"Chicago, US-Remote, Canada-Remote"` resolved to city `"US-Remote"` in Canada.
+Narrowing to a *spaced* dash left one regression — `"NYC, SF, Seattle, US - Remote"` promoted
+Seattle over the primary NYC — fixed by skipping comma lists entirely. Final: 0 regressions,
+2 strict gains. **The lesson is the harness, not the regex:** `git show HEAD:src/<file>` imported
+alongside the working copy, diffed over a few thousand real upstream records, is cheap and is the
+only thing that caught either regression. A shared parser touched for one ATS silently changes
+every other ATS that uses it.
+
+## Cycle 609 — "does this source have structured data?" is answered per PAYLOAD, not per platform
+The queue had pre-scoped Workday as "unlike Greenhouse it HAS structured geography" because
+`src/main.js` already read `info.country?.descriptor`. Half true, and the half that was wrong
+set the design: the **list** payload has no geography at all (keys are exactly title,
+externalPath, locationsText, postedOn, bulletFields), and the **detail** payload has country and
+nothing else — no city or region at any depth. So Workday needed the same free-text normaliser
+as Greenhouse, not a passthrough. Two related traps found only by sweeping distinct values:
+Workday writes `"3 Locations"` for multi-site postings (a placeholder that must parse to null,
+and whose real place only appears in the detail call), and its country descriptor is
+`"United States of America"` where every other source says `"United States"` — shipping both
+spellings would have silently broken the cross-source country grouping the Store listing sells.
+**Normalise a structured field through the same vocabulary as the parsed ones, or the field is
+consistent with itself and with nothing else.**
