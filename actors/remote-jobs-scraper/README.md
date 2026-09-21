@@ -8,9 +8,9 @@ Pulls live remote job postings from four documented, public, no-login job-board 
 
 | Source | What it covers | Salary data |
 |---|---|---|
-| [Remotive](https://remotive.com) | Remote tech, design, marketing, support roles, worldwide. Its public feed is small — **20 live postings total on 2026-09-21**, regardless of the `limit` you ask for | free-text range (`salaryText`) |
-| [Remote OK](https://remoteok.com) | The ~100 most recent Remote OK postings | numeric USD range on many rows |
-| [Jobicy](https://jobicy.com) | The 50 most recent Jobicy postings | numeric range + currency + period on many rows |
+| [Remotive](https://remotive.com) | Remote tech, design, marketing, support roles, worldwide. Its public feed is small — **20 live postings total on 2026-09-21**, regardless of the `limit` you ask for | free-text range, parsed to numbers |
+| [Remote OK](https://remoteok.com) | The ~100 most recent Remote OK postings | numeric USD range on many rows, rendered to text |
+| [Jobicy](https://jobicy.com) | The 50 most recent Jobicy postings | numeric range + currency + period on many rows, rendered to text |
 | [Arbeitnow](https://www.arbeitnow.com) | A general European board — **only** rows flagged remote are returned | none |
 
 Every row says which board it came from (`source`, `sourceSite`) and links to the original posting (`url`).
@@ -63,9 +63,9 @@ One object per unique posting:
   "category": "Design",
   "tags": ["api", "django", "docker", "frontend", "python", "react"],
   "salaryText": "$90k - $105k",
-  "salaryMin": null,
-  "salaryMax": null,
-  "salaryCurrency": null,
+  "salaryMin": 90000,
+  "salaryMax": 105000,
+  "salaryCurrency": "USD",
   "salaryPeriod": null,
   "publishedAt": "2026-09-18T16:43:22.000Z",
   "alsoOn": [],
@@ -80,7 +80,15 @@ Remote boards publish the region a candidate must be in (`"Worldwide"`, `"USA, C
 
 ### Salary
 
-`salaryMin`/`salaryMax` are only set when the board publishes numbers (Remote OK, Jobicy). Remote OK's zeros mean "not disclosed" and are normalized to `null`, not `0`. Remotive publishes a free-text range, kept verbatim in `salaryText`. **No currency conversion is performed** — `salaryCurrency` tells you what the number is in.
+Every board publishes salary in exactly one shape and leaves the other empty: Remotive sends a free-text range only (`"$90k - $105k"`), Remote OK and Jobicy send numbers only. **You get both columns filled from whichever one the board sent**, so you can sort and filter numerically across all sources and still show a human-readable range:
+
+- Remotive's text is parsed into `salaryMin`/`salaryMax`/`salaryCurrency` (`"$31,2k- $52k"` → `31200`–`52000` USD; `k`/`K` suffixes, `$ € £ ₹ ¥`, spelled-out codes like `CAD`, thousands commas and European decimal commas all handled). `"up to $90k"` sets only `salaryMax`, `"from $60k"` only `salaryMin`.
+- Remote OK's and Jobicy's numbers are rendered into `salaryText` (`"$250,000 - $315,000 per year"`, `"Up to $127,000 per year"`).
+- A value the board itself published is **never** overwritten — parsing only fills a field that was empty.
+
+`salaryPeriod` is set **only when the posting states it** (`/hour`, `per year`, Jobicy's own field). We do not infer a period from the size of the number: `"$90k - $105k"` is almost certainly annual, but "almost certainly" is not something we will put in a data field, so it stays `null`. Text we cannot parse at all (`"Competitive"`) leaves the numeric fields `null` rather than guessing.
+
+Remote OK's zeros mean "not disclosed" and are normalized to `null`, not `0`. **No currency conversion is performed** — `salaryCurrency` tells you what the number is in, and a bare `$` is read as USD.
 
 ## Pricing
 

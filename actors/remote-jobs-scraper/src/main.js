@@ -152,6 +152,124 @@ function num(v) {
 
 const norm = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+// ---------------------------------------------------------------- salary normalization
+// Every board publishes salary in exactly one shape and leaves the other empty: Remotive
+// gives a free-text range only ("$90k - $105k"), Remote OK and Jobicy give numbers only.
+// Untranslated, that means `salaryText` is structurally null on 3 of 4 sources and
+// `salaryMin`/`salaryMax` are structurally null on Remotive, even when the board plainly
+// published the figure. Both directions are filled below; a value the board itself sent is
+// never overwritten.
+
+const CURRENCY_SYMBOLS = { $: 'USD', '€': 'EUR', '£': 'GBP', '₹': 'INR', '¥': 'JPY' };
+const SYMBOL_FOR = { USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥' };
+
+// Only periods the text states outright. We deliberately do NOT infer a period from the
+// magnitude ("$90k" is almost certainly annual, but "almost certainly" is not a fact we
+// are willing to sell), so salaryPeriod stays null unless the board said it.
+// NB: these must not be wrapped in a leading \b — the "/hour" form starts with a
+// non-word character, so a \b in front of the alternation can never match it.
+const PERIOD_PATTERNS = [
+  [/(\bper\s*hour\b|\ban\s*hour\b|\bhourly\b|\/\s*hours?\b|\/\s*hr\b|\bp\/h\b)/i, 'hourly'],
+  [/(\bper\s*day\b|\ba\s*day\b|\bdaily\b|\/\s*days?\b)/i, 'daily'],
+  [/(\bper\s*week\b|\ba\s*week\b|\bweekly\b|\/\s*weeks?\b|\/\s*wk\b)/i, 'weekly'],
+  [/(\bper\s*month\b|\ba\s*month\b|\bmonthly\b|\/\s*months?\b|\/\s*mo\b)/i, 'monthly'],
+  [/(\bper\s*year\b|\ba\s*year\b|\byearly\b|\bannually\b|\bannual\b|\bper\s*annum\b|\/\s*years?\b|\/\s*yr\b)/i, 'yearly'],
+];
+
+// "up to $90k" is a ceiling and "from $90k" is a floor; reading either as an exact figure
+// would misreport the posting.
+const CEILING_RE = /\b(up\s*to|at\s*most|maximum|max|under|below)\b/i;
+const FLOOR_RE = /\b(from|starting\s*at|start(s|ing)?\s*from|at\s*least|minimum|min)\b/i;
+
+// "105,000" is a thousands separator; "31,2" is a European decimal comma. The digit count
+// after the comma is what tells them apart.
+function amountFromToken(digits, kSuffix) {
+  const cleaned = digits.replace(/,(\d{3})\b/g, '$1').replace(/,(\d{1,2})\b/g, '.$1').replace(/\s/g, '');
+  let n = Number(cleaned);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (kSuffix) n *= 1000;
+  return Math.round(n);
+}
+
+function parseSalaryText(text) {
+  const s = String(text ?? '').trim();
+  if (!s) return null;
+
+  let currency = null;
+  for (const [sym, code] of Object.entries(CURRENCY_SYMBOLS)) {
+    if (s.includes(sym)) { currency = code; break; }
+  }
+  // A spelled-out code wins over a bare symbol ("CAD $80k" is Canadian, not US).
+  const code = s.match(/\b(USD|EUR|GBP|CAD|AUD|NZD|CHF|SEK|NOK|DKK|PLN|INR|JPY|SGD|BRL|ZAR|MXN)\b/i);
+  if (code) currency = code[1].toUpperCase();
+
+  let period = null;
+  for (const [re, name] of PERIOD_PATTERNS) {
+    if (re.test(s)) { period = name; break; }
+  }
+
+  const tokens = [...s.matchAll(/(\d[\d.,\s]*)\s*(k\b|k(?=\W)|k$)?/gi)]
+    .map((m) => amountFromToken(m[1].trim(), Boolean(m[2])))
+    .filter((n) => n !== null);
+  if (!tokens.length) return null;
+
+  // A range is the first two figures; anything beyond that (a "401k", a year) is noise we
+  // do not guess at. A lone figure is an exact value unless the text marks it as a bound.
+  const [a, b] = tokens;
+  if (b === undefined) {
+    if (CEILING_RE.test(s)) return { min: null, max: a, currency, period };
+    if (FLOOR_RE.test(s)) return { min: a, max: null, currency, period };
+    return { min: a, max: a, currency, period };
+  }
+  const min = Math.min(a, b);
+  const max = Math.max(a, b);
+  return { min, max, currency, period };
+}
+
+const PERIOD_WORDS = {
+  hourly: 'per hour', daily: 'per day', weekly: 'per week',
+  monthly: 'per month', yearly: 'per year',
+};
+
+function formatSalary({ min, max, currency, period }) {
+  if (!min && !max) return null;
+  const sym = currency ? (SYMBOL_FOR[currency] ?? null) : null;
+  const money = (n) => {
+    const digits = Number(n).toLocaleString('en-US');
+    if (sym) return `${sym}${digits}`;
+    return currency ? `${digits} ${currency}` : digits;
+  };
+  let body;
+  if (min && max && min !== max) body = `${money(min)} - ${money(max)}`;
+  else if (min && max) body = money(min);
+  else if (min) body = `From ${money(min)}`;
+  else body = `Up to ${money(max)}`;
+  const suffix = period ? ` ${PERIOD_WORDS[period] ?? period}` : '';
+  return `${body}${suffix}`;
+}
+
+// Fills whichever half of the salary picture the board left empty. Never overwrites a
+// value the board actually sent.
+function normalizeSalary(row) {
+  if (!row.salaryText && (row.salaryMin || row.salaryMax)) {
+    row.salaryText = formatSalary({
+      min: row.salaryMin,
+      max: row.salaryMax,
+      currency: row.salaryCurrency,
+      period: row.salaryPeriod,
+    });
+  } else if (row.salaryText && !row.salaryMin && !row.salaryMax) {
+    const parsed = parseSalaryText(row.salaryText);
+    if (parsed) {
+      row.salaryMin = parsed.min;
+      row.salaryMax = parsed.max;
+      row.salaryCurrency = row.salaryCurrency ?? parsed.currency;
+      row.salaryPeriod = row.salaryPeriod ?? parsed.period;
+    }
+  }
+  return row;
+}
+
 // ---------------------------------------------------------------- per-source fetchers
 // Each returns an array of rows already in our normalized shape.
 
@@ -300,7 +418,7 @@ try {
   const collected = [];
   for (const src of sources) {
     try {
-      const rows = await FETCHERS[src]();
+      const rows = (await FETCHERS[src]()).map(normalizeSalary);
       const kept = rows.filter(keep);
       log.info(`${src}: fetched ${rows.length}, ${kept.length} match the filters.`);
       collected.push(...kept);
