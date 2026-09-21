@@ -26,8 +26,8 @@ Extract the full product catalog of any Shopify store (or a single collection or
 | `maxResults` | integer | Total cap |
 | `proxyConfiguration` | object | Route storefront requests through Apify Proxy (default on). Use a country-specific residential group to read that country's prices and currency, or to get past IP rate-limiting. Accounts without proxy access fall back to a direct connection instead of failing. |
 | `detailLevel` | string | `"basic"` (default) reads only the products feed. `"full"` also fetches each product's live page **and** its per-product `.js` route for `barcode`, `inventoryQuantity`, `inventoryManagement`, `inventoryPolicy`, `quantityRule`, `totalInventory`, `seoTitle`, `seoDescription`, `ratingValue`, `reviewCount`, `hasSubscriptionOption` and `subscriptionPlans` — none of which the bulk `products.json` feed carries — priced as one extra event per product (see Pricing). Both requests run in parallel, so it costs no extra wall-clock. |
-| `watchLabel` | string | Turn the run into a **catalog watch**. The first run under a label records every product's price and availability and returns nothing (charges nothing); later runs under the same label return only products that are new, changed price, or changed stock status. See *Watch mode* below. |
-| `watchEvents` | array | Restrict a watch to some change types only: `new`, `priceDrop`, `priceIncrease`, `backInStock`, `outOfStock`. Empty (default) reports all five. Ignored without `watchLabel`. |
+| `watchLabel` | string | Turn the run into a **catalog watch**. The first run under a label records every product's price and availability and returns nothing (charges nothing); later runs under the same label return only products that are new, changed price, changed stock status, or have been removed from the catalog. See *Watch mode* below. |
+| `watchEvents` | array | Restrict a watch to some change types only: `new`, `priceDrop`, `priceIncrease`, `backInStock`, `outOfStock`, `delisted`. Empty (default) reports all six. Ignored without `watchLabel`. |
 | `webhookUrl` | string | Optional http(s) URL that receives a small JSON POST when the run finishes (products pushed, per-change-type counts, dataset id). Best-effort — a failing webhook never fails the run or changes the bill. |
 
 ## Output (one item per product)
@@ -85,10 +85,19 @@ Scraping a competitor's catalog every morning normally means re-buying the same 
 ```
 
 - **Run 1** records each product's price and availability and returns **0 products, charged $0** — it's a baseline.
-- **Every run after that** returns only the products that moved. Each row is a normal product row plus `watchChange` (`new` / `priceDrop` / `priceIncrease` / `backInStock` / `outOfStock`), `watchChanges` (all changes on that product), `previousPriceMin`, `previousAvailable` and `priceChange` (the signed difference).
+- **Every run after that** returns only the products that moved. Each row is a normal product row plus `watchChange` (`new` / `priceDrop` / `priceIncrease` / `backInStock` / `outOfStock` / `delisted`), `watchChanges` (all changes on that product), `previousPriceMin`, `previousAvailable` and `priceChange` (the signed difference).
 - Unchanged products are never pushed and **never charged**, so a daily watch on a stable catalog costs nothing on quiet days.
 - Adding a store URL to an existing label baselines **just that store**, so you aren't billed for its whole catalog as "new". Changing a filter (`onlyAvailable`, `searchQuery`, `vendors`, `productTypes`, `minPrice`, `maxPrice`, `onSaleOnly`, `minDiscountPercent`) starts a fresh baseline, since it's a different watched set.
 - In watch mode `maxProductsPerStore` caps how many products are **scanned** per store (the diff has to walk the feed), so set it above the store's catalog size; the log warns when the sweep was cut short.
+
+### `delisted` — products that are gone
+A `delisted` row means a product that was in the baseline is no longer in the store's catalog at all: pulled, discontinued or sold out permanently. It is the one watch event with a coverage precondition, because "absent" and "we didn't look" are the same observation from the outside:
+
+- It is only produced for a store whose feed this run walked **end to end**. If `maxProductsPerStore` cut the sweep short, `maxResults` or your PPE budget stopped it mid-flight, the run ran out of time, or the store errored, **no `delisted` rows are produced for that store** — the run never guesses, so you are never charged for a catalog that is still there.
+- Products that are still on the store but no longer match your filters (e.g. a price rose above `maxPrice`) are **not** delisted. Coverage is measured on the raw feed, before any filter runs.
+- If more than half a store's baseline (and more than 25 products) goes missing at once, the run reports **none** of it and logs why — a collection being emptied or re-scoped looks identical to a mass delist from the outside. They stay in the baseline, so a genuine shutdown still surfaces as the catalog shrinks past the guard.
+- A delisted row carries `id`, `handle`, `url`, `store`, `previousPriceMin` and `previousAvailable`; the product-detail fields are `null`, because there is no longer a product to read them from. The `url` is the product's old URL — it 404s by definition, and is there to identify the product.
+- Once reported, the product leaves the baseline, so you are charged for it **once**. If it comes back, it returns as `new`.
 - Pair it with `webhookUrl` and Apify's scheduler to get a ping only when something actually changes.
 
 ## Pricing
@@ -115,7 +124,7 @@ Scraping a competitor's catalog every morning normally means re-buying the same 
 **Can I set a minimum discount instead of "any discount"?** Yes, set `minDiscountPercent` (e.g. `30` for "30% off or more") — it reads the same `discountPercent` field `onSaleOnly` checks, just with a floor. A product with no compare-at price at all is excluded, not treated as a 0% discount that happens to fail the floor.
 **Can I filter to specific brands or product types without a keyword search?** Yes — `vendors` and `productTypes` are OR-matched lists (e.g. `vendors: ["Allbirds","Rothy's"]` returns products from either brand), unlike `searchQuery`, which is AND-of-words across a single combined haystack and can't express "brand A or brand B". Both read fields already on every row, so there's no extra request cost, and both combine with every other filter (including each other) via AND — only the entries within one list are OR'd together.
 
-**Can I monitor a store for price drops instead of re-scraping the whole catalog?** Yes — set `watchLabel` (optionally narrowed with `watchEvents`). The first run under that label is a free baseline that returns nothing; every later run returns only new products, price changes and stock flips, each row carrying `watchChange`, `previousPriceMin`, `previousAvailable` and `priceChange`. Products that didn't move are never pushed and never charged, so a scheduled daily watch costs nothing on days when the store doesn't change. See *Watch mode* above.
+**Can I monitor a store for price drops instead of re-scraping the whole catalog?** Yes — set `watchLabel` (optionally narrowed with `watchEvents`). The first run under that label is a free baseline that returns nothing; every later run returns only new products, price changes, stock flips and products that have disappeared from the catalog (`delisted`), each row carrying `watchChange`, `previousPriceMin`, `previousAvailable` and `priceChange`. Products that didn't move are never pushed and never charged, so a scheduled daily watch costs nothing on days when the store doesn't change. See *Watch mode* above.
 
 ## Related guides
 Engineering write-ups behind this Actor:

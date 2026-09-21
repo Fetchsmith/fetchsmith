@@ -56,7 +56,7 @@ if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeU
 // value per product (price + availability), not just an id.
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0;
-const WATCH_EVENTS = ['new', 'priceDrop', 'priceIncrease', 'backInStock', 'outOfStock'];
+const WATCH_EVENTS = ['new', 'priceDrop', 'priceIncrease', 'backInStock', 'outOfStock', 'delisted'];
 const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
 const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
 if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
@@ -92,9 +92,21 @@ function watchKeyFor(label) {
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
-const watchPrev = new Map(); // productId -> { price, avail } as of the last run under this label
-const watchNow = new Map(); // productId -> { price, avail } seen in THIS run
+const watchPrev = new Map(); // productId -> { price, avail, store, handle } as of the last run under this label
+const watchNow = new Map(); // productId -> { price, avail, store, handle } seen in THIS run
 const seededStores = new Set(); // endpoint URLs already baselined under this label
+// A product missing from this run is only "delisted" if the run can PROVE it walked that store's
+// whole feed — otherwise a scan cap, a maxResults stop, the time budget or a mid-sweep error would
+// bill the buyer for a catalog that is still there. Populated only for stores whose paged sweep ran
+// to the end of the feed: endpoint URL -> every product id the feed returned, BEFORE any filter (a
+// product that is still on the store but no longer matches "maxPrice" is not delisted).
+const watchStoreSweeps = new Map();
+// Guard against the one benign case that looks exactly like a mass delist: a collection emptied or
+// re-scoped. Above this share (and above the floor, so a genuinely tiny store can still fully
+// close) the run reports nothing and charges nothing rather than guessing.
+const DELIST_SUSPICIOUS_SHARE = 0.5;
+const DELIST_SUSPICIOUS_MIN = 25;
+const watchDeliveredDelisted = new Set(); // reported gone -> dropped from the baseline so it is not re-reported
 let watchUnchanged = 0;
 let watchEventsFiltered = 0; // a real change the buyer's watchEvents list excluded
 let watchSeededThisRun = 0; // rows recorded as baseline instead of delivered
@@ -106,8 +118,20 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.products)) {
     watchRecord = existing;
-    for (const [id, price, avail] of existing.products) watchPrev.set(String(id), { price: price ?? null, avail: avail == null ? null : !!avail });
-    for (const s of existing.seededStores ?? []) seededStores.add(String(s));
+    // storeIdx/handle (elements 4 and 5) were added later: records written before that are
+    // 3-element tuples, so their products have no store attribution and can never be reported as
+    // delisted. They pick attribution up the first time this run sees them again.
+    const storeList = (existing.seededStores ?? []).map(String);
+    for (const [id, price, avail, storeIdx, handle] of existing.products) {
+      const watchBaselineEntry = { // bookkeeping, not a dataset row (see bin/check-code-fields)
+        price: price ?? null,
+        avail: avail == null ? null : !!avail,
+        store: typeof storeIdx === 'number' ? storeList[storeIdx] ?? null : null,
+        handle: handle ?? null,
+      };
+      watchPrev.set(String(id), watchBaselineEntry);
+    }
+    for (const s of storeList) seededStores.add(s);
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchPrev.size} product(s) across ${seededStores.size} store URL(s). This run returns only products that are new `
@@ -124,11 +148,18 @@ if (watchMode) {
 }
 async function saveWatchRecord() {
   if (!watchMode || !watchStore) return;
-  // Products not seen this run (deeper than the scan cap, filtered out, or delisted) keep their
-  // old baseline — a truncated sweep must not make the next run re-announce them as "new".
+  // Products not seen this run (deeper than the scan cap, or filtered out) keep their old baseline
+  // — a truncated sweep must not make the next run re-announce them as "new". The exception is a
+  // product already DELIVERED as delisted: keeping it would re-report it on every later run.
+  const storeList = [...seededStores];
+  const storeIdxOf = new Map(storeList.map((s, i) => [s, i]));
+  const row = (id, v) => {
+    const idx = v.store != null ? storeIdxOf.get(v.store) : undefined;
+    return [id, v.price, v.avail == null ? null : v.avail ? 1 : 0, idx ?? null, v.handle ?? null];
+  };
   const merged = [];
-  for (const [id, v] of watchPrev) if (!watchNow.has(id)) merged.push([id, v.price, v.avail == null ? null : v.avail ? 1 : 0]);
-  for (const [id, v] of watchNow) merged.push([id, v.price, v.avail == null ? null : v.avail ? 1 : 0]);
+  for (const [id, v] of watchPrev) if (!watchNow.has(id) && !watchDeliveredDelisted.has(id)) merged.push(row(id, v));
+  for (const [id, v] of watchNow) merged.push(row(id, v));
   const kept = merged.slice(-WATCH_KEEP);
   await watchStore.setValue(watchKey, {
     ...watchRecord,
@@ -136,7 +167,7 @@ async function saveWatchRecord() {
     fingerprint: watchRecord.fingerprint,
     lastRunAt: new Date().toISOString(),
     runCount: (watchRecord.runCount ?? 0) + 1,
-    seededStores: [...seededStores],
+    seededStores: storeList,
     productCount: kept.length,
     products: kept,
   });
@@ -144,9 +175,10 @@ async function saveWatchRecord() {
 }
 // Records the product in this run's baseline and decides whether it is a deliverable change.
 // Returns null for "record it, do not push and do not charge".
-function watchVerdict(item, storeSeeding) {
+function watchVerdict(item, storeSeeding, storeUrl) {
   const id = String(item.id);
-  watchNow.set(id, { price: item.priceMin, avail: item.available });
+  const watchBaselineEntry = { price: item.priceMin, avail: item.available, store: storeUrl, handle: item.handle ?? null }; // bookkeeping, not a dataset row
+  watchNow.set(id, watchBaselineEntry);
   if (storeSeeding) { watchSeededThisRun += 1; return null; }
   const prev = watchPrev.get(id);
   const changes = [];
@@ -519,6 +551,10 @@ for (const raw of storeUrls) {
   // buyer for that store's entire catalog as "new products".
   const storeSeeding = watchMode && !seededStores.has(ep.url);
   if (storeSeeding && watchRecord?.runCount) log.info(`${ep.origin}: not in the baseline for "${watchLabel}" yet — baselining this store this run instead of reporting its whole catalog as new.`);
+  // Every product id this store's feed returned, before any filter, plus whether the sweep actually
+  // reached the end of the feed. Only both together license a "delisted" verdict below.
+  const seenAllIds = new Set();
+  let sweptToEnd = false;
   try {
     const currency = await currencyFor(ep.origin);
     if (ep.kind === 'product') {
@@ -534,7 +570,7 @@ for (const raw of storeUrls) {
             // Watch mode runs on the shaped row (it compares priceMin/available) but before the
             // paid `detailLevel:"full"` fetch and before pushResult() charges, so an unchanged
             // product costs the buyer nothing at all.
-            const verdict = watchMode ? watchVerdict(item, storeSeeding) : {};
+            const verdict = watchMode ? watchVerdict(item, storeSeeding, ep.url) : {};
             if (verdict) {
               Object.assign(item, verdict);
               // Unlike inventory fields, subscription/quantity-rule data only lives on the `.js`
@@ -554,23 +590,27 @@ for (const raw of storeUrls) {
       for (let page = 1; !scanCapped() && keepGoing; page++) {
         if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
         const products = await fetchProductsPage(ep, page);
-        if (!products.length) break;
+        // An empty page after page 1 is the end of the feed (page 1 is re-confirmed inside
+        // fetchProductsPage), so the sweep is complete — that is exactly the "store emptied" case.
+        if (!products.length) { sweptToEnd = true; break; }
         seenBeforeFilter += products.length;
         for (const p of products) {
+          seenAllIds.add(String(p.id)); // coverage is measured BEFORE the filters, never after
           if (!watchMode && got >= perStore) break;
           if (onlyAvailable && !passesAvailability(p)) continue;
           if (!matchesSearch(p)) continue;
           if (!matchesVendorType(p)) continue;
           const item = shape(p, ep.origin, currency);
           if (!passesShapedFilters(item)) continue; // before enrichment/charging: never bill a filtered-out product
-          const verdict = watchMode ? watchVerdict(item, storeSeeding) : {};
+          const verdict = watchMode ? watchVerdict(item, storeSeeding, ep.url) : {};
           if (!verdict) continue; // watch mode: recorded in the baseline, never pushed, never charged
           Object.assign(item, verdict);
           if (detailLevel === 'full') await enrichWithDetail(item, ep.origin, p.handle);
           keepGoing = await pushResult(item); got++;
           if (!keepGoing) break;
         }
-        if (products.length < 250) break;
+        if (!keepGoing) break; // maxResults / PPE budget stopped us mid-page: the sweep is NOT complete
+        if (products.length < 250) { sweptToEnd = true; break; }
       }
       if (watchMode && seenBeforeFilter >= perStore) log.warning(`${ep.origin}: stopped after scanning ${seenBeforeFilter} products (maxProductsPerStore = ${perStore}). In watch mode that cap limits how deep the diff looks — raise it to cover the whole catalog, or changes to products further down the feed will be missed.`);
     }
@@ -620,7 +660,65 @@ for (const raw of storeUrls) {
   // Only a store that actually answered joins the baseline. A store that errored stays unseeded,
   // so the next run baselines it properly instead of announcing its whole catalog as "new".
   if (watchMode && seenBeforeFilter > 0) seededStores.add(ep.url);
+  // A store this run both walked end-to-end AND already had a baseline for can be asked "what is
+  // gone". A store being seeded this run cannot (it has no prior baseline of its own), and neither
+  // can a capped, truncated or errored sweep — sweptToEnd stays false in every one of those.
+  if (watchMode && sweptToEnd && !storeSeeding) watchStoreSweeps.set(ep.url, seenAllIds);
   log.info(`${ep.origin}: ${got} products`);
+}
+// ---- delisted: products that were in the baseline and are no longer in a COMPLETE sweep ---------
+// Runs after every store so it can compare against the finished coverage picture. Each row is a
+// normal billable result, so the bar for producing one is coverage proof, not absence.
+if (watchMode && watchEvents.has('delisted') && watchStoreSweeps.size && keepGoing) {
+  for (const [storeUrl, seen] of watchStoreSweeps) {
+    if (!keepGoing) break;
+    const origin = new URL(storeUrl).origin;
+    const gone = [];
+    let baselineForStore = 0;
+    for (const [id, v] of watchPrev) {
+      if (v.store !== storeUrl) continue; // incl. legacy records with no attribution yet
+      baselineForStore += 1;
+      if (!seen.has(id)) gone.push([id, v]);
+    }
+    if (!gone.length) continue;
+    if (gone.length > DELIST_SUSPICIOUS_MIN && gone.length > baselineForStore * DELIST_SUSPICIOUS_SHARE) {
+      log.warning(
+        `${origin}: ${gone.length} of ${baselineForStore} baselined products are missing from a complete sweep. That is too large a share `
+        + 'to call "delisted" — a collection being emptied or re-scoped looks identical — so no delisted rows were produced and nothing was '
+        + 'charged for them. They stay in the baseline; if they are genuinely gone they will still be missing next run.',
+      );
+      continue;
+    }
+    for (const [id, v] of gone) {
+      const numericId = Number(id);
+      const delistedRow = {
+        id: Number.isFinite(numericId) ? numericId : null,
+        title: null,
+        handle: v.handle ?? null,
+        // The baseline keeps the handle, not the title, so a delisted row is still clickable (the
+        // URL 404s by definition — it is there to identify the product, not to visit).
+        url: v.handle ? `${origin}/products/${v.handle}` : null,
+        store: origin,
+        priceMin: null,
+        available: null,
+        watchLabel,
+        watchChange: 'delisted',
+        watchChanges: ['delisted'],
+        previousPriceMin: v.price,
+        previousAvailable: v.avail,
+        priceChange: null,
+        scrapedAt: new Date().toISOString(),
+      };
+      const before = pushed;
+      keepGoing = await pushResult(delistedRow);
+      // Only a row that actually landed leaves the baseline — pushResult also returns false when
+      // the buyer's PPE budget is exhausted and NOTHING was pushed, and dropping it then would
+      // lose the product silently.
+      if (pushed > before) { watchCounts.delisted += 1; watchDeliveredDelisted.add(id); }
+      if (!keepGoing) break;
+    }
+    log.info(`${origin}: ${watchCounts.delisted} product(s) reported as delisted so far (${gone.length} missing from a complete sweep of ${baselineForStore} baselined).`);
+  }
 }
 if (watchMode) {
   await saveWatchRecord();

@@ -300,7 +300,8 @@
                     "null"
                 ],
                 "title": "WatchChange",
-                "example": "priceDrop"
+                "example": "priceDrop",
+                "description": "Which change this row reports in watch mode: new, priceDrop, priceIncrease, backInStock, outOfStock or delisted. \"delisted\" means the product is no longer in the store catalog and is only reported when the run walked that store's whole feed."
             },
             "watchChanges": {
                 "type": [

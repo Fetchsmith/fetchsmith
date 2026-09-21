@@ -1486,3 +1486,37 @@ you passed in. Every Actor with a `default` in its input schema has this trap.
 - **A rewrite can DISARM a check while it still reports 0 stale.** `check-blog-claims` went from *6 claims checked* to *5*, 0 stale, purely because I reworded "all eighteen" out of a line — its `ALL_N` rule only fires on an "all <N>" sitting beside >=2 Actor links on the same line. **Read the check's TOTAL, not just its stale count: a falling total is a silently removed guard.** Restoring a true "all nineteen" brought it back to 6.
 - **Apple's feed "hole" retry logic must not apply to a refused request.** `app-store-reviews-scraper` retried every empty page under the other client class and then the other sort — correct for Apple's real per-page holes, catastrophic for a 4xx, which is permanent: a nonexistent-but-well-formed storefront (`zz`) cost ~20 requests and ~20 identical warnings before ending "empty". Tagging the error (`err.httpStatus`) and rethrowing a non-429 4xx cut it to **1 request / ~1s on the platform**. **The general rule: separate "the source has no data here" from "the source refused this request" before writing any retry ladder — they need opposite policies.** Check the call chain first; the same fetch helper also served an outage probe that must keep tolerating failures.
 - **Watch mode invariant, now applied on a third Actor: a pair/store/target the source REFUSED must never enter the baseline.** Shopify's errored-store rule, ported to app-store's `seededPairs`. Without it, one broken storefront on a seeding run is recorded as "already delivered" and its whole back catalogue never gets delivered. Verified by reading the written record (`gb` present, `zz` absent), not by trusting the log.
+
+## Cycle 599 — "gone" is a coverage claim, not an absence check (shopify-products-scraper `delisted`)
+Reusable for any catalog/snapshot source (as opposed to an event stream). A product missing from a run
+means nothing on its own: from outside, **"it was removed" and "we stopped looking" are the same
+observation**. So the deliverable is a *proof of coverage*, and it has to be per-store, not per-run:
+- Set a `sweptToEnd` flag ONLY where the page loop exits because the feed genuinely ran out
+  (`products.length < pageSize`, or an empty page past page 1). Leave it false for every other exit:
+  scan cap, `maxResults`/budget stop mid-page, time budget, thrown error. Getting this right is the
+  whole feature — the negative tests (truncated sweep must yield ZERO removals) matter more than the
+  positive one, because a false positive bills the buyer for a catalog that is still there.
+- **Measure coverage on the RAW feed, before any filter.** The baseline is the filtered set, but
+  "did we see it this run" must be answered from unfiltered ids, or a product whose price rose above
+  `maxPrice` gets reported as deleted.
+- **Cap the blast radius.** A collection being emptied or re-scoped is indistinguishable from a mass
+  delist, so above ~50% of a store's baseline (with a small-N floor) report nothing and warn. The
+  items stay in the baseline, so a real shutdown still surfaces later as the catalog shrinks past
+  the guard. Cheap, and it converts the worst failure mode from "huge wrong bill" into "one warning".
+- **Charge once:** drop a DELIVERED removal from the baseline; keep one that was suppressed (by the
+  event filter or the guard). Reuse `pushed` deltas rather than `pushResult()`'s boolean to decide
+  "did this row actually land" — that boolean is false both for "pushed, limit reached" and for
+  "budget exhausted, nothing pushed", and dropping on the latter loses the product silently.
+- Extending a KV baseline tuple is safe if you append: load by destructuring
+  (`[id, price, avail, storeIdx, handle]`) and treat missing trailing elements as "unknown", which
+  degrades to "cannot be reported yet" rather than to a wrong answer. Index into the record's own
+  store list instead of repeating an origin string 30k times.
+
+## Cycle 599 — `bin/check-code-fields` suppresses non-row literals by BINDING NAME
+`NON_ROW_BIND = (watch|criteria|summary|fingerprint|stats|cache|opts|options|payload)` is matched
+against the `const/let/var` name a literal is bound to. An object passed **inline** into a call
+(`watchNow.set(id, { price, avail, store, handle })`) has no binding for it to key off, so as soon as
+the internal shape picks up field names that also exist in `dataset_schema.json` it reads as a
+dataset row and the check reports CODE-ONLY drift. Fix is one line and improves the code anyway:
+bind internal bookkeeping objects to a `watch*`/`criteria*`-style const. Do not add a
+`FIELD_SUPPRESS` entry for this class — the binding rule already covers it.

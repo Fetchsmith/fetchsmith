@@ -122,7 +122,7 @@
         "watchLabel": {
             "title": "Watch label (change alerts)",
             "type": "string",
-            "description": "Set a name (e.g. \"my-competitor-prices\") to turn this run into a catalog watch. The FIRST run under a given label + filter set records each product's price and availability and returns NOTHING (0 products charged). Every run after that returns ONLY products that are new, changed price, went out of stock or came back in stock — so you can schedule this Actor daily and pay only for what actually moved, instead of re-buying the whole catalog. Each returned row carries watchChange / watchChanges / previousPriceMin / previousAvailable / priceChange alongside the normal product fields. Adding a store URL to an existing label baselines just that store; changing a filter (onlyAvailable / searchQuery / vendors / productTypes / minPrice / maxPrice / onSaleOnly / minDiscountPercent) starts a fresh baseline. Leave empty for a normal one-off scrape.",
+            "description": "Set a name (e.g. \"my-competitor-prices\") to turn this run into a catalog watch. The FIRST run under a given label + filter set records each product's price and availability and returns NOTHING (0 products charged). Every run after that returns ONLY products that are new, changed price, went out of stock, came back in stock or were removed from the catalog (delisted) — so you can schedule this Actor daily and pay only for what actually moved, instead of re-buying the whole catalog. Each returned row carries watchChange / watchChanges / previousPriceMin / previousAvailable / priceChange alongside the normal product fields. Adding a store URL to an existing label baselines just that store; changing a filter (onlyAvailable / searchQuery / vendors / productTypes / minPrice / maxPrice / onSaleOnly / minDiscountPercent) starts a fresh baseline. Leave empty for a normal one-off scrape.",
             "editor": "textfield"
         },
         "watchEvents": {
@@ -136,17 +136,19 @@
                     "priceDrop",
                     "priceIncrease",
                     "backInStock",
-                    "outOfStock"
+                    "outOfStock",
+                    "delisted"
                 ],
                 "enumTitles": [
                     "New product",
                     "Price drop",
                     "Price increase",
                     "Back in stock",
-                    "Out of stock"
+                    "Out of stock",
+                    "Delisted (removed from the catalog)"
                 ]
             },
-            "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Price drop\" alone to build a discount tracker and never pay for anything else. Leave empty for all five. Ignored when \"Watch label\" is empty.",
+            "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Price drop\" alone to build a discount tracker and never pay for anything else. Leave empty for all six. \"Delisted\" is only reported for a store whose whole feed this run walked end to end (see \"Max products per store\"). Ignored when \"Watch label\" is empty.",
             "default": []
         },
         "webhookUrl": {

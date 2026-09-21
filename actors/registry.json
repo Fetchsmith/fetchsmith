@@ -273,7 +273,7 @@
         "available": true,
         "variantCount": 12
       },
-      "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p><p><strong>Watch mode:</strong> set <code>watchLabel</code> and the first run records each product’s price and availability for free; every later run under that label returns only what changed (<code>new</code>, <code>priceDrop</code>, <code>priceIncrease</code>, <code>backInStock</code>, <code>outOfStock</code>) with <code>previousPriceMin</code> and <code>priceChange</code> on each row. Unchanged products are never pushed and never charged.</p>",
+      "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p><p><strong>Watch mode:</strong> set <code>watchLabel</code> and the first run records each product’s price and availability for free; every later run under that label returns only what changed (<code>new</code>, <code>priceDrop</code>, <code>priceIncrease</code>, <code>backInStock</code>, <code>outOfStock</code>, <code>delisted</code>) with <code>previousPriceMin</code> and <code>priceChange</code> on each row. Unchanged products are never pushed and never charged, and a <code>delisted</code> row is only produced when the run walked that store’s whole feed.</p>",
       "memory_mb": 1024
     },
     {
