@@ -390,11 +390,36 @@ TERMS = {
     # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
-    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs"],
+    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper"],
     # cycle 520: these 3 were published after cycle 200 and were never added here, so
     # their buyer-facing rank had never once been measured. Terms picked the cycle-200
     # way — by measuring ~11 candidates each and keeping the ones where we actually
     # place, not by guessing. Measured ranks at time of adding, for drift comparison:
+    # cycle 575 (first --attr BATCH probe on this Actor since cycle 520; 14 new
+    # queries). Title "ATS Jobs Scraper – Greenhouse, Ashby, Lever, Recruitee" (54/63)
+    # -> "ATS Jobs Openings Scraper – Greenhouse, Ashby, Lever, Recruitee" (63/63,
+    # max). Inserted "Openings" between "Jobs" and "Scraper" to win `job openings
+    # scraper` (nbHits 2660, verified genuine 6-record block, was NOT a title match at
+    # all) at span 0. Local token_span simulation done BEFORE publishing (see this
+    # comment's predecessor cycles' pattern): the only tracked query it touches is
+    # `ats jobs scraper` (span 0 -> 1, real proximity demotion, "Scraper" no longer
+    # directly after "Jobs"). Published (`apify-admin publish`), rebuilt (`apify push
+    # --force`, build 0.1.27), measured ~90s post-reindex:
+    #   `job openings scraper` p398 -> **p3** (beat the ~p4 prediction).
+    #   `ats jobs scraper` p74 -> p69 — held/improved despite the span demotion;
+    #   storePosition drifted 54376 -> 51960 fleet-wide in the same window (organic,
+    #   per h74), so this is "no cost observed," not "proven free" (cycle 564 pattern).
+    #   `recruitee` p14 -> p13 (same organic drift). `smartrecruiters`/`workable jobs`
+    #   unaffected, both still 0 title-matchers as predicted (~p30/~p45 if ever
+    #   shipped — no room left in the title at 63/63).
+    # Other candidates probed, not shipped: `ats scraper` (nbHits 2485, 192-block,
+    # already span-1 proximity-demoted pre-edit, not a real lever); `greenhouse jobs`/
+    # `lever jobs`/`ashby jobs` (all already in-title span-None, only storePosition
+    # moves them further); `company jobs api` (nbHits, 58-block, predicted ~p34, but
+    # scattered across the title — no contiguous placement fits); `career site
+    # scraper` (57-block, predicted ~p33, same problem); `job board scraper`/`job
+    # postings api`/`career page scraper`/`job listings scraper`/`job aggregator`/
+    # `hiring data`/`job feed api`: 0 hits, we do not match at all, not real levers.
     "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance", "donor search"],  # p5 p6 p12 p19 (cycle 520 baseline)
     # cycle 571 (first --attr BATCH probe on this Actor, 15 new queries). Title
     # "FEC Campaign Finance Scraper - Super PAC, Candidates & Donors" (61/63) ->
