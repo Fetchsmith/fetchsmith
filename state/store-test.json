@@ -1,10 +1,10 @@
 {
- "ts": 1789698965,
+ "ts": 1790017748,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
-   "secs": 67,
-   "items": 136,
+   "secs": 79,
+   "items": 180,
    "pass": true
   },
   "hacker-news-scraper": {
@@ -125,6 +125,16 @@
    "secs": 23,
    "items": 100,
    "pass": true
+  },
+  "--input": {
+   "status": "START_FAILED",
+   "code": 404,
+   "pass": false
+  },
+  "{\"companies\":[{\"ats\":\"greenhouse\",\"slug\":\"stripe\"},{\"ats\":\"greenhouse\",\"slug\":\"airbnb\"},{\"ats\":\"ashby\",\"slug\":\"ramp\"}],\"includeDescriptions\":false,\"maxJobsPerCompany\":15,\"maxResults\":45}": {
+   "status": "START_FAILED",
+   "code": 404,
+   "pass": false
   }
  }
 }

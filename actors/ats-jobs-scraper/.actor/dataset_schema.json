@@ -51,6 +51,16 @@
     "title": "Team",
     "example": "Backend"
    },
+   "departmentPath": {
+    "type": [
+     "array",
+     "null"
+    ],
+    "title": "Department path (root to leaf)",
+    "items": {
+     "type": "string"
+    }
+   },
    "employmentType": {
     "type": [
      "string",
@@ -215,6 +225,7 @@
      "title",
      "department",
      "team",
+     "departmentPath",
      "employmentType",
      "workplaceType",
      "isRemote",
@@ -247,6 +258,10 @@
      "team": {
       "label": "Team",
       "format": "text"
+     },
+     "departmentPath": {
+      "label": "Department path",
+      "format": "array"
      },
      "employmentType": {
       "label": "EmploymentType",

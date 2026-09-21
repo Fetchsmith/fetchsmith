@@ -28,7 +28,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `locationKeyword` | string | Only keep postings whose location/city/region/country contains this text. |
 | `locationExcludeKeyword` | string | Drop postings whose location/city/region/country contains this text, e.g. a country you don't hire in. |
 | `employmentTypeKeyword` | string | Only keep postings whose normalized `employmentType` contains this text, e.g. `"full"` or `"contract"`. Postings where the ATS never exposes this field are dropped when set. |
-| `departmentKeyword` | string | Only keep postings whose `department`/`team` contains this text, e.g. `"Engineering"`. Postings where the ATS never exposes a department are dropped when set. |
+| `departmentKeyword` | string | Only keep postings whose `department`, `team` or `departmentPath` contains this text, e.g. `"Engineering"`. Postings where the ATS never exposes a department are dropped when set. |
 | `descriptionKeyword` | string | Only keep postings whose **description text** contains this text, e.g. `"Kubernetes"` or `"visa sponsorship"` — the requirements a job title never mentions. Matched against the plain text, not the HTML. |
 | `descriptionExcludeKeyword` | string | Drop postings whose description text contains this text, e.g. `"security clearance"`. |
 | `hasSalary` | boolean | Only keep postings that come back with a salary — an ATS compensation field (Ashby, Lever, Recruitee) or a pay-transparency range printed in the posting body (Greenhouse). Default `false`. |
@@ -57,7 +57,23 @@ If you only have a guess at the slug (e.g. the company's own name, lowercased) a
 
 ## Output
 One row per job posting:
-`company, atsSource, jobId, title, department, team, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, salaryInterval, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
+`company, atsSource, jobId, title, department, team, departmentPath, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, salaryInterval, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
+
+### Department and team (changed in 0.1.36)
+
+A Greenhouse job carries exactly one department, and it is the **leaf** of the board's own org tree — on a large board that is an internal cost-centre node, not a department anyone would group by. Measured over **1,909 live postings across 5 boards**, **76% sit at depth ≥ 1** in the tree (up to depth 3 on Stripe: `Tech > Security (Planning Org) > Security (Planning Group) > 8611 Security Analytics`).
+
+Since 0.1.36 this Actor also reads the board-level department endpoint — **one extra request per company, not per job** — rebuilds the chain, and reports:
+
+| Field | Value |
+| --- | --- |
+| `department` | the **top-level** department (`"Tech"`) |
+| `team` | the **leaf** the posting actually sits in (`"8611 Security Analytics"`), `null` when the job is already top-level |
+| `departmentPath` | the whole chain root→leaf as an array, `null` on sources with no hierarchy |
+
+The point is cross-company grouping: distinct `department` values on the same live boards collapse from **191 → 4** (Stripe), **44 → 13** (Databricks), **29 → 3** (Airbnb), **17 → 5** (Discord). `team` went from `null` on every Greenhouse row to filled on **76%**.
+
+`departmentKeyword` now matches against `department`, `team` **and** `departmentPath` together, so a filter you wrote against a leaf name before 0.1.36 still matches — the filter got strictly wider, never narrower. If the departments endpoint is unavailable for a board, `department` falls back to the leaf name exactly as before and `team` is `null`. Ashby and Lever expose a real `team` field of their own and are unchanged; Recruitee, Workable, SmartRecruiters and Workday have no team concept and return `null`.
 
 **Workday's board-listing API doesn't carry `department`, `employmentType` or an exact `publishedAt` date** — those only come back from a per-job detail call, which this Actor makes automatically for every kept posting when `includeDescriptions` is `true` (the default) **or when you set a filter that needs one of those fields** (`employmentTypeKeyword`, `departmentKeyword`, `postedAfter`, `postedBefore`, `descriptionKeyword`, `descriptionExcludeKeyword`) — so those filters work on Workday boards even with `includeDescriptions: false`. With descriptions off and none of those filters set, the detail call is skipped for a faster, cheaper-in-wall-clock run and those three fields come back `null` for Workday postings only (every other ATS is unaffected either way). `department` is populated from the posting's hiring organization name (e.g. `"131 DEPARTMENT OF CORRECTIONS"`), which is what Workday boards actually expose in place of a dedicated department field.
 

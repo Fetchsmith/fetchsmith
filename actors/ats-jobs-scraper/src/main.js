@@ -391,10 +391,48 @@ function ashbySalary(comp) {
   return { min: null, max: null, currency: null, interval: null };
 }
 
+// Greenhouse's job payload carries only the LEAF department -- on a big board that is a
+// cost-centre node like "8611 Security Analytics" (Stripe) or "Delivery Solutions Architects"
+// (Databricks), not a department anyone would filter on. Measured over 1,907 live postings on
+// 5 boards (cycle 611): 76% sit at depth >= 1 in the board's own department tree, up to depth 3
+// on Stripe. The board-level /departments endpoint returns every node FLAT with a `parent_id`,
+// so one extra call per company (not per job) rebuilds the chain and lets us report the
+// top-level department in `department` and the leaf in `team`. Cached per board per run.
+const ghDeptCache = new Map();
+async function greenhouseDepartments(slug) {
+  if (ghDeptCache.has(slug)) return ghDeptCache.get(slug);
+  let flat = new Map();
+  try {
+    const { status, body } = await getJson(`https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(slug)}/departments`);
+    if (status === 200) for (const d of body?.departments ?? []) flat.set(d.id, d);
+  } catch {
+    // A missing/failed tree is not a run failure: we fall back to the leaf name in `department`
+    // exactly as every build before 0.1.36 did.
+    flat = new Map();
+  }
+  ghDeptCache.set(slug, flat);
+  return flat;
+}
+
+// Root-first chain of department names for a leaf id. Guards against a self- or cyclic
+// parent_id (seen on hand-edited boards) with a visited set rather than a depth cap.
+function greenhouseDeptPath(flat, leafId) {
+  const names = [];
+  const seen = new Set();
+  let cur = flat.get(leafId);
+  while (cur && !seen.has(cur.id)) {
+    seen.add(cur.id);
+    if (cur.name) names.push(cur.name);
+    cur = cur.parent_id ? flat.get(cur.parent_id) : null;
+  }
+  return names.reverse();
+}
+
 async function fetchGreenhouse(slug) {
   const { status, body } = await getJson(`https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(slug)}/jobs?content=true`);
   if (status === 404) return { jobs: [], notFound: true };
   const jobs = body?.jobs ?? [];
+  const deptTree = await greenhouseDepartments(slug);
   return {
     jobs: jobs.map((j) => {
       // Decoded on every run, not only when descriptions are requested: the pay-transparency block
@@ -406,9 +444,15 @@ async function fetchGreenhouse(slug) {
       // text, and `offices[]` is NOT used as a fallback because it contradicts the
       // posting on some boards (see src/location.js).
       const geo = parseLocation(j.location?.name);
+      const leaf = j.departments?.[0];
+      const deptPath = leaf ? greenhouseDeptPath(deptTree, leaf.id) : [];
+      // Fall back to the leaf name when the tree is unavailable or the id is not in it, so
+      // `department` is never emptier than it was before this field existed.
+      const department = deptPath[0] ?? leaf?.name ?? null;
+      const team = deptPath.length > 1 ? deptPath[deptPath.length - 1] : null;
       return {
         company: slug, atsSource: 'greenhouse', jobId: String(j.id), title: j.title?.trim() ?? null,
-        department: j.departments?.[0]?.name ?? null, team: null, employmentType: null,
+        department, team, departmentPath: deptPath.length ? deptPath : null, employmentType: null,
         workplaceType, isRemote: /remote/i.test(j.location?.name ?? '') || (workplaceType ? /remote/i.test(workplaceType) : null),
         location: j.location?.name ?? null, secondaryLocations: (j.offices ?? []).slice(1).map((o) => o.name),
         country: geo.country, region: geo.region, city: geo.city,
@@ -429,7 +473,7 @@ async function fetchAshby(slug) {
       const pay = ashbySalary(j.compensation);
       return {
       company: slug, atsSource: 'ashby', jobId: j.id, title: j.title?.trim() ?? null,
-      department: j.department ?? null, team: j.team ?? null,
+      department: j.department ?? null, team: j.team ?? null, departmentPath: null,
       employmentType: j.employmentType ?? null, workplaceType: j.workplaceType ?? null, isRemote: j.isRemote ?? null,
       location: j.location ?? null,
       secondaryLocations: (j.secondaryLocations ?? []).map((l) => l.location).filter(Boolean),
@@ -455,7 +499,7 @@ async function fetchLever(slug) {
   return {
     jobs: res.body.map((j) => ({
       company: slug, atsSource: 'lever', jobId: j.id, title: j.text?.trim() ?? null,
-      department: j.categories?.department ?? null, team: j.categories?.team ?? null,
+      department: j.categories?.department ?? null, team: j.categories?.team ?? null, departmentPath: null,
       employmentType: j.categories?.commitment ?? null, workplaceType: j.workplaceType ?? null,
       isRemote: j.workplaceType ? /remote/i.test(j.workplaceType) : (j.categories?.location ? /remote/i.test(j.categories.location) : null),
       location: j.categories?.location ?? null, secondaryLocations: (j.categories?.allLocations ?? []).slice(1),
@@ -476,7 +520,7 @@ async function fetchRecruitee(slug) {
   return {
     jobs: res.body.offers.map((o) => ({
       company: slug, atsSource: 'recruitee', jobId: String(o.id), title: o.title?.trim() ?? null,
-      department: o.department ?? null, team: null, employmentType: o.employment_type_code ?? null,
+      department: o.department ?? null, team: null, departmentPath: null, employmentType: o.employment_type_code ?? null,
       workplaceType: o.remote ? 'remote' : (o.on_site ? 'onsite' : (o.hybrid ? 'hybrid' : null)), isRemote: !!o.remote,
       location: o.location ?? null,
       secondaryLocations: (Array.isArray(o.locations) ? o.locations : []).slice(1).map((l) => (typeof l === 'string' ? l : (l?.city ?? l?.name))).filter(Boolean),
@@ -504,7 +548,7 @@ async function fetchWorkable(slug) {
   return {
     jobs: body.jobs.map((j) => ({
       company: slug, atsSource: 'workable', jobId: j.shortcode ?? null, title: j.title?.trim() ?? null,
-      department: j.department ?? null, team: null, employmentType: j.employment_type ?? null,
+      department: j.department ?? null, team: null, departmentPath: null, employmentType: j.employment_type ?? null,
       workplaceType: j.telecommuting ? 'remote' : null, isRemote: !!j.telecommuting,
       location: [j.city, j.state, j.country].filter(Boolean).join(', ') || null,
       secondaryLocations: (j.locations ?? []).slice(1)
@@ -556,7 +600,7 @@ async function fetchSmartRecruiters(slug) {
     const loc = p.location ?? {};
     return {
       company: slug, atsSource: 'smartrecruiters', jobId: String(p.id), title: p.name?.trim() ?? null,
-      department: p.department?.label ?? p.function?.label ?? null, team: null,
+      department: p.department?.label ?? p.function?.label ?? null, team: null, departmentPath: null,
       employmentType: p.typeOfEmployment?.label ?? null,
       workplaceType: loc.remote ? 'remote' : (loc.hybrid ? 'hybrid' : (loc.city ? 'onsite' : null)),
       isRemote: !!loc.remote,
@@ -668,7 +712,7 @@ async function fetchWorkday(slug) {
     return {
       company: tenant, atsSource: 'workday', jobId: (p.bulletFields ?? [])[0] || p.externalPath || null,
       title: p.title?.trim() ?? null,
-      department: null, team: null, employmentType: null, workplaceType: null,
+      department: null, team: null, departmentPath: null, employmentType: null, workplaceType: null,
       isRemote: /remote/i.test(p.locationsText ?? ''),
       location: p.locationsText ?? null, secondaryLocations: [],
       country: geo.country, region: geo.region, city: geo.city,
@@ -783,8 +827,15 @@ function passesFilters(job, deferred = []) {
   }
   if (ready('employmentType') && employmentTypeKeyword
     && !(job.employmentType ?? '').toLowerCase().includes(employmentTypeKeyword)) return false;
-  if (ready('department') && departmentKeyword
-    && !(job.department ?? '').toLowerCase().includes(departmentKeyword)) return false;
+  // Haystack, not just `department`: since 0.1.36 Greenhouse reports the TOP-LEVEL department in
+  // `department` and the leaf in `team`/`departmentPath`, so matching `department` alone would
+  // have silently dropped every pre-0.1.36 filter written against a leaf name ("Security
+  // Analytics"). Including team and the full path makes this filter strictly wider than before,
+  // never narrower, on every source.
+  if (ready('department') && departmentKeyword) {
+    const haystack = `${job.department ?? ''} ${job.team ?? ''} ${(job.departmentPath ?? []).join(' ')}`.toLowerCase();
+    if (!haystack.includes(departmentKeyword)) return false;
+  }
   if (ready('description') && (descriptionKeyword || descriptionExcludeKeyword)) {
     // Match the plain text, not the HTML, so a keyword can't be satisfied by a tag/class name.
     const body = (job.descriptionText ?? '').toLowerCase();
