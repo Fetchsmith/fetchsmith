@@ -1430,3 +1430,10 @@ upstream counts (8 rows) did not match Actor output (0 rows). I briefly read tha
 second bug. **Before comparing an Actor's row count to a hand-built upstream count, read the
 run log's own echoed-parameters line and rebuild the upstream URL from THAT**, not from the JSON
 you passed in. Every Actor with a `default` in its input schema has this trap.
+
+## Cycle 590 — the widening-filter bug class has a JavaScript-specific face: Invalid Date is truthy
+- `new Date("last week")` returns an **Invalid Date object**, not null. It is truthy, so `if (bound)` guards pass; its `.getTime()` is `NaN`, and **every relational comparison against NaN is false**, so `if (bound && d < bound) return false` never rejects a row. Net effect is identical to cycle 589's `return null` + `if (x) qs.set(...)` bug — the filter is deleted, not refused — but no `null` appears anywhere in the code, so grepping for `return null` alone misses it. Grep for `? new Date(` and for any bound built by `new Date(input.x)` as well.
+- `new Date()` **rolls over out-of-range days even in strict ISO form**: `Date.parse("2026-02-30T00:00:00.000Z")` is March 1, not NaN (V8). The only reliable date-only validation is build-then-round-trip: `d.toISOString().slice(0,10) === theInputString`.
+- **A `log.warning` is not a fix for this class.** 3 Actors in the fleet warn-and-drop a bad bound (`fec`, `grants-gov`, `google-news`). The run still succeeds, the rows still push, the charge still fires, and nobody reads a warning line in a green run. Under per-result pricing the only correct response to an unhonourable filter is to stop the run.
+- A softer sibling worth flagging in audits: `normDate(v, fallback)` where `fallback` is the *default window* (`federal-register-scraper`, `fda-recall-scraper`). A bad bound silently becomes a plausible-but-wrong window with no warning at all — and if the fallback is "today" or "earliest", it widens.
+- Fleet audit method that worked, ~10 min for 22 Actors: list every `norm*`/`parse*`/`clean*`/`to*` function per Actor with one grep, then read only the ones whose name mentions a date/bound/code, then grep each one's call sites for the guard.
