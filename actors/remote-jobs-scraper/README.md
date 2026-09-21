@@ -118,6 +118,7 @@ All four APIs are public and ask for credit in return. This Actor puts the sourc
 
 - Public data only: no login, no personal data beyond what the boards publish publicly about a job.
 - Feeds are snapshots of what each board serves at run time; Remote OK and Jobicy expose only their most recent postings, so historical `postedBefore` windows will thin out on those two.
+- **Flaky-feed handling (2026-09-21).** Remote OK's edge intermittently kills the HTTP/2 stream or answers a fresh connection with a non-HTTP preamble — measured at roughly 1 fresh request in 4, and Remotive does it too. Each source is fetched once per run, so one blip used to drop that whole board from your dataset with only a warning in the log. Every transport-level failure is now retried up to 3 times, falling back to HTTP/1.1 after the first attempt. A measured back-to-back pair of runs over all four boards: **83 rows before the fix, 182 after** (two blips in the same run, both recovered). A feed that answers 404 or 5xx now fails its source loudly instead of reporting zero jobs, which used to look identical to "nothing posted today".
 
 ## Related guides
 

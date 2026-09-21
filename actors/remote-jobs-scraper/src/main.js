@@ -116,15 +116,46 @@ async function pushResult(item) {
 
 // ---------------------------------------------------------------- helpers
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// got only retries a fixed list of network error codes (ETIMEDOUT, ECONNRESET, ...). Remote OK's
+// edge intermittently kills the HTTP/2 stream (ERR_HTTP2_ERROR) or answers a fresh connection with
+// a non-HTTP preamble (HPE_INVALID_CONSTANT) — measured at ~1 fresh request in 4, cycle 616 — and
+// neither code is on that list, so a single blip used to drop that whole source for the run with
+// only a WARN. Retry every transport-level failure ourselves, dropping to HTTP/1.1 after the first
+// attempt. 4xx (other than 429) fails fast — retrying our own bad request never helps.
 async function fetchJson(url) {
-  const res = await gotScraping({
-    url,
-    responseType: 'json',
-    headers: { 'User-Agent': UA, Accept: 'application/json' },
-    timeout: { request: 45000 },
-    retry: { limit: 2 },
-  });
-  return res.body;
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const res = await gotScraping({
+        url,
+        responseType: 'json',
+        headers: { 'User-Agent': UA, Accept: 'application/json' },
+        timeout: { request: 45000 },
+        retry: { limit: 2 },
+        ...(attempt > 0 ? { http2: false } : {}),
+      });
+      // got-scraping sets throwHttpErrors:false, so a 404/500 arrives here as an ordinary body and
+      // the source would report "fetched 0" — a dead feed looking exactly like an empty one
+      // (measured cycle 616). Surface it instead, and only retry the statuses worth retrying.
+      if (res.statusCode >= 400) {
+        const err = new Error(`HTTP ${res.statusCode} from ${url}`);
+        err.statusCode = res.statusCode;
+        if (res.statusCode < 500 && res.statusCode !== 429) throw err;
+        throw Object.assign(err, { retryable: true });
+      }
+      return res.body;
+    } catch (err) {
+      if (err.statusCode && !err.retryable) throw err;
+      lastErr = err;
+      if (attempt < 2) {
+        log.warning(`${url}: ${err.code || err.name} (${err.message}). Retrying over HTTP/1.1.`);
+        await sleep(500 * (attempt + 1));
+      }
+    }
+  }
+  throw lastErr;
 }
 
 function toIso(value) {
