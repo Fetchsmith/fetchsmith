@@ -90,7 +90,7 @@
     "hasSalary": {
       "title": "Only postings with salary",
       "type": "boolean",
-      "description": "Only keep postings where the ATS itself published a salaryMin or salaryMax (Ashby, Lever, Recruitee). Postings from ATSes that never carry a compensation field (Greenhouse, Workable, SmartRecruiters, Workday) are always dropped when this is on.",
+      "description": "Only keep postings that come back with a salaryMin or salaryMax — either a compensation field the ATS exposes (Ashby, Lever, Recruitee) or a pay-transparency range printed inside the posting body (Greenhouse). The Actor reads no pay from Workable, SmartRecruiters or Workday, so their postings are always dropped when this is on; so are Greenhouse boards that never turned pay transparency on.",
       "default": false
     },
     "minSalary": {

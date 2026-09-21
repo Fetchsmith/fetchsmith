@@ -31,7 +31,7 @@ Live job postings straight from any company's own career board on **Greenhouse, 
 | `departmentKeyword` | string | Only keep postings whose `department`/`team` contains this text, e.g. `"Engineering"`. Postings where the ATS never exposes a department are dropped when set. |
 | `descriptionKeyword` | string | Only keep postings whose **description text** contains this text, e.g. `"Kubernetes"` or `"visa sponsorship"` — the requirements a job title never mentions. Matched against the plain text, not the HTML. |
 | `descriptionExcludeKeyword` | string | Drop postings whose description text contains this text, e.g. `"security clearance"`. |
-| `hasSalary` | boolean | Only keep postings where the ATS itself published a salary. Default `false`. |
+| `hasSalary` | boolean | Only keep postings that come back with a salary — an ATS compensation field (Ashby, Lever, Recruitee) or a pay-transparency range printed in the posting body (Greenhouse). Default `false`. |
 | `minSalary` / `maxSalary` | integer | Only keep postings whose salary range overlaps this floor/ceiling, e.g. `minSalary:150000`. Compared against the number as posted — no currency conversion, no pay-interval normalization (check `salaryCurrency`/`salaryInterval` on the row, since ranges mix year/month/week/day/hour). Postings with no salary never match either. |
 | `remoteOnly` | boolean | Only keep postings the ATS marks as remote. Default `false`. |
 | `postedAfter` | string | `YYYY-MM-DD` (or full ISO datetime); only keep postings published on/after it. The named day is included. An unparseable date stops the run — see "Date bounds" below. |
