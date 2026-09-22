@@ -2119,3 +2119,12 @@ run again and confirm the second run *charges* for rows the first run already re
 reproduces the money impact directly instead of only asserting the new warning string fires.
 Always pair it with a negative control at the real cap — a warning that fires on healthy runs
 is worse than none.
+
+**h285 arc, cycle 658: check for a name collision BEFORE wiring in a new counter, not after.**
+`app-store-reviews-scraper` already had a local `truncationNote` variable meaning "this run's
+own early stop" (maxResults/charge-limit/SEED_CAP) — unrelated to the WATCH_KEEP record-cap
+eviction warning every other h285 fix names `baselineTruncated`/`truncationNote`. Reusing the
+existing name would have silently overloaded two different meanings under one field, exactly
+the defect cycle 656/657 found (after shipping) on `federal-register-scraper`'s `baselineTruncated`
+vs `seedCapped`. One `grep -n "truncat"` on the target file before adding fields caught it this
+time. Cheap check, expensive mistake to unwind later once a buyer's pipeline reads the field.
