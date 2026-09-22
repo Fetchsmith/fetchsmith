@@ -248,6 +248,8 @@ log.info(`TED query: ${query}`);
 const WATCH_STORE = 'fetchsmith-ted-watch';
 const SEED_CAP = 20000; // bound a seed walk against an unfiltered/very broad query
 const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0; // notice ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 // publishedWithinDays is a ROLLING window (its resolved value changes every day),
 // so it is deliberately excluded from the fingerprint — same trap cycles 297/298
@@ -286,6 +288,16 @@ const watchSeen = new Set(); // publicationNumbers already delivered under this 
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `
+      + `${baselineTruncated} oldest notice id(s) were dropped (${baselineTruncatedTotal} dropped over the `
+      + `life of this label) and will be re-delivered and re-charged as "new" on a future run. Narrow the `
+      + 'query (a country, a CPV code, a shorter publication-date window) to keep the baseline under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -295,6 +307,8 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
   });
 }
 
@@ -517,8 +531,18 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
   page += 1;
 }
 
+// WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
+// never taints the common case where the baseline comfortably fits under the cap. Computed
+// AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
+let evictionSuffix = '';
+
 if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  evictionSuffix = baselineTruncated > 0
+    ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest notice `
+      + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
+      + 're-delivered and re-charged as "new" on a future run. Narrow the query to keep the baseline under the cap.'
+    : '';
   if (seeding) {
     log.info(
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} notice(s) recorded as already-seen, `
@@ -527,12 +551,13 @@ if (watchMode) {
         ? ` NOTE: the baseline stopped at the ${SEED_CAP}-notice cap. Narrow the query (a country, a CPV code, `
         + 'a shorter publication-date window) so the whole result set fits, or the first incremental run will '
         + 'report notices past the cap as new.'
-        : ''),
+        : '') + evictionSuffix,
     );
   } else {
     log.info(
       `Watch label "${watchLabel}": ${pushed} new notice(s) since the last run `
-      + `(${skippedSeen} already-delivered notice(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+      + `(${skippedSeen} already-delivered notice(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`
+      + evictionSuffix,
     );
   }
 }
@@ -594,6 +619,10 @@ if (webhookUrl) {
     watchLabel: watchMode ? watchLabel : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSeeding: watchMode ? seeding : null,
+    // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+    // re-charge for rows already paid for once.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({
