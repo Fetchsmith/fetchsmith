@@ -95,7 +95,10 @@ const dateTo = normDate(input.publicationDateTo, isoDay(today));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function apiGet(path, params) {
+// `state`, when passed, records the terminal cause of a `null` return (h250 class: a permanent
+// upstream failure otherwise looks identical to a genuinely exhausted index — both just stop the
+// walk with no page). See `runState`/`markIncomplete` near the bottom of the file.
+async function apiGet(path, params, state = null) {
     // doseq-style encoding: `conditions[type][]` must be percent-encoded or some clients
     // silently drop the brackets and the filter is ignored rather than rejected.
     const qs = new URLSearchParams();
@@ -121,12 +124,14 @@ async function apiGet(path, params) {
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
             log.warning(`Federal Register API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
+            if (state) state.lastError = `request failed: ${err.message}`;
             await sleep(waitS * 1000);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`Federal Register API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
+            if (state) state.lastError = `HTTP ${resp.statusCode}`;
             await sleep(waitS * 1000);
             continue;
         }
@@ -136,15 +141,18 @@ async function apiGet(path, params) {
             // An unknown agency slug is a 400, not an empty result set — verified live.
             const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
             log.warning(`Federal Register API ${resp.statusCode}: ${detail}`);
+            if (state) state.lastError = `HTTP ${resp.statusCode}: ${detail.slice(0, 120)}`;
             return null;
         }
         if (!parsed) {
             log.warning(`Federal Register returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
+            if (state) state.lastError = `non-JSON body: ${String(resp.body).slice(0, 120).replace(/\s+/g, ' ').trim()}`;
             return null;
         }
         return parsed;
     }
     log.warning('Federal Register API kept erroring after 4 attempts; stopping early.');
+    if (state) state.lastError = state.lastError ? `${state.lastError} (after 4 retries)` : 'unreachable after 4 retries';
     return null;
 }
 
@@ -318,23 +326,27 @@ if (watchMode) {
 
 // Seeding only needs the ids, so it asks for one field instead of 29. Same filters, same
 // cursor walk, a fraction of the bytes — and it never normalizes, pushes or charges.
-async function seedBaseline() {
+async function seedBaseline(state) {
     // per_page is pinned to the maximum, not to maxResults: the baseline has to cover the
     // WHOLE match set, not one page of it. A baseline that stops early would report every
     // document past the stopping point as "new" on the first incremental run.
     const params = { ...baseParams(), 'fields[]': ['document_number'], per_page: MAX_PER_PAGE };
     let pagesSeeded = 0;
     while (watchSeen.size < SEED_CAP) {
-        const page = await apiGet(publicInspection ? '/public-inspection-documents.json' : '/documents.json', params);
-        if (!page) break;
+        const page = await apiGet(publicInspection ? '/public-inspection-documents.json' : '/documents.json', params, state);
+        // A permanent upstream failure mid-seed must not read the same as "the archive has no
+        // more matches" — the baseline would be saved as complete, and every document past the
+        // failure point would be charged as "new" on the very first incremental run.
+        if (!page) { state.failed = true; break; }
         const results = listOf(page.results);
-        if (!results.length) break;
+        if (!results.length) { state.exhausted = true; break; }
         pagesSeeded += 1;
         for (const row of results) {
             if (row.document_number) watchSeen.add(String(row.document_number));
         }
-        if (!applyNext(params, page.next_page_url)) break;
+        if (!applyNext(params, page.next_page_url)) { state.exhausted = true; break; }
     }
+    if (watchSeen.size >= SEED_CAP) state.seedCapped = true;
     log.info(`Baseline walk: ${watchSeen.size} document id(s) over ${pagesSeeded} id-only page(s).`);
 }
 
@@ -519,12 +531,14 @@ function normalizePI(d) {
 }
 
 let pushed = 0;
+let chargeLimitReached = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
         if (r.chargedCount === 0) return false;
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) chargeLimitReached = true;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
@@ -576,13 +590,19 @@ let pages = 0;
 let skippedSeen = 0;
 let beforePush = 0;
 
-if (seeding) await seedBaseline();
+// h250 class (same shape closed on court-records-scraper, uk-find-a-tender-scraper and
+// sam-gov-opportunities-scraper): `apiGet` returning null after 4 retries and a next_page_url
+// simply running out both end the walk the same way, but only one of them means the buyer got
+// everything. `failed`/`exhausted` tell those two apart for RUN_SUMMARY below.
+const runState = { failed: false, exhausted: false, seedCapped: false };
+
+if (seeding) await seedBaseline(runState);
 
 while (!seeding && keepGoing && pushed < maxResults) {
-    const page = await apiGet(publicInspection ? '/public-inspection-documents.json' : '/documents.json', walkParams);
-    if (!page) break;
+    const page = await apiGet(publicInspection ? '/public-inspection-documents.json' : '/documents.json', walkParams, runState);
+    if (!page) { runState.failed = true; break; }
     const results = listOf(page.results);
-    if (!results.length) break;
+    if (!results.length) { runState.exhausted = true; break; }
     pages += 1;
 
     for (const row of results) {
@@ -605,8 +625,9 @@ while (!seeding && keepGoing && pushed < maxResults) {
     }
 
     // Following the API's own next_page_url is cheaper and safer than reinventing offset
-    // paging, which 400s past row 10000.
-    if (!applyNext(walkParams, page.next_page_url)) break;
+    // paging, which 400s past row 10000. No next page really does mean the walk is exhausted,
+    // even if maxResults/a charge limit was also hit on this same last page.
+    if (!applyNext(walkParams, page.next_page_url)) { runState.exhausted = true; break; }
 }
 
 if (watchMode) {
@@ -659,6 +680,79 @@ if (pushed === 0 && watchMode && !seeding) {
 
 log.info(`Done. Pushed ${pushed} documents over ${pages} page(s) (scanned ${scanned} rows).`);
 
+// ---------------------------------------------------------------------------
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read without a webhook
+// (GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY). `complete` is kept out of
+// the run STATUS on purpose — a run can SUCCEED and still be short, and that pair is exactly
+// what this record exists for. No `declaredMatches` field: the API's own `count` is clamped at
+// 10000 regardless of the true match size (see the MAX_PER_PAGE comment above), so it would
+// misreport a large archive as "10000 matches" rather than telling the truth, which is "unknown".
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+function markIncomplete(reason, detail = null) {
+    if (!complete) return;
+    complete = false;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+}
+if (seeding) {
+    if (runState.failed) {
+        markIncomplete('source-error', `baseline seed API error: ${runState.lastError ?? 'unknown'}`);
+    } else if (runState.seedCapped) {
+        markIncomplete(
+            'seed-cap',
+            `the baseline stopped at the ${SEED_CAP.toLocaleString('en-US')}-document cap; narrow the query `
+            + '(an agency, a document type, a shorter publication-date window) or the rest will be charged as new '
+            + 'on the first incremental run',
+        );
+    }
+} else {
+    if (runState.failed) {
+        markIncomplete('source-error', `API error: ${runState.lastError ?? 'unknown'}`);
+    } else if (chargeLimitReached) {
+        markIncomplete('charge-limit', "the run's pay-per-event charge limit was reached before the walk reached the end of the result set");
+    } else if (!runState.exhausted && pushed >= maxResults) {
+        markIncomplete('max-results', `maxResults=${maxResults} was reached before the walk reached the end of the result set`);
+    } else if (!runState.exhausted) {
+        markIncomplete('stopped-early', 'the walk ended with no recorded reason');
+    }
+}
+
+const runSummary = {
+    mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : (publicInspection ? 'public-inspection' : 'search'),
+    scanned,
+    delivered: pushed,
+    pages,
+    exhausted: runState.exhausted,
+    failed: runState.failed,
+    lastApiError: runState.lastError ?? null,
+    complete,
+    incompleteReason,
+    incompleteDetail,
+    maxResults,
+    chargeLimitReached,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    baselineTruncated: watchMode ? runState.seedCapped : null,
+    skippedSeen: watchMode && !seeding ? skippedSeen : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
+// message is the only place the Apify console itself shows the shortfall. There was no
+// setStatusMessage call anywhere in this Actor before cycle 654.
+if (!complete) {
+    await Actor.setStatusMessage(
+        seeding
+            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} document(s) recorded — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+            : `Incomplete: ${pushed.toLocaleString('en-US')} document(s) delivered — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+}
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error.
@@ -674,6 +768,9 @@ if (webhookUrl) {
         watchLabel: watchMode ? watchLabel : null,
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed : null,
+        // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a
+        // console/API consumer read the identical completeness facts.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({
