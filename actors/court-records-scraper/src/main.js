@@ -286,7 +286,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // caution applied to every other public API in this fleet.
 const PAGE_DELAY_MS = 1200;
 
-async function apiGet(url) {
+// `state` (when given) records WHY a null came back, since the caller only sees null either
+// way — without this a permanent 500 and a genuinely exhausted index are indistinguishable to
+// everything downstream of apiGet, which is exactly the h250 gap this cycle closes.
+async function apiGet(url, state = null) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
         let resp;
         try {
@@ -304,12 +307,14 @@ async function apiGet(url) {
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
             log.warning(`CourtListener request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
+            if (state) state.lastError = `request failed: ${err.message}`;
             await sleep(waitS * 1000);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`CourtListener returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
+            if (state) state.lastError = `HTTP ${resp.statusCode}`;
             await sleep(waitS * 1000);
             continue;
         }
@@ -318,15 +323,18 @@ async function apiGet(url) {
         if (resp.statusCode !== 200) {
             const detail = parsed ? JSON.stringify(parsed).slice(0, 300) : String(resp.body).slice(0, 300);
             log.warning(`CourtListener ${resp.statusCode}: ${detail}`);
+            if (state) state.lastError = `HTTP ${resp.statusCode}: ${detail.slice(0, 120)}`;
             return null;
         }
         if (!parsed) {
             log.warning(`CourtListener returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
+            if (state) state.lastError = `non-JSON body: ${String(resp.body).slice(0, 120).replace(/\s+/g, ' ').trim()}`;
             return null;
         }
         return parsed;
     }
     log.warning('CourtListener kept erroring after 4 attempts; stopping this walk early.');
+    if (state) state.lastError = state.lastError ? `${state.lastError} (after 4 retries)` : 'unreachable after 4 retries';
     return null;
 }
 
@@ -631,12 +639,16 @@ async function saveWatchRecord(status) {
 }
 
 let pushed = 0;
+let chargeLimitReached = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
-        if (r.chargedCount === 0) return false;
+        // Both of these end the walk; only the charge limit is a cause the buyer set on the RUN
+        // rather than in the input, so RUN_SUMMARY has to tell them apart from maxResults.
+        if (r.chargedCount === 0) { chargeLimitReached = true; return false; }
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) chargeLimitReached = true;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
@@ -660,25 +672,29 @@ let totalReported = 0;
 let stop = false;
 
 // Walk one index until the run's cumulative `pushed` reaches `target` (or the index runs out).
-// Returns the cursor URL to resume from, or null when that index is exhausted.
+// Returns the cursor URL to resume from, or null when that index is exhausted OR failed —
+// `state.exhausted`/`state.failed` are what tell those two apart afterwards (see the
+// completeness contract below); before this cycle nothing recorded the difference at all.
 async function walk(state, target) {
     let first = state.started !== true;
     state.started = true;
     while (state.url && !stop && pushed < target) {
         if (!first) await sleep(PAGE_DELAY_MS);
-        const page = await apiGet(state.url);
+        const page = await apiGet(state.url, state);
         first = false;
-        if (!page) { state.url = null; break; }
+        if (!page) { state.failed = true; state.url = null; break; }
         const results = listOf(page.results);
-        if (typeof page.count === 'number' && !state.counted) {
+        if (typeof page.count === 'number' && state.declaredMatches === null) {
+            state.declaredMatches = page.count;
             totalReported += page.count;
-            state.counted = true;
         }
-        if (!results.length) { state.url = null; break; }
+        if (!results.length) { state.exhausted = true; state.url = null; break; }
         pages += 1;
+        state.pages += 1;
 
         for (const row of results) {
             scanned += 1;
+            state.scanned += 1;
             const item = state.kind === 'opinions' ? normalizeOpinion(row) : normalizeDocket(row);
             const key = item.id ?? `${state.kind}:${item.caseName}:${item.dateFiled}`;
             if (seenIdsThisRun.has(key)) continue;
@@ -695,6 +711,7 @@ async function walk(state, target) {
 
             const before = pushed;
             const keepGoing = await pushResult(item);
+            if (pushed > before) state.delivered += 1;
             if (watchMode && pushed > before) watchSeen.add(key);
             if (!keepGoing || pushed >= maxResults) { stop = true; break; }
             if (pushed >= target) break;
@@ -702,11 +719,23 @@ async function walk(state, target) {
         // Follow the API's own cursor link rather than rebuilding it: the cursor token is opaque
         // and there is no offset paging to fall back on.
         state.url = typeof page.next === 'string' && page.next ? page.next : null;
+        if (!state.url) state.exhausted = true;
     }
     return state.url;
 }
 
-const walkers = recordTypes.map((kind) => ({ kind, url: firstUrl(kind), started: false, counted: false }));
+const walkers = recordTypes.map((kind) => ({
+    kind,
+    url: firstUrl(kind),
+    started: false,
+    pages: 0,
+    scanned: 0,
+    delivered: 0,
+    declaredMatches: null,
+    exhausted: false,
+    failed: false,
+    lastError: null,
+}));
 
 // With recordType "both" the two indexes are walked to a fair share of maxResults each, not
 // first-come-first-served. The opinion index is far larger than the RECAP one for most queries,
@@ -730,6 +759,55 @@ while (!stop && pushed < maxResults && walkers.some((s) => s.url)) {
         await walk(state, maxResults);
     }
     if (pushed === before) break;
+}
+
+// ---------------------------------------------------------------------------
+// Completeness contract (cycle 653), same shape as sam-gov-opportunities-scraper /
+// uk-find-a-tender-scraper: a RUN_SUMMARY key-value record, a status message, and the same
+// object on the webhook payload. This was the h250 scan's last untouched target, and the gap
+// was in `walk()`'s stop path: `if (!page) { state.url = null; break; }` treated a permanent
+// upstream failure (4 failed retries, a non-200, a non-JSON body) exactly like a natural end
+// of the index (`!results.length` or no `next` cursor) — both just set `state.url = null` and
+// the run ended "Done. Pushed N record(s)..." either way. A buyer searching a court with
+// ongoing litigation who got "0 dockets" could not tell a genuinely empty court from a
+// mid-walk 500; `walk()` now records `exhausted`/`failed`/`lastError` per index instead.
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+function markIncomplete(reason, detail = null) {
+    if (!complete) return;
+    complete = false;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+}
+
+const failedWalkers = walkers.filter((w) => w.failed);
+if (failedWalkers.length) {
+    markIncomplete(
+        'source-error',
+        `${failedWalkers.map((w) => w.kind).join(' and ')} stopped answering `
+        + `(${failedWalkers.map((w) => `${w.kind}: ${w.lastError ?? 'unknown error'}`).join('; ')}); its remaining `
+        + 'matches are missing from this run, and a low or zero delivered count for it does NOT mean the index had that few',
+    );
+}
+// A walker that still has a cursor to follow only happens because the shared `stop` flag fired
+// (maxResults, a charge limit, or the watch seed cap) — the redistribution loop above only ends
+// early via `stop`; otherwise it keeps rotating budget until every walker's `url` is null
+// (exhausted or failed), so this is checked after both rounds, not per-round.
+const stillOpen = walkers.filter((w) => w.url);
+if (stillOpen.length) {
+    const rest = stillOpen.map((w) => w.kind).join(' and ');
+    if (chargeLimitReached) {
+        markIncomplete('charge-limit', `the run's pay-per-event charge limit was reached with ${rest} still to read`);
+    } else if (seeding && watchSeen.size >= SEED_CAP) {
+        markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-record cap with ${rest} still to read`);
+    } else if (!seeding && pushed >= maxResults) {
+        markIncomplete('max-results', `maxResults=${maxResults} was reached with ${rest} still to read`);
+    } else {
+        // Should be unreachable given the loop structure above — say so rather than reporting
+        // a false "complete".
+        markIncomplete('stopped-early', `the walk ended with ${rest} still to read for no recorded reason`);
+    }
 }
 
 if (watchMode) {
@@ -779,6 +857,62 @@ log.info(
     + `CourtListener reported ${totalReported} total matches across the selected index(es)).`,
 );
 
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which needs no webhook. `complete` is deliberately kept out of the run STATUS: a run can be
+// SUCCEEDED and short at the same time, and that pair is exactly what this record exists for.
+// `recordTypes` is per-index on purpose — a single fleet-standard `complete` flag would still
+// leave "which index, opinions or dockets, is this number missing from?" unanswered.
+// `declaredMatches` is null (not summed as 0) unless EVERY requested index returned its own
+// count at least once — present-and-0 would read as "we asked and the archive has none",
+// which is a different fact than "one index failed before it ever told us its total".
+const allDeclared = walkers.every((w) => w.declaredMatches !== null);
+const declaredMatchesTotal = allDeclared ? walkers.reduce((n, w) => n + w.declaredMatches, 0) : null;
+const runSummary = {
+    mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : 'search',
+    recordTypes: Object.fromEntries(walkers.map((w) => [w.kind, {
+        pages: w.pages,
+        scanned: w.scanned,
+        delivered: w.delivered,
+        declaredMatches: w.declaredMatches,
+        // TRUE only if this index answered until it ran out of results/cursor. When false,
+        // `delivered` for it is unknown, not "this index had that few".
+        exhausted: w.exhausted,
+        failed: w.failed,
+        lastError: w.lastError,
+    }])),
+    recordTypesRequested: recordTypes,
+    declaredMatches: declaredMatchesTotal,
+    scanned,
+    delivered: pushed,
+    pages,
+    complete,
+    incompleteReason,
+    incompleteDetail,
+    maxResults,
+    chargeLimitReached,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    skippedSeen: watchMode && !seeding ? skippedSeen : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
+// message is the only place the Apify console itself shows the shortfall. There was no
+// setStatusMessage call anywhere in this Actor before cycle 653.
+if (!complete) {
+    await Actor.setStatusMessage(
+        seeding
+            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} record(s) recorded — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+            : `Incomplete: ${pushed.toLocaleString('en-US')} record(s) delivered — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else {
+    log.info(`Complete: every selected index (${recordTypes.join(', ')}) was read to the end of its matches for these filters.`);
+}
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error.
@@ -795,6 +929,9 @@ if (webhookUrl) {
         watchLabel: watchMode ? watchLabel : null,
         watchNewCount: watchMode && !seeding ? pushed : null,
         watchSeeding: watchMode ? seeding : null,
+        // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a polling
+        // consumer read the identical completeness facts.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({
