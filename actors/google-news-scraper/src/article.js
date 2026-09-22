@@ -42,6 +42,72 @@ function findArticleLd($) {
   }) || null;
 }
 
+const MIN_BODY_CHARS = 300; // shorter than this is a teaser/consent wall, not an article
+
+// Did we get the WHOLE article, or a paywall teaser that merely looks like one?
+//
+// A teaser is the dangerous failure: it arrives as real <p> paragraphs, clears every length
+// threshold, and reports articleFetchStatus:"ok" with no hint that the rest is missing.
+//
+// The naive check -- "JSON-LD says isAccessibleForFree:false, therefore incomplete" -- is WRONG,
+// and we measured it: theatlantic.com declares isAccessibleForFree:false on every article yet
+// served us the full 3,479-word body. Metered paywalls gate the Nth read, not the first, so the
+// flag describes the publisher's intent, never what this response actually contained.
+//
+// So we never trust the flag as a verdict; we use it as a MAP. Google's paywall spec makes the
+// publisher name the gated region in `hasPart[].cssSelector`, so we can go look at that exact
+// region in the HTML we were served and see whether the text is in it. That turns an assumption
+// into an observation. Where no observation is possible we return null, never false -- a guessed
+// "incomplete" is as bad for a buyer as a silent teaser.
+// Run this on the UNTOUCHED document, before bodyFromHtml() strips noise elements out of it --
+// one of those strip rules could otherwise remove the very region we are trying to inspect.
+function probeGatedRegion($, ld) {
+  const parts = (Array.isArray(ld.hasPart) ? ld.hasPart : [ld.hasPart]).filter((p) => p && typeof p === 'object');
+  for (const part of parts) {
+    const partGated = part.isAccessibleForFree === false || String(part.isAccessibleForFree).toLowerCase() === 'false';
+    if (!partGated || !part.cssSelector) continue;
+    let scope;
+    try { scope = $(String(part.cssSelector)); } catch { continue; } // publishers ship selectors cheerio can't parse
+    if (!scope.length) return { served: false, reason: 'paywalled-section-missing' };
+    const text = clean(scope.find('p').map((_, p) => clean($(p).text())).get().filter((t) => t.length > 40).join('\n\n'));
+    if (text.length < MIN_BODY_CHARS) return { served: false, reason: 'paywalled-section-empty' };
+    return { served: true, reason: null }; // the gated region was served to us in full
+  }
+  return null; // publisher named no inspectable gated region
+}
+
+// A gated region that came back empty is NOT on its own proof of a teaser, and we measured this
+// too: scmp.com points `cssSelector` at `.piano-metering__paywall-container`, the client-side
+// paywall OVERLAY, which is correctly empty on a free read. Treating "gated region empty" as
+// "article truncated" flagged two complete 849- and 1,123-word SCMP articles as incomplete.
+// So an empty gated region only downgrades to `false` when a SECOND, independent observation
+// agrees that what we hold is teaser-sized. One observation short of that, we say `null`.
+const TEASER_MAX_WORDS = 220;
+
+function assessCompleteness(probe, ld, deliveredWords) {
+  const n = Number(ld.wordCount);
+  const declaredWordCount = Number.isFinite(n) && n > 0 ? n : null;
+  const free = ld.isAccessibleForFree;
+  const isFalse = free === false || String(free).toLowerCase() === 'false';
+  const isTrue = free === true || String(free).toLowerCase() === 'true';
+
+  // Publisher declares its own length and we fell well short of it: incomplete on our own numbers,
+  // independent of any paywall claim. Both counts ride on the row so a buyer can re-judge the ratio.
+  if (declaredWordCount && deliveredWords < declaredWordCount * 0.6) {
+    return { declaredWordCount, complete: false, reason: 'short-vs-declared-wordcount' };
+  }
+  if (probe?.served) return { declaredWordCount, complete: true, reason: null };
+  if (probe && deliveredWords <= TEASER_MAX_WORDS) {
+    return { declaredWordCount, complete: false, reason: probe.reason };
+  }
+  // Gated, but nothing we can check came back conclusive: either the publisher named no region for
+  // us to inspect, or the region was empty while the text we hold is full-article-sized. We know it
+  // is paywalled and we do NOT know whether this response was truncated. Say exactly that.
+  if (probe || isFalse) return { declaredWordCount, complete: null, reason: 'paywall-declared-unverifiable' };
+  if (isTrue || declaredWordCount) return { declaredWordCount, complete: true, reason: null };
+  return { declaredWordCount, complete: null, reason: null }; // no completeness signal on the page
+}
+
 // Fallback when JSON-LD has no articleBody: pull the paragraphs out of the article container.
 function bodyFromHtml($) {
   // Most specific container first: a publisher-specific body wrapper carries less caption/bio
@@ -55,7 +121,7 @@ function bodyFromHtml($) {
     if (!scope.length) continue;
     const paras = scope.find('p').map((_, p) => clean($(p).text())).get().filter((t) => t.length > 40);
     const text = clean(paras.join('\n\n'));
-    if (text.length >= 300) return text; // shorter than this is a teaser/consent wall, not an article
+    if (text.length >= MIN_BODY_CHARS) return text;
   }
   return null;
 }
@@ -75,16 +141,22 @@ export function makeArticleFetcher({ http, bodyMaxChars, log }) {
         $ = cheerio.load(res.body);
       } catch (e) { log.debug(`article fetch failed (${url}): ${e.message}`); status = 'error'; continue; }
       const ld = findArticleLd($) ?? {};
+      const gatedProbe = probeGatedRegion($, ld); // before bodyFromHtml() mutates the document
       const ldBody = clean(ld.articleBody);
-      const body = ldBody.length >= 300 ? ldBody : bodyFromHtml($) ?? (ldBody || null);
+      const body = ldBody.length >= MIN_BODY_CHARS ? ldBody : bodyFromHtml($) ?? (ldBody || null);
       if (!body) continue; // this fingerprint got a page without the text — try the next one
       hostVariant.set(host, i);
+      const words = body.split(/\s+/).filter(Boolean).length;
+      const { declaredWordCount, complete, reason } = assessCompleteness(gatedProbe, ld, words);
       const kw = ld.keywords ?? $('meta[name="news_keywords"]').attr('content') ?? $('meta[name="keywords"]').attr('content');
       return {
         articleBody: body.slice(0, bodyMaxChars),
         articleBodyTruncated: body.length > bodyMaxChars,
-        articleWordCount: body.split(/\s+/).filter(Boolean).length,
-        articleBodySource: ldBody.length >= 300 ? 'jsonld' : 'html',
+        articleWordCount: words,
+        articleDeclaredWordCount: declaredWordCount,
+        articleBodyComplete: complete,
+        articleBodyIncompleteReason: reason,
+        articleBodySource: ldBody.length >= MIN_BODY_CHARS ? 'jsonld' : 'html',
         articleAuthor: firstName(ld.author) || clean($('meta[name="author"]').attr('content')) || null,
         articleImage: firstUrl(ld.image) ?? $('meta[property="og:image"]').attr('content') ?? null,
         articleKeywords: (Array.isArray(kw) ? kw : String(kw ?? '').split(',')).map((k) => clean(k)).filter(Boolean),

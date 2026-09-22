@@ -112,6 +112,30 @@
           "null"
         ]
       },
+      "articleDeclaredWordCount": {
+        "title": "ArticleDeclaredWordCount",
+        "example": 1240,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "articleBodyComplete": {
+        "title": "ArticleBodyComplete",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "articleBodyIncompleteReason": {
+        "title": "ArticleBodyIncompleteReason",
+        "example": "paywalled-section-missing",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "articleBodySource": {
         "title": "ArticleBodySource",
         "example": "html",

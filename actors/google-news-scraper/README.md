@@ -67,6 +67,9 @@ With `fetchArticleBody: true` each item also carries:
 {
   "articleBody": "Apify, the web scraping and automation platform, said on Tuesday...",
   "articleWordCount": 812,
+  "articleDeclaredWordCount": null,
+  "articleBodyComplete": true,
+  "articleBodyIncompleteReason": null,
   "articleBodyTruncated": false,
   "articleBodySource": "jsonld",
   "articleAuthor": "Jane Doe",
@@ -101,12 +104,20 @@ Rule-based and free (no extra request): it catches a cashtag (`$TSLA`), an excha
 - Use `rssUrls` for topic feeds, e.g. `https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en`.
 - Turn off `decodeUrls` for the fastest runs if you only need headlines and sources.
 - `fetchArticleBody` adds one request per article, so it is slower — but it costs no extra: you are still charged once per article returned, body or no body.
-- Hard-paywalled publishers will come back as `blocked` or with a short teaser body; filter on `articleWordCount` if you only want complete articles.
+- Hard-paywalled publishers come back as `blocked`. Metered ones are the tricky case — they return a *teaser* that looks like a real article; filter on `articleBodyComplete !== false` rather than guessing from `articleWordCount`.
 
 ## FAQ
 **Why is `url` null on some articles?** Google occasionally rate-limits the redirect-resolving endpoint per IP; `googleNewsUrl` still works, and the run status message tells you how many articles were affected. Every run routes through rotating Apify Proxy IPs by default specifically to avoid this — if you turned `proxyConfiguration` off, turn it back on first.
 **Does `fetchArticleBody` cost more?** No — you pay once per article returned whether or not the body was fetched.
 **Why does `articleFetchStatus` say `blocked` or `no-body`?** The publisher likely paywalls the article or serves it without readable paragraph text; both are reported explicitly instead of a silently empty `articleBody`.
+**How do I know the `articleBody` is the WHOLE article and not a paywall teaser?** Read `articleBodyComplete`. A metered paywall is the dangerous case: it serves the first few hundred words as ordinary paragraphs, so the body clears every length check and `articleFetchStatus` is a perfectly honest `ok` — nothing about the row looks wrong. `articleBodyComplete` is three-state on purpose: `true` = we observed the whole article arrive, `false` = we observed that it did not (`articleBodyIncompleteReason` names which observation), `null` = the page carried no completeness signal, so we are not guessing either way. **Never read `null` as a problem, and never read `false` as a guess.** The reasons are:
+- `paywalled-section-missing` / `paywalled-section-empty` — the page's own structured data names the paywalled region by CSS selector (Google's paywall markup), we looked, and that region was either absent from the HTML we received or held no article text **and** what we did extract is teaser-sized (≤220 words). Both of those had to be true. You got the free part only.
+- `short-vs-declared-wordcount` — the publisher declared a `wordCount` (also surfaced as `articleDeclaredWordCount`) and we extracted under 60% of it. Both numbers ride on the row so you can apply your own threshold.
+- `paywall-declared-unverifiable` — the page is gated but nothing we can check came back conclusive, so completeness is genuinely unknown. This is a `null`, not a `false`.
+
+Two things this deliberately does **not** do, both because we measured them failing:
+- It does not treat `isAccessibleForFree: false` as proof of a teaser. theatlantic.com carries that flag on every article yet served us a complete 3,479-word body. Metered paywalls gate the *Nth* read, so the flag describes the publisher's intent, never what your request received — we use it only to find out where to look.
+- It does not treat an empty paywalled region as proof either. scmp.com points its selector at `.piano-metering__paywall-container`, the client-side paywall *overlay*, which is correctly empty on a free read — trusting that alone flagged two complete SCMP articles (849 and 1,123 words) as truncated. That is why `false` needs a second, independent observation and `null` is a first-class answer here.
 **Why did a run return 0 articles with status SUCCEEDED?** The status message distinguishes "Google returned nothing for this query" from "every result was a duplicate of another feed" from "the request failed" — check it before assuming your query is wrong.
 **What's the difference between `siteFilter` and typing `site:` into `queries`?** None functionally — `siteFilter` just OR's multiple domains together (`site:a.com OR site:b.com`) and applies them to every query in your list, so you don't have to hand-append the operator to each one.
 **What happens if Google's RSS feed has a transient blip mid-run?** Every feed and article-URL-decoding request is retried up to 3 times on a connection-level failure (measured at roughly 1 fresh request in 4 for HTTP/2 faults across this fleet, 2026-09-21) before that feed is given up on and named in the status message — a single blip no longer silently empties a query's results into `erroredFeeds`.
