@@ -172,6 +172,11 @@ const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
 let stop = false;
+// Why the run stopped early, if it did. `stop` abandons the REST OF THE APP LIST (see the main
+// loop's `if (stop) break`), so a run that hits any of these delivers a dataset covering only the
+// apps it got to -- which is indistinguishable from a complete run unless we say so. Tracked
+// separately from `stop` because the three causes need different advice.
+let chargeLimitHit = false; // the buyer's own pay-per-event charge limit was exhausted mid-run
 
 // watchId is the review's stable id; app-detail records pass null and are handled by the
 // caller (they are deferred in watch mode, see the main loop).
@@ -191,6 +196,7 @@ async function pushResult(item, watchId = null) {
     await Actor.pushData(item);
     pushed += 1;
     if (watchMode && watchId != null) watchSeen.add(String(watchId));
+    if (r.eventChargeLimitReached) chargeLimitHit = true;
     if (r.eventChargeLimitReached || pushed >= maxResults) stop = true;
     return !stop;
   }
@@ -290,8 +296,12 @@ const seenReviewIds = new Set();
 let duplicatesSkipped = 0;
 let unidentifiedSkipped = 0; // watch mode only: reviews Google Play returned without an id
 const saturatedApps = []; // watch mode: every fetched review was new, so older new ones may be out of reach
+// Apps the loop actually got to. Everything in resolvedAppIds but NOT in here was abandoned by an
+// early stop and contributed zero rows -- the silent-shortfall case the end-of-run note reports.
+const appsAttempted = new Set();
 for (const appId of resolvedAppIds) {
   if (stop) break;
+  appsAttempted.add(String(appId));
   // An app that is not in the baseline yet is baselined on this run instead of delivered, even
   // on an otherwise incremental run. This only happens when a 'searchTerms' lookup resolves to a
   // different app than last time (editing 'appIds' changes the fingerprint, which starts a whole
@@ -420,12 +430,41 @@ if (watchMode) {
 }
 
 log.info(`Done. Pushed ${pushed} items.${duplicatesSkipped ? ` Skipped ${duplicatesSkipped} duplicate review(s) (not charged).` : ''}${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
+
+// An early stop silently truncates the APP LIST, not just the row count: apps after the stopping
+// point were never fetched at all, and none of the per-app buckets below (emptyApps,
+// filteredOutApps, depthCappedApps, erroredApps) know about them, so without this note the run
+// reads as a complete one that simply found less. Appended to whatever status message applies.
+const appsNotReached = resolvedAppIds.map(String).filter((a) => !appsAttempted.has(a));
+let truncationNote = '';
+if (stop) {
+  const cause = chargeLimitHit
+    ? 'your pay-per-event charge limit was reached'
+    : pushed >= maxResults
+      ? `the maxResults cap (${maxResults}) was reached`
+      : watchMode && seeding
+        ? `the baseline cap (${SEED_CAP} reviews) was reached`
+        : 'the run stopped early';
+  // Only claim the app list was abandoned when it actually was. Hitting the cap on the very last
+  // row of the last app is the common, harmless case (the default input does exactly that) and
+  // must not be reported as missing apps we never looked at.
+  truncationNote = ` MAY BE INCOMPLETE: ${cause}.`
+    + (appsNotReached.length
+      ? ` The run stopped before finishing the app list — ${appsNotReached.length} app(s) were never fetched and returned nothing: ${appsNotReached.join(', ')}.`
+      : ' Every requested app was fetched, but the last one may have been cut short.')
+    + (chargeLimitHit
+      ? ' Raise the Actor\'s charge limit and re-run to get the rest.'
+      : ` Raise "maxResults" (currently ${maxResults}) and re-run to get the rest.`);
+  log.warning(truncationNote.trim());
+}
+
+let statusMsg;
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
+  statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
 } else if (watchMode && saturatedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new item(s) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.`);
+  statusMsg = (`Pushed ${pushed} new item(s) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.`);
 } else if (pushed === 0 && resolvedAppIds.length) {
   const why = invalidApps.length
     ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
@@ -436,12 +475,17 @@ if (watchMode && seeding) {
     : filteredOutApps.length && !emptyApps.length
       ? 'reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters'
       : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
-  await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
+  statusMsg = (`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
+  statusMsg = (`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyApps.length || filteredOutApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
+  statusMsg = (`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
+} else if (truncationNote) {
+  // A clean run that nothing else had to report, EXCEPT that it stopped early -- previously this
+  // was the case that set no status message at all and read as a complete run.
+  statusMsg = `Pushed ${pushed} items.`;
 }
+if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote).slice(0, 1000));
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are

@@ -1761,3 +1761,36 @@ Also added **`bodyWordCount`** to every post row — what you actually got, next
 **Do not trust these as truncation signals** (checked, all unreliable): `should_send_free_preview` was `true` on only 2 of 7 truncated paid posts; `post_preview_limit` was `null`/`0`; `truncated_body_text` is a ~330-char SEO blurb unrelated to the body; `exempt_from_archive_paywall` was `false` everywhere. Measure the body, don't read a flag.
 
 **Generalisable:** any Actor scraping a freemium publisher (Medium members-only, Seeking Alpha, paid podcasts' transcripts) should compare *delivered* content length against the platform's *declared* length before claiming completeness. "Field is non-empty" != "field is complete" — a new defect class distinct from the always-null class `check-field-fill` hunts. Worth a sweep of the other content Actors.
+
+## Cycle 630 — a global result cap silently truncates the *input list*, not just the row count
+`google-play-reviews-scraper` had a `stop` flag set by three separate causes (`pushed >= maxResults`,
+the buyer's pay-per-event `eventChargeLimitReached`, and the watch `SEED_CAP`). The main loop did
+`for (const appId of resolvedAppIds) { if (stop) break; ... }`. Everyone reads that as "cap the rows",
+but it also **abandons every remaining app**, and the abandoned apps appear in none of the per-app
+diagnostic buckets (`emptyApps`/`filteredOutApps`/`depthCappedApps`/`erroredApps`) — because those
+buckets are only filled by code that ran. So the whole end-of-run `if/else if` status-message chain
+fell through to nothing: run SUCCEEDED, status message empty, log said `Done. Pushed N items.`
+Ask for 3 apps, get rows for 1, no way to tell. Billing was never wrong (nothing pushed = nothing
+charged), so no charge-side check could have caught it — same blind spot as cycle 629.
+
+**Generalisable check, applies to every Actor with a global `maxResults` over a list of targets:**
+track the targets the loop actually *reached* (`appsAttempted`), diff against the resolved list, and
+if the run stopped early, say so and **name the skipped targets by id**. An `if/else` chain of
+diagnostics that can fall through to "no message at all" is the smell — prefer building one
+`statusMsg` variable and issuing a single `setStatusMessage` call, so a truncation note can always
+be appended regardless of which branch won.
+
+**Don't over-claim the cause.** The first build asserted "the run stopped before finishing the app
+list" whenever `stop` was set — but hitting the cap on the last row of the last app is the common,
+harmless case, and the Actor's own `test_input.json` does exactly that, so the default-input gate
+immediately showed a false alarm on the Store's example run. Fixed to "MAY BE INCOMPLETE" with the
+app-list sentence gated on `appsNotReached.length`. **The default-input gate is worth running
+precisely because it is the buyer's first click** — it caught a wrong claim that all three local
+tests had passed.
+
+**Method note (2 cycles running):** both real finds (629 substack comments, 630 this) came from
+**reading the control flow that abandons work** — `break`, `return false`, `keepGoing = false` — not
+from field-fill or ratio sweeps. In 630 the live ratio sweep falsified all three of its hypotheses
+(pagination delivers `num` exactly to the 5000 ceiling; `NEWEST` is strictly date-descending over
+5000 deep rows; Google Play's `app.reviews` is locale-scoped, not global) and found nothing. Grep
+for the abandon points first; use measurement to confirm a specific suspicion, not to hunt.
