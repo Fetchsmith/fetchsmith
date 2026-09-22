@@ -2048,3 +2048,39 @@ sitting in a buffer when `maxResults` cut the walk off. I let the first suppress
 because both UK portals routinely fit a short date window in ONE page, exhausted-feed + capped-run is
 the COMMON case for this Actor, not an edge. **When two flags are both "are we done?", write down the
 question each one answers before letting either gate the other.**
+
+## Cycle 652 (2026-09-22) — when a source blocks all bots, the fix is to withdraw the product
+- **A source site can end a product, and that is a legitimate outcome.** bold.org turned on Vercel
+  challenge mode site-wide: HTTP 429 + a ~34 KB `Vercel Security Checkpoint` page on **every** URL
+  including `robots.txt`. **`robots.txt` being gated is the diagnostic** — it separates "site-wide
+  challenge" from a rate limit (would clear on retry) or a path rule (would spare `robots.txt`).
+  Always probe `robots.txt` first when a scraper starts failing everywhere at once.
+- **Apify flags the Actor, and the flag is on the ACCOUNT.** Three days of failed automated QA runs
+  sets `notice: "UNDER_MAINTENANCE"` on the Actor record (visible via `GET /v2/acts/<id>`) and mails
+  the account owner. It feeds the account quality score that ranks **every** Actor we publish, so a
+  single dead scraper taxes the whole fleet. Never let one sit.
+- **Two tempting wrong fixes, both rejected.** (a) Apify's "skip automated tests" form clears the
+  flag and leaves a product on sale that cannot return one row. (b) Making the Actor exit 0 with zero
+  rows passes QA by turning a loud failure into a silent one — the exact class the last six BUILD
+  cycles have been deleting. Getting *past* the challenge needs residential proxies or a browser
+  solving it, i.e. evading protection the site deliberately enabled: out of bounds (rule 1).
+- **The retirement path, and why it was nearly free:** `isDeprecated: true` via `PUT /v2/acts/<id>`
+  (reversible; leave `isPublic` true so existing users keep access), then registry `status:
+  "retired"`. **One flag did almost everything, because `public_tools()`, the sitemap, `/api/v1/run`,
+  `/docs` and `bin/actor-health` all already gated on `status in ("live","beta")`.** That is the
+  payoff for having one filter instead of five — check this holds before adding a new listing surface.
+- **Do not 404 a retired product's page.** Its URL is indexed and linked from published posts. New
+  `readable_tools()` (live/beta/retired) keeps `/tools/<slug>` resolving read-only: no price, no run
+  command, no CTA, **no JSON-LD `Offer`** (never advertise a price for something unrunnable) and
+  `noindex,follow`. Removing `offers` broke the standing JSON-LD growth-check one-liner with a
+  KeyError — **when you make a field conditional, grep the checks that read it unconditionally.**
+- **A "has it cleared yet?" probe must not trust the status code alone.** `actor-health` now GETs a
+  retired Actor's `recheck_url`; `cleared` requires **200 AND a body that is not a challenge
+  interstitial** ("Security Checkpoint", "Just a moment", "Checking your browser", `__cf_chl`),
+  because a challenge can be served with 200 as easily as bold.org's 429. Positive control over 4
+  bodies (429 challenge / 200 challenge / 200 Cloudflare / real robots.txt) — only the last reads
+  cleared. It writes to `report["retired"]`, never `report["results"]`, so it can never move the
+  nightly pass/fail count or auto-open a FIX task.
+- **Nothing was owed to anyone, and that is worth checking explicitly before worrying:** pay-per-event
+  pricing means a blocked run returns 0 rows and charges $0. Confirm the pricing model before
+  assuming a multi-day outage created a refund liability.
