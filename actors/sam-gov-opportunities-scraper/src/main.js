@@ -25,6 +25,34 @@ const NOTICE_TYPE_CODES = {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ---------------------------------------------------------------------------
+// Run-level completeness (cycle 649, h250 class). Before this, EVERY way this Actor could come up
+// short was invisible to a pipeline: a page that 500s mid-walk just `break`s out of fetchRows(),
+// SAM's 10,000-row backend depth cap only produced an English log line, maxResults and the PPE
+// charge limit stopped the push loop silently, and `totalElements` -- the only number that says how
+// many opportunities actually matched -- was never written anywhere the buyer can read. 200 rows of
+// a 12,297-match query looked exactly like exhausting a 200-match query. Same contract as
+// nih-reporter-scraper / fda-recall-scraper / clinicaltrials-scraper: a RUN_SUMMARY key-value
+// record, a status message, and the same object on the webhook payload.
+let declaredMatches = null;   // SAM's own page.totalElements for this query; null = never answered, NEVER 0
+let scanned = 0;              // raw search rows read back from the API
+let pages = 0;
+let pagesFailed = 0;
+let duplicateRowsDropped = 0; // rows SAM.gov served more than once; dropped before any charge
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+let lastApiError = null;      // WHY the most recent null happened, carried into RUN_SUMMARY
+
+// First cause wins: a walk that stopped because SAM stopped answering and THEN also hit maxResults
+// must keep reporting the upstream failure -- that is the cause the buyer can act on.
+function markIncomplete(reason, detail = null) {
+    if (!complete) return;
+    complete = false;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+}
+
 async function apiGet(url) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
         let resp;
@@ -39,24 +67,28 @@ async function apiGet(url) {
                 headers: { accept: 'application/hal+json' }, // required: plain application/json 406s (cycle 539)
             });
         } catch (err) {
+            lastApiError = `request error: ${err.message}`;
             log.warning(`SAM.gov request failed (${err.message}); retrying (${attempt}/4).`);
             await sleep(attempt * 2000);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            lastApiError = `HTTP ${resp.statusCode}`;
             log.warning(`SAM.gov returned ${resp.statusCode}; retrying (${attempt}/4).`);
             await sleep(attempt * 3000);
             continue;
         }
-        if (resp.statusCode === 404) return null;
+        if (resp.statusCode === 404) { lastApiError = 'HTTP 404'; return null; }
         let parsed = null;
         try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
         if (resp.statusCode !== 200 || !parsed) {
+            lastApiError = `HTTP ${resp.statusCode}, non-JSON or unexpected body`;
             log.warning(`SAM.gov ${url} returned ${resp.statusCode}, non-JSON or unexpected body: ${String(resp.body).slice(0, 200)}`);
             return null;
         }
         return parsed;
     }
+    lastApiError = lastApiError ?? 'exhausted 4 attempts';
     log.warning(`SAM.gov ${url} kept failing after 4 attempts; skipping.`);
     return null;
 }
@@ -154,10 +186,12 @@ function normalizeRow(row) {
     };
 }
 
+let detailLookupsFailed = 0;
+
 async function enrichOne(item) {
     if (!item.opportunityId) return item;
     const detail = await apiGet(`${DETAIL_API}/${item.opportunityId}`);
-    if (!detail?.data2) return item;
+    if (!detail?.data2) { detailLookupsFailed += 1; return item; }
     const d = detail.data2;
     item.naicsCodes = Array.isArray(d.naics) ? d.naics.flatMap((n) => n.code ?? []) : null;
     item.setAside = d.solicitation?.setAside ?? d.award?.setAside ?? null;
@@ -258,8 +292,19 @@ const watchSeen = new Map(); // opportunityId -> last-seen snapshot
 let changedCount = 0;
 let skippedSeen = 0;
 
+let baselineTruncated = 0; // ids dropped by WATCH_KEEP -- they come back as "new" and get charged
+
 async function saveWatchRecord(status) {
-    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen.entries());
+    const entries = all.slice(-WATCH_KEEP);
+    baselineTruncated = all.length - entries.length;
+    if (baselineTruncated > 0) {
+        log.warning(
+            `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+            + 'oldest opportunity id(s) were dropped and will be returned and CHARGED as new on a future run. '
+            + 'Narrow the watch query (keyword, NAICS, notice type) or split it across labels.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -329,12 +374,14 @@ if (watchMode) {
 // booked fleet-wide as of this cycle, so no refund owed). `isPPE` guards local/non-PPE test runs,
 // same as the sibling Actors.
 let pushed = 0;
+let chargeLimitReached = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
-        if (r.chargedCount === 0) return false;
+        if (r.chargedCount === 0) { chargeLimitReached = true; return false; }
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) chargeLimitReached = true;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
@@ -345,24 +392,87 @@ const PAGE_SIZE = 100;
 
 // Pulled out so the real run and a watch-mode baseline seed walk share the exact same paging
 // logic and can never drift out of sync -- only the `limit` differs (maxResults vs. SEED_CAP).
+const DEPTH_CAP = 10000; // SAM.gov's own hard backend paging depth, confirmed cycle 538
+
+// How many of the declared matches this backend will actually hand over. null while SAM has not
+// answered with a count -- never collapsed to 0, which is what made a failed count read as
+// "nothing matched your filters" everywhere it was used.
+function reachable() {
+    return declaredMatches === null ? null : Math.min(declaredMatches, DEPTH_CAP);
+}
+
 async function fetchRows(limit) {
     const rows = [];
+    // Measured live cycle 649 on a 19,834-match query: a full 100-page walk read 10,000 rows but
+    // only 8,990 DISTINCT opportunity ids -- ~10% of rows repeat across pages, because SAM.gov
+    // pages by offset over a live, relevance-sorted index that shifts under the walk. Every repeat
+    // used to be pushed AND CHARGED again as a separate result. Dedupe inside the walk.
+    const seenIds = new Set();
     let page = 0;
-    let total = Infinity;
-    while (rows.length < limit && rows.length < total) {
+    while (rows.length < limit) {
+        const reach = reachable();
+        if (reach !== null && rows.length >= reach) break; // delivered everything SAM will serve
         const url = buildSearchUrl(page, PAGE_SIZE);
         const data = await apiGet(url);
-        if (!data) { log.warning(`Page ${page} failed after retries; stopping.`); break; }
-        total = Math.min(data.page?.totalElements ?? 0, 10000);
+        if (!data) {
+            pagesFailed += 1;
+            markIncomplete('upstream-error', `page ${page} failed after 4 attempts (${lastApiError ?? 'unknown error'})`);
+            log.warning(`Page ${page} failed after retries; stopping short.`);
+            break;
+        }
+        pages += 1;
+        // A 200 whose body carries no usable total is NOT "0 matches" -- the walk keeps paging blind
+        // until SAM returns an empty page, instead of ending on the first page looking complete.
+        const declared = Number.isFinite(data.page?.totalElements) ? Number(data.page.totalElements) : null;
+        // FIRST answer wins. Measured live cycle 649: walking a 911-match query to exhaustion, the
+        // one-past-the-end page comes back 200 with an empty `results` AND `totalElements: 0`, so
+        // re-assigning on every page clobbered the real count with 0 on the very last read --
+        // RUN_SUMMARY would have published `declaredMatches: 0` for a 911-match query and the
+        // duplicate/short-page checks (`rows.length < 0`) could never fire. The declared count is a
+        // property of the query, measured once, not a per-page field.
+        if (declared !== null && declaredMatches === null) declaredMatches = declared;
         const pageRows = data._embedded?.results ?? [];
-        if (pageRows.length === 0) break;
+        if (pageRows.length === 0) {
+            // Empty page before SAM's own declared total is reached = the backend quit early, which
+            // is not the same fact as "the result set ended here".
+            const reachNow = reachable();
+            if (reachNow !== null && rows.length < reachNow) {
+                // Distinguish "SAM.gov quit early" from "SAM.gov served its whole set but repeated
+                // rows, so there were fewer distinct opportunities than it declared". Both come up
+                // short of the declared total; only the first is an upstream failure.
+                if (rows.length + duplicateRowsDropped >= reachNow) {
+                    markIncomplete('duplicate-rows', `SAM.gov served ${reachNow} row(s) for this query but only ${rows.length} were distinct opportunities (${duplicateRowsDropped} repeat(s) dropped, uncharged)`);
+                } else {
+                    markIncomplete('short-page', `SAM.gov returned an empty page ${page} after ${rows.length} of ${reachNow} reachable match(es)`);
+                }
+            }
+            break;
+        }
+        scanned += pageRows.length;
         for (const row of pageRows) {
-            rows.push(normalizeRow(row));
+            const item = normalizeRow(row);
+            if (item.opportunityId) {
+                if (seenIds.has(item.opportunityId)) { duplicateRowsDropped += 1; continue; }
+                seenIds.add(item.opportunityId);
+            }
+            rows.push(item);
             if (rows.length >= limit) break;
         }
-        log.info(`Page ${page}: +${pageRows.length} rows (total so far ${rows.length}/${Math.min(total, limit)})`);
+        const target = reachable() === null ? limit : Math.min(reachable(), limit);
+        log.info(`Page ${page}: +${pageRows.length} rows (total so far ${rows.length}/${target})`);
         page += 1;
-        if (page * PAGE_SIZE >= 10000) { log.warning('Hit SAM.gov\'s 10,000-row backend depth cap; narrow keyword/filters for more.'); break; }
+        if (page * PAGE_SIZE >= DEPTH_CAP) {
+            // Only a shortfall if there was actually more to get and the caller still wanted it.
+            if (rows.length < limit && (declaredMatches === null || declaredMatches > DEPTH_CAP)) {
+                markIncomplete(
+                    'depth-cap',
+                    `SAM.gov serves at most ${DEPTH_CAP} rows per query`
+                    + `${declaredMatches === null ? '' : `; ${declaredMatches - DEPTH_CAP} of ${declaredMatches} match(es) sit past it`}`,
+                );
+            }
+            log.warning('Hit SAM.gov\'s 10,000-row backend depth cap; narrow keyword/filters for more.');
+            break;
+        }
         await sleep(300); // stay well under any rate limit; verified spacing from the feasibility check
     }
     return rows;
@@ -378,22 +488,50 @@ if (watchMode && seeding) {
     for (const row of baselineRows) {
         if (row.opportunityId) watchSeen.set(row.opportunityId, snapshotOf(row));
     }
+    // Backstop, keyed on rows READ not rows kept: if the seed asks for exactly SEED_CAP distinct
+    // rows and SAM.gov happens to serve no duplicates, the walk exits on `rows.length >= limit`
+    // before fetchRows' own depth-cap branch is reached. A baseline that stopped at the cap is the
+    // same over-charge as one that stopped on an error, so it is marked either way. Same
+    // `depth-cap` reason on purpose -- one name per fact; `mode: "watch-seed"` says it was a seed.
+    if (scanned >= SEED_CAP && (declaredMatches === null || declaredMatches > SEED_CAP)) {
+        markIncomplete(
+            'depth-cap',
+            `the baseline walk stopped at SAM.gov's ${SEED_CAP}-row depth cap`
+            + `${declaredMatches === null ? '' : `; ${(declaredMatches - SEED_CAP).toLocaleString('en-US')} of ${declaredMatches.toLocaleString('en-US')} match(es) were never seen`}`,
+        );
+    }
     log.info(`Baseline walk: ${watchSeen.size} opportunity id(s) recorded.`);
 }
 
 let results = [];
+let rowsNotReached = 0; // fetched rows the push loop never got to (charge limit / maxResults)
 if (!seeding) {
     results = await fetchRows(maxResults);
+    // The walk delivered all it was asked for, but SAM says there is more behind it. That is a
+    // legitimate, buyer-chosen shortfall -- it still has to be SAID, because a pipeline cannot tell
+    // "200 of 200 matches" from "200 of 12,297" by looking at the dataset.
+    const reach = reachable();
+    if (results.length >= maxResults && reach !== null && reach > maxResults) {
+        markIncomplete('max-results', `maxResults=${maxResults} of ${reach} reachable match(es)`);
+    }
     if (enrichDetail) {
         log.info(`Enriching ${results.length} rows with detail-call fields (naics, set-aside, place of performance, contacts)...`);
         for (const item of results) {
             await enrichOne(item);
             await sleep(200);
         }
+        // A detail call that failed leaves naicsCodes/setAside/pointOfContact at null -- the same
+        // null a genuinely contact-less notice has. The buyer turned enrichment ON and paid for
+        // those fields, so a silent miss is a shortfall, not a detail.
+        if (detailLookupsFailed) {
+            markIncomplete('enrich-failed', `${detailLookupsFailed} of ${results.length} detail lookup(s) failed; their naics/set-aside/place-of-performance/contact fields are null for that reason, not because SAM.gov has none`);
+        }
     }
 
     let beforePush = 0;
+    let index = 0;
     for (const item of results) {
+        index += 1;
         if (watchMode && item.opportunityId && watchSeen.has(item.opportunityId)) {
             const id = item.opportunityId;
             const nextSnap = snapshotOf(item);
@@ -412,7 +550,7 @@ if (!seeding) {
             const cont = await pushResult({ ...item, _watchChangeType: change.types, _watchPrevious: change.previous });
             if (pushed > beforePush) { watchSeen.set(id, nextSnap); changedCount += 1; }
             beforePush = pushed;
-            if (!cont) break;
+            if (!cont) { rowsNotReached = results.length - index; break; }
             continue;
         }
         const cont = await pushResult(item);
@@ -420,13 +558,38 @@ if (!seeding) {
         // maxResults or a charge limit stays "new" for the next run.
         if (watchMode && item.opportunityId && pushed > beforePush) watchSeen.set(item.opportunityId, snapshotOf(item));
         beforePush = pushed;
-        if (!cont) break; // maxResults reached or a per-run charge limit hit
+        if (!cont) { rowsNotReached = results.length - index; break; } // maxResults reached or a per-run charge limit hit
+    }
+
+    // The push loop abandoning rows it had already fetched is invisible in the dataset: the run
+    // SUCCEEDS with a plausible-looking row count. Charge limit is reported ahead of maxResults --
+    // it is the cause the buyer did not choose.
+    if (chargeLimitReached) {
+        markIncomplete('charge-limit', `the run's pay-per-event charge limit was reached${rowsNotReached ? `; ${rowsNotReached} already-fetched row(s) were not delivered` : ''}`);
+    } else if (rowsNotReached > 0) {
+        markIncomplete('max-results', `maxResults=${maxResults} reached; ${rowsNotReached} already-fetched row(s) were not delivered`);
     }
 }
 
 if (watchMode) {
-    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    await saveWatchRecord(
+        seeding
+            ? (complete ? 'seeded' : 'seeded-incomplete')
+            : (complete ? 'incremental' : 'incremental-incomplete'),
+    );
     if (seeding) {
+        // An incomplete baseline is the EXPENSIVE failure in this Actor: every opportunity SAM.gov
+        // did not hand over during seeding looks brand new on the next incremental run and is
+        // charged for. Until this cycle a page that 500'd mid-seed produced one `log.warning` from
+        // apiGet and nothing else -- the baseline saved as "seeded" and the over-charge was silent.
+        if (!complete) {
+            log.warning(
+                `BASELINE INCOMPLETE (${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}). Only `
+                + `${watchSeen.size} opportunity(ies) were recorded as already-seen out of `
+                + `${declaredMatches === null ? 'an unknown number of' : declaredMatches.toLocaleString('en-US')} match(es). `
+                + 'Re-run this seed before scheduling incremental runs, or the missing opportunities will be returned and CHARGED as new.',
+            );
+        }
         log.info(
             `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} opportunity(ies) recorded as already-seen, `
             + '0 results returned, 0 charged. The next run on this label and these filters returns only new opportunities.'
@@ -445,7 +608,61 @@ if (watchMode) {
     }
 }
 
-log.info(`Done. Pushed ${pushed} opportunities.`);
+log.info(`Done. Pushed ${pushed} opportunities (scanned ${scanned} row(s) over ${pages} page(s)).`);
+
+// ---------------------------------------------------------------------------
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which needs no webhook. `complete` is deliberately kept OUT of the status string: a run can be
+// SUCCEEDED and short at the same time, and that pair is exactly what this record exists for.
+const runSummary = {
+    mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : 'search',
+    // What SAM.gov itself says matches this query (page.totalElements). `null` means the search
+    // never answered with a count -- never read it as 0.
+    declaredMatches,
+    // Of those, how many this backend will actually serve, given its 10,000-row depth cap.
+    reachableMatches: reachable(),
+    unreachableMatches: declaredMatches === null ? null : Math.max(declaredMatches - DEPTH_CAP, 0),
+    depthCap: DEPTH_CAP,
+    scanned,
+    delivered: pushed,
+    rowsNotReached,
+    pages,
+    pagesFailed,
+    // Distinct is what you are charged for: `scanned` counts raw rows off the wire,
+    // `scanned - duplicateRowsDropped` is how many distinct opportunities that actually was.
+    duplicateRowsDropped,
+    complete,
+    incompleteReason,
+    incompleteDetail,
+    lastApiError,
+    maxResults,
+    chargeLimitReached,
+    detailLookupsFailed: enrichDetail ? detailLookupsFailed : null,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    changedRedelivered: watchMode && !seeding ? changedCount : null,
+    skippedSeen: watchMode && !seeding ? skippedSeen : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
+// message is the only place the Apify console itself shows the shortfall. There was no
+// setStatusMessage call anywhere in this Actor before cycle 649.
+if (!complete) {
+    const of = reachable() === null ? '' : ` of ${reachable().toLocaleString('en-US')} reachable`;
+    await Actor.setStatusMessage(
+        seeding
+            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} opportunity(ies) recorded${of} — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+            : `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else if (declaredMatches !== null && !watchMode) {
+    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} opportunity(ies) SAM.gov declared for these filters.`);
+}
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
@@ -458,12 +675,16 @@ if (webhookUrl) {
         defaultDatasetId: env.defaultDatasetId ?? null,
         finishedAt: new Date().toISOString(),
         pushed,
-        rowsScanned: results.length,
+        rowsScanned: scanned, // raw rows read from SAM.gov, seed walk included -- `results.length`
+        // was 0 on every baseline run no matter how many thousands it walked.
         watchLabel: watchMode ? watchLabel : null,
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
         watchChangedCount: watchMode && !seeding && watchChanges ? changedCount : null,
         watchSkippedCount: watchMode && !seeding ? skippedSeen : null,
+        // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a
+        // console/API consumer read the identical completeness facts.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({
