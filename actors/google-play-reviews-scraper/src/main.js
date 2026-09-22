@@ -104,6 +104,8 @@ let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
 const watchSeen = new Set(); // reviewIds already delivered under this label+fingerprint
+let baselineTruncated = 0; // reviewIds dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const seededApps = new Set(); // appIds whose existing reviews are already in the baseline
 let appSeeding = false; // set per app in the main loop: this app is being baselined, not delivered
 
@@ -156,6 +158,16 @@ if (watchMode) {
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `
+      + `${baselineTruncated} oldest review id(s) were dropped (${baselineTruncatedTotal} dropped over the `
+      + 'life of this label) and will be re-delivered and re-charged as "new" on a future run. Narrow the '
+      + 'filters (rating/keyword/date, fewer apps per label) to keep the baseline under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -165,6 +177,8 @@ async function saveWatchRecord(status) {
     seenCount: ids.length,
     seededApps: Array.from(seededApps),
     seenIds: ids,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
   });
 }
 
@@ -409,8 +423,18 @@ for (const appId of resolvedAppIds) {
   }
 }
 
+// WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
+// never taints the common case where the baseline comfortably fits under the cap. Computed
+// AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
+let evictionSuffix = '';
+
 if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  evictionSuffix = baselineTruncated > 0
+    ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest review `
+      + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
+      + 're-delivered and re-charged as "new" on a future run. Narrow the filters to keep the baseline under the cap.'
+    : '';
   if (seeding) {
     log.info(
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across `
@@ -419,12 +443,13 @@ if (watchMode) {
       + (watchSeen.size >= SEED_CAP
         ? ` NOTE: the baseline hit the ${SEED_CAP}-review cap. Narrow the filters or watch fewer apps per label, `
           + 'or the reviews beyond the cap will be reported as new later.'
-        : ''),
+        : '') + evictionSuffix,
     );
   } else {
     log.info(
       `Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered `
-      + `review(s) skipped, not charged); baseline now holds ${watchSeen.size} review(s) across ${seededApps.size} app(s).`,
+      + `review(s) skipped, not charged); baseline now holds ${watchSeen.size} review(s) across ${seededApps.size} app(s).`
+      + evictionSuffix,
     );
   }
 }
@@ -484,8 +509,12 @@ if (watchMode && seeding) {
   // A clean run that nothing else had to report, EXCEPT that it stopped early -- previously this
   // was the case that set no status message at all and read as a complete run.
   statusMsg = `Pushed ${pushed} items.`;
+} else if (watchMode && baselineTruncated > 0) {
+  // Same gap, other cause: an otherwise-clean delivering watch run whose baseline just lost ids
+  // to the record cap had no status message at all, so the re-charge risk stayed invisible.
+  statusMsg = `Pushed ${pushed} new item(s) for watch label "${watchLabel}".`;
 }
-if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote).slice(0, 1000));
+if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + evictionSuffix).slice(0, 1000));
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
@@ -501,6 +530,8 @@ if (webhookUrl) {
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkipped: watchMode ? watchSkipped : null,
     watchSeeding: watchMode ? seeding : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({
