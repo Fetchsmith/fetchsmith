@@ -380,8 +380,27 @@ let seeding = false;
 let skippedSeen = 0;
 const watchSeen = new Set(); // notice ids (ocid, falling back to noticeId) already delivered under this label+fingerprint
 
+// Ids evicted by the WATCH_KEEP cap on THIS run, and cumulatively over the life of the record.
+// Set by saveWatchRecord(), so read them only after it has been awaited.
+let baselineTruncated = 0;
+let baselineTruncatedTotal = 0;
+
 async function saveWatchRecord(status) {
     const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    // The slice above silently drops the OLDEST ids once the baseline passes WATCH_KEEP. Those
+    // notices were already delivered and paid for, but the next run no longer recognises them and
+    // will hand them over -- and charge for them -- a second time. Count it and say so.
+    baselineTruncated = watchSeen.size - ids.length;
+    baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+    if (baselineTruncated > 0) {
+        log.warning(
+            `Baseline size cap reached: ${baselineTruncated.toLocaleString('en-US')} of the oldest already-delivered `
+            + `notice id(s) were dropped to keep the watch record at ${WATCH_KEEP.toLocaleString('en-US')} `
+            + `(${baselineTruncatedTotal.toLocaleString('en-US')} dropped in total so far). Those notices are no longer `
+            + 'recognised as seen, so a later run will deliver and CHARGE for them again. Narrow the watch (a CPV code, '
+            + 'a buyer name, a shorter "updatedWithinDays", one portal in "sources") so the result set stays under the cap.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -391,6 +410,8 @@ async function saveWatchRecord(status) {
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: ids.length,
         seenIds: ids,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
     });
 }
 
@@ -710,6 +731,12 @@ if (stoppedShort.length) {
 
 if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    // Computed only AFTER saveWatchRecord() has run -- it is the call that sets baselineTruncated.
+    const truncationNote = () => (baselineTruncated > 0
+        ? ` WARNING: ${baselineTruncated.toLocaleString('en-US')} of the oldest seen id(s) were dropped at the `
+          + `${WATCH_KEEP.toLocaleString('en-US')}-notice baseline cap, so they will be delivered and charged again. `
+          + 'Narrow the watch filters.'
+        : '');
     if (seeding) {
         log.info(
             `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} notice(s) recorded as already-seen, `
@@ -718,12 +745,14 @@ if (watchMode) {
                 ? ` NOTE: the baseline stopped at the ${SEED_CAP}-notice cap. Narrow the query (a CPV code, a buyer `
                 + 'name, a shorter date window) so the whole result set fits, or the first incremental run will '
                 + 'report notices past the cap as new.'
-                : ''),
+                : '')
+            + truncationNote(),
         );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed} new notice(s) since the last run `
-            + `(${skippedSeen} already-delivered notice(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            + `(${skippedSeen} already-delivered notice(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`
+            + truncationNote(),
         );
     }
 }
@@ -794,6 +823,10 @@ const runSummary = {
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
     baselineSize: watchMode ? watchSeen.size : null,
+    // Already-delivered ids evicted by the WATCH_KEEP cap: this run, and cumulatively. Anything
+    // above 0 means a later run will re-deliver and re-charge those notices.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
@@ -808,6 +841,17 @@ if (!complete) {
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} notice(s) delivered — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else if (baselineTruncated > 0) {
+    // A COMPLETE run can still have evicted ids at the baseline cap, and that costs the buyer money
+    // on the NEXT run. Without this branch the console would show nothing at all for it.
+    await Actor.setStatusMessage(
+        seeding
+            ? `Baseline capped: ${baselineTruncated.toLocaleString('en-US')} oldest id(s) dropped at the `
+              + `${WATCH_KEEP.toLocaleString('en-US')}-notice limit — they will be charged again as new. Narrow the watch filters. See RUN_SUMMARY.`
+            : `${pushed.toLocaleString('en-US')} new notice(s) — but ${baselineTruncated.toLocaleString('en-US')} `
+              + `already-delivered id(s) were dropped at the ${WATCH_KEEP.toLocaleString('en-US')}-notice baseline limit `
+              + 'and will be charged again. Narrow the watch filters. See RUN_SUMMARY.',
     );
 } else {
     log.info(
