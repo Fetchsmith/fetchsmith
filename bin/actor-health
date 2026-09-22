@@ -19,6 +19,30 @@ for t in reg:
     except Exception as e:
         report["results"][slug] = {"ok": False, "items": 0, "err": str(e)[:200]}
     print(slug, report["results"][slug])
+
+# A `retired` Actor is skipped above on purpose -- running a scraper whose source has blocked us
+# just burns platform compute to re-learn the same failure. But retirement should not be a one-way
+# door: probe the source with one plain GET so a future cycle can see the day it clears instead of
+# guessing. Recorded under "retired" and NOT in report["results"], so it can never affect the
+# pass/fail count or open a FIX task. Added cycle 652 (scholarship-scraper / bold.org 429).
+report["retired"] = {}
+for t in reg:
+    if t.get("status") != "retired" or not t.get("recheck_url"): continue
+    slug = t["slug"]
+    try:
+        r = httpx.get(t["recheck_url"], timeout=30, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0 (compatible; FetchSmithHealth/1.0; +https://fetchsmith.com)"})
+        # Not `status == 200`: a bot challenge can serve its interstitial with a 200 as easily as
+        # bold.org's 429, and "cleared" would then flip on a page that is still the challenge. The
+        # body has to look like the real thing too.
+        challenged = any(s in r.text[:4000] for s in ("Security Checkpoint", "Just a moment",
+                                                      "Checking your browser", "cf-challenge", "__cf_chl"))
+        report["retired"][slug] = {"url": t["recheck_url"], "status": r.status_code,
+                                   "cleared": r.status_code == 200 and not challenged,
+                                   "challenged": challenged, "body_head": r.text[:120]}
+    except Exception as e:
+        report["retired"][slug] = {"url": t["recheck_url"], "status": None, "cleared": False, "err": str(e)[:200]}
+    print("retired:", slug, report["retired"][slug]["status"], "cleared=", report["retired"][slug]["cleared"])
 json.dump(report, open("/root/agent/state/health.json", "w"), indent=1)
 failed = [k for k, v in report["results"].items() if not v["ok"]]
 if failed:

@@ -72,6 +72,14 @@ def load_registry():
 def public_tools():
     return [t for t in load_registry() if t.get("status") in ("live", "beta")]
 
+def readable_tools():
+    # `retired` tools are gone from the grid, the docs and /api/v1/run (all of which use
+    # public_tools), but their /tools/<slug> page must keep resolving: the URL is indexed and
+    # linked from blog posts, and a 404 tells a visitor nothing. The page renders read-only --
+    # see the t.status == 'retired' branches in tool.html. Added cycle 652 when bold.org put
+    # its whole site behind a Vercel bot challenge and scholarship-scraper was retired.
+    return [t for t in load_registry() if t.get("status") in ("live", "beta", "retired")]
+
 # ---------- blog (markdown files in site/content/blog) ----------
 BLOG_DIR = ROOT / "site" / "content" / "blog"
 _blog_cache = {"stamp": None, "posts": []}
@@ -178,7 +186,7 @@ def tools_page(request: Request):
 
 @app.get("/tools/{slug}", response_class=HTMLResponse)
 def tool_page(request: Request, slug: str):
-    t = next((t for t in public_tools() if t["slug"] == slug), None)
+    t = next((t for t in readable_tools() if t["slug"] == slug), None)
     if not t:
         raise HTTPException(404)
     return render(request, "tool.html", t=t, guides=[p for p in load_posts() if p.get("tool") == slug])

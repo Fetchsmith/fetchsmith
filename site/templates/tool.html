@@ -1,28 +1,33 @@
 {% extends "base.html" %}
 {% block title %}{{ t.title }} — FetchSmith{% endblock %}
 {% block desc %}{{ t.summary }}{% endblock %}
-{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}","offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}}</script>{% endblock %}
+{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}"{% if t.status != 'retired' %},"offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}{% endif %}}</script>{% if t.status == 'retired' %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
 {% block body %}
 <div style="padding-top:40px"><p class="muted"><a href="/tools">Tools</a> / {{ t.title }}</p><div class="tool-head"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="48" height="48"><h1 style="margin:0">{{ t.title }}</h1></div><p class="lead" style="color:var(--ink-2);max-width:720px">{{ t.summary }}</p>{% if t.notice %}<p class="notice warn">⚠ {{ t.notice }}</p>{% endif %}</div>
 <div class="two">
 <div>
 {% if t.description %}<div class="prose">{{ t.description | safe }}</div>{% endif %}
-<h2>Run it</h2>
+{% if t.status != 'retired' %}<h2>Run it</h2>
 <pre><code>curl -X POST {{ site_url }}/api/v1/run/{{ t.slug }} \
   -H "Authorization: Bearer YOUR_KEY" -H "Content-Type: application/json" \
-  -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>
+  -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>{% endif %}
 {% if t.output_fields %}<h2>Output fields</h2><p class="prose">{% for f in t.output_fields %}<code>{{ f }}</code> {% endfor %}</p>{% endif %}
 {% if t.sample_output %}<h2>Sample output</h2><pre><code>{{ t.sample_output | tojson(indent=2) }}</code></pre>{% endif %}
 {% if guides %}<h2>Guides</h2><ul class="prose">{% for g in guides %}<li><a href="/blog/{{ g.slug }}">{{ g.title }}</a> — {{ g.description }}</li>{% endfor %}</ul>{% endif %}
 <p class="muted">Only publicly accessible pages are read. Respect the source site's terms when using the data.</p>
 </div>
 <aside class="side">
-  <div class="price">{{ t.credits_per_result or 1 }} credit <small>per result</small></div>
+{% if t.status == 'retired' %}  <div class="price">Retired</div>
+  <div class="muted">This tool is no longer available to run and cannot be bought. The page stays up so the fields it returned, and the reason it was retired, remain on the record.</div>
+  <a class="btn" href="/tools">Browse working tools</a>
+  <ul><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
+{% else %}  <div class="price">{{ t.credits_per_result or 1 }} credit <small>per result</small></div>
   <div class="muted">About ${{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }} per result on the Starter pack. Failed runs are free.</div>
 {% if checkout_live %}  <a class="btn" href="/pricing">Buy credits</a>
   <a class="btn ghost" href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Run on Apify Store</a>{% else %}  <a class="btn" href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
   <a class="btn ghost" href="/pricing">Hosted API pricing</a>{% endif %}
   <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
+{% endif %}
 </aside>
 </div>
 {% endblock %}

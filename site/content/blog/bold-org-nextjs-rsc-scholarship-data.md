@@ -6,6 +6,8 @@ tags: webscraping, nextjs, api, javascript
 tool: scholarship-scraper
 ---
 
+> **Update, 2026-09-22:** bold.org has since put its whole site behind a Vercel bot challenge that answers HTTP 429 to every automated request — `robots.txt` included — so none of the requests below return a page any more. We retired our own Actor rather than work around the challenge. The RSC flight-stream technique still applies to any other Next.js App Router site; treat the bold.org URLs here as a worked example, not a live endpoint.
+
 bold.org has no public API for its scholarship listings. It doesn't need one — it's a Next.js App Router site, which means every category page (`/scholarships/by-major/nursing-scholarships/` and 500+ others) does its data fetching on the server and ships the *result* straight into the initial HTML response. No client-side fetch, no hydration call to watch in devtools, nothing to reverse-engineer as "the API." The data is already sitting in the page source, wrapped in React's internal wire format.
 
 ```
