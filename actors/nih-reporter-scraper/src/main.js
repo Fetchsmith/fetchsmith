@@ -19,6 +19,37 @@ const SPLIT_AT = 14500; // leave headroom: `total` drifts slightly between the p
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ---------------------------------------------------------------------------
+// Machine-readable completeness (cycle 647). Every failure path in this Actor used to collapse
+// into the same bare `null` from apiPost(), and every caller read that null as a FACT about NIH's
+// index: countOf() turned it into "0 matches", the chunk loops turned it into "this IC funded
+// nothing", walkChunk() turned it into "that was the last page", and fetchPublications() turned it
+// into "this project produced no papers". Each one SUCCEEDS and looks complete in the dataset,
+// which is the only surface a pipeline parses. Same design as fda-recall-scraper /
+// clinicaltrials-scraper: a RUN_SUMMARY key-value record (no webhook needed) plus the same object
+// on the webhook payload.
+let declaredMatches = null;   // NIH's own meta.total for the root query; null = never answered, NEVER 0
+let scanned = 0;              // raw project rows read back from the API
+let pages = 0;
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+let lastApiError = null;      // WHY the most recent null happened, carried into RUN_SUMMARY
+let unreachableMatches = 0;   // declared matches sitting past NIH's 15000-row offset wall
+let chunksPlanned = 0;        // sub-queries the chunk-and-merge plan created (0 = no split needed)
+let chunksScanned = 0;
+let chunksEmpty = 0;          // sub-queries NIH answered with a real 0
+let chunksCountFailed = 0;    // sub-queries whose count never answered -- NOT the same as empty
+
+// First cause wins: a walk that stopped because NIH stopped answering and THEN also hit
+// maxResults must keep reporting the upstream failure -- that is the cause the buyer can act on.
+function markIncomplete(reason, detail = null) {
+    if (!complete) return;
+    complete = false;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+}
+
 async function apiPost(path, body, attempts = 4) {
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
         let resp;
@@ -34,24 +65,28 @@ async function apiPost(path, body, attempts = 4) {
                 body: JSON.stringify(body),
             });
         } catch (err) {
-            log.warning(`NIH RePORTER request failed (${err.message}); retrying (${attempt}/4).`);
+            lastApiError = `${path}: ${err.message}`;
+            log.warning(`NIH RePORTER request failed (${err.message}); retrying (${attempt}/${attempts}).`);
             await sleep(attempt * 2000);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            lastApiError = `${path}: HTTP ${resp.statusCode}`;
             const waitS = Number(resp.headers['retry-after']) || attempt * 5;
-            log.warning(`NIH RePORTER returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
+            log.warning(`NIH RePORTER returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/${attempts}).`);
             await sleep(waitS * 1000);
             continue;
         }
         let parsed = null;
         try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
         if (resp.statusCode !== 200 || !parsed) {
+            lastApiError = `${path}: HTTP ${resp.statusCode} ${String(resp.body).slice(0, 120)}`.trim();
             log.warning(`NIH RePORTER ${path} returned ${resp.statusCode}: ${String(resp.body).slice(0, 200)}`);
             return null;
         }
         return parsed;
     }
+    lastApiError = `${path}: no answer after ${attempts} attempts (${lastApiError ?? 'unknown'})`;
     log.warning(`NIH RePORTER ${path} kept failing after ${attempts} attempts; stopping early.`);
     return null;
 }
@@ -287,9 +322,14 @@ function searchBody(criteria, extra) {
         : { criteria: assertCriteria(criteria), ...extra };
 }
 
+// Returns NIH's own meta.total, or `null` when the request never got an answer. The distinction is
+// the whole point: before cycle 647 this returned a bare 0 for both, so a single failed count query
+// became "NIH funds nothing matching that" -- reported as a SUCCEEDED run with an empty dataset and
+// a warning blaming the buyer's filters. A timeout cannot support a claim about the NIH index.
 async function countOf(criteria) {
     const page = await apiPost('/projects/search', searchBody(criteria, { limit: 1, offset: 0 }));
-    return Number(page?.meta?.total ?? 0);
+    const total = page?.meta?.total;
+    return typeof total === 'number' ? total : null;
 }
 
 // Chunking: pick the next unused categorical dimension and fan the query out across it, then
@@ -386,17 +426,35 @@ function normalize(row) {
 // project numbers in one call returned both projects' papers -- so this costs roughly one extra
 // request per 25 projects rather than one per project.
 const PUB_BATCH = 25;
+let pubBatchesFailed = 0;
+let pubBatchesTruncated = 0;
 async function fetchPublications(coreNums) {
     const map = new Map();
+    // Core project numbers whose publication lookup never got an answer. Their rows report
+    // `publicationCount: null` rather than 0 -- before cycle 647 a failed /publications/search
+    // page silently became "this project produced no papers", which is a claim about PubMed that a
+    // timeout cannot support (and the exact number a research-funding buyer filters on).
+    const unknown = new Set();
     for (let i = 0; i < coreNums.length; i += PUB_BATCH) {
         const batch = coreNums.slice(i, i + PUB_BATCH);
         let offset = 0;
+        let batchTotal = null;
         for (;;) {
             const page = await apiPost('/publications/search', {
                 criteria: { core_project_nums: batch },
                 limit: PAGE_LIMIT,
                 offset,
             });
+            if (page === null) {
+                pubBatchesFailed += 1;
+                for (const c of batch) unknown.add(c);
+                log.warning(
+                    `Publication lookup failed for ${batch.length} project(s) (${lastApiError}); their publicationCount `
+                    + 'is reported as null, not 0 -- the papers may well exist. Re-run to fill them in.',
+                );
+                break;
+            }
+            if (typeof page?.meta?.total === 'number') batchTotal = page.meta.total;
             const rows = listOf(page?.results);
             for (const r of rows) {
                 if (!r.coreproject || !r.pmid) continue;
@@ -404,10 +462,22 @@ async function fetchPublications(coreNums) {
                 map.get(r.coreproject).add(r.pmid);
             }
             offset += rows.length;
-            if (rows.length < PAGE_LIMIT || offset + PAGE_LIMIT > OFFSET_WALL) break;
+            if (rows.length < PAGE_LIMIT) break;
+            if (offset + PAGE_LIMIT > OFFSET_WALL) {
+                // The same 15000-row offset wall as the project search. Reaching it here means the
+                // batch's papers are undercounted, so say so instead of returning a short count.
+                if (batchTotal === null || offset < batchTotal) {
+                    pubBatchesTruncated += 1;
+                    log.warning(
+                        `Publication lookup for ${batch.length} project(s) hit NIH's ${OFFSET_WALL}-row offset wall at `
+                        + `${offset} of ${batchTotal ?? 'an unknown number of'} paper(s); their publicationCount is a floor, not a total.`,
+                    );
+                }
+                break;
+            }
         }
     }
-    return map;
+    return { map, unknown };
 }
 
 // ---------------------------------------------------------------------------
@@ -485,6 +555,10 @@ async function saveWatchRecord(status) {
         criteria: watchCriteria,
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
+        // Recorded so a later run (or the buyer reading the store) can tell a baseline that was
+        // fully built from one that was cut short by an upstream failure and needs re-seeding.
+        lastRunComplete: complete,
+        lastRunIncompleteReason: incompleteReason,
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: entries.length,
         // Compact per-entry shape: id plus the 4 snapshot fields (short keys because WATCH_KEEP
@@ -505,7 +579,7 @@ async function pushResults(items) {
     for (const item of items) {
         if (isPPE) {
             const r = await Actor.charge({ eventName: 'result', count: 1 });
-            if (r.chargedCount === 0) return false;
+            if (r.chargedCount === 0) { markIncomplete('charge-limit'); return false; }
             await Actor.pushData(item); pushed += 1;
             // Only a row the buyer was actually charged for counts as delivered: anything left
             // behind by maxResults or the charge limit stays "new" and comes back next run.
@@ -513,14 +587,15 @@ async function pushResults(items) {
                 watchSeen.set(String(item.applId), watchChanges ? snapshotFromItem(item) : null);
                 if (item._watchChangeType) changedCount += 1;
             }
-            if (r.eventChargeLimitReached || pushed >= maxResults) return false;
+            if (r.eventChargeLimitReached) { markIncomplete('charge-limit'); return false; }
+            if (pushed >= maxResults) { markIncomplete('max-results', `maxResults=${maxResults}`); return false; }
         } else {
             await Actor.pushData(item); pushed += 1;
             if (watchMode && item.applId != null) {
                 watchSeen.set(String(item.applId), watchChanges ? snapshotFromItem(item) : null);
                 if (item._watchChangeType) changedCount += 1;
             }
-            if (pushed >= maxResults) return false;
+            if (pushed >= maxResults) { markIncomplete('max-results', `maxResults=${maxResults}`); return false; }
         }
     }
     return true;
@@ -528,10 +603,17 @@ async function pushResults(items) {
 
 // Walk one criteria object page by page, up to the offset wall. Returns false when the caller
 // should stop entirely (charge limit or maxResults reached).
+// `total` may be null: that means the count query for this chunk never got an answer, so instead
+// of walking zero pages (which is what a null-as-0 total did before cycle 647) we walk until a
+// short page or the offset wall stops us, and the run is already flagged incomplete by the caller.
 async function walkChunk(criteria, total) {
     let offset = 0;
-    while (offset < Math.min(total, OFFSET_WALL) && (seeding || pushed < maxResults)) {
-        if (seeding && watchSeen.size >= SEED_CAP) return false;
+    const ceiling = total === null ? OFFSET_WALL : Math.min(total, OFFSET_WALL);
+    while (offset < ceiling && (seeding || pushed < maxResults)) {
+        if (seeding && watchSeen.size >= SEED_CAP) {
+            markIncomplete('seed-cap', `SEED_CAP=${SEED_CAP}`);
+            return false;
+        }
         // Never over-fetch: the publications join runs on whatever a page returns, so pulling a
         // full 500 rows to satisfy a maxResults of 100 would cost ~16 pointless extra requests.
         // A seeding run is the exception -- it wants ids only, so it always takes full pages and
@@ -548,8 +630,31 @@ async function walkChunk(criteria, total) {
                 : ['ApplId', 'ProjectNum'];
         }
         const page = await apiPost('/projects/search', body);
+        if (page === null) {
+            // A page NIH never answered is not the end of the result set. Before cycle 647 this
+            // fell through `listOf(page?.results)` into the `!rows.length` exhaustion path below
+            // and the run reported "Done. Pushed N project records" -- SUCCEEDED, silently short.
+            // In a seeding run it is worse: the baseline is short, so the next incremental run
+            // charges the buyer for projects that already existed. (7th appearance of that shape.)
+            markIncomplete('search-request-failed', lastApiError);
+            log.warning(
+                `NIH RePORTER stopped answering at offset ${offset} of `
+                + `${total === null ? 'an unknown number of' : total} match(es) for this query. This run returned only `
+                + 'what was fetched before the failure -- see RUN_SUMMARY.',
+            );
+            return false;
+        }
+        pages += 1;
         const rows = listOf(page?.results);
-        if (!rows.length) return true;
+        scanned += rows.length;
+        if (!rows.length) {
+            // A genuinely exhausted query; only suspicious if NIH's own total said there was
+            // materially more to come (its total drifts by a few rows between probe and walk).
+            if (total !== null && total - offset > limit) {
+                markIncomplete('empty-page-before-total', `offset=${offset}, declared total=${total}`);
+            }
+            return true;
+        }
 
         const fresh = rows.filter((r) => r.appl_id == null || !seen.has(r.appl_id));
         for (const r of fresh) if (r.appl_id != null) seen.add(r.appl_id);
@@ -591,8 +696,11 @@ async function walkChunk(criteria, total) {
             const coreNums = Array.from(new Set(items.map((i) => i.coreProjectNum).filter(Boolean)));
             const pubs = await fetchPublications(coreNums);
             items = items.map((i) => {
-                const pmids = i.coreProjectNum ? Array.from(pubs.get(i.coreProjectNum) ?? []) : [];
-                return { ...i, publicationCount: pmids.length, pubmedIds: pmids };
+                const pmids = i.coreProjectNum ? Array.from(pubs.map.get(i.coreProjectNum) ?? []) : [];
+                // null, not 0: the lookup for this project never got an answer, so "no papers" is
+                // not something this run is entitled to say.
+                const unknownPubs = i.coreProjectNum ? pubs.unknown.has(i.coreProjectNum) : false;
+                return { ...i, publicationCount: unknownPubs ? null : pmids.length, pubmedIds: pmids };
             });
         }
 
@@ -669,15 +777,32 @@ if (searchId) {
             + '(If reporter.nih.gov itself is down right now, the same run will work later unchanged.)',
         );
     }
-    rootTotal = Number(probe.meta.total ?? 0);
+    rootTotal = typeof probe.meta.total === 'number' ? probe.meta.total : null;
 } else {
     rootTotal = await countOf(rootCriteria);
 }
-log.info(`Matched ${rootTotal} project records before paging.`);
+declaredMatches = rootTotal;
+if (rootTotal === null) {
+    // The count query itself never got an answer. Before cycle 647 this became `0`, the walk was
+    // skipped entirely, and the run SUCCEEDED with an empty dataset and a warning telling the buyer
+    // their filters were too narrow. Now it is named, and the walk still runs blind to the wall.
+    markIncomplete('count-request-failed', lastApiError);
+    log.warning(
+        'NIH RePORTER never answered the match-count query for these filters, so how many projects match is '
+        + 'UNKNOWN (not zero). Paging ahead anyway up to the offset wall; whatever comes back is real but may be '
+        + 'incomplete, and results-per-query planning is disabled for this run. See RUN_SUMMARY.',
+    );
+} else {
+    log.info(`Matched ${rootTotal} project records before paging.`);
+}
 
-if (searchId && rootTotal > SPLIT_AT) {
+if (rootTotal === null) {
+    await walkChunk(rootCriteria, null);
+} else if (searchId && rootTotal > SPLIT_AT) {
     // The chunk-and-merge trick below rewrites the criteria object, and a saved search has none to
     // rewrite (NIH ignores criteria sent with a search id), so the 15000-row wall is hard here.
+    unreachableMatches = rootTotal - OFFSET_WALL;
+    markIncomplete('offset-wall', `${unreachableMatches} of ${rootTotal} match(es) are past NIH's ${OFFSET_WALL}-row wall and a saved search cannot be split`);
     log.warning(
         `This saved search matches ${rootTotal} projects, but NIH RePORTER caps offset+limit at ${OFFSET_WALL} with no `
         + `cursor, and a saved search cannot be split into sub-queries the way the filter inputs can. Only the first `
@@ -689,6 +814,8 @@ if (searchId && rootTotal > SPLIT_AT) {
     // Past the 15000-row wall: fan out across a categorical dimension and merge on appl_id.
     const chunks = splitCriteria(rootCriteria);
     if (!chunks) {
+        unreachableMatches = rootTotal - OFFSET_WALL;
+        markIncomplete('offset-wall', `${unreachableMatches} of ${rootTotal} match(es) are past NIH's ${OFFSET_WALL}-row wall and no dimension is left to split on`);
         log.warning(
             `${rootTotal} matches but no dimension left to split on -- NIH RePORTER caps offset+limit at ${OFFSET_WALL} `
             + 'and has no cursor, so only the first 15000 are reachable. Narrow the query (add a fiscal year, IC or state) to see the rest.',
@@ -696,24 +823,56 @@ if (searchId && rootTotal > SPLIT_AT) {
         await walkChunk(rootCriteria, rootTotal);
     } else {
         log.info(`Over the ${OFFSET_WALL}-row offset wall; splitting into ${chunks.length} sub-queries and merging on appl_id.`);
+        chunksPlanned = chunks.length;
         for (const chunk of chunks) {
             if (pushed >= maxResults) break;
             const total = await countOf(chunk);
-            if (!total) continue;
+            // null is NOT "this sub-query matched nothing". Before cycle 647 both landed on the
+            // same `if (!total) continue`, so one failed count query deleted an entire institute
+            // (or fiscal year) from the run with no row, no warning and no trace -- the buyer got
+            // a dataset that read as "NCI funded nothing about this". Now it is walked blind and
+            // named in RUN_SUMMARY.
+            if (total === null) {
+                chunksCountFailed += 1;
+                markIncomplete('count-request-failed', lastApiError);
+                log.warning(`Match count failed for sub-query ${JSON.stringify(chunk).slice(0, 120)} (${lastApiError}); paging it blind rather than skipping it.`);
+                chunksScanned += 1;
+                if (!(await walkChunk(chunk, null))) break;
+                continue;
+            }
+            if (total === 0) { chunksEmpty += 1; continue; }
+            chunksScanned += 1;
             if (total > SPLIT_AT) {
                 const sub = splitCriteria(chunk);
                 if (sub) {
                     for (const s of sub) {
                         if (pushed >= maxResults) break;
                         const t = await countOf(s);
-                        if (!t) continue;
+                        if (t === null) {
+                            chunksCountFailed += 1;
+                            markIncomplete('count-request-failed', lastApiError);
+                            log.warning(`Match count failed for sub-query ${JSON.stringify(s).slice(0, 120)} (${lastApiError}); paging it blind rather than skipping it.`);
+                            if (!(await walkChunk(s, null))) break;
+                            continue;
+                        }
+                        if (t === 0) continue;
+                        if (t > SPLIT_AT) {
+                            unreachableMatches += t - OFFSET_WALL;
+                            markIncomplete('offset-wall', `a sub-query has ${t} matches and cannot be split further`);
+                            log.warning(`A sub-query still has ${t} matches and cannot be split further; taking its first ${OFFSET_WALL}.`);
+                        }
                         if (!(await walkChunk(s, t))) break;
                     }
                     continue;
                 }
+                unreachableMatches += total - OFFSET_WALL;
+                markIncomplete('offset-wall', `a sub-query has ${total} matches and cannot be split further`);
                 log.warning(`A sub-query still has ${total} matches and cannot be split further; taking its first ${OFFSET_WALL}.`);
             }
             if (!(await walkChunk(chunk, total))) break;
+        }
+        if (chunksPlanned && chunksScanned + chunksEmpty < chunksPlanned) {
+            markIncomplete('not-reached', `${chunksPlanned - chunksScanned - chunksEmpty} of ${chunksPlanned} sub-queries were never scanned`);
         }
     }
 } else {
@@ -721,8 +880,19 @@ if (searchId && rootTotal > SPLIT_AT) {
 }
 
 if (watchMode) {
-    await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+    await saveWatchRecord(seeding ? (complete ? 'seeded' : 'seeded-incomplete') : (complete ? 'incremental' : 'incremental-incomplete'));
     if (seeding) {
+        // An incomplete baseline is the expensive failure in this Actor: every project NIH did not
+        // hand over during seeding looks brand new on the next incremental run and is charged for.
+        // Say so here, not only in RUN_SUMMARY, because a scheduled seed's log is what gets read.
+        if (!complete) {
+            log.warning(
+                `BASELINE INCOMPLETE (${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}). Only `
+                + `${watchSeen.size} project(s) were recorded as already-seen out of `
+                + `${declaredMatches === null ? 'an unknown number of' : declaredMatches} match(es). Re-run this seed `
+                + 'before scheduling incremental runs, or the missing projects will be returned and CHARGED as new.',
+            );
+        }
         log.info(
             `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} project(s) recorded as already-seen, `
             + '0 results returned, 0 charged. The next run on this label and these filters returns only new projects.'
@@ -741,7 +911,15 @@ if (watchMode) {
     }
 }
 
-if (pushed === 0 && !seeding) {
+if (pushed === 0 && !seeding && !complete) {
+    // Zero rows because NIH stopped answering is not zero matches, and the advice below ("your
+    // filters are too narrow") would send the buyer off editing a query that was never the problem.
+    log.warning(
+        `No rows were returned, but this run did NOT complete (${incompleteReason}`
+        + `${incompleteDetail ? `: ${incompleteDetail}` : ''}). That says nothing about how many projects match your `
+        + 'filters -- NIH RePORTER did not answer. Re-run it; see RUN_SUMMARY for the exact failure.',
+    );
+} else if (pushed === 0 && !seeding) {
     log.warning(
         watchMode
             ? `Nothing new for watch label "${watchLabel}" since its last run -- every matching project had already been `
@@ -757,7 +935,57 @@ if (pushed === 0 && !seeding) {
     );
 }
 
-log.info(`Done. Pushed ${pushed} project records.`);
+log.info(`Done. Pushed ${pushed} project records (scanned ${scanned} row(s) over ${pages} page(s)).`);
+
+// ---------------------------------------------------------------------------
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which needs no webhook. `complete` is deliberately kept OUT of the status string: a run can be
+// SUCCEEDED and short at the same time, and that pair is exactly what this record exists for.
+const runMode = exclusiveProjectNums
+    ? 'project-lookup'
+    : (watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : (searchId ? 'saved-search' : 'search'));
+const runSummary = {
+    mode: runMode,
+    // What NIH itself says matches this query. `null` means the count query never answered --
+    // never read it as 0.
+    declaredMatches,
+    // Of those, how many are actually fetchable given the 15000-row offset wall.
+    reachableMatches: declaredMatches === null ? null : Math.max(declaredMatches - unreachableMatches, 0),
+    unreachableMatches,
+    scanned,
+    delivered: pushed,
+    pages,
+    complete,
+    incompleteReason,
+    incompleteDetail,
+    lastApiError,
+    maxResults,
+    chunksPlanned,
+    chunksScanned,
+    chunksEmpty,
+    chunksCountFailed,
+    publicationLookupBatchesFailed: includePublications ? pubBatchesFailed : null,
+    publicationLookupBatchesTruncated: includePublications ? pubBatchesTruncated : null,
+    watchLabel: watchMode ? watchLabel : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    changedRedelivered: watchMode && !seeding ? changedCount : null,
+    requestedProjectNums: exclusiveProjectNums ? projectNums : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
+// message is the only place the Apify console itself shows the shortfall. There was no
+// setStatusMessage call anywhere in this Actor before cycle 647.
+if (!complete) {
+    const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')} declared`;
+    await Actor.setStatusMessage(
+        `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
+        + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else if (declaredMatches !== null && !watchMode && !exclusiveProjectNums) {
+    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} project(s) NIH RePORTER declared for these filters.`);
+}
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
@@ -773,6 +1001,9 @@ if (webhookUrl) {
         watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
         watchChangedCount: watchMode && !seeding ? changedCount : null,
         watchSeeding: watchMode ? seeding : null,
+        // The same object as the RUN_SUMMARY key-value record, for subscribers who would rather
+        // not make a second call to read it.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({

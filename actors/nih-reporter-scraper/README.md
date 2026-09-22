@@ -99,7 +99,7 @@ Sample row (trimmed):
 
 Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contract records (`N01`, `funding_mechanism: "R and D Contracts"`) are much thinner** — verified live: `publicHealthRelevance`, `awardType`, `opportunityNumber`, `cfdaCode` and `studySection` all come back `null`, and `directCostAmt`/`indirectCostAmt` are usually absent on older rows too. Filter on `fundingMechanism` if you need a uniformly populated set.
 
-`publicationCount` is legitimately `0` for many recent projects — papers take years to appear, so a 2024 new award usually has none yet. It is not a join failure.
+`publicationCount` is legitimately `0` for many recent projects — papers take years to appear, so a 2024 new award usually has none yet. It is not a join failure. `publicationCount: null` means something different and is never mixed up with `0`: the PubMed lookup for that project didn't get an answer from NIH, so the count is *unknown*, not zero. The run log names every project it happened to and `RUN_SUMMARY.publicationLookupBatchesFailed` counts them.
 
 ## FAQ
 
@@ -121,8 +121,45 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 
 **Is any personal contact data collected?** No. The NIH RePORTER schema contains no email or phone field at all. PI and program-officer **names** are included because they are statutory public disclosure, published on every reporter.nih.gov project page — the same class of data as a federal contract awardee's name.
 
+**How do I know the run returned everything it should have — in code, not by reading the log?**
+Every run writes a `RUN_SUMMARY` record to its key-value store, readable with no webhook set up:
+
+```
+GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY?token=<token>
+```
+
+```json
+{
+  "mode": "search",
+  "declaredMatches": 19126,
+  "reachableMatches": 19126,
+  "unreachableMatches": 0,
+  "scanned": 5,
+  "delivered": 5,
+  "pages": 1,
+  "complete": false,
+  "incompleteReason": "max-results",
+  "incompleteDetail": "maxResults=5",
+  "maxResults": 5,
+  "chunksPlanned": 39,
+  "chunksScanned": 1,
+  "chunksEmpty": 0,
+  "chunksCountFailed": 0,
+  "publicationLookupBatchesFailed": 0,
+  "watchLabel": null,
+  "baselineSize": null
+}
+```
+
+`declaredMatches` is NIH RePORTER's own `meta.total` for your filters, so `delivered` vs `declaredMatches` is the shortfall, computed against NIH rather than against our own paging. `complete: false` is not a failure — a run capped by `maxResults` is short on purpose — it means *don't treat this dataset as the whole answer*. `incompleteReason` is one of `max-results`, `charge-limit`, `seed-cap`, `offset-wall` (matches past NIH's hard 15,000-row paging wall), `count-request-failed`, `search-request-failed`, `empty-page-before-total`, `not-reached`. A short run also sets the Apify status message, so the shortfall is visible in the Console without opening the log.
+
+**Important:** a number is never invented from a failure. If NIH doesn't answer a count query, `declaredMatches` is `null` — never `0` — and if it stops answering mid-walk the run says `search-request-failed` instead of reporting a partial page set as the complete result. The same rule applies to a chunked query: a sub-query whose count fails is paged anyway and counted in `chunksCountFailed`, so a single failed request can't quietly delete an entire NIH institute from your results.
+
+**I run this on a schedule as a watch — what should my pipeline check?**
+`complete`. A watch baseline (`mode: "watch-seed"`) that was cut short records fewer already-seen projects than really match, and every project it missed looks brand new — and gets charged — on the next incremental run. When that happens the run logs a `BASELINE INCOMPLETE` warning, sets `complete: false`, and stores `lastRunComplete: false` in the watch record, so re-seed before trusting the next run. On a healthy seed, `baselineSize` equals `declaredMatches`.
+
 **How is `webhookUrl` different from Apify's own platform webhooks?**
-Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, the full `summary` object described above, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Pricing
 
