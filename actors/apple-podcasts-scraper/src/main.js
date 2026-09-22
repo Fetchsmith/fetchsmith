@@ -278,6 +278,12 @@ const RSS_VARIANTS = [
   { headerGeneratorOptions: { browsers: ['safari'], devices: ['mobile'], operatingSystems: ['ios'] } },
 ];
 let preferredVariant = 0; // the fingerprint that last worked; tried first to keep requests at 1/page
+// Apple serves the customer-review RSS 50 entries to a page. A FULL last page followed by nothing
+// is the calibration-free tell that Apple truncated the feed rather than the show running out of
+// reviews — a show that really runs out ends on a PARTIAL page. Used by the feedCeiling check in
+// scrapeReviews. Deliberately NOT a ratio against any declared review/rating count: ratings
+// outnumber written reviews 5-20x, so any such threshold would be guesswork (h255).
+const RSS_PAGE_SIZE = 50;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // A full pass over the fingerprints. Every variant is requested back-to-back, so this only
 // defeats the shard disagreement above — not a transient (stale edge cache, or a rate-limited
@@ -618,16 +624,24 @@ async function scrapeReviews(id) {
   let got = 0;
   let filteredOut = 0;
   let failed = false; // a fetch that threw is NOT evidence that Apple has no reviews
+  let pageError = false; // the walk ended on a thrown request, so its shape proves nothing
+  // True when the buyer's own cap cut a page short, i.e. the run stopped wanting more before
+  // Apple stopped serving. Distinguishes "raise maxReviewsPerPodcast" from "Apple has no page N+1".
+  let capBrokeMidPage = false;
+  let lastServedPage = 0; // the deepest page Apple actually answered with reviews
+  let lastPageFull = false; // ...and whether that page came back FULL (see RSS_PAGE_SIZE)
   for (let page = 1; page <= 10 && got < perPodcastReviews && keepGoing; page++) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     let entries = [];
     try {
       const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${id}/sortBy=${sort}/page=${page}/json`;
       entries = await fetchEntries(url, got === 0);
-    } catch (e) { log.warning(`review page ${page} failed for ${id}: ${e.message}`); failed = got === 0; break; }
+    } catch (e) { log.warning(`review page ${page} failed for ${id}: ${e.message}`); failed = got === 0; pageError = true; break; }
     if (!entries.length) break;
+    lastServedPage = page;
+    lastPageFull = entries.length >= RSS_PAGE_SIZE;
     for (const e of entries) {
-      if (got >= perPodcastReviews) break;
+      if (got >= perPodcastReviews) { capBrokeMidPage = true; break; }
       const item = {
         type: 'review',
         collectionId: Number(id),
@@ -651,7 +665,16 @@ async function scrapeReviews(id) {
     }
   }
   const capReached = got >= perPodcastReviews;
-  return { got, filteredOut, capReached, failed };
+  // Apple stops serving this feed LONG before its documented 10-page/500-review depth, and as of
+  // 2026-09-22 that is the common case on the sibling app-store feed (same endpoint family,
+  // measured that day: a populated page 1 for only 6 of 36 app/storefront pairs, and an empty
+  // page 2 onwards for every pair that answered). When it quits mid-walk the loop just breaks on
+  // the empty page with `capReached` false, `failed` false and `filteredOut` 0 — every reporting
+  // bucket below is skipped and a show with 40k reviews delivering ~100 rows reads exactly like a
+  // show that only has 100. Same consequence for the buyer as a hard ceiling: those reviews exist,
+  // and NO input value reaches them, so this carries no "raise maxReviewsPerPodcast" advice.
+  const feedCeiling = lastPageFull && !capReached && keepGoing && !capBrokeMidPage && !pageError;
+  return { got, filteredOut, capReached, failed, feedCeiling, feedStopPage: feedCeiling ? lastServedPage : null };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -692,6 +715,7 @@ for (const term of searchTerms) {
 const emptyIds = [];
 const failedIds = []; // sources that returned nothing because the request broke, not because they are empty
 const depthCapped = [];
+const feedCeilingIds = []; // Apple's review feed quit mid-walk after a FULL page (see scrapeReviews)
 if (dataType === 'charts') {
   // Rank comes from array order in all cases.
   const url = chartGenre
@@ -841,6 +865,15 @@ if (dataType === 'charts') {
         );
         depthCapped.push(id);
       }
+      if (r.feedCeiling) {
+        feedCeilingIds.push(id);
+        log.warning(
+          `Podcast ${id}: Apple's public review feed stopped serving at page ${r.feedStopPage} after a FULL page, so this `
+          + `show returned ${r.got} review(s) rather than the ${perPodcastReviews} you asked for. Older reviews exist but `
+          + `Apple does not expose them here, and no "maxReviewsPerPodcast" value can reach them — try another "country" `
+          + `storefront for wider coverage.`,
+        );
+      }
     } else {
       ({ got, failed } = await scrapeEpisodes(id));
     }
@@ -898,14 +931,26 @@ const episodeFiltersSet = [
 const emptySourceLabel = (list) => (list.some((x) => /^https?:\/\//i.test(x))
   ? `no episodes found for: ${list.join(', ')}`
   : `Apple returned nothing for: ${list.join(', ')} in storefront "${country}"`);
+// Apple's mid-walk feed ceiling, said in the status message rather than only in the log. Phrased
+// deliberately WITHOUT a "raise maxReviewsPerPodcast" suggestion: unlike the cap-while-filtering
+// case below, this shortfall cannot be undone from the input, so the honest advice is another
+// storefront. Appended rather than a branch of its own so it never displaces an emptier report.
+const ceilingNote = feedCeilingIds.length
+  ? ' Apple\'s public review feed stopped serving mid-walk (a full page followed by nothing) for podcast(s):'
+    + ` ${feedCeilingIds.join(', ')}`
+    + ' — these shows have older reviews Apple does not expose here, and no "maxReviewsPerPodcast" value can reach them.'
+    + ` Try another storefront in "country" for wider coverage.`
+  : '';
+
+let statusMsg;
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}`);
+  statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}`;
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${timeBudgetNote}`);
+  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${timeBudgetNote}`;
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${timeBudgetNote}`);
+  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${timeBudgetNote}`;
 } else if (pushed === 0 && timeBudgetExceeded) {
-  await Actor.setStatusMessage(`No results before the run approached its time limit.${timeBudgetNote}`);
+  statusMsg = `No results before the run approached its time limit.${timeBudgetNote}`;
 } else if (pushed === 0) {
   const why = failedIds.length
     ? `the request to Apple failed for: ${failedIds.join(', ')} — that is a fetch failure, not proof there is no data. Re-run it`
@@ -920,13 +965,19 @@ if (watchMode && seeding) {
           : dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length
             ? `every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`
             : 'no valid podcast IDs could be parsed from your input';
-  await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
+  statusMsg = `No results — ${why}. See the log for details.`;
 } else if (depthCapped.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`);
+  statusMsg = `Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`;
 } else if (emptyIds.length || failedIds.length || timeBudgetExceeded) {
   const failedNote = failedIds.length ? ` The request to Apple failed for: ${failedIds.join(', ')} — re-run to get those.` : '';
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${failedNote}${timeBudgetNote}`);
+  statusMsg = `Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${failedNote}${timeBudgetNote}`;
+} else if (ceilingNote) {
+  // A run that nothing else had to report, EXCEPT that Apple's own feed ceiling cut it short.
+  // Previously this case set no status message at all and a run returning 100 of a show's 40k
+  // reviews read exactly like one that exhausted a 100-review show (h250/h255/h257 class).
+  statusMsg = `Pushed ${pushed} results.${timeBudgetNote}`;
 }
+if (statusMsg) await Actor.setStatusMessage((statusMsg + ceilingNote).slice(0, 1000));
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
