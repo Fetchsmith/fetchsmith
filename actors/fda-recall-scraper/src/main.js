@@ -333,16 +333,73 @@ async function fetchPage(productType, search, limit, skip) {
         if (resp.statusCode !== 200) {
             const detail = parsed?.error?.message ?? String(resp.body).slice(0, 300);
             log.warning(`openFDA ${productType} API ${resp.statusCode}: ${detail}`);
+            lastApiFailure = `HTTP ${resp.statusCode}: ${detail}`;
             return null;
         }
         if (!parsed) {
             log.warning(`openFDA ${productType} returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
+            lastApiFailure = 'non-JSON response body';
             return null;
         }
         return { results: parsed.results ?? [], total: parsed.meta?.results?.total ?? 0 };
     }
     log.warning(`openFDA ${productType} kept erroring after 4 attempts; stopping this product type early.`);
+    lastApiFailure = 'request kept failing after 4 attempts';
     return null;
+}
+
+// ---------------------------------------------------------------------------
+// Run completeness (cycle 645). `fetchPage` returns `null` for BOTH "openFDA
+// answered with nothing" and "we never got an answer", and every caller used to
+// collapse the two into the same silent stop: a dead product type was `continue`d
+// out of the plan, a failed window probe truncated the window plan, and a failed
+// page ended a walk through the same `break` as a genuine last page. All of those
+// produced a SUCCEEDED run whose dataset is indistinguishable from a complete one
+// -- and in watch-seed mode an under-seeded baseline makes the NEXT run deliver
+// and CHARGE pre-existing recalls as "new".
+//
+// Everything below exists to say that in a field rather than in English: openFDA
+// hands us `meta.results.total` on every page, so this Actor always knows how many
+// recalls matched and can state delivered-vs-declared per product type.
+// `complete` is deliberately kept OUT of `status` -- a type can be `ok` AND
+// truncated at once, which is exactly the case this record exists for.
+// ---------------------------------------------------------------------------
+let lastApiFailure = null;
+const typeSummaries = new Map();
+function summaryFor(productType) {
+    let s = typeSummaries.get(productType);
+    if (!s) {
+        s = {
+            productType,
+            // Sum of openFDA's own `meta.results.total` over the planned windows.
+            // null = we never got a usable plan, which is NOT the same as 0 matches.
+            declaredMatches: null,
+            // What paging can actually reach: a window bigger than MAX_SKIP is
+            // permanently truncated by openFDA, not by us.
+            reachableMatches: null,
+            windowsPlanned: null,
+            windowsScanned: 0,
+            scanned: 0,
+            delivered: 0,
+            skippedSeen: 0,
+            status: 'ok',
+            complete: true,
+            incompleteReason: null,
+            incompleteDetail: null,
+        };
+        typeSummaries.set(productType, s);
+    }
+    return s;
+}
+function markIncomplete(productType, reason, detail) {
+    const s = summaryFor(productType);
+    // First cause wins: it is the one that actually stopped the walk. A later
+    // `max-results` stop must never overwrite the upstream failure above it.
+    if (s.incompleteReason !== null) return;
+    s.complete = false;
+    s.incompleteReason = reason;
+    s.incompleteDetail = detail;
+    log.warning(`[${productType}] ${detail}`);
 }
 
 const yearOf = (d) => Number(String(d).slice(0, 4));
@@ -351,9 +408,21 @@ const yearOf = (d) => Number(String(d).slice(0, 4));
 // inclusive and were live-verified to sum exactly to the unsplit total (no overlap, no gaps).
 async function planWindows(productType, from, to) {
     const probe = await fetchPage(productType, buildSearch(from, to), 1, 0);
-    if (!probe) return null;
-    if (probe.total === 0) return [];
-    if (probe.total <= CHUNK_THRESHOLD) return [{ from, to, total: probe.total }];
+    if (!probe) {
+        // Not "this product type has no matching recalls" -- we never got an answer.
+        // The old code returned null here and the caller `continue`d, dropping the
+        // entire product type from the run with nothing but a log line to show it.
+        markIncomplete(
+            productType,
+            'plan-request-failed',
+            `openFDA never answered the initial ${productType} count query (${lastApiFailure}), so NOT ONE `
+            + `${productType} recall was scanned. This is not evidence that no ${productType} recall matched.`,
+        );
+        summaryFor(productType).status = 'not-scanned';
+        return null;
+    }
+    if (probe.total === 0) { summaryFor(productType).declaredMatches = 0; summaryFor(productType).reachableMatches = 0; summaryFor(productType).windowsPlanned = 0; return []; }
+    if (probe.total <= CHUNK_THRESHOLD) return recordPlan(productType, [{ from, to, total: probe.total }], true);
 
     const windows = [];
     const queue = [];
@@ -365,7 +434,21 @@ async function planWindows(productType, from, to) {
     while (queue.length) {
         const w = queue.shift();
         const r = await fetchPage(productType, buildSearch(w.from, w.to), 1, 0);
-        if (!r) return windows.length ? windows : null;
+        if (!r) {
+            // A failed probe mid-plan used to return a PARTIAL window list that the
+            // caller could not tell from a finished one: every remaining date window
+            // (often whole years) was then never scanned, and the run still said
+            // "Done. Pushed N".
+            markIncomplete(
+                productType,
+                'plan-request-failed',
+                `Planning the ${productType} date windows failed at ${w.from}..${w.to} (${lastApiFailure}); `
+                + `${queue.length + 1} window(s) of that range were never scanned and their recalls are missing `
+                + 'from this run.',
+            );
+            if (!windows.length) { summaryFor(productType).status = 'not-scanned'; return null; }
+            return recordPlan(productType, windows, false);
+        }
         if (r.total === 0) continue;
         // A single year still over the cap is halved by month; depth guards against a
         // pathological range that can never be split small enough.
@@ -376,14 +459,29 @@ async function planWindows(productType, from, to) {
             continue;
         }
         if (r.total > CHUNK_THRESHOLD) {
-            log.warning(
+            markIncomplete(
+                productType,
+                'skip-ceiling',
                 `${productType} window ${w.from}..${w.to} has ${r.total} rows and cannot be split further; `
-                + `only the first ${MAX_SKIP} are reachable. Narrow reportDateFrom/reportDateTo to see the rest.`,
+                + `only the first ${MAX_SKIP} are reachable (openFDA refuses skip>${MAX_SKIP}). Narrow `
+                + 'reportDateFrom/reportDateTo to see the rest.',
             );
         }
         windows.push({ from: w.from, to: w.to, total: r.total });
     }
     log.info(`${productType}: split into ${windows.length} date windows (skip cap workaround).`);
+    return recordPlan(productType, windows, true);
+}
+
+// Records what the plan says is out there, so delivered-vs-declared is a number the
+// dataset's consumer can read. `planComplete=false` means the window list itself was
+// cut short by a failure, so `declaredMatches` is a floor, not the match count.
+function recordPlan(productType, windows, planComplete) {
+    const s = summaryFor(productType);
+    s.windowsPlanned = windows.length;
+    s.declaredMatches = windows.reduce((n, w) => n + w.total, 0);
+    s.reachableMatches = windows.reduce((n, w) => n + Math.min(w.total, MAX_SKIP), 0);
+    s.declaredMatchesIsFloor = !planComplete;
     return windows;
 }
 
@@ -622,12 +720,14 @@ function normalizePressRelease(item) {
 }
 
 let pushed = 0;
+let chargeLimitHit = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
-        if (r.chargedCount === 0) return false;
+        if (r.chargedCount === 0) { chargeLimitHit = true; return false; }
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) chargeLimitHit = true;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
@@ -666,7 +766,9 @@ const readers = [];
 if (!(watchMode && seeding)) {
     for (const productType of productTypes) {
         const windows = await planWindows(productType, reportDateFrom, reportDateTo);
-        if (windows === null) continue; // API failed for this type; others still run
+        // API failed for this type; the others still run -- but the failure is now on
+        // the record (markIncomplete inside planWindows) instead of vanishing here.
+        if (windows === null) continue;
         readers.push({ productType, windows, windowIdx: 0, skip: 0, buffer: [], done: !windows.length, pushed: 0 });
     }
 }
@@ -678,13 +780,25 @@ async function refill(reader) {
         if (reader.skip >= Math.min(w.total, MAX_SKIP)) {
             reader.windowIdx += 1;
             reader.skip = 0;
+            summaryFor(reader.productType).windowsScanned += 1;
             continue;
         }
         const limit = Math.min(pageSize, MAX_SKIP - reader.skip);
         const page = await fetchPage(reader.productType, buildSearch(w.from, w.to), limit, reader.skip);
-        if (!page) { reader.done = true; return; }
+        if (!page) {
+            // Was: silently identical to "this product type is exhausted".
+            markIncomplete(
+                reader.productType,
+                'search-request-failed',
+                `The ${reader.productType} walk stopped at window ${w.from}..${w.to} offset ${reader.skip} because `
+                + `openFDA did not answer (${lastApiFailure}); the rest of that window and every window after it `
+                + 'was not scanned.',
+            );
+            reader.done = true;
+            return;
+        }
         reader.skip += limit;
-        if (!page.results.length) { reader.windowIdx += 1; reader.skip = 0; continue; }
+        if (!page.results.length) { reader.windowIdx += 1; reader.skip = 0; summaryFor(reader.productType).windowsScanned += 1; continue; }
         reader.buffer = page.results;
     }
 }
@@ -707,11 +821,28 @@ async function seedBaseline() {
                 if (skip >= Math.min(w.total, MAX_SKIP)) break;
                 const limit = Math.min(MAX_LIMIT, MAX_SKIP - skip);
                 const page = await fetchPage(productType, buildSearch(w.from, w.to), limit, skip);
-                if (!page || !page.results.length) break;
+                // Split apart: a failed request is NOT a finished window. Collapsing the
+                // two under-seeds the baseline, and every recall past the failure point
+                // is then delivered and CHARGED as "new" on the next incremental run.
+                if (!page) {
+                    markIncomplete(
+                        productType,
+                        'search-request-failed',
+                        `The ${productType} baseline walk stopped at window ${w.from}..${w.to} offset ${skip} because `
+                        + `openFDA did not answer (${lastApiFailure}). Recalls past that point are NOT in the baseline, `
+                        + 'so the next incremental run on this watch label would deliver and charge them as new. '
+                        + 'Re-run the seed (delete nothing; seeding overwrites the baseline) before relying on it.',
+                    );
+                    break;
+                }
+                if (!page.results.length) break;
                 for (const row of page.results) watchSeen.set(dedupKeyOf(productType, row), snapshotOf(row));
+                summaryFor(productType).scanned += page.results.length;
                 skip += limit;
                 if (watchSeen.size >= SEED_CAP) {
-                    log.warning(
+                    markIncomplete(
+                        productType,
+                        'seed-cap',
                         `Watch label "${watchLabel}" seed hit the ${SEED_CAP}-recall cap before scanning the whole `
                         + 'match set. Narrow the query (a shorter date window, a classification, a state) so the '
                         + 'whole result set fits, or the first incremental run will report recalls past the cap as new.',
@@ -721,6 +852,7 @@ async function seedBaseline() {
                 }
                 if (page.results.length < limit) break; // last page of this window
             }
+            summaryFor(productType).windowsScanned += 1;
         }
     }
     if (runPressReleases) {
@@ -749,6 +881,7 @@ if (watchMode && seeding) {
             if (!row) continue;
             emitted = true;
             scanned += 1;
+            summaryFor(reader.productType).scanned += 1;
             const key = dedupKeyOf(reader.productType, row);
             if (seen.has(key)) continue;
             seen.add(key);
@@ -764,6 +897,7 @@ if (watchMode && seeding) {
                     // only drift from that point, not a backlog since the baseline.
                     watchSeen.set(key, nextSnap);
                     skippedSeen += 1;
+                    summaryFor(reader.productType).skippedSeen += 1;
                     continue;
                 }
                 reader.pushed += 1;
@@ -773,7 +907,7 @@ if (watchMode && seeding) {
                     _watchChangeType: change.types,
                     _watchPrevious: change.previous,
                 });
-                if (pushed > before) { watchSeen.set(key, nextSnap); changedCount += 1; }
+                if (pushed > before) { watchSeen.set(key, nextSnap); changedCount += 1; summaryFor(reader.productType).delivered += 1; }
                 continue;
             }
             reader.pushed += 1;
@@ -781,9 +915,28 @@ if (watchMode && seeding) {
             keepGoing = await pushResult(normalize(row, reader.productType));
             // Recorded as delivered only after the charge actually succeeded -- anything dropped
             // by maxResults or a charge limit stays "new" for the next run.
+            if (pushed > before) summaryFor(reader.productType).delivered += 1;
             if (watchMode && pushed > before) watchSeen.set(key, snapshotOf(row));
         }
         if (!emitted) break;
+    }
+
+    // An early stop leaves every product type short of its declared match set, and
+    // until now it was recorded nowhere at all -- the run just said "Done. Pushed N".
+    if (!keepGoing || pushed >= maxResults) {
+        const reason = chargeLimitHit ? 'charge-limit' : 'max-results';
+        const detail = chargeLimitHit
+            ? 'Stopped by the run\'s maximum-cost limit before the match set was exhausted; raise it to get the rest.'
+            : `Stopped at maxResults=${maxResults}; matching recalls past this point were not returned.`;
+        for (const reader of readers) {
+            if (!reader.done || reader.buffer.length) markIncomplete(reader.productType, reason, detail);
+        }
+    }
+    // A type whose reader never ran out of windows is short regardless of why the
+    // round-robin left it behind.
+    for (const reader of readers) {
+        const s = summaryFor(reader.productType);
+        if (!reader.done && s.complete) markIncomplete(reader.productType, 'not-reached', `The ${reader.productType} walk ended before its windows were exhausted.`);
     }
 
     for (const reader of readers) log.info(`${reader.productType}: pushed ${reader.pushed} recalls.`);
@@ -857,6 +1010,50 @@ if (pushed === 0 && watchMode && !seeding) {
     );
 }
 
+// The whole point of this record: everything above is English in a log, and a pipeline
+// reads neither. 40 rows against a declared 12,431 matches is byte-identical to a
+// complete result set in the dataset. Written to the run's key-value store so it is
+// readable with no webhook configured:
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+for (const productType of productTypes) summaryFor(productType);
+const types = [...typeSummaries.values()];
+const firstIncomplete = types.find((s) => !s.complete) ?? null;
+const runSummary = {
+    finishedAt: new Date().toISOString(),
+    mode: seeding ? 'watch-seed' : (watchMode ? 'watch-incremental' : 'search'),
+    // Sum over product types. null when NO type produced a usable plan -- which is not
+    // the same claim as "0 recalls matched", and the difference is the whole point.
+    declaredMatches: types.some((s) => s.declaredMatches !== null)
+        ? types.reduce((n, s) => n + (s.declaredMatches ?? 0), 0)
+        : null,
+    // In watch-seed mode the global counter stays 0 (nothing is delivered by design),
+    // so the seed walk's own row count is what "scanned" has to mean there.
+    scanned: seeding ? types.reduce((n, s) => n + s.scanned, 0) : scanned,
+    delivered: pushed,
+    // A buyer asking "did I get everything that matched?" needs the answer to be a
+    // field, not a sentence. Seeding runs deliver 0 rows BY DESIGN and are judged on
+    // the baseline walk instead.
+    complete: firstIncomplete === null,
+    incompleteReason: firstIncomplete?.incompleteReason ?? null,
+    incompleteDetail: firstIncomplete?.incompleteDetail ?? null,
+    skippedSeen,
+    changedCount: watchMode && !seeding ? changedCount : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    pressReleasesRequested: includePressReleases,
+    pressReleasesIncluded: runPressReleases,
+    productTypes: types,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+if (firstIncomplete) {
+    const short = types.filter((s) => !s.complete).map((s) => `${s.productType}:${s.incompleteReason}`).join(', ');
+    await Actor.setStatusMessage(
+        `INCOMPLETE (${short}): delivered ${pushed} row(s)`
+        + (runSummary.declaredMatches !== null ? ` of ${runSummary.declaredMatches} declared match(es)` : '')
+        + `. ${firstIncomplete.incompleteDetail} See the RUN_SUMMARY key-value record for the machine-readable detail.`,
+    );
+}
+
 log.info(`Done. Pushed ${pushed} recalls from ${productTypes.length} product type(s) (scanned ${scanned} rows).`);
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
@@ -874,6 +1071,9 @@ if (webhookUrl) {
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
         watchChangedCount: watchMode && !seeding ? changedCount : null,
+        // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a
+        // polling consumer can never be told two different stories about one run.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({

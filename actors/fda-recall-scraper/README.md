@@ -197,7 +197,52 @@ The press-release feed is unstructured — it has no classification, state/count
 Checked live pricing and features again on 2026-09-15 against the highest-user leader (`benthepythondev/fda-recall-intelligence`, 11 users): they charge $0.05/result tapering to $0.035 on Diamond, **plus a per-GB Actor-start fee** — we are $0.0035/result on the free plan and $0.0024 on Gold and above, **with no start fee**, 10-20x cheaper at every tier. Their input set (8 fields) is a subset of ours (20 fields: three date-field choices instead of one, city, voluntary/mandated, free-text search across three fields, state and country, exact recall-number/event-ID lookup, drug-specific brand/generic/manufacturer name filters, and no 1,000-row cap — ours goes to 50,000). Their one real feature, an "AI-powered intelligence score", is now matched by `riskScore` above — ours is fully documented instead of a black box. Also checked against the real leader by volume (`scrapers_lat/openfda-food-recalls-scraper`, food-only, checked 2026-09-13, input-schema re-diffed 2026-09-17): they charge $0.01/result tapering to $0.008 on Gold+, **plus a separate $0.004→$0.001 Actor-start fee** — cheaper at every run size, and we cover drug and device recalls too, not just food. The 2026-09-17 re-check found `country`/`recallNumber`/`eventId` filters we lacked (they were already present as *output* fields, just not filterable on) — closed as `countries`, `recallNumber`, `eventId` above; a 2026-09-18 re-check of the same benthepythondev listing found `brandName`/`genericName`/`manufacturerName` were the same "computed-but-unfilterable" gap, closed the same way, so no remaining input-parity gap against either competitor. A 2026-09-20 audit found every FDA-recall Actor on the Store, including our own prior version, reads only the same lagging openFDA enforcement API — `includePressReleases` (above) is the one feature none of them currently has: the recall the week FDA announces it, not the week the enforcement paperwork catches up.
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
-Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel`: your endpoint gets told how many brand-new or changed recalls landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`, plus the full `summary` object described in the next FAQ) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel`: your endpoint gets told how many brand-new or changed recalls landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+
+**How do I know the run returned everything that matched?**
+Read the `RUN_SUMMARY` record from the run's key-value store — no webhook needed:
+
+```
+GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY?token=<token>
+```
+
+```json
+{
+  "finishedAt": "2026-09-22T12:03:58.593Z",
+  "mode": "search",
+  "declaredMatches": 14381,
+  "scanned": 6,
+  "delivered": 6,
+  "complete": false,
+  "incompleteReason": "max-results",
+  "incompleteDetail": "Stopped at maxResults=6; matching recalls past this point were not returned.",
+  "skippedSeen": 0,
+  "changedCount": null,
+  "baselineSize": null,
+  "pressReleasesRequested": false,
+  "pressReleasesIncluded": false,
+  "productTypes": [
+    { "productType": "food", "declaredMatches": 3976, "reachableMatches": 3976, "windowsPlanned": 1,
+      "windowsScanned": 0, "scanned": 2, "delivered": 2, "skippedSeen": 0, "status": "ok",
+      "complete": false, "incompleteReason": "max-results", "declaredMatchesIsFloor": false }
+  ]
+}
+```
+
+`declaredMatches` is openFDA's own `meta.results.total` for your filters, so `delivered` vs `declaredMatches` answers the question directly, per product type as well as for the run. Six rows against 14,381 matches looks exactly like a complete result set in the dataset — this is where you find out it isn't. `mode` is `search`, `watch-seed` or `watch-incremental`.
+
+`complete` is deliberately **not** folded into `status`: a product type can be perfectly `ok` and truncated at the same time. `incompleteReason` is one of:
+
+| Reason | Meaning |
+|---|---|
+| `max-results` | Your `maxResults` stopped the walk before the match set ran out. |
+| `charge-limit` | The run's maximum-cost limit stopped it; raise the limit to get the rest. |
+| `seed-cap` | A `watchLabel` seed hit the 20,000-recall cap. Narrow the query and re-seed, or the first incremental run reports recalls past the cap as new. |
+| `skip-ceiling` | A single date window holds more rows than openFDA will page through (`skip` cannot exceed 25,000). Narrow `reportDateFrom`/`reportDateTo`. |
+| `search-request-failed` | openFDA stopped answering mid-walk. Rows past that point were never scanned — this is **not** evidence they don't exist. |
+| `plan-request-failed` | openFDA never answered the initial count query for a product type, so nothing of that type was scanned. That type's `status` is `not-scanned` and its `declaredMatches` is `null`, never `0`. |
+
+The `null`-vs-`0` distinction is the point: `declaredMatches: null` means *we never got an answer*, while `0` means *FDA has no matching recall*. `declaredMatchesIsFloor: true` means the window plan itself was cut short, so the real total is higher. When anything is incomplete the run also sets a human-readable status message, visible at the top of the run in the Apify Console.
 
 ## Related guides
 
