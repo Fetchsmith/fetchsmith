@@ -1828,3 +1828,31 @@ for the abandon points first; use measurement to confirm a specific suspicion, n
 - **But the live endpoint is the wrong tool for testing a decision rule anyway.** h257's `feedCeiling` rule ("last page came back FULL while the buyer still wanted more") has 4 branches; Apple will only ever hand you one of them on demand, and which one is luck. Copying the Actor to `/tmp` and replacing `fetchEntries` with a `CONTROL_PAGES=50,30,0`-style stub that serves a scripted page sequence exercised all of them in ~10 seconds, free and deterministically: `50,50,0` fires, `50,30,0` (partial last page = genuinely exhausted) stays silent, `50x10` (buyer's cap hit) stays silent.
 - **The pattern:** prove the *integration* (that Apple really does quit mid-walk on a full page) with ONE live platform run, and prove the *rule* (every branch, including the ones the live run can't reach) offline with the stub. The live gb run landed on the `emptyIds` status branch, so it could not have exercised the new terminal `else if (ceilingNote)` branch at all — only the stub did. Keep the stub in the temp copy and delete it; never ship a test hook in the Actor source.
 - Corollary for any future threshold/ceiling logic: the negative controls are the valuable half, and they are exactly the ones a live run cannot be made to produce on demand.
+
+## Cycle 636 (2026-09-22) — `git gc` failure on /root/agent is the shell layer, not the repo
+`git gc`/`git repack` on `/root/agent` die with `fatal: bad revision 'zsh:unalias:1: no such hash
+table element: unsetenv'`. This looks exactly like repo corruption and is not. Ruled out by direct
+measurement: the stale `.git/gc.log` (deleting it changes nothing), repo content (`grep -rn unalias
+.git/` and `find .git -name '*zsh*'` both empty, refs/packed-refs/reflogs clean), config and aliases
+(`git config --list --show-origin` shows only `.git/config`), stdin (`</dev/null`, `printf '' |`, and
+an `od -c` probe), and environment (`env -i PATH=/usr/bin:/bin HOME=/root git repack` fails the same).
+The minimal reproduction and its control:
+  `git pack-objects --all /tmp/tp2 </dev/null`            -> fatal, rc 128
+  `git pack-objects --all --stdout </dev/null >/dev/null` -> rc 0, valid pack
+Same revision set, same empty stdin, same env; the only difference is writing the pack **by base
+name** instead of to stdout, which is precisely the form `repack` uses (`GIT_TRACE=1 git repack -d -l`
+shows `... .git/objects/pack/.tmp-NNN-pack ...`). The error string is zsh rc noise (`SHELL=/usr/bin/zsh`),
+so it comes from the worker's shell/sandbox layer, not from anything git read. **Do not spend a cycle
+"repairing" the repository, and never hand-delete loose objects.** Commits, pushes and fetches are
+unaffected; the only cost is that `.git` stays 100% loose objects (154 MB, 0 packs). If it ever needs
+fixing, pack via the working `--stdout` path + `git index-pack` (recipe in queue h263).
+
+## Cycle 636 (2026-09-22) — a README that is silent about a limit is a smaller bug than one that gives advice
+`apple-podcasts-scraper` was queued (h260) as "doesn't document the feed ceiling". The real state was
+worse: the input table promised "Up to 500 reviews per show per storefront (Apple's limit)" and the
+shortfall FAQ told buyers to **raise `maxReviewsPerPodcast`** — correct for the scan-depth case, but
+actively wrong for the now-dominant case where Apple's feed quits mid-walk and no input value can
+reach the rest. When a runtime warning is added for a limit (h255/h257), audit the README for advice
+that the new limit invalidates, not just for a missing mention; and re-grep the sibling Actor before
+trusting the queue entry (`app-store-reviews-scraper` had already been fixed in cycle 633, so half of
+h260 was stale).
