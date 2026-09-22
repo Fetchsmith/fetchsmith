@@ -1094,12 +1094,38 @@ if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + ceilin
 // The pair records, on a surface every run has whether or not the buyer configured a webhook:
 // GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY. Best-effort — a failure here
 // must never fail a run whose rows are already delivered and charged.
+// Run-level completeness, so a consumer can read `complete` here exactly as it does on the other
+// RUN_SUMMARY Actors in the fleet instead of having to know this one reports per pair. Derived
+// only from the pair records below -- no new claim is made here that `pairs` does not already
+// carry. Any pair that is not `complete === true` makes the RUN incomplete: an unknown pair
+// (storefront error, never reached) means reviews the buyer asked for are definitively absent
+// from the dataset, which is incompleteness, not uncertainty.
+const runComplete = pairOutcomes.length ? pairOutcomes.every((p) => p.complete === true) : null;
+// First-cause-wins, same convention as the rest of the fleet: report the FIRST pair that fell
+// short, not the last one to be noticed. Pairs whose own `incompleteReason` is null (refused or
+// never attempted) get a reason derived from their status, because "no reason recorded" must not
+// read as "nothing wrong".
+const firstShort = runComplete === false ? pairOutcomes.find((p) => p.complete !== true) : null;
+const STATUS_REASON = { error: 'storefront-error', badAppId: 'bad-app-id', notReached: 'not-reached' };
+const runIncompleteReason = !firstShort ? null
+  : (firstShort.incompleteReason ?? STATUS_REASON[firstShort.status] ?? 'pair-incomplete');
+const shortPairs = pairOutcomes.filter((p) => p.complete !== true).length;
 const runSummary = {
   finishedAt: new Date().toISOString(),
   pushed,
   pairsPlanned: plannedPairs.length,
   pairsAttempted,
+  // `pairsIncomplete` counts only pairs we KNOW fell short (complete === false). `pairsUnknown`
+  // counts the ones with no completeness to report at all (complete === null) -- without it, a run
+  // in which every pair was refused reads as `pairsIncomplete: 0`, i.e. "nothing wrong".
   pairsIncomplete: pairOutcomes.filter((p) => p.complete === false).length,
+  pairsUnknown: pairOutcomes.filter((p) => p.complete === null).length,
+  complete: runComplete,
+  incompleteReason: runIncompleteReason,
+  incompleteDetail: firstShort
+    ? `${firstShort.app}/${firstShort.country}: ${firstShort.incompleteReason ?? firstShort.reason ?? firstShort.status}`
+      + (shortPairs > 1 ? ` (and ${shortPairs - 1} other pair(s); see \`pairs\`)` : '')
+    : null,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
   pairs: pairOutcomes,
@@ -1126,6 +1152,10 @@ if (webhookUrl) {
     watchPreBaselineSkipped: watchMode ? floorSkipped : null,
     watchSeeding: watchMode ? seeding : null,
     pairsIncomplete: runSummary.pairsIncomplete,
+    pairsUnknown: runSummary.pairsUnknown,
+    complete: runSummary.complete,
+    incompleteReason: runSummary.incompleteReason,
+    incompleteDetail: runSummary.incompleteDetail,
     pairs: pairOutcomes,
   };
   try {

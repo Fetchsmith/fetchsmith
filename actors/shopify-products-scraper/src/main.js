@@ -877,12 +877,45 @@ if (watchMode && pushed === 0 && !erroredStores.length && !timeBudgetExceeded) {
 // consumer that polls runs (rather than receiving a webhook) can read them too:
 // GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY. This is the only machine-readable
 // way to tell an empty dataset's causes apart — the status message is prose for humans.
+// Run-level completeness, so a consumer reads `complete` here exactly as it does on the other
+// RUN_SUMMARY Actors in the fleet instead of having to know this one reports per URL. Derived
+// only from the per-source records below plus the time budget -- no new claim. A run is complete
+// only if every requested URL's feed was read to the end AND the run did not stop on the clock.
+const runComplete = sourceOutcomes.length ? (sourceOutcomes.every((s) => s.complete === true) && !timeBudgetExceeded) : null;
+// First-cause-wins: the FIRST URL that fell short, not the last. `duplicate` is the one status
+// that is not a shortfall -- those products were already delivered by an earlier URL in this run.
+const STATUS_REASON = {
+  badUrl: 'bad-url', notReached: 'not-reached', error: 'source-request-failed',
+  empty: 'empty-source', filteredOut: 'filtered-out', watchBaselined: 'watch-baselined',
+  watchNoChanges: 'watch-no-changes', duplicate: 'duplicate-source',
+};
+const firstShort = runComplete === false ? sourceOutcomes.find((s) => s.complete !== true) : null;
+const shortSources = sourceOutcomes.filter((s) => s.complete !== true).length;
+// A source with status `ok` that is nevertheless incomplete was cut short by the RUN, not by
+// anything about that URL -- status and completeness are deliberately separate here. Name the
+// actual stop cause with the fleet's vocabulary instead of a vague "source-incomplete".
+// Per-source first: a URL that hit its own maxProductsPerStore cap was cut short by that cap, not
+// by whatever later ended the run. Only fall back to the run-level stop cause.
+const runStopReason = pushed >= maxResults ? 'max-results'
+  : timeBudgetExceeded ? 'time-budget'
+  : !keepGoing ? 'charge-limit'
+  : 'source-incomplete';
+const shortReason = (s) => (s.status === 'ok' && s.scanned >= perStore ? 'max-products-per-store' : runStopReason);
 const runSummary = {
   finishedAt: new Date().toISOString(),
   pushed,
   duplicateProducts,
   storesRequested: storeUrls.length,
   timeBudgetExceeded,
+  complete: runComplete,
+  sourcesIncomplete: shortSources,
+  incompleteReason: runComplete !== false ? null
+    : (firstShort ? (STATUS_REASON[firstShort.status] ?? shortReason(firstShort)) : 'time-budget'),
+  incompleteDetail: runComplete !== false ? null
+    : (firstShort
+      ? `${firstShort.url}: ${firstShort.reason ?? (firstShort.status === 'ok' ? `read to ${firstShort.delivered} product(s), stopped by ${shortReason(firstShort)}` : firstShort.status)}`
+        + (shortSources > 1 ? ` (and ${shortSources - 1} other URL(s); see \`sources\`)` : '')
+      : 'the run stopped on the time budget before every URL was read to the end'),
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? watchSeededThisRun > 0 : null,
   sources: sourceOutcomes,
@@ -905,6 +938,10 @@ if (webhookUrl) {
     erroredStores,
     emptyStores,
     filteredOutStores,
+    complete: runSummary.complete,
+    sourcesIncomplete: runSummary.sourcesIncomplete,
+    incompleteReason: runSummary.incompleteReason,
+    incompleteDetail: runSummary.incompleteDetail,
     sources: sourceOutcomes,
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? watchSeededThisRun > 0 : null,
