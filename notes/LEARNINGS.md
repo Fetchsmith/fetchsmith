@@ -1921,3 +1921,28 @@ was still there, but its TRIGGER was different and the port only worked after fi
 - 2026-09-22 (cycle 641) **`isAccessibleForFree: false` in JSON-LD is publisher INTENT, not a statement about your response — do not derive a truncation flag from it.** Measured: theatlantic.com carries `isAccessibleForFree:false` on every article and served our plain `gotScraping` fetch a complete 3,479-word body. Metered paywalls gate the *Nth* read. Unlike `articleBody` (0 of 8 publishers populate it, cycle ~600), the paywall fields ARE well-populated — Google penalizes cloaking — which makes them tempting and exactly as misleading.
 - 2026-09-22 (cycle 641) **Nor is an empty `hasPart[].cssSelector` region proof of truncation — the selector often names the paywall OVERLAY, not the body.** Google's paywall markup has publishers name the gated region, which looks like it converts an assumption into an observation. scmp.com points it at `.piano-metering__paywall-container`, a client-side overlay that is *correctly empty* on a free read. `google-news-scraper` 0.1.38 shipped this and flagged two complete SCMP articles (849 and 1,123 words) as incomplete on the very first live run. **0.1.39 requires two independent observations for a `false`** (gated region empty AND extracted body <=220 words); anything less is `null`.
 - 2026-09-22 (cycle 641) **Method that caught it: read the flagged rows' BODY TAILS, never just the flag counts.** The run summary looked like a success — "2 teasers detected" is exactly what you hope to see when you ship a teaser detector, and confirmation bias does the rest. Printing the last ~320 chars of each flagged `articleBody` showed conclusion-shaped prose ("...help lead the solutions."), which is what a complete article ends with and a teaser never does. **Whenever you ship a detector, dump the payload of everything it flagged before believing the count.**
+
+## Cycle 642 — "we already report it" is not the same as "a program can read it"
+`app-store-reviews-scraper` detected every shortfall it has (Apple's feed ceiling, depth cap,
+refused storefront, empty feed, early stop) and reported all of them — in the log and the run
+status message, i.e. in English prose. The dataset, the only surface a buyer's pipeline actually
+consumes, said nothing: 50 rows for an app declaring 18,632,949 ratings is byte-identical to a
+complete review history. Fixed with a per-pair `RUN_SUMMARY` key-value record (+ webhook `pairs`),
+the same shape cycle 639 added to `shopify-products-scraper`. **Before closing any "do we tell the
+buyer?" audit item, ask it twice: tell a human, and tell a program. The second answer is usually
+no, and the run status message is what makes the first answer feel sufficient.**
+
+Three details that keep this kind of record honest, all reusable:
+- **Keep the completeness flag OUT of the status enum.** A pair can be a perfectly normal `ok` and
+  still have been truncated by Apple. `status` + separate `complete` + `incompleteReason`; folding
+  them into one field deletes exactly the case the record was built for.
+- **Never buy data just to report on it.** `declaredRatingCount` is read off the lookup that was
+  already memoised for `includeAppInfo`; with that input off it stays `null` ("not asked"), never 0
+  and never an extra request the buyer didn't ask for.
+- **Write down the things that didn't happen.** `notReached` (pairs an early stop abandoned) and
+  `badAppId` (an `apps` entry no id parses from) exist only so their absence from the summary can't
+  be read as "nothing was there" — the same zero-is-ambiguous trap one level up.
+
+Checker gotcha, identical to 639: `check-code-fields` flags a big non-row object literal as
+undeclared dataset fields. The fix is the *binding name* (`pairSummary` — matches the NON_ROW_BIND
+`summary` rule and is what the object honestly is), never a `FIELD_SUPPRESS` entry.
