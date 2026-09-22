@@ -545,9 +545,34 @@ let changedCount = 0;
 // appl_id -> last-seen snapshot (or null, when watchChanges has never run for this label) of
 // the 4 fields that can change on an otherwise-already-delivered project.
 const watchSeen = new Map();
+// Set by saveWatchRecord(): how many ids this run's WATCH_KEEP cap evicted from the baseline.
+// An evicted id is indistinguishable from a genuinely new one next run -- it gets delivered
+// and CHARGED again for a project the buyer already paid for. Read only AFTER
+// saveWatchRecord() has run (see cycle-661's ordering trap on eu-ted-tenders-scraper).
+let baselineTruncated = 0;
+let baselineTruncatedTotal = 0;
+
+function truncationNote() {
+    return baselineTruncated > 0
+        ? ` WARNING: the baseline exceeded the ${WATCH_KEEP}-project cap and dropped ${baselineTruncated} `
+        + `older id(s) (${baselineTruncatedTotal} total since this label started) -- those projects will be `
+        + 'reported and CHARGED as new next run. Narrow the query (a fiscal year, IC or state) to keep the '
+        + 'baseline under the cap.'
+        : '';
+}
 
 async function saveWatchRecord(status) {
     const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+    baselineTruncated = watchSeen.size - entries.length;
+    baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+    if (baselineTruncated > 0) {
+        log.warning(
+            `Watch baseline for label "${watchLabel}" exceeded the ${WATCH_KEEP}-project cap: `
+            + `${baselineTruncated} older id(s) fell off the record (${baselineTruncatedTotal} total since this `
+            + 'label started). Those projects will look brand new on a later run and be CHARGED again -- narrow '
+            + 'the query (a fiscal year, IC or state) so the whole result set fits under the cap.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -561,6 +586,8 @@ async function saveWatchRecord(status) {
         lastRunIncompleteReason: incompleteReason,
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: entries.length,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
         // Compact per-entry shape: id plus the 4 snapshot fields (short keys because WATCH_KEEP
         // can hold up to 60,000 of these in one KV record). snap is null when watchChanges has
         // never run for this label -- stored as a bare id in that case, same as pre-this-feature
@@ -900,13 +927,15 @@ if (watchMode) {
                 ? ` NOTE: the baseline hit the ${SEED_CAP}-project cap, which is also NIH RePORTER's own paging wall. `
                 + 'Narrow the query (a fiscal year, IC or state) so the whole result set fits, or the first incremental '
                 + 'run will report older projects past the cap as new.'
-                : ''),
+                : '')
+            + truncationNote(),
         );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new project(s)`
             + (watchChanges ? ` and ${changedCount} changed project(s) (end date/budget end/award amount/active flag)` : '')
-            + ` since the last run; baseline now holds ${watchSeen.size}.`,
+            + ` since the last run; baseline now holds ${watchSeen.size}.`
+            + truncationNote(),
         );
     }
 }
@@ -970,6 +999,8 @@ const runSummary = {
     watchLabel: watchMode ? watchLabel : null,
     baselineSize: watchMode ? watchSeen.size : null,
     changedRedelivered: watchMode && !seeding ? changedCount : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     requestedProjectNums: exclusiveProjectNums ? projectNums : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
@@ -982,6 +1013,11 @@ if (!complete) {
     await Actor.setStatusMessage(
         `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
         + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else if (baselineTruncated > 0) {
+    await Actor.setStatusMessage(
+        `Complete, but the watch baseline dropped ${baselineTruncated} older id(s) past the ${WATCH_KEEP}-project `
+        + `cap (${baselineTruncatedTotal} total) -- those will be re-delivered and CHARGED next run. See RUN_SUMMARY.`,
     );
 } else if (declaredMatches !== null && !watchMode && !exclusiveProjectNums) {
     log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} project(s) NIH RePORTER declared for these filters.`);

@@ -119,6 +119,8 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 
 **Where is the watch baseline kept, and can I reset it?** In a named key-value store, `fetchsmith-nih-watch`, **on your own Apify account** — one record per label + filter combination, holding the `appl_id`s already sent plus the last run time. Delete the record (or just use a new label) to start over. Nothing about your saved queries leaves your account. Two caveats worth knowing: a project that was skipped because it fell outside `maxResults` is *not* marked as delivered, so it comes back on the next run; and a baseline caps at 15,000 projects (RePORTER's own paging wall), so watch a query narrow enough to fit under that — the run log warns you if it doesn't.
 
+**Baseline size cap.** Separately from the 15,000-project seeding wall above, the *saved record itself* holds up to **60,000** appl_ids for one label. If a long-running label's baseline grows past that, the oldest ids are dropped — and a dropped id is no longer recognised, so it comes back as "new" on a later run **and is charged again**. The run that drops any says so explicitly: a warning in the log, a note appended to the seeding/incremental log line, a status message on an otherwise-complete run, and `baselineTruncated`/`baselineTruncatedTotal` (this run / the whole life of the label) in the saved record and in `RUN_SUMMARY`. If you see it, narrow the query (a fiscal year, IC or state) or split it across several labels so each baseline stays under the cap.
+
 **Is any personal contact data collected?** No. The NIH RePORTER schema contains no email or phone field at all. PI and program-officer **names** are included because they are statutory public disclosure, published on every reporter.nih.gov project page — the same class of data as a federal contract awardee's name.
 
 **How do I know the run returned everything it should have — in code, not by reading the log?**
@@ -147,7 +149,9 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
   "chunksCountFailed": 0,
   "publicationLookupBatchesFailed": 0,
   "watchLabel": null,
-  "baselineSize": null
+  "baselineSize": null,
+  "baselineTruncated": null,
+  "baselineTruncatedTotal": null
 }
 ```
 
@@ -156,7 +160,7 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 **Important:** a number is never invented from a failure. If NIH doesn't answer a count query, `declaredMatches` is `null` — never `0` — and if it stops answering mid-walk the run says `search-request-failed` instead of reporting a partial page set as the complete result. The same rule applies to a chunked query: a sub-query whose count fails is paged anyway and counted in `chunksCountFailed`, so a single failed request can't quietly delete an entire NIH institute from your results.
 
 **I run this on a schedule as a watch — what should my pipeline check?**
-`complete`. A watch baseline (`mode: "watch-seed"`) that was cut short records fewer already-seen projects than really match, and every project it missed looks brand new — and gets charged — on the next incremental run. When that happens the run logs a `BASELINE INCOMPLETE` warning, sets `complete: false`, and stores `lastRunComplete: false` in the watch record, so re-seed before trusting the next run. On a healthy seed, `baselineSize` equals `declaredMatches`.
+`complete`. A watch baseline (`mode: "watch-seed"`) that was cut short records fewer already-seen projects than really match, and every project it missed looks brand new — and gets charged — on the next incremental run. When that happens the run logs a `BASELINE INCOMPLETE` warning, sets `complete: false`, and stores `lastRunComplete: false` in the watch record, so re-seed before trusting the next run. On a healthy seed, `baselineSize` equals `declaredMatches`. Also check `baselineTruncated`/`baselineTruncatedTotal` (watch mode only) — a non-zero value means the 60,000-id record cap dropped older ids this run, and those will be re-delivered and charged again next run; see the "Baseline size cap" FAQ above.
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
 Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, the full `summary` object described above, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
