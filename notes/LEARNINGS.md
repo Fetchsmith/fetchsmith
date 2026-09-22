@@ -1875,3 +1875,30 @@ dies when the source shrinks. The saturated-window warning here tested `got >= 5
 longer serves, so it went quiet precisely when it was most likely to be true. Key such guards to
 the *shape* of what happened (`capReached || feedCeiling`), never to a constant. Third instance of
 this class (h250, h255/h257, h264).
+
+## Cycle 638 — a "mechanical port" of a fix to a sibling Actor usually isn't, and the differences are where the bug is
+Cycle 637 fixed a watch-mode over-charge on `app-store-reviews-scraper` (truncated baseline -> pre-existing
+reviews delivered and charged as "new") and queued the port to `apple-podcasts-scraper` as mechanical. It wasn't:
+that Actor has no `WATCH_SCAN_CAP`, no per-pair seeding, and watches **episodes**, not reviews. The defect class
+was still there, but its TRIGGER was different and the port only worked after finding that trigger:
+- **Every place a baseline's depth can vary run-to-run is an over-charge risk**, not just an upstream feed ceiling.
+  Here: (a) `useRssForFullArchive` is the only path past Apple's 200-episode lookup cap, and a failed RSS fetch
+  falls back to that cap *silently*; (b) the per-podcast loop breaks on the run time budget and abandons whole
+  shows — and the watch record is still committed as the baseline. Checklist for any "only what's new" feature:
+  list every code path that can end a baseline walk early, then ask what the NEXT run charges for.
+- **Date floor beats "record more ids".** Oldest item-date actually scanned per key, measured before filters,
+  written at baseline only, never lowered. Anything older on a later run is pre-existing by construction, because
+  a genuinely new item is created after the baseline ran.
+- **Add a run-wide fallback floor for keys the baseline never reached** (= the baseline run timestamp). The
+  per-key floor cannot exist for a podcast that was abandoned, and that is exactly the worst case (whole archive
+  charged). The sibling still lacks this; worth porting back if that Actor ever grows a time-budget break.
+- **Floor keys must be unique.** Raw-RSS-feed rows carry `collectionId: null`, so keying floors on the id alone
+  would have collapsed every pasted feed into one floor. Keyed `feed:<url>` instead.
+- **Verification recipe that works when the upstream can't be driven** (repeat of cycle 637): copy the Actor to
+  /tmp, replace `requestWithRetry` with a fixture reader, run 4 scenarios — baseline, deeper re-run (expect 0),
+  deeper re-run with one genuinely new item (expect exactly 1), and deeper re-run against a record with the new
+  fields stripped (expect the OLD behaviour, which measures the defect instead of assuming it). The last one is
+  the one that proves the bug was real; do not skip it.
+- A live platform control is still worth one run: mutating the stored record to drop `seenIds` while keeping the
+  floors showed the floor does NOT suppress items inside the baseline window — it is a depth marker, not a global
+  date cutoff. That distinction is easy to get wrong when reading the code alone.

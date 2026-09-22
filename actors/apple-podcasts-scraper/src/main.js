@@ -127,6 +127,21 @@ let seeding = false;
 let watchSkipped = 0;
 const watchSeen = new Set(); // `${collectionId}:${episodeId|episodeGuid|title}` already delivered under this label+fingerprint
 
+// Per-podcast DATE FLOOR (ported from app-store-reviews-scraper 0.1.52, cycle 637). A baseline
+// run only ever records the episodes it actually SAW, and how deep a baseline reaches is not
+// constant: an RSS full-archive fetch that fails falls back to Apple's 200-episode lookup, and
+// the outer loop abandons whole podcasts when the run approaches its time limit — yet the record
+// is still committed as THE baseline. A later, luckier run then reaches further back, finds
+// archive episodes missing from the baseline, calls them new and PUSHES AND CHARGES for them.
+// The floor is the fix: for every podcast the baseline walked, remember the oldest releaseDate it
+// scanned; anything older than that on a later run is pre-existing, never new. A genuinely new
+// episode is published after the baseline ran, so it is always newer than the floor — the rule
+// can only remove false "new", never hide a real one.
+const pairFloors = new Map(); // floorKey -> ISO releaseDate of the oldest episode the baseline scanned
+let seedFloor = null; // fallback for podcasts the baseline never reached at all (see above)
+let floorSkipped = 0;
+const floorFor = (floorKey) => pairFloors.get(floorKey) ?? seedFloor;
+
 if (watchMode) {
   // Every filter that decides what an episode run returns goes into the fingerprint — raw
   // "podcasts"/"searchTerms" (what the buyer typed, not resolved ids), not resolved ones.
@@ -148,12 +163,22 @@ if (watchMode) {
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
     for (const id of existing.seenIds) watchSeen.add(String(id));
+    // Records written before 0.1.39 carry neither floor; they keep their old behaviour exactly.
+    for (const [k, v] of Object.entries(existing.pairFloors ?? {})) if (v) pairFloors.set(k, String(v));
+    seedFloor = existing.seedFloor ?? null;
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchSeen.size} already-delivered episode(s). Only episodes NOT in that baseline will be returned and charged.`,
     );
+    if (seedFloor) {
+      log.info(
+        `Baseline depth floor: episodes released before ${seedFloor} (per podcast where known) already existed when the `
+        + 'baseline ran, so they count as pre-existing even if the baseline did not manage to scan them — not charged.',
+      );
+    }
   } else {
-    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    const seededAt = new Date().toISOString();
+    watchRecord = { fingerprint, firstSeededAt: seededAt, seedFloor: seededAt, runCount: 0 };
     seeding = true;
     log.info(
       `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
@@ -173,6 +198,9 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    // Floors are written by the baseline run only. An incremental run re-persists what it loaded
+    // unchanged: lowering a floor would re-expose, one run later, exactly what it just suppressed.
+    pairFloors: Object.fromEntries(pairFloors),
   });
 }
 
@@ -515,16 +543,29 @@ async function getFeedUrlOnly(id) {
   return feedUrl;
 }
 
-async function pushEpisodeRows(rows) {
+// `floorKey` identifies the podcast this batch belongs to for the watch-mode date floor: the
+// Apple show id, or the feed URL for a show pasted in as a raw RSS link (which has no id, so all
+// of them would otherwise share one floor).
+async function pushEpisodeRows(rows, floorKey) {
   let got = 0;
+  const floor = watchMode && !seeding ? floorFor(floorKey) : null;
+  const floorMs = floor ? Date.parse(floor) : NaN;
+  let oldestScanned = null; // measured BEFORE the filters: a scanned-then-discarded episode still
+  // proves the walk reached that date, and the filter set is part of the watch fingerprint anyway.
   for (const row of rows) {
     if (!keepGoing || got >= perPodcastEpisodes) break;
     got += 1;
+    const releasedMs = row.releaseDate ? Date.parse(row.releaseDate) : NaN;
+    if (!Number.isNaN(releasedMs) && (oldestScanned == null || releasedMs < oldestScanned)) oldestScanned = releasedMs;
     if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
     if (!episodePassesFilters(row)) continue;
     if (watchMode) {
       const watchId = `${row.collectionId ?? 'feed'}:${row.episodeId ?? row.episodeGuid ?? row.title ?? ''}`;
       if (seeding) { watchSeen.add(watchId); continue; } // baseline: record, never push/charge
+      // Older than the deepest point the baseline reached => it already existed then, whatever the
+      // baseline managed to record. Not new, so not pushed and not charged. An episode with no
+      // usable date is left to the seen-id test rather than guessed at.
+      if (!Number.isNaN(floorMs) && !Number.isNaN(releasedMs) && releasedMs < floorMs) { floorSkipped += 1; continue; }
       if (watchSeen.has(watchId)) { watchSkipped += 1; continue; } // already delivered under this label
       const beforePush = pushed;
       keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
@@ -532,6 +573,11 @@ async function pushEpisodeRows(rows) {
       continue;
     }
     keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
+  }
+  // Committed only for a podcast the baseline actually walked; one it never reached keeps the
+  // run-wide `seedFloor` instead, which is the weaker (later) of the two and suppresses more.
+  if (watchMode && seeding && oldestScanned != null) {
+    pairFloors.set(floorKey, new Date(oldestScanned).toISOString());
   }
   return got;
 }
@@ -588,7 +634,7 @@ async function scrapeEpisodes(id) {
     catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return { got: 0, failed: true }; }
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
-  return { got: await pushEpisodeRows(rows), failed: false };
+  return { got: await pushEpisodeRows(rows, String(id)), failed: false };
 }
 
 // Podcast shows without an Apple presence (or with one the caller didn't bother looking up) can
@@ -616,7 +662,7 @@ async function scrapeEpisodesFromFeed(feedUrl) {
   } : null;
   const channelExplicit = parseItunesExplicit(channel.find('> itunes\\:explicit').first().text());
   const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info, channelExplicit)).get();
-  return { got: await pushEpisodeRows(rows), failed: false };
+  return { got: await pushEpisodeRows(rows, `feed:${feedUrl}`), failed: false };
 }
 
 async function scrapeReviews(id) {
@@ -942,13 +988,22 @@ const ceilingNote = feedCeilingIds.length
     + ` Try another storefront in "country" for wider coverage.`
   : '';
 
+// Episodes older than the depth the baseline run reached: pre-existing, so deliberately not
+// delivered and not charged. Said out loud, because the alternative reading of a smaller-than-
+// expected watch result is "the Actor missed episodes".
+const floorNote = floorSkipped > 0
+  ? ` ${floorSkipped} older episode(s) that already existed when the baseline ran were skipped and not charged`
+    + ' (the baseline did not reach that far back into the archive; they are not new).'
+  : '';
+if (floorSkipped > 0) log.info(floorNote.trim());
+
 let statusMsg;
 if (watchMode && seeding) {
   statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}`;
 } else if (watchMode && pushed === 0) {
-  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${timeBudgetNote}`;
+  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${floorNote}${timeBudgetNote}`;
 } else if (watchMode) {
-  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${timeBudgetNote}`;
+  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${floorNote}${timeBudgetNote}`;
 } else if (pushed === 0 && timeBudgetExceeded) {
   statusMsg = `No results before the run approached its time limit.${timeBudgetNote}`;
 } else if (pushed === 0) {
