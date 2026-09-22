@@ -79,13 +79,14 @@ Three record shapes, distinguished by `type`.
 | `postDate` | `2026-09-08T12:04:21.658Z` |
 | `audience`, `isPaid` | `everyone`, `false` |
 | `postType` | `newsletter`, `podcast`, `thread`, … |
-| `wordCount` | `4695` |
+| `wordCount` | `4695` — the full article's length, as Substack reports it |
 | `reactionCount`, `commentCount`, `restackCount` | `199`, `118`, `14` |
 | `tags`, `section`, `language` | `[]`, `null`, `en` |
 | `coverImage`, `podcastUrl`, `podcastDurationSec` | media links where present |
 | `bodyText` | full article as plain text (28 kB in the sample above) |
 | `bodyHtml` | original HTML (only when `includeBodyHtml`) |
-| `bodyTruncated` | `true` when the post is paywalled and no public text exists |
+| `bodyWordCount` | `4695` — words actually in `bodyText`. Equals `wordCount` on public posts; smaller on a paywalled preview |
+| `bodyTruncated` | `true` when `bodyText` is **not** the whole article — no public body at all, or only the free preview of a paid post |
 
 Only when `includePublicationInfo: true` (values below from a real run on `bigtechnology.com`):
 
@@ -116,6 +117,7 @@ Only when `includePublicationInfo: true` (values below from a real run on `bigte
   "commentCount": 118,
   "restackCount": 14,
   "bodyText": "The Story So Far\nMechanistic interpretability is the science of \"reading an AI's mind\"...",
+  "bodyWordCount": 4695,
   "bodyTruncated": false
 }
 ```
@@ -193,7 +195,9 @@ Pay per result, split by item type so metadata-only and comment-heavy runs aren'
 
 ## FAQ
 
-**Does it get paywalled content?** No. It returns exactly what a logged-out visitor can see: paywalled posts come back with metadata and `bodyTruncated: true`. There is no login or paywall bypass, by design.
+**Does it get paywalled content?** No. It returns exactly what a logged-out visitor can see, and it tells you when that is less than the whole article. Substack serves a *free preview* of most subscriber-only posts — a real body, but cut off partway through (measured live across three publications: 2%–45% of the article, while the post's own `wordCount` still reports the full length). Those rows come back with `bodyTruncated: true` and a `bodyWordCount` well below `wordCount`, so you can filter or discount them instead of mistaking a preview for a full article. Posts with no public body at all are `bodyTruncated: true` with an empty `bodyText`. There is no login or paywall bypass, by design.
+
+**How do I avoid paying for previews?** Set `audienceFilter: "free"` — public posts only, which are the ones that come back complete. The filter is applied from the archive listing, before any body is fetched or charged.
 **What if I list the same publication or post twice?** Deduped automatically — `publicationUrls`/`postUrls` entries that resolve to the same origin or the same post are only fetched (and charged) once.
 
 **Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way.

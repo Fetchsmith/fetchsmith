@@ -472,6 +472,7 @@
         "language",
         "bodyText",
         "bodyHtml",
+        "bodyWordCount",
         "bodyTruncated",
         "publicationSubscriberCount",
         "publicationSubscriberCountLabel",
@@ -514,7 +515,9 @@
         "wordCount": 4695,
         "reactionCount": 199,
         "commentCount": 118,
-        "bodyText": "The Story So Far\nMechanistic interpretability is the science of “reading an AI’s mind”…"
+        "bodyText": "The Story So Far\nMechanistic interpretability is the science of “reading an AI’s mind”…",
+        "bodyWordCount": 4695,
+        "bodyTruncated": false
       },
       "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record — including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
       "memory_mb": 1024

@@ -181,6 +181,28 @@ function htmlToText(html) {
   return $.root().text().replace(/ /g, ' ').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim() || null;
 }
 
+// Substack serves a *free preview* of a subscriber-only post to logged-out clients: body_html is
+// present but cut off mid-article (measured live: 2–45% of the real article), while the post's
+// `wordcount` still reports the full length. A non-empty body is therefore NOT proof of a complete
+// article, so `bodyTruncated` cannot just be `!bodyText` — compare what we actually extracted
+// against the declared word count. Free posts measured 0.93–1.06 of `wordcount`; previews 0.00–0.45.
+const BODY_COMPLETE_RATIO = 0.9;
+// Absolute floor so a short post whose tokenisation differs slightly from Substack's isn't flagged
+// (smallest real preview shortfall measured: 1185 words).
+const BODY_SHORTFALL_MIN_WORDS = 50;
+
+function countWords(text) {
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function isBodyTruncated(bodyText, bodyWordCount, declaredWordCount) {
+  if (!bodyText) return true;
+  if (typeof declaredWordCount !== 'number' || !Number.isFinite(declaredWordCount) || declaredWordCount <= 0) return false;
+  const shortfall = declaredWordCount - bodyWordCount;
+  return shortfall >= BODY_SHORTFALL_MIN_WORDS && bodyWordCount < declaredWordCount * BODY_COMPLETE_RATIO;
+}
+
 function matchesAudience(post) {
   const paid = post.audience && post.audience !== 'everyone';
   if (audienceFilter === 'free') return !paid;
@@ -222,6 +244,8 @@ function mapPost(post, origin, detail, pubInfo) {
   const bodyHtml = full.body_html || null;
   const bodyText = htmlToText(bodyHtml) ?? (post.truncated_body_text || null);
   const url = post.canonical_url || `${origin}/p/${post.slug}`;
+  const declaredWordCount = full.wordcount ?? post.wordcount ?? null;
+  const bodyWordCount = countWords(bodyText);
   return {
     type: 'post',
     id: post.id,
@@ -240,7 +264,7 @@ function mapPost(post, origin, detail, pubInfo) {
     audience: post.audience ?? null,
     isPaid: !!(post.audience && post.audience !== 'everyone'),
     postType: post.type ?? null,
-    wordCount: full.wordcount ?? post.wordcount ?? null,
+    wordCount: declaredWordCount,
     reactionCount: post.reaction_count ?? 0,
     commentCount: post.comment_count ?? 0,
     restackCount: post.restacks ?? 0,
@@ -253,8 +277,12 @@ function mapPost(post, origin, detail, pubInfo) {
     language: post.language ?? null,
     bodyText: includeBodyText ? bodyText : undefined,
     bodyHtml: includeBodyHtml ? bodyHtml : undefined,
-    // true when the full article text is not publicly available (paywalled subscriber-only post)
-    bodyTruncated: includeBodyText ? !bodyText : undefined,
+    // How many words of body we actually extracted, vs. `wordCount` which is the full article's
+    // length as Substack reports it. They match on public posts and diverge on paywalled previews.
+    bodyWordCount: includeBodyText ? bodyWordCount : undefined,
+    // true when the text returned is not the complete article — either no public body at all, or
+    // only the free preview of a subscriber-only post.
+    bodyTruncated: includeBodyText ? isBodyTruncated(bodyText, bodyWordCount, declaredWordCount) : undefined,
     ...(pubInfo ?? {}),
   };
 }

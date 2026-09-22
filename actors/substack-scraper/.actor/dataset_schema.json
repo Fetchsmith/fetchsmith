@@ -262,6 +262,14 @@
           "null"
         ]
       },
+      "bodyWordCount": {
+        "title": "BodyWordCount",
+        "example": 4695,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "bodyTruncated": {
         "title": "BodyTruncated",
         "example": false,
