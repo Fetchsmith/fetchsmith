@@ -2020,3 +2020,31 @@ inside the join is detectable rather than silently undercounting.
 - **Fixed TED anyway, and the reason is the one that generalizes: the guard is cheap and the failure is silent and billable.** TED sends **no `sort` parameter at all** (checked: `grep -n sort src/main.js` finds only `.sort()` on local arrays), so nothing *guarantees* one notice appears on one page — the repeat rate is a function of how busy TED is while your run walks, not of anything the Actor controls. A Set plus a counter costs nothing; a silent double charge costs a buyer's trust. **Rate-dependent upstream behaviour measuring 0 today is not the same as structurally impossible.**
 - **Mark the dedup id when the row is CONSIDERED, not after a successful charge** — the opposite of the rule for a *persisted* watch baseline. `watchSeen` is charge-gated on purpose (a row dropped by `maxResults` must stay "new" for the next run). A run-scoped set has no next run, so charge-gating it would let a repeat of a *value-filtered* notice inflate `filteredOutValue` and re-process rows after the charge limit. Same data structure, opposite rule, because one outlives the run and the other doesn't.
 - **Offline fixture gotcha:** the walk's continue condition is `(page - 1) * PAGE_SIZE < total`, so a 15-row fixture against the real `PAGE_SIZE = 250` **stops after page 1 and never executes the paging path under test**. Had to drop `PAGE_SIZE` to 10 in the fixture copy. A fixture smaller than one page tests nothing — size it to force at least two pages.
+
+## An offline fixture can be honest and still be structurally unable to fail (cycle 651)
+Building the completeness contract for `uk-find-a-tender-scraper`, I wrote an offline fixture that
+reproduced the target defect exactly (a portal serving one page then 503ing), ran the **committed
+pre-fix code** against it to prove it was silent, ran the post-fix code to prove it spoke, and added
+a healthy-feed negative control so it could not cry wolf. All three passed. **The very first live
+platform run then found a real bug in the new code**: a run that read both feeds to the end and
+delivered 12 of 42 notices reported itself `complete: true`.
+
+The fixture could not have caught it. It served 6 rows against `maxResults: 100`, so the buffers
+always drained to empty and the "stopped short with rows still buffered" branch never executed.
+Same shape as cycle 650's TED fixture gotcha (a 15-row fixture against `PAGE_SIZE = 250` never
+reached the paging path) — **the fixture's size must be chosen relative to the BOUND under test, not
+just large enough to exercise the happy path.** A fixture smaller than the cap it is testing tests
+nothing about the cap.
+
+**Rule: for every bound the code can stop on (`maxResults`, a page cap, a charge limit, a seed cap),
+the fixture needs a case that actually trips it.** Enumerate the stop causes first, then size the
+fixture; one fixture per cause is cheaper than one live run that embarrasses the commit.
+
+**The underlying design error is worth naming separately: two booleans that sound like synonyms.**
+`exhausted` ("this portal's feed ran out of `links.next`") and "the buyer got everything" read as the
+same fact and are not. `exhausted` is what makes a per-source `delivered: 0` trustworthy — it is the
+whole reason a dead portal can be told apart from an empty one. It says nothing about rows still
+sitting in a buffer when `maxResults` cut the walk off. I let the first suppress the second, and
+because both UK portals routinely fit a short date window in ONE page, exhausted-feed + capped-run is
+the COMMON case for this Actor, not an edge. **When two flags are both "are we done?", write down the
+question each one answers before letting either gate the other.**
