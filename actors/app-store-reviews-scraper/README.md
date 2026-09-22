@@ -35,8 +35,9 @@ Filtering happens before you're charged — you never pay for rows that got filt
 ## Watch mode — only new reviews since the last run
 Set `watchLabel` to any name and this Actor stops re-delivering the same reviews on every scheduled run:
 
-1. **First run for a label is a free baseline.** It records which reviews already exist for every `apps`/`countries` pair (always walking Apple's full 500-review ceiling per pair, regardless of `maxReviewsPerApp`) and returns **zero rows — you are charged nothing**.
+1. **First run for a label is a free baseline.** It records which reviews already exist for every `apps`/`countries` pair — walking as deep as Apple will serve, up to 500 per pair and regardless of `maxReviewsPerApp` — and returns **zero rows — you are charged nothing**. Apple's feed often stops well short of 500 (see the FAQ), so a baseline may only cover the newest ~50 reviews of a pair; that is safe, see the next bullet.
 2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
+3. **A review older than the baseline could reach is never billed as "new".** Each pair also records the oldest review date its baseline walk actually scanned. If Apple's feed serves deeper on a later run than it did at baseline time, the extra older reviews are recognised as pre-existing — not delivered, not charged — and the run says how many. Reviews posted after the baseline are always newer than that date, so real alerts are never suppressed.
 
 The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-app-store-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`appNames`/`countries`/`countryFallback`/`sort` **and every review filter (`minRating`/`maxRating`/`keyword`/`minReviewLength`/`reviewsAfter`/`reviewsBefore`/`minVoteSum`/`minVoteCount`)** (Apple's feed takes none of those server-side, so all of them decide what "new" means). Change any of those and you get a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
 

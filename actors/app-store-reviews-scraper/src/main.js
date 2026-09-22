@@ -120,7 +120,11 @@ function passesFilters(item) {
 const WATCH_STORE = 'fetchsmith-app-store-reviews-watch';
 const SEED_CAP = 20000; // bound the cost/time of a baseline run across all (app,country) pairs
 const WATCH_KEEP = 40000; // bound the record size; oldest ids fall off first
-const WATCH_SCAN_CAP = 500; // Apple's own hard ceiling (10 pages x 50) — always safe to use for seeding
+// The deepest a seeding walk is ALLOWED to go (10 pages x 50). It is a ceiling, not a promise:
+// as of 2026-09-22 Apple's feed usually quits far sooner (often after page 1), so a baseline can
+// easily hold only the newest ~50 reviews of a pair. That is why a truncated baseline can no
+// longer over-charge — see `pairFloors` below.
+const WATCH_SCAN_CAP = 500;
 
 function watchKeyFor(label, criteria) {
   const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -145,6 +149,27 @@ let watchSkipped = 0;
 let unidentifiedSkipped = 0; // watch mode only: reviews Apple returned without a usable id
 const watchSeen = new Set(); // `${appId}:${actualCountry}:${reviewId}` already delivered under this label+fingerprint
 const seededPairs = new Set(); // `${appId}::${requestedCountry}` pairs already baselined
+// Per `${appId}::${actualCountry}` date floor, written ONCE when that pair is baselined: the
+// OLDEST review date the baseline walk actually scanned. Any review older than that existed at
+// baseline time and was simply out of reach (Apple truncated the walk) — so it is NOT new and must
+// never be delivered or charged on a later run, however deep that run happens to get. A genuinely
+// new review is posted after the baseline run, hence always newer than the floor, so this can only
+// remove false "new", never hide a real one. Deliberately never updated after seeding: lowering it
+// on an incremental run would re-expose the very reviews it had just suppressed.
+const pairFloors = new Map();
+const seedFloors = new Map(); // oldest date scanned per pair DURING this run's seeding walks
+let floorSkipped = 0; // reviews suppressed by a pair floor this run (not delivered, not charged)
+// Promote the floors measured while baselining this app (its requested storefront and, if it ran,
+// its countryFallback storefront) into the persisted record. Called only where the pair is marked
+// baselined, i.e. only when its seed walk actually completed — a walk cut short by SEED_CAP has an
+// incomplete picture and must not leave a floor behind, same invariant as `seededPairs`.
+function commitSeedFloors(appId) {
+  for (const [k, v] of seedFloors) {
+    if (!k.startsWith(`${appId}::`)) continue;
+    if (!pairFloors.has(k)) pairFloors.set(k, v);
+    seedFloors.delete(k);
+  }
+}
 
 if (watchMode) {
   // EVERY filter that decides what gets delivered goes into the fingerprint, including the
@@ -175,6 +200,9 @@ if (watchMode) {
     watchRecord = existing;
     for (const id of existing.seenIds) watchSeen.add(String(id));
     for (const p of existing.seededPairs ?? []) seededPairs.add(String(p));
+    // Absent on records written before this was added: those watches keep their old behaviour
+    // (id-set only) rather than acquiring a floor retroactively from a walk that never measured one.
+    for (const [p, d] of Object.entries(existing.pairFloors ?? {})) pairFloors.set(String(p), String(d));
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchSeen.size} already-delivered review(s) across ${seededPairs.size} app/country pair(s). Only `
@@ -207,6 +235,7 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seededPairs: Array.from(seededPairs),
+    pairFloors: Object.fromEntries(pairFloors),
     seenIds: ids,
   });
 }
@@ -261,6 +290,15 @@ async function pushResult(item, watchId = null, pairSeeding = false) {
   if (watchMode && watchId != null && watchSeen.has(watchId)) {
     watchSkipped += 1;
     return true; // already delivered under this label: not pushed, not charged, keep scanning
+  }
+  // Older than everything the baseline walk managed to scan for this pair => it existed back then
+  // and Apple simply did not serve it, so it is not "since the last run". Not pushed, not charged.
+  if (watchMode && watchId != null) {
+    const floor = pairFloors.get(`${item.appId}::${item.country}`);
+    if (floor && item.updatedAt && new Date(item.updatedAt) < new Date(floor)) {
+      floorSkipped += 1;
+      return true;
+    }
   }
   if (ratingSort) {
     // Not charged/pushed yet -- just buffered. maxReviewsPerApp/reviewsAfter early-stop still
@@ -627,6 +665,14 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
         break;
       }
       got += 1; tally.got += 1;
+      // Floor measurement runs BEFORE the filters on purpose: a review this walk looked at and
+      // discarded still proves the feed reached that date, and the filter set is part of the watch
+      // fingerprint anyway, so a deeper (older) floor here is both safe and more useful.
+      if (watchMode && pairSeeding && item.updatedAt) {
+        const fk = `${appId}::${country}`;
+        const prev = seedFloors.get(fk);
+        if (!prev || new Date(item.updatedAt) < new Date(prev)) seedFloors.set(fk, item.updatedAt);
+      }
       if (!passesFilters(item)) { tally.filteredOut += 1; continue; }
       const watchId = watchMode ? `${appId}:${country}:${reviewId}` : null;
       // Counts every matching review considered "new" this scan (not already in the baseline) --
@@ -773,6 +819,16 @@ for (const app of apps) {
         + `new reviews over time.`,
       );
     }
+    if (feedCeiling && watchMode && pairSeeding) {
+      // A baseline that Apple truncated is not a broken baseline — the date floor recorded above
+      // keeps the reviews it could not reach from coming back as "new" — but the buyer should know
+      // their watch only covers reviews newer than the ones it managed to scan.
+      log.warning(
+        `${appId}/${country}: Apple's review feed stopped serving at page ${feedStopPage} after a FULL page, so this `
+        + `baseline holds the newest ${got} review(s) only. Reviews older than that are recorded as pre-existing and `
+        + `will never be delivered or charged as "new" — only reviews posted from now on will be.`,
+      );
+    }
     if (capReached && filteredOut > 0) {
       depthCappedPairs.push(`${appId}/${country}`);
       log.warning(
@@ -808,7 +864,7 @@ for (const app of apps) {
         }
         if (fb2.got > 0) {
           feedServed += totalGot;
-          if (watchMode && pairSeeding && keepGoing) seededPairs.add(pairKey);
+          if (watchMode && pairSeeding && keepGoing) { seededPairs.add(pairKey); commitSeedFloors(appId); }
           continue;
         }
       }
@@ -824,10 +880,16 @@ for (const app of apps) {
     feedServed += totalGot;
     // Only mark a pair baselined if its seed walk actually finished -- one cut short by the global
     // SEED_CAP (keepGoing=false) has an incomplete picture of what already exists for that pair.
-    if (watchMode && pairSeeding && keepGoing) seededPairs.add(pairKey);
-    if (watchMode && !pairSeeding && totalGot >= WATCH_SCAN_CAP && totalNewForPair > 0 && totalNewForPair === totalGot) {
+    if (watchMode && pairSeeding && keepGoing) { seededPairs.add(pairKey); commitSeedFloors(appId); }
+    // "The scan window was saturated": every review it looked at was new, AND the window was cut
+    // short by something rather than running out of reviews — the buyer's own cap (capReached) or
+    // Apple quitting mid-feed (feedCeiling). This used to test `totalGot >= WATCH_SCAN_CAP`, i.e.
+    // 500 reviews in one pair, which Apple's feed can no longer deliver (measured 2026-09-22: it
+    // commonly stops after page 1), so the warning had become unfirable exactly when the feed
+    // ceiling made it most likely to be true — same class as the h255/h257 silent shortfall.
+    if (watchMode && !pairSeeding && (capReached || feedCeiling) && totalNewForPair > 0 && totalNewForPair === totalGot) {
       saturatedPairs.push(pairKey);
-      log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — run the watch more often.`);
+      log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — ${feedCeiling ? "Apple's feed stopped serving mid-walk, so run the watch more often (raising maxReviewsPerApp cannot reach deeper)" : 'run the watch more often, or raise maxReviewsPerApp'}.`);
     }
   }
 }
@@ -855,6 +917,13 @@ if (pairsAttempted > 0 && feedServed === 0 && await reviewFeedIsDown()) {
   );
 }
 if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+if (floorSkipped) {
+  log.info(
+    `${floorSkipped} review(s) were older than the deepest review this watch's baseline could scan, so they already `
+    + `existed when the baseline was taken and were NOT delivered or charged as new. This happens when Apple's feed `
+    + `serves deeper on a later run than it did at baseline time.`,
+  );
+}
 log.info(`Done. Pushed ${pushed} items.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
 // An early stop (maxResults, the buyer's pay-per-event charge limit, or the baseline SEED_CAP)
 // `break`s out of the pair loops. The pairs left behind are in none of the per-pair buckets
@@ -906,11 +975,11 @@ if (watchMode && storefrontErrorPairs.length) {
 } else if (watchMode && seeding) {
   statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededPairs.size} app/country pair(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
 } else if (watchMode && pushed === 0) {
-  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped + floorSkipped} matching review(s) had already been delivered or pre-dated the baseline. That is the expected result most of the time; you were charged for nothing.`);
 } else if (watchMode && saturatedPairs.length) {
   statusMsg = (`Pushed ${pushed} new item(s) for watch label "${watchLabel}". ${saturatedPairs.join(', ')}: every matching review in the scanned window was new — older new reviews may have been missed; run the watch more often.`);
 } else if (watchMode) {
-  statusMsg = (`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).`);
+  statusMsg = (`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${floorSkipped ? `; ${floorSkipped} older than the baseline scan, treated as pre-existing and not charged` : ''}).`);
 } else if (pushed === 0) {
   const why = storefrontErrorPairs.length && !emptyPairs.length
     ? `Apple refused these app/storefront pairs: ${storefrontErrorPairs.join(', ')} — ${storefrontErrorMessages.join(' ')}`
@@ -948,6 +1017,7 @@ if (webhookUrl) {
     watchLabel: watchMode ? watchLabel : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkipped: watchMode ? watchSkipped : null,
+    watchPreBaselineSkipped: watchMode ? floorSkipped : null,
     watchSeeding: watchMode ? seeding : null,
   };
   try {
