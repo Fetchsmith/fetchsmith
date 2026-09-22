@@ -329,6 +329,8 @@ if (webhookUrlRaw) {
 const WATCH_STORE = 'fetchsmith-usaspending-watch';
 const SEED_CAP = 20000; // bound the cost of a baseline run against a broad/unfiltered category
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0; // ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 // Per-category page cap used only while seeding, independent of the buyer's own
 // maxPagesPerCategory cost cap -- same fix as eu-ted-tenders/uk-find-a-tender: the buyer's
 // own scan-depth budget must never also bound how comprehensive a baseline is, or an
@@ -468,7 +470,27 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-  const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+  const all = Array.from(watchSeen.entries());
+  const entries = all.slice(-WATCH_KEEP);
+  // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+  // baseline, so it is delivered and CHARGED again even though the buyer already paid for it.
+  // The dropped end is oldest-FIRST-SEEN (re-seeing an id re-uses its existing Map key and does
+  // not move it), so on USAspending -- where an award keeps matching the same filter for years --
+  // the ids that fall off are exactly the long-lived awards that will match again on the very
+  // next run. SEED_CAP == WATCH_KEEP here, so a baseline that fills its own cap starts evicting
+  // as soon as the first incremental run adds anything. The cap itself is deliberate (KV record
+  // size budget); the bug was that it applied in silence.
+  baselineTruncated = all.length - entries.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+      + 'oldest award/sub-award id(s) were dropped and will be returned and CHARGED as new on a future run '
+      + `(${baselineTruncatedTotal} dropped over the life of this label). Narrow the watch query `
+      + '(agencies, keywords, state, minAmount, the date window, awardTypes) or split it across several '
+      + 'labels so each baseline stays under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -476,6 +498,8 @@ async function saveWatchRecord(status) {
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: entries.length,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
     // Compact per-entry shape (id + 6 short-keyed snapshot fields) -- WATCH_KEEP can hold up
     // to 20,000 of these in one KV record.
     seenIds: entries.map(([id, snap]) => ({
@@ -779,6 +803,13 @@ for (const category of categories) {
     log.info(`${category}: pushed ${categoryRows} ${isSubaward ? 'sub-awards' : 'awards'}.`);
 }
 
+// Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
+function truncationNote() {
+    if (baselineTruncated <= 0) return '';
+    return ` WARNING: the baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest id(s) were`
+        + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
+}
+
 if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
@@ -791,7 +822,10 @@ if (watchMode) {
                     + 'set fits, or the first incremental run may report older, merely-unscanned awards as new.'
                 : ''),
         );
-        await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing award(s)/sub-award(s) recorded, 0 charged. Run again later to get only what's new.`);
+        await Actor.setStatusMessage(
+            `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing award(s)/sub-award(s) recorded, 0 charged. Run again later to get only what's new.`
+            + truncationNote(),
+        );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new award(s)/sub-award(s)`
@@ -799,7 +833,16 @@ if (watchMode) {
             + ` since the last run (${watchSkipped} already-delivered, unchanged hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`,
         );
         if (pushed === 0) {
-            await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching award/sub-award had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+            await Actor.setStatusMessage(
+                `Nothing new for watch label "${watchLabel}" since its last run -- every matching award/sub-award had already been delivered. That is the expected result most of the time; you were charged for nothing.`
+                + truncationNote(),
+            );
+        } else if (baselineTruncated > 0) {
+            // A run that delivered rows would otherwise leave the default status message in place
+            // and the truncation would only be visible in the log.
+            await Actor.setStatusMessage(
+                `Watch label "${watchLabel}": ${pushed} row(s) delivered.` + truncationNote(),
+            );
         }
     }
 }
@@ -844,6 +887,10 @@ if (webhookUrl) {
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
         watchChangedCount: watchMode && !seeding ? changedCount : null,
+        // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver
+        // and re-charge them; the cumulative figure is the drift over the whole life of the label.
+        baselineTruncated: watchMode ? baselineTruncated : null,
+        baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     };
     try {
         const resp = await gotScraping({
