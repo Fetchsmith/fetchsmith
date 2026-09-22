@@ -431,8 +431,11 @@ async function pushResult(item) {
             return pushed < maxResults;
         }
         const r = await Actor.charge({ eventName: 'result', count: 1 });
-        if (r.chargedCount === 0) return false;
+        // Both of these end the walk; only the charge limit is a cause the buyer set on the RUN
+        // rather than in the input, so RUN_SUMMARY has to tell them apart.
+        if (r.chargedCount === 0) { chargeLimitReached = true; return false; }
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) chargeLimitReached = true;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
@@ -494,18 +497,23 @@ async function fetchPage(pageUrl, source) {
         }
         if (resp.statusCode !== 200) {
             log.warning(`${source.label} API returned ${resp.statusCode}: ${String(resp.body).slice(0, 300)}`);
+            // WHY this source died, carried into RUN_SUMMARY. Without it the record could only
+            // say "fts stopped early", which is the same sentence for a 500 and a bad filter.
+            source.lastError = `HTTP ${resp.statusCode}: ${String(resp.body).slice(0, 120).replace(/\s+/g, ' ').trim()}`;
             return null;
         }
         try {
             return JSON.parse(resp.body);
         } catch {
             log.warning(`${source.label} returned a non-JSON body (${String(resp.body).slice(0, 200)})`);
+            source.lastError = `non-JSON body: ${String(resp.body).slice(0, 120).replace(/\s+/g, ' ').trim()}`;
             return null;
         }
     }
     // Reached after 4 failed attempts from either cause — a 429 or a network-level error — so the
     // wording must not claim rate-limiting specifically.
     log.warning(`${source.label} kept rate-limiting/failing after 4 retries; stopping that source early rather than returning a partial page silently.`);
+    source.lastError = 'rate-limited or unreachable after 4 retries';
     return null;
 }
 
@@ -518,8 +526,40 @@ const seen = new Set();
 const perSource = {};
 let keepGoing = true;
 
+// ---------------------------------------------------------------------------
+// Completeness contract (cycle 651), same shape as sam-gov-opportunities-scraper /
+// nih-reporter-scraper / clinicaltrials-scraper: a RUN_SUMMARY key-value record, a status
+// message, and the same object on the webhook payload.
+//
+// This Actor's version of the defect was worse than the fleet's because it merges TWO portals.
+// `fetchPage` returns null on a 4xx/5xx, a non-JSON body, or four failed retries; `fillBuffer`
+// then drops that cursor and the run carries on with the OTHER portal, ends SUCCEEDED, and the
+// final log line reads "Find a Tender: 0, Contracts Finder: 47". Find a Tender is a genuinely
+// thin feed (~7-8 tender-stage notices/day), so "0" is a completely ordinary number — a dead
+// portal and an empty portal were indistinguishable, in the log and in the dataset alike. The
+// shared `page < effectivePageCap` budget and `maxResults` end the walk just as quietly.
+//
+// Neither portal declares a match count (both are pure cursor walks over `links.next` — no
+// totalElements/hitCount anywhere in the OCDS package, verified live), so there is no "N of M"
+// to report. The completeness question here is per-source and binary: did this source's walk
+// reach its natural end (`links.next` absent), or did something stop it early?
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+let chargeLimitReached = false;
+
+// First cause wins: a walk that lost a portal and THEN also hit maxResults must keep reporting
+// the dead portal — that is the cause the buyer can act on.
+function markIncomplete(reason, detail = null) {
+    if (!complete) return;
+    complete = false;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+}
+
 if (!sources.length) {
     log.warning('No valid "sources" selected — pick "fts" (Find a Tender), "cf" (Contracts Finder), or both.');
+    markIncomplete('no-sources', 'the "sources" input selected neither "fts" nor "cf", so nothing was searched');
 }
 
 // Row-level round-robin across sources, not page-level. A single Find a Tender page already
@@ -529,7 +569,20 @@ if (!sources.length) {
 // (~7-8 tender-stage notices/day vs CF's ~18+100/day). Buffer each source's current page and
 // pop one release at a time round-robin, only fetching a source's next page when its buffer
 // empties, so both sources contribute from the very first pushed rows.
-const cursors = sources.map((key) => ({ key, source: SOURCES[key], url: SOURCES[key].buildUrl(), buffer: [], pushed: 0, done: false }));
+const cursors = sources.map((key) => ({
+    key,
+    source: SOURCES[key],
+    url: SOURCES[key].buildUrl(),
+    buffer: [],
+    pushed: 0,
+    done: false,
+    // Per-source completeness state. `exhausted` means this portal answered until it ran out of
+    // `links.next` — the only state in which "0 notices" honestly means "this portal has none".
+    pages: 0,
+    scanned: 0,
+    exhausted: false,
+    failed: false,
+}));
 for (const c of cursors) log.info(`${c.source.label}: ${c.url}`);
 
 // During a seed walk the loop is bounded by SEED_CAP/SEED_PAGE_CAP, not the buyer's
@@ -541,14 +594,38 @@ const effectivePageCap = seeding ? Math.max(maxPagesScanned, SEED_PAGE_CAP) : ma
 async function fillBuffer(c) {
     while (!c.buffer.length && c.url && page < effectivePageCap) {
         const body = await fetchPage(c.url, c.source);
-        if (!body) { c.url = null; break; }
+        if (!body) {
+            // The run does NOT abort — the other portal's rows are real and already charged —
+            // but this portal's contribution is now unknown, not zero.
+            c.failed = true;
+            c.url = null;
+            markIncomplete(
+                'source-failed',
+                `${c.source.label} stopped answering after ${c.pages} page(s) (${c.source.lastError ?? 'unknown error'}); `
+                + `its notices are missing from this run, and "0 from ${c.source.label}" here does NOT mean it had none`,
+            );
+            break;
+        }
         const releases = body.releases ?? [];
         page += 1;
+        c.pages += 1;
         scanned += releases.length;
+        c.scanned += releases.length;
         log.info(`${c.source.label} page ${page}: scanned ${releases.length} releases (${scanned} total so far)`);
         c.url = body.links?.next ?? null;
+        // Natural end of this portal's walk: no cursor left to follow. Recorded before the
+        // empty-page break so a final empty page still counts as exhausted, not as a stop.
+        if (!c.url) c.exhausted = true;
         if (!releases.length) break;
         c.buffer = releases;
+    }
+    // Ran out of the shared page budget with a cursor still to follow — more notices exist and
+    // this run will not see them.
+    if (!c.buffer.length && c.url && page >= effectivePageCap) {
+        markIncomplete(
+            'page-cap',
+            `the ${effectivePageCap}-page scan budget (maxPagesScanned) ran out with ${c.source.label} still paging`,
+        );
     }
     if (!c.buffer.length) c.done = true;
 }
@@ -599,6 +676,38 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
 log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, after ${page} page(s) scanned.`);
 for (const c of cursors) perSource[c.key] = c.pushed;
 
+// Stop causes that can only be judged once the walk is over. A cursor that still has buffered
+// releases or a `links.next` to follow is a portal with more notices we never delivered.
+//
+// `exhausted` deliberately does NOT suppress this. The two flags answer different questions:
+// `exhausted` is "did we read this portal's feed to its end", which is what makes a per-source
+// `delivered: 0` trustworthy; this check is "did the buyer get every matching notice". Both
+// portals routinely fit a short window in one page, so a run can read both feeds to the end and
+// STILL be 30 notices short because maxResults cut it off — caught by live run H4J3c67eIEWyYKd33,
+// which read all 42 available notices, delivered 12, and reported itself complete. The offline
+// fixture could not catch it (its row count was below maxResults, so the buffers drained).
+const stoppedShort = cursors.filter((c) => !c.failed && (c.buffer.length || c.url));
+// Only meaningful when every source ran out of pages: then nothing is left unread upstream and
+// the leftover buffers are the exact count of matching notices the run did not hand over.
+const undelivered = cursors.every((c) => c.exhausted || c.failed)
+    ? cursors.reduce((n, c) => n + c.buffer.length, 0)
+    : null;
+if (stoppedShort.length) {
+    const rest = stoppedShort.map((c) => c.source.label).join(' and ');
+    const short = undelivered ? `; ${undelivered} already-fetched matching notice(s) were not delivered` : '';
+    if (chargeLimitReached) {
+        markIncomplete('charge-limit', `the run's pay-per-event charge limit was reached with ${rest} still to read${short}`);
+    } else if (seeding && watchSeen.size >= SEED_CAP) {
+        markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-notice cap with ${rest} still to read${short}`);
+    } else if (!seeding && pushed >= maxResults) {
+        markIncomplete('max-results', `maxResults=${maxResults} was reached with ${rest} still to read${short}`);
+    } else {
+        // No known bound fired but a cursor survived the loop — should be unreachable; say so
+        // rather than letting it report as complete.
+        markIncomplete('stopped-early', `the walk ended with ${rest} still to read${short} for no recorded reason`);
+    }
+}
+
 if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
@@ -644,6 +753,69 @@ log.info(
     + `(${sources.map((s) => `${SOURCES[s].label}: ${perSource[s] ?? 0}`).join(', ')}).`,
 );
 
+// ---------------------------------------------------------------------------
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which needs no webhook. `complete` is deliberately kept out of the run STATUS: a run can be
+// SUCCEEDED and short at the same time, and that pair is exactly what this record exists for.
+// `sources` is per-portal on purpose — a fleet-standard single `complete` flag would still leave
+// "which of the two portals is this number missing?" unanswered.
+const runSummary = {
+    mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : 'search',
+    // Neither portal publishes a match count, so there is no declaredMatches field here. Present
+    // and null would read as "we asked and got nothing"; absent says "this API cannot be asked".
+    sources: Object.fromEntries(cursors.map((c) => [c.key, {
+        label: c.source.label,
+        pages: c.pages,
+        scanned: c.scanned,
+        delivered: c.pushed,
+        // TRUE only if this portal answered until it ran out of `links.next`. When it is false,
+        // `delivered: 0` means "unknown", not "this portal had nothing".
+        exhausted: c.exhausted,
+        failed: c.failed,
+        lastError: c.source.lastError ?? null,
+    }])),
+    sourcesRequested: sources,
+    sourcesFailed: cursors.filter((c) => c.failed).map((c) => c.key),
+    scanned,
+    delivered: pushed,
+    filteredOut: filtered,
+    pages: page,
+    pageCap: effectivePageCap,
+    // Matching notices that were fetched but never handed over (maxResults/charge limit cut the
+    // run short). `null` means at least one portal still had pages left, so no total is knowable.
+    undelivered,
+    complete,
+    incompleteReason,
+    incompleteDetail,
+    maxResults,
+    chargeLimitReached,
+    freeRowsGiven: freeGiven,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    skippedSeen: watchMode && !seeding ? skippedSeen : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
+// message is the only place the Apify console itself shows the shortfall. There was no
+// setStatusMessage call anywhere in this Actor before cycle 651.
+if (!complete) {
+    await Actor.setStatusMessage(
+        seeding
+            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} notice(s) recorded — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+            : `Incomplete: ${pushed.toLocaleString('en-US')} notice(s) delivered — ${incompleteReason}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else {
+    log.info(
+        `Complete: every notice both portal(s) (${cursors.map((c) => c.source.label).join(', ')}) had for these `
+        + 'filters was read to the end of its feed.',
+    );
+}
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error.
@@ -660,6 +832,9 @@ if (webhookUrl) {
         watchLabel: watchMode ? watchLabel : null,
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed : null,
+        // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a
+        // polling consumer read the identical completeness facts.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({

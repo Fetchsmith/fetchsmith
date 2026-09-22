@@ -52,7 +52,7 @@ One row per notice, including:
 | `maxPagesScanned` | integer | `50` | Safety cap on API pages read while looking for matches. Raise it for narrow filters over long date ranges. |
 | `includeRawOcds` | boolean | `false` | Attach the complete, unmodified OCDS 1.1 release JSON as a `rawOcds` field on every row, alongside the normalized fields — for pipelines that want the full nested government data (all parties, all documents, amendment history), not just the flattened columns. |
 | `watchLabel` | string | — | Turn this run into an **alert**: see "Watch mode" below. |
-| `webhookUrl` | string | — | Optional. POST a small JSON completion summary (notices pushed, releases scanned/filtered, pages, dataset ID, watch new count) here when the run finishes — see FAQ. |
+| `webhookUrl` | string | — | Optional. POST a small JSON completion summary (notices pushed, releases scanned/filtered, pages, dataset ID, watch new count, plus the full `RUN_SUMMARY` completeness object) here when the run finishes — see FAQ. |
 
 ### Example
 
@@ -113,6 +113,32 @@ The baseline lives in a key-value store named `fetchsmith-uk-tender-watch` on yo
 
 ## FAQ
 
+**How do I know a run returned everything — and that "0 from Find a Tender" means that portal really had nothing?**
+Every run writes a machine-readable `RUN_SUMMARY` record to its key-value store (v0.1.27+). Fetch it with no webhook needed:
+
+```
+GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+```
+
+```json
+{
+  "mode": "search",
+  "sources": {
+    "fts": { "label": "Find a Tender", "pages": 1, "scanned": 2, "delivered": 2,
+             "exhausted": false, "failed": true, "lastError": "HTTP 503: Service Unavailable" },
+    "cf":  { "label": "Contracts Finder", "pages": 2, "scanned": 4, "delivered": 4,
+             "exhausted": true, "failed": false, "lastError": null }
+  },
+  "sourcesFailed": ["fts"],
+  "delivered": 6, "filteredOut": 0, "pages": 3, "pageCap": 50, "undelivered": 0,
+  "complete": false,
+  "incompleteReason": "source-failed",
+  "incompleteDetail": "Find a Tender stopped answering after 1 page(s) (HTTP 503: ...)"
+}
+```
+
+The field that matters is **`sources.<portal>.exhausted`**: it is `true` only when that portal answered until its feed ran out. When it is `false`, that portal's `delivered` count is a **lower bound, not a total** — which is the whole point, because Find a Tender is a thin feed (~7–8 tender-stage notices a day), so a genuine `0` and a dead portal produce the same number. `complete: false` also sets the run's status message in the Apify Console, with `incompleteReason` one of `source-failed`, `page-cap`, `max-results`, `charge-limit`, `seed-cap` or `no-sources`. Reading both feeds to the end is **not** the same as delivering everything: a short date window often fits in one page per portal, so a run can exhaust both feeds and still be cut short by `maxResults` — when that happens `undelivered` is the exact number of matching notices that were fetched but not handed over (raise `maxResults` by that much to get them). A short run still **succeeds** — the notices it did return are real and already charged — so `complete` is the only reliable check. The same object is included as `summary` on the `webhookUrl` payload.
+
 **What is the difference between the two portals?**
 Find a Tender carries **above-threshold** UK public contracts (the post-Brexit replacement for the UK's TED publication), including Scotland, Wales and Northern Ireland. Contracts Finder carries the **sub-threshold** contracts below those limits — a much larger flow, and the one most SMEs actually bid on. They are separate systems with separate APIs; a contract normally appears on one or the other, not both. Rows are deduplicated on `ocid` and notice id regardless.
 
@@ -148,7 +174,7 @@ Yes — it reads two official UK government open-data APIs under the OGL v3 lice
 **Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-uk-tender-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
-Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `filtered`, `pagesScanned`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel` on a scheduled run: your endpoint gets told how many brand-new notices landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `filtered`, `pagesScanned`, `summary` — the same object as the `RUN_SUMMARY` record — and, if `watchLabel` is set, `watchSeeding`/`watchNewCount`) once the run finishes and every row is already pushed and charged. Especially useful with `watchLabel` on a scheduled run: your endpoint gets told how many brand-new notices landed without polling the dataset. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Source code
 
