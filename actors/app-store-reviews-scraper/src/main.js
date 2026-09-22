@@ -568,6 +568,9 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
   // run can reach, or older reviews return as "new" later — Apple's own hard ceiling is only 500
   // reviews (10 pages x 50), so seeding simply always uses that ceiling, never less.
   const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
+  // True when the buyer's own scan cap cut a page short, i.e. the run stopped wanting more before
+  // Apple stopped serving. Distinguishes "raise maxReviewsPerApp" from "Apple has no page 11".
+  let capBrokeMidPage = false;
   for (let page = 1; page <= MAX_RSS_PAGE && tally.got < scanCap && keepGoing && !hitCutoff; page++) {
     const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
     let entries;
@@ -587,7 +590,7 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
     // Memoised: one fetch per (app, country) across both sorts, resolved value reused every page.
     const info = await getInfo();
     for (const e of entries) {
-      if (tally.got >= scanCap) break;
+      if (tally.got >= scanCap) { capBrokeMidPage = true; break; }
       const reviewId = lbl(e.id);
       if (reviewId != null && seen.has(reviewId)) continue;
       if (reviewId != null) seen.add(reviewId);
@@ -621,6 +624,14 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
       keepGoing = await pushResult(item, watchId, pairSeeding);
       if (!keepGoing) break;
     }
+    // Apple's LAST page came back full and we consumed all of it while still willing to take more:
+    // the walk ended because Apple serves no page 11, not because the buyer asked for less.
+    // Verified live 2026-09-22 — Spotify/us page 10 = 50 entries, page 11 = empty, while a 115-
+    // rating app runs dry long before page 10. So a full page 10 means reviews exist behind the
+    // ceiling that this feed will never serve, and no input change can reach them.
+    if (page === MAX_RSS_PAGE && entries.length && !hitCutoff && keepGoing && !capBrokeMidPage) {
+      tally.feedCeiling = true;
+    }
   }
   return got;
 }
@@ -651,6 +662,7 @@ async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false)
   return {
     got: tally.got, filteredOut: tally.filteredOut, capReached: tally.got >= scanCap,
     newForPair: tally.newForPair || 0, storefrontError: tally.storefrontError || null,
+    feedCeiling: tally.feedCeiling === true,
   };
 }
 
@@ -672,6 +684,11 @@ const depthCappedPairs = [];
 // Watch mode: every matching review inside the scanned window was new, so older new reviews
 // (posted since the last run but sorting past the window) may have been missed.
 const saturatedPairs = [];
+// Pairs where Apple's own hard feed ceiling (MAX_RSS_PAGE x 50 = 500 reviews per app/storefront)
+// ended the walk: the last page Apple serves came back full and we were still taking reviews.
+// Unlike every other shortfall here this one is NOT fixable from the input — it is the public RSS
+// feed's limit — so it has to be SAID rather than hinted at with a "raise the cap" suggestion.
+const feedCeilingPairs = [];
 // Reviews Apple served this run across every pair, BEFORE filters and before watch-mode
 // de-duplication -- i.e. how much data the upstream feed produced at all. Zero here (with pairs
 // actually attempted) is what triggers the upstream-outage probe below.
@@ -705,7 +722,7 @@ for (const app of apps) {
     const pushedBefore = pushed;
     pairsAttempted += 1;
     attemptedPairs.add(`${appId}/${country}`);
-    const { got, filteredOut, capReached, newForPair, storefrontError } = await scrapeAppCountry(appId, country, {}, pairSeeding);
+    const { got, filteredOut, capReached, newForPair, storefrontError, feedCeiling } = await scrapeAppCountry(appId, country, {}, pairSeeding);
     if (ratingSort) await flushPairBuffer();
     if (storefrontError) {
       // Apple refused this (app, storefront) outright. Report the fault verbatim and move on: do
@@ -718,6 +735,15 @@ for (const app of apps) {
       continue;
     }
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
+    if (feedCeiling && !watchMode) {
+      feedCeilingPairs.push(`${appId}/${country}`);
+      log.warning(
+        `${appId}/${country}: hit Apple's own ceiling of ${MAX_RSS_PAGE * 50} reviews per app/storefront — its public `
+        + `review RSS serves ${MAX_RSS_PAGE} pages and no more, and the last one was full. This app has older reviews `
+        + `that Apple does not expose through this feed; raising "maxReviewsPerApp" cannot reach them. Add more `
+        + `storefronts to "countries" for wider coverage, or schedule the Actor in watchMode to collect new reviews over time.`,
+      );
+    }
     if (capReached && filteredOut > 0) {
       depthCappedPairs.push(`${appId}/${country}`);
       log.warning(
@@ -740,6 +766,10 @@ for (const app of apps) {
         totalNewForPair += fb2.newForPair;
         totalGot += fb2.got;
         log.info(`${appId}/${fb} (fallback): ${fb2.got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
+        if (fb2.feedCeiling && !watchMode) {
+          feedCeilingPairs.push(`${appId}/${fb}`);
+          log.warning(`${appId}/${fb} (fallback): hit Apple's ceiling of ${MAX_RSS_PAGE * 50} reviews per app/storefront — older reviews exist but Apple's public feed does not serve them.`);
+        }
         if (fb2.capReached && fb2.filteredOut > 0) {
           depthCappedPairs.push(`${appId}/${fb}`);
           log.warning(
@@ -824,6 +854,16 @@ if (!keepGoing) {
   log.warning(truncationNote.trim());
 }
 
+// Apple's 500/app/storefront ceiling, said in the status message rather than only in the log. It
+// is deliberately phrased WITHOUT a "raise the cap" suggestion: unlike maxReviewsPerApp/maxResults
+// truncation this one cannot be undone from the input, so the honest advice is more storefronts or
+// watchMode. Appended (not a branch of its own) so it never displaces an emptier/refused report.
+const ceilingNote = feedCeilingPairs.length
+  ? ` Apple serves at most ${MAX_RSS_PAGE * 50} reviews per app/storefront through its public review feed, and that ceiling was reached for: ${feedCeilingPairs.join(', ')}`
+    + ' — these apps have older reviews Apple does not expose here, and no "maxReviewsPerApp" value can reach them.'
+    + ' Add more storefronts to "countries" for wider coverage, or schedule this Actor with "watchMode" to collect new reviews as they are posted.'
+  : '';
+
 let statusMsg;
 if (watchMode && storefrontErrorPairs.length) {
   // Said first in watch mode: a scheduled run whose storefront is broken must not be summarised as
@@ -857,12 +897,13 @@ if (watchMode && storefrontErrorPairs.length) {
     `Pushed ${pushed} reviews.${emptyPairs.length ? ` Empty Apple feed for: ${emptyPairs.join(', ')}.` : ''}`
     + `${storefrontErrorPairs.length ? ` Apple refused: ${storefrontErrorPairs.join(', ')} (check the storefront code and the app id).` : ''}`
   );
-} else if (truncationNote) {
-  // A clean run that nothing else had to report, EXCEPT that it stopped early — previously this
-  // was the case that set no status message at all and read as a complete run.
+} else if (truncationNote || ceilingNote) {
+  // A clean run that nothing else had to report, EXCEPT that it stopped early or that Apple's own
+  // feed ceiling cut it off — previously both cases set no status message at all and a run that
+  // returned 500 of an app's 1.8M reviews read exactly like a complete one.
   statusMsg = `Pushed ${pushed} reviews.`;
 }
-if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote).slice(0, 1000));
+if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + ceilingNote).slice(0, 1000));
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
