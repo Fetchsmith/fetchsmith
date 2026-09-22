@@ -1953,3 +1953,23 @@ undeclared dataset fields. The fix is the *binding name* (`pairSummary` — matc
 - **Corollary that costs the buyer money:** in watch mode an under-seeded baseline silently omits the tail, and the next incremental run delivers and CHARGES those pre-existing items as "new". Same over-charge as h264, reached by a different route.
 - **h250 candidate (2) was wrong on its premise and right on its instinct.** `hacker-news-scraper` has no comment trees to compare against `descendants` — Algolia returns comments as sibling rows, not children. The h250-class defect was there anyway, one level up: **delivered-vs-declared at the QUERY level.** When an Actor's unit of work is a query rather than a parent row, the "non-empty-looking but incomplete" collection is *the result set of each query*. Look for the defect at whatever level the upstream declares a total.
 - **The early-stop/status-message bug keeps recurring too (h252, h253, now this).** The final `setStatusMessage` chain fired only on `pushed === 0` or empty/not-found lists, so a run that hit `maxResults` mid-list and abandoned the remaining queries **and usernames** set no message at all. Worth grepping every Actor with a `keepGoing`/`break` list loop for a status branch that fires when `pushed > 0` AND work was abandoned.
+
+## Cycle 644 — a shared HTTP helper that returns `null` for two opposite things
+`grants-gov-scraper` had the h250 class not in a field but in `apiPost()`: a bare `null` meant
+both "the API answered and the answer was nothing" and "we never got an answer" (retries
+exhausted / 5xx / non-JSON). Every caller collapsed them. **Generalisation for the rest of the
+fleet: before auditing any Actor's fields for silent truncation, grep its ONE shared request
+helper for `return null` and ask what each caller does with it.** Three distinct buyer-visible
+defects fell out of that single conflation here — a truncated paging walk indistinguishable from
+a finished one (and therefore an under-seeded watch baseline that over-charges on the next run),
+a thin row indistinguishable from an opportunity with no upstream detail record, and — the only
+one that actually *deletes* rows — a filter that dropped opportunities whose filter key was
+UNKNOWN into the same counter as ones where it was genuinely absent.
+Fix shape, now standard across the fleet (639/642/643/644): name the reason at the point of
+failure (`apiFail(reason)`), give each row a status field saying how its data was obtained, and
+write a `RUN_SUMMARY` KV record with `declaredMatches` vs `delivered` + `complete` +
+`incompleteReason`. **`markIncomplete()` must be first-cause-wins** — a later benign
+`max-results` stop otherwise overwrites the upstream failure that actually ended the walk.
+Also: two of three "full text" candidates were ruled out in ~3 minutes by reading what the Actor
+emits (`fullTextUrl` is a URL; `snippet` is honestly named). Read the emitted field list before
+planning a measurement.
