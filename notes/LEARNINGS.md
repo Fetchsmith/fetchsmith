@@ -1987,3 +1987,17 @@ planning a measurement.
 - **The watch-baseline over-charge shape, 6th appearance** (h255, h264, h266, h272, h273, now). Same one-line signature every time: `const page = await apiGet(...); if (!page) break;` inside `seedBaseline()`. A failed page shortens the baseline silently, so the next incremental run delivers — and **charges for** — everything past the failure point as "new". Proven both ways this cycle against one fixture (page 0 OK + `totalCount` 3000, token page 503 forever): pre-fix the run logged `Baseline saved ... 1000 recorded ... returns only what is new` and SUCCEEDED; post-fix the same run names the shortfall, warns to re-seed, and sets a status message. **Running the committed pre-fix version against the same fixture is worth the 60 seconds** — it converts "this was a bug" from an assertion into a diff.
 - **Check whether the upstream has a declared total before assuming it doesn't.** ClinicalTrials.gov v2 returns `totalCount` only when you pass `countTotal=true`; the Actor had never sent it in ~550 cycles, so the single number that makes "is this complete?" answerable was one query parameter away the whole time. Ask for it on **page 0 only** — a mid-walk recount is taken against a moving index and can understate the very shortfall being reported.
 - **Ruled out by measuring, unlike h272:** this Actor's `SEED_CAP = 20000` *is* reachable — the v2 API serves `nextPageToken` indefinitely at `pageSize=1000` and `query.cond=cancer` alone declares 123,498 matches. A cap is only dead if the API cannot serve that depth; check, don't assume either way.
+
+## Cycle 647 — a `?? 0` on a failed count is a fabricated claim about the upstream index
+`nih-reporter-scraper`'s `countOf()` was `Number(page?.meta?.total ?? 0)`. That one default turned
+"NIH never answered" into "NIH has 0 matching projects": the walk was skipped, the dataset came back
+empty, the run SUCCEEDED, and the closing warning told the buyer *their filters* were too narrow.
+The same null was read as three more facts elsewhere — `if (!total) continue` silently deleted a
+whole institute from a chunked run, a failed page ended the walk as if exhausted, and a failed
+publications lookup became `publicationCount: 0`. **Generalisation for the remaining h250 targets:
+grep each Actor for `?? 0`, `|| 0`, `if (!total)` and `if (!page)` on anything derived from a
+network response — every one of them is a place where an outage is being reported to the buyer as
+upstream truth.** The fix pattern that now holds fleet-wide: a count helper returns `null` on
+failure and the caller must branch on it; a null count means *page blind to the wall*, never *skip*.
+Also worth reusing: NIH's `/publications/search` returns `meta.total` too, so a paging wall hit
+inside the join is detectable rather than silently undercounting.
