@@ -6,6 +6,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 - Calls Grants.gov's own `search2`/`fetchOpportunity` endpoints (the same API that powers grants.gov/search-grants), not HTML scraping.
 - Search results alone carry only 10 thin fields (id, number, title, agency, dates, status). Turn on `enrich` (default) to join each row with a second call for the money fields a grant seeker actually decides on: `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, and the full synopsis text.
 - **Forecasted opportunities (`docType: "forecast"`) are enriched too**, not just posted ones — roughly half of the default `oppStatuses` result set. Grants.gov gives a forecast its own estimated award ceiling/floor, applicant types and funding instruments/categories under the same field names as a posted synopsis, plus forecast-only fields: `numberOfAwards`, `estimatedFunding`, `estSynopsisPostingDate`, `estApplicationResponseDate`, `estAwardDate`, `estProjectStartDate`, `fiscalYear`.
+- **The announcement documents come with the row.** Every enriched opportunity carries an `attachments` array of the files the agency attached — the full NOFO PDF/DOCX, special notices, Q&A and amendment documents — each with a direct `downloadUrl`, plus `fileName`, `description`, `mimeType`, `sizeBytes`, `folderName`, `folderType` and `postedDate`. Measured on a live 20-row sample: 8 rows carried 45 files between them, while Grants.gov's separate "related documents" list (`synopsisDocumentURLs`) was populated on only 1 of the 20 — so the attachments are where the actual announcement lives. The download links are plain public URLs (no login, no session) and are not fetched during the run, so they cost you nothing extra.
 - **Agency codes are resolved and expanded**, not passed through blind: Grants.gov's parent agency codes (e.g. `"USDA"`, `"DOD"`) do **not** automatically include their sub-agencies in a search — unlike some other government APIs. This Actor expands a parent code you supply into all of its real sub-agency codes (e.g. `"USDA"` → `USDA-NIFA`, `USDA-FS`, `USDA-APHIS`, …) so filtering by department actually works. An unrecognised code is dropped with a named warning instead of silently returning zero rows.
 - **Opportunity-number lookup ignores your other filters.** Grants.gov ANDs `oppNum` with every other filter, including its own default status filter — looking up a *closed* or *archived* opportunity by its exact number normally returns nothing. Set `oppNum` and this Actor searches all statuses and ignores keyword/agency/eligibility filters, so an exact-number lookup always finds the opportunity if it exists.
 - **`oppNums` — batch-lookup a whole list of opportunity numbers in one run.** Grants.gov's API has no batch or joined form for this (`"num1|num2"` and `"num1,num2"` both return zero results, verified live) so this Actor makes one exact-match lookup per number instead — same all-statuses behaviour as a single `oppNum`. A number that doesn't match anything is named in a warning rather than silently dropped, so a partial miss on a long list is never invisible.
@@ -69,7 +70,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 `id`, `opportunityNumber`, `title`, `agencyCode`, `agency`, `openDate`, `closeDate`, `oppStatus`, `docType`, `cfdaList`, `url`
 
 ## Output (enriched fields, when `enrich: true`)
-`agencyName`, `agencyCode`, `topAgencyName`, `topAgencyCode`, `opportunityCategory`, `postingDate`, `responseDate`, `archiveDate`, `costSharing`, `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, `synopsisText`, `cfdas`, `fundingDescLinkUrl`, `synopsisDocumentURLs`, `assistURL`, `lastUpdatedDate`, `modComments`
+`agencyName`, `agencyCode`, `topAgencyName`, `topAgencyCode`, `opportunityCategory`, `postingDate`, `responseDate`, `archiveDate`, `costSharing`, `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, `synopsisText`, `cfdas`, `fundingDescLinkUrl`, `synopsisDocumentURLs`, `attachments`, `assistURL`, `lastUpdatedDate`, `modComments`
 
 ## Output (watch-mode change fields, only on a `watchChanges` re-delivery)
 `_watchChangeType` (array, one or more of `closeDate`/`docType`/`oppStatus`/`awardCeiling`/`awardFloor`/`lastUpdatedDate`/`applicantEligibilityDesc`), `_watchPrevious` (object with the previous value(s) for each changed field — `applicantEligibilityDesc`'s previous value is a fixed note, not the old text, since only a fingerprint of it is stored, not the full text)
@@ -109,6 +110,42 @@ On a `docType: "forecast"` row, `responseDate`/`archiveDate`/`applicantEligibili
 }
 ```
 Note `awardFloor: null` alongside a real `awardCeiling` — agencies often set only one of the two. Dates come back in Grants.gov's own two formats: `MM/DD/YYYY` on the thin search fields, and a long `MMM DD, YYYY hh:mm:ss AM/PM TZ` string on the enriched detail fields. Both are passed through as the API returns them.
+
+### Sample output (the `attachments` array, one real row)
+```json
+{
+  "id": "332894",
+  "opportunityNumber": "W911NF21S0009",
+  "title": "LPS Qubit Collaboratory (LQC)",
+  "agency": "Dept of the Army -- Materiel Command",
+  "synopsisDocumentURLs": [
+    { "url": "https://www.arl.army.mil/business/broad-agency-announcements/", "description": "ARO & ARL BAA SITE" }
+  ],
+  "attachments": [
+    {
+      "fileName": "LQC BAA Final W911NF21S0009.pdf",
+      "description": "LPS LQC BAA",
+      "mimeType": "application/pdf",
+      "sizeBytes": 887949,
+      "folderName": "LPS BAA",
+      "folderType": "Full Announcement",
+      "postedDate": "Apr 16, 2021 12:37:01 PM EDT",
+      "downloadUrl": "https://www.grants.gov/grantsws/rest/opportunity/att/download/306813"
+    },
+    {
+      "fileName": "LQC BAA W911NF-21-S-0009-3.pdf",
+      "description": "LQC BAA W911NF-21-S-0009-3",
+      "mimeType": "application/pdf",
+      "sizeBytes": 832097,
+      "folderName": "LQC BAA W911NF-21-S-0009-3",
+      "folderType": "Revised Full Announcement",
+      "postedDate": "Mar 18, 2026 03:45:10 PM EDT",
+      "downloadUrl": "https://www.grants.gov/grantsws/rest/opportunity/att/download/350603"
+    }
+  ]
+}
+```
+This row has five attachments in total (the original BAA, a special notice, a revised announcement and two amendments) and exactly one entry in `synopsisDocumentURLs` — a link to the agency's own BAA page, not the announcement itself. `folderType` is how Grants.gov distinguishes the original from a revision (`Full Announcement` vs `Revised Full Announcement`), and `postedDate` tells you which revision is current. `sizeBytes` is the real byte size of the file behind `downloadUrl`. Rows with no attached files get `attachments: []`, never `null`.
 
 ### Sample output (a forecast, `oppStatuses: ["forecasted"]`)
 ```json

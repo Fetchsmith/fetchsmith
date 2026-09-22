@@ -554,6 +554,27 @@ function normalizeEnriched(detail) {
         cfdas: listOf(detail.cfdas).filter((c) => c.cfdaNumber).map((c) => ({ number: c.cfdaNumber, title: c.programTitle ?? null })),
         fundingDescLinkUrl: sub.fundingDescLinkUrl || null,
         synopsisDocumentURLs: listOf(detail.synopsisDocumentURLs).map((d) => ({ url: d.docUrl ?? null, description: d.description ?? null })).filter((d) => d.url),
+        // The actual announcement files (the NOFO PDF/DOCX a grant researcher is really after).
+        // Found cycle 624 via check-field-fill: `synopsisDocumentURLs` -- the only document field
+        // this Actor shipped -- is filled on just 1/20 live opportunities, but 8/20 carry real
+        // attachments under `synopsisAttachmentFolders[].synopsisAttachments[]`, so ~35% of rows
+        // were silently losing their full announcement. The two are NOT the same list (opportunity
+        // 332894 has one docUrl AND five attachments). Forecast rows use this same key -- there is
+        // no `forecastAttachmentFolders` (checked on 8 live forecasts) -- so one read covers both
+        // docTypes. The download URL is not in the API response; it is built from the attachment
+        // id and was verified live on two files (887,949 B PDF and 57,716 B DOCX, both exactly
+        // matching `fileLobSize`). Agency-entered file names/descriptions are document metadata,
+        // not personal data, so the PII rule above does not apply to them.
+        attachments: listOf(detail.synopsisAttachmentFolders).flatMap((f) => listOf(f.synopsisAttachments).map((a) => ({
+            fileName: a.fileName ?? null,
+            description: cleanText(a.fileDescription),
+            mimeType: a.mimeType ?? null,
+            sizeBytes: Number.isFinite(a.fileLobSize) ? a.fileLobSize : null,
+            folderName: f.folderName ?? null,
+            folderType: f.folderType ?? null,
+            postedDate: a.createdDate ?? null,
+            downloadUrl: a.id ? `https://www.grants.gov/grantsws/rest/opportunity/att/download/${a.id}` : null,
+        }))).filter((a) => a.downloadUrl),
         assistURL: detail.assistURL || null,
         lastUpdatedDate: sub.lastUpdatedDate ?? null,
         modComments: cleanText(sub.modComments),

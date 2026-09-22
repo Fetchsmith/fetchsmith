@@ -1445,6 +1445,7 @@
         "cfdas",
         "fundingDescLinkUrl",
         "synopsisDocumentURLs",
+        "attachments",
         "assistURL",
         "lastUpdatedDate",
         "modComments",

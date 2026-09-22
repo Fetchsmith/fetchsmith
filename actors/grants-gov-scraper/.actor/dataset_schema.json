@@ -229,6 +229,14 @@
           "null"
         ]
       },
+      "attachments": {
+        "title": "Attachments",
+        "description": "Full announcement files attached to the opportunity (NOFO PDF/DOCX and supporting documents), each with a direct downloadUrl, fileName, description, mimeType, sizeBytes, folderName, folderType and postedDate.",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
       "assistURL": {
         "title": "AssistURL",
         "type": [
@@ -310,7 +318,9 @@
       },
       "_watchChangeType": {
         "title": "_watchChangeType",
-        "example": ["closeDate"],
+        "example": [
+          "closeDate"
+        ],
         "type": [
           "array",
           "null"
@@ -318,7 +328,9 @@
       },
       "_watchPrevious": {
         "title": "_watchPrevious",
-        "example": { "closeDate": "01/01/2000" },
+        "example": {
+          "closeDate": "01/01/2000"
+        },
         "type": [
           "object",
           "null"
