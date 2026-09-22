@@ -140,6 +140,8 @@ if (webhookUrlRaw) {
 const WATCH_STORE = 'fetchsmith-ats-watch';
 const SEED_CAP = 5000; // bound the cost of a baseline run against a very broad company list
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0; // posting ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 // A posting id is only unique within one board, so the baseline key is (ats, company, jobId).
 // Workday's list payload can omit the requisition id, so fall back to the job URL, which is
@@ -218,6 +220,16 @@ const deliverCapPerCompany = maxJobsPerCompany;
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `
+      + `${baselineTruncated} oldest posting id(s) were dropped (${baselineTruncatedTotal} dropped over the `
+      + 'life of this label) and will be re-delivered and re-charged as "new" on a future run. Narrow the '
+      + 'filters (title/location keyword, fewer companies) to keep the baseline under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -226,6 +238,8 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
   });
 }
 
@@ -963,8 +977,18 @@ try {
   await Actor.fail(`Run failed: ${err.message}`);
 }
 
+// WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
+// never taints the common case where the baseline comfortably fits under the cap. Computed
+// AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
+let evictionSuffix = '';
+
 if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  evictionSuffix = baselineTruncated > 0
+    ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest posting `
+      + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
+      + 're-delivered and re-charged as "new" on a future run. Narrow the filters to keep the baseline under the cap.'
+    : '';
   if (seeding) {
     log.info(
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} posting(s) recorded as already-seen, `
@@ -973,7 +997,7 @@ if (watchMode) {
       + (watchSeen.size >= SEED_CAP
         ? ` NOTE: the baseline hit the ${SEED_CAP}-posting cap. Narrow the filters (title/location keyword, `
           + 'fewer companies) or postings beyond the cap will be reported as new next run.'
-        : ''),
+        : '') + evictionSuffix,
     );
     // A board that failed to answer during the seed contributes nothing to the baseline, so its
     // entire current board would come back as "new" (and billable) on the next run. Say so.
@@ -986,16 +1010,18 @@ if (watchMode) {
       );
     }
   } else {
-    log.info(`Watch label "${watchLabel}": ${pushed} new posting(s) since the last run (${watchSkipped} already-delivered posting(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+    log.info(`Watch label "${watchLabel}": ${pushed} new posting(s) since the last run (${watchSkipped} already-delivered posting(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
   }
 }
 
 log.info(`Done. Pushed ${pushed} job postings from ${companies.length} companies.`);
 
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
+} else if (watchMode && baselineTruncated > 0) {
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
@@ -1014,6 +1040,10 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+    // re-charge for rows already paid for once.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({
