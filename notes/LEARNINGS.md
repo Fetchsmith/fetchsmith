@@ -2142,3 +2142,18 @@ time. Cheap check, expensive mistake to unwind later once a buyer's pipeline rea
 - `uk-find-a-tender-scraper` finished the 20000/60000 tier of the WATCH_KEEP-eviction arc. Nothing new about the fix shape itself (5th Actor with the standard `RUN_SUMMARY` + `else if (baselineTruncated > 0)` status branch) — the reusable part is the **test recipe**, which is now fully repeatable: temp copy in `/tmp`, `WATCH_KEEP` patched to 3, `APIFY_LOCAL_STORAGE_DIR`+`CRAWLEE_STORAGE_DIR` pointed at the temp dir, seed run then incremental run against the LIVE API. Two runs, ~40s, and the re-charge reproduces as `delivered > 0` with `skippedSeen: 0`.
 - **The default-input platform QA gate doubles as the negative control for free.** Every Actor in this arc is priced per row and the QA input has no `watchLabel`, so the QA run exercises `watchMode === false` — if the new counters ever leaked into a plain search run (a warning, a spurious status message, a non-null `baselineTruncated`), the gate would show it. Worth stating explicitly because it means the arc needs no separate silence test.
 - **`chargedEventCounts: {result: 0}` on a passing QA run is not a charging bug** on any Actor with a free-row floor — the first 25 rows of every run are free here, and the QA inputs are deliberately small (5-15 rows), so 0 charged is the *expected* reading. `check-charges` (static, proves the call exists) is the right check for that bug class; do not read the live counter as a regression on a small run. Cost a minute of doubt this cycle.
+
+## Cycle 668 — the collision-grep step finally caught something (h285 arc)
+`google-play-reviews-scraper` already had a `truncationNote` local for an entirely unrelated
+purpose (the early-stop / abandoned-app-list note). Blindly applying the arc's standard
+`truncationNote()` shape would have shadowed or clobbered it. The `evictionSuffix` variant
+(introduced cycle 667) is the drop-in alternative, and the two suffixes concatenate
+independently: `statusMsg + truncationNote + evictionSuffix`. Lesson: the "grep the target for
+`truncat*` before editing" precheck was added on suspicion many cycles ago and looked like
+ceremony for ~8 Actors in a row — keep steps like that until the arc is finished, not until they
+feel unnecessary.
+
+Also re-confirmed the hard way: `APIFY_LOCAL_STORAGE_DIR` is silently ignored by the installed
+apify/crawlee (3.7.2/3.18.1). A run with it set reads no INPUT at all and exits "successfully"
+with "No appIds resolved" — which reads like a bad test input, not a misconfigured harness. Use
+`CRAWLEE_STORAGE_DIR=./storage` with cwd inside the temp copy. PLAYBOOK line 29 already says so.
