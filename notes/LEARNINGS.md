@@ -2128,3 +2128,8 @@ existing name would have silently overloaded two different meanings under one fi
 the defect cycle 656/657 found (after shipping) on `federal-register-scraper`'s `baselineTruncated`
 vs `seedCapped`. One `grep -n "truncat"` on the target file before adding fields caught it this
 time. Cheap check, expensive mistake to unwind later once a buyer's pipeline reads the field.
+
+## Cycle 660 — two cheap traps while appending a note to an existing status message
+- **Appending to a ternary-built status string silently drops half the cases.** `court-records-scraper`'s `setStatusMessage` is `seeding ? A : B` and writing `seeding ? A : B + note()` attaches `note()` to the incremental branch only — `?:` binds looser than `+`. Parenthesise the whole ternary: `(seeding ? A : B) + note()`. Worth a deliberate look every time an h285-style note is added to an Actor that already had a conditional status message.
+- **A COMPLETE run can still have a billing problem.** Both Actors fixed this cycle only called `setStatusMessage` on the `!complete` path, so a perfectly complete run that evicted 2,265 baseline ids showed nothing at all in the Apify console — the damage lands in a *future* bill, not in this run's row count. Any Actor whose status message is gated on `!complete` needs an extra `else if (<billing signal>)` branch, not just a longer incomplete string.
+- **`clinicaltrials-scraper`'s `conditions` input is a STRING, not an array** (the platform rejects an array with HTTP 400 `Field input.conditions must be string`), unlike `court-records-scraper`'s `courts`. Same class as the cycle-655 output-key trap: read the Actor's own `input_schema.json` before writing a `bin/varied-test` call, not just the README prose.
