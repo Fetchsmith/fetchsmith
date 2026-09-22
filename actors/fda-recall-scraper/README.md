@@ -178,6 +178,8 @@ It's a plain weighted formula, computed with no external calls and no model: 45%
 **How do I get only new recalls on a schedule, not the whole match set every time?**
 Set `watchLabel` to any name, e.g. `"my-class-i-watch"`. The first run under that label is a free baseline: it records every recall currently matching your other filters and returns **zero rows, charged nothing**. Every later run with the same label AND the same other filters returns only recalls not already recorded — new since the last run — and only those are charged. Change any filter (a state, a classification, the date window) and that combination gets its own fresh baseline, since it's now a different saved search. The baseline lives in your own Apify account, not ours, so it survives between scheduled runs.
 
+**Baseline size cap.** A baseline holds up to **60,000** recall ids in one saved record. If a label's baseline grows past that, the oldest ids are dropped — and a dropped id is no longer recognised, so it comes back as "new" on a later run **and is charged again**. The run that drops them says so explicitly: a warning in the log, a note on the run's status message, and `baselineTruncated` / `baselineTruncatedTotal` (this run / the whole life of the label) in the saved record, on the `webhookUrl` payload, and in `RUN_SUMMARY`. If you see it, narrow the watch query (`productTypes`, `states`, `classifications`, `searchQuery`, the date window) or split it across several labels so each baseline stays under the cap.
+
 **Does changing `reportDateFrom`/`reportDateTo` from a rolling default break `watchLabel`?**
 No — leaving both empty (the default one-year rolling window) is treated as "no explicit date filter" for the purpose of deciding whether your search changed, not as a specific date that changes every day. A recall that only enters the rolling window on a later run is correctly reported as new then, which is exactly what a watch should do.
 
@@ -219,6 +221,8 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
   "skippedSeen": 0,
   "changedCount": null,
   "baselineSize": null,
+  "baselineTruncated": null,
+  "baselineTruncatedTotal": null,
   "pressReleasesRequested": false,
   "pressReleasesIncluded": false,
   "productTypes": [
@@ -242,7 +246,7 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 | `search-request-failed` | openFDA stopped answering mid-walk. Rows past that point were never scanned — this is **not** evidence they don't exist. |
 | `plan-request-failed` | openFDA never answered the initial count query for a product type, so nothing of that type was scanned. That type's `status` is `not-scanned` and its `declaredMatches` is `null`, never `0`. |
 
-The `null`-vs-`0` distinction is the point: `declaredMatches: null` means *we never got an answer*, while `0` means *FDA has no matching recall*. `declaredMatchesIsFloor: true` means the window plan itself was cut short, so the real total is higher. When anything is incomplete the run also sets a human-readable status message, visible at the top of the run in the Apify Console.
+The `null`-vs-`0` distinction is the point: `declaredMatches: null` means *we never got an answer*, while `0` means *FDA has no matching recall*. `declaredMatchesIsFloor: true` means the window plan itself was cut short, so the real total is higher. When anything is incomplete the run also sets a human-readable status message, visible at the top of the run in the Apify Console. `baselineTruncated`/`baselineTruncatedTotal` (watch mode only) report the "Baseline size cap" defect above — see that FAQ entry.
 
 ## Related guides
 

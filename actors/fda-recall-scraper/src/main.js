@@ -188,6 +188,14 @@ let seeding = false;
 // baseline. Same shape as grants-gov-scraper's `watchChanges` (cycle 346) -- copy, don't reinvent.
 const watchSeen = new Map();
 let changedCount = 0;
+let baselineTruncated = 0;
+let baselineTruncatedTotal = 0;
+
+function truncationNote() {
+    return baselineTruncated > 0
+        ? ` (baseline cap: ${baselineTruncated} old id(s) dropped this run, ${baselineTruncatedTotal} total -- narrow filters to avoid re-charges)`
+        : '';
+}
 
 function snapshotOf(row) {
     return { status: row.status ?? null, classification: row.classification ?? null };
@@ -209,7 +217,18 @@ function changesBetween(prev, next) {
 }
 
 async function saveWatchRecord(status_) {
-    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen.entries());
+    const entries = all.slice(-WATCH_KEEP);
+    baselineTruncated = all.length - entries.length;
+    if (baselineTruncated > 0) {
+        baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+        log.warning(
+            `Watch label "${watchLabel}": baseline holds ${all.length} recall id(s), over the ${WATCH_KEEP}-id `
+            + `cap -- the oldest ${baselineTruncated} were dropped and will look like NEW (billable) recalls the `
+            + 'next time this run happens to see them again. Narrow the filters (productTypes/states/searchQuery) '
+            + 'to keep a watch label under the cap.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -218,6 +237,8 @@ async function saveWatchRecord(status_) {
         lastRunStatus: status_,
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: entries.length,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
         // Compact per-entry shape: id, status, classification. Kept short because WATCH_KEEP
         // can hold up to 60,000 of these in one KV record.
         seenIds: entries.map(([id, snap]) => ({ i: id, s: snap.status, c: snap.classification })),
@@ -977,13 +998,13 @@ if (watchMode) {
     if (seeding) {
         log.info(
             `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} recall(s) recorded as already-seen, `
-            + '0 results returned, 0 charged. The next run on this label and these filters returns only new recalls.',
+            + `0 results returned, 0 charged. The next run on this label and these filters returns only new recalls.${truncationNote()}`,
         );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new recall(s)`
             + (watchChanges ? ` and ${changedCount} changed recall(s) (status/classification)` : '')
-            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.${truncationNote()}`,
         );
     }
 }
@@ -1039,6 +1060,8 @@ const runSummary = {
     skippedSeen,
     changedCount: watchMode && !seeding ? changedCount : null,
     baselineSize: watchMode ? watchSeen.size : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     pressReleasesRequested: includePressReleases,
     pressReleasesIncluded: runPressReleases,
     productTypes: types,
@@ -1051,6 +1074,12 @@ if (firstIncomplete) {
         `INCOMPLETE (${short}): delivered ${pushed} row(s)`
         + (runSummary.declaredMatches !== null ? ` of ${runSummary.declaredMatches} declared match(es)` : '')
         + `. ${firstIncomplete.incompleteDetail} See the RUN_SUMMARY key-value record for the machine-readable detail.`,
+    );
+} else if (baselineTruncated > 0) {
+    await Actor.setStatusMessage(
+        `Complete, but the watch baseline exceeded its ${WATCH_KEEP}-id cap and dropped ${baselineTruncated} old `
+        + `id(s) this run (${baselineTruncatedTotal} total) -- those may be re-delivered and re-charged as "new" `
+        + 'later. Narrow the filters to keep this label under the cap.',
     );
 }
 
