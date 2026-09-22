@@ -704,13 +704,26 @@ async function fetchWorkday(slug) {
   let offset = 0;
   let total = null;
   let notFoundFlag = false;
+  let partial = false;
   while (raw.length < rawCap && timeBudgetOk()) {
-    const res = await requestWithRetry({
-      url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`, method: 'POST',
-      json: { appliedFacets: {}, limit: pageSize, offset, searchText: '' },
-      timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(),
-      throwHttpErrors: false, responseType: 'json',
-    });
+    let res;
+    try {
+      res = await requestWithRetry({
+        url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`, method: 'POST',
+        json: { appliedFacets: {}, limit: pageSize, offset, searchText: '' },
+        timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(),
+        throwHttpErrors: false, responseType: 'json',
+      });
+    } catch (e) {
+      // Page 0 failing means we have nothing at all for this company -- let it propagate so the
+      // caller marks the whole company errored, same as before. A LATER page failing after 3
+      // retries used to also throw here, which discarded every posting already collected from
+      // earlier pages in `raw` -- return what was fetched instead of nothing (h243).
+      if (offset === 0) throw e;
+      log.warning(`${host}/${site}: page fetch at offset ${offset} failed after retries (${e.message}) -- returning the ${raw.length} posting(s) already fetched from earlier pages instead of discarding them.`);
+      partial = true;
+      break;
+    }
     if (res.statusCode !== 200) { if (offset === 0) notFoundFlag = true; break; }
     if (offset === 0) total = res.body?.total ?? null;
     const postings = res.body?.jobPostings ?? [];
@@ -806,7 +819,7 @@ async function fetchWorkday(slug) {
     }
   }
   kept.forEach((j) => { delete j._externalPath; });
-  return { jobs: kept };
+  return { jobs: kept, partial };
 }
 
 const FETCHERS = {
@@ -904,6 +917,7 @@ function passesFilters(job, deferred = []) {
 
 const notFoundCompanies = [];
 const erroredCompanies = [];
+const partialCompanies = []; // Workday: a later page failed after retries, so this company's jobs are an undercount, not a clean zero
 
 try {
   for (const { ats, slug } of companies) {
@@ -917,6 +931,7 @@ try {
       continue;
     }
     if (result.notFound) { notFoundCompanies.push({ ats, slug }); continue; }
+    if (result.partial) partialCompanies.push({ ats, slug });
     if (result.detectedAts) log.info(`${slug} — auto-detected as ${result.detectedAts}.`);
     let scannedForCompany = 0;
     let deliveredForCompany = 0;
@@ -942,6 +957,7 @@ try {
   }
   if (notFoundCompanies.length) log.warning(`Not found / not on this ATS (skipped, run not failed): ${notFoundCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
   if (erroredCompanies.length) log.warning(`Fetch errors (skipped, run not failed): ${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
+  if (partialCompanies.length) log.warning(`Partial results (a page fetch failed after retries, so fewer postings than actually exist): ${partialCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
 } catch (err) {
   log.exception(err, 'Run failed');
   await Actor.fail(`Run failed: ${err.message}`);
