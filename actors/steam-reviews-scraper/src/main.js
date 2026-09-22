@@ -183,8 +183,28 @@ async function pushResult(item, watchId = null, appSeeding = false) {
 // 200 with an empty/`{"success":2}` body, handled downstream), so what this guard is really for is
 // the transport-level failures a long review pull does hit — 429 rate-limiting and Steam's HTML
 // maintenance/error pages. Same defect class as the 0.1.43 Shopify fix.
+// got's own retry:{limit:2} only covers a fixed errorCodes list that excludes ERR_HTTP2_ERROR and
+// HPE_INVALID_CONSTANT — a connection-establishment fault measured cycle 616 at ~1-in-4 fresh
+// connections on this fleet's got-scraping version. Every getJson call site degrades gracefully on
+// a thrown error (null field, warning, or loop break) rather than failing the run, so an unretried
+// blip here doesn't crash anything — it silently ships a thinner row or a shorter review page and
+// the run still SUCCEEDS. requestWithRetry closes that gap the same way as the other Pattern-B fixes
+// (apple-podcasts-scraper, app-store-reviews-scraper, shopify-products-scraper, ats-jobs-scraper,
+// hacker-news-scraper, google-news-scraper, remote-jobs-scraper): retry thrown/connection errors up
+// to 3 attempts with backoff; a resolved HTTP response (including 4xx/5xx) is not retried here — that
+// stays getJson's job below.
+const requestWithRetry = async (url, opts, attempts = 3) => {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+    } catch (e) {
+      if (attempt >= attempts) throw e;
+      await sleep(attempt * 1000);
+    }
+  }
+};
 const getJson = async (url, opts = {}) => {
-  const resp = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  const resp = await requestWithRetry(url, opts);
   const host = new URL(url).hostname;
   if (resp.statusCode >= 400) {
     const hint = resp.statusCode === 429

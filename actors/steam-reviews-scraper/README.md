@@ -243,6 +243,9 @@ Steam's review API occasionally serves an incomplete response — HTTP 200, `suc
 **Can I see the reviewer's PC specs?**
 When Steam has them, yes: `hardwareOs`, `hardwareCpu`, `hardwareGpu`, `hardwareRamMb`, `hardwareVramMb` come straight from the reviewer's Steam Hardware Survey opt-in, attached to the review itself. It's only present on a minority of reviews (roughly 1 in 5–25, game-dependent) — everyone else gets `null` on all five fields, never a guess. No other Steam reviews Actor exposes this.
 
+**A row came back with fewer fields than usual, or `ownersEstimate`/review totals were null when they shouldn't be — could that be a transient network blip?**
+It used to be able to. Every request to Steam and SteamSpy now retries automatically (up to 3 attempts, short backoff) on a connection-establishment fault before giving up, not just once. Before this, a single dropped connection on one of these secondary calls silently shipped that row with a missing field and only a log warning — the run still succeeded, you just got less than you paid for. A field is still `null` when Steam/SteamSpy genuinely has nothing to say (see the two FAQ entries above), never as a side effect of a network hiccup.
+
 ---
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/steam-reviews-scraper
