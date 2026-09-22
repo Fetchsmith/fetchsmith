@@ -17,9 +17,9 @@ Every row says which board it came from (`source`, `sourceSite`) and links to th
 
 ## Cross-board de-duplication (and what it actually measures)
 
-When a job is syndicated to more than one of these boards, a naive aggregator returns it twice — and on a pay-per-result Actor you pay for both copies. This Actor folds copies into one row (matched on normalized company + title, newest kept) **before** the charge is made: the extra boards show up as `alsoOn: ["remoteok","jobicy"]` with their links in `duplicateUrls`, so you keep the information without paying for it twice. Set `dedupe: false` to get one row per board copy.
+When a job is syndicated to more than one of these boards, a naive aggregator returns it twice — and on a pay-per-result Actor you pay for both copies. This Actor folds copies into one row (matched on normalized company + title, newest kept) **before** the charge is made: the extra boards show up as `alsoOn: ["remoteok","jobicy"]` with their links in `duplicateUrls`, so you keep the information without paying for it twice. The company match strips common legal-entity suffixes (Inc, LLC, Ltd, Corp, GmbH, …) first, so "Acme Inc" on one board and "Acme" on another still fold into one row. Set `dedupe: false` to get one row per board copy.
 
-**Measured honestly:** on a full four-board pull on 2026-09-21, **0 of 181** postings were cross-board duplicates — these four boards curate largely disjoint sets, so the overlap on any given day may be small or zero. Treat de-duplication as a guarantee that you will never be billed twice for one posting, not as a claim that the boards overlap heavily.
+**Measured honestly:** on a full four-board pull on 2026-09-22 (193 postings), **2 of 193** were cross-board duplicates — these four boards curate largely disjoint sets, so the overlap on any given day is usually small. Treat de-duplication as a guarantee that you will never be billed twice for one posting, not as a claim that the boards overlap heavily.
 
 ## Use cases
 

@@ -183,6 +183,14 @@ function num(v) {
 
 const norm = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+// Cross-board dedup match key for company names. The same employer is routinely listed as
+// "Acme Inc" on one board and "Acme" on another (verified live: "Sanctuary Computer Inc" on
+// Remotive vs "Sanctuary Computer" on Remote OK, same posting, missed by a bare norm() match),
+// so strip common legal-entity suffixes before comparing. Never used for the displayed
+// `company` field, only for matching.
+const LEGAL_SUFFIXES = /\b(inc|incorporated|llc|ltd|limited|corp|corporation|co|gmbh|plc|llp|pty|pte|srl|bv|ag|sa)\b$/;
+const normCompany = (s) => norm(s).replace(LEGAL_SUFFIXES, '').trim();
+
 // ---------------------------------------------------------------- salary normalization
 // Every board publishes salary in exactly one shape and leaves the other empty: Remotive
 // gives a free-text range only ("$90k - $105k"), Remote OK and Jobicy give numbers only.
@@ -465,8 +473,8 @@ try {
   const byKey = new Map();
   const ordered = [];
   for (const row of collected) {
-    const key = `${norm(row.company)}|${norm(row.title)}`;
-    if (dedupe && norm(row.company) && norm(row.title) && byKey.has(key)) {
+    const key = `${normCompany(row.company)}|${norm(row.title)}`;
+    if (dedupe && normCompany(row.company) && norm(row.title) && byKey.has(key)) {
       const first = byKey.get(key);
       if (!first.alsoOn.includes(row.source)) first.alsoOn.push(row.source);
       first.duplicateUrls.push(row.url);

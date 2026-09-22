@@ -79,21 +79,21 @@ page 3: 100 rows ->  0 remote
 
 Eleven useful postings out of 600 rows — a hit rate under 2%. There is no `meta.total` to plan against either, so you cannot know how deep to page before you start. This is the one source where the cost of the request and the value of the response are wildly mismatched, and it is why our Actor defaults to 2 pages of Arbeitnow rather than exhausting it.
 
-## Zero of the postings overlap
+## Almost none of the postings overlap
 
-The reason to merge boards is usually that a syndicated posting appears on several of them and you want to pay for it once. We measured it directly: normalize company and title, take the set union across all four boards, and count keys appearing more than once.
+The reason to merge boards is usually that a syndicated posting appears on several of them and you want to pay for it once. We measured it directly: normalize company and title (stripping legal-entity suffixes like "Inc"/"LLC" so "Acme Inc" and "Acme" still match), take the set union across all four boards, and count keys appearing more than once.
 
 ```
-total rows        180
-unique keys       180
-keys on >1 board  0
+total rows        193
+unique keys       191
+keys on >1 board  2
 ```
 
-Zero. An independent pull earlier the same day gave 0 of 181. These four boards do not syndicate to each other; each one curates its own set.
+Two, out of 193 — one of them only found because the two copies of the posting spelled the employer "Sanctuary Computer Inc" on one board and "Sanctuary Computer" on the other; a bare string match misses that. An independent pull the same week gave 0 of 181. These four boards mostly do not syndicate to each other; each one curates its own set, and true overlap is a handful of postings, not a volume story.
 
-The overlap that *does* exist is at the company level, and it is tiny — two companies today posted different roles on two different boards (`imerit technology` on Remotive and Remote OK, `hey contact heroes gmbh` on Remotive and Arbeitnow). Those are genuinely different openings and should stay as separate rows.
+The overlap that *does* exist beyond that is at the company level, and it is tiny — two companies today posted different roles on two different boards (`imerit technology` on Remotive and Remote OK, `hey contact heroes gmbh` on Remotive and Arbeitnow). Those are genuinely different openings and should stay as separate rows.
 
-So de-duplication across these boards is worth building as a **guarantee** — you will never be billed twice for one posting — but not as a volume story. Anyone selling you "we deduplicate millions of aggregated remote jobs" from these four sources is describing a step that, on the measured data, removes nothing.
+So de-duplication across these boards is worth building as a **guarantee** — you will never be billed twice for one posting — but not as a volume story. Anyone selling you "we deduplicate millions of aggregated remote jobs" from these four sources is describing a step that, on the measured data, removes almost nothing.
 
 ## Merging four feeds: sort globally, and know what a small cap samples
 
