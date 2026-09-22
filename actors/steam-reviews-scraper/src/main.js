@@ -74,6 +74,8 @@ if (watchMode && dataType === 'games') {
 const WATCH_STORE = 'fetchsmith-steam-reviews-watch';
 const SEED_CAP = 20000;   // bound the cost/time of a baseline run across all apps
 const WATCH_KEEP = 40000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0; // review ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 function watchKeyFor(label, criteria) {
   const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -139,6 +141,20 @@ if (watchMode) {
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+  // baseline, so it is delivered and CHARGED again even though the buyer already paid for it.
+  // Same shape as us-federal-awards-scraper / app-store-reviews-scraper (h285).
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+      + 'oldest review id(s) were dropped and will be returned and CHARGED as new on a future run '
+      + `(${baselineTruncatedTotal} dropped over the life of this label). Narrow the watch (fewer apps `
+      + 'or a stricter keyword/playtime/date filter) or split it across several labels so each baseline '
+      + 'stays under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -146,6 +162,8 @@ async function saveWatchRecord(status) {
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
     seededApps: Array.from(seededApps),
     seenIds: ids,
   });
@@ -653,14 +671,22 @@ const baselinedSuffix = baselinedInPlace.length
 const degradedSuffix = upstreamDegraded.length
   ? ` Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; those apps were skipped, re-run them later.`
   : '';
+// WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
+// never adds noise to a healthy run.
+const evictionSuffix = baselineTruncated > 0
+  ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest review `
+    + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
+    + 'returned and charged again as "new" on a future run. Narrow the watch (fewer apps or a stricter '
+    + 'filter) so the baseline stays under the cap.'
+  : '';
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.${baselinedSuffix}${degradedSuffix}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode && saturatedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new review(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).${baselinedSuffix}${degradedSuffix}`);
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new review(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (pushed === 0) {
   const why = emptyIds.length
     ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
@@ -696,6 +722,10 @@ if (webhookUrl) {
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkipped: watchMode ? watchSkipped : null,
     watchSeeding: watchMode ? seeding : null,
+    // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+    // re-charge them as "new" (h285). null outside watch mode, where there is no baseline.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({

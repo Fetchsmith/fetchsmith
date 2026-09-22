@@ -83,6 +83,7 @@ Details worth knowing:
 - If a `searchTerms` query resolves to a *different* game than last time, that game is baselined on the spot rather than having its entire review history delivered as "new".
 - If Steam serves an incomplete review response for a game (see the FAQ below), that game is **not** baselined and the run says so — you never end up with a baseline built from an upstream fault.
 - Watch mode applies to `dataType: "reviews"` only. In `games` mode a row is the same snapshot of the same game on every run, not a stream of new events, so `watchLabel` is ignored with a warning.
+- **Baseline size cap:** the saved baseline holds at most 40,000 review ids across all your `apps`/`searchTerms` (the oldest drop off first). A watch this large is rare, but if it happens, the dropped ids will be delivered and **charged again** as "new" on a future run — the run's log and status message name the count when it occurs. Split a very large watch across several labels (e.g. one per game) to stay under the cap.
 
 ### Example input
 

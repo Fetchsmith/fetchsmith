@@ -125,6 +125,8 @@ const WATCH_KEEP = 40000; // bound the record size; oldest ids fall off first
 // easily hold only the newest ~50 reviews of a pair. That is why a truncated baseline can no
 // longer over-charge — see `pairFloors` below.
 const WATCH_SCAN_CAP = 500;
+let baselineTruncated = 0; // review ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 function watchKeyFor(label, criteria) {
   const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -227,6 +229,20 @@ if (watchMode) {
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+  // baseline, so it is delivered and CHARGED again even though the buyer already paid for it.
+  // Same shape as us-federal-awards-scraper / fec-campaign-finance-scraper (h285).
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+      + 'oldest review id(s) were dropped and will be returned and CHARGED as new on a future run '
+      + `(${baselineTruncatedTotal} dropped over the life of this label). Narrow the watch (fewer apps/countries `
+      + 'or a stricter rating/keyword/length/vote filter) or split it across several labels so each baseline '
+      + 'stays under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -234,6 +250,8 @@ async function saveWatchRecord(status) {
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
     seededPairs: Array.from(seededPairs),
     pairFloors: Object.fromEntries(pairFloors),
     seenIds: ids,
@@ -992,6 +1010,17 @@ if (pairsAttempted > 0 && feedServed === 0 && await reviewFeedIsDown()) {
   );
 }
 if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+// WATCH_KEEP record-cap eviction (h285) -- kept as its own note, deliberately not folded into
+// `truncationNote` below: that one is about THIS run's own early stop (maxResults/charge-limit/
+// SEED_CAP), a different failure that happens to want a similar name. Empty unless something was
+// actually dropped, so it never adds noise to a healthy run.
+let evictionNote = '';
+if (baselineTruncated > 0) {
+  evictionNote = ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest `
+    + `review id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will `
+    + 'be returned and charged again as "new" on a future run. Narrow the watch (fewer apps/countries or a '
+    + 'stricter filter) so the baseline stays under the cap.';
+}
 if (floorSkipped) {
   log.info(
     `${floorSkipped} review(s) were older than the deepest review this watch's baseline could scan, so they already `
@@ -1089,7 +1118,7 @@ if (watchMode && storefrontErrorPairs.length) {
   // returned 500 of an app's 1.8M reviews read exactly like a complete one.
   statusMsg = `Pushed ${pushed} reviews.`;
 }
-if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + ceilingNote).slice(0, 1000));
+if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + ceilingNote + evictionNote).slice(0, 1000));
 
 // The pair records, on a surface every run has whether or not the buyer configured a webhook:
 // GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY. Best-effort — a failure here
@@ -1128,6 +1157,10 @@ const runSummary = {
     : null,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
+  // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+  // re-charge them as "new" (h285). null outside watch mode, where there is no baseline.
+  baselineTruncated: watchMode ? baselineTruncated : null,
+  baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   pairs: pairOutcomes,
 };
 try {
@@ -1151,6 +1184,8 @@ if (webhookUrl) {
     watchSkipped: watchMode ? watchSkipped : null,
     watchPreBaselineSkipped: watchMode ? floorSkipped : null,
     watchSeeding: watchMode ? seeding : null,
+    baselineTruncated: runSummary.baselineTruncated,
+    baselineTruncatedTotal: runSummary.baselineTruncatedTotal,
     pairsIncomplete: runSummary.pairsIncomplete,
     pairsUnknown: runSummary.pairsUnknown,
     complete: runSummary.complete,
