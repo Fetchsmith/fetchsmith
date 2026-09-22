@@ -245,6 +245,8 @@ function baseParams() {
 const WATCH_STORE = 'fetchsmith-fedreg-watch';
 const SEED_CAP = 20000; // bound a seed walk; cursor paging itself has no wall
 const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0; // ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 // Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted.
 // The criteria fingerprint is part of the key on purpose: if the buyer edits a filter, that is
@@ -287,7 +289,22 @@ let seeding = false;
 const watchSeen = new Set(); // document_numbers already delivered under this label+fingerprint
 
 async function saveWatchRecord(status) {
-    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen);
+    const ids = all.slice(-WATCH_KEEP);
+    // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+    // baseline, so it is delivered and CHARGED again even though the buyer already paid for it.
+    // The dropped end is oldest-FIRST-SEEN (re-seeing an id is a Set no-op and doesn't move it).
+    // Distinct from SEED_CAP/seedCapped above, which bounds one baseline WALK, not this record.
+    baselineTruncated = all.length - ids.length;
+    baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+    if (baselineTruncated > 0) {
+        log.warning(
+            `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+            + 'oldest document id(s) were dropped and will be returned and CHARGED as new on a future run '
+            + `(${baselineTruncatedTotal} dropped over the life of this label). Narrow the query (an agency, a `
+            + 'document type, a shorter publication-date window) or split it across several labels so the baseline stays under the cap.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -297,6 +314,8 @@ async function saveWatchRecord(status) {
         lastRunStatus: status,
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: ids.length,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
         seenIds: ids,
     });
 }
@@ -630,6 +649,13 @@ while (!seeding && keepGoing && pushed < maxResults) {
     if (!applyNext(walkParams, page.next_page_url)) { runState.exhausted = true; break; }
 }
 
+// Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
+function truncationNote() {
+    if (baselineTruncated <= 0) return '';
+    return ` WARNING: the baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest id(s) were`
+        + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
+}
+
 if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
@@ -642,11 +668,20 @@ if (watchMode) {
                 + 'incremental run will report documents past the cap as new.'
                 : ''),
         );
+        await Actor.setStatusMessage(
+            `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing document(s) recorded, 0 charged. Run again later to get only what's new.`
+            + truncationNote(),
+        );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed} new document(s) since the last run `
             + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
         );
+        if (pushed > 0 && baselineTruncated > 0) {
+            // A run that delivered rows would otherwise leave the default status message in
+            // place and the truncation would only be visible in the log.
+            await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} document(s) delivered.` + truncationNote());
+        }
     }
 }
 
@@ -654,6 +689,10 @@ if (pushed === 0 && watchMode && !seeding) {
     log.warning(
         `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching document(s) `
         + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+    );
+    await Actor.setStatusMessage(
+        `Nothing new for watch label "${watchLabel}" since its last run -- every matching document had already been delivered. That is the expected result most of the time; you were charged for nothing.`
+        + truncationNote(),
     );
 } else if (pushed === 0 && !seeding && publicInspection) {
     log.warning(
@@ -735,7 +774,14 @@ const runSummary = {
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
     baselineSize: watchMode ? watchSeen.size : null,
-    baselineTruncated: watchMode ? runState.seedCapped : null,
+    // seedCapped: this SEED walk stopped at the SEED_CAP document limit (a one-time baseline
+    // depth cap). baselineTruncated/baselineTruncatedTotal: the SAVED RECORD exceeded WATCH_KEEP
+    // and dropped ids -- a different cap, and the one that causes a future re-charge. Was a single
+    // misnamed `baselineTruncated: runState.seedCapped` field before cycle 657 (h285 naming
+    // collision with us-federal-awards-scraper, which uses the same field name for the real thing).
+    seedCapped: watchMode ? runState.seedCapped : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);

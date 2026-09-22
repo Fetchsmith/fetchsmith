@@ -97,6 +97,8 @@ Set `watchLabel` to a name for the query — `epa-air-rules`, say — and this A
 
 The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a Federal Register alert.
 
+**Baseline size cap.** A baseline holds up to **60,000** ids in one saved record. If a label's baseline grows past that, the oldest-first-seen ids are dropped — and a dropped id is no longer recognised, so it comes back as "new" on a later run **and is charged again**. The run that drops them says so explicitly: a warning in the log, a note on the run's status message, and `baselineTruncated` / `baselineTruncatedTotal` (this run / the whole life of the label) in `RUN_SUMMARY` and the `webhookUrl` payload. If you see it, narrow the query (an agency, a document type, a shorter publication-date window) or split it across several labels so the baseline stays under the cap. This is separate from `seedCapped` in `RUN_SUMMARY`, which means the one-time baseline *walk* stopped at the 20,000-document `SEED_CAP` before it finished reading the whole current match set.
+
 Note: unlike some of our other government-data Actors, there is no `watchChanges` option here — a Federal Register document's own record never mutates after publication (see `referencedCitations` above for how amendments actually surface).
 
 ## Sample output

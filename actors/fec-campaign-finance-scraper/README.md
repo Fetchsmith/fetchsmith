@@ -248,13 +248,15 @@ Set `watchLabel` (any transaction mode: contributions, disbursements, independen
 
 Not available in candidates mode: it always returns the same fixed roster of people for a given filter set, not a stream of discrete new events, so "new since last time" has no natural meaning there — setting `watchLabel` alongside `searchMode: "candidates"` logs a warning and is ignored.
 
+**Baseline size cap.** A baseline holds up to **20,000** ids in one saved record. If a label's baseline grows past that, the oldest-first-seen ids are dropped — and a dropped id is no longer recognised, so it comes back as "new" on a later run **and is charged again**. The run that drops them says so explicitly: a warning in the log, a note on the run's status message, and `baselineTruncated` / `baselineTruncatedTotal` (this run / the whole life of the label) on the `webhookUrl` payload and the saved record. If you see it, narrow the filters (donorName, donorEmployer, state, the amount window, the date window) or split the watch across several labels so each baseline stays under the cap.
+
 ## Pricing
 `result` — you are charged per row actually returned (one candidate, contribution, disbursement or independent expenditure). Starting a run is free, and a run that finds no matches costs nothing (this includes every watch-mode baseline run). HTTP-only (no browser), so runs are fast and cheap.
 
 ## FAQ
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
-Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkipped`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchSkipped`/`baselineTruncated`/`baselineTruncatedTotal`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 **Which mode should I use for "how much did this campaign spend on Facebook ads"?**
 `searchMode: "disbursements"` with `recipientName: "META"` and the committee's `committeeId`. Disbursements are money the campaign itself paid out. `independentExpenditures` is a different thing: money spent by *outside* groups for or against a candidate, which the candidate's own committee never reports.

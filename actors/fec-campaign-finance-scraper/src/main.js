@@ -121,6 +121,8 @@ const WATCH_STORE = 'fetchsmith-fec-watch';
 const SEED_CAP = 5000; // bound the cost of a baseline run against a broad donor/employer filter
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
 const WATCH_PAGE_CAP = 1000; // safety valve: a broad/unfiltered watch could otherwise page through the whole multi-hundred-thousand-row Schedule A table every run
+let baselineTruncated = 0; // ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 function watchKeyFor(label, criteria) {
   const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -185,7 +187,22 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  const all = Array.from(watchSeen);
+  const ids = all.slice(-WATCH_KEEP);
+  // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+  // baseline, so it is delivered and CHARGED again even though the buyer already paid for it.
+  // The dropped end is oldest-FIRST-SEEN (re-seeing an id is a Set no-op and doesn't move it).
+  baselineTruncated = all.length - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+      + 'oldest contribution/disbursement/expenditure id(s) were dropped and will be returned and CHARGED as '
+      + `new on a future run (${baselineTruncatedTotal} dropped over the life of this label). Narrow `
+      + 'donorName/donorEmployer/donorOccupation/donorCity/donorZip/state/minAmount/maxAmount/'
+      + 'contributionDateFrom/contributionDateTo, or split it across several labels, so the baseline stays under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -193,6 +210,8 @@ async function saveWatchRecord(status) {
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
     seenIds: ids,
   });
 }
@@ -480,6 +499,13 @@ try {
   await Actor.fail(`Run failed: ${err.message}`);
 }
 
+// Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
+function truncationNote() {
+  if (baselineTruncated <= 0) return '';
+  return ` WARNING: the baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest id(s) were`
+    + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
+}
+
 if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
   if (seeding) {
@@ -493,11 +519,21 @@ if (watchMode) {
           ? ` NOTE: the baseline hit the ${WATCH_PAGE_CAP}-page scan cap before exhausting the match set. Narrow the filters.`
           : ''),
     );
-    await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing contribution(s) recorded, 0 charged. Run again later to get only what's new.`);
+    await Actor.setStatusMessage(
+      `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing contribution(s) recorded, 0 charged. Run again later to get only what's new.`
+      + truncationNote(),
+    );
   } else {
     log.info(`Watch label "${watchLabel}": ${pushed} new contribution(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
     if (pushed === 0) {
-      await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+      await Actor.setStatusMessage(
+        `Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`
+        + truncationNote(),
+      );
+    } else if (baselineTruncated > 0) {
+      // A run that delivered rows would otherwise leave the default status message in place and
+      // the truncation would only be visible in the log.
+      await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} row(s) delivered.` + truncationNote());
     }
   }
 }
@@ -518,6 +554,10 @@ if (webhookUrl) {
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkipped: watchMode ? watchSkipped : null,
     watchSeeding: watchMode ? seeding : null,
+    // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+    // re-charge them; the cumulative figure is the drift over the whole life of the label.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({
