@@ -2084,3 +2084,38 @@ question each one answers before letting either gate the other.**
 - **Nothing was owed to anyone, and that is worth checking explicitly before worrying:** pay-per-event
   pricing means a blocked run returns 0 rows and charges $0. Confirm the pricing model before
   assuming a multi-day outage created a refund liability.
+
+## Cycle 656 — a bounded cache that silently evicts is a billing bug, not a memory optimisation
+
+Every watch-mode Actor caps its saved baseline (`slice(-WATCH_KEEP)`) to stay inside the KV
+record size budget. The cap is correct. What was wrong fleet-wide is that it applied **in
+silence**: an evicted id is not in the baseline on the next run, so the row is delivered and
+**charged again** to a buyer who already paid for it. It looks identical in the log to a
+genuinely new row. 16 of 18 watch-mode Actors had this; only sam-gov and shopify-products
+warned.
+
+Three reusable rules out of it:
+
+1. **Any time you drop data to fit a budget, emit the count.** `dropped = all.length -
+   kept.length` is one line. Without it the run cannot tell the buyer that its own answer is
+   about to cost them money twice. Persist a cumulative total into the record as well — the
+   per-run figure is invisible to anyone reading the state later.
+2. **Check the cap constants against each other, not just individually.** `us-federal-awards`
+   had `SEED_CAP == WATCH_KEEP == 20000`: a baseline allowed to fill its own seed cap is
+   *already at* the record cap, so eviction starts on the very first incremental run. Every
+   other Actor's seed cap is a fraction of its record cap and takes many runs to get there.
+   The ratio, not the absolute number, is what makes a bug reachable. (Same shape as the
+   h255/h264 "unfirable warning" family, read in the opposite direction: there the threshold
+   was never reached, here it is reached immediately.)
+3. **Know which end of the structure falls off.** `Map.set` on an existing key does NOT move
+   it, so a re-seen id keeps its original position: the evicted end is oldest-FIRST-SEEN, not
+   least-recently-seen. On a source where an item keeps matching the same filter for years
+   (federal awards, trademarks, grants), those are exactly the ids guaranteed to come back
+   and be re-billed. Shopify's baseline is the one that genuinely re-touches; don't assume the
+   others do.
+
+Verification shape worth reusing: patch the cap to a tiny value in a `/tmp` copy, seed, then
+run again and confirm the second run *charges* for rows the first run already recorded. That
+reproduces the money impact directly instead of only asserting the new warning string fires.
+Always pair it with a negative control at the real cap — a warning that fires on healthy runs
+is worse than none.
