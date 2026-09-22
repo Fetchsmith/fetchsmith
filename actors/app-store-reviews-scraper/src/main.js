@@ -733,10 +733,20 @@ async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false)
   // -- if the cap was hit and some scanned reviews were dropped by a filter, matching reviews may
   // still sit deeper in Apple's feed and were never looked at.
   const scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp;
+  // How many reviews Apple SAYS this app has in this storefront, for the delivered-vs-declared
+  // pair record below. Read off the already-memoised lookup only — never a fresh request: if
+  // includeInfo is off (or the lookup failed, or no page ever served) this stays null rather than
+  // costing the buyer a request they did not ask for, and null must never be read as zero.
+  let declaredRatingCount = null;
+  if (infoPromise) {
+    const info = await infoPromise.catch(() => null);
+    declaredRatingCount = info?.ratingCount ?? info?.totalRatings ?? null;
+  }
   return {
     got: tally.got, filteredOut: tally.filteredOut, capReached: tally.got >= scanCap,
     newForPair: tally.newForPair || 0, storefrontError: tally.storefrontError || null,
     feedCeiling: tally.feedCeiling === true, feedStopPage: tally.feedStopPage ?? null,
+    declaredRatingCount, scanCap,
   };
 }
 
@@ -763,6 +773,45 @@ const saturatedPairs = [];
 // Unlike every other shortfall here this one is NOT fixable from the input — it is the public RSS
 // feed's limit — so it has to be SAID rather than hinted at with a "raise the cap" suggestion.
 const feedCeilingPairs = [];
+// One machine-readable record per (app, storefront) pair, written to the run's key-value store as
+// RUN_SUMMARY and posted on the webhook. Every shortfall this Actor knows about is already SAID —
+// in the log and in the status message — but both are English prose, so the only surface a
+// PROGRAM can read is the dataset, where a run that delivered 500 of an app's 1.8M reviews and a
+// run that delivered an app's complete review history arrive as the same thing: N rows and no
+// disagreement anywhere. `delivered` next to `declaredRatingCount`, plus `complete` and the reason
+// that made it false, answers that at the level the shortfall actually happens — the pair, not the
+// run. Same shape and same lesson as shopify-products-scraper's sourceOutcomes (cycle 639).
+const pairOutcomes = [];
+// `complete` is deliberately NOT folded into `status`: a pair can deliver reviews perfectly
+// normally (status "ok") and still have been cut short by Apple's feed ceiling, and collapsing the
+// two would lose exactly the case this record exists for. `null` (never false, never 0) wherever
+// we did not observe the answer — a refused pair has no completeness to report.
+function recordPair(appId, country, res, delivered, status, extra = {}) {
+  const truncatedByRun = !keepGoing; // the run stopped during THIS pair (recorded immediately after it)
+  const incompleteReason = res.storefrontError ? null
+    : res.feedCeiling ? 'apple-feed-ceiling'
+    : res.capReached ? 'max-reviews-per-app'
+    : truncatedByRun ? (chargeLimitHit ? 'charge-limit' : (watchMode && seeding ? 'baseline-cap' : 'max-results'))
+    : null;
+  const pairSummary = {
+    app: appId,
+    country,
+    status,
+    scanned: res.got,
+    delivered,
+    filteredOut: res.filteredOut,
+    // What Apple says the app has in this storefront. Only present when the metadata lookup was
+    // already made for this pair (includeInfo); null means "not asked", NOT "no ratings".
+    declaredRatingCount: res.declaredRatingCount,
+    complete: res.storefrontError ? null : incompleteReason === null,
+    incompleteReason,
+    scanDepthCap: res.scanCap ?? null,
+    feedStopPage: res.feedStopPage ?? null,
+    reason: res.storefrontError ?? null,
+    ...extra,
+  };
+  pairOutcomes.push(pairSummary);
+}
 // Reviews Apple served this run across every pair, BEFORE filters and before watch-mode
 // de-duplication -- i.e. how much data the upstream feed produced at all. Zero here (with pairs
 // actually attempted) is what triggers the upstream-outage probe below.
@@ -780,7 +829,18 @@ let keepGoing = true;
 for (const app of apps) {
   if (!keepGoing) break;
   const appId = parseId(app);
-  if (!appId) { log.warning(`Cannot parse app id from "${app}"`); continue; }
+  if (!appId) {
+    log.warning(`Cannot parse app id from "${app}"`);
+    // Recorded, not just logged: an unreadable input is the one shortfall that leaves no trace
+    // anywhere else — it never reaches plannedPairs, so "notReached" below cannot report it either.
+    const pairSummary = {
+      app: String(app), country: null, status: 'badAppId', scanned: 0, delivered: 0, filteredOut: 0,
+      declaredRatingCount: null, complete: null, incompleteReason: null, scanDepthCap: null,
+      feedStopPage: null, reason: 'could not parse an App Store app id from this input value',
+    };
+    pairOutcomes.push(pairSummary);
+    continue;
+  }
   for (const country of countries) {
     if (!keepGoing) break;
     const pairKey = `${appId}::${country}`;
@@ -796,7 +856,8 @@ for (const app of apps) {
     const pushedBefore = pushed;
     pairsAttempted += 1;
     attemptedPairs.add(`${appId}/${country}`);
-    const { got, filteredOut, capReached, newForPair, storefrontError, feedCeiling, feedStopPage } = await scrapeAppCountry(appId, country, {}, pairSeeding);
+    const res = await scrapeAppCountry(appId, country, {}, pairSeeding);
+    const { got, filteredOut, capReached, newForPair, storefrontError, feedCeiling, feedStopPage } = res;
     if (ratingSort) await flushPairBuffer();
     if (storefrontError) {
       // Apple refused this (app, storefront) outright. Report the fault verbatim and move on: do
@@ -806,6 +867,7 @@ for (const app of apps) {
       storefrontErrorPairs.push(`${appId}/${country}`);
       if (!storefrontErrorMessages.includes(storefrontError)) storefrontErrorMessages.push(storefrontError);
       feedServed += got;
+      recordPair(appId, country, res, pushed - pushedBefore, 'error');
       continue;
     }
     log.info(`${appId}/${country}: ${got} reviews fetched, ${pushed - pushedBefore} kept after filters`);
@@ -865,6 +927,9 @@ for (const app of apps) {
         if (fb2.got > 0) {
           feedServed += totalGot;
           if (watchMode && pairSeeding && keepGoing) { seededPairs.add(pairKey); commitSeedFloors(appId); }
+          // The record is keyed to the storefront that ACTUALLY answered, with the requested one
+          // alongside — otherwise a `de` row in the summary would claim coverage `de` never gave.
+          recordPair(appId, fb, fb2, pushed - pushedBefore, pairSeeding ? 'watchBaselined' : 'ok', { requestedCountry: country, fallbackUsed: true });
           continue;
         }
       }
@@ -891,6 +956,16 @@ for (const app of apps) {
       saturatedPairs.push(pairKey);
       log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — ${feedCeiling ? "Apple's feed stopped serving mid-walk, so run the watch more often (raising maxReviewsPerApp cannot reach deeper)" : 'run the watch more often, or raise maxReviewsPerApp'}.`);
     }
+    const delivered = pushed - pushedBefore;
+    // "empty" and "filteredOut" are kept apart for the same reason the status message keeps them
+    // apart: both deliver zero rows, but one means Apple has nothing and the other means the
+    // buyer's own filters removed everything — and only the second is fixable from the input.
+    // "watchNoChanges" is a third zero: reviews were there and had already been delivered.
+    const status = totalGot === 0 ? 'empty'
+      : watchMode && pairSeeding ? 'watchBaselined'
+      : delivered === 0 ? (watchMode ? 'watchNoChanges' : 'filteredOut')
+      : 'ok';
+    recordPair(appId, country, res, delivered, status, watchMode && saturatedPairs.includes(pairKey) ? { watchWindowSaturated: true } : {});
   }
 }
 // Every pair we tried was REFUSED by Apple (not empty — refused). That is always the input, so say
@@ -931,6 +1006,18 @@ log.info(`Done. Pushed ${pushed} items.${unidentifiedSkipped ? ` Skipped ${unide
 // this note the run reads as a complete one that simply found less. Same defect and same fix as
 // google-play-reviews-scraper (cycle 630). Appended to whatever status message applies.
 const pairsNotReached = plannedPairs.filter((p) => !attemptedPairs.has(p));
+// A pair the run never got to has no bucket and no log line of its own. Omitting it from the
+// summary would let its ABSENCE read as "nothing there" — the same zero-is-ambiguous trap this
+// record exists to close — so it is written down explicitly with complete: null.
+for (const p of pairsNotReached) {
+  const [app, country] = p.split('/');
+  const pairSummary = {
+    app, country, status: 'notReached', scanned: 0, delivered: 0, filteredOut: 0,
+    declaredRatingCount: null, complete: null, incompleteReason: null, scanDepthCap: null,
+    feedStopPage: null, reason: 'the run stopped before reaching this app/storefront pair',
+  };
+  pairOutcomes.push(pairSummary);
+}
 let truncationNote = '';
 if (!keepGoing) {
   const cause = chargeLimitHit
@@ -1004,6 +1091,25 @@ if (watchMode && storefrontErrorPairs.length) {
 }
 if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + ceilingNote).slice(0, 1000));
 
+// The pair records, on a surface every run has whether or not the buyer configured a webhook:
+// GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY. Best-effort — a failure here
+// must never fail a run whose rows are already delivered and charged.
+const runSummary = {
+  finishedAt: new Date().toISOString(),
+  pushed,
+  pairsPlanned: plannedPairs.length,
+  pairsAttempted,
+  pairsIncomplete: pairOutcomes.filter((p) => p.complete === false).length,
+  watchLabel: watchMode ? watchLabel : null,
+  watchSeeding: watchMode ? seeding : null,
+  pairs: pairOutcomes,
+};
+try {
+  await Actor.setValue('RUN_SUMMARY', runSummary);
+} catch (err) {
+  log.warning(`Could not write RUN_SUMMARY to the key-value store (${err.message}); run result is unaffected.`);
+}
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error.
@@ -1019,6 +1125,8 @@ if (webhookUrl) {
     watchSkipped: watchMode ? watchSkipped : null,
     watchPreBaselineSkipped: watchMode ? floorSkipped : null,
     watchSeeding: watchMode ? seeding : null,
+    pairsIncomplete: runSummary.pairsIncomplete,
+    pairs: pairOutcomes,
   };
   try {
     const resp = await gotScraping({
