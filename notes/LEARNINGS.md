@@ -1856,3 +1856,22 @@ reach the rest. When a runtime warning is added for a limit (h255/h257), audit t
 that the new limit invalidates, not just for a missing mention; and re-grep the sibling Actor before
 trusting the queue entry (`app-store-reviews-scraper` had already been fixed in cycle 633, so half of
 h260 was stale).
+
+## 2026-09-22 (cycle 637) — an incremental/watch baseline needs a DATE floor, not just an id set
+When a watch baseline is seeded by walking a feed whose depth the source controls (Apple's review
+RSS quits mid-walk, and at a different depth each run), the id set alone is not a safe definition
+of "already delivered": a later run that reaches deeper finds older reviews missing from the
+baseline and bills them as new. The fix that generalises to every watch-mode Actor is to record,
+per pair, the **oldest item date the baseline actually scanned**, and to treat anything older than
+that as pre-existing forever. It is correct by construction and needs no calibration: a genuinely
+new item is created after the baseline run, so it is always newer than the floor — the rule can
+only remove false "new". Two design points learned the hard way on paper: measure the floor BEFORE
+client-side filters (a scanned-then-discarded item still proves the feed reached that date, and the
+filters are in the watch fingerprint anyway), and never lower the floor on an incremental run —
+lowering it re-exposes, one run later, exactly the items it just suppressed. Absent floor => old
+behaviour, so existing watch records upgrade without a reset.
+Second, recurring pattern: any guard written as `>= SOME_MAX_THE_SOURCE_USED_TO_SERVE` silently
+dies when the source shrinks. The saturated-window warning here tested `got >= 500`, which Apple no
+longer serves, so it went quiet precisely when it was most likely to be true. Key such guards to
+the *shape* of what happened (`capReached || feedCeiling`), never to a constant. Third instance of
+this class (h250, h255/h257, h264).
