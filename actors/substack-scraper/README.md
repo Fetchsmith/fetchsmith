@@ -88,6 +88,13 @@ Three record shapes, distinguished by `type`.
 | `bodyWordCount` | `4695` — words actually in `bodyText`. Equals `wordCount` on public posts; smaller on a paywalled preview |
 | `bodyTruncated` | `true` when `bodyText` is **not** the whole article — no public body at all, or only the free preview of a paid post |
 
+Only when `includeComments: true`:
+
+| Field | Example |
+|---|---|
+| `commentsRetrieved` | `190` — how many comments Substack actually handed back, to compare against `commentCount` (how many it says the post has). Unaffected by `maxCommentsPerPost`, which is your own cap and applies after. `null` if the request failed |
+| `commentsWithheld` | `true` when the post has comments but Substack served **none** of them — subscriber-only posts keep their comment section paywalled |
+
 Only when `includePublicationInfo: true` (values below from a real run on `bigtechnology.com`):
 
 | Field | Example |
@@ -203,6 +210,8 @@ Pay per result, split by item type so metadata-only and comment-heavy runs aren'
 **Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way.
 
 **Why are comments optional?** They're charged like posts, and a popular post can have hundreds. Turn them on with `includeComments` and bound them with `maxCommentsPerPost`.
+
+**I turned on `includeComments` and got no comments, even though the posts show hundreds.** The comment section of a subscriber-only post is paywalled too, and Substack's API says so by answering `200 OK` with an empty list rather than an error. Measured live across three publications, the split is total: all 15 public posts sampled returned their full tree (318–1200 comments, no server-side cap), and all 15 subscriber-only posts returned **zero** — one of them on a post declaring 5,426 comments. Those rows come back `commentsWithheld: true` with `commentsRetrieved: 0`, and the run log and status message both name the count, so it is visible rather than looking like a broken run. Set `audienceFilter: "free"` to scrape only posts whose comments you can actually get. You are never charged for a comment that wasn't returned.
 
 **What's the difference between `leaderboardOnly` and `discoverCategories` + `includePublicationInfo`?** Both read the same Substack leaderboard data, but `discoverCategories` alone uses the leaderboard only to find publications, then scrapes their posts (charged per post). `leaderboardOnly: true` skips the post scraping and returns the leaderboard rows themselves — rank, subscriber counts, pricing — as the entire result, at a fraction of the cost of a post-scraping run. Use it for "who are the top 20 paid tech newsletters and what do they charge", not "give me their articles".
 

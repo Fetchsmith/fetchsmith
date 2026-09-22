@@ -278,6 +278,22 @@
           "null"
         ]
       },
+      "commentsRetrieved": {
+        "title": "CommentsRetrieved",
+        "example": 190,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "commentsWithheld": {
+        "title": "CommentsWithheld",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
       "publicationSubscriberCount": {
         "title": "PublicationSubscriberCount",
         "example": 156000,

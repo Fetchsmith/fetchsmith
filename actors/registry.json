@@ -474,6 +474,8 @@
         "bodyHtml",
         "bodyWordCount",
         "bodyTruncated",
+        "commentsRetrieved",
+        "commentsWithheld",
         "publicationSubscriberCount",
         "publicationSubscriberCountLabel",
         "publicationPaidSubscribersLabel",

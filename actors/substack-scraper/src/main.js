@@ -62,6 +62,10 @@ const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
 let excludedByFilters = 0;
+// Posts where Substack acknowledged comments exist (`comment_count > 0`) but served an empty
+// comment tree. Subscriber-only posts keep their comment section behind the paywall and the
+// endpoint answers 200 with `comments: []` rather than an error — see commentsWithheld below.
+let postsWithCommentsWithheld = 0;
 const filtersActive = audienceFilter !== 'all' || contentType !== 'all' || !!publishedAfter || !!publishedBefore
   || minReactionCount != null || minCommentCount != null || minRestackCount != null || minWordCount != null || maxWordCount != null;
 
@@ -239,7 +243,7 @@ function matchesEngagement(post) {
   return true;
 }
 
-function mapPost(post, origin, detail, pubInfo) {
+function mapPost(post, origin, detail, pubInfo, commentFetch) {
   const full = detail ?? post;
   const bodyHtml = full.body_html || null;
   const bodyText = htmlToText(bodyHtml) ?? (post.truncated_body_text || null);
@@ -283,6 +287,16 @@ function mapPost(post, origin, detail, pubInfo) {
     // true when the text returned is not the complete article — either no public body at all, or
     // only the free preview of a subscriber-only post.
     bodyTruncated: includeBodyText ? isBodyTruncated(bodyText, bodyWordCount, declaredWordCount) : undefined,
+    // How many comments Substack actually handed back for this post, vs. `commentCount` which is
+    // the total it says the post has. `null` means we could not find out (the request failed, or
+    // the run ran out of time before asking). Not affected by maxCommentsPerPost — that cap is
+    // your own, and applies after this count.
+    commentsRetrieved: includeComments ? (commentFetch ? commentFetch.comments.length : null) : undefined,
+    // true when the post has comments but Substack served none of them: subscriber-only posts keep
+    // their comment section paywalled, and the API says so with an empty list, not an error.
+    commentsWithheld: includeComments
+      ? (commentFetch ? commentFetch.comments.length === 0 && (post.comment_count ?? 0) > 0 : null)
+      : undefined,
     ...(pubInfo ?? {}),
   };
 }
@@ -324,26 +338,47 @@ async function fetchDetail(origin, slug) {
   }
 }
 
+// Returns `{ comments: [...] }` when we know what Substack has (possibly an empty list — that is
+// itself the answer on a paywalled comment section), or `null` when we could not find out. The
+// caller needs that distinction to report commentsRetrieved/commentsWithheld honestly, which is
+// why this runs before the post row is pushed rather than after.
+async function fetchComments(origin, post) {
+  if (!includeComments) return null;
+  if ((post.comment_count ?? 0) === 0) return { comments: [] };
+  if (!timeBudgetOk()) return null;
+  try {
+    const body = await getJson(`${origin}/api/v1/post/${post.id}/comments?token=&all_comments=true&sort=best_first`);
+    return { comments: flattenComments(body.comments) };
+  } catch (e) {
+    log.warning(`Comments failed for post ${post.id}: ${e.message}`);
+    return null;
+  }
+}
+
 async function handlePost(post, origin, preloadedDetail = null) {
   if (!matchesAudience(post) || !matchesContentType(post) || !matchesDate(post) || !matchesEngagement(post)) { excludedByFilters += 1; return true; }
   const needDetail = includeBodyText || includeBodyHtml;
   const detail = preloadedDetail ?? (needDetail && post.slug ? await fetchDetail(origin, post.slug) : null);
   const pubInfo = await fetchPublicationInfo(origin);
-  keepGoing = await pushResult(mapPost(post, origin, detail, pubInfo), POST_EVENT);
+  const commentFetch = await fetchComments(origin, post);
+  if (commentFetch && commentFetch.comments.length === 0 && (post.comment_count ?? 0) > 0) {
+    postsWithCommentsWithheld += 1;
+    log.warning(
+      `Substack served 0 of ${post.comment_count} comments for ${origin}/p/${post.slug}`
+      + ' — subscriber-only posts keep their comment section paywalled. Row flagged commentsWithheld:true.',
+    );
+  }
+  keepGoing = await pushResult(mapPost(post, origin, detail, pubInfo, commentFetch), POST_EVENT);
   if (!keepGoing) return false;
 
-  if (includeComments && (post.comment_count ?? 0) > 0 && timeBudgetOk()) {
-    try {
-      const body = await getJson(`${origin}/api/v1/post/${post.id}/comments?token=&all_comments=true&sort=best_first`);
-      const flat = flattenComments(body.comments).slice(0, maxCommentsPerPost);
-      for (const c of flat) {
-        keepGoing = await pushResult(mapComment(c, post, origin), 'comment');
-        if (!keepGoing) return false;
-      }
-    } catch (e) {
-      log.warning(`Comments failed for post ${post.id}: ${e.message}`);
-    }
+  for (const c of (commentFetch?.comments ?? []).slice(0, maxCommentsPerPost)) {
+    keepGoing = await pushResult(mapComment(c, post, origin), 'comment');
+    if (!keepGoing) return false;
   }
+  // fetchComments() now runs BEFORE the post row is pushed, so a time budget it tripped would be
+  // overwritten by pushResult()'s return value above. Re-assert it, or the run would carry on past
+  // the timeout margin (the pre-reorder code got this for free by pushing the post row first).
+  if (timeBudgetExceeded) keepGoing = false;
   return keepGoing;
 }
 
@@ -586,9 +621,15 @@ if (!publicationTargets.length && !postTargets.length) {
           ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`
           : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
     await Actor.setStatusMessage(`No items returned — ${why}.`);
-  } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote) {
+  } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote || postsWithCommentsWithheld) {
     const notes = [];
     if (timeBudgetNote) notes.push(timeBudgetNote);
+    if (postsWithCommentsWithheld) {
+      notes.push(
+        `Substack withheld the comment section on ${postsWithCommentsWithheld} subscriber-only post(s)`
+        + ' (flagged commentsWithheld:true — set audienceFilter:"free" to scrape only posts whose comments are public)',
+      );
+    }
     if (errored.length) notes.push(`request failed for ${errored.join(', ')}`);
     if (empty.length) notes.push(`no posts found for ${empty.join(', ')}`);
     if (filtered.length) notes.push(`filters excluded everything from ${filtered.join(', ')}`);
