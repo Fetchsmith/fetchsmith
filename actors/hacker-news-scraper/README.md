@@ -24,12 +24,12 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `excludeKeywords` | array | Drop any story/comment whose title or text contains any of these words/phrases (case-insensitive) — HN's search has no negative-term syntax, so this is applied client-side after fetching, before you're charged |
 | `author` | string | Only items posted by this exact HN username |
 | `postedAfter` / `postedBefore` | string | ISO date bounds |
-| `maxItemsPerQuery` | integer | Cap per query (up to 1000) |
+| `maxItemsPerQuery` | integer | Cap per query (up to 1000, which is also HN's own hard limit per query — see FAQ) |
 | `maxResults` | integer | Overall cap |
 | `usernames` | array | HN usernames to fetch profile data for (karma, about, account age) — a separate lookup, not a story filter. To fetch ONLY profiles with no story search, also set `queries` and `tags` to `[]`. |
 | `watchLabel` | string | Name a saved search to get **only story/comment/job hits new since its last run** — see below |
 | `enrichGithubLinks` | boolean | When a result links to a GitHub repo, add star count, primary language, last-push date and open-issue count (default `false`) |
-| `webhookUrl` | string | Optional. POST a small JSON completion summary (items pushed, hits scanned, dataset ID, watch new/skipped counts) here when the run finishes — see FAQ |
+| `webhookUrl` | string | Optional. POST a small JSON completion summary (items pushed, hits scanned, dataset ID, watch new/skipped counts, per-query completeness) here when the run finishes — see FAQ |
 
 ## Output (one item per story/comment)
 ```json
@@ -70,7 +70,7 @@ A `usernames` lookup returns one row per user, `type: "user"`:
 ```
 
 ## Watch mode (`watchLabel`)
-Name a saved search — `watchLabel: "my-launch-watch"` — and the Actor keeps a per-label record of every story/comment/job hit it has already delivered under that name, so a scheduled run returns **only what is new since last time** and you are charged for nothing else. The first run on a new label is a **free baseline run**: it records what already matches (up to 5000 hits) and returns zero results. Every run after that returns only new items. Change `queries`, `tags`, `author`, `sortBy`, the date range or the point/comment thresholds and the label starts a fresh baseline, instead of dumping everything the old narrower filter excluded as "new". `usernames` profile lookups are unaffected — they run and are charged normally every time, since a profile snapshot isn't a discrete new item.
+Name a saved search — `watchLabel: "my-launch-watch"` — and the Actor keeps a per-label record of every story/comment/job hit it has already delivered under that name, so a scheduled run returns **only what is new since last time** and you are charged for nothing else. The first run on a new label is a **free baseline run**: it records what already matches and returns zero results. HN's search API never serves more than 1000 hits for one query (see FAQ), so **a query with more than 1000 current matches cannot be fully baselined** — the un-recorded tail would come back as "new" and be charged on your next run. The baseline run detects this and says so explicitly in its status message, naming each query and its declared match count; narrow those queries (tighter keywords, `minPoints`, or a `postedAfter` window) until each fits under 1000, then re-seed under a fresh `watchLabel`. Every run after that returns only new items. Change `queries`, `tags`, `author`, `sortBy`, the date range or the point/comment thresholds and the label starts a fresh baseline, instead of dumping everything the old narrower filter excluded as "new". `usernames` profile lookups are unaffected — they run and are charged normally every time, since a profile snapshot isn't a discrete new item.
 
 ## GitHub enrichment (`enrichGithubLinks`)
 When a story or comment's URL or text links to a GitHub repo, set `enrichGithubLinks: true` to look it up on GitHub's public API and add `githubStars`, `githubLanguage`, `githubPushedAt` and `githubOpenIssues` — handy for triaging Show HN launches or "what got built" threads by real traction rather than just HN points. Off by default (adds one extra request per distinct repo found). Bounded to 200 lookups per run against GitHub's unauthenticated 60/hour rate limit; a repo linked by multiple items in the same run is only looked up once. If the limit is hit mid-run, later items still get `githubRepo` (the match itself is free) but not the star/language/push data.
@@ -87,6 +87,22 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 - Leaving both `queries` and `tags` empty is not a "browse everything" mode — it's rejected (with a warning, no charge) rather than matching HN's entire 46M+ item history by relevance. Always set at least one tag (e.g. `["story"]`, `["front_page"]`) or a search query.
 
 ## FAQ
+**I asked for a common word and got exactly 100 (or 1000) rows — is that everything?** No, and the run now tells you so instead of leaving you to guess. Two separate ceilings apply. Yours: `maxItemsPerQuery` (default 100). HN's: **Algolia's HN index never returns more than 1000 hits for a single query**, whatever you set — a search for `ai` declares nearly 2 million matches and will still only ever hand over 1000 of them. When either ceiling truncates a query, the run's status message names the query with both numbers ("20 scanned of 60108 declared"), and the per-query detail lands in a machine-readable `RUN_SUMMARY` record. To actually get more than 1000, split one broad query into several narrower ones — consecutive `postedAfter`/`postedBefore` windows is the reliable way, or raise `minPoints` to cut the long tail.
+
+**How do I check completeness from code, without reading the log?** Every run writes a `RUN_SUMMARY` key-value record — `GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY` — with a top-level `complete` boolean and one entry per query: `declaredMatches` (what HN says exists), `scanned`, `delivered`, `filteredOut`, `status`, `complete`, `incompleteReason` and `hitPaginationCeiling`. `status` and `complete` are deliberately separate: a query can be `"ok"` *and* truncated, which is the case worth catching.
+```json
+{ "complete": false, "pushed": 25, "queriesIncomplete": 2, "queriesNotReached": 1,
+  "queries": [
+    { "query": "rust", "declaredMatches": 60108, "scanned": 20, "delivered": 20, "filteredOut": 0,
+      "status": "ok", "complete": false, "incompleteReason": "max-items-per-query", "hitPaginationCeiling": false, "scanCap": 20 },
+    { "query": "kubernetes", "declaredMatches": null, "scanned": 0, "delivered": 0, "filteredOut": 0,
+      "status": "notReached", "complete": false, "incompleteReason": null, "hitPaginationCeiling": false, "scanCap": null }
+  ] }
+```
+`incompleteReason` is one of `algolia-pagination-ceiling`, `max-items-per-query`, `seed-cap`, `max-results`, `charge-limit`, `scan-short-of-declared` or `request-failed`. The same fields are posted to `webhookUrl` if you set one.
+
+**I passed 5 queries but rows only came back for the first two.** The run hit `maxResults` (or your pay-per-event charge limit) partway through and stopped. The remaining queries are never searched — they now appear in `RUN_SUMMARY` with `status: "notReached"` and are named in the status message, so "we never looked there" can't be mistaken for "nothing matched there". Raise `maxResults`, or run the queries as separate runs.
+
 **Why did my run return 0 items with status SUCCEEDED?** The status message distinguishes "no matches for this query/tags/date/points filter" from "the Algolia request failed" — check it before assuming the query is wrong.
 **What happens if Algolia's API has a transient blip mid-run?** Each page request is retried up to 3 times on a connection-level failure (measured on `remote-jobs-scraper`'s upstream boards at roughly 1 fresh request in 4 for HTTP/2 faults, 2026-09-21) before that query is given up on and named in the status message — a single blip no longer silently truncates a query to whatever page it reached.
 **Can I ask for two content types at once, e.g. stories and comments?** Yes — `tags: ["story","comment"]` returns both. The tags you list are OR-ed with each other, and `author` is AND-ed on top of that group, so `author: "pg"` + `tags: ["story","comment"]` returns pg's stories and pg's comments. (Underneath, HN's Algolia index treats a bare comma as AND, so `story,comment` would match nothing at all — the Actor wraps your tags in the OR form for you. See the guide linked below.)

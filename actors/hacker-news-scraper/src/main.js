@@ -50,7 +50,14 @@ let scanned = 0;
 // profile lookups are a snapshot, not a discrete new item, so they run/charge normally
 // regardless of watch mode (see the usage note below).
 const WATCH_STORE = 'fetchsmith-hn-watch';
-const SEED_CAP = 5000; // bound the cost of a baseline run against a very broad query
+// Algolia's HN index is `paginationLimitedTo` 1000: past hit 1000 the API returns 200 with an
+// EMPTY hits array and a `message` explaining the cap, and `nbPages` is already clamped to
+// 1000/hitsPerPage so the page loop just ends. `nbHits` is NOT that cap -- it is the true match
+// count (query "ai" declares 1,971,890 against a 1,000-hit window, measured cycle 643). Any cap
+// above this is a number no run can ever reach, which is how SEED_CAP=5000 turned into an
+// unfirable warning below (same bug class as the app-store WATCH_SCAN_CAP, h264).
+const ALGOLIA_MAX_HITS = 1000;
+const SEED_CAP = 5000; // bound the cost of a baseline run ACROSS queries (per query, ALGOLIA_MAX_HITS binds first)
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
 
 function watchKeyFor(label, criteria) {
@@ -273,11 +280,35 @@ const seenIds = new Set(); // dedup across queries — overlapping/duplicate que
 let duplicates = 0;
 let excluded = 0;
 let keepGoing = true;
+// One record per query, written to the RUN_SUMMARY key-value record and posted on the webhook.
+// The DATASET is the only surface a pipeline reads, and there a full 100 rows for a query
+// declaring 60,108 matches is indistinguishable from the complete match set -- the log and the
+// status message say so in prose, i.e. in English, which no program can read (h250/h271 class).
+const summaries = [];
+// `notReached`: the run stopped (maxResults or the PPE charge limit) before this query was ever
+// searched. Written down explicitly, because otherwise its ABSENCE from the summary reads as
+// "nothing matched there" rather than "we never looked" (cycle 642 lesson).
+const summaryFor = (query) => ({
+  query: query || null,
+  declaredMatches: null, // Algolia nbHits: the true match count, independent of the 1000-hit window
+  scanned: 0,
+  delivered: 0,
+  filteredOut: 0,
+  status: 'notReached',
+  complete: false,
+  incompleteReason: null,
+  hitPaginationCeiling: false,
+  scanCap: null,
+});
 for (const query of queries) {
-  if (!keepGoing) break;
+  const querySummary = summaryFor(query);
+  summaries.push(querySummary);
+  if (!keepGoing) continue; // keep walking so every unsearched query gets a `notReached` record
   let page = 0;
   let fetched = 0;
   let requestFailed = false;
+  const deliveredBefore = pushed;
+  const filteredBefore = excluded + duplicates;
   // Algolia's tag syntax: a COMMA between tags means AND, parentheses mean OR. `tags` is a
   // multi-select of content types, and the combinations a buyer actually picks are mutually
   // exclusive — comma-joining them matched NOTHING, forever, with a 200 and no warning
@@ -308,6 +339,8 @@ for (const query of queries) {
         : 'No query and no tags for this iteration — skipping (set tags, e.g. ["story"], or a search query; use "usernames" alone for user-profile-only runs).',
     );
     emptyQueries.push(query || '<empty>');
+    querySummary.status = 'skipped';
+    querySummary.incompleteReason = tags.length && !typeTags.length ? 'all-tags-dropped' : 'no-query-and-no-tags';
     continue;
   }
   // A seeding run needs the whole current match set (up to SEED_CAP), not just the
@@ -321,7 +354,8 @@ for (const query of queries) {
   // maxItemsPerQuery only means "cost cap" when there's no baseline to scan past; once
   // watchLabel is set, seeding or not, the scan cap is SEED_CAP and maxResults alone
   // governs what's actually delivered and charged.
-  const queryCap = watchMode ? SEED_CAP : maxItemsPerQuery;
+  const queryCap = Math.min(watchMode ? SEED_CAP : maxItemsPerQuery, ALGOLIA_MAX_HITS);
+  querySummary.scanCap = queryCap;
   while (keepGoing && fetched < queryCap) {
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
     if (query) url.searchParams.set('query', query);
@@ -356,8 +390,19 @@ for (const query of queries) {
       requestFailed = true;
       break;
     }
+    // Read nbHits from page 0 only: it is the same number on every page, and past the
+    // 1000-hit window Algolia answers with an empty-hits page whose nbHits is the exhaustive
+    // recount (exhaustiveNbHits flips true) -- overwriting the real figure with it would
+    // understate exactly the shortfall this record exists to report.
+    if (page === 0 && typeof body.nbHits === 'number') querySummary.declaredMatches = body.nbHits;
     const hits = body.hits || [];
-    if (!hits.length) break;
+    if (!hits.length) {
+      // 200 + zero hits at a page we asked for past hit 1000 is Algolia's pagination cap, not
+      // the end of the match set; it carries an explanatory `message` the plain end-of-results
+      // response does not have.
+      if (fetched >= ALGOLIA_MAX_HITS || body.message) querySummary.hitPaginationCeiling = true;
+      break;
+    }
     for (const hit of hits) {
       fetched += 1;
       scanned += 1;
@@ -376,16 +421,47 @@ for (const query of queries) {
       if (!keepGoing) break;
     }
     page += 1;
-    if (page >= (body.nbPages ?? 1)) break;
+    // nbPages is already clamped to the 1000-hit window, so running out of pages while the
+    // index declares more matches than we scanned IS the ceiling, not the end of the results.
+    if (page >= (body.nbPages ?? 1)) {
+      if (fetched >= ALGOLIA_MAX_HITS && (querySummary.declaredMatches ?? 0) > fetched) querySummary.hitPaginationCeiling = true;
+      break;
+    }
   }
-  if (requestFailed) erroredQueries.push(query || '<empty>');
-  else if (fetched === 0) emptyQueries.push(query || '<empty>');
+  querySummary.scanned = fetched;
+  querySummary.delivered = pushed - deliveredBefore;
+  querySummary.filteredOut = (excluded + duplicates) - filteredBefore;
+  if (requestFailed) {
+    erroredQueries.push(query || '<empty>');
+    querySummary.status = 'error';
+    querySummary.incompleteReason = 'request-failed';
+  } else if (fetched === 0) {
+    emptyQueries.push(query || '<empty>');
+    querySummary.status = 'empty';
+    querySummary.complete = true; // nothing matched, and that is the whole truth about this query
+  } else {
+    querySummary.status = querySummary.delivered === 0 ? 'filteredOut' : 'ok';
+    // `complete` is deliberately NOT folded into `status`: a query can be `ok` and truncated at
+    // the same time, which is the exact case this record exists to expose (cycle 642 lesson).
+    const declared = querySummary.declaredMatches;
+    if (querySummary.hitPaginationCeiling) querySummary.incompleteReason = 'algolia-pagination-ceiling';
+    else if (fetched >= queryCap && (declared == null || declared > fetched)) querySummary.incompleteReason = watchMode ? 'seed-cap' : 'max-items-per-query';
+    else if (!keepGoing) querySummary.incompleteReason = pushed >= maxResults ? 'max-results' : 'charge-limit';
+    else if (declared != null && declared > fetched) querySummary.incompleteReason = 'scan-short-of-declared';
+    querySummary.complete = querySummary.incompleteReason == null;
+  }
 }
+// Truncated queries in a baseline run are the expensive case: the un-scanned tail is NOT in the
+// baseline, so the next incremental run sees those items for the first time and DELIVERS AND
+// CHARGES pre-existing matches as "new" (h264, in the app-store Actor, was this same bug).
+const truncatedSummaries = summaries.filter((s) => s.status !== 'notReached' && s.incompleteReason != null);
+const notReachedSummaries = summaries.filter((s) => s.status === 'notReached');
 
 const notFoundUsers = [];
 const erroredUsers = [];
+const notReachedUsers = []; // the run stopped before we looked these up -- say so, don't just omit them
 for (const username of usernames) {
-  if (!keepGoing) break;
+  if (!keepGoing) { notReachedUsers.push(username); continue; }
   let data;
   try {
     const res = await gotScraping({
@@ -414,10 +490,16 @@ if (watchMode) {
     log.info(
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} item(s) recorded as already-seen, `
       + '0 results returned, 0 charged. The next run on this label and these filters returns only new items.'
-      + (watchSeen.size >= SEED_CAP
-        ? ` NOTE: the baseline hit the ${SEED_CAP}-item cap. Narrow the query (tighter keywords, tags, or `
-        + 'a date/point/comment threshold) so the whole current match set fits, or the first incremental run may '
-        + 'report older items past the cap as new.'
+      // The old test here was `watchSeen.size >= SEED_CAP` (5000) -- unreachable, because Algolia
+      // stops at 1000 hits per query, so the warning could never fire on the case it was written
+      // for. Key it to the measured per-query truncation instead.
+      + (truncatedSummaries.length
+        ? ` WARNING: the baseline is INCOMPLETE for ${truncatedSummaries.length} of ${summaries.length} query/queries `
+        + `(${truncatedSummaries.map((s) => `"${s.query ?? '<empty>'}" scanned ${s.scanned}`
+          + `${s.declaredMatches != null ? ` of ${s.declaredMatches} declared matches` : ''} [${s.incompleteReason}]`).join('; ')}). `
+        + 'Matches past that point are NOT in the baseline, so the first incremental run will return and CHARGE FOR '
+        + 'them as if they were new. Narrow each query (tighter keywords, tags, or a postedAfter/minPoints threshold) '
+        + `until its declared match count fits under ${ALGOLIA_MAX_HITS}, then re-seed with a fresh watchLabel.`
         : ''),
     );
   } else {
@@ -426,6 +508,46 @@ if (watchMode) {
 }
 
 log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}`);
+
+for (const s of truncatedSummaries) {
+  log.warning(
+    `Query "${s.query ?? '<empty>'}" is INCOMPLETE: scanned ${s.scanned}`
+    + `${s.declaredMatches != null ? ` of ${s.declaredMatches} match(es) Hacker News declares` : ''}`
+    + `, delivered ${s.delivered} (${s.incompleteReason}).`
+    + (s.hitPaginationCeiling
+      ? ` Algolia's HN index never serves more than ${ALGOLIA_MAX_HITS} hits for one query, whatever maxItemsPerQuery says`
+        + ' -- split the query by date window (postedAfter/postedBefore) or raise minPoints to get the rest.'
+      : ''),
+  );
+}
+if (notReachedSummaries.length || notReachedUsers.length) {
+  log.warning(
+    `The run stopped before ${notReachedSummaries.length} query/queries${notReachedUsers.length ? ` and ${notReachedUsers.length} username(s)` : ''} `
+    + `were searched at all (${pushed >= maxResults ? `maxResults ${maxResults} reached` : 'charge limit reached'}): `
+    + `${[...notReachedSummaries.map((s) => `"${s.query ?? '<empty>'}"`), ...notReachedUsers].join(', ')}. `
+    + 'Raise maxResults (or the charge limit) to cover them, or run them separately.',
+  );
+}
+
+// A key-value record, not just a webhook field: it is readable with no webhook configured, via
+// GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY.
+await Actor.setValue('RUN_SUMMARY', {
+  actorRunId: Actor.getEnv().actorRunId ?? null,
+  finishedAt: new Date().toISOString(),
+  pushed,
+  scanned,
+  maxResults,
+  paginationCeiling: ALGOLIA_MAX_HITS,
+  complete: truncatedSummaries.length === 0 && notReachedSummaries.length === 0 && notReachedUsers.length === 0,
+  queries: summaries,
+  queriesIncomplete: truncatedSummaries.length,
+  queriesNotReached: notReachedSummaries.length,
+  usersNotReached: notReachedUsers,
+  usersNotFound: notFoundUsers,
+  usersErrored: erroredUsers,
+  watchLabel: watchMode ? watchLabel : null,
+  watchSeeding: watchMode ? seeding : null,
+});
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
@@ -444,6 +566,10 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    complete: truncatedSummaries.length === 0 && notReachedSummaries.length === 0 && notReachedUsers.length === 0,
+    queries: summaries,
+    queriesIncomplete: truncatedSummaries.length,
+    queriesNotReached: notReachedSummaries.length,
   };
   try {
     const resp = await gotScraping({
@@ -475,8 +601,28 @@ if (pushed === 0 && watchMode && !seeding) {
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   await Actor.setStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`);
-} else if (emptyQueries.length || notFoundUsers.length) {
+} else if (emptyQueries.length || notFoundUsers.length || truncatedSummaries.length || notReachedSummaries.length || notReachedUsers.length) {
+  // Until cycle 643 this branch fired ONLY on emptyQueries/notFoundUsers, so a run that
+  // delivered a full 100 rows against 60,108 declared matches -- or that stopped at maxResults
+  // and never searched half the queries -- ended with no status message at all, i.e. looking
+  // exactly like a complete one.
   const notes = [];
+  if (truncatedSummaries.length) {
+    const worst = truncatedSummaries
+      .filter((s) => s.declaredMatches != null)
+      .sort((a, b) => (b.declaredMatches - b.scanned) - (a.declaredMatches - a.scanned))[0];
+    notes.push(
+      `${truncatedSummaries.length} of ${summaries.length} query/queries returned only PART of their matches`
+      + (worst ? ` (worst: "${worst.query ?? '<empty>'}" -- ${worst.scanned} scanned of ${worst.declaredMatches} declared, ${worst.incompleteReason})` : '')
+      + '; see the RUN_SUMMARY key-value record for the per-query numbers',
+    );
+  }
+  if (notReachedSummaries.length || notReachedUsers.length) {
+    notes.push(
+      `the run stopped at ${pushed >= maxResults ? `maxResults=${maxResults}` : 'the charge limit'} before `
+      + `${notReachedSummaries.length} query/queries${notReachedUsers.length ? ` and ${notReachedUsers.length} username(s)` : ''} were searched at all`,
+    );
+  }
   if (emptyQueries.length) notes.push(`no matches for: ${emptyQueries.join(', ')}`);
   if (notFoundUsers.length) notes.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
