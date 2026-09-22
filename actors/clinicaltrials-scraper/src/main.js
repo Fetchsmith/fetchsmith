@@ -442,6 +442,14 @@ if (watchMode) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// `apiGet` returns `null` for EVERY failure shape (non-200, non-JSON body, 4 exhausted retries,
+// network throw). Before cycle 646 every caller collapsed that null into "the walk is finished",
+// so a 5xx on page 3 of 9 ended the run through the same `break` as a genuine last page: the run
+// logged `Done. Pushed N rows` and SUCCEEDED with a third of the match set. `lastApiError` carries
+// WHY the null happened so callers can tell "we reached the end" from "we stopped being answered".
+// Set on every failure, cleared on every success -- always read it immediately after the call.
+let lastApiError = null;
+
 async function apiGet(params, { quiet = false } = {}) {
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
@@ -464,12 +472,14 @@ async function apiGet(params, { quiet = false } = {}) {
             // A network-level failure (timeout, ECONNRESET, DNS) throws instead of resolving with
             // a status code — without this catch it crashes the whole run instead of retrying like
             // a 429/5xx does, even though the same backoff is exactly as valid here.
+            lastApiError = `request failed: ${err.message}`;
             const waitS = attempt * 10;
             if (!quiet) log.warning(`ClinicalTrials.gov API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
             await sleep(waitS * 1000);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            lastApiError = `HTTP ${resp.statusCode}`;
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`ClinicalTrials.gov API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
             await sleep(waitS * 1000);
@@ -478,24 +488,32 @@ async function apiGet(params, { quiet = false } = {}) {
         let parsed = null;
         try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
         if (resp.statusCode !== 200) {
-            if (!quiet) {
-                const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
-                log.warning(`ClinicalTrials.gov API ${resp.statusCode}: ${detail}`);
-            }
+            const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
+            lastApiError = `HTTP ${resp.statusCode}: ${detail.slice(0, 200)}`;
+            if (!quiet) log.warning(`ClinicalTrials.gov API ${resp.statusCode}: ${detail}`);
             return null;
         }
         if (!parsed) {
+            lastApiError = `non-JSON body: ${String(resp.body).slice(0, 120)}`;
             if (!quiet) log.warning(`ClinicalTrials.gov returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
             return null;
         }
+        lastApiError = null;
         return parsed;
     }
+    lastApiError = `${lastApiError ?? 'request failed'} (4 attempts exhausted)`;
     if (!quiet) log.warning('ClinicalTrials.gov API kept erroring after 4 attempts; stopping early.');
     return null;
 }
 
-function baseParams() {
+// `countTotal=true` makes the API return `totalCount` -- the number of studies the REGISTRY says
+// match these filters, which is the only thing a buyer can compare our row count against. Measured
+// live cycle 646: `query.cond=cancer` declares 123,498. It is requested on the FIRST page only
+// (verified: the key is simply absent without the flag), because a recount taken mid-walk would be
+// taken against a moving index and could understate the very shortfall we are reporting.
+function baseParams({ countTotal = false } = {}) {
     const p = { pageSize: MAX_PAGE_SIZE };
+    if (countTotal) p.countTotal = 'true';
     if (conditions) p['query.cond'] = conditions;
     if (interventions) p['query.intr'] = interventions;
     if (sponsors) p['query.spons'] = sponsors;
@@ -545,14 +563,45 @@ function baseParams() {
 // carries a schema `default` of "cancer" that Apify applies server-side to any input missing the
 // field (verified cycle 96/121), so an API caller who sends only `nctIds` would otherwise get an
 // invisible `AND query.cond=cancer` and silently lose every non-cancer trial they asked for.
+//
+// Measured live cycle 646, and it changes what the two outcomes MEAN. A well-formed id the
+// registry does not hold (`NCT99999999`) comes back **200 with an empty `studies` array**, not a
+// 400 — only a MALFORMED id (`NOTANID`) 400s. So before this cycle: (a) a well-formed unknown id
+// produced no row and no mention anywhere, because the success branch returned `notFound: []` and
+// nobody diffed the request against the response; and (b) the only ids that ever reached the old
+// `notFound` list were malformed ones and ones whose request FAILED — yet the run reported all of
+// them as "not found on ClinicalTrials.gov", a claim about the registry that a timeout cannot
+// support. The three outcomes are now kept apart: `notFound` (asked, answered, absent),
+// `malformed` (the registry rejected the id itself) and `failed` (we never got an answer).
 async function resolveIdsChunk(ids) {
     const params = { 'filter.ids': ids, pageSize: Math.min(MAX_PAGE_SIZE, Math.max(ids.length, 1)) };
     const page = await apiGet(params, { quiet: ids.length > 1 });
-    if (page) return { studies: listOf(page.studies), notFound: [] };
-    if (ids.length === 1) return { studies: [], notFound: ids };
+    if (page) {
+        const studies = listOf(page.studies);
+        const got = new Set(studies.map((s) => s.protocolSection?.identificationModule?.nctId).filter(Boolean));
+        // Case-insensitive: the API accepts lowercase ids and echoes them back upper-cased.
+        const gotUpper = new Set([...got].map((s) => s.toUpperCase()));
+        return {
+            studies,
+            notFound: ids.filter((id) => !gotUpper.has(String(id).toUpperCase())),
+            malformed: [],
+            failed: [],
+        };
+    }
+    if (ids.length === 1) {
+        const isBadId = /^HTTP 400\b/.test(String(lastApiError));
+        return isBadId
+            ? { studies: [], notFound: [], malformed: ids, failed: [] }
+            : { studies: [], notFound: [], malformed: [], failed: ids };
+    }
     const mid = Math.ceil(ids.length / 2);
     const [a, b] = await Promise.all([resolveIdsChunk(ids.slice(0, mid)), resolveIdsChunk(ids.slice(mid))]);
-    return { studies: [...a.studies, ...b.studies], notFound: [...a.notFound, ...b.notFound] };
+    return {
+        studies: [...a.studies, ...b.studies],
+        notFound: [...a.notFound, ...b.notFound],
+        malformed: [...a.malformed, ...b.malformed],
+        failed: [...a.failed, ...b.failed],
+    };
 }
 
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
@@ -668,16 +717,43 @@ function normalizeStudy(study) {
     };
 }
 
+// ---------------------------------------------------------------------------
+// Machine-readable completeness (cycle 646). 100 rows against a registry that declares 123,498
+// matches reads, in the dataset, exactly like a complete result set -- and the dataset is the only
+// surface a pipeline actually parses. Prose in the log does not reach it. Same design as
+// fda-recall-scraper / grants-gov-scraper / app-store-reviews-scraper: a RUN_SUMMARY key-value
+// record (readable with no webhook configured) plus the same object on the webhook payload.
+let declaredMatches = null;     // registry's own totalCount; null = "not asked / never answered", NEVER 0
+const notFoundIds = [];         // asked, answered, absent from the registry
+const malformedIds = [];        // the registry rejected the id itself (HTTP 400)
+const failedIds = [];           // never answered -- says NOTHING about whether the study exists
+const notReachedIds = [];       // never requested, because the run stopped first
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+
+// First cause wins: a walk that stopped because the API stopped answering, and THEN also hit
+// maxResults, must keep reporting the upstream failure -- that is the cause the buyer can act on.
+function markIncomplete(reason, detail = null) {
+    if (!complete) return;
+    complete = false;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+}
+
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     if (isPPE) {
         const r = await Actor.charge({ eventName: 'result', count: 1 });
-        if (r.chargedCount === 0) return false;
+        if (r.chargedCount === 0) { markIncomplete('charge-limit'); return false; }
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) markIncomplete('charge-limit');
+        else if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults}`);
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     await Actor.pushData(item); pushed += 1;
+    if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults}`);
     return pushed < maxResults;
 }
 
@@ -712,10 +788,23 @@ let skippedSeen = 0;
 async function seedBaseline() {
     let pageToken = null;
     for (;;) {
-        const params = baseParams();
+        const params = baseParams({ countTotal: pages === 0 });
         if (pageToken) params.pageToken = pageToken;
         const page = await apiGet(params);
-        if (!page) break;
+        if (!page) {
+            // The over-charge shape, 6th appearance across the fleet (h255/h264/h266/h272/h273).
+            // A failed page here silently SHORTENS the baseline, and every study past the failure
+            // point is then "new" on the next incremental run -- so the buyer is charged for rows
+            // they already had. Loud, named, and recorded in RUN_SUMMARY.
+            markIncomplete('search-request-failed', lastApiError);
+            log.warning(
+                `Baseline seed for watch label "${watchLabel}" stopped early: ${lastApiError}. The baseline is `
+                + `INCOMPLETE (${watchSeen.size} recorded), so the next incremental run would deliver -- and `
+                + 'CHARGE FOR -- studies past that point as if they were new. Re-run the seed before scheduling.',
+            );
+            break;
+        }
+        if (pages === 0 && Number.isFinite(page.totalCount)) declaredMatches = page.totalCount;
         const studies = listOf(page.studies);
         if (!studies.length) break;
         pages += 1;
@@ -724,6 +813,10 @@ async function seedBaseline() {
             const nctId = study.protocolSection?.identificationModule?.nctId ?? null;
             if (nctId) watchSeen.set(nctId, snapshotOf(normalizeStudy(study)));
             if (watchSeen.size >= SEED_CAP) {
+                // Measured live cycle 646 (unlike hacker-news-scraper's dead cap, h272): the v2 API
+                // serves nextPageToken indefinitely at pageSize=1000 and `query.cond=cancer` alone
+                // declares 123,498 matches, so this cap is reachable and this warning can fire.
+                markIncomplete('seed-cap', `SEED_CAP=${SEED_CAP}`);
                 log.warning(
                     `Watch label "${watchLabel}" seed hit the ${SEED_CAP}-study cap before scanning the whole `
                     + 'match set. Narrow the query (fewer conditions/locations, a shorter date window) so the '
@@ -758,30 +851,64 @@ if (nctIds.length) {
     // "search by direct URL"). Exclusive of the search filters below — see the note on
     // resolveIdsChunk for why they are not ANDed in here.
     const CHUNK = 500; // keeps each top-level request well under MAX_PAGE_SIZE / URL-length limits
-    const notFound = [];
-    for (let i = 0; i < nctIds.length && keepGoing; i += CHUNK) {
-        const { studies, notFound: nf } = await resolveIdsChunk(nctIds.slice(i, i + CHUNK));
-        notFound.push(...nf);
+    let i = 0;
+    for (; i < nctIds.length && keepGoing; i += CHUNK) {
+        const r = await resolveIdsChunk(nctIds.slice(i, i + CHUNK));
+        notFoundIds.push(...r.notFound);
+        malformedIds.push(...r.malformed);
+        failedIds.push(...r.failed);
         pages += 1;
-        for (const study of studies) {
+        for (const study of r.studies) {
             await emitStudy(normalizeStudy(study));
             if (!keepGoing) break;
         }
     }
-    if (notFound.length) {
-        log.warning(`${notFound.length} of ${nctIds.length} nctIds were not found on ClinicalTrials.gov: ${notFound.join(', ')}`);
+    // Ids past an early stop were never asked about at all. Their ABSENCE from every list would
+    // read as "we checked and there was nothing" -- so they are written down explicitly.
+    notReachedIds.push(...nctIds.slice(Math.min(i, nctIds.length)));
+    // `declaredMatches` in direct-lookup mode is the number of ids the buyer asked for; the
+    // registry has no separate total to declare here.
+    declaredMatches = nctIds.length;
+    if (notFoundIds.length) {
+        log.warning(`${notFoundIds.length} of ${nctIds.length} nctIds are not in the ClinicalTrials.gov registry: ${notFoundIds.join(', ')}`);
     }
+    if (malformedIds.length) {
+        log.warning(`${malformedIds.length} nctId(s) were rejected by ClinicalTrials.gov as malformed: ${malformedIds.join(', ')}`);
+    }
+    if (failedIds.length) {
+        // Deliberately NOT folded into notFound: a failed request cannot support the claim that a
+        // study is absent from the registry.
+        markIncomplete('lookup-request-failed', lastApiError);
+        log.warning(
+            `${failedIds.length} nctId(s) could not be checked -- ClinicalTrials.gov never answered for them `
+            + `(${lastApiError}): ${failedIds.join(', ')}. They are NOT known to be missing; re-run for these ids.`,
+        );
+    }
+    if (notReachedIds.length) markIncomplete('max-results', `${notReachedIds.length} id(s) never requested`);
 } else if (watchMode && seeding) {
     await seedBaseline();
 } else {
     let pageToken = null;
     while (keepGoing) {
-        const params = baseParams();
+        const params = baseParams({ countTotal: pages === 0 });
         if (pageToken) params.pageToken = pageToken;
         const page = await apiGet(params);
-        if (!page) break;
+        if (!page) {
+            markIncomplete('search-request-failed', lastApiError);
+            log.warning(
+                `Paging stopped early after ${pages} page(s): ${lastApiError}. The result set is INCOMPLETE -- `
+                + 'this run returned only what was fetched before the failure. See RUN_SUMMARY.',
+            );
+            break;
+        }
+        if (pages === 0 && Number.isFinite(page.totalCount)) declaredMatches = page.totalCount;
         const studies = listOf(page.studies);
-        if (!studies.length) break;
+        if (!studies.length) {
+            // A 200 with zero studies AND a nextPageToken still in hand is not an ending we can
+            // explain, so it is written down rather than read as "that was everything".
+            if (pageToken) markIncomplete('empty-page-with-token', `after ${pages} page(s)`);
+            break;
+        }
         pages += 1;
 
         for (const study of studies) {
@@ -862,6 +989,51 @@ if (pushed === 0 && watchMode && !seeding) {
 
 log.info(`Done. Pushed ${pushed} rows over ${pages} page(s) (scanned ${scanned} studies, mode=${rowsPerStudy}).`);
 
+// ---------------------------------------------------------------------------
+// RUN_SUMMARY: the completeness of this run, in a form a pipeline can read. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which works with no webhook configured. `complete` is deliberately kept OUT of any status
+// string: a run is SUCCEEDED and truncated at the same time, and that pair is the exact case this
+// record exists for.
+const runMode = nctIds.length ? 'direct-lookup' : (watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : 'search');
+const runSummary = {
+    mode: runMode,
+    // What the registry says matches these filters (search modes) or how many ids were asked for
+    // (direct-lookup). `null` means we never got a number -- never assume 0.
+    declaredMatches,
+    scanned,
+    delivered: pushed,
+    pages,
+    rowsPerStudy,
+    complete,
+    incompleteReason,
+    incompleteDetail,
+    maxResults,
+    watchLabel: watchMode ? watchLabel : null,
+    baselineSize: watchMode ? watchSeen.size : null,
+    skippedAlreadyDelivered: watchMode && !seeding ? skippedSeen : null,
+    changedRedelivered: watchMode && !seeding ? changedCount : null,
+    requestedIds: nctIds.length || null,
+    notFoundIds: nctIds.length ? notFoundIds : null,
+    malformedIds: nctIds.length ? malformedIds : null,
+    failedIds: nctIds.length ? failedIds : null,
+    notReachedIds: nctIds.length ? notReachedIds : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A truncated run still SUCCEEDS (the rows we did get are real and already charged), so the status
+// message is the only place the Apify console itself shows the shortfall. There was no
+// setStatusMessage call anywhere in this Actor before cycle 646.
+if (!complete) {
+    const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')} declared`;
+    await Actor.setStatusMessage(
+        `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
+        + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+    );
+} else if (declaredMatches !== null && !watchMode && !nctIds.length) {
+    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} studies the registry declared for these filters.`);
+}
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error.
@@ -878,6 +1050,9 @@ if (webhookUrl) {
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
         watchChangedCount: watchMode && !seeding ? changedCount : null,
+        // Same object as the RUN_SUMMARY key-value record, for subscribers who would rather not
+        // make a second call to find out whether the result set was complete.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({

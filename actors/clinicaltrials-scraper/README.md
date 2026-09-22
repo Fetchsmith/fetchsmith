@@ -83,7 +83,7 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 | `maxResults` | Up to 50,000. Token-based paging, no offset wall. |
 | `watchLabel` | Name a saved search to get only studies new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. Ignored when `nctIds` is set. |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen study if its `overallStatus`, `lastUpdatePostDate`, `enrollmentCount`, `primaryCompletionDate` or `completionDate` changed (default `false`) — see FAQ. |
-| `webhookUrl` | Optional. POST a small JSON completion summary (rows pushed, studies scanned, pages walked, dataset ID, watch new/changed counts) here when the run finishes — see FAQ. |
+| `webhookUrl` | Optional. POST a small JSON completion summary (rows pushed, studies scanned, pages walked, dataset ID, watch new/changed counts, plus the full `summary` completeness object) here when the run finishes — see FAQ. |
 
 ## Sample output (`rowsPerStudy: "study"`)
 
@@ -156,7 +156,43 @@ No — "new" is always decided per **study** (`nctId`), never per site row. A tr
 No extra fee — a changed study is billed at the same per-row price as a new one (exploded per-site same as any other row if `rowsPerStudy: "site"`). Plain `watchLabel` only ever tells you about studies it has never delivered before; it stays silent forever about one it already sent you, even if that trial later stops recruiting or its enrollment target changes. Set `watchChanges: true` and each run also compares every already-delivered study's `overallStatus`, `lastUpdatePostDate`, `enrollmentCount`, `primaryCompletionDate` and `completionDate` against what they looked like last time; if any moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 studies' recorded status/enrollment count directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
-Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, a full `summary` object identical to the `RUN_SUMMARY` record below, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+
+**How do I tell a complete result set from a truncated one?**
+
+Read the `RUN_SUMMARY` key-value record — no webhook needed:
+
+```
+GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+```
+
+```json
+{
+  "mode": "search",
+  "declaredMatches": 123498,
+  "scanned": 5,
+  "delivered": 5,
+  "pages": 1,
+  "complete": false,
+  "incompleteReason": "max-results",
+  "incompleteDetail": "maxResults=5",
+  "maxResults": 5
+}
+```
+
+`declaredMatches` is **ClinicalTrials.gov's own `totalCount`** for your filters — the number the registry says matches — so `delivered` vs `declaredMatches` is a comparison you can make in code rather than by eye. It is `null` when no total was ever obtained, and is **never `0`** in that case: a request that failed cannot support the claim "the registry has no such trial". `complete` is deliberately separate from the run's status, because a run can SUCCEED and be truncated at the same time — that pair is exactly what this record exists for. When `complete` is `false` the run's status message says so too.
+
+| `incompleteReason` | What happened |
+| --- | --- |
+| `max-results` | Your `maxResults` stopped the run before the match set ran out. |
+| `charge-limit` | The run hit the charging limit set on it. |
+| `seed-cap` | A `watchLabel` baseline walk hit the 20,000-study seed cap. |
+| `search-request-failed` | ClinicalTrials.gov stopped answering mid-walk (after 4 retries). **The rows you got are real, but they are not all of them.** |
+| `lookup-request-failed` | One or more `nctIds` could never be checked. |
+| `empty-page-with-token` | A page came back empty while pagination said there was more. |
+
+**In `nctIds` mode, what's the difference between `notFoundIds`, `malformedIds` and `failedIds`?**
+They are three different facts and folding them together produces a false one. `notFoundIds` means we asked, the registry answered, and it does not hold that study — a fact you can act on. `malformedIds` means ClinicalTrials.gov rejected the id's format outright. `failedIds` means we never got an answer for it (timeout or repeated 5xx): those studies are **not** known to be missing, and re-running for just those ids is usually all that's needed. `notReachedIds` lists ids the run never got to because `maxResults` or a charge limit stopped it first — their absence from the other three lists would otherwise read as "we checked and there was nothing there".
 
 ## Related guides
 
