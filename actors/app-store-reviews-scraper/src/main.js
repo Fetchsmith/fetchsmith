@@ -212,6 +212,7 @@ async function saveWatchRecord(status) {
 }
 
 let pushed = 0;
+let chargeLimitHit = false; // the buyer's own pay-per-event charge limit was exhausted mid-run
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 // ratingSort buffers one (app,country) pair's whole passing-filter scan here instead of pushing
 // immediately, so it can be re-ordered by rating before delivery. Reset per pair (see the main
@@ -223,6 +224,7 @@ async function chargeAndPush(item, watchId = null) {
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
     if (watchMode && watchId != null) watchSeen.add(watchId);
+    if (r.eventChargeLimitReached) chargeLimitHit = true;
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
@@ -675,6 +677,14 @@ const saturatedPairs = [];
 // actually attempted) is what triggers the upstream-outage probe below.
 let feedServed = 0;
 let pairsAttempted = 0;
+// Every (app,country) pair this run is supposed to visit, and the ones it actually reached. An
+// early stop (maxResults / the buyer's charge limit / SEED_CAP) breaks out of both loops and leaves
+// the rest of these pairs in NO per-pair bucket, so only this difference can report them.
+const plannedPairs = apps
+  .map(parseId)
+  .filter(Boolean)
+  .flatMap((id) => countries.map((c) => `${id}/${c}`));
+const attemptedPairs = new Set();
 let keepGoing = true;
 for (const app of apps) {
   if (!keepGoing) break;
@@ -694,6 +704,7 @@ for (const app of apps) {
     }
     const pushedBefore = pushed;
     pairsAttempted += 1;
+    attemptedPairs.add(`${appId}/${country}`);
     const { got, filteredOut, capReached, newForPair, storefrontError } = await scrapeAppCountry(appId, country, {}, pairSeeding);
     if (ratingSort) await flushPairBuffer();
     if (storefrontError) {
@@ -786,22 +797,50 @@ if (pairsAttempted > 0 && feedServed === 0 && await reviewFeedIsDown()) {
 }
 if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
 log.info(`Done. Pushed ${pushed} items.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
+// An early stop (maxResults, the buyer's pay-per-event charge limit, or the baseline SEED_CAP)
+// `break`s out of the pair loops. The pairs left behind are in none of the per-pair buckets
+// (emptyPairs/storefrontErrorPairs/filteredOutPairs/depthCappedPairs/saturatedPairs), so without
+// this note the run reads as a complete one that simply found less. Same defect and same fix as
+// google-play-reviews-scraper (cycle 630). Appended to whatever status message applies.
+const pairsNotReached = plannedPairs.filter((p) => !attemptedPairs.has(p));
+let truncationNote = '';
+if (!keepGoing) {
+  const cause = chargeLimitHit
+    ? 'your pay-per-event charge limit was reached'
+    : pushed >= maxResults
+      ? `the maxResults cap (${maxResults}) was reached`
+      : watchMode && seeding
+        ? `the baseline cap (${SEED_CAP} reviews) was reached`
+        : 'the run stopped early';
+  // Only claim the pair list was abandoned when it actually was. Hitting the cap on the very last
+  // row of the last pair is the common, harmless case and must not be reported as missing pairs.
+  truncationNote = ` MAY BE INCOMPLETE: ${cause}.`
+    + (pairsNotReached.length
+      ? ` The run stopped before finishing the app/storefront list — ${pairsNotReached.length} pair(s) were never fetched and returned nothing: ${pairsNotReached.join(', ')}.`
+      : ' Every requested app/storefront pair was fetched, but the last one may have been cut short.')
+    + (chargeLimitHit
+      ? ' Raise the Actor\'s charge limit and re-run to get the rest.'
+      : ` Raise "maxResults" (currently ${maxResults}) and re-run to get the rest.`);
+  log.warning(truncationNote.trim());
+}
+
+let statusMsg;
 if (watchMode && storefrontErrorPairs.length) {
   // Said first in watch mode: a scheduled run whose storefront is broken must not be summarised as
   // the reassuring "nothing new since the last run" — those pairs delivered nothing because Apple
   // refused them, and they were deliberately left out of the baseline.
-  await Actor.setStatusMessage(
+  statusMsg = (
     `Apple refused ${storefrontErrorPairs.length} app/storefront pair(s) in this run (${storefrontErrorPairs.join(', ')}) — they were NOT baselined and nothing was charged for them. `
-    + `${storefrontErrorMessages.join(' ')} Watch label "${watchLabel}": ${pushed} item(s) returned from the pairs that did answer.`,
+    + `${storefrontErrorMessages.join(' ')} Watch label "${watchLabel}": ${pushed} item(s) returned from the pairs that did answer.`
   );
 } else if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededPairs.size} app/country pair(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
+  statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededPairs.size} app/country pair(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
 } else if (watchMode && saturatedPairs.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new item(s) for watch label "${watchLabel}". ${saturatedPairs.join(', ')}: every matching review in the scanned window was new — older new reviews may have been missed; run the watch more often.`);
+  statusMsg = (`Pushed ${pushed} new item(s) for watch label "${watchLabel}". ${saturatedPairs.join(', ')}: every matching review in the scanned window was new — older new reviews may have been missed; run the watch more often.`);
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).`);
+  statusMsg = (`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).`);
 } else if (pushed === 0) {
   const why = storefrontErrorPairs.length && !emptyPairs.length
     ? `Apple refused these app/storefront pairs: ${storefrontErrorPairs.join(', ')} — ${storefrontErrorMessages.join(' ')}`
@@ -810,15 +849,20 @@ if (watchMode && storefrontErrorPairs.length) {
     : filteredOutPairs.length && !emptyPairs.length
     ? 'reviews were found but every one was removed by your review filters (rating/keyword/length/votes/date)'
     : `Apple's review feed returned nothing for: ${emptyPairs.join(', ')} (try another storefront in "countries")`;
-  await Actor.setStatusMessage(`No reviews returned — ${why}. See the log for details.`);
+  statusMsg = (`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedPairs.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} reviews. maxReviewsPerApp (${perApp}) was hit while filtering: ${depthCappedPairs.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
+  statusMsg = (`Pushed ${pushed} reviews. maxReviewsPerApp (${perApp}) was hit while filtering: ${depthCappedPairs.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyPairs.length || storefrontErrorPairs.length) {
-  await Actor.setStatusMessage(
+  statusMsg = (
     `Pushed ${pushed} reviews.${emptyPairs.length ? ` Empty Apple feed for: ${emptyPairs.join(', ')}.` : ''}`
-    + `${storefrontErrorPairs.length ? ` Apple refused: ${storefrontErrorPairs.join(', ')} (check the storefront code and the app id).` : ''}`,
+    + `${storefrontErrorPairs.length ? ` Apple refused: ${storefrontErrorPairs.join(', ')} (check the storefront code and the app id).` : ''}`
   );
+} else if (truncationNote) {
+  // A clean run that nothing else had to report, EXCEPT that it stopped early — previously this
+  // was the case that set no status message at all and read as a complete run.
+  statusMsg = `Pushed ${pushed} reviews.`;
 }
+if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote).slice(0, 1000));
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
