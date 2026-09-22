@@ -350,6 +350,14 @@ const inventoryFieldsOf = (v) => ({
   barcode: v.barcode || null,
   inventoryQuantity: v.inventory_quantity ?? null,
   inventoryManagement: v.inventory_management ?? null,
+  // Named predicate for "is this variant's stock actually tracked", so the 999999 sentinel stays
+  // safe to spot after the row is flattened. `inventoryManagement: null` already carries that
+  // meaning inside the nested row, but a CSV export of `variants[]` loses an implicit null far
+  // more easily than a named boolean — and a dropped column there reintroduces the bad aggregate
+  // (summing sentinels) that `totalInventoryOf` exists to prevent. Three-state on purpose: `null`
+  // means the variant carries no inventory data at all (a `detailLevel:"basic"` row, where the
+  // bulk feed strips these fields), which must not read as a confident "not tracked".
+  inventoryTracked: hasInventoryData(v) ? !!v.inventory_management : null,
   inventoryPolicy: v.inventory_policy ?? null,
   quantityRule: isMeaningfulQuantityRule(v.quantity_rule) ? { min: v.quantity_rule.min ?? null, max: v.quantity_rule.max ?? null, increment: v.quantity_rule.increment ?? null } : null,
 });
@@ -360,6 +368,9 @@ const hasInventoryData = (v) => !!(v.barcode || v.inventory_quantity != null || 
 // quantity rather than a real one — allbirds' "Free Returns Coverage" comes back as 999999 per
 // variant, which summed to 1,981,856 before this filter — so they are excluded from the total.
 // Per-variant `inventoryQuantity` is still passed through verbatim; only the roll-up is filtered.
+// The filter stays on `inventoryManagement` rather than the derived `inventoryTracked` flag: both
+// read the same source field, and keeping the roll-up on the raw value means a future change to
+// the flag's three-state shape can never silently change what the total counts.
 function totalInventoryOf(variants) {
   const qs = variants.filter((v) => v.inventoryManagement).map((v) => v.inventoryQuantity).filter((n) => typeof n === 'number');
   return qs.length ? qs.reduce((a, b) => a + b, 0) : null;
