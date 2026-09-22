@@ -335,6 +335,16 @@ async function pushResult(item) {
 }
 
 const PAGE_SIZE = 250;
+// TED is paged by PAGE NUMBER over a live index and the search request carries no
+// `sort`, so nothing guarantees a notice appears on exactly one page: a publication
+// landing mid-walk shifts every later row, and the same publication-number can come
+// back twice. Every repeat used to be its own Actor.charge() — the buyer paid twice
+// for one notice (the shape found live on sam-gov at cycle 649, ~10% repeats there).
+// Measured on TED 2026-09-22: 2000 rows over 8 pages of a 4,486-match query, 0
+// repeats — so this is a guard against a rate-dependent upstream behaviour, not a
+// fix for one observed today. watchSeen only covers watch mode; this covers all modes.
+const seenRowIds = new Set();
+let duplicateRowsDropped = 0;
 let page = 1;
 let total = Infinity;
 let keepGoing = true;
@@ -467,6 +477,20 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
   let beforePush = pushed;
   for (const notice of notices) {
     const id = notice['publication-number'];
+    // Same notice served twice by TED's own paging within THIS run: dropped before
+    // normalize() and before any charge. Must come before the watch check so it is
+    // counted as an upstream repeat rather than as an already-delivered notice.
+    if (id && seenRowIds.has(String(id))) {
+      duplicateRowsDropped += 1;
+      continue;
+    }
+    // Marked as soon as the row is CONSIDERED, not after a successful push: this set
+    // is run-scoped and never persisted, so its only job is "TED already handed me
+    // this row". Marking it after the charge would let a repeat of a value-filtered
+    // notice inflate filteredOutValue, and a repeat arriving after the charge limit
+    // is reached would be re-processed for no reason. watchSeen keeps its own
+    // charge-gated rule below because that one IS persisted across runs.
+    if (id) seenRowIds.add(String(id));
     // Already delivered under this watch label: dropped before normalize() and
     // before any charge, so a notice is never paid for twice.
     if (watchMode && id && watchSeen.has(String(id))) {
@@ -520,6 +544,13 @@ if (!pushed && httpError) {
 }
 
 log.info(`Done. Pushed ${pushed} notices.`);
+if (duplicateRowsDropped > 0) {
+  log.info(
+    `${duplicateRowsDropped} notice(s) were served more than once by TED's own paging and were dropped `
+    + 'before being pushed or charged — you paid for each notice exactly once. This happens when new '
+    + 'notices are published while the walk is in progress, shifting rows onto a later page.',
+  );
+}
 if (filteredOutValue > 0) {
   log.info(`${filteredOutValue} matching notice(s) were dropped by minValue/maxValue (no value data, or value outside the range).`);
 }
@@ -558,6 +589,7 @@ if (webhookUrl) {
     finishedAt: new Date().toISOString(),
     pushed,
     pagesScanned: page - 1,
+    duplicateRowsDropped,
     totalNoticeCount: Number.isFinite(total) ? total : null,
     watchLabel: watchMode ? watchLabel : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
