@@ -556,6 +556,8 @@ function normalizeDocket(r) {
 const WATCH_STORE = 'fetchsmith-courtlistener-watch';
 const SEED_CAP = 20000;
 const WATCH_KEEP = 60000;
+let baselineTruncated = 0; // ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 function watchKeyFor(label, criteria) {
     const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -625,7 +627,26 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-    const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen);
+    const ids = all.slice(-WATCH_KEEP);
+    // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+    // baseline, so the opinion/docket is delivered and CHARGED again even though the buyer already
+    // paid for it. The dropped end is oldest-FIRST-SEEN (re-seeing an id does not move it in the
+    // Set), so on CourtListener -- where a docket keeps matching the same court/party filter for
+    // years -- the ids that fall off are exactly the long-lived records that will match again on
+    // the very next run. The cap itself is deliberate (KV record size budget); the bug this fixes
+    // was that it applied in silence.
+    baselineTruncated = all.length - ids.length;
+    baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+    if (baselineTruncated > 0) {
+        log.warning(
+            `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+            + 'oldest record id(s) were dropped and will be returned and CHARGED as new on a future run '
+            + `(${baselineTruncatedTotal} dropped over the life of this label). Narrow the watch query `
+            + '(a court, fewer record types, a shorter filed-date window) or split it across several labels so '
+            + 'each baseline stays under the cap.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -634,8 +655,17 @@ async function saveWatchRecord(status) {
         lastRunStatus: status,
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: ids.length,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
         seenIds: ids,
     });
+}
+
+// Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
+function truncationNote() {
+    if (baselineTruncated <= 0) return '';
+    return ` WARNING: the baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest record id(s) were`
+        + ' dropped — those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
 let pushed = 0;
@@ -894,6 +924,10 @@ const runSummary = {
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
     baselineSize: watchMode ? watchSeen.size : null,
+    // Ids the WATCH_KEEP record cap dropped this run / over the life of this label. A dropped id
+    // is re-delivered and re-charged later, so this is a billing signal, not just a size stat.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
@@ -903,11 +937,21 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // setStatusMessage call anywhere in this Actor before cycle 653.
 if (!complete) {
     await Actor.setStatusMessage(
-        seeding
+        (seeding
             ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} record(s) recorded — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} record(s) delivered — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`)
+        + truncationNote(),
+    );
+} else if (baselineTruncated > 0) {
+    // A complete run that evicted baseline ids would otherwise show nothing in the console at all
+    // — the shortfall lands in a future bill, not in this run's row count.
+    await Actor.setStatusMessage(
+        (seeding
+            ? `Baseline run for watch label "${watchLabel}": ${watchSeen.size.toLocaleString('en-US')} record(s) recorded, 0 charged.`
+            : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} record(s) delivered.`)
+        + truncationNote(),
     );
 } else {
     log.info(`Complete: every selected index (${recordTypes.join(', ')}) was read to the end of its matches for these filters.`);

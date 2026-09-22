@@ -307,6 +307,8 @@ if (input.watchLabel && nctIds.length) {
 const WATCH_STORE = 'fetchsmith-clinicaltrials-watch';
 const SEED_CAP = 20000; // our own bound on a seed walk's runtime, not a server limit
 const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0; // ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 
 // None of the six date-range pairs above resolve a rolling/relative default (verified against
 // `.actor/input_schema.json`: no `default` on any of them, unlike federal-register-scraper's
@@ -382,7 +384,26 @@ function changesBetween(prev, next) {
 }
 
 async function saveWatchRecord(status_) {
-    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen.entries());
+    const entries = all.slice(-WATCH_KEEP);
+    // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
+    // baseline, so the study is delivered and CHARGED again even though the buyer already paid for
+    // it. The dropped end is oldest-FIRST-SEEN (re-seeing an nctId re-uses its existing Map key and
+    // does not move it), so on a registry where a study keeps matching the same condition/sponsor
+    // filter for years, the ids that fall off are exactly the long-lived studies that will match
+    // again on the very next run. The cap itself is deliberate (KV record size budget); the bug
+    // this fixes was that it applied in silence.
+    baselineTruncated = all.length - entries.length;
+    baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+    if (baselineTruncated > 0) {
+        log.warning(
+            `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
+            + 'oldest nctId(s) were dropped and will be returned and CHARGED as new on a future run '
+            + `(${baselineTruncatedTotal} dropped over the life of this label). Narrow the watch query `
+            + '(conditions, interventions, sponsors, locations, overallStatus, phases, the date windows) or split '
+            + 'it across several labels so each baseline stays under the cap.',
+        );
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -391,11 +412,20 @@ async function saveWatchRecord(status_) {
         lastRunStatus: status_,
         runCount: (watchRecord.runCount ?? 0) + 1,
         seenCount: entries.length,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
         // Compact per-entry shape (id + 5 short-keyed snapshot fields).
         seenIds: entries.map(([id, snap]) => ({
             i: id, u: snap.lastUpdatePostDate, s: snap.overallStatus, n: snap.enrollmentCount, p: snap.primaryCompletionDate, c: snap.completionDate,
         })),
     });
+}
+
+// Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
+function truncationNote() {
+    if (baselineTruncated <= 0) return '';
+    return ` WARNING: the baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest nctId(s) were`
+        + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
 if (watchMode) {
@@ -1011,6 +1041,10 @@ const runSummary = {
     maxResults,
     watchLabel: watchMode ? watchLabel : null,
     baselineSize: watchMode ? watchSeen.size : null,
+    // Ids the WATCH_KEEP record cap dropped this run / over the life of this label. A dropped id
+    // is re-delivered and re-charged later, so this is a billing signal, not just a size stat.
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedAlreadyDelivered: watchMode && !seeding ? skippedSeen : null,
     changedRedelivered: watchMode && !seeding ? changedCount : null,
     requestedIds: nctIds.length || null,
@@ -1028,7 +1062,17 @@ if (!complete) {
     const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')} declared`;
     await Actor.setStatusMessage(
         `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
-        + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+        + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`
+        + truncationNote(),
+    );
+} else if (baselineTruncated > 0) {
+    // A complete run that evicted baseline ids would otherwise show nothing in the console at all
+    // -- the shortfall is in a future bill, not in this run's row count.
+    await Actor.setStatusMessage(
+        (seeding
+            ? `Baseline run for watch label "${watchLabel}": ${watchSeen.size.toLocaleString('en-US')} stud(y/ies) recorded, 0 charged.`
+            : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} row(s) delivered.`)
+        + truncationNote(),
     );
 } else if (declaredMatches !== null && !watchMode && !nctIds.length) {
     log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} studies the registry declared for these filters.`);
