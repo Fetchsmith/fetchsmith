@@ -340,6 +340,14 @@ let seeding = false;
 // current so turning watchChanges on later works without a fresh baseline.
 const watchSeen = new Map();
 let changedCount = 0;
+let baselineTruncated = 0;
+let baselineTruncatedTotal = 0;
+
+function truncationNote() {
+    return baselineTruncated > 0
+        ? ` (baseline cap: ${baselineTruncated} old id(s) dropped this run, ${baselineTruncatedTotal} total -- narrow filters to avoid re-charges)`
+        : '';
+}
 
 // applicantEligibilityDesc can be a multi-KB free-text field and WATCH_KEEP persists up to 60,000
 // snapshots in one KV record, so the full text is never stored -- only an 8-char md5 fingerprint,
@@ -381,7 +389,20 @@ function changesBetween(prev, next) {
 }
 
 async function saveWatchRecord(status) {
-    const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen.entries());
+    const entries = all.slice(-WATCH_KEEP);
+    baselineTruncated = all.length - entries.length;
+    if (baselineTruncated > 0) {
+        baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+        log.warning(
+            `Watch label "${watchLabel}": baseline holds ${all.length} opportunity id(s), over the ${WATCH_KEEP}-id `
+            + `cap -- the oldest ${baselineTruncated} were dropped and will look like NEW (billable) opportunities the `
+            + 'next time this label runs, even though they were already delivered. Narrow the filters (a keyword, '
+            + 'agency, or date window) so the whole match set fits under the cap.',
+        );
+    } else {
+        baselineTruncatedTotal = watchRecord.truncatedTotal ?? 0;
+    }
     await watchStore.setValue(watchKey, {
         ...watchRecord,
         label: watchLabel,
@@ -389,6 +410,8 @@ async function saveWatchRecord(status) {
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
         seenCount: entries.length,
+        truncatedLastRun: baselineTruncated,
+        truncatedTotal: baselineTruncatedTotal,
         // Compact per-entry shape: id, closeDate, docType, oppStatus, awardCeiling, awardFloor,
         // lastUpdatedDate, eligHash. Kept as short keys because WATCH_KEEP can hold up to 60,000
         // of these in one KV record; eligHash is already an 8-char fingerprint, not the full text.
@@ -963,13 +986,13 @@ if (watchMode) {
                 ? ` NOTE: the baseline stopped at the ${SEED_CAP}-opportunity cap. Narrow the query (a keyword, an `
                 + 'agency, a shorter posted-date window) so the whole result set fits, or the first incremental run '
                 + 'will report opportunities past the cap as new.'
-                : ''),
+                : '') + truncationNote(),
         );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new opportunity(ies)`
             + (watchChanges ? ` and ${changedCount} changed opportunity(ies) (deadline/status/forecast/funding/eligibility/last-updated)` : '')
-            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.${truncationNote()}`,
         );
     }
 }
@@ -1044,6 +1067,8 @@ const runSummary = {
     notFoundOppNums: exclusiveOppNum ? notFoundOppNums : [],
     failedOppNums,
     baselineSize: watchMode ? watchSeen.size : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
@@ -1052,6 +1077,12 @@ if (incompleteReason !== null) {
         `INCOMPLETE (${incompleteReason}): delivered ${pushed} row(s)`
         + (declaredMatches !== null ? ` of ${declaredMatches} declared match(es)` : '')
         + `. ${incompleteDetail} See the RUN_SUMMARY key-value record for the machine-readable detail.`,
+    );
+} else if (baselineTruncated > 0) {
+    await Actor.setStatusMessage(
+        `Complete, but the watch baseline exceeded its ${WATCH_KEEP}-id cap and dropped ${baselineTruncated} old `
+        + `id(s) this run (${baselineTruncatedTotal} total) -- those may be re-delivered and re-charged as "new" `
+        + 'on a future run. Narrow the filters to keep the whole match set under the cap.',
     );
 }
 

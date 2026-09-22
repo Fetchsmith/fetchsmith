@@ -266,14 +266,19 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
   "droppedNoAward": 0,
   "droppedUnknownAward": 0,
   "notFoundOppNums": [],
-  "failedOppNums": []
+  "failedOppNums": [],
+  "baselineSize": null,
+  "baselineTruncated": null,
+  "baselineTruncatedTotal": null
 }
 ```
 
-`declaredMatches` is Grants.gov's own count of everything matching your filters, so `delivered` is checkable against it from code rather than by reading English in a log. `complete` is deliberately **separate** from any status string: a run can succeed and still be truncated, and that is exactly the case this record exists to make machine-readable. `incompleteReason` is one of `max-results` (your own cap — benign), `charge-limit` (the run's maximum-cost limit stopped it), `seed-cap` (a watch baseline hit the 20,000-opportunity cap), or `search-request-failed` (Grants.gov stopped answering mid-walk — the result set is short through no choice of yours, and before this existed that failure ended the paging walk looking exactly like a finished run). When the run is incomplete the Actor also sets a run status message saying so.
+`declaredMatches` is Grants.gov's own count of everything matching your filters, so `delivered` is checkable against it from code rather than by reading English in a log. `complete` is deliberately **separate** from any status string: a run can succeed and still be truncated, and that is exactly the case this record exists to make machine-readable. `incompleteReason` is one of `max-results` (your own cap — benign), `charge-limit` (the run's maximum-cost limit stopped it), `seed-cap` (a watch baseline hit the 20,000-opportunity cap), or `search-request-failed` (Grants.gov stopped answering mid-walk — the result set is short through no choice of yours, and before this existed that failure ended the paging walk looking exactly like a finished run). When the run is incomplete the Actor also sets a run status message saying so. `baselineSize`/`baselineTruncated`/`baselineTruncatedTotal` (watch mode only) report the current baseline size and the "Baseline size cap" defect above — see that FAQ entry.
 
 **How does `watchLabel` know what's already new, and where is that baseline stored?**
 The first run for a label walks the whole match set (every page, not just `maxResults` of it), records every opportunity's `id`, and returns nothing — you are charged $0. Every later run with the same label and the same other filters returns only opportunities whose `id` isn't in that recorded set, then adds them to it. The baseline lives in a key-value store named `fetchsmith-grants-watch` in *your own* Apify account (Storage tab in the console), not ours — you can inspect or delete it any time. Deleting the record for a label resets it to a fresh baseline on the next run. Verified live on build 0.1.9: a seed run over `keyword: "water"` recorded 18,458 opportunity ids and returned 0 rows; an identical rerun returned 0 new; removing 3 ids from the baseline directly and rerunning returned exactly those 3.
+
+**Baseline size cap.** A baseline holds up to **60,000** opportunity ids in one saved record. If a label's baseline grows past that, the oldest ids are dropped — and a dropped id is no longer recognised, so it comes back as "new" on a later run **and is charged again**. The run that drops them says so explicitly: a warning in the log, a note on the run's status message, and `baselineTruncated` / `baselineTruncatedTotal` (this run / the whole life of the label) in the saved record, on the `webhookUrl` payload, and in `RUN_SUMMARY`. If you see it, narrow the watch query (`keyword`, `agencies`, `postedFrom`/`postedTo`, `eligibilities`) or split it across several labels so each baseline stays under the cap.
 
 **If I change a filter, does `watchLabel` dump a pile of "new" results I've actually seen before?**
 No. The baseline key includes a fingerprint of every other filter you set, so changing `keyword`, `agencies`, `postedFrom`/`postedTo`, `minAwardAmount`, etc. starts an entirely fresh baseline (another free, zero-result seed run) under that label instead of comparing against the old filter's baseline. `oppNum` lookups ignore `watchLabel` entirely — an exact single-opportunity lookup has no "new since last time" to track.
