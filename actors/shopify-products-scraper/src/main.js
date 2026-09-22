@@ -580,12 +580,33 @@ async function enrichWithDetail(item, origin, handle) {
 const erroredStores = []; // products.json fetch failed (not Shopify, or endpoint disabled)
 const emptyStores = []; // request succeeded but Shopify returned zero products for this URL
 const filteredOutStores = []; // products existed but onlyAvailable removed all of them
+// One structured record per input URL, so a machine reading this run can tell the outcomes apart
+// WITHOUT parsing the English status message. Zero rows has at least six different causes here —
+// endpoint disabled, genuinely empty collection, filters removed everything, every product already
+// returned by an earlier URL, a watch run with no changes, a fetch failure — and collapsing them
+// into one empty dataset is exactly the bug this Actor's own docs warn buyers about. A later
+// successful retry must not look like "inventory suddenly appeared", so status, scanned and
+// delivered are three separate fields, never re-derived from the row count.
+const sourceOutcomes = [];
+// One shape for every outcome (KV-store/webhook bookkeeping, never a dataset row), so a URL that
+// was never fetched carries the same keys as one that succeeded — a consumer can read `status`
+// without first checking which keys exist.
+const sourceSummary = (url, store, status, extra = {}) => ({
+  url, store, status, scanned: 0, delivered: 0, duplicates: 0, complete: false, reason: null, ...extra,
+});
 let keepGoing = true;
 for (const raw of storeUrls) {
   if (!keepGoing) break;
   if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
-  let ep; try { ep = endpointFor(raw); } catch { log.warning(`Bad URL: ${raw}`); continue; }
+  let ep;
+  try { ep = endpointFor(raw); } catch {
+    log.warning(`Bad URL: ${raw}`);
+    sourceOutcomes.push(sourceSummary(raw, null, 'badUrl', { reason: 'not a parseable http(s) URL' }));
+    continue;
+  }
   rawForEndpoint.set(ep.url, raw);
+  let outcome = 'ok';
+  let outcomeReason = null;
   let got = 0;
   let dupThisUrl = 0; // products this URL returned that an earlier URL in this run already delivered
   let seenBeforeFilter = 0;
@@ -672,12 +693,15 @@ for (const raw of storeUrls) {
     }
     if (seenBeforeFilter === 0) {
       emptyStores.push(ep.origin);
+      outcome = 'empty';
+      outcomeReason = 'Shopify returned zero products (empty store/collection, or products.json is disabled)';
       // Only the paged store/collection route re-confirms an empty first page; don't claim retries
       // that the single-product route never made.
       const attempts = ep.kind === 'product' ? '' : ` on ${EMPTY_PAGE_RETRIES + 1} separate attempts`;
       log.warning(`${ep.origin}: Shopify returned zero products for this URL${attempts} (empty store/collection, or products.json is disabled — not a scrape failure).`);
     } else if (got === 0 && watchMode) {
       // The normal, healthy watch outcome — not a filter problem, so it must not be reported as one.
+      outcome = storeSeeding ? 'watchBaselined' : 'watchNoChanges';
       log.info(storeSeeding
         ? `${ep.origin}: recorded ${seenBeforeFilter} products as the baseline for "${watchLabel}" (nothing delivered, nothing charged).`
         : `${ep.origin}: scanned ${seenBeforeFilter} products, no changes matching "${[...watchEvents].join(', ')}" since the last run under "${watchLabel}".`);
@@ -685,9 +709,12 @@ for (const raw of storeUrls) {
       // Every product behind this URL was already delivered by an earlier URL in this run. That is
       // a correct and complete result for this URL, so it must not be reported as "filters removed
       // everything" (which would send the buyer off relaxing filters that did nothing).
+      outcome = 'duplicate';
+      outcomeReason = 'every product behind this URL was already returned by an earlier URL in this run';
       log.info(`${ep.origin}: every product for this URL (${seenBeforeFilter}) was already returned by an earlier URL in this run — nothing new to return or charge.`);
     } else if (got === 0) {
       filteredOutStores.push(ep.origin);
+      outcome = 'filteredOut';
       // Name every filter that was actually set, so a zero-row run says which input to relax
       // instead of blaming whichever one this message happened to hardcode.
       const activeFilters = [
@@ -703,10 +730,12 @@ for (const raw of storeUrls) {
       const reason = activeFilters.length === 1
         ? `${activeFilters[0]} removed all of them`
         : `${activeFilters.join(' / ')} removed all of them between them`;
+      outcomeReason = reason;
       log.warning(`${ep.origin}: fetched ${seenBeforeFilter} products but ${reason}.`);
     }
   } catch (e) {
     erroredStores.push(ep.origin);
+    outcome = 'error';
     // got-scraping doesn't throw on 4xx/redirect-to-HTML, so a headless/custom storefront
     // (e.g. Shopify Hydrogen/Oxygen, which has no classic Liquid products.json route) or a
     // bot-check page shows up here as a JSON.parse SyntaxError, not a request-level error —
@@ -716,8 +745,16 @@ for (const raw of storeUrls) {
       : e instanceof SyntaxError && /Unexpected token '<'/.test(e.message)
         ? 'this URL returned an HTML page instead of JSON — likely a headless/custom storefront (e.g. Shopify Hydrogen) without the classic products.json endpoint, or a bot-check page. Not a failure on our end.'
         : `${e.message} (store may not be Shopify or has products.json disabled)`;
+    outcomeReason = reason;
     log.warning(`${ep.origin}: ${reason}`);
   }
+  // `complete` = "this URL's feed was read to the end", which licenses a delisted verdict and
+  // tells a consumer the counts are the whole picture. The paged route only earns it by seeing a
+  // short final page (`sweptToEnd`); a single-product URL earns it by answering at all, since one
+  // product IS its whole feed — reusing `sweptToEnd` there would report every healthy
+  // single-product run as truncated.
+  const complete = ep.kind === 'product' ? outcome !== 'error' && seenBeforeFilter > 0 : sweptToEnd;
+  sourceOutcomes.push(sourceSummary(raw, ep.origin, outcome, { scanned: seenBeforeFilter, delivered: got, duplicates: dupThisUrl, complete, reason: outcomeReason }));
   // Only a store that actually answered joins the baseline. A store that errored stays unseeded,
   // so the next run baselines it properly instead of announcing its whole catalog as "new".
   if (watchMode && seenBeforeFilter > 0) seededStores.add(ep.url);
@@ -726,6 +763,15 @@ for (const raw of storeUrls) {
   // can a capped, truncated or errored sweep — sweptToEnd stays false in every one of those.
   if (watchMode && sweptToEnd && !storeSeeding) watchStoreSweeps.set(ep.url, seenAllIds);
   log.info(`${ep.origin}: ${got} products`);
+}
+// A URL the run stopped before reaching (time budget, maxResults, or the PPE budget) has no
+// outcome at all — leaving it out of `sourceOutcomes` would let a consumer read its absence as
+// "nothing there" rather than "never looked".
+for (const raw of storeUrls.slice(sourceOutcomes.length)) {
+  sourceOutcomes.push(sourceSummary(raw, null, 'notReached', { reason: 'the run stopped before this URL (time limit, maxResults, or charge budget)' }));
+}
+if (sourceOutcomes.some((s) => s.status === 'notReached')) {
+  log.warning(`${sourceOutcomes.filter((s) => s.status === 'notReached').length} of your ${storeUrls.length} storeUrls were never fetched — this run stopped early. They are reported as "notReached", not as empty.`);
 }
 // ---- delisted: products that were in the baseline and are no longer in a COMPLETE sweep ---------
 // Runs after every store so it can compare against the finished coverage picture. Each row is a
@@ -816,6 +862,22 @@ if (watchMode && pushed === 0 && !erroredStores.length && !timeBudgetExceeded) {
   await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`)].join(', ')}.${timeBudgetNote}`);
 }
 
+// The same per-URL outcomes as the webhook, written to the run's default key-value store so a
+// consumer that polls runs (rather than receiving a webhook) can read them too:
+// GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY. This is the only machine-readable
+// way to tell an empty dataset's causes apart — the status message is prose for humans.
+const runSummary = {
+  finishedAt: new Date().toISOString(),
+  pushed,
+  duplicateProducts,
+  storesRequested: storeUrls.length,
+  timeBudgetExceeded,
+  watchLabel: watchMode ? watchLabel : null,
+  watchSeeding: watchMode ? watchSeededThisRun > 0 : null,
+  sources: sourceOutcomes,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error. A run that ends in Actor.fail() sends nothing, so this answers
@@ -830,6 +892,9 @@ if (webhookUrl) {
     duplicateProducts,
     storesScraped: storeUrls.length,
     erroredStores,
+    emptyStores,
+    filteredOutStores,
+    sources: sourceOutcomes,
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? watchSeededThisRun > 0 : null,
     watchChangeCounts: watchMode ? watchCounts : null,
