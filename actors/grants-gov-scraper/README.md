@@ -67,7 +67,7 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 | `webhookUrl` | string | Optional. POST a small JSON completion summary (pushed/scanned counts, dataset ID, watch new/changed counts) here when the run finishes — see FAQ |
 
 ## Output (thin fields, always present)
-`id`, `opportunityNumber`, `title`, `agencyCode`, `agency`, `openDate`, `closeDate`, `oppStatus`, `docType`, `cfdaList`, `url`
+`id`, `opportunityNumber`, `title`, `agencyCode`, `agency`, `openDate`, `closeDate`, `oppStatus`, `docType`, `cfdaList`, `url`, `enrichment`
 
 ## Output (enriched fields, when `enrich: true`)
 `agencyName`, `agencyCode`, `topAgencyName`, `topAgencyCode`, `opportunityCategory`, `postingDate`, `responseDate`, `archiveDate`, `costSharing`, `awardCeiling`, `awardFloor`, `applicantEligibilityDesc`, `applicantTypes`, `fundingInstruments`, `fundingActivityCategories`, `synopsisText`, `cfdas`, `fundingDescLinkUrl`, `synopsisDocumentURLs`, `attachments`, `assistURL`, `lastUpdatedDate`, `modComments`
@@ -229,7 +229,48 @@ Every filter is ANDed, and Grants.gov's API never reports a bad value — a typo
 Only for fast sweeps where the thin fields (id, number, title, agency, dates, status, CFDA list, plus a URL this Actor builds for you) are enough — those rows are billed at $0.0007 instead of $0.0015, because they cost no detail lookup to serve. Everything a funding decision actually turns on — award amounts, eligibility text, funding instrument/category, the full synopsis — exists only in the detail record, which is why `enrich` defaults to on. It is forced on when you set an award-amount filter.
 
 **I left `enrich` on but some rows came back without award amounts — was I charged full price for them?**
-No. Grants.gov has no detail record at all for a small number of opportunities (mostly archived ones with no synopsis or forecast record). When the detail lookup comes back empty, the row is still returned with its thin fields and billed as `opportunity-thin` ($0.0007), not `result` ($0.0015). The split is printed in the run log at the end of every run.
+No. Grants.gov has no detail record at all for a small number of opportunities (mostly archived ones with no synopsis or forecast record). When the detail lookup comes back empty, the row is still returned with its thin fields and billed as `opportunity-thin` ($0.0007), not `result` ($0.0015). The split is printed in the run log at the end of every run. Every row also carries an `enrichment` field saying *which* of these happened — see the next question, because "Grants.gov has no detail record" and "Grants.gov did not answer us" are not the same thing and used to look identical.
+
+**How do I tell "this opportunity has no attachments / no award ceiling" from "you failed to fetch them"?**
+Read the row's `enrichment` field. It is one of four values:
+
+| `enrichment` | What it means for the enriched fields on that row |
+|---|---|
+| `ok` | The detail record was fetched and merged. An empty `attachments` really is no attachments; a `null` `awardCeiling` really is an agency that set none. |
+| `not-requested` | You ran with `enrich: false`. No detail lookup was made, so none of the enriched fields are present. |
+| `no-detail-record` | Grants.gov answered and has no synopsis or forecast record for this opportunity (mostly archived ones). The enriched fields genuinely do not exist upstream. |
+| `fetch-failed` | Grants.gov did **not** answer the detail lookup (retries exhausted, 5xx, or a non-JSON body). The enriched fields may well exist — we could not ask. Re-run to get them. |
+
+Only `ok` licenses you to treat a missing value as a fact about the grant. This matters most with `minAwardAmount`/`maxAwardAmount`: a row whose detail lookup failed has no ceiling to compare, so it is dropped — but it is counted and reported separately from rows the agency genuinely left open-ended, and the run log names the count.
+
+**Was my result set complete? (`RUN_SUMMARY`)**
+Every run writes a `RUN_SUMMARY` record to its own key-value store — no webhook needed:
+
+```
+GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+```
+
+```json
+{
+  "declaredMatches": 2113,
+  "scanned": 1000,
+  "delivered": 100,
+  "complete": false,
+  "incompleteReason": "max-results",
+  "incompleteDetail": "Stopped at maxResults=100; matching opportunities past this point were not returned.",
+  "mode": "search",
+  "enrichedCharged": 98,
+  "thinCharged": 2,
+  "detailFetchFailures": 0,
+  "detailNoRecord": 2,
+  "droppedNoAward": 0,
+  "droppedUnknownAward": 0,
+  "notFoundOppNums": [],
+  "failedOppNums": []
+}
+```
+
+`declaredMatches` is Grants.gov's own count of everything matching your filters, so `delivered` is checkable against it from code rather than by reading English in a log. `complete` is deliberately **separate** from any status string: a run can succeed and still be truncated, and that is exactly the case this record exists to make machine-readable. `incompleteReason` is one of `max-results` (your own cap — benign), `charge-limit` (the run's maximum-cost limit stopped it), `seed-cap` (a watch baseline hit the 20,000-opportunity cap), or `search-request-failed` (Grants.gov stopped answering mid-walk — the result set is short through no choice of yours, and before this existed that failure ended the paging walk looking exactly like a finished run). When the run is incomplete the Actor also sets a run status message saying so.
 
 **How does `watchLabel` know what's already new, and where is that baseline stored?**
 The first run for a label walks the whole match set (every page, not just `maxResults` of it), records every opportunity's `id`, and returns nothing — you are charged $0. Every later run with the same label and the same other filters returns only opportunities whose `id` isn't in that recorded set, then adds them to it. The baseline lives in a key-value store named `fetchsmith-grants-watch` in *your own* Apify account (Storage tab in the console), not ours — you can inspect or delete it any time. Deleting the record for a label resets it to a fresh baseline on the next run. Verified live on build 0.1.9: a seed run over `keyword: "water"` recorded 18,458 opportunity ids and returned 0 rows; an identical rerun returned 0 new; removing 3 ids from the baseline directly and rerunning returned exactly those 3.
@@ -241,7 +282,7 @@ No. The baseline key includes a fingerprint of every other filter you set, so ch
 No extra fee — a changed opportunity is billed at the same per-row price as a new one ($0.0015 enriched / $0.0007 thin), so you only pay when there is actually something to see. Plain `watchLabel` only ever tells you about opportunities it has never delivered before; it stays silent forever about one it already sent you, even if that agency later extends the deadline, closes it early, revises the award range, rewrites eligibility, or turns a `forecast` into a real posted `synopsis`. Set `watchChanges: true` and each run also compares every already-delivered opportunity's `closeDate`/`docType`/`oppStatus`/`awardCeiling`/`awardFloor`/`lastUpdatedDate`/`applicantEligibilityDesc` against what it looked like last time; if any moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be, except `applicantEligibilityDesc` — only an 8-character fingerprint of that text is stored, never the full text, so its "previous" value is a fixed note rather than the old wording). The award/eligibility/last-updated fields only exist on the enriched detail record, so they're only watched when `enrich` is on (the default) — with `enrich: false`, `watchChanges` still catches `closeDate`/`docType`/`oppStatus`. Verified live: seeding a baseline, editing 2 opportunities' recorded closing date and doc type directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again; the award-ceiling/floor, last-updated-date and eligibility-fingerprint detection was verified the same way in a follow-up test (2 more opportunities mutated on those fields, correctly and only those 2 re-delivered with the right `_watchChangeType`). Existing watch labels created before this feature shipped work immediately; the first run under a newly-tracked field just starts detecting drift from that point forward rather than reporting an artificial backlog.
 
 **How is `webhookUrl` different from Apify's own platform webhooks?**
-Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you're already living in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `pushed`, `scanned`, `enrichedCharged`, `thinCharged`, and — if `watchLabel` is set — `watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort: a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
+Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you're already living in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `pushed`, `scanned`, `enrichedCharged`, `thinCharged`, a `summary` object identical to the `RUN_SUMMARY` record described above, and — if `watchLabel` is set — `watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort: a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
 ## Notes
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

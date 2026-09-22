@@ -90,6 +90,15 @@
           "null"
         ]
       },
+      "enrichment": {
+        "title": "Enrichment",
+        "description": "How the enriched detail fields on this row were obtained: \"ok\" (detail record fetched and merged), \"not-requested\" (enrich:false, no detail lookup was made), \"no-detail-record\" (Grants.gov answered and has no synopsis/forecast for this opportunity), or \"fetch-failed\" (the detail lookup did not answer, so missing synopsisText/awardCeiling/attachments mean \"not asked\", NOT \"empty\").",
+        "example": "ok",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "agencyName": {
         "title": "AgencyName",
         "example": "Office of the Assistant Secretary for Health",

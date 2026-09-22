@@ -11,6 +11,15 @@ const API = 'https://api.grants.gov/v1/api';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// "The API answered and the answer was nothing" and "we never got an answer" both used to
+// leave this file as a bare `null`, and every caller below treated them identically: an empty
+// search page ended the paging walk as if it were the last page, and a failed detail lookup
+// produced a thin row indistinguishable from an opportunity that genuinely has no detail
+// record. Recording WHY each null happened is what makes the completeness reporting at the end
+// of the run possible.
+let lastApiFailure = null;
+const apiFail = (reason) => { lastApiFailure = reason; return null; };
+
 // Verified live (cycle 124/125): this API NEVER returns an HTTP error status or a non-zero
 // errorcode for a bad parameter or a typo'd enum -- it returns errorcode 0, "Webservice
 // Succeeds", and a silently empty (hitCount: 0) result set. There is nothing to catch a mistake,
@@ -18,6 +27,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // validates enums server-side before the Actor even runs) or resolved against a live value list
 // in this file. Only network/5xx failures are retried here.
 async function apiPost(path, body) {
+    let lastTransport = 'unknown transport failure';
     for (let attempt = 1; attempt <= 4; attempt += 1) {
         let resp;
         try {
@@ -33,12 +43,14 @@ async function apiPost(path, body) {
             });
         } catch (err) {
             log.warning(`Grants.gov request failed (${err.message}); retrying (${attempt}/4).`);
+            lastTransport = `network error: ${err.message}`;
             await sleep(attempt * 2000);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 5;
             log.warning(`Grants.gov returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
+            lastTransport = `HTTP ${resp.statusCode}`;
             await sleep(waitS * 1000);
             continue;
         }
@@ -46,12 +58,13 @@ async function apiPost(path, body) {
         try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
         if (resp.statusCode !== 200 || !parsed) {
             log.warning(`Grants.gov ${path} returned ${resp.statusCode}, non-JSON or unexpected body: ${String(resp.body).slice(0, 200)}`);
-            return null;
+            return apiFail(`HTTP ${resp.statusCode}${parsed ? '' : ', non-JSON body'}`);
         }
+        lastApiFailure = null;
         return parsed;
     }
     log.warning(`Grants.gov ${path} kept failing after 4 attempts; stopping early.`);
-    return null;
+    return apiFail(`${lastTransport} (4 attempts)`);
 }
 
 const keyword = String(input.keyword ?? '').trim();
@@ -601,7 +614,19 @@ function normalizeEnriched(detail) {
 // minAwardAmount/maxAwardAmount filter, which requires a numeric awardCeiling that a thin row
 // never has, so 100% of forecasts were dropped from any amount-filtered run. Forecasts carry
 // `detail.data.forecast` instead of `.synopsis` -- accept either.
+// Every element is `{ fields, status }`, never a bare null, because the three ways a row can
+// come back without enriched fields are NOT the same thing to a buyer and used to be
+// indistinguishable on the row:
+//   ok               -- the detail record was fetched and merged
+//   no-detail-record -- Grants.gov answered, and has no synopsis/forecast for this id
+//                       (archived opportunities); the enriched fields genuinely do not exist
+//   fetch-failed     -- we never got an answer (retries exhausted / 5xx / non-JSON). The
+//                       enriched fields may well exist; we simply did not get them. An empty
+//                       `attachments` here means "not asked", not "no attachments", and a
+//                       missing `awardCeiling` here is not evidence the agency set none.
 const ENRICH_CONCURRENCY = 5;
+let detailFetchFailures = 0;
+let detailNoRecord = 0;
 async function enrichBatch(rows) {
     const out = new Array(rows.length).fill(null);
     let next = 0;
@@ -611,9 +636,13 @@ async function enrichBatch(rows) {
             if (i >= rows.length) return;
             const detail = await apiPost('/fetchOpportunity', { opportunityId: rows[i].id });
             if (detail?.data && !detail.data.errorMessages?.length && (detail.data.synopsis || detail.data.forecast)) {
-                out[i] = normalizeEnriched(detail.data);
+                out[i] = { fields: normalizeEnriched(detail.data), status: 'ok' };
+            } else if (detail === null) {
+                detailFetchFailures += 1;
+                out[i] = { fields: null, status: 'fetch-failed' };
             } else {
-                out[i] = null; // detail not available at all (e.g. archived with no synopsis/forecast) -- keep the thin row
+                detailNoRecord += 1;
+                out[i] = { fields: null, status: 'no-detail-record' };
             }
         }
     }
@@ -636,15 +665,27 @@ let thinCharged = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
     const eventName = item[ENRICHED] ? 'result' : THIN_EVENT;
+    // Both of these end the walk with matching opportunities still unvisited, so both are
+    // truncation causes the buyer needs named -- `maxResults` is their own choice and benign,
+    // the charge limit is not, and until now neither was distinguishable from a finished run.
+    const stopNote = () => {
+        if (pushed >= maxResults) markIncomplete('max-results', `Stopped at maxResults=${maxResults}; matching opportunities past this point were not returned.`);
+    };
     if (isPPE) {
         const r = await Actor.charge({ eventName, count: 1 });
-        if (r.chargedCount === 0) return false;
+        if (r.chargedCount === 0) {
+            markIncomplete('charge-limit', 'Stopped by the run\'s maximum-cost limit before the match set was exhausted; raise it to get the rest.');
+            return false;
+        }
         if (eventName === THIN_EVENT) thinCharged += 1;
         await Actor.pushData(item); pushed += 1;
+        if (r.eventChargeLimitReached) markIncomplete('charge-limit', 'Stopped by the run\'s maximum-cost limit before the match set was exhausted; raise it to get the rest.');
+        stopNote();
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
     if (eventName === THIN_EVENT) thinCharged += 1;
     await Actor.pushData(item); pushed += 1;
+    stopNote();
     return pushed < maxResults;
 }
 
@@ -688,9 +729,26 @@ if (hasEffectiveCloseDateFilter && oppStatuses.split('|').includes('forecasted')
 
 let scanned = 0;
 let droppedNoAward = 0;
+let droppedUnknownAward = 0;
 let droppedOutOfRange = 0;
 let droppedNoCloseDate = 0;
 let skippedSeen = 0;
+
+// Run-level completeness, written to the key-value store as RUN_SUMMARY at the end of the run
+// (and onto the webhook payload). `complete` is deliberately NOT folded into a status string: a
+// run can be perfectly successful AND truncated at the same time -- that is precisely the case
+// this record exists to make machine-readable, and collapsing the two loses it.
+let declaredMatches = null;
+let incompleteReason = null;
+let incompleteDetail = null;
+function markIncomplete(reason, detail) {
+    // First cause wins: it is the one that actually stopped the walk; anything after it is a
+    // consequence. A later maxResults stop must not overwrite a real upstream failure.
+    if (incompleteReason !== null) return;
+    incompleteReason = reason;
+    incompleteDetail = detail;
+    log.warning(detail);
+}
 
 // Walks the full startRecordNum offset paging exactly once, applying enrichment and the
 // amount/date filters in one place, so the real run and the watch-mode seed walk can never
@@ -713,6 +771,18 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
     while (keepGoing) {
         const params = { ...baseParams(), startRecordNum };
         const page = await apiPost('/search2', params);
+        // A failed search page used to arrive as `null`, produce zero hits, and end the walk
+        // through the SAME `break` as a genuine last page -- so a 5xx on page 3 of 9 returned a
+        // third of the match set, said "Done. Pushed N", and the run SUCCEEDED. In watch seeding
+        // that also under-seeds the baseline, and the next incremental run then delivers and
+        // CHARGES everything past the failure point as "new".
+        if (page === null) {
+            markIncomplete('search-request-failed', `Grants.gov search failed at offset ${startRecordNum} (${lastApiFailure}).`);
+            break;
+        }
+        // The upstream's own count of everything that matched, read from the first page only:
+        // it is what makes "we delivered 40" checkable against "Grants.gov says 2,113 match".
+        if (declaredMatches === null && Number.isFinite(page?.data?.hitCount)) declaredMatches = page.data.hitCount;
         const hits = listOf(page?.data?.oppHits);
         if (!hits.length) break;
         scanned += hits.length;
@@ -721,11 +791,23 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
         let batch = thin;
         if (needsEnrich) {
             const details = await enrichBatch(hits);
-            batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i], [ENRICHED]: true } : row));
+            batch = thin.map((row, i) => (details[i].fields
+                ? { ...row, ...details[i].fields, enrichment: 'ok', [ENRICHED]: true }
+                : { ...row, enrichment: details[i].status }));
+        } else {
+            batch = thin.map((row) => ({ ...row, enrichment: 'not-requested' }));
         }
         if (minAwardAmount !== null || maxAwardAmount !== null) {
             batch = batch.filter((row) => {
-                if (typeof row.awardCeiling !== 'number') { droppedNoAward += 1; return false; }
+                if (typeof row.awardCeiling !== 'number') {
+                    // Two very different reasons, and only one of them is the buyer's filter
+                    // doing its job. A row whose detail lookup failed is dropped because we
+                    // do not KNOW its ceiling -- counting that as "agency set no ceiling"
+                    // would assert a cause we never observed.
+                    if (row.enrichment === 'fetch-failed') droppedUnknownAward += 1;
+                    else droppedNoAward += 1;
+                    return false;
+                }
                 if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
                 if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
                 return true;
@@ -757,6 +839,7 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
 }
 
 const notFoundOppNums = [];
+const failedOppNums = [];
 
 // Batch form of the exact-number lookup: one /search2 call per number in `oppNums`, since (see
 // the note by `oppNums` above) the API has no batch/joined form for this param. Each call is an
@@ -770,6 +853,14 @@ async function walkOppNums(onBatch) {
         const page = await apiPost('/search2', {
             resultType: 'json', oppNum: num, oppStatuses: 'forecasted|posted|closed|archived', rows: PAGE_SIZE, startRecordNum: 0,
         });
+        // Same distinction as in walkMatches, and it matters more here: "this number had no
+        // match" is a claim about Grants.gov's index that a failed request cannot support, and
+        // it is reported to the buyer by number in the warning below.
+        if (page === null) {
+            markIncomplete('search-request-failed', `Lookup of opportunity number ${num} failed (${lastApiFailure}); it is NOT reported as "no match" because we never got an answer.`);
+            failedOppNums.push(num);
+            continue;
+        }
         const hits = listOf(page?.data?.oppHits);
         if (!hits.length) { notFoundOppNums.push(num); continue; }
         scanned += hits.length;
@@ -778,11 +869,23 @@ async function walkOppNums(onBatch) {
         let batch = thin;
         if (needsEnrich) {
             const details = await enrichBatch(hits);
-            batch = thin.map((row, i) => (details[i] ? { ...row, ...details[i], [ENRICHED]: true } : row));
+            batch = thin.map((row, i) => (details[i].fields
+                ? { ...row, ...details[i].fields, enrichment: 'ok', [ENRICHED]: true }
+                : { ...row, enrichment: details[i].status }));
+        } else {
+            batch = thin.map((row) => ({ ...row, enrichment: 'not-requested' }));
         }
         if (minAwardAmount !== null || maxAwardAmount !== null) {
             batch = batch.filter((row) => {
-                if (typeof row.awardCeiling !== 'number') { droppedNoAward += 1; return false; }
+                if (typeof row.awardCeiling !== 'number') {
+                    // Two very different reasons, and only one of them is the buyer's filter
+                    // doing its job. A row whose detail lookup failed is dropped because we
+                    // do not KNOW its ceiling -- counting that as "agency set no ceiling"
+                    // would assert a cause we never observed.
+                    if (row.enrichment === 'fetch-failed') droppedUnknownAward += 1;
+                    else droppedNoAward += 1;
+                    return false;
+                }
                 if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
                 if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
                 return true;
@@ -801,7 +904,10 @@ async function seedBaseline() {
     await walkMatches(async (batch) => {
         for (const row of batch) {
             if (row.id != null) watchSeen.set(String(row.id), snapshotOf(row));
-            if (watchSeen.size >= SEED_CAP) return false;
+            if (watchSeen.size >= SEED_CAP) {
+                markIncomplete('seed-cap', `The watch baseline stopped at the ${SEED_CAP}-opportunity cap; opportunities past it would be reported as new on the first incremental run.`);
+                return false;
+            }
         }
         return true;
     }, { thinOnly: true });
@@ -891,13 +997,73 @@ if (pushed === 0 && watchMode && !seeding) {
     // silently if only the total-pushed count is checked, so it gets its own always-shown line.
     log.warning(`${notFoundOppNums.length} of ${oppNums.length} number(s) had no match: ${notFoundOppNums.join(', ')}. Check the exact number(s) on grants.gov/search-grants.`);
 }
+if (failedOppNums.length > 0) {
+    log.warning(`${failedOppNums.length} of ${oppNums.length} number(s) could not be looked up at all (Grants.gov did not answer): ${failedOppNums.join(', ')}. They are absent from the results but are NOT known to be missing from Grants.gov -- re-run those numbers.`);
+}
+if (droppedUnknownAward) {
+    log.warning(
+        `${droppedUnknownAward} row(s) were dropped by the award-amount filter because their detail lookup FAILED, `
+        + 'not because the agency set no ceiling. Those opportunities may well be inside your range -- re-run to get them.',
+    );
+}
+if (detailFetchFailures) {
+    log.warning(
+        `${detailFetchFailures} row(s) carry enrichment:"fetch-failed" -- Grants.gov did not answer their detail lookup, `
+        + 'so their synopsis text, award amounts and attachments are missing because we could not ask, not because they '
+        + 'are empty. Rows where Grants.gov answered and genuinely has no detail record carry enrichment:"no-detail-record".',
+    );
+}
+
+// The whole point of this record: everything above is English in a log, and a pipeline reads
+// neither. 40 rows against a declared 2,113 matches looks exactly like a complete result set in
+// the dataset. Written to the run's key-value store so it is readable with no webhook
+// configured: GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+const runSummary = {
+    finishedAt: new Date().toISOString(),
+    declaredMatches,
+    scanned,
+    delivered: pushed,
+    // A buyer asking "did I get everything that matched?" needs the answer to be a field, not a
+    // sentence. Seeding runs deliver 0 rows BY DESIGN, so they are judged on the baseline walk.
+    complete: incompleteReason === null,
+    incompleteReason,
+    incompleteDetail,
+    mode: seeding ? 'watch-seed' : (watchMode ? 'watch-incremental' : 'search'),
+    enrichedCharged: pushed - thinCharged,
+    thinCharged,
+    detailFetchFailures,
+    detailNoRecord,
+    droppedNoAward,
+    droppedUnknownAward,
+    droppedOutOfRange,
+    droppedNoCloseDate,
+    skippedSeen,
+    // Written down explicitly rather than left out: the ABSENCE of a number from the results
+    // would otherwise read as "Grants.gov has no such opportunity", which is the one thing a
+    // failed lookup does not prove.
+    notFoundOppNums: exclusiveOppNum ? notFoundOppNums : [],
+    failedOppNums,
+    baselineSize: watchMode ? watchSeen.size : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+if (incompleteReason !== null) {
+    await Actor.setStatusMessage(
+        `INCOMPLETE (${incompleteReason}): delivered ${pushed} row(s)`
+        + (declaredMatches !== null ? ` of ${declaredMatches} declared match(es)` : '')
+        + `. ${incompleteDetail} See the RUN_SUMMARY key-value record for the machine-readable detail.`,
+    );
+}
 
 log.info(
     `Done. Pushed ${pushed} opportunities (scanned ${scanned} rows).`
     + (pushed
         ? ` Charged ${pushed - thinCharged} as enriched "result" and ${thinCharged} at the cheaper "${THIN_EVENT}" rate.`
         : '')
-    + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) with no award ceiling to compare against the amount filter.` : '')
+    + (declaredMatches !== null ? ` Grants.gov declared ${declaredMatches} total match(es) for these filters.` : '')
+    + (incompleteReason !== null ? ` RESULT IS INCOMPLETE (${incompleteReason}).` : '')
+    + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) whose agency set no award ceiling to compare against the amount filter.` : '')
+    + (droppedUnknownAward ? ` Dropped ${droppedUnknownAward} row(s) whose award ceiling is UNKNOWN because their detail lookup failed.` : '')
     + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : '')
     + (droppedNoCloseDate ? ` Dropped ${droppedNoCloseDate} row(s) with no close date (forecasts and rolling/continuous announcements have none) against the closeDateFrom/closeDateTo filter.` : ''),
 );
@@ -918,6 +1084,9 @@ if (webhookUrl) {
         watchLabel: watchMode ? watchLabel : null,
         watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
         watchChangedCount: watchMode && !seeding ? changedCount : null,
+        // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a
+        // dataset-polling consumer cannot end up with different ideas of what the run delivered.
+        summary: runSummary,
     };
     try {
         const resp = await gotScraping({
