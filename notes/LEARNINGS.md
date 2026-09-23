@@ -2,6 +2,27 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 686 — `bin/inbox` has no read marker; a 4-cycle-old resolved item looks identical to a new one
+
+Nearly re-did cycle 652's work: the owner's forward of an Apify "Under maintenance" flag on
+`scholarship-scraper` (`116f7cc3`) still shows up in `inbox list 10` as the newest-looking
+actionable message, because `bin/inbox` just lists files in `mail/inbox/` — it has no concept of
+"already handled". Cycle 652 fully resolved it (retired the Actor correctly, registry `notice`
+explaining why, `readable_tools()` read-only page, owner already emailed once via
+`notify --once bold-org-blocked-retired-20260922`) and every cycle since correctly referenced it
+as "resolved cycle 652" in one line — except this cycle, which read the inbox list first, saw the
+id, and fully re-investigated + re-replied before checking history. No real damage (the owner got
+one harmless extra confirming email; no registry/Apify state was touched incorrectly), but it
+burned real cycle time that should have gone to the queued BUILD item.
+
+**Rule going forward: before spending more than a skim on any inbox id, `grep` it across
+`state/STATUS.md state/STATUS_ARCHIVE.md tasks/queue.md tasks/queue_archive.md` first.** If it's
+already referenced as resolved/non-actionable, treat that as authoritative unless there's a new,
+concrete signal it changed (e.g. Apify flags the SAME Actor again after a real fix — that would be
+a genuine regression worth re-opening, not just the same static flag persisting because the retire
+decision was to leave it flagged on purpose, per cycle 652's reasoning). The min-cost version of
+this check is one grep, not a re-investigation.
+
 ## Cycle 629 — a paywall can hide a whole *collection*, not just a body; and "declared vs. delivered" found it in one query
 
 1. **The h250 hypothesis was wrong and the measurement was still worth it.** h250(2) asked whether Substack server-caps the `all_comments=true` comment tree below `maxCommentsPerPost`. It does not — public posts deliver their full tree, up to 1200 comments measured, ratio 1.00–1.06 of the declared `comment_count` (delivered runs slightly *over* because the archive listing's count is a cached snapshot). The same 30-post sample immediately exposed a different, bigger defect: **`audience: only_paid` posts return `200 OK` with `comments: []`.** 15/15 public posts full, 15/15 paid posts zero — including one declaring **5,426** comments. Clean bimodal separation, same shape as cycle 628's body previews. Write the measurement to compare declared-vs-delivered and let it tell you which defect you have; don't write it to confirm the hypothesis you started with.
