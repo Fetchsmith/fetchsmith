@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""Catch the h289 defect class: a watch-mode SEED walk cut short by an upstream
+error, whose partial id set is nonetheless persisted as the baseline.
+
+Why this costs real money: a seed run returns 0 rows and charges 0. Its only job is
+to record "these ids already exist, do not bill for them". If the source 500s or
+rate-limits halfway through the walk and we save the truncated id set anyway, every
+single record past the stopping point is absent from the baseline -- so the FIRST
+incremental run delivers all of them as "new" and CHARGES the buyer for rows that
+were never new. The buyer cannot tell; the run SUCCEEDS with a plausible row count.
+Re-seeding is free (a seed charges nothing), so refusing to save costs nothing.
+
+Cycles 680-687 found and fixed five instances of this by hand, one Actor per cycle
+(eu-ted-tenders-scraper, federal-register-scraper, fda-recall-scraper,
+clinicaltrials-scraper, grants-gov-scraper). The settled fleet policy those five
+converged on: on a seed walk stopped by an UPSTREAM failure, save NOTHING and tell
+the buyer to re-run. (A `seed-cap` stop -- the buyer's own query being too broad --
+is deliberately exempt fleet-wide: a capped-but-real baseline beats no baseline, and
+RUN_SUMMARY already reports the cap.) No static check covered the shape. This is it.
+
+Two heuristics, both textual (not real control-flow analysis):
+
+  1. UNGUARDED SAVE. Find the `saveWatchRecord(` call whose status argument can
+     evaluate to 'seeded', then look for a guard: either the save's own condition or
+     an enclosing `if (` in the preceding lines must combine a seed token with a
+     failure token (`if (watchMode && seeding && seedError)` / `seedFailure` /
+     `!skipBaselineSave`). Identifiers used in the save's condition are resolved back
+     to their `const` definition, so steam-reviews-scraper's indirection through
+     `skipBaselineSave` reads as guarded. An Actor with no seed-incompleteness signal
+     at all (never sets an error/incomplete flag during the walk) cannot exhibit the
+     bug and is reported `n/a` rather than flagged.
+
+  2. STATUS-ONLY MITIGATION. Some Actors save the truncated baseline anyway but tag
+     it with a distinct status (`'seeded-incomplete'`) and log a warning. That only
+     helps if the NEXT run actually reads that status back and refuses to treat the
+     record as a usable baseline. If the load path never reads `.status` off the
+     stored record, the tag is cosmetic: the partial baseline is consumed exactly
+     like a complete one and the over-charge still happens, just with a warning
+     buried in the seed run's log that the buyer had to have read at the time.
+     Flagged as SUSPECT(status-only) -- cycle 688 found sam-gov-opportunities-scraper
+     and nih-reporter-scraper in exactly this state.
+
+Fault-injection verified (cycle 688): run against `git show <fix-commit>~1:` copies of
+all five Actors that were actually fixed, it catches all 5 real bugs; 0 drift against
+the current fleet.
+
+Exit 0 = clean, 1 = drift found. Usage: check-seed-save [slug ...]
+       check-seed-save --file <path> [--label NAME]   (for fault injection)
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ACTORS = os.path.join(ROOT, "actors")
+
+# (slug, reason) -> why a flag is safe despite the textual shape. A reason must name
+# the invariant that makes it safe, not merely silence the flag.
+ALLOWLIST = {}
+
+SEED_TOKENS = ("seeding", "seed")
+# Tokens that mark "this walk did not finish because the source failed us".
+FAIL_TOKENS = ("fail", "error", "incomplete", "skip", "abort", "truncat")
+
+
+def strip_literals(text):
+    """Drop string/template literals before token-testing a candidate guard.
+
+    Essential: the status argument itself is full of failure words ('failed-incremental',
+    'seeded-incomplete'), so an unguarded save line reads as its own guard unless the
+    literals go first. A guard has to be CODE that tests a flag, not a label we store.
+    """
+    text = re.sub(r"'[^']*'", "''", text)
+    text = re.sub(r'"[^"]*"', '""', text)
+    return re.sub(r"`[^`]*`", "``", text)
+
+
+def has_seed_and_fail(text):
+    low = strip_literals(text).lower()
+    return any(t in low for t in SEED_TOKENS) and any(t in low for t in FAIL_TOKENS)
+
+
+def strip_comment(line):
+    s = line.strip()
+    return "" if s.startswith("//") or s.startswith("*") else line
+
+
+def find_seed_save(lines):
+    """Line index (0-based) of the saveWatchRecord() call that can save a seed."""
+    for i, raw in enumerate(lines):
+        line = strip_comment(raw)
+        if "saveWatchRecord(" not in line:
+            continue
+        if "async function saveWatchRecord" in line or "saveWatchRecord =" in line:
+            continue
+        # The status argument may span the next few lines (sam-gov wraps its ternary).
+        window = " ".join(strip_comment(l) for l in lines[i:i + 6])
+        if "'seeded" in window or '"seeded' in window:
+            return i
+    return None
+
+
+def guard_candidates(lines, idx):
+    """The save's own condition, plus the if-chain the save sits in.
+
+    Only the part of the save line BEFORE `saveWatchRecord(` counts as its condition
+    (`if (watchMode && !skipBaselineSave) await saveWatchRecord(...)`) -- the argument
+    is a status label, not a test. Enclosing conditions are `if (` lines in the
+    preceding 25 that mention watchMode, which is how every watch block in the fleet
+    opens; that keeps an unrelated `if` elsewhere in the walk from reading as a guard.
+    """
+    out = [strip_comment(lines[idx]).split("saveWatchRecord(")[0]]
+    for j in range(max(0, idx - 25), idx):
+        line = strip_comment(lines[j])
+        if re.search(r"\bif\s*\(", line) and "watchMode" in line:
+            out.append(line)
+    return out
+
+
+def resolve_identifiers(lines, idx, text):
+    """Definitions of identifiers named in the save's condition (steam's indirection)."""
+    out = []
+    for name in set(re.findall(r"[A-Za-z_$][A-Za-z0-9_$]*", text)):
+        if len(name) < 4:
+            continue
+        for j in range(0, idx):
+            line = strip_comment(lines[j])
+            if re.search(r"\b(const|let|var)\s+%s\s*=" % re.escape(name), line):
+                out.append(line)
+                break
+    return out
+
+
+def reads_status_back(text):
+    """Does the load path read the saved record's status back on a later run?"""
+    return bool(re.search(r"(existing|record|watchRecord|stored|prev\w*)\s*[.\[]\s*['\"]?status", text))
+
+
+def check(label, text):
+    """-> (state, detail). state in {ok, n/a, SUSPECT}."""
+    lines = text.split("\n")
+    if "saveWatchRecord(" not in text:
+        return "n/a", "no watch baseline"
+    idx = find_seed_save(lines)
+    if idx is None:
+        return "n/a", "no seed-status save"
+
+    # Does this Actor even have a notion of a walk cut short? If it never records an
+    # upstream failure during the walk, there is nothing for a guard to test.
+    walk_signals = [
+        s for s in ("markIncomplete(", "seedError", "runError", "lastApiError",
+                    "incompleteReason", "state.failed", "runState.failed", "apiErrorMessage")
+        if s in text
+    ]
+    if not walk_signals:
+        # NOT a clean bill. This is the state eu-ted-tenders-scraper was in before its
+        # cycle-680 fix: the walk broke out of its loop on an API error and recorded
+        # nothing at all, so the seed save had no flag to consult and the truncated
+        # baseline went out as complete. A textual check cannot tell that apart from an
+        # Actor whose walk genuinely cannot be interrupted -- it has to be read once by
+        # hand. Reported, counted separately, and deliberately not exit-failing, since
+        # unlike a SUSPECT there is no specific line to go fix.
+        return "REVIEW", ("seed baseline saved at line %d and the walk records NO "
+                          "incompleteness signal at all -- read it once by hand to confirm a "
+                          "cut-short walk is impossible (pre-fix eu-ted looked exactly like this)"
+                          % (idx + 1))
+
+    save_line = strip_comment(lines[idx])
+    arg_window = " ".join(strip_comment(l) for l in lines[idx:idx + 6])
+
+    cands = guard_candidates(lines, idx)
+    # Resolve identifiers from EVERY candidate, not just the save's own line: a guard is
+    # as often a named flag on the enclosing `if` (`if (watchMode && !skipBaselineSave)`,
+    # trademark-search-scraper) as inline on the save. Such a name need not contain a seed
+    # token itself -- only its definition does.
+    cands += [d for c in cands for d in resolve_identifiers(lines, idx, c)]
+    guard = next((c.strip() for c in cands if has_seed_and_fail(c)), None)
+    if guard:
+        return "ok", "guarded by: %s" % re.sub(r"\s+", " ", guard)[:110]
+
+    # No guard. Distinguish "saves a truncated baseline silently as complete" from
+    # "saves it under a distinct status" -- the latter is only a fix if read back.
+    variant = re.search(r"['\"](seeded-[a-z-]+)['\"]", arg_window)
+    if variant:
+        if reads_status_back(text):
+            return "ok", "saves as '%s' and the load path reads status back" % variant.group(1)
+        return "SUSPECT", (
+            "saves a cut-short baseline as '%s' but NOTHING reads status back on the next "
+            "run -- the partial baseline is consumed like a complete one and the first "
+            "incremental run re-charges every record past the stopping point (line %d)"
+            % (variant.group(1), idx + 1)
+        )
+    return "SUSPECT", (
+        "seed baseline saved unconditionally at line %d despite an incompleteness signal "
+        "(%s) -- a walk cut short by the source is persisted as a complete baseline"
+        % (idx + 1, ", ".join(walk_signals[:3]))
+    )
+
+
+def main():
+    argv = sys.argv[1:]
+    if "--file" in argv:
+        i = argv.index("--file")
+        path = argv[i + 1]
+        label = argv[argv.index("--label") + 1] if "--label" in argv else os.path.basename(path)
+        with open(path, encoding="utf-8") as fh:
+            state, detail = check(label, fh.read())
+        print("%-34s %s  %s" % (label, state, detail))
+        return 1 if state == "SUSPECT" else 0
+
+    slugs = argv or sorted(
+        d for d in os.listdir(ACTORS)
+        if os.path.isfile(os.path.join(ACTORS, d, "src", "main.js")) and not d.startswith("_")
+    )
+    checked = suspect = review = 0
+    for slug in slugs:
+        src = os.path.join(ACTORS, slug, "src", "main.js")
+        if not os.path.isfile(src):
+            continue
+        with open(src, encoding="utf-8") as fh:
+            state, detail = check(slug, fh.read())
+        if state == "n/a" and not argv:
+            continue
+        checked += 1
+        if state == "SUSPECT" and slug in ALLOWLIST:
+            state, detail = "ok", "ALLOWLISTED: %s" % ALLOWLIST[slug]
+        if state == "SUSPECT":
+            suspect += 1
+        if state == "REVIEW":
+            review += 1
+        print("%-34s %-8s %s" % (slug, state, detail))
+
+    print("\ncheck-seed-save: %d watch-mode Actor(s) checked, %d suspect seed-baseline save(s), "
+          "%d needing a one-time manual read" % (checked, suspect, review))
+    return 1 if suspect else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
