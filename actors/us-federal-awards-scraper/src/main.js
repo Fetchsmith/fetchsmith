@@ -728,6 +728,12 @@ if (awardIds.length) {
 const seen = new Set();
 let scanned = 0;
 let keepGoing = true;
+// A page request that fails outright (postPage() exhausts its own retries and returns null) is
+// indistinguishable, at this point, from "no more results" -- the while loop below just breaks
+// either way. During seeding that ambiguity matters: a baseline saved after a genuine API failure
+// would be missing everything past the failure point, and the next incremental run would deliver
+// and charge for all of it as "new" (see the eu-ted/fda-recall/etc. sweep in LEARNINGS.md).
+let seedError = false;
 
 for (const category of categories) {
     if (!keepGoing || pushed >= maxResults) break;
@@ -746,7 +752,7 @@ for (const category of categories) {
     let categoryRows = 0;
     while (keepGoing && pushed < maxResults && page <= pageCap) {
         const body = await postPage({ filters, fields, page, limit: PAGE_SIZE, sort, order, subawards: isSubaward });
-        if (!body) break;
+        if (!body) { if (seeding) seedError = true; break; }
         const results = body.results ?? [];
         if (!results.length) break;
         scanned += results.length;
@@ -810,7 +816,17 @@ function truncationNote() {
         + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
-if (watchMode) {
+const seedFailure = seeding && seedError;
+if (watchMode && seedFailure) {
+    log.warning(
+        `Seed walk for watch label "${watchLabel}" hit a USAspending API failure and stopped early -- baseline `
+        + 'NOT saved. Re-run this exact seed (same label and filters) to try again; saving a truncated baseline '
+        + 'here would risk charging you for pre-existing awards/sub-awards as "new" on the next incremental run.',
+    );
+    await Actor.setStatusMessage(
+        `Baseline run for watch label "${watchLabel}" failed midway (USAspending API error) -- nothing saved, 0 charged. Re-run to try again.`,
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
         log.info(
@@ -908,6 +924,13 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+if (seedFailure) {
+    await Actor.fail(
+        `Seed walk for watch label "${watchLabel}" hit a USAspending API failure and stopped early; baseline `
+        + 'was not saved. Re-run this exact seed (same label and filters) to try again.',
+    );
 }
 
 await Actor.exit();
