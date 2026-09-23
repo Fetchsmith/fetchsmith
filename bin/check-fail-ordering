@@ -35,13 +35,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1003): (
+    ("apple-podcasts-scraper", 1024): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, pushEpisodeRows() records watch ids and `continue`s without ever calling "
         "pushResult(), so a seed run's charge count is provably 0 and there is no charge "
         "record to lose. Verified live: seed run with an unreachable feed exits 1 and writes "
-        "no baseline; happy-path seed charges 0 and saves."
+        "no baseline; happy-path seed charges 0 and saves. Line shifted from 1003 by cycle "
+        "714's time-budget-clamp fix (added lines earlier in the file, no logic change here)."
     ),
     ("app-store-reviews-scraper", 787): (
         "input validation on the resolved `apps` list, fired before the app/country loop "

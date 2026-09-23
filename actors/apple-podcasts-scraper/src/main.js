@@ -230,9 +230,11 @@ if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
 const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
 let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
 function timeBudgetOk() {
-  if (timeoutAt == null) return true;
-  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) { timeBudgetExceeded = true; return false; }
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
   return true;
 }
 
@@ -272,16 +274,34 @@ const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match
 // throws before believing them. Only exceptions reach here — an HTTP 4xx/5xx is a returned
 // response (throwHttpErrors is off by default in got-scraping) and is handled by getJson below,
 // so a genuine "bad storefront code" 400 still fails on the first attempt instead of looping.
+// got applies `timeout.request` PER ATTEMPT, so `retry.limit: 2` at 30s was worth up to 90s in a
+// single call across this function's own 3 outer attempts — far more than the TIME_BUDGET_MARGIN_MS
+// the between-request timeBudgetOk() checks leave, which is how one real external run TIMED-OUT
+// (google-news-scraper, cycle 712; same copied pattern here). Clamp the per-attempt timeout and
+// got's own retry count to what's actually left, so no single call can outlive the run.
+const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
 const requestWithRetry = async (url, opts = {}) => {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const left = remainingMs();
+    if (left <= MIN_REQUEST_MS) {
+      timeBudgetExceeded = true;
+      throw lastErr ?? new Error('run time budget exhausted before the request could be made');
+    }
+    const wantedMs = opts.timeout?.request ?? 30000;
+    const wantedRetries = opts.retry?.limit ?? 2;
+    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(wantedMs, left));
+    const retryLimit = Math.max(0, Math.min(wantedRetries, Math.floor(left / perRequest) - 1));
     try {
-      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+      return await gotScraping({
+        url, ...opts,
+        timeout: { ...(opts.timeout ?? {}), request: perRequest }, retry: { ...(opts.retry ?? {}), limit: retryLimit },
+      });
     } catch (e) {
       lastErr = e;
-      if (attempt < 3) {
+      if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
         log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
-        await new Promise((r) => setTimeout(r, attempt * 1000));
+        await new Promise((r) => setTimeout(r, Math.min(attempt * 1000, Math.max(0, remainingMs() - MIN_REQUEST_MS))));
       }
     }
   }
@@ -355,8 +375,9 @@ async function fetchEntries(url, firstPage = true) {
   let entries = await fetchEntriesOnce(url, firstPage);
   if (entries.length || !firstPage) return entries;
   for (const [i, delay] of EMPTY_RECONFIRM_DELAYS_MS.entries()) {
+    if (remainingMs() <= MIN_REQUEST_MS) { timeBudgetExceeded = true; break; }
     log.warning(`Apple's review feed came back empty on the first page — re-checking in ${delay / 1000}s (attempt ${i + 2}/${EMPTY_RECONFIRM_DELAYS_MS.length + 1}) before reporting no reviews.`);
-    await sleep(delay);
+    await sleep(Math.max(0, Math.min(delay, remainingMs() - MIN_REQUEST_MS)));
     entries = await fetchEntriesOnce(url, true);
     if (entries.length) return entries;
   }
