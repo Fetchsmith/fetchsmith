@@ -513,7 +513,22 @@ for (const username of usernames) {
   keepGoing = await pushResult(mapUser(username, data));
 }
 
-if (watchMode) {
+// A seed walk that never got an answer from Algolia for one query is not a smaller baseline, it
+// is a WRONG one: every hit past the failure point would read as "new" (and be charged) on the
+// first incremental run. Structural truncation (seed-cap, algolia-pagination-ceiling, etc.) is
+// deliberately excluded -- that is a capped-but-real baseline, already surfaced above, and still
+// strictly better than none. Seeding never charges, so refusing to save costs nothing but a
+// re-run.
+const seedFailure = seeding && erroredQueries.length ? erroredQueries.join(', ') : null;
+
+if (watchMode && seedFailure) {
+  log.warning(
+    `Baseline walk for watch label "${watchLabel}" was cut short (Algolia request(s) failed for: ${seedFailure}), `
+    + 'so NO baseline was saved. Re-run with the same watchLabel to seed again once Algolia is answering -- saving '
+    + 'a truncated baseline would make every item past the failure point look "new" (and billable) on the first '
+    + 'incremental run.',
+  );
+} else if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
   if (seeding) {
     log.info(
@@ -671,4 +686,12 @@ if (pushed === 0 && watchMode && !seeding) {
     + 'See the RUN_SUMMARY key-value record.',
   );
 }
+
+if (watchMode && seedFailure) {
+  await Actor.fail(
+    `The watch baseline could not be completed: Algolia request(s) failed for: ${seedFailure}. No baseline was `
+    + `saved for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+  );
+}
+
 await Actor.exit();
