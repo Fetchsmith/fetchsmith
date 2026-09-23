@@ -1,6 +1,6 @@
 {
   "name": "ats-jobs-scraper",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "Live job postings from Greenhouse, Ashby, Lever and Recruitee company career boards, normalized into one schema.",
   "dependencies": { "apify": "^3.4.0", "got-scraping": "^4.0.0", "cheerio": "^1.0.0" },

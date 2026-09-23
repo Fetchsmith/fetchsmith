@@ -932,6 +932,7 @@ function passesFilters(job, deferred = []) {
 const notFoundCompanies = [];
 const erroredCompanies = [];
 const partialCompanies = []; // Workday: a later page failed after retries, so this company's jobs are an undercount, not a clean zero
+let runError = null;
 
 try {
   for (const { ats, slug } of companies) {
@@ -973,8 +974,13 @@ try {
   if (erroredCompanies.length) log.warning(`Fetch errors (skipped, run not failed): ${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
   if (partialCompanies.length) log.warning(`Partial results (a page fetch failed after retries, so fewer postings than actually exist): ${partialCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
 } catch (err) {
+  // Deliberately NOT Actor.fail() here (same class as fec-campaign-finance-scraper cycle 676 /
+  // steam-reviews-scraper cycle 678): Actor.fail exits the process immediately, so the watch
+  // baseline save below would never run and every posting this run had already pushed and
+  // CHARGED for would be missing from the baseline and re-delivered/re-charged next run. Record
+  // the error, let the tail of the script persist the baseline, and fail at the very end instead.
   log.exception(err, 'Run failed');
-  await Actor.fail(`Run failed: ${err.message}`);
+  runError = err.message;
 }
 
 // WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
@@ -982,8 +988,21 @@ try {
 // AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
 let evictionSuffix = '';
 
-if (watchMode) {
-  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+// A failed SEEDING run must NOT leave a partial baseline behind: a company the seed walk never
+// reached would look already-baselined to the next run and have its whole current board delivered
+// and CHARGED as "new". No record at all is the cheap outcome — the next run simply re-seeds for free.
+const skipBaselineSave = watchMode && seeding && runError !== null;
+if (skipBaselineSave) {
+  log.warning(
+    `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+    + 'Re-run on the same label and filters to seed again (a baseline run charges nothing). Saving '
+    + 'a partial baseline would have made the next run treat the un-reached compan(ies) as freshly '
+    + 'baselined and charge for their entire current board.',
+  );
+}
+
+if (watchMode && !skipBaselineSave) {
+  await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
   evictionSuffix = baselineTruncated > 0
     ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest posting `
       + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
@@ -1062,5 +1081,10 @@ if (webhookUrl) {
     log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
   }
 }
+
+// The failure signal itself is unchanged — the run still ends FAILED. It just happens here, after
+// the baseline and webhook have been persisted, instead of where Actor.fail's immediate exit would
+// have skipped both.
+if (runError) await Actor.fail(`Run failed: ${runError}`);
 
 await Actor.exit();
