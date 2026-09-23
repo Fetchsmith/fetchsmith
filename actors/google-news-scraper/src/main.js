@@ -11,9 +11,11 @@ await Actor.init();
 const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
 let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
 function timeBudgetOk() {
-  if (timeoutAt == null) return true;
-  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) { timeBudgetExceeded = true; return false; }
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
   return true;
 }
 const input = (await Actor.getInput()) ?? {};
@@ -114,16 +116,38 @@ try {
 // outer retry, one blip on a feed request drops that whole feed into `erroredFeeds` (see the
 // feed loop below), silently under-delivering a paid run instead of erroring loudly. Retry
 // connection-level throws a handful of times before giving up.
+// The between-feed/between-item budget checks below are necessary but NOT sufficient on their own:
+// they can pass with ~45s of margin left and then hand control to a call chain worth minutes. One
+// article with `fetchArticleBody` on costs up to 3 page variants x 3 outer attempts x got's own
+// retries x a 25-30s request timeout, so a single item can overshoot the deadline many times over
+// and the platform hard-kills the run as TIMED-OUT — exactly the outcome the guard exists to avoid
+// (one such external run observed in the 30-day public stats, cycle 712). Clamp every request to
+// the time actually left, including got's internal retries, so no single call can outlive the run.
+const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
 const http = async (url, opts = {}) => {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const left = remainingMs();
+    if (left <= MIN_REQUEST_MS) {
+      timeBudgetExceeded = true;
+      throw lastErr ?? new Error('run time budget exhausted before the request could be made');
+    }
+    const wantedMs = opts.timeout?.request ?? 30000;
+    const wantedRetries = opts.retry?.limit ?? 2;
+    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(wantedMs, left));
+    // got applies `timeout.request` per attempt, so `limit: 2` is worth 3x that wall-clock.
+    // Allow only as many attempts as fit in what's left.
+    const retryLimit = Math.max(0, Math.min(wantedRetries, Math.floor(left / perRequest) - 1));
     try {
-      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, headers: { 'accept-language': hl }, proxyUrl: await proxyUrlFor(), ...opts });
+      return await gotScraping({
+        url, headers: { 'accept-language': hl }, proxyUrl: await proxyUrlFor(), ...opts,
+        timeout: { ...(opts.timeout ?? {}), request: perRequest }, retry: { ...(opts.retry ?? {}), limit: retryLimit },
+      });
     } catch (e) {
       lastErr = e;
-      if (attempt < 3) {
+      if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
         log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
-        await new Promise((r) => setTimeout(r, attempt * 1000));
+        await new Promise((r) => setTimeout(r, Math.min(attempt * 1000, Math.max(0, remainingMs() - MIN_REQUEST_MS))));
       }
     }
   }
@@ -232,7 +256,8 @@ async function decodeUrl(gnUrl) {
         return null;
       }
       log.warning('Google News rate-limited the URL-decoding endpoint (429) — this article keeps its googleNewsUrl but url will be null.');
-      await new Promise((r) => setTimeout(r, Math.min(2000 * decodeRateLimited, 15000))); // back off so a burst can recover
+      // Back off so a burst can recover — but never sleep past the run's deadline.
+      await new Promise((r) => setTimeout(r, Math.max(0, Math.min(2000 * decodeRateLimited, 15000, remainingMs()))));
       return null;
     }
     consecutive429 = 0; // the burst recovered; don't trip the breaker on scattered 429s
@@ -268,7 +293,12 @@ for (const feed of feeds) {
   log.info(`Fetching feed: ${feed.url}`);
   let items = [];
   try { items = parseRss((await http(feed.url)).body).slice(0, perQuery); }
-  catch (e) { log.warning(`Feed failed (${feed.url}): ${e.message}`); erroredFeeds.push(feed.query || feed.topic || feed.url); continue; }
+  catch (e) {
+    // A feed we ran out of time to even request is not an errored feed — reporting it as one would
+    // blame Google for our own deadline. Stop instead and let the status message say "ran out of time".
+    if (timeBudgetExceeded) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+    log.warning(`Feed failed (${feed.url}): ${e.message}`); erroredFeeds.push(feed.query || feed.topic || feed.url); continue;
+  }
   log.info(`${items.length} items`);
   if (!items.length) { emptyFeeds.push(feed.query || feed.topic || feed.url); continue; }
   const pushedBefore = pushed;
@@ -285,6 +315,9 @@ for (const feed of feeds) {
     }
     // Rank as Google ordered it within this feed (1-based), so relevance/recency order survives
     // into the dataset even after export or sorting.
+    // Enrichment (decode/body) ran out of runway rather than finishing: don't charge the buyer for a
+    // row whose url/articleBody is blank only because the clock stopped us mid-item. Drop it and stop.
+    if (timeBudgetExceeded) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     const tickers = extractTickers ? { tickers: extractTickersFrom(`${it.title} ${article.articleBody ?? ''}`) } : {};
     keepGoing = await pushResult({ ...it, url, ...article, ...tickers, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
