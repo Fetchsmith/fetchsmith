@@ -2274,3 +2274,25 @@ watch-seed mode against the LIVE API with `CRAWLEE_STORAGE_DIR=./storage`, then 
 `seenCount`, the new one writes no store at all. Cycle 684: 1000 of 1409 saved vs nothing, i.e.
 409 recalls that would have been charged twice. Always re-run the happy path AND a follow-up
 incremental afterwards: the failure gate is one boolean away from suppressing every save.
+
+**h289 sweep, item 5 (`grants-gov-scraper`, cycle 687): not every Actor calls `Actor.fail()` at
+all.** Before porting the "gate the save, defer `Actor.fail()`" fix shape, check whether the
+target Actor fails on anything — `grants-gov-scraper` reports every incompleteness (including
+`max-results`, `charge-limit`, a failed search page) purely via `RUN_SUMMARY`/status message and
+always exits 0, by design, for normal (non-seed) runs. That design is fine for a real run — the
+buyer is charged only for what was delivered, and the record says so. It is NOT fine for a SEED
+run specifically, because a seed always charges 0 rows regardless of outcome, so failing costs
+nothing and a silently-truncated baseline costs future buyers real money. The fix added this
+Actor's first-ever `Actor.fail()` call, scoped to exactly the `seeding && seedFailure` case, and
+left every other exit path (including a search run that hits `max-results`) exiting 0 as designed.
+**Applying this to the remaining 14 inline-seeding Actors**: grep for whether the Actor calls
+`Actor.fail()` anywhere before assuming "gate + fail" is the right shape — some may need the fail
+call added from scratch (as here), and for an Actor where seeding can charge nonzero (none seen
+in the fleet so far, but check), failing on incompleteness would be wrong the way it would be for
+a real run.
+
+**`walkMatches()`/paging-helper fixes can already be in place from an earlier, unrelated cycle.**
+`grants-gov-scraper`'s failed-page-vs-exhausted distinction (the thing cycle 684 flagged as
+possibly missing) was already fixed — its own inline comment even names the old bug. Always grep
+and read the current helper before assuming a flagged "might be missing" item is still missing;
+cycle 684's note was a caveat to check, not a confirmed gap.

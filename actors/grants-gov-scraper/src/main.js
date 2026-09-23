@@ -976,7 +976,21 @@ if (!seeding) {
     });
 }
 
-if (watchMode) {
+// A seed walk that never got an answer from Grants.gov for one page is not a smaller baseline,
+// it is a WRONG one: every opportunity past the failure point would read as "new" (and be
+// charged) on the first incremental run. `seed-cap` is deliberately excluded -- that is the
+// buyer's own query being too broad, already surfaced in RUN_SUMMARY, and a capped baseline is
+// still strictly better than none. Seeding never charges, so refusing to save costs nothing but
+// a re-run.
+const seedFailure = seeding && incompleteReason === 'search-request-failed' ? incompleteDetail : null;
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
+        + 'Re-run with the same watchLabel to seed again once Grants.gov is answering -- saving a truncated baseline '
+        + 'would make every opportunity past the failure point look "new" (and billable) on the first incremental run.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
         log.info(
@@ -1135,6 +1149,13 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+if (watchMode && seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
+        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+    );
 }
 
 await Actor.exit();
