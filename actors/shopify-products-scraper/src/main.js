@@ -234,9 +234,9 @@ try {
 const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
 let timeBudgetExceeded = false;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
 function timeBudgetOk() {
-  if (timeoutAt == null) return true;
-  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) { timeBudgetExceeded = true; return false; }
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
   return true;
 }
 
@@ -265,16 +265,32 @@ async function pushResult(item) {
 // truncating a paid catalog instead of erroring loudly. Retry connection-level throws a
 // handful of times before giving up; a thrown storefront HTTP status (throwIfStorefrontError,
 // called by the caller after this resolves) is a separate, later step and is never retried here.
+// timeBudgetOk() is only consulted between stores/pages, so it can pass with 45s left and then
+// hand control to one call worth minutes: got applies `timeout.request` PER attempt, so 40000 x
+// (1 + retry.limit 2) is 120s of wall clock, x this outer 3-attempt loop is up to ~360s against a
+// 45s margin — the run gets hard-killed as TIMED-OUT and the customer gets nothing back instead of
+// the partial catalog already in the dataset. Clamp every request to the time actually left,
+// including got's internal retries, so no single call can outlive the run (same defect class fixed
+// on google-news-scraper c712, substack-scraper c713, apple-podcasts-scraper c714, ats-jobs-scraper c715).
+const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
 const request = async (url, headers) => {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const left = remainingMs();
+    if (left <= MIN_REQUEST_MS) {
+      timeBudgetExceeded = true;
+      throw lastErr ?? new Error('run time budget exhausted before the request could be made');
+    }
+    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(40000, left));
+    // Allow only as many got-internal attempts as fit in what's left.
+    const retryLimit = Math.max(0, Math.min(2, Math.floor(left / perRequest) - 1));
     try {
-      return await gotScraping({ url, timeout: { request: 40000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers } });
+      return await gotScraping({ url, timeout: { request: perRequest }, retry: { limit: retryLimit }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers } });
     } catch (e) {
       lastErr = e;
-      if (attempt < 3) {
+      if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
         log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
-        await new Promise((r) => setTimeout(r, attempt * 1000));
+        await new Promise((r) => setTimeout(r, Math.min(attempt * 1000, Math.max(0, remainingMs() - MIN_REQUEST_MS))));
       }
     }
   }
@@ -322,6 +338,13 @@ const fetchProductsPage = async (ep, page) => {
   for (let attempt = 0; ; attempt++) {
     const products = JSON.parse(throwIfStorefrontError(await http(`${ep.url}?limit=250&page=${page}`)).body).products ?? [];
     if (products.length || page !== 1 || attempt >= EMPTY_PAGE_RETRIES) return products;
+    // The re-confirm is a nicety, not the result: never let its sleep + extra request push the run
+    // past the deadline. Needs room for the sleep AND the request it is about to make.
+    if (remainingMs() <= 2000 * (attempt + 1) + MIN_REQUEST_MS) {
+      timeBudgetExceeded = true;
+      log.warning(`${ep.origin}: zero products on page 1 — skipping the re-check, the run is out of time.`);
+      return products;
+    }
     log.warning(`${ep.origin}: zero products on page 1 — re-checking (attempt ${attempt + 2}/${EMPTY_PAGE_RETRIES + 1}) in case Shopify served a transient empty response.`);
     await sleep(2000 * (attempt + 1));
   }
