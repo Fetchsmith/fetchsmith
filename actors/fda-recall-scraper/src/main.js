@@ -386,6 +386,11 @@ async function fetchPage(productType, search, limit, skip) {
 // truncated at once, which is exactly the case this record exists for.
 // ---------------------------------------------------------------------------
 let lastApiFailure = null;
+// Set when the press-release RSS feed could not be read. It is NOT a product-type failure
+// (press releases have no typeSummaries entry), so it needs its own flag: during a seed walk
+// an unread feed means zero press-release guids in the baseline, which would make the first
+// incremental run deliver and CHARGE the whole feed as "new" (h289).
+let pressReleaseFetchFailed = null;
 const typeSummaries = new Map();
 function summaryFor(productType) {
     let s = typeSummaries.get(productType);
@@ -682,10 +687,12 @@ async function fetchPressReleases() {
             headers: { accept: 'application/rss+xml, application/xml, text/xml' },
         });
     } catch (err) {
+        pressReleaseFetchFailed = `the FDA press-release RSS feed request failed (${err.message})`;
         log.warning(`FDA press-release RSS feed request failed (${err.message}); skipping press releases this run.`);
         return [];
     }
     if (resp.statusCode !== 200) {
+        pressReleaseFetchFailed = `the FDA press-release RSS feed returned HTTP ${resp.statusCode}`;
         log.warning(`FDA press-release RSS feed returned ${resp.statusCode}; skipping press releases this run.`);
         return [];
     }
@@ -993,7 +1000,27 @@ if (watchMode && seeding) {
     }
 }
 
-if (watchMode) {
+// A SEED walk cut short by an upstream error must save NOTHING (h289, first fixed on
+// federal-register-scraper cycle 683): saving the partial id set as the baseline makes the first
+// incremental run treat every recall past the failure point as "new" and CHARGE for it. A seed
+// charges nothing, so re-seeding later is free -- there is nothing lost by not persisting here.
+// Deliberately NOT gated on `seed-cap`/`skip-ceiling`: those are the buyer's query being too
+// broad, are reported in RUN_SUMMARY and the status message, and a capped baseline is still
+// strictly better than none. Only a source that never answered gets the no-save treatment.
+const SEED_UPSTREAM_FAILURES = new Set(['plan-request-failed', 'search-request-failed']);
+const seedFailure = seeding
+    ? ([...typeSummaries.values()].find((s) => SEED_UPSTREAM_FAILURES.has(s.incompleteReason))?.incompleteDetail
+        ?? pressReleaseFetchFailed
+        ?? null)
+    : null;
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
+        + 'A partial baseline would have caused every recall past the stopping point to be delivered and charged '
+        + 'as "new" on your next run. Re-run the same label and filters once the source recovers.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
         log.info(
@@ -1038,7 +1065,19 @@ if (pushed === 0 && watchMode && !seeding) {
 //   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
 for (const productType of productTypes) summaryFor(productType);
 const types = [...typeSummaries.values()];
-const firstIncomplete = types.find((s) => !s.complete) ?? null;
+const typeIncomplete = types.find((s) => !s.complete) ?? null;
+// The press-release feed is a source in its own right, not a product type, so a feed failure has
+// no typeSummaries entry to mark incomplete -- without this the run reports complete:true while
+// silently missing every press release the buyer asked for (and, on a seed, leaves them out of
+// the baseline so they are all charged as "new" later).
+const feedIncomplete = runPressReleases && pressReleaseFetchFailed
+    ? {
+        incompleteReason: 'press-release-feed-failed',
+        incompleteDetail: `Press releases were requested but ${pressReleaseFetchFailed}, so none are in this run.`
+            + (seeding ? ' No baseline was saved for this label.' : ''),
+    }
+    : null;
+const firstIncomplete = typeIncomplete ?? feedIncomplete;
 const runSummary = {
     finishedAt: new Date().toISOString(),
     mode: seeding ? 'watch-seed' : (watchMode ? 'watch-incremental' : 'search'),
@@ -1064,12 +1103,16 @@ const runSummary = {
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     pressReleasesRequested: includePressReleases,
     pressReleasesIncluded: runPressReleases,
+    pressReleaseFeedError: pressReleaseFetchFailed,
     productTypes: types,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
 if (firstIncomplete) {
-    const short = types.filter((s) => !s.complete).map((s) => `${s.productType}:${s.incompleteReason}`).join(', ');
+    const short = [
+        ...types.filter((s) => !s.complete).map((s) => `${s.productType}:${s.incompleteReason}`),
+        ...(feedIncomplete ? [`press_release:${feedIncomplete.incompleteReason}`] : []),
+    ].join(', ');
     await Actor.setStatusMessage(
         `INCOMPLETE (${short}): delivered ${pushed} row(s)`
         + (runSummary.declaredMatches !== null ? ` of ${runSummary.declaredMatches} declared match(es)` : '')
@@ -1120,6 +1163,19 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+// Deferred to the very last statement on purpose (h287): failing any earlier would skip the
+// RUN_SUMMARY write and the webhook above. A seed pushes no rows, so nothing was charged and
+// failing is free -- and failing loudly, instead of exiting 0 with no baseline saved, stops a
+// scheduled run from quietly reading "seeded" and moving on to incremental.
+if (watchMode && seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
+        + '(a partial one would '
+        + 'cause you to be charged twice for the same recalls later) and nothing was charged. Please re-run in '
+        + 'a few minutes.',
+    );
 }
 
 await Actor.exit();
