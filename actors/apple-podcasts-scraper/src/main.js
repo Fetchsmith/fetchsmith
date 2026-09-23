@@ -757,6 +757,10 @@ if (rawFeeds.length && dataType !== 'episodes') {
   rawFeeds.length = 0;
 }
 
+// Sources a BASELINE run could not read because the request to Apple broke (h289). Populated only
+// while `seeding`, because only a seed run commits a record that later runs trust as "these already
+// existed"; an incremental run's failures are already reported in `failedIds` and cost nobody money.
+const seedErrors = [];
 const searchHits = [];
 const emptySearches = [];
 for (const term of searchTerms) {
@@ -768,7 +772,12 @@ for (const term of searchTerms) {
     if (!results.length) { emptySearches.push(term); log.warning(`Search "${term}" returned no podcasts in storefront "${country}".`); continue; }
     log.info(`Search "${term}": ${results.length} podcasts.`);
     for (const p of results) { searchHits.push({ term, p }); addId(String(p.collectionId)); }
-  } catch (e) { log.warning(`Search "${term}" failed: ${e.message}`); }
+  } catch (e) {
+    log.warning(`Search "${term}" failed: ${e.message}`);
+    // Worst case for a baseline: the term resolves to NO ids at all, so every podcast behind it is
+    // silently absent from the record rather than merely shallow in it.
+    if (seeding) seedErrors.push(`search "${term}"`);
+  }
 }
 
 // ---- run -------------------------------------------------------------------
@@ -942,6 +951,7 @@ if (dataType === 'charts') {
     // Apple has nothing, and must never be reported as the latter (LEARNINGS cycle 484).
     if (got === 0 && failed) {
       failedIds.push(id);
+      if (seeding) seedErrors.push(`podcast ${id}`);
       log.warning(`Could not read ${dataType} for podcast ${id} from Apple — the request failed (see the warning above), so this is NOT evidence that Apple has no ${dataType} for this show. Re-run it.`);
     } else if (got === 0) {
       emptyIds.push(id);
@@ -959,6 +969,7 @@ if (dataType === 'charts') {
       log.info(`${feedUrl}: ${got} episodes fetched, ${pushed - before} kept after filters.`);
       if (got === 0 && failed) {
         failedIds.push(feedUrl);
+        if (seeding) seedErrors.push(`feed ${feedUrl}`);
         log.warning(`Could not fetch RSS feed "${feedUrl}" (see the warning above) — that is a fetch failure, not evidence that the feed has no episodes. Re-run it.`);
       } else if (got === 0) {
         emptyIds.push(feedUrl);
@@ -978,7 +989,26 @@ if (unenrichedChartEntries > 0) {
   log.warning(`${unenrichedChartEntries} chart entry/entries could not be enriched from Apple's lookup API (typically Apple-exclusive or subscriber-only shows, which expose no episode list). They are still in the dataset with chartRank, title and episodePageUrl, and source "chart" instead of "itunes".`);
 }
 log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publisher' ? 'podcasts' : dataType}.`);
-if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+// h289: a baseline that an upstream failure cut short must not be committed. Unlike the rest of the
+// fleet this Actor is NOT wide open to the classic over-charge — the per-podcast date floor above
+// (cycle 637) already treats everything older than the seed run as pre-existing for a podcast the
+// baseline never reached, so a failed podcast's back catalogue stays unbilled. Two holes survive it,
+// and this gate closes both: (1) an episode Apple returns with no parseable releaseDate slips past
+// the floor entirely and would be delivered and charged as "new", and (2) a seed run that failed to
+// read half its input still reported `seeded`, so the buyer was told a baseline exists for podcasts
+// it never saw. A seed pushes and charges nothing, so failing costs only a re-run. Time-budget
+// truncation is deliberately NOT a seed error: that is exactly what the floor was built for, and
+// failing there would make a large input impossible to baseline at all.
+if (watchMode && seedErrors.length) {
+  await Actor.fail(
+    `Baseline run for watch label "${watchLabel}" could not read ${seedErrors.length} source(s) from Apple: `
+    + `${seedErrors.join(', ')}. The baseline was NOT saved — saving it would record those podcasts as `
+    + 'already-seen when they were never read, and you could be charged later for episodes that already '
+    + 'exist today. Nothing was returned or charged for this run; re-run it on the same watch label to seed again.',
+  );
+} else if (watchMode) {
+  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+}
 const timeBudgetNote = timeBudgetExceeded
   ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'
   : '';
