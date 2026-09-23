@@ -107,6 +107,33 @@ if (webhookUrlRaw) {
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
+// Completeness bookkeeping (cycle 676, h250 class). Before this the Actor could stop early for
+// five different reasons -- charge limit, maxResults, SEED_CAP, WATCH_PAGE_CAP, an API error --
+// and a pipeline reading the dataset could not tell "that is all there is" from "that is all we
+// fetched". `scanned`/`pages`/`declaredMatches` are what make the shortfall measurable.
+let scanned = 0;              // raw rows read off the wire, watch-seed walk included
+let pages = 0;                // pages actually fetched
+let declaredMatches = null;   // pagination.count -- what the FEC says matches these filters. null
+                              // means the API never answered with a count; never read it as 0.
+let declaredExact = null;     // FEC's own `is_count_exact` flag on that number
+let chargeLimitReached = false;
+let seedCapHit = false;
+let maxResultsReached = false;
+let rowsNotReached = 0;       // rows already fetched on the page the walk stopped on, never delivered
+let moreAvailable = false;    // a cursor/page was still outstanding when the walk stopped
+let runError = null;          // set instead of failing immediately, so the baseline still gets saved
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+
+// First cause wins: a walk that stopped because the FEC stopped answering and THEN also hit
+// maxResults must keep reporting the upstream failure -- that is the cause the buyer can act on.
+function markIncomplete(reason, detail = null) {
+  if (!complete) return;
+  complete = false;
+  incompleteReason = reason;
+  incompleteDetail = detail;
+}
 
 // Watch mode: a stateful "only new contributions since my last run" filter, scoped to
 // contributions mode only -- candidates mode returns the same fixed roster of people, not a
@@ -219,7 +246,8 @@ async function saveWatchRecord(status) {
 async function pushResult(item, watchId) {
   if (watchMode && watchId != null && seeding) {
     watchSeen.add(String(watchId));
-    return watchSeen.size < SEED_CAP;
+    if (watchSeen.size >= SEED_CAP) { seedCapHit = true; return false; }
+    return true;
   }
   if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
     watchSkipped += 1;
@@ -227,14 +255,20 @@ async function pushResult(item, watchId) {
   }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
-    if (r.chargedCount === 0) return false;
+    // chargedCount 0 and eventChargeLimitReached are both the charge limit, not the end of the
+    // data -- without this flag the run stops at the same place a complete run would and the
+    // dataset looks finished.
+    if (r.chargedCount === 0) { chargeLimitReached = true; return false; }
     await Actor.pushData(item); pushed += 1;
     if (watchMode && watchId != null) watchSeen.add(String(watchId));
-    return !r.eventChargeLimitReached && pushed < maxResults;
+    if (r.eventChargeLimitReached) { chargeLimitReached = true; return false; }
+    if (pushed >= maxResults) { maxResultsReached = true; return false; }
+    return true;
   }
   await Actor.pushData(item); pushed += 1;
   if (watchMode && watchId != null) watchSeen.add(String(watchId));
-  return pushed < maxResults;
+  if (pushed >= maxResults) { maxResultsReached = true; return false; }
+  return true;
 }
 
 const API_BASE = 'https://api.open.fec.gov/v1';
@@ -375,9 +409,20 @@ try {
         sort: 'name',
       });
     const results = body.results ?? [];
+    pages += 1;
+    scanned += results.length;
+    // `pagination.count` is the FEC's own match total for these filters. Captured on the first
+    // page only: the keyset-paginated schedules recompute it per request and it drifts as new
+    // filings land, so a late page's count would silently restate the baseline mid-walk.
+    if (declaredMatches === null && typeof body.pagination?.count === 'number') {
+      declaredMatches = body.pagination.count;
+      declaredExact = body.pagination.is_count_exact ?? null;
+    }
     if (results.length === 0) break;
 
+    let rowIndex = -1;
     for (const c of results) {
+      rowIndex += 1;
       let item;
       let watchId;
       if (searchMode === 'disbursements') {
@@ -473,7 +518,14 @@ try {
         };
       }
       const keepGoing = await pushResult(item, watchId);
-      if (!keepGoing) { stop = true; break; }
+      if (!keepGoing) {
+        // Rows the run had already paid to fetch and then never delivered. This is the number
+        // that proves the stop was a cap, not the end of the data -- `results.length === 0`
+        // (the natural end) can never produce it.
+        rowsNotReached = results.length - (rowIndex + 1);
+        stop = true;
+        break;
+      }
     }
 
     const pagination = body.pagination ?? {};
@@ -487,16 +539,29 @@ try {
       // No cursor, or a cursor identical to the one we just used, means the result set is
       // exhausted. Without this guard the old `page`-based loop silently re-fetched (and
       // re-charged for) the first page until maxResults was reached.
-      if (Object.keys(cleaned).length === 0 || JSON.stringify(cleaned) === JSON.stringify(cursor ?? {})) break;
+      const exhausted = Object.keys(cleaned).length === 0 || JSON.stringify(cleaned) === JSON.stringify(cursor ?? {});
+      // Was anything left behind the cap? Asked with the SAME exhaustion test the walk itself
+      // uses, so "stopped on a cap" and "ran out of data" can never be confused -- a stop that
+      // lands exactly on a page boundary is still short if the cursor was live.
+      if (stop) { moreAvailable = rowsNotReached > 0 || !exhausted; break; }
+      if (exhausted) break;
       cursor = cleaned;
     } else {
-      if (page >= (pagination.pages ?? 1)) break; // /candidates/ pages normally via `page`
+      const morePages = page < (pagination.pages ?? 1);
+      if (stop) { moreAvailable = rowsNotReached > 0 || morePages; break; }
+      if (!morePages) break; // /candidates/ pages normally via `page`
     }
     page += 1;
   }
 } catch (err) {
+  // Deliberately NOT Actor.fail() here (cycle 676): Actor.fail exits the process immediately, so
+  // the watch baseline was never saved on a failed incremental run -- every row this run had
+  // already pushed AND CHARGED for was missing from the baseline and got delivered and charged a
+  // second time on the next run. Record the error, let the tail of the script persist the
+  // baseline and RUN_SUMMARY, and fail at the very end instead.
   log.exception(err, 'Run failed');
-  await Actor.fail(`Run failed: ${err.message}`);
+  runError = err.message;
+  markIncomplete('upstream-error', `the FEC API call on page ${pages + 1} failed: ${err.message}`);
 }
 
 // Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
@@ -506,9 +571,35 @@ function truncationNote() {
     + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
-if (watchMode) {
-  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
-  if (seeding) {
+// First cause wins, so these run in the order the buyer can act on: an upstream failure was
+// already recorded in the catch above and outranks every cap below it. `max-results` is only a
+// shortfall when something was demonstrably left behind -- a query with exactly maxResults
+// matches is complete, and saying otherwise would cry wolf on the commonest healthy run.
+if (watchPageCapHit) markIncomplete('watch-page-cap', `the watch scan stopped after ${WATCH_PAGE_CAP} page(s) without exhausting the match set`);
+if (seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-row cap; matches past the cap will be reported as new (and charged) on a later incremental run`);
+if (chargeLimitReached) markIncomplete('charge-limit', `the run's pay-per-event charge limit was reached${rowsNotReached ? `; ${rowsNotReached} already-fetched row(s) were not delivered` : ''}`);
+if (maxResultsReached && moreAvailable) markIncomplete('max-results', `maxResults=${maxResults} reached${rowsNotReached ? `; ${rowsNotReached} already-fetched row(s) were not delivered` : ''}`);
+
+// A failed SEEDING run must NOT leave a partial baseline behind: a half-written baseline turns
+// the next run into an "incremental" one that charges for every match the seed walk never
+// reached. No record at all is the cheap outcome -- the next run simply re-seeds for free.
+const skipBaselineSave = watchMode && seeding && runError !== null;
+if (skipBaselineSave) {
+  log.warning(
+    `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+    + 'Re-run on the same label and filters to seed again (a baseline run charges nothing). Saving '
+    + 'the partial baseline would have made the next run an incremental one and charged you for '
+    + 'every match the failed seed walk never reached.',
+  );
+}
+
+if (watchMode && !skipBaselineSave) {
+  await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
+  if (runError) {
+    // The rows this run pushed were already charged; recording them is what stops the next run
+    // delivering and charging for them a second time.
+    log.info(`Watch baseline for "${watchLabel}" saved despite the failure: the ${pushed} row(s) already delivered and charged this run will not be charged again.`);
+  } else if (seeding) {
     log.info(
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded as already-seen, `
       + '0 results returned, 0 charged. The next run on this label and these filters returns only what is new.'
@@ -520,7 +611,12 @@ if (watchMode) {
           : ''),
     );
     await Actor.setStatusMessage(
-      `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing contribution(s) recorded, 0 charged. Run again later to get only what's new.`
+      (complete
+        ? `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing contribution(s) recorded, 0 charged. Run again later to get only what's new.`
+        // An INCOMPLETE baseline is the costliest quiet outcome this Actor has: everything the
+        // seed walk never reached is "new" to the first incremental run and gets charged.
+        : `Baseline INCOMPLETE for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded, 0 charged — ${incompleteReason}`
+          + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Narrow the filters and re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`)
       + truncationNote(),
     );
   } else {
@@ -530,15 +626,73 @@ if (watchMode) {
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`
         + truncationNote(),
       );
-    } else if (baselineTruncated > 0) {
+    } else if (baselineTruncated > 0 || !complete) {
       // A run that delivered rows would otherwise leave the default status message in place and
-      // the truncation would only be visible in the log.
-      await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} row(s) delivered.` + truncationNote());
+      // the truncation -- or a scan that stopped on a cap with new contributions still unread --
+      // would only be visible in the log.
+      await Actor.setStatusMessage(
+        `Watch label "${watchLabel}": ${pushed} row(s) delivered.`
+        + (complete ? '' : ` Scan INCOMPLETE — ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}; more new contributions may be waiting. See RUN_SUMMARY.`)
+        + truncationNote(),
+      );
     }
   }
 }
 
-log.info(`Done. Pushed ${pushed} results.`);
+log.info(`Done. Pushed ${pushed} results (scanned ${scanned} row(s) over ${pages} page(s)).`);
+
+// ---------------------------------------------------------------------------
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which needs no webhook. `complete` is deliberately kept OUT of the run status: a run can be
+// SUCCEEDED and short at the same time, and that pair is exactly what this record exists for.
+const runSummary = {
+  mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : searchMode,
+  searchMode,
+  // What the FEC itself says matches these filters (pagination.count, first page). `null` means
+  // the API never answered with a count -- never read it as 0. `declaredMatchesExact` is the
+  // FEC's own is_count_exact flag: on the big schedules the count can be an estimate.
+  declaredMatches,
+  declaredMatchesExact: declaredExact,
+  scanned,
+  delivered: pushed,
+  rowsNotReached,
+  pages,
+  complete,
+  incompleteReason,
+  incompleteDetail,
+  runError,
+  maxResults,
+  maxResultsReached,
+  chargeLimitReached,
+  seedCap: watchMode && seeding ? SEED_CAP : null,
+  seedCapHit: watchMode && seeding ? seedCapHit : null,
+  watchPageCap: watchMode ? WATCH_PAGE_CAP : null,
+  watchPageCapHit: watchMode ? watchPageCapHit : null,
+  watchLabel: watchMode ? watchLabel : null,
+  watchSeeding: watchMode ? seeding : null,
+  baselineSaved: watchMode ? !skipBaselineSave : null,
+  baselineSize: watchMode ? watchSeen.size : null,
+  // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+  // re-charge them; the cumulative figure is the drift over the whole life of the label.
+  baselineTruncated: watchMode ? baselineTruncated : null,
+  baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+  skippedSeen: watchMode && !seeding ? watchSkipped : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// A short run still SUCCEEDS (the rows it did get are real and already charged), so outside the
+// watch-mode branches above -- which set their own, more specific messages -- the status message
+// is the only place the Apify console itself shows the shortfall.
+if (!complete && !runError && !watchMode) { // watch mode sets its own, more specific message above
+  const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')}${declaredExact === false ? '+' : ''} declared match(es)`;
+  await Actor.setStatusMessage(
+    `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
+    + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+  );
+} else if (complete && !watchMode && declaredMatches !== null) {
+  log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} row(s) the FEC declared for these filters.`);
+}
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
@@ -558,6 +712,9 @@ if (webhookUrl) {
     // re-charge them; the cumulative figure is the drift over the whole life of the label.
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a console/API
+    // consumer read the identical completeness facts.
+    summary: runSummary,
   };
   try {
     const resp = await gotScraping({
@@ -576,5 +733,10 @@ if (webhookUrl) {
     log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
   }
 }
+
+// The failure signal itself is unchanged -- the run still ends FAILED. It just happens here,
+// after the baseline, RUN_SUMMARY and webhook have been persisted, instead of inside the catch
+// where Actor.fail's immediate exit skipped all three.
+if (runError) await Actor.fail(`Run failed: ${runError}`);
 
 await Actor.exit();

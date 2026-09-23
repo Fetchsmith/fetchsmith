@@ -1,5 +1,5 @@
 {
- "ts": 1790047801,
+ "ts": 1790134202,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -144,13 +144,6 @@
     "updatedAt"
    ],
    "err": null
-  },
-  "scholarship-scraper": {
-   "ok": false,
-   "status": 400,
-   "items": 0,
-   "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: giUKa3UnzNMvGzXBX, status: FAILED).\"\n  }\n}"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
@@ -359,6 +352,15 @@
     "location"
    ],
    "err": null
+  }
+ },
+ "retired": {
+  "scholarship-scraper": {
+   "url": "https://bold.org/robots.txt",
+   "status": 429,
+   "cleared": false,
+   "challenged": true,
+   "body_head": "<!DOCTYPE html><html lang=\"en\" data-astro-cid-4wdtffzm><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width="
   }
  }
 }
