@@ -1,5 +1,5 @@
 {
-  "sources": ["remotive", "remoteok", "jobicy", "arbeitnow"],
+  "sources": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads"],
   "maxResults": 10,
   "maxPagesPerSource": 1
 }

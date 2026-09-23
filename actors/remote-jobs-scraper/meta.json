@@ -1,8 +1,8 @@
 {
-  "title": "Remote Jobs Scraper – Remotive, Remote OK, Jobicy, Arbeitnow",
-  "description": "Remote job postings from four public job boards (Remotive, Remote OK, Jobicy, Arbeitnow) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and posted date; every row links back to the original posting.",
-  "seoTitle": "Remote Jobs Scraper: 4 Boards, De-duplicated JSON Feed",
-  "seoDescription": "Scrape remote job postings from Remotive, Remote OK, Jobicy and Arbeitnow into one JSON schema. Cross-board de-duplication, strict date filters, no start fee.",
+  "title": "Remote Jobs Scraper – 5 Boards, Deduped Feed",
+  "description": "Remote job postings from five public boards (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and date; every row links to the original posting.",
+  "seoTitle": "Remote Jobs Scraper: 5 Boards, De-duplicated JSON Feed",
+  "seoDescription": "Scrape remote job postings from Remotive, Remote OK, Jobicy, Arbeitnow and Working Nomads into one JSON schema. Cross-board de-duplication, strict date filters, no start fee.",
   "categories": ["JOBS", "LEAD_GENERATION"],
   "events": {
     "job": {

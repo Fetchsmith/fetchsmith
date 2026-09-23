@@ -1,6 +1,6 @@
-// remote-jobs-scraper — remote job postings from four PUBLIC, documented, no-auth job APIs
-// (Remotive, Remote OK, Jobicy, Arbeitnow), normalized into one schema and de-duplicated
-// across boards. HTTP-only, no headless browser, pay-per-event on pushed rows only.
+// remote-jobs-scraper — remote job postings from five PUBLIC, documented, no-auth job APIs
+// (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads), normalized into one schema and
+// de-duplicated across boards. HTTP-only, no headless browser, pay-per-event on pushed rows only.
 //
 // House rules honoured here:
 //  - a date bound that cannot be parsed THROWS (dropping it would widen the billable set);
@@ -14,13 +14,14 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
 const UA = 'FetchSmith remote-jobs-scraper (+https://fetchsmith.com)';
-const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow'];
+const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads'];
 
 const SOURCE_SITE = {
   remotive: 'https://remotive.com',
   remoteok: 'https://remoteok.com',
   jobicy: 'https://jobicy.com',
   arbeitnow: 'https://www.arbeitnow.com',
+  workingnomads: 'https://www.workingnomads.com',
 };
 
 // ---------------------------------------------------------------- input parsing
@@ -426,11 +427,41 @@ async function fromArbeitnow() {
   return out;
 }
 
+async function fromWorkingNomads() {
+  const body = await fetchJson('https://www.workingnomads.com/api/exposed_jobs/');
+  const rows = Array.isArray(body) ? body : [];
+  return rows
+    .filter((j) => j && j.url && j.title)
+    // No stable job id field in this feed; the job's own permalink URL is the only
+    // per-posting identifier the API exposes, so it doubles as sourceJobId here.
+    .map((j) => ({
+      source: 'workingnomads',
+      sourceJobId: String(j.url ?? ''),
+      title: j.title ?? null,
+      company: j.company_name ?? null,
+      companyLogo: null,
+      url: j.url ?? null,
+      location: j.location || null,
+      remote: true,
+      jobType: null,
+      category: j.category_name || null,
+      tags: String(j.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean),
+      salaryText: null,
+      salaryMin: null,
+      salaryMax: null,
+      salaryCurrency: null,
+      salaryPeriod: null,
+      publishedAt: toIso(j.pub_date),
+      descriptionHtml: includeDescription ? (j.description ?? null) : undefined,
+    }));
+}
+
 const FETCHERS = {
   remotive: fromRemotive,
   remoteok: fromRemoteOk,
   jobicy: fromJobicy,
   arbeitnow: fromArbeitnow,
+  workingnomads: fromWorkingNomads,
 };
 
 // ---------------------------------------------------------------- filters

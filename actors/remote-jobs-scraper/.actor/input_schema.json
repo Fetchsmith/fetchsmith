@@ -6,10 +6,10 @@
     "sources": {
       "title": "Job boards",
       "type": "array",
-      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned). Leave empty for all four. An unknown name fails the run rather than being silently ignored.",
+      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned), \"workingnomads\" (Working Nomads, general remote board with a category field on every row). Leave empty for all five. An unknown name fails the run rather than being silently ignored.",
       "editor": "select",
-      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow"] },
-      "default": ["remotive", "remoteok", "jobicy", "arbeitnow"]
+      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads"] },
+      "default": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads"]
     },
     "searchKeyword": {
       "title": "Keyword",
@@ -50,7 +50,7 @@
     "salaryOnly": {
       "title": "Only postings with salary info",
       "type": "boolean",
-      "description": "Keep only postings that carry a salary range or salary text. Remote OK and Jobicy supply numeric ranges on many rows; Remotive supplies a free-text range; Arbeitnow supplies none, so enabling this drops all Arbeitnow rows.",
+      "description": "Keep only postings that carry a salary range or salary text. Remote OK and Jobicy supply numeric ranges on many rows; Remotive supplies a free-text range; Arbeitnow and Working Nomads supply none, so enabling this drops all their rows.",
       "default": false
     },
     "dedupe": {
