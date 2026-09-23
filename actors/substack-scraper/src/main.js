@@ -19,9 +19,11 @@ const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
 let timeBudgetExceeded = false;
 let keepGoing = true;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
 function timeBudgetOk() {
-  if (timeoutAt == null) return true;
-  if (Date.now() >= timeoutAt - TIME_BUDGET_MARGIN_MS) {
+  if (remainingMs() <= 0) {
     if (!timeBudgetExceeded) log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.');
     timeBudgetExceeded = true;
     keepGoing = false;
@@ -80,11 +82,21 @@ async function pushResult(item, eventName = 'result') {
   return pushed < maxResults;
 }
 
+// got applies `timeout.request` PER ATTEMPT, so `retry.limit: 3` was worth up to 4x45s = 180s in
+// a single call — far more than the TIME_BUDGET_MARGIN_MS the between-request timeBudgetOk()
+// checks leave, which is how one real external run TIMED-OUT (google-news-scraper, cycle 712;
+// same copied pattern here). Clamp both the per-attempt timeout and the retry count to what's
+// actually left so no single call can outlive the run.
+const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
 async function getJson(url) {
+  const left = remainingMs();
+  if (left <= MIN_REQUEST_MS) { timeBudgetExceeded = true; throw new Error('run time budget exhausted before the request could be made'); }
+  const perRequest = Math.max(MIN_REQUEST_MS, Math.min(45000, left));
+  const retryLimit = Math.max(0, Math.min(3, Math.floor(left / perRequest) - 1));
   const res = await gotScraping({
     url,
-    timeout: { request: 45000 },
-    retry: { limit: 3, statusCodes: [408, 413, 429, 500, 502, 503, 504] },
+    timeout: { request: perRequest },
+    retry: { limit: retryLimit, statusCodes: [408, 413, 429, 500, 502, 503, 504] },
     responseType: 'json',
     followRedirect: true, // <handle>.substack.com often 301s to a custom domain
     headers: { accept: 'application/json' },
@@ -147,10 +159,14 @@ async function fetchPublicationInfo(origin) {
   if (pubInfoCache.has(origin)) return pubInfoCache.get(origin);
   let info = EMPTY_PUB_INFO;
   try {
+    const left = remainingMs();
+    if (left <= MIN_REQUEST_MS) throw new Error('run time budget exhausted before the request could be made');
+    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(45000, left));
+    const retryLimit = Math.max(0, Math.min(2, Math.floor(left / perRequest) - 1));
     const res = await gotScraping({
       url: `${origin}/`,
-      timeout: { request: 45000 },
-      retry: { limit: 2, statusCodes: [408, 413, 429, 500, 502, 503, 504] },
+      timeout: { request: perRequest },
+      retry: { limit: retryLimit, statusCodes: [408, 413, 429, 500, 502, 503, 504] },
       followRedirect: true,
       headers: { accept: 'text/html' },
     });
