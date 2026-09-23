@@ -68,6 +68,26 @@ ALLOWLIST = {
         "single-gate-before-save shape, not per-item completion tracking; hand-verified "
         "cycle 693, see LEARNINGS.md."
     ),
+    "google-play-reviews-scraper": (
+        "no seed-incompleteness FLAG exists because none is needed -- completeness is "
+        "tracked per APP via seededApps membership (main.js ~403): `if (appSeeding && "
+        "!stop) seededApps.add(appId)` only fires after that app's own reviews() call "
+        "resolved without throwing AND the global SEED_CAP wasn't hit mid-walk. An app "
+        "whose reviews() call throws (network/rate-limit/parse failure -- confirmed the "
+        "underlying google-play-scraper library rejects the whole promise chain on any "
+        "page failure, it never returns a partial page silently) lands in the catch at "
+        "line 420 and is simply never added to seededApps, so `appSeeding` re-evaluates "
+        "true for that exact app on every future run (line 324) until a walk actually "
+        "succeeds -- self-healing, no incomplete baseline ever reads as complete. "
+        "saveWatchRecord() itself is unconditional because gating it would be wrong: a "
+        "seed run with 9 successful apps and 1 failed one must still save progress for "
+        "the 9. No date-floor-style secondary hole either: watchSeen keys off the "
+        "reviewId directly (not a date heuristic), and sinceDate/untilDate/score/keyword "
+        "filters are static input values baked into the watch fingerprint, so a review "
+        "filtered out during seeding stays filtered out on every incremental run under "
+        "the same label -- it can never later read as newly-in-scope. Hand-verified "
+        "cycle 697."
+    ),
 }
 
 SEED_TOKENS = ("seeding", "seed")
@@ -234,7 +254,7 @@ def main():
         if state == "n/a" and not argv:
             continue
         checked += 1
-        if state == "SUSPECT" and slug in ALLOWLIST:
+        if state in ("SUSPECT", "REVIEW") and slug in ALLOWLIST:
             state, detail = "ok", "ALLOWLISTED: %s" % ALLOWLIST[slug]
         if state == "SUSPECT":
             suspect += 1
