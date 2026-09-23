@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""Catch the h287 defect class: Actor.fail() exiting the process before a
+watch-mode Actor persists the baseline that already-charged rows are recorded in.
+
+Cycles 676-680 found and fixed 4 live instances of this shape (fec-campaign-finance-
+scraper, ats-jobs-scraper, trademark-search-scraper, eu-ted-tenders-scraper) by hand,
+one grep-and-read pass at a time. No static check covered it -- this is that check.
+
+Heuristic (textual, not a real control-flow analysis): for every Actor whose source
+declares a `watchLabel` input (i.e. it persists a watch baseline via a
+`saveWatchRecord(` call), find the LAST line that calls `saveWatchRecord(` and the
+FIRST line that calls `Actor.charge(`. Any `Actor.fail(` call sitting between those
+two lines can fire *after* a row has been pushed and charged for but *before* the
+baseline recording that charge is saved -- exactly the shape that caused the re-charge
+bug. An `Actor.fail(` before the first charge (e.g. input validation) is fine, since
+nothing has been charged yet to lose the record of.
+
+This does NOT prove a flagged call is reachable mid-run (vs. only ever firing before
+any charge), only that the textual ordering is suspicious -- a cheap trip-wire, not a
+substitute for reading the function and reproducing against the live API the way the
+4 real fixes did. Two known false positives are ALLOWLISTed below: a purely textual,
+line-number heuristic can't see that `Actor.charge(` sits inside a helper function
+whose FIRST call site is actually later than a validation-time `Actor.fail(` earlier
+in the file, or that a branch's own guard condition (e.g. "every pair failed, so this
+run's push-count is provably 0") makes it safe. Read the allowlist reason before
+trusting it -- it must name the invariant that makes the flag safe, not just silence it.
+
+Exit 0 = clean, 1 = drift found. Usage: check-fail-ordering [slug ...]
+"""
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
+# textual ordering. Re-verify the reason still holds if the line number ever shifts.
+ALLOWLIST = {
+    ("app-store-reviews-scraper", 775): (
+        "input validation on the resolved `apps` list, fired before the app/country loop "
+        "that ever calls Actor.charge( even starts -- nothing can have been charged yet."
+    ),
+    ("app-store-reviews-scraper", 993): (
+        "guarded by pairsAttempted > 0 and storefrontErrorPairs.length === pairsAttempted "
+        "-- every pair in this run errored, so nothing was ever pushed/charged to lose."
+    ),
+    ("app-store-reviews-scraper", 1004): (
+        "guarded by feedServed === 0 -- nothing came out of Apple for any pair in this "
+        "run, so nothing was ever pushed/charged to lose; comment in-code confirms this "
+        "fires before the watch record write on purpose."
+    ),
+}
+
+
+def find_calls(lines, needle, exclude=None):
+    out = []
+    for i, l in enumerate(lines):
+        stripped = l.strip()
+        if stripped.startswith("//"):
+            continue
+        if needle in l and (exclude is None or exclude not in l):
+            out.append(i)
+    return out
+
+
+def main(argv):
+    wanted = set(argv[1:])
+    drift = 0
+    checked = 0
+
+    actors_dir = os.path.join(ROOT, "actors")
+    for slug in sorted(os.listdir(actors_dir)):
+        if slug == "_template" or slug.startswith("."):
+            continue
+        if wanted and slug not in wanted:
+            continue
+        src = os.path.join(actors_dir, slug, "src", "main.js")
+        if not os.path.isfile(src):
+            continue
+        with open(src) as fh:
+            text = fh.read()
+        if "watchLabel" not in text:
+            continue
+        lines = text.splitlines()
+        save_lines = find_calls(lines, "saveWatchRecord(", exclude="function saveWatchRecord")
+        if not save_lines:
+            continue
+        checked += 1
+        last_save = max(save_lines)
+        charge_lines = find_calls(lines, "Actor.charge(")
+        first_charge = min(charge_lines) if charge_lines else None
+        fail_lines = find_calls(lines, "Actor.fail(")
+        if first_charge is None:
+            suspect = []
+        else:
+            suspect = [
+                i for i in fail_lines
+                if first_charge < i < last_save and (slug, i + 1) not in ALLOWLIST
+            ]
+        if suspect:
+            drift += 1
+            rows = ", ".join(f"line {i + 1}" for i in suspect)
+            print(f"{slug:33} SUSPECT Actor.fail() before last saveWatchRecord() (line {last_save + 1}): {rows}")
+        else:
+            print(f"{slug:33} ok (last saveWatchRecord() line {last_save + 1}, {len(fail_lines)} Actor.fail() call(s), 0 between first charge and save)")
+
+    print()
+    print(f"check-fail-ordering: {checked} watch-mode Actor(s) checked, {drift} suspect fail-before-save ordering(s)")
+    return 1 if drift else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
