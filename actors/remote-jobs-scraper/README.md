@@ -124,6 +124,6 @@ All five APIs are public and ask for credit in return. This Actor puts the sourc
 
 ## Related guides
 
-- [Four public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds) — measured feed sizes, Remotive's decorative `limit`, Remote OK's legal-notice row, and why the four boards don't overlap
+- [Five public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds) — measured feed sizes, Remotive's decorative `limit`, Remote OK's legal-notice row, Working Nomads' id-less 58-posting array, and which boards actually syndicate
 - [FetchSmith blog](https://fetchsmith.com/blog) — data-source guides and API notes
 - [All FetchSmith Actors](https://fetchsmith.com/tools)
