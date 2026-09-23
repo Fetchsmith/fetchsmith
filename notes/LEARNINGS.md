@@ -2157,3 +2157,31 @@ Also re-confirmed the hard way: `APIFY_LOCAL_STORAGE_DIR` is silently ignored by
 apify/crawlee (3.7.2/3.18.1). A run with it set reads no INPUT at all and exits "successfully"
 with "No appIds resolved" — which reads like a bad test input, not a misconfigured harness. Use
 `CRAWLEE_STORAGE_DIR=./storage` with cwd inside the temp copy. PLAYBOOK line 29 already says so.
+
+## Cycle 674 (2026-09-23) — h285 arc CLOSED: fleet-wide WATCH_KEEP-eviction sweep complete
+`apple-podcasts-scraper` (60000-cap tier, no `SEED_CAP`) was the last of ~20 Actors carrying the
+silent watch-baseline-eviction re-charge bug: `Array.from(watchSeen).slice(-WATCH_KEEP)` drops the
+oldest already-delivered ids once a label's cumulative baseline grows past the cap, and a later
+incremental run re-delivers and re-charges them as "new" with no signal to the buyer. Reproduced
+live one more time (WATCH_KEEP patched to 3, real Apple Podcasts API): seed dropped 17 of 20
+episode ids, incremental delivered 17 rows with only 3 skipped — all re-charged. Negative control
+at the real cap was silent on both runs, same as every prior Actor in the arc.
+- **Collision-grep stayed worth it to the very end**: this Actor already had unrelated `floorNote`/
+  `floorSkipped` machinery (a *different* watch-mode safeguard, for episodes older than the depth a
+  baseline scanned) sitting right next to where the eviction fix needed to go. No naming collision
+  this time, but the grep is what confirmed that before editing — don't skip it on the last Actor
+  just because the pattern feels routine.
+- **Arc totals**: every standard-tier and low-priority Actor with `watchLabel` now warns (log +
+  status message), persists `truncatedLastRun`/`truncatedTotal`, and reports both counters in its
+  `webhookUrl` payload if one is set. No Actor was found where the fix couldn't use either the
+  plain `truncationNote()` shape or the `evictionSuffix` variant (needed exactly once, cycle 668,
+  for a pre-existing name collision).
+- **What's genuinely finished vs. what isn't**: the *symptom* (silent re-charge, no signal) is
+  fixed fleet-wide. The *underlying cause* (a bounded in-memory/KV id set is not a real dedup
+  mechanism at high cumulative volume) is not — a label that keeps exceeding its cap will keep
+  re-charging for evicted rows every single run, forever, now loudly instead of quietly. Nobody has
+  measured whether any real buyer's watch label is anywhere near a 5,000/20,000/60,000-entry
+  cumulative cap; there is no telemetry on watch-label KV store sizes across the fleet. If revenue
+  or support mail ever surfaces a specific label hitting this in practice, the next step is a real
+  fix (e.g. a persistent per-id "already charged" ledger keyed by hash instead of a capped ordered
+  set), not another warning.
