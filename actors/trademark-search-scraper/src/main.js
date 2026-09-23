@@ -244,14 +244,19 @@ async function fetchPage(page) {
     }
     return res.body ?? {};
   }
-  await Actor.fail(
+  // Deliberately a plain throw, not Actor.fail() (h287, same class as ats-jobs-scraper cycle
+  // 678): Actor.fail() exits the process immediately, which — on a page-2+ failure — would skip
+  // the watch-baseline save below and lose the record of rows this run already pushed and
+  // charged for. Let the outer catch record the error and fail at the very end instead.
+  throw new Error(
     'Could not reach TMview (tmdn.org) through any network path this run: '
     + `${PROXY_ROTATIONS} Apify Proxy session(s) and a direct connection all failed transport-level — last error: ${lastErr?.message}. `
     + 'TMview itself is frequently reachable when this happens, so it is usually the proxy route rather than an outage: '
-    + 're-run in a few minutes, or set "proxyConfiguration" to a residential group. Nothing was scraped and nothing was charged.',
+    + 're-run in a few minutes, or set "proxyConfiguration" to a residential group.',
   );
-  throw lastErr;
 }
+
+let runError = null;
 
 try {
   if (!searchTerm) {
@@ -279,8 +284,13 @@ try {
     }
   }
 } catch (err) {
+  // Deliberately NOT Actor.fail() here (h287, same class as fec-campaign-finance-scraper cycle
+  // 676 / ats-jobs-scraper cycle 678): Actor.fail() exits the process immediately, so the watch
+  // baseline save below would never run and every mark this run already pushed and CHARGED for
+  // would be missing from the baseline and re-delivered/re-charged next run. Record the error,
+  // let the tail of the script persist the baseline, and fail at the very end instead.
   log.exception(err, 'Run failed');
-  await Actor.fail(`Run failed: ${err.message}`);
+  runError = err.message;
 }
 
 // WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
@@ -288,8 +298,22 @@ try {
 // AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
 let evictionSuffix = '';
 
-if (watchMode) {
-  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+// A failed SEEDING run must NOT leave a partial baseline behind: an office/search-slice the seed
+// walk never reached would look already-baselined to the next run and have its whole current
+// match set delivered and CHARGED as "new". No record at all is the cheap outcome — the next run
+// simply re-seeds for free.
+const skipBaselineSave = watchMode && seeding && runError !== null;
+if (skipBaselineSave) {
+  log.warning(
+    `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+    + 'Re-run on the same label and search to seed again (a baseline run charges nothing). Saving '
+    + 'a partial baseline would have made the next run treat the un-reached mark(s) as freshly '
+    + 'baselined and charge for the entire current match set.',
+  );
+}
+
+if (watchMode && !skipBaselineSave) {
+  await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
   evictionSuffix = baselineTruncated > 0
     ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest mark `
       + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) -- they will be `
@@ -354,5 +378,10 @@ if (webhookUrl) {
     log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
   }
 }
+
+// The failure signal itself is unchanged — the run still ends FAILED. It just happens here, after
+// the baseline and webhook have been persisted, instead of where Actor.fail's immediate exit would
+// have skipped both.
+if (runError) await Actor.fail(`Run failed: ${runError}`);
 
 await Actor.exit();
