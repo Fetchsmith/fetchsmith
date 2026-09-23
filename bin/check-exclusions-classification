@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Guard against `sam-gov-opportunities-scraper`'s exclusions dataType regressing into a
+PII-harvesting product (CLAUDE.md rule 1 / cycle 708-709).
+
+168,673 rows on SAM.gov's exclusions index (`index=ei`); 79% (133,478) are
+`classification.code: "Individual"` -- named private people with home addresses. This Actor
+ships the organization-only slice (Firm/Vessel/Special Entity Designation, ~35,195 rows) by
+hard-coding a `classification` param into every request for that dataType, never fetching
+then filtering. A future edit that widens, drops, or makes that param conditional would
+silently start shipping the person rows -- not a shape a platform test run would flag,
+since the API still returns 200 and real-looking rows either way.
+
+Static source check: the file must contain the literal `classification: 'Firm,Vessel,Special
+Entity Designation'` (the exact allowed value, unconditional) and must never contain the
+string 'Individual' anywhere near a `classification` assignment.
+
+Exit 0 = clean, 1 = drift found.
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SLUG = 'sam-gov-opportunities-scraper'
+REQUIRED = "classification: 'Firm,Vessel,Special Entity Designation'"
+
+path = os.path.join(ROOT, 'actors', SLUG, 'src', 'main.js')
+src = open(path).read()
+
+# Explanatory `//` comments legitimately discuss the excluded "Individual" classification
+# (that's WHY the filter exists) -- only non-comment code lines are checked for a live leak.
+code_lines = [ln for ln in src.splitlines() if not ln.strip().startswith('//')]
+code_only = '\n'.join(code_lines)
+
+problems = []
+if REQUIRED not in src:
+    problems.append(f"literal `{REQUIRED}` not found -- the mandatory classification filter may have been widened, made conditional, or removed")
+if re.search(r"classification[^\n]{0,80}Individual", code_only, re.IGNORECASE):
+    problems.append("found 'Individual' near a `classification` reference in actual code (not a comment) -- check nothing now permits the person-record slice")
+
+if problems:
+    print(f"{SLUG}: PII-SAFETY REGRESSION")
+    for p in problems:
+        print(f"    {p}")
+    sys.exit(1)
+
+print(f"check-exclusions-classification: {SLUG} ok (mandatory organization-only classification filter intact)")
+sys.exit(0)
