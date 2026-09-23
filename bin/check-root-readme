@@ -1,0 +1,99 @@
+#!/root/agent/venv/bin/python
+"""Flag root README.md Actor rows whose "N <noun>s" claim is stale vs. the Actor's
+own README.md.
+
+Real drift found by hand 3 times without a check (LEARNINGS/queue, cycles 701/702/704):
+root README.md's per-Actor summary row is prose written once at ship time and never
+touched again when a later cycle adds a board/mode/dataset to that Actor — the Actor's
+own README.md gets updated every time (it's part of the Store listing, checked by
+check-readme-samples et al.), root README.md is not covered by any existing check.
+
+Heuristic: find "<number-word-or-digit> <noun>" phrases (boards, feeds, modes,
+datasets, indices, sites, sources, types, endpoints, offices) in an Actor's own
+README.md, and for each noun that ALSO appears as a counted phrase in that Actor's
+root-README row, compare the counts. A mismatch means one of the two prose copies
+was not updated when a feature was added (usually root README, per history above,
+but this reports either direction).
+
+This is a heuristic on hand-written prose, not a schema diff — it will miss drift
+that doesn't happen to use one of these nouns, and it only compares counts that
+appear in BOTH places (a noun mentioned in only one file is not flagged: that is
+normal, not drift). Extend NOUNS below if a new drift shape uses a different word.
+"""
+import re
+import sys
+
+NOUNS = r"boards?|feeds?|modes?|datasets?|indices|sites?|sources?|types?|endpoints?|offices?"
+
+NUM_WORDS = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7,
+    'eight': 8, 'nine': 9, 'ten': 10, 'eleven': 11, 'twelve': 12,
+}
+
+COUNT_RE = re.compile(
+    r'\b(?P<num>one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|[0-9]+)'
+    r'\+?\s+(?:public\s+)?(?:[a-zA-Z][a-zA-Z-]*\s+){0,2}?(?P<noun>' + NOUNS + r')\b',
+    re.IGNORECASE,
+)
+
+
+def counts_by_noun(text):
+    out = {}
+    for m in COUNT_RE.finditer(text):
+        num = m.group('num').lower()
+        n = NUM_WORDS.get(num, None)
+        if n is None:
+            try:
+                n = int(num)
+            except ValueError:
+                continue
+        noun = m.group('noun').lower().rstrip('s')  # crude singularize
+        out.setdefault(noun, set()).add(n)
+    return out
+
+
+def main(argv):
+    root_readme = open('/root/agent/README.md').read()
+
+    # Split root README into per-Actor rows keyed by slug, via the Source link.
+    rows = {}
+    for line in root_readme.splitlines():
+        m = re.search(r'\[Source\]\(actors/([a-z0-9-]+)\)', line)
+        if m and line.strip().startswith('|'):
+            rows[m.group(1)] = line
+
+    drift = 0
+    checked = 0
+    for slug, row in sorted(rows.items()):
+        try:
+            actor_readme = open('/root/agent/actors/%s/README.md' % slug).read()
+        except FileNotFoundError:
+            continue
+        checked += 1
+        root_counts = counts_by_noun(row)
+        actor_counts = counts_by_noun(actor_readme)
+        problems = []
+        for noun, nums in root_counts.items():
+            # Actor READMEs accumulate historical "Nth board added" mentions across
+            # cycles, so any single past count showing up there is not evidence of
+            # freshness — only the HIGHEST count seen (counts only grow) is trusted
+            # as the Actor's current claim.
+            if noun in actor_counts and max(nums) != max(actor_counts[noun]):
+                problems.append(
+                    '%s: root README says %s, Actor README\'s highest is %s'
+                    % (noun, sorted(nums), max(actor_counts[noun]))
+                )
+        if problems:
+            drift += 1
+            print(slug)
+            for p in problems:
+                print('    %s' % p)
+        else:
+            print('%-32s ok' % slug)
+
+    print('\n%d/%d Actor(s) with drift.' % (drift, checked))
+    return 1 if drift else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
