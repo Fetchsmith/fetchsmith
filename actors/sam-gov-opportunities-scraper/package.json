@@ -1,8 +1,8 @@
 {
   "name": "sam-gov-opportunities-scraper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
-  "description": "Scrape live US federal contracting opportunities from SAM.gov (presolicitations, solicitations, sources sought, awards) with no API key required.",
+  "description": "Scrape live US federal contracting opportunities from SAM.gov (presolicitations, solicitations, sources sought, awards), plus Davis-Bacon/SCA/CBA wage determinations and CFDA grant/loan programs, with no API key required.",
   "dependencies": { "apify": "^3.4.0", "got-scraping": "^4.0.0" },
   "scripts": { "start": "node src/main.js" }
 }

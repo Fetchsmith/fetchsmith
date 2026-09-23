@@ -16,11 +16,13 @@ const SEARCH_API = 'https://sam.gov/api/prod/sgs/v1/search/';
 const DETAIL_API = 'https://sam.gov/api/prod/opps/v2/opportunities';
 
 // The SAME keyless backend multiplexes several of SAM.gov's public data types behind `index=`
-// (cycle 703's rule, cycle 704's build). Probed live cycle 704, all 200 OK with no key/login:
+// (cycle 703's rule, cycle 704's build). Probed live cycle 704/707, all 200 OK with no key/login:
 //   index=opp  -> contract opportunities (what this Actor shipped with)
 //   index=dbra -> Davis-Bacon Act construction wage determinations (`_type: wdDBRA`, 85,426)
 //   index=wd   -> Collective Bargaining Agreement wage determinations (`_type: wdCBA`, 107,580)
 //   index=sca  -> Service Contract Act wage determinations (`_type: wdSCA`, 2,666)
+//   index=cfda -> CFDA assistance listings -- grants/loans/direct-payment programs
+//                 (`_type: assistanceListing`, 7,392, ~2,871 active)
 // `index=dbra` was NOT in cycle 703's scoping (it guessed `dba`/`wdol`/`davisbacon`, all 400) --
 // `wd` alone is CBA-only, so shipping just `wd` would have silently omitted the Davis-Bacon set,
 // which is the one construction contractors actually need. One index per run on purpose: the
@@ -31,6 +33,16 @@ const DATA_TYPES = {
     'wage-determinations-dbra': { index: 'dbra', noun: 'wage determination', nounPlural: 'wage determinations' },
     'wage-determinations-cba': { index: 'wd', noun: 'wage determination', nounPlural: 'wage determinations' },
     'wage-determinations-sca': { index: 'sca', noun: 'wage determination', nounPlural: 'wage determinations' },
+    'assistance-listings': { index: 'cfda', noun: 'assistance listing', nounPlural: 'assistance listings' },
+};
+// A 3rd distinct row family (opp / wd / cfda) needs its own dispatch, not a 2-way `isWd` boolean
+// (cycle 706's note) -- one map from dataType to family, `isWd`/`isCfda` derived from it below.
+const DATA_TYPE_FAMILY = {
+    'opportunities': 'opp',
+    'wage-determinations-dbra': 'wd',
+    'wage-determinations-cba': 'wd',
+    'wage-determinations-sca': 'wd',
+    'assistance-listings': 'cfda',
 };
 
 // Confirmed live cycle 539: `notice_type` takes SAM's own single-letter codes (matches the
@@ -117,15 +129,20 @@ if (dataType !== dataTypeRaw) {
     log.warning(`dataType "${dataTypeRaw}" is not one of ${Object.keys(DATA_TYPES).join(', ')}; falling back to "opportunities".`);
 }
 const { index: SEARCH_INDEX, noun: ROW_NOUN, nounPlural: ROW_NOUN_PLURAL } = DATA_TYPES[dataType];
-const isWd = dataType !== 'opportunities';
+const recordFamily = DATA_TYPE_FAMILY[dataType];
+const isWd = recordFamily === 'wd';
+const isCfda = recordFamily === 'cfda';
 
 // Cycle 96 seed rule: never ship a default that makes the very first test run return 0 rows.
 // On the wage-determination indices a keyword is the WRONG default: `q` there matches the
 // determination's reference number, not the trades inside it (measured cycle 704: `q=roofing`
 // returns 0 against 85,426 live Davis-Bacon rows), so defaulting to "contract" would hand a first
 // run an empty dataset. Seed those modes with no keyword instead -- an unfiltered wd query is
-// itself a valid, large result set.
-const keyword = String(input.keyword ?? (isWd ? '' : 'contract')).trim();
+// itself a valid, large result set. `q=contract` on the cfda index is technically non-zero
+// (176/7,392, measured cycle 707) but is a construction/procurement term that has nothing to do
+// with grant programs and would bias a first-run sample toward an unrepresentative slice --
+// same "no keyword" treatment as wd, for a different reason (irrelevance, not a zero-match trap).
+const keyword = String(input.keyword ?? (isWd || isCfda ? '' : 'contract')).trim();
 const naicsCodes = (Array.isArray(input.naicsCodes) ? input.naicsCodes : []).map((v) => String(v).trim()).filter(Boolean);
 const setAsideTypes = (Array.isArray(input.setAsideTypes) ? input.setAsideTypes : []).map((v) => String(v).trim()).filter(Boolean);
 const noticeTypes = (Array.isArray(input.noticeTypes) ? input.noticeTypes : [])
@@ -156,6 +173,33 @@ if (isWd) {
         // Probed cycle 704: only CBA has a keyless per-record detail endpoint
         // (sam.gov/api/prod/wdol/v1/cba/<id>); the dbra/sca equivalents 404 on every guessed path.
         // Rather than enrich one of three modes asymmetrically, enrichment is opportunity-only.
+        log.warning(`enrichDetail is only supported for dataType "opportunities"; ignored for "${dataType}".`);
+        enrichDetail = false;
+    }
+}
+// The cfda index shares `organization_id` with opportunities (confirmed live cycle 707:
+// `organization_id=100000000` -> 189 programs, same param name), so it is NOT ignored here.
+// `states`/`state` are confirmed NO-OPs on this index (both return the unfiltered 7,392 total --
+// assistance-listing programs are nationwide, not place-of-performance filtered), so silently
+// accepting them would look filtered while charging for the full unfiltered set.
+if (isCfda) {
+    const ignored = [];
+    if (naicsCodes.length) ignored.push('naicsCodes');
+    if (setAsideTypes.length) ignored.push('setAsideTypes');
+    if (noticeTypes.length) ignored.push('noticeTypes');
+    if (states.length) ignored.push('states');
+    if (ignored.length) {
+        log.warning(
+            `${ignored.join(', ')} ${ignored.length === 1 ? 'is' : 'are'} only supported for dataType "opportunities" `
+            + `and ${ignored.length === 1 ? 'was' : 'were'} IGNORED for "assistance-listings". SAM.gov's assistance-listing `
+            + 'index is filterable by keyword (`keyword`, matches title/objective/program number), active status '
+            + '(`activeOnly`) and organization (`organizationId`) only -- your results are NOT narrowed by the ignored filter(s).',
+        );
+    }
+    if (enrichDetail) {
+        // No keyless per-record detail endpoint probed for cfda (cycle 707) -- the search row
+        // already carries the full record (financial/eligibility/contacts), so there is nothing a
+        // detail call would add. Opportunity-only, same reasoning as the wd branch above.
         log.warning(`enrichDetail is only supported for dataType "opportunities"; ignored for "${dataType}".`);
         enrichDetail = false;
     }
@@ -194,6 +238,16 @@ function buildSearchUrl(page, size) {
         // `state=AL,TX` -> 10,415, i.e. 3,509 + 6,909 minus the 3 determinations covering both;
         // repeating the key (`state=AL&state=TX`) first-wins at 3,509 and fails OPEN, so never do it.
         if (states.length) params.set('state', states.join(','));
+        return `${SEARCH_API}?${params.toString()}`;
+    }
+    if (isCfda) {
+        const params = new URLSearchParams({
+            index: SEARCH_INDEX, responseType: 'json',
+            page: String(page), size: String(size),
+        });
+        if (keyword) params.set('q', keyword);
+        if (activeOnly) params.set('is_active', 'true');
+        if (organizationId) params.set('organization_id', organizationId);
         return `${SEARCH_API}?${params.toString()}`;
     }
     // `mode=search` truncates `descriptions[0].content` to 250 chars server-side -- confirmed by
@@ -332,10 +386,62 @@ function normalizeWdRow(row) {
     };
 }
 
-// One identity accessor for both row shapes, so the dedupe set, the watch baseline and the push
-// loop can never disagree about what "the id of this row" means.
+// cfda's organizationHierarchy entries carry NO `type` field (unlike opp's, which orgField()
+// above reads) -- only `level` (1 = department, 2 = agency, checked live cycle 707 against real
+// records; a 3rd level was never observed in samples but the accessor stays general). Do NOT
+// reuse orgField() for cfda rows -- it would silently return null for every one of them.
+function orgFieldByLevel(hierarchy, level) {
+    const row = (hierarchy ?? []).find((h) => h.level === level);
+    return row ? row.name : null;
+}
+
+// CFDA (Catalog of Federal Domestic Assistance) rows describe grant/loan/direct-payment programs,
+// a structurally richer family than opp/wd -- confirmed live cycle 707. `_id` is a stable 32-char
+// hex id (same role as opp's `_id`). `programNumber` (e.g. "12.103") is the reference number
+// buyers actually search by, same role as wd's `referenceNumber`. `publishDate`/`modifiedDate` are
+// ISO strings on every sample checked (unlike wd's epoch-ms DBRA/SCA split) -- no toIso() needed.
+// `contacts` is the agency's own published program contact, same PII-safe reasoning already
+// applied to opp's `pointOfContact` (statutory public notice, not a person's private profile).
+// `financial.obligations` is shipped as raw pass-through, not normalized: the one sample read had
+// only a `flag` per year (no numeric `amount`), and cycle 707's time budget did not allow reading
+// enough records to enumerate the full flag vocabulary -- honest raw data beats a half-guessed enum.
+function normalizeCfdaRow(row) {
+    const id = row._id;
+    return {
+        assistanceListingId: id === null || id === undefined ? null : String(id),
+        programNumber: row.programNumber ?? null,
+        title: row.title ?? null,
+        alternativeNames: Array.isArray(row.alternativeNames) ? row.alternativeNames : null,
+        objective: row.objective ?? null,
+        isActive: row.isActive ?? null,
+        isFunded: row.isFunded ?? null,
+        isLatest: row.isLatest ?? null,
+        publishDate: row.publishDate ?? null,
+        modifiedDate: row.modifiedDate ?? null,
+        department: orgFieldByLevel(row.organizationHierarchy, 1),
+        agency: orgFieldByLevel(row.organizationHierarchy, 2),
+        assistanceTypes: Array.isArray(row.assistanceTypes)
+            ? row.assistanceTypes.map((t) => (t?.hierarchy ?? []).map((h) => h?.value ?? null).filter(Boolean))
+            : null,
+        eligibleApplicants: row.eligibility?.applicant?.types?.map((t) => t?.value ?? null).filter(Boolean) ?? null,
+        eligibleApplicantsNote: row.eligibility?.applicant?.additionalInfo ?? null,
+        eligibleBeneficiaries: row.eligibility?.beneficiary?.types?.map((t) => t?.value ?? null).filter(Boolean) ?? null,
+        eligibleBeneficiariesNote: row.eligibility?.beneficiary?.additionalInfo ?? null,
+        obligations: Array.isArray(row.financial?.obligations) ? row.financial.obligations : null,
+        contacts: Array.isArray(row.contacts)
+            ? row.contacts.map((c) => ({ name: c?.name ?? null, title: c?.title ?? null, phone: c?.phone ?? null, address: c?.address?.streetAddress ?? null }))
+            : null,
+        relatedPrograms: Array.isArray(row.relatedPrograms) ? row.relatedPrograms.map((p) => p?.programNumber ?? null).filter(Boolean) : null,
+        website: row.website ?? null,
+        historicalIndexCount: Array.isArray(row.historicalIndex) ? row.historicalIndex.length : null,
+        sourceUrl: id ? `https://sam.gov/fal/${id}/view` : null,
+    };
+}
+
+// One identity accessor for all three row shapes, so the dedupe set, the watch baseline and the
+// push loop can never disagree about what "the id of this row" means.
 function idOf(item) {
-    return item.opportunityId ?? item.wageDeterminationId ?? null;
+    return item.opportunityId ?? item.wageDeterminationId ?? item.assistanceListingId ?? null;
 }
 
 let detailLookupsFailed = 0;
@@ -407,7 +513,9 @@ const watchCriteria = {
 function descHashOf(desc) {
     return desc ? createHash('md5').update(desc).digest('hex').slice(0, 8) : null;
 }
-const WATCHED_FIELDS_TEXT = isWd
+const WATCHED_FIELDS_TEXT = isCfda
+    ? 'active or funded status, modified date, or historical-index entry count'
+    : isWd
     ? 'revision number, active status or modified date'
     : 'active/notice-type status, response deadline, modified date, modification count, awardee or description';
 
@@ -424,6 +532,13 @@ function snapshotOf(item) {
         // a REVISION (Davis-Bacon schedules are revised many times a year) and isActive flipping
         // when a newer revision supersedes them. Always null on an opportunity row.
         revisionNumber: typeof item.revisionNumber === 'number' ? item.revisionNumber : null,
+        // Assistance listings have no revision number either; what moves is funded status
+        // (isFunded flips as budgets are appropriated) and the historical-index log growing when
+        // SAM.gov records a title/agency change (not yet observed live over time as of cycle 707 --
+        // treated as a candidate signal, not a confirmed one; harmless if it never fires). Always
+        // null on an opp/wd row.
+        isFunded: typeof item.isFunded === 'boolean' ? item.isFunded : null,
+        historicalIndexCount: typeof item.historicalIndexCount === 'number' ? item.historicalIndexCount : null,
     };
 }
 
@@ -434,7 +549,7 @@ function changesBetween(prev, next) {
     if (!prev) return null;
     const types = [];
     const previous = {};
-    for (const field of ['isActive', 'noticeTypeCode', 'responseDate', 'modifiedDate', 'modificationsCount', 'awardeeName', 'revisionNumber']) {
+    for (const field of ['isActive', 'noticeTypeCode', 'responseDate', 'modifiedDate', 'modificationsCount', 'awardeeName', 'revisionNumber', 'isFunded', 'historicalIndexCount']) {
         if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
             types.push(field);
             previous[field] = prev[field];
@@ -477,10 +592,12 @@ async function saveWatchRecord(status) {
         seenCount: entries.length,
         // Compact per-entry shape so WATCH_KEEP's 60,000 entries stay inside the KV record's size
         // budget: i(d), a(isActive), n(noticeTypeCode), r(responseDate), m(modifiedDate),
-        // c(modificationsCount), w(awardeeName), h(descHash), v(revisionNumber).
+        // c(modificationsCount), w(awardeeName), h(descHash), v(revisionNumber), f(isFunded),
+        // x(historicalIndexCount).
         seenIds: entries.map(([id, snap]) => ({
             i: id, a: snap.isActive, n: snap.noticeTypeCode, r: snap.responseDate, m: snap.modifiedDate,
             c: snap.modificationsCount, w: snap.awardeeName, h: snap.descHash, v: snap.revisionNumber,
+            f: snap.isFunded, x: snap.historicalIndexCount,
         })),
         runCount: (watchRecord.runCount ?? 0) + 1,
     });
@@ -505,11 +622,14 @@ if (watchMode) {
                     modificationsCount: typeof entry.c === 'number' ? entry.c : null,
                     awardeeName: entry.w ?? null, descHash: entry.h ?? null,
                     revisionNumber: typeof entry.v === 'number' ? entry.v : null,
+                    isFunded: typeof entry.f === 'boolean' ? entry.f : null,
+                    historicalIndexCount: typeof entry.x === 'number' ? entry.x : null,
                 });
             } else {
                 watchSeen.set(String(entry), {
                     isActive: null, noticeTypeCode: null, responseDate: null, modifiedDate: null,
                     modificationsCount: null, awardeeName: null, descHash: null, revisionNumber: null,
+                    isFunded: null, historicalIndexCount: null,
                 });
             }
         }
@@ -614,7 +734,7 @@ async function fetchRows(limit) {
         }
         scanned += pageRows.length;
         for (const row of pageRows) {
-            const item = isWd ? normalizeWdRow(row) : normalizeRow(row);
+            const item = isWd ? normalizeWdRow(row) : isCfda ? normalizeCfdaRow(row) : normalizeRow(row);
             const rowId = idOf(item);
             if (rowId) {
                 if (seenIds.has(rowId)) { duplicateRowsDropped += 1; continue; }
@@ -777,9 +897,9 @@ if (watchMode && seedFailure) {
             `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} ${ROW_NOUN}(s) recorded as already-seen, `
             + `0 results returned, 0 charged. The next run on this label and these filters returns only new ${ROW_NOUN_PLURAL}.`
             + (watchSeen.size >= SEED_CAP
-                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-record cap. Narrow the query (a keyword, a `
-                + `state${isWd ? '' : ', a NAICS code, a set-aside/notice type'}) so the whole result set fits, or the `
-                + `first incremental run will report ${ROW_NOUN_PLURAL} past the cap as new.`
+                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-record cap. Narrow the query (a keyword`
+                + `${isCfda ? ', an organization' : isWd ? ', a state' : ', a NAICS code, a set-aside/notice type'}) so `
+                + `the whole result set fits, or the first incremental run will report ${ROW_NOUN_PLURAL} past the cap as new.`
                 : ''),
         );
     } else {

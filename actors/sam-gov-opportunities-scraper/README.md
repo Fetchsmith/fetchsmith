@@ -1,9 +1,9 @@
-# SAM.gov Scraper – US Federal Contracts, Bids & Wage Determinations
+# SAM.gov Scraper – US Federal Contracts, Bids, Wage Determinations & Grants
 
 Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with **no API key, no login, no proxy and no browser**. Filter by keyword, NAICS code, set-aside type, notice type, place-of-performance state and issuing organization, and optionally enrich every row with the contracting officer's contact details, NAICS codes, set-aside and place of performance.
 
 ## What it does
-- **Four public SAM.gov datasets, one Actor, no key.** `dataType` picks which one: `opportunities` (default — solicitations, presolicitations, sources sought, awards) or one of three Department of Labor wage-determination sets SAM.gov publishes — `wage-determinations-dbra` (Davis-Bacon Act, construction), `wage-determinations-sca` (Service Contract Act, services) and `wage-determinations-cba` (collective bargaining agreements). All four come off the same keyless public search backend, so none of them needs a registered API key.
+- **Five public SAM.gov datasets, one Actor, no key.** `dataType` picks which one: `opportunities` (default — solicitations, presolicitations, sources sought, awards), one of three Department of Labor wage-determination sets SAM.gov publishes — `wage-determinations-dbra` (Davis-Bacon Act, construction), `wage-determinations-sca` (Service Contract Act, services) and `wage-determinations-cba` (collective bargaining agreements) — or `assistance-listings`, the Catalog of Federal Domestic Assistance (CFDA) grant/loan/direct-payment programs. All five come off the same keyless public search backend, so none of them needs a registered API key.
 - Calls the same backend that powers sam.gov's own public opportunity search page, so results match what you see on the site. **SAM.gov's official developer API (`api.sam.gov/opportunities/v2`) requires a free registered API key — this Actor needs none.** You do not have to register with GSA, wait for key approval, or rotate a key across a team.
 - **`enrichDetail` joins each row with the per-opportunity record**, which is where the fields a bidder actually qualifies on live: `naicsCodes`, `setAside`, `placeOfPerformanceState`/`placeOfPerformanceCountry`, and `pointOfContact` (the contracting officer's name, email and phone, primary and secondary). None of these are on the search row. Off by default because it costs one extra HTTP call per row; turn it on when you are qualifying, not just listing.
 - **Multi-value filters really OR.** `naicsCodes: ["541511", "541512"]` returns the union of both, not just the first. This is worth stating because SAM.gov's backend silently accepts a repeated query parameter and then honours only the first value — verified live: `naics=541511` → 607 hits, `naics=541512` → 312, repeated-key form → 607 (wrong, and no error), comma-joined form → exactly 919. This Actor sends the comma-joined form for every multi-value filter (`naicsCodes`, `setAsideTypes`, `noticeTypes`, `states`), so a two-code search does not quietly drop half your pipeline.
@@ -75,6 +75,55 @@ Set `dataType` to one of the three wage-determination options and the same filte
 }
 ```
 
+## Assistance listings (CFDA)
+Set `dataType` to `assistance-listings` to pull the Catalog of Federal Domestic Assistance — ~7,400 federal grant/loan/direct-payment programs (~2,900 currently active), each with its objective, eligibility rules, funding-obligation history, related programs and the agency's own published program contact.
+
+- **Supports `keyword`, `organizationId`, `activeOnly`, `maxResults`, `watchLabel`, `watchChanges`, `webhookUrl`.** `naicsCodes`, `setAsideTypes`, `noticeTypes` and `states` are opportunity-only and are ignored (with a log warning) here — assistance-listing programs are nationwide, not filtered by place of performance. `enrichDetail` is also ignored: the search row already carries the full record.
+- **`keyword` matches title, objective and program number** (e.g. `q=flood` → 60 of 7,392 programs), not a reference-number-only match like the wage-determination indices.
+- **`programNumber`** (e.g. `"12.103"`) is the CFDA number buyers actually search by — the natural reference for cross-checking against grants.gov or an agency's own NOFO.
+- **`obligations`** is shipped as SAM.gov's own raw per-assistance-type funding history (`{ assistanceType, values: [{ year, flag }], additionalInfo }`) rather than normalized into a single amount field — the sampled records carry only a `flag` (e.g. `"ena"` = estimate not available) per year, not a consistent numeric amount, so a normalized field would either be frequently null or silently wrong.
+- **`contacts`** is the agency's own published program contact (name/title/phone/address) from the public listing, the same disclosure class as opportunities' `pointOfContact`.
+- **`watchChanges` on assistance listings** re-delivers a program if its active or funded status, modified date, or historical-index entry count has changed since you last saw it — there is no revision number or response deadline on this dataset, so funded/active status is the closest signal to "this program moved."
+
+### Example assistance-listings input
+```json
+{
+  "dataType": "assistance-listings",
+  "keyword": "broadband",
+  "activeOnly": true,
+  "maxResults": 100
+}
+```
+
+### Sample assistance-listings output row
+```json
+{
+  "assistanceListingId": "8d745b5ad52a421dbf9483c7451adec1",
+  "programNumber": "12.002",
+  "title": "Procurement Technical Assistance For Business Firms",
+  "alternativeNames": ["APEX Accelerator Program/Procurement Technical Assistance Program (PTAP))"],
+  "objective": "Building a strong and sustainable U.S. supply chain and supporting a wide range of diverse businesses by providing procurement assistance to businesses...",
+  "isActive": true,
+  "isFunded": true,
+  "isLatest": true,
+  "publishDate": "2026-01-16T00:02:55-05:00",
+  "modifiedDate": "2026-01-16T00:02:55-05:00",
+  "department": "DEPT OF DEFENSE",
+  "agency": "WASHINGTON HEADQUARTERS SERVICES (WHS)",
+  "assistanceTypes": [["Financial", "Cooperative Agreement"]],
+  "eligibleApplicants": ["Nonprofit Organization", "Tribal", "..."],
+  "eligibleApplicantsNote": "Eligible applicants. Only those entities listed in this section are eligible to apply...",
+  "eligibleBeneficiaries": ["Anyone/general public", "State", "Local"],
+  "eligibleBeneficiariesNote": null,
+  "obligations": [{ "assistanceType": { "code": "F001", "value": "Grant" }, "values": [{ "flag": "ena", "year": 2025 }], "additionalInfo": null }],
+  "contacts": [{ "name": null, "title": null, "phone": null, "address": "Commander, U.S. Army Corps of Engineers, Attn: CECW-OE, Washington, DC 20314-1000." }],
+  "relatedPrograms": ["12.104", "12.105"],
+  "website": "http://www.usace.army.mil/business.html.",
+  "historicalIndexCount": 6,
+  "sourceUrl": "https://sam.gov/fal/8d745b5ad52a421dbf9483c7451adec1/view"
+}
+```
+
 ## Use cases
 - **GovCon bid pipelines** — pull every active solicitation in your NAICS codes and set-aside category (`naicsCodes` + `setAsideTypes` + `noticeTypes: ["o", "k"]`) into a CRM, already qualified by place of performance.
 - **Small-business / 8(a) / SDVOSB capture** — filter to the set-asides you actually hold and stop reading opportunities you are not eligible for.
@@ -86,6 +135,8 @@ Set `dataType` to one of the three wage-determination options and the same filte
 - **Service Contract Act scoping** — `dataType: "wage-determinations-sca"` returns the service categories each determination covers, so you can map a services solicitation to the right determination before pricing labour.
 - **Wage-determination revision alerts** — `watchLabel` + `watchChanges` on a state-filtered wage-determination search re-delivers a determination only when its `revisionNumber`, active status or modified date moves — the signal that an in-flight bid or a running contract needs repricing.
 - **Deadline-extension / lifecycle alerts** — `watchLabel` + `watchChanges` flags a presolicitation turning into a solicitation, a deadline extension, or an award landing on a solicitation you're already tracking.
+- **Grant-eligibility screening** — `dataType: "assistance-listings"` with a keyword returns each matching program's `eligibleApplicants`/`eligibleBeneficiaries` and `objective`, so a grant writer can shortlist which CFDA programs a client actually qualifies for before drafting anything.
+- **New/defunded grant program alerts** — `watchLabel` + `watchChanges` on `assistance-listings` flags a program going active, funded, or unfunded since your last check.
 
 ### Example input
 ```json
@@ -100,18 +151,18 @@ Set `dataType` to one of the three wage-determination options and the same filte
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `dataType` | string | Which SAM.gov dataset: `opportunities` (default), `wage-determinations-dbra`, `wage-determinations-sca`, `wage-determinations-cba` |
-| `keyword` | string | Full-text search across the opportunity index (default `contract`). On wage-determination types it matches the determination's reference number — leave empty for all |
-| `naicsCodes` | array | NAICS codes, e.g. `["541511", "541512"]` — multiple codes are ORed |
-| `setAsideTypes` | array | Set-aside codes, e.g. `["SBA"]` — multiple values are ORed |
-| `noticeTypes` | array | Notice-type codes `p`/`o`/`k`/`r`/`a`/`s`/`g`/`i`/`u` — multiple values are ORed |
-| `states` | array | Two-letter state codes, e.g. `["TX", "CA"]` — ORed. Place of performance for opportunities; covered state for wage determinations |
-| `organizationId` | string | Restrict to one issuing department/agency/office by SAM organization id |
-| `activeOnly` | boolean | Only opportunities still open for response — for wage determinations, only determinations currently in force (default `true`) |
-| `enrichDetail` | boolean | Join each row with NAICS / set-aside / place of performance / contacts (default `false`) |
+| `dataType` | string | Which SAM.gov dataset: `opportunities` (default), `wage-determinations-dbra`, `wage-determinations-sca`, `wage-determinations-cba`, `assistance-listings` |
+| `keyword` | string | Full-text search across the opportunity index (default `contract`). On wage-determination types it matches the determination's reference number; on `assistance-listings` it matches title/objective/program number — leave empty for all |
+| `naicsCodes` | array | NAICS codes, e.g. `["541511", "541512"]` — multiple codes are ORed. Opportunities only |
+| `setAsideTypes` | array | Set-aside codes, e.g. `["SBA"]` — multiple values are ORed. Opportunities only |
+| `noticeTypes` | array | Notice-type codes `p`/`o`/`k`/`r`/`a`/`s`/`g`/`i`/`u` — multiple values are ORed. Opportunities only |
+| `states` | array | Two-letter state codes, e.g. `["TX", "CA"]` — ORed. Place of performance for opportunities; covered state for wage determinations; not supported for `assistance-listings` |
+| `organizationId` | string | Restrict to one issuing department/agency/office by SAM organization id. Opportunities and `assistance-listings` only |
+| `activeOnly` | boolean | Only opportunities still open for response — for wage determinations, only determinations currently in force; for `assistance-listings`, only currently-active programs (default `true`) |
+| `enrichDetail` | boolean | Join each row with NAICS / set-aside / place of performance / contacts (default `false`). Opportunities only |
 | `maxResults` | integer | Cap on rows returned (default `200`) |
-| `watchLabel` | string | Optional. Name a saved search to get only opportunities new since your last run under that label — see FAQ |
-| `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen opportunity if `isActive`, `noticeTypeCode`, `responseDate`, `modifiedDate`, `modificationsCount`, `awardeeName` or `description` changed (default `false`) — see FAQ |
+| `watchLabel` | string | Optional. Name a saved search to get only records new since your last run under that label — see FAQ |
+| `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen record if a watched field changed — for opportunities: `isActive`, `noticeTypeCode`, `responseDate`, `modifiedDate`, `modificationsCount`, `awardeeName` or `description`; for wage determinations: `revisionNumber`, `isActive` or `modifiedDate`; for `assistance-listings`: `isActive`, `isFunded`, `modifiedDate` or `historicalIndexCount` (default `false`) — see FAQ |
 | `webhookUrl` | string | Optional. POST a small JSON completion summary (opportunities pushed, rows scanned, dataset ID, watch new/changed/skipped counts) here when the run finishes — see FAQ |
 
 ## Sample output row

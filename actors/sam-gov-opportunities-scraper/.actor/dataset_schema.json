@@ -3,312 +3,441 @@
   "fields": {
     "type": "object",
     "properties": {
-      "opportunityId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Opportunity ID"
-      },
-      "title": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Title"
-      },
-      "solicitationNumber": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Solicitation number"
-      },
-      "noticeTypeCode": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Notice type code"
-      },
-      "noticeType": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Notice type"
-      },
-      "isActive": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "Active"
-      },
-      "isCanceled": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "Canceled"
-      },
-      "publishDate": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Published"
-      },
-      "modifiedDate": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Last modified"
-      },
-      "responseDate": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Response deadline (UTC)"
-      },
-      "responseDateActual": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Response deadline (local)"
-      },
-      "responseTimeZone": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Response time zone"
-      },
-      "department": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Department"
-      },
-      "agency": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Agency"
-      },
-      "office": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Office"
-      },
-      "description": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Description (full solicitation text)"
-      },
-      "awardeeName": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Awardee name"
-      },
-      "awardeeUeiSAM": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Awardee UEI (SAM)"
-      },
-      "modificationsCount": {
-        "type": [
-          "integer",
-          "null"
-        ],
-        "title": "Modifications count"
-      },
-      "sourceUrl": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "SAM.gov URL"
-      },
-      "naicsCodes": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "NAICS codes"
-      },
-      "setAside": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Set-aside"
-      },
-      "placeOfPerformanceState": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Place of performance (state)"
-      },
-      "placeOfPerformanceCountry": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "title": "Place of performance (country)"
-      },
-      "pointOfContact": {
-        "type": [
-          "array",
-          "null"
-        ],
-        "title": "Points of contact"
-      },
-      "_watchChangeType": {
-        "title": "_watchChangeType",
-        "example": [
-          "isActive"
-        ],
-        "type": [
-          "array",
-          "null"
-        ]
-      },
-      "_watchPrevious": {
-        "title": "_watchPrevious",
-        "example": {
-          "isActive": true
-        },
-        "type": [
-          "object",
-          "null"
-        ]
-      },
       "wageDeterminationId": {
+        "title": "WageDeterminationId",
+        "example": "43246",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Wage determination ID"
+        ]
       },
       "referenceNumber": {
+        "title": "ReferenceNumber",
+        "example": "CBA-2003-2",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Reference number"
+        ]
       },
       "shortReferenceNumber": {
+        "title": "ShortReferenceNumber",
+        "example": "AK1",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Short reference number"
+        ]
+      },
+      "title": {
+        "title": "Title",
+        "example": "CBA-2003-2",
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "actCode": {
+        "title": "ActCode",
+        "example": "CBA",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Act code"
+        ]
       },
       "actName": {
+        "title": "ActName",
+        "example": "Collective Bargaining Agreement",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Act"
+        ]
       },
       "recordType": {
+        "title": "RecordType",
+        "example": "wdCBA",
         "type": [
           "string",
           "null"
-        ],
-        "title": "Record type"
+        ]
+      },
+      "isActive": {
+        "title": "IsActive",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
       },
       "isLatest": {
+        "title": "IsLatest",
+        "example": true,
         "type": [
           "boolean",
           "null"
-        ],
-        "title": "Latest revision"
+        ]
       },
       "isStandard": {
+        "title": "IsStandard",
+        "example": true,
         "type": [
           "boolean",
           "null"
-        ],
-        "title": "Standard determination"
+        ]
       },
       "revisionNumber": {
+        "title": "RevisionNumber",
+        "example": 0,
         "type": [
+          "number",
           "integer",
           "null"
-        ],
-        "title": "Revision number"
+        ]
       },
       "year": {
+        "title": "Year",
+        "example": 2026,
         "type": [
+          "number",
           "integer",
           "null"
-        ],
-        "title": "Year"
+        ]
+      },
+      "publishDate": {
+        "title": "PublishDate",
+        "example": "2003-10-03T05:00:00+00:00",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "modifiedDate": {
+        "title": "ModifiedDate",
+        "example": "2003-10-03T23:34:49+00:00",
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "constructionTypes": {
+        "title": "ConstructionTypes",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Construction types"
+        ]
       },
       "services": {
+        "title": "Services",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Service categories"
+        ]
       },
       "coverage": {
+        "title": "Coverage",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Geographic coverage"
+        ]
       },
       "stateCodes": {
+        "title": "StateCodes",
         "type": [
           "array",
           "null"
-        ],
-        "title": "State codes"
+        ]
       },
       "countyCount": {
+        "title": "CountyCount",
+        "example": 1,
         "type": [
+          "number",
           "integer",
           "null"
-        ],
-        "title": "County count"
+        ]
       },
       "wageRates": {
+        "title": "WageRates",
         "type": [
           "array",
           "null"
-        ],
-        "title": "Wage rates (not published on the index; always null)"
+        ]
+      },
+      "assistanceListingId": {
+        "title": "AssistanceListingId",
+        "example": "1f81e2493e57437897aa8024aeb12174",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "programNumber": {
+        "title": "ProgramNumber",
+        "example": "11.031",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "alternativeNames": {
+        "title": "AlternativeNames",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "objective": {
+        "title": "Objective",
+        "example": "The Broadband Infrastructure Program provides federal grants for the deployment of broadband infrastructure.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "isFunded": {
+        "title": "IsFunded",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "department": {
+        "title": "Department",
+        "example": "COMMERCE, DEPARTMENT OF",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "agency": {
+        "title": "Agency",
+        "example": "NATIONAL TELECOMMUNICATIONS AND INFORMATION ADMINISTRATION",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "assistanceTypes": {
+        "title": "AssistanceTypes",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "eligibleApplicants": {
+        "title": "EligibleApplicants",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "eligibleApplicantsNote": {
+        "title": "EligibleApplicantsNote",
+        "example": "An applicant must be a \"covered partnership,\" which means partnership between\u2014 (A) a State or U.S. Territory, or one or ",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "eligibleBeneficiaries": {
+        "title": "EligibleBeneficiaries",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "eligibleBeneficiariesNote": {
+        "title": "EligibleBeneficiariesNote",
+        "example": "General public and businesses will benefit from this assistance which supports broadband infrastructure deployment to ar",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "obligations": {
+        "title": "Obligations",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "contacts": {
+        "title": "Contacts",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "relatedPrograms": {
+        "title": "RelatedPrograms",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "website": {
+        "title": "Website",
+        "example": "http://www.ntia.gov",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "historicalIndexCount": {
+        "title": "HistoricalIndexCount",
+        "example": 7,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "sourceUrl": {
+        "title": "SourceUrl",
+        "example": "https://sam.gov/fal/1f81e2493e57437897aa8024aeb12174/view",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "opportunityId": {
+        "title": "OpportunityId",
+        "example": "6d39960f98d00539537f673269cdfd35",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "solicitationNumber": {
+        "title": "SolicitationNumber",
+        "example": "N0018919Q0207",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "noticeTypeCode": {
+        "title": "NoticeTypeCode",
+        "example": "o",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "noticeType": {
+        "title": "NoticeType",
+        "example": "Solicitation",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "isCanceled": {
+        "title": "IsCanceled",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "responseDate": {
+        "title": "ResponseDate",
+        "example": "2024-12-10T00:00:00+00:00",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "responseDateActual": {
+        "title": "ResponseDateActual",
+        "example": "2024-12-10",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "responseTimeZone": {
+        "title": "ResponseTimeZone",
+        "example": "America/New_York",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "office": {
+        "title": "Office",
+        "example": "NAVSUP FLT LOG CTR NORFOLK",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": {
+        "title": "Description",
+        "example": "Award Notice for N0018919Q0207:\n\nContract Award date: 27 June 2019\n\nContract Number: N0018919D0020\nContract Awardee: Klo",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "awardeeName": {
+        "title": "AwardeeName",
+        "example": "Colorado Department of Labor and Employment",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "awardeeUeiSAM": {
+        "title": "AwardeeUeiSAM",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "modificationsCount": {
+        "title": "ModificationsCount",
+        "example": 7,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "naicsCodes": {
+        "title": "NaicsCodes",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "setAside": {
+        "title": "SetAside",
+        "example": "SBA",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placeOfPerformanceState": {
+        "title": "PlaceOfPerformanceState",
+        "example": "NY",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placeOfPerformanceCountry": {
+        "title": "PlaceOfPerformanceCountry",
+        "example": "USA",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pointOfContact": {
+        "title": "PointOfContact",
+        "type": [
+          "array",
+          "null"
+        ]
       }
     }
   },
@@ -317,59 +446,60 @@
       "title": "Overview",
       "transformation": {
         "fields": [
+          "wageDeterminationId",
+          "referenceNumber",
+          "shortReferenceNumber",
           "title",
-          "noticeType",
-          "solicitationNumber",
-          "agency",
-          "office",
-          "publishDate",
-          "responseDate",
+          "actCode",
+          "actName",
+          "recordType",
           "isActive",
-          "setAside",
-          "naicsCodes",
-          "placeOfPerformanceState",
-          "sourceUrl"
+          "isLatest",
+          "isStandard"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
+          "wageDeterminationId": {
+            "label": "WageDeterminationId",
+            "format": "text"
+          },
+          "referenceNumber": {
+            "label": "ReferenceNumber",
+            "format": "text"
+          },
+          "shortReferenceNumber": {
+            "label": "ShortReferenceNumber",
+            "format": "text"
+          },
           "title": {
-            "label": "Title"
+            "label": "Title",
+            "format": "text"
           },
-          "noticeType": {
-            "label": "Notice type"
+          "actCode": {
+            "label": "ActCode",
+            "format": "text"
           },
-          "solicitationNumber": {
-            "label": "Solicitation #"
+          "actName": {
+            "label": "ActName",
+            "format": "text"
           },
-          "agency": {
-            "label": "Agency"
-          },
-          "office": {
-            "label": "Office"
-          },
-          "publishDate": {
-            "label": "Published"
-          },
-          "responseDate": {
-            "label": "Deadline"
+          "recordType": {
+            "label": "RecordType",
+            "format": "text"
           },
           "isActive": {
-            "label": "Active"
+            "label": "IsActive",
+            "format": "boolean"
           },
-          "setAside": {
-            "label": "Set-aside"
+          "isLatest": {
+            "label": "IsLatest",
+            "format": "boolean"
           },
-          "naicsCodes": {
-            "label": "NAICS"
-          },
-          "placeOfPerformanceState": {
-            "label": "PoP state"
-          },
-          "sourceUrl": {
-            "label": "SAM.gov",
-            "format": "link"
+          "isStandard": {
+            "label": "IsStandard",
+            "format": "boolean"
           }
         }
       }

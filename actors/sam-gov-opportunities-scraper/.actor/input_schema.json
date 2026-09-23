@@ -6,26 +6,28 @@
         "dataType": {
             "title": "Data type",
             "type": "string",
-            "description": "Which SAM.gov public dataset to pull. **Contract opportunities** (default) returns solicitations/awards. The three **wage determination** options return the Department of Labor determinations SAM.gov publishes: **Davis-Bacon Act** (construction, ~85k records), **Service Contract Act** (services, ~2.7k) and **Collective Bargaining Agreement** (~108k). Wage-determination modes support the keyword, state, active-only and max-results filters only — NAICS, set-aside, notice type, organization and detail enrichment are opportunity-only and are ignored (with a log warning) if set. They return the determination index (which determination applies to which state/counties, its revision and whether it is current), not the per-occupation hourly rate tables.",
+            "description": "Which SAM.gov public dataset to pull. **Contract opportunities** (default) returns solicitations/awards. The three **wage determination** options return the Department of Labor determinations SAM.gov publishes: **Davis-Bacon Act** (construction, ~85k records), **Service Contract Act** (services, ~2.7k) and **Collective Bargaining Agreement** (~108k). Wage-determination modes support the keyword, state, active-only and max-results filters only — NAICS, set-aside, notice type, organization and detail enrichment are opportunity-only and are ignored (with a log warning) if set. They return the determination index (which determination applies to which state/counties, its revision and whether it is current), not the per-occupation hourly rate tables. **Assistance listings (CFDA)** returns the Catalog of Federal Domestic Assistance — federal grant/loan/direct-payment programs (~7.4k, ~2.9k currently active) — with objective, eligibility, funding-obligation history and agency contact per program. Supports keyword, organization, active-only and max-results only — NAICS/set-aside/notice-type/state are opportunity-only and ignored here (assistance-listing programs are nationwide, not filtered by place of performance).",
             "editor": "select",
             "default": "opportunities",
             "enum": [
                 "opportunities",
                 "wage-determinations-dbra",
                 "wage-determinations-sca",
-                "wage-determinations-cba"
+                "wage-determinations-cba",
+                "assistance-listings"
             ],
             "enumTitles": [
                 "Contract opportunities",
                 "Wage determinations — Davis-Bacon Act (construction)",
                 "Wage determinations — Service Contract Act (services)",
-                "Wage determinations — Collective Bargaining Agreement"
+                "Wage determinations — Collective Bargaining Agreement",
+                "Assistance listings (CFDA grants/loans)"
             ]
         },
         "keyword": {
             "title": "Keyword",
             "type": "string",
-            "description": "Searched against opportunity title/description. For wage determinations it matches the determination's reference number (e.g. \"AK20260001\"), NOT trades or occupations. Leave empty for all. Defaults to \"contract\" for opportunities so a first test run never returns 0 rows.",
+            "description": "Searched against opportunity title/description. For wage determinations it matches the determination's reference number (e.g. \"AK20260001\"), NOT trades or occupations. For assistance listings it matches title/objective/program number. Leave empty for all. Defaults to \"contract\" for opportunities so a first test run never returns 0 rows; other data types default to empty.",
             "editor": "textfield"
         },
         "naicsCodes": {
@@ -75,25 +77,25 @@
         "states": {
             "title": "Place of performance state(s)",
             "type": "array",
-            "description": "2-letter US state codes, e.g. CA. For opportunities this is the place of performance; for wage determinations it is the state the determination covers. Multiple states are OR-ed.",
+            "description": "2-letter US state codes, e.g. CA. For opportunities this is the place of performance; for wage determinations it is the state the determination covers. Multiple states are OR-ed. Not supported for assistance listings (ignored — those programs are nationwide).",
             "editor": "stringList"
         },
         "organizationId": {
             "title": "Organization ID",
             "type": "string",
-            "description": "SAM.gov internal organization ID to filter to one agency/office (advanced; find via a search result's organizationHierarchy).",
+            "description": "SAM.gov internal organization ID to filter to one agency/office (advanced; find via a search result's organizationHierarchy). Supported for opportunities and assistance listings; ignored for wage determinations.",
             "editor": "textfield"
         },
         "activeOnly": {
             "title": "Active records only",
             "type": "boolean",
-            "description": "Only return records SAM.gov currently flags active (for wage determinations: currently in force, i.e. not superseded by a later revision).",
+            "description": "Only return records SAM.gov currently flags active (for wage determinations: currently in force, i.e. not superseded by a later revision; for assistance listings: the program is currently active, ~2.9k of ~7.4k).",
             "default": true
         },
         "enrichDetail": {
             "title": "Enrich with detail call",
             "type": "boolean",
-            "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower. Opportunities only; ignored for wage determinations.",
+            "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower. Opportunities only; ignored for wage determinations and assistance listings (the assistance-listing search row already carries the full record).",
             "default": false
         },
         "maxResults": {
@@ -113,7 +115,7 @@
         "watchChanges": {
             "title": "Watch mode: also alert on lifecycle/deadline changes",
             "type": "boolean",
-            "description": "Only used together with Watch label. When on, a run also re-delivers an opportunity you already have if its active/notice-type status (e.g. presolicitation turning into a solicitation, or an award landing), response deadline, modified date, modification count, awardee or description has changed since you last saw it. Charged at the same per-row price as a new opportunity. Each changed row is tagged with `_watchChangeType` (one or more of `isActive`, `noticeTypeCode`, `responseDate`, `modifiedDate`, `modificationsCount`, `awardeeName`, `description`) plus the previous value(s) under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
+            "description": "Only used together with Watch label. When on, a run also re-delivers a record you already have if its watched fields changed since you last saw it: for opportunities, active/notice-type status (e.g. presolicitation turning into a solicitation, or an award landing), response deadline, modified date, modification count, awardee or description; for wage determinations, revision number, active status or modified date; for assistance listings, active or funded status, modified date, or historical-index entry count. Charged at the same per-row price as a new record. Each changed row is tagged with `_watchChangeType` (one or more of `isActive`, `noticeTypeCode`, `responseDate`, `modifiedDate`, `modificationsCount`, `awardeeName`, `description`, `revisionNumber`, `isFunded`, `historicalIndexCount`) plus the previous value(s) under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
             "default": false
         },
         "webhookUrl": {
