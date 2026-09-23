@@ -656,7 +656,19 @@ function truncationNote() {
         + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
-if (watchMode) {
+// A SEED walk cut short by an upstream error must save NOTHING (h287, 3rd variant, first fixed
+// on eu-ted-tenders-scraper cycle 680): saving the partial id set as the baseline would make the
+// first incremental run treat every document past the failure point as "new" and charge for it.
+// A seed charges nothing, so re-seeding later is free -- unlike an incremental run, there is
+// nothing lost by not persisting here.
+if (watchMode && seeding && runState.failed) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${runState.lastError ?? 'unknown API error'}), `
+        + 'so NO baseline was saved. A partial baseline would have caused every document past the stopping '
+        + 'point to be delivered and charged as "new" on your next run. Re-run the same label and filters '
+        + 'once the source recovers.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
         log.info(
@@ -834,6 +846,18 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+// Deferred to the very last statement on purpose (h287): failing any earlier would skip the
+// RUN_SUMMARY write and the webhook above. Nothing was charged this run (a seed pushes no
+// rows), so failing is free -- and failing loudly, instead of exiting 0 with an unsaved
+// baseline, stops a scheduled run from quietly reading "seeded" and moving on to incremental.
+if (watchMode && seeding && runState.failed) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${runState.lastError ?? 'unknown API error'}. No baseline `
+        + 'was saved (a partial one would cause you to be charged twice for the same documents later) and '
+        + 'nothing was charged. Please re-run in a few minutes.',
+    );
 }
 
 await Actor.exit();
