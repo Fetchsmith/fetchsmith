@@ -35,18 +35,20 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("app-store-reviews-scraper", 775): (
+    ("app-store-reviews-scraper", 787): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
         "that ever calls Actor.charge( even starts -- nothing can have been charged yet."
     ),
-    ("app-store-reviews-scraper", 993): (
+    ("app-store-reviews-scraper", 1006): (
         "guarded by pairsAttempted > 0 and storefrontErrorPairs.length === pairsAttempted "
-        "-- every pair in this run errored, so nothing was ever pushed/charged to lose."
+        "-- every pair in this run errored, so nothing was ever pushed/charged to lose. "
+        "Line shifted from 993 by cycle 693's fetchPage fix."
     ),
-    ("app-store-reviews-scraper", 1004): (
+    ("app-store-reviews-scraper", 1019): (
         "guarded by feedServed === 0 -- nothing came out of Apple for any pair in this "
         "run, so nothing was ever pushed/charged to lose; comment in-code confirms this "
-        "fires before the watch record write on purpose."
+        "fires before the watch record write on purpose. Line shifted from 1004 by "
+        "cycle 693's fetchPage fix."
     ),
 }
 
