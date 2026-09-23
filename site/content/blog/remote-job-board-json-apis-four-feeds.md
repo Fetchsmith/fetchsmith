@@ -1,16 +1,16 @@
 ---
-title: Five public remote-job APIs with no key — and how small each feed really is
-description: Remotive, Remote OK, Jobicy, Arbeitnow and Working Nomads all publish remote job postings as JSON with no login. Measured live on three separate days, the five together hold about 250 postings, limit is decorative on two of them, and only one pair of boards genuinely syndicates.
+title: Six public remote-job APIs with no key — and how small each feed really is
+description: Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads and Himalayas all publish remote job postings as JSON with no login. Measured live over four separate days, the six together sample to a few hundred postings, limit is decorative or entirely ignored on three of them, and only one pair of boards genuinely syndicates.
 date: 2026-09-21
 tags: webscraping, api, jobs, hiring
 tool: remote-jobs-scraper
 ---
 
-Five remote-job boards publish their postings as public JSON with no key, no cookie and no login: [Remotive](https://remotive.com), [Remote OK](https://remoteok.com), [Jobicy](https://jobicy.com), [Arbeitnow](https://www.arbeitnow.com) and [Working Nomads](https://www.workingnomads.com). We merged all five into one normalized schema for [remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper), and measured each feed on separate days before writing anything down.
+Six remote-job boards publish their postings as public JSON with no key, no cookie and no login: [Remotive](https://remotive.com), [Remote OK](https://remoteok.com), [Jobicy](https://jobicy.com), [Arbeitnow](https://www.arbeitnow.com), [Working Nomads](https://www.workingnomads.com) and [Himalayas](https://himalayas.app). We merged all six into one normalized schema for [remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper), and measured each feed on separate days before writing anything down.
 
-The headline result is not the one we expected going in. These are not five big overlapping firehoses that need careful de-duplication. They are five small curated lists that are *mostly* disjoint, and the interesting engineering problem is coverage, not overlap.
+The headline result is not the one we expected going in. Five of these are not big overlapping firehoses that need careful de-duplication — they are small curated lists that are *mostly* disjoint, and the interesting engineering problem is coverage, not overlap. Himalayas is the outlier: its own count of total live postings is in the hundred-thousands, two to three orders of magnitude past any of the other five (see the update at the end).
 
-> **This post was written on 2026-09-21 covering four boards** — which is why the URL says `four-feeds`. Working Nomads was added on 2026-09-23 and is measured in its own section at the end of this post, with the numbers re-taken that day rather than folded into the older table. The URL is left alone so existing links keep working.
+> **This post was written on 2026-09-21 covering four boards** — which is why the URL says `four-feeds`. Working Nomads was added 2026-09-23 and Himalayas the same day, each measured in its own section at the end of this post, with the numbers re-taken on the day added rather than folded into the older table. The URL is left alone so existing links keep working.
 
 ## The five endpoints
 
@@ -200,9 +200,41 @@ That is a real change in kind, not just in count. The four-board conclusion was 
 
 Company-level overlap grew too: four companies now appear on Working Nomads and at least one other board (`lemon io`, `telus digital`, `imerit technology` — which is on three boards — and `sticker mule`). As before, those are genuinely different openings and stay as separate rows.
 
+## Update, 2026-09-23: a sixth feed — Himalayas, and it is a different shape of source entirely
+
+[Himalayas](https://himalayas.app) is not a small curated list like the other five. Its own response reports **101,778 total live postings** — two to three orders of magnitude past any board measured above. Finding the real endpoint took more effort than any of the others:
+
+```
+GET https://himalayas.app/api/jobs      -> 404
+GET https://himalayas.app/api/v1/jobs   -> the HTML app shell, not JSON
+GET https://himalayas.app/jobs/api      -> 200, real JSON
+```
+
+Neither documented-looking path works; the real endpoint was only found by reading the string embedded in the site's own JSON `comments` field. It is cursor-paginated:
+
+```json
+{"jobs": [...], "nextCursor": "…", "totalCount": 101778}
+```
+
+`?limit=` is ignored the way Working Nomads ignores every parameter — tested at 50, 100 and 200, the page is always **exactly 20 jobs**, so depth into the ~102k-job inventory is governed purely by how many pages you request, the same shape as Arbeitnow's page-count cap rather than a page-size parameter. Jobs are sorted newest-first. Like Working Nomads, there is no dedicated id field — the job's own permalink (`guid`) is the only stable per-posting key.
+
+### The overlap finding, re-measured across all six
+
+Re-running the same normalize-company-and-title union, now over six boards on 2026-09-23, sampling five boards in full plus 100 of Himalayas' newest postings (5 pages at Himalayas' fixed 20-per-page):
+
+```
+total rows        352
+unique keys       340
+keys on >1 board  5
+```
+
+The count of true cross-board duplicates did not move — **still the same 5 pairs found in the five-board measurement above, all of them Working Nomads/Remotive or Remote OK/Remotive.** Himalayas' 100 sampled postings matched none of them. At this inventory's scale that is expected, not a finding about syndication: 100 rows out of a 102k-posting board is a thin enough slice that even real overlap with a 20-50-posting curated board would often miss by chance. This number should not be read as "Himalayas doesn't syndicate" — it is "this sample was too small to tell," which is itself worth knowing before you build a coverage claim on top of it.
+
+**A different kind of duplicate showed up while re-running this: two boards had their own internal repeats.** Arbeitnow listed "SouthwestX — CEO / Business Co-Founder" and "BDF EXPERTS — Senior SAP Berater" twice each within its own 2-page pull, and Working Nomads listed Peroptyx's "AI Content Analyst" twice and "Data Analyst" **four times** within its single 58-row feed. These are same-board, not cross-board — a board re-posting or re-syndicating its own listing — and they are exactly as billable-twice as a cross-board duplicate if you only dedupe across sources and not within one. The Actor's de-duplication key does not care which board a repeat comes from, so this is already handled, but it's a real shape worth knowing if you are building your own merge from scratch: don't assume one board's own feed is internally unique.
+
 ## What we shipped
 
-[remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper) pulls all five boards, normalizes them into a single row shape (source, title, company, url, location, jobType, category, tags, normalized salary min/max/currency/period, publishedAt), de-duplicates across boards **before** charging, and fails the run on an unparseable date bound rather than silently returning the unfiltered set. It is HTTP-only — no headless browser — and every row carries the source board and the original posting URL so you can honour the attribution these APIs ask for.
+[remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper) pulls all six boards, normalizes them into a single row shape (source, title, company, url, location, jobType, category, tags, normalized salary min/max/currency/period, publishedAt), de-duplicates across **and within** boards **before** charging, and fails the run on an unparseable date bound rather than silently returning the unfiltered set. It is HTTP-only — no headless browser — and every row carries the source board and the original posting URL so you can honour the attribution these APIs ask for.
 
 ## Related guides
 
