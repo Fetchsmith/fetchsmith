@@ -171,11 +171,13 @@ async function saveWatchRecord(status) {
 
 let pushed = 0;
 let keepGoing = true;
+let chargeLimitReached = false; // Actor.charge()'s own per-event charge limit, not maxResults (h250)
+let seedCapHit = false;         // watch seeding stopped at SEED_CAP before the whole match set was recorded
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item, watchId = null, appSeeding = false) {
   if (watchMode && watchId != null && appSeeding) {
     watchSeen.add(watchId); // baseline run (or a newly-appeared app): record, never deliver, never charge
-    if (watchSeen.size >= SEED_CAP) keepGoing = false;
+    if (watchSeen.size >= SEED_CAP) { keepGoing = false; seedCapHit = true; }
     return keepGoing;
   }
   if (watchMode && watchId != null && watchSeen.has(watchId)) {
@@ -187,6 +189,7 @@ async function pushResult(item, watchId = null, appSeeding = false) {
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
     if (watchMode && watchId != null) watchSeen.add(watchId);
+    if (r.eventChargeLimitReached) chargeLimitReached = true;
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
@@ -648,19 +651,53 @@ if (ownersMissing.length) {
   log.warning(`SteamSpy had no owner estimates for ${ownersMissing.length} app(s): ${ownersMissing.slice(0, 10).join(', ')}${ownersMissing.length > 10 ? ', …' : ''}. Those rows still carry every Steam-sourced field; ownersEstimate/peakConcurrentYesterday/steamSpyTags are null. SteamSpy typically lacks unreleased apps, non-game items (DLC, soundtracks, software) and very new releases.`);
 }
 log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
+
 // An upstream fault that produced nothing is a failed run, not an empty one: surfacing it as a
 // success would tell the user their games have no reviews, which is the opposite of the truth.
+// Deliberately NOT Actor.fail() here (h250, same shape as fec-campaign-finance-scraper cycle 676):
+// Actor.fail() exits the process immediately, which would skip the watch-baseline save below and the
+// RUN_SUMMARY record entirely. Record the error, let the tail of the script persist state, and fail
+// at the very end instead.
+let runError = null;
 if (pushed === 0 && upstreamDegraded.length) {
-  await Actor.fail(
-    `Steam's review API returned incomplete responses (success, but no reviews and no review totals) `
-    + `for: ${upstreamDegraded.join(', ')} — after 2 retries each. This is an upstream Steam fault, `
-    + `not a problem with your input; please re-run later.`,
+  runError = `Steam's review API returned incomplete responses (success, but no reviews and no review `
+    + `totals) for: ${upstreamDegraded.join(', ')} — after 2 retries each. This is an upstream Steam `
+    + `fault, not a problem with your input; please re-run later.`;
+  log.error(runError);
+}
+
+// A failed SEEDING run must NOT leave a partial baseline behind: an app the seed walk never reached
+// would look already-baselined to the next run and instead has its whole review history delivered
+// and CHARGED as "new". No record at all is the cheap outcome — the next run simply re-seeds for free.
+const skipBaselineSave = watchMode && seeding && runError !== null;
+if (skipBaselineSave) {
+  log.warning(
+    `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+    + 'Re-run on the same label and filters to seed again (a baseline run charges nothing). Saving '
+    + 'a partial baseline would have made the next run treat the un-reached app(s) as freshly '
+    + 'baselined and charge for every one of their existing reviews.',
   );
 }
-// The watch record is written only AFTER the upstream-fault check above, and never when that check
-// fails the run: a baseline that recorded "app seeded, 0 reviews" during a degenerate Steam window
-// would deliver — and charge for — that app's entire back catalogue on the next run.
-if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+if (watchMode && !skipBaselineSave) await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
+
+// Completeness bookkeeping (h250, same shape as fec-campaign-finance-scraper cycle 676). First
+// cause wins: report whichever stopping reason the buyer can act on first.
+let complete = true;
+let incompleteReason = null;
+let incompleteDetail = null;
+function markIncomplete(reason, detail = null) {
+  if (!complete) return;
+  complete = false;
+  incompleteReason = reason;
+  incompleteDetail = detail;
+}
+if (runError) markIncomplete('upstream-error', runError);
+if (chargeLimitReached) markIncomplete('charge-limit', "the run's pay-per-event charge limit was reached");
+if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults} reached; more reviews may exist`);
+if (watchMode && seeding && seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-review cap; reviews past the cap will be delivered and charged as new on a later incremental run`);
+if (upstreamDegraded.length) markIncomplete('upstream-degraded', `Steam returned incomplete responses for: ${upstreamDegraded.join(', ')}`);
+if (depthCapped.length) markIncomplete('depth-cap', `maxReviewsPerApp (${perAppReviews}) was hit while filtering for: ${depthCapped.join(', ')} — matching reviews may sit deeper in the feed`);
+if (watchMode && !seeding && saturatedApps.length) markIncomplete('watch-saturated', `every scanned review was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed`);
 
 // A watch status message still has to carry the upstream-fault notice when only SOME apps were
 // degraded (a fully-degraded run already failed above) — those apps were not baselined and their
@@ -706,7 +743,47 @@ if (watchMode && seeding) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
 } else if (emptyIds.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} results. Steam returned nothing for: ${emptyIds.join(', ')}.`);
+} else if (!complete) {
+  // Reaches here only for a non-watch run that hit maxResults or the charge limit cleanly (no
+  // upstream/depth/empty issue), which none of the branches above cover.
+  await Actor.setStatusMessage(`Pushed ${pushed} results — incomplete: ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`);
 }
+
+// RUN_SUMMARY: this run's completeness, in a form a pipeline can read (h250, same shape as
+// fec-campaign-finance-scraper cycle 676). Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// which needs no webhook.
+const runSummary = {
+  mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : dataType,
+  dataType,
+  appsRequested: ids.length,
+  delivered: pushed,
+  emptySearches,
+  emptyIds,
+  upstreamDegraded,
+  depthCapped,
+  saturatedApps: watchMode ? saturatedApps : null,
+  unidentifiedSkipped: watchMode ? unidentifiedSkipped : null,
+  maxResults,
+  maxResultsReached: pushed >= maxResults,
+  chargeLimitReached,
+  seedCap: watchMode && seeding ? SEED_CAP : null,
+  seedCapHit: watchMode && seeding ? seedCapHit : null,
+  complete,
+  incompleteReason,
+  incompleteDetail,
+  runError,
+  watchLabel: watchMode ? watchLabel : null,
+  watchSeeding: watchMode ? seeding : null,
+  baselineSaved: watchMode ? !skipBaselineSave : null,
+  baselineSize: watchMode ? watchSeen.size : null,
+  // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
+  // re-charge them as "new" (h285). null outside watch mode, where there is no baseline.
+  baselineTruncated: watchMode ? baselineTruncated : null,
+  baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+  skippedSeen: watchMode && !seeding ? watchSkipped : null,
+};
+await Actor.setValue('RUN_SUMMARY', runSummary);
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
@@ -726,6 +803,9 @@ if (webhookUrl) {
     // re-charge them as "new" (h285). null outside watch mode, where there is no baseline.
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a console/API
+    // consumer read the identical completeness facts.
+    summary: runSummary,
   };
   try {
     const resp = await gotScraping({
@@ -744,5 +824,10 @@ if (webhookUrl) {
     log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
   }
 }
+
+// The failure signal itself is unchanged — the run still ends FAILED. It just happens here, after
+// the baseline, RUN_SUMMARY and webhook have been persisted, instead of where Actor.fail's
+// immediate exit would have skipped all three.
+if (runError) await Actor.fail(runError);
 
 await Actor.exit();
