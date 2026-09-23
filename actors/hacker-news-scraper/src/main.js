@@ -59,6 +59,12 @@ const WATCH_STORE = 'fetchsmith-hn-watch';
 const ALGOLIA_MAX_HITS = 1000;
 const SEED_CAP = 5000; // bound the cost of a baseline run ACROSS queries (per query, ALGOLIA_MAX_HITS binds first)
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
+// Set inside saveWatchRecord() when the WATCH_KEEP slice above actually drops ids -- distinct
+// from `truncatedSummaries` (an Algolia SCAN that stopped short this run). This is the RECORD
+// itself losing already-charged ids: on the next run they look "new" again and get charged a
+// second time (h285, the same defect found across the rest of the fleet's watch-mode Actors).
+let baselineTruncated = 0;
+let baselineTruncatedTotal = 0;
 
 function watchKeyFor(label, criteria) {
   const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -101,6 +107,18 @@ if (watchMode) {
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `Watch label "${watchLabel}": the baseline record hit its ${WATCH_KEEP}-id cap and dropped `
+      + `${baselineTruncated} of the oldest already-delivered id(s) this run (${baselineTruncatedTotal} total `
+      + 'across all runs). Those ids are no longer in the baseline, so the NEXT run will return AND CHARGE FOR '
+      + 'them again as if they were new. Narrow the query/tags (tighter keywords, a postedAfter window, or a '
+      + 'higher minPoints/minComments) to keep the baseline under the cap, or split this watch across more '
+      + 'specific labels.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -109,7 +127,18 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
   });
+}
+
+// Appended to the seeding/incremental log lines AFTER saveWatchRecord() has run (it sets the
+// two module-scope counters above) -- computing it before that call would read stale zeros.
+function evictionNote() {
+  if (!baselineTruncated) return '';
+  return ` NOTE: the baseline record dropped ${baselineTruncated} of the oldest already-delivered id(s) this run `
+    + `(${baselineTruncatedTotal} total) to stay under its ${WATCH_KEEP}-id cap -- those will be treated as new `
+    + 'and CHARGED FOR again next run unless you narrow the query/tags. See the RUN_SUMMARY key-value record.';
 }
 
 async function pushResult(item, watchId) {
@@ -500,10 +529,11 @@ if (watchMode) {
         + 'Matches past that point are NOT in the baseline, so the first incremental run will return and CHARGE FOR '
         + 'them as if they were new. Narrow each query (tighter keywords, tags, or a postedAfter/minPoints threshold) '
         + `until its declared match count fits under ${ALGOLIA_MAX_HITS}, then re-seed with a fresh watchLabel.`
-        : ''),
+        : '')
+      + evictionNote(),
     );
   } else {
-    log.info(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+    log.info(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionNote()}`);
   }
 }
 
@@ -547,6 +577,8 @@ await Actor.setValue('RUN_SUMMARY', {
   usersErrored: erroredUsers,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
+  baselineTruncated: watchMode ? baselineTruncated : null,
+  baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
 });
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
@@ -566,6 +598,8 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     complete: truncatedSummaries.length === 0 && notReachedSummaries.length === 0 && notReachedUsers.length === 0,
     queries: summaries,
     queriesIncomplete: truncatedSummaries.length,
@@ -626,5 +660,15 @@ if (pushed === 0 && watchMode && !seeding) {
   if (emptyQueries.length) notes.push(`no matches for: ${emptyQueries.join(', ')}`);
   if (notFoundUsers.length) notes.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
+} else if (watchMode && !seeding && baselineTruncated > 0) {
+  // Otherwise-clean delivering run: none of the branches above fire, so without this the
+  // baseline-eviction re-charge risk would be invisible in the Console (same gap found and
+  // closed across the rest of the h285 arc).
+  await Actor.setStatusMessage(
+    `Pushed ${pushed} new item(s). WARNING: the baseline record dropped ${baselineTruncated} of the oldest `
+    + `already-delivered id(s) this run (${baselineTruncatedTotal} total) to stay under its ${WATCH_KEEP}-id `
+    + 'cap -- those will be charged for again as "new" on a future run unless you narrow the query/tags. '
+    + 'See the RUN_SUMMARY key-value record.',
+  );
 }
 await Actor.exit();
