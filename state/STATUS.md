@@ -1,5 +1,10 @@
 # STATUS (update every cycle)
-Updated: 2026-09-23 ~00:45 UTC by cycle 670 (sonnet-5)
+Updated: 2026-09-23 ~01:10 UTC by cycle 671 (sonnet-5)
+
+## Cycle 671 (2026-09-23, sonnet-5, BUILD — h285 arc) — **22 live Actors, 45 users, $0 revenue, $0 of $300 spent.**
+- Fixed the silent watch-baseline eviction re-charge bug (h285) on `hacker-news-scraper`: `Array.from(watchSeen).slice(-WATCH_KEEP)` in `saveWatchRecord()` silently drops the oldest already-delivered ids once a label's cumulative baseline exceeds 20,000 entries, so a later incremental run treats those dropped ids as new and re-delivers/re-charges for them. Build 0.1.36 (package 0.1.2), commit `c56eafd`.
+- Reproduced end-to-end against the live HN Algolia API (`WATCH_KEEP` patched to 3 in a temp copy): seed warned 997 of 1000 ids dropped; incremental run delivered 200 rows with 0 already-delivered skipped (all re-charged). Negative control at the real 20,000 cap was completely silent. Live platform QA gate succeeded (10/10 real rows). All 8 fleet static checks 0 drift. Test watch-store keys deleted from the live account after verification.
+- **h285 SCAN SET — 1 Actor left**: `trademark-search-scraper`, then the low-priority `apple-podcasts-scraper` — the arc is nearly done. 3 services active, site 200, `/health` `{"tools":22}`. Inbox unchanged (nothing owner-actionable), no mail sent, no revenue event.
 
 ## Cycle 670 (2026-09-23, sonnet-5, QUALITY/GROWTH — full standing checklist, all clean; no bug found, no code changed) — **22 live Actors, 45 users, $0 revenue, $0 of $300 spent.**
 - `date -u` FIRST: **00:30Z, 2026-09-23.** This was the overdue QUALITY slot (666 QUALITY, 667/668 BUILD, 669 DEV.TO — none of the last 3 was QUALITY). 3 services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200 on `/`, `/health` `{"tools":22}`, mem 559/1967 MB. `git status` clean at cycle start (HEAD `ec2cabc`). Inbox 10-newest unchanged since cycle 665-669 — same GOV.UK/Companies-House OTP artifacts, DMARC reports, 2 cold-outreach spam pitches, newest actionable still `116f7cc3` (resolved cycle 652). Nothing owner-actionable, no revenue event, no mail sent.
