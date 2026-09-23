@@ -3,9 +3,202 @@
   "fields": {
     "type": "object",
     "properties": {
+      "opportunityId": {
+        "title": "OpportunityId",
+        "example": "6d39960f98d00539537f673269cdfd35",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "title": {
+        "title": "Title",
+        "example": "V--Transportation, travel  and relocation services.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "solicitationNumber": {
+        "title": "SolicitationNumber",
+        "example": "N0018919Q0207",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "noticeTypeCode": {
+        "title": "NoticeTypeCode",
+        "example": "o",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "noticeType": {
+        "title": "NoticeType",
+        "example": "Solicitation",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "isActive": {
+        "title": "IsActive",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "isCanceled": {
+        "title": "IsCanceled",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "publishDate": {
+        "title": "PublishDate",
+        "example": "2019-06-27T13:45:56-04:00",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "modifiedDate": {
+        "title": "ModifiedDate",
+        "example": "2019-06-27T13:45:56-04:00",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "responseDate": {
+        "title": "ResponseDate",
+        "example": "2024-12-10T00:00:00+00:00",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "responseDateActual": {
+        "title": "ResponseDateActual",
+        "example": "2024-12-10",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "responseTimeZone": {
+        "title": "ResponseTimeZone",
+        "example": "America/New_York",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "department": {
+        "title": "Department",
+        "example": "DEPT OF DEFENSE",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "agency": {
+        "title": "Agency",
+        "example": "DEPT OF THE NAVY",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "office": {
+        "title": "Office",
+        "example": "NAVSUP FLT LOG CTR NORFOLK",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": {
+        "title": "Description",
+        "example": "Award Notice for N0018919Q0207:\n\nContract Award date: 27 June 2019\n\nContract Number: N0018919D0020\nContract Awardee: Klo",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "awardeeName": {
+        "title": "AwardeeName",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "awardeeUeiSAM": {
+        "title": "AwardeeUeiSAM",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "modificationsCount": {
+        "title": "ModificationsCount",
+        "example": 7,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "sourceUrl": {
+        "title": "SourceUrl",
+        "example": "https://sam.gov/opp/6d39960f98d00539537f673269cdfd35/view",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "naicsCodes": {
+        "title": "NaicsCodes",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "setAside": {
+        "title": "SetAside",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placeOfPerformanceState": {
+        "title": "PlaceOfPerformanceState",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placeOfPerformanceCountry": {
+        "title": "PlaceOfPerformanceCountry",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pointOfContact": {
+        "title": "PointOfContact",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
       "wageDeterminationId": {
         "title": "WageDeterminationId",
-        "example": "43246",
+        "example": "AK20260001",
         "type": [
           "string",
           "null"
@@ -13,7 +206,7 @@
       },
       "referenceNumber": {
         "title": "ReferenceNumber",
-        "example": "CBA-2003-2",
+        "example": "AK20260001",
         "type": [
           "string",
           "null"
@@ -27,17 +220,9 @@
           "null"
         ]
       },
-      "title": {
-        "title": "Title",
-        "example": "CBA-2003-2",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
       "actCode": {
         "title": "ActCode",
-        "example": "CBA",
+        "example": "DBA",
         "type": [
           "string",
           "null"
@@ -45,7 +230,7 @@
       },
       "actName": {
         "title": "ActName",
-        "example": "Collective Bargaining Agreement",
+        "example": "Davis-Bacon Act",
         "type": [
           "string",
           "null"
@@ -53,17 +238,9 @@
       },
       "recordType": {
         "title": "RecordType",
-        "example": "wdCBA",
+        "example": "wdDBRA",
         "type": [
           "string",
-          "null"
-        ]
-      },
-      "isActive": {
-        "title": "IsActive",
-        "example": true,
-        "type": [
-          "boolean",
           "null"
         ]
       },
@@ -85,7 +262,7 @@
       },
       "revisionNumber": {
         "title": "RevisionNumber",
-        "example": 0,
+        "example": 2,
         "type": [
           "number",
           "integer",
@@ -98,22 +275,6 @@
         "type": [
           "number",
           "integer",
-          "null"
-        ]
-      },
-      "publishDate": {
-        "title": "PublishDate",
-        "example": "2003-10-03T05:00:00+00:00",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "modifiedDate": {
-        "title": "ModifiedDate",
-        "example": "2003-10-03T23:34:49+00:00",
-        "type": [
-          "string",
           "null"
         ]
       },
@@ -147,7 +308,7 @@
       },
       "countyCount": {
         "title": "CountyCount",
-        "example": 1,
+        "example": 28,
         "type": [
           "number",
           "integer",
@@ -163,7 +324,7 @@
       },
       "assistanceListingId": {
         "title": "AssistanceListingId",
-        "example": "1f81e2493e57437897aa8024aeb12174",
+        "example": "7f35e497c11544ad8900a967a1284d89",
         "type": [
           "string",
           "null"
@@ -171,7 +332,7 @@
       },
       "programNumber": {
         "title": "ProgramNumber",
-        "example": "11.031",
+        "example": "11.611",
         "type": [
           "string",
           "null"
@@ -186,7 +347,7 @@
       },
       "objective": {
         "title": "Objective",
-        "example": "The Broadband Infrastructure Program provides federal grants for the deployment of broadband infrastructure.",
+        "example": "Enhance competitiveness, productivity, and technological performance in United States manufacturing.\r\nEstablish, maintai",
         "type": [
           "string",
           "null"
@@ -194,25 +355,9 @@
       },
       "isFunded": {
         "title": "IsFunded",
-        "example": false,
+        "example": true,
         "type": [
           "boolean",
-          "null"
-        ]
-      },
-      "department": {
-        "title": "Department",
-        "example": "COMMERCE, DEPARTMENT OF",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "agency": {
-        "title": "Agency",
-        "example": "NATIONAL TELECOMMUNICATIONS AND INFORMATION ADMINISTRATION",
-        "type": [
-          "string",
           "null"
         ]
       },
@@ -232,7 +377,7 @@
       },
       "eligibleApplicantsNote": {
         "title": "EligibleApplicantsNote",
-        "example": "An applicant must be a \"covered partnership,\" which means partnership between\u2014 (A) a State or U.S. Territory, or one or ",
+        "example": "For MEP Center projects under 15 U.S.C. \u00a7 278k, eligible applicants shall be U.S.\u00ad-based nonprofit institutions or organ",
         "type": [
           "string",
           "null"
@@ -247,7 +392,7 @@
       },
       "eligibleBeneficiariesNote": {
         "title": "EligibleBeneficiariesNote",
-        "example": "General public and businesses will benefit from this assistance which supports broadband infrastructure deployment to ar",
+        "example": "Beneficiary shall be U.S.-based manufacturing firms, especially smaller companies.",
         "type": [
           "string",
           "null"
@@ -276,7 +421,7 @@
       },
       "website": {
         "title": "Website",
-        "example": "http://www.ntia.gov",
+        "example": "http://www.mep.nist.gov",
         "type": [
           "string",
           "null"
@@ -284,158 +429,142 @@
       },
       "historicalIndexCount": {
         "title": "HistoricalIndexCount",
-        "example": 7,
+        "example": 14,
         "type": [
           "number",
           "null"
         ]
       },
-      "sourceUrl": {
-        "title": "SourceUrl",
-        "example": "https://sam.gov/fal/1f81e2493e57437897aa8024aeb12174/view",
+      "exclusionId": {
+        "title": "ExclusionId",
+        "example": "4550ad9c-4b01-4e3d-bc94-716ee807836e",
         "type": [
           "string",
           "null"
         ]
       },
-      "opportunityId": {
-        "title": "OpportunityId",
-        "example": "6d39960f98d00539537f673269cdfd35",
+      "classificationCode": {
+        "title": "ClassificationCode",
+        "example": "Special Entity Designation",
         "type": [
           "string",
           "null"
         ]
       },
-      "solicitationNumber": {
-        "title": "SolicitationNumber",
-        "example": "N0018919Q0207",
+      "ueiSam": {
+        "title": "UeiSam",
+        "example": "NTRNRHCG7L45",
         "type": [
           "string",
           "null"
         ]
       },
-      "noticeTypeCode": {
-        "title": "NoticeTypeCode",
-        "example": "o",
+      "cageCode": {
+        "title": "CageCode",
         "type": [
           "string",
           "null"
         ]
       },
-      "noticeType": {
-        "title": "NoticeType",
-        "example": "Solicitation",
+      "samNumber": {
+        "title": "SamNumber",
         "type": [
           "string",
           "null"
         ]
       },
-      "isCanceled": {
-        "title": "IsCanceled",
-        "example": false,
-        "type": [
-          "boolean",
-          "null"
-        ]
-      },
-      "responseDate": {
-        "title": "ResponseDate",
-        "example": "2024-12-10T00:00:00+00:00",
+      "addressCity": {
+        "title": "AddressCity",
+        "example": "LONDON",
         "type": [
           "string",
           "null"
         ]
       },
-      "responseDateActual": {
-        "title": "ResponseDateActual",
-        "example": "2024-12-10",
+      "addressState": {
+        "title": "AddressState",
+        "example": "XX",
         "type": [
           "string",
           "null"
         ]
       },
-      "responseTimeZone": {
-        "title": "ResponseTimeZone",
-        "example": "America/New_York",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "office": {
-        "title": "Office",
-        "example": "NAVSUP FLT LOG CTR NORFOLK",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "description": {
-        "title": "Description",
-        "example": "Award Notice for N0018919Q0207:\n\nContract Award date: 27 June 2019\n\nContract Number: N0018919D0020\nContract Awardee: Klo",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "awardeeName": {
-        "title": "AwardeeName",
-        "example": "Colorado Department of Labor and Employment",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "awardeeUeiSAM": {
-        "title": "AwardeeUeiSAM",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "modificationsCount": {
-        "title": "ModificationsCount",
-        "example": 7,
-        "type": [
-          "number",
-          "null"
-        ]
-      },
-      "naicsCodes": {
-        "title": "NaicsCodes",
-        "type": [
-          "array",
-          "null"
-        ]
-      },
-      "setAside": {
-        "title": "SetAside",
-        "example": "SBA",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "placeOfPerformanceState": {
-        "title": "PlaceOfPerformanceState",
-        "example": "NY",
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "placeOfPerformanceCountry": {
-        "title": "PlaceOfPerformanceCountry",
+      "addressCountry": {
+        "title": "AddressCountry",
         "example": "USA",
         "type": [
           "string",
           "null"
         ]
       },
-      "pointOfContact": {
-        "title": "PointOfContact",
+      "addressZip": {
+        "title": "AddressZip",
+        "example": "UB8 1SY",
         "type": [
-          "array",
+          "string",
+          "null"
+        ]
+      },
+      "exclusionTypeCode": {
+        "title": "ExclusionTypeCode",
+        "example": "PR",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "exclusionType": {
+        "title": "ExclusionType",
+        "example": "Prohibition/Restriction",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "exclusionProgram": {
+        "title": "ExclusionProgram",
+        "example": "Reciprocal",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "excludingAgency": {
+        "title": "ExcludingAgency",
+        "example": "OFAC",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "excludingAgencyDesc": {
+        "title": "ExcludingAgencyDesc",
+        "example": "OFFICE OF FOREIGN ASSETS CONTROL",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "activationDate": {
+        "title": "ActivationDate",
+        "example": "2024-03-27",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "terminationDate": {
+        "title": "TerminationDate",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "isFascsaOrder": {
+        "title": "IsFascsaOrder",
+        "example": false,
+        "type": [
+          "boolean",
           "null"
         ]
       }
@@ -446,60 +575,60 @@
       "title": "Overview",
       "transformation": {
         "fields": [
-          "wageDeterminationId",
-          "referenceNumber",
-          "shortReferenceNumber",
+          "opportunityId",
           "title",
-          "actCode",
-          "actName",
-          "recordType",
+          "solicitationNumber",
+          "noticeTypeCode",
+          "noticeType",
           "isActive",
-          "isLatest",
-          "isStandard"
+          "isCanceled",
+          "publishDate",
+          "modifiedDate",
+          "responseDate"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "wageDeterminationId": {
-            "label": "WageDeterminationId",
-            "format": "text"
-          },
-          "referenceNumber": {
-            "label": "ReferenceNumber",
-            "format": "text"
-          },
-          "shortReferenceNumber": {
-            "label": "ShortReferenceNumber",
+          "opportunityId": {
+            "label": "OpportunityId",
             "format": "text"
           },
           "title": {
             "label": "Title",
             "format": "text"
           },
-          "actCode": {
-            "label": "ActCode",
+          "solicitationNumber": {
+            "label": "SolicitationNumber",
             "format": "text"
           },
-          "actName": {
-            "label": "ActName",
+          "noticeTypeCode": {
+            "label": "NoticeTypeCode",
             "format": "text"
           },
-          "recordType": {
-            "label": "RecordType",
+          "noticeType": {
+            "label": "NoticeType",
             "format": "text"
           },
           "isActive": {
             "label": "IsActive",
             "format": "boolean"
           },
-          "isLatest": {
-            "label": "IsLatest",
+          "isCanceled": {
+            "label": "IsCanceled",
             "format": "boolean"
           },
-          "isStandard": {
-            "label": "IsStandard",
-            "format": "boolean"
+          "publishDate": {
+            "label": "PublishDate",
+            "format": "text"
+          },
+          "modifiedDate": {
+            "label": "ModifiedDate",
+            "format": "text"
+          },
+          "responseDate": {
+            "label": "ResponseDate",
+            "format": "text"
           }
         }
       }

@@ -3,7 +3,7 @@
 Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with **no API key, no login, no proxy and no browser**. Filter by keyword, NAICS code, set-aside type, notice type, place-of-performance state and issuing organization, and optionally enrich every row with the contracting officer's contact details, NAICS codes, set-aside and place of performance.
 
 ## What it does
-- **Five public SAM.gov datasets, one Actor, no key.** `dataType` picks which one: `opportunities` (default — solicitations, presolicitations, sources sought, awards), one of three Department of Labor wage-determination sets SAM.gov publishes — `wage-determinations-dbra` (Davis-Bacon Act, construction), `wage-determinations-sca` (Service Contract Act, services) and `wage-determinations-cba` (collective bargaining agreements) — or `assistance-listings`, the Catalog of Federal Domestic Assistance (CFDA) grant/loan/direct-payment programs. All five come off the same keyless public search backend, so none of them needs a registered API key.
+- **Six public SAM.gov datasets, one Actor, no key.** `dataType` picks which one: `opportunities` (default — solicitations, presolicitations, sources sought, awards), one of three Department of Labor wage-determination sets SAM.gov publishes — `wage-determinations-dbra` (Davis-Bacon Act, construction), `wage-determinations-sca` (Service Contract Act, services) and `wage-determinations-cba` (collective bargaining agreements) — `assistance-listings`, the Catalog of Federal Domestic Assistance (CFDA) grant/loan/direct-payment programs, or `exclusions`, the federal debarment/suspension list (organizations only — see below). All six come off the same keyless public search backend, so none of them needs a registered API key.
 - Calls the same backend that powers sam.gov's own public opportunity search page, so results match what you see on the site. **SAM.gov's official developer API (`api.sam.gov/opportunities/v2`) requires a free registered API key — this Actor needs none.** You do not have to register with GSA, wait for key approval, or rotate a key across a team.
 - **`enrichDetail` joins each row with the per-opportunity record**, which is where the fields a bidder actually qualifies on live: `naicsCodes`, `setAside`, `placeOfPerformanceState`/`placeOfPerformanceCountry`, and `pointOfContact` (the contracting officer's name, email and phone, primary and secondary). None of these are on the search row. Off by default because it costs one extra HTTP call per row; turn it on when you are qualifying, not just listing.
 - **Multi-value filters really OR.** `naicsCodes: ["541511", "541512"]` returns the union of both, not just the first. This is worth stating because SAM.gov's backend silently accepts a repeated query parameter and then honours only the first value — verified live: `naics=541511` → 607 hits, `naics=541512` → 312, repeated-key form → 607 (wrong, and no error), comma-joined form → exactly 919. This Actor sends the comma-joined form for every multi-value filter (`naicsCodes`, `setAsideTypes`, `noticeTypes`, `states`), so a two-code search does not quietly drop half your pipeline.
@@ -121,6 +121,52 @@ Set `dataType` to `assistance-listings` to pull the Catalog of Federal Domestic 
   "website": "http://www.usace.army.mil/business.html.",
   "historicalIndexCount": 6,
   "sourceUrl": "https://sam.gov/fal/8d745b5ad52a421dbf9483c7451adec1/view"
+}
+```
+
+## Exclusions
+Set `dataType` to `exclusions` to pull SAM.gov's federal debarment/suspension list — entities barred from receiving federal contracts, grants or other assistance — **restricted to organizations only (firms, vessels and special entity designations, ~35,200 records)**.
+
+- **This Actor never returns the individual-person exclusion records SAM.gov also publishes.** SAM.gov's exclusions index carries 168,673 records total, and 79% of them (133,478) name a private person with a home city, state and zip — not a company. Turning that into a bulk-downloadable dataset would be a people-search product, which this Actor deliberately does not offer: the `classification` filter that separates organizations from individuals is hard-coded into every request this Actor makes, with no input anywhere that can widen it. If you need to check whether a specific named individual is excluded, look them up one at a time on [sam.gov/search](https://sam.gov/search/?index=ei) directly — SAM.gov's own public exclusions checker is exactly built for that single-lookup use case.
+- **Supports `keyword` (matches the excluded entity's name), `organizationId`, `maxResults`, `watchLabel`, `watchChanges`, `webhookUrl`.** `naicsCodes`, `setAsideTypes`, `noticeTypes` and `states` are opportunity-only and are ignored (with a log warning) here. `activeOnly` has **no effect** on this dataset — SAM.gov's exclusions index does not support server-side active-status filtering, so every matching record is returned regardless of the setting; check each row's own `isActive`/`terminationDate` if you need to filter locally. `enrichDetail` is also ignored: the search row already carries the full record.
+- **Rows SAM.gov itself flags "do not display" are dropped before you ever see them**, regardless of classification — a small number of exclusion records carry SAM.gov's own `noPublicDisplayFlag`, and this Actor honors it the same way sam.gov's own public search does.
+- **`watchChanges` on exclusions** re-delivers a record if its active status or termination date has changed since you last saw it — the two signals that mean a debarment was lifted.
+
+### Example exclusions input
+```json
+{
+  "dataType": "exclusions",
+  "keyword": "construction",
+  "maxResults": 100
+}
+```
+
+### Sample exclusions output row
+```json
+{
+  "exclusionId": "4550ad9c-4b01-4e3d-bc94-716ee807836e",
+  "title": "CHOSUN INTERNATIONAL CHEMICALS JOINT OPERATION COMPANY",
+  "classificationCode": "Special Entity Designation",
+  "ueiSam": "NTRNRHCG7L45",
+  "cageCode": null,
+  "samNumber": null,
+  "addressCity": null,
+  "addressState": null,
+  "addressCountry": "USA",
+  "addressZip": null,
+  "exclusionTypeCode": "PR",
+  "exclusionType": "Prohibition/Restriction",
+  "exclusionProgram": "Reciprocal",
+  "excludingAgency": "OFAC",
+  "excludingAgencyDesc": "OFFICE OF FOREIGN ASSETS CONTROL",
+  "department": "TREASURY, DEPARTMENT OF THE",
+  "agency": "DEPARTMENTAL OFFICES",
+  "office": "OFFICE OF FOREIGN ASSETS CONTROL",
+  "isActive": true,
+  "activationDate": null,
+  "terminationDate": null,
+  "isFascsaOrder": false,
+  "sourceUrl": "https://sam.gov/exclusion/4550ad9c-4b01-4e3d-bc94-716ee807836e/view"
 }
 ```
 

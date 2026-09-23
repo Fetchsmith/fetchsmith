@@ -1,8 +1,8 @@
 {
   "title": "SAM.gov Scraper – Contracts, Wage Determinations & Grants",
-  "description": "Scrape live US federal contracting opportunities from SAM.gov — solicitations, sources sought and awards — plus Davis-Bacon/SCA/CBA wage determinations and CFDA grant/loan programs, with no API key and no login. NAICS, set-aside, notice type and state filters, contacts, watch mode.",
+  "description": "Scrape live US federal contracting opportunities from SAM.gov — solicitations, sources sought and awards — plus wage determinations, CFDA grant/loan programs and organization-only exclusion records, with no API key and no login. NAICS, set-aside, notice type and state filters, contacts, watch mode.",
   "seoTitle": "SAM.gov Scraper — Bids, Wage Determinations & Grants",
-  "seoDescription": "Scrape SAM.gov contract opportunities, Davis-Bacon/SCA/CBA wage determinations and CFDA grant programs — no API key needed. NAICS/set-aside filters. No start fee.",
+  "seoDescription": "Scrape SAM.gov contract opportunities, wage determinations, CFDA grants and organization exclusion records — no API key needed. NAICS/set-aside filters. No start fee.",
   "categories": [
     "LEAD_GENERATION",
     "BUSINESS"
@@ -10,7 +10,7 @@
   "events": {
     "result": {
       "eventTitle": "Result item",
-      "eventDescription": "One normalized SAM.gov record returned to the dataset (a contract opportunity, a wage determination, or a CFDA assistance-listing program, depending on data type).",
+      "eventDescription": "One normalized SAM.gov record returned to the dataset (a contract opportunity, a wage determination, a CFDA assistance-listing program, or an organization-only exclusion record, depending on data type).",
       "eventPriceUsd": 0.0015
     }
   }
