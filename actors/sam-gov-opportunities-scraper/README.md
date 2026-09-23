@@ -1,8 +1,9 @@
-# SAM.gov Opportunities Scraper – US Federal Contracts & Bids
+# SAM.gov Scraper – US Federal Contracts, Bids & Wage Determinations
 
 Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with **no API key, no login, no proxy and no browser**. Filter by keyword, NAICS code, set-aside type, notice type, place-of-performance state and issuing organization, and optionally enrich every row with the contracting officer's contact details, NAICS codes, set-aside and place of performance.
 
 ## What it does
+- **Four public SAM.gov datasets, one Actor, no key.** `dataType` picks which one: `opportunities` (default — solicitations, presolicitations, sources sought, awards) or one of three Department of Labor wage-determination sets SAM.gov publishes — `wage-determinations-dbra` (Davis-Bacon Act, construction), `wage-determinations-sca` (Service Contract Act, services) and `wage-determinations-cba` (collective bargaining agreements). All four come off the same keyless public search backend, so none of them needs a registered API key.
 - Calls the same backend that powers sam.gov's own public opportunity search page, so results match what you see on the site. **SAM.gov's official developer API (`api.sam.gov/opportunities/v2`) requires a free registered API key — this Actor needs none.** You do not have to register with GSA, wait for key approval, or rotate a key across a team.
 - **`enrichDetail` joins each row with the per-opportunity record**, which is where the fields a bidder actually qualifies on live: `naicsCodes`, `setAside`, `placeOfPerformanceState`/`placeOfPerformanceCountry`, and `pointOfContact` (the contracting officer's name, email and phone, primary and secondary). None of these are on the search row. Off by default because it costs one extra HTTP call per row; turn it on when you are qualifying, not just listing.
 - **Multi-value filters really OR.** `naicsCodes: ["541511", "541512"]` returns the union of both, not just the first. This is worth stating because SAM.gov's backend silently accepts a repeated query parameter and then honours only the first value — verified live: `naics=541511` → 607 hits, `naics=541512` → 312, repeated-key form → 607 (wrong, and no error), comma-joined form → exactly 919. This Actor sends the comma-joined form for every multi-value filter (`naicsCodes`, `setAsideTypes`, `noticeTypes`, `states`), so a two-code search does not quietly drop half your pipeline.
@@ -14,6 +15,66 @@ Scrape live US federal contracting opportunities from SAM.gov — presolicitatio
 - **`description` is the full solicitation text**, not a truncated snippet — the same original HTML SAM.gov itself stores, which can run to several thousand characters on a detailed notice.
 - **`watchChanges` — also catch a deadline extension, a lifecycle transition, or an award landing.** Add this to `watchLabel` and an opportunity you already have gets re-delivered (at the normal per-row price, tagged `_watchChangeType`/`_watchPrevious`) if its `isActive` flag, `noticeTypeCode` (a presolicitation turning into a solicitation, or a solicitation turning into an award), `responseDate` (deadline moved), `modifiedDate`, `modificationsCount` or `awardeeName` (an award landing) has changed since you last saw it — not just brand-new opportunities. Off by default so existing watches keep their current behaviour.
 
+## Wage determinations
+Set `dataType` to one of the three wage-determination options and the same filters you already know (`keyword`, `states`, `activeOnly`, `maxResults`, `watchLabel`, `watchChanges`, `webhookUrl`) apply to Department of Labor determinations instead of solicitations.
+
+| `dataType` | What it returns | Live record count |
+|---|---|---|
+| `wage-determinations-dbra` | Davis-Bacon Act determinations — construction, with `constructionTypes` (Building / Heavy / Highway / Residential) | ~85,400 (~4,200 active) |
+| `wage-determinations-sca` | Service Contract Act determinations — services, with a `services[]` list of covered categories | ~2,700 (~1,500 active) |
+| `wage-determinations-cba` | Collective bargaining agreement determinations | ~107,600 (~10,100 active) |
+
+- **Coverage is normalized across all three.** SAM.gov returns the covered geography in three different shapes (DBRA nests a single `location.state`, CBA an array of `location.states`, SCA an array whose counties split into `include`/`exclude` lists). Every row here carries the same flat `coverage` array of `{ stateCode, stateName, isStateWide, counties, excludedCounties }`, plus `stateCodes` and `countyCount` for filtering. SCA's *excluded* counties are kept in their own field rather than merged into the covered list — an excluded county is the opposite of a covered one.
+- **Dates are normalized too.** `publishDate` comes back as an ISO string on CBA rows but as epoch milliseconds on DBRA/SCA rows; this Actor emits ISO 8601 for every row so you are not parsing two formats.
+- **`states` filters on the state the determination covers**, and multiple states OR together the same way: measured live, `AL` → 3,509 and `TX` → 6,909 CBA determinations, `["AL","TX"]` → 10,415 (the 3 determinations covering both states are returned once, not twice).
+- **`activeOnly` means "currently in force"** — a determination superseded by a later revision has `isActive: false`. Combine with `watchLabel` + `watchChanges` and a run tells you when a determination you track is revised (`revisionNumber` moves) or goes inactive.
+- **`keyword` searches the reference number, not trades.** On these indices `q` matches the determination's own number (e.g. `AK20260001`), so `q=roofing` returns zero against 85,000+ live Davis-Bacon records. Filter by state and construction/service type instead, and leave `keyword` empty to get the whole set.
+- **What this does NOT include: per-occupation hourly wage rate tables.** SAM.gov does not publish the rate schedule on any of the three search indices, so every row has `wageRates: null`. This Actor gives you the determination *index* — which determination applies to which state and counties, its revision number, its construction/service scope and whether it is current — which is what you need to pick the right determination; read the rates themselves from the determination's own page on sam.gov.
+- `naicsCodes`, `setAsideTypes`, `noticeTypes`, `organizationId` and `enrichDetail` are opportunity-only. If you set one in a wage-determination run it is ignored and the run logs a warning saying so, rather than silently returning an unfiltered set that looks filtered.
+
+### Example wage-determination input
+```json
+{
+  "dataType": "wage-determinations-dbra",
+  "states": ["TX", "NM"],
+  "activeOnly": true,
+  "maxResults": 500
+}
+```
+
+### Sample wage-determination output row
+```json
+{
+  "wageDeterminationId": "AK20260001",
+  "referenceNumber": "AK20260001",
+  "shortReferenceNumber": "AK1",
+  "title": "AK20260001",
+  "actCode": "DBA",
+  "actName": "Davis-Bacon Act",
+  "recordType": "wdDBRA",
+  "isActive": true,
+  "isStandard": true,
+  "revisionNumber": 2,
+  "year": 2026,
+  "publishDate": "2026-09-17T04:00:00.000Z",
+  "modifiedDate": "2026-09-17T00:00:00-04:00",
+  "constructionTypes": ["Building", "Heavy"],
+  "services": null,
+  "coverage": [
+    {
+      "stateCode": "AK",
+      "stateName": "Alaska",
+      "isStateWide": null,
+      "counties": ["Anchorage", "Matanuska-Susitna", "Fairbanks North Star", "Juneau"],
+      "excludedCounties": []
+    }
+  ],
+  "stateCodes": ["AK"],
+  "countyCount": 28,
+  "wageRates": null
+}
+```
+
 ## Use cases
 - **GovCon bid pipelines** — pull every active solicitation in your NAICS codes and set-aside category (`naicsCodes` + `setAsideTypes` + `noticeTypes: ["o", "k"]`) into a CRM, already qualified by place of performance.
 - **Small-business / 8(a) / SDVOSB capture** — filter to the set-asides you actually hold and stop reading opportunities you are not eligible for.
@@ -21,6 +82,9 @@ Scrape live US federal contracting opportunities from SAM.gov — presolicitatio
 - **Competitive award research** — `activeOnly: false` with `noticeTypes: ["a"]` returns award notices including `awardeeName` and `awardeeUeiSAM`, so you can see who is winning in your NAICS.
 - **Agency- or state-specific monitoring** — `organizationId` for one department/agency, or `states` for the geographies your team can actually staff.
 - **Daily cron alerts** — `watchLabel` on a narrow keyword/NAICS search on a schedule returns only the handful of new notices, instead of refreshing sam.gov by hand or re-paying for the whole result set every run.
+- **Davis-Bacon compliance for construction bids** — `dataType: "wage-determinations-dbra"` with the states you build in tells you which determination covers each county and whether it is the current revision, so a bid is priced against a determination that is actually in force.
+- **Service Contract Act scoping** — `dataType: "wage-determinations-sca"` returns the service categories each determination covers, so you can map a services solicitation to the right determination before pricing labour.
+- **Wage-determination revision alerts** — `watchLabel` + `watchChanges` on a state-filtered wage-determination search re-delivers a determination only when its `revisionNumber`, active status or modified date moves — the signal that an in-flight bid or a running contract needs repricing.
 - **Deadline-extension / lifecycle alerts** — `watchLabel` + `watchChanges` flags a presolicitation turning into a solicitation, a deadline extension, or an award landing on a solicitation you're already tracking.
 
 ### Example input
@@ -36,13 +100,14 @@ Scrape live US federal contracting opportunities from SAM.gov — presolicitatio
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `keyword` | string | Full-text search across the opportunity index (default `contract`) |
+| `dataType` | string | Which SAM.gov dataset: `opportunities` (default), `wage-determinations-dbra`, `wage-determinations-sca`, `wage-determinations-cba` |
+| `keyword` | string | Full-text search across the opportunity index (default `contract`). On wage-determination types it matches the determination's reference number — leave empty for all |
 | `naicsCodes` | array | NAICS codes, e.g. `["541511", "541512"]` — multiple codes are ORed |
 | `setAsideTypes` | array | Set-aside codes, e.g. `["SBA"]` — multiple values are ORed |
 | `noticeTypes` | array | Notice-type codes `p`/`o`/`k`/`r`/`a`/`s`/`g`/`i`/`u` — multiple values are ORed |
-| `states` | array | Two-letter **place-of-performance** state codes, e.g. `["TX", "CA"]` — ORed |
+| `states` | array | Two-letter state codes, e.g. `["TX", "CA"]` — ORed. Place of performance for opportunities; covered state for wage determinations |
 | `organizationId` | string | Restrict to one issuing department/agency/office by SAM organization id |
-| `activeOnly` | boolean | Only opportunities still open for response (default `true`) |
+| `activeOnly` | boolean | Only opportunities still open for response — for wage determinations, only determinations currently in force (default `true`) |
 | `enrichDetail` | boolean | Join each row with NAICS / set-aside / place of performance / contacts (default `false`) |
 | `maxResults` | integer | Cap on rows returned (default `200`) |
 | `watchLabel` | string | Optional. Name a saved search to get only opportunities new since your last run under that label — see FAQ |

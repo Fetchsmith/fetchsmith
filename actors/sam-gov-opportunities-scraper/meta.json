@@ -1,8 +1,8 @@
 {
-  "title": "SAM.gov Opportunities Scraper – US Federal Contracts, Bids",
-  "description": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, sources sought and awards — with no API key, no login. NAICS, set-aside, notice type and place-of-performance filters, plus optional per-opportunity enrichment (contacts, NAICS, place of performance).",
-  "seoTitle": "SAM.gov Opportunities Scraper — Federal Bids API",
-  "seoDescription": "Scrape live SAM.gov federal contracting opportunities — no API key needed. NAICS, set-aside, notice type filters, contact enrichment. No start fee.",
+  "title": "SAM.gov Scraper – Federal Contracts, Bids, Wage Determinations",
+  "description": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, sources sought and awards — plus Davis-Bacon, Service Contract Act and CBA wage determinations, with no API key and no login. NAICS, set-aside, notice type and state filters, contacts, watch mode.",
+  "seoTitle": "SAM.gov Scraper — Federal Bids & Wage Determinations API",
+  "seoDescription": "Scrape SAM.gov federal contract opportunities and Davis-Bacon / SCA / CBA wage determinations — no API key needed. State, NAICS and set-aside filters. No start fee.",
   "categories": [
     "LEAD_GENERATION",
     "BUSINESS"
@@ -10,7 +10,7 @@
   "events": {
     "result": {
       "eventTitle": "Result item",
-      "eventDescription": "One normalized SAM.gov opportunity returned to the dataset.",
+      "eventDescription": "One normalized SAM.gov record returned to the dataset (a contract opportunity, or a wage determination in the wage-determination data types).",
       "eventPriceUsd": 0.0015
     }
   }

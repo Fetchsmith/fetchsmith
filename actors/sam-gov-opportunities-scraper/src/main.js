@@ -15,6 +15,24 @@ const input = (await Actor.getInput()) ?? {};
 const SEARCH_API = 'https://sam.gov/api/prod/sgs/v1/search/';
 const DETAIL_API = 'https://sam.gov/api/prod/opps/v2/opportunities';
 
+// The SAME keyless backend multiplexes several of SAM.gov's public data types behind `index=`
+// (cycle 703's rule, cycle 704's build). Probed live cycle 704, all 200 OK with no key/login:
+//   index=opp  -> contract opportunities (what this Actor shipped with)
+//   index=dbra -> Davis-Bacon Act construction wage determinations (`_type: wdDBRA`, 85,426)
+//   index=wd   -> Collective Bargaining Agreement wage determinations (`_type: wdCBA`, 107,580)
+//   index=sca  -> Service Contract Act wage determinations (`_type: wdSCA`, 2,666)
+// `index=dbra` was NOT in cycle 703's scoping (it guessed `dba`/`wdol`/`davisbacon`, all 400) --
+// `wd` alone is CBA-only, so shipping just `wd` would have silently omitted the Davis-Bacon set,
+// which is the one construction contractors actually need. One index per run on purpose: the
+// completeness machinery below measures ONE `page.totalElements` per run, and merging two indices
+// would make `declaredMatches` unreadable.
+const DATA_TYPES = {
+    'opportunities': { index: 'opp', noun: 'opportunity', nounPlural: 'opportunities' },
+    'wage-determinations-dbra': { index: 'dbra', noun: 'wage determination', nounPlural: 'wage determinations' },
+    'wage-determinations-cba': { index: 'wd', noun: 'wage determination', nounPlural: 'wage determinations' },
+    'wage-determinations-sca': { index: 'sca', noun: 'wage determination', nounPlural: 'wage determinations' },
+};
+
 // Confirmed live cycle 539: `notice_type` takes SAM's own single-letter codes (matches the
 // codes SAM shows in the UI dropdown / that come back on each row's `type.code`).
 const NOTICE_TYPE_CODES = {
@@ -93,8 +111,21 @@ async function apiGet(url) {
     return null;
 }
 
+const dataTypeRaw = String(input.dataType ?? 'opportunities').trim();
+const dataType = Object.hasOwn(DATA_TYPES, dataTypeRaw) ? dataTypeRaw : 'opportunities';
+if (dataType !== dataTypeRaw) {
+    log.warning(`dataType "${dataTypeRaw}" is not one of ${Object.keys(DATA_TYPES).join(', ')}; falling back to "opportunities".`);
+}
+const { index: SEARCH_INDEX, noun: ROW_NOUN, nounPlural: ROW_NOUN_PLURAL } = DATA_TYPES[dataType];
+const isWd = dataType !== 'opportunities';
+
 // Cycle 96 seed rule: never ship a default that makes the very first test run return 0 rows.
-const keyword = String(input.keyword ?? 'contract').trim();
+// On the wage-determination indices a keyword is the WRONG default: `q` there matches the
+// determination's reference number, not the trades inside it (measured cycle 704: `q=roofing`
+// returns 0 against 85,426 live Davis-Bacon rows), so defaulting to "contract" would hand a first
+// run an empty dataset. Seed those modes with no keyword instead -- an unfiltered wd query is
+// itself a valid, large result set.
+const keyword = String(input.keyword ?? (isWd ? '' : 'contract')).trim();
 const naicsCodes = (Array.isArray(input.naicsCodes) ? input.naicsCodes : []).map((v) => String(v).trim()).filter(Boolean);
 const setAsideTypes = (Array.isArray(input.setAsideTypes) ? input.setAsideTypes : []).map((v) => String(v).trim()).filter(Boolean);
 const noticeTypes = (Array.isArray(input.noticeTypes) ? input.noticeTypes : [])
@@ -103,7 +134,32 @@ const noticeTypes = (Array.isArray(input.noticeTypes) ? input.noticeTypes : [])
 const states = (Array.isArray(input.states) ? input.states : []).map((v) => String(v).toUpperCase().trim()).filter(Boolean);
 const organizationId = String(input.organizationId ?? '').trim();
 const activeOnly = input.activeOnly !== false; // default true
-const enrichDetail = input.enrichDetail === true;
+let enrichDetail = input.enrichDetail === true;
+
+// Filters that only exist on the opportunity index. Silently ignoring them in a wage-determination
+// run would return a full 10,000-row unfiltered set that LOOKS filtered -- and every row is billed.
+if (isWd) {
+    const ignored = [];
+    if (naicsCodes.length) ignored.push('naicsCodes');
+    if (setAsideTypes.length) ignored.push('setAsideTypes');
+    if (noticeTypes.length) ignored.push('noticeTypes');
+    if (organizationId) ignored.push('organizationId');
+    if (ignored.length) {
+        log.warning(
+            `${ignored.join(', ')} ${ignored.length === 1 ? 'is' : 'are'} only supported for dataType "opportunities" `
+            + `and ${ignored.length === 1 ? 'was' : 'were'} IGNORED for "${dataType}". SAM.gov's wage-determination `
+            + 'indices are filterable by state (`states`), active status (`activeOnly`) and reference-number keyword '
+            + '(`keyword`) only -- your results are NOT narrowed by the ignored filter(s).',
+        );
+    }
+    if (enrichDetail) {
+        // Probed cycle 704: only CBA has a keyless per-record detail endpoint
+        // (sam.gov/api/prod/wdol/v1/cba/<id>); the dbra/sca equivalents 404 on every guessed path.
+        // Rather than enrich one of three modes asymmetrically, enrichment is opportunity-only.
+        log.warning(`enrichDetail is only supported for dataType "opportunities"; ignored for "${dataType}".`);
+        enrichDetail = false;
+    }
+}
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 200), 1), 10000); // 10k = confirmed backend depth cap (cycle 538)
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
@@ -119,11 +175,27 @@ if (webhookUrlRaw) {
     }
 }
 
-log.info('Starting SAM.gov opportunity search', {
+log.info(`Starting SAM.gov ${ROW_NOUN} search (dataType=${dataType}, index=${SEARCH_INDEX})`, {
     keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail, watchLabel,
 });
 
 function buildSearchUrl(page, size) {
+    if (isWd) {
+        const params = new URLSearchParams({
+            index: SEARCH_INDEX, responseType: 'json',
+            page: String(page), size: String(size),
+        });
+        if (keyword) params.set('q', keyword);
+        if (activeOnly) params.set('is_active', 'true');
+        // The state param is `state`, NOT the opportunity index's `pop_state` -- measured live
+        // cycle 704: `state=AL` -> 3,509 and `state=TX` -> 6,909 on index=wd, while `pop_state=AL`
+        // returns 0 (applied, matches nothing) and an unrecognised name like `wd_state=AL` returns
+        // the unfiltered 107,580. Comma-join is a true OR, same as the opportunity filters:
+        // `state=AL,TX` -> 10,415, i.e. 3,509 + 6,909 minus the 3 determinations covering both;
+        // repeating the key (`state=AL&state=TX`) first-wins at 3,509 and fails OPEN, so never do it.
+        if (states.length) params.set('state', states.join(','));
+        return `${SEARCH_API}?${params.toString()}`;
+    }
     // `mode=search` truncates `descriptions[0].content` to 250 chars server-side -- confirmed by
     // diffing identical queries with/without it (cycle 567): same `totalElements`, same row ids
     // per page (intra-page order can differ on relevance ties, never drops/adds a row), but content
@@ -186,6 +258,86 @@ function normalizeRow(row) {
     };
 }
 
+// The three wage-determination indices describe the same thing in three different location shapes,
+// all confirmed against live rows (cycle 704):
+//   wdDBRA  location.state  = { code, name, counties: [{code, value}] }      (singular object)
+//   wdCBA   location.states = [{ code, name, counties: [{code, value}] }]    (array)
+//   wdSCA   location.states = [{ code, name, isStateWide, counties: { include: [...], exclude: [...] } }]
+// Flattened to one `coverage` array so a buyer writes one parser, not three. SCA's `exclude` list is
+// kept as its own field rather than folded into the county list -- an excluded county is the exact
+// opposite of a covered one, and silently merging them would be a wrong answer, not a lossy one.
+function countyNames(counties) {
+    if (Array.isArray(counties)) return counties.map((c) => c?.value ?? null).filter(Boolean);
+    if (Array.isArray(counties?.include)) return counties.include.map((c) => c?.value ?? null).filter(Boolean);
+    return [];
+}
+function excludedCountyNames(counties) {
+    return Array.isArray(counties?.exclude) ? counties.exclude.map((c) => c?.value ?? null).filter(Boolean) : [];
+}
+function coverageOf(location) {
+    const states = Array.isArray(location?.states) ? location.states : (location?.state ? [location.state] : []);
+    return states.map((s) => ({
+        stateCode: s?.code ?? null,
+        stateName: s?.name ?? null,
+        isStateWide: s?.isStateWide ?? null,
+        counties: countyNames(s?.counties),
+        excludedCounties: excludedCountyNames(s?.counties),
+    }));
+}
+
+// `publishDate` comes back as an ISO string on wdCBA but as epoch MILLISECONDS on wdDBRA/wdSCA
+// (measured live cycle 704: 1789617600000). Emitting both shapes under one field name would make
+// every downstream date parse a coin flip, so normalise to ISO here.
+function toIso(value) {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'number') return new Date(value).toISOString();
+    return String(value);
+}
+
+function normalizeWdRow(row) {
+    const id = row._id;
+    const coverage = coverageOf(row.location);
+    return {
+        wageDeterminationId: id === null || id === undefined ? null : String(id),
+        // wdDBRA/wdSCA carry `fullReferenceNumber` (e.g. "AK20260001", "2014-0333"); wdCBA carries
+        // `cbaNumber` (e.g. "CBA-2003-2"). `title` mirrors whichever exists on all three.
+        referenceNumber: row.fullReferenceNumber ?? row.cbaNumber ?? row.title ?? null,
+        shortReferenceNumber: row.shortReferenceNumber ?? null,
+        title: row.title ?? null,
+        actCode: row.type?.code ?? null,       // DBA | SCA | CBA
+        actName: row.type?.value ?? null,      // Davis-Bacon Act | Service Contract Act | Collective Bargaining Agreement
+        recordType: row._type ?? null,         // wdDBRA | wdSCA | wdCBA
+        isActive: row.isActive ?? null,
+        isLatest: row.isLatest ?? null,
+        isStandard: row.isStandard ?? null,
+        revisionNumber: typeof row.revisionNumber === 'number' ? row.revisionNumber : null,
+        year: typeof row.year === 'number' ? row.year : null,
+        publishDate: toIso(row.publishDate),
+        modifiedDate: toIso(row.modifiedDate),
+        // DBRA only: which kinds of construction the schedule applies to (Building/Heavy/Highway/
+        // Residential). SCA only: the service categories it covers.
+        constructionTypes: Array.isArray(row.constructionTypes) ? row.constructionTypes : null,
+        services: Array.isArray(row.services)
+            ? row.services.map((s) => ({ code: s?.code ?? null, name: s?.value ?? null, description: s?.description ?? null }))
+            : null,
+        coverage,
+        stateCodes: coverage.map((c) => c.stateCode).filter(Boolean),
+        countyCount: coverage.reduce((n, c) => n + c.counties.length, 0),
+        // Per-occupation wage RATE schedules are not on the search row for any of the three
+        // indices, and only wdCBA has a keyless per-record detail endpoint (cycle 704), so this
+        // Actor delivers the determination index -- which determination applies where, and whether
+        // it is current -- not the rate tables. Said plainly here and in the README so nobody buys
+        // rows expecting hourly rates.
+        wageRates: null,
+    };
+}
+
+// One identity accessor for both row shapes, so the dedupe set, the watch baseline and the push
+// loop can never disagree about what "the id of this row" means.
+function idOf(item) {
+    return item.opportunityId ?? item.wageDeterminationId ?? null;
+}
+
 let detailLookupsFailed = 0;
 
 async function enrichOne(item) {
@@ -236,6 +388,9 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchCriteria = {
+    // dataType is part of the fingerprint: opportunities and wage determinations are different
+    // questions with disjoint id spaces, so they must never share a baseline.
+    dataType,
     keyword, naicsCodes: [...naicsCodes].sort(), setAsideTypes: [...setAsideTypes].sort(),
     noticeTypes: [...noticeTypes].sort(), states: [...states].sort(), organizationId, activeOnly,
 };
@@ -252,6 +407,10 @@ const watchCriteria = {
 function descHashOf(desc) {
     return desc ? createHash('md5').update(desc).digest('hex').slice(0, 8) : null;
 }
+const WATCHED_FIELDS_TEXT = isWd
+    ? 'revision number, active status or modified date'
+    : 'active/notice-type status, response deadline, modified date, modification count, awardee or description';
+
 function snapshotOf(item) {
     return {
         isActive: item.isActive ?? null,
@@ -261,6 +420,10 @@ function snapshotOf(item) {
         modificationsCount: typeof item.modificationsCount === 'number' ? item.modificationsCount : null,
         awardeeName: item.awardeeName ?? null,
         descHash: descHashOf(item.description),
+        // Wage determinations have no notice lifecycle or response deadline; what moves on them is
+        // a REVISION (Davis-Bacon schedules are revised many times a year) and isActive flipping
+        // when a newer revision supersedes them. Always null on an opportunity row.
+        revisionNumber: typeof item.revisionNumber === 'number' ? item.revisionNumber : null,
     };
 }
 
@@ -271,7 +434,7 @@ function changesBetween(prev, next) {
     if (!prev) return null;
     const types = [];
     const previous = {};
-    for (const field of ['isActive', 'noticeTypeCode', 'responseDate', 'modifiedDate', 'modificationsCount', 'awardeeName']) {
+    for (const field of ['isActive', 'noticeTypeCode', 'responseDate', 'modifiedDate', 'modificationsCount', 'awardeeName', 'revisionNumber']) {
         if (prev[field] !== undefined && prev[field] !== null && prev[field] !== next[field]) {
             types.push(field);
             previous[field] = prev[field];
@@ -314,10 +477,10 @@ async function saveWatchRecord(status) {
         seenCount: entries.length,
         // Compact per-entry shape so WATCH_KEEP's 60,000 entries stay inside the KV record's size
         // budget: i(d), a(isActive), n(noticeTypeCode), r(responseDate), m(modifiedDate),
-        // c(modificationsCount), w(awardeeName), h(descHash).
+        // c(modificationsCount), w(awardeeName), h(descHash), v(revisionNumber).
         seenIds: entries.map(([id, snap]) => ({
             i: id, a: snap.isActive, n: snap.noticeTypeCode, r: snap.responseDate, m: snap.modifiedDate,
-            c: snap.modificationsCount, w: snap.awardeeName, h: snap.descHash,
+            c: snap.modificationsCount, w: snap.awardeeName, h: snap.descHash, v: snap.revisionNumber,
         })),
         runCount: (watchRecord.runCount ?? 0) + 1,
     });
@@ -341,25 +504,26 @@ if (watchMode) {
                     modifiedDate: entry.m ?? null,
                     modificationsCount: typeof entry.c === 'number' ? entry.c : null,
                     awardeeName: entry.w ?? null, descHash: entry.h ?? null,
+                    revisionNumber: typeof entry.v === 'number' ? entry.v : null,
                 });
             } else {
                 watchSeen.set(String(entry), {
                     isActive: null, noticeTypeCode: null, responseDate: null, modifiedDate: null,
-                    modificationsCount: null, awardeeName: null, descHash: null,
+                    modificationsCount: null, awardeeName: null, descHash: null, revisionNumber: null,
                 });
             }
         }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-            + `${watchSeen.size} already-delivered opportunity(ies). Only opportunities NOT in that baseline are returned and charged`
-            + (watchChanges ? ', plus any already-delivered opportunity whose active/notice-type status, response deadline, modified date, modification count, awardee or description changed.' : '.'),
+            + `${watchSeen.size} already-delivered ${ROW_NOUN}(s). Only ${ROW_NOUN_PLURAL} NOT in that baseline are returned and charged`
+            + (watchChanges ? `, plus any already-delivered ${ROW_NOUN} whose ${WATCHED_FIELDS_TEXT} changed.` : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
         seeding = true;
         log.info(
             `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
-            + 'It records which opportunities already match and returns ZERO results (you are charged nothing). Run it '
+            + `It records which ${ROW_NOUN_PLURAL} already match and returns ZERO results (you are charged nothing). Run it `
             + 'again on the same label and filters -- on a schedule, typically -- to get only what is new since now.',
         );
     }
@@ -450,10 +614,11 @@ async function fetchRows(limit) {
         }
         scanned += pageRows.length;
         for (const row of pageRows) {
-            const item = normalizeRow(row);
-            if (item.opportunityId) {
-                if (seenIds.has(item.opportunityId)) { duplicateRowsDropped += 1; continue; }
-                seenIds.add(item.opportunityId);
+            const item = isWd ? normalizeWdRow(row) : normalizeRow(row);
+            const rowId = idOf(item);
+            if (rowId) {
+                if (seenIds.has(rowId)) { duplicateRowsDropped += 1; continue; }
+                seenIds.add(rowId);
             }
             rows.push(item);
             if (rows.length >= limit) break;
@@ -486,7 +651,7 @@ async function fetchRows(limit) {
 if (watchMode && seeding) {
     const baselineRows = await fetchRows(SEED_CAP);
     for (const row of baselineRows) {
-        if (row.opportunityId) watchSeen.set(row.opportunityId, snapshotOf(row));
+        if (idOf(row)) watchSeen.set(idOf(row), snapshotOf(row));
     }
     // Backstop, keyed on rows READ not rows kept: if the seed asks for exactly SEED_CAP distinct
     // rows and SAM.gov happens to serve no duplicates, the walk exits on `rows.length >= limit`
@@ -500,7 +665,7 @@ if (watchMode && seeding) {
             + `${declaredMatches === null ? '' : `; ${(declaredMatches - SEED_CAP).toLocaleString('en-US')} of ${declaredMatches.toLocaleString('en-US')} match(es) were never seen`}`,
         );
     }
-    log.info(`Baseline walk: ${watchSeen.size} opportunity id(s) recorded.`);
+    log.info(`Baseline walk: ${watchSeen.size} ${ROW_NOUN} id(s) recorded.`);
 }
 
 let results = [];
@@ -532,8 +697,8 @@ if (!seeding) {
     let index = 0;
     for (const item of results) {
         index += 1;
-        if (watchMode && item.opportunityId && watchSeen.has(item.opportunityId)) {
-            const id = item.opportunityId;
+        if (watchMode && idOf(item) && watchSeen.has(idOf(item))) {
+            const id = idOf(item);
             const nextSnap = snapshotOf(item);
             // Already delivered under this watch label. Normally dropped before any charge, so an
             // opportunity is never paid for twice -- UNLESS watchChanges is on and one of the
@@ -556,7 +721,7 @@ if (!seeding) {
         const cont = await pushResult(item);
         // Recorded as delivered only after the charge actually succeeded -- anything dropped by
         // maxResults or a charge limit stays "new" for the next run.
-        if (watchMode && item.opportunityId && pushed > beforePush) watchSeen.set(item.opportunityId, snapshotOf(item));
+        if (watchMode && idOf(item) && pushed > beforePush) watchSeen.set(idOf(item), snapshotOf(item));
         beforePush = pushed;
         if (!cont) { rowsNotReached = results.length - index; break; } // maxResults reached or a per-run charge limit hit
     }
@@ -603,30 +768,30 @@ if (watchMode && seedFailure) {
         if (!complete) {
             log.warning(
                 `BASELINE INCOMPLETE (${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}). Only `
-                + `${watchSeen.size} opportunity(ies) were recorded as already-seen out of `
+                + `${watchSeen.size} ${ROW_NOUN}(s) were recorded as already-seen out of `
                 + `${declaredMatches === null ? 'an unknown number of' : declaredMatches.toLocaleString('en-US')} match(es). `
-                + 'Re-run this seed before scheduling incremental runs, or the missing opportunities will be returned and CHARGED as new.',
+                + `Re-run this seed before scheduling incremental runs, or the missing ${ROW_NOUN_PLURAL} will be returned and CHARGED as new.`,
             );
         }
         log.info(
-            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} opportunity(ies) recorded as already-seen, `
-            + '0 results returned, 0 charged. The next run on this label and these filters returns only new opportunities.'
+            `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} ${ROW_NOUN}(s) recorded as already-seen, `
+            + `0 results returned, 0 charged. The next run on this label and these filters returns only new ${ROW_NOUN_PLURAL}.`
             + (watchSeen.size >= SEED_CAP
-                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-opportunity cap. Narrow the query (a keyword, a `
-                + 'NAICS code, a set-aside/notice type) so the whole result set fits, or the first incremental run '
-                + 'will report opportunities past the cap as new.'
+                ? ` NOTE: the baseline stopped at the ${SEED_CAP}-record cap. Narrow the query (a keyword, a `
+                + `state${isWd ? '' : ', a NAICS code, a set-aside/notice type'}) so the whole result set fits, or the `
+                + `first incremental run will report ${ROW_NOUN_PLURAL} past the cap as new.`
                 : ''),
         );
     } else {
         log.info(
-            `Watch label "${watchLabel}": ${pushed - changedCount} new opportunity(ies)`
-            + (watchChanges ? ` and ${changedCount} changed opportunity(ies) (active/notice-type status, response deadline, modified date, modification count, awardee or description)` : '')
+            `Watch label "${watchLabel}": ${pushed - changedCount} new ${ROW_NOUN}(s)`
+            + (watchChanges ? ` and ${changedCount} changed ${ROW_NOUN}(s) (${WATCHED_FIELDS_TEXT})` : '')
             + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
         );
     }
 }
 
-log.info(`Done. Pushed ${pushed} opportunities (scanned ${scanned} row(s) over ${pages} page(s)).`);
+log.info(`Done. Pushed ${pushed} ${ROW_NOUN_PLURAL} (scanned ${scanned} row(s) over ${pages} page(s)).`);
 
 // ---------------------------------------------------------------------------
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
@@ -634,6 +799,8 @@ log.info(`Done. Pushed ${pushed} opportunities (scanned ${scanned} row(s) over $
 // which needs no webhook. `complete` is deliberately kept OUT of the status string: a run can be
 // SUCCEEDED and short at the same time, and that pair is exactly what this record exists for.
 const runSummary = {
+    dataType,
+    searchIndex: SEARCH_INDEX,
     mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : 'search',
     // What SAM.gov itself says matches this query (page.totalElements). `null` means the search
     // never answered with a count -- never read it as 0.
@@ -673,13 +840,13 @@ if (!complete) {
     const of = reachable() === null ? '' : ` of ${reachable().toLocaleString('en-US')} reachable`;
     await Actor.setStatusMessage(
         seeding
-            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} opportunity(ies) recorded${of} — ${incompleteReason}`
+            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} ${ROW_NOUN}(s) recorded${of} — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
     );
 } else if (declaredMatches !== null && !watchMode) {
-    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} opportunity(ies) SAM.gov declared for these filters.`);
+    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never

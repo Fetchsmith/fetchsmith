@@ -3,12 +3,30 @@
     "type": "object",
     "schemaVersion": 1,
     "properties": {
+        "dataType": {
+            "title": "Data type",
+            "type": "string",
+            "description": "Which SAM.gov public dataset to pull. **Contract opportunities** (default) returns solicitations/awards. The three **wage determination** options return the Department of Labor determinations SAM.gov publishes: **Davis-Bacon Act** (construction, ~85k records), **Service Contract Act** (services, ~2.7k) and **Collective Bargaining Agreement** (~108k). Wage-determination modes support the keyword, state, active-only and max-results filters only — NAICS, set-aside, notice type, organization and detail enrichment are opportunity-only and are ignored (with a log warning) if set. They return the determination index (which determination applies to which state/counties, its revision and whether it is current), not the per-occupation hourly rate tables.",
+            "editor": "select",
+            "default": "opportunities",
+            "enum": [
+                "opportunities",
+                "wage-determinations-dbra",
+                "wage-determinations-sca",
+                "wage-determinations-cba"
+            ],
+            "enumTitles": [
+                "Contract opportunities",
+                "Wage determinations — Davis-Bacon Act (construction)",
+                "Wage determinations — Service Contract Act (services)",
+                "Wage determinations — Collective Bargaining Agreement"
+            ]
+        },
         "keyword": {
             "title": "Keyword",
             "type": "string",
-            "description": "Searched against opportunity title/description. Defaults to \"contract\" so a first test run never returns 0 rows.",
-            "editor": "textfield",
-            "default": "contract"
+            "description": "Searched against opportunity title/description. For wage determinations it matches the determination's reference number (e.g. \"AK20260001\"), NOT trades or occupations. Leave empty for all. Defaults to \"contract\" for opportunities so a first test run never returns 0 rows.",
+            "editor": "textfield"
         },
         "naicsCodes": {
             "title": "NAICS codes",
@@ -29,11 +47,27 @@
             "editor": "select",
             "items": {
                 "type": "string",
-                "enum": ["p", "o", "k", "r", "a", "s", "g", "i", "u"],
+                "enum": [
+                    "p",
+                    "o",
+                    "k",
+                    "r",
+                    "a",
+                    "s",
+                    "g",
+                    "i",
+                    "u"
+                ],
                 "enumTitles": [
-                    "Presolicitation", "Solicitation", "Combined Synopsis/Solicitation",
-                    "Sources Sought", "Award Notice", "Special Notice", "Sale of Surplus",
-                    "Intent to Bundle", "Justification"
+                    "Presolicitation",
+                    "Solicitation",
+                    "Combined Synopsis/Solicitation",
+                    "Sources Sought",
+                    "Award Notice",
+                    "Special Notice",
+                    "Sale of Surplus",
+                    "Intent to Bundle",
+                    "Justification"
                 ]
             },
             "uniqueItems": true
@@ -41,7 +75,7 @@
         "states": {
             "title": "Place of performance state(s)",
             "type": "array",
-            "description": "2-letter US state codes, e.g. CA.",
+            "description": "2-letter US state codes, e.g. CA. For opportunities this is the place of performance; for wage determinations it is the state the determination covers. Multiple states are OR-ed.",
             "editor": "stringList"
         },
         "organizationId": {
@@ -51,15 +85,15 @@
             "editor": "textfield"
         },
         "activeOnly": {
-            "title": "Active opportunities only",
+            "title": "Active records only",
             "type": "boolean",
-            "description": "Only return opportunities SAM.gov currently flags active.",
+            "description": "Only return records SAM.gov currently flags active (for wage determinations: currently in force, i.e. not superseded by a later revision).",
             "default": true
         },
         "enrichDetail": {
             "title": "Enrich with detail call",
             "type": "boolean",
-            "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower.",
+            "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower. Opportunities only; ignored for wage determinations.",
             "default": false
         },
         "maxResults": {

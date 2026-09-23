@@ -180,7 +180,9 @@
       },
       "_watchChangeType": {
         "title": "_watchChangeType",
-        "example": ["isActive"],
+        "example": [
+          "isActive"
+        ],
         "type": [
           "array",
           "null"
@@ -188,11 +190,125 @@
       },
       "_watchPrevious": {
         "title": "_watchPrevious",
-        "example": { "isActive": true },
+        "example": {
+          "isActive": true
+        },
         "type": [
           "object",
           "null"
         ]
+      },
+      "wageDeterminationId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Wage determination ID"
+      },
+      "referenceNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Reference number"
+      },
+      "shortReferenceNumber": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Short reference number"
+      },
+      "actCode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Act code"
+      },
+      "actName": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Act"
+      },
+      "recordType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Record type"
+      },
+      "isLatest": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Latest revision"
+      },
+      "isStandard": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Standard determination"
+      },
+      "revisionNumber": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Revision number"
+      },
+      "year": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Year"
+      },
+      "constructionTypes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Construction types"
+      },
+      "services": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Service categories"
+      },
+      "coverage": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Geographic coverage"
+      },
+      "stateCodes": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "State codes"
+      },
+      "countyCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "County count"
+      },
+      "wageRates": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Wage rates (not published on the index; always null)"
       }
     }
   },
