@@ -87,6 +87,8 @@ let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
+let baselineTruncated = 0; // mark ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const watchSeen = new Set();
 
 if (watchMode) {
@@ -115,6 +117,16 @@ if (watchMode) {
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `
+      + `${baselineTruncated} oldest mark id(s) were dropped (${baselineTruncatedTotal} dropped over the `
+      + 'life of this label) and will be re-delivered and re-charged as "new" on a future run. Narrow the '
+      + 'search (tighter term, fewer offices, specific Nice classes or statuses) to keep the baseline under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -123,6 +135,8 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
   });
 }
 
@@ -269,8 +283,18 @@ try {
   await Actor.fail(`Run failed: ${err.message}`);
 }
 
+// WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
+// never taints the common case where the baseline comfortably fits under the cap. Computed
+// AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
+let evictionSuffix = '';
+
 if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  evictionSuffix = baselineTruncated > 0
+    ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest mark `
+      + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) -- they will be `
+      + 're-delivered and re-charged as "new" on a future run. Narrow the search to keep the baseline under the cap.'
+    : '';
   if (seeding) {
     log.info(
       `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} mark(s) recorded as already-seen, `
@@ -278,13 +302,15 @@ if (watchMode) {
       + (watchSeen.size >= SEED_CAP
         ? ` NOTE: the baseline hit the ${SEED_CAP}-mark cap. Narrow the search (tighter term, offices, class or `
         + 'status) so the whole current match set fits, or the first incremental run may report older marks past the cap as new.'
-        : ''),
+        : '') + evictionSuffix,
     );
-    await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing mark(s) recorded, 0 charged. Run again later to get only what's new.`);
+    await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing mark(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
   } else {
-    log.info(`Watch label "${watchLabel}": ${pushed} new mark(s) since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
+    log.info(`Watch label "${watchLabel}": ${pushed} new mark(s) since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
     if (pushed === 0) {
-      await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+      await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
+    } else if (baselineTruncated > 0) {
+      await Actor.setStatusMessage(`Pushed ${pushed} new mark(s) for watch label "${watchLabel}".${evictionSuffix}`);
     }
   }
 }
@@ -308,6 +334,8 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({
