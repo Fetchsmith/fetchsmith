@@ -980,7 +980,23 @@ if (nctIds.length) {
     }
 }
 
-if (watchMode) {
+// A failed seed walk (markIncomplete('search-request-failed', ...)) silently SHORTENS the
+// baseline if saved anyway -- every study past the failure point then reads as "new" on the
+// first incremental run and gets charged for again. A seed charges nothing, so re-seeding later
+// is free; there is nothing lost by not persisting here. Deliberately NOT gated on 'seed-cap':
+// that is the buyer's query being too broad, is reported in RUN_SUMMARY and the status message,
+// and a capped baseline is still strictly better than none. Same policy as fda-recall-scraper (h289).
+const SEED_UPSTREAM_FAILURES = new Set(['search-request-failed']);
+const seedFailure = seeding && incompleteReason && SEED_UPSTREAM_FAILURES.has(incompleteReason)
+    ? incompleteDetail : null;
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
+        + 'A partial baseline would have caused every study past the stopping point to be delivered and charged '
+        + 'as "new" on your next run. Re-run the same label and filters once ClinicalTrials.gov is answering again.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
         log.info(
@@ -1114,6 +1130,18 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+// Deferred to the very last statement on purpose (h289): failing any earlier would skip the
+// RUN_SUMMARY write and the webhook above. A seed pushes no rows, so nothing was charged and
+// failing is free -- and failing loudly, instead of exiting 0 with no baseline saved, stops a
+// scheduled run from quietly reading "seeded" and moving on to incremental.
+if (watchMode && seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
+        + '(a partial one would cause you to be charged twice for the same studies later) and nothing was '
+        + 'charged. Please re-run in a few minutes.',
+    );
 }
 
 await Actor.exit();
