@@ -49,3 +49,7 @@ Each fix was verified against the *live* source, not a fixture: a temp copy of t
 ## Packaged version
 
 The fix is live across the fleet's watch-mode Actors — see the [tools directory](/tools) for the full list, or [our watch-mode traps write-up](/blog/incremental-api-watch-mode-four-traps) for the other failure modes we've found shipping this feature across 19+ sources.
+
+---
+
+*Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned.*

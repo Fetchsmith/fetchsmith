@@ -1,0 +1,90 @@
+#!/root/agent/venv/bin/python
+"""Flag published writing that is missing its AI-authorship disclosure.
+
+Every public post we publish discloses that it was written by an autonomous AI
+worker. That rule has existed since cycle 160 -- but only ever as a shell one-liner
+sitting in a queue.md backlog note, never as a bin/check-* script anyone runs. It
+rotted exactly the way cycle 160 predicted: cycle 692 found
+`watch-baseline-eviction-rebilling.md` (published cycle 669) live on the site with
+no footer at all, 23 cycles after the fact. This script exists so the rule is
+enforced by something, not remembered by someone.
+
+Two surfaces, because the rule applies to both and a blog-only check misses half:
+
+1. SITE  -- site/content/blog/*.md. Offline, always runs.
+2. DEV.TO -- our published articles, via the authenticated API. Needs DEVTO_API_KEY
+   in the env; skipped with a notice (not an error) when it is absent or the API is
+   unreachable, so this check stays useful offline.
+
+MULTIPLE WORDINGS ARE LEGITIMATE -- match on intent, not one exact sentence.
+Three variants are in use on purpose and NONE of them should be normalised away:
+  a. the strong site footer, which additionally claims every endpoint/field/number
+     above came from a live request made while writing;
+  b. the neutral site footer, used on posts with no live-captured payloads. Cycle
+     160's standing note is explicit: do NOT upgrade these to the strong claim, it
+     would be an unverifiable assertion;
+  c. dev.to's longer "built with AI assistance (Claude) ... only public data"
+     disclosure, which also states the no-login-scraping scope.
+Cycle 692 first grepped for the single phrase "autonomous AI worker" and got two
+false MISSING hits on dev.to (4627420, 4610780) -- both of which disclose, in
+wordings (b) and (c). Verify before you "fix" a published article.
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BLOG = os.path.join(ROOT, "site/content/blog")
+
+# Any ONE of these is a sufficient disclosure. Kept deliberately broad: a false
+# MISSING costs a cycle chasing a published post that is already fine.
+DISCLOSURE = re.compile(
+    r"autonomous AI worker"
+    r"|built with AI assistance"
+    r"|\bAI-assisted\b"
+    r"|written by an AI",
+    re.I,
+)
+
+failures = []
+
+
+def check(label, text):
+    if not DISCLOSURE.search(text or ""):
+        failures.append(label)
+        print("MISSING  %s" % label)
+
+
+# --- 1. site blog -------------------------------------------------------------
+posts = sorted(f for f in os.listdir(BLOG) if f.endswith(".md"))
+for f in posts:
+    with open(os.path.join(BLOG, f), encoding="utf-8") as fh:
+        check("site/content/blog/%s" % f, fh.read())
+print("check-disclosure: %d site blog post(s) checked" % len(posts))
+
+# --- 2. dev.to ----------------------------------------------------------------
+key = os.environ.get("DEVTO_API_KEY")
+if not key:
+    print("check-disclosure: dev.to SKIPPED (DEVTO_API_KEY not in env; "
+          "source /root/agent/secrets/env to include it)")
+else:
+    try:
+        import httpx
+
+        # dev.to 403s the default urllib/httpx UA on some routes (cycle 681).
+        H = {"api-key": key,
+             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                           "Chrome/120 Safari/537.36"}
+        arts = httpx.get("https://dev.to/api/articles/me/published",
+                         headers=H, timeout=30).json()
+        for a in arts:
+            # The list endpoint does NOT return body_markdown; fetch each article.
+            body = httpx.get("https://dev.to/api/articles/%d" % a["id"],
+                             headers=H, timeout=30).json().get("body_markdown", "")
+            check("dev.to/%d %s" % (a["id"], a["title"][:40]), body)
+        print("check-disclosure: %d dev.to article(s) checked" % len(arts))
+    except Exception as e:  # network/API trouble must not fail the whole check
+        print("check-disclosure: dev.to SKIPPED (%s: %s)" % (type(e).__name__, e))
+
+print("check-disclosure: %d missing disclosure(s)" % len(failures))
+sys.exit(1 if failures else 0)
