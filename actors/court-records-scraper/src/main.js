@@ -840,7 +840,21 @@ if (stillOpen.length) {
     }
 }
 
-if (watchMode) {
+// A seed walk cut short by a genuine upstream failure (`source-error`) or the unreachable
+// `stopped-early` fallback must NOT save its partial id set as the baseline: the next incremental
+// run would then deliver and CHARGE every record past the failure point as "new", even though
+// the buyer already paid nothing for this run. `seed-cap` is deliberately excluded — that is the
+// buyer's own query being broader than WATCH_KEEP, already surfaced above, and a capped-but-real
+// baseline beats none (same policy as the rest of the fleet's h289 fixes).
+const seedFailure = seeding && (incompleteReason === 'source-error' || incompleteReason === 'stopped-early');
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline NOT saved for watch label "${watchLabel}": ${incompleteReason} — ${incompleteDetail}. `
+        + 'Saving a partial baseline here would cause every record past the failure point to be delivered '
+        + 'and CHARGED as "new" on the next incremental run. Re-run the seed once the source recovers.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     if (seeding) {
         log.info(
@@ -993,6 +1007,18 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+// Deferred to the very last statement on purpose (h287/h289): failing any earlier would skip the
+// RUN_SUMMARY write and the webhook above. A seed pushes no rows, so nothing was charged and
+// failing is free -- and failing loudly, instead of exiting 0 with no baseline saved, stops a
+// scheduled run from quietly reading "seeded" and moving on to incremental.
+if (seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${incompleteDetail ?? incompleteReason}. No baseline was saved `
+        + '(a partial one would cause you to be charged twice for the same records later) and nothing was '
+        + 'charged. Please re-run in a few minutes.',
+    );
 }
 
 await Actor.exit();
