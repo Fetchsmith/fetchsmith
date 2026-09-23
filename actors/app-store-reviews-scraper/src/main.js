@@ -558,6 +558,8 @@ async function getAppInfo(appId, country) {
 // keeps reviewFeedIsDown()'s control probes on the old behaviour — an outage probe must be allowed
 // to come back empty rather than throwing out of the run.
 async function fetchPage(url, primary = 'default', tolerateAll = false) {
+  let lastErr = null;
+  let sawSuccess = false;
   for (const clientClass of [primary, primary === 'default' ? 'ios' : 'default']) {
     let entries;
     try {
@@ -565,9 +567,19 @@ async function fetchPage(url, primary = 'default', tolerateAll = false) {
     } catch (e) {
       if (!tolerateAll && e.httpStatus >= 400 && e.httpStatus < 500 && e.httpStatus !== 429) throw e;
       log.warning(`${url} failed (${clientClass}): ${e.message}`);
+      lastErr = e;
       continue;
     }
+    sawSuccess = true;
     if (entries.length) return { entries, clientClass };
+  }
+  // Both client classes THREW (5xx/429/network) rather than answering with a real response -- that
+  // is not a feed hole (a hole is a successful 200 with an empty array, returned above) and must
+  // not be read as one: recording "Apple confirmed 0 reviews here" for a page nobody could actually
+  // reach would seed a baseline that later delivers and charges for this pair's entire real review
+  // history as "new". tolerateAll (the outage probe) keeps its own empty-after-retries signal.
+  if (!tolerateAll && !sawSuccess && lastErr) {
+    throw Object.assign(new Error(`fetch failed on every attempt (${lastErr.message})`), { httpStatus: lastErr.httpStatus ?? 599 });
   }
   return { entries: [], clientClass: primary };
 }
@@ -986,14 +998,17 @@ for (const app of apps) {
     recordPair(appId, country, res, delivered, status, watchMode && saturatedPairs.includes(pairKey) ? { watchWindowSaturated: true } : {});
   }
 }
-// Every pair we tried was REFUSED by Apple (not empty — refused). That is always the input, so say
-// so by name and fail, instead of falling through to the outage probe (which would spend ~12 more
-// requests on control apps that are fine) or reporting it to the buyer as "no reviews found".
+// Every pair we tried came back an ERROR (not empty — a permanent 4xx refusal or every fetch
+// attempt failing outright). Either way it is worth naming by pair and failing loudly, instead of
+// falling through to the outage probe (which would spend ~12 more requests on control apps that
+// are fine) or reporting it to the buyer as "no reviews found".
 if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted) {
   await Actor.fail(
-    `Apple refused every app/storefront pair in this run (${storefrontErrorPairs.join(', ')}): ${storefrontErrorMessages.join(' ')} `
-    + 'Nothing was scraped and nothing was charged. Check "countries" (two-letter ISO-3166-1 alpha-2 storefront '
-    + 'codes — the UK is "gb", not "uk") and that the app ids really exist in those storefronts.',
+    `Every app/storefront pair in this run failed (${storefrontErrorPairs.join(', ')}): ${storefrontErrorMessages.join(' ')} `
+    + 'Nothing was scraped and nothing was charged. If this names a bad storefront or app id, check "countries" '
+    + '(two-letter ISO-3166-1 alpha-2 codes — the UK is "gb", not "uk") and that the app ids really exist there. '
+    + "If the message above says every fetch attempt failed rather than naming a storefront, it is Apple's side "
+    + '(a 5xx/rate-limit run of bad luck) — just re-run.',
   );
 }
 // Nothing at all came out of Apple for any pair: before reporting that as an ordinary empty

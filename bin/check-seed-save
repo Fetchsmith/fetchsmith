@@ -56,7 +56,19 @@ ACTORS = os.path.join(ROOT, "actors")
 
 # (slug, reason) -> why a flag is safe despite the textual shape. A reason must name
 # the invariant that makes it safe, not merely silence the flag.
-ALLOWLIST = {}
+ALLOWLIST = {
+    "app-store-reviews-scraper": (
+        "saveWatchRecord() itself is unconditional, but completeness is NOT tracked by "
+        "gating that one call -- it is tracked per (app,country) PAIR: seededPairs.add() "
+        "(main.js ~966) only fires when a pair's own walk both finished (keepGoing still "
+        "true) and did not hit a storefrontError (permanent 4xx, or -- since cycle 693's "
+        "fetchPage fix -- every client-class attempt failing outright). A pair cut short "
+        "either way is left OUT of seededPairs, so the next run re-seeds exactly that pair "
+        "instead of reading it as already-complete. This heuristic only understands the "
+        "single-gate-before-save shape, not per-item completion tracking; hand-verified "
+        "cycle 693, see LEARNINGS.md."
+    ),
+}
 
 SEED_TOKENS = ("seeding", "seed")
 # Tokens that mark "this walk did not finish because the source failed us".
