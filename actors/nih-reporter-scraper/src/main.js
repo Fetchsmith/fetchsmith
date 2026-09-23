@@ -40,6 +40,12 @@ let chunksPlanned = 0;        // sub-queries the chunk-and-merge plan created (0
 let chunksScanned = 0;
 let chunksEmpty = 0;          // sub-queries NIH answered with a real 0
 let chunksCountFailed = 0;    // sub-queries whose count never answered -- NOT the same as empty
+// True the instant NIH's API genuinely fails to answer a request this run (a page or a count
+// query). Set independently of `incompleteReason` below, because markIncomplete()'s first-cause-
+// wins rule can leave a LATER real request failure hidden behind an EARLIER structural reason
+// (offset-wall, seed-cap) that is not itself an over-charge risk -- only THIS flag, not the
+// reason string, decides whether a SEED walk's baseline is safe to save.
+let seedUpstreamFailure = false;
 
 // First cause wins: a walk that stopped because NIH stopped answering and THEN also hit
 // maxResults must keep reporting the upstream failure -- that is the cause the buyer can act on.
@@ -48,6 +54,15 @@ function markIncomplete(reason, detail = null) {
     complete = false;
     incompleteReason = reason;
     incompleteDetail = detail;
+}
+
+// Same bookkeeping as markIncomplete(), but also flips seedUpstreamFailure unconditionally.
+// Use ONLY at a call site where NIH's API genuinely did not answer a request (not a structural
+// cap like seed-cap/offset-wall) -- a seed walk that hits this never saves its baseline, no
+// matter what earlier reason `incompleteReason` already recorded.
+function markUpstreamFailure(reason, detail = null) {
+    seedUpstreamFailure = true;
+    markIncomplete(reason, detail);
 }
 
 async function apiPost(path, body, attempts = 4) {
@@ -663,7 +678,7 @@ async function walkChunk(criteria, total) {
             // and the run reported "Done. Pushed N project records" -- SUCCEEDED, silently short.
             // In a seeding run it is worse: the baseline is short, so the next incremental run
             // charges the buyer for projects that already existed. (7th appearance of that shape.)
-            markIncomplete('search-request-failed', lastApiError);
+            markUpstreamFailure('search-request-failed', lastApiError);
             log.warning(
                 `NIH RePORTER stopped answering at offset ${offset} of `
                 + `${total === null ? 'an unknown number of' : total} match(es) for this query. This run returned only `
@@ -678,7 +693,7 @@ async function walkChunk(criteria, total) {
             // A genuinely exhausted query; only suspicious if NIH's own total said there was
             // materially more to come (its total drifts by a few rows between probe and walk).
             if (total !== null && total - offset > limit) {
-                markIncomplete('empty-page-before-total', `offset=${offset}, declared total=${total}`);
+                markUpstreamFailure('empty-page-before-total', `offset=${offset}, declared total=${total}`);
             }
             return true;
         }
@@ -813,7 +828,7 @@ if (rootTotal === null) {
     // The count query itself never got an answer. Before cycle 647 this became `0`, the walk was
     // skipped entirely, and the run SUCCEEDED with an empty dataset and a warning telling the buyer
     // their filters were too narrow. Now it is named, and the walk still runs blind to the wall.
-    markIncomplete('count-request-failed', lastApiError);
+    markUpstreamFailure('count-request-failed', lastApiError);
     log.warning(
         'NIH RePORTER never answered the match-count query for these filters, so how many projects match is '
         + 'UNKNOWN (not zero). Paging ahead anyway up to the offset wall; whatever comes back is real but may be '
@@ -861,7 +876,7 @@ if (rootTotal === null) {
             // named in RUN_SUMMARY.
             if (total === null) {
                 chunksCountFailed += 1;
-                markIncomplete('count-request-failed', lastApiError);
+                markUpstreamFailure('count-request-failed', lastApiError);
                 log.warning(`Match count failed for sub-query ${JSON.stringify(chunk).slice(0, 120)} (${lastApiError}); paging it blind rather than skipping it.`);
                 chunksScanned += 1;
                 if (!(await walkChunk(chunk, null))) break;
@@ -877,7 +892,7 @@ if (rootTotal === null) {
                         const t = await countOf(s);
                         if (t === null) {
                             chunksCountFailed += 1;
-                            markIncomplete('count-request-failed', lastApiError);
+                            markUpstreamFailure('count-request-failed', lastApiError);
                             log.warning(`Match count failed for sub-query ${JSON.stringify(s).slice(0, 120)} (${lastApiError}); paging it blind rather than skipping it.`);
                             if (!(await walkChunk(s, null))) break;
                             continue;
@@ -906,7 +921,27 @@ if (rootTotal === null) {
     await walkChunk(rootCriteria, rootTotal);
 }
 
-if (watchMode) {
+// A SEED walk that NIH RePORTER genuinely failed to answer in full (a page fetch, a count query,
+// or a page coming back empty well short of NIH's own declared total) is not a smaller baseline,
+// it is a WRONG one: every project past the failure point would read as "new" (and charged) on the
+// first incremental run. `seed-cap`/`offset-wall`/`not-reached` are deliberately excluded -- those
+// are the buyer's own query being too broad or NIH's own hard paging wall, already surfaced in
+// RUN_SUMMARY, and a capped-but-real baseline is still strictly better than none. Seeding never
+// charges, so refusing to save costs nothing but a re-run. Before this fix the save was
+// unconditional and only the status label read `'seeded-incomplete'` -- cosmetic, since the load
+// path (line ~751) only tests `Array.isArray(existing.seenIds)` and never reads `.status` back, so
+// the truncated baseline was consumed exactly like a complete one.
+const seedFailure = seeding && seedUpstreamFailure
+    ? `${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}`
+    : null;
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
+        + 'Re-run with the same watchLabel to seed again once NIH RePORTER is answering -- saving a truncated baseline '
+        + 'would make every project past the failure point look "new" (and billable) on the first incremental run.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? (complete ? 'seeded' : 'seeded-incomplete') : (complete ? 'incremental' : 'incremental-incomplete'));
     if (seeding) {
         // An incomplete baseline is the expensive failure in this Actor: every project NIH did not
@@ -1057,6 +1092,13 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+if (watchMode && seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
+        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+    );
 }
 
 await Actor.exit();

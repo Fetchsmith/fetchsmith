@@ -571,17 +571,35 @@ if (!seeding) {
     }
 }
 
-if (watchMode) {
+// A SEED walk cut short by SAM.gov not answering (`upstream-error`) or quitting early before its
+// own declared total, unexplained by duplicates (`short-page`), is not a smaller baseline, it is a
+// WRONG one: every opportunity past the failure point would read as "new" (and charged) on the
+// first incremental run. `depth-cap` and `duplicate-rows` are deliberately excluded -- both mean
+// SAM.gov answered IN FULL (its own hard 10,000-row limit, or repeats within what it did serve),
+// so a capped-but-real baseline is still strictly better than none. Seeding never charges, so
+// refusing to save costs nothing but a re-run. Before this fix the save was unconditional and only
+// the status label read `'seeded-incomplete'` -- cosmetic, since neither load path (line ~751)
+// reads `.status` back, so the truncated baseline was consumed exactly like a complete one.
+const SEED_UPSTREAM_FAILURES = new Set(['upstream-error', 'short-page']);
+const seedFailure = seeding && incompleteReason && SEED_UPSTREAM_FAILURES.has(incompleteReason)
+    ? `${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}`
+    : null;
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
+        + 'Re-run with the same watchLabel to seed again once SAM.gov is answering -- saving a truncated baseline '
+        + 'would make every opportunity past the failure point look "new" (and billable) on the first incremental run.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(
         seeding
             ? (complete ? 'seeded' : 'seeded-incomplete')
             : (complete ? 'incremental' : 'incremental-incomplete'),
     );
     if (seeding) {
-        // An incomplete baseline is the EXPENSIVE failure in this Actor: every opportunity SAM.gov
-        // did not hand over during seeding looks brand new on the next incremental run and is
-        // charged for. Until this cycle a page that 500'd mid-seed produced one `log.warning` from
-        // apiGet and nothing else -- the baseline saved as "seeded" and the over-charge was silent.
+        // An incomplete-but-saved baseline here means depth-cap/duplicate-rows only -- SAM.gov
+        // answered in full, so this is a real (if capped) baseline, not the over-charge risk above.
         if (!complete) {
             log.warning(
                 `BASELINE INCOMPLETE (${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}). Only `
@@ -702,6 +720,13 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+if (watchMode && seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
+        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+    );
 }
 
 await Actor.exit();
