@@ -125,6 +125,8 @@ let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
+let baselineTruncated = 0; // episode ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
+let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const watchSeen = new Set(); // `${collectionId}:${episodeId|episodeGuid|title}` already delivered under this label+fingerprint
 
 // Per-podcast DATE FLOOR (ported from app-store-reviews-scraper 0.1.52, cycle 637). A baseline
@@ -190,6 +192,16 @@ if (watchMode) {
 
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-episode record cap; the `
+      + `${baselineTruncated} oldest episode id(s) were dropped (${baselineTruncatedTotal} dropped over the `
+      + 'life of this label) and will be re-delivered and re-charged as "new" on a future run. Narrow the '
+      + 'input (fewer podcasts/searchTerms, or a minReleaseDate) to keep the baseline under the cap.',
+    );
+  }
   await watchStore.setValue(watchKey, {
     ...watchRecord,
     label: watchLabel,
@@ -198,6 +210,8 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
     // Floors are written by the baseline run only. An incremental run re-persists what it loaded
     // unchanged: lowering a floor would re-expose, one run later, exactly what it just suppressed.
     pairFloors: Object.fromEntries(pairFloors),
@@ -997,13 +1011,22 @@ const floorNote = floorSkipped > 0
   : '';
 if (floorSkipped > 0) log.info(floorNote.trim());
 
+// WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped this run, so
+// it never taints the common case where the baseline comfortably fits under the cap. `saveWatchRecord()`
+// above already set baselineTruncated/baselineTruncatedTotal before this point.
+const evictionSuffix = watchMode && baselineTruncated > 0
+  ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-episode cap and ${baselineTruncated} oldest episode `
+    + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
+    + 're-delivered and re-charged as "new" on a future run. Narrow the input to keep the baseline under the cap.'
+  : '';
+
 let statusMsg;
 if (watchMode && seeding) {
-  statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}`;
+  statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}${evictionSuffix}`;
 } else if (watchMode && pushed === 0) {
-  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${floorNote}${timeBudgetNote}`;
+  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${floorNote}${timeBudgetNote}${evictionSuffix}`;
 } else if (watchMode) {
-  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${floorNote}${timeBudgetNote}`;
+  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${floorNote}${timeBudgetNote}${evictionSuffix}`;
 } else if (pushed === 0 && timeBudgetExceeded) {
   statusMsg = `No results before the run approached its time limit.${timeBudgetNote}`;
 } else if (pushed === 0) {
@@ -1045,6 +1068,11 @@ if (webhookUrl) {
     finishedAt: new Date().toISOString(),
     dataType,
     pushed,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   };
   try {
     const resp = await gotScraping({
