@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "remote-jobs-scraper",
-  "title": "Remote Jobs Scraper \u2013 5 Boards, Deduped Feed",
-  "description": "Remote job postings from five public boards (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and date; every row links to the original posting.",
+  "title": "Remote Jobs Scraper \u2013 6 Boards, Deduped Feed",
+  "description": "Remote job postings from six public boards (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and date; every row links to the original posting.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

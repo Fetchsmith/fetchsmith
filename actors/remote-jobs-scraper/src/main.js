@@ -1,6 +1,7 @@
-// remote-jobs-scraper — remote job postings from five PUBLIC, documented, no-auth job APIs
-// (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads), normalized into one schema and
-// de-duplicated across boards. HTTP-only, no headless browser, pay-per-event on pushed rows only.
+// remote-jobs-scraper — remote job postings from six PUBLIC, documented, no-auth job APIs
+// (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas), normalized into one
+// schema and de-duplicated across boards. HTTP-only, no headless browser, pay-per-event on
+// pushed rows only.
 //
 // House rules honoured here:
 //  - a date bound that cannot be parsed THROWS (dropping it would widen the billable set);
@@ -14,7 +15,7 @@ await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
 const UA = 'FetchSmith remote-jobs-scraper (+https://fetchsmith.com)';
-const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads'];
+const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads', 'himalayas'];
 
 const SOURCE_SITE = {
   remotive: 'https://remotive.com',
@@ -22,6 +23,7 @@ const SOURCE_SITE = {
   jobicy: 'https://jobicy.com',
   arbeitnow: 'https://www.arbeitnow.com',
   workingnomads: 'https://www.workingnomads.com',
+  himalayas: 'https://himalayas.app',
 };
 
 // ---------------------------------------------------------------- input parsing
@@ -456,12 +458,55 @@ async function fromWorkingNomads() {
     }));
 }
 
+async function fromHimalayas() {
+  const out = [];
+  let cursor = null;
+  for (let page = 0; page < maxPagesPerSource; page += 1) {
+    // Fixed page size (the API ignores ?limit=, verified live: always returns 20 regardless
+    // of the value requested), so depth is capped purely by maxPagesPerSource like Arbeitnow.
+    const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+    const body = await fetchJson(`https://himalayas.app/jobs/api${qs}`);
+    const jobs = Array.isArray(body?.jobs) ? body.jobs : [];
+    for (const j of jobs) {
+      out.push({
+        source: 'himalayas',
+        // No separate id field; guid is the job's own permalink and the only stable
+        // per-posting key the API exposes (same gap-filling as Working Nomads' url).
+        sourceJobId: String(j.guid ?? ''),
+        title: j.title ?? null,
+        company: j.companyName ?? null,
+        companyLogo: j.companyLogo || null,
+        url: j.applicationLink || j.guid || null,
+        location: Array.isArray(j.locationRestrictions) && j.locationRestrictions.length
+          ? j.locationRestrictions.join(', ') : null,
+        remote: true,
+        jobType: j.employmentType || null,
+        category: asArray(j.parentCategories).join(', ') || null,
+        tags: asArray(j.categories),
+        salaryText: null,
+        salaryMin: num(j.minSalary),
+        salaryMax: num(j.maxSalary),
+        salaryCurrency: (num(j.minSalary) || num(j.maxSalary)) ? (j.currency || null) : null,
+        salaryPeriod: (num(j.minSalary) || num(j.maxSalary)) ? (j.salaryPeriod || null) : null,
+        publishedAt: toIso(j.pubDate),
+        descriptionHtml: includeDescription ? (j.description ?? null) : undefined,
+      });
+    }
+    // Stop on an empty page rather than a missing nextCursor — with ~102k total jobs the
+    // last page was never reached live, so whether nextCursor is omitted there is unverified.
+    if (jobs.length === 0 || !body.nextCursor) break;
+    cursor = body.nextCursor;
+  }
+  return out;
+}
+
 const FETCHERS = {
   remotive: fromRemotive,
   remoteok: fromRemoteOk,
   jobicy: fromJobicy,
   arbeitnow: fromArbeitnow,
   workingnomads: fromWorkingNomads,
+  himalayas: fromHimalayas,
 };
 
 // ---------------------------------------------------------------- filters

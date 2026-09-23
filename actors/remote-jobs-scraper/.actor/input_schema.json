@@ -6,10 +6,10 @@
     "sources": {
       "title": "Job boards",
       "type": "array",
-      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned), \"workingnomads\" (Working Nomads, general remote board with a category field on every row). Leave empty for all five. An unknown name fails the run rather than being silently ignored.",
+      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned), \"workingnomads\" (Working Nomads, general remote board with a category field on every row), \"himalayas\" (Himalayas, the largest board here at ~100k live postings, cursor-paginated 20 at a time — numeric salary range, seniority and category tags on most rows). Leave empty for all six. An unknown name fails the run rather than being silently ignored.",
       "editor": "select",
-      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads"] },
-      "default": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads"]
+      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads", "himalayas"] },
+      "default": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads", "himalayas"]
     },
     "searchKeyword": {
       "title": "Keyword",
@@ -68,7 +68,7 @@
     "maxPagesPerSource": {
       "title": "Max pages per source",
       "type": "integer",
-      "description": "Only affects Arbeitnow, the one paginated source (250 postings per page). The other three boards return their whole feed in one request.",
+      "description": "Only affects the paginated sources — Arbeitnow (250 postings per page) and Himalayas (20 postings per page, cursor-based). The other four boards return their whole feed in one request.",
       "default": 2,
       "minimum": 1,
       "maximum": 20

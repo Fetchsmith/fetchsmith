@@ -1,10 +1,10 @@
-# Remote Jobs Scraper – Remotive, Remote OK, Jobicy, Arbeitnow & Working Nomads in one de-duplicated feed
+# Remote Jobs Scraper – Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads & Himalayas in one de-duplicated feed
 
-Five public remote-job boards, one normalized JSON schema, **de-duplicated across boards before you are charged**.
+Six public remote-job boards, one normalized JSON schema, **de-duplicated across boards before you are charged**.
 
 ## What it does
 
-Pulls live remote job postings from five documented, public, no-login job-board APIs and merges them:
+Pulls live remote job postings from six documented, public, no-login job-board APIs and merges them:
 
 | Source | What it covers | Salary data |
 |---|---|---|
@@ -13,6 +13,7 @@ Pulls live remote job postings from five documented, public, no-login job-board 
 | [Jobicy](https://jobicy.com) | The 50 most recent Jobicy postings | numeric range + currency + period on many rows, rendered to text |
 | [Arbeitnow](https://www.arbeitnow.com) | A general European board — **only** rows flagged remote are returned | none |
 | [Working Nomads](https://www.workingnomads.com) | A general remote board with a `category` field on every row | none |
+| [Himalayas](https://himalayas.app) | By far the largest board here — **~102,000 live postings** per its own API (measured 2026-09-23), cursor-paginated 20 at a time, so `maxPagesPerSource` caps how deep a run walks into it | numeric min/max/currency/period on most rows |
 
 Every row says which board it came from (`source`, `sourceSite`) and links to the original posting (`url`).
 
@@ -20,7 +21,7 @@ Every row says which board it came from (`source`, `sourceSite`) and links to th
 
 When a job is syndicated to more than one of these boards, a naive aggregator returns it twice — and on a pay-per-result Actor you pay for both copies. This Actor folds copies into one row (matched on normalized company + title, newest kept) **before** the charge is made: the extra boards show up as `alsoOn: ["remoteok","jobicy"]` with their links in `duplicateUrls`, so you keep the information without paying for it twice. The company match strips common legal-entity suffixes (Inc, LLC, Ltd, Corp, GmbH, …) first, so "Acme Inc" on one board and "Acme" on another still fold into one row. Set `dedupe: false` to get one row per board copy.
 
-**Measured honestly:** on a full five-board pull on 2026-09-23 (250 postings), **10 of 250** were duplicates (cross-board and same-board re-posts both folded) — these boards curate largely disjoint sets, so the overlap on any given day is usually small. Working Nomads syndicates some of the same postings Remotive carries, confirmed live this pull. Treat de-duplication as a guarantee that you will never be billed twice for one posting, not as a claim that the boards overlap heavily.
+**Measured honestly:** on a full five-board pull on 2026-09-23 (250 postings), **10 of 250** were duplicates (cross-board and same-board re-posts both folded) — these boards curate largely disjoint sets, so the overlap on any given day is usually small. Working Nomads syndicates some of the same postings Remotive carries, confirmed live this pull. **Himalayas is not part of that figure.** Its own inventory (~102k postings) dwarfs what any single run samples, so a capped `maxPagesPerSource` walk into it is not a "full pull" the way the other five boards' entire feeds are — a duplicate-rate measured against a partial Himalayas sample would not be comparable to the other five, so none is claimed here. Dedup against Himalayas still works exactly the same way per run — it just is not summarized as a fleet-wide overlap percentage. Treat de-duplication as a guarantee that you will never be billed twice for one posting, not as a claim that the boards overlap heavily.
 
 ## Use cases
 
@@ -33,7 +34,7 @@ When a job is syndicated to more than one of these boards, a naive aggregator re
 
 | Field | Type | Notes |
 |---|---|---|
-| `sources` | array | Any subset of `remotive`, `remoteok`, `jobicy`, `arbeitnow`, `workingnomads`. Default: all five. An unknown name **fails the run** rather than being quietly dropped. |
+| `sources` | array | Any subset of `remotive`, `remoteok`, `jobicy`, `arbeitnow`, `workingnomads`, `himalayas`. Default: all six. An unknown name **fails the run** rather than being quietly dropped. |
 | `searchKeyword` | string | Kept if the title, company, category or tags contain it (case-insensitive). Also passed to Remotive's and Jobicy's own search parameters. |
 | `titleExcludeKeyword` | string | Drops postings whose title contains it, e.g. `Senior`. |
 | `companyKeyword` | string | Substring match on company name. |
@@ -42,7 +43,7 @@ When a job is syndicated to more than one of these boards, a naive aggregator re
 | `salaryOnly` | boolean | Keep only rows carrying a salary range or salary text. |
 | `dedupe` | boolean | Default `true`. See above. |
 | `includeDescription` | boolean | Adds `descriptionHtml`. Off by default — descriptions are large. |
-| `maxPagesPerSource` | integer | Only affects Arbeitnow, the one paginated source (250/page). Default 2. |
+| `maxPagesPerSource` | integer | Only affects the paginated sources — Arbeitnow (250/page) and Himalayas (20/page, cursor-based). Default 2. |
 | `maxResults` | integer | Stop after this many unique postings are pushed and charged. Default 100. |
 
 ## Output
@@ -97,23 +98,25 @@ Pay per result: you are charged once per **unique** posting pushed to the datase
 
 ## FAQ
 
-**What happens if I typo a date?** The run fails immediately with an error naming the field and the bad value. It is deliberate: if a bad `postedAfter` were ignored, the run would return (and bill for) every posting on all five boards instead of your window, and a warning line in a successful run is not something anyone reads. `2026-6-5`, `06/15/2026` and `2026-02-30` are all rejected — the last one because it is not a real date, even though JavaScript would silently roll it over to March 1.
+**What happens if I typo a date?** The run fails immediately with an error naming the field and the bad value. It is deliberate: if a bad `postedAfter` were ignored, the run would return (and bill for) every posting on all six boards instead of your window, and a warning line in a successful run is not something anyone reads. `2026-6-5`, `06/15/2026` and `2026-02-30` are all rejected — the last one because it is not a real date, even though JavaScript would silently roll it over to March 1.
 
 **Are both date bounds inclusive?** Yes. `postedAfter` starts at 00:00:00.000Z of that day and `postedBefore` ends at 23:59:59.999Z, so a job posted at 14:00Z on your end date is included.
 
 **How are duplicates detected?** Normalized company name + normalized job title (lowercased, punctuation collapsed). That catches the common syndication case ("Acme, Inc." on one board and "Acme Inc" on another). It will not merge two genuinely different openings that share a title at the same company — those stay separate rows.
 
-**I set a small `maxResults` and got rows from only one board — is that a bug?** No. The merge is global newest-first across all five boards, so a small cap samples *recency*, not *boards*: whichever board happened to publish the freshest postings that minute fills the cap. Ask for at least 50 results to see all five represented, or run once per board with `sources` set to a single board if you need a guaranteed per-board slice.
+**I set a small `maxResults` and got rows from only one board — is that a bug?** No. The merge is global newest-first across all six boards, so a small cap samples *recency*, not *boards*: whichever board happened to publish the freshest postings that minute fills the cap. Ask for at least 50 results to see all six represented, or run once per board with `sources` set to a single board if you need a guaranteed per-board slice.
 
 **What if one board is down?** The run continues with the others and logs a warning naming the failed board. You are only charged for rows you actually receive.
 
-**Does this need a login, API key or proxy?** No. All five endpoints are public and documented, and the Actor is HTTP-only — no headless browser.
+**Does this need a login, API key or proxy?** No. All six endpoints are public and documented, and the Actor is HTTP-only — no headless browser.
 
 **Why are Arbeitnow rows mostly German?** Arbeitnow is a European (largely German) board; only its postings flagged remote are returned here. Drop `arbeitnow` from `sources` if you want US-centric boards only.
 
+**Why does Himalayas only return a handful of rows even with a high `maxResults`?** Its own feed caps page size at 20 regardless of what you request, so `maxPagesPerSource` (default 2 → 40 Himalayas rows per run) governs how deep a run walks into its ~102k-posting inventory. Raise `maxPagesPerSource` (max 20 → 400 rows) if you need more from this one board specifically.
+
 ## Sources and attribution
 
-All five APIs are public and ask for credit in return. This Actor puts the source board and the original posting URL on every row so you can honour that downstream: **if you republish these postings, link back to [Remotive](https://remotive.com), [Remote OK](https://remoteok.com), [Jobicy](https://jobicy.com), [Arbeitnow](https://www.arbeitnow.com) and [Working Nomads](https://www.workingnomads.com), and point application buttons at the original job URL in the `url` field.** Remote OK's API terms require a followed link back; Jobicy's asks that apply buttons resolve to the original posting.
+All six APIs are public and ask for credit in return. This Actor puts the source board and the original posting URL on every row so you can honour that downstream: **if you republish these postings, link back to [Remotive](https://remotive.com), [Remote OK](https://remoteok.com), [Jobicy](https://jobicy.com), [Arbeitnow](https://www.arbeitnow.com), [Working Nomads](https://www.workingnomads.com) and [Himalayas](https://himalayas.app), and point application buttons at the original job URL in the `url` field.** Remote OK's API terms require a followed link back; Jobicy's asks that apply buttons resolve to the original posting.
 
 ## Notes
 
@@ -121,6 +124,7 @@ All five APIs are public and ask for credit in return. This Actor puts the sourc
 - Feeds are snapshots of what each board serves at run time; Remote OK and Jobicy expose only their most recent postings, so historical `postedBefore` windows will thin out on those two.
 - **Flaky-feed handling (2026-09-21).** Remote OK's edge intermittently kills the HTTP/2 stream or answers a fresh connection with a non-HTTP preamble — measured at roughly 1 fresh request in 4, and Remotive does it too. Each source is fetched once per run, so one blip used to drop that whole board from your dataset with only a warning in the log. Every transport-level failure is now retried up to 3 times, falling back to HTTP/1.1 after the first attempt. A measured back-to-back pair of runs over all four boards (pre-Working-Nomads): **83 rows before the fix, 182 after** (two blips in the same run, both recovered). A feed that answers 404 or 5xx now fails its source loudly instead of reporting zero jobs, which used to look identical to "nothing posted today".
 - **Working Nomads added (cycle 699).** Closes a feature gap against the category leader (`benthepythondev/remote-jobs-aggregator`, 805 Store users), which covers 6 boards including Working Nomads and Himalayas; we now cover 5. No stable job ID in its feed — the job's own permalink URL doubles as `sourceJobId`. No salary or company-logo fields published, same shape as Arbeitnow.
+- **Himalayas added (cycle 701).** Closes the last feature gap against the category leader — we now match its 6-board coverage. Public endpoint is `https://himalayas.app/jobs/api` (the documented-looking `/api/jobs` and `/api/v1/jobs` paths both 404 or return the HTML app shell; the real one was found by reading the response's own `comments` field, which documents the cursor-pagination contract). Fixed page size of 20 regardless of any `limit` query param (verified live at limit=50/100/200, all still returned 20) — depth is governed entirely by `maxPagesPerSource`, same lever as Arbeitnow. No stable numeric id; `guid` (the job's own permalink) doubles as `sourceJobId`, same gap-filling as Working Nomads.
 
 ## Related guides
 
