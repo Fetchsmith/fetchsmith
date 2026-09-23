@@ -262,9 +262,13 @@ try {
 // platform kills the run so partial results are still flushed.
 const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
 function timeBudgetOk() {
-  if (timeoutAt == null) return true;
-  return Date.now() < timeoutAt - TIME_BUDGET_MARGIN_MS;
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+  return true;
 }
 
 let pushed = 0;
@@ -300,16 +304,39 @@ async function pushResult(item, watchId) {
 // (see the per-company catch below) — the same "silently emptier dataset" class fixed on
 // hacker-news-scraper (617) and shopify-products-scraper (618). Retry connection-level throws
 // a handful of times before letting the company-level catch report it as errored.
+// The between-company budget check above is necessary but NOT sufficient on its own: it can pass
+// with ~45s of margin left and then hand control to a call chain worth minutes (got's own
+// `retry.limit` x a 30s per-attempt `timeout.request`, x this outer 3-attempt loop), overshooting
+// the deadline many times over and getting the whole run hard-killed as TIMED-OUT instead of
+// returning what was already collected (same defect class fixed on google-news-scraper cycle 712,
+// substack-scraper cycle 713, apple-podcasts-scraper cycle 714). Clamp every request to the time
+// actually left, including got's internal retries, so no single call can outlive the run.
+const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
 async function requestWithRetry(opts) {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const left = remainingMs();
+    if (left <= MIN_REQUEST_MS) {
+      timeBudgetExceeded = true;
+      throw lastErr ?? new Error('run time budget exhausted before the request could be made');
+    }
+    const wantedMs = opts.timeout?.request ?? 30000;
+    const wantedRetries = opts.retry?.limit ?? 2;
+    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(wantedMs, left));
+    // got applies `timeout.request` per attempt, so `limit: 2` is worth 3x that wall-clock.
+    // Allow only as many attempts as fit in what's left.
+    const retryLimit = Math.max(0, Math.min(wantedRetries, Math.floor(left / perRequest) - 1));
     try {
-      return await gotScraping(opts);
+      return await gotScraping({
+        ...opts,
+        timeout: { ...(opts.timeout ?? {}), request: perRequest },
+        retry: { ...(opts.retry ?? {}), limit: retryLimit },
+      });
     } catch (e) {
       lastErr = e;
-      if (attempt < 3) {
+      if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
         log.warning(`${opts.url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
-        await new Promise((r) => setTimeout(r, attempt * 1000));
+        await new Promise((r) => setTimeout(r, Math.min(attempt * 1000, Math.max(0, remainingMs() - MIN_REQUEST_MS))));
       }
     }
   }
@@ -1035,12 +1062,21 @@ if (watchMode && !skipBaselineSave) {
 
 log.info(`Done. Pushed ${pushed} job postings from ${companies.length} companies.`);
 
+// timeBudgetExceeded can be set either by the between-company check or by requestWithRetry
+// refusing a call mid-company — either way the run stopped early, not because of an actual error.
+const timeBudgetNote = timeBudgetExceeded
+  ? ` Stopped before scanning all ${companies.length} companies because the run was approaching its time limit — postings already found are complete and charged normally; re-run to cover the rest, or narrow the company list.`
+  : '';
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && baselineTruncated > 0) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${timeBudgetNote}`);
+} else if (watchMode && timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${timeBudgetNote}`);
+} else if (timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s).${timeBudgetNote}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
