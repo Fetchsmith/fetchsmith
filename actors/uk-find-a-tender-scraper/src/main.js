@@ -729,7 +729,20 @@ if (stoppedShort.length) {
     }
 }
 
-if (watchMode) {
+// A seed walk that lost a portal mid-way is not a smaller baseline, it is a WRONG one: every
+// notice past the failure point would read as "new" (and be charged) on the first incremental
+// run. `page-cap`/`seed-cap` are deliberately excluded -- those are the buyer's own query/budget
+// being too broad, already surfaced in RUN_SUMMARY, and a capped-but-real baseline is still
+// strictly better than none. Seeding never charges, so refusing to save costs nothing but a re-run.
+const seedFailure = seeding && incompleteReason === 'source-failed' ? incompleteDetail : null;
+
+if (watchMode && seedFailure) {
+    log.warning(
+        `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
+        + 'Re-run with the same watchLabel to seed again once the portal is answering -- saving a truncated baseline '
+        + 'would make every notice past the failure point look "new" (and billable) on the first incremental run.',
+    );
+} else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
     // Computed only AFTER saveWatchRecord() has run -- it is the call that sets baselineTruncated.
     const truncationNote = () => (baselineTruncated > 0
@@ -896,6 +909,13 @@ if (webhookUrl) {
     } catch (err) {
         log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
     }
+}
+
+if (watchMode && seedFailure) {
+    await Actor.fail(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
+        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+    );
 }
 
 await Actor.exit();
