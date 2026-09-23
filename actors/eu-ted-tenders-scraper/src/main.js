@@ -363,6 +363,16 @@ let page = 1;
 let total = Infinity;
 let keepGoing = true;
 let httpError = null;
+// h287: an upstream error mid-walk must NOT exit the process before the watch
+// baseline is written. Rows already pushed have already been CHARGED, and the
+// baseline is the only record that they were delivered — dropping it makes the
+// next run bill the buyer for them a second time. So the error is recorded here,
+// the loop breaks cleanly, saveWatchRecord() runs, and only then does the run fail.
+let apiErrorMessage = null;
+// Set when the BASELINE walk itself was cut short by an upstream error. A partial
+// baseline is worse than no baseline: it is saved as complete, so every notice past
+// the stopping point is reported as "new" — and charged — on the first incremental run.
+let seedError = null;
 
 // gotScraping runs with throwHttpErrors:false, so got's own `retry` never fires on a
 // non-2xx — a single TED 429 used to end the run instantly (seen live 2026-09-11: the
@@ -434,9 +444,17 @@ async function seedBaseline() {
     const resp = await fetchPage(seedPage, seedFields);
     if (resp.statusCode !== 200) {
       log.warning(`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage} — stopping baseline walk early.`);
+      seedError = `TED returned HTTP ${resp.statusCode} on baseline page ${seedPage}`;
       break;
     }
     const body = resp.body;
+    // A 200 carrying an error message yields no notices, which would otherwise read as
+    // a clean end-of-results and save a short baseline as if it were complete.
+    if (body.message) {
+      log.warning(`Baseline walk: TED API error on page ${seedPage}: ${body.message} — stopping baseline walk early.`);
+      seedError = `TED returned an API error on baseline page ${seedPage}: ${body.message}`;
+      break;
+    }
     seedTotal = body.totalNoticeCount ?? 0;
     const notices = body.notices ?? [];
     if (!notices.length) break;
@@ -463,7 +481,12 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
 
   let body = resp.body;
   if (body.message) {
-    await Actor.fail(`TED API error: ${body.message}`);
+    // Recorded and broken out of rather than failed on the spot: Actor.fail() exits
+    // the process immediately, which on an incremental watch run would discard the
+    // baseline holding the rows this run already pushed and charged for (h287).
+    log.warning(`TED API error on page ${page}: ${body.message} — stopping the walk; results fetched so far are kept.`);
+    apiErrorMessage = body.message;
+    break;
   }
   total = body.totalNoticeCount ?? 0;
   let notices = body.notices ?? [];
@@ -536,8 +559,19 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
 // AFTER saveWatchRecord() below, which is what actually sets baselineTruncated.
 let evictionSuffix = '';
 
-if (watchMode) {
-  await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+// A baseline walk that an upstream error cut short saves NOTHING: a partial baseline is
+// recorded as complete, so every notice past the stopping point would be delivered — and
+// charged — as "new" on the first incremental run. A seed charges nothing, so re-running
+// it costs the buyer nothing; silently over-charging them later would.
+if (watchMode && seeding && seedError) {
+  log.warning(
+    `Baseline walk for watch label "${watchLabel}" was cut short (${seedError}), so NO baseline was saved and `
+    + 'this run FAILED. A partial baseline would have been treated as complete, and every notice past the '
+    + 'stopping point would have been delivered and charged as "new" on your next run. Nothing was charged '
+    + 'for this run — re-run the same label and filters to build a complete baseline.',
+  );
+} else if (watchMode) {
+  await saveWatchRecord(apiErrorMessage && !seeding ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
   evictionSuffix = baselineTruncated > 0
     ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest notice `
       + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
@@ -623,6 +657,9 @@ if (webhookUrl) {
     // re-charge for rows already paid for once.
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // Non-null means the walk was cut short by TED and this run will exit FAILED. The rows
+    // in the dataset are real and were charged for; there are simply more that were not reached.
+    error: seedError ?? (apiErrorMessage ? `TED API error: ${apiErrorMessage}` : null),
   };
   try {
     const resp = await gotScraping({
@@ -640,6 +677,25 @@ if (webhookUrl) {
   } catch (err) {
     log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
   }
+}
+
+// Deferred to the very last statement on purpose (h287): Actor.fail() exits the process, so
+// failing any earlier would skip the watch-baseline save above — throwing away the record that
+// the rows this run already CHARGED for were delivered, and billing the buyer for them again on
+// the next run — and would skip the completion webhook for those same charged rows.
+if (seedError) {
+  await Actor.fail(
+    `The watch baseline could not be completed: ${seedError}. No baseline was saved (a partial one would `
+    + 'cause you to be charged twice for the same notices) and nothing was charged. This is a TED-side '
+    + 'outage or rate limit, not a problem with your input — please re-run in a few minutes.',
+  );
+} else if (apiErrorMessage) {
+  await Actor.fail(
+    `TED API error: ${apiErrorMessage}. The walk stopped there, so this run is incomplete — the `
+    + `${pushed} notice(s) already in the dataset are valid and were kept`
+    + (watchMode && !seeding ? ' and recorded in the watch baseline, so you will not be charged for them again' : '')
+    + '. Please re-run in a few minutes.',
+  );
 }
 
 await Actor.exit();
