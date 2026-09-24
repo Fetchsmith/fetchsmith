@@ -249,7 +249,7 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 The `null`-vs-`0` distinction is the point: `declaredMatches: null` means *we never got an answer*, while `0` means *FDA has no matching recall*. `declaredMatchesIsFloor: true` means the window plan itself was cut short, so the real total is higher. When anything is incomplete the run also sets a human-readable status message, visible at the top of the run in the Apify Console. `baselineTruncated`/`baselineTruncatedTotal` (watch mode only) report the "Baseline size cap" defect above — see that FAQ entry.
 
 ## Related guides
-
+- [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
 - [All FetchSmith scrapers](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.
 - [The FDA publishes every product recall as JSON — but you can't page past row 25,000, and only drugs come with a barcode](https://fetchsmith.com/blog/fda-openfda-recall-json-api) — the full write-up of the 25,000-row skip cap, the date-chunking workaround and the drug-only `openfda` barcode fields.
 - [Scraping USAspending's federal awards JSON API](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — the same "US government publishes it as keyless JSON" pattern, applied to federal contracts and grants.

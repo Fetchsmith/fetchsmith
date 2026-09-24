@@ -174,7 +174,7 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 Only public data from NIH RePORTER's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
-
+- [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
 - https://fetchsmith.com/blog/nih-reporter-grants-json-api
 - https://fetchsmith.com/blog/nih-reporter-search-id-vs-criteria
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api

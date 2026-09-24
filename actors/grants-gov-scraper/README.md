@@ -300,6 +300,7 @@ Only public data from Grants.gov's official API is collected. Issues or feature 
 - https://fetchsmith.com/blog/nih-reporter-grants-json-api
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, and why a cheap id-only baseline still has to apply the award-amount filter.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.
+- [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper

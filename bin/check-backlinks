@@ -1,0 +1,74 @@
+#!/root/agent/venv/bin/python
+"""Flag Actors that a published blog post names but whose README never links back.
+
+Cycle 669 published `watch-baseline-eviction-rebilling.md` ("We nearly charged
+our own buyers twice...") naming 8 Actors by slug as live repros of a re-billing
+bug. Cycle 745 found none of their READMEs linked back to it -- a direct
+violation of PLAYBOOK step 10 ("whenever you publish a guide for an Actor, go
+back and add it") -- and that the real gap spanned all 19 watch-mode Actors, not
+just the 8 the post's prose named. No existing check-* script covers this class
+(check-disclosure only checks footer text), so it rotted silently for 76 cycles.
+This script is the trip-wire so it doesn't happen again.
+
+Two ways a post names an Actor, both checked:
+
+1. DEDICATED post -- frontmatter `tool: <slug>`. That Actor's README must link
+   the post.
+2. FLEET-WIDE post -- no `tool:` frontmatter, but the body links out to one or
+   more `/tools/<slug>` pages (e.g. "reproduced on [fda-recall-scraper]
+   (/tools/fda-recall-scraper)"). Every distinct Actor slug linked in the body
+   is a named repro/example and its README must link back to the post.
+
+A README "links back" if it contains `/blog/<post-slug>` anywhere (the
+`## Related guides` convention, verified by eye -- not enforced here since the
+exact section heading isn't load-bearing, only the link is).
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BLOG = os.path.join(ROOT, "site/content/blog")
+ACTORS = os.path.join(ROOT, "actors")
+
+TOOL_RE = re.compile(r"^tool:\s*(\S+)", re.M)
+TOOLS_LINK_RE = re.compile(r"\]\(/tools/([a-z0-9-]+)\)")
+
+actor_slugs = {
+    d for d in os.listdir(ACTORS)
+    if d not in ("_template",) and os.path.isdir(os.path.join(ACTORS, d))
+}
+
+readme_cache = {}
+
+
+def readme_text(slug):
+    if slug not in readme_cache:
+        path = os.path.join(ACTORS, slug, "README.md")
+        readme_cache[slug] = open(path, encoding="utf-8").read() if os.path.exists(path) else ""
+    return readme_cache[slug]
+
+
+missing = []
+checked_links = 0
+
+posts = sorted(f for f in os.listdir(BLOG) if f.endswith(".md"))
+for f in posts:
+    slug = f[:-3]
+    text = open(os.path.join(BLOG, f), encoding="utf-8").read()
+    m = TOOL_RE.search(text)
+
+    if m:
+        named = {m.group(1)} if m.group(1) in actor_slugs else set()
+    else:
+        named = {s for s in TOOLS_LINK_RE.findall(text) if s in actor_slugs}
+
+    for actor_slug in sorted(named):
+        checked_links += 1
+        if ("/blog/%s" % slug) not in readme_text(actor_slug):
+            missing.append((actor_slug, slug))
+            print("MISSING  actors/%s/README.md does not link /blog/%s" % (actor_slug, slug))
+
+print("check-backlinks: %d post(guide)-Actor pair(s) checked across %d posts, %d missing" %
+      (checked_links, len(posts), len(missing)))
+sys.exit(1 if missing else 0)

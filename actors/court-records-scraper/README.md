@@ -179,7 +179,7 @@ Every name in the output — parties, attorneys, law firms, judges — appears o
 <https://github.com/Fetchsmith/fetchsmith/tree/main/actors/court-records-scraper>
 
 ## Related guides
-
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the fleet-wide survey of watch-mode failure shapes across all nineteen incremental Actors, this one included.
 - [CourtListener's court-records API needs no key — except for the one endpoint most wrapper docs point you at first](https://fetchsmith.com/blog/courtlistener-search-api-two-auth-tiers)
 - [CourtListener's "any" opinion status wasn't any — and the published-only default hides a different share every time](https://fetchsmith.com/blog/court-records-opinion-status-any-is-not-any)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.

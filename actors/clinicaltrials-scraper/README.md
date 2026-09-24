@@ -197,8 +197,9 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 They are three different facts and folding them together produces a false one. `notFoundIds` means we asked, the registry answered, and it does not hold that study — a fact you can act on. `malformedIds` means ClinicalTrials.gov rejected the id's format outright. `failedIds` means we never got an answer for it (timeout or repeated 5xx): those studies are **not** known to be missing, and re-running for just those ids is usually all that's needed. `notReachedIds` lists ids the run never got to because `maxResults` or a charge limit stopped it first — their absence from the other three lists would otherwise read as "we checked and there was nothing there".
 
 ## Related guides
-
+- [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
 - [The ClinicalTrials.gov API silently caps pageSize at 1000 — and its phase filter doesn't exist where you'd look for it](https://fetchsmith.com/blog/clinicaltrials-gov-json-api)
+- [A 4-day window on ClinicalTrials.gov returns more trials than a 21-day one — because 42% of its dates have no day](https://fetchsmith.com/blog/clinicaltrials-month-precision-dates) — month-only completion dates collapse onto the 1st inside a `RANGE[]` filter, so a window starting after the 1st silently drops them.
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.
 - [All FetchSmith tools](https://fetchsmith.com/tools)

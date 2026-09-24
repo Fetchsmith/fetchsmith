@@ -261,5 +261,7 @@ Engineering write-ups behind this Actor:
 - [Steam quietly attaches a reviewer's PC specs to their review — for about 1 in 15](https://fetchsmith.com/blog/steam-review-hardware-specs-json-field)
 - [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
+- [App Store, Google Play and Steam reviews — three JSON APIs, three unrelated meanings of "empty"](https://fetchsmith.com/blog/app-store-review-apis-three-silent-empties) — how this Actor's specific silent-empty failure mode compares to the other two review platforms we scrape.
+- [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the fleet-wide survey of watch-mode failure shapes across all nineteen incremental Actors, this one included.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
