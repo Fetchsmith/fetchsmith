@@ -82,6 +82,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [CourtListener's court-records API needs no key — except for the one endpoint most wrapper docs point you at first](https://fetchsmith.com/blog/courtlistener-search-api-two-auth-tiers)
 - [Six public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds)
 - [SEC Form 4's 10b5-1 flag is not spelled "true" — 92% of filings write it as 1 or 0](https://fetchsmith.com/blog/sec-form-4-10b5-1-flag-is-not-a-boolean)
+- [We checked every other government-data Actor for SEC Form 4's boolean trap — none of them could have it](https://fetchsmith.com/blog/sec-form-4-is-the-only-actor-that-parses-raw-xml)
 - [Remote job boards duplicate their own listings — and fuzzy title matching would make that worse, not better](https://fetchsmith.com/blog/remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling)
 - [One key-free API searches trademarks in 70+ offices — and its worst failure returns no HTTP status at all](https://fetchsmith.com/blog/tmview-trademark-search-api-no-key)
