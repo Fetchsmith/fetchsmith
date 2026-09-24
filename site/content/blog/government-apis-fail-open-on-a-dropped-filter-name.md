@@ -55,6 +55,8 @@ If your own scraper has a hard-coded filter whose job is to exclude something ra
 
 [SAM.gov opportunities](/tools/sam-gov-opportunities-scraper), [FEC campaign finance](/tools/fec-campaign-finance-scraper) and [US federal awards](/tools/us-federal-awards-scraper) are all on Apify — live government data, $0 flat run fee, per-result pricing, no API key required from you.
 
+**Update, 2026-09-24:** the canary-value guard now ships on all three, not just SAM.gov. OpenFEC's version (`assertFilterNamesApplied()`) needed a second probe shape this post didn't have yet — four of its fields (`committee_id`, `candidate_id`, amounts, `office`) format-validate their input and reject a canary *value* even when the name is spelled right, so those are probed by expecting a 400/422 rather than a 0-match response; the rest (`recipient_name`/`state`, `payee_name`, candidate `state`/`party`) use the same zero-match probe as SAM.gov. USAspending's version (`assertFiltersApplied()`) turned out simpler than either — every optional filter there is safely canary-probeable with a plain non-matching value, no format-validated fields to special-case. Both verified the same way as SAM.gov's: a real run with correctly named filters passes silently, a deliberately misspelled name aborts pre-billing.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every number above comes from a live request made while writing this post, not from documentation.*

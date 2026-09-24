@@ -312,6 +312,8 @@ The FEC's Schedule A endpoint times out on a full-table scan (129,000+ rows even
 
 **My donor/employer filter is broad — will a watch run scan the whole Schedule A table every time?** It scans until it finds `maxResults` new contributions or exhausts the current match set (capped at 1000 pages, ~100,000 rows, per run — a safety valve, not something a normally-filtered watch should ever hit). A very broad, weakly-filtered watch (e.g. a common surname with no employer/state/amount filter) can page through a lot of already-seen contributions before finding something new; narrow the filters for a faster, cheaper watch.
 
+**Could a dropped filter name silently turn my filtered search into the entire FEC dataset — and bill me for it?** Not without stopping the run first. OpenFEC fails *closed* on a filter value it doesn't recognise but fails *open* on a filter **name** it doesn't recognise: the parameter is silently ignored and the same HTTP 200 comes back carrying the unfiltered result set. Measured live: `office=P` → 6,921 matches, the one-letter typo `ofice=P` → 54,581, a 7.9x widening with no error anywhere. So before fetching a single billable page, every run sends one canary probe per filter name it's about to use — a value guaranteed to match nothing for search filters, or guaranteed to be rejected for the fields OpenFEC format-validates (`committee_id`, `candidate_id`, amounts, `office`) — and aborts naming the parameter if a probe doesn't behave as expected, instead of silently delivering and charging for an unfiltered result set.
+
 ## Notes
 Only public data from the FEC's own public disclosure API. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
