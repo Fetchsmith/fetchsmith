@@ -328,8 +328,141 @@ async function fetchTotals(id) {
   }
 }
 
+// FEC fails CLOSED on some unrecognised filter VALUES (format-validated fields -- committee_id,
+// candidate_id, min_amount/max_amount, office -- each reject a canary with HTTP 400/422) but
+// OPEN on an unrecognised filter NAME -- silently dropped, full unfiltered index returned at
+// HTTP 200. Measured live 2026-09-24: schedule_b `recipient_name`->`recipiant_name` (typo)
+// 19,810,455 -> 157,249,937 matches (7.9x); schedule_a `contributor_employer`->`contributer_employer`
+// 129,917 -> 264,070,913 (2032x); candidates `office`->`offce` returns all 127 unfiltered "Warren"
+// rows instead of erroring. Same class as the sam-gov/OpenFEC/USAspending fail-open trap
+// documented in /blog/government-apis-fail-open-on-a-dropped-filter-name. Two probe shapes,
+// mirroring sam-gov's guardedFilterNames()/assertFilterNamesApplied() (cycle 748):
+//  - COUNT probe (free-text/exact fields: contributor_name/employer/occupation/city/state,
+//    recipient_name/state, payee_name, candidates state/party): a canary VALUE can't match
+//    anything real, so a recognised name returns count 0; a dropped name returns the full
+//    unfiltered count (>0).
+//  - REJECT probe (format-validated fields: committee_id, candidate_id, min_amount, max_amount,
+//    support_oppose_indicator, office): a canary VALUE fails the API's own format check
+//    (HTTP 400/422) only if the name is still recognised; a dropped name skips validation
+//    entirely and returns a normal HTTP 200.
+// contributor_zip is deliberately NOT probed: it format-validates like the others, but "00000"
+// (the obvious non-matching placeholder) turned out to have 40,703 real contributions attached
+// to it, so there is no value that is both valid-format and guaranteed to match nothing.
+const FILTER_CANARY = '__fetchsmith_canary_no_such_value__';
+
+function guardedFilterNames() {
+  const countProbe = [];
+  const rejectProbe = [];
+  if (searchMode === 'candidates') {
+    if (state) countProbe.push('state');
+    if (party) countProbe.push('party');
+    if (office) rejectProbe.push('office');
+  } else if (searchMode === 'contributions') {
+    if (donorName) countProbe.push('contributor_name');
+    if (donorEmployer) countProbe.push('contributor_employer');
+    if (donorOccupation) countProbe.push('contributor_occupation');
+    if (donorCity) countProbe.push('contributor_city');
+    if (state) countProbe.push('contributor_state');
+  } else if (searchMode === 'disbursements') {
+    if (recipientName) countProbe.push('recipient_name');
+    if (state) countProbe.push('recipient_state');
+    if (committeeId) rejectProbe.push('committee_id');
+  } else if (searchMode === 'independentExpenditures') {
+    if (payeeName) countProbe.push('payee_name');
+    if (candidateId) rejectProbe.push('candidate_id');
+    if (committeeId) rejectProbe.push('committee_id');
+    if (supportOppose) rejectProbe.push('support_oppose_indicator');
+  }
+  if (isTxnMode) {
+    if (minAmount !== undefined) rejectProbe.push('min_amount');
+    if (maxAmount !== undefined) rejectProbe.push('max_amount');
+  }
+  return { countProbe, rejectProbe };
+}
+
+async function assertFilterNamesApplied() {
+  const { countProbe, rejectProbe } = guardedFilterNames();
+  const base = searchMode === 'candidates' ? '/candidates/'
+    : searchMode === 'disbursements' ? '/schedules/schedule_b/'
+    : searchMode === 'independentExpenditures' ? '/schedules/schedule_e/'
+    : '/schedules/schedule_a/';
+  // Schedule A/B/E refuse a query with NO recognised filter at all ("please choose a single
+  // two_year_transaction_period or add one of the following filters"), and not every field this
+  // Actor guards is itself on that allow-list (contributor_state/recipient_state are not) --
+  // probed alone they get that generic 400 instead of a real per-filter signal. The real query
+  // always carries the period bound in txn mode (electionYear defaults to the current cycle, see
+  // above), so echoing it into the probe keeps the probe representative of the real request.
+  const periodParam = !isTxnMode ? {}
+    : searchMode === 'independentExpenditures' ? { cycle: electionYear }
+    : { two_year_transaction_period: electionYear };
+  for (const name of countProbe) {
+    let data;
+    try {
+      data = await fecGet(base, { ...periodParam, [name]: FILTER_CANARY, per_page: 1 });
+    } catch (err) {
+      // An upstream blip is not evidence of a dropped filter -- do not fail the run on it.
+      log.warning(`Could not verify that the FEC API still honours the "${name}" filter (probe request failed: ${err.message}); continuing.`);
+      continue;
+    }
+    const total = data?.pagination?.count;
+    if (typeof total !== 'number') {
+      log.warning(`Could not verify that the FEC API still honours the "${name}" filter (no usable count in probe response); continuing.`);
+      continue;
+    }
+    if (total > 0) {
+      throw new Error(
+        `The FEC API no longer recognises the "${name}" search filter: a probe request with `
+        + `${name}=${FILTER_CANARY} returned ${total} matches instead of 0, which means the `
+        + 'parameter is now being silently ignored and this search would return the entire '
+        + 'unfiltered dataset instead of your filtered subset. Stopping before any unfiltered '
+        + 'rows are delivered or charged. This is an upstream FEC API change -- please report it '
+        + 'so the Actor can be updated.',
+      );
+    }
+    log.info(`Verified the FEC API still honours the "${name}" filter (canary value returned 0 matches).`);
+  }
+  for (const name of rejectProbe) {
+    let rejected = false;
+    let count = null;
+    let data;
+    try {
+      data = await fecGet(base, { ...periodParam, [name]: FILTER_CANARY, per_page: 1 });
+    } catch (err) {
+      // got-scraping is configured with throwHttpErrors:false (its own default -- verified
+      // live, a 422 body comes back as a normal resolved response, not a thrown error), so only
+      // a genuine network failure lands here. An upstream blip is not evidence of a dropped
+      // filter -- do not fail the run on it.
+      log.warning(`Could not verify that the FEC API still honours the "${name}" filter (probe request failed: ${err.message}); continuing.`);
+      continue;
+    }
+    // FEC's own validation-error bodies carry a numeric `status` (>=400) and no `pagination` --
+    // that is what "rejected" looks like when the transport layer doesn't throw for it.
+    if (typeof data?.status === 'number' && data.status >= 400) {
+      rejected = true;
+    } else {
+      count = data?.pagination?.count ?? null;
+    }
+    if (!rejected) {
+      throw new Error(
+        `The FEC API no longer recognises the "${name}" search filter: a probe request with an `
+        + `invalid ${name}=${FILTER_CANARY} was NOT rejected (expected HTTP 400/422${count !== null ? `, got HTTP 200 with ${count} matches instead` : ''}), `
+        + 'which means the parameter is now being silently ignored and this search would return '
+        + 'unfiltered results instead of your filtered subset. Stopping before any unfiltered rows '
+        + 'are delivered or charged. This is an upstream FEC API change -- please report it so the '
+        + 'Actor can be updated.',
+      );
+    }
+    log.info(`Verified the FEC API still honours the "${name}" filter (canary value was correctly rejected).`);
+  }
+}
+
 let watchPageCapHit = false;
 try {
+  // Before spending a single billable page: confirm the FEC API still honours every filter name
+  // we are about to send. Deliberately inside this try, not before it -- a thrown guard error
+  // still needs to fall through to the catch below so the watch baseline and RUN_SUMMARY get
+  // persisted the same way an upstream API failure does (see the comment on that catch).
+  await assertFilterNamesApplied();
   let page = 1;
   let stop = false;
   // The FEC's three transaction schedules (A/B/E) are KEYSET-paginated, not offset-paginated:
