@@ -603,6 +603,69 @@ async function postPage(body) {
     return null;
 }
 
+// USAspending fails CLOSED on a filter VALUE that matches nothing but fails OPEN on a dropped or
+// misspelled filter NAME -- a typo'd key inside `filters` is silently ignored by the API and the
+// full unfiltered award index comes back at the same HTTP 200. Same trap class as SAM.gov/OpenFEC
+// (cycle 748/750, see /blog/government-apis-fail-open-on-a-dropped-filter-name), measured live
+// here across every optional filter this Actor sends -- keywords, recipient_search_text, agencies,
+// place_of_performance_locations, recipient_locations, recipient_type_names, award_amounts,
+// naics_codes, psc_codes, and award_ids all show the identical shape: a canary value that cannot
+// match any real award returns 0 results under the correct name, 1+ (the unfiltered index) under a
+// one-character-off name. Unlike SAM.gov/FEC, every filter here is safely canary-probeable -- no
+// boolean/enum field here rejects an out-of-range value with a 400/422 -- so the probe is uniform
+// across fields instead of needing a second per-field shape.
+const FILTER_CANARY = '__fetchsmith_canary_no_such_value__';
+
+function guardedFilters() {
+    // Only the keys buildFilters() will actually set this run are worth probing -- an unused key
+    // can't leak anything. Mirrors buildFilters()'s own branching.
+    if (awardIds.length) return [['award_ids', [FILTER_CANARY]]]; // exclusive, same as buildFilters()
+    const probes = [];
+    if (keywords.length) probes.push(['keywords', [FILTER_CANARY]]);
+    if (recipients.length) probes.push(['recipient_search_text', [FILTER_CANARY]]);
+    if (agencies.length || fundingAgencies.length) {
+        probes.push(['agencies', [{ type: 'awarding', tier: 'toptier', name: FILTER_CANARY }]]);
+    }
+    if (states.length) probes.push(['place_of_performance_locations', [{ country: 'USA', state: 'ZZ' }]]);
+    if (recipientStates.length) probes.push(['recipient_locations', [{ country: 'USA', state: 'ZZ' }]]);
+    if (recipientTypes.length) probes.push(['recipient_type_names', [FILTER_CANARY]]);
+    if (minAwardAmount != null || maxAwardAmount != null) {
+        probes.push(['award_amounts', [{ lower_bound: 999999999999, upper_bound: 999999999999 }]]);
+    }
+    if (naicsCodes.length) probes.push(['naics_codes', { require: ['999999'] }]);
+    if (pscCodes.length) probes.push(['psc_codes', ['ZZZZ']]);
+    return probes;
+}
+
+async function assertFiltersApplied() {
+    const probes = guardedFilters();
+    if (!probes.length) return;
+    const { codes } = CATEGORIES[categories[0]];
+    const timePeriod = awardIds.length
+        ? [{ start_date: EARLIEST, end_date: isoDay(today) }]
+        : [{ start_date: effectiveStart, end_date: endDate }];
+    for (const [name, canaryValue] of probes) {
+        const filters = { award_type_codes: codes, time_period: timePeriod, [name]: canaryValue };
+        const body = await postPage({ filters, fields: ['Award ID'], limit: 1, page: 1, subawards: isSubaward });
+        if (!body) {
+            // An upstream blip is not evidence of a dropped filter -- do not fail the run on it.
+            log.warning(`Could not verify that USAspending still honours the "${name}" filter (probe request failed); continuing.`);
+            continue;
+        }
+        const results = body.results ?? [];
+        if (results.length > 0) {
+            throw new Error(
+                `USAspending no longer recognises the "${name}" search filter: a probe request with `
+                + `"${name}" set to a value that cannot match any real award still returned `
+                + `${results.length} row(s), which means the parameter is now being silently dropped `
+                + 'and this search would return the entire unfiltered award index instead of your '
+                + 'filtered subset. Stopping before any unfiltered rows are delivered or charged. '
+                + 'This is an upstream USAspending API change -- please report it so the Actor can be updated.',
+            );
+        }
+    }
+}
+
 function uniq(arr) {
     return Array.from(new Set((arr ?? []).filter((v) => v != null && v !== '')));
 }
@@ -724,6 +787,11 @@ if (awardIds.length) {
         + (pscCodes.length ? ` pscCodes=[${pscCodes.join(', ')}]` : ''),
     );
 }
+
+// Probe every filter this run actually uses BEFORE any billable page is fetched (see
+// `assertFiltersApplied` above -- a dropped name fails OPEN and would otherwise silently
+// return/charge the whole unfiltered award index).
+await assertFiltersApplied();
 
 const seen = new Set();
 let scanned = 0;
