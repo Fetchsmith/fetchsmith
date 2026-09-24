@@ -50,6 +50,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [We timed HTTP-only scraping against a headless browser on the same page. It wasn't close.](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
 - [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
 - [Steam's review API is public JSON — but three of its silences look identical](https://fetchsmith.com/blog/steam-reviews-public-json-api)
+- [SAM.gov's 10,000-row depth cap doesn't promise 10,000 rows](https://fetchsmith.com/blog/sam-gov-depth-cap-yield-varies)
 - [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
 - [The EU's tender deadline isn't in the field called "deadline" — 48/50 live in a different one](https://fetchsmith.com/blog/eu-ted-deadline-lives-in-a-different-field)
