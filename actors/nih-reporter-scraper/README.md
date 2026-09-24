@@ -176,6 +176,7 @@ Only public data from NIH RePORTER's official API is collected. Issues or featur
 ## Related guides
 
 - https://fetchsmith.com/blog/nih-reporter-grants-json-api
+- https://fetchsmith.com/blog/nih-reporter-search-id-vs-criteria
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, why `newly_added_projects_only` is not the same thing, and the three-run test that proves a baseline is complete.
 - https://fetchsmith.com/tools

@@ -81,6 +81,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling)
 - [One key-free API searches trademarks in 70+ offices — and its worst failure returns no HTTP status at all](https://fetchsmith.com/blog/tmview-trademark-search-api-no-key)
 - [The Federal Register tells you tomorrow's rules today — but only for 16 hours a day](https://fetchsmith.com/blog/federal-register-public-inspection-early-access)
+- [NIH RePORTER's shared-search links silently drop every filter you add alongside them — but not offset, limit, or sort](https://fetchsmith.com/blog/nih-reporter-search-id-vs-criteria)
 
 ## Layout
 
