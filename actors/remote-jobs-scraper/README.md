@@ -102,7 +102,7 @@ Pay per result: you are charged once per **unique** posting pushed to the datase
 
 **Are both date bounds inclusive?** Yes. `postedAfter` starts at 00:00:00.000Z of that day and `postedBefore` ends at 23:59:59.999Z, so a job posted at 14:00Z on your end date is included.
 
-**How are duplicates detected?** Normalized company name + normalized job title (lowercased, punctuation collapsed). That catches the common syndication case ("Acme, Inc." on one board and "Acme Inc" on another). It will not merge two genuinely different openings that share a title at the same company — those stay separate rows.
+**How are duplicates detected?** Normalized company name + normalized job title (lowercased, punctuation collapsed), no source check — so it also catches a board re-listing its own posting under a new URL, not just cross-board syndication. It will not merge two genuinely different openings that share a title at the same company — those stay separate rows. Both halves are measured, not assumed: a live 356-row pull found 4 same-board reposts correctly folded (one company, Peroptyx, had 4 URLs behind one title on Working Nomads alone) and 0 of 14 same-company near-title-overlap pairs (e.g. Lemon.io's simultaneous "Senior AI/QA/DevOps/Solutions Engineer" openings) were true duplicates — confirming that loosening the match to fuzzy titles would silently merge real distinct roles far more often than it would catch missed duplicates. See [Remote job boards duplicate their own listings — and fuzzy title matching would make that worse, not better](https://fetchsmith.com/blog/remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie).
 
 **I set a small `maxResults` and got rows from only one board — is that a bug?** No. The merge is global newest-first across all six boards, so a small cap samples *recency*, not *boards*: whichever board happened to publish the freshest postings that minute fills the cap. Ask for at least 50 results to see all six represented, or run once per board with `sources` set to a single board if you need a guaranteed per-board slice.
 
@@ -129,5 +129,6 @@ All six APIs are public and ask for credit in return. This Actor puts the source
 ## Related guides
 
 - [Six public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds) — measured feed sizes, Remotive's decorative `limit`, Remote OK's legal-notice row, Working Nomads' id-less 58-posting array, Himalayas' ~102k-posting scale and undocumented endpoint, and which boards actually syndicate
+- [Remote job boards duplicate their own listings — and fuzzy title matching would make that worse, not better](https://fetchsmith.com/blog/remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie) — a live 356-row pull found the same board re-listing one job under a new URL (correctly folded), and confirmed that fuzzy title matching would have wrongly merged 14 genuinely distinct roles at companies that batch-post similar titles
 - [FetchSmith blog](https://fetchsmith.com/blog) — data-source guides and API notes
 - [All FetchSmith Actors](https://fetchsmith.com/tools)
