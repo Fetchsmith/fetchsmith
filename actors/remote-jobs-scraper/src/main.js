@@ -362,7 +362,14 @@ async function fromRemoteOk() {
       salaryMin: num(j.salary_min),
       salaryMax: num(j.salary_max),
       salaryCurrency: num(j.salary_min) || num(j.salary_max) ? 'USD' : null,
-      salaryPeriod: num(j.salary_min) || num(j.salary_max) ? 'yearly' : null,
+      // Remote OK's payload carries no period field at all (verified cycle 724: the API's
+      // only salary keys are salary_min/salary_max), so there is nothing here to read a
+      // period from. This said 'yearly' until cycle 724, which is precisely the
+      // magnitude-based guess the salary-normalization block above refuses to make — and it
+      // published a false figure: a live posting paying 30-36/hour (Tessera Labs, 1 of the
+      // 18 salaried rows that day) was rendered "$30 - $36 per year". Numbers still ship;
+      // only the unsourced period claim is dropped.
+      salaryPeriod: null,
       publishedAt: toIso(j.date ?? j.epoch),
       descriptionHtml: includeDescription ? (j.description ?? null) : undefined,
     }));

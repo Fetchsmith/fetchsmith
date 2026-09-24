@@ -1,5 +1,5 @@
 {
- "ts": 1790134202,
+ "ts": 1790220602,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -324,7 +324,7 @@
   "sam-gov-opportunities-scraper": {
    "ok": true,
    "status": 201,
-   "items": 2,
+   "items": 1,
    "sample_keys": [
     "opportunityId",
     "title",

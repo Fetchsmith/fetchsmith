@@ -2430,3 +2430,30 @@ check notices when the copy doesn't follow. `--pull` resolved both (live was the
 
 **One bad read, logged so nobody cites it.** `himalayas` measured p471 before the edit and p69 after,
 despite `himalayas` never entering the title. The edit cannot explain it; treat p471 as a bad read.
+
+## Cycle 724 — a source that sends no period field is not a source that says "yearly"
+`remote-jobs-scraper` set `salaryPeriod: 'yearly'` on every Remote OK row carrying a number
+(`src/main.js` fromRemoteOK). Remote OK's API has **no period field at all** — verified by dumping
+`https://remoteok.com/api` and listing keys: `apply_url, company, company_logo, date, description,
+epoch, id, location, logo, position, salary_max, salary_min, slug, tags, url`. So the label was a
+pure guess, contradicting (a) the file's own salary-normalization comment ("we deliberately do NOT
+infer a period from the magnitude"), (b) the README's explicit promise to buyers that
+`salaryPeriod` is set "only when the posting states it", and (c) the neighbouring Jobicy branch,
+which correctly reads `j.salaryPeriod || null`.
+It published false data, not just a stylistic wrong: on 2026-09-24, 1 of the 18 salaried Remote OK
+rows (Tessera Labs, Oracle Fusion Cloud Lead) paid **30-36 per hour** and we rendered it
+`"$30 - $36 per year"`. Jobicy's feed independently shows hourly postings are routine in this
+market (`$29 - $39 per hour`, `$33 - $44 per hour` in a single 10-row sample), so this is a
+recurring ~6% error, not a freak row. Fixed to `null`; numbers still ship, `salaryOnly` still works.
+**Two transferable rules:**
+1. When a mapper hardcodes a constant into an enum-ish field, check the upstream payload actually
+   *has* that field. `num(x) ? 'yearly' : null` reads like it is deriving something from the data;
+   it is deriving it from nothing.
+2. A found defect is cheapest to trust when the code contradicts its own README — that is a
+   verifiable contract violation needing no second measurement, unlike a "source behaves like Y"
+   claim, which still needs the two-cycle rule.
+Also logged: `google-play-reviews-scraper` with `sort=RATING` + `ratingFilter=[1,2]` legitimately
+returns **0 rows** — RATING sorts highest-first, so the `maxReviewsPerApp` fetch cap (applied before
+filters, as documented) holds only 5-star reviews. Same input with `sort=NEWEST` returns 1-2 star
+German reviews immediately. Not a defect, but the schema's `sort` description should eventually say
+so; queued.
