@@ -63,7 +63,20 @@ if (webhookUrlRaw) {
 // the underlying `status` field on every opinion row (line below, `normalizeOpinion`) but had
 // no way to filter or complete on it. Default "published" reproduces today's exact behavior
 // (no existing run's row count changes); "unpublished" and "any" are additive opt-ins.
-const OPINION_STAT_PARAM = { published: ['stat_Published'], unpublished: ['stat_Unpublished'], any: ['stat_Published', 'stat_Unpublished'] };
+//
+// Re-measured cycle 743 across 4 fresh topic queries: the drop is NOT a constant ~26% — it
+// ranged 5.7% ("patent infringement") to 37.2% ("immigration") to 18.8%/13.7% on two others.
+// Also found `any` (published+unpublished) was itself silently incomplete: CourtListener's
+// opinion `status` field has 5 more real values beyond those two (`stat_Errata`, `stat_Separate`,
+// `stat_In-chambers`, `stat_Relating-to`, `stat_Unknown`) — confirmed live, e.g. on "immigration"
+// `stat_Unknown=on` alone matched 31,096 real, dated opinions (2023-2025 district-court rows,
+// not junk/placeholders) that "any" was dropping on the floor, ~17.7% on top of published+
+// unpublished. Widened `any` to all 7 real status flags so it matches its own name.
+const OPINION_STAT_PARAM = {
+    published: ['stat_Published'],
+    unpublished: ['stat_Unpublished'],
+    any: ['stat_Published', 'stat_Unpublished', 'stat_Errata', 'stat_Separate', 'stat_In-chambers', 'stat_Relating-to', 'stat_Unknown'],
+};
 let opinionStatus = String(input.opinionStatus ?? 'published').toLowerCase().trim();
 if (!Object.hasOwn(OPINION_STAT_PARAM, opinionStatus)) {
     log.warning(`Unknown opinionStatus "${input.opinionStatus}"; falling back to "published".`);

@@ -54,9 +54,11 @@ CourtListener doesn't reject a field the index can't honour — it ignores it. A
 
 If a `docketNumber` returns nothing, try it without the office prefix (`20-cv-03590` rather than `1:20-cv-03590`) — the format varies by court.
 
-### Opinion status: the default hides ~1 in 4 real matches
+### Opinion status: the default hides a real, query-dependent chunk of matches
 
-CourtListener's opinion index defaults to **published** opinions unless you say otherwise — verified live: a 2024+ "climate" query returned 545 published opinions, 191 unpublished, and the true total (736) only when both are requested. That's roughly 26% of real matches silently absent from a plain search, with no indication in the response that anything was left out. Set `opinionStatus` to `"any"` to get the complete set, or `"unpublished"` to see only opinions courts didn't designate for publication (often the more interesting ones — sanctions orders, informal rulings, unusual fact patterns). Ignored (with a warning) when `recordType` is `"dockets"`, since RECAP dockets have no publication-status concept. Every opinion row already carries a `status` field either way, so you can always tell which bucket a row came from.
+CourtListener's opinion index defaults to **published** opinions unless you say otherwise — verified live across 4 topic queries, the hidden share is **not a fixed number**: "patent infringement" 5.7%, "employment discrimination" 18.8%, "qualified immunity" 13.7%, "immigration" 37.2% of true matches missing from a plain search, with no indication in the response that anything was left out. Set `opinionStatus` to `"unpublished"` to see only opinions courts didn't designate for publication (often the more interesting ones — sanctions orders, informal rulings, unusual fact patterns), or `"any"` for the complete set.
+
+**`"any"` means every real status, not just published + unpublished.** CourtListener's opinion `status` field has 5 more real values we found by testing each `stat_*` flag individually: `Errata`, `Separate`, `In-chambers`, `Relating-to`, and `Unknown`. The first four are small (0-27 matches each on "immigration"), but `Unknown` is not — 31,096 real, dated opinions (2023-2025 district-court rows, not placeholders) on that one query alone, ~17.7% on top of published+unpublished combined. `opinionStatus: "any"` now requests all 7 flags so it actually returns everything; earlier builds only requested published+unpublished. Ignored (with a warning) when `recordType` is `"dockets"`, since RECAP dockets have no publication-status concept. Every opinion row already carries a `status` field either way, so you can always tell which bucket a row came from.
 
 ### Filing dates: both bounds inclusive, and a bad date stops the run
 
@@ -179,4 +181,5 @@ Every name in the output — parties, attorneys, law firms, judges — appears o
 ## Related guides
 
 - [CourtListener's court-records API needs no key — except for the one endpoint most wrapper docs point you at first](https://fetchsmith.com/blog/courtlistener-search-api-two-auth-tiers)
+- [CourtListener's "any" opinion status wasn't any — and the published-only default hides a different share every time](https://fetchsmith.com/blog/court-records-opinion-status-any-is-not-any)
 - [All FetchSmith tools and APIs](https://fetchsmith.com/tools)

@@ -76,7 +76,7 @@
     "opinionStatus": {
       "title": "Opinion status",
       "type": "string",
-      "description": "Opinions mode only. CourtListener's opinion index defaults to PUBLISHED opinions only when this is left as-is — verified live on a real query, unpublished opinions are ~26% of matches and are silently absent unless you ask for them. \"Any\" returns both.",
+      "description": "Opinions mode only. CourtListener's opinion index defaults to PUBLISHED opinions only when this is left as-is — verified live, the drop varies by query (5.7%-37.2% across 4 topics tested, not a fixed number) and is silently absent unless you ask for it. \"Any\" returns every real status (published, unpublished, errata, separate, in-chambers, relating-to, and unknown) — not just published+unpublished.",
       "editor": "select",
       "enum": [
         "published",
@@ -86,7 +86,7 @@
       "enumTitles": [
         "Published only (default)",
         "Unpublished only",
-        "Any (published + unpublished)"
+        "Any (all statuses)"
       ],
       "default": "published"
     },
