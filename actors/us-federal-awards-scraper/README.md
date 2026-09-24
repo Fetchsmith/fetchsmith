@@ -206,6 +206,7 @@ Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federa
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [The filter that isn't there: three government APIs return the whole index when a filter name is dropped](https://fetchsmith.com/blog/government-apis-fail-open-on-a-dropped-filter-name) — USAspending silently ignores an unrecognized filter name (`naics_code` vs `naics_codes`) rather than erroring, measured live.
 - [The US publishes every federal award as JSON — but you can't ask for a contract and a grant in the same request](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — why each award type has its own field mapping, and how this Actor handles all six in one run.
 - [Grants.gov's search API never returns an error — a typo in your filter just silently returns zero results](https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api) — the pre-award side: opportunities you can still bid on, rather than awards already made.
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel`/`watchChanges` are built, and why a cheap id-only baseline still has to apply every client-side filter.

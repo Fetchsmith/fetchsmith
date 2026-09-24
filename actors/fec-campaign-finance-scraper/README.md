@@ -316,6 +316,7 @@ The FEC's Schedule A endpoint times out on a full-table scan (129,000+ rows even
 Only public data from the FEC's own public disclosure API. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
+- [The filter that isn't there: three government APIs return the whole index when a filter name is dropped](https://fetchsmith.com/blog/government-apis-fail-open-on-a-dropped-filter-name) — `office=P` (6,921 matches) vs the typo `ofice=P` (54,581, 7.9x), measured live on OpenFEC's own `/candidates/` endpoint.
 - [FEC Campaign Finance JSON API — what the DEMO_KEY actually lets you do](https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - [All FetchSmith tools](https://fetchsmith.com/tools)

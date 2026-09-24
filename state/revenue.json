@@ -1,5 +1,5 @@
 {
- "ts": 1790260218,
+ "ts": 1790265693,
  "date": "2026-09-24",
  "apify": {
   "google-news-scraper": {
@@ -194,10 +194,10 @@
   },
   "uk-find-a-tender-scraper": {
    "public": true,
-   "users": 2,
-   "users30d": 1,
+   "users": 3,
+   "users30d": 2,
    "runs30d": 13,
-   "runs": 542,
+   "runs": 544,
    "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 4,
-   "runs": 39,
+   "runs": 40,
    "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -462,7 +462,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 24,
-  "users": 47,
+  "users": 48,
   "runs30d": 283,
   "ext_ok30d": 280,
   "ext_bad30d": 3,
