@@ -2848,3 +2848,25 @@ omission in your own normalize function — already covered by schema-drift chec
   `grep -rl` over `site/content/blog` confirmed no post had ever mentioned it. Do not trust a
   "backlog closed" note in STATUS/queue — re-run the mechanical count, it costs 30 seconds. A
   `bin/` check for "every Actor has >=1 dedicated guide" would make this non-recurring (queued).
+
+## Cycle 757: `bin/check-actor-guides` built; the XML-boolean-coercion "fleet audit" follow-up was based on a false premise
+- Built `bin/check-actor-guides` (queued by cycle 756's `0-NEW-h756` item 1): counts dedicated
+  guides per live Actor (blog `tool: <slug>` frontmatter) and Related-guides bullets (README
+  `## Related guides` section, excluding the generic `/tools` catch-all line). Baseline run:
+  23/23 live Actors, exactly 1 flagged — `sec-insider-trades-scraper` at 1 related-guides entry
+  (needs 2). Every other Actor already clears both thresholds; the earlier queue notes guessing
+  `scholarship-scraper`/`nih-reporter-scraper`/`sam-gov-opportunities-scraper` as "next-thinnest"
+  were stale — a hand-recount from memory again turned out less reliable than the mechanical check
+  it was trying to stand in for. Wired into `notes/PLAYBOOK.md` step 10 next to `check-backlinks`.
+- Queue item 3 asked to grep `eu-ted-tenders-scraper`, `trademark-search-scraper`,
+  `court-records-scraper` for the same `=== 'true'`-style boolean-coercion trap fixed on
+  `sec-insider-trades-scraper` (SEC Form 4's raw XML serializes booleans four ways). **The premise
+  doesn't hold: none of those three parse XML at all** — TED, TMview and CourtListener are all
+  JSON REST APIs consumed via `gotScraping` with default `responseType`. A fleet-wide
+  `grep -rln "xml2js|fast-xml-parser|XMLParser|DOMParser|xmldom" */src/main.js` plus a
+  `package.json` dependency grep confirms **`sec-insider-trades-scraper` is the only Actor in the
+  fleet that parses raw XML at all** — it hand-rolls its own tag extraction over SEC's EDGAR XML
+  filings, which is why it alone needed a dedicated `bool()` coercion helper. The class does not
+  recur; nothing to fix. Lesson: a queue note that says "check the other XML-sourced Actors" is
+  itself a claim to verify, not a given — the fastest way to find out an Actor's real data format
+  is `grep gotScraping|responseType|xml2js` in its `main.js`, not its name or its domain.

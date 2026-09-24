@@ -1,0 +1,87 @@
+#!/root/agent/venv/bin/python
+"""Flag live Actors that are thin on written guides.
+
+Cycle 755 believed the "every Actor has a second guide" backlog was CLOSED.
+Cycle 756 found `sec-insider-trades-scraper` at *zero* dedicated guides in a
+30-second grep -- the backlog had silently regressed (a new Actor shipped
+without ever getting one) and nothing would have caught it short of someone
+re-running the count by hand. This script is that trip-wire, run on every
+QUALITY cycle next to check-backlinks/check-disclosure.
+
+Two independent counts per live Actor (from registry.json):
+
+1. DEDICATED guides -- blog posts under site/content/blog/*.md whose
+   frontmatter has `tool: <slug>` naming this Actor specifically. Threshold:
+   >= 1. An Actor with zero is the sec-insider-trades-scraper class of bug.
+
+2. RELATED-GUIDES entries -- bullet lines (`- ...`) under the Actor's
+   `## Related guides` README section, excluding the generic catch-all link
+   to https://fetchsmith.com/tools (every Actor has that one; it isn't a
+   guide). Threshold: >= 2. A dedicated post plus zero fleet-wide links is
+   still a thin README relative to the rest of the fleet.
+
+Both thresholds must be re-verified, not assumed -- see LEARNINGS/queue
+cycle 756 for why "believed closed" isn't good enough.
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BLOG = os.path.join(ROOT, "site/content/blog")
+ACTORS = os.path.join(ROOT, "actors")
+
+TOOL_RE = re.compile(r"^tool:\s*(\S+)\s*$", re.M)
+DEDICATED_MIN = 1
+RELATED_MIN = 2
+
+with open(os.path.join(ACTORS, "registry.json"), encoding="utf-8") as f:
+    registry = json.load(f)
+live_slugs = sorted(t["slug"] for t in registry["tools"] if t.get("status") == "live")
+
+# dedicated guide count per slug, from blog frontmatter
+dedicated = {slug: 0 for slug in live_slugs}
+for fname in os.listdir(BLOG):
+    if not fname.endswith(".md"):
+        continue
+    text = open(os.path.join(BLOG, fname), encoding="utf-8").read()
+    m = TOOL_RE.search(text)
+    if m and m.group(1) in dedicated:
+        dedicated[m.group(1)] += 1
+
+
+def related_count(slug):
+    path = os.path.join(ACTORS, slug, "README.md")
+    if not os.path.exists(path):
+        return None
+    text = open(path, encoding="utf-8").read()
+    m = re.search(r"^## Related guides\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not m:
+        return 0
+    section = m.group(1)
+    bullets = [l for l in section.splitlines() if l.lstrip().startswith("- ")]
+    bullets = [l for l in bullets if "fetchsmith.com/tools" not in l or "/blog/" in l]
+    return len(bullets)
+
+
+rows = []
+for slug in live_slugs:
+    rc = related_count(slug)
+    rows.append((slug, dedicated[slug], rc))
+
+rows.sort(key=lambda r: (r[1], r[2] if r[2] is not None else -1))
+
+flagged = []
+for slug, ded, rc in rows:
+    bad = ded < DEDICATED_MIN or (rc is not None and rc < RELATED_MIN) or rc is None
+    marker = "FLAG " if bad else "ok   "
+    print("%s%-32s dedicated=%d related=%s" % (marker, slug, ded, rc))
+    if bad:
+        flagged.append(slug)
+
+print(
+    "check-actor-guides: %d live Actors, %d flagged (dedicated<%d or related<%d)"
+    % (len(live_slugs), len(flagged), DEDICATED_MIN, RELATED_MIN)
+)
+sys.exit(1 if flagged else 0)
