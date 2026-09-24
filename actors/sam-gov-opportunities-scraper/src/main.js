@@ -75,6 +75,15 @@ let scanned = 0;              // raw search rows read back from the API
 let pages = 0;
 let pagesFailed = 0;
 let duplicateRowsDropped = 0; // rows SAM.gov served more than once; dropped before any charge
+// SAM.gov sometimes posts the SAME solicitation twice under two brand-new opportunityIds, seconds
+// apart (measured live 2026-09-24, 400-row activeOnly opportunities sample: 2.2%, up to 3 copies of
+// one VA notice at 14:11:11/:12/:12) -- id-keyed `seenIds` above can never catch this, since the id
+// itself is what differs. Same defect class as `uk-find-a-tender-scraper` cycle 760's republication
+// finding: content-level redundancy is a different defect from filter fidelity, and only a
+// same-source content hash (never cross-record-shape) catches it without over-merging genuinely
+// distinct opportunities that happen to share a title. Opportunities-shape only (isWd/isCfda/
+// isExclusions rows were not part of this measurement and are not covered).
+let republishedRowsDropped = 0;
 // SAM.gov's own do-not-display marker on the exclusions index -- every sampled row carries "F",
 // but any row marked "T" must be dropped regardless of classification (cycle 708 finding). Counted
 // separately from duplicates so RUN_SUMMARY doesn't conflate "SAM repeated a row" with "SAM said
@@ -886,6 +895,7 @@ async function fetchRows(limit) {
     // pages by offset over a live, relevance-sorted index that shifts under the walk. Every repeat
     // used to be pushed AND CHARGED again as a separate result. Dedupe inside the walk.
     const seenIds = new Set();
+    const seenContentHashes = new Set(); // same-source republication guard; opportunities shape only
     let page = 0;
     while (rows.length < limit) {
         const reach = reachable();
@@ -934,6 +944,11 @@ async function fetchRows(limit) {
             if (rowId) {
                 if (seenIds.has(rowId)) { duplicateRowsDropped += 1; continue; }
                 seenIds.add(rowId);
+            }
+            if (!isWd && !isCfda && !isExclusions) {
+                const contentHash = [item.solicitationNumber, item.noticeTypeCode, item.title, descHashOf(item.description)].join('|');
+                if (seenContentHashes.has(contentHash)) { republishedRowsDropped += 1; continue; }
+                seenContentHashes.add(contentHash);
             }
             rows.push(item);
             if (rows.length >= limit) break;
@@ -1107,7 +1122,8 @@ if (watchMode && seedFailure) {
 }
 
 log.info(`Done. Pushed ${pushed} ${ROW_NOUN_PLURAL} (scanned ${scanned} row(s) over ${pages} page(s)).`
-    + (isExclusions ? ` ${noPublicDisplaySuppressed} row(s) suppressed by SAM.gov's own do-not-display flag.` : ''));
+    + (isExclusions ? ` ${noPublicDisplaySuppressed} row(s) suppressed by SAM.gov's own do-not-display flag.` : '')
+    + ((!isWd && !isCfda && !isExclusions && republishedRowsDropped > 0) ? ` ${republishedRowsDropped} republished duplicate row(s) dropped, uncharged.` : ''));
 
 // ---------------------------------------------------------------------------
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
@@ -1133,6 +1149,7 @@ const runSummary = {
     // Distinct is what you are charged for: `scanned` counts raw rows off the wire,
     // `scanned - duplicateRowsDropped` is how many distinct opportunities that actually was.
     duplicateRowsDropped,
+    republishedRowsDropped: (!isWd && !isCfda && !isExclusions) ? republishedRowsDropped : null,
     noPublicDisplaySuppressed: isExclusions ? noPublicDisplaySuppressed : null,
     complete,
     incompleteReason,
