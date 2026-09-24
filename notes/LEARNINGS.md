@@ -2722,3 +2722,29 @@ Grants.gov's `/search2` was documented in our own source (cycle 124/125) as "a b
   (renamed `state`→`stat` in the guard's own filter list) correctly aborted the run pre-billing with 0
   rows pushed and 0 pages fetched. Live platform run (candidates, Warren/MA/S) confirms both probes
   fire and 2 real Warren rows are delivered afterward.
+
+**Cycle 751: ported the same canary-value guard to `us-federal-awards-scraper` (USAspending), the
+third and last leg of the fail-open-on-dropped-filter-name fleet finding (sam-gov cycle 748, FEC
+cycle 750).** This port turned out to be the *simplest* of the three, and the concern the FEC port's
+note left open for it ("check whether the upstream requires a minimum filter set before assuming an
+isolated single-param probe is representative") did NOT materialize:
+- USAspending's `spending_by_award` POST is uniform, unlike SAM.gov/FEC. Live-tested all 9 optional
+  filter keys this Actor sends (`keywords`, `recipient_search_text`, `agencies`,
+  `place_of_performance_locations`, `recipient_locations`, `recipient_type_names`, `award_amounts`,
+  `naics_codes`, `psc_codes`) plus the exclusive `award_ids` lookup: every one fails open identically
+  (dropped/misspelled key → 0 results become the full unfiltered index at HTTP 200) and every one is
+  safely canary-probeable with a single made-up value (no boolean/enum field 400s on an out-of-range
+  canary, unlike SAM's `is_active` or FEC's format-validated fields) — so `guardedFilters()` needed no
+  per-field special-casing, unlike sam-gov's `countProbe`/`rejectProbe` split or FEC's per-searchMode
+  design.
+- A single extra filter alongside the always-present `award_type_codes`+`time_period` base was enough
+  to get a clean per-filter signal — no minimum-filter-set 400 like FEC's Schedule A/B/E needed
+  `two_year_transaction_period` echoed into every probe. Worth remembering the *opposite* lesson too:
+  don't assume every upstream needs that workaround just because one did.
+- Verified both directions locally (clean run with keywords+agencies delivered 12/12 rows; a separate
+  run with naicsCodes+placeOfPerformanceStates+minAwardAmount delivered 8/8; negative test — misspelled
+  `keywords`→`keywrods` in the guard's own probe list — aborted pre-billing with 0 rows/0 datasets) and
+  on the platform (build 0.1.34, `chargedEventCounts {result: 5}` on a live verification run, no extra
+  charge from the probe requests since they use `limit:1` with no PPE event).
+- All three government-search Actors covered by the fleet's `/blog/government-apis-fail-open-on-a-
+  dropped-filter-name` post (sam-gov, FEC, USAspending) are now code-guarded, not just documented.
