@@ -202,10 +202,17 @@ function htmlToText(html) {
 }
 
 // Substack serves a *free preview* of a subscriber-only post to logged-out clients: body_html is
-// present but cut off mid-article (measured live: 2–45% of the real article), while the post's
-// `wordcount` still reports the full length. A non-empty body is therefore NOT proof of a complete
-// article, so `bodyTruncated` cannot just be `!bodyText` — compare what we actually extracted
-// against the declared word count. Free posts measured 0.93–1.06 of `wordcount`; previews 0.00–0.45.
+// present but cut off mid-article, while the post's `wordcount` still reports the full length. A
+// non-empty body is therefore NOT proof of a complete article, so `bodyTruncated` cannot just be
+// `!bodyText` — compare what we actually extracted against the declared word count.
+// Re-measured cycle 740 at n=69 over 7 publications (write-up: /blog/substack-paywalled-post-preview-vs-full-text):
+//   free  (n=42): ratio 0.976–1.402, median 1.007 — 0 falsely flagged at the 0.9 threshold.
+//   paid  (n=27): ratio 0.000–0.967, median 0.337. Preview length is a per-publication setting
+//                 (experimentalhistory 0.02–0.05, noahpinion 0.25–0.37, doomberg 0.34–0.46).
+// `audience` is NOT a usable substitute for this check: 4/27 paid posts came back essentially whole
+// (0.959–0.967) because publications unlock posts without changing the flag. Extraction also
+// routinely OVERSHOOTS `wordcount` (captions/footnotes/embeds), which is why the threshold is a
+// floor on what is missing, not an equality test.
 const BODY_COMPLETE_RATIO = 0.9;
 // Absolute floor so a short post whose tokenisation differs slightly from Substack's isn't flagged
 // (smallest real preview shortfall measured: 1185 words).
