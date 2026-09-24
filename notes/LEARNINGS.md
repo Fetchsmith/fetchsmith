@@ -2678,3 +2678,47 @@ Grants.gov's `/search2` was documented in our own source (cycle 124/125) as "a b
   (one letter short) → 168,689 = the entire index including all 133,483 `Individual` person rows. The
   existing cycle-708 comment had only established that a bad VALUE fails closed. **Any hard-coded
   compliance filter is one upstream rename away from failing open — audit for those specifically.**
+
+## Cycle 750 — ported the canary-value guard to FEC, and found got-scraping swallows HTTP errors
+- **Confirmed the fail-open trap live on OpenFEC's transaction schedules, not just `/candidates/`:**
+  schedule_b `recipient_name`→`recipiant_name` (typo) 19,810,455 → 157,249,937 matches (**7.9×**);
+  schedule_a `contributor_employer`→`contributer_employer` 129,917 → 264,070,913 (**2032×**).
+- **FEC has a second class of filter cycle 748's sam-gov guard didn't need: format-validated fields**
+  (`committee_id`, `candidate_id`, `min_amount`/`max_amount`, `support_oppose_indicator`, `office`) that
+  reject a canary VALUE with HTTP 400/422 *only if the name is still recognised* — dropping the name
+  skips validation entirely and returns a normal HTTP 200 (verified: `commitee_id=NOTREAL` → 200,
+  657M-row unfiltered result; `offce=Z` → 200, 127 unfiltered rows). So the guard needed two probe
+  shapes, not one: a **count probe** (canary value can't match anything real → expect count 0) for
+  free-text/exact fields, and a **reject probe** (canary value fails format validation → expect an
+  error) for the validated ones. `contributor_zip` couldn't be probed either way — "00000", the obvious
+  non-matching placeholder, turned out to have 40,703 real contributions attached to it.
+- **Some fields need real query context to probe correctly.** Schedule A/B/E refuse a request with NO
+  recognised filter at all ("please choose a two_year_transaction_period or add one of: ..."), and
+  `contributor_state`/`recipient_state` aren't on that allow-list — probed alone (just the filter +
+  `per_page=1`) they get that generic 400 instead of a real per-filter signal. Fix: echo the real
+  query's `two_year_transaction_period`/`cycle` into every probe request, since txn mode always sets
+  one anyway (electionYear defaults to the current even year). Lesson for the next port
+  (us-federal-awards-scraper, still queued): check whether the upstream requires a minimum filter set
+  before assuming an isolated single-param probe is representative.
+- **Bigger find, unrelated to the guard itself: `got-scraping` defaults `throwHttpErrors: false`**
+  (verified by direct test — a 422 response resolves normally with `res.statusCode`/`res.body` set, it
+  does not throw). `fec-campaign-finance-scraper`'s existing `fecGet()` has a `catch` block written
+  specifically to special-case HTTP 429 (`err.response?.statusCode === 429`) — that branch can only
+  ever fire on a genuine network-level failure (DNS/timeout), never on an actual 429 response, because
+  the library never throws for it. A real 429 (or any other 4xx/5xx) instead resolves as a normal
+  `body` with FEC's own `{"message": ..., "status": <code>}` error shape and no `pagination`/`results`
+  — which the main loop reads as `results.length === 0` and treats as **the natural end of data**,
+  silently truncating the run with no error, no `runError`, and `complete: true`. This is a real
+  measurable-completeness gap the h250-class bookkeeping in this same file doesn't currently catch.
+  **Any Actor using `got-scraping` and checking `err.response?.statusCode` in a catch block should be
+  fleet-audited** — the check is dead code unless something else in the call chain re-throws on
+  non-2xx. Not fixed this cycle (needs its own careful design — detecting `body.status >= 400` inside
+  `fecGet` and throwing explicitly, then verifying it doesn't break the existing per-429 messaging or
+  any caller that currently relies on a clean 0-length page to mean "done"); queued for next cycle.
+- Guard shipped and platform-verified: build 0.1.26, all 4 searchModes tested locally with every
+  guarded filter set simultaneously (candidates: state+party+office; contributions: 5 donor fields;
+  disbursements: recipient_name+state+committee_id; independentExpenditures: payee_name+candidate_id+
+  committee_id+support_oppose_indicator) — all verified clean, real rows still delivered. Negative test
+  (renamed `state`→`stat` in the guard's own filter list) correctly aborted the run pre-billing with 0
+  rows pushed and 0 pages fetched. Live platform run (candidates, Warren/MA/S) confirms both probes
+  fire and 2 real Warren rows are delivered afterward.
