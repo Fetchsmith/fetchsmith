@@ -3,12 +3,290 @@
   "fields": {
     "type": "object",
     "properties": {
-      "url": {
+      "id": {
+        "title": "Id",
+        "example": "0001140361-26-037020-n0",
         "type": [
           "string",
           "null"
-        ],
-        "title": "URL"
+        ]
+      },
+      "accessionNumber": {
+        "title": "AccessionNumber",
+        "example": "0001140361-26-037020",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "formType": {
+        "title": "FormType",
+        "example": "4",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "filingDate": {
+        "title": "FilingDate",
+        "example": "2026-09-17",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "periodOfReport": {
+        "title": "PeriodOfReport",
+        "example": "2026-09-15",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "issuerName": {
+        "title": "IssuerName",
+        "example": "Apple Inc.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "issuerCik": {
+        "title": "IssuerCik",
+        "example": "320193",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ticker": {
+        "title": "Ticker",
+        "example": "AAPL",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "insiderName": {
+        "title": "InsiderName",
+        "example": "Newstead Jennifer",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "insiderCik": {
+        "title": "InsiderCik",
+        "example": "0001780525",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "isDirector": {
+        "title": "IsDirector",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "isOfficer": {
+        "title": "IsOfficer",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "isTenPercentOwner": {
+        "title": "IsTenPercentOwner",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "isOther": {
+        "title": "IsOther",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "officerTitle": {
+        "title": "OfficerTitle",
+        "example": "SVP, GC and Government Affairs",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "coFilers": {
+        "title": "CoFilers",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "derivative": {
+        "title": "Derivative",
+        "example": false,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "securityTitle": {
+        "title": "SecurityTitle",
+        "example": "Common Stock",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "transactionDate": {
+        "title": "TransactionDate",
+        "example": "2026-09-15",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "transactionCode": {
+        "title": "TransactionCode",
+        "example": "S",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "transactionCodeMeaning": {
+        "title": "TransactionCodeMeaning",
+        "example": "Open-market sale",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "acquiredOrDisposed": {
+        "title": "AcquiredOrDisposed",
+        "example": "D",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "shares": {
+        "title": "Shares",
+        "example": 1438,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "pricePerShare": {
+        "title": "PricePerShare",
+        "example": 330.19,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "transactionValueUsd": {
+        "title": "TransactionValueUsd",
+        "example": -474813.22,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "sharesOwnedAfter": {
+        "title": "SharesOwnedAfter",
+        "example": 32914,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "directOrIndirect": {
+        "title": "DirectOrIndirect",
+        "example": "D",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "indirectOwnershipNature": {
+        "title": "IndirectOwnershipNature",
+        "example": "By Trust",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "exercisePrice": {
+        "title": "ExercisePrice",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "expirationDate": {
+        "title": "ExpirationDate",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "underlyingSecurityTitle": {
+        "title": "UnderlyingSecurityTitle",
+        "example": "Common Stock",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "underlyingShares": {
+        "title": "UnderlyingShares",
+        "example": 30104,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "rule10b5_1Plan": {
+        "title": "Rule10b5 1Plan",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "footnotes": {
+        "title": "Footnotes",
+        "example": "This transaction was made pursuant to a Rule 10b5-1 trading plan adopted by the reporting person on May 5, 2026.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "filingUrl": {
+        "title": "FilingUrl",
+        "example": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037020/form4.xml",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "url": {
+        "title": "Url",
+        "example": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037020/0001140361-26-037020-index.htm",
+        "type": [
+          "string",
+          "null"
+        ]
       }
     }
   },
@@ -17,15 +295,60 @@
       "title": "Overview",
       "transformation": {
         "fields": [
-          "url"
+          "id",
+          "accessionNumber",
+          "formType",
+          "filingDate",
+          "periodOfReport",
+          "issuerName",
+          "issuerCik",
+          "ticker",
+          "insiderName",
+          "insiderCik"
         ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": {
-            "label": "URL",
-            "format": "link"
+          "id": {
+            "label": "Id",
+            "format": "text"
+          },
+          "accessionNumber": {
+            "label": "AccessionNumber",
+            "format": "text"
+          },
+          "formType": {
+            "label": "FormType",
+            "format": "text"
+          },
+          "filingDate": {
+            "label": "FilingDate",
+            "format": "text"
+          },
+          "periodOfReport": {
+            "label": "PeriodOfReport",
+            "format": "text"
+          },
+          "issuerName": {
+            "label": "IssuerName",
+            "format": "text"
+          },
+          "issuerCik": {
+            "label": "IssuerCik",
+            "format": "text"
+          },
+          "ticker": {
+            "label": "Ticker",
+            "format": "text"
+          },
+          "insiderName": {
+            "label": "InsiderName",
+            "format": "text"
+          },
+          "insiderCik": {
+            "label": "InsiderCik",
+            "format": "text"
           }
         }
       }

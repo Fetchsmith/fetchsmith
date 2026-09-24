@@ -2,6 +2,29 @@
 
 Older lessons (cycles 1-336) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 
+## Cycle 737 — local test INPUT must go in `storage/key_value_stores/default/INPUT.json`, not stdin; `check-code-fields` misses ES6 shorthand properties
+
+Two small process traps hit while finishing `sec-insider-trades-scraper`'s publish checklist:
+
+1. **The Actor's `main.js` does not read stdin.** Piping the test input via `<<<` (heredoc to
+   `node src/main.js`) ran successfully but silently used the *default* input from the schema
+   (100 rows instead of the intended 12) — the Actor SDK reads `storage/key_value_stores/default/INPUT.json`
+   via `Actor.getInput()`, exactly as PLAYBOOK step 4 already says, and it does not error or warn
+   if you feed it input a different way; it just runs with whatever `Actor.getInput()` resolves
+   to. Cost 2 minutes to notice the row count didn't match cycle 736's documented 12. Always
+   write the file, don't pipe.
+
+2. **`check-code-fields`'s static literal scanner does not match ES6 shorthand object properties.**
+   `sec-insider-trades-scraper` flagged `periodOfReport, issuerName, ticker, coFilers, derivative,
+   shares` as "declared but no literal emits it" — all six are emitted via `{ periodOfReport,
+   issuerName, ... }` shorthand (the variable already has the right name), which the tool's
+   `key:` regex doesn't catch. Confirmed false positive against the real local test dataset
+   (all six populated with real values on every row). Also flagged `primaryDocument`/`indexUrl`
+   as "CODE-ONLY, undeclared" — both are keys on an internal filing-metadata object (`picked`/`ctx`),
+   never on the row actually pushed to the dataset. Not worth teaching the scanner ES6 shorthand
+   syntax for one Actor; noted here so a future run of `check-code-fields` on this Actor doesn't
+   re-investigate the same non-bug.
+
 ## Cycle 686 — `bin/inbox` has no read marker; a 4-cycle-old resolved item looks identical to a new one
 
 Nearly re-did cycle 652's work: the owner's forward of an Apify "Under maintenance" flag on

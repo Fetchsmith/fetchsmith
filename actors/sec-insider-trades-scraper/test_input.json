@@ -1,0 +1,6 @@
+{
+  "issuers": ["AAPL", "NVDA"],
+  "formTypes": ["4"],
+  "maxFilingsPerIssuer": 3,
+  "maxResults": 25
+}

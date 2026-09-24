@@ -517,6 +517,13 @@ TERMS = {
     # title-match, verified matchLevel 'full'), with no copy edit since publish. Rank on a
     # thin query moves on its own; do not read it back as evidence a past edit worked.
     "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo"],  # p5 p12 p1 p20 (cycle 544)
+    # cycle 737: first probe, immediately after publish (Algolia index may still be
+    # catching up). Candidates probed via --query: "sec insider trading" (real
+    # competitor ryanclinton/sec-insider-trading, 52u/2213r), "sec form 4"
+    # (scrapemint/sec-form4-insider-tracker, 12u/1012r), "insider trades"
+    # (toolstem's MCP server, 4u/1283r), "form 4 filings". Kept the 4 most natural
+    # buyer phrasings; re-measure next cycle once indexed to see which land.
+    "sec-insider-trades-scraper": ["sec insider trading", "sec form 4", "insider trades", "form 4 filings"],
     # cycle 541: first --attr baseline for this Actor (h158 follow-up). Title
     # "SAM.gov Opportunities Scraper - US Federal Contracts, Bids" already wins TWO
     # contiguous span-0 queries ("sam.gov opportunities" p9, "sam gov opportunities"
