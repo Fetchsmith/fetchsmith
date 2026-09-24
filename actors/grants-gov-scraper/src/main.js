@@ -468,6 +468,43 @@ if (watchMode) {
     }
 }
 
+// Grants.gov has TWO opposite silent-failure modes, not the one the comment at the top of this
+// file recorded (measured live cycle 744, all counts from the same minute):
+//   * a known param with a garbage VALUE fails CLOSED -- errorcode 0, "Webservice Succeeds",
+//     hitCount 0 (oppStatuses:"postd", agencies/eligibilities/fundingCategories/cfda/sortBy/
+//     dateRange with "ZZZZNOTREAL" all returned 0). Harmless under per-result pricing: nothing
+//     matches, nothing is billed.
+//   * an unknown param NAME fails OPEN -- it is dropped and you get the UNFILTERED set at the
+//     same errorcode 0. The dangerous shape is a near-miss singular/plural, because the response
+//     rows are keyed in the singular: `eligibility` instead of `eligibilities` went 690 -> 942
+//     hits (+37%), `oppStatus` instead of `oppStatuses` went 942 -> 1533 (+63%), and misspelling
+//     `startRecordNum` re-serves page 1 forever.
+// Widening under per-result pricing must stop the run (same rule as parseIsoDate above), and the
+// API gives us a free detector: `data.searchParams` echoes back only the params the server
+// actually recognized, with the values it applied -- a dropped filter is simply absent there.
+// All 13 params baseParams()/walkOppNums send were verified to round-trip cleanly, so this
+// assertion costs zero extra requests and cannot false-positive on our own known-good names.
+// It exists to catch the day Grants.gov renames or retires one of them underneath us.
+const ECHO_EXEMPT = new Set(['keywordEncoded']); // boolean flag, echoed as a real bool not our string
+function assertFiltersApplied(sent, page) {
+    const echo = page?.data?.searchParams;
+    if (!echo || typeof echo !== 'object') return; // no echo block = nothing to check against
+    const dropped = Object.keys(sent).filter((k) => {
+        if (ECHO_EXEMPT.has(k)) return false;
+        const want = sent[k];
+        if (want === '' || want === null || want === undefined) return false; // we sent nothing
+        return String(echo[k] ?? '') !== String(want);
+    });
+    if (!dropped.length) return;
+    throw new Error(
+        `Grants.gov silently ignored ${dropped.length} search filter(s): ${dropped.join(', ')}. `
+        + 'An unrecognized parameter name is dropped without any error and the API returns the '
+        + 'UNFILTERED result set, which would bill you for far more rows than you asked for. '
+        + 'Stopping instead of delivering the wrong (wider) set. This means Grants.gov changed '
+        + 'its API -- please report it so the Actor can be updated.',
+    );
+}
+
 function baseParams() {
     // exclusiveOppNum never reaches here -- it uses walkOppNums (one /search2 call per number,
     // since the API has no batch/joined form), not this filtered-search path.
@@ -806,6 +843,7 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
         // The upstream's own count of everything that matched, read from the first page only:
         // it is what makes "we delivered 40" checkable against "Grants.gov says 2,113 match".
         if (declaredMatches === null && Number.isFinite(page?.data?.hitCount)) declaredMatches = page.data.hitCount;
+        assertFiltersApplied(params, page);
         const hits = listOf(page?.data?.oppHits);
         if (!hits.length) break;
         scanned += hits.length;

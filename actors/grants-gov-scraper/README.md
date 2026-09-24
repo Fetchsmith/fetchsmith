@@ -295,6 +295,7 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 Only public data from Grants.gov's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
+- [Grants.gov's search API has two opposite silent failures — and only one of them is safe](https://fetchsmith.com/blog/grants-gov-api-fails-open-and-closed) — a typo'd filter *value* returns zero rows; a typo'd filter *name* returns the whole unfiltered catalog at the same `errorcode: 0`. Measured both, and the guard this Actor now runs on every search page.
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 - https://fetchsmith.com/blog/nih-reporter-grants-json-api
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, and why a cheap id-only baseline still has to apply the award-amount filter.

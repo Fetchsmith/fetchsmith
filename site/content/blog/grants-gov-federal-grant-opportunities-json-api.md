@@ -19,6 +19,8 @@ No key, no login, no proxy — verified 200 from a plain datacenter IP. We built
 
 ## A typo in your filter returns zero results, not an error
 
+> **Update, 2026-09-24:** this section is correct but incomplete. It describes a typo in a filter's *value*, which fails closed (zero rows). A typo in a filter's *name* does the opposite — it's dropped silently and you get the entire unfiltered catalog at the same `errorcode: 0`. That's the expensive one, and the singular/plural near miss (`eligibility` vs `eligibilities`) makes it easy to hit. Measurements and the detector are in [Grants.gov's search API has two opposite silent failures](/blog/grants-gov-api-fails-open-and-closed).
+
 Most APIs we've built against tell you when you got a parameter wrong — openFDA 400s on a bad skip value, Federal Register 400s on an unrecognised agency slug. Grants.gov does neither:
 
 ```json
