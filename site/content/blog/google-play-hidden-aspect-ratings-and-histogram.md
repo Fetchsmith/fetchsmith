@@ -23,7 +23,7 @@ The gap in every case is a handful of ratings out of tens of millions — almost
 
 ## `aspectRatings`: the per-review data Google Play's own UI doesn't show
 
-The reviews endpoint also returns a `criterias` array on some reviews — things like `{"criteria": "vaf_app_quality_ads_frequency", "rating": 2}`, effectively a per-aspect thumbs score attached to a single review. None of the three Store-leader competitor Actors checked when this field was first added to the schema expose it in their dataset shape. We map it through as `aspectRatings`.
+The reviews endpoint also returns a `criterias` array on some reviews — things like `{"criteria": "vaf_app_quality_ads_frequency", "rating": 2}`, effectively a per-aspect thumbs score attached to a single review. None of the top 3 Store-leader competitor Actors by users expose it in their output schema (re-verified 2026-09-17). We map it through as `aspectRatings`.
 
 Sampling 200 of the newest reviews on each of the same four apps (800 reviews total):
 
