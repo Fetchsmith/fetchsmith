@@ -2648,3 +2648,33 @@ Grants.gov's `/search2` was documented in our own source (cycle 124/125) as "a b
 - Standing pricing rule this reinforces (from grants-gov's own `parseIsoDate`): **a failure that narrows results may warn; a failure that widens them must stop the run.** Nobody reads a warning inside a SUCCEEDED run, and by then they're billed.
 - Before shipping such a guard, verify BOTH directions: a real full run with known-good params (no false positive) AND a deliberately misspelled param (it actually fires). Doing only the first is how a dead guard ships.
 - Incidental: a garbage `sortBy` on this API deletes the result set (0 rows) rather than returning it unsorted — sorting is not a presentation-layer concern here. And the echo reveals a server-side default (`oppStatuses: "forecasted|posted"`), so the "no filters" baseline is not truly unfiltered.
+
+## Cycle 748 — the "echo round-trip" guard does NOT generalize; the canary-value probe does
+- **Cycle 744's `searchParams`-echo guard is upstream-specific.** It works on grants-gov only because
+  grants-gov echoes the **parsed** filters back, so a dropped one is absent from the echo. Checked the
+  three candidates queued for a "fleet pass": **SAM.gov echoes the raw REQUEST** (`_links.self.href`
+  contains `naic=541511` verbatim even though the param was ignored — useless as a guard); **OpenFEC
+  echoes nothing** (response keys are only `api_version`/`pagination`/`results`); **USAspending echoes
+  nothing usable**. Don't plan a fleet pass around an echo — check per upstream whether the echo is
+  *parsed* or *raw* first.
+- **All three fail OPEN on an unrecognised filter NAME while failing CLOSED on a bad filter VALUE** —
+  same split cycle 744 found on grants-gov, so treat this as the DEFAULT assumption for a keyless
+  government search API, not a quirk. Measured live 2026-09-24:
+  - SAM.gov `index=opp`: `naics=541511` → 604, `naic=541511` → 52,460 (**86×**); `naics=999999` → 0.
+  - OpenFEC `/candidates/`: `office=P` → 6,921, `ofice=P` → 54,581 (**7.9×**).
+  - USAspending `spending_by_award`: unknown `naics_code` (vs `naics_codes`) silently accepted and
+    ignored; the *correct* `naics_codes` also rejects the `{require:[[...]]}` shape — it wants a flat array.
+- **The portable guard is a canary VALUE, not an echo.** Because a recognised name fails closed, send
+  each filter name you are about to use with a value that cannot match anything: recognised → 0 matches,
+  dropped → full index. Deterministic, zero false positives (never depends on the user's real filter
+  values), one `size=1` request per name, no billable rows. Shipped on `sam-gov-opportunities-scraper`
+  (build 0.1.21/0.1.22); negative test with a deliberately misspelled name aborted the run with 0 rows pushed.
+- **Booleans can't be canary-probed:** SAM.gov `is_active=<canary>` returns HTTP 400 (parsed as a
+  boolean), so exclude boolean filters from the probe list. Free-text `q` is also unsuitable — a keyword
+  that matches nothing is a legitimate result, not proof the name was honoured.
+- **The highest-value application of this is a PII gate, not a billing gate.** `sam-gov`'s exclusions
+  dataset relies on a hard-coded `classification=Firm,Vessel,Special Entity Designation` to keep named
+  private individuals out of the output. Measured live: that filter → 35,206 rows, `classificatio=...`
+  (one letter short) → 168,689 = the entire index including all 133,483 `Individual` person rows. The
+  existing cycle-708 comment had only established that a bad VALUE fails closed. **Any hard-coded
+  compliance filter is one upstream rename away from failing open — audit for those specifically.**

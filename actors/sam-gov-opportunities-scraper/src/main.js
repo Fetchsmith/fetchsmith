@@ -348,6 +348,80 @@ function buildSearchUrl(page, size) {
     return `${SEARCH_API}?${params.toString()}`;
 }
 
+// SAM.gov fails CLOSED on an unrecognised filter VALUE but fails OPEN on an unrecognised filter
+// NAME -- the name is silently dropped and the query returns the WHOLE index at the same HTTP 200.
+// Measured live cycle 748 on index=opp: `naics=541511` -> 604 matches, the one-letter typo
+// `naic=541511` -> 52,460. That is an 86x widening, and under per-result pricing every one of those
+// rows would be pushed and CHARGED as a real match.
+// The `_links.self.href` echo cannot detect this: it echoes the REQUEST verbatim, so a dropped
+// param still appears in it (verified -- `naic=541511` is echoed back unchanged). That is the
+// difference from grants-gov's `data.searchParams`, which echoes only the PARSED params and so
+// supports a round-trip assertion (cycle 744) -- the same guard shape does NOT port here.
+// The worst case is not the over-bill, it is index=ei: the hard-coded `classification` PII gate in
+// `buildSearchUrl` above is the only thing keeping named private individuals out of the output, and
+// it is exactly as droppable. Measured live: `classification=Firm,Vessel,Special Entity Designation`
+// -> 35,206 rows, `classificatio=...` (one letter short) -> 168,689 = the full index, INCLUDING all
+// 133,483 `Individual` person rows with their home city/state/zip. The cycle 708 note above only
+// established that a bad VALUE fails closed; the dropped-NAME case was never checked until now.
+// The guard below sends each filter name we are about to use with a value that cannot match
+// anything: a recognised name fails closed -> 0 matches, a dropped name returns the full index -> >0.
+// Deterministic and false-positive-free (it never depends on the user's real filter values), and it
+// costs one `size=1` request per distinct filter name -- zero billable rows.
+const FILTER_CANARY = '__fetchsmith_canary_no_such_value__';
+
+function guardedFilterNames() {
+    const names = [];
+    if (isExclusions) {
+        names.push('classification'); // mandatory PII gate -- probed on EVERY run, user filters or not
+        if (organizationId) names.push('organization_id');
+    } else if (isWd) {
+        // Verified live cycle 748 on all three wd-family indices (dbra/sca/wd): `state=<canary>`
+        // returns 0 on each, so this probe is safe on every index the family can select.
+        if (states.length) names.push('state');
+    } else if (isCfda) {
+        if (organizationId) names.push('organization_id');
+    } else {
+        if (naicsCodes.length) names.push('naics');
+        if (setAsideTypes.length) names.push('set_aside');
+        if (noticeTypes.length) names.push('notice_type');
+        if (states.length) names.push('pop_state');
+        if (organizationId) names.push('organization_id');
+    }
+    // `is_active` and `q` are deliberately NOT probed. `is_active=<canary>` returns HTTP 400 (it is
+    // parsed as a boolean, so a non-boolean value cannot be used as a canary -- measured cycle 748),
+    // and a keyword that matches nothing is a legitimate `q` result, not evidence the name was kept.
+    return names;
+}
+
+async function assertFilterNamesApplied() {
+    for (const name of guardedFilterNames()) {
+        const params = new URLSearchParams({
+            index: SEARCH_INDEX, responseType: 'json', page: '0', size: '1',
+        });
+        params.set(name, FILTER_CANARY);
+        const data = await apiGet(`${SEARCH_API}?${params.toString()}`);
+        const total = Number.isFinite(data?.page?.totalElements) ? Number(data.page.totalElements) : null;
+        if (total === null) {
+            // An upstream blip is not evidence of a dropped filter -- do not fail the run on it.
+            log.warning(`Could not verify that SAM.gov still honours the "${name}" filter `
+                + `(probe request failed: ${lastApiError ?? 'no usable total in response'}); continuing.`);
+            continue;
+        }
+        if (total > 0) {
+            throw new Error(
+                `SAM.gov no longer recognises the "${name}" search filter: a probe request with `
+                + `${name}=${FILTER_CANARY} returned ${total} matches instead of 0, which means the `
+                + `parameter is now being silently ignored and this search would return the entire `
+                + `"${SEARCH_INDEX}" index instead of your filtered subset`
+                + (isExclusions ? ', including the individual-person rows this Actor never publishes' : '')
+                + '. Stopping before any unfiltered rows are delivered or charged. This is an upstream '
+                + 'SAM.gov API change -- please report it so the Actor can be updated.',
+            );
+        }
+        log.info(`Verified SAM.gov still honours the "${name}" filter (canary value returned 0 matches).`);
+    }
+}
+
 function orgField(hierarchy, type) {
     const row = (hierarchy ?? []).find((h) => h.type === type);
     return row ? row.name : null;
@@ -803,6 +877,9 @@ function reachable() {
 }
 
 async function fetchRows(limit) {
+    // Before spending a single billable page: confirm SAM.gov still honours every filter name we
+    // are about to send (see `assertFilterNamesApplied` above -- a dropped name fails OPEN).
+    await assertFilterNamesApplied();
     const rows = [];
     // Measured live cycle 649 on a 19,834-match query: a full 100-page walk read 10,000 rows but
     // only 8,990 DISTINCT opportunity ids -- ~10% of rows repeat across pages, because SAM.gov
