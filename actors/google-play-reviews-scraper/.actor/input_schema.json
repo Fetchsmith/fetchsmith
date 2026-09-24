@@ -39,7 +39,7 @@
     "sort": {
       "title": "Sort order",
       "type": "string",
-      "description": "Review sort order.",
+      "description": "Review sort order. Note: the fetch cap (maxReviewsPerApp) is applied to this sort order BEFORE ratingFilter, so RATING sort fills the cap with the highest-rated reviews first — hunting for low ratings with ratingFilter can return 0 rows even when low-rated reviews exist. Use NEWEST (or raise maxReviewsPerApp) when filtering for specific low ratings.",
       "editor": "select",
       "enum": [
         "NEWEST",

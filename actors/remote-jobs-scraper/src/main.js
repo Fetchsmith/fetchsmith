@@ -361,7 +361,15 @@ async function fromRemoteOk() {
       salaryText: null,
       salaryMin: num(j.salary_min),
       salaryMax: num(j.salary_max),
-      salaryCurrency: num(j.salary_min) || num(j.salary_max) ? 'USD' : null,
+      // Remote OK's payload carries no currency field at all either (same dump as the period
+      // check below: only salary_min/salary_max) — 'USD' here until cycle 725 was the same
+      // shape of invented value as the salaryPeriod bug below, just never proven wrong by a
+      // sampled row because most Remote OK postings genuinely are USD. Per the fleet's
+      // standing no-inference rule (LEARNINGS cycle 605: "read the ISO code the board
+      // prints; if there is none, leave salaryCurrency null"), stop guessing. formatSalary()
+      // renders bare digits with no $ prefix when currency is null, which is the honest
+      // output for a board that never told us the unit.
+      salaryCurrency: null,
       // Remote OK's payload carries no period field at all (verified cycle 724: the API's
       // only salary keys are salary_min/salary_max), so there is nothing here to read a
       // period from. This said 'yearly' until cycle 724, which is precisely the
