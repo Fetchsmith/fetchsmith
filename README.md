@@ -77,6 +77,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Six public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling)
 - [One key-free API searches trademarks in 70+ offices — and its worst failure returns no HTTP status at all](https://fetchsmith.com/blog/tmview-trademark-search-api-no-key)
+- [The Federal Register tells you tomorrow's rules today — but only for 16 hours a day](https://fetchsmith.com/blog/federal-register-public-inspection-early-access)
 
 ## Layout
 
