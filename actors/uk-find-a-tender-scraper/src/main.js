@@ -544,6 +544,26 @@ let filtered = 0;
 // Deduped across both portals: a contract can legitimately appear on each, and OCIDs are
 // portal-prefixed, so the ocid is the only key that could collide — check it as well as the id.
 const seen = new Set();
+// Republication dedup (cycle 760). Distinct from `seen` above, which keys on ids: both portals
+// routinely re-publish the SAME notice under a brand-new ocid AND a brand-new release id, so
+// nothing id-based can catch it. Measured live over 374 tender-stage notices (30-day window,
+// both portals): 11 rows, 2.9% of the run, were byte-identical republications a PPE buyer paid
+// for — Islington shipped one notice 5 times inside 11 seconds, Dundee shipped one 5 times over
+// 3 days. In 4 of the 5 groups NO field differed except the ids and the publication timestamp.
+// Two deliberate narrowings, both from live data:
+//  - Same source only. The 5th group was a Kent County Council notice carried by BOTH portals,
+//    and those two rows differ in 16 fields (buyerId/Region/Url, delivery*, legalBasis, lots,
+//    suitableForSme/Vcse, ...) — complementary, not redundant. Dropping either loses data.
+//  - The description is part of the key. Buyer+title alone over-merges: East Sussex publishes
+//    one notice per school-transport route under a single generic title, and those rows really
+//    are distinct contracts (descriptions differ). Same lesson as remote-jobs-scraper, cycle
+//    755 — a title match is not a duplicate.
+const contentSeen = new Set();
+let republished = 0;
+const contentKey = (row) => [
+    row.source, (row.title ?? '').trim().toLowerCase(), row.buyerName ?? '',
+    row.valueAmount ?? '', row.deadlineDate ?? '', (row.description ?? '').trim(),
+].join(' ');
 const perSource = {};
 let keepGoing = true;
 
@@ -669,6 +689,12 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
         const row = normalize(release, c.source, includeRawOcds);
         if (!matches(row)) { filtered += 1; continue; }
 
+        // Keep the first copy the walk reaches, which is the newest (both portals page
+        // newest-first), and never charge for the rest.
+        const ck = contentKey(row);
+        if (contentSeen.has(ck)) { republished += 1; continue; }
+        contentSeen.add(ck);
+
         // Per-publication id, not ocid: neither portal ever mutates a published release in
         // place (verified live, cycle 359) — an award or amendment always ships as a NEW
         // release id under the SAME ocid as the original tender notice. Keying watch identity
@@ -694,7 +720,7 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
         if (watchMode && watchId && pushed > beforePush) watchSeen.add(watchId);
     }
 }
-log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, after ${page} page(s) scanned.`);
+log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, suppressed ${republished} republication(s), after ${page} page(s) scanned.`);
 for (const c of cursors) perSource[c.key] = c.pushed;
 
 // Stop causes that can only be judged once the walk is over. A cursor that still has buffered
@@ -822,6 +848,9 @@ const runSummary = {
     scanned,
     delivered: pushed,
     filteredOut: filtered,
+    // Byte-identical re-publications of a notice already delivered in this run (same portal),
+    // suppressed so they are not charged. See the contentKey comment above.
+    republishedSuppressed: republished,
     pages: page,
     pageCap: effectivePageCap,
     // Matching notices that were fetched but never handed over (maxResults/charge limit cut the
@@ -885,6 +914,7 @@ if (webhookUrl) {
         pushed,
         scanned,
         filtered,
+        republishedSuppressed: republished,
         pagesScanned: page,
         watchLabel: watchMode ? watchLabel : null,
         watchSeeding: watchMode ? seeding : null,
