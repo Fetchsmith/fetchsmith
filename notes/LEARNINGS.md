@@ -2806,3 +2806,15 @@ passed happily; the same input to the platform API returned
 platform before trusting it as a regression case — and check the schema for the real flag name
 (`enrichGithubLinks`, not the `includeGithubData` I guessed, which silently produced 0 enriched rows
 and looked like a code failure).
+
+**Not every hard-coded compliance/PII string is the same risk class.** `sam-gov-opportunities-scraper`'s
+`classification` filter is an *upstream query parameter* — droppable if the API stops recognizing the
+name, which is exactly the fail-open trap this fleet has been chasing, and needs a canary-probe guard.
+grep also turned up `sec-insider-trades-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`,
+`clinicaltrials-scraper` and `substack-scraper` doing PII redaction too — but all five fetch the full
+upstream response and simply never read the sensitive field into the output object. There is no API
+parameter involved, so there is nothing for an upstream rename to silently drop; the only failure mode
+is a code regression (someone starts reading the field), which `bin/check-real-fields` (real pushed
+dataset keys vs. declared schema) already catches. **Before designing a guard for a "compliance filter,"
+check whether the filtering happens upstream (query param — needs a canary probe) or downstream (field
+omission in your own normalize function — already covered by schema-drift checks).**
