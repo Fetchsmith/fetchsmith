@@ -2491,3 +2491,45 @@ Also confirmed: a README-only or `dataset_schema`-only change needs `apify push 
 `apify-admin publish` (that is for `meta.json` title/description/seo copy). The Store page renders
 the README off the **build** record — `GET /v2/acts/<id>/builds/<buildId>` `.readme` — not off the
 act record or the version record, both of which read empty here. Verify a README ship there.
+
+## check-field-fill's partial-fill tier (2-70%), cycle 729 — mined out, 0 new bugs, closes the mine
+
+Cycle 728 mined the 0%-fill tier (`--threshold 0.02`) and found one real bug. The remaining
+partial-fill tier (`--threshold 0.3` minus the 0% entries, ~124 flagged lines across ~15 Actors)
+looked like a plausible second hiding place for a bug shaped like the original eu-ted `deadlineDate`
+defect (95% null, not 100%). It wasn't — **every sampled line traces to one of two root causes, and
+zero are Actor defects.**
+
+**Root cause 1 (the majority): `check-field-fill` pools the last 3 SUCCEEDED runs' rows into one flat
+list with no type discriminator, and several Actors emit polymorphic rows.** `substack-scraper` emits
+`type:"post"` / `type:"comment"` / `type:"leaderboard"` rows in the *same* dataset, each with almost
+entirely disjoint field sets (a leaderboard row uses `name`/`publicationDescription`, a post row uses
+`publicationName`/`description` — different field names for similar concepts). `apple-podcasts-scraper`
+mixes `dataType:episodes` and `dataType:reviews` runs. `google-play-reviews-scraper` emits one
+app-details row per app alongside N per-review rows. `sam-gov-opportunities-scraper` and
+`fec-campaign-finance-scraper` mix rows from different `dataType`/`searchMode` values across the 3
+pooled runs. `us-federal-awards-scraper`'s `cfdaNumbers` is real-and-always-present on `grants` rows,
+real-and-always-absent on `contracts` rows (CFDA numbers don't exist for contracts — correct), and its
+`opportunityScore` is gated by the `includeOpportunityScore` input flag. In every case, verified with a
+live per-run data pull (not assumed): the flagged fill count exactly matches the row count of the
+run(s)/type(s) where the field legitimately applies.
+
+**Root cause 2 (the rest): genuinely sparse upstream data, same shape the tool's own docstring already
+names (award-notice tenders having no deadline).** Verified live: `ats-jobs-scraper`'s `region` is
+only set when the job's free-text location maps to a recognizable sub-national region — "Tokyo,
+Japan"/"United States"/"Canada" correctly have none, "London, United Kingdom"/"Sydney, Australia" do.
+`shopify-products-scraper`'s `compareAtPriceMin/Max` are only set on the one Allbirds SKU actually on
+sale that day. `eu-ted-tenders-scraper`'s `changeReasonDescription`, `uk-find-a-tender-scraper`'s 3
+optional-notice fields, `fda-recall-scraper`'s `upc`, `clinicaltrials-scraper`'s
+`resultsFirstPostDate`, `grants-gov-scraper`'s `synopsisDocumentURLs` are the same shape (only some
+smaller subset spot-checked live; the rest share the identical single-conditional-field pattern and
+weren't individually re-verified — low priority to revisit unless one looks structurally odd, e.g. a
+5-70% fill with NO plausible conditional explanation at all).
+
+**Don't re-run this check expecting more find.** Both tiers of the fleet-wide baseline are now mined
+(cycle 728 exhausted the 0% tier, this closes the 2-70% tier) — the tool has done its one job
+(`assistURL`, cycle 728) and further reruns without a genuinely new Actor or a fresh field will just
+re-derive the same triage. If it's ever worth revisiting: teach the script to group by a discriminator
+field (`type`/`dataType`/`recordType`/`postType`, whichever the Actor uses) before computing fill
+rate — that would collapse root-cause 1 to zero noise and leave only root-cause 2's genuinely-sparse
+signal, which is the one category actually worth eyeballing every time.
