@@ -80,7 +80,7 @@ One row per notice:
 | `contractNature`, `cpvCodes` | e.g. `["services"]`, `["71000000"]` (arrays, deduplicated). |
 | `description` | Free-text lot description, in `outputLanguage`. |
 | `totalValue`, `totalValueCurrency` | Contract value, when the notice type carries one — see the FAQ. |
-| `deadlineDate`, `daysUntilDeadline`, `deadlineType` | Earliest submission deadline across all lots, how many whole days are left before it (negative = already closed, `null` = no deadline published), and which TED field the date came from: `tender` (the tender-receipt deadline, by far the most common), `generic`, or `expressions` (the expressions-of-interest deadline on two-stage procedures). |
+| `deadlineDate`, `daysUntilDeadline`, `deadlineType` | Earliest submission deadline across all lots, how many whole days are left before it (negative = already closed, `null` = no deadline published), and which TED field the date came from: `tender` (the tender-receipt deadline — 48/50 live call-for-competition notices in a fresh measurement, see [the deadline-fields guide](https://fetchsmith.com/blog/eu-ted-deadline-lives-in-a-different-field)), `generic` (1/50), or `expressions` (the expressions-of-interest deadline on two-stage procedures, 0/50). Result/award notices (`can-standard`) carry none of the three fields — 0/50 in the same measurement — which is why `onlyOpenDeadlines` treats "no deadline published" as closed. |
 | `deadlineReceiptRequestDate` | The separate tender-documents/information-request deadline, where TED publishes one. |
 | `publicationDate` | When TED published the notice. |
 | `noticeUrl` | Link to the notice's PDF (or XML) on ted.europa.eu, in your chosen language when available. Kept for backward compatibility — prefer the three fields below for a specific format. |
@@ -172,6 +172,7 @@ Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/eu-ted-te
 ## Related guides
 Engineering write-ups behind this Actor:
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
+- [The EU's tender deadline isn't in the field called "deadline" — 48/50 live in a different one](https://fetchsmith.com/blog/eu-ted-deadline-lives-in-a-different-field) — which of TED's three deadline fields to trust, measured by notice type.
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the traps it has to avoid.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
