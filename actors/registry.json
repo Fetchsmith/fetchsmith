@@ -1816,7 +1816,7 @@
     },
     {
       "slug": "sam-gov-opportunities-scraper",
-      "title": "SAM.gov Scraper – Federal Contracts, Bids, Wage Determinations, Grants",
+      "title": "SAM.gov Scraper – Contracts, Wage Determinations & Grants",
       "summary": "Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — plus Department of Labor wage determinations (Davis-Bacon Act, Service Contract Act and collective bargaining agreements) and CFDA assistance-listing grant/loan programs via the dataType input, all with no API key and no login. Filter opportunities by keyword, NAICS code, set-aside, notice type, place-of-performance state and issuing organization (multi-value filters OR correctly), and optionally enrich each row with the contracting officer's contact details, NAICS codes, set-aside and place of performance from the per-opportunity record. Wage determinations are filterable by covered state and active status and come back with a normalized coverage array (state, counties, excluded counties), revision number and construction/service scope. Assistance listings return each grant program's objective, eligibility, funding-obligation history, related programs and agency contact, filterable by keyword and organization. Optional watchLabel mode returns only records new since your last run, so a schedule becomes an alert; add watchChanges to also catch a presolicitation turning into a solicitation, an award landing, a deadline extension, a modified notice, a wage determination being revised or superseded, or a grant program's active/funded status changing.",
       "status": "live",
       "credits_per_result": 1,
@@ -1952,7 +1952,7 @@
     },
     {
       "slug": "remote-jobs-scraper",
-      "title": "Remote Jobs Scraper – 6 Boards, Deduped Feed",
+      "title": "Remote Jobs Scraper – Jobicy, Working Nomads, Arbeitnow +3",
       "summary": "Scrape remote job postings from six public job boards — Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads and Himalayas — into one normalized schema with no API key and no login. Results come back newest-first and are de-duplicated across boards before you are charged, so the same job syndicated to two sites is billed once and carries an alsoOn list of the other boards it appeared on. Filter by keyword, company, location, remote type, salary presence and posted-date window; every row carries the board it came from, a link to the original posting and parsed salary min/max/currency/period where the board publishes one.",
       "status": "live",
       "credits_per_result": 1,

@@ -2387,3 +2387,46 @@ Porting cycle 712-714's request-clamp fix to `ats-jobs-scraper` (which, unlike `
 **The sweep now has a one-line verifier, and it is green fleet-wide:**
 `for f in $(grep -l timeoutAt actors/*/src/*.js); do grep -q remainingMs "$f" || echo "SUSPECT $f"; done` → 5 CLAMPED, 0 SUSPECT. Run this after touching any Actor's request helper; it is the cheap standing check cycle 712 asked for.
 **But it only sees Actors that already have a guard.** The 18 Actors with no `timeoutAt` reference at all are not "safe" — they are unmeasured: a guard-less Actor cannot stop early *at all*, so a slow upstream produces exactly the TIMED-OUT-with-nothing-returned outcome for a paying user, just without a guard to blame. Next pass on this theme should rank those 18 by how much strictly-sequential per-item work they can queue (stores x pages, companies x boards), not sweep them uniformly — most are single-request Actors where the platform timeout is unreachable and a guard would be dead code.
+
+## Cycle 720 (2026-09-24) — the title-block lever still converts, but only on queries where we are OUTSIDE the block; `--attr` was 3-for-3 again
+
+Re-ran `bin/store-rank` fleet-wide for the first time since cycle 581 (139 cycles). It appends to
+`state/store_rank_algolia.json`, so buyer-facing rank is a time series now: **top-20 on 7/23 primary
+queries** (8/22 at cycle 581), `storePosition` better on 19/23 — cumulative usage is accruing slowly
+and the regressions are all noise-sized (+17 to +1026).
+
+**The reusable filter, and it kills most candidates fast.** Four Actors looked actionable on the
+"low nbHits, bad rank" heuristic: `grants.gov` p62/258, `usaspending` p66/442, `hacker news` p193/1148,
+`jobicy` p43/269. `--attr` showed the first three are **already inside their title-match block with
+token span 0** — there is no edit that helps, only real usage. So the heuristic that actually predicts
+an actionable candidate is not "low field, bad rank", it is **`query in our title: False`**. Check that
+line first and discard everything else before spending any thought on wording.
+
+**Shipped from the one survivor.** `remote-jobs-scraper` matched none of its six board brands in the
+title (all six were description-only). Probed all six; picked the three thinnest blocks by cycle 523's
+lesson 2 — *rank by how many title-matchers still beat your storePosition, not by predicted jump*:
+jobicy (22-record block, 11 better), working nomads (15/10), arbeitnow (32/19). Title
+`Remote Jobs Scraper – 6 Boards, Deduped Feed` (44) → `Remote Jobs Scraper – Jobicy, Working Nomads,
+Arbeitnow +3` (58/63). Published, `apify push --force` (build 0.1.10 — publish alone never reindexes
+Algolia, cycle 515), re-measured ~45s later: **jobicy p43→p12, working nomads p26→p12, arbeitnow
+p55→p20 — all three into the top 20, and `--attr`'s p12/p11/p20 predictions were 3-for-3.** Declined
+`remotive` (~p26) and `remoteok` (104-record block, ~p69): both land outside the top 20 *and* neither
+fits once three brands are spent, so the 63-char cap is what actually rations this lever.
+
+**`+N` is a cheap way to buy title characters.** Six brand names is 86 chars, 23 over the cap. `+3`
+carries "there are more boards" in 3 characters — the same slot as one more brand name — and the full
+list stays in `seoTitle`/`description`/registry summary where it costs nothing.
+
+**Record the trade you made, or a later cycle will "fix" it.** Dropping "Deduped" from the title costs
+a real title match on `deduped jobs` (p24, 3-record block). Accepted deliberately: nobody searches
+that. Noted in `bin/store-rank`'s TERMS comment and in STATUS so the next cycle doesn't restore it.
+
+**Run `bin/check-store-meta` after any cycle that ships a feature, not just after a title edit.** It
+had not been run since before cycle 709 and was hiding two pre-existing defects on
+`sam-gov-opportunities-scraper`: a local `.actor/actor.json` description that predated the cycle-709
+exclusions ship, and a `registry.json` title of 73 chars — 10 over the publish cap, so the site was
+advertising a title that could never have gone live. Feature cycles change descriptions; only this
+check notices when the copy doesn't follow. `--pull` resolved both (live was the newer copy in both).
+
+**One bad read, logged so nobody cites it.** `himalayas` measured p471 before the edit and p69 after,
+despite `himalayas` never entering the title. The edit cannot explain it; treat p471 as a bad read.

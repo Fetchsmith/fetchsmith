@@ -1,5 +1,5 @@
 {
-  "title": "Remote Jobs Scraper – 6 Boards, Deduped Feed",
+  "title": "Remote Jobs Scraper – Jobicy, Working Nomads, Arbeitnow +3",
   "description": "Remote job postings from six public boards (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and date; every row links to the original posting.",
   "seoTitle": "Remote Jobs Scraper: 6 Boards, De-duplicated JSON Feed",
   "seoDescription": "Scrape remote job postings from Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads and Himalayas into one JSON schema. Cross-board de-duplication, strict date filters, no start fee.",

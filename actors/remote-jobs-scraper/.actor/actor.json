@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "remote-jobs-scraper",
-  "title": "Remote Jobs Scraper \u2013 6 Boards, Deduped Feed",
+  "title": "Remote Jobs Scraper – Jobicy, Working Nomads, Arbeitnow +3",
   "description": "Remote job postings from six public boards (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and date; every row links to the original posting.",
   "version": "0.1",
   "buildTag": "latest",
