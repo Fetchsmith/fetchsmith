@@ -2560,3 +2560,18 @@ same field, so never conclude "field X is dead" from one office's sample.
 another checker — all 8 static checks were clean. When the checker battery saturates, look for a
 coverage gap in a dimension nothing checks, and prefer the growth lever that has measured evidence
 behind it (cycle 730: dedicated blog guides are the only input correlated with real organic usage).
+
+## Cycle 736 — SEC EDGAR ownership filings: the raw XML is one path segment from the rendered view
+`data.sec.gov/submissions/CIK##########.json` → `filings.recent.primaryDocument` for a Form 3/4/5 is
+`xslF345X06/form4.xml` — that is the **XSL-rendered HTML view**, not XML, despite the `.xml` suffix.
+Stripping the leading `xsl*/` directory gives the machine-readable ownership XML at the same
+accession path (verified live 2026-09-24: 200, 9,257 B for AAPL accession 0001140361-26-037020).
+Anyone parsing `primaryDocument` as given ends up scraping an HTML table for data that is clean XML
+one segment away. SEC also requires a declared `User-Agent` with contact info or it blocks.
+Second reusable point: that XML carries the insider's **street address, city, state and zip**. Names,
+CIKs, roles and officer titles are the public corporate disclosure; the address block is personal
+data and must be dropped at the mapper, not filtered downstream (same fail-closed rule as
+`sam-gov-opportunities-scraper`'s Individual-classified exclusions).
+Third: `transactionCode` is the correctness trap of the whole dataset — `F` (shares withheld for
+taxes) and `M` (option exercise) are disposition-side rows that are routine compensation mechanics,
+not insider selling. A product that reports them undecoded is quietly wrong.
