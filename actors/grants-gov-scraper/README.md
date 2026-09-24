@@ -267,6 +267,7 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
   "detailNoRecord": 2,
   "droppedNoAward": 0,
   "droppedUnknownAward": 0,
+  "republishedRowsDropped": 0,
   "notFoundOppNums": [],
   "failedOppNums": [],
   "baselineSize": null,
@@ -276,6 +277,9 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 ```
 
 `declaredMatches` is Grants.gov's own count of everything matching your filters, so `delivered` is checkable against it from code rather than by reading English in a log. `complete` is deliberately **separate** from any status string: a run can succeed and still be truncated, and that is exactly the case this record exists to make machine-readable. `incompleteReason` is one of `max-results` (your own cap — benign), `charge-limit` (the run's maximum-cost limit stopped it), `seed-cap` (a watch baseline hit the 20,000-opportunity cap), or `search-request-failed` (Grants.gov stopped answering mid-walk — the result set is short through no choice of yours, and before this existed that failure ended the paging walk looking exactly like a finished run). When the run is incomplete the Actor also sets a run status message saying so. `baselineSize`/`baselineTruncated`/`baselineTruncatedTotal` (watch mode only) report the current baseline size and the "Baseline size cap" defect above — see that FAQ entry.
+
+**Can the same opportunity come back twice (and be charged twice)?**
+No — Grants.gov sometimes serves the exact same opportunity under two (or more) brand-new `id`s within one result set, which an id-keyed check can never catch, since the id is exactly what differs. Measured live 2026-09-24 on a 400-row unfiltered sample (`oppStatuses: forecasted|posted|closed|archived`, no keyword): 1% of rows were byte-identical republications (same title/agencyCode/openDate/closeDate/opportunityNumber/docType) — one Fish & Wildlife Service opportunity ("Evaluation and Improvement in Desert Bighorn Sheep Population Estimates") was posted 3 times under ids 51589/51581/51611. `opportunityNumber` alone is **not** a safe dedup key: the same sample also had 2 cases where Grants.gov reused a number for a genuinely revised posting (different title and/or open date — a real correction, not a duplicate). Every run now dedupes on a same-source content hash (`opportunityNumber` + `title` + `agencyCode` + `openDate` + `closeDate` + `docType`, requiring all six to match) before any charge, and reports how many it dropped in `RUN_SUMMARY.republishedRowsDropped`.
 
 **How does `watchLabel` know what's already new, and where is that baseline stored?**
 The first run for a label walks the whole match set (every page, not just `maxResults` of it), records every opportunity's `id`, and returns nothing — you are charged $0. Every later run with the same label and the same other filters returns only opportunities whose `id` isn't in that recorded set, then adds them to it. The baseline lives in a key-value store named `fetchsmith-grants-watch` in *your own* Apify account (Storage tab in the console), not ours — you can inspect or delete it any time. Deleting the record for a label resets it to a fresh baseline on the next run. Verified live on build 0.1.9: a seed run over `keyword: "water"` recorded 18,458 opportunity ids and returned 0 rows; an identical rerun returned 0 new; removing 3 ids from the baseline directly and rerunning returned exactly those 3.

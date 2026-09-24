@@ -793,6 +793,18 @@ let droppedUnknownAward = 0;
 let droppedOutOfRange = 0;
 let droppedNoCloseDate = 0;
 let skippedSeen = 0;
+// Grants.gov sometimes serves the SAME opportunity twice under two brand-new `id`s within one
+// result set -- measured live cycle 762, 400-row unfiltered sample: 1% (3 groups, "Evaluation and
+// Improvement in Desert Bighorn Sheep Population Estimates" appeared 3x under ids 51589/51581/
+// 51611, all with identical title/agencyCode/openDate/closeDate/docType/number). `opportunityNumber`
+// alone is NOT a safe key -- the same 1,000-row sample also had 2 cases where Grants.gov reused an
+// oppNum for a genuinely revised posting (NNL10ZB1011C: title AND openDate both changed; that is a
+// real correction, not a duplicate, same corrigendum-style distinction `eu-ted-tenders-scraper`
+// relies on). Only a same-source hash of number+title+agencyCode+openDate+closeDate+docType --
+// requiring ALL of them to match -- catches the byte-identical republication without merging a
+// revision into its predecessor. Same defect class as `sam-gov-opportunities-scraper` cycle 761
+// and `uk-find-a-tender-scraper` cycle 760.
+let republishedRowsDropped = 0;
 
 // Run-level completeness, written to the key-value store as RUN_SUMMARY at the end of the run
 // (and onto the webhook payload). `complete` is deliberately NOT folded into a status string: a
@@ -828,6 +840,9 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
     const needsEnrich = minAwardAmount !== null || maxAwardAmount !== null ? true : (thinOnly ? false : enrich);
     let startRecordNum = 0;
     let keepGoing = true;
+    // Scoped to this one walk (seeding and the real run never share a call, see the caller below),
+    // same shape as sam-gov-opportunities-scraper's republication guard.
+    const seenContentHashes = new Set();
     while (keepGoing) {
         const params = { ...baseParams(), startRecordNum };
         const page = await apiPost('/search2', params);
@@ -844,9 +859,19 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
         // it is what makes "we delivered 40" checkable against "Grants.gov says 2,113 match".
         if (declaredMatches === null && Number.isFinite(page?.data?.hitCount)) declaredMatches = page.data.hitCount;
         assertFiltersApplied(params, page);
-        const hits = listOf(page?.data?.oppHits);
-        if (!hits.length) break;
-        scanned += hits.length;
+        const pageHits = listOf(page?.data?.oppHits);
+        if (!pageHits.length) break;
+        scanned += pageHits.length;
+
+        // Drop same-source byte-identical republications (new `id`, everything else unchanged)
+        // BEFORE enrichment, so a repeat costs neither an extra detail fetch nor a charge.
+        const hits = [];
+        for (const h of pageHits) {
+            const contentHash = [h.number, h.title, h.agencyCode, h.openDate, h.closeDate, h.docType].join('|');
+            if (seenContentHashes.has(contentHash)) { republishedRowsDropped += 1; continue; }
+            seenContentHashes.add(contentHash);
+            hits.push(h);
+        }
 
         const thin = hits.map(normalizeThin);
         let batch = thin;
@@ -894,8 +919,11 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
         }
 
         keepGoing = await onBatch(batch);
-        startRecordNum += hits.length;
-        if (hits.length < PAGE_SIZE) break; // last page
+        // Advance by the RAW page size Grants.gov actually returned, not the post-dedup count --
+        // `startRecordNum` is a server-side offset into the underlying (undeduped) result list, so
+        // advancing by fewer than that would re-request rows already consumed on this page.
+        startRecordNum += pageHits.length;
+        if (pageHits.length < PAGE_SIZE) break; // last page
     }
 }
 
@@ -1113,6 +1141,7 @@ const runSummary = {
     droppedOutOfRange,
     droppedNoCloseDate,
     skippedSeen,
+    republishedRowsDropped,
     // Written down explicitly rather than left out: the ABSENCE of a number from the results
     // would otherwise read as "Grants.gov has no such opportunity", which is the one thing a
     // failed lookup does not prove.
@@ -1148,7 +1177,8 @@ log.info(
     + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) whose agency set no award ceiling to compare against the amount filter.` : '')
     + (droppedUnknownAward ? ` Dropped ${droppedUnknownAward} row(s) whose award ceiling is UNKNOWN because their detail lookup failed.` : '')
     + (droppedOutOfRange ? ` Dropped ${droppedOutOfRange} row(s) outside the postedFrom/postedTo range.` : '')
-    + (droppedNoCloseDate ? ` Dropped ${droppedNoCloseDate} row(s) with no close date (forecasts and rolling/continuous announcements have none) against the closeDateFrom/closeDateTo filter.` : ''),
+    + (droppedNoCloseDate ? ` Dropped ${droppedNoCloseDate} row(s) with no close date (forecasts and rolling/continuous announcements have none) against the closeDateFrom/closeDateTo filter.` : '')
+    + (republishedRowsDropped ? ` ${republishedRowsDropped} republished duplicate row(s) dropped, uncharged.` : ''),
 );
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
