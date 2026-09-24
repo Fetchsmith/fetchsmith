@@ -1,21 +1,21 @@
 {
- "ts": 1790199022,
- "date": "2026-09-23",
+ "ts": 1790208022,
+ "date": "2026-09-24",
  "apify": {
   "google-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 14,
-   "runs": 598,
-   "ext_ok30d": 13,
+   "runs30d": 15,
+   "runs": 600,
+   "ext_ok30d": 14,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 13,
+    "SUCCEEDED": 14,
     "TIMED-OUT": 1,
-    "TOTAL": 14
+    "TOTAL": 15
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -26,7 +26,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 15,
-   "runs": 630,
+   "runs": 631,
    "ext_ok30d": 15,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -45,7 +45,7 @@
    "users": 2,
    "users30d": 0,
    "runs30d": 24,
-   "runs": 638,
+   "runs": 641,
    "ext_ok30d": 24,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -64,7 +64,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 15,
-   "runs": 597,
+   "runs": 598,
    "ext_ok30d": 15,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -83,7 +83,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 15,
-   "runs": 580,
+   "runs": 581,
    "ext_ok30d": 15,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -102,7 +102,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 14,
-   "runs": 597,
+   "runs": 599,
    "ext_ok30d": 14,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -121,7 +121,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 14,
-   "runs": 604,
+   "runs": 606,
    "ext_ok30d": 14,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -139,16 +139,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 13,
-   "runs": 592,
-   "ext_ok30d": 13,
+   "runs30d": 14,
+   "runs": 593,
+   "ext_ok30d": 14,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 13,
+    "SUCCEEDED": 14,
     "TIMED-OUT": 0,
-    "TOTAL": 13
+    "TOTAL": 14
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -178,7 +178,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 13,
-   "runs": 575,
+   "runs": 576,
    "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -197,7 +197,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 13,
-   "runs": 540,
+   "runs": 541,
    "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -216,7 +216,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 13,
-   "runs": 543,
+   "runs": 544,
    "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -234,16 +234,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 12,
-   "runs": 524,
-   "ext_ok30d": 12,
+   "runs30d": 13,
+   "runs": 525,
+   "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 12,
+    "SUCCEEDED": 13,
     "TIMED-OUT": 0,
-    "TOTAL": 12
+    "TOTAL": 13
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -254,7 +254,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 12,
-   "runs": 511,
+   "runs": 512,
    "ext_ok30d": 12,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 12,
-   "runs": 523,
+   "runs": 524,
    "ext_ok30d": 12,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -292,7 +292,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 13,
-   "runs": 461,
+   "runs": 462,
    "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -311,7 +311,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 12,
-   "runs": 433,
+   "runs": 434,
    "ext_ok30d": 12,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -329,8 +329,27 @@
    "public": true,
    "users": 2,
    "users30d": 1,
+   "runs30d": 11,
+   "runs": 394,
+   "ext_ok30d": 11,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 11,
+    "TIMED-OUT": 0,
+    "TOTAL": 11
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "fec-campaign-finance-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
    "runs30d": 10,
-   "runs": 392,
+   "runs": 238,
    "ext_ok30d": 10,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -344,31 +363,12 @@
    "reviews": 0,
    "rating": 0
   },
-  "fec-campaign-finance-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 9,
-   "runs": 236,
-   "ext_ok30d": 9,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 9,
-    "TIMED-OUT": 0,
-    "TOTAL": 9
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
   "court-records-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
    "runs30d": 7,
-   "runs": 79,
+   "runs": 80,
    "ext_ok30d": 7,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -387,7 +387,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 4,
-   "runs": 29,
+   "runs": 30,
    "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 4,
-   "runs": 34,
+   "runs": 35,
    "ext_ok30d": 4,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -425,7 +425,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 3,
-   "runs": 23,
+   "runs": 24,
    "ext_ok30d": 3,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -444,8 +444,8 @@
  "apify_totals": {
   "public_actors": 23,
   "users": 45,
-  "runs30d": 273,
-  "ext_ok30d": 270,
+  "runs30d": 278,
+  "ext_ok30d": 275,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,
