@@ -141,7 +141,7 @@
     },
     {
       "slug": "app-store-reviews-scraper",
-      "title": "App Store Reviews Scraper – iTunes Reviews, Any App & Country",
+      "title": "Mac App Store Reviews Scraper – iTunes Reviews, Any Country",
       "summary": "Apple App Store reviews for any iOS or Mac App Store app and country storefront: rating, title, text, author (with profile URL), version, vote counts, sort/client diagnostics, plus full app metadata (developer, bundle id, genre, current version, store URL). Optional watch mode (watchLabel) returns only the reviews posted since your last run, so a scheduled watch on a quiet app returns nothing and costs nothing.",
       "status": "live",
       "credits_per_result": 1,

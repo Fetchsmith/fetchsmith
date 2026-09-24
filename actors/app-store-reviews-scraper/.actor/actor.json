@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "app-store-reviews-scraper",
-  "title": "App Store Reviews Scraper – iTunes Reviews, Any App & Country",
+  "title": "Mac App Store Reviews Scraper – iTunes Reviews, Any Country",
   "description": "Extract Apple App Store reviews for any iOS or Mac app and country storefront: rating, title, text, version, author, date, app metadata, per-star ratings breakdown, and sort by most recent, most helpful, favorable or critical. Pay per review.",
   "version": "0.1",
   "buildTag": "latest",
