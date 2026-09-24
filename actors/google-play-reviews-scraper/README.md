@@ -107,6 +107,7 @@ Engineering write-ups behind this Actor:
 - [Google Play's review API carries two fields almost nobody reads — a full star histogram and a hidden per-review "aspect" breakdown](https://fetchsmith.com/blog/google-play-hidden-aspect-ratings-and-histogram)
 - [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
 - [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
+- [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. This is the Actor the bug was first found and reproduced on.
 
 ## Notes
 Only public Google Play data is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/google-play-reviews-scraper

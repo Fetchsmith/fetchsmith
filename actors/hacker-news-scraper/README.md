@@ -127,6 +127,7 @@ Engineering write-ups behind this Actor:
 - [HN search caps every query at 1,000 hits, no matter what nbHits claims](https://fetchsmith.com/blog/hacker-news-1000-hit-search-ceiling) — live proof of the ceiling, and why the date-slicing workaround's window width has to match how hot the query is
 - [HN's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the three-run test that proves a baseline is complete
+- [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 
 Only publicly available data is collected via HN's official search API. Questions or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com/tools/hacker-news-scraper
 

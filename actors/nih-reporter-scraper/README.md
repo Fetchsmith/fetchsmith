@@ -179,6 +179,7 @@ Only public data from NIH RePORTER's official API is collected. Issues or featur
 - https://fetchsmith.com/blog/nih-reporter-search-id-vs-criteria
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built, why `newly_added_projects_only` is not the same thing, and the three-run test that proves a baseline is complete.
+- [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.
 - https://fetchsmith.com/tools
 
 ## Source code

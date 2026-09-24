@@ -85,5 +85,6 @@ Only public data from the official TMview database is collected. Respect the sou
 ## Related guides
 - [One key-free API searches trademarks in 70+ offices — and its worst failure returns no HTTP status at all](https://fetchsmith.com/blog/tmview-trademark-search-api-no-key) — the TMview endpoint this Actor is built on: why it resets the connection instead of returning 403, why every date is anchored at midday UTC, and measured per-office fill rates for `expirationDate`/`oppositionDeadline`/`seniorityClaimed`
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how this Actor's `watchLabel` mode keys its baseline on TMview's own `st13` id, and what it does and does not track
+- [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - [FetchSmith blog](https://fetchsmith.com/blog) — data-source guides and API notes
 - See more tools like this at [fetchsmith.com/tools](https://fetchsmith.com/tools).

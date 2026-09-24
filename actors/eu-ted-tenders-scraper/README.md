@@ -174,5 +174,6 @@ Engineering write-ups behind this Actor:
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)
 - [The EU's tender deadline isn't in the field called "deadline" — 48/50 live in a different one](https://fetchsmith.com/blog/eu-ted-deadline-lives-in-a-different-field) — which of TED's three deadline fields to trust, measured by notice type.
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built and the traps it has to avoid.
+- [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)

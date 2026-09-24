@@ -273,6 +273,7 @@ Set `dataType` to `exclusions` to pull SAM.gov's federal debarment/suspension li
 - https://fetchsmith.com/blog/sam-gov-key-free-federal-datasets-one-endpoint
 - https://fetchsmith.com/blog/usaspending-federal-awards-json-api
 - https://fetchsmith.com/blog/grants-gov-federal-grant-opportunities-json-api
+- [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - https://fetchsmith.com/tools
 
 ## Source code
