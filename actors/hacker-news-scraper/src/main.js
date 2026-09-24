@@ -243,8 +243,29 @@ async function enrichGithub(item) {
       retry: { limit: 0 },
       responseType: 'json',
       headers: { 'User-Agent': 'fetchsmith-hacker-news-scraper' },
+      throwHttpErrors: false,
     });
+    // got-scraping defaults to throwHttpErrors:false (verified live 2026-09-24), so GitHub's
+    // 403/429/404 all arrive here as ordinary resolved responses. Until cycle 752 the status was
+    // read off `e.response` in the catch below, which could never run: a 404 fell through to the
+    // mapping and wrote four null enrichment columns instead of the "do not retry" sentinel, and
+    // a rate limit never set `githubRateLimited`, so the run kept spending its lookup budget on
+    // calls that could only return nulls. Read the status off the response instead.
+    const status = res.statusCode;
+    if (status === 403 || status === 429) {
+      githubRateLimited = true;
+      log.warning('GitHub API rate limit reached -- remaining items in this run keep githubRepo but not star/language/pushed-at data.');
+      return;
+    }
+    if (status === 404) {
+      githubCache.set(repoFullName, null); // repo renamed/deleted/private -- do not retry
+      return;
+    }
     const d = res.body;
+    if (status !== 200 || !d || typeof d !== 'object') {
+      log.warning(`GitHub lookup failed for ${repoFullName}: HTTP ${status}.`);
+      return;
+    }
     const fields = {
       githubStars: d.stargazers_count ?? null,
       githubLanguage: d.language ?? null,
@@ -254,15 +275,8 @@ async function enrichGithub(item) {
     githubCache.set(repoFullName, fields);
     Object.assign(item, fields);
   } catch (e) {
-    const status = e.response?.statusCode;
-    if (status === 403 || status === 429) {
-      githubRateLimited = true;
-      log.warning('GitHub API rate limit reached -- remaining items in this run keep githubRepo but not star/language/pushed-at data.');
-    } else if (status === 404) {
-      githubCache.set(repoFullName, null); // repo renamed/deleted/private -- do not retry
-    } else {
-      log.warning(`GitHub lookup failed for ${repoFullName}: ${e.message}`);
-    }
+    // Only a genuine transport failure (DNS/TLS/timeout) reaches this now.
+    log.warning(`GitHub lookup failed for ${repoFullName}: ${e.message}`);
   }
 }
 

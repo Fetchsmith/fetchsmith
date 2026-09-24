@@ -2748,3 +2748,61 @@ isolated single-param probe is representative") did NOT materialize:
   charge from the probe requests since they use `limit:1` with no PPE event).
 - All three government-search Actors covered by the fleet's `/blog/government-apis-fail-open-on-a-
   dropped-filter-name` post (sam-gov, FEC, USAspending) are now code-guarded, not just documented.
+
+## Cycle 752 — the `got-scraping` throwHttpErrors fleet audit: only 2 Actors were affected, and the queued fix plan was wrong
+
+**Re-verified the premise first (worth the 30 seconds):** `gotScraping({responseType:'json'})` with no
+`throwHttpErrors` set returns a 403/404/422 as an ordinary RESOLVED response. Confirmed live against
+both api.open.fec.gov and api.github.com. So any `catch (e) { e.response?.statusCode ... }` is dead code.
+
+**The audit is cheap and should be the first move, not a fleet-wide rewrite.** `grep -rn "err\.response\|e\.response"`
+across all 25 Actors returned exactly **2 hits** (`fec-campaign-finance-scraper`, `hacker-news-scraper`).
+Every other Actor already reads `resp.statusCode` off the resolved response — the correct pattern, and
+immune by construction. `us-federal-awards-scraper`'s `postPage` (flagged as "worth 2 minutes" in the
+cycle 751 queue note) is in that immune set: it sets `throwHttpErrors:false` explicitly and branches on
+`resp.statusCode`. **Do not assume a class finding is fleet-wide before grepping — this one was 2/25.**
+
+**The queued fix (`check body.status >= 400`) would have missed the exact case the code existed for.**
+FEC has TWO error shapes, measured live:
+  - api.data.gov gateway (auth AND **rate limits** — the 429 the catch block was written for):
+    `{"error":{"code":"API_KEY_INVALID","message":...}}` — **no `status` key at all**.
+  - FEC app validation: `{"message":"Invalid committee_id...","status":422}` — has `status`.
+A `body.status` check catches only the second. **The status code is the only authority**; body shape is
+for the human-readable detail string. Generalize: when an API sits behind a gateway (api.data.gov,
+Kong, APIM), gateway errors and app errors have different bodies, and rate limits come from the gateway.
+
+**The dead catch was actively harmful in two directions, both measured:**
+1. *Silent partial success.* The page walk does `const results = body.results ?? []` then
+   `if (results.length === 0) break`. A mid-walk 429 → error body → 0 results → clean `break` → run ends
+   `complete: true` with partial data. `fetchTotals` turned one into "no money on file".
+2. *Crying wolf.* Ran the old code with a bad API key: it aborted with **"The FEC API no longer recognises
+   the office search filter... please report it so the Actor can be updated"** — because cycle 750's
+   rejectProbe sniffed `data.status`, and the gateway-shaped 403 has none, so a plain auth failure was
+   reported to the buyer as an upstream FEC schema change. A body-shape probe fails open on a body shape
+   it has never seen; a status-code probe does not.
+
+**The landing zone usually already exists.** `fecGet` throwing needed zero new plumbing: the walk's
+`catch` at the bottom already called `markIncomplete('upstream-error', ...)` and deliberately avoided
+`Actor.fail()` (cycle 676's re-billing fix). It had simply never been reachable. Before building error
+handling for a newly-throwing function, check whether a previous cycle already built it for the throw
+that never came.
+
+**Making a function throw can silently disable a guard that depended on it not throwing.** Cycle 750's
+`rejectProbe` *wanted* the 4xx body back. After the change it landed in the catch, whose `continue`
+would have skipped the safety check with only a warning. Moved the rejection test to `err.httpStatus
+=== 400 || 422` — which is also strictly better, since it now catches gateway-shaped rejections too.
+**When you change a function's error contract, grep its callers for ones that treated errors as data.**
+
+**hacker-news-scraper, same class, different blast radius:** GitHub's 403/429/404 all resolve, so the
+404 branch (cache the "do not retry" sentinel) and the rate-limit short-circuit (`githubRateLimited`)
+were both unreachable — a 404 fell through and wrote 4 null enrichment columns, and a rate limit let the
+run keep spending its 200-lookup budget on calls that could only return nulls. Verified both directions
+live after the fix (6/6 real repos enriched with stars/lang/issues; `github.com/blog/...` false-positive
+"repos" 404 and now take the sentinel path with no warnings).
+
+**Local runs do NOT validate against `.actor/input_schema.json`.** A local test with `sortBy:"points"`
+passed happily; the same input to the platform API returned
+`400 invalid-input: must be equal to one of "relevance","date"`. Always confirm a new test input on the
+platform before trusting it as a regression case — and check the schema for the real flag name
+(`enrichGithubLinks`, not the `includeGithubData` I guessed, which silently produced 0 enriched rows
+and looked like a code failure).

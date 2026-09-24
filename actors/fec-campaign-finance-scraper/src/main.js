@@ -280,29 +280,47 @@ async function fecGet(path, params) {
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, v);
   }
-  try {
-    const res = await gotScraping({
-      url: url.toString(),
-      timeout: { request: 30000 },
-      retry: { limit: 2 },
-      responseType: 'json',
-    });
-    return res.body;
-  } catch (err) {
-    // The shared DEMO_KEY quota is per egress IP, so exhaustion is a real runtime
-    // outcome, not an edge case. Never let it look like "this candidate has no money
-    // on file" - the totals endpoint expresses that as HTTP 200 with results: [].
-    if (err.response?.statusCode === 429) {
+  // got-scraping defaults to throwHttpErrors:false (verified live 2026-09-24: a 403/422/404
+  // arrives as an ordinary RESOLVED response, never a thrown error). Set explicitly because the
+  // status check below depends on it. Until cycle 752 this function relied on got throwing and
+  // inspected `err.response?.statusCode` in a catch -- code that could never run, so every 4xx/5xx
+  // was returned to the caller as a normal body. The page walk reads `body.results ?? []`, sees an
+  // empty page and `break`s, so a mid-walk 429 ended the run as "complete" with partial data and
+  // no warning; `fetchTotals` turned one into "no money on file". Check the status directly.
+  const res = await gotScraping({
+    url: url.toString(),
+    timeout: { request: 30000 },
+    retry: { limit: 2 },
+    responseType: 'json',
+    throwHttpErrors: false,
+  });
+  if (res.statusCode >= 400) {
+    // Two distinct upstream error shapes, both measured live 2026-09-24 -- neither one alone is
+    // enough to detect a failure, which is why the status code is the authority here:
+    //  - api.data.gov gateway (auth + RATE LIMITS): {"error":{"code","message"}}, NO `status` key.
+    //  - FEC app validation: {"message":"Invalid committee_id...","status":422}.
+    const body = res.body;
+    const detail = body?.error?.message
+      ?? (typeof body?.message === 'string' ? body.message : null)
+      ?? (typeof body === 'string' ? body.slice(0, 200) : null);
+    // The shared DEMO_KEY quota is per egress IP, so exhaustion is a real runtime outcome, not an
+    // edge case. Never let it look like "this candidate has no money on file" - the totals
+    // endpoint expresses that as HTTP 200 with results: [].
+    if (res.statusCode === 429) {
       const e = new Error(
         'FEC API rate limit hit (HTTP 429) on the shared DEMO_KEY, which is throttled per '
         + 'egress IP. Note each result costs 2 requests when includeTotals is on. Retry later, '
         + 'lower maxResults, or set includeTotals to false to halve the request count.',
       );
       e.isRateLimit = true;
+      e.httpStatus = 429;
       throw e;
     }
-    throw err;
+    const e = new Error(`FEC API returned HTTP ${res.statusCode}${detail ? `: ${detail}` : ''}`);
+    e.httpStatus = res.statusCode;
+    throw e;
   }
+  return res.body;
 }
 
 // FEC's own official committee classification, straight off the `committee` sub-object the
@@ -400,6 +418,10 @@ async function assertFilterNamesApplied() {
     try {
       data = await fecGet(base, { ...periodParam, [name]: FILTER_CANARY, per_page: 1 });
     } catch (err) {
+      // A rate limit is not an "upstream blip" to shrug off: the real request is about to hit the
+      // same wall, and skipping the guard is exactly how an unverified filter reaches a billable
+      // page. Fail loudly instead.
+      if (err.isRateLimit) throw err;
       // An upstream blip is not evidence of a dropped filter -- do not fail the run on it.
       log.warning(`Could not verify that the FEC API still honours the "${name}" filter (probe request failed: ${err.message}); continuing.`);
       continue;
@@ -428,21 +450,22 @@ async function assertFilterNamesApplied() {
     try {
       data = await fecGet(base, { ...periodParam, [name]: FILTER_CANARY, per_page: 1 });
     } catch (err) {
-      // got-scraping is configured with throwHttpErrors:false (its own default -- verified
-      // live, a 422 body comes back as a normal resolved response, not a thrown error), so only
-      // a genuine network failure lands here. An upstream blip is not evidence of a dropped
-      // filter -- do not fail the run on it.
-      log.warning(`Could not verify that the FEC API still honours the "${name}" filter (probe request failed: ${err.message}); continuing.`);
-      continue;
-    }
-    // FEC's own validation-error bodies carry a numeric `status` (>=400) and no `pagination` --
-    // that is what "rejected" looks like when the transport layer doesn't throw for it.
-    if (typeof data?.status === 'number' && data.status >= 400) {
-      rejected = true;
-    } else {
-      count = data?.pagination?.count ?? null;
+      // Since cycle 752 fecGet throws on any 4xx/5xx, so THIS is where a healthy rejection now
+      // lands -- and it is a strictly better signal than the old body sniff, which only ever
+      // matched FEC's app-level {"message","status"} shape and would have read a gateway-shaped
+      // 400 as "not rejected" and aborted a perfectly good run. 400/422 is FEC's validation
+      // range; anything else (429, 5xx, network) is not evidence about this filter.
+      if (err.isRateLimit) throw err;
+      if (err.httpStatus === 400 || err.httpStatus === 422) {
+        rejected = true;
+      } else {
+        // An upstream blip is not evidence of a dropped filter -- do not fail the run on it.
+        log.warning(`Could not verify that the FEC API still honours the "${name}" filter (probe request failed: ${err.message}); continuing.`);
+        continue;
+      }
     }
     if (!rejected) {
+      count = data?.pagination?.count ?? null;
       throw new Error(
         `The FEC API no longer recognises the "${name}" search filter: a probe request with an `
         + `invalid ${name}=${FILTER_CANARY} was NOT rejected (expected HTTP 400/422${count !== null ? `, got HTTP 200 with ${count} matches instead` : ''}), `
