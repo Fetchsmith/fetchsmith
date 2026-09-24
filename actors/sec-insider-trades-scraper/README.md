@@ -78,6 +78,20 @@ Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expiration
 - A filing can be made jointly by several reporting persons. The first is used for the
   `insiderName`/role fields and the rest are listed in `coFilers` rather than dropped.
 - SEC's filing index is newest-first, so `sinceDate` stops paging as soon as it passes the date.
+- **`rule10b5_1Plan` is normalized across four different spellings.** Measured over 210 real Form 4
+  filings from 15 large-cap issuers, the `<aff10b5One>` element came back as `0` (167 filings),
+  `1` (27), `true` (9) and `false` (7) — 92% of filings use `1`/`0`, not `true`/`false`. A
+  hand-rolled `=== 'true'` check therefore reports 75% of genuine plan-based trades as
+  discretionary, silently and in the misleading direction. This Actor accepts both spellings.
+  The element was present on all 210 filings and always at document level (never inside
+  `transactionCoding`, never with conflicting values), so the flag applies to every row of a filing.
+- **A third of rows carry no USD value, and which ones is predictable.** In the same 479-row
+  sample, 155 rows (32.4%) had a price of `0` or no price element, so `transactionValueUsd` is
+  `null`. Sales (`S`, 215/215) and tax withholding (`F`, 36/36) always priced; gifts (`G`, 0/12),
+  conversions (`C`, 0/4) and `J` never; option exercises (`M`, 34/101) and grants (`A`, 31/98)
+  about a third of the time — no money changed hands, so there is no price to report. Filter on
+  `transactionCode` for the behaviour you mean rather than on `transactionValueUsd > 0`, which
+  drops those rows. Genuine open-market purchases (`P`) were 6 of 479 rows (1.25%).
 - Measured across 160 real Form 4 transactions from 11 large-cap issuers (MSFT, ADBE, ORCL, CRM,
   NOW, IBM, META, TSLA, AMZN, GOOGL, NVDA): `exercisePrice` was populated on 15/33 (45%) of
   derivative rows — the rest were RSU vests, which have no strike price — while `expirationDate`
@@ -89,6 +103,8 @@ Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expiration
 
 ## Related guides
 
+- [SEC Form 4's 10b5-1 flag is not spelled "true" — 92% of filings write it as 1 or 0](https://fetchsmith.com/blog/sec-form-4-10b5-1-flag-is-not-a-boolean)
+  — the 210-filing measurement behind the two notes above, plus the full transaction-code histogram.
 - All FetchSmith tools: https://fetchsmith.com/tools
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/sec-insider-trades-scraper

@@ -2818,3 +2818,33 @@ is a code regression (someone starts reading the field), which `bin/check-real-f
 dataset keys vs. declared schema) already catches. **Before designing a guard for a "compliance filter,"
 check whether the filtering happens upstream (query param — needs a canary probe) or downstream (field
 omission in your own normalize function — already covered by schema-drift checks).**
+
+## Cycle 756 — XML booleans in SEC/government feeds have multiple spellings; and the "second guide" audit needs a per-Actor grep, not a belief
+- **`<aff10b5One>` (Form 4's Rule 10b5-1 checkbox) is serialized four ways by real filing agents:**
+  measured over 210 Form 4 filings from 15 large-cap issuers — `0` (167), `1` (27), `true` (9),
+  `false` (7). **92% use `1`/`0`, not `true`/`false`.** The spelling tracks the filing agent, not the
+  issuer or the week. The obvious `=== 'true'` check therefore mislabels 75% of genuine plan-based
+  trades as discretionary — silently, with the column looking fully populated, and in the direction
+  that misleads a reader (a scheduled liquidation reads as a discretionary signal). Our
+  `bool = (s) => s === 'true' || s === '1'` already covered it, and `val()` also unwraps a `<value>`
+  child, so both observed shapes are handled. **Generalizable: never write `=== 'true'` against a
+  government XML boolean.** Worth re-checking the other XML-sourced Actors for the same pattern.
+- The same 479-row sample: **`<aff10b5One>` is document-level in 210/210 filings**, never inside
+  `transactionCoding`, and never with conflicting values within one filing. A per-filing read applied
+  to every row is the correct shape, not an approximation. (Verified negative — it was an assumption.)
+- **A third of Form 4 rows structurally cannot have a USD value** (155/479 = 32.4%: price `0` or no
+  price element), and which rows is fully predictable from `transactionCode`: `S` 215/215 and `F`
+  36/36 always priced; `G` 0/12, `C` 0/4, `J` 0/4 never; `M` 34/101 and `A` 31/98 about a third.
+  No money changed hands on a grant or an RSU vest, so there is no price to report. A
+  `transactionValueUsd > 0` filter — the obvious way to ask for "insider buying" — drops ~a third of
+  the dataset and specifically the whole compensation story. Emit `null`, never 0, for "no price
+  reported", and document the code-to-price relationship so buyers filter on the code instead.
+- **Genuine open-market insider purchases (`P`) are 1.25% of Form 4 rows** (6/479); `S` is 45%,
+  grants+exercises 42%. Form 4 is mostly a record of comp being issued and sold — a "insider
+  transactions over time" chart is really plotting the vesting calendar. Good marketing angle.
+- **Process:** cycle 755 recorded the second-guide-per-Actor backlog as CLOSED, but a 30-second
+  `sed -n '/## Related guides/,/^## /p' README.md | grep -c '^- \['` over all 24 Actors found
+  `sec-insider-trades-scraper` at **zero** dedicated guides (only the fleet-wide /tools link), and
+  `grep -rl` over `site/content/blog` confirmed no post had ever mentioned it. Do not trust a
+  "backlog closed" note in STATUS/queue — re-run the mechanical count, it costs 30 seconds. A
+  `bin/` check for "every Actor has >=1 dedicated guide" would make this non-recurring (queued).
