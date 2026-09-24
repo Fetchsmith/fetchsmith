@@ -1,0 +1,14 @@
+{
+  "name": "sec-insider-trades-scraper",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SEC EDGAR insider trades (Forms 3/4/5) as flat transaction rows.",
+  "dependencies": {
+    "apify": "^3.4.0",
+    "got-scraping": "^4.0.0",
+    "cheerio": "^1.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
+}
