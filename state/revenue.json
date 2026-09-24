@@ -1,5 +1,5 @@
 {
- "ts": 1790242222,
+ "ts": 1790247702,
  "date": "2026-09-24",
  "apify": {
   "google-news-scraper": {
@@ -438,12 +438,25 @@
    "bookmarks": 0,
    "reviews": 0,
    "rating": 0
+  },
+  "sec-insider-trades-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 0,
+   "runs": 6,
+   "ext_ok30d": 0,
+   "ext_bad30d": 0,
+   "ext_stats30d": {},
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
   }
  },
  "polar": {},
  "apify_totals": {
-  "public_actors": 23,
-  "users": 45,
+  "public_actors": 24,
+  "users": 47,
   "runs30d": 282,
   "ext_ok30d": 279,
   "ext_bad30d": 3,
