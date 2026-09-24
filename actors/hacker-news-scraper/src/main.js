@@ -209,7 +209,12 @@ function mapHit(hit) {
 // Matches a GitHub repo reference (owner/repo) out of a URL or free text, skipping
 // GitHub's own non-repo paths (github.com/sponsors/x, /marketplace/x, etc. are not repos).
 const GITHUB_REPO_RE = /github\.com\/([A-Za-z0-9](?:[A-Za-z0-9-]){0,38})\/([A-Za-z0-9_.-]+?)(?=[/?#\s"'.)]|$)/i;
-const GITHUB_NON_REPO_OWNERS = new Set(['sponsors', 'marketplace', 'topics', 'search', 'orgs', 'settings', 'apps', 'features', 'about', 'pricing']);
+const GITHUB_NON_REPO_OWNERS = new Set([
+  'sponsors', 'marketplace', 'topics', 'search', 'orgs', 'settings', 'apps', 'features', 'about', 'pricing',
+  'blog', 'security', 'enterprise', 'readme', 'collections', 'events', 'login', 'logout', 'join', 'contact',
+  'customer-stories', 'dashboard', 'explore', 'gist', 'home', 'issues', 'new', 'notifications', 'org',
+  'pages', 'personal', 'plans', 'press', 'pulls', 'site', 'stars', 'trending', 'watching', 'account',
+]);
 const githubCache = new Map(); // ownerRepo -> enrichment fields, or null once known-missing (avoid refetching the same repo twice in one run)
 const GITHUB_LOOKUP_CAP = 200; // bound cost against GitHub's unauthenticated 60/hr rate limit
 let githubLookups = 0;
