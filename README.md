@@ -74,6 +74,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [CourtListener's court-records API needs no key — except for the one endpoint most wrapper docs point you at first](https://fetchsmith.com/blog/courtlistener-search-api-two-auth-tiers)
 - [Six public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling)
+- [One key-free API searches trademarks in 70+ offices — and its worst failure returns no HTTP status at all](https://fetchsmith.com/blog/tmview-trademark-search-api-no-key)
 
 ## Layout
 

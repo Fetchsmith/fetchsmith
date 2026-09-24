@@ -2533,3 +2533,30 @@ re-derive the same triage. If it's ever worth revisiting: teach the script to gr
 field (`type`/`dataType`/`recordType`/`postType`, whichever the Actor uses) before computing fill
 rate — that would collapse root-cause 1 to zero noise and leave only root-cause 2's genuinely-sparse
 signal, which is the one category actually worth eyeballing every time.
+
+## Cycle 732 — an edge filter that RSTs instead of 403ing is invisible to `throwHttpErrors:false`
+TMview (`www.tmdn.org/tmview/api/search/results`) drops the TCP connection when the request carries
+no `User-Agent`: measured 4 header variants x 3 attempts, `Content-Type` alone and `Content-Type +
+Accept: application/json` both give `000`/`000`/`000` (`curl: (56) Recv failure: Connection reset by
+peer`), a browser UA gives `200`/`200`/`200`. `Accept` is irrelevant. **The durable lesson is not
+"send a UA" — it is that a WAF which resets rather than 403s produces no status line at all**, so
+the `throwHttpErrors:false` + `if (res.statusCode !== 200)` pattern (the standard way to handle a
+hostile endpoint gracefully) never fires, and the socket error throws straight past it looking like
+an upstream outage. Transport failure and HTTP failure are two separate error paths; retry/rotate
+logic belongs in the `catch`, not in the status branch. Same class as this Actor's existing
+`590 UPSTREAM502` proxy case and as dev.to's silent 403 to bare `urllib`. Note `got-scraping` sends
+a browser UA by default, which is precisely why this is invisible until you reproduce the call by
+hand — a hand-rolled curl repro of a working Actor can "fail" for a reason the Actor never hits.
+
+Two smaller TMview facts worth keeping: every date is anchored at **exactly** `T12:00:00.000Z`
+(683/683 non-null values across 200 rows / 4 offices) — a deliberate choice, since midnight renders
+as the previous calendar day anywhere west of UTC; and the API spells the key `oppositionDeadLine`
+with a capital L while its siblings are `oppositionPeriodStart`/`oppositionPeriodEnd`, so a typed
+`oppositionDeadline` is `undefined` in every office and is indistinguishable from the (very real)
+"this office doesn't publish that field" case — per-office fill rates vary from 0/50 to 50/50 on the
+same field, so never conclude "field X is dead" from one office's sample.
+
+**Process note:** the task for this cycle was found by *mapping blog posts to Actors*, not by running
+another checker — all 8 static checks were clean. When the checker battery saturates, look for a
+coverage gap in a dimension nothing checks, and prefer the growth lever that has measured evidence
+behind it (cycle 730: dedicated blog guides are the only input correlated with real organic usage).
