@@ -75,6 +75,8 @@ Search US federal grant opportunities from Grants.gov's official public API — 
 ## Output (watch-mode change fields, only on a `watchChanges` re-delivery)
 `_watchChangeType` (array, one or more of `closeDate`/`docType`/`oppStatus`/`awardCeiling`/`awardFloor`/`lastUpdatedDate`/`applicantEligibilityDesc`), `_watchPrevious` (object with the previous value(s) for each changed field — `applicantEligibilityDesc`'s previous value is a fixed note, not the old text, since only a fingerprint of it is stored, not the full text)
 
+`assistURL` is Grants.gov's link to an agency's ASSIST application workspace. It is carried through verbatim from the API and is almost always empty: on a 48-opportunity live sample spanning five keyword searches and both forecast and posted rows, Grants.gov returned an empty `assistURL` and `assistCompatible: false` on every single row. The field is still emitted (as `null`) so the row shape stays stable, but do not build on it — use `url` for the public opportunity page and `attachments[].downloadUrl` for the announcement files.
+
 On a `docType: "forecast"` row, `responseDate`/`archiveDate`/`applicantEligibilityDesc`/`fundingDescLinkUrl` are `null` (a forecast has no firm deadline or eligibility writeup yet) and seven forecast-only fields are added instead: `numberOfAwards`, `estimatedFunding`, `estSynopsisPostingDate` (Grants.gov's own estimate of when the real NOFO posts), `estApplicationResponseDate`, `estAwardDate`, `estProjectStartDate`, `fiscalYear`. These are `null` on synopsis-based (posted/closed/archived) rows.
 
 ### Sample output (one real row from the example input above)

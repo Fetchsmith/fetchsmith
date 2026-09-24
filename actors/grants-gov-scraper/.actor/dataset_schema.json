@@ -248,6 +248,7 @@
       },
       "assistURL": {
         "title": "AssistURL",
+        "description": "Grants.gov ASSIST application-workspace link, passed through verbatim. Almost always null: a 48-opportunity live sample returned an empty assistURL and assistCompatible:false on every row. Use `url` for the opportunity page and `attachments[].downloadUrl` for the announcement files.",
         "type": [
           "string",
           "null"

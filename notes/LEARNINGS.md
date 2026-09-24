@@ -2457,3 +2457,37 @@ returns **0 rows** — RATING sorts highest-first, so the `maxReviewsPerApp` fet
 filters, as documented) holds only 5-star reviews. Same input with `sort=NEWEST` returns 1-2 star
 German reviews immediately. Not a defect, but the schema's `sort` description should eventually say
 so; queued.
+
+## Cycle 728 — `check-field-fill`'s 200+ flags are minable; filter to 0% and ask "is it mode-gated?"
+Since ~cycle 486 every QUALITY cycle has recorded `check-field-fill`'s output as "the usual
+informational baseline" (264, then 206 flags) and moved on. That is the wrong read: the tool was
+written for exactly the defect it keeps burying (eu-ted `deadlineDate`, 95% null, invisible to every
+other check). The baseline is large because most low-fill fields are legitimately **mode-gated** —
+`_watch*` fields only on a watch re-delivery, `sam-gov`'s wage-determination/CFDA fields only when
+`dataTypes` asks for them, `court-records`' PACER docket fields only on `recordType:dockets`,
+`grants-gov`'s seven `est*`/`fiscalYear` fields only on `docType:forecast`, `remote-jobs`'
+`descriptionHtml` only under the opt-in `includeDescription`.
+
+**Cheap method that turns the baseline into a signal:** run `--threshold 0.02` (0%-fill only, ~80
+lines not 264), then for each field grep the source for its assignment and ask whether it sits behind
+a mode/flag gate. Everything gated is explained and dismissed in seconds; whatever is *ungated and
+still 0%* is the real candidate list. On 22 Actors that reduced to exactly one field.
+
+**What it found:** `grants-gov-scraper`'s `assistURL` — mapped correctly (`detail.assistURL || null`,
+the key really does exist in `/fetchOpportunity`) but **structurally always empty upstream**. Measured
+live across 48 opportunities (5 keyword searches, forecast + posted): `assistURL` was `""` and
+`assistCompatible` was `false` on 48/48. Grants.gov's ASSIST integration is effectively dead, so we
+were advertising a dead field in the README's enriched-field list, `registry.json` and
+`dataset_schema.json` with no qualifier.
+
+**Fix shape — prefer disclosure over deletion for a dead-upstream field.** Removing the key would
+break row shape for any consumer and trip four drift checks; instead keep emitting `null` and say so
+truthfully in both README and the schema `description`, pointing buyers at the fields that do carry
+the payload (`url`, `attachments[].downloadUrl`). This is the *opposite* call from the cycle-724/725
+`salaryPeriod`/`salaryCurrency` bugs, where the value was **invented** — invented data must be
+deleted, merely-absent data must be disclosed.
+
+Also confirmed: a README-only or `dataset_schema`-only change needs `apify push --force`, NOT
+`apify-admin publish` (that is for `meta.json` title/description/seo copy). The Store page renders
+the README off the **build** record — `GET /v2/acts/<id>/builds/<buildId>` `.readme` — not off the
+act record or the version record, both of which read empty here. Verify a README ship there.
