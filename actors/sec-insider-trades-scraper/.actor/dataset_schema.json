@@ -228,8 +228,9 @@
       },
       "exercisePrice": {
         "title": "ExercisePrice",
+        "example": 224.5,
         "type": [
-          "string",
+          "number",
           "null"
         ]
       },

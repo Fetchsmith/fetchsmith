@@ -55,10 +55,13 @@ for it in items:
             if t not in props[k]["types"]: props[k]["types"].append(t)
         if v not in (None, '', [], {}) and "example" not in props[k]:
             props[k]["example"] = v if not isinstance(v, str) else v[:120]
+blind_guess = []
 for k in props:
     for t in prior_types.get(k, []):
         if t not in props[k]["types"]: props[k]["types"].append(t)
-    if not props[k]["types"]: props[k]["types"] = ['string']
+    if not props[k]["types"]:
+        props[k]["types"] = ['string']
+        blind_guess.append(k)
 for k in props:
     primary = props[k]["types"][0]
     if primary in ('array', 'object'): props[k].pop("example", None)
@@ -83,3 +86,10 @@ aj = json.load(open(f"{d}/.actor/actor.json"))
 aj["output"] = "./output_schema.json"; aj["storages"] = {"dataset": "./dataset_schema.json"}
 json.dump(aj, open(f"{d}/.actor/actor.json", 'w'), indent=2)
 print(slug, 'fields:', len(props), 'view fields:', scalar)
+if blind_guess:
+    print(f"WARNING: {len(blind_guess)} field(s) were null in EVERY sample row and have no prior "
+          f"type, so their type was guessed as 'string' by default: {blind_guess}. If the code "
+          f"actually produces a number/boolean/array for any of these on real data, this schema "
+          f"will reject that row at publish time (cycle-738 sec-insider-trades-scraper incident) "
+          f"-- check the source before trusting this schema, and re-run a wider platform sample "
+          f"to confirm before publishing.")

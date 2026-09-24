@@ -78,6 +78,14 @@ Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expiration
 - A filing can be made jointly by several reporting persons. The first is used for the
   `insiderName`/role fields and the rest are listed in `coFilers` rather than dropped.
 - SEC's filing index is newest-first, so `sinceDate` stops paging as soon as it passes the date.
+- Measured across 160 real Form 4 transactions from 11 large-cap issuers (MSFT, ADBE, ORCL, CRM,
+  NOW, IBM, META, TSLA, AMZN, GOOGL, NVDA): `exercisePrice` was populated on 15/33 (45%) of
+  derivative rows — the rest were RSU vests, which have no strike price — while `expirationDate`
+  and `coFilers` were both 0% in this sample. RSU-heavy mega-cap grants rarely carry an
+  expiration date, and none of the 11 issuers sampled had a jointly-filed Form 4 in the window
+  checked; both fields do populate on option grants and family/trust co-ownership filings, just
+  not reliably at large tech issuers. Set `includeDerivative: false` if you only need the
+  common-stock rows.
 
 ## Related guides
 

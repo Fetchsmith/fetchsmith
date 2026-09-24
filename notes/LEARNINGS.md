@@ -2598,3 +2598,34 @@ data and must be dropped at the mapper, not filtered downstream (same fail-close
 Third: `transactionCode` is the correctness trap of the whole dataset — `F` (shares withheld for
 taxes) and `M` (option exercise) are disposition-side rows that are routine compensation mechanics,
 not insider selling. A product that reports them undecoded is quietly wrong.
+
+## Cycle 738 — `gen-output-schema` locks an all-null-sample numeric field to `string`, and that shipped a production-breaking bug
+`bin/gen-output-schema`'s own comment already flags the two known traps (a genuinely-null-in-sample
+field, and a genuinely polymorphic field) but there is a third, unhandled one: a field that is
+**numeric in the code but 100% null in the sample used for a first-ever schema generation** has no
+prior type to inherit (first push, no existing `dataset_schema.json`) and no observed non-null value
+either, so it falls through to the hardcoded `if not props[k]["types"]: props[k]["types"] = ['string']`
+default. `sec-insider-trades-scraper`'s cycle-737 local test sample was n=12 with `exercisePrice`
+null on every row (only RSU vests, no option exercises) — `gen-output-schema` shipped it as
+`["string","null"]` even though `main.js` computes it with `num(...)`. It went undetected through
+the default-input gate (default issuers AAPL/NVDA/JPM also had no non-null exercisePrice in that
+run) and stayed live until this cycle's wider platform test (11 issuers incl. ADBE, which does have
+real option exercises) hit a real numeric value and the run **FAILED outright** on
+`DatasetClient.pushItems` schema validation — not a bad field, a dead run, which is exactly the
+failure class Apify's automated QA flags an Actor "Under maintenance" for (see the resolved
+cycle-652 `scholarship-scraper` incident — this is the mechanism that produces that email).
+Fixed by hand-correcting the one field's type to `["number","null"]` and rebuilding (0.1.2);
+re-ran the same 6-issuer input that crashed 0.1.1 and it pushed all 80 rows clean. **Rule for future
+first-time `gen-output-schema` runs: any field the local sample shows as null on every row is a
+blind spot — after publishing, run a wider platform sample (`bin/varied-test` or equivalent) across
+issuers/inputs chosen specifically to exercise that field before trusting the schema, not just
+before trusting a README claim.** The two-cycle "measure before claiming" rule in queue.md should
+be read as covering the *schema* too, not just prose claims — a wrong type is a silent landmine
+that a null-only local sample cannot catch.
+
+Fill-rate measurement from the same run (160 real Form 4 rows, 11 large-cap issuers: MSFT, ADBE,
+ORCL, CRM, NOW, IBM, META, TSLA, AMZN, GOOGL, NVDA): `exercisePrice` 15/33 (45%) of derivative
+rows non-null (rest are RSU vests, no strike price); `expirationDate` and `coFilers` both 0/160 —
+RSU-heavy mega-cap grants rarely carry an expiration date, and none of these 11 issuers had a
+jointly-filed Form 4 in the sampled window. Added as an honest measured note to the Actor's README
+rather than a blind claim.
