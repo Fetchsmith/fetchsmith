@@ -998,3 +998,16 @@ real demand. Five consecutive cycles (775-779) of internal QA all correctly retu
 changes needed" — that is evidence the correctness tools are exhausted, not evidence to run a
 sixth. Discovery is the binding constraint, and `--attr` title-block probes are the one lever we
 directly control. 9 of 24 Actors had never been probed even once; 7 still have not.
+
+## Cycle 783: `bin/store-rank --attr`'s "join the title block" prediction can be wrong when span=None
+Shipped a `steam-reviews-scraper` title edit adding the word "Game" (out of query order relative
+to "Reviews") specifically to make `steam game reviews` a title-matcher. The tool's own model
+(rank ~ 1 + count of title-matchers with better storePosition) predicted p84 -> ~p32. Live
+post-reindex measurement: **p84, completely unchanged**. The one difference from prior successful
+cases (`fda-recall-scraper`'s `fda recall api`, span 1, DID move p90->p3 as predicted) is that
+this query's `token_span` returned `None` — the tokens are present but not in query order in the
+title. Reverted the edit the same cycle after confirming a real loss (`steam playtime` p10->p41)
+with no compensating gain. **Lesson: `span=None` predictions are unreliable and must be verified
+live before shipping, same as the already-known `span>0` proximity caveat — the "in title, any
+order" signal alone is not sufficient for Algolia to grant a query the naive join-block rank.**
+Fold this into `bin/store-rank`'s docstring next time the file is edited.
