@@ -2934,3 +2934,37 @@ RUN_SUMMARY both written) instead of being hard-killed with nothing.
 **Cycle 771 (`remote-jobs-scraper` timeoutAt guard, closing the 5-Actor hardening series): a real-platform verification run at `timeout=60` can pass without ever exercising the guard, if the Actor's actual work is fast.** All 4 prior Actors in this series (hacker-news, app-store-reviews, google-play-reviews, steam-reviews) do up to 200 sequential per-item external calls, so `timeout=60` reliably ran into the 45s margin. `remote-jobs-scraper`'s real fetch across all 6 sources (including 20-page Himalayas pagination) took ~4 seconds wall-clock on the platform — a `timeout=60` run completed normally with all rows delivered, proving nothing about the guard. Had to drop to `timeout=46` (1s above the fixed 45s `TIME_BUDGET_MARGIN_MS`) to actually force `remainingMs() <= 0` before any source was reached. **Lesson: when platform-verifying a timeout guard, don't default to `timeout=60` — check whether the Actor's real per-run work is even slow enough to approach that margin, and if not, use `margin + a few seconds` instead.** The mid-pagination case (guard tripping after the first page instead of before any source) still needs the `timeBudgetOk()`-patched throwaway-copy technique locally, since a real platform run can't be timed precisely enough to land inside one specific loop iteration on a fast Actor.
 
 **Also cycle 771: an Actor with no existing RUN_SUMMARY/status field can still lie about a timeout — the lie is just structural instead of in a wrong branch.** `remote-jobs-scraper` (unlike the 4 reviews-scrapers) has no per-run status object at all; before the guard, a timeout mid-collection produced `0 matching rows...`/`Done. Pushed 0 results.` with zero indication anything was wrong — reading exactly like a legitimate "nothing matched today" outcome. Don't assume "no status field" means "nothing to audit" — the absence of a report is itself a report that says "everything was fine."
+
+## Cycle 772 — `check-uniqueness`'s "REAL duplicate, differing id fields: []" is its WEAKEST verdict, not its strongest
+`bin/check-uniqueness` (built cycle 764) splits candidate duplicate groups into REAL (only id-ish
+fields differ → the feed re-published one record under a new id → PPE overcharge) and AMBIGUOUS
+(a non-id field differs → needs a raw-text diff). There is a third case the split hid: a group
+where **nothing at all differs**, i.e. the rows are byte-identical across every field we emit.
+That lands in REAL with an empty differing-id list, which reads like the most damning result
+possible. It is the opposite.
+
+`fec-campaign-finance-scraper` swept clean-looking-but-flagged this cycle: 6 such groups in 300
+rows (2.33%). **All six were false positives.** A keyset-paginated raw probe of
+`api.open.fec.gov/v1/schedules/schedule_a/` on the same filter returned 300 rows with 300 distinct
+`sub_id`s and found exactly the same 6 groups — each member with its own `sub_id` AND its own
+`transaction_id`. They are real, separate transactions: the same donor giving the same small amount
+to the same committee on the same day (ActBlue recurring/earmarked micro-donations, e.g. three
+separate $2 gifts on 2024-12-31). Nothing was charged twice.
+
+The root cause was a genuine, smaller bug in the other direction: the Actor **read** `sub_id` (for
+watch-mode dedup) but never **emitted** it, so the customer could not tell the rows apart, dedup
+them, or join a row back to the FEC. Fixed by emitting `transactionId` + `subId` on all three
+transaction schedules (A/B/E), build 0.1.29.
+
+Durable rules:
+1. **An empty differing-id list means "we emit no field that separates these rows" — which can mean
+   duplicate OR mean we dropped the upstream's record id.** Always grep the Actor for the upstream
+   id (`sub_id`/`transaction_id`/`recordId`/…) before believing an overcharge. `check-uniqueness`
+   now prints this CAVEAT itself when any group lands in that subclass.
+2. **The raw probe has to reproduce the Actor's pagination or it manufactures duplicates.** The
+   first probe this cycle used `page=1,2,3` on schedule_a and produced 98 "dup groups" with
+   *identical* sub_ids — because schedule_a is keyset-paginated and silently ignores `page`, so all
+   three pages were page 1 (the Actor's own comment at `src/main.js:~491` says so, from cycle 428).
+   A raw-feed diff that disagrees with the Actor by 16x is a bug in the probe first.
+3. If an Actor consumes an upstream per-record id internally, emit it. It costs one field, it makes
+   the dataset joinable, and it makes every future uniqueness sweep on that Actor decisive.

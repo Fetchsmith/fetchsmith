@@ -430,6 +430,22 @@
           "null"
         ],
         "title": "Filed as a 24/48-hour notice"
+      },
+      "transactionId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Transaction ID (filer)",
+        "example": "SA11AI_682682199"
+      },
+      "subId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "FEC row ID (sub_id)",
+        "example": "4021120251167375831"
       }
     }
   },

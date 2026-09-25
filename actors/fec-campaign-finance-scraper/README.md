@@ -110,6 +110,7 @@ One item per itemized donor contribution:
 | `committeeId`, `committeeName` | The receiving committee. |
 | `committeeType`, `committeeDesignation` | The FEC's own committee classification, e.g. `"Super PAC (Independent Expenditure-Only)"`, `"PAC - Qualified"`, `"House"` (a candidate's principal committee) and `"Unauthorized"`/`"Principal campaign committee"`/`"Joint fundraiser"`. Straight from the FEC's own codes, not a guess — see the FAQ. |
 | `candidateId` | The committee's associated candidate, when the committee is a candidate committee (`null` for PACs/parties). |
+| `transactionId`, `subId` | The FEC's own identity for this transaction — `transactionId` is the filer's id (stable across amendments of the same transaction), `subId` is the FEC's row id. Use these to dedup or to join back to the FEC. They matter: the same donor giving the same amount twice on the same day is two real transactions that are otherwise identical row-for-row. |
 | `imageNumber`, `pdfUrl` | The FEC's own scanned-image identifier for the original filing, and a direct link to that PDF page — the primary source document behind the row. |
 
 ### Sample row, contributions mode
@@ -130,6 +131,8 @@ One item per itemized donor contribution:
   "committeeType": "Party - Qualified",
   "committeeDesignation": "Unauthorized",
   "candidateId": null,
+  "transactionId": "SA11AI_682682199",
+  "subId": "4021120251167375831",
   "imageNumber": "202609149904200417",
   "pdfUrl": "https://docquery.fec.gov/cgi-bin/fecimg/?202609149904200417"
 }
@@ -137,7 +140,7 @@ One item per itemized donor contribution:
 
 ### Disbursements mode output (Schedule B)
 
-`searchMode: "disbursements"` returns one row per payment a committee reported making, 18 fields:
+`searchMode: "disbursements"` returns one row per payment a committee reported making, 20 fields:
 
 | Field | Description |
 |---|---|
@@ -151,6 +154,7 @@ One item per itemized donor contribution:
 | `lineNumberLabel` | Which line of the form it was reported on, e.g. `Operating Expenditures`. |
 | `candidateId`, `candidateName` | The candidate the payment relates to, when the filing names one. |
 | `electionCycle` | The two-year transaction period the row belongs to. |
+| `transactionId`, `subId` | The FEC's own identity for this transaction — the filer's id and the FEC's row id. Two payments to the same vendor for the same amount on the same day are otherwise identical row-for-row. |
 | `imageNumber`, `pdfUrl` | The scanned original filing and a direct link to it. |
 
 ```json
@@ -174,7 +178,7 @@ One item per itemized donor contribution:
 
 ### Independent expenditures mode output (Schedule E)
 
-`searchMode: "independentExpenditures"` returns one row per reported independent expenditure — outside money spent for or against a candidate, not coordinated with them — 23 fields:
+`searchMode: "independentExpenditures"` returns one row per reported independent expenditure — outside money spent for or against a candidate, not coordinated with them — 25 fields:
 
 | Field | Description |
 |---|---|
@@ -191,6 +195,7 @@ One item per itemized donor contribution:
 | `officeTotalYtd` | The committee's year-to-date total spent on that office, as computed by the FEC. |
 | `electionType` | Primary/general/runoff, when supplied. |
 | `filingForm`, `isNotice` | The form it arrived on (`F24` = a 24/48-hour notice, `F3X` = a periodic report), and whether this row is such a notice. |
+| `transactionId`, `subId` | The FEC's own identity for this expenditure — the filer's id and the FEC's row id. Use them to dedup, and to tell a re-filed amendment from a second, genuinely-distinct buy. |
 | `electionCycle`, `imageNumber`, `pdfUrl` | Cycle and the original scanned filing. |
 
 ```json

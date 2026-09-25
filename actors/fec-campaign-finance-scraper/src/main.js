@@ -599,6 +599,13 @@ try {
           candidateId: c.candidate_id ?? null,
           candidateName: c.candidate_name ?? null,
           electionCycle: c.two_year_transaction_period ?? null,
+          // The FEC's own per-transaction identity. Emitted (cycle 772) because without it two
+          // legitimately-repeated transactions -- same payee, amount, date and filing -- are
+          // byte-identical in our output, so a customer cannot tell them apart, dedup them, or
+          // join a row back to the FEC. `subId` is the FEC's row id; `transactionId` is the
+          // filer's own id, stable across amendments of the same transaction.
+          transactionId: c.transaction_id ?? null,
+          subId: c.sub_id ?? null,
           imageNumber: c.image_number ?? null,
           pdfUrl: c.pdf_url ?? null,
         };
@@ -625,6 +632,8 @@ try {
           filingForm: c.filing_form ?? null,
           isNotice: c.is_notice ?? null,
           electionCycle: c.election_year ?? null,
+          transactionId: c.transaction_id ?? null,
+          subId: c.sub_id ?? null,
           imageNumber: c.image_number ?? null,
           pdfUrl: c.pdf_url ?? null,
         };
@@ -644,6 +653,8 @@ try {
           committeeName: c.committee?.name ?? null,
           ...committeeClassification(c),
           candidateId: c.candidate_id ?? c.committee?.candidate_ids?.[0] ?? null,
+          transactionId: c.transaction_id ?? null,
+          subId: c.sub_id ?? null,
           imageNumber: c.image_number ?? null,
           pdfUrl: c.pdf_url ?? null,
         };

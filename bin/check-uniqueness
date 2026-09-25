@@ -16,7 +16,9 @@ Method, and why it is NOT the shallow content key the sweep used by hand:
     - REAL DUP   -> the only fields that differ are id-ish ones (auto-detected list)
     - AMBIGUOUS  -> some non-id field differs; prints which, for a human/agent call
   Nothing is auto-fixed and nothing is auto-reported as a bug: AMBIGUOUS groups need
-  the raw-text diff step (cycle 763) before you believe them.
+  the raw-text diff step (cycle 763) before you believe them. A REAL group whose
+  differing-id list is EMPTY needs that same diff step (cycle 772) -- it can equally
+  mean the Actor never emitted the upstream's own record id; see the CAVEAT it prints.
 
 Cost: `rows` caps what we READ, not what the Actor CHARGES. Always put the Actor's
 own cap (maxResults/maxItems/...) in the input JSON -- unknown input keys are
@@ -118,10 +120,24 @@ def main():
     dup_rows = sum(len(i) - 1 for i, _ in real)
     print(f"\n== REAL duplicate groups (differ only in id-ish fields): {len(real)}"
           f"  -> {dup_rows} redundant rows = {dup_rows / len(items) * 100:.2f}% of the sample")
+    identical = [g for g in real if not g[1]]
     for idxs, differing in real[:10]:
-        print(f"  rows {idxs}  differing id fields: {differing}")
+        note = "  <- IDENTICAL on every emitted field: see the caveat below" if not differing else ""
+        print(f"  rows {idxs}  differing id fields: {differing}{note}")
         for k in sorted(set(flat[idxs[0]]) - set(id_fields))[:4]:
             print(f"     {k} = {flat[idxs[0]][k][:90]}")
+    if identical:
+        # cycle 772, fec-campaign-finance-scraper: 6 groups landed here and ALL SIX were false
+        # positives -- the rows were distinct FEC transactions with distinct sub_id/transaction_id
+        # that the Actor read (for watch dedup) but never emitted. An empty differing-id list is
+        # therefore NOT stronger evidence than a non-empty one; it is weaker, because it can also
+        # mean "we dropped the upstream's own record id", and this tool can only see what we emit.
+        print(f"  CAVEAT: {len(identical)} of those {len(real)} groups are identical on EVERY field "
+              "we emit, differing-id list empty. That is ambiguous, not conclusive: it also happens "
+              "when the Actor DROPS the upstream's per-record id. Before calling it an overcharge, "
+              "grep the Actor for the upstream id field (sub_id / transaction_id / recordId ...) and "
+              "diff the raw feed -- if upstream ids differ, these are distinct records and the real "
+              "bug is the missing id field, not double charging.")
     print(f"\n== AMBIGUOUS groups (key matched but a non-id field differs): {len(ambiguous)}")
     for idxs, differing in ambiguous[:10]:
         print(f"  rows {idxs}  differing: {differing}  <- confirm with a raw-text diff before believing it")

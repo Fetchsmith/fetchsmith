@@ -1633,6 +1633,8 @@
         "committeeType",
         "committeeDesignation",
         "imageNumber",
+        "transactionId",
+        "subId",
         "pdfUrl",
         "recipientName",
         "recipientCity",
@@ -1677,6 +1679,8 @@
         "officeTotalYtd": 112395.99,
         "filingForm": "F24",
         "isNotice": true,
+        "transactionId": "500543378",
+        "subId": "4021820261309017009",
         "pdfUrl": "https://docquery.fec.gov/cgi-bin/fecimg/?202407199661322773"
       }
     },
