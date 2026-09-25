@@ -1029,3 +1029,28 @@ against the per-source mappers, and fix with a warning line, not silence.
 (`sorted(items[0].keys())`) BEFORE choosing the keys to print. Guessed key names return all-`None` rows that are
 indistinguishable from a real data bug — hit twice this cycle (`trademarkName` not `markName`; the nested
 `site` object, not flat `facilityName`/`facilityCity`).
+
+**Cycle 785 — fleet sweep for the "filter on a field some sub-source hardcodes to null" class (item 2 from
+cycle 784), result: already closed everywhere it matters, a clean negative.** Grepped every `actors/*/src/*.js`
+for `field: null` literals, cross-referenced each hit against that Actor's `.actor/input_schema.json` filter
+properties, then read the surrounding code for the 4 real candidates:
+- `fda-recall-scraper` (press-release rows: `classification`/`status`/`state`/... all null) — already guarded:
+  `RSS_UNSUPPORTED_REASONS` (main.js:109-123) detects exactly when `classifications`/`states`/`status`/etc. are
+  set and skips press releases entirely with a warning, rather than silently returning them pre-filtered to zero.
+- `sam-gov-opportunities-scraper` (`naicsCodes`/`setAsideTypes`/`placeOfPerformanceState` null unless
+  `enrichDetail`) — not a trap: `naicsCodes`/`setAsideTypes` filters are applied as real SAM.gov API query params
+  (`naics`/`set_aside`, main.js:353-354) before the null output fields even come into play, not read from them.
+- `court-records-scraper` (`jurisdictionType`/`cause`/`chapter`/`juryDemand`/`status` null on one of the two
+  record types) — no filter reads any of these fields at all (checked the full input schema); they're a
+  documented superset-shape artifact ("Fields that only exist on one side are null on the other, never omitted",
+  main.js:422-423), not a filter target.
+- `apple-podcasts-scraper` (`explicitFilter`, RSS items sometimes lack a per-episode explicit tag) — already
+  guarded with a runtime warning (main.js:1006) when the filter is active and the fallback path was used.
+- `remote-jobs-scraper` (`jobType`/`category`/`salary*` null per-source) — no dedicated filter on these fields;
+  `searchKeyword` is a generic multi-field OR match where `category` is one of several haystack fields
+  (main.js:552), so a source lacking `category` still matches on title/company/tags — not a silent full-zero trap.
+**Conclusion: the Greenhouse bug in `ats-jobs-scraper` was the one real instance of this class in the fleet, not
+the first of several — every other multi-source Actor with the same null-literal shape had already been built
+defensively (guard/warning) or the null field was never wired to a filter in the first place.** No code changes
+this cycle. Don't re-run this exact sweep without a new Actor added or a new sub-source integrated into an
+existing one — re-grep `': null'` against the *new* code, not the whole fleet again.
