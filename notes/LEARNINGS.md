@@ -732,3 +732,16 @@ against the cycle-800 test (does the cap's own schema maximum actually reach the
   filter) AND the sort key must equal the filtered field** (or be strictly monotonic with it) so the
   excluded class forms one contiguous, unboundedly-long block at the scan's start. Neither condition
   holds for the remaining "raise the cap" Actors — sweep closed, no new fix needed.
+
+## Cycle 803: `grants-gov-scraper` — NSF only ever tags eligibility `25`/`99`, never a specific code
+`varied-test` combo `agencies:NSF+eligibilities:06` returned 0 rows. Live-swept all 17 eligibility
+codes against `agencies:NSF` directly on `api.grants.gov/v1/api/search2`: NSF opportunities carry
+ONLY eligibility `25` (Others, 72 hits) or `99` (Unrestricted, 52 hits) — every other code, including
+the intuitive `06` (public/state higher-ed institutions, NSF's actual grantee base in practice), is
+exactly 0. Confirmed not universal — `DOD-AMC+eligibilities:06` = 1 hit — so this is a real,
+agency-specific data-tagging quirk on Grants.gov's side, not a filter bug in our code. The existing
+generic zero-match warning ("agency plus eligibility often has zero real matches, drop one and
+retry") already covers this correctly; did not add a bespoke per-agency warning since it would need a
+compatibility table that goes stale as agencies change their tagging habits. Useful fact if a support
+reply ever needs to explain a `grants-gov-scraper` 0-row NSF+eligibility query: point them at `25`
+(Others) or `99` (Unrestricted) instead of a specific institution-type code.
