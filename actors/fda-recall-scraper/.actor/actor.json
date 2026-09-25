@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "fda-recall-scraper",
-  "title": "FDA Recalls Scraper \u2014 Food, Drug & Device Enforcement Reports",
+  "title": "FDA Recall Scraper API \u2014 Food, Drug, Device Enforcement Reports",
   "description": "Search and track FDA recalls \u2014 food, drug and device \u2014 from openFDA, plus an optional press-release feed up to 9 days faster. 37 fields incl. severity, a documented 0-100 riskScore (not AI), recalling firm, ISO dates, NDC/UPC/brand on drug recalls. From $0.0024/result, no start fee.",
   "version": "0.1",
   "buildTag": "latest",

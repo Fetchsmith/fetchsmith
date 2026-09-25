@@ -1,4 +1,4 @@
-# FDA Recall Scraper — Food, Drug & Device Enforcement Reports
+# FDA Recall Scraper API — Food, Drug, Device Enforcement Reports
 
 Search every US FDA product recall from the official **openFDA enforcement API** — food, drug and device — and get it back as flat, typed JSON/CSV/Excel rows.
 
