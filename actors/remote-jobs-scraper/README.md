@@ -108,6 +108,8 @@ Pay per result: you are charged once per **unique** posting pushed to the datase
 
 **What if one board is down?** The run continues with the others and logs a warning naming the failed board. You are only charged for rows you actually receive.
 
+**What if the run approaches the platform run timeout?** It stops itself short of the hard kill and pushes whatever unique postings it already collected, rather than losing the whole run to a mid-collection kill (this Actor collects and de-duplicates all six boards before pushing any row, so an unguarded timeout previously meant zero rows delivered). The closing log line gets a `(incomplete: time-budget)` suffix, and a `Board(s) not reached: ...` warning names any board the clock didn't leave time to start at all — a source missing from your results because of this is different from a source that's genuinely empty for your filters. There is no `RUN_SUMMARY` key-value record for this Actor; the log is the source of truth. If you see this, narrow the date window, lower `maxPagesPerSource`, or drop a slow `source` from the list.
+
 **Does this need a login, API key or proxy?** No. All six endpoints are public and documented, and the Actor is HTTP-only — no headless browser.
 
 **Why are Arbeitnow rows mostly German?** Arbeitnow is a European (largely German) board; only its postings flagged remote are returned here. Drop `arbeitnow` from `sources` if you want US-centric boards only.
