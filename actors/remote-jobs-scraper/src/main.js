@@ -17,6 +17,20 @@ const input = (await Actor.getInput()) ?? {};
 const UA = 'FetchSmith remote-jobs-scraper (+https://fetchsmith.com)';
 const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads', 'himalayas'];
 
+// Arbeitnow and Himalayas paginate up to `maxPagesPerSource` (max 20) sequential requests each,
+// on top of up to 6 sources and fetchJson's own 3 retry attempts per call — a slow run can
+// otherwise get hard-killed by the platform mid-collection with zero rows pushed, since pushing
+// only starts after every source has been walked (see the final loop below). Stopping early and
+// returning whatever was already collected is strictly better than that.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+  return true;
+}
+
 const SOURCE_SITE = {
   remotive: 'https://remotive.com',
   remoteok: 'https://remoteok.com',
@@ -413,6 +427,10 @@ async function fromArbeitnow() {
   const out = [];
   let url = 'https://www.arbeitnow.com/api/job-board-api';
   for (let page = 0; page < maxPagesPerSource && url; page += 1) {
+    if (!timeBudgetOk()) {
+      log.warning(`arbeitnow: approaching the run timeout — stopping pagination early at page ${page} of ${maxPagesPerSource}.`);
+      break;
+    }
     const body = await fetchJson(url);
     for (const j of body?.data ?? []) {
       // Arbeitnow is a general (mostly German) board, so keep only the remote rows —
@@ -477,6 +495,10 @@ async function fromHimalayas() {
   const out = [];
   let cursor = null;
   for (let page = 0; page < maxPagesPerSource; page += 1) {
+    if (!timeBudgetOk()) {
+      log.warning(`himalayas: approaching the run timeout — stopping pagination early at page ${page} of ${maxPagesPerSource}.`);
+      break;
+    }
     // Fixed page size (the API ignores ?limit=, verified live: always returns 20 regardless
     // of the value requested), so depth is capped purely by maxPagesPerSource like Arbeitnow.
     const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
@@ -544,9 +566,15 @@ function keep(row) {
 
 // ---------------------------------------------------------------- main
 
+const sourcesNotReached = [];
 try {
   const collected = [];
   for (const src of sources) {
+    // Checked before starting each board, not just inside the paginated ones' own loops: a run
+    // can also run low on budget between single-fetch sources (Remotive/Remote OK/Jobicy/Working
+    // Nomads), and skipping the rest here is what lets `sourcesNotReached` name the true reason
+    // instead of leaving a source silently missing with no explanation.
+    if (!timeBudgetOk()) { sourcesNotReached.push(src); continue; }
     try {
       const rows = (await FETCHERS[src]()).map(normalizeSalary);
       const kept = rows.filter(keep);
@@ -610,5 +638,13 @@ try {
   await Actor.fail(`Run failed: ${err.message}`);
 }
 
-log.info(`Done. Pushed ${pushed} results.`);
+// A timeout-triggered stop must not read like a clean, complete run — the boards named here
+// were never even queried, which is a materially different situation from "these six boards had
+// nothing matching your filters".
+if (timeBudgetExceeded) {
+  log.warning(`Approaching the run timeout — stopped collecting early. Board(s) not reached: ${
+    sourcesNotReached.length ? sourcesNotReached.join(', ') : '(all boards were started, but pagination on one or more was cut short — see warnings above)'
+  }. Narrow the input (fewer sources, or a lower "maxPagesPerSource") or raise the Actor's run timeout to see the rest.`);
+}
+log.info(`Done. Pushed ${pushed} results.${timeBudgetExceeded ? ' (incomplete: time-budget)' : ''}`);
 await Actor.exit();
