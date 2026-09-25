@@ -72,6 +72,28 @@ if (publishedAfter || publishedBefore) {
 // These operators only exist on the search endpoint. Topic sections and user-supplied RSS URLs are
 // fixed feeds, so a date filter set with only those inputs would silently do nothing — say so.
 if (timeSuffix && !queries.length) log.warning('A date filter was set but there are no search queries — it does not apply to topics or custom RSS URLs, which are fixed feeds.');
+
+// Backstop for a measured Google bug (cycle 788): `after:`/`before:` are honoured on their own, with
+// `-word` exclusions and with a positive `site:` (0 far-out-of-window items in 100 on each), but
+// combining them with a `-site:` exclusion — i.e. setting `excludeSites` together with an explicit
+// date window — makes the feed leak articles months to YEARS outside the window (7 in 100 measured,
+// incl. a 2011 item). `when:Nd` + `-site:` does not leak, so this is specific to the explicit-date
+// operators. Those rows are pay-per-result items that flatly contradict the filter the customer set,
+// so drop them before decoding/charging rather than bill for them.
+// The tolerance is deliberately a full day, not zero: Google evaluates `after:`/`before:` in its own
+// (US Pacific) timezone while `publishedAt` is UTC, so up to ~8h of legitimately in-window articles
+// sit just outside the UTC window at each edge (7-15 in 100 on every query shape, including the ones
+// with no leak at all). A zero-tolerance client-side filter would throw those away as "violations".
+const dropAfterMs = publishedAfter ? Date.parse(`${publishedAfter}T00:00:00Z`) - 86_400_000 : null;
+const dropBeforeMs = publishedBefore ? Date.parse(`${publishedBefore}T00:00:00Z`) + 86_400_000 : null;
+const enforceDates = dropAfterMs != null || dropBeforeMs != null;
+let outOfWindowDropped = 0;
+function farOutsideWindow(publishedAt) {
+  if (!enforceDates) return false;
+  const t = Date.parse(publishedAt);
+  if (!Number.isFinite(t)) return false; // unparseable pubDate: not evidence of a violation
+  return (dropAfterMs != null && t < dropAfterMs) || (dropBeforeMs != null && t >= dropBeforeMs);
+}
 // Don't double-apply if the customer already typed the operator into the query themselves.
 const hasOwnTimeOp = (q) => /\b(when|after|before):/i.test(q);
 const hl = input.language || 'en-US';
@@ -307,6 +329,9 @@ for (const feed of feeds) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     if (seen.has(it.guid)) continue; seen.add(it.guid);
     allDuped = false;
+    // Only search feeds carry our date operators; topics/custom RSS URLs are fixed feeds, and a query
+    // with the customer's own when:/after:/before: never got our suffix, so neither is ours to police.
+    if (feed.query && !hasOwnTimeOp(feed.query) && farOutsideWindow(it.publishedAt)) { outOfWindowDropped += 1; continue; }
     const url = decode ? (await decodeUrl(it.googleNewsUrl)) : null;
     let article = {};
     if (fetchBody) {
@@ -330,6 +355,10 @@ const bodyNote = fetchBody ? ` Article bodies: ${bodiesOk} extracted, ${bodiesFa
 const decodeNote = decodeRateLimited
   ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s)${decodeDisabled ? ', so decoding was switched off for the rest of the run' : ''} (url is null; googleNewsUrl still works) — Apify Proxy is already on by default; if it's off, turn it on, or reduce articles per run.`
   : decodeFailed ? ` ${decodeFailed} article URL(s) could not be decoded (url is null; googleNewsUrl still works).` : '';
+if (outOfWindowDropped) log.info(`Dropped ${outOfWindowDropped} article(s) Google returned outside the requested publishedAfter/publishedBefore window.`);
+const windowNote = outOfWindowDropped
+  ? ` Dropped ${outOfWindowDropped} article(s) that Google returned well outside your publishedAfter/publishedBefore window (a known Google quirk when a date window is combined with "Exclude these domains") — you were not charged for them.`
+  : '';
 const timeBudgetNote = timeBudgetExceeded
   ? ` Stopped before finishing all queries because the run was approaching its time limit — the ${pushed} article(s) already found are complete and charged normally; re-run with fewer queries, a lower "Max articles per query", or "Extract full article text" off to cover the rest.`
   : '';
@@ -338,13 +367,18 @@ if (pushed === 0 && feeds.length && !timeBudgetExceeded) {
     ? `the RSS request failed for: ${erroredFeeds.join(', ')} (see log for the error)`
     : dedupedFeeds.length && !emptyFeeds.length
       ? `every item found was a duplicate already returned by another query/RSS URL: ${dedupedFeeds.join(', ')}`
-      : `Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`;
-  await Actor.setStatusMessage(`No articles returned — ${why}.`);
+      : !emptyFeeds.length && outOfWindowDropped
+        // Items came back, but every one of them fell outside the requested date window. Saying
+        // "Google returned zero results" here would send the customer off to widen a query that
+        // is not the problem.
+        ? `every article Google returned fell outside your publishedAfter/publishedBefore window (try widening the dates)`
+        : `Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`;
+  await Actor.setStatusMessage(`No articles returned — ${why}.${windowNote}`);
 } else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No articles returned before the run approached its time limit.${timeBudgetNote}`);
 } else if (emptyFeeds.length || erroredFeeds.length || timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}${timeBudgetNote}`);
-} else if ((fetchBody && bodiesFailed) || decodeNote) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items.${bodyNote}${decodeNote}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}${windowNote}${timeBudgetNote}`);
+} else if ((fetchBody && bodiesFailed) || decodeNote || windowNote) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items.${bodyNote}${decodeNote}${windowNote}`);
 }
 await Actor.exit();

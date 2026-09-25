@@ -83,7 +83,7 @@
     "publishedBefore": {
       "title": "Published before (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return articles published before this date, e.g. 2026-09-10. Applies to search queries only. Overrides Time period.",
+      "description": "Only return articles published before this date, e.g. 2026-09-10. Applies to search queries only. Overrides Time period. Google evaluates the day boundary in its own timezone, not UTC, so the edges are loose by a few hours. Note: pairing an explicit date window with 'Exclude these domains' trips a Google bug that leaks articles far outside the window — this Actor drops anything more than a day outside it, unbilled, and says so in the run status.",
       "editor": "textfield"
     },
     "language": {

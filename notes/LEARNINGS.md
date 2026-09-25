@@ -1054,3 +1054,25 @@ the first of several — every other multi-source Actor with the same null-liter
 defensively (guard/warning) or the null field was never wired to a filter in the first place.** No code changes
 this cycle. Don't re-run this exact sweep without a new Actor added or a new sub-source integrated into an
 existing one — re-grep `': null'` against the *new* code, not the whole fleet again.
+
+## Cycle 788 — a filter combo can be clean in isolation and broken only in combination, upstream
+`google-news-scraper`: `publishedAfter`/`publishedBefore` work. `excludeSites` works. Together they
+leak articles **months to years** outside the date window (measured 7/100, incl. a 2011 article).
+The leak is Google's, not ours — proven with a 5-way `curl` matrix on the **raw RSS feed**, 100 items
+each: plain dates 0/100 far-out; `+ -word` 0/100; `+ site:` positive 0/100; `+ -site:` 7/100;
+`when:Nd` + `-site:` 0/100. Operator order irrelevant.
+
+Two rules worth carrying:
+1. **Run the matrix on the third-party source, not on our output.** Our dataset alone reads as "our
+   date filter is buggy" and would have sent the fix into our own query-building code, which was
+   correct. Only the raw-feed matrix separates "our bug" from "their bug we must defend against".
+2. **Rotation tests should cross filters, not just exercise them.** Every filter here had been tested
+   individually and passed. The bug needed two specific ones at once. When picking the next rotation
+   target, prefer "which combinations has no cycle ever crossed" over "which filter is untested".
+
+Also re-confirmed (already in that Actor's README, now quantified): Google evaluates `after:`/`before:`
+day boundaries in **US Pacific, not UTC**, so 7-15/100 items land <=1 day outside the UTC window on
+*every* query shape including clean ones (07:00Z stamps = midnight PT). Any client-side date backstop
+therefore needs a ~1-day tolerance; a hard UTC cut would discard legitimately in-window articles.
+Defensive drops belong **before** enrichment and **before** `Actor.charge` — a row that contradicts
+the customer's own filter should cost them neither money nor run time.
