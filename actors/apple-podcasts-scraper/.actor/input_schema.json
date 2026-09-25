@@ -135,7 +135,7 @@
     "maxEpisodesPerPodcast": {
       "title": "Max episodes per podcast",
       "type": "integer",
-      "description": "Apple's episode endpoint exposes up to 200 of the most recent episodes per show. With 'Use RSS for full archive' enabled, this can go up to 20,000 since RSS has no such cap.",
+      "description": "Apple's episode endpoint exposes up to 200 of the most recent episodes per show. With 'Use RSS for full archive' enabled, this can go up to 20,000 since RSS has no such cap. What it counts differs by source, because only one of them can be re-read: on Apple's API it is the number of recent episodes FETCHED (the API's own limit), so a date/duration/explicit filter narrows within them and cannot reach older ones; on RSS the whole feed arrives in one request, so it caps the episodes KEPT after filtering and a date window is free to match anywhere in the archive.",
       "default": 100,
       "minimum": 1,
       "maximum": 20000

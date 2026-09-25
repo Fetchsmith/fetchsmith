@@ -581,19 +581,31 @@ async function getFeedUrlOnly(id) {
 // `floorKey` identifies the podcast this batch belongs to for the watch-mode date floor: the
 // Apple show id, or the feed URL for a show pasted in as a raw RSS link (which has no id, so all
 // of them would otherwise share one floor).
-async function pushEpisodeRows(rows, floorKey) {
+// `wholeFeed` says the rows are a show's ENTIRE RSS archive, already fetched and parsed in one
+// request. There the maxEpisodesPerPodcast cap counts episodes KEPT, not episodes walked: nothing
+// is saved by stopping the walk early (the items are already in memory), and counting scanned rows
+// silently defeated the whole point of useRssForFullArchive — a date window older than the N
+// most-recent episodes returned 0 rows even though the feed held the matches (measured on the Lex
+// Fridman feed, 2026-09-25: a 2020-01..2020-06 window gave 0 rows at the default cap of 100 and 8
+// rows at 600). Apple's lookup path keeps scan semantics, because there the cap IS the API's
+// `limit` — those episodes were never fetched and cannot be reached by walking further.
+async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
   let got = 0;
+  let kept = 0;
   const floor = watchMode && !seeding ? floorFor(floorKey) : null;
   const floorMs = floor ? Date.parse(floor) : NaN;
   let oldestScanned = null; // measured BEFORE the filters: a scanned-then-discarded episode still
   // proves the walk reached that date, and the filter set is part of the watch fingerprint anyway.
+  let newestScanned = null;
   for (const row of rows) {
-    if (!keepGoing || got >= perPodcastEpisodes) break;
+    if (!keepGoing || (wholeFeed ? kept : got) >= perPodcastEpisodes) break;
     got += 1;
     const releasedMs = row.releaseDate ? Date.parse(row.releaseDate) : NaN;
     if (!Number.isNaN(releasedMs) && (oldestScanned == null || releasedMs < oldestScanned)) oldestScanned = releasedMs;
+    if (!Number.isNaN(releasedMs) && (newestScanned == null || releasedMs > newestScanned)) newestScanned = releasedMs;
     if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
     if (!episodePassesFilters(row)) continue;
+    kept += 1;
     if (watchMode) {
       const watchId = `${row.collectionId ?? 'feed'}:${row.episodeId ?? row.episodeGuid ?? row.title ?? ''}`;
       if (seeding) { watchSeen.add(watchId); continue; } // baseline: record, never push/charge
@@ -608,6 +620,17 @@ async function pushEpisodeRows(rows, floorKey) {
       continue;
     }
     keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
+  }
+  // A whole-archive walk that kept nothing under a date window is the one case where the customer
+  // can act on the answer: the feed's real coverage is now known exactly, so name it instead of
+  // leaving them to guess whether the show, the storefront or the window is wrong.
+  if (wholeFeed && kept === 0 && got > 0 && (minReleaseDate || maxReleaseDate) && oldestScanned != null) {
+    log.warning(
+      `Walked all ${got} episode(s) in this show's RSS archive and none fell inside the requested `
+      + `minReleaseDate/maxReleaseDate window. The feed itself covers `
+      + `${new Date(oldestScanned).toISOString().slice(0, 10)} to ${new Date(newestScanned).toISOString().slice(0, 10)} `
+      + `— widen the window to that range. This is the show's own published archive, not a scrape limit.`,
+    );
   }
   // Committed only for a podcast the baseline actually walked; one it never reached keeps the
   // run-wide `seedFloor` instead, which is the weaker (later) of the two and suppresses more.
@@ -652,10 +675,11 @@ async function getShowEpisodeBundle(showId) {
 async function scrapeEpisodes(id) {
   const info = includePodcastInfo ? await getPodcastInfo(id) : null;
   let rows = null;
+  let fromWholeFeed = false;
   if (rssFullArchive) {
     const feedUrl = info?.feedUrl ?? await getFeedUrlOnly(id);
     if (feedUrl) {
-      try { rows = await scrapeRssFeed(feedUrl, Number(id), info ?? { feedUrl }); }
+      try { rows = await scrapeRssFeed(feedUrl, Number(id), info ?? { feedUrl }); fromWholeFeed = true; }
       catch (e) { log.warning(`RSS full-archive fetch failed for podcast ${id} (${feedUrl}): ${e.message} — falling back to Apple's lookup API (max 200 episodes).`); }
     } else {
       log.warning(`No RSS feed URL found for podcast ${id} — falling back to Apple's lookup API (max 200 episodes).`);
@@ -669,7 +693,7 @@ async function scrapeEpisodes(id) {
     catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return { got: 0, failed: true }; }
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
-  return { got: await pushEpisodeRows(rows, String(id)), failed: false };
+  return { got: await pushEpisodeRows(rows, String(id), fromWholeFeed), failed: false };
 }
 
 // Podcast shows without an Apple presence (or with one the caller didn't bother looking up) can
@@ -697,7 +721,7 @@ async function scrapeEpisodesFromFeed(feedUrl) {
   } : null;
   const channelExplicit = parseItunesExplicit(channel.find('> itunes\\:explicit').first().text());
   const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info, channelExplicit)).get();
-  return { got: await pushEpisodeRows(rows, `feed:${feedUrl}`), failed: false };
+  return { got: await pushEpisodeRows(rows, `feed:${feedUrl}`, true), failed: false };
 }
 
 async function scrapeReviews(id) {
