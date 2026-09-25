@@ -34,6 +34,8 @@ ID_RE = re.compile(
     r"(^|_)(id|ids|uuid|guid|key|hash|url|uri|link|href|permalink|"
     r"(scraped|fetched|retrieved|crawled)_?at|timestamp|rownum)$", re.I)
 CAP_RE = re.compile(r"max|limit|count|rows|items", re.I)
+# Not excluded automatically (see the HINT below in main) -- only reported to the caller.
+SUSPECT_RE = re.compile(r"(^|_)(number|num|no|identifier|accession|code|cik|docket)$", re.I)
 
 
 def is_id_field(name, extra):
@@ -103,6 +105,20 @@ def main():
     print(f"fields: {len(names)}  treated-as-id (excluded from the key): {id_fields}")
     if len(id_fields) == len(names):
         print("NOTE: every field looks id-ish -- pass an explicit shorter extra-id list or none.")
+    # cycle 776: ID_RE deliberately does NOT match `*Number`/`*Num`/`*Identifier`, because on
+    # many feeds those are real content (episodeNumber, seasonNumber, revisionNumber) and
+    # excluding them would manufacture false REAL groups -- the same trap as created_at. But
+    # on 11 of 24 Actors they ARE the upstream record id (recallNumber, documentNumber,
+    # publicationNumber, solicitationNumber, accessionNumber, opportunityNumber...), and a
+    # per-record id left INSIDE the key silently splits every duplicate group -> a clean run
+    # that means nothing. Neither default is right, so name them and make the caller decide.
+    suspects = [n for n in names if n not in id_fields
+                and SUSPECT_RE.search(re.sub(r"(?<!^)(?=[A-Z])", "_", n.split(".")[-1]).lower())]
+    if suspects:
+        print(f"HINT: id-LOOKING fields left INSIDE the key (not auto-excluded): {suspects}. "
+              "If any is the upstream's per-record id, re-run with it in the extra-id-fields "
+              "argument -- otherwise a 0-group result proves nothing. If it is real content "
+              "(episodeNumber, seasonNumber), leave it in: excluding it fakes REAL groups.")
 
     groups = collections.defaultdict(list)
     for i, f in enumerate(flat):

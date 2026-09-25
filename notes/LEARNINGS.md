@@ -915,3 +915,31 @@ Durable rules:
    A raw-feed diff that disagrees with the Actor by 16x is a bug in the probe first.
 3. If an Actor consumes an upstream per-record id internally, emit it. It costs one field, it makes
    the dataset joinable, and it makes every future uniqueness sweep on that Actor decisive.
+
+## Cycle 776 — an id field the checker does not recognise turns a duplicate-detector into a rubber stamp
+`bin/check-uniqueness` groups rows on "the whole flattened row minus id-ish fields" and its `ID_RE`
+deliberately does NOT match `*Number`/`*Num`/`*Identifier` — correct for `episodeNumber`/`seasonNumber`,
+which are real content and would manufacture false REAL groups if excluded (same reasoning as the
+`created_at` note in the source). But **11 of 24 Actors name their upstream record id exactly that way**:
+`recallNumber`, `documentNumber`, `publicationNumber`, `solicitationNumber`, `accessionNumber`,
+`opportunityNumber`, `projectNum`, `procedureIdentifier`, `docketNumber`, `applicationNumber`,
+`registrationNumber`. A per-record id left INSIDE the grouping key gives every row a unique key, so
+**no group can ever form and the tool reports 0/0 — a clean bill of health that means nothing.**
+This is the mirror image of the cycle-772 lesson (an EMPTY differing-id list is the tool's weakest
+verdict): there the risk was a false positive, here it is a silent false negative, and the false
+negative is worse because nothing prints.
+- **The fix is not a wider regex.** Either default is wrong for some Actor, so the tool now prints a
+  `HINT: id-LOOKING fields left INSIDE the key` line naming them and stating both directions
+  (upstream id -> re-run with `extra-id-fields`; real content -> leave it in). Generalisable rule:
+  **when a heuristic cannot be right for every input, make it name what it skipped instead of
+  picking a side silently.** The caller has the per-Actor knowledge the regex never will.
+- Verified by unit-testing the classifier on 17 real field names before trusting it (positive AND
+  negative controls: `title`/`riskScore` must not flag, already-excluded `url`/`scrapedAt` must not
+  double-flag) — the standing "one deliberate positive control before an audit script is believed"
+  rule from cycle 650. Then confirmed live on `trademark-search-scraper`.
+- **Parallel `bin/check-uniqueness` calls are safe** — the slug is an argument and nothing depends on
+  the shell's persisted cwd, unlike the `apify push` race logged at cycle 774. 15 Actors (each a real
+  capped platform run) finished inside one ~25-minute cycle in batches of 4, which is what made
+  full-fleet coverage affordable at all. A full sweep is now a ~25-minute on-demand action, so the
+  right trigger is a symptom (support mail, a duplicate-rows review, a known upstream change), not a
+  standing rotation.
