@@ -225,7 +225,42 @@ TERMS = {
     # Do not re-probe: "substack export"/"substack rss"/"newsletter scraper" -- we
     # are not in the first 163/484/1000 hits at all, so no title edit reaches them.
     # "substack subscribers" already p3 without a title match; leave it alone.
-    "substack-scraper": ["substack", "substack api", "newsletter api", "substack comments"],
+    "substack-scraper": ["substack scraper", "substack api", "newsletter api", "substack comments", "substack post scraper"],
+    # cycle 781 (first --attr title-block probe ever on this Actor; 13 queries).
+    # Old title "Substack API Scraper – Full Text, Comments, Newsletter API" had
+    # "substack" and "scraper" separated by "API" -- a span-1 proximity demotion on
+    # the single most generic buyer query, "substack scraper" (779 hits, p79 despite
+    # being a naive title match). New title "Substack Scraper – Posts, Comments &
+    # Substack Newsletter API" (60/63 chars) repeats "Substack" so BOTH "substack
+    # scraper" (span0 via 1st occurrence) and "substack api"/"newsletter api" (span0/1
+    # via 2nd occurrence + trailing "Newsletter API") hold; "Full Text" evicted from
+    # title, kept in description (already present) and added "via its own newsletter
+    # API" phrase. Published (meta.json+actor.json+registry.json together) + `apify
+    # push --force` build 0.1.35, measured ~75s post-reindex (storePosition settled
+    # 49406->51411, ordinary drift, not edit-caused):
+    #   substack comments         p6  -> p1   (real win, 478 hits)
+    #   substack post scraper     p81 -> p29  (not-in-title -> in-title, 532 hits)
+    #   substack newsletter scraper p135 -> p100 (mild win, 336 hits)
+    #   newsletter api             p3  -> p3   (held, 2179 hits -- the fleet's single
+    #                                            highest-nbHits query, preserved on
+    #                                            purpose by keeping "Newsletter API"
+    #                                            contiguous at the end)
+    #   substack api               p2  -> p3   (mild loss, still page-1-tier, 745 hits)
+    #   substack scraper           p79 -> p86  (flat: fixing proximity to span0 only
+    #                                            moved us INTO the tier of ~147 naive
+    #                                            title-matchers who compete purely on
+    #                                            storePosition from there -- most of
+    #                                            that tier already had span0 too, so
+    #                                            the cycle-524 "worth ~hundreds of
+    #                                            ranks" heuristic does NOT hold for a
+    #                                            query this generic/high-competition;
+    #                                            record this as the counter-example)
+    #   newsletter scraper / substack leaderboard: unchanged (p174 / p28), as expected.
+    # Net: 1 real win, 1 near-neutral tier win, 1 trivial loss, headline query flat
+    # not improved. Ship decision: kept (net positive, no page-1-reachable query hurt),
+    # but do NOT reuse the "repeat the word to win both phrases" trick expecting a
+    # guaranteed top-of-block result on a highly generic 2-word query -- verify live,
+    # not just via local token_span=0, before counting it as a win.
     "apple-podcasts-scraper": ["apple podcasts", "podcast publishers", "podcast reviews", "podcast episodes"],
     # cycle 548 (first --attr brainstorm on this Actor; 13 queries probed). Title
     # "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers" ->

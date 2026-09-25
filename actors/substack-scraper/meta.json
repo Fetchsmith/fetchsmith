@@ -1,6 +1,6 @@
 {
-  "title": "Substack API Scraper \u2013 Full Text, Comments, Newsletter API",
-  "description": "Scrape any Substack newsletter into JSON/CSV: posts with full text, comments, or the category leaderboard itself (rank, subscriber counts, pricing), no post scraping needed. No login, no browser, no start fee. Full text from $0.002, leaderboard rows from $0.0005.",
+  "title": "Substack Scraper \u2013 Posts, Comments & Substack Newsletter API",
+  "description": "Scrape any Substack newsletter via its own newsletter API into JSON/CSV: posts with full text, comments, or the category leaderboard itself (rank, subscriber counts, pricing), no post scraping needed. No login, no browser, no start fee. Full text from $0.002, leaderboard rows from $0.0005.",
   "seoTitle": "Substack Scraper API \u2013 Posts, Text & Leaderboard",
   "seoDescription": "Scrape Substack posts, full article text, comments, and category leaderboard rankings with subscriber counts and pricing \u2014 JSON/CSV, no login required.",
   "categories": [
