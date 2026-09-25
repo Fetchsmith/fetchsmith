@@ -1011,3 +1011,21 @@ with no compensating gain. **Lesson: `span=None` predictions are unreliable and 
 live before shipping, same as the already-known `span>0` proximity caveat — the "in title, any
 order" signal alone is not sufficient for Algolia to grant a query the naive join-block rank.**
 Fold this into `bin/store-rank`'s docstring next time the file is edited.
+
+## Cycle 784 — a filter can be "correct" and still be a silent zero-rows trap (ats-jobs-scraper / Greenhouse)
+`employmentTypeKeyword` in `ats-jobs-scraper` was implemented correctly and passed every prior QA sweep, yet it
+returns **0 rows for every Greenhouse board** — because Greenhouse's public job-board API has no employment-type
+field at all, so the greenhouse mapper hardcodes `employmentType: null` and the filter drops the whole board.
+Measured live (cycle 784): `greenhouse:airbnb` 155-163 live postings -> 0 rows with `employmentTypeKeyword:"full"`,
+rows without it; the identical filter returns rows on `ashby:ramp` (`FullTime`) and `lever:leverdemo`
+(`Regular Full Time (Salary)`). This is the same failure *shape* as the cycle-408 Workday bug, but upstream-caused:
+there is no deferred-enrichment fix, only a warning + docs. Shipped as build 0.1.49 (runtime `log.warning` naming
+the company + a README "Employment type" section with the per-ATS availability map).
+**Generalizable rule:** in a multi-source Actor, every filter field that any sub-source hardcodes to `null` is a
+silent zero-rows trap for that sub-source. Correctness sweeps do not catch it (the code is right, the data is
+absent) and neither does a default-input smoke test. Find them by cross-referencing each Actor's filter list
+against the per-source mappers, and fix with a warning line, not silence.
+**Second, cheaper lesson from the same cycle:** when probing with `bin/varied-test`, dump the real output keys
+(`sorted(items[0].keys())`) BEFORE choosing the keys to print. Guessed key names return all-`None` rows that are
+indistinguishable from a real data bug — hit twice this cycle (`trademarkName` not `markName`; the nested
+`site` object, not flat `facilityName`/`facilityCity`).

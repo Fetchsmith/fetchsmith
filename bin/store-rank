@@ -261,6 +261,16 @@ TERMS = {
     # but do NOT reuse the "repeat the word to win both phrases" trick expecting a
     # guaranteed top-of-block result on a highly generic 2-word query -- verify live,
     # not just via local token_span=0, before counting it as a win.
+    # CAVEAT (cycle 783, steam-reviews-scraper): the same warning extends to the
+    # span=None shape -- a query whose tokens are ALL already in the title but not in
+    # query order. The naive model says "reorder/swap a word to join the block and you
+    # jump to the block's rank"; measured live that gain did NOT materialize
+    # ("steam game reviews", 5174 hits, predicted ~p32, stayed flat at p84) while the
+    # word swapped OUT cost a confirmed p10 -> p41 on "steam playtime". Shipped, then
+    # reverted the same cycle (build 0.1.42 restored the original title). Treat a
+    # span=None -> span=0 prediction with the same suspicion as a span>0 proximity
+    # prediction: measure live before assuming, and prefer edits that ADD a phrase
+    # over edits that EVICT one.
     "apple-podcasts-scraper": ["apple podcasts", "podcast publishers", "podcast reviews", "podcast episodes"],
     # cycle 548 (first --attr brainstorm on this Actor; 13 queries probed). Title
     # "Apple Podcasts Scraper – Episodes, Reviews, Charts & Publishers" ->

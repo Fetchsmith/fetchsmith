@@ -975,6 +975,15 @@ try {
     if (result.notFound) { notFoundCompanies.push({ ats, slug }); continue; }
     if (result.partial) partialCompanies.push({ ats, slug });
     if (result.detectedAts) log.info(`${slug} — auto-detected as ${result.detectedAts}.`);
+    // Greenhouse's board API carries no employment-type field at all, so `employmentType` is
+    // always null there and employmentTypeKeyword drops the whole board — the same silent
+    // zero-row shape as the cycle-408 Workday bug, but upstream-caused, so there is nothing to
+    // defer and nothing to fix: say so. Measured cycle 784: airbnb 163 postings -> 0 rows.
+    if (employmentTypeKeyword && (result.detectedAts ?? ats) === 'greenhouse') {
+      log.warning(`greenhouse:${slug} — Greenhouse boards do not publish employment type, so`
+        + ` employmentTypeKeyword ("${employmentTypeKeyword}") drops every posting on this board.`
+        + ' Use titleKeyword/descriptionKeyword for Greenhouse companies instead.');
+    }
     let scannedForCompany = 0;
     let deliveredForCompany = 0;
     for (const job of result.jobs) {
