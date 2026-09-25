@@ -113,7 +113,7 @@
     "status": {
       "title": "Recall status",
       "type": "string",
-      "description": "Filter by FDA recall status. Leave empty for all.",
+      "description": "Filter by FDA recall status. Leave empty for all. \"Pending\" is a value in FDA's own status vocabulary but has never appeared in openFDA's enforcement data for any product type (verified 2026-09-25) -- expect zero rows if you select it; it's offered only because FDA defines it.",
       "editor": "select",
       "enum": ["", "Ongoing", "Completed", "Terminated", "Pending"],
       "enumTitles": ["All statuses", "Ongoing", "Completed", "Terminated", "Pending"],

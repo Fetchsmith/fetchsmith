@@ -39,6 +39,14 @@ const recallNumber = String(input.recallNumber ?? '').trim();
 const eventId = String(input.eventId ?? '').trim();
 const searchQuery = String(input.searchQuery ?? '').trim();
 const status = String(input.status ?? '').trim();
+if (status === 'Pending') {
+    log.warning(
+        'status "Pending" is a value in FDA\'s recall-status vocabulary but has never appeared in openFDA\'s '
+        + 'enforcement data for any product type (verified live against food/drug/device 2026-09-25, 0 of '
+        + '~80,000 records) -- this run will almost certainly return zero rows. Use "Ongoing", "Completed" or '
+        + '"Terminated", or leave the filter empty.',
+    );
+}
 const recallingFirm = String(input.recallingFirm ?? '').trim();
 const city = String(input.city ?? '').trim();
 // Drug-only cross-referenced fields (see the openfda comment near normalize() below) --

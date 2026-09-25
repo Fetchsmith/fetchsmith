@@ -32,7 +32,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `countries` | array | Country names of the **recalling firm**, exactly as FDA writes them (`United States`, `Canada`, `Israel`, ...). Most recalls are US firms; foreign firms whose products entered the US market show up too. Empty = all. |
 | `recallNumber` | string | Look up one recall by its exact FDA recall number, e.g. `F-1233-2022`. Overrides every filter above except `productTypes`, and automatically searches full history regardless of `reportDateFrom`/`reportDateTo`. |
 | `eventId` | string | Look up every product recalled under one FDA event ID, e.g. `90105` (one event can cover several products, each its own row). Same override/full-history behaviour as `recallNumber`. |
-| `status` | string | `Ongoing`, `Completed`, `Terminated`, `Pending`. Empty = all. |
+| `status` | string | `Ongoing`, `Completed`, `Terminated`, `Pending`. Empty = all. `Pending` is in FDA's own vocabulary but has never appeared in openFDA's enforcement data (verified 2026-09-25) — expect zero rows if you select it. |
 | `recallingFirm` | string | Filter to one firm, e.g. `Tyson Foods`. Narrower than `searchQuery`, which also matches product description and recall reason. |
 | `city` | string | Filter to recalls whose recalling firm is in this city, e.g. `Chicago`. |
 | `brandName` | string | **Drug recalls only.** Filter by drug brand name, e.g. `Nurtec`. openFDA only cross-references brand/generic/manufacturer name for drug recalls — food and device recalls never match these three filters. |
