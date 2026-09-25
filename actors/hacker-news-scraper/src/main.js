@@ -3,6 +3,21 @@ import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
+// A run with many queries and enrichGithubLinks on does up to GITHUB_LOOKUP_CAP sequential
+// per-item GitHub calls nested inside a per-query outer loop -- the same compounding-latency
+// shape as the google-news-scraper timeout bug. Getting hard-killed there returns nothing to
+// the customer even though partial results already exist in the dataset. Stop proactively with
+// a safety margin and flush what's collected instead (pattern mirrored from google-news-scraper).
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+  return true;
+}
 const input = (await Actor.getInput()) ?? {};
 
 const queries = (input.queries ?? []).map((q) => String(q).trim()).filter((q) => q.length);
@@ -351,7 +366,7 @@ const summaryFor = (query) => ({
 for (const query of queries) {
   const querySummary = summaryFor(query);
   summaries.push(querySummary);
-  if (!keepGoing) continue; // keep walking so every unsearched query gets a `notReached` record
+  if (!keepGoing || timeBudgetExceeded) continue; // keep walking so every unsearched query gets a `notReached` record
   let page = 0;
   let fetched = 0;
   let requestFailed = false;
@@ -404,7 +419,8 @@ for (const query of queries) {
   // governs what's actually delivered and charged.
   const queryCap = Math.min(watchMode ? SEED_CAP : maxItemsPerQuery, ALGOLIA_MAX_HITS);
   querySummary.scanCap = queryCap;
-  while (keepGoing && fetched < queryCap) {
+  while (keepGoing && !timeBudgetExceeded && fetched < queryCap) {
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
     if (query) url.searchParams.set('query', query);
     if (wantTags) url.searchParams.set('tags', wantTags);
@@ -464,7 +480,10 @@ for (const query of queries) {
       // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
       // would only starve the rows that actually get returned.
       const willDeliver = !(watchMode && (seeding || watchSeen.has(String(hit.objectID))));
-      if (enrichGithubLinks && willDeliver) await enrichGithub(mapped);
+      if (enrichGithubLinks && willDeliver) {
+        if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+        await enrichGithub(mapped);
+      }
       keepGoing = await pushResult(mapped, hit.objectID);
       if (!keepGoing) break;
     }
@@ -494,6 +513,7 @@ for (const query of queries) {
     const declared = querySummary.declaredMatches;
     if (querySummary.hitPaginationCeiling) querySummary.incompleteReason = 'algolia-pagination-ceiling';
     else if (fetched >= queryCap && (declared == null || declared > fetched)) querySummary.incompleteReason = watchMode ? 'seed-cap' : 'max-items-per-query';
+    else if (timeBudgetExceeded) querySummary.incompleteReason = 'time-budget';
     else if (!keepGoing) querySummary.incompleteReason = pushed >= maxResults ? 'max-results' : 'charge-limit';
     else if (declared != null && declared > fetched) querySummary.incompleteReason = 'scan-short-of-declared';
     querySummary.complete = querySummary.incompleteReason == null;
@@ -509,7 +529,7 @@ const notFoundUsers = [];
 const erroredUsers = [];
 const notReachedUsers = []; // the run stopped before we looked these up -- say so, don't just omit them
 for (const username of usernames) {
-  if (!keepGoing) { notReachedUsers.push(username); continue; }
+  if (!keepGoing || !timeBudgetOk()) { notReachedUsers.push(username); continue; }
   let data;
   try {
     const res = await gotScraping({
@@ -587,9 +607,9 @@ for (const s of truncatedSummaries) {
 if (notReachedSummaries.length || notReachedUsers.length) {
   log.warning(
     `The run stopped before ${notReachedSummaries.length} query/queries${notReachedUsers.length ? ` and ${notReachedUsers.length} username(s)` : ''} `
-    + `were searched at all (${pushed >= maxResults ? `maxResults ${maxResults} reached` : 'charge limit reached'}): `
+    + `were searched at all (${timeBudgetExceeded ? 'approaching the run timeout' : pushed >= maxResults ? `maxResults ${maxResults} reached` : 'charge limit reached'}): `
     + `${[...notReachedSummaries.map((s) => `"${s.query ?? '<empty>'}"`), ...notReachedUsers].join(', ')}. `
-    + 'Raise maxResults (or the charge limit) to cover them, or run them separately.',
+    + (timeBudgetExceeded ? 'Narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) so the run finishes within the platform timeout, or run them separately.' : 'Raise maxResults (or the charge limit) to cover them, or run them separately.'),
   );
 }
 
@@ -603,6 +623,7 @@ await Actor.setValue('RUN_SUMMARY', {
   maxResults,
   paginationCeiling: ALGOLIA_MAX_HITS,
   complete: truncatedSummaries.length === 0 && notReachedSummaries.length === 0 && notReachedUsers.length === 0,
+  timeBudgetExceeded,
   queries: summaries,
   queriesIncomplete: truncatedSummaries.length,
   queriesNotReached: notReachedSummaries.length,
@@ -668,6 +689,7 @@ if (pushed === 0 && watchMode && !seeding) {
   if (excluded) reasons.push(`excludeKeywords (${excludeKeywords.join(', ')}) removed all ${excluded} otherwise-matching item(s)`);
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
+  if (timeBudgetExceeded) reasons.push('the run stopped early, approaching the platform run timeout, before any result could be delivered — narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) and try again');
   await Actor.setStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`);
 } else if (emptyQueries.length || notFoundUsers.length || truncatedSummaries.length || notReachedSummaries.length || notReachedUsers.length) {
   // Until cycle 643 this branch fired ONLY on emptyQueries/notFoundUsers, so a run that
@@ -687,7 +709,7 @@ if (pushed === 0 && watchMode && !seeding) {
   }
   if (notReachedSummaries.length || notReachedUsers.length) {
     notes.push(
-      `the run stopped at ${pushed >= maxResults ? `maxResults=${maxResults}` : 'the charge limit'} before `
+      `the run stopped at ${timeBudgetExceeded ? 'the platform run timeout' : pushed >= maxResults ? `maxResults=${maxResults}` : 'the charge limit'} before `
       + `${notReachedSummaries.length} query/queries${notReachedUsers.length ? ` and ${notReachedUsers.length} username(s)` : ''} were searched at all`,
     );
   }
