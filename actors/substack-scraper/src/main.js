@@ -530,9 +530,25 @@ function mapLeaderboardEntry(e) {
   };
 }
 
+// publicationUrls carries a schema default (the sample "astralcodexten" publication) so Apify's
+// automated {} Store test still returns rows (PLAYBOOK step 4c). The platform auto-fills that
+// same default array whenever a caller sets discoverCategories and never touches publicationUrls
+// at all — which used to mean the sample publication got silently scraped and billed alongside
+// the discovered ones. Drop it in that one case; a caller who really wants both can just list the
+// sample publication in publicationUrls explicitly (any form other than the exact default string).
+const DEFAULT_PUBLICATION_URLS = ['https://astralcodexten.substack.com'];
+const rawPublicationUrls = input.publicationUrls ?? [];
+const publicationUrlsIsUntouchedDefault = discoverCategories.length > 0
+  && rawPublicationUrls.length === DEFAULT_PUBLICATION_URLS.length
+  && rawPublicationUrls.every((u, i) => String(u) === DEFAULT_PUBLICATION_URLS[i]);
+if (publicationUrlsIsUntouchedDefault) {
+  log.info('discoverCategories is set and publicationUrls was left at its default sample publication — scraping only the discovered publications, not the sample.');
+}
+const effectivePublicationUrls = publicationUrlsIsUntouchedDefault ? [] : rawPublicationUrls;
+
 const publicationTargets = [];
 const postTargets = [];
-for (const raw of input.publicationUrls ?? []) {
+for (const raw of effectivePublicationUrls) {
   const t = parseTarget(raw);
   if (t) (t.postSlug ? postTargets : publicationTargets).push(t);
 }

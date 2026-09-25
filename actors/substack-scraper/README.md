@@ -31,7 +31,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 |---|---|---|---|
 | `publicationUrls` | array | — | Publications to scrape: `astralcodexten`, `astralcodexten.substack.com`, or `https://www.bigtechnology.com`. |
 | `postUrls` | array | — | Individual post URLs (`https://.../p/some-slug`). |
-| `discoverCategories` | array | `[]` | **Start from a topic, not a URL list.** Substack category slugs (`technology`, `business`, `finance`, `culture`, `us-politics`, `food`, …, plus subcategory slugs). Publications come back in Substack's own leaderboard order. |
+| `discoverCategories` | array | `[]` | **Start from a topic, not a URL list.** Substack category slugs (`technology`, `business`, `finance`, `culture`, `us-politics`, `food`, …, plus subcategory slugs). Publications come back in Substack's own leaderboard order. If you set this and leave `publicationUrls` untouched, only the discovered publications are scraped — the sample publication in `publicationUrls`'s default is not scraped and not charged. |
 | `maxPublicationsPerCategory` | integer | `10` | How many top publications to take from each discovered category. |
 | `discoverType` | string | `all` | Restrict discovery to `newsletter` or `podcast` publications. |
 | `leaderboardTier` | string | `all` | Which leaderboard ranking `discoverCategories` reads from: `all` (overall), `free`, or `paid`. |
