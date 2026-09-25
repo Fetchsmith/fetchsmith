@@ -28,6 +28,9 @@ function haveTime() {
 const maxResults = Math.min(Number(input.maxResults ?? 100), 5000);
 const maxFilingsPerIssuer = Math.min(Number(input.maxFilingsPerIssuer ?? 20), 200);
 const includeDerivative = input.includeDerivative !== false;
+// Opt-in (default off) so an existing Form 4 caller's row count -- and therefore their
+// bill -- does not change: Form 4s often carry holdings rows alongside the transactions.
+const includeHoldings = input.includeHoldings === true;
 const sinceDate = typeof input.sinceDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input.sinceDate)
   ? input.sinceDate : null;
 const formTypes = Array.isArray(input.formTypes) && input.formTypes.length
@@ -147,19 +150,28 @@ function rowsFromXml(xml, ctx) {
     return seen.length ? seen.join(' ') : null;
   };
 
-  const selectors = ['nonDerivativeTable > nonDerivativeTransaction'];
-  if (includeDerivative) selectors.push('derivativeTable > derivativeTransaction');
+  // A Form 3 (and the holdings section of a Form 4/5) carries only *Holding elements —
+  // no transaction is ever reported there — so without includeHoldings a Form-3-only run
+  // returns exactly zero rows even though the position data is sitting in the same XML.
+  const selectors = [{ sel: 'nonDerivativeTable > nonDerivativeTransaction', derivative: false, holding: false }];
+  if (includeDerivative) selectors.push({ sel: 'derivativeTable > derivativeTransaction', derivative: true, holding: false });
+  if (includeHoldings) {
+    selectors.push({ sel: 'nonDerivativeTable > nonDerivativeHolding', derivative: false, holding: true });
+    if (includeDerivative) selectors.push({ sel: 'derivativeTable > derivativeHolding', derivative: true, holding: true });
+  }
 
   const rows = [];
-  for (const sel of selectors) {
-    const derivative = sel.startsWith('derivative');
+  for (const { sel, derivative, holding } of selectors) {
     doc.find(sel).each((idx, tx) => {
-      const code = val($, tx, 'transactionCoding > transactionCode');
-      const shares = num(val($, tx, 'transactionAmounts > transactionShares'));
-      const price = num(val($, tx, 'transactionAmounts > transactionPricePerShare'));
-      const acqDisp = val($, tx, 'transactionAcquiredDisposedCode');
+      // Holdings have no transactionCoding/transactionAmounts block at all: leaving these
+      // null (rather than 0) keeps "no trade was reported" distinct from "traded at $0".
+      const code = holding ? null : val($, tx, 'transactionCoding > transactionCode');
+      const shares = holding ? null : num(val($, tx, 'transactionAmounts > transactionShares'));
+      const price = holding ? null : num(val($, tx, 'transactionAmounts > transactionPricePerShare'));
+      const acqDisp = holding ? null : val($, tx, 'transactionAcquiredDisposedCode');
       rows.push({
-        id: `${ctx.accessionNumber}-${derivative ? 'd' : 'n'}${idx}`,
+        id: `${ctx.accessionNumber}-${derivative ? 'd' : 'n'}${holding ? 'h' : ''}${idx}`,
+        rowType: holding ? 'holding' : 'transaction',
         accessionNumber: ctx.accessionNumber,
         formType: documentType,
         filingDate: ctx.filingDate,
@@ -196,6 +208,14 @@ function rowsFromXml(xml, ctx) {
     });
   }
   return rows;
+}
+
+// Form 3 is a holdings snapshot: it never contains a transaction element, so asking for it
+// without includeHoldings can only ever return zero rows. Say so up front rather than
+// letting the buyer read "no transaction rows" once per filing and assume the feed is empty.
+if (formTypes.includes('3') && !includeHoldings) {
+  log.warning('formTypes includes "3" but includeHoldings is off: Form 3 filings report holdings '
+    + 'only (no transactions), so they will yield 0 rows. Enable includeHoldings to get those positions.');
 }
 
 try {

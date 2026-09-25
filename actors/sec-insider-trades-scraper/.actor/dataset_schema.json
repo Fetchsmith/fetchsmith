@@ -5,7 +5,15 @@
     "properties": {
       "id": {
         "title": "Id",
-        "example": "0001140361-26-037020-n0",
+        "example": "0001140361-26-037584-n0",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "rowType": {
+        "title": "RowType",
+        "example": "transaction",
         "type": [
           "string",
           "null"
@@ -13,7 +21,7 @@
       },
       "accessionNumber": {
         "title": "AccessionNumber",
-        "example": "0001140361-26-037020",
+        "example": "0001140361-26-037584",
         "type": [
           "string",
           "null"
@@ -29,7 +37,7 @@
       },
       "filingDate": {
         "title": "FilingDate",
-        "example": "2026-09-17",
+        "example": "2026-09-24",
         "type": [
           "string",
           "null"
@@ -37,7 +45,7 @@
       },
       "periodOfReport": {
         "title": "PeriodOfReport",
-        "example": "2026-09-15",
+        "example": "2026-09-22",
         "type": [
           "string",
           "null"
@@ -148,7 +156,7 @@
       },
       "transactionDate": {
         "title": "TransactionDate",
-        "example": "2026-09-15",
+        "example": "2026-09-22",
         "type": [
           "string",
           "null"
@@ -180,7 +188,7 @@
       },
       "shares": {
         "title": "Shares",
-        "example": 1438,
+        "example": 2399,
         "type": [
           "number",
           "null"
@@ -188,7 +196,7 @@
       },
       "pricePerShare": {
         "title": "PricePerShare",
-        "example": 330.19,
+        "example": 340.06,
         "type": [
           "number",
           "null"
@@ -196,7 +204,7 @@
       },
       "transactionValueUsd": {
         "title": "TransactionValueUsd",
-        "example": -474813.22,
+        "example": -815803.94,
         "type": [
           "number",
           "null"
@@ -204,7 +212,7 @@
       },
       "sharesOwnedAfter": {
         "title": "SharesOwnedAfter",
-        "example": 32914,
+        "example": 44391,
         "type": [
           "number",
           "null"
@@ -228,7 +236,6 @@
       },
       "exercisePrice": {
         "title": "ExercisePrice",
-        "example": 224.5,
         "type": [
           "number",
           "null"
@@ -275,7 +282,7 @@
       },
       "filingUrl": {
         "title": "FilingUrl",
-        "example": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037020/form4.xml",
+        "example": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037584/form4.xml",
         "type": [
           "string",
           "null"
@@ -283,7 +290,7 @@
       },
       "url": {
         "title": "Url",
-        "example": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037020/0001140361-26-037020-index.htm",
+        "example": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037584/0001140361-26-037584-index.htm",
         "type": [
           "string",
           "null"
@@ -297,6 +304,7 @@
       "transformation": {
         "fields": [
           "id",
+          "rowType",
           "accessionNumber",
           "formType",
           "filingDate",
@@ -304,8 +312,7 @@
           "issuerName",
           "issuerCik",
           "ticker",
-          "insiderName",
-          "insiderCik"
+          "insiderName"
         ]
       },
       "display": {
@@ -313,6 +320,10 @@
         "properties": {
           "id": {
             "label": "Id",
+            "format": "text"
+          },
+          "rowType": {
+            "label": "RowType",
             "format": "text"
           },
           "accessionNumber": {
@@ -345,10 +356,6 @@
           },
           "insiderName": {
             "label": "InsiderName",
-            "format": "text"
-          },
-          "insiderCik": {
-            "label": "InsiderCik",
             "format": "text"
           }
         }

@@ -1,60 +1,81 @@
 {
-    "title": "SEC Insider Trades Scraper input",
-    "type": "object",
-    "schemaVersion": 1,
-    "properties": {
-        "issuers": {
-            "title": "Companies (tickers or CIKs)",
-            "type": "array",
-            "description": "Ticker symbols (AAPL, NVDA) or raw SEC CIK numbers (320193). Tickers are resolved against SEC's own official ticker->CIK map, so a ticker that SEC does not list is skipped with a warning rather than silently returning nothing.",
-            "editor": "stringList",
-            "default": ["AAPL", "NVDA", "JPM"],
-            "prefill": ["AAPL", "NVDA", "JPM"]
-        },
-        "formTypes": {
-            "title": "Ownership form types",
-            "type": "array",
-            "description": "Form 4 is the one that matters for trade signals (a transaction reported within 2 business days). Form 3 is an initial statement of holdings and Form 5 is an annual catch-up; both are mostly holdings rather than open-market trades, so a Form 3 filing often yields zero transaction rows.",
-            "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": ["3", "4", "5"],
-                "enumTitles": [
-                    "Form 3 - initial statement of ownership",
-                    "Form 4 - changes in ownership (insider trades)",
-                    "Form 5 - annual statement"
-                ]
-            },
-            "default": ["4"]
-        },
-        "sinceDate": {
-            "title": "Only filings on/after this date",
-            "type": "string",
-            "description": "YYYY-MM-DD. Leave empty for no lower bound. SEC's filing index is newest-first, so this stops paging as soon as it passes the date.",
-            "editor": "textfield",
-            "default": ""
-        },
-        "maxFilingsPerIssuer": {
-            "title": "Max filings per company",
-            "type": "integer",
-            "description": "How many matching ownership filings to open per company. One filing usually yields 1-4 transaction rows.",
-            "default": 20,
-            "minimum": 1,
-            "maximum": 200
-        },
-        "includeDerivative": {
-            "title": "Include derivative transactions",
-            "type": "boolean",
-            "description": "Derivative rows are options, RSUs and convertible securities (with exercise price, expiration and underlying share count). Turn off to get only the non-derivative common-stock rows.",
-            "default": true
-        },
-        "maxResults": {
-            "title": "Max results",
-            "type": "integer",
-            "description": "Hard cap on transaction rows returned (and therefore on what you are charged).",
-            "default": 100,
-            "minimum": 1,
-            "maximum": 5000
-        }
+  "title": "SEC Insider Trades Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "issuers": {
+      "title": "Companies (tickers or CIKs)",
+      "type": "array",
+      "description": "Ticker symbols (AAPL, NVDA) or raw SEC CIK numbers (320193). Tickers are resolved against SEC's own official ticker->CIK map, so a ticker that SEC does not list is skipped with a warning rather than silently returning nothing.",
+      "editor": "stringList",
+      "default": [
+        "AAPL",
+        "NVDA",
+        "JPM"
+      ],
+      "prefill": [
+        "AAPL",
+        "NVDA",
+        "JPM"
+      ]
+    },
+    "formTypes": {
+      "title": "Ownership form types",
+      "type": "array",
+      "description": "Form 4 is the one that matters for trade signals (a transaction reported within 2 business days). Form 5 is an annual catch-up and does carry real transactions. Form 3 is an initial statement of holdings and contains no transaction at all, so selecting it returns zero rows unless you also turn on includeHoldings below.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "3",
+          "4",
+          "5"
+        ],
+        "enumTitles": [
+          "Form 3 - initial statement of ownership",
+          "Form 4 - changes in ownership (insider trades)",
+          "Form 5 - annual statement"
+        ]
+      },
+      "default": [
+        "4"
+      ]
+    },
+    "sinceDate": {
+      "title": "Only filings on/after this date",
+      "type": "string",
+      "description": "YYYY-MM-DD. Leave empty for no lower bound. SEC's filing index is newest-first, so this stops paging as soon as it passes the date.",
+      "editor": "textfield",
+      "default": ""
+    },
+    "maxFilingsPerIssuer": {
+      "title": "Max filings per company",
+      "type": "integer",
+      "description": "How many matching ownership filings to open per company. One filing usually yields 1-4 transaction rows.",
+      "default": 20,
+      "minimum": 1,
+      "maximum": 200
+    },
+    "includeDerivative": {
+      "title": "Include derivative transactions",
+      "type": "boolean",
+      "description": "Derivative rows are options, RSUs and convertible securities (with exercise price, expiration and underlying share count). Turn off to get only the non-derivative common-stock rows.",
+      "default": true
+    },
+    "includeHoldings": {
+      "title": "Include holdings rows (Form 3 positions)",
+      "type": "boolean",
+      "description": "Off by default. Form 3 (and the holdings section of a Form 4/5) reports a position the insider *holds*, not a trade, so with this off a Form 3 filing yields zero rows. Turn it on to also get those positions as rows with rowType \"holding\" — transactionDate/transactionCode/shares/pricePerShare are null on them and sharesOwnedAfter carries the reported position. Leaving it off keeps Form 4 output (and your bill) unchanged.",
+      "default": false,
+      "editor": "checkbox"
+    },
+    "maxResults": {
+      "title": "Max results",
+      "type": "integer",
+      "description": "Hard cap on transaction rows returned (and therefore on what you are charged).",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
     }
+  }
 }

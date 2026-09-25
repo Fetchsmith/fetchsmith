@@ -29,7 +29,7 @@ returning nothing.
 
 ## Output fields
 
-`id`, `accessionNumber`, `formType`, `filingDate`, `periodOfReport`, `issuerName`, `issuerCik`,
+`id`, `rowType`, `accessionNumber`, `formType`, `filingDate`, `periodOfReport`, `issuerName`, `issuerCik`,
 `ticker`, `insiderName`, `insiderCik`, `isDirector`, `isOfficer`, `isTenPercentOwner`, `isOther`,
 `officerTitle`, `coFilers`, `derivative`, `securityTitle`, `transactionDate`, `transactionCode`,
 `transactionCodeMeaning`, `acquiredOrDisposed`, `shares`, `pricePerShare`, `transactionValueUsd`,
@@ -40,6 +40,22 @@ returning nothing.
 Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expirationDate`,
 `underlyingSecurityTitle` and `underlyingShares`; non-derivative common-stock rows leave them
 `null`. Set `includeDerivative: false` to get common stock only.
+
+### Holdings rows (`includeHoldings`, off by default)
+
+A Form 3 — and the holdings section of a Form 4/5 — reports a position the insider *holds*, not a
+trade, and SEC files those in separate `<nonDerivativeHolding>`/`<derivativeHolding>` elements. With
+`includeHoldings` off (the default) they are skipped, which means **a Form-3-only run returns zero
+rows**; the Actor now warns about exactly that at the top of the run instead of leaving you to guess.
+
+Set `includeHoldings: true` to get them as extra rows with `rowType: "holding"` (transaction rows are
+`rowType: "transaction"`). On a holding row `transactionDate`, `transactionCode`,
+`transactionCodeMeaning`, `acquiredOrDisposed`, `shares`, `pricePerShare` and `transactionValueUsd`
+are `null` — there is no trade to report — and the position is in `sharesOwnedAfter` for common stock
+or in `underlyingShares` for a derivative holding such as an RSU award (measured on Apple's
+September 2026 Form 3s: 1 non-derivative + 7 derivative holding rows per filing, each with the full
+vesting schedule in `footnotes`). It is opt-in so that an existing Form 4 caller's row count — and
+therefore their bill — does not change.
 
 ### Sample row
 
@@ -72,9 +88,11 @@ Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expiration
 
 ## Notes on the source
 
-- Form 3 is an **initial** statement of holdings and Form 5 an annual catch-up; both are largely
-  holdings rather than open-market trades, so a Form 3 often yields **zero transaction rows**.
-  That is the filing, not a bug.
+- Form 3 is an **initial** statement of holdings and Form 5 an annual catch-up. A Form 3 never
+  contains a transaction element at all (verified across Apple's four most recent Form 3s: 0
+  transactions, 1–2 non-derivative and 2–7 derivative holdings each), so with the default
+  `includeHoldings: false` a Form-3-only run yields **zero rows** — turn `includeHoldings` on to
+  get those positions. Form 5 does carry real transactions.
 - A filing can be made jointly by several reporting persons. The first is used for the
   `insiderName`/role fields and the rest are listed in `coFilers` rather than dropped.
 - SEC's filing index is newest-first, so `sinceDate` stops paging as soon as it passes the date.

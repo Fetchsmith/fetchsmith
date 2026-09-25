@@ -667,3 +667,23 @@ Two related invariants worth preserving whenever you touch this shape:
 - A 0-row answer from a filter is only actionable if the run says **what range the data actually covered**. The whole archive was in memory anyway, so reporting the feed's real first/last dates costs nothing and turns "no results" into "widen your window to X..Y".
 
 How it was found: the standard QUALITY-cycle `varied-test` combo pass, on the first combo tried. Stripping filters one at a time until the 0 rows persisted, then re-running the *identical* input with only the cap raised, is what separated "a filter is wrong" from "the cap is the wrong kind of cap" — worth doing before reading any code.
+
+## Cycle 796 — an input enum value that CANNOT return a row is a product gap, not a doc nit
+`sec-insider-trades-scraper` offered `formTypes: ["3","4","5"]`, but a Form 3 filing contains
+**no transaction element at all** (verified on AAPL's 4 most recent Form 3s: 0 `<nonDerivativeTransaction>`
+/ 0 `<derivativeTransaction>`, but 1-2 `<nonDerivativeHolding>` and 2-7 `<derivativeHolding>` each).
+The Actor only selected `*Transaction`, so `formTypes:["3"]` returned exactly 0 rows — always, for
+everyone, since publication — while the data the buyer wanted sat unparsed in the same XML.
+Generalizable check: **for every input enum of source/document/record types, confirm each value has
+been observed to return >0 rows at least once.** A value that cannot is one of three things — parse
+the missing shape (best), warn at run start, or remove it from the enum. Never just soften the README
+("often yields zero"), which is what hid this one.
+Two corollaries worth reusing:
+- **Adding rows to an existing output shape is a billing change on a PPE Actor.** Holdings rows were
+  21 of 41 on a mixed Form 4/3/5 run, and Form 4s carry them too, so defaulting the new parse ON would
+  have roughly doubled an existing caller's bill for input they never changed. Ship it opt-in
+  (`includeHoldings`, default false) and verify the default path is byte-identical — including the
+  platform `{}` Store-test gate.
+- **Check a suspicious 0/null against the raw source before calling it a parse bug.** Two rows came
+  back `pricePerShare: 0`; SEC's own XML says `<value>0.0</value>` for that grant and option exercise.
+  The helper already maps a genuinely empty element to `null`, so 0 vs null was carrying real meaning.
