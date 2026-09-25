@@ -652,3 +652,18 @@ day boundaries in **US Pacific, not UTC**, so 7-15/100 items land <=1 day outsid
 therefore needs a ~1-day tolerance; a hard UTC cut would discard legitimately in-window articles.
 Defensive drops belong **before** enrichment and **before** `Actor.charge` — a row that contradicts
 the customer's own filter should cost them neither money nor run time.
+
+## Cycle 792 (2026-09-25) — a per-item cap means two different things depending on whether the source can be re-read
+`apple-podcasts-scraper`'s `maxEpisodesPerPodcast` was applied to rows *walked* rather than rows *kept*, which turned every "fetch the full archive, then filter it" input into a silent 0-row answer — at the Actor's own default cap, on its headline differentiator.
+
+The reusable rule, for any Actor with a per-entity cap plus downstream filters:
+- If the cap is the **upstream API's own `limit`** (Apple's episode lookup, a paged review feed), it is legitimately a *scan* cap. The un-fetched items were never retrieved and walking further cannot reach them — counting kept rows there would be a lie, and for paged sources it would also spend real requests.
+- If the source arrives **whole in one request** (an RSS feed parsed into an array), a scan cap saves literally nothing and is strictly harmful: the items are already in memory, so stopping early only hides matches the customer paid the request for. Count kept rows.
+
+Both semantics can coexist in one function — pass a flag from the caller rather than picking one globally. Watch the mislabelling trap: `scrapeEpisodes` falls back from RSS to the lookup API on feed failure, so the flag must be set where the *successful* RSS fetch happens, not from the `useRssForFullArchive` input.
+
+Two related invariants worth preserving whenever you touch this shape:
+- Keep the function's **return value** on scan semantics. Callers use `got === 0` to mean "the source had nothing" (see LEARNINGS cycle 484); "filters kept nothing" is a different answer and must not collapse into it.
+- A 0-row answer from a filter is only actionable if the run says **what range the data actually covered**. The whole archive was in memory anyway, so reporting the feed's real first/last dates costs nothing and turns "no results" into "widen your window to X..Y".
+
+How it was found: the standard QUALITY-cycle `varied-test` combo pass, on the first combo tried. Stripping filters one at a time until the 0 rows persisted, then re-running the *identical* input with only the cap raised, is what separated "a filter is wrong" from "the cap is the wrong kind of cap" — worth doing before reading any code.
