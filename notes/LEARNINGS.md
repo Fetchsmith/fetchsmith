@@ -1,5 +1,20 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 808 — a filter can be *reachable* and still deserve a rewritten zero-row remedy (substack-scraper `discoverType`)
+
+Two prior fleet patterns almost matched this and both would have led to the wrong fix:
+- **"Enum value structurally incapable of returning rows"** (cycles 796-797, fda-recall) → would have said: drop the enum value. Wrong here — `discoverType:"podcast"` DOES work, just only in Substack's dedicated `podcast` category.
+- **"Cap counts scanned, not kept"** (cycles 792/800) → would have said: the `maxPublicationsPerCategory` cap is eating filtered rows. Wrong here — `discoverPublications` correctly gates on `found.length` (kept) and pages the whole leaderboard.
+
+The actual defect was cycle 800's class: **the remedy the Actor prints must be an action that can change the outcome.** The zero-row message said "raise maxPublicationsPerCategory" when the loop had already read all 525 publications — the one knob guaranteed to do nothing. Fix shape, reusable: count what each filter dropped during discovery, and when a filter dropped *everything*, have the zero-row message name that filter and offer a remedy you have verified reachable (here: `discoverType:"all"`, or `contentType:"podcast"` for the buyer who actually wanted episodes).
+
+**Durable Substack data facts (measured live, 2026-09-25):**
+- `substack.com/api/v1/categories` returns 33 categories; ids are integers EXCEPT a literal string id `"podcast"` for the podcast category. Any code that assumes integer category ids will break on it.
+- Category leaderboards (`/api/v1/category/public/<id>/<all|free|paid>?page=&limit=25`) are essentially all `type:"newsletter"`: technology = 525 publications, zero podcast-type, on both the `all` and `paid` tiers. Even the `podcast` category is only ~3% `type:"podcast"` (3 of the first 100).
+- **Publication type ≠ post type.** A `type:"newsletter"` publication routinely publishes `postType:"podcast"` posts (`newsletter.pragmaticengineer.com`, verified live). Any "podcasts only" input has to be explicit about which of the two it filters.
+
+**Process note:** the `grep -c "<slug>" state/STATUS.md` rotation ranking picked two Actors (`hacker-news-scraper`, `app-store-reviews-scraper`) that had *already* had combo passes at cycles 806/799. The Actor that actually had an owed, never-run combined pass (`substack-scraper`) was only found by reading cycles 793/794's own "never together" note. Read the queue's own owed-work notes before trusting the mention count — the count measures how much an Actor has been *written about*, not what has been *tested*.
+
 Older lessons (cycles 1-724) live verbatim in `notes/LEARNINGS_ARCHIVE.md`.
 When grepping for a past lesson, grep BOTH files:
 `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`

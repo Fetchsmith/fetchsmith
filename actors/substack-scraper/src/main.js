@@ -486,9 +486,17 @@ async function resolveCategoryIds(wanted) {
 // Substack ranks publications in 3 separate lists per category (overall/free/paid) at
 // category/public/<id>/<tier> — same publication object shape as the homepage's window._preloads
 // (verified live), so a leaderboard hit is also a complete, free includePublicationInfo profile.
+// Substack's category leaderboards are overwhelmingly `newsletter` publications — a live sweep of
+// the whole technology leaderboard (300 publications, 12 pages, both the `all` and `paid` tiers)
+// found zero `podcast`-type ones, and even the dedicated `podcast` category is only ~3% podcast.
+// So discoverType:'podcast' legitimately returns nothing for most categories; count what the filter
+// dropped so the zero-row remedy can name it instead of pointing at maxPublicationsPerCategory.
+let discoverTypeSkipped = 0;
+
 async function discoverPublications(cat) {
   const found = [];
   const entries = [];
+  let skippedByType = 0;
   const pageSize = 25;
   for (let page = 0; found.length < maxPublicationsPerCategory && timeBudgetOk(); page += 1) {
     const url = `https://substack.com/api/v1/category/public/${cat.id}/${leaderboardTier}?page=${page}&limit=${pageSize}`;
@@ -503,7 +511,7 @@ async function discoverPublications(cat) {
     if (!Array.isArray(pubs) || !pubs.length) break;
     pubs.forEach((p, i) => {
       const rank = page * pageSize + i + 1;
-      if (discoverType !== 'all' && p.type && p.type !== discoverType) return;
+      if (discoverType !== 'all' && p.type && p.type !== discoverType) { skippedByType += 1; return; }
       const host = p.custom_domain || (p.subdomain ? `${p.subdomain}.substack.com` : null);
       if (!host) return;
       if (found.length >= maxPublicationsPerCategory) return;
@@ -513,6 +521,12 @@ async function discoverPublications(cat) {
     if (!body.more) break;
   }
   log.info(`Category "${cat.slug}" (${leaderboardTier}): discovered ${found.length} publication(s)${found.length ? ` — ${found.slice(0, 5).map((f) => f.pubName).join(', ')}${found.length > 5 ? ', …' : ''}` : ''}`);
+  discoverTypeSkipped += skippedByType;
+  if (skippedByType && !found.length) {
+    log.warning(`Category "${cat.slug}" (${leaderboardTier}): every one of the ${skippedByType} publication(s) on the leaderboard was dropped by discoverType="${discoverType}" — Substack's category leaderboards are almost entirely "newsletter" publications, so discoverType="podcast" usually matches nothing outside the "podcast" category. Raising maxPublicationsPerCategory will not help (the whole leaderboard was already read); set discoverType="all" instead, and use contentType="podcast" if what you want is podcast *episodes* rather than podcast-type publications.`);
+  } else if (skippedByType) {
+    log.info(`Category "${cat.slug}": ${skippedByType} publication(s) skipped by discoverType="${discoverType}".`);
+  }
   return { found, entries };
 }
 
@@ -581,9 +595,11 @@ if (leaderboardOnly) {
   if (!leaderboardEntries.length) {
     const why = unknownCategories
       ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
-      : discoverCategories.length
-        ? 'category discovery returned no publications — try a different category, leaderboardTier or raise maxPublicationsPerCategory'
-        : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
+      : discoverTypeSkipped
+        ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help)`
+        : discoverCategories.length
+          ? 'category discovery returned no publications — try a different category, leaderboardTier or raise maxPublicationsPerCategory'
+          : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
     log.warning(`Nothing to do — ${why}.`);
     await Actor.setStatusMessage(`No items returned — ${why}.`);
   } else {
@@ -625,9 +641,11 @@ const depthCapped = [];
 if (!publicationTargets.length && !postTargets.length) {
   const why = unknownCategories
     ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
-    : discoverCategories.length
-      ? 'category discovery returned no publications — try a different category or raise maxPublicationsPerCategory'
-      : 'no publicationUrls, postUrls or discoverCategories were provided';
+    : discoverTypeSkipped
+      ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help); use contentType="podcast" if you want podcast episodes rather than podcast-type publications`
+      : discoverCategories.length
+        ? 'category discovery returned no publications — try a different category or raise maxPublicationsPerCategory'
+        : 'no publicationUrls, postUrls or discoverCategories were provided';
   log.warning(`Nothing to do — ${why}.`);
   await Actor.setStatusMessage(`No items returned — ${why}.`);
 } else {
