@@ -492,6 +492,23 @@ async function resolveCategoryIds(wanted) {
 // So discoverType:'podcast' legitimately returns nothing for most categories; count what the filter
 // dropped so the zero-row remedy can name it instead of pointing at maxPublicationsPerCategory.
 let discoverTypeSkipped = 0;
+// cycle 812: same rule one branch over. When discovery yields nothing and discoverType is NOT the
+// cause, the old remedy said "try a different category or raise maxPublicationsPerCategory" — both
+// unreachable. Verified live (cycle 812): all 33 categories x all 3 leaderboardTiers return a full
+// 25-publication page with more:true, so an empty `found` with no type-skips means the leaderboard
+// REQUEST failed, not that the category is thin. Record the failure so the message can say "re-run".
+const discoverFetchFailures = [];
+
+// Shared by both zero-row paths below (leaderboardOnly and post scraping) so their advice can never
+// drift apart, which is how the stale "raise maxPublicationsPerCategory" survived in one of them.
+const noDiscoveryWhy = () => (discoverFetchFailures.length
+  ? `the Substack leaderboard request failed, so no publications could be read (${discoverFetchFailures.join('; ')})`
+    + ' — every Substack category normally returns publications, so this is a transient Substack-side'
+    + ' or rate-limit failure: re-run the Actor. Changing discoverCategories, leaderboardTier or'
+    + ' maxPublicationsPerCategory will not help'
+  : `the "${leaderboardTier}" leaderboard returned no publications for ${discoverCategories.join(', ')}`
+    + ' — try leaderboardTier="all", or a different category slug from substack.com/api/v1/categories'
+    + ' (raising maxPublicationsPerCategory cannot help: the leaderboard was already read to its last page)');
 
 async function discoverPublications(cat) {
   const found = [];
@@ -505,6 +522,7 @@ async function discoverPublications(cat) {
       body = await getJson(url);
     } catch (e) {
       log.warning(`Category "${cat.slug}" page ${page} failed: ${e.message}`);
+      if (!found.length) discoverFetchFailures.push(`${cat.slug} page ${page}: ${e.message}`);
       break;
     }
     const pubs = body?.publications;
@@ -598,7 +616,7 @@ if (leaderboardOnly) {
       : discoverTypeSkipped
         ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help)`
         : discoverCategories.length
-          ? 'category discovery returned no publications — try a different category, leaderboardTier or raise maxPublicationsPerCategory'
+          ? noDiscoveryWhy()
           : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
     log.warning(`Nothing to do — ${why}.`);
     await Actor.setStatusMessage(`No items returned — ${why}.`);
@@ -644,7 +662,7 @@ if (!publicationTargets.length && !postTargets.length) {
     : discoverTypeSkipped
       ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help); use contentType="podcast" if you want podcast episodes rather than podcast-type publications`
       : discoverCategories.length
-        ? 'category discovery returned no publications — try a different category or raise maxPublicationsPerCategory'
+        ? noDiscoveryWhy()
         : 'no publicationUrls, postUrls or discoverCategories were provided';
   log.warning(`Nothing to do — ${why}.`);
   await Actor.setStatusMessage(`No items returned — ${why}.`);

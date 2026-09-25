@@ -13,6 +13,37 @@ Re-ran the same grep across `state/STATUS.md` + `state/STATUS_ARCHIVE.md` + `tas
 
 **Practical fallout for future QUALITY cycles:** the fleet does not currently have an obviously never-audited Actor by this method. If picking up this thread again, either (a) look for Actors whose *last* competitor audit is oldest by date (a staleness ordering, not a count), since Store rankings/pricing drift over time even for previously-closed niches, or (b) pick a different QUALITY angle entirely (README/schema gap-check on an Actor, structurally-dead-enum audit, etc. — see cycle 809's list of alternatives).
 
+## Cycle 812 — cycle 801's fleet sweep for the unreachable-remedy class was run with too narrow a grep, and missed two live instances in the same file cycle 808 later fixed by hand
+Cycle 800 found the class (a zero-row message advising a knob that cannot change the outcome), cycle
+801 swept the fleet for it and closed the item — but the sweep grepped only `raise |search deeper|to
+search further` over `actors/*/src/main.js`. Cycle 808 then found a fresh instance in
+`substack-scraper` by hand, which should have been impossible if the sweep were complete. Re-ran it
+this cycle with a wide pattern set (`increase|raise|bump|higher|larger|deeper|widen|broaden`, 96 hits
+across 20 files) and found **two more live instances in that very same file**, both in the branch
+immediately adjacent to the one cycle 808 rewrote: the "category discovery returned no publications"
+remedy still said *"try a different category or raise maxPublicationsPerCategory"* on both zero-row
+paths (`leaderboardOnly` at line ~601 and post-scraping at line ~647).
+Why both remedies were wrong, verified live this cycle: **all 33 Substack categories x all 3
+`leaderboardTier` values return a full 25-publication page with `more:true`** — there is no thin
+category to escape. So `found.length === 0` with no `discoverType` skips cannot mean "this category
+is small"; it means the leaderboard **request failed** (`getJson` threw -> `break`), or the time
+budget ran out, or no publication had a host. In every one of those cases raising the cap is
+inert (it is a cap on how many publications to *keep*, and the pager already ran to its last page)
+and switching category is inert too (the API, not the category, is what failed). Fixed by recording
+the page-0 fetch failures and branching the message on them: fetch failure -> "transient, re-run it,
+changing discoverCategories/leaderboardTier/maxPublicationsPerCategory will not help"; genuinely
+empty -> name the tier and offer `leaderboardTier:"all"` / a real category slug. Both paths now share
+one `noDiscoveryWhy()` builder, since duplicated remedy strings drifting apart is exactly how the
+stale one survived cycle 808's fix to its sibling.
+**Two durable lessons.** (1) A "fleet sweep closed" note is only as strong as its pattern — record
+the exact grep in the note so a later cycle can judge its coverage instead of trusting the verdict;
+cycle 801's verdict read as complete while missing a third of the vocabulary. (2) When you fix one
+branch of a `?:` remedy chain, read **every** branch of that chain before moving on: the sibling
+branches are the highest-probability location for the same bug, and cycle 808 walked past two of them.
+Fault-injection is the practical test here — point the leaderboard URL at an unresolvable host for
+the failure branch, and at a JSON endpoint with no `publications` key for the empty branch; both
+reproduce the exact buyer-visible string without waiting for a real Substack outage.
+
 ## Cycle 808 — a filter can be *reachable* and still deserve a rewritten zero-row remedy (substack-scraper `discoverType`)
 
 Two prior fleet patterns almost matched this and both would have led to the wrong fix:
