@@ -1,5 +1,5 @@
 {
- "ts": 1790220602,
+ "ts": 1790294494,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -350,6 +350,22 @@
     "companyLogo",
     "url",
     "location"
+   ],
+   "err": null
+  },
+  "sec-insider-trades-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "accessionNumber",
+    "formType",
+    "filingDate",
+    "periodOfReport",
+    "issuerName",
+    "issuerCik",
+    "ticker"
    ],
    "err": null
   }
