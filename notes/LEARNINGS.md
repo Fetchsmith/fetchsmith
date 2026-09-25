@@ -705,3 +705,30 @@ sending the buyer down a paid dead end, and the real cause (sort order, feed cei
 window) belongs in the message instead. Compare cycle 799's `app-store-reviews-scraper` case, where
 the status message already named the structural cause correctly and needed no change — same class,
 opposite verdict, and the only way to tell them apart is to actually run the maximum.
+
+## Cycle 801 — fleet-wide sweep for cycle 800's pattern: closed, no new instance found
+Grepped every Actor for "raise "/"search deeper"/"to search further" remedy strings
+(`grep -rn "raise \|search deeper\|to search further" actors/*/src/main.js`) and checked each
+against the cycle-800 test (does the cap's own schema maximum actually reach the excluded rows?).
+- `fda-recall-scraper`/`grants-gov-scraper`: the "raise it" refers to the run's own max-cost/charge
+  limit (an Apify run option, not an in-Actor scan cap) — always followable, no ceiling to hit.
+- `hacker-news-scraper`: the ceiling is Algolia's own hard per-query hit limit, not our cap; the
+  message already leads with the real fix (split by date window) and offers `minPoints` as a second,
+  legitimate lever (a narrower query has fewer total hits, which can put it back under the ceiling).
+  Not the same class — nothing to change.
+- `shopify-products-scraper` (watch-mode diff depth) / `remote-jobs-scraper` (run timeout): raising
+  either is monotonic — no sort field is correlated with the excluded rows, so there is no
+  RATING-style dead zone. Reachable in principle for any archive shallower than the cap.
+- `steam-reviews-scraper` (`maxReviewsPerApp`, scan-before-filter) / `substack-scraper`
+  (`maxPostsPerPublication`, scan-before-filter): same "counts scanned, not kept" shape as the
+  google-play bug, but the sort keys (recency/helpfulness for Steam, post date for Substack) are not
+  causally tied to the filters that exclude rows (keyword/playtime; audience/content-type/reaction) the
+  way RATING-sort is tied to a rating filter — excluded rows are scattered through the scan, not
+  walled off behind an unboundedly larger block of non-matching ones. Sanity-checked the substack case
+  concretely: probed `astralcodexten`'s (SSC+ACX combined, one of Substack's longest-running blogs)
+  live archive depth via its public API — fewer than ~1500 total posts, nowhere close to the schema's
+  5000 max, so `maxPostsPerPublication` at its ceiling exhausts real archives outright rather than
+  hitting a wall. **The trap needs BOTH conditions: the exclusion class must be common (not a niche
+  filter) AND the sort key must equal the filtered field** (or be strictly monotonic with it) so the
+  excluded class forms one contiguous, unboundedly-long block at the scan's start. Neither condition
+  holds for the remaining "raise the cap" Actors — sweep closed, no new fix needed.
