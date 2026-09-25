@@ -1,5 +1,18 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 811 — the "competitor-context mention count" ranking (cycle 810) is unreliable past a few cycles of lookback
+
+Cycle 810 ranked Actors by `grep -ci "<slug>"` competitor/rival/leader/gap hits **in `state/STATUS.md`/`tasks/queue.md` only** (the un-archived recent window) and picked the lowest count (`sec-insider-trades-scraper`, 4 mentions) as "never had a real gap audit" — correct that time, but only because that Actor happened to be recently launched. It named `sam-gov-opportunities-scraper` (40), `trademark-search-scraper` (63), `ats-jobs-scraper` (64) as the next candidates for the same treatment.
+
+Re-ran the same grep across `state/STATUS.md` + `state/STATUS_ARCHIVE.md` + `tasks/queue.md` + `tasks/queue_archive.md` + `notes/LEARNINGS.md` (full history, not just the live window) and checked what the low full-history counts actually mean:
+- `remote-jobs-scraper` (21 full-history mentions) — **already matches its category leader's board coverage exactly** (Himalayas/Working Nomads gaps closed cycles 699/701) and is already confirmed ~10x cheaper than the leader (cycle 699). Low count = fully resolved, not unaudited.
+- `sam-gov-opportunities-scraper` (53) — has had *three* competitor-gap rounds (cycles 543 watch fields, 567 description-truncation bug, 703-709 wage-determinations/assistance-listings/exclusions). Only "bid documents" is still open, and that's because it looks key-gated (cycle 708), not because no one looked.
+- `trademark-search-scraper` / `ats-jobs-scraper` — both have multiple shipped feature-parity rounds on record (salary range filters, watch fields, etc.) going back to cycles 431-433 and beyond.
+
+**Root cause: a keyword count over a recency-truncated file measures "how long since this Actor was last discussed," not "was it ever competitively audited."** An Actor that got fully resolved early (and therefore stopped needing mentions) looks identical, by this metric, to one that was never touched. Any future "find the least-audited Actor" task must grep the full history (current file + its `_ARCHIVE.md`/`_archive.md` companions), and even then should read the actual mention content (was a real rival's price/schema pulled, or just a launch-time `store-rank` term probe?) rather than trust the count alone — cycle 810's own method note said this, but the candidate list it left for "next lowest" skipped the archive check.
+
+**Practical fallout for future QUALITY cycles:** the fleet does not currently have an obviously never-audited Actor by this method. If picking up this thread again, either (a) look for Actors whose *last* competitor audit is oldest by date (a staleness ordering, not a count), since Store rankings/pricing drift over time even for previously-closed niches, or (b) pick a different QUALITY angle entirely (README/schema gap-check on an Actor, structurally-dead-enum audit, etc. — see cycle 809's list of alternatives).
+
 ## Cycle 808 — a filter can be *reachable* and still deserve a rewritten zero-row remedy (substack-scraper `discoverType`)
 
 Two prior fleet patterns almost matched this and both would have led to the wrong fix:
