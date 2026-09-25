@@ -3,6 +3,23 @@ import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
 
 await Actor.init();
+// apps/searchTerms carry no length cap, and each app can cost up to 200 sequential paginated review
+// fetches (scrapeReviews' page loop below) -- the same compounding-latency shape as the other
+// reviews-scrapers' timeout bug: getting hard-killed mid-walk returns nothing even though rows
+// already pushed sit in the dataset, and no status message or truncation note is ever written.
+// Stop proactively with a safety margin and report what was collected instead (pattern mirrored
+// from google-news/hacker-news/app-store-reviews-scraper/google-play-reviews-scraper).
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+  return true;
+}
+const TIME_BUDGET_WARNING = 'Approaching the run timeout — stopping early and returning what has been collected so far.';
 const input = (await Actor.getInput()) ?? {};
 const apps = (input.apps ?? []).map((a) => String(a).trim()).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
@@ -476,6 +493,7 @@ async function scrapeReviews(appId) {
   const seen = new Set();
   let degenerate = false;
   for (let page = 0; page < 200 && got < perAppReviews && keepGoing; page++) {
+    if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
     let body;
     try { body = await getJson(reviewsUrl(appId, cursor)); } // URLSearchParams below already encodes the cursor — do not encode it twice
     catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
@@ -540,6 +558,7 @@ for (const a of apps) {
 const emptySearches = [];
 for (const term of searchTerms) {
   if (!keepGoing) break;
+  if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
   try {
     const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(term)}&l=english&cc=${country}`;
     const items = (await getJson(url)).items ?? [];
@@ -566,9 +585,15 @@ const saturatedApps = [];
 const baselinedInPlace = [];
 let ownersCalls = 0;
 const ownersMissing = [];
+// Ids the loop actually got to. Everything in ids but NOT in here was abandoned by an early stop
+// (time budget, maxResults, charge limit) and contributed zero rows -- the silent-shortfall case
+// the end-of-run report needs to name instead of leaving unexplained.
+const idsAttempted = new Set();
 if (dataType === 'games') {
   for (const id of ids) {
     if (!keepGoing) break;
+    if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
+    idsAttempted.add(String(id));
     const d = await getAppDetails(id);
     if (!d) {
       emptyIds.push(id);
@@ -603,6 +628,8 @@ if (dataType === 'games') {
 } else {
   for (const id of ids) {
     if (!keepGoing) break;
+    if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
+    idsAttempted.add(String(id));
     const before = pushed;
     const { got, filteredOut, capReached, degenerate, newForApp, appSeeding } = await scrapeReviews(id);
     log.info(appSeeding
@@ -680,6 +707,12 @@ if (skipBaselineSave) {
 }
 if (watchMode && !skipBaselineSave) await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
 
+// An early time-budget stop silently truncates the id list, not just the row count: ids after the
+// stopping point were never fetched at all, and none of the per-id buckets below (emptyIds,
+// upstreamDegraded, depthCapped) know about them, so without this the run reads as a complete one
+// that simply found less.
+const idsNotReached = ids.map(String).filter((id) => !idsAttempted.has(id));
+
 // Completeness bookkeeping (h250, same shape as fec-campaign-finance-scraper cycle 676). First
 // cause wins: report whichever stopping reason the buyer can act on first.
 let complete = true;
@@ -692,6 +725,11 @@ function markIncomplete(reason, detail = null) {
   incompleteDetail = detail;
 }
 if (runError) markIncomplete('upstream-error', runError);
+// Top priority ahead of chargeLimitHit/maxResults/seed-cap (fleet convention, cycles 767-769): a
+// timeout is our own clock, not something the other reasons' advice ("raise maxResults") would fix.
+if (timeBudgetExceeded) markIncomplete('time-budget', idsNotReached.length
+  ? `the run was approaching the platform run timeout and stopped before finishing the id list — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}`
+  : 'the run was approaching the platform run timeout and stopped early to return what it had');
 if (chargeLimitReached) markIncomplete('charge-limit', "the run's pay-per-event charge limit was reached");
 if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults} reached; more reviews may exist`);
 if (watchMode && seeding && seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-review cap; reviews past the cap will be delivered and charged as new on a later incremental run`);
@@ -716,7 +754,17 @@ const evictionSuffix = baselineTruncated > 0
     + 'returned and charged again as "new" on a future run. Narrow the watch (fewer apps or a stricter '
     + 'filter) so the baseline stays under the cap.'
   : '';
-if (watchMode && seeding) {
+// Placed before watch mode's reassuring "nothing new" / "baseline recorded" messages, which would
+// otherwise misreport a timeout-truncated run as a clean, complete one (same lie class fixed in
+// app-store-reviews-scraper cycle 768 and google-play-reviews-scraper cycle 769).
+const timeoutSuffix = idsNotReached.length
+  ? ` The run was approaching the platform run timeout and stopped before finishing the id list — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}. Narrow the input (fewer apps/search terms, or a lower "maxReviewsPerApp"), raise the Actor's run timeout, or run the rest separately.`
+  : '';
+if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.`);
+} else if (timeBudgetExceeded && pushed === 0 && watchMode) {
+  await Actor.setStatusMessage(`No new reviews delivered for watch label "${watchLabel}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}`);
+} else if (watchMode && seeding) {
   await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode && pushed === 0) {
   await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
@@ -725,7 +773,13 @@ if (watchMode && seeding) {
 } else if (watchMode) {
   await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new review(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (pushed === 0) {
-  const why = emptyIds.length
+  // timeBudgetExceeded checked FIRST: without it, timing out before any id was even attempted falls
+  // into the final default below ("no valid Steam App IDs could be parsed from your input") -- a
+  // false claim about the input when the real cause is our own clock (idsAttempted stays empty, so
+  // emptyIds/emptySearches/depthCapped are all empty too, not because nothing matched).
+  const why = timeBudgetExceeded && idsAttempted.size === 0
+    ? 'the run was approaching the platform run timeout and stopped before any id could be checked'
+    : emptyIds.length
     ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
     : emptySearches.length
       ? `your search terms matched no Steam games: ${emptySearches.join(', ')}`
@@ -734,15 +788,17 @@ if (watchMode && seeding) {
         : keyword || minPlaytimeHours != null || hasDateWindow
           ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
           : 'no valid Steam App IDs could be parsed from your input';
-  await Actor.setStatusMessage(`No results — ${why}. See the log for details.`);
+  await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}`);
 } else if (upstreamDegraded.length) {
   // Partial success: other apps produced rows, so the run is not a failure, but the user still
   // needs to know these specific apps are missing for an upstream reason and are worth re-running.
-  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; re-run those later.`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; re-run those later.${timeoutSuffix}`);
 } else if (depthCapped.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.${timeoutSuffix}`);
 } else if (emptyIds.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam returned nothing for: ${emptyIds.join(', ')}.`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam returned nothing for: ${emptyIds.join(', ')}.${timeoutSuffix}`);
+} else if (timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}`);
 } else if (!complete) {
   // Reaches here only for a non-watch run that hit maxResults or the charge limit cleanly (no
   // upstream/depth/empty issue), which none of the branches above cover.
@@ -762,6 +818,8 @@ const runSummary = {
   emptyIds,
   upstreamDegraded,
   depthCapped,
+  timeBudgetExceeded,
+  idsNotReached,
   saturatedApps: watchMode ? saturatedApps : null,
   unidentifiedSkipped: watchMode ? unidentifiedSkipped : null,
   maxResults,
