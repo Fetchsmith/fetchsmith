@@ -4,6 +4,23 @@ import gplay from 'google-play-scraper';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
+// appIds/searchTerms carry no length cap, and each entry costs 1-2 sequential network calls
+// (gplay.search() per term, then gplay.app()+gplay.reviews() per app) -- a large list is the same
+// compounding-latency shape as the other reviews-scrapers' timeout bug: getting hard-killed
+// mid-walk returns nothing even though rows already pushed sit in the dataset, and no status
+// message or truncation note is ever written. Stop proactively with a safety margin and report
+// what was collected instead (pattern mirrored from google-news/hacker-news/app-store-reviews-scraper).
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+  return true;
+}
+const TIME_BUDGET_WARNING = 'Approaching the run timeout — stopping early and returning what has been collected so far.';
 const input = (await Actor.getInput()) ?? {};
 
 // Accept either a bare package name or a full Play Store URL -- users paste the URL far more
@@ -223,7 +240,11 @@ async function pushResult(item, watchId = null) {
 
 async function resolveAppIds() {
   const resolved = [...appIds];
-  for (const term of searchTerms) {
+  for (const [i, term] of searchTerms.entries()) {
+    if (!timeBudgetOk()) {
+      log.warning(`Approaching the run timeout — skipping the remaining ${searchTerms.length - i} search-term lookup(s).`);
+      break;
+    }
     try {
       const results = await gplay.search({ term, num: 1, lang, country });
       if (results.length) {
@@ -315,6 +336,7 @@ const saturatedApps = []; // watch mode: every fetched review was new, so older 
 const appsAttempted = new Set();
 for (const appId of resolvedAppIds) {
   if (stop) break;
+  if (!timeBudgetOk()) { stop = true; log.warning(TIME_BUDGET_WARNING); break; }
   appsAttempted.add(String(appId));
   // An app that is not in the baseline yet is baselined on this run instead of delivered, even
   // on an otherwise incremental run. This only happens when a 'searchTerms' lookup resolves to a
@@ -463,7 +485,9 @@ log.info(`Done. Pushed ${pushed} items.${duplicatesSkipped ? ` Skipped ${duplica
 const appsNotReached = resolvedAppIds.map(String).filter((a) => !appsAttempted.has(a));
 let truncationNote = '';
 if (stop) {
-  const cause = chargeLimitHit
+  const cause = timeBudgetExceeded
+    ? 'the run was approaching the platform run timeout and stopped early to return what it had'
+    : chargeLimitHit
     ? 'your pay-per-event charge limit was reached'
     : pushed >= maxResults
       ? `the maxResults cap (${maxResults}) was reached`
@@ -477,7 +501,10 @@ if (stop) {
     + (appsNotReached.length
       ? ` The run stopped before finishing the app list — ${appsNotReached.length} app(s) were never fetched and returned nothing: ${appsNotReached.join(', ')}.`
       : ' Every requested app was fetched, but the last one may have been cut short.')
-    + (chargeLimitHit
+    + (timeBudgetExceeded
+      ? ' Narrow the input (fewer apps/search terms, or a lower "maxReviewsPerApp") so the run finishes inside the'
+        + " platform run timeout, raise the Actor's run timeout, or run the remaining apps separately."
+      : chargeLimitHit
       ? ' Raise the Actor\'s charge limit and re-run to get the rest.'
       : ` Raise "maxResults" (currently ${maxResults}) and re-run to get the rest.`);
   log.warning(truncationNote.trim());
@@ -491,7 +518,12 @@ if (watchMode && seeding) {
 } else if (watchMode && saturatedApps.length) {
   statusMsg = (`Pushed ${pushed} new item(s) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.`);
 } else if (pushed === 0 && resolvedAppIds.length) {
-  const why = invalidApps.length
+  // Without this branch, timing out before any app was even queried fell into the final default
+  // below with an empty emptyApps list, asserting "Google Play returned zero reviews for: " (blank)
+  // -- a false claim about Google Play's data when the real cause is our own clock.
+  const why = timeBudgetExceeded && appsAttempted.size === 0
+    ? 'the run was approaching the platform run timeout and stopped before any app could be checked'
+    : invalidApps.length
     ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
     : erroredApps.length
     ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
