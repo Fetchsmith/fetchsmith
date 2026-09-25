@@ -2026,7 +2026,7 @@
     },
     {
       "slug": "sec-insider-trades-scraper",
-      "title": "SEC Insider Trades Scraper - Form 4 Buys & Sells",
+      "title": "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys",
       "summary": "Scrape SEC EDGAR Form 3/4/5 insider ownership filings straight from SEC's own keyless endpoints and get one flat row per reported transaction, not a filing index and not a PDF you still have to parse. Every one of the 17 transaction codes is decoded (S = open-market sale, F = shares withheld for taxes, M = option exercise, etc.), transactionValueUsd is signed and pre-computed so you can sum a column without re-deriving the sign, and the Rule 10b5-1 flag plus footnotes are carried through so you can tell a pre-scheduled plan sale from a discretionary one. The insider's personal street address is never emitted. No API key, no start fee, HTTP only.",
       "status": "live",
       "credits_per_result": 1,

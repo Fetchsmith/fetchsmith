@@ -1,7 +1,7 @@
 {
-  "title": "SEC Insider Trades Scraper - Form 4 Buys & Sells",
-  "description": "Scrape SEC EDGAR Form 3/4/5 insider trades from the official filings: one flat row per transaction with insider name, role, decoded code, shares, price, signed USD value and shares held after. No API key, no start fee.",
-  "seoTitle": "SEC Insider Trades Scraper - Form 4 Buys & Sells",
+  "title": "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys",
+  "description": "Scrape SEC EDGAR Form 3/4/5 insider trades — buys and sells — from the official filings: one flat row per transaction with insider name, role, decoded code, shares, price, signed USD value and shares held after. No API key, no start fee.",
+  "seoTitle": "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys",
   "seoDescription": "Scrape SEC EDGAR Form 4 insider trades as flat rows: insider name, role, decoded transaction code, shares, price, signed USD value, 10b5-1 flag. No API key.",
   "categories": ["BUSINESS", "LEAD_GENERATION"],
   "events": {

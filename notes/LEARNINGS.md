@@ -943,3 +943,58 @@ negative is worse because nothing prints.
   full-fleet coverage affordable at all. A full sweep is now a ~25-minute on-demand action, so the
   right trigger is a symptom (support mail, a duplicate-rows review, a known upstream change), not a
   standing rotation.
+
+## Cycle 780 (2026-09-25) — Algolia prefix-matching is token-directional, and a repeated word can win two conflicting adjacency constraints
+
+Two durable, reusable findings from shipping the `sec-insider-trades-scraper` title rewrite
+(p129 -> p12 / p143 -> p9, 6 queries improved, 0 regressions).
+
+**1. The prefix-match direction trap — the highest-value listing bug we have found so far.**
+Algolia matches by testing whether the INDEXED word starts with the QUERY token, i.e.
+`indexed.startswith(query_token)`. It is NOT symmetric and NOT a stem match. So a title
+containing "Trades" does **not** match the query token `trading` (`"trading".startswith("trades")`
+is false) — and equally, a title containing "Trading" does not match `trades`. Our title read as
+richly keyworded to a human and was invisible to the three highest-intent phrasings a buyer
+actually types. **Singular/plural and verb/noun forms of the same concept are DIFFERENT
+keywords.** Always probe both forms (`trades` AND `trading`, `review` AND `reviews`, `tender`
+AND `tenders`) before concluding a title is maxed. The related free win, from cycle 572: a
+PLURAL word does prefix-cover the singular query (`"scholarships".startswith("scholarship")`),
+so when the two forms differ only by a trailing `s`, ship the plural and win both with one word.
+
+**2. Repeat a word on purpose to satisfy mutually-exclusive adjacency constraints.**
+`token_span` (and Algolia's proximity criterion) scores the TIGHTEST occurrence, trying every
+start position. So when two queries worth winning need the same word adjacent to two different
+successors — `Insider Trading` and `Insider Trades` — you do not have to choose and you do not
+have to accept a wide span on one of them. Put the shared word in twice:
+    "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys"
+Occurrence 1 serves the `*trading*` queries at span 0; occurrence 2 serves `insider trades` at
+span 0. Both at 58/63 chars. Mild repetition in the title reads fine on a Store card and is far
+cheaper than losing a page-1 slot. Check for this shape before declaring a niche unwinnable.
+
+**3. When a title edit evicts a word, add that word to the DESCRIPTION in the same edit.**
+The simulation correctly predicted one regression (dropping "Sells" would lose the title match
+for `insider sells`, 3270 hits, p64). Adding "buys and sells" to the store description in the
+same publish meant the query kept matching — and the measured rank actually IMPROVED to p51.
+A description match ranks below a title match but far above no match at all, so this converts a
+predicted loss into a no-op or a small gain for free. Make it a standing step of any title edit.
+
+**4. Process: simulate locally, then publish, then FORCE THE REINDEX.**
+`token_span` is 20 lines and runs offline against candidate strings, so checking a candidate
+title against every probed query costs nothing and catches regressions before they are public —
+do not ship a title on the strength of the `--attr` predicted rank alone. And the live prediction
+undershot: `sec insider trading` was predicted ~p28 and landed p12, because joining the title
+block also re-sorts you by `storePosition` against only that block's members. Publishing is two
+steps, not one: `apify-admin publish` updates the record and Store page instantly, but Apify's
+Algolia index only reindexes on a **new build**, so `apify push --force` is mandatory (cycle 515)
+or Store *search* keeps serving the old copy indefinitely. Update `meta.json` AND
+`.actor/actor.json` AND the README H1 together — `apify push` writes the title from
+`actor.json`, so a stale `actor.json` silently reverts the platform title you just published.
+
+**5. Strategic: `bin/check-pricing` + `bin/real-demand` are the two checks that bound the
+revenue problem, and they should be run before any "why is revenue $0" reasoning.** Live pricing
+drift is 0 across 24 Actors / 29 charge events, so monetization is armed and $0 is not a billing
+bug. And raw `runs30d` 309 decomposes into a 296.7 automatic publication floor plus **+12.3**
+real demand. Five consecutive cycles (775-779) of internal QA all correctly returned "no code
+changes needed" — that is evidence the correctness tools are exhausted, not evidence to run a
+sixth. Discovery is the binding constraint, and `--attr` title-block probes are the one lever we
+directly control. 9 of 24 Actors had never been probed even once; 7 still have not.

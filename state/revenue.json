@@ -1,5 +1,5 @@
 {
- "ts": 1790319658,
+ "ts": 1790321414,
  "date": "2026-09-25",
  "apify": {
   "google-news-scraper": {
@@ -118,8 +118,8 @@
   },
   "apple-podcasts-scraper": {
    "public": true,
-   "users": 2,
-   "users30d": 1,
+   "users": 1,
+   "users30d": 0,
    "runs30d": 16,
    "runs": 616,
    "ext_ok30d": 16,
@@ -462,7 +462,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 24,
-  "users": 48,
+  "users": 47,
   "runs30d": 309,
   "ext_ok30d": 306,
   "ext_bad30d": 3,

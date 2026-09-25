@@ -523,7 +523,36 @@ TERMS = {
     # (scrapemint/sec-form4-insider-tracker, 12u/1012r), "insider trades"
     # (toolstem's MCP server, 4u/1283r), "form 4 filings". Kept the 4 most natural
     # buyer phrasings; re-measure next cycle once indexed to see which land.
-    "sec-insider-trades-scraper": ["sec insider trading", "sec form 4", "insider trades", "form 4 filings"],
+    # cycle 780 (first --attr BATCH probe on this Actor, 14 queries) — SHIPPED a title
+    # rewrite, the fleet's biggest single-edit rank gain so far. Old title "SEC Insider
+    # Trades Scraper - Form 4 Buys & Sells" (48 chars) matched "trades" but NOT
+    # "trading": Algolia prefix-matches the indexed word against the query token, and
+    # "trading".startswith("trades") is false, so the three highest-intent buyer
+    # phrasings all fell outside the title block entirely. New title (58/63):
+    #     "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys"
+    # The trick is that "Insider" appears TWICE, which is what makes the win free:
+    # occurrence 1 feeds "sec insider trading"/"insider trading"/"insider trading
+    # scraper" at span 0, occurrence 2 feeds "insider trades" at span 0, so the two
+    # mutually-exclusive adjacency constraints ("Insider Trad-ing" vs "Insider Trad-es")
+    # are BOTH satisfied in one 58-char string. token_span simulated all 14 queries
+    # locally before publishing; measured live post-reindex, every number an improvement
+    # or byte-identical:
+    #   insider trading scraper  p143 -> p9  (nbHits 705, PAGE 1)
+    #   sec insider trading      p129 -> p12 (nbHits 261, PAGE 1; predicted only ~p28)
+    #   insider trading          p191 -> p30 (nbHits 717)
+    #   form 4 insider            p67 -> p26 (nbHits 5884, was span None)
+    #   form 4                    p46 -> p29 (nbHits 55657, span 0 held)
+    #   insider trades            p15 -> p15 (nbHits 1879, protected, unchanged)
+    #   insider sells             p64 -> p51 (the ONE predicted regression -- dropping
+    #     "Sells" from the title -- did not materialize, because the mitigation worked:
+    #     "buys and sells" was added to the store DESCRIPTION in the same edit, which
+    #     kept us matching the query. Do this whenever a title edit evicts a word.)
+    # Declined (probed, not worth title characters): "sec edgar" p372 -> ~p176,
+    # "edgar filings" p391 -> ~p93, "sec filings" p513 -> ~p127 (all far outside page 1
+    # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
+    # real remaining prize but needs "Stock Insider" adjacent and the title is out of
+    # budget; revisit only if a word frees up.
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider"],
     # cycle 541: first --attr baseline for this Actor (h158 follow-up). Title
     # "SAM.gov Opportunities Scraper - US Federal Contracts, Bids" already wins TWO
     # contiguous span-0 queries ("sam.gov opportunities" p9, "sam gov opportunities"

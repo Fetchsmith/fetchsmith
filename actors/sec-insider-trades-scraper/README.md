@@ -1,4 +1,4 @@
-# SEC Insider Trades Scraper — Form 4 buys & sells as flat rows
+# SEC Insider Trading Scraper — Form 4 insider trades, buys & sells as flat rows
 
 Reads **SEC EDGAR ownership filings (Forms 3, 4 and 5)** straight from the SEC's own keyless
 endpoints and returns **one flat row per reported transaction** — not one row per filing, and not
