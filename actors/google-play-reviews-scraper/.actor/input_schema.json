@@ -39,7 +39,7 @@
     "sort": {
       "title": "Sort order",
       "type": "string",
-      "description": "Review sort order. Note: the fetch cap (maxReviewsPerApp) is applied to this sort order BEFORE ratingFilter, so RATING sort fills the cap with the highest-rated reviews first — hunting for low ratings with ratingFilter can return 0 rows even when low-rated reviews exist. Use NEWEST (or raise maxReviewsPerApp) when filtering for specific low ratings.",
+      "description": "Review sort order. Note: the fetch cap (maxReviewsPerApp) is applied to this sort order BEFORE ratingFilter, so RATING sort fills the cap with the highest-rated reviews first — hunting for low ratings with ratingFilter/maxScore returns 0 rows even when low-rated reviews exist, and raising maxReviewsPerApp does NOT help (verified 2026-09-25: on Spotify even the 5000 maximum kept 0 rows, all 5000 fetched were 5★). Use NEWEST (the default) when filtering for specific star ratings.",
       "editor": "select",
       "enum": [
         "NEWEST",
@@ -51,7 +51,7 @@
     "maxReviewsPerApp": {
       "title": "Max reviews per app",
       "type": "integer",
-      "description": "Fetch cap per app, counted before rating/keyword/appVersion/date filters are applied — a low cap combined with a narrow filter can miss matches deeper in the feed (see README FAQ).",
+      "description": "Fetch cap per app, counted before rating/keyword/appVersion/date filters are applied — a low cap combined with a narrow filter can miss matches deeper in the feed (see README FAQ). Raising it cannot help when sort=RATING excludes the star ratings you want; switch to NEWEST instead.",
       "default": 100,
       "minimum": 1,
       "maximum": 5000
@@ -122,8 +122,16 @@
       "type": "string",
       "description": "\"Has a reply\" finds reviews the developer already responded to (e.g. to audit response quality). \"No reply\" finds reviews still waiting for a response — the common support-queue use case.",
       "editor": "select",
-      "enum": ["any", "hasReply", "noReply"],
-      "enumTitles": ["Any (default, no filter)", "Has a developer reply", "No developer reply"],
+      "enum": [
+        "any",
+        "hasReply",
+        "noReply"
+      ],
+      "enumTitles": [
+        "Any (default, no filter)",
+        "Has a developer reply",
+        "No developer reply"
+      ],
       "default": "any"
     },
     "minReviewLength": {

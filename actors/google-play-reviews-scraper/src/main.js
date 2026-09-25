@@ -78,6 +78,33 @@ if (webhookUrlRaw) {
     }
 }
 
+// RATING sort walks the feed highest-star-first, and maxReviewsPerApp caps reviews FETCHED (before
+// any filter), so a rating filter that excludes 5★ spends the whole walk inside the 5★ block. On a
+// high-volume app that block is far larger than the 5000-review schema maximum: verified 2026-09-25
+// on com.spotify.music, sort=RATING + ratingFilter=[1,2] fetched all 5000 and kept 0. "Raise
+// maxReviewsPerApp" — what the depth-cap warning otherwise advises — is therefore unreachable
+// advice here, not a deeper walk away. The remedy is sort=NEWEST.
+function ratingAllowed(score) {
+  if (minScore != null && score < minScore) return false;
+  if (maxScore != null && score > maxScore) return false;
+  if (ratingFilter.length && !ratingFilter.includes(score)) return false;
+  return true;
+}
+const topStarExcluded = !ratingAllowed(5);
+const ratingSortUnreachable = sortName === 'RATING' && topStarExcluded;
+const RATING_SORT_HINT = ' — with sort="RATING" the feed is walked highest-star-first, so the fetch '
+  + 'cap fills with 5★ reviews before reaching lower ones; use sort="NEWEST" (the default) instead, '
+  + 'as raising maxReviewsPerApp cannot help past its 5000 maximum';
+if (ratingSortUnreachable) {
+  log.warning(
+    'sort="RATING" combined with a rating filter that excludes 5★ reviews: Google Play returns '
+    + `RATING-sorted reviews highest-first, and maxReviewsPerApp (${maxReviewsPerApp}) counts reviews `
+    + 'fetched BEFORE filtering, so this run will likely spend its whole fetch budget on 5★ reviews '
+    + 'and return 0 rows. On a popular app even the 5000 maximum is not enough. Use sort="NEWEST" '
+    + '(the default) to hunt for specific star ratings.',
+  );
+}
+
 function passesFilters(r) {
   if (minScore != null && r.score < minScore) return false;
   if (maxScore != null && r.score > maxScore) return false;
@@ -386,7 +413,7 @@ for (const appId of resolvedAppIds) {
       log.warning(
         `${appId}: maxReviewsPerApp (${fetchNum}) was reached and ${data.length - passCount} of the `
         + `fetched reviews were removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters. The cap counts reviews `
-        + `fetched, before filtering -- raise maxReviewsPerApp to search deeper in the feed.`,
+        + `fetched, before filtering${ratingSortUnreachable ? RATING_SORT_HINT : ' -- raise maxReviewsPerApp to search deeper in the feed'}.`,
       );
     }
     for (const r of data) {
@@ -528,13 +555,13 @@ if (watchMode && seeding) {
     : erroredApps.length
     ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
     : depthCappedApps.length && !emptyApps.length
-      ? `maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')} — raise maxReviewsPerApp to search deeper`
+      ? `maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : ' — raise maxReviewsPerApp to search deeper'}`
     : filteredOutApps.length && !emptyApps.length
       ? 'reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters'
       : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
   statusMsg = (`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedApps.length) {
-  statusMsg = (`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
+  statusMsg = (`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}.`);
 } else if (emptyApps.length || filteredOutApps.length) {
   statusMsg = (`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
 } else if (truncationNote) {

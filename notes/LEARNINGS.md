@@ -687,3 +687,21 @@ Two corollaries worth reusing:
 - **Check a suspicious 0/null against the raw source before calling it a parse bug.** Two rows came
   back `pricePerShare: 0`; SEC's own XML says `<value>0.0</value>` for that grant and option exercise.
   The helper already maps a genuinely empty element to `null`, so 0 vs null was carrying real meaning.
+
+## Cycle 800 — a "raise the cap" remedy must be reachable, or it is a lie
+`google-play-reviews-scraper` had the RATING-sort trap already documented (README FAQ + input-schema
+description, both added by an earlier cycle) — but every one of its three remedy strings said "raise
+maxReviewsPerApp to search deeper". **Verified live that this is impossible:** under `sort:"RATING"`
+Google Play walks highest-star-first, and on `com.spotify.music` `maxReviewsPerApp:5000` (the schema
+MAXIMUM) fetched all 5000 and kept **0** rows for `ratingFilter:[1,2]` *and* for `ratingFilter:[4]` —
+all 5000 were 5★. So a buyer following our own advice escalates 200 -> 1000 -> 5000, pays for three
+full walks, and can never succeed. Documenting a trap is not the same as pointing at a remedy that
+works; the fix was a pre-walk `log.warning` (fires before the fetch budget is spent) plus swapping
+the "raise the cap" clause for "use sort=NEWEST" in all three messages whenever the rating filter
+excludes 5★.
+**Generalizable check for any Actor whose zero-row message advises raising a cap: push the cap to its
+schema maximum and confirm the advice actually produces rows there.** If it doesn't, the message is
+sending the buyer down a paid dead end, and the real cause (sort order, feed ceiling, upstream
+window) belongs in the message instead. Compare cycle 799's `app-store-reviews-scraper` case, where
+the status message already named the structural cause correctly and needed no change — same class,
+opposite verdict, and the only way to tell them apart is to actually run the maximum.
