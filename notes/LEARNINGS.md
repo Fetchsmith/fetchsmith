@@ -2899,3 +2899,34 @@ Also: `state/STATUS.md` had reached 339KB (78 cycle entries), more than 2x the 1
 5. **`remote-jobs-scraper`** — `for (const src of sources)` (main.js:549), 6 boards each independently paginated (bounded by `maxPagesPerSource<=20`), lower risk than 1-4 since 4 of the 6 boards return their whole feed in one request.
 6-18 (`clinicaltrials`, `court-records`, `eu-ted-tenders`, `fda-recall`, `fec-campaign-finance`, `federal-register`, `grants-gov`, `nih-reporter`, `sam-gov-opportunities`, `trademark-search`, `uk-find-a-tender`, `us-federal-awards`, `scholarship`[retired]) — every array-typed input in these Actors' schemas (`naicsCodes`, `agencies`, `productTypes`, etc.) is an OR-filter baked into ONE request's query params, not a per-value fetch loop; these are single-source paginated feeds where a `timeoutAt` guard would mostly be dead code. `fda-recall-scraper`'s 3 `productTypes` is the one borderline case here (3 separate openFDA endpoints, each paginated) but each endpoint returns large batches per page, so latency accumulates far slower than #1-4's one-network-call-per-item pattern.
 Not built this cycle (ranking was the missing deliverable, not the fix) — next step is porting a `timeoutAt` guard to `hacker-news-scraper` first, verifying it actually fires under a synthetic slow-github-response test before trusting it, same rigor as the cycle 752 fix to that Actor's dead-catch bug.
+
+## Cycle 768 — adding a run-timeout guard? Audit the SHORTFALL-REPORT paths, not just the loops.
+Porting the `timeoutAt`/`remainingMs()`/`timeBudgetOk()` guard into `app-store-reviews-scraper` took
+ten minutes; the four **pre-existing** report paths that would have misreported the new stop took the
+rest of the cycle and are where all the buyer-visible damage was. A time-budget stop is a THIRD kind
+of early exit, distinct from "buyer's cap reached" and "upstream ran out", and every existing branch
+that infers a cause from a count or a flag has to be re-read against it:
+1. **An "upstream truncated us" heuristic fires identically.** This Actor infers Apple's hard feed
+   ceiling from `lastPageFull && got < scanCap && !hitCutoff && keepGoing && !capBrokeMidPage`. Our
+   own clock stopping the walk right after a full page satisfies every term — so it would have told
+   the buyer `apple-feed-ceiling`, whose documented meaning is "no input value can reach the rest".
+   That is the worst possible lie: the rest is reachable with a narrower input. Verified live: the
+   mid-walk test's cut pair had a FULL page 1 (50 rows) and `got < scanCap`.
+2. **`got === 0` fell into the "source is empty" branch**, which spends 4 more probe requests with no
+   clock left, records the pair in `emptyPairs`, and says "this is Apple's data, not a scrape failure".
+3. **`status = totalGot === 0 ? 'empty'`** — the same false claim, in the machine-readable RUN_SUMMARY
+   a pipeline reads. Needed a distinct `'timedOut'`.
+4. **The truncation note was gated on `!keepGoing`.** A time-budget stop leaves `keepGoing` TRUE (the
+   run was still *willing* to take rows, it just ran out of clock), so a timed-out run reported as
+   complete. Same trap as cycle 767's hacker-news `pushed === 0` status-message bug: the new stop
+   reason has to be added to the gate, not just to the loop condition.
+Also: a diagnostic probe that exists to distinguish "empty" from "broken" (`reviewFeedIsDown()`, ~12
+requests over 3 attempts with 5s sleeps) must be SKIPPED when the guard has fired — it costs exactly
+the margin just reserved, and "nothing served" is already explained.
+**Testing:** a synthetic `ACTOR_TIMEOUT_AT` at `margin + 10s` over 10 pairs is what produces the
+valuable *mid-walk* stop (at `margin + 200ms` the guard fires before any work and only exercises the
+`notReached` path). For a branch whose window is too tight to hit with a real clock (here `got === 0`
+inside a pair), `sed` a throwaway copy of main.js whose `timeBudgetOk()` trips on its Nth call. And
+finish with a **real platform run at `timeout=60`**: it is the only proof that the real
+`Actor.getEnv().timeoutAt` path works and that the run now SUCCEEDS (exitCode 0, status message and
+RUN_SUMMARY both written) instead of being hard-killed with nothing.
