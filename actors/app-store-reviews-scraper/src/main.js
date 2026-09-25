@@ -3,6 +3,24 @@ import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
+// A run with several apps x several storefronts does, per pair, up to MAX_RSS_PAGE sequential page
+// fetches under each of two sorts, plus an app-info lookup and a ratings-page fetch, plus (on an
+// empty pair) up to 5 x 4 sequential storefront probes -- all nested inside the apps x countries
+// loop. That is the same compounding-latency shape as the google-news-scraper timeout bug: getting
+// hard-killed mid-walk returns nothing to the customer even though partial results already sit in
+// the dataset, and no pair record or status message is ever written. Stop proactively with a safety
+// margin and flush what's collected instead (pattern mirrored from google-news/hacker-news-scraper).
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+  if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+  return true;
+}
+const TIME_BUDGET_WARNING = 'Approaching the run timeout — stopping early and returning what has been collected so far.';
 const input = (await Actor.getInput()) ?? {};
 // The schema's "apps" field carries a default (Notion) so the Store's bare-{} auto-test has
 // something real to run. Verified live on the platform 2026-09-11 that this default gets silently
@@ -479,6 +497,9 @@ async function probeStorefronts(appId, skip) {
   const found = [];
   for (const c of PROBE_COUNTRIES) {
     if (c === skip) continue;
+    // Probing is pure diagnostics (never charged), so it is the first thing to give up when the
+    // clock runs short — up to 5 x 4 sequential requests is otherwise enough to eat the margin.
+    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — skipping the remaining storefront probes.'); break; }
     // Page 1 alone is not enough evidence — it is often one of Apple's empty holes — so sample a
     // few pages spread across both sorts AND both client classes, and stop at the first hit.
     for (const [sortBy, page, cls] of [['mostHelpful', 1, 'default'], ['mostRecent', 1, 'ios'], ['mostHelpful', 2, 'ios'], ['mostRecent', 2, 'default']]) {
@@ -649,7 +670,10 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
   // PARTIAL page. Used below for the early-dry case; see the comment at the post-loop check.
   let lastServedPage = 0;
   let lastPageFull = false;
-  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < scanCap && keepGoing && !hitCutoff; page++) {
+  for (let page = 1; page <= MAX_RSS_PAGE && tally.got < scanCap && keepGoing && !hitCutoff && !timeBudgetExceeded; page++) {
+    // Checked per page rather than per pair: fetchPage can try two client classes and retry each,
+    // so a single deep walk is where a run actually runs out of clock.
+    if (!timeBudgetOk()) { log.warning(TIME_BUDGET_WARNING); break; }
     const url = `https://itunes.apple.com/${country}/rss/customerreviews/id=${appId}/sortBy=${sortBy}/page=${page}/json`;
     let entries;
     let clientClass;
@@ -732,8 +756,12 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
   // ratings. Only the page-10 rule above used to catch that shape, and it no longer fires when the
   // feed quits at page 2 or 7. Same consequence for the buyer as the 500 ceiling: reviews exist
   // that this feed will not serve, and no input change reaches them.
+  // `!timeBudgetExceeded` matters as much as the other guards here: our OWN clock stopping the walk
+  // right after a full page looks identical to Apple truncating the feed, and misreporting it as
+  // 'apple-feed-ceiling' would tell the buyer no input change can reach the rest — when in fact a
+  // narrower input (or a longer run timeout) reaches it fine.
   if (!tally.feedCeiling && lastPageFull && tally.got < scanCap && !hitCutoff && keepGoing
-      && !capBrokeMidPage && !tally.storefrontError) {
+      && !timeBudgetExceeded && !capBrokeMidPage && !tally.storefrontError) {
     tally.feedCeiling = true;
     tally.feedStopPage = lastServedPage;
   }
@@ -754,7 +782,7 @@ async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false)
   await scrapeAppCountrySort(appId, country, sort, seen, getInfo, tally, extra, pairSeeding);
   // The alternate-sort fallback exists for Apple's per-sort feed HOLES; a 4xx is not a hole, it is
   // the whole (app, storefront) being unanswerable, so the other sort would only repeat the fault.
-  if (tally.got === 0 && keepGoing && !tally.storefrontError) {
+  if (tally.got === 0 && keepGoing && !tally.storefrontError && !timeBudgetExceeded) {
     const alt = sort === 'mostRecent' ? 'mostHelpful' : 'mostRecent';
     log.info(`${appId}/${country}: Apple's "${sort}" feed is empty; retrying under "${alt}".`);
     await scrapeAppCountrySort(appId, country, alt, seen, getInfo, tally, extra, pairSeeding);
@@ -818,7 +846,11 @@ const pairOutcomes = [];
 // we did not observe the answer — a refused pair has no completeness to report.
 function recordPair(appId, country, res, delivered, status, extra = {}) {
   const truncatedByRun = !keepGoing; // the run stopped during THIS pair (recorded immediately after it)
+  // A pair cut short by our own timeout guard gets its own reason rather than being folded into
+  // 'max-results': the fix is a narrower input or a longer run timeout, not a bigger cap, and a
+  // buyer reading RUN_SUMMARY must be able to tell the two apart.
   const incompleteReason = res.storefrontError ? null
+    : timeBudgetExceeded ? 'time-budget'
     : res.feedCeiling ? 'apple-feed-ceiling'
     : res.capReached ? 'max-reviews-per-app'
     : truncatedByRun ? (chargeLimitHit ? 'charge-limit' : (watchMode && seeding ? 'baseline-cap' : 'max-results'))
@@ -857,7 +889,7 @@ const plannedPairs = apps
 const attemptedPairs = new Set();
 let keepGoing = true;
 for (const app of apps) {
-  if (!keepGoing) break;
+  if (!keepGoing || timeBudgetExceeded) break;
   const appId = parseId(app);
   if (!appId) {
     log.warning(`Cannot parse app id from "${app}"`);
@@ -873,6 +905,9 @@ for (const app of apps) {
   }
   for (const country of countries) {
     if (!keepGoing) break;
+    // Re-checked (not just inherited from the page loop) so a pair is never STARTED with no clock
+    // left: starting one costs an app-info lookup and a ratings fetch before any review arrives.
+    if (!timeBudgetOk()) { log.warning(TIME_BUDGET_WARNING); break; }
     const pairKey = `${appId}::${country}`;
     // A pair not yet in the baseline is seeded in place instead of delivered, even on an otherwise
     // incremental run. This only happens when "appNames" resolves to a different app id than last
@@ -931,7 +966,16 @@ for (const app of apps) {
     }
     let totalNewForPair = newForPair;
     let totalGot = got;
-    if (got === 0) {
+    if (got === 0 && timeBudgetExceeded) {
+      // Our own clock, not Apple's data. Must not fall into the empty-pair branch below: that one
+      // probes four other storefronts (more requests, with no clock to spend), records the pair in
+      // `emptyPairs`, and tells the buyer "this is Apple's data, not a scrape failure" — none of
+      // which is true when the walk never got to ask. recordPair marks it 'time-budget'.
+      log.warning(
+        `${appId}/${country}: stopped before any review could be fetched — the run was approaching the platform `
+        + `run timeout. This says nothing about whether Apple has reviews for this app/storefront.`,
+      );
+    } else if (got === 0) {
       const alt = await probeStorefronts(appId, country);
       if (countryFallback && alt?.length) {
         // Opt-in: pull the same app from a storefront that does have reviews. Rows carry the
@@ -991,7 +1035,11 @@ for (const app of apps) {
     // apart: both deliver zero rows, but one means Apple has nothing and the other means the
     // buyer's own filters removed everything — and only the second is fixable from the input.
     // "watchNoChanges" is a third zero: reviews were there and had already been delivered.
-    const status = totalGot === 0 ? 'empty'
+    // A fourth zero, added with the run-timeout guard: zero rows because the run ran out of clock,
+    // which must NOT be recorded as "empty" — that status asserts Apple has nothing for the pair,
+    // and here the walk never finished asking.
+    const status = totalGot === 0 && timeBudgetExceeded ? 'timedOut'
+      : totalGot === 0 ? 'empty'
       : watchMode && pairSeeding ? 'watchBaselined'
       : delivered === 0 ? (watchMode ? 'watchNoChanges' : 'filteredOut')
       : 'ok';
@@ -1015,7 +1063,10 @@ if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted) {
 // result, check whether the feed itself is down (see reviewFeedIsDown). This runs BEFORE the watch
 // record is written on purpose — a seeding run that recorded "baselined, 0 reviews" during an
 // outage would treat the app's entire back catalogue as new on the next run and charge for it.
-if (pairsAttempted > 0 && feedServed === 0 && await reviewFeedIsDown()) {
+// Skipped when our own timeout guard stopped the run: the probe spends ~12 requests over 3 attempts
+// with 5s sleeps between them, which is exactly the margin we just reserved to finish cleanly, and
+// "nothing served" is already explained by the run running out of clock rather than by an outage.
+if (pairsAttempted > 0 && feedServed === 0 && !timeBudgetExceeded && await reviewFeedIsDown()) {
   await Actor.fail(
     "Apple's customer-review RSS feed (itunes.apple.com/.../rss/customerreviews) returned an empty feed for "
     + 'every app tried, including control apps that have hundreds of thousands of reviews — checked over 3 '
@@ -1058,13 +1109,21 @@ for (const p of pairsNotReached) {
   const pairSummary = {
     app, country, status: 'notReached', scanned: 0, delivered: 0, filteredOut: 0,
     declaredRatingCount: null, complete: null, incompleteReason: null, scanDepthCap: null,
-    feedStopPage: null, reason: 'the run stopped before reaching this app/storefront pair',
+    feedStopPage: null,
+    reason: timeBudgetExceeded
+      ? 'the run stopped short of the platform run timeout before reaching this app/storefront pair'
+      : 'the run stopped before reaching this app/storefront pair',
   };
   pairOutcomes.push(pairSummary);
 }
 let truncationNote = '';
-if (!keepGoing) {
-  const cause = chargeLimitHit
+// `timeBudgetExceeded` is a second, independent way to end the walk early: unlike the cap/charge
+// stops it leaves `keepGoing` true (the run was still willing to take rows, it just ran out of
+// clock), so gating this note on `!keepGoing` alone used to let a timed-out run read as complete.
+if (!keepGoing || timeBudgetExceeded) {
+  const cause = timeBudgetExceeded
+    ? 'the run was approaching the platform run timeout and stopped early to return what it had'
+    : chargeLimitHit
     ? 'your pay-per-event charge limit was reached'
     : pushed >= maxResults
       ? `the maxResults cap (${maxResults}) was reached`
@@ -1077,7 +1136,10 @@ if (!keepGoing) {
     + (pairsNotReached.length
       ? ` The run stopped before finishing the app/storefront list — ${pairsNotReached.length} pair(s) were never fetched and returned nothing: ${pairsNotReached.join(', ')}.`
       : ' Every requested app/storefront pair was fetched, but the last one may have been cut short.')
-    + (chargeLimitHit
+    + (timeBudgetExceeded
+      ? ' Narrow the input (fewer apps/storefronts, or a lower "maxReviewsPerApp") so the run finishes inside the'
+        + " platform run timeout, raise the Actor's run timeout, or run the remaining pairs separately."
+      : chargeLimitHit
       ? ' Raise the Actor\'s charge limit and re-run to get the rest.'
       : ` Raise "maxResults" (currently ${maxResults}) and re-run to get the rest.`);
   log.warning(truncationNote.trim());
@@ -1105,6 +1167,16 @@ if (watchMode && storefrontErrorPairs.length) {
   );
 } else if (watchMode && seeding) {
   statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededPairs.size} app/country pair(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
+} else if (timeBudgetExceeded && pushed === 0) {
+  // Must be said BEFORE the two zero-result branches below, both of which would otherwise explain
+  // an empty dataset with the wrong cause: watch mode's reassuring "nothing new since the last run,
+  // you were charged for nothing", or the non-watch branch's `emptyPairs` list — which is itself
+  // empty here, since the pairs were never fetched rather than fetched and found empty. Detail (the
+  // unreached pairs and the fix) comes from truncationNote, appended just below.
+  statusMsg = (
+    `No reviews returned — the run stopped short of the platform run timeout before any review could be delivered`
+    + `${watchMode ? ` for watch label "${watchLabel}"` : ''}. That is not the same as Apple having nothing to serve.`
+  );
 } else if (watchMode && pushed === 0) {
   statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped + floorSkipped} matching review(s) had already been delivered or pre-dated the baseline. That is the expected result most of the time; you were charged for nothing.`);
 } else if (watchMode && saturatedPairs.length) {
@@ -1150,7 +1222,7 @@ const runComplete = pairOutcomes.length ? pairOutcomes.every((p) => p.complete =
 // never attempted) get a reason derived from their status, because "no reason recorded" must not
 // read as "nothing wrong".
 const firstShort = runComplete === false ? pairOutcomes.find((p) => p.complete !== true) : null;
-const STATUS_REASON = { error: 'storefront-error', badAppId: 'bad-app-id', notReached: 'not-reached' };
+const STATUS_REASON = { error: 'storefront-error', badAppId: 'bad-app-id', notReached: 'not-reached', timedOut: 'time-budget' };
 const runIncompleteReason = !firstShort ? null
   : (firstShort.incompleteReason ?? STATUS_REASON[firstShort.status] ?? 'pair-incomplete');
 const shortPairs = pairOutcomes.filter((p) => p.complete !== true).length;
