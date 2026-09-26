@@ -1044,6 +1044,49 @@ not validate, the alias-to-default behaviour is a free oracle. Probe a deliberat
 default's fingerprint, then every candidate is a one-line comparison against it.** This is cheaper and far more
 certain than TED-style 400-message exclusion (cycle 836), and it works on APIs that never error at all.
 
+## Cycle 842 — fixing `check-code-fields`' shorthand-property blind spot the naive way creates worse false positives than the bug it fixes
+
+Cycle 841 queued a real gap: `KEY_RE` required a literal `:` to recognize an object-literal key, so ES6 shorthand
+properties (`periodOfReport,` not `periodOfReport: periodOfReport,`) were invisible, producing false "declared but no
+literal emits it" soft warnings on any Actor whose row-builder used shorthand (confirmed on `sec-insider-trades-scraper`:
+6 real emitted fields misread as stale docs).
+
+**The naive fix — extend `KEY_RE` to also match a bare identifier followed by `,`/end-of-frame — broke 3 Actors that
+had never had a code-only drift problem.** `check-code-fields` decides whether a `{...}` literal is a dataset row by
+counting how many of its keys overlap the declared schema (`MIN_OVERLAP = 2`); once shorthand keys became visible,
+that overlap count could be satisfied by pure NAME COINCIDENCE in literals that were never rows at all:
+- `fec-campaign-finance-scraper`'s `fecGet('/candidates/', { q: candidateName, state, office, party, cycle, page, ... })`
+  — an outbound API query-params object — shares `state`/`office`/`party`/`page` with the *output* schema purely
+  because a candidate's own state/office/party happen to also be real dataset columns.
+- `fda-recall-scraper`'s internal per-product-type bookkeeping object `s = { productType, declaredMatches: null,
+  ..., status: 'ok', scanned: 0, ... }` shares `productType` (shorthand) + `status` (colon) with the dataset schema
+  and is bound to the generic name `s`, which the existing `NON_ROW_BIND` keyword list (`watch|criteria|summary|...`)
+  doesn't catch.
+- `substack-scraper` had the same shape (a non-row literal whose bare shorthand keys happened to match 2 real
+  dataset field names).
+
+All 3 were run-tracking/API-params objects sitting at exactly 1 colon-key of accidental overlap before the fix —
+under threshold, correctly ignored. Shorthand detection added just enough coincidental overlap to tip them over
+`MIN_OVERLAP` and turned the fix into 3 fresh false CODE-ONLY drifts (verified nothing was actually undeclared;
+`declaredMatches`/`q`/`tier` etc. are RUN_SUMMARY/query-param fields, not pushed rows).
+
+**Fix that keeps both properties: qualify a literal as a record shape using colon-keys only (unchanged, proven-safe
+heuristic), but once a literal qualifies, extract emitted fields from colon-keys AND shorthand-keys together.** This
+exactly closes the motivating gap — every real shorthand miss found (`sec-insider-trades-scraper`'s 6,
+`eu-ted-tenders-scraper`'s 7, `app-store-reviews-scraper`'s 4, plus smaller ones on `google-news-scraper`,
+`shopify-products-scraper`, `hacker-news-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`,
+`trademark-search-scraper`, `sam-gov-opportunities-scraper`) lived inside a literal that ALREADY had ≥2 colon-key
+overlap from its non-shorthand fields — while leaving all 3 false-positive literals below threshold exactly as
+before, since their only qualifying overlap came from shorthand names. Verified with a byte-level diff of the whole
+fleet's output before/after: 0 code-only drift both times, 10 Actors' soft-warning lists shrank (all hand-spot-checked
+against the real push path), 0 Actors' lists got worse.
+
+**Generalization: when a static heuristic's classification depends on counting matches against a target vocabulary
+(here: schema field names), do not let a broadened extraction rule feed BOTH the classification gate and the
+downstream report — a change that makes the extractor see more true positives will also make it see more
+coincidental ones, and the two need separate, independently-tunable thresholds.** The safe pattern is "old, narrow
+signal decides membership; new, broad signal only enriches an already-admitted item."
+
 **Second lesson — do not read a single app's identical list as a silent alias; check whether the facet is degenerate
 FOR THAT APP.** `purchase_type=non_steam_purchase` returned a list identical to `all` on Dota 2, the textbook cycle-839
 bug signature. It is not a bug: Dota 2 is free-to-play, so 2,771,732 of its 2,786,098 reviews genuinely *are*

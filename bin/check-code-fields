@@ -30,6 +30,20 @@ MIN_OVERLAP = 2  # keys shared with dataset_schema before a literal counts as a 
 
 KEY_RE = re.compile(r"(?:\A|,)\s*(?:'([A-Za-z_$][\w$]*)'|\"([A-Za-z_$][\w$]*)\"|([A-Za-z_$][\w$]*))\s*:")
 
+# Cycle 842: also recognize ES6 shorthand keys (`periodOfReport,` not `periodOfReport: periodOfReport,`).
+# Only a bare identifier can be shorthand in real JS (quoted keys always need `:`), and it closes
+# on a following comma or end-of-frame-text -- a literal `}` never appears in a frame's own text
+# (see object_literals), so end-of-text IS end-of-object for a trailing shorthand key.
+# Kept as a SEPARATE regex from KEY_RE rather than folded in: a literal only qualifies as a
+# record shape by its KEY_RE (colon) overlap with dataset_schema (see MIN_OVERLAP check below).
+# Query-param objects and internal counters often reuse a schema field's NAME by coincidence in
+# a bare shorthand slot (`{ q: x, state, office, party }` sent to an API, or `{ productType,
+# status: 'ok', scanned: 0 }` internal bookkeeping) without being a row shape at all; letting
+# shorthand keys count toward qualification tipped exactly those non-row literals over
+# MIN_OVERLAP and produced false CODE-ONLY drift on 3 Actors when first tried. Shorthand keys
+# are only ever used to ADD fields to a literal that colon-keys alone already qualified.
+SHORTHAND_KEY_RE = re.compile(r"(?:\A|,)\s*([A-Za-z_$][\w$]*)\s*(?=,|\Z)")
+
 
 BIND_RES = [
     re.compile(r'(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*\(?\s*$'),
@@ -147,9 +161,10 @@ def object_literals(src):
         i += 1
     keysets = []
     for text, bind in out:
-        keys = [a or b or c for a, b, c in KEY_RE.findall(text)]
-        if keys:
-            keysets.append((keys, bind))
+        colon_keys = [a or b or c for a, b, c in KEY_RE.findall(text)]
+        shorthand_keys = [k for k in SHORTHAND_KEY_RE.findall(text) if k not in colon_keys]
+        if colon_keys or shorthand_keys:
+            keysets.append((colon_keys, shorthand_keys, bind))
     return keysets
 
 
@@ -185,8 +200,12 @@ def main(argv):
         internal = set(re.findall(r'delete\s+[A-Za-z_$][\w$]*\.([A-Za-z_$][\w$]*)', src))
 
         emitted, record_shapes, suppressed = [], 0, []
-        for keys, bind in object_literals(src):
-            if len(dset.intersection(keys)) < MIN_OVERLAP:
+        for colon_keys, shorthand_keys, bind in object_literals(src):
+            # Qualification uses colon-keys only (see SHORTHAND_KEY_RE comment): a bare
+            # shorthand identifier reusing a schema field's name by coincidence (a query-param
+            # object, an internal counter) must not be able to tip a non-row literal over
+            # MIN_OVERLAP on its own.
+            if len(dset.intersection(colon_keys)) < MIN_OVERLAP:
                 continue
             # A literal bound to the name of a declared array/object field is that field's
             # ELEMENT shape, not a row: shopify-products-scraper's `const variants = [...]`
@@ -195,7 +214,7 @@ def main(argv):
                 suppressed.append(bind)
                 continue
             record_shapes += 1
-            for k in keys:
+            for k in colon_keys + shorthand_keys:
                 if k not in emitted and k not in internal:
                     emitted.append(k)
         suppress_fields = FIELD_SUPPRESS.get(slug, set()) if not show_all else set()
