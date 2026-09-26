@@ -48,10 +48,10 @@
   },
   "fec-campaign-finance-scraper": {
     "varied_test": 798,
-    "enum_audit": 428,
+    "enum_audit": 827,
     "unreachable_remedy": null,
     "competitor_audit": null,
-    "note": "per cycle 814's archive grep, earlier canary work cycles 391/428+"
+    "note": "cycle 827: independently re-verified both schema enums against OpenFEC's own API (previously only dated to cycle 428, never re-checked). office (H/S/P): live per-code counts all nonzero (H=3044, S=613, P=1561 candidates in 2024), and querying office=X returns a 422 with 'Must be one of: , H, S, P.' -- exact match to our schema, no missing/dead code. support_oppose_indicator (S/O): same pattern -- support_oppose_indicator=X on schedule_e returns 422 'Must be one of: S, O.', both real codes have >500k rows in the 2024 cycle. Both enums exhaustive and accurate, no code change needed."
   },
   "federal-register-scraper": {
     "varied_test": 802,
