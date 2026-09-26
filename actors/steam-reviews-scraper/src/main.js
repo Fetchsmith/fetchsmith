@@ -123,13 +123,44 @@ function watchKeyFor(label, criteria) {
   return { key: `watch-${safe}-${fp}`, fingerprint: fp };
 }
 
+// Steam keeps a review's recommendationid stable when its author edits it in place — verified live
+// 2026-09-26 by sampling real reviews on app 570 where timestamp_updated != timestamp_created
+// (e.g. recommendationid 181644785, created and later edited, same id both times). Editing a review
+// is exactly how a player flips their own thumbs-up/thumbs-down, so a returning id is not
+// necessarily old — same subset-of-filterable-fields gap already fixed on shopify-products-scraper
+// (h843), google-play-reviews-scraper (h844) and app-store-reviews-scraper (h845). Steam's reviews
+// have no developer-response concept at all (unlike Google Play), so only a recommendation flip is
+// worth watching here. Empty = both events, mirroring the rest of the fleet's watchEvents convention.
+const WATCH_EVENTS = ['new', 'recommendationChanged'];
+const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
+if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
+const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
+if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
+
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
+let watchChanged = 0; // already-delivered reviews re-delivered this run because voted_up flipped
+let watchEventsFiltered = 0; // a real recommendation change (or a brand-new review) excluded by watchEvents
 let unidentifiedSkipped = 0; // watch mode only: reviews Steam returned without a recommendationid
 const watchSeen = new Set();  // `${appId}:${reviewId}` already delivered under this label+fingerprint
+// watchId -> `recommended` (voted_up) the review had when last delivered, or null if unknown (a
+// record written before this feature existed). Parallel to seenIds on disk, same order/length.
+const watchMeta = new Map();
+const META_UNKNOWN = 0;
+function encodeMeta(recommended) {
+  if (recommended === true) return 1;
+  if (recommended === false) return 2;
+  return META_UNKNOWN;
+}
+function decodeMeta(code) {
+  if (code === 1) return true;
+  if (code === 2) return false;
+  return null;
+}
 const seededApps = new Set(); // appIds already baselined under this label+fingerprint
 
 if (watchMode) {
@@ -154,12 +185,27 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    const meta = Array.isArray(existing.seenMeta) ? existing.seenMeta : [];
+    existing.seenIds.forEach((id, i) => {
+      watchSeen.add(String(id));
+      // A record written before watchEvents existed has no seenMeta at all; a shorter-than-ids
+      // array decodes the missing tail as unknown rather than misaligning ids with the wrong flags.
+      watchMeta.set(String(id), decodeMeta(meta[i] ?? META_UNKNOWN));
+    });
     for (const a of existing.seededApps ?? []) seededApps.add(String(a));
+    const known = [...watchMeta.values()].filter((v) => v != null).length;
+    if (known === 0 && watchSeen.size > 0) {
+      log.info(
+        `Watch baseline for "${watchLabel}" predates change detection, so it holds no recommendation state: `
+        + 'this run reports new reviews only and records that state; recommendationChanged starts working '
+        + 'from the next run onwards.',
+      );
+    }
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchSeen.size} already-delivered review(s) across ${seededApps.size} app(s). Only reviews NOT in `
-      + 'that baseline will be returned and charged.',
+      + `that baseline, or already-delivered ones whose thumbs-up/thumbs-down flipped (events: ${[...watchEvents].join(', ')}), `
+      + 'will be returned and charged.',
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -178,6 +224,12 @@ if (watchMode) {
       + 'missed. Use sortBy="recent" for reliable alerting.',
     );
   }
+  if (!watchEvents.has('new')) {
+    log.info('"new" is not in watchEvents: brand-new reviews will be recorded in the baseline but not returned or charged for.');
+  }
+}
+if (!watchMode && watchEventsInput.length) {
+  log.warning('"watchEvents" only applies when "watchLabel" is set — this run is a normal one-off scrape and returns every matching review.');
 }
 
 async function saveWatchRecord(status) {
@@ -207,6 +259,10 @@ async function saveWatchRecord(status) {
     truncatedTotal: baselineTruncatedTotal,
     seededApps: Array.from(seededApps),
     seenIds: ids,
+    // Parallel to seenIds, same order/length: `recommended` each review had when last delivered.
+    // Written even for ids carried over from a pre-watchEvents record (as 0/unknown) so the two
+    // arrays never misalign.
+    seenMeta: ids.map((id) => encodeMeta(watchMeta.get(String(id)))),
   });
 }
 
@@ -215,9 +271,26 @@ let keepGoing = true;
 let chargeLimitReached = false; // Actor.charge()'s own per-event charge limit, not maxResults (h250)
 let seedCapHit = false;         // watch seeding stopped at SEED_CAP before the whole match set was recorded
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item, watchId = null, appSeeding = false) {
+// Charges and pushes with no "already delivered" guard — used both by pushResult (a genuinely new
+// id, never seen before) and directly by the recommendationChanged branch above (an id that IS
+// already in watchSeen on purpose, because it's a real change on an already-delivered review).
+async function chargeAndPush(item, watchId = null, metaCode = META_UNKNOWN) {
+  if (isPPE) {
+    const r = await Actor.charge({ eventName: 'result', count: 1 });
+    if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
+    await Actor.pushData(item); pushed += 1;
+    if (watchMode && watchId != null) { watchSeen.add(watchId); watchMeta.set(watchId, decodeMeta(metaCode)); }
+    if (r.eventChargeLimitReached) chargeLimitReached = true;
+    return !r.eventChargeLimitReached && pushed < maxResults;
+  }
+  await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
+  if (watchMode && watchId != null) { watchSeen.add(watchId); watchMeta.set(watchId, decodeMeta(metaCode)); }
+  return pushed < maxResults;
+}
+async function pushResult(item, watchId = null, appSeeding = false, metaCode = META_UNKNOWN) {
   if (watchMode && watchId != null && appSeeding) {
     watchSeen.add(watchId); // baseline run (or a newly-appeared app): record, never deliver, never charge
+    watchMeta.set(watchId, decodeMeta(metaCode));
     if (watchSeen.size >= SEED_CAP) { keepGoing = false; seedCapHit = true; }
     return keepGoing;
   }
@@ -225,17 +298,7 @@ async function pushResult(item, watchId = null, appSeeding = false) {
     watchSkipped += 1;
     return true; // already delivered under this label: not pushed, not charged, keep scanning
   }
-  if (isPPE) {
-    const r = await Actor.charge({ eventName: 'result', count: 1 });
-    if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
-    await Actor.pushData(item); pushed += 1;
-    if (watchMode && watchId != null) watchSeen.add(watchId);
-    if (r.eventChargeLimitReached) chargeLimitReached = true;
-    return !r.eventChargeLimitReached && pushed < maxResults;
-  }
-  await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
-  if (watchMode && watchId != null) watchSeen.add(watchId);
-  return pushed < maxResults;
+  return chargeAndPush(item, watchId, metaCode);
 }
 
 // got-scraping does NOT throw on 4xx/5xx, so without a status check an error page reaches
@@ -555,10 +618,47 @@ async function scrapeReviews(appId) {
         continue;
       }
       const watchId = watchMode ? `${appId}:${item.reviewId}` : null;
+      const metaCode = encodeMeta(item.recommended);
+      // Watch mode, incremental run: an id already in the baseline is not automatically old. Steam
+      // keeps a review's recommendationid stable when its author edits it in place (verified live,
+      // see the comment at WATCH_EVENTS above), so a returning id must be diffed against the
+      // recorded recommendation rather than skipped unconditionally — same gap as
+      // google-play-reviews-scraper h844 / app-store-reviews-scraper h845.
+      if (watchMode && !appSeeding && watchId != null && watchSeen.has(watchId)) {
+        const previous = watchMeta.get(watchId) ?? null;
+        const changed = previous != null && item.recommended != null && previous !== item.recommended;
+        if (changed && watchEvents.has('recommendationChanged')) {
+          item.watchEvent = 'recommendationChanged';
+          item.previousRecommended = previous;
+          watchChanged += 1;
+          newForApp += 1;
+          // chargeAndPush, not pushResult: pushResult's own "already delivered" guard would
+          // unconditionally skip this id since it IS already in watchSeen — that guard exists to
+          // stop a genuinely-unchanged repeat from being re-charged, not to block a real change.
+          keepGoing = await chargeAndPush(item, watchId, metaCode);
+        } else {
+          // Record the new recommendation anyway: an excluded change must not be re-reported later
+          // as a change from the stale pre-change state.
+          if (changed) watchEventsFiltered += 1;
+          watchMeta.set(watchId, decodeMeta(metaCode));
+          watchSkipped += 1;
+        }
+        continue;
+      }
+      if (watchMode && !appSeeding && watchId != null && !watchEvents.has('new')) {
+        // "new" deselected: record it (and its recommendation) in the baseline so a later change
+        // can still be detected, but do not deliver or charge for it.
+        watchSeen.add(watchId);
+        watchMeta.set(watchId, decodeMeta(metaCode));
+        watchEventsFiltered += 1;
+        watchSkipped += 1;
+        continue;
+      }
+      if (watchMode && !appSeeding && watchId != null) { item.watchEvent = 'new'; item.previousRecommended = null; }
       // Counts reviews that passed the filters AND were not already in the baseline — the
       // saturation signal below. Distinct from pushResult's own watchSkipped bookkeeping.
-      if (!(watchMode && !appSeeding && watchSeen.has(watchId))) newForApp += 1;
-      keepGoing = await pushResult(item, watchId, appSeeding);
+      newForApp += 1;
+      keepGoing = await pushResult(item, watchId, appSeeding, metaCode);
     }
     if (pastWindow) break;
     const next = body.cursor;
@@ -794,11 +894,11 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
 } else if (watchMode && seeding) {
   await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode && saturatedApps.length) {
   await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} new review(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged).${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
 } else if (pushed === 0) {
   // timeBudgetExceeded checked FIRST: without it, timing out before any id was even attempted falls
   // into the final default below ("no valid Steam App IDs could be parsed from your input") -- a
@@ -867,6 +967,9 @@ const runSummary = {
   baselineTruncated: watchMode ? baselineTruncated : null,
   baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   skippedSeen: watchMode && !seeding ? watchSkipped : null,
+  watchEvents: watchMode ? [...watchEvents] : null,
+  watchChanged: watchMode && !seeding ? watchChanged : null,
+  watchEventsFiltered: watchMode && !seeding ? watchEventsFiltered : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

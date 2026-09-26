@@ -51,6 +51,22 @@
         "title": "Recommended",
         "example": true
       },
+      "watchEvent": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "WatchEvent",
+        "example": "new"
+      },
+      "previousRecommended": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "PreviousRecommended",
+        "example": null
+      },
       "createdAt": {
         "type": [
           "string",

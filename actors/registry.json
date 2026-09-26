@@ -636,6 +636,8 @@
         "review",
         "language",
         "recommended",
+        "watchEvent",
+        "previousRecommended",
         "createdAt",
         "updatedAt",
         "votesUp",

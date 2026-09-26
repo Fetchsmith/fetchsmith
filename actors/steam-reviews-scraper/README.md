@@ -44,6 +44,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `includeOwnerEstimates` | boolean | `false` | `games` mode: add estimated owner range, peak concurrent players yesterday, and Steam's crowd-voted tags with vote counts — see below |
 | `searchLimit` | integer | `10` | Games taken from each search term |
 | `watchLabel` | string | — | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Reviews mode only. Leave empty for normal runs. |
+| `watchEvents` | array | *(both)* | Watch mode only. Which change types to report: `new` and/or `recommendationChanged` (an already-delivered review whose thumbs-up/thumbs-down flipped). Leave empty for both. |
 | `webhookUrl` | string | — | Optional. An http(s) URL to POST a small JSON completion summary to when the run finishes — see FAQ. |
 
 ## Off-topic review bombs (`includeOffTopic`)
@@ -72,6 +73,7 @@ Set `watchLabel` to any name and this Actor stops re-delivering the same reviews
 
 1. **The first run for a label is a free baseline.** It records which reviews already exist for every game in your input and returns **zero rows — you are charged nothing**.
 2. **Every run after that returns only reviews that weren't in the baseline**, and adds them to it. Nothing new → zero rows → zero charge.
+3. **An already-delivered review isn't necessarily done changing.** Steam lets a reviewer edit their own review in place — same `reviewId`, but the thumbs-up/thumbs-down (and the review's own `updatedAt`) can flip. Set `watchEvents` to control which of `new`/`recommendationChanged` you get charged for (default: both).
 
 The baseline lives in **your own** Apify account, in a named key-value store called `fetchsmith-steam-reviews-watch`, keyed by your label plus a fingerprint of `apps`/`searchTerms`/`searchLimit`/`country`/`language`/`reviewType`/`purchaseType`/`includeOffTopic`/`sortBy`/`dayRange` **and every `keyword`/`minPlaytimeHours`/`reviewsAfter`/`reviewsBefore` filter** — all of them decide what "new" means, so changing any of them gives you a fresh baseline rather than a silently wrong one. Delete the record to start over; use different labels to watch several filter sets in parallel.
 
@@ -219,6 +221,9 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 
 **Is there a machine-readable record of whether a run got everything, or stopped short?**
 Yes — every run writes a `RUN_SUMMARY` record to its key-value store (`GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY`, no webhook needed). It carries `delivered`, `complete` (a boolean — a run can SUCCEED and still be short), and when `complete` is `false`, `incompleteReason` — one of `upstream-error` (Steam had an outage), `charge-limit`, `max-results`, `seed-cap` (watch baseline capped before finishing), `upstream-degraded` (some apps hit a Steam data fault, others delivered fine), `depth-cap` (`maxReviewsPerApp` was hit while a filter was still discarding matches) or `watch-saturated` (the whole scanned window was new — older new reviews may sit unread) — plus `incompleteDetail` with the specifics. Watch-mode runs also carry `baselineSaved`/`baselineSize`/`baselineTruncated`. A run that hits an upstream fault on every app no longer fails silently mid-script: the error is recorded, the watch baseline and `RUN_SUMMARY` are still written, and only then does the run end FAILED — so a failed incremental run's baseline still reflects every row it already delivered and charged.
+
+**I'm watching a game and a review I already got paid for is coming back again — is that a bug?**
+No — it's `recommendationChanged`. Steam keeps a review's id stable when its author edits it in place, and editing is exactly how a player flips their own thumbs-up/thumbs-down (verified live 2026-09-26: real reviews on appId `570` show the same `recommendationid` with `timestamp_updated` well after `timestamp_created`). A watch baseline built before this feature existed carries no recommendation state, so `recommendationChanged` only starts firing from the *second* run after you get it — the log says so explicitly. Set `watchEvents: ["new"]` if you never want to pay for a flip, only for genuinely new reviews.
 
 **What is `sortBy: "funny"` and how is it different from `all`?**
 It's Steam's fourth review ordering — the "Funny" tab on a store page's review list, ranked by funny votes rather than helpfulness. It returns a genuinely different set of reviews, not a re-sort of the same ones: on Dota 2 the top funny reviews have 5,000–15,000 funny votes each and date from 2013–2017, while the top *helpful* reviews are from the last 30 days with double-digit funny votes. Use it to pull a game's best-known community jokes and copypastas (community-management, marketing and meme-research work) rather than its buying-decision feedback. Two things to know: it is **always all-time** (Steam offers no date control for it, so `dayRange` is ignored and the run says so), and it is not chronological, so it's a poor choice for watch mode.
