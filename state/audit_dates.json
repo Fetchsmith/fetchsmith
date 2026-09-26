@@ -136,9 +136,9 @@
   "substack-scraper": {
     "varied_test": 794,
     "unreachable_remedy": 813,
-    "enum_audit": null,
+    "enum_audit": 839,
     "competitor_audit": null,
-    "note": "2 real bugs found+fixed: discoverType cycle 808 (build 0.1.38), unreachable leaderboard-cap message cycle 812 (build 0.1.39); cycle 813 left the 'widen filters' phrasing as weak-but-not-wrong"
+    "note": "2 real bugs found+fixed: discoverType cycle 808 (build 0.1.38), unreachable leaderboard-cap message cycle 812 (build 0.1.39); cycle 813 left the 'widen filters' phrasing as weak-but-not-wrong | cycle 839: 4 schema enums -- audienceFilter/contentType(all/newsletter/podcast/thread)/discoverType(all/newsletter/podcast) are code-side allowlists on fields Substack's own JSON (post.audience/post.type/publication.type) already returns as free text, not validated by any upstream enum, so 'exhaustive' just means 'every value observed live' -- not separately probed this cycle. leaderboardTier(all/free/paid) WAS probed directly against Substack's category leaderboard API (substack.com/api/v1/category/public/<id>/<tier>): verified live across 3 categories (culture id96, technology id4, humor id49692) at every page depth (up to 15 pages/375 pubs) that 'free' returns the byte-identical publication list, in the same order, as 'all' -- it is NOT a real filter, just a silent alias. Only 'all' and 'paid' are real (paid is a genuinely different, separately-ranked, non-subset population). No cheap client-side substitute exists either -- payments_state does not predict paid-leaderboard membership (checked: several 'enabled' pubs on the all-list were absent from the paid-list). Fixed: input_schema.json enumTitle + description now say this explicitly, main.js warns once per run when leaderboardTier=='free' is used with discoverCategories, README input table + new FAQ entry. Kept 'free' selectable (backwards compat, and it is harmless -- equivalent to 'all') rather than removing it. Build 0.1.40, verified live (SUCCEEDED, correct warning, 3 rows) and regression-checked (paid tier still returns its own distinct list, default-input Store gate still 50 rows)."
   },
   "trademark-search-scraper": {
     "varied_test": 815,

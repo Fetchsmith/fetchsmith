@@ -592,6 +592,20 @@ for (const raw of input.postUrls ?? []) {
 let unknownCategories = false;
 const leaderboardEntries = [];
 if (discoverCategories.length) {
+  // Verified live cycle 839 across 3 categories at every page depth (culture/technology/humor,
+  // 15+ pages each): category/public/<id>/free is NOT a real Substack leaderboard tier. It
+  // returns the byte-identical publication list, in the same order, as /all — never a free-only
+  // ranking. /paid genuinely returns a different, separately-ranked list, so only "all"/"paid"
+  // are real. There is no cheap client-side substitute (a publication's payments_state does not
+  // reliably predict membership in the /paid list, so it cannot be used to reconstruct a true
+  // free-only set).
+  if (leaderboardTier === 'free') {
+    log.warning(
+      'leaderboardTier="free" is not a real Substack leaderboard filter — verified live, it returns'
+      + ' the exact same list as "all" (which mixes free and paid-tier publications), never a'
+      + ' free-only ranking. Use leaderboardTier="paid" to find monetized newsletters instead.',
+    );
+  }
   const cats = await resolveCategoryIds(discoverCategories);
   unknownCategories = cats.length === 0;
   for (const cat of cats) {

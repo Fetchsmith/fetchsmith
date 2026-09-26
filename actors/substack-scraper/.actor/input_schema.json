@@ -56,7 +56,7 @@
     "leaderboardTier": {
       "title": "Leaderboard ranking",
       "type": "string",
-      "description": "Which Substack leaderboard ranking to pull publications from for discoverCategories: overall, free-only, or paid-only (Substack ranks these as separate lists, e.g. substack.com/leaderboard/technology/paid).",
+      "description": "Which Substack leaderboard ranking to pull publications from for discoverCategories: overall, or paid-only (Substack ranks paid as its own list, e.g. substack.com/leaderboard/technology/paid). \"free\" is accepted for backwards compatibility but is NOT a real Substack leaderboard tier — verified live across 3 categories and every page depth, it always returns the exact same list as \"all\" (which mixes free and paid-tier publications), never a free-only ranking. Use \"paid\" to find monetized newsletters; there is no upstream free-only equivalent.",
       "editor": "select",
       "default": "all",
       "enum": [
@@ -66,7 +66,7 @@
       ],
       "enumTitles": [
         "Overall leaderboard",
-        "Free leaderboard",
+        "Free leaderboard (same as Overall — see description)",
         "Paid leaderboard"
       ]
     },
