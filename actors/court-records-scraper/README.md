@@ -34,6 +34,7 @@ Search is full text across case names, party and attorney names, docket text and
 | `startUrl` | string | Paste a courtlistener.com search or API URL instead of filling in the fields above — see below. |
 | `maxResults` | integer | Default 100. With `both`, the budget is split evenly between the two indexes, and whatever one index leaves unused goes to the other. |
 | `watchLabel` | string | Incremental mode — see below. |
+| `watchChanges` | boolean | Only with `watchLabel`. Off by default. When on, a docket you already saw is re-delivered (and charged again) if its case is terminated since — see below. |
 | `webhookUrl` | string | Optional. POST a small JSON completion summary (records pushed, rows scanned, pages, CourtListener's reported total, dataset ID) here when the run finishes — see FAQ. |
 
 ### Paste a CourtListener search URL
@@ -78,9 +79,11 @@ Set `watchLabel` to any name and schedule the Actor. The **first** run on that l
 
 **Baseline size cap.** A baseline holds up to **60,000** record ids in one saved record. If a label's baseline grows past that, the oldest-first-seen ids are dropped — and a dropped id is no longer recognised, so that opinion/docket comes back as "new" on a later run **and is charged again**. The run that drops them says so explicitly: a warning in the log, a note on the run's status message, and `baselineTruncated` / `baselineTruncatedTotal` (this run / the whole life of the label) in `RUN_SUMMARY`, on the `webhookUrl` payload and in the saved record. If you see it, narrow the watch query (a court, fewer `recordTypes`, a shorter filed-date window) or split it across several labels so each baseline stays under the cap. A baseline run also stops recording at 20,000 records, and already warns separately when it hits that.
 
+**A docket's own id never changes when its case closes — set `watchChanges` to hear about that too.** By default, watch mode only ever tells you about brand-new records: a docket you were already delivered stays silent forever after, even the day the case is dismissed or a judgment issues, because CourtListener keeps the same `docket_id` for the life of the case. Set `watchChanges: true` and a docket whose `dateTerminated` moves from empty to a real date since you last saw it is re-delivered — charged again, same as a new row — tagged with `_watchChangeType: ["dateTerminated"]` and `_watchPrevious: { dateTerminated: null }` (or whatever the earlier value was) so you don't have to diff it against your own last-seen copy. Only dockets can fire this; opinions have no comparable field and are unaffected whether `watchChanges` is on or off. A baseline seeded before this option existed keeps working unchanged — it just starts tracking terminations from the run you first turn it on, not retroactively.
+
 ### Webhook notification on completion
 
-Set `webhookUrl` to an http(s) URL and this Actor POSTs a small JSON summary there when the run finishes — `actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, `totalReported`, a `summary` object (identical to the `RUN_SUMMARY` record below), and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`. This is a plain input field, not an Apify platform webhook (those are configured separately per Task/Actor via the Console or Webhooks API) — set it on the run itself for a quick completion ping without extra setup. It's best-effort: a failed or slow webhook only logs a warning, fired after every record is already pushed and charged, so it never affects the result set or your bill.
+Set `webhookUrl` to an http(s) URL and this Actor POSTs a small JSON summary there when the run finishes — `actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, `totalReported`, a `summary` object (identical to the `RUN_SUMMARY` record below), and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`. This is a plain input field, not an Apify platform webhook (those are configured separately per Task/Actor via the Console or Webhooks API) — set it on the run itself for a quick completion ping without extra setup. It's best-effort: a failed or slow webhook only logs a warning, fired after every record is already pushed and charged, so it never affects the result set or your bill.
 
 ### Did this run get everything? Check `RUN_SUMMARY`
 
@@ -138,7 +141,7 @@ Every run writes a `RUN_SUMMARY` record to its key-value store (`GET /v2/actor-r
 }
 ```
 
-All 39 fields are listed with types and examples in the **Output schema** tab.
+All 41 fields are listed with types and examples in the **Output schema** tab.
 
 ## Use cases
 

@@ -42,6 +42,9 @@ if (!Object.hasOwn(TYPE_FOR, recordTypeRaw) && recordTypeRaw !== 'both') {
 let query = String(input.query ?? '').trim();
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 const watchLabel = String(input.watchLabel ?? '').trim();
+// Off by default: a re-delivered row is a real charge, and most watch labels just want new
+// filings. Same default and reasoning as fda-recall-scraper's watchChanges (cycle 848).
+const watchChanges = Boolean(input.watchChanges);
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -606,7 +609,38 @@ let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
-const watchSeen = new Set();
+let changedCount = 0;
+// key -> { t: dateTerminated } | {} (empty = unknown baseline, see below). A docket's own id never
+// changes when the case closes, so an id-only baseline (the pre-849 shape) could never tell a
+// buyer their watched case was terminated, however long the schedule ran — live-proved cycle 848
+// (`r-61654321` filed 2021-12-31, terminated 2024-01-24, 25 months later, same id both times).
+// Opinions have no comparable mutable field (`dateTerminated` is always null on that side), so
+// their snapshot never changes and this is a pure no-op there.
+//
+// UNLIKE fda-recall-scraper's status/classification (never legitimately null on a real row, cycle
+// 848 verified this live), `dateTerminated: null` IS the real, common value for every still-open
+// docket -- the overwhelming majority. A snapshot keyed on "is `t` null?" to mean "unknown legacy
+// baseline" would therefore suppress the exact transition this feature exists to catch: a case
+// seeded as open (a real, known `t: null`) closing later is null -> a-real-date, identical in
+// shape to "we never captured a value at all". So the unknown marker here is PRESENCE of the `t`
+// key, not its value -- `{}` (no `t` property) means "never captured", `{ t: null }` means "captured
+// and confirmed open". Caught by a local logic-only round-trip test before shipping (live
+// CourtListener probing was rate-limited into a ~40min cooldown mid-cycle) -- an earlier draft of
+// this Actor used fda's null-means-unknown convention verbatim and it silently never fired on the
+// single most common real transition (open -> closed).
+const watchSeen = new Map();
+
+function snapshotOf(item) {
+    return { t: item.dateTerminated ?? null };
+}
+
+// A changed docket is re-delivered with these fields describing exactly what moved, so a buyer
+// doesn't have to diff the row against their own last-seen copy to find out.
+function changesBetween(prev, next) {
+    if (!prev || !Object.hasOwn(prev, 't')) return null;
+    if (prev.t !== next.t) return { types: ['dateTerminated'], previous: { dateTerminated: prev.t } };
+    return null;
+}
 
 if (watchMode) {
     watchStore = await Actor.openKeyValueStore(WATCH_STORE);
@@ -615,10 +649,24 @@ if (watchMode) {
     const existing = await watchStore.getValue(key);
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
-        for (const id of existing.seenIds) watchSeen.add(String(id));
+        // Pre-849 records stored `seenIds` as a flat array of plain id strings -- handled here so
+        // an existing buyer's baseline keeps working unchanged instead of needing a fresh seed the
+        // day this feature shipped. Those ids simply have no snapshot yet (the empty-object
+        // "unknown" marker above), so watchChanges only starts detecting terminations from here on,
+        // never against a backlog it never captured -- the FIRST incremental run that touches each
+        // id resyncs it to a real, known snapshot (see the walk loop below), so the gap is exactly
+        // one run wide per id, never permanent.
+        for (const entry of existing.seenIds) {
+            if (entry && typeof entry === 'object') {
+                watchSeen.set(String(entry.i), Object.hasOwn(entry, 't') ? { t: entry.t } : {});
+            } else {
+                watchSeen.set(String(entry), {});
+            }
+        }
         log.info(
             `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-            + `${watchSeen.size} already-delivered record(s). Only records NOT in that baseline are returned and charged.`,
+            + `${watchSeen.size} already-delivered record(s). Only records NOT in that baseline are returned and charged`
+            + (watchChanges ? ', plus any already-delivered docket whose case was terminated since we last saw it.' : '.'),
         );
     } else {
         watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -645,16 +693,16 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-    const all = Array.from(watchSeen);
-    const ids = all.slice(-WATCH_KEEP);
+    const all = Array.from(watchSeen.entries());
+    const entries = all.slice(-WATCH_KEEP);
     // An id past the record cap is not forgotten harmlessly: the next run does not find it in the
     // baseline, so the opinion/docket is delivered and CHARGED again even though the buyer already
-    // paid for it. The dropped end is oldest-FIRST-SEEN (re-seeing an id does not move it in the
-    // Set), so on CourtListener -- where a docket keeps matching the same court/party filter for
+    // paid for it. The dropped end is oldest-FIRST-SEEN (re-seeing an id does not move it in a Map),
+    // so on CourtListener -- where a docket keeps matching the same court/party filter for
     // years -- the ids that fall off are exactly the long-lived records that will match again on
     // the very next run. The cap itself is deliberate (KV record size budget); the bug this fixes
     // was that it applied in silence.
-    baselineTruncated = all.length - ids.length;
+    baselineTruncated = all.length - entries.length;
     baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
     if (baselineTruncated > 0) {
         log.warning(
@@ -672,10 +720,15 @@ async function saveWatchRecord(status) {
         lastRunAt: new Date().toISOString(),
         lastRunStatus: status,
         runCount: (watchRecord.runCount ?? 0) + 1,
-        seenCount: ids.length,
+        seenCount: entries.length,
         truncatedLastRun: baselineTruncated,
         truncatedTotal: baselineTruncatedTotal,
-        seenIds: ids,
+        // Compact per-entry shape: id + terminated-date snapshot. `t` is OMITTED (not `null`) for
+        // an id whose snapshot was never captured (a pre-849 baseline entry untouched by any run
+        // since) -- that omission is the "unknown" marker `changesBetween` checks for, distinct
+        // from a captured-and-confirmed-open `t: null`. Kept short because WATCH_KEEP can hold up
+        // to 60,000 of these in one KV record.
+        seenIds: entries.map(([id, snap]) => (Object.hasOwn(snap, 't') ? { i: id, t: snap.t } : { i: id })),
     });
 }
 
@@ -749,18 +802,36 @@ async function walk(state, target) {
             seenIdsThisRun.add(key);
 
             if (seeding) {
-                watchSeen.add(key);
+                watchSeen.set(key, snapshotOf(item));
                 if (watchSeen.size >= SEED_CAP) { stop = true; break; }
                 continue;
             }
-            // Already delivered under this watch label: dropped before any charge, so a record
-            // is never paid for twice.
-            if (watchMode && watchSeen.has(key)) { skippedSeen += 1; continue; }
+            // Already delivered under this watch label: normally dropped before any charge, so a
+            // record is never paid for twice -- UNLESS watchChanges is on and its case was
+            // terminated since we last saw it, in which case it is re-delivered (charged like a
+            // new row) tagged with exactly what changed.
+            if (watchMode && watchSeen.has(key)) {
+                const nextSnap = snapshotOf(item);
+                const change = watchChanges ? changesBetween(watchSeen.get(key), nextSnap) : null;
+                if (!change) {
+                    // Snapshot kept current either way, so turning watchChanges on later detects
+                    // only drift from that point, not a backlog since the baseline.
+                    watchSeen.set(key, nextSnap);
+                    skippedSeen += 1;
+                    continue;
+                }
+                const before = pushed;
+                const keepGoing = await pushResult({ ...item, _watchChangeType: change.types, _watchPrevious: change.previous });
+                if (pushed > before) { state.delivered += 1; watchSeen.set(key, nextSnap); changedCount += 1; }
+                if (!keepGoing || pushed >= maxResults) { stop = true; break; }
+                if (pushed >= target) break;
+                continue;
+            }
 
             const before = pushed;
             const keepGoing = await pushResult(item);
             if (pushed > before) state.delivered += 1;
-            if (watchMode && pushed > before) watchSeen.add(key);
+            if (watchMode && pushed > before) watchSeen.set(key, snapshotOf(item));
             if (!keepGoing || pushed >= maxResults) { stop = true; break; }
             if (pushed >= target) break;
         }
@@ -892,8 +963,10 @@ if (watchMode && seedFailure) {
         );
     } else {
         log.info(
-            `Watch label "${watchLabel}": ${pushed} new record(s) since the last run `
-            + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            `Watch label "${watchLabel}": ${pushed - changedCount} new record(s)`
+            + (watchChanges ? ` and ${changedCount} changed record(s) (case terminated)` : '')
+            + ` since the last run (${skippedSeen} already-delivered row(s) skipped, uncharged); `
+            + `baseline now holds ${watchSeen.size}.`,
         );
     }
 }
@@ -967,6 +1040,7 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
+    changedCount: watchMode && !seeding ? changedCount : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
@@ -1009,7 +1083,8 @@ if (webhookUrl) {
         pages,
         totalReported,
         watchLabel: watchMode ? watchLabel : null,
-        watchNewCount: watchMode && !seeding ? pushed : null,
+        watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
+        watchChangedCount: watchMode && !seeding ? changedCount : null,
         watchSeeding: watchMode ? seeding : null,
         // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a polling
         // consumer read the identical completeness facts.

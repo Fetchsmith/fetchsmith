@@ -128,6 +128,12 @@
       "description": "Optional. Name this saved search to get ONLY records that are new since its last run. The first run on a label records the current matches as a baseline and returns zero results (you are charged nothing); every run after that returns only what appeared since. Changing any filter starts a fresh baseline under the same label. Leave empty for a normal one-off run.",
       "editor": "textfield"
     },
+    "watchChanges": {
+      "title": "Also alert when a docket case closes",
+      "type": "boolean",
+      "description": "Only used with watchLabel, and only affects dockets (RECAP). When on, a docket you were already alerted on is re-delivered (charged again) if its case is terminated after you first saw it — CourtListener keeps the docket's own id stable when a case closes, so without this option a buyer never learns a watched case ended, no matter how long the schedule runs. Re-delivered rows are tagged with _watchChangeType and _watchPrevious showing exactly what moved. Opinions have no comparable mutable field and are unaffected either way. Off by default, so a plain watchLabel only ever alerts on brand-new records, same as before this option existed.",
+      "default": false
+    },
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",
