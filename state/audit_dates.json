@@ -75,9 +75,9 @@
   "grants-gov-scraper": {
     "varied_test": 803,
     "unreachable_remedy": 553,
-    "enum_audit": null,
+    "enum_audit": 828,
     "competitor_audit": null,
-    "note": "unreachable_remedy date per cycle 814's archive-grep range 526-553, not individually re-verified"
+    "note": "unreachable_remedy date per cycle 814's archive-grep range 526-553, not individually re-verified. cycle 828 enum_audit (first ever): all 5 enum fields checked live against Grants.gov's own /search2 facet lists, which self-describe every valid value WITH a count in a single request (oppStatusOptions/eligibilities/fundingCategories/fundingInstruments), so dead AND missing values are both detectable at once. oppStatuses (4), eligibilities (17), fundingInstruments (4): exact set match, zero dead values. TWO REAL GAPS FOUND AND FIXED in build 0.1.35: (1) fundingCategories was missing 'RA' (Recovery Act, 414 real opportunities) -- 27 of the API's 28 values; buyers could not filter for it at all. Verified live (hitCount 414) and by a platform run returning 6 real Recovery Act rows. (2) sortBy offered only 4 of the 6 working values -- 'oppNum|asc'/'oppNum|desc' both work and genuinely sort by opportunity number (live-proved: asc 0660-ZA28,09HQPA0021,... vs desc W912HZ26S0001,...), and they are the ONLY stable sort key here, which matters for paging a large set across runs as grants open/close. Added both with that rationale in the description. Invalid probes (title|asc, agencyCode|asc, postedDate|desc, relevance|desc, bare 'closeDate', 'closeDate|descending') all silently return hitCount 0 with errorcode 0 -- confirming the schema's existing warning that an unsupported sortBy is a silent zero-row, not an error. Also aligned the EIC title to Grants.gov's official label (added 'and Materials'). No stale count claims in README/meta.json/registry to follow up."
   },
   "hacker-news-scraper": {
     "unreachable_remedy": 801,

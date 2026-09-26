@@ -122,6 +122,7 @@
           "NR",
           "OZ",
           "O",
+          "RA",
           "RT",
           "RD",
           "ST",
@@ -138,7 +139,7 @@
           "Education",
           "Employment, Labor and Training",
           "Energy",
-          "Energy Infrastructure and Critical Minerals",
+          "Energy Infrastructure and Critical Minerals and Materials",
           "Environment",
           "Food and Nutrition",
           "Health",
@@ -151,6 +152,7 @@
           "Natural Resources",
           "Opportunity Zone Benefits",
           "Other",
+          "Recovery Act",
           "Recreation and Tourism",
           "Regional Development",
           "Science and Technology / R&D",
@@ -204,21 +206,25 @@
     "sortBy": {
       "title": "Sort order",
       "type": "string",
-      "description": "Sort by open date or close date. An unsupported value silently returns zero rows on Grants.gov's own API, so only these validated options are offered.",
+      "description": "Sort by open date, close date, or opportunity number. An unsupported value silently returns zero rows on Grants.gov's own API (no error), so only these live-validated options are offered. Opportunity number is the only sort that is stable across runs -- use it if you page a large result set over several runs and need the order not to shift as grants open and close.",
       "editor": "select",
       "enum": [
         "",
         "openDate|desc",
         "openDate|asc",
         "closeDate|desc",
-        "closeDate|asc"
+        "closeDate|asc",
+        "oppNum|asc",
+        "oppNum|desc"
       ],
       "enumTitles": [
         "Default (most relevant)",
         "Open date, newest first",
         "Open date, oldest first",
         "Close date, soonest last",
-        "Close date, soonest first"
+        "Close date, soonest first",
+        "Opportunity number, A-Z (stable)",
+        "Opportunity number, Z-A (stable)"
       ],
       "default": ""
     },
