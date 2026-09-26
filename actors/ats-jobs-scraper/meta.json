@@ -9,12 +9,12 @@
       "eventTitle": "Job posting",
       "eventDescription": "One normalized job posting returned to the dataset.",
       "eventTieredPricingUsd": {
-        "FREE": { "tieredEventPriceUsd": 0.0015 },
-        "BRONZE": { "tieredEventPriceUsd": 0.0013 },
-        "SILVER": { "tieredEventPriceUsd": 0.0011 },
-        "GOLD": { "tieredEventPriceUsd": 0.001 },
-        "PLATINUM": { "tieredEventPriceUsd": 0.001 },
-        "DIAMOND": { "tieredEventPriceUsd": 0.001 }
+        "FREE": { "tieredEventPriceUsd": 0.001 },
+        "BRONZE": { "tieredEventPriceUsd": 0.00085 },
+        "SILVER": { "tieredEventPriceUsd": 0.00075 },
+        "GOLD": { "tieredEventPriceUsd": 0.0007 },
+        "PLATINUM": { "tieredEventPriceUsd": 0.0007 },
+        "DIAMOND": { "tieredEventPriceUsd": 0.0007 }
       }
     }
   }
