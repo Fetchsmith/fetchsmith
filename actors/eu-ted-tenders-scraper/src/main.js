@@ -373,6 +373,8 @@ let apiErrorMessage = null;
 // baseline is worse than no baseline: it is saved as complete, so every notice past
 // the stopping point is reported as "new" — and charged — on the first incremental run.
 let seedError = null;
+let seedErrorStatus = null;
+let httpErrorMessage = null;
 
 // gotScraping runs with throwHttpErrors:false, so got's own `retry` never fires on a
 // non-2xx — a single TED 429 used to end the run instantly (seen live 2026-09-11: the
@@ -380,6 +382,30 @@ let seedError = null;
 // notices). Retry transient statuses here, honouring Retry-After when TED sends one.
 const TRANSIENT_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
+// A 4xx from TED is a rejected QUERY, not an outage: it is never retried above, and
+// re-running the same input will fail the same way forever. Telling the buyer "not a
+// problem with your input — re-run in a few minutes" (what every failure path said
+// before cycle 836) sends them into an infinite retry loop. The commonest cause by far
+// is an unsupported filter value: TED validates notice-type/procedure-type/buyer-country
+// server-side and answers 400 QUERY_UNSUPPORTED_FIELD_VALUE naming the bad value.
+const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
+
+// Tail sentence for a failure message: blame the input or blame TED, never both.
+function upstreamAdvice(statusCode) {
+  return INPUT_ERROR_STATUS.has(statusCode)
+    ? `HTTP ${statusCode} means TED REJECTED THE QUERY, so re-running the same input will not help — fix the input `
+      + 'shown in the message above (most often an unsupported "Notice types", "Procedure types" or "Buyer countries" '
+      + 'value, or an invalid "Expert query"), then run again.'
+    : `This is a TED-side outage or rate limit (HTTP ${statusCode}), not a problem with your input — please re-run `
+      + 'in a few minutes.';
+}
+
+// TED puts its explanation in the JSON body of a non-2xx ("Value 'x' is not supported for
+// search field 'notice-type' in expert search") — surfacing it is what makes the failure fixable.
+function upstreamMessage(body) {
+  if (!body || typeof body !== 'object') return null;
+  return body.message ?? body.error?.message ?? null;
+}
 
 async function fetchPage(pageNum, fieldsOverride) {
   let resp = await fetchPageOnce(pageNum, fieldsOverride);
@@ -443,8 +469,10 @@ async function seedBaseline() {
   while (watchSeen.size < SEED_CAP && (seedPage - 1) * PAGE_SIZE < seedTotal) {
     const resp = await fetchPage(seedPage, seedFields);
     if (resp.statusCode !== 200) {
-      log.warning(`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage} — stopping baseline walk early.`);
-      seedError = `TED returned HTTP ${resp.statusCode} on baseline page ${seedPage}`;
+      const upstream = upstreamMessage(resp.body);
+      log.warning(`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage}${upstream ? `: ${upstream}` : ''} — stopping baseline walk early.`);
+      seedError = `TED returned HTTP ${resp.statusCode} on baseline page ${seedPage}${upstream ? `: ${upstream}` : ''}`;
+      seedErrorStatus = resp.statusCode;
       break;
     }
     const body = resp.body;
@@ -476,6 +504,7 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
   if (resp.statusCode !== 200) {
     log.warning(`TED API returned ${resp.statusCode} on page ${page}: ${JSON.stringify(resp.body).slice(0, 300)}`);
     httpError = resp.statusCode;
+    httpErrorMessage = upstreamMessage(resp.body);
     break;
   }
 
@@ -599,7 +628,14 @@ if (watchMode && seeding && seedError) {
 // A run that scraped nothing because TED was erroring is a failure, not a quiet
 // success — exiting 0 with an empty dataset looks to the user like "no tenders match".
 if (!pushed && httpError) {
-  await Actor.fail(`TED's API kept returning HTTP ${httpError} (retried ${HTTP_RETRY_DELAYS_MS.length} times), so no notices could be fetched. This is a TED-side outage or rate limit, not a problem with your input — please re-run in a few minutes.`);
+  const retried = TRANSIENT_STATUS.has(httpError)
+    ? ` (retried ${HTTP_RETRY_DELAYS_MS.length} times)`
+    : ''; // a 4xx is not in TRANSIENT_STATUS, so claiming retries here was simply false
+  await Actor.fail(
+    `TED's API returned HTTP ${httpError}${retried}, so no notices could be fetched.`
+    + (httpErrorMessage ? ` TED said: "${httpErrorMessage}".` : '')
+    + ` ${upstreamAdvice(httpError)}`,
+  );
 }
 
 log.info(`Done. Pushed ${pushed} notices.`);
@@ -686,8 +722,10 @@ if (webhookUrl) {
 if (seedError) {
   await Actor.fail(
     `The watch baseline could not be completed: ${seedError}. No baseline was saved (a partial one would `
-    + 'cause you to be charged twice for the same notices) and nothing was charged. This is a TED-side '
-    + 'outage or rate limit, not a problem with your input — please re-run in a few minutes.',
+    + 'cause you to be charged twice for the same notices) and nothing was charged. '
+    + (seedErrorStatus == null
+      ? 'If this looks like a TED-side outage or rate limit, please re-run in a few minutes.'
+      : upstreamAdvice(seedErrorStatus)),
   );
 } else if (apiErrorMessage) {
   await Actor.fail(
