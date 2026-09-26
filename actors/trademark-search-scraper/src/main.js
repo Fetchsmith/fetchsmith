@@ -257,19 +257,30 @@ async function fetchPage(page) {
 }
 
 let runError = null;
+// null unless TMview actually answered page 1 with its own total -- distinguishes "TMview
+// declared 0 matches" from "we errored before ever getting a total" (h826).
+let declaredMatches = null;
+let totalPages = null;
+let pagesFetched = 0;
+// True only if the walk stopped before totalPages because THIS run's own maxResults or Apify
+// cost limit was hit -- never because TMview refused a page (h824/h826: two platform runs, 60
+// and then 100 pages -- the code's own ceiling -- both walked to completion with every row
+// unique, so there is no observed "TMview cut us off early" case to distinguish from this one).
+let stoppedByCap = false;
 
 try {
   if (!searchTerm) {
     log.warning('No searchTerm provided — nothing to search. Finishing with 0 results.');
   } else {
     const first = await fetchPage(1);
-    const total = Number(first.totalResults ?? 0);
-    const totalPages = Number(first.totalPages ?? 0);
-    log.info(`TMview: ${total} matches for "${searchTerm}"${offices.length ? ` in ${offices.join(', ')}` : ''} (${totalPages} pages).`);
+    declaredMatches = Number(first.totalResults ?? 0);
+    totalPages = Number(first.totalPages ?? 0);
+    log.info(`TMview: ${declaredMatches} matches for "${searchTerm}"${offices.length ? ` in ${offices.join(', ')}` : ''} (${totalPages} pages).`);
 
     let keepGoing = true;
     let batch = first.tradeMarks ?? [];
     let page = 1;
+    pagesFetched = 1;
 
     while (keepGoing && batch.length) {
       for (const tm of batch) {
@@ -277,10 +288,12 @@ try {
         keepGoing = await pushResult(normalize(tm), tm.ST13 ?? null);
         if (!keepGoing) break;
       }
-      if (!keepGoing || page >= totalPages) break;
+      if (!keepGoing) { stoppedByCap = page < totalPages; break; }
+      if (page >= totalPages) break;
       page += 1;
       const next = await fetchPage(page);
       batch = next.tradeMarks ?? [];
+      pagesFetched += 1;
     }
   }
 } catch (err) {
@@ -337,6 +350,36 @@ if (watchMode && !skipBaselineSave) {
       await Actor.setStatusMessage(`Pushed ${pushed} new mark(s) for watch label "${watchLabel}".${evictionSuffix}`);
     }
   }
+}
+
+// RUN_SUMMARY: this run's completeness against TMview's own declared total, in a form a
+// pipeline can read without parsing log lines. Fetch with
+//   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
+// Unlike court-records-scraper's exhausted/failed pair, there is no "TMview refused depth" state
+// here to report (h824/h826 finding above) -- `complete` is false only for a buyer-imposed stop
+// (maxResults/cost limit, `stoppedByCap`) or a transport failure (`error`), never a silent
+// upstream cutoff.
+const complete = runError === null && !stoppedByCap;
+await Actor.setValue('RUN_SUMMARY', {
+  searchTerm: searchTerm || null,
+  declaredMatches,
+  totalPages,
+  pagesFetched,
+  scanned,
+  delivered: pushed,
+  maxResults,
+  complete,
+  stoppedByCap,
+  error: runError,
+  watchLabel: watchMode ? watchLabel : null,
+  watchSeeding: watchMode ? seeding : null,
+});
+if (stoppedByCap) {
+  await Actor.setStatusMessage(
+    `Pushed ${pushed.toLocaleString('en-US')} of ${declaredMatches?.toLocaleString('en-US') ?? '?'} matches TMview declared for this search — `
+    + 'stopped early because of this run\'s own maxResults or Apify cost limit, not because TMview ran out of results. '
+    + 'Raise maxResults (or the run\'s cost limit) to get more. See RUN_SUMMARY.',
+  );
 }
 
 log.info(`Done. Pushed ${pushed} results.${watchLabel ? ` Watch label: ${watchLabel}` : ''}`);
