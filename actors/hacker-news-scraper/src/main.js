@@ -34,6 +34,26 @@ if (input.minComments) numericFilters.push(`num_comments>=${Number(input.minComm
 const author = input.author ? String(input.author).trim() : null;
 const usernames = [...new Set((input.usernames ?? []).map((u) => String(u).trim()).filter((u) => u.length))];
 const watchLabel = String(input.watchLabel ?? '').trim();
+// Watch-mode change alerts. HN points/comments are NOT the kind of rare one-time flip the rest of
+// the fleet's watchChanges options diff (a recall's status, a docket's dateTerminated, a listing
+// going closed) -- they are counters that tick up on nearly every poll of an active story. A bare
+// "previous !== current" diff would therefore re-deliver AND RE-CHARGE for the same trending story
+// on run after run, which is worse for the buyer than the gap it closes. So the event fires only
+// when a count CROSSES a milestone the previous snapshot hadn't reached yet: each threshold pays
+// out at most once per item, so a story climbing 51 -> 99 points over 20 runs stays silent and
+// bills once, at 100.
+const watchChanges = input.watchChanges === true;
+// Blank (not merely absent) disables that ladder, so a buyer who only wants comment milestones can
+// clear the points field rather than needing a separate on/off toggle per ladder.
+function parseMilestones(raw, fallback) {
+  const src = raw === undefined || raw === null ? fallback : raw;
+  return [...new Set(
+    String(src).split(/[,;\s]+/).map((v) => Number(v))
+      .filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.floor(n)),
+  )].sort((a, b) => a - b);
+}
+const pointMilestones = parseMilestones(input.watchPointMilestones, '25,50,100,250,500,1000,2500,5000');
+const commentMilestones = parseMilestones(input.watchCommentMilestones, '25,50,100,250,500,1000');
 const enrichGithubLinks = input.enrichGithubLinks === true;
 const excludeKeywords = [...new Set((input.excludeKeywords ?? []).map((k) => String(k).trim().toLowerCase()).filter((k) => k.length))];
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
@@ -109,12 +129,56 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchMode = watchLabel.length > 0;
+if (watchChanges && !watchMode) {
+  log.warning('watchChanges is on but no watchLabel is set — it only applies to watch mode and does nothing here. Set a watchLabel to use it.');
+} else if (watchChanges && !pointMilestones.length && !commentMilestones.length) {
+  log.warning('watchChanges is on but BOTH milestone ladders are empty, so nothing can ever re-fire. Set watchPointMilestones and/or watchCommentMilestones (comma-separated numbers) or turn watchChanges off.');
+}
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
-const watchSeen = new Set(); // objectIDs already delivered under this label+fingerprint
+let watchChangedCount = 0;
+// objectID -> engagement snapshot `{ p: points, c: numComments }` at the moment we last SAW it
+// (not last delivered it -- see pushResult). An entry with no `p` key means "seen but never
+// captured": that is how pre-0.1.x flat-string baselines decode, and it deliberately never fires a
+// milestone, because "we don't know where it was" cannot be distinguished from "it was at 0" and
+// guessing 0 would re-charge for every already-popular story the day this option shipped. Key
+// PRESENCE, not a null value, is the marker -- `p: null` is the real, legitimate snapshot of a
+// comment hit (Algolia attaches no points to comments), same trap court-records-scraper hit with
+// `dateTerminated: null` on an open docket.
+const watchSeen = new Map();
+
+function snapshotOf(item) {
+  return { p: item.points ?? null, c: item.numComments ?? null };
+}
+
+// Highest ladder rung strictly above where we last saw the item and at or below where it is now,
+// or null if it hasn't cleared a new rung. Returning only the HIGHEST means a story that jumps
+// 10 -> 600 points in one run fires once (at 500), not four times.
+function crossedMilestone(prevVal, nextVal, ladder) {
+  if (!ladder.length || nextVal == null) return null;
+  const base = prevVal ?? 0;
+  if (nextVal <= base) return null;
+  let crossed = null;
+  for (const m of ladder) if (m > base && m <= nextVal) crossed = m;
+  return crossed;
+}
+
+// A re-delivered item carries exactly what moved and which rung it cleared, so a buyer doesn't
+// have to diff the row against their own last-seen copy to find out why they were charged.
+function changesBetween(prev, next) {
+  if (!prev || !Object.hasOwn(prev, 'p')) return null;
+  const types = [];
+  const previous = {};
+  const milestone = {};
+  const p = crossedMilestone(prev.p, next.p, pointMilestones);
+  if (p != null) { types.push('pointsMilestone'); previous.points = prev.p; milestone.points = p; }
+  const c = crossedMilestone(prev.c, next.c, commentMilestones);
+  if (c != null) { types.push('commentsMilestone'); previous.numComments = prev.c; milestone.numComments = c; }
+  return types.length ? { types, previous, milestone } : null;
+}
 
 if (watchMode) {
   const criteria = { queries, tags, sortBy, author, includeComments, numericFilters };
@@ -125,10 +189,24 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    // Entries are `{ i, p, c }` objects from 0.1.x on; a baseline seeded before that is a flat
+    // array of id strings, decoded here to the no-snapshot marker so an existing buyer's watch
+    // keeps working unchanged instead of needing a fresh seed. Those ids resync to a real snapshot
+    // the first incremental run that touches them, so the blind spot is one run wide per id.
+    for (const entry of existing.seenIds) {
+      if (entry && typeof entry === 'object') {
+        watchSeen.set(String(entry.i), Object.hasOwn(entry, 'p') ? { p: entry.p, c: entry.c ?? null } : {});
+      } else {
+        watchSeen.set(String(entry), {});
+      }
+    }
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-      + `${watchSeen.size} already-delivered item(s). Only items NOT in that baseline will be returned and charged.`,
+      + `${watchSeen.size} already-delivered item(s). Only items NOT in that baseline will be returned and charged`
+      + (watchChanges
+        ? `, plus any already-delivered item that crossed a points milestone (${pointMilestones.join('/') || 'disabled'}) `
+          + `or comment milestone (${commentMilestones.join('/') || 'disabled'}) since we last saw it.`
+        : '.'),
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -142,7 +220,7 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  const ids = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
   baselineTruncated = watchSeen.size - ids.length;
   baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
   if (baselineTruncated > 0) {
@@ -162,7 +240,10 @@ async function saveWatchRecord(status) {
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
-    seenIds: ids,
+    // An id whose snapshot was never captured is written back WITHOUT `p`/`c` keys rather than
+    // with nulls -- that omission is the "unknown" marker changesBetween() checks for, and a null
+    // would read as a real "was at no points" reading and mis-fire a milestone.
+    seenIds: ids.map(([id, snap]) => (Object.hasOwn(snap, 'p') ? { i: id, p: snap.p, c: snap.c } : { i: id })),
     truncatedLastRun: baselineTruncated,
     truncatedTotal: baselineTruncatedTotal,
   });
@@ -177,24 +258,49 @@ function evictionNote() {
     + 'and CHARGED FOR again next run unless you narrow the query/tags. See the RUN_SUMMARY key-value record.';
 }
 
+// True when an already-delivered item is about to be re-delivered because it cleared a milestone.
+// Read BEFORE pushResult() by the GitHub-enrichment gate, which has to decide whether the row is
+// worth spending a lookup on; pushResult() re-derives it rather than trusting a passed-in flag.
+function isMilestoneRedelivery(watchId, item) {
+  if (!watchMode || !watchChanges || seeding || watchId == null) return false;
+  const wid = String(watchId);
+  return watchSeen.has(wid) && changesBetween(watchSeen.get(wid), snapshotOf(item)) != null;
+}
+
 async function pushResult(item, watchId) {
-  if (watchMode && watchId != null && seeding) {
-    watchSeen.add(String(watchId));
+  const wid = watchId == null ? null : String(watchId);
+  if (watchMode && wid != null && seeding) {
+    watchSeen.set(wid, snapshotOf(item));
     return watchSeen.size < SEED_CAP;
   }
-  if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
-    watchSkipped += 1;
-    return true;
+  let change = null;
+  if (watchMode && wid != null && watchSeen.has(wid)) {
+    const nextSnap = snapshotOf(item);
+    change = watchChanges ? changesBetween(watchSeen.get(wid), nextSnap) : null;
+    if (!change) {
+      // Snapshot kept current even with watchChanges off, so turning it on later alerts on drift
+      // from that point rather than dumping every milestone crossed since the baseline was seeded.
+      // This is also what stops a climbing story from re-firing: the base moves up every run it is
+      // scanned, so only a genuinely new rung can ever clear it.
+      watchSeen.set(wid, nextSnap);
+      watchSkipped += 1;
+      return true;
+    }
+    item = { ...item, _watchChangeType: change.types, _watchPrevious: change.previous, _watchMilestone: change.milestone };
   }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
+    // Not charged => not delivered => snapshot deliberately NOT advanced, so the milestone is
+    // still pending and fires on the next run instead of being silently consumed by a charge cap.
     if (r.chargedCount === 0) return false;
     await Actor.pushData(item); pushed += 1;
-    if (watchMode && watchId != null) watchSeen.add(String(watchId));
+    if (watchMode && wid != null) watchSeen.set(wid, snapshotOf(item));
+    if (change) watchChangedCount += 1;
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1;
-  if (watchMode && watchId != null) watchSeen.add(String(watchId));
+  if (watchMode && wid != null) watchSeen.set(wid, snapshotOf(item));
+  if (change) watchChangedCount += 1;
   return pushed < maxResults;
 }
 
@@ -504,7 +610,8 @@ for (const query of queries) {
       // (seeding baseline, or already delivered under this watch label) -- those never
       // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
       // would only starve the rows that actually get returned.
-      const willDeliver = !(watchMode && (seeding || watchSeen.has(String(hit.objectID))));
+      const willDeliver = !(watchMode && (seeding || watchSeen.has(String(hit.objectID))))
+        || isMilestoneRedelivery(hit.objectID, mapped);
       if (enrichGithubLinks && willDeliver) {
         if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
         await enrichGithub(mapped);
@@ -612,7 +719,11 @@ if (watchMode && seedFailure) {
       + evictionNote(),
     );
   } else {
-    log.info(`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionNote()}`);
+    log.info(
+      `Watch label "${watchLabel}": ${pushed - watchChangedCount} new item(s) since the last run`
+      + (watchChanges ? ` and ${watchChangedCount} already-delivered item(s) re-charged for crossing a milestone` : '')
+      + ` (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionNote()}`,
+    );
   }
 }
 
@@ -657,15 +768,17 @@ await Actor.setValue('RUN_SUMMARY', {
   usersErrored: erroredUsers,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
+  watchChanges: watchMode ? watchChanges : null,
+  watchChangedCount: watchMode && !seeding && watchChanges ? watchChangedCount : null,
   baselineTruncated: watchMode ? baselineTruncated : null,
   baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
 });
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
-// a warning not a thrown error. Watch mode here drops already-seen hits BEFORE the push loop, so
-// `watchNewCount` is `pushed` and there is no change-detection counter to report (cycle 441 lesson,
-// same shape as trademark-search-scraper).
+// a warning not a thrown error. Watch mode drops already-seen hits before they are charged, so
+// `watchNewCount` counts only first-time items; `watchChangedCount` is the separate re-delivery
+// count (already-seen items that cleared a milestone), and the two sum to `pushed`.
 if (webhookUrl) {
   const env = Actor.getEnv();
   const payload = {
@@ -676,7 +789,8 @@ if (webhookUrl) {
     scanned,
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
-    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchNewCount: watchMode && !seeding ? pushed - watchChangedCount : null,
+    watchChangedCount: watchMode && !seeding && watchChanges ? watchChangedCount : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,

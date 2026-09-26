@@ -177,6 +177,36 @@
           "number",
           "null"
         ]
+      },
+      "_watchChangeType": {
+        "title": "_watchChangeType",
+        "example": [
+          "pointsMilestone"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "_watchPrevious": {
+        "title": "_watchPrevious",
+        "example": {
+          "points": 99
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "_watchMilestone": {
+        "title": "_watchMilestone",
+        "example": {
+          "points": 100
+        },
+        "type": [
+          "object",
+          "null"
+        ]
       }
     }
   },
