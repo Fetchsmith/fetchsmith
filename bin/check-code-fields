@@ -61,6 +61,16 @@ FIELD_SUPPRESS = {
     # -- never pushed to the dataset. snapshotOf()'s `return {...}` shares 6/7 keys with real
     # dataset fields for the same reason as grants-gov-scraper above.
     'sam-gov-opportunities-scraper': {'descHash'},
+    # Both are intermediate helper objects, never the pushed row (cycle 841 hand-read of
+    # src/main.js): `picked.push({accessionNumber, filingDate, primaryDocument})` is the raw
+    # SEC filing-index entry used only to build the fetch URL (`rawDoc = f.primaryDocument
+    # .replace(...)`), and the `ctx` object passed into rowsFromXml (`{accessionNumber,
+    # filingDate, issuerCik, filingUrl, indexUrl}`) is consumed field-by-field into the real
+    # row, with `indexUrl` renamed to `url` (already declared) rather than emitted under its
+    # own name. Neither literal has a `const/let/var` binding for binding_of() to key off (one
+    # is a bare call argument, the other a push() argument), so they read as row shapes purely
+    # because they share >= MIN_OVERLAP field names with the real schema.
+    'sec-insider-trades-scraper': {'primaryDocument', 'indexUrl'},
 }
 
 

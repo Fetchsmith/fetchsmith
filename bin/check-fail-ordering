@@ -35,29 +35,35 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1024): (
+    ("apple-podcasts-scraper", 1048): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
-        "seeding, pushEpisodeRows() records watch ids and `continue`s without ever calling "
+        "seeding, the code records watch ids and `continue`s (line 611) without ever calling "
         "pushResult(), so a seed run's charge count is provably 0 and there is no charge "
-        "record to lose. Verified live: seed run with an unreachable feed exits 1 and writes "
-        "no baseline; happy-path seed charges 0 and saves. Line shifted from 1003 by cycle "
-        "714's time-budget-clamp fix (added lines earlier in the file, no logic change here)."
+        "record to lose. Re-verified cycle 841 by re-reading lines 595-1055 against this "
+        "exact invariant (still holds, no logic change): seedErrors is only populated at "
+        "lines 824/999/1017, all three `if (seeding) seedErrors.push(...)`, and seedErrors.length "
+        "can only be nonzero when seeding=true, during which no charge call is reachable. "
+        "Line shifted from 1024 (cycle 714 baseline) -- text added earlier in the file, no "
+        "logic change here."
     ),
-    ("app-store-reviews-scraper", 787): (
+    ("app-store-reviews-scraper", 815): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
-        "that ever calls Actor.charge( even starts -- nothing can have been charged yet."
+        "that ever calls Actor.charge( even starts -- nothing can have been charged yet. "
+        "Re-verified cycle 841 (still holds): unchanged `if (!apps.length) await Actor.fail(...)` "
+        "guard, no charge-capable code above it. Line shifted from 787."
     ),
-    ("app-store-reviews-scraper", 1006): (
+    ("app-store-reviews-scraper", 1054): (
         "guarded by pairsAttempted > 0 and storefrontErrorPairs.length === pairsAttempted "
         "-- every pair in this run errored, so nothing was ever pushed/charged to lose. "
-        "Line shifted from 993 by cycle 693's fetchPage fix."
+        "Re-verified cycle 841 (still holds, same guard condition read live in source). "
+        "Line shifted from 1006 by cycle 693's fetchPage fix."
     ),
-    ("app-store-reviews-scraper", 1019): (
-        "guarded by feedServed === 0 -- nothing came out of Apple for any pair in this "
-        "run, so nothing was ever pushed/charged to lose; comment in-code confirms this "
-        "fires before the watch record write on purpose. Line shifted from 1004 by "
-        "cycle 693's fetchPage fix."
+    ("app-store-reviews-scraper", 1070): (
+        "guarded by pairsAttempted > 0 and feedServed === 0 -- nothing came out of Apple "
+        "for any pair in this run, so nothing was ever pushed/charged to lose; comment in-code "
+        "confirms this fires before the watch record write on purpose. Re-verified cycle 841 "
+        "(still holds, same guard condition read live in source). Line shifted from 1019."
     ),
 }
 
