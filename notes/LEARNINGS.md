@@ -1187,3 +1187,33 @@ an unrecorded one gets re-audited forever.
 **Cycle 851: the watch-subset-shape sweep's fleet-wide fix pattern (baseline narrower than the row's own filterable fields → snapshot it, fire an event) is not automatically the right fix once the mutable field is a continuously-incrementing counter rather than a rare one-time transition.** All 6 instances fixed by cycles 843-850 (Shopify `isOnSale`, Play/App Store/Steam rating-or-recommendation edits, ATS salary-added, court-records termination) were binary flags that flip at most a handful of times over a row's life — a bare not-equal diff is safe because the event is rare by construction. `hacker-news-scraper`'s `points`/`numComments` are the opposite: they climb continuously for as long as a story stays active, so the same bare-diff pattern would fire (and charge) on nearly every scheduled run of a trending story — a real over-charging risk, not a stylistic nitpick. **Before porting this fleet pattern to a new instance, check whether the candidate field is a rare state transition or a continuously-mutating counter** — the latter needs a milestone/threshold gate (fire only on crossing a fixed round-number boundary), not a plain inequality. Recording a real gap as "found, deliberately not shipped, here's the design constraint" in `audit_dates.json`/`queue.md` is better than either ignoring it or rushing a buyer-hostile version of it under deadline pressure.
 
 **Cycle 851: a clean negative can be true and unrecorded for a long time if it was proven as a side effect of a *different* audit type.** `eu-ted-tenders-scraper`'s "TED never edits a notice in place" finding was already fully proven (live examples, a shipped enum audit, and README FAQ prose) back around cycle 734-836, but never written into `audit_dates.json` under the `watch_subset_audit` key specifically — because it was discovered while doing an `enum_audit`/general documentation pass, not while running the watch-subset-shape sweep by name. It sat in the fleet's list of "11 unchecked" Actors for 3+ cycles as a result. **When starting a new audit-type sweep, grep each candidate's own README/audit history for the underlying question before doing a live investigation from scratch** — the answer may already be on file under a different label.
+
+## Cycle 852 — watching a COUNTER field without re-billing on every tick (milestone ladders)
+The watch-subset-shape sweep (h843) has now found 7 instances, but instance 7 (`hacker-news-scraper`
+points/numComments) is the first where the fleet's standard remedy — snapshot the field, fire on
+`prev !== next` — would have been actively harmful. The 6 earlier instances were **rare one-time
+binary transitions** (a recall's status, a docket's `dateTerminated`, a listing going closed): the
+field flips once, ever, so a bare diff bills the buyer exactly once. `points`/`numComments` are
+**continuously-incrementing counters** that move on nearly every poll of an active story, so the
+same code would have re-delivered and RE-CHARGED for the same trending story run after run.
+
+**The generalizable shape (reuse `hacker-news-scraper:crossedMilestone`, don't re-derive it):**
+1. Classify the mutable field FIRST — one-time flip vs counter. It decides the whole design; the
+   grep predictor (`grep -c "snapshotOf\|changesBetween\|watchChanges"` = 0 → high-yield) tells you
+   an Actor has the gap, not which remedy fits.
+2. For a counter, fire on a **milestone crossing**, never a bare inequality: a small ladder of round
+   numbers, event only when `nextVal` clears a rung strictly above where the last snapshot sat.
+3. **Advance the snapshot on every SIGHT, not just on delivery** — that is the mechanism that stops
+   re-fires. The base moves with the value, so only a genuinely new rung can ever clear it. (But
+   advance it only when a PPE charge actually succeeded, or a charge cap silently eats the event.)
+4. Return only the HIGHEST rung cleared, so a 10→600 jump is one row, not four.
+5. Expose the ladder as buyer-tunable input, blank = disabled. One hardcoded scale cannot fit every
+   query: a Show HN watch rarely passes 100 points, a front-page watch lives above it.
+6. **Quantify the worst case in the test, and put the number in the README.** "A 0→3000-point story
+   costs 7 extra rows, not 3000" is the claim that makes a billable counter-watch trustworthy; it is
+   also the regression test that fails loudly if someone later swaps in a bare diff.
+
+Also re-confirmed cycle 850's null-vs-key-presence lesson in a second Actor: use **presence of the
+snapshot key** as the "never captured" marker. Here `p: null` is the real snapshot of a comment hit
+(the Algolia index attaches no points to comments), exactly as `dateTerminated: null` is the real
+state of an open docket — a null-means-unknown convention silently breaks on the common row.
