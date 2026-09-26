@@ -157,6 +157,37 @@ function watchKeyFor(label, criteria) {
   return { key: `watch-${safe}-${fp}`, fingerprint: fp };
 }
 
+// The watch baseline was jobId-only for a long time — the strictest possible subset of a job's own
+// filterable fields. Greenhouse/Ashby/Lever/Recruitee postings commonly gain a salary AFTER first
+// publish (added later for a pay-transparency requirement, or a plain edit) with the jobId unchanged,
+// so that edit was invisible forever — same subset-of-filterable-fields gap already fixed on
+// shopify-products-scraper (h843), google-play-reviews-scraper (h844), app-store-reviews-scraper
+// (h845), steam-reviews-scraper (h846). SmartRecruiters/Workable/Workday never carry a salary at all
+// (verified in their own mappers above), so `salaryAdded` simply never fires for those — harmless,
+// not worth excluding. Empty = both events, mirroring the rest of the fleet's watchEvents convention.
+const WATCH_EVENTS = ['new', 'salaryAdded'];
+const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
+if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
+const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
+if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
+let watchEventsFiltered = 0; // a real salaryAdded (or brand-new posting) excluded by watchEvents
+let watchChanged = 0; // already-delivered postings re-delivered this run because a salary appeared
+// watchId -> hasSalary the posting carried when last delivered, or null if unknown (a record written
+// before this feature existed). Parallel to seenIds on disk, same order/length.
+const watchMeta = new Map();
+const META_UNKNOWN = 0;
+function encodeMeta(hasSalary) {
+  if (hasSalary === true) return 1;
+  if (hasSalary === false) return 2;
+  return META_UNKNOWN;
+}
+function decodeMeta(code) {
+  if (code === 1) return true;
+  if (code === 2) return false;
+  return null;
+}
+
 const watchMode = watchLabel.length > 0;
 let watchStore = null;
 let watchKey = null;
@@ -192,10 +223,24 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    const meta = Array.isArray(existing.seenMeta) ? existing.seenMeta : [];
+    existing.seenIds.forEach((id, i) => {
+      watchSeen.add(String(id));
+      // A record written before watchEvents existed has no seenMeta at all; a shorter-than-ids
+      // array decodes the missing tail as unknown rather than misaligning ids with the wrong flags.
+      watchMeta.set(String(id), decodeMeta(meta[i] ?? META_UNKNOWN));
+    });
+    const known = [...watchMeta.values()].filter((v) => v != null).length;
+    if (known === 0 && watchSeen.size > 0) {
+      log.info(
+        `Watch baseline for "${watchLabel}" predates change detection, so it holds no salary state: `
+        + 'this run reports new postings only and records that state; salaryAdded starts working from the next run onwards.',
+      );
+    }
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-      + `${watchSeen.size} already-delivered posting(s). Only postings NOT in that baseline will be returned and charged.`,
+      + `${watchSeen.size} already-delivered posting(s). Only postings NOT in that baseline, or already-delivered `
+      + `ones that gained a salary (events: ${[...watchEvents].join(', ')}), will be returned and charged.`,
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -238,6 +283,10 @@ async function saveWatchRecord(status) {
     runCount: (watchRecord.runCount ?? 0) + 1,
     seenCount: ids.length,
     seenIds: ids,
+    // Parallel to seenIds, same order/length: hasSalary each posting had when last delivered.
+    // Written even for ids carried over from a pre-watchEvents record (as 0/unknown) so the two
+    // arrays never misalign.
+    seenMeta: ids.map((id) => encodeMeta(watchMeta.get(id))),
     truncatedLastRun: baselineTruncated,
     truncatedTotal: baselineTruncatedTotal,
   });
@@ -273,28 +322,66 @@ function timeBudgetOk() {
 
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-async function pushResult(item, watchId) {
-  // Seeding: record the id, push and charge nothing.
-  if (watchMode && watchId != null && seeding) {
-    watchSeen.add(String(watchId));
-    return watchSeen.size < SEED_CAP;
-  }
-  // Already delivered under this label: dropped before any charge, so a repeat costs nothing.
-  if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
-    watchSkipped += 1;
-    return true;
-  }
+// Charges and pushes with no "already delivered" guard — used both by pushResult (a genuinely new
+// id, never seen before) and directly by the salaryAdded branch below (an id that IS already in
+// watchSeen on purpose, because it's a real change on an already-delivered posting).
+async function chargeAndPush(item) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'job', count: 1 });
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
-    // Recorded as delivered only after the charge succeeded.
-    if (watchMode && watchId != null) watchSeen.add(String(watchId));
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1;
-  if (watchMode && watchId != null) watchSeen.add(String(watchId));
   return pushed < maxResults;
+}
+async function pushResult(item, watchId) {
+  if (!watchMode || watchId == null) return chargeAndPush(item);
+  const idStr = String(watchId);
+  const hasSalary = item.salaryMin != null || item.salaryMax != null;
+  // Seeding: record the id + its current salary state, push and charge nothing.
+  if (seeding) {
+    watchSeen.add(idStr);
+    watchMeta.set(idStr, hasSalary);
+    return watchSeen.size < SEED_CAP;
+  }
+  if (watchSeen.has(idStr)) {
+    // Not automatically a harmless repeat: Greenhouse/Ashby/Lever/Recruitee postings commonly gain
+    // a salary after first publish with the same jobId (pay-transparency add-on, or a plain edit),
+    // so a returning id must be diffed against its recorded salary state rather than skipped
+    // unconditionally — see the WATCH_EVENTS comment above.
+    const previous = watchMeta.get(idStr) ?? null;
+    const salaryAdded = previous === false && hasSalary === true;
+    // Resync regardless of delivery: an excluded change must not be re-reported later as a change
+    // from the stale pre-change state.
+    watchMeta.set(idStr, hasSalary);
+    if (salaryAdded && watchEvents.has('salaryAdded')) {
+      item.watchEvent = 'salaryAdded';
+      item.previousHasSalary = false;
+      watchChanged += 1;
+      return chargeAndPush(item);
+    }
+    if (salaryAdded) watchEventsFiltered += 1;
+    watchSkipped += 1;
+    return true;
+  }
+  // Brand-new id.
+  if (!watchEvents.has('new')) {
+    // "new" deselected: record it (and its salary state) in the baseline so a later salaryAdded
+    // can still be detected, but do not deliver or charge for it.
+    watchSeen.add(idStr);
+    watchMeta.set(idStr, hasSalary);
+    watchEventsFiltered += 1;
+    watchSkipped += 1;
+    return true;
+  }
+  item.watchEvent = 'new';
+  item.previousHasSalary = null;
+  const before = pushed;
+  const keepGoing = await chargeAndPush(item);
+  // Recorded as delivered only after the charge succeeded.
+  if (pushed > before) { watchSeen.add(idStr); watchMeta.set(idStr, hasSalary); }
+  return keepGoing;
 }
 
 // got's own `retry` only fires for a fixed errorCodes list that does not include the
@@ -1001,7 +1088,7 @@ try {
       if (!keepGoing) break;
     }
     log.info(`${ats}:${slug} — ${result.jobs.length} postings, ${scannedForCompany} kept after filters`
-      + (watchMode ? `, ${deliveredForCompany} new.` : '.'));
+      + (watchMode ? `, ${deliveredForCompany} delivered (new or salary-added).` : '.'));
     if (pushed >= maxResults) break;
     // A seeding run pushes nothing, so the maxResults stop above can never fire for it.
     if (seeding && watchSeen.size >= SEED_CAP) break;
@@ -1065,7 +1152,9 @@ if (watchMode && !skipBaselineSave) {
       );
     }
   } else {
-    log.info(`Watch label "${watchLabel}": ${pushed} new posting(s) since the last run (${watchSkipped} already-delivered posting(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
+    log.info(`Watch label "${watchLabel}": ${pushed} posting(s) since the last run (${watchSkipped} already-delivered posting(s) skipped, not charged`
+      + `${watchChanged ? `; ${watchChanged} of the pushed item(s) were a salary appearing on an already-delivered posting, not a brand-new one` : ''}`
+      + `${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new posting(s) excluded by your watchEvents list` : ''}); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
   }
 }
 
@@ -1079,7 +1168,7 @@ const timeBudgetNote = timeBudgetExceeded
 if (watchMode && seeding) {
   await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}${timeBudgetNote}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered and none of them gained a salary. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && baselineTruncated > 0) {
   await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && timeBudgetExceeded) {
@@ -1104,6 +1193,9 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     watchNewCount: watchMode && !seeding ? pushed : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    watchEvents: watchMode ? [...watchEvents] : null,
+    watchChangedCount: watchMode && !seeding ? watchChanged : null,
+    watchEventsFilteredCount: watchMode && !seeding ? watchEventsFiltered : null,
     // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
     // re-charge for rows already paid for once.
     baselineTruncated: watchMode ? baselineTruncated : null,
