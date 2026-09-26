@@ -123,6 +123,22 @@
           "null"
         ]
       },
+      "watchEvent": {
+        "title": "WatchEvent",
+        "example": "new",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "previousScore": {
+        "title": "PreviousScore",
+        "example": 5,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "appName": {
         "title": "AppName",
         "example": "Instagram",

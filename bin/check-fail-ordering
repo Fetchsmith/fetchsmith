@@ -47,23 +47,25 @@ ALLOWLIST = {
         "Line shifted from 1024 (cycle 714 baseline) -- text added earlier in the file, no "
         "logic change here."
     ),
-    ("app-store-reviews-scraper", 815): (
+    ("app-store-reviews-scraper", 907): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
         "that ever calls Actor.charge( even starts -- nothing can have been charged yet. "
-        "Re-verified cycle 841 (still holds): unchanged `if (!apps.length) await Actor.fail(...)` "
-        "guard, no charge-capable code above it. Line shifted from 787."
+        "Re-verified cycle 845 (still holds): unchanged `if (!apps.length) await Actor.fail(...)` "
+        "guard, no charge-capable code above it. Line shifted from 815 by cycle 845's watchEvents "
+        "(scoreChanged) change, which added code before this point."
     ),
-    ("app-store-reviews-scraper", 1054): (
+    ("app-store-reviews-scraper", 1146): (
         "guarded by pairsAttempted > 0 and storefrontErrorPairs.length === pairsAttempted "
         "-- every pair in this run errored, so nothing was ever pushed/charged to lose. "
-        "Re-verified cycle 841 (still holds, same guard condition read live in source). "
-        "Line shifted from 1006 by cycle 693's fetchPage fix."
+        "Re-verified cycle 845 (still holds, same guard condition read live in source). "
+        "Line shifted from 1054 by cycle 845's watchEvents (scoreChanged) change."
     ),
-    ("app-store-reviews-scraper", 1070): (
+    ("app-store-reviews-scraper", 1162): (
         "guarded by pairsAttempted > 0 and feedServed === 0 -- nothing came out of Apple "
         "for any pair in this run, so nothing was ever pushed/charged to lose; comment in-code "
-        "confirms this fires before the watch record write on purpose. Re-verified cycle 841 "
-        "(still holds, same guard condition read live in source). Line shifted from 1019."
+        "confirms this fires before the watch record write on purpose. Re-verified cycle 845 "
+        "(still holds, same guard condition read live in source). Line shifted from 1070 by "
+        "cycle 845's watchEvents (scoreChanged) change."
     ),
 }
 

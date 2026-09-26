@@ -173,6 +173,8 @@
         "voteCount",
         "sortUsed",
         "clientClass",
+        "watchEvent",
+        "previousScore",
         "appName",
         "developer",
         "bundleId",

@@ -136,6 +136,18 @@
       "description": "Set a name (e.g. \"my-app-reviews\") to turn this run into a watch: the FIRST run for a given label + filter set records which reviews already exist and returns nothing (0 charged). Every run after that returns only reviews posted since the last run under the same label, so you can schedule this Actor and get alerted on new reviews without re-paying for ones you already have. Changing any filter (apps/appNames/countries/countryFallback/sort/minRating/maxRating/keyword/minReviewLength/reviewsAfter/reviewsBefore/minVoteSum/minVoteCount) starts a fresh baseline. Leave empty for normal one-off runs.",
       "editor": "textfield"
     },
+    "watchEvents": {
+      "title": "Watch events to report",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["new", "scoreChanged"],
+        "enumTitles": ["New review", "Star rating edited (reviewer changed their own score)"]
+      },
+      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Star rating edited\" alone to be alerted only when an existing reviewer downgrades or upgrades their score, and never pay for anything else. Leave empty for both. Apple lets a reviewer edit a review in place (same review id, the feed's own \"updated\" date advances) — without this event an already-delivered review that later drops from 5★ to 1★ is invisible to a watch forever. There is no developer-reply field anywhere in this review feed (unlike Google Play), so that is not an event this Actor can offer. Score-change events compare against the rating recorded the last time the review was delivered, so they only start firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
+      "default": []
+    },
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",

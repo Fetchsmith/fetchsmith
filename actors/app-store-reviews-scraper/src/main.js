@@ -161,13 +161,39 @@ if (watchMode && ratingSort) {
     + '"mostRecent"/"mostHelpful" with watchLabel.',
   );
 }
+// Which review filters do not decide DELIVERY at all, they decide the FEED, and Apple keeps a
+// review's id stable across the one mutation buyers can watch for on this feed: the author editing
+// their own star rating (there is no developer-response field anywhere in this RSS -- verified live
+// 2026-09-26, a raw entry has author/rating/title/content/version/votes and nothing else -- so
+// unlike google-play-reviews-scraper's watchEvents, "developerReplied" has no upstream data to key
+// off here). Empty = both events, mirroring the rest of the fleet's watchEvents convention.
+const WATCH_EVENTS = ['new', 'scoreChanged'];
+const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
+if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
+const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
+if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
+let watchChanged = 0; // already-delivered reviews re-delivered this run because their rating changed
+let watchEventsFiltered = 0; // a real rating change the buyer's watchEvents list excluded
 let unidentifiedSkipped = 0; // watch mode only: reviews Apple returned without a usable id
 const watchSeen = new Set(); // `${appId}:${actualCountry}:${reviewId}` already delivered under this label+fingerprint
+// watchId -> the star rating (1-5) that review had when last delivered, or null if unknown (a
+// record written before this feature existed). Parallel to seenIds on disk, same order/length.
+const watchMeta = new Map();
+const META_UNKNOWN = 0;
+function encodeMeta(rating) {
+  const r = Number(rating);
+  return Number.isInteger(r) && r >= 1 && r <= 5 ? r : META_UNKNOWN;
+}
+function decodeMeta(code) {
+  const c = Number(code);
+  return Number.isInteger(c) && c >= 1 && c <= 5 ? c : null;
+}
 const seededPairs = new Set(); // `${appId}::${requestedCountry}` pairs already baselined
 // Per `${appId}::${actualCountry}` date floor, written ONCE when that pair is baselined: the
 // OLDEST review date the baseline walk actually scanned. Any review older than that existed at
@@ -218,15 +244,31 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    const meta = Array.isArray(existing.seenMeta) ? existing.seenMeta : [];
+    existing.seenIds.forEach((id, i) => {
+      watchSeen.add(String(id));
+      // A record written before watchEvents existed has no seenMeta at all; a shorter-than-ids
+      // array (should not happen, but a hand-edited or truncated record could) decodes the missing
+      // tail as unknown rather than misaligning ids with the wrong ratings.
+      watchMeta.set(String(id), decodeMeta(meta[i] ?? META_UNKNOWN));
+    });
     for (const p of existing.seededPairs ?? []) seededPairs.add(String(p));
     // Absent on records written before this was added: those watches keep their old behaviour
     // (id-set only) rather than acquiring a floor retroactively from a walk that never measured one.
     for (const [p, d] of Object.entries(existing.pairFloors ?? {})) pairFloors.set(String(p), String(d));
+    const known = [...watchMeta.values()].filter((v) => v != null).length;
+    if (known === 0 && watchSeen.size > 0) {
+      log.info(
+        `Watch baseline for "${watchLabel}" predates change detection, so it holds no star-rating state: this `
+        + 'run reports new reviews only and records that state, and scoreChanged starts working from the next '
+        + 'run onwards.',
+      );
+    }
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchSeen.size} already-delivered review(s) across ${seededPairs.size} app/country pair(s). Only `
-      + 'reviews NOT in that baseline will be returned and charged.',
+      + `reviews NOT in that baseline, or already-delivered ones whose star rating changed (events: ${[...watchEvents].join(', ')}), `
+      + 'will be returned and charged.',
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -243,6 +285,12 @@ if (watchMode) {
       + `necessarily inside the first ${perApp} rows scanned. Use sort="mostRecent" for reliable alerting.`,
     );
   }
+  if (!watchEvents.has('new')) {
+    log.info('"new" is not in watchEvents: brand-new reviews will be recorded in the baseline but not returned or charged for.');
+  }
+}
+if (!watchMode && watchEventsInput.length) {
+  log.warning('"watchEvents" only applies when "watchLabel" is set — this run is a normal one-off scrape and returns every matching review.');
 }
 
 async function saveWatchRecord(status) {
@@ -273,6 +321,10 @@ async function saveWatchRecord(status) {
     seededPairs: Array.from(seededPairs),
     pairFloors: Object.fromEntries(pairFloors),
     seenIds: ids,
+    // Parallel to seenIds, same order/length: the star rating each review had when last delivered.
+    // Written even for ids carried over from a pre-watchEvents record (as 0/unknown) so the two
+    // arrays never misalign.
+    seenMeta: ids.map((id) => encodeMeta(watchMeta.get(String(id)))),
   });
 }
 
@@ -283,17 +335,17 @@ const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 // immediately, so it can be re-ordered by rating before delivery. Reset per pair (see the main
 // pair loop below) -- buffering globally would let one huge app dominate memory/ordering.
 let pairBuffer = [];
-async function chargeAndPush(item, watchId = null) {
+async function chargeAndPush(item, watchId = null, metaCode = META_UNKNOWN) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
-    if (watchMode && watchId != null) watchSeen.add(watchId);
+    if (watchMode && watchId != null) { watchSeen.add(watchId); watchMeta.set(watchId, decodeMeta(metaCode)); }
     if (r.eventChargeLimitReached) chargeLimitHit = true;
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
-  if (watchMode && watchId != null) watchSeen.add(watchId);
+  if (watchMode && watchId != null) { watchSeen.add(watchId); watchMeta.set(watchId, decodeMeta(metaCode)); }
   return pushed < maxResults;
 }
 // Sorts everything currently buffered for one (app,country) pair by rating and charges/pushes it
@@ -312,14 +364,15 @@ async function flushPairBuffer() {
     if (byRating !== 0) return byRating;
     return new Date(b.item.updatedAt || 0) - new Date(a.item.updatedAt || 0);
   });
-  for (const { item, watchId } of buffered) {
-    keepGoing = await chargeAndPush(item, watchId);
+  for (const { item, watchId, metaCode } of buffered) {
+    keepGoing = await chargeAndPush(item, watchId, metaCode);
     if (!keepGoing) break;
   }
 }
-async function pushResult(item, watchId = null, pairSeeding = false) {
+async function pushResult(item, watchId = null, pairSeeding = false, metaCode = META_UNKNOWN) {
   if (watchMode && watchId != null && pairSeeding) {
     watchSeen.add(watchId);
+    watchMeta.set(watchId, decodeMeta(metaCode));
     if (watchSeen.size >= SEED_CAP) keepGoing = false;
     return keepGoing;
   }
@@ -340,10 +393,12 @@ async function pushResult(item, watchId = null, pairSeeding = false) {
     // Not charged/pushed yet -- just buffered. maxReviewsPerApp/reviewsAfter early-stop still
     // apply to the SCAN (tally.got / canEarlyStop in scrapeAppCountrySort, both unaffected by
     // this), so the scan depth is identical to a non-rating-sort run; only the push order defers.
-    pairBuffer.push({ item, watchId });
+    // (ratingSort can never combine with watchMode -- rejected at startup -- so metaCode here is
+    // always the harmless META_UNKNOWN default.)
+    pairBuffer.push({ item, watchId, metaCode });
     return true;
   }
-  return chargeAndPush(item, watchId);
+  return chargeAndPush(item, watchId, metaCode);
 }
 // got-scraping does NOT throw on 4xx, and Apple's error bodies parse as three different kinds of
 // nonsense (all measured live 2026-09-21 with the storefront code "uk", which is not a storefront):
@@ -729,11 +784,48 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
       }
       if (!passesFilters(item)) { tally.filteredOut += 1; continue; }
       const watchId = watchMode ? `${appId}:${country}:${reviewId}` : null;
+      const metaCode = encodeMeta(item.rating);
+      // Watch mode, incremental run: an id already in the baseline is not automatically old. Apple
+      // keeps a review's id stable when its author edits their own star rating (verified live
+      // 2026-09-26: the feed's own "updated" timestamp advances on the same id, see the comment at
+      // WATCH_EVENTS above), so a returning id must be diffed against the recorded rating rather
+      // than skipped unconditionally -- same gap as google-play-reviews-scraper h844.
+      if (watchMode && !pairSeeding && watchId != null && watchSeen.has(watchId)) {
+        const previous = watchMeta.get(watchId) ?? null;
+        const changed = previous != null && item.rating != null && previous !== item.rating;
+        if (changed && watchEvents.has('scoreChanged')) {
+          item.watchEvent = 'scoreChanged';
+          item.previousScore = previous;
+          watchChanged += 1;
+          keepGoing = await chargeAndPush(item, watchId, metaCode);
+          if (!keepGoing) break;
+        } else {
+          // Record the new rating anyway: an excluded change must not be re-reported later as a
+          // change from the stale pre-change state.
+          if (changed) watchEventsFiltered += 1;
+          watchMeta.set(watchId, decodeMeta(metaCode));
+          watchSkipped += 1;
+        }
+        continue;
+      }
+      if (watchMode && !pairSeeding && watchId != null && !watchEvents.has('new')) {
+        // "new" deselected: record it (and its rating) in the baseline so a later change can still
+        // be detected, but do not deliver or charge for it.
+        const floor = pairFloors.get(`${appId}::${country}`);
+        if (!(floor && item.updatedAt && new Date(item.updatedAt) < new Date(floor))) {
+          watchSeen.add(watchId);
+          watchMeta.set(watchId, decodeMeta(metaCode));
+        }
+        watchEventsFiltered += 1;
+        watchSkipped += 1;
+        continue;
+      }
+      if (watchMode && !pairSeeding && watchId != null) { item.watchEvent = 'new'; item.previousScore = null; }
       // Counts every matching review considered "new" this scan (not already in the baseline) --
       // used only to detect a saturated scan window (see the saturatedPairs check below), separate
       // from pushResult's own watchSkipped bookkeeping.
-      if (!(watchMode && !pairSeeding && watchId != null && watchSeen.has(watchId))) tally.newForPair = (tally.newForPair || 0) + 1;
-      keepGoing = await pushResult(item, watchId, pairSeeding);
+      tally.newForPair = (tally.newForPair || 0) + 1;
+      keepGoing = await pushResult(item, watchId, pairSeeding, metaCode);
       if (!keepGoing) break;
     }
     // Apple's LAST page came back full and we consumed all of it while still willing to take more:
@@ -1178,11 +1270,11 @@ if (watchMode && storefrontErrorPairs.length) {
     + `${watchMode ? ` for watch label "${watchLabel}"` : ''}. That is not the same as Apple having nothing to serve.`
   );
 } else if (watchMode && pushed === 0) {
-  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped + floorSkipped} matching review(s) had already been delivered or pre-dated the baseline. That is the expected result most of the time; you were charged for nothing.`);
+  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped + floorSkipped} matching review(s) had already been delivered or pre-dated the baseline and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}`);
 } else if (watchMode && saturatedPairs.length) {
   statusMsg = (`Pushed ${pushed} new item(s) for watch label "${watchLabel}". ${saturatedPairs.join(', ')}: every matching review in the scanned window was new — older new reviews may have been missed; run the watch more often.`);
 } else if (watchMode) {
-  statusMsg = (`Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${floorSkipped ? `; ${floorSkipped} older than the baseline scan, treated as pre-existing and not charged` : ''}).`);
+  statusMsg = (`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${floorSkipped ? `; ${floorSkipped} older than the baseline scan, treated as pre-existing and not charged` : ''}${watchChanged ? `; ${watchChanged} of the pushed item(s) were a star-rating change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).`);
 } else if (pushed === 0) {
   const why = storefrontErrorPairs.length && !emptyPairs.length
     ? `Apple refused these app/storefront pairs: ${storefrontErrorPairs.join(', ')} — ${storefrontErrorMessages.join(' ')}`
