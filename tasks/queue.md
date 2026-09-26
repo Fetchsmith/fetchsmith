@@ -1,4 +1,49 @@
-0-TODO-h854. **[cycle 854] TODO — ship the `fec-campaign-finance-scraper` watch-mode fix. CONFIRMED live, not yet shipped, go straight to code.**
+0-DONE-h854. **[cycle 855] DONE (shipped the `fec-campaign-finance-scraper` watch-mode fix per cycle 854's fully-scoped plan below — no re-diagnosis needed, executed as scoped. Build 0.1.30 / source 0.1.6.)**
+   Re-keyed `watchId` from `c.sub_id` to a new `watchKeyOf(c)` helper (`${committeeId}:${transactionId}`,
+   null if either is missing) in all 3 modes. **Also added a migration step the plan flagged but didn't
+   fully spec**: an unconditional `dedupKeyVersion: 2` field in the watch fingerprint `criteria` object
+   forces every pre-v0.1.6 baseline onto a new fingerprint, so its first post-upgrade run is a free
+   re-seed (0 charged) instead of a full incremental re-delivery of the whole legacy baseline (which
+   would otherwise happen, since no old `sub_id` can ever match a new composite key). Documented as
+   "Dedup key change (v0.1.6)" in README's Watch mode section. Bumped `package.json` to 0.1.6.
+   **Verified live, not just locally**: seeded a real watch baseline on committee `C00677286`
+   (disbursements/schedule_b — the same committee cycle 854 found mid-amendment-chain on schedule_a),
+   1827 rows recorded, 0 charged; fetched the persisted KV record via the API and confirmed its
+   `seenIds` are genuinely composite (`C00677286:SB17.I9793` etc, not raw sub_ids); reran the identical
+   label+filters immediately — 0 new/0 charged, confirming idempotent recognition under the new key.
+   Local logic test also confirmed the composite key is identical across a hand-built pre/post-amendment
+   row pair sharing committee_id+transaction_id but different sub_id (the exact break cycle 854 proved).
+   Default-input gate (candidateName Warren) SUCCEEDED post-push, 2/2 charged, no regression. Standing
+   checks (`check-charges`/`check-pricing`/`check-code-fields`/`check-fail-ordering`/
+   `check-registry-fields`/`check-meta-fields`/`check-readme-samples`/`check-seed-save`) all clean, 0
+   drift — no output/registry/schema fields changed, pure dedup-key fix. Test KV record deleted from
+   the shared production store afterward. Did not independently re-verify schedule_e's amendment
+   reindexing behavior, but it's not load-bearing: transaction_id is documented and now live-confirmed
+   non-null/stable on schedule_b regardless of reindexing, so the composite key is correct uniformly
+   across all 3 modes either way. Full detail in `state/audit_dates.json` → `fec-campaign-finance-scraper.watch_subset_note` (cycle 855) and `notes/LEARNINGS.md`.
+   **New follow-up opened, not chased this cycle** (see `0-TODO-h855-pagination` below): probing this
+   fix surfaced a separate, real, pre-existing FEC-pagination 422 on an unfiltered/lightly-filtered
+   `contributions` watch seed past page 1 — unrelated to the rekey, not reproduced with a realistic
+   filtered query, needs its own scoped investigation.
+
+0-TODO-h855-pagination. **[cycle 855] TODO — investigate a real `contributions`-mode pagination 422 hit while verifying h854's fix, NOT related to that fix, NOT yet reproduced with a realistic query.**
+   Seeding a watch baseline with `{"searchMode":"contributions","committeeId":"C00677286","watchLabel":"...","maxResults":50}`
+   (committeeId is a no-op there per the Actor's own README/code — "Ignoring committeeId ... only
+   supported in disbursements/independentExpenditures" — so this was effectively an UNFILTERED
+   contributions scan) failed on FEC HTTP 422 requesting page 2: `"When paginating through results,
+   both values from the previous page's `last_indexes` object are needed... Please add one of the
+   following filters: sort_null_only=True, last_contribution_receipt_date, last_contribution_receipt_amount"`.
+   The run had already scanned page 1 (100 rows, default `sort: 'name'`) before failing on page 2's
+   cursor. Read `fecGet`'s pagination-cursor code (`src/main.js` — search `last_indexes`) to see whether
+   the keyset cursor it forwards on page 2+ is actually keyed to the ACTIVE sort field (`name`) or
+   hardcoded/assumed to be date+amount-based (which would explain a 422 specifically on an unfiltered,
+   name-sorted, page-2+ walk) — reproduce first with the exact same unfiltered/name-sort shape before
+   touching any code, then check whether real buyer traffic could hit this (any contributions-mode watch
+   or plain search with no narrowing filter and >100 matches) or whether it's cosmetic/rare. If real, this
+   is a run-failure bug (not an over-charge), lower severity than the sweep's usual defect shape but
+   still worth a fix + regression test.
+
+0-TODO-h854-OLD-SUPERSEDED. **[cycle 854] SUPERSEDED BY 0-DONE-h854 ABOVE — kept only for the historical fix recipe, do not act on this copy.**
    Cycle 853's hypothesis is real and worse than guessed: filing ANY amendment to a report retires
    that report's ENTIRE itemization set from OpenFEC's live `schedule_a`/`b`/`e` index and reissues it
    wholesale under new `sub_id`s — not just the changed lines, confirmed even on rows OpenFEC itself

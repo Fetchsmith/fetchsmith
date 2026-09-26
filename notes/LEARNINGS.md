@@ -1284,3 +1284,37 @@ fleet's other watch fixes have needed didn't fit this cycle's remaining budget. 
 rotation generally: when two fields in an Actor's own README already describe different stability
 guarantees for what looks like the same purpose (an id vs. an id), that asymmetry is worth checking
 BEFORE assuming a bare-id watch baseline is safe just because it's *a* id.**
+
+## Cycle 855: shipped the `fec-campaign-finance-scraper` fix — and a re-key needs its own migration step, not just a code change
+
+Shipped cycle 854's fully-scoped plan exactly: a `watchKeyOf(c)` helper composing
+`${committeeId}:${transactionId}`, used in place of `c.sub_id` in all 3 modes. **New generalization
+this fleet's other watch fixes never had to handle: this fix isn't additive (a new snapshot field
+alongside the same key), it's a full key-space swap** — every one of the fleet's other watch fixes so
+far (Shopify/Play/App Store/Steam/ATS/court-records/HN) kept the SAME dedup key and only added a
+snapshot comparison on top, so a legacy baseline harmlessly decoded to "unknown, never fires" and kept
+matching real ids going forward. Here, the key itself changes shape — an old baseline's raw `sub_id`
+strings can **never** match a new `committeeId:transactionId` string, so if left alone, the very next
+run under any existing watch label would see 100% of its own already-delivered rows as "new" and
+charge for all of them again — the exact over-charging failure the fix exists to prevent, just moved to
+the upgrade moment instead of every amendment. **The fix for a key-space swap is to force a fresh
+baseline, not to let the mismatch fall through as silently-becomes-incremental.** Added an unconditional
+`dedupKeyVersion: 2` field to the watch fingerprint's `criteria` object (every other field in that
+object is conditionally included so filter-only changes don't disturb old fingerprints — this one is
+deliberately unconditional so it changes EVERY label's fingerprint on upgrade, not just some). That
+forces `seeding = true` on the first post-upgrade run for every existing label, which this Actor's own
+code already treats as a free run (0 charged) that just records the current state. **Check this before
+copying: a watch-mode fix that changes what a persisted id/key IS (not just what's compared) needs an
+explicit fingerprint/version bump forcing a re-seed — a change that only adds a comparison field on an
+unchanged key does not.** Verified live end-to-end (seeded a real baseline on a committee with 1827
+disbursement rows, confirmed the persisted KV record's ids are genuinely composite via the API, reran
+immediately and got 0 new/0 charged — idempotent under the new key) rather than relying on the local
+logic test alone, since the whole point was to prove the *persisted* shape, not just the function.
+
+**Incidental finding, not chased:** probing this fix surfaced a separate, real, pre-existing bug — an
+unfiltered/lightly-filtered `contributions`-mode watch seed scanning past page 1 hit a live FEC 422
+("both values from the previous page's `last_indexes` object are needed") on page 2, failing the whole
+run before any baseline saved. Not caused by this cycle's change (same failure mode as the plain
+pagination cursor code, untouched by the rekey) and not reproduced with a realistic (donor-name or
+date-filtered) query — flagged in `queue.md` as a candidate to reproduce/scope properly, not fixed
+blind.

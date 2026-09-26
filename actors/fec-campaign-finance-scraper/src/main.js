@@ -171,6 +171,14 @@ const watchSeen = new Set(); // sub_ids already delivered under this label+finge
 
 if (watchMode) {
   const criteria = {
+    // Unconditional, deliberately bumped this cycle (not gated behind a filter check like the
+    // fields below): v0.1.6 re-keys watchId from `sub_id` to `committeeId:transactionId` (see
+    // README "Dedup key change"), and the two key spaces share no ids at all -- an old
+    // `sub_id`-keyed baseline treated as still-valid under the new key would see every one of
+    // its own already-seen rows as "new" and charge for the whole thing again. Bumping this
+    // forces every pre-v0.1.6 baseline onto a fresh fingerprint, so its first post-upgrade run is
+    // a free re-seed (0 charged) instead of a full incremental re-delivery.
+    dedupKeyVersion: 2,
     donorName, donorEmployer, state, minAmount: minAmount ?? null, electionYearRaw: input.electionYear ?? null,
     // Added cycle 459. Only present when set, same rule as maxAmount/contributionDate* below --
     // a watch baseline saved before this cycle keeps its fingerprint instead of silently re-seeding.
@@ -241,6 +249,17 @@ async function saveWatchRecord(status) {
     truncatedTotal: baselineTruncatedTotal,
     seenIds: ids,
   });
+}
+
+// OpenFEC reissues a brand-new sub_id for every row on a report -- even an unchanged one --
+// the moment the report is amended in any way, so sub_id is unsafe as a watch dedup key (it
+// would re-deliver, and re-charge for, the whole report on every amendment). transaction_id is
+// the filer's own id and is documented (and confirmed live) to stay stable across amendments of
+// the same transaction; committee_id disambiguates in the rare case two committees reuse one.
+function watchKeyOf(c) {
+  const committeeId = c.committee_id ?? c.committee?.committee_id ?? null;
+  if (committeeId == null || c.transaction_id == null) return null;
+  return `${committeeId}:${c.transaction_id}`;
 }
 
 async function pushResult(item, watchId) {
@@ -582,7 +601,12 @@ try {
       let item;
       let watchId;
       if (searchMode === 'disbursements') {
-        watchId = c.sub_id ?? null;
+        // Keyed on committee_id+transaction_id, not sub_id: OpenFEC reissues a brand-new sub_id
+        // for every itemization on a report -- including byte-identical, amendment_indicator:"N"
+        // rows -- the moment the report gets ANY amendment, so a sub_id-keyed watch baseline
+        // re-delivers (and re-charges for) the whole report on every amendment. transaction_id is
+        // the filer's own id and stays stable across amendments (confirmed live, see README).
+        watchId = watchKeyOf(c);
         item = {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
@@ -610,7 +634,7 @@ try {
           pdfUrl: c.pdf_url ?? null,
         };
       } else if (searchMode === 'independentExpenditures') {
-        watchId = c.sub_id ?? null;
+        watchId = watchKeyOf(c);
         item = {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
@@ -638,7 +662,7 @@ try {
           pdfUrl: c.pdf_url ?? null,
         };
       } else if (searchMode === 'contributions') {
-        watchId = c.sub_id ?? null;
+        watchId = watchKeyOf(c);
         item = {
           contributorName: c.contributor_name ?? null,
           contributorEmployer: c.contributor_employer ?? null,
