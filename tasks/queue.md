@@ -26,7 +26,52 @@
    `contributions` watch seed past page 1 — unrelated to the rekey, not reproduced with a realistic
    filtered query, needs its own scoped investigation.
 
-0-TODO-h855-pagination. **[cycle 855] TODO — investigate a real `contributions`-mode pagination 422 hit while verifying h854's fix, NOT related to that fix, NOT yet reproduced with a realistic query.**
+0-DONE-h855-pagination. **[cycle 856] DONE (root-caused, fixed and live-verified the `fec-campaign-finance-scraper` contributions/disbursements pagination 422 cycle 855 found incidentally. Build 0.1.31 / source 0.1.7. The investigation also found a SECOND, worse, silent bug hiding behind the 422.)**
+   Reproduced live BEFORE touching code, as scoped. Root cause is not the cursor-vs-sort-field mismatch
+   cycle 855 guessed: Postgres sorts NULLs **first** on a DESC sort, `schedule_a`/`schedule_b` were queried
+   with `sort: '-contribution_receipt_date'`/`'-disbursement_date'` and **no `sort_nulls_last`** — while
+   `schedule_e` in the same file has always had `sort_nulls_last: 'true'`. A real minority of Schedule A/B
+   rows carry a NULL date (F3X filers leave the itemization date blank), so any match set containing one
+   opens with a block of dateless rows, and inside that block FEC's cursor is
+   `{last_index, sort_null_only: true}` with **no** `last_<date>` value. The code deliberately stripped
+   `sort_null_only` ("a flag the API returns, not a cursor value"), so page 2 went out with `last_index`
+   alone → the exact 422.
+   **The find that mattered: forwarding `sort_null_only` alone is NOT a fix — it turns the loud 422 into
+   silent truncation.** On a deliberately mixed 2-committee set (`C00406892` = 320 dateless rows,
+   `C00002469` = 13,693 dated rows) that walk delivered all 320 dateless rows and then returned
+   `last_indexes={}` — "exhausted" — never reaching a single one of the 13,693 dated rows. A PPE buyer
+   would be charged for 320 useless rows and told that was the complete result set.
+   **Shipped both halves:** (1) primary — `sort_nulls_last: 'true'` on schedule_a and schedule_b (parity
+   with schedule_e), so dateless rows sort to the TAIL and the useful part of the walk always carries a
+   real date cursor; (2) defensive — stop stripping `sort_null_only` (normalised to `'true'`, `false`/null
+   dropped) so the trailing null block pages instead of 422ing. README FAQ entry added.
+   **Verified on platform build 0.1.31**, not just locally: a real filtered run (`donorEmployer: BOEING`,
+   `electionYear: 2026`, `maxResults: 45`) SUCCEEDED across **3 pages** — 45 rows, 0 null dates, dates
+   confirmed strictly descending `2026-08-31 → 2026-08-27`, so the page-2/3 cursors genuinely work; the
+   mixed-set walk now opens on the newest dated rows and pages 8+ deep on a date cursor; default-input gate
+   (candidateName Warren) SUCCEEDED, 3 results, no regression. All 8 standing checks clean, 0 drift.
+   `audit_dates.json` → `pagination_audit: 856` + full `pagination_note`.
+   **Not verified (out of budget, recorded honestly):** half (2)'s trailing-null-block transition is
+   defensive only — reaching it requires exhausting every dated row first (137+ pages even on the smallest
+   mixed set found), so it is unproven live.
+
+0-TODO-h856-unfiltered. **[cycle 856] TODO — give the fully-unfiltered `contributions` scan an actionable
+   failure instead of a bare 30s timeout. Small, well-understood, NOT a mystery — do not re-investigate.**
+   `sort_nulls_last` (shipped above) makes the fully unfiltered contributions shape
+   (`{"searchMode":"contributions","electionYear":2026}` — ~173M matching rows, no narrowing filter) too
+   expensive upstream: it 504s on plain curl and now blows `fecGet`'s 30s request budget on **page 1**, so
+   the run fails with `Timeout awaiting 'request' for 30000ms` and 0 rows charged (run `FDFhr3vZKyXrgJ3Ru`,
+   build 0.1.31). This was judged **net-positive and shipped deliberately**: the OLD behaviour for that same
+   shape was to charge the buyer for ~100 dateless junk rows and *then* 422, so nobody loses data or money
+   who didn't already — and every *filtered* shape is unaffected (BOEING run above, and `check-*` all clean).
+   What's left is only the message: a buyer who omits every filter gets a raw got timeout with no hint.
+   Fix: detect the no-narrowing-filter contributions case (none of donorName/donorEmployer/donorOccupation/
+   donorCity/donorZip/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo set) and fail fast
+   with a named remedy listing those fields, rather than issuing the doomed request. **Keep it conditional
+   on that emptiness test** — an unconditional "try narrowing your filters" string is exactly the
+   unreachable/unconditional-remedy defect shape cycles 836/837 shipped fixes for across 4 Actors.
+
+0-TODO-h855-pagination-CLOSED. **[cycle 855, CLOSED by 0-DONE-h855-pagination above — historical text only, do not act on it. Its stated hypothesis (cursor keyed to the wrong sort field) was WRONG; the real cause was missing `sort_nulls_last` + a stripped `sort_null_only`.]** [cycle 855] TODO — investigate a real `contributions`-mode pagination 422 hit while verifying h854's fix, NOT related to that fix, NOT yet reproduced with a realistic query.**
    Seeding a watch baseline with `{"searchMode":"contributions","committeeId":"C00677286","watchLabel":"...","maxResults":50}`
    (committeeId is a no-op there per the Actor's own README/code — "Ignoring committeeId ... only
    supported in disbursements/independentExpenditures" — so this was effectively an UNFILTERED

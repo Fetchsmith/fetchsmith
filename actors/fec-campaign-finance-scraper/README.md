@@ -268,6 +268,9 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 **Which mode should I use for "how much did this campaign spend on Facebook ads"?**
 `searchMode: "disbursements"` with `recipientName: "META"` and the committee's `committeeId`. Disbursements are money the campaign itself paid out. `independentExpenditures` is a different thing: money spent by *outside* groups for or against a candidate, which the candidate's own committee never reports.
 
+**Some contributions/disbursements have no date at all — where do those rows end up? (v0.1.7)**
+At the end, not the beginning. A minority of Schedule A/B rows genuinely carry no `contributionDate`/`disbursementDate` (F3X filers routinely leave the itemization date blank), and results are returned newest-first, so those dateless rows sort *last* rather than crowding out the recent data you asked for. Before v0.1.7 they came first: a broad query whose match set contained dateless rows would return page after page of them, and — because the FEC's keyset cursor carries no date value inside that block — the run then either failed with an HTTP 422 or stopped at the end of the dateless rows and reported the result set as complete, without ever reaching the dated rows behind them. Both are fixed; if you want to exclude dateless rows entirely, set `contributionDateFrom` (a date filter drops them at the source).
+
 **Why is an `expenditureDate` sometimes in the year 3024?**
 Because the filer typed it that way. Schedule E dates are transcribed from the committee's own filing and the FEC publishes them as filed, typos included (`3024-07-18` on a real 2024 row). Use `disseminationDate` — when the ad actually ran — when you need a date you can sort on, and treat far-future `expenditureDate` values as data-entry errors rather than dropping the row.
 

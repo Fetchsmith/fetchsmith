@@ -539,6 +539,13 @@ try {
         ...cursor,
         per_page: perPage,
         sort: '-disbursement_date',
+        // Postgres sorts NULLs FIRST on a DESC sort, so without this a match set containing any
+        // dateless row (F3X filers routinely omit the date) starts with a block of dateless rows
+        // instead of the newest ones -- and worse, that block's cursor carries no date value, so
+        // the walk terminates at the end of it and never reaches the dated rows at all (proved
+        // live cycle 856 on schedule_a: 320 dateless rows delivered, 13,693 dated rows silently
+        // never reached). schedule_e has always had this; A and B were missing it.
+        sort_nulls_last: 'true',
       })
       : searchMode === 'independentExpenditures'
       ? await fecGet('/schedules/schedule_e/', {
@@ -572,6 +579,7 @@ try {
         ...cursor,
         per_page: perPage,
         sort: '-contribution_receipt_date',
+        sort_nulls_last: 'true', // see the schedule_b note above -- same NULLs-first defect
       })
       : await fecGet('/candidates/', {
         q: candidateName,
@@ -722,10 +730,17 @@ try {
     const pagination = body.pagination ?? {};
     if (isTxnMode) {
       const next = pagination.last_indexes ?? null;
-      // `sort_null_only` is a flag the API returns inside last_indexes, not a cursor value;
-      // echoing it back would ask for null-sorted rows only, so drop it.
+      // `sort_null_only: true` means "the rows after this point have a NULL sort field" -- with
+      // `sort_nulls_last` set (below) that can only be the trailing null block, which is real
+      // remaining data. It MUST be echoed back: the FEC rejects a cursor carrying only
+      // `last_index` with HTTP 422 ("both values from the previous page's `last_indexes` object
+      // are needed"), which used to fail the whole run (cycle 856, reproduced live). Normalised to
+      // the string 'true' so the cursor-equality exhaustion test below compares stable JSON, and
+      // `false` is dropped rather than sent as the truthy string "false".
       const cleaned = next
-        ? Object.fromEntries(Object.entries(next).filter(([k, v]) => k !== 'sort_null_only' && v !== null && v !== undefined))
+        ? Object.fromEntries(Object.entries(next)
+          .filter(([, v]) => v !== null && v !== undefined && v !== false)
+          .map(([k, v]) => [k, v === true ? 'true' : v]))
         : {};
       // No cursor, or a cursor identical to the one we just used, means the result set is
       // exhausted. Without this guard the old `page`-based loop silently re-fetched (and

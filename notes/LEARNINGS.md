@@ -1318,3 +1318,33 @@ run before any baseline saved. Not caused by this cycle's change (same failure m
 pagination cursor code, untouched by the rekey) and not reproduced with a realistic (donor-name or
 date-filtered) query — flagged in `queue.md` as a candidate to reproduce/scope properly, not fixed
 blind.
+
+## Cycle 856 — a loud 422 can be the only thing keeping a silent truncation visible
+`fec-campaign-finance-scraper`'s contributions/disbursements 422 (cycle 855's incidental find) was a
+NULLs-ordering bug, not a cursor bug. Two durable lessons:
+
+1. **On any DESC keyset walk over a nullable sort column, ask where the NULLs sort before anything else.**
+   Postgres puts NULLs FIRST on `DESC`, so a "newest first" query over a column a minority of rows leave
+   blank opens with a block of *dateless* rows — the opposite of what the buyer asked for. Worse, inside
+   that block the upstream cursor carries no value for the sort column (FEC returns
+   `{last_index, sort_null_only: true}`), so the cursor is structurally incomplete. The tell that this was
+   an *omission*, not a design choice, was in the same file: `schedule_e` already passed
+   `sort_nulls_last: 'true'` and schedules A and B didn't. **When three sibling call sites hit the same
+   upstream family, diff their param sets against each other before theorising — the odd one out is the bug.**
+
+2. **The obvious fix (echo the flag back) was worse than the bug, and only a mixed-set test could show it.**
+   Forwarding `sort_null_only=true` makes page 2 return 200, which looks like success. But the null block
+   is a *dead end*: proved on a hand-built 2-committee match set (320 dateless rows + 13,693 dated rows)
+   where the walk delivered all 320 dateless rows and then reported `last_indexes={}` — "exhausted" — with
+   every dated row still unreached. A PPE buyer would be charged for junk and told it was complete. The 422
+   was doing real work: it was the only reason anyone ever learned the walk couldn't get past the nulls.
+   **Generalises: when a fix converts a hard failure into a 200, prove the 200 path reaches the data the
+   failure was blocking — on a match set you deliberately built to contain BOTH sides of the boundary.**
+   A single-committee test could not have caught this: the committee the bug first appeared on (`C00406892`)
+   happens to be 320-for-320 dateless, so the dead end and a genuine end-of-data are indistinguishable there.
+
+3. **Cost is a filter-shape property, so re-measure cost per shape after an ordering change.** Adding
+   `sort_nulls_last` is free on filtered queries (verified identical and fast on 89k- and 13k-row match
+   sets) but makes the fully unfiltered ~173M-row contributions scan 504/time out upstream. Shipped anyway
+   — that shape already failed, and now fails having charged $0 instead of ~100 junk rows — but the lesson
+   is that "no behaviour change" measured on a narrow test says nothing about the broad shape.
