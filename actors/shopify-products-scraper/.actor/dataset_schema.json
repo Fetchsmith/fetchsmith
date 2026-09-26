@@ -309,7 +309,7 @@
                 ],
                 "title": "WatchChange",
                 "example": "priceDrop",
-                "description": "Which change this row reports in watch mode: new, priceDrop, priceIncrease, backInStock, outOfStock or delisted. \"delisted\" means the product is no longer in the store catalog and is only reported when the run walked that store's whole feed."
+                "description": "Which change this row reports in watch mode: new, priceDrop, priceIncrease, wentOnSale, saleEnded, backInStock, outOfStock or delisted. \"wentOnSale\"/\"saleEnded\" fire only when the compare-at price is added/removed with the current price unchanged — a price change that also flips the sale flag is reported as priceDrop/priceIncrease instead. \"delisted\" means the product is no longer in the store catalog and is only reported when the run walked that store's whole feed."
             },
             "watchChanges": {
                 "type": [
@@ -336,6 +336,14 @@
                 ],
                 "title": "PreviousAvailable",
                 "example": true
+            },
+            "previousIsOnSale": {
+                "type": [
+                    "boolean",
+                    "null"
+                ],
+                "title": "PreviousIsOnSale",
+                "example": false
             },
             "priceChange": {
                 "type": [

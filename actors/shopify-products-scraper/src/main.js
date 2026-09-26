@@ -56,7 +56,7 @@ if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeU
 // value per product (price + availability), not just an id.
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0;
-const WATCH_EVENTS = ['new', 'priceDrop', 'priceIncrease', 'backInStock', 'outOfStock', 'delisted'];
+const WATCH_EVENTS = ['new', 'priceDrop', 'priceIncrease', 'wentOnSale', 'saleEnded', 'backInStock', 'outOfStock', 'delisted'];
 const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
 const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
 if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
@@ -129,12 +129,15 @@ if (watchMode) {
     watchRecord = existing;
     // storeIdx/handle (elements 4 and 5) were added later: records written before that are
     // 3-element tuples, so their products have no store attribution and can never be reported as
-    // delisted. They pick attribution up the first time this run sees them again.
+    // delisted. onSale (element 6) is newer still: records written before it have `onSale`
+    // undefined here, read as null ("unknown") below — same as a fresh product with no baseline
+    // sale state, so it just can't trigger wentOnSale/saleEnded until this run's own value is saved.
     const storeList = (existing.seededStores ?? []).map(String);
-    for (const [id, price, avail, storeIdx, handle] of existing.products) {
+    for (const [id, price, avail, storeIdx, handle, onSale] of existing.products) {
       const watchBaselineEntry = { // bookkeeping, not a dataset row (see bin/check-code-fields)
         price: price ?? null,
         avail: avail == null ? null : !!avail,
+        onSale: onSale == null ? null : !!onSale,
         store: typeof storeIdx === 'number' ? storeList[storeIdx] ?? null : null,
         handle: handle ?? null,
       };
@@ -144,13 +147,13 @@ if (watchMode) {
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchPrev.size} product(s) across ${seededStores.size} store URL(s). This run returns only products that are new `
-      + `or whose price/availability changed (events: ${[...watchEvents].join(', ')}); unchanged products are not pushed and not charged.`,
+      + `or whose price/availability/sale status changed (events: ${[...watchEvents].join(', ')}); unchanged products are not pushed and not charged.`,
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
     log.info(
       `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline run. `
-      + 'It records each product\'s price and availability and returns NOTHING (nothing is charged). The next run under '
+      + 'It records each product\'s price, availability and sale status and returns NOTHING (nothing is charged). The next run under '
       + 'the same label returns the differences.',
     );
   }
@@ -164,7 +167,7 @@ async function saveWatchRecord() {
   const storeIdxOf = new Map(storeList.map((s, i) => [s, i]));
   const row = (id, v) => {
     const idx = v.store != null ? storeIdxOf.get(v.store) : undefined;
-    return [id, v.price, v.avail == null ? null : v.avail ? 1 : 0, idx ?? null, v.handle ?? null];
+    return [id, v.price, v.avail == null ? null : v.avail ? 1 : 0, idx ?? null, v.handle ?? null, v.onSale == null ? null : v.onSale ? 1 : 0];
   };
   const merged = [];
   for (const [id, v] of watchPrev) if (!watchNow.has(id) && !watchDeliveredDelisted.has(id)) merged.push(row(id, v));
@@ -186,7 +189,7 @@ async function saveWatchRecord() {
 // Returns null for "record it, do not push and do not charge".
 function watchVerdict(item, storeSeeding, storeUrl) {
   const id = String(item.id);
-  const watchBaselineEntry = { price: item.priceMin, avail: item.available, store: storeUrl, handle: item.handle ?? null }; // bookkeeping, not a dataset row
+  const watchBaselineEntry = { price: item.priceMin, avail: item.available, onSale: item.isOnSale, store: storeUrl, handle: item.handle ?? null }; // bookkeeping, not a dataset row
   watchNow.set(id, watchBaselineEntry);
   if (storeSeeding) { watchSeededThisRun += 1; return null; }
   const prev = watchPrev.get(id);
@@ -196,6 +199,12 @@ function watchVerdict(item, storeSeeding, storeUrl) {
     // Unknown price or unknown availability (null) is "we could not tell", never an event —
     // same rule the rest of this Actor uses for null availability.
     if (prev.price != null && item.priceMin != null && prev.price !== item.priceMin) changes.push(item.priceMin < prev.price ? 'priceDrop' : 'priceIncrease');
+    // A markdown applied or lifted without the current price itself moving (a store adds/removes
+    // a compare-at "was" price) is otherwise invisible to the price check above — only reported
+    // when priceMin did NOT already produce a priceDrop/priceIncrease for this row, so a price
+    // change that also flips the sale flag isn't double-reported as two separate events.
+    if (!changes.length && prev.onSale === false && item.isOnSale === true) changes.push('wentOnSale');
+    if (!changes.length && prev.onSale === true && item.isOnSale === false) changes.push('saleEnded');
     if (prev.avail === false && item.available === true) changes.push('backInStock');
     if (prev.avail === true && item.available === false) changes.push('outOfStock');
   }
@@ -209,6 +218,7 @@ function watchVerdict(item, storeSeeding, storeUrl) {
     watchChanges: wanted,
     previousPriceMin: prev?.price ?? null,
     previousAvailable: prev ? prev.avail : null,
+    previousIsOnSale: prev ? prev.onSale : null,
     priceChange: prev?.price != null && item.priceMin != null ? Math.round((item.priceMin - prev.price) * 100) / 100 : null,
   };
 }
@@ -851,6 +861,7 @@ if (watchMode && watchEvents.has('delisted') && watchStoreSweeps.size && keepGoi
         watchChanges: ['delisted'],
         previousPriceMin: v.price,
         previousAvailable: v.avail,
+        previousIsOnSale: v.onSale ?? null,
         priceChange: null,
         scrapedAt: new Date().toISOString(),
       };
