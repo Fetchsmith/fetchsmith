@@ -879,3 +879,28 @@ while its max is off by an order of magnitude, and for billing-relevant claims t
 usually the one that burns a buyer.** Same live-sampling method also confirmed
 `nih-reporter-scraper`'s "~3% of rows have no award_amount" (FY2024) at 2.66% over a
 10,000-project sample — that one held up, no fix needed.
+
+## Cycle 823 — Algolia's "relevance" endpoint lies about nbHits when there's no text query
+
+Re-verifying `hacker-news-scraper`'s `tags` enum (dated cycle 291, never independently
+re-checked) meant hitting HN's own Algolia API once per tag value with `hitsPerPage=0` to
+confirm each is real and non-empty — all 7 (`story`, `comment`, `poll`, `ask_hn`, `show_hn`,
+`job`, `front_page`) came back fine. But the counts for `/search` (the "relevance" ranking,
+which is `sortBy`'s default) didn't match `/search_by_date`'s counts for the same tag: `story`
+read 45M on `/search` vs the real ~3.9M on `/search_by_date`; `comment` read 293K vs the real
+~40.7M — nonsense in both directions. The tell was the response's own `exhaustiveNbHits` flag:
+`false` on `/search` for these, `true` (or at least sane) on `/search_by_date`. **Algolia's
+relevance-ranked index only computes an exhaustive count when a text query anchors the
+ranking; a pure tag/filter query with no text falls back to an approximate estimate that can
+be off by 3-12x for large result sets** (small tags like `job`/`poll` stayed exact — the
+approximation only kicks in past some tens-of-thousands-of-matches threshold). `hacker-news-
+scraper`'s schema explicitly documents "leave queries empty to browse by tag/date only" as a
+supported pattern, and the code surfaces this exact number to buyers as `declaredMatches` in
+the RUN_SUMMARY/status message — so a real, documented use case was showing wildly wrong match
+counts. Fixed by re-deriving the count from `/search_by_date` (always accurate) whenever the
+run is using `/search` with an empty text query, falling back to the original number if that
+supplementary call fails. **Generalization: don't trust a search API's own reported total-match
+count without a query text before comparing it against a second endpoint/method — some engines
+(Algolia's relevance index is one) only guarantee an exhaustive count when a query is actually
+doing full-text ranking, and silently approximate otherwise with no error, just a quiet
+`exhaustiveNbHits: false` flag most integrations never check.**

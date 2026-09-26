@@ -73,6 +73,27 @@ const WATCH_STORE = 'fetchsmith-hn-watch';
 // unfirable warning below (same bug class as the app-store WATCH_SCAN_CAP, h264).
 const ALGOLIA_MAX_HITS = 1000;
 const SEED_CAP = 5000; // bound the cost of a baseline run ACROSS queries (per query, ALGOLIA_MAX_HITS binds first)
+// /search (relevance ranking, the "sortBy":"relevance" default) only computes an EXHAUSTIVE
+// nbHits when a text query anchors the ranking. For tag-only browsing -- the documented "leave
+// queries empty to browse by tag/date only" pattern -- on a large-volume tag it silently falls
+// back to an approximate estimate that overshoots the true count by 3-12x (verified live, cycle
+// 823: tags=ask_hn declared 2,262,034 vs the real 179,272 [12.6x]; tags=show_hn 1,941,371 vs
+// 544,193 [3.6x]; story/comment similarly inflated; small tags like job/poll/front_page stay
+// exact). /search_by_date's nbHits for the same tags/filters is always the accurate one
+// (cross-checked against the corpus total). So when this run is on /search with no text query,
+// re-derive declaredMatches from search_by_date instead of trusting the possibly-inflated number.
+async function accurateNbHits(wantTags, filters) {
+  const url = new URL('https://hn.algolia.com/api/v1/search_by_date');
+  if (wantTags) url.searchParams.set('tags', wantTags);
+  if (filters.length) url.searchParams.set('numericFilters', filters.join(','));
+  url.searchParams.set('hitsPerPage', '0');
+  try {
+    const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
+    return typeof res.body.nbHits === 'number' ? res.body.nbHits : null;
+  } catch {
+    return null; // best-effort correction only; caller falls back to the original (possibly inflated) count
+  }
+}
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
 // Set inside saveWatchRecord() when the WATCH_KEEP slice above actually drops ids -- distinct
 // from `truncatedSummaries` (an Algolia SCAN that stopped short this run). This is the RECORD
@@ -458,7 +479,11 @@ for (const query of queries) {
     // 1000-hit window Algolia answers with an empty-hits page whose nbHits is the exhaustive
     // recount (exhaustiveNbHits flips true) -- overwriting the real figure with it would
     // understate exactly the shortfall this record exists to report.
-    if (page === 0 && typeof body.nbHits === 'number') querySummary.declaredMatches = body.nbHits;
+    if (page === 0 && typeof body.nbHits === 'number') {
+      querySummary.declaredMatches = (sortBy === 'search' && !query)
+        ? (await accurateNbHits(wantTags, numericFilters)) ?? body.nbHits
+        : body.nbHits;
+    }
     const hits = body.hits || [];
     if (!hits.length) {
       // 200 + zero hits at a page we asked for past hit 1000 is Algolia's pagination cap, not
