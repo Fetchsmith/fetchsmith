@@ -17,6 +17,7 @@ const niceClasses = (Array.isArray(input.niceClasses) ? input.niceClasses : [])
 const statuses = (Array.isArray(input.statuses) ? input.statuses : []).filter(Boolean);
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const watchChanges = Boolean(input.watchChanges);
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -65,12 +66,12 @@ let scanned = 0;
 
 // Watch mode: "only what's new since my last run on this label+search" -- distinct from a
 // plain search, which returns the same matching marks every time. Baseline (ST13 ids already
-// delivered under this label+criteria) lives in a NAMED key-value store on the buyer's own
-// account so it survives across runs (the default KV store is per-run and would reset).
-// Same pattern as hacker-news-scraper/eu-ted-tenders-scraper etc. No watchChanges here (unlike
-// fda-recall-scraper/grants-gov-scraper): TMview's own status field can move Pending->Registered,
-// but tracking that transition needs re-querying every known id, out of scope for this pass --
-// new-matches-only is still the core "opposition watch" value (catching new filings early).
+// delivered under this label+criteria, plus a snapshot of each mark's status) lives in a NAMED
+// key-value store on the buyer's own account so it survives across runs (the default KV store is
+// per-run and would reset). Same pattern as hacker-news-scraper/eu-ted-tenders-scraper etc.
+// `watchChanges` (added after launch -- see below) re-delivers an already-seen mark when TMview's
+// own status field moves (e.g. Pending -> Registered, or into Opposed/Expired) -- the core
+// "opposition watch" value is catching a status transition, not just a brand-new filing.
 const WATCH_STORE = 'fetchsmith-trademark-watch';
 const SEED_CAP = 5000;
 const WATCH_KEEP = 20000;
@@ -81,15 +82,31 @@ function watchKeyFor(label, criteria) {
   return { key: `watch-${safe}-${fp}`, fingerprint: fp };
 }
 
+// Snapshot is just `status` today -- the one TMview field the pre-watchChanges code flagged as
+// worth tracking. Kept as its own function (rather than inlined) so a second tracked field later
+// only touches this, changesBetween, and the two seenIds map/unmap sites.
+function snapshotOf(item) {
+  return { status: item.status ?? null };
+}
+
+// null unless a snapshot actually existed to compare against (a mark seen before watchChanges was
+// ever turned on for this label has no prior status recorded, so its first post-upgrade sighting
+// cannot be a "change" -- same undetectable-until-now-onward rule as grants-gov-scraper).
+function changesBetween(prev, next) {
+  if (!prev || prev.status === undefined || prev.status === null || prev.status === next.status) return null;
+  return { types: ['status'], previous: { status: prev.status } };
+}
+
 const watchMode = watchLabel.length > 0;
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
+let changedCount = 0;
 let baselineTruncated = 0; // mark ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
 let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
-const watchSeen = new Set();
+const watchSeen = new Map(); // ST13 id -> last-seen snapshot ({status})
 
 if (watchMode) {
   const criteria = { searchTerm, offices, niceClasses, statuses };
@@ -99,10 +116,17 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    // Pre-watchChanges records stored `seenIds` as a flat array of id strings -- handled here so
+    // an existing buyer's baseline keeps working unchanged (no forced re-seed) and simply has no
+    // status snapshot yet, so watchChanges only starts detecting drift from this run onward.
+    for (const entry of existing.seenIds) {
+      if (entry && typeof entry === 'object') watchSeen.set(String(entry.i), { status: entry.s ?? null });
+      else watchSeen.set(String(entry), { status: null });
+    }
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
-      + `${watchSeen.size} already-delivered mark(s). Only marks NOT in that baseline will be returned and charged.`,
+      + `${watchSeen.size} already-delivered mark(s). Only marks NOT in that baseline will be returned and charged`
+      + (watchChanges ? ', plus any already-delivered mark whose status has changed since last seen.' : '.'),
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -116,8 +140,9 @@ if (watchMode) {
 }
 
 async function saveWatchRecord(status) {
-  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
-  baselineTruncated = watchSeen.size - ids.length;
+  const all = Array.from(watchSeen.entries());
+  const entries = all.slice(-WATCH_KEEP);
+  baselineTruncated = all.length - entries.length;
   baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
   if (baselineTruncated > 0) {
     log.warning(
@@ -133,8 +158,9 @@ async function saveWatchRecord(status) {
     lastRunAt: new Date().toISOString(),
     lastRunStatus: status,
     runCount: (watchRecord.runCount ?? 0) + 1,
-    seenCount: ids.length,
-    seenIds: ids,
+    seenCount: entries.length,
+    // Compact shape: id + status only. WATCH_KEEP can hold up to 20,000 of these in one KV record.
+    seenIds: entries.map(([id, snap]) => ({ i: id, s: snap.status })),
     truncatedLastRun: baselineTruncated,
     truncatedTotal: baselineTruncatedTotal,
   });
@@ -142,22 +168,38 @@ async function saveWatchRecord(status) {
 
 async function pushResult(item, watchId) {
   if (watchMode && watchId != null && seeding) {
-    watchSeen.add(String(watchId));
+    watchSeen.set(String(watchId), snapshotOf(item));
     return watchSeen.size < SEED_CAP;
   }
+  let change = null;
   if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
-    watchSkipped += 1;
-    return true;
+    const id = String(watchId);
+    const nextSnap = snapshotOf(item);
+    change = watchChanges ? changesBetween(watchSeen.get(id), nextSnap) : null;
+    if (!change) {
+      // Snapshot is kept current either way, so turning watchChanges on later detects only drift
+      // from that point, not a backlog of status moves since the baseline.
+      watchSeen.set(id, nextSnap);
+      watchSkipped += 1;
+      return true;
+    }
+    item = { ...item, _watchChangeType: change.types, _watchPrevious: change.previous };
   }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
-    if (watchMode && watchId != null) watchSeen.add(String(watchId));
+    if (watchMode && watchId != null) {
+      watchSeen.set(String(watchId), snapshotOf(item));
+      if (change) changedCount += 1;
+    }
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1;
-  if (watchMode && watchId != null) watchSeen.add(String(watchId));
+  if (watchMode && watchId != null) {
+    watchSeen.set(String(watchId), snapshotOf(item));
+    if (change) changedCount += 1;
+  }
   return pushed < maxResults;
 }
 
@@ -343,7 +385,11 @@ if (watchMode && !skipBaselineSave) {
     );
     await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing mark(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
   } else {
-    log.info(`Watch label "${watchLabel}": ${pushed} new mark(s) since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
+    log.info(
+      `Watch label "${watchLabel}": ${pushed - changedCount} new mark(s)`
+      + (watchChanges ? ` and ${changedCount} changed mark(s) (status)` : '')
+      + ` since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`,
+    );
     if (pushed === 0) {
       await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
     } else if (baselineTruncated > 0) {
@@ -373,6 +419,8 @@ await Actor.setValue('RUN_SUMMARY', {
   error: runError,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
+  watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
+  watchChangedCount: watchMode && !seeding ? changedCount : null,
 });
 if (stoppedByCap) {
   await Actor.setStatusMessage(
@@ -386,9 +434,7 @@ log.info(`Done. Pushed ${pushed} results.${watchLabel ? ` Watch label: ${watchLa
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill -- best-effort only, one attempt, short timeout, failures are
-// a warning not a thrown error. Watch mode here drops already-seen marks BEFORE the push loop
-// (the Actor's own summary line says "N new mark(s)"), so `watchNewCount` is `pushed` and there
-// is no change-detection counter to report (cycle 441 lesson).
+// a warning not a thrown error.
 if (webhookUrl) {
   const env = Actor.getEnv();
   const payload = {
@@ -399,7 +445,8 @@ if (webhookUrl) {
     scanned,
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
-    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
+    watchChangedCount: watchMode && !seeding ? changedCount : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,

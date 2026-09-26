@@ -46,6 +46,12 @@
       "editor": "textfield",
       "default": ""
     },
+    "watchChanges": {
+      "title": "Watch mode: also alert on status changes",
+      "type": "boolean",
+      "description": "Only used together with Watch label. When on, a run also re-delivers a mark you already have if its status has changed since you last saw it -- e.g. Pending -> Registered, or a move into Opposed/Expired/Withdrawn -- instead of only ever reporting brand-new filings. Charged at the same per-row price as a new mark. Each changed row is tagged with `_watchChangeType: [\"status\"]` plus the previous value under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
+      "default": false
+    },
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",

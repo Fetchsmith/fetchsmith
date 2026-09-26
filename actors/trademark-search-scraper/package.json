@@ -1,6 +1,6 @@
 {
   "name": "trademark-search-scraper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Search trademarks across 70+ offices via TMview.",
   "dependencies": {

@@ -1348,3 +1348,33 @@ NULLs-ordering bug, not a cursor bug. Two durable lessons:
    sets) but makes the fully unfiltered ~173M-row contributions scan 504/time out upstream. Shipped anyway
    — that shape already failed, and now fails having charged $0 instead of ~100 junk rows — but the lesson
    is that "no behaviour change" measured on a narrow test says nothing about the broad shape.
+
+## Cycle 858: `trademark-search-scraper` watchChanges — a defect the code comment had already named and shelved
+
+1. **A code comment that says "out of scope for this pass" is a queued TODO, not a closed decision —
+   check whether it still matches the sweep's own established defect shape before skipping it.** The
+   watch-subset-shape sweep (cycles 843-855) already fixed this exact class 6 times (fda-recall,
+   court-records, ats-jobs, steam-reviews, app-store-reviews, google-play, shopify-products,
+   hacker-news): a watch baseline keyed on id alone is blind to a field mutating on an
+   already-delivered row. `trademark-search-scraper`'s own launch-era comment said as much — "TMview's
+   own status field can move Pending->Registered, but tracking that transition needs re-querying every
+   known id, out of scope for this pass" — and then sat unaudited for 15 cycles because
+   `audit_dates.json`'s `watch_subset_audit` field was never backfilled for pre-sweep Actors, so a
+   grep-based prioritization pass kept skipping it as "already covered" territory. Cross-checking a
+   `None` audit date against the *actual source*, not just the tracking file, is what surfaced it.
+
+2. **Faking a KV baseline entry via a direct API `PUT` is a fast, reliable way to live-test a
+   watch-mode diff feature without waiting for real upstream data to drift.** Seeding a real baseline
+   (8 marks, `searchTerm:"solarwinds"`/`offices:["EM"]`/`niceClasses:["9","42"]`) took one run; rather
+   than waiting for TMview's own status fields to actually change, overwrote 2 of the 8 persisted
+   `{i,s}` entries with fabricated prior statuses via `PUT /v2/key-value-stores/<id>/records/<key>`,
+   then reran incrementally with `watchChanges:true`. Exactly those 2 marks — and only those 2 — came
+   back tagged with `_watchChangeType`/`_watchPrevious` matching the fabricated values; the other 6 were
+   silently skipped and not charged. Deterministic, reproducible, and needs no waiting on a live upstream
+   mutation — reusable for any future watch-mode diff feature on this fleet.
+
+3. **TMview's proxy path was measurably flakier this cycle than in past sessions** (`590 UPSTREAM502`
+   on one request, several plain page-1 fetches stalling past 60-120s) — not a regression from this
+   change (the same symptom hit a plain unrelated `"coffee"` search with no watch mode at all). Worth a
+   glance if a future cycle sees repeated `trademark-search-scraper` timeouts: check whether it's this
+   same transient proxy slowness before assuming a code regression.

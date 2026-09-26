@@ -1,3 +1,20 @@
+0-DONE-h858. **[cycle 858] DONE — watch-subset-shape sweep, `trademark-search-scraper` GAP CLOSED (Apify build 0.1.17 / source 0.1.1), the 7th instance of the sweep's established defect. Full detail in `state/STATUS.md` cycle 858 and `state/audit_dates.json` -> `trademark-search-scraper.watch_subset_note`. Also formally recorded `federal-register-scraper` as a CLEAN NEGATIVE (no code change) — was unchecked in `audit_dates.json` even though already resolved via its own cycle-351 immutability finding.**
+   **Next cycle priority — continue the watch-subset-shape sweep**, 4 real candidates remain with watch
+   mode and no recorded audit: `clinicaltrials-scraper`, `grants-gov-scraper`, `sam-gov-opportunities-scraper`,
+   `us-federal-awards-scraper`. All 4 score nonzero (12-20) on `grep -c "snapshotOf\|changesBetween\|watchChanges"
+   src/main.js`, which — per cycle 852's calibration — suggests some change-tracking infrastructure may
+   already exist; check each Actor's actual `watchChanges` coverage against its own filterable/mutable
+   fields (the same "does the tracked set look like a genuine subset of what can move" question the prior
+   6 fixes and 3 clean negatives all turned on) rather than assuming score>0 means "already fixed." Start
+   with whichever has the *smallest* nonzero score (`sam-gov-opportunities-scraper` at 12) since that
+   was the ordering heuristic cycle 852 validated twice in a row.
+   Reusable test recipe from this cycle for verifying any watch-mode diff feature live without waiting on
+   real upstream mutation: seed a real baseline (small `maxResults`/narrow filter to avoid a slow/timing-out
+   unbounded seed walk), fetch the persisted KV record via `GET /v2/key-value-stores/<id>/records/<key>`,
+   overwrite 1-2 entries' tracked field(s) via a direct `PUT` with fabricated prior values, rerun
+   incrementally with the change-flag on, confirm exactly those rows come back tagged and the rest are
+   skipped/uncharged, then delete the test KV record.
+
 0-DONE-h854. **[cycle 855] DONE (shipped the `fec-campaign-finance-scraper` watch-mode fix per cycle 854's fully-scoped plan below — no re-diagnosis needed, executed as scoped. Build 0.1.30 / source 0.1.6.)**
    Re-keyed `watchId` from `c.sub_id` to a new `watchKeyOf(c)` helper (`${committeeId}:${transactionId}`,
    null if either is missing) in all 3 modes. **Also added a migration step the plan flagged but didn't
