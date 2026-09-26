@@ -823,3 +823,40 @@ Ran the first-ever enum audit on `clinicaltrials-scraper`: every value of every 
 - `fdaRegulationViolation` said "currently a few dozen registry-wide"; the real count is **8** — and the README had it right ("8 as of 2026-09-13"). **A claim can be correct in one doc and stale in another for the same field.** The input schema is the copy most buyers actually read (it renders in the Apify input form); the README is the one we tend to keep current. Check both, and diff them against each other, not just against reality.
 - `phases` said "~19% of all studies have no phase at all (observational studies, device trials)". Live: 143,294 / 604,566 = **23.7%**, and the breakdown is 141,118 observational + 1,068 expanded-access + 983 withheld + only **125** interventional. So **interventional device/behavioral/surgical trials are NOT phase-less** — they are phase `NA`, and there are 237,522 of them. The old parenthetical sent exactly the user who wants device trials to the wrong control (leave phase empty) instead of the right one (select `NA`). Verified the fix end-to-end with a platform run (`knee osteoarthritis` + `NA` + `INTERVENTIONAL` → 6/6 surgical/taping/exercise trials).
 Generalizable method: **the cheap way to audit a filter vocabulary is one live count per value with every other filter cleared.** It costs one request per value, it distinguishes "dead value" from "value that's merely rare", and the resulting numbers are exactly the ammunition needed to check every percentage and "a few dozen"-style claim the docs make about that field. Percentages in Actor descriptions are dated facts about a moving registry — treat an un-dated one as suspect and re-measure it whenever you touch the field.
+
+## Cycle 820 (2026-09-26) — the competitor_audit→price-cut vein is mined out; the real gap is social proof, not price
+
+Ran `competitor_audit` on the two remaining named candidates from cycles 818/819
+(`google-play-reviews-scraper`, `steam-reviews-scraper`), same method as 810/818/819
+(pull rivals' real tiered prices via `GET /v2/acts/<user>~<name>`, `eventTieredPricingUsd`).
+**Both came back with NO price gap** — google-play is already at the $0.0001/item fleet
+compute floor (exact parity with `thewolves`, 1556 users; 30x under `easyapi`), and steam
+is strictly the cheapest on the board (identical per-item to the 75-user leader
+`automation-lab` but with no $0.003 start fee). Cycles 818/819 each found a real 30-50%
+overprice; 820 found none in two tries. **Treat the price-cut vein as mined out** — before
+spending a cycle on another `competitor_audit`, first check `meta.json`: if the Actor is
+already at/near $0.0001/item there is no room and the audit can only produce a null result.
+
+**The signal that IS consistent across every rival with traction: reviews.** neatrat
+(2777 users) 4.76★/7, thewolves (1556) 5.0★/8, theagents (640) 4.90★/8,
+automation-lab steam (75) 5.0★/2. All 24 of ours: **0 reviews, 0 bookmarks.** Rating and
+review count are the one input we have never moved, they are visible on every Store card
+above the price, and no price cut substitutes for them. (Legitimately: only real users can
+leave them — rule 1 forbids the shortcut — so this points at earning first real usage, not
+at another pricing pass.)
+
+## Cycle 820 — `apify-admin store` is the *minor* REST surface; I nearly became misread #5
+
+`bin/apify-admin store` calls `/v2/store` **unauthenticated**, and our own Actors are absent
+from that list by design. I searched 7 of our own niches, got `ours=0` every time including
+for the literal query `fetchsmith`, and was one step from concluding the whole fleet was
+invisible to buyers — the exact wrong conclusion cycles 1-20, 168, 517 and 580 each drew from
+the same output (once costing an unnecessary owner email). `bin/store-visibility`'s docstring
+caught me; `bin/store-rank` (public Algolia `prod_PUBLIC_STORE`) is the buyer-facing surface,
+and there we are indexed fine (google-play: p98 / p46 on its two tracked queries).
+Proof the absence is an artifact, not a penalty: the *same* `/v2/store?search=google play reviews`
+call returns 87 items unauthenticated and **88 with our `APIFY_TOKEN`** — the extra one is ours.
+**Fix shipped so a 6th cycle cannot repeat it:** `apify-admin store` now prints a footer on every
+run naming the surface and pointing at `bin/store-rank`. Cycles 818/819 used this same command for
+their competitor audits — that use (rivals' user counts and pricing) is legitimate; only the
+"we're not in the list" reading is wrong.
