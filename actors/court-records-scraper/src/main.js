@@ -302,6 +302,11 @@ const PAGE_DELAY_MS = 1200;
 // `state` (when given) records WHY a null came back, since the caller only sees null either
 // way — without this a permanent 500 and a genuinely exhausted index are indistinguishable to
 // everything downstream of apiGet, which is exactly the h250 gap this cycle closes.
+// A 400/404/422 is CourtListener rejecting the request itself (e.g. a malformed field
+// combination) -- retrying the identical input will fail identically. 429/5xx/network errors
+// are the only ones worth telling a buyer to "re-run in a few minutes" for (h836 TED class bug).
+const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
+
 async function apiGet(url, state = null) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
         let resp;
@@ -327,7 +332,7 @@ async function apiGet(url, state = null) {
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`CourtListener returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
-            if (state) state.lastError = `HTTP ${resp.statusCode}`;
+            if (state) { state.lastError = `HTTP ${resp.statusCode}`; state.lastErrorStatus = resp.statusCode; }
             await sleep(waitS * 1000);
             continue;
         }
@@ -336,7 +341,7 @@ async function apiGet(url, state = null) {
         if (resp.statusCode !== 200) {
             const detail = parsed ? JSON.stringify(parsed).slice(0, 300) : String(resp.body).slice(0, 300);
             log.warning(`CourtListener ${resp.statusCode}: ${detail}`);
-            if (state) state.lastError = `HTTP ${resp.statusCode}: ${detail.slice(0, 120)}`;
+            if (state) { state.lastError = `HTTP ${resp.statusCode}: ${detail.slice(0, 120)}`; state.lastErrorStatus = resp.statusCode; }
             return null;
         }
         if (!parsed) {
@@ -825,6 +830,10 @@ function markIncomplete(reason, detail = null) {
 }
 
 const failedWalkers = walkers.filter((w) => w.failed);
+// True when at least one failed walker's last error was CourtListener rejecting the request
+// itself (400/404/422), not a transient 429/5xx/network fault -- re-running with the same
+// input would fail identically (h836 TED class bug).
+const seedFailureIsInputError = failedWalkers.some((w) => INPUT_ERROR_STATUS.has(w.lastErrorStatus));
 if (failedWalkers.length) {
     markIncomplete(
         'source-error',
@@ -865,7 +874,9 @@ if (watchMode && seedFailure) {
     log.warning(
         `Baseline NOT saved for watch label "${watchLabel}": ${incompleteReason} — ${incompleteDetail}. `
         + 'Saving a partial baseline here would cause every record past the failure point to be delivered '
-        + 'and CHARGED as "new" on the next incremental run. Re-run the seed once the source recovers.',
+        + `and CHARGED as "new" on the next incremental run. ${seedFailureIsInputError
+            ? 'This is CourtListener rejecting the input itself -- fix the filter values and re-run.'
+            : 'Re-run the seed once the source recovers.'}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1030,7 +1041,10 @@ if (seedFailure) {
     await Actor.fail(
         `The watch baseline could not be completed: ${incompleteDetail ?? incompleteReason}. No baseline was saved `
         + '(a partial one would cause you to be charged twice for the same records later) and nothing was '
-        + 'charged. Please re-run in a few minutes.',
+        + `charged. ${seedFailureIsInputError
+            ? 'This is CourtListener rejecting your input (an unrecognised court id or a malformed filter) — '
+                + 're-running with the same input will fail the same way; fix the filter values above and re-run.'
+            : 'Please re-run in a few minutes.'}`,
     );
 }
 

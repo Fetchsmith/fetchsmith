@@ -105,6 +105,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // `state`, when passed, records the terminal cause of a `null` return (h250 class: a permanent
 // upstream failure otherwise looks identical to a genuinely exhausted index — both just stop the
 // walk with no page). See `runState`/`markIncomplete` near the bottom of the file.
+// A 400/404/422 is the Federal Register API rejecting the request itself (e.g. an unknown
+// agency slug) -- retrying the identical input will fail identically. 429/5xx/network errors
+// are the only ones worth telling a buyer to "re-run in a few minutes" for (h836 TED class bug).
+const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
+
 async function apiGet(path, params, state = null) {
     // doseq-style encoding: `conditions[type][]` must be percent-encoded or some clients
     // silently drop the brackets and the filter is ignored rather than rejected.
@@ -138,7 +143,7 @@ async function apiGet(path, params, state = null) {
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`Federal Register API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
-            if (state) state.lastError = `HTTP ${resp.statusCode}`;
+            if (state) { state.lastError = `HTTP ${resp.statusCode}`; state.lastErrorStatus = resp.statusCode; }
             await sleep(waitS * 1000);
             continue;
         }
@@ -148,7 +153,7 @@ async function apiGet(path, params, state = null) {
             // An unknown agency slug is a 400, not an empty result set — verified live.
             const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
             log.warning(`Federal Register API ${resp.statusCode}: ${detail}`);
-            if (state) state.lastError = `HTTP ${resp.statusCode}: ${detail.slice(0, 120)}`;
+            if (state) { state.lastError = `HTTP ${resp.statusCode}: ${detail.slice(0, 120)}`; state.lastErrorStatus = resp.statusCode; }
             return null;
         }
         if (!parsed) {
@@ -673,11 +678,13 @@ function truncationNote() {
 // A seed charges nothing, so re-seeding later is free -- unlike an incremental run, there is
 // nothing lost by not persisting here.
 if (watchMode && seeding && runState.failed) {
+    const isInputError = INPUT_ERROR_STATUS.has(runState.lastErrorStatus);
     log.warning(
         `Baseline walk for watch label "${watchLabel}" was cut short (${runState.lastError ?? 'unknown API error'}), `
         + 'so NO baseline was saved. A partial baseline would have caused every document past the stopping '
-        + 'point to be delivered and charged as "new" on your next run. Re-run the same label and filters '
-        + 'once the source recovers.',
+        + `point to be delivered and charged as "new" on your next run. ${isInputError
+            ? 'This is the Federal Register API rejecting the input itself -- fix the filter values and re-run.'
+            : 'Re-run the same label and filters once the source recovers.'}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -864,10 +871,15 @@ if (webhookUrl) {
 // rows), so failing is free -- and failing loudly, instead of exiting 0 with an unsaved
 // baseline, stops a scheduled run from quietly reading "seeded" and moving on to incremental.
 if (watchMode && seeding && runState.failed) {
+    const isInputError = INPUT_ERROR_STATUS.has(runState.lastErrorStatus);
     await Actor.fail(
         `The watch baseline could not be completed: ${runState.lastError ?? 'unknown API error'}. No baseline `
         + 'was saved (a partial one would cause you to be charged twice for the same documents later) and '
-        + 'nothing was charged. Please re-run in a few minutes.',
+        + `nothing was charged. ${isInputError
+            ? 'This is the Federal Register API rejecting your input (e.g. an unrecognised agency, CFR title or '
+                + 'document type) — re-running with the same input will fail the same way; fix the filter values '
+                + 'above and re-run.'
+            : 'Please re-run in a few minutes.'}`,
     );
 }
 

@@ -493,6 +493,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // WHY the null happened so callers can tell "we reached the end" from "we stopped being answered".
 // Set on every failure, cleared on every success -- always read it immediately after the call.
 let lastApiError = null;
+// Companion status code: lets callers tell a 400/404/422 (ClinicalTrials.gov rejecting the
+// request itself -- retrying the same input fails identically) apart from a 429/5xx/network
+// fault (genuinely worth retrying). Same shape as the h836 TED fix. null for network-level
+// throws and the final "4 attempts exhausted" fallback, since no status code exists there.
+let lastApiErrorStatus = null;
+const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
 
 async function apiGet(params, { quiet = false } = {}) {
     const qs = new URLSearchParams();
@@ -517,6 +523,7 @@ async function apiGet(params, { quiet = false } = {}) {
             // a status code — without this catch it crashes the whole run instead of retrying like
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             lastApiError = `request failed: ${err.message}`;
+            lastApiErrorStatus = null;
             const waitS = attempt * 10;
             if (!quiet) log.warning(`ClinicalTrials.gov API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
             await sleep(waitS * 1000);
@@ -524,6 +531,7 @@ async function apiGet(params, { quiet = false } = {}) {
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             lastApiError = `HTTP ${resp.statusCode}`;
+            lastApiErrorStatus = resp.statusCode;
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`ClinicalTrials.gov API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
             await sleep(waitS * 1000);
@@ -534,15 +542,18 @@ async function apiGet(params, { quiet = false } = {}) {
         if (resp.statusCode !== 200) {
             const detail = parsed?.errors ? JSON.stringify(parsed.errors) : String(resp.body).slice(0, 300);
             lastApiError = `HTTP ${resp.statusCode}: ${detail.slice(0, 200)}`;
+            lastApiErrorStatus = resp.statusCode;
             if (!quiet) log.warning(`ClinicalTrials.gov API ${resp.statusCode}: ${detail}`);
             return null;
         }
         if (!parsed) {
             lastApiError = `non-JSON body: ${String(resp.body).slice(0, 120)}`;
+            lastApiErrorStatus = null;
             if (!quiet) log.warning(`ClinicalTrials.gov returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
             return null;
         }
         lastApiError = null;
+        lastApiErrorStatus = null;
         return parsed;
     }
     lastApiError = `${lastApiError ?? 'request failed'} (4 attempts exhausted)`;
@@ -775,14 +786,18 @@ const notReachedIds = [];       // never requested, because the run stopped firs
 let complete = true;
 let incompleteReason = null;
 let incompleteDetail = null;
+let incompleteStatus = null;
 
 // First cause wins: a walk that stopped because the API stopped answering, and THEN also hit
 // maxResults, must keep reporting the upstream failure -- that is the cause the buyer can act on.
-function markIncomplete(reason, detail = null) {
+// `status` defaults to whatever `lastApiErrorStatus` was AT THE MOMENT markIncomplete is called
+// (JS evaluates default params at call time), so a later successful call elsewhere can't clobber it.
+function markIncomplete(reason, detail = null, status = lastApiErrorStatus) {
     if (!complete) return;
     complete = false;
     incompleteReason = reason;
     incompleteDetail = detail;
+    incompleteStatus = status;
 }
 
 let pushed = 0;
@@ -1003,12 +1018,15 @@ if (nctIds.length) {
 const SEED_UPSTREAM_FAILURES = new Set(['search-request-failed']);
 const seedFailure = seeding && incompleteReason && SEED_UPSTREAM_FAILURES.has(incompleteReason)
     ? incompleteDetail : null;
+const seedFailureIsInputError = seedFailure != null && INPUT_ERROR_STATUS.has(incompleteStatus);
 
 if (watchMode && seedFailure) {
     log.warning(
         `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
         + 'A partial baseline would have caused every study past the stopping point to be delivered and charged '
-        + 'as "new" on your next run. Re-run the same label and filters once ClinicalTrials.gov is answering again.',
+        + `as "new" on your next run. ${seedFailureIsInputError
+            ? 'This is ClinicalTrials.gov rejecting the input itself -- fix the filter values and re-run.'
+            : 'Re-run the same label and filters once ClinicalTrials.gov is answering again.'}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1154,7 +1172,10 @@ if (watchMode && seedFailure) {
     await Actor.fail(
         `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
         + '(a partial one would cause you to be charged twice for the same studies later) and nothing was '
-        + 'charged. Please re-run in a few minutes.',
+        + `charged. ${seedFailureIsInputError
+            ? 'This is ClinicalTrials.gov rejecting your input (an unrecognised filter value) -- re-running with '
+                + 'the same input will fail the same way; fix the filter values above and re-run.'
+            : 'Please re-run in a few minutes.'}`,
     );
 }
 
