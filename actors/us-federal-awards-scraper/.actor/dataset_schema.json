@@ -157,14 +157,14 @@
       },
       "loanValue": {
         "type": [
-          "string",
+          "number",
           "null"
         ],
         "title": "LoanValue"
       },
       "subsidyCost": {
         "type": [
-          "string",
+          "number",
           "null"
         ],
         "title": "SubsidyCost"

@@ -11,13 +11,24 @@ const PAGE_SIZE = 100; // API max for this endpoint
 // award_type_codes must come from ONE group per request — mixing contract and grant codes
 // returns HTTP 400 "must only contain types from one group". So each selected category is
 // its own paginated query and the results are merged here.
+//
+// Every category also carries "F0xx" codes alongside its legacy 2-digit ones — both sets are
+// live in USAspending's own /api/v2/references/award_types/ groupings, and F001/F002/F003/F004/
+// F006/F010 are NOT rare: live-checked 2026-09-26, they cover 15,724 grants (F001), 7,786 grants
+// (F002), 9,181 loans (F003), 62,404 loans (F004), 13,295 direct payments (F006) and 31 other-
+// financial-assistance awards (F010) since 2007-10-01 — including some of the single largest
+// awards in the dataset (e.g. a $22.4B DOE loan guarantee to Georgia Power, a $17.7B EV-battery
+// loan to BlueOval SK). Before this fix those codes were entirely absent from every category's
+// query, so any buyer filtering by category silently never saw them. F005/F007/F008/F009 are
+// also official codes but returned 0 awards fleet-wide over the same full date range — included
+// anyway since the API accepts them at zero marginal cost/risk and they cost nothing to carry.
 const CATEGORIES = {
     contracts: { codes: ['A', 'B', 'C', 'D'], kind: 'contract' },
     idvs: { codes: ['IDV_A', 'IDV_B', 'IDV_B_A', 'IDV_B_B', 'IDV_B_C', 'IDV_C', 'IDV_D', 'IDV_E'], kind: 'contract' },
-    grants: { codes: ['02', '03', '04', '05'], kind: 'assistance' },
-    direct_payments: { codes: ['06', '10'], kind: 'assistance' },
-    other_financial_assistance: { codes: ['09', '11', '-1'], kind: 'assistance' },
-    loans: { codes: ['07', '08'], kind: 'loan' },
+    grants: { codes: ['02', '03', '04', '05', 'F001', 'F002'], kind: 'assistance' },
+    direct_payments: { codes: ['06', '10', 'F006', 'F007'], kind: 'assistance' },
+    other_financial_assistance: { codes: ['09', '11', '-1', 'F005', 'F008', 'F009', 'F010'], kind: 'assistance' },
+    loans: { codes: ['07', '08', 'F003', 'F004'], kind: 'loan' },
 };
 
 // Every award kind has its own field mapping on the API. These are the fields verified to

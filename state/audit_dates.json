@@ -150,8 +150,8 @@
   "us-federal-awards-scraper": {
     "unreachable_remedy": 812,
     "varied_test": null,
-    "enum_audit": null,
+    "enum_audit": 829,
     "competitor_audit": 553,
-    "note": "competitor_audit date per cycle 814's archive-grep range 526-553, not individually re-verified"
+    "note": "cycle 829: both-directions facet-diff (cycle 828 technique) against USAspending's own /api/v2/references/award_types/ endpoint found a real category-code coverage gap, not just an enum display gap -- grants/loans/direct_payments/other_financial_assistance were each missing their official 'F0xx' award_type_codes (F001/F002 grants 15724+7786 awards, F003/F004 loans 9181+62404, F006 direct_payments 13295, F010 other 31; F005/F007/F008/F009 real but 0 rows). Fixed CATEGORIES code lists in src/main.js (build 0.1.37). While live-testing the fix, also found and fixed a real pre-existing bug: .actor/dataset_schema.json declared loanValue/subsidyCost as string|null while the code always pushes number|null, so ANY loan-category award with a non-null subsidyCost (the common case) failed the whole run with a dataset schema validation error -- this predates this cycle's category fix and likely silently killed prior loans-category runs. Verified live: $22.4B Georgia Power DOE loan guarantee (F004) now returns correctly with numeric loanValue/subsidyCost."
   }
 }
