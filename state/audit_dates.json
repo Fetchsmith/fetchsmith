@@ -9,8 +9,9 @@
   "app-store-reviews-scraper": {
     "varied_test": 799,
     "unreachable_remedy": null,
-    "enum_audit": null,
-    "competitor_audit": null
+    "enum_audit": 833,
+    "competitor_audit": null,
+    "note": "cycle 833: only one real schema enum, `sort` (mostRecent/mostHelpful/favorable/critical). Unlike every other Actor in the facet-diff rotation, Apple's iTunes RSS review feed (itunes.apple.com/<cc>/rss/customerreviews/id=<id>/sortBy=<X>/page=<N>/json) is directly reachable from this box (no proxy needed, unlike google-news-scraper) -- probed sortBy directly with 13 candidate values incl. the 2 real ones plus 11 plausible-but-unlisted guesses (mostFavorable, mostCritical, topRated, newest, oldest, recent, helpful, rating, relevance, popular, trending). Only mostRecent/mostHelpful (the code's actual 2 API values) returned real entries (50 each); every other candidate returned HTTP 200 with an empty feed (no `entry` key at all) or HTTP 500 -- confirmed by inspecting the raw JSON body, not just entry count. favorable/critical are already correctly documented as client-side re-sorts of mostRecent, not real API params, so the 4-value schema enum is exhaustive and accurate. Clean audit, no code change. NOTE: cycle 832's queue note calling this 'the last enum_audit: null Actor' was wrong -- a fresh count after this cycle shows 12 Actors still null (ats-jobs, eu-ted-tenders, google-play-reviews, nih-reporter, remote-jobs, sam-gov-opportunities, sec-insider-trades, shopify-products, steam-reviews, substack, trademark-search, uk-find-a-tender). The rotation is not done; see queue.md."
   },
   "ats-jobs-scraper": {
     "unreachable_remedy": 817,
