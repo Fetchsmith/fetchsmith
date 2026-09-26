@@ -32,7 +32,17 @@ const reviewsAfter = input.reviewsAfter ? new Date(input.reviewsAfter) : null;
 const reviewsBefore = input.reviewsBefore ? new Date(input.reviewsBefore) : null;
 const hasDateWindow = (reviewsAfter && !isNaN(reviewsAfter)) || (reviewsBefore && !isNaN(reviewsBefore));
 // Reviews-after/before need reviews in strict newest-first order to filter and early-stop correctly.
-let sortBy = ['recent', 'updated', 'all'].includes(input.sortBy) ? input.sortBy : 'recent';
+// "funny" is Steam's own fourth ordering (the "Funny" tab on a store page's review list, ranked by
+// votes_funny). Verified live 2026-09-26 that it is a real server-side ordering and not an alias:
+// on both Dota 2 (570) and Stardew Valley (413150) it returns a population disjoint from all/recent,
+// strictly descending in votes_funny, paginating cleanly over 6 cursor pages with 0 duplicates, and
+// composing correctly with review_type/purchase_type. Every value Steam does NOT know (toprated,
+// helpful, newest, oldest, random, trending, "") returns a byte-identical list to filter=all with
+// HTTP 200 and success:1 — so the vocabulary is exactly these four and nothing else.
+const SORTS = ['recent', 'updated', 'all', 'funny'];
+// Orderings that are not newest-first, so a scan window is not a time window.
+const NON_CHRONOLOGICAL = new Set(['all', 'funny']);
+let sortBy = SORTS.includes(input.sortBy) ? input.sortBy : 'recent';
 if (hasDateWindow && sortBy !== 'recent') {
   log.warning(`Sort was "${sortBy}" but "Reviews after/before" requires chronological order — using "recent" instead.`);
   sortBy = 'recent';
@@ -49,6 +59,19 @@ const includePlayerCount = input.includePlayerCount === true;
 // populated on all of them, while SteamSpy's playtime fields (average_forever / median_forever /
 // *_2weeks) are a flat 0 on every single one — dead since Valve hid profile playtime. So this ships
 // owners/peak-CCU/tags and deliberately does NOT claim playtime estimates.
+// Steam honours day_range only in its most-helpful ordering, so say so rather than letting the
+// buyer believe a window was applied. `recent`/`updated` are already chronological (use
+// reviewsAfter/reviewsBefore instead); `funny` is all-time and has no date control at all.
+if (dayRange && sortBy !== 'all') {
+  log.warning(
+    `"Last N days" (${dayRange}) is ignored with sortBy="${sortBy}" — Steam only honours a day range in its `
+    + 'most-helpful ordering. '
+    + (sortBy === 'funny'
+      ? 'The funniest ordering is always all-time and Steam offers no date filter for it; use sortBy="recent" '
+        + 'with "Reviews after/before" if you need a date window.'
+      : 'This ordering is already newest-first, so use "Reviews after/before" for a date window.'),
+  );
+}
 const includeOwnerEstimates = input.includeOwnerEstimates === true;
 if (includeOwnerEstimates && dataType !== 'games') {
   log.warning('includeOwnerEstimates is ignored for dataType:"reviews" — owner estimates and tags describe a game, not a review. Set dataType:"games" to get them.');
@@ -147,9 +170,10 @@ if (watchMode) {
       + 'the same label and filters — on a schedule, typically — to get only the reviews posted since now.',
     );
   }
-  if (sortBy === 'all') {
+  if (NON_CHRONOLOGICAL.has(sortBy)) {
+    const which = sortBy === 'all' ? 'most-helpful' : 'funniest';
     log.warning(
-      'Watch mode with sortBy="all": that is Steam\'s most-helpful ordering, not a chronological one, so a '
+      `Watch mode with sortBy="${sortBy}": that is Steam's ${which} ordering, not a chronological one, so a `
       + `brand-new review is not necessarily inside the ${perAppReviews} review(s) scanned per app and can be `
       + 'missed. Use sortBy="recent" for reliable alerting.',
     );
@@ -466,6 +490,9 @@ function reviewsUrl(appId, cursor) {
     cursor,
   });
   // day_range only applies to filter=all (Steam's "most helpful over the last N days" mode).
+  // Verified live 2026-09-26 that filter=funny ignores it outright: day_range 7 vs 365 vs absent all
+  // return the byte-identical page, and funny is all-time by default (unlike `all`, which Steam caps
+  // to 30 days). Sending it anyway would be a silent no-op, so it is withheld and warned about below.
   if (dayRange && sortBy === 'all') p.set('day_range', String(dayRange));
   if (hasDateWindow) {
     p.set('date_range_type', 'include');

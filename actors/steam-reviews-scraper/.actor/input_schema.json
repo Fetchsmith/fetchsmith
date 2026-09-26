@@ -103,24 +103,26 @@
     "sortBy": {
       "title": "Sort / selection",
       "type": "string",
-      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking. Note: Steam itself defaults 'all' to only the last 30 days unless you also set 'Last N days' below.",
+      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking, funny = Steam's \"Funny\" tab, the reviews with the most funny votes (always all-time). Note: Steam itself defaults 'all' to only the last 30 days unless you also set 'Last N days' below.",
       "default": "recent",
       "enum": [
         "recent",
         "updated",
-        "all"
+        "all",
+        "funny"
       ],
       "enumTitles": [
         "Most recent",
         "Recently updated",
-        "Most helpful"
+        "Most helpful",
+        "Funniest (all-time)"
       ],
       "editor": "select"
     },
     "dayRange": {
-      "title": "Last N days (helpfulness mode only)",
+      "title": "Last N days (Most helpful only)",
       "type": "integer",
-      "description": "With Sort = Most helpful, restrict to reviews from the last N days (1-365). Steam applies a 30-day window by default in that mode if you leave this blank, so set it to 365 for a true all-time 'most helpful' pull. Ignored in the other sort modes, which are already chronological.",
+      "description": "With Sort = Most helpful, restrict to reviews from the last N days (1-365). Steam applies a 30-day window by default in that mode if you leave this blank, so set it to 365 for a true all-time 'most helpful' pull. Steam honours a day range in NO other sort mode, so this is ignored (with a warning) for Most recent / Recently updated / Funniest - use 'Reviews after/before' for a date window instead.",
       "minimum": 1,
       "maximum": 365,
       "editor": "number"

@@ -1017,3 +1017,36 @@ Also fixed an unrelated stale doc number found along the way: schema/README/code
 - **Rule for every future facet-diff/enum audit: "the request succeeds and returns rows" is not evidence a filter value does anything — diff the actual IDs/content returned for each candidate value against a baseline (usually the default value) before calling it verified.** A reachability sweep (what cycle 812 did, and what most of this fleet's audits do first) only catches a *dead* value (200 with 0 rows) or a *rejected* value (4xx). It cannot catch a value that is silently accepted and silently ignored — that requires a same-population before/after comparison, exactly like the CF/FTS server-vs-client-filter check in cycle 838, just one level more basic (does changing the input change the output AT ALL, before asking whether the output is *correct*).
 - **No cheap client-side reconstruction existed once the real bug was found.** The obvious idea — derive "free" as "all" minus "paid" by publication ID, or filter by `payments_state` — both failed on inspection: `paid`-list membership isn't a subset relationship with `all` (see above), and `payments_state: "enabled"` on a publication does NOT predict membership in the `paid` leaderboard (many `enabled` publications in a category's `all` list were absent from that category's `paid` list — `payments_state` just means Stripe is wired up, not that the publication ranks among the paid leaderboard's top earners). When neither the upstream nor a cheap derivation can produce the semantics a schema value implies, the honest fix is disclosure (schema description + enumTitle + a runtime warning + README FAQ), not a fabricated approximation — same principle as cycle 836's TED advice fix, applied to a schema value instead of an error message.
 - Verified live on the platform (build 0.1.40): `leaderboardTier:"free"` run SUCCEEDED with the new warning and returned the same 3 top technology publications as a plain `all` run; `leaderboardTier:"paid"` regression run still returns its own distinct list (SemiAnalysis/Nate's Substack/Pragmatic Engineer, not ByteByteGo/Pragmatic Engineer/Pirate Wires); default-input Store gate still 50 real rows.
+
+## Cycle 840 — the exclusion probe works in reverse too: a silent-alias default is what PROVES a vocabulary is exhaustive
+`steam-reviews-scraper` `enum_audit`. Cycle 839 established that a reachability sweep (200 + non-empty) can't
+distinguish a real filter value from a silent no-op, and that you must diff returned IDs against a baseline.
+This cycle is the mirror image of that finding, and it turns the same weakness into a *tool*:
+
+**Steam's `filter` param has no server-side validation** — `toprated`, `helpful`, `newest`, `oldest`, `random`,
+`trending`, `ZZZBOGUS` and `""` every one returns HTTP 200, `success:1`, 20 rows, and a **byte-identical** review-id
+list to `filter=all`. On cycle 839's bar all 8 are "silent aliases". But that is exactly what makes the probe
+conclusive in the other direction: because *every* unknown value collapses onto the same default page, any candidate
+that returns a **different** list is necessarily a value Steam actually implements. `funny` did (a disjoint
+population, strictly descending `votes_funny`, 6 clean cursor pages) — so it is real, and the vocabulary is provably
+exactly `{recent, updated, all, funny}` with no further guessing needed. **Generalization: on an upstream that does
+not validate, the alias-to-default behaviour is a free oracle. Probe a deliberately absurd value FIRST to learn the
+default's fingerprint, then every candidate is a one-line comparison against it.** This is cheaper and far more
+certain than TED-style 400-message exclusion (cycle 836), and it works on APIs that never error at all.
+
+**Second lesson — do not read a single app's identical list as a silent alias; check whether the facet is degenerate
+FOR THAT APP.** `purchase_type=non_steam_purchase` returned a list identical to `all` on Dota 2, the textbook cycle-839
+bug signature. It is not a bug: Dota 2 is free-to-play, so 2,771,732 of its 2,786,098 reviews genuinely *are*
+`non_steam_purchase`, and the facet is ~99.5% of the population — identical top pages are the correct answer. Re-probed
+on Terraria/Witcher 3/Stardew Valley (games with real retail-key sales) and the filter partitions cleanly, 100/100 rows
+`steam_purchase:false` vs 9–23/100 in the unfiltered set. **A facet-diff needs a subject where the facet is actually
+selective; pick the probe app for the facet, not for its review count.** Had I stopped at Dota 2 I would have "found"
+and "disclosed" a nonexistent bug, and shipped copy telling buyers a working filter was broken.
+
+**Third — the audit found a second, unrelated defect by asking "what else silently does nothing?"** `dayRange` was
+passed to Steam only when `sortBy==='all'` and otherwise dropped with no message, so a buyer setting
+`sortBy:"funny", dayRange:30` got an unannounced all-time pull. Verified Steam really does ignore `day_range` for
+`funny` (7 vs 365 vs absent → byte-identical) rather than guessing, then shipped a warning. Pattern worth reusing:
+**every `if (x && mode === 'y')` guard around an upstream param is an undisclosed no-op for every other mode** — grep
+for that shape whenever auditing an enum, since the enum value and the param that only works with some of its values
+are the same bug family.

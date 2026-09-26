@@ -32,8 +32,8 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `reviewType` | string | `all` | `positive` / `negative` to keep only thumbs-up / thumbs-down |
 | `purchaseType` | string | `all` | `steam` excludes key activations and free weekends |
 | `includeOffTopic` | boolean | `false` | Include reviews from periods Valve flagged as **off-topic review bombs** — see below |
-| `sortBy` | string | `recent` | `recent`, `updated`, or `all` (Steam's helpfulness ranking) |
-| `dayRange` | integer | — | With `sortBy: "all"`, restrict to the last N days (1–365) |
+| `sortBy` | string | `recent` | `recent`, `updated`, `all` (Steam's helpfulness ranking) or `funny` (Steam's "Funny" tab — most funny votes, all-time) |
+| `dayRange` | integer | — | With `sortBy: "all"`, restrict to the last N days (1–365). Ignored in every other sort mode (Steam has no day range there) — the run warns rather than silently dropping it |
 | `reviewsAfter` | string | — | ISO date (`2024-01-01`) — keep only reviews created on/after this date. Reaches any point in history, forces `sortBy` to `recent`. |
 | `reviewsBefore` | string | — | ISO date — keep only reviews created before this date. Combine with `reviewsAfter` for an exact window. |
 | `minPlaytimeHours` | integer | — | Keep only reviewers with at least this many hours in the game |
@@ -77,7 +77,7 @@ The baseline lives in **your own** Apify account, in a named key-value store cal
 
 Details worth knowing:
 
-- **Use `sortBy: "recent"`** (the default). `sortBy: "all"` is Steam's helpfulness ranking, not a chronological one, so a brand-new review isn't necessarily inside the scanned window and can be missed; the run logs a warning if you watch with `all` anyway.
+- **Use `sortBy: "recent"`** (the default). `sortBy: "all"` (helpfulness) and `sortBy: "funny"` (funny votes) are not chronological orderings, so a brand-new review isn't necessarily inside the scanned window and can be missed; the run logs a warning if you watch with either of them anyway.
 - **`maxReviewsPerApp` is your scan-depth budget on incremental runs and is left exactly as you set it** — with `recent`, new reviews sort to the top, so your own cap doesn't hide them. If every matching review inside that window turned out to be new, the run warns you that reviews posted since the last run may sit further back — raise `maxReviewsPerApp` or run the watch more often.
 - `maxReviewsPerApp` and `maxResults` are **not** part of the fingerprint (they are budgets, not filters), and neither are `includeGameInfo`/`includePlayerCount` (they change a row's contents, never which reviews count as new).
 - If a `searchTerms` query resolves to a *different* game than last time, that game is baselined on the spot rather than having its entire review history delivered as "new".
@@ -220,8 +220,11 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 **Is there a machine-readable record of whether a run got everything, or stopped short?**
 Yes — every run writes a `RUN_SUMMARY` record to its key-value store (`GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY`, no webhook needed). It carries `delivered`, `complete` (a boolean — a run can SUCCEED and still be short), and when `complete` is `false`, `incompleteReason` — one of `upstream-error` (Steam had an outage), `charge-limit`, `max-results`, `seed-cap` (watch baseline capped before finishing), `upstream-degraded` (some apps hit a Steam data fault, others delivered fine), `depth-cap` (`maxReviewsPerApp` was hit while a filter was still discarding matches) or `watch-saturated` (the whole scanned window was new — older new reviews may sit unread) — plus `incompleteDetail` with the specifics. Watch-mode runs also carry `baselineSaved`/`baselineSize`/`baselineTruncated`. A run that hits an upstream fault on every app no longer fails silently mid-script: the error is recorded, the watch baseline and `RUN_SUMMARY` are still written, and only then does the run end FAILED — so a failed incremental run's baseline still reflects every row it already delivered and charged.
 
+**What is `sortBy: "funny"` and how is it different from `all`?**
+It's Steam's fourth review ordering — the "Funny" tab on a store page's review list, ranked by funny votes rather than helpfulness. It returns a genuinely different set of reviews, not a re-sort of the same ones: on Dota 2 the top funny reviews have 5,000–15,000 funny votes each and date from 2013–2017, while the top *helpful* reviews are from the last 30 days with double-digit funny votes. Use it to pull a game's best-known community jokes and copypastas (community-management, marketing and meme-research work) rather than its buying-decision feedback. Two things to know: it is **always all-time** (Steam offers no date control for it, so `dayRange` is ignored and the run says so), and it is not chronological, so it's a poor choice for watch mode.
+
 **Does `dayRange` work with the "most recent" sort?**
-No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. For any other historical window, use `reviewsAfter`/`reviewsBefore` instead — the Actor forces chronological order and sends the window straight to Steam's own date filter, so it works arbitrarily far back, not just the last 365 days.
+No — Steam only honours a day range in its helpfulness ranking, so set `sortBy: "all"` when you use `dayRange`. Verified against Steam's API: in the other three modes `dayRange` changes nothing at all, so this Actor withholds it and logs a warning instead of letting you believe a window was applied. For any other historical window, use `reviewsAfter`/`reviewsBefore` instead — the Actor forces chronological order and sends the window straight to Steam's own date filter, so it works arbitrarily far back, not just the last 365 days.
 
 **Can I pull reviews from a specific week/month years ago, like a launch controversy?**
 Yes — set `reviewsAfter` and `reviewsBefore` to that exact window (e.g. `"2024-01-15"` / `"2024-02-01"`). Steam's public UI only exposes a rolling `dayRange` capped at 365 days (the helpfulness sort), but its review API itself accepts a real date-range filter (`start_date`/`end_date`) that this Actor sends server-side whenever `reviewsAfter`/`reviewsBefore` is set — Steam does the filtering on its end instead of us paging back from today and discarding everything outside your window, so a narrow window years back is fast even on a huge game.
