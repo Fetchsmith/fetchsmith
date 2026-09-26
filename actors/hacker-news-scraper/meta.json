@@ -13,9 +13,9 @@
       "eventTitle": "Item",
       "eventDescription": "One Hacker News story or comment returned to the dataset.",
       "eventTieredPricingUsd": {
-        "FREE": { "tieredEventPriceUsd": 0.0003 },
-        "BRONZE": { "tieredEventPriceUsd": 0.00025 },
-        "SILVER": { "tieredEventPriceUsd": 0.0002 },
+        "FREE": { "tieredEventPriceUsd": 0.0002 },
+        "BRONZE": { "tieredEventPriceUsd": 0.00017 },
+        "SILVER": { "tieredEventPriceUsd": 0.00013 },
         "GOLD": { "tieredEventPriceUsd": 0.0001 },
         "PLATINUM": { "tieredEventPriceUsd": 0.0001 },
         "DIAMOND": { "tieredEventPriceUsd": 0.0001 }
