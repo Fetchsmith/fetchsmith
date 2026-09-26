@@ -21,6 +21,20 @@ const input = (await Actor.getInput()) ?? {};
 // and narrows the result count, so a pass-through cannot lose a filter the way a partial decoder
 // would silently drop an unknown one.
 //
+// Enum audit (cycle 816, live against the v2 API, no filter but the one under test): every value
+// in every enum we expose is real and non-empty registry-wide -- all 14 `overallStatus`
+// (TEMPORARILY_NOT_AVAILABLE is the rarest at 36 studies, WITHHELD 983, APPROVED_FOR_MARKETING
+// 241, AVAILABLE 255, NO_LONGER_AVAILABLE 536), all 3 `studyTypes` (EXPANDED_ACCESS 1,068), all 6
+// `phases`, all 3 `ageGroups`, all 3 `documentTypes` (union 56,182 = 9.3% of 604,566 studies, so
+// the README's "about 9%" still holds), both `resultsAvailability` values and both `sex` values.
+// No structurally-dead value to remove. Two schema descriptions WERE stale and were corrected:
+// `fdaRegulationViolation` said "a few dozen" (really 8 -- the README already had this right), and
+// `phases` said "~19% of all studies have no phase at all (observational studies, device trials)"
+// -- really 23.7% (143,294), and the breakdown is 141,118 observational + 1,068 expanded-access
+// + 983 withheld + only 125 interventional, i.e. interventional device/behavioral trials are NOT
+// phase-less, they are phase NA (237,522 of them). The old wording sent those users to the wrong
+// control.
+//
 // Precedence: a `startUrl` is the source of truth for the filters it carries. The search-term
 // family (cond/term/intr/spons/locn/titles/outc/lead/id) is REPLACED wholesale -- set to the URL's
 // values, cleared where the URL has none -- because `conditions` has a schema default ("cancer")

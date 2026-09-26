@@ -91,7 +91,7 @@
         "phases": {
             "title": "Phase",
             "type": "array",
-            "description": "Trial phase. Only meaningful for interventional studies; ~19% of all studies have no phase at all (observational studies, device trials). Leave empty for all. A study is matched if the phase is anywhere in its phase list, so \"Phase 2\" also returns combined PHASE1/PHASE2 trials.",
+            "description": "Trial phase. Only meaningful for interventional studies; ~24% of all studies carry no phase field at all (143,294 of 604,566 as of 2026-09-26 — almost entirely observational studies, plus expanded-access records). Note that interventional trials without a phase concept (device, behavioral, surgical) are NOT in that set: they are recorded as \"Not Applicable\", so select NA to get them. Leave empty for all. A study is matched if the phase is anywhere in its phase list, so \"Phase 2\" also returns combined PHASE1/PHASE2 trials.",
             "editor": "select",
             "items": {
                 "type": "string",
@@ -180,7 +180,7 @@
         "fdaRegulationViolation": {
             "title": "Only studies with an FDAAA violation notice",
             "type": "boolean",
-            "description": "Restrict to the small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — currently a few dozen registry-wide. Leave off for normal searches.",
+            "description": "Restrict to the very small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — 8 studies registry-wide as of 2026-09-26 (re-verified live). Combining this with any other filter will usually return nothing; use it on its own. Leave off for normal searches.",
             "default": false
         },
         "sex": {

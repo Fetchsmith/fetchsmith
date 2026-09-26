@@ -1,5 +1,5 @@
 {
- "ts": 1790382636,
+ "ts": 1790386216,
  "date": "2026-09-26",
  "apify": {
   "google-news-scraper": {
@@ -44,16 +44,16 @@
    "public": true,
    "users": 2,
    "users30d": 0,
-   "runs30d": 25,
+   "runs30d": 26,
    "runs": 651,
-   "ext_ok30d": 25,
+   "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 25,
+    "SUCCEEDED": 26,
     "TIMED-OUT": 0,
-    "TOTAL": 25
+    "TOTAL": 26
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -63,16 +63,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 16,
+   "runs30d": 17,
    "runs": 613,
-   "ext_ok30d": 16,
+   "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 16,
+    "SUCCEEDED": 17,
     "TIMED-OUT": 0,
-    "TOTAL": 16
+    "TOTAL": 17
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -82,16 +82,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 16,
+   "runs30d": 17,
    "runs": 603,
-   "ext_ok30d": 16,
+   "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 16,
+    "SUCCEEDED": 17,
     "TIMED-OUT": 0,
-    "TOTAL": 16
+    "TOTAL": 17
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -101,16 +101,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 15,
+   "runs30d": 16,
    "runs": 620,
-   "ext_ok30d": 15,
+   "ext_ok30d": 16,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 15,
+    "SUCCEEDED": 16,
     "TIMED-OUT": 0,
-    "TOTAL": 15
+    "TOTAL": 16
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -120,16 +120,16 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 16,
+   "runs30d": 17,
    "runs": 624,
-   "ext_ok30d": 16,
+   "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 16,
+    "SUCCEEDED": 17,
     "TIMED-OUT": 0,
-    "TOTAL": 16
+    "TOTAL": 17
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -196,16 +196,16 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 18,
+   "runs30d": 19,
    "runs": 560,
-   "ext_ok30d": 18,
+   "ext_ok30d": 19,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 18,
+    "SUCCEEDED": 19,
     "TIMED-OUT": 0,
-    "TOTAL": 18
+    "TOTAL": 19
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -215,16 +215,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 14,
+   "runs30d": 15,
    "runs": 556,
-   "ext_ok30d": 14,
+   "ext_ok30d": 15,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 14,
+    "SUCCEEDED": 15,
     "TIMED-OUT": 0,
-    "TOTAL": 14
+    "TOTAL": 15
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -367,16 +367,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 8,
+   "runs30d": 9,
    "runs": 99,
-   "ext_ok30d": 8,
+   "ext_ok30d": 9,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 8,
+    "SUCCEEDED": 9,
     "TIMED-OUT": 0,
-    "TOTAL": 8
+    "TOTAL": 9
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -405,16 +405,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 5,
+   "runs30d": 6,
    "runs": 57,
-   "ext_ok30d": 5,
+   "ext_ok30d": 6,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 5,
+    "SUCCEEDED": 6,
     "TIMED-OUT": 0,
-    "TOTAL": 5
+    "TOTAL": 6
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -463,8 +463,8 @@
  "apify_totals": {
   "public_actors": 24,
   "users": 46,
-  "runs30d": 316,
-  "ext_ok30d": 313,
+  "runs30d": 325,
+  "ext_ok30d": 322,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,

@@ -3,7 +3,7 @@
   "apple-podcasts-scraper": { "enum_audit": 797, "unreachable_remedy": 812, "varied_test": null, "competitor_audit": null },
   "app-store-reviews-scraper": { "varied_test": 799, "unreachable_remedy": null, "enum_audit": null, "competitor_audit": null },
   "ats-jobs-scraper": { "varied_test": null, "unreachable_remedy": null, "enum_audit": null, "competitor_audit": null, "note": "no audit found in cycles 797-814; candidate for next real audit" },
-  "clinicaltrials-scraper": { "varied_test": null, "unreachable_remedy": null, "enum_audit": null, "competitor_audit": null, "note": "no audit found in cycles 797-814; candidate for next real audit" },
+  "clinicaltrials-scraper": { "enum_audit": 816, "varied_test": 816, "unreachable_remedy": null, "competitor_audit": null, "note": "cycle 816: all 6 exposed vocabularies checked live registry-wide (14 overallStatus, 3 studyTypes, 6 phases, 3 ageGroups, 3 documentTypes, resultsAvailability, sex) -- every value real and non-empty, nothing to remove. Two stale schema descriptions fixed instead (fdaRegulationViolation 'a few dozen' -> 8; phases '~19% no phase' -> 23.7% + corrected the device-trial parenthetical). Build 0.1.32, both claims re-verified by platform run." },
   "court-records-scraper": { "enum_audit": 423, "varied_test": 458, "unreachable_remedy": null, "competitor_audit": null, "note": "per cycle 814's archive grep: canary/scale/live-API audits cycles 391-423 and 456-458+; deep prior coverage, low priority" },
   "eu-ted-tenders-scraper": { "unreachable_remedy": 813, "varied_test": null, "enum_audit": null, "competitor_audit": null },
   "fda-recall-scraper": { "enum_audit": 797, "unreachable_remedy": 813, "varied_test": null, "competitor_audit": null },

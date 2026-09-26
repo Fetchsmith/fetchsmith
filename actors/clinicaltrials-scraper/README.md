@@ -62,7 +62,7 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 | `resultsAvailability` | `with` = only studies that posted a results section; `without` = only studies that never reported (the FDAAA-compliance question). Blank = both. Supersedes the older boolean `hasResultsOnly`, which still works. |
 | `ageGroups` | Standard age groups the study enrols: `CHILD` (0–17), `ADULT` (18–64), `OLDER_ADULT` (65+). Multiple = OR. Coarser and more reliable than `ageRangeFromYears`/`ageRangeToYears`, which only match studies that state a numeric bound. |
 | `documentTypes` | Only studies that uploaded one of these documents: `prot` (study protocol), `sap` (statistical analysis plan), `icf` (informed consent form). Multiple = OR. About 9% of studies have any. |
-| `fdaRegulationViolation` | Only studies carrying an FDA regulation (FDAAA 801) violation notice — 8 registry-wide as of 2026-09-13. |
+| `fdaRegulationViolation` | Only studies carrying an FDA regulation (FDAAA 801) violation notice — 8 registry-wide, re-verified live 2026-09-26. Combine it with nothing else or you will get zero rows. |
 | `sex` | `FEMALE` or `MALE` — restrict to studies whose eligibility criteria specify that sex. Leave blank for all. |
 | `acceptsHealthyVolunteers` | Only studies that accept healthy volunteers, not just patients with the condition. |
 | `lastUpdatePostedDateFrom` / `lastUpdatePostedDateTo` | Absolute `YYYY-MM-DD` window on the record's last-updated date — a repeatable "what changed since I last pulled" query, either bound optional. Setting `From` after `To` fails fast with an error instead of silently returning 0 rows. |
