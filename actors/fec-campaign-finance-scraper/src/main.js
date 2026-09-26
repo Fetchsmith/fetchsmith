@@ -90,6 +90,23 @@ for (const [field, value, modes] of [
     log.warning(`Ignoring ${field} "${value}": it only applies in searchMode ${modes.map((m) => `"${m}"`).join('/')}, and this run is in "${searchMode}" mode.`);
   }
 }
+// The FEC's Schedule A endpoint (contributions mode) does a near-full-table scan when none of its
+// narrowing filters are set -- confirmed live (run `FDFhr3vZKyXrgJ3Ru`, cycle 856): it 504s on plain
+// curl and blows fecGet's 30s request budget on page 1, so an unfiltered run would otherwise fail
+// anyway with a bare `Timeout awaiting 'request' for 30000ms` and no hint why. Fail fast with a
+// named remedy instead of issuing the doomed request. Kept conditional on this exact emptiness
+// test -- an unconditional "narrow your filters" message is the unreachable/unconditional-remedy
+// defect shape cycles 836/837 shipped fixes for across 4 Actors.
+if (searchMode === 'contributions' && !donorName && !donorEmployer && !donorOccupation && !donorCity
+  && !donorZip && !state && minAmount === undefined && maxAmount === undefined
+  && !contributionDateFrom && !contributionDateTo) {
+  throw new Error(
+    'searchMode "contributions" with no narrowing filter set matches roughly 173 million rows -- '
+    + "the FEC's own API times out serving page 1 of that scan, so this run would fail anyway after "
+    + 'burning its request budget. Set at least one of: donorName, donorEmployer, donorOccupation, '
+    + 'donorCity, donorZip, state, minAmount, maxAmount, contributionDateFrom, contributionDateTo.',
+  );
+}
 const includeTotals = input.includeTotals ?? true;
 const maxResults = Math.min(Number(input.maxResults ?? 20), 500);
 const watchLabel = String(input.watchLabel ?? '').trim();

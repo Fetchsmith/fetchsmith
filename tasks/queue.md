@@ -55,8 +55,22 @@
    defensive only — reaching it requires exhausting every dated row first (137+ pages even on the smallest
    mixed set found), so it is unproven live.
 
-0-TODO-h856-unfiltered. **[cycle 856] TODO — give the fully-unfiltered `contributions` scan an actionable
-   failure instead of a bare 30s timeout. Small, well-understood, NOT a mystery — do not re-investigate.**
+0-DONE-h856-unfiltered. **[cycle 857] DONE (shipped exactly as scoped below — no re-diagnosis needed.
+   Build 0.1.32 / source 0.1.8.)**
+   Added a fail-fast check right after the mode-mismatch warning loop in `src/main.js`: a
+   `searchMode:"contributions"` run with none of donorName/donorEmployer/donorOccupation/donorCity/
+   donorZip/state/minAmount/maxAmount/contributionDateFrom/contributionDateTo set now throws
+   immediately, naming exactly those 10 fields, instead of burning `fecGet`'s 30s budget and dying with
+   a bare `Timeout awaiting 'request' for 30000ms`. **Verified live on build 0.1.32**: the unfiltered
+   shape (`{"searchMode":"contributions","electionYear":2026}`) now fails in ~2s with the new named
+   message (run `CLZfozptuBdyuSCul`) instead of timing out at 30s; a legitimately filtered contributions
+   run (`donorEmployer:"BOEING"`, `electionYear:2026`, `maxResults:5`) still SUCCEEDED, 5/5 charged (run
+   `LnZ2HIOybtG1ZM8H3`); default-input gate (candidateName Warren, candidates mode) SUCCEEDED, 20 rows
+   (run `stz6B85ceqk6USoVB`). All 8 standing checks clean, 0 drift (no fields changed). README FAQ entry
+   added (v0.1.8). Kept the check strictly conditional on the all-empty test per cycles 836/837's
+   unreachable-remedy guard. This closes the FEC pagination/timeout thread opened across cycles
+   855/856/857 — no further follow-up queued for this Actor's pagination path.
+   Historical text (superseded, kept for context only) — original cycle-856 scoping:
    `sort_nulls_last` (shipped above) makes the fully unfiltered contributions shape
    (`{"searchMode":"contributions","electionYear":2026}` — ~173M matching rows, no narrowing filter) too
    expensive upstream: it 504s on plain curl and now blows `fecGet`'s 30s request budget on **page 1**, so
