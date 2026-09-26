@@ -904,3 +904,23 @@ count without a query text before comparing it against a second endpoint/method 
 (Algolia's relevance index is one) only guarantee an exhaustive count when a query is actually
 doing full-text ranking, and silently approximate otherwise with no error, just a quiet
 `exhaustiveNbHits: false` flag most integrations never check.**
+
+## Cycle 824 — telling an exact upstream count from an estimate without paging it
+Cycle 823 found Algolia silently returning an inflated `nbHits` when no text query anchors the
+ranking, so cycle 824 swept the fleet for a second instance. The cheap general test, when the
+match set is far too large to page: **disjoint-range additivity.** Split one filter-only query into
+two non-overlapping halves (usually a date range) and check `count(whole) == count(A) + count(B)`.
+An exhaustive count stays additive at any scale; an estimator does not (the HN case was 3-12x off,
+and would have broken additivity immediately). This settled CourtListener v4 in 3 requests
+(5,224 == 2,528 + 2,696, delta 0) where paging 5,224 rows would have taken 262 requests. Pair it
+with one small-N case paged to exhaustion (declared 71, paged 71) to rule out a constant offset.
+Second, cheaper signal, for an API that reports both a total and a page count: check whether
+`totalPages == ceil(total / pageSize)` exactly, at two very different scales. If it does, the page
+count is *derived* from the total rather than independently capped — which rules out a silent
+pagination cap but says nothing about whether deep pages actually return rows. Those are two
+different failure modes and the fleet had been conflating them: `trademark-search-scraper` passes
+the consistency check (25,930/519 and 9,682,228/193,645 both exact) and still has no guard for a
+deep-page refusal, because nothing has ever walked it past ~page 10. A declared total is only
+honest if the run also discloses how much of it is *reachable*.
+Also: anonymous CourtListener rate-limits (HTTP 429) after roughly 4 rapid API calls — space
+audit calls 10-20s apart or the audit dies mid-sample.
