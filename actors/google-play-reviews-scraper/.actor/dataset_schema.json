@@ -273,6 +273,30 @@
             "rating": 2
           }
         ]
+      },
+      "watchEvent": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "WatchEvent",
+        "example": "scoreChanged"
+      },
+      "previousScore": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "PreviousScore",
+        "example": 5
+      },
+      "previousHasDeveloperReply": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "PreviousHasDeveloperReply",
+        "example": false
       }
     }
   },

@@ -66,6 +66,16 @@ const minReviewLength = input.minReviewLength != null ? Number(input.minReviewLe
 const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;
 const untilDate = input.untilDate ? new Date(input.untilDate) : null;
 const watchLabel = String(input.watchLabel ?? '').trim();
+// Watch-mode change events. "new" is the original behaviour (a review id never delivered under
+// this label); the other three are MUTATIONS of an already-delivered review -- Google Play keeps
+// the review id stable when a reviewer edits their own star rating and when a developer adds or
+// deletes a reply, so an id-only baseline can never see either (see LEARNINGS cycle 844).
+const WATCH_EVENTS = ['new', 'scoreChanged', 'developerReplied', 'replyRemoved'];
+const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
+if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
+const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
+if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -148,6 +158,24 @@ let watchRecord = null;
 let seeding = false;
 let watchSkipped = 0;
 const watchSeen = new Set(); // reviewIds already delivered under this label+fingerprint
+// reviewId -> the mutable state that review had when it was last delivered, encoded as one small
+// int so the persisted record grows ~10% rather than doubling: score * 2 + (hasDeveloperReply ?
+// 1 : 0), i.e. 2..11. 0 means "recorded before this feature existed" -> unknown, never fires an
+// event. Kept as a parallel array aligned to seenIds on disk.
+const watchMeta = new Map();
+const META_UNKNOWN = 0;
+function encodeMeta(r) {
+  const s = Number(r.score);
+  if (!Number.isInteger(s) || s < 1 || s > 5) return META_UNKNOWN;
+  return s * 2 + (r.replyText ? 1 : 0);
+}
+function decodeMeta(code) {
+  const c = Number(code);
+  if (!Number.isInteger(c) || c < 2 || c > 11) return null;
+  return { score: Math.floor(c / 2), hasReply: c % 2 === 1 };
+}
+let watchEventsFiltered = 0; // a real change the buyer's watchEvents list excluded
+let watchChanged = 0; // already-delivered reviews re-delivered this run because they changed
 let baselineTruncated = 0; // reviewIds dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
 let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const seededApps = new Set(); // appIds whose existing reviews are already in the baseline
@@ -175,12 +203,28 @@ if (watchMode) {
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
-    for (const id of existing.seenIds) watchSeen.add(String(id));
+    const meta = Array.isArray(existing.seenMeta) ? existing.seenMeta : [];
+    existing.seenIds.forEach((id, i) => {
+      watchSeen.add(String(id));
+      // A record written before watchEvents existed has no seenMeta at all; a shorter-than-ids
+      // array (should not happen, but a hand-edited or truncated record could) decodes the
+      // missing tail as unknown rather than misaligning.
+      watchMeta.set(String(id), decodeMeta(meta[i] ?? META_UNKNOWN));
+    });
+    const known = [...watchMeta.values()].filter(Boolean).length;
+    if (known === 0 && watchSeen.size > 0) {
+      log.info(
+        `Watch baseline for "${watchLabel}" predates change detection, so it holds no star-rating/reply state: `
+        + 'this run reports new reviews only and records that state, and scoreChanged/developerReplied/replyRemoved '
+        + 'start working from the next run onwards.',
+      );
+    }
     for (const a of existing.seededApps ?? []) seededApps.add(String(a));
     log.info(
       `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
       + `${watchSeen.size} already-delivered review(s) across ${seededApps.size} app(s). Only reviews NOT in that `
-      + 'baseline will be returned and charged.',
+      + `baseline, or already-delivered ones whose star rating or developer reply changed (events: ${[...watchEvents].join(', ')}), `
+      + 'will be returned and charged.',
     );
   } else {
     watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
@@ -190,6 +234,14 @@ if (watchMode) {
       + 'It records which reviews already exist and returns ZERO rows (you are charged nothing). Run it again on '
       + 'the same label and filters -- on a schedule, typically -- to get only the reviews posted since now.',
     );
+  }
+}
+if (!watchMode && watchEventsInput.length) {
+  log.warning('"watchEvents" only applies when "watchLabel" is set — this run is a normal one-off scrape and returns every matching review.');
+}
+if (watchMode) {
+  if (!watchEvents.has('new')) {
+    log.info('"new" is not in watchEvents: brand-new reviews will be recorded in the baseline but not returned or charged for.');
   }
   if (sortName !== 'NEWEST') {
     log.warning(
@@ -221,6 +273,13 @@ async function saveWatchRecord(status) {
     seenCount: ids.length,
     seededApps: Array.from(seededApps),
     seenIds: ids,
+    // Parallel to seenIds, same order, same length: the star-rating/reply state each review had
+    // when it was last delivered. Written even for ids carried over from a pre-watchEvents
+    // record (as 0/unknown) so the two arrays never misalign.
+    seenMeta: ids.map((id) => {
+      const m = watchMeta.get(String(id));
+      return m ? m.score * 2 + (m.hasReply ? 1 : 0) : META_UNKNOWN;
+    }),
     truncatedLastRun: baselineTruncated,
     truncatedTotal: baselineTruncatedTotal,
   });
@@ -237,30 +296,30 @@ let stop = false;
 let chargeLimitHit = false; // the buyer's own pay-per-event charge limit was exhausted mid-run
 
 // watchId is the review's stable id; app-detail records pass null and are handled by the
-// caller (they are deferred in watch mode, see the main loop).
-async function pushResult(item, watchId = null) {
+// caller (they are deferred in watch mode, see the main loop). metaCode is the encoded
+// star-rating/reply state to record alongside the id so the NEXT run can diff against it; the
+// caller has already decided (via watchVerdict) that this row is worth delivering, so the
+// "already seen" short-circuit below only catches rows the caller did not classify.
+async function pushResult(item, watchId = null, metaCode = META_UNKNOWN) {
   if (watchMode && watchId != null && appSeeding) {
     watchSeen.add(String(watchId));
+    watchMeta.set(String(watchId), decodeMeta(metaCode));
     if (watchSeen.size >= SEED_CAP) stop = true;
     return !stop;
-  }
-  if (watchMode && watchId != null && watchSeen.has(String(watchId))) {
-    watchSkipped += 1;
-    return true; // already delivered under this label: not pushed, not charged, keep scanning
   }
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false;
     await Actor.pushData(item);
     pushed += 1;
-    if (watchMode && watchId != null) watchSeen.add(String(watchId));
+    if (watchMode && watchId != null) { watchSeen.add(String(watchId)); watchMeta.set(String(watchId), decodeMeta(metaCode)); }
     if (r.eventChargeLimitReached) chargeLimitHit = true;
     if (r.eventChargeLimitReached || pushed >= maxResults) stop = true;
     return !stop;
   }
   await Actor.pushData(item);
   pushed += 1;
-  if (watchMode && watchId != null) watchSeen.add(String(watchId));
+  if (watchMode && watchId != null) { watchSeen.add(String(watchId)); watchMeta.set(String(watchId), decodeMeta(metaCode)); }
   if (pushed >= maxResults) stop = true;
   return !stop;
 }
@@ -432,9 +491,41 @@ for (const appId of resolvedAppIds) {
         unidentifiedSkipped += 1;
         continue;
       }
+      // Watch mode, incremental run: an id already in the baseline is not automatically "old".
+      // Google Play keeps the review id stable when the reviewer edits their own star rating and
+      // when the developer adds or deletes a reply, so diff the recorded state before skipping.
+      let verdict = 'new';
+      let previous = null;
       if (watchMode && !appSeeding && watchSeen.has(String(r.id))) {
-        // Counted as skipped inside pushResult; short-circuit here so the app record is not
-        // pushed for an app whose reviews are all old.
+        previous = watchMeta.get(String(r.id)) ?? null;
+        const changes = [];
+        if (previous) {
+          if (previous.score !== Number(r.score)) changes.push('scoreChanged');
+          if (!previous.hasReply && r.replyText) changes.push('developerReplied');
+          if (previous.hasReply && !r.replyText) changes.push('replyRemoved');
+        }
+        const wanted = changes.filter((c) => watchEvents.has(c));
+        if (!wanted.length) {
+          // Counted as skipped inside pushResult; short-circuit here so the app record is not
+          // pushed for an app whose reviews are all old. A real change the buyer's watchEvents
+          // list excluded is tracked separately so it is not silently invisible in the log.
+          if (changes.length) watchEventsFiltered += 1;
+          watchSkipped += 1;
+          // Record the new state anyway: an excluded change must not be re-reported later as a
+          // change from the stale pre-change state.
+          watchMeta.set(String(r.id), decodeMeta(encodeMeta(r)));
+          continue;
+        }
+        // A score edit that also added a reply is one delivery, reported by its primary change
+        // (the score), not two charges.
+        verdict = wanted[0];
+        watchChanged += 1;
+      } else if (watchMode && !appSeeding && !watchEvents.has('new')) {
+        // "new" deselected: record the review in the baseline so a later change can be detected,
+        // but do not deliver or charge for it.
+        watchSeen.add(String(r.id));
+        watchMeta.set(String(r.id), decodeMeta(encodeMeta(r)));
+        watchEventsFiltered += 1;
         watchSkipped += 1;
         continue;
       }
@@ -443,7 +534,13 @@ for (const appId of resolvedAppIds) {
         pendingAppRecord = null;
         if (!keepGoingApp) break;
       }
-      const keepGoing = await pushResult(mapReview(appId, r), watchMode ? r.id : null);
+      const row = mapReview(appId, r);
+      if (watchMode && !appSeeding) {
+        row.watchEvent = verdict;
+        row.previousScore = previous ? previous.score : null;
+        row.previousHasDeveloperReply = previous ? previous.hasReply : null;
+      }
+      const keepGoing = await pushResult(row, watchMode ? r.id : null, encodeMeta(r));
       if (!appSeeding) newForApp += 1;
       if (!keepGoing) break;
     }
@@ -496,8 +593,11 @@ if (watchMode) {
     );
   } else {
     log.info(
-      `Watch label "${watchLabel}": ${pushed} new item(s) since the last run (${watchSkipped} already-delivered `
-      + `review(s) skipped, not charged); baseline now holds ${watchSeen.size} review(s) across ${seededApps.size} app(s).`
+      `Watch label "${watchLabel}": ${pushed} item(s) since the last run — ${pushed - watchChanged} new review(s) and `
+      + `${watchChanged} already-delivered review(s) whose star rating or developer reply changed (${watchSkipped} `
+      + `unchanged/already-delivered review(s) skipped, not charged`
+      + `${watchEventsFiltered ? `, of which ${watchEventsFiltered} really did change but were excluded by your watchEvents list` : ''}); `
+      + `baseline now holds ${watchSeen.size} review(s) across ${seededApps.size} app(s).`
       + evictionSuffix,
     );
   }
@@ -541,9 +641,9 @@ let statusMsg;
 if (watchMode && seeding) {
   statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
 } else if (watchMode && pushed === 0) {
-  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change but the event was excluded by your watchEvents list.)` : ''}`);
 } else if (watchMode && saturatedApps.length) {
-  statusMsg = (`Pushed ${pushed} new item(s) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.`);
+  statusMsg = (`Pushed ${pushed} item(s) (${watchChanged} of them changed re-deliveries) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.`);
 } else if (pushed === 0 && resolvedAppIds.length) {
   // Without this branch, timing out before any app was even queried fell into the final default
   // below with an empty emptyApps list, asserting "Google Play returned zero reviews for: " (blank)
@@ -586,8 +686,9 @@ if (webhookUrl) {
     finishedAt: new Date().toISOString(),
     pushed,
     watchLabel: watchMode ? watchLabel : null,
-    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchNewCount: watchMode && !seeding ? pushed - watchChanged : null,
     watchSkipped: watchMode ? watchSkipped : null,
+    watchChangedCount: watchMode && !seeding ? watchChanged : null,
     watchSeeding: watchMode ? seeding : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,

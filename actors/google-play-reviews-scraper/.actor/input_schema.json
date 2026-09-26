@@ -158,6 +158,28 @@
       "description": "Optional. Name a saved watch (e.g. \"my-app-alerts\") and this run returns ONLY reviews not delivered under that same label and filter set before, instead of the same top-of-feed reviews every time. The first run for a label is a free baseline: it records the reviews that already exist (walking at least 1000 per app, up to 5000 total) and returns zero rows. Run it again later — on a schedule, typically — to get only what is new. The baseline is kept in your own Apify account (a named key-value store \"fetchsmith-google-play-reviews-watch\"), keyed by label plus a fingerprint of apps/search terms/country/language/sort and every rating, keyword, app-version and date filter, so changing any of those starts a fresh baseline instead of hiding newly-matching reviews as \"already seen\". Use sort=NEWEST. App-detail records are only returned on a run where that app actually has a new review, so a run with nothing new costs nothing.",
       "editor": "textfield"
     },
+    "watchEvents": {
+      "title": "Watch events to report",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "new",
+          "scoreChanged",
+          "developerReplied",
+          "replyRemoved"
+        ],
+        "enumTitles": [
+          "New review",
+          "Star rating edited (reviewer changed their own score)",
+          "Developer replied (reply newly added)",
+          "Developer reply removed"
+        ]
+      },
+      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Star rating edited\" alone to be alerted only when an existing reviewer downgrades or upgrades their score, and never pay for anything else. Leave empty for all four. Google Play lets a reviewer edit a review in place (same review id), and lets a developer add or delete a reply at any time — without these events an already-delivered review that later drops from 5★ to 1★, or that finally gets a reply, is invisible to a watch forever. Change events compare against the star rating and reply state recorded the last time the review was delivered, so they only start firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
+      "default": []
+    },
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",
