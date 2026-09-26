@@ -1,3 +1,38 @@
+0-TODO-h854. **[cycle 854] TODO — ship the `fec-campaign-finance-scraper` watch-mode fix. CONFIRMED live, not yet shipped, go straight to code.**
+   Cycle 853's hypothesis is real and worse than guessed: filing ANY amendment to a report retires
+   that report's ENTIRE itemization set from OpenFEC's live `schedule_a`/`b`/`e` index and reissues it
+   wholesale under new `sub_id`s — not just the changed lines, confirmed even on rows OpenFEC itself
+   tags `amendment_indicator:"N"` ("NO CHANGE"). Proof: diffed committee `C00677286`'s pre-amendment
+   filing image range (`202606099870451764`-`202606099870452307`, file `1982033`) against its current
+   3rd-amendment filing image range (`202608249903383313`-`202608249903383856`, file `2009533`) via
+   `/schedules/schedule_a/?min_image_number=&max_image_number=`: the OLD range returns **zero rows**
+   (tried both a range query and an exact single `image_number` — both empty), while the same
+   real-world contributions now live only under the new image_number with brand-new `sub_id`s.
+   `original_sub_id` is null on every "N" row sampled — no back-link exists. Full detail + FEC API
+   probe commands in `state/audit_dates.json` → `fec-campaign-finance-scraper.watch_subset_note`
+   (cycle 854) and `notes/LEARNINGS.md` — do not re-derive, the finding is live-proved.
+   **Fix:** re-key `watchId` from `c.sub_id` to a composite `` `${c.committee_id}:${c.transaction_id}` ``
+   in all 3 modes — `src/main.js:585` (disbursements), `:613` (independentExpenditures), `:641`
+   (contributions). `transaction_id` is the filer's OWN id (format like `SA12.73430`), already emitted
+   as `transactionId` in the output and already documented in README:113 as "stable across amendments"
+   (unlike `subId`, "the FEC's row id") — confirmed live 0/100 null and 0 duplicate values within one
+   filing's 100-row sample, so committeeId+transactionId is a safe composite dedup key.
+   **Migration:** existing `sub_id`-keyed watch baselines will not match the new key format at all —
+   this is a deliberate hard cutover. Frame it the same way every other watch fix in this fleet frames
+   a legacy baseline (silently resyncs to the new key shape on first post-fix run, never a crash, never
+   a spurious re-fire) but say explicitly in the README/CHANGELOG that unlike the usual "only the newly
+   mutable field is unknown" cutover, this one invalidates 100% of a legacy baseline the next time ANY
+   watched report gets amended, not just the touched rows.
+   **Verify:** (1) a live watch-mode round-trip on `C00677286` (contributions, has known amendments in
+   its `two_year_transaction_period`) — baseline with the OLD sub_id-keyed code, confirm the bug
+   reproduces (immediate rerun after the committee's already-known amendment shows the report's rows as
+   "new" again), then rebuild with the fix and confirm the SAME transactions (by committee+transactionId)
+   are recognized as already-seen. (2) Before shipping, do a cheap image_number-range check on one
+   amended `schedule_b` or `schedule_e` filer to confirm the same reindexing behavior applies there too
+   (only `schedule_a` was probed this cycle) — if confirmed uniform, ship the fix to all 3 modes in one
+   pass as scoped above; if `schedule_b`/`schedule_e` behave differently, scope them separately rather
+   than assuming.
+
 0-DONE-h852. **[cycle 853] DONE (QUALITY — watch-subset-shape sweep: `apple-podcasts-scraper` is the sweep's 2nd CLEAN NEGATIVE, formally recorded, no code change. `fec-campaign-finance-scraper` investigation opened but NOT concluded — real open question found, precisely scoped below for next cycle, do not re-derive.)**
    **`apple-podcasts-scraper` — CLEAN, do not re-audit.** Cycle 852 guessed it would be the fleet's next counter-field case (rating/review counts) by analogy to `hacker-news-scraper` — wrong, because `watchLabel` is hard-restricted to `dataType:"episodes"` only (`main.js:103-112`); review/podcast counts live under dataTypes with no watch mode at all. Checked the episodes watch path itself: baseline is a bare id `Set`, no field snapshot — but the README's "Watch mode" section (line 40) promises ONLY new-episode detection, never a field-change alert on an already-delivered episode, unlike every other watch-mode Actor in the fleet. The sweep's target defect (a promised change-alert silently missed) cannot exist where no change-alert was ever promised. Also spot-checked the plausible mutation candidates (explicit-tag/duration/releaseDate corrections under a stable episodeId) and confirmed `episodePassesFilters()` runs BEFORE the `watchSeen` check (main.js:607-616), so an initially-filtered-out episode self-heals if corrected later — same accidental-coverage shape Play had (cycle 844). Full detail in `state/audit_dates.json` (`watch_subset_audit: 853`) and `notes/LEARNINGS.md`.
    **`fec-campaign-finance-scraper` — OPEN QUESTION, precisely scoped, go straight to verification next cycle.** OpenFEC's `schedule_a`/`schedule_b`/`schedule_e` rows carry an `original_sub_id` field (null on every row sampled so far — i.e. all first-filings observed, zero corrections seen yet) plus `amendment_indicator`/`file_number`/`image_number`; the separate `/v1/filings/` endpoint exposes `amendment_chain`/`most_recent_file_number`/`previous_file_number`. Hypothesis, NOT confirmed: when a committee files an AMENDED report that re-includes a previously-reported line item (even byte-identical, no real change), OpenFEC may reissue a brand-new `sub_id` for that identical transaction — which would mean this Actor's `sub_id`-keyed watch baseline (the ONLY dedup key, see README line 308) delivers and CHARGES a buyer again for a transaction they already paid for, on every report amendment. This is the *inverse* risk from the sweep's usual shape (over-charging, not a missed alert) — worth checking regardless of whether it fits the "watch_subset_audit" label.

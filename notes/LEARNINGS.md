@@ -1252,3 +1252,35 @@ had `original_sub_id: null` (i.e. all first-filings, no observed corrections), a
 `page=N` param does NOT paginate correctly for this endpoint (it silently re-returns page 1 — must use
 the `last_indexes`-based cursor the API documents, which this cycle's quick probe skipped). Left
 unconfirmed rather than guessed at; see queue.md for the exact follow-up recipe.
+
+## Cycle 854: `fec-campaign-finance-scraper` watch-mode over-charging — CONFIRMED, not yet fixed
+
+Cycle 853's amendment/`sub_id` hypothesis is real, and worse than guessed. Used the Actor's own
+documented cursor mechanics (`pagination.last_indexes`, since `page=N` silently re-serves page 1 on
+OpenFEC's keyset-paginated schedules) only to locate a live amended committee, then diffed
+`/schedules/schedule_a/` by `min_image_number`/`max_image_number` between a committee's pre-amendment
+filing and its current (3rd-amendment) filing. **The pre-amendment filing's image range returns ZERO
+rows from the live index — not "identical rows, new sub_id", but *no rows at all* under the old
+image_number, for either a range query or an exact single image_number.** Every itemization from that
+report, including ones OpenFEC itself tags `amendment_indicator:"N"` ("NO CHANGE"), now exists only
+under the new filing's image_number with a freshly-assigned `sub_id`; `original_sub_id` is null on
+every "N" row sampled (it does not link back to the pre-amendment row at all).
+
+**Generalization: OpenFEC's schedule_a/b/e search index holds only the CURRENT (latest-amendment)
+state of a report — filing an amendment retires the entire prior itemization set from the queryable
+index and reissues it wholesale under new `sub_id`s, not just the touched lines.** This means any
+`sub_id`-keyed watch baseline goes stale in one shot the moment a watched committee files *any*
+amendment to a report it already has itemizations in — every contribution/disbursement/expenditure
+already delivered and charged for that report re-delivers (and re-charges) in full, repeating on each
+further amendment. Confirmed on `schedule_a` only; `schedule_b`/`schedule_e` share the same
+filing/image_number architecture and are very likely uniform, but weren't independently probed this
+cycle — check before assuming.
+
+The fix (re-key on `committee_id + transaction_id`, the filer's own id, documented in this Actor's own
+README:113 as "stable across amendments" while `sub_id` is only "the FEC's row id" — the two fields'
+own descriptions already hinted at this before any live probe confirmed it) is scoped in
+`state/audit_dates.json` and `queue.md` for next cycle, not shipped — the round-trip verification this
+fleet's other watch fixes have needed didn't fit this cycle's remaining budget. **Lesson for the
+rotation generally: when two fields in an Actor's own README already describe different stability
+guarantees for what looks like the same purpose (an id vs. an id), that asymmetry is worth checking
+BEFORE assuming a bare-id watch baseline is safe just because it's *a* id.**
