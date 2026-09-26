@@ -1135,3 +1135,47 @@ are the same bug family.
 - **Verified the fix cannot be defeated by the two ATS-specific "skip the detail call for an already-seen id" optimizations** (SmartRecruiters and Workday both skip a per-job detail fetch — used only for descriptions — when `watchSeen.has(watchIdFor(job))`, to avoid wasting a request on a row that will be dropped anyway). Confirmed both ATSes hardcode `salaryMin: null` at the LIST-level mapping, before that optimization ever runs, so `hasSalary` is always `false` for them regardless of the optimization — no interaction, no need to special-case it.
 - **The queue/STATUS "next candidate" pointer inherited from cycle 845/846 was simply wrong: `substack-scraper` has no watch mode at all.** A `grep -rli watch` over its actor directory (excluding `node_modules`) returns nothing — no `watchEvents`, `seenIds`, or `WATCH_STORE`. The pointer had been carried forward for two cycles (845 said "check it next", 846 repeated it) without anyone actually opening the file. **Generalization: before adding an Actor to a "do X next" queue note, grep its actual source for the feature in question — a plausible-sounding candidate name is not a substitute for one `grep -l` call**, and a stale carried-forward pointer costs the next cycle a wasted setup pass before it discovers the premise is false (caught here only because the "no watch found" check happens to be nearly free — always do it first, before reading deeper into an Actor for the technique you're about to apply).
 - **Fleet-wide state after this cycle: 18 watch-mode Actors total, 5 fixed by this rotation (Shopify h843, Google Play h844, App Store h845, Steam h846, ATS Jobs h847), 13 not yet checked by this specific technique** (`apple-podcasts-scraper`, `clinicaltrials-scraper`, `court-records-scraper`, `eu-ted-tenders-scraper`, `fda-recall-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`, `sam-gov-opportunities-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`). Get the actual list with `grep -l "watchEvents\|WATCH_KV\|seenIds" actors/*/src/main.js` before picking the next one — do not trust a name recalled from a prior cycle's prose.
+
+## Cycle 848 — rank the watch-subset-shape sweep by a grep, not by guessing upstream mutability
+
+The sweep (h843-h847, 5-for-5) picks its next target by asking "what could change upstream under a
+stable id?" That question is about the *data source*, and it sent cycle 847 straight at
+`fda-recall-scraper`, an Actor that had **already** shipped exactly the change detection cycle 847
+predicted it was missing (`snapshotOf` → `{status, classification}` + `watchChanges`, copied from
+`grants-gov-scraper` cycle 346). The guess about FDA was right and completely useless: being right
+about what mutates upstream says nothing about whether *our code already tracks it*.
+
+The cheap, correct pre-filter is a grep over our own source, not a theory about theirs:
+
+    grep -c "snapshotOf\|changesBetween\|watchChanges" actors/<slug>/src/main.js
+
+Nonzero ⇒ the Actor already carries a per-id snapshot ⇒ **low-yield** target (at most a missing
+*field* in an existing snapshot). Zero ⇒ a bare id `Set`/`seenIds` baseline with no change detection
+at all ⇒ **high-yield** target (the whole mechanism is missing). It predicted both of this cycle's
+outcomes correctly: `fda-recall-scraper` scored high and was clean, `court-records-scraper` scored 0
+and was the 6th confirmed instance. Same family as cycle 847's lesson — open the file before
+believing a claim about it — but sharper: the sweep now has an ordering signal that costs one grep
+instead of a cycle. Use it to order the remaining 11 watch-mode Actors.
+
+**Second, narrower lesson: a null-guard in a change detector is only a bug if the field can actually
+be absent upstream.** `changesBetween` skips any field whose previous value is `null`, which is the
+exact shape h847 shipped a fix for (`seenMeta` 1/2/0 to tell "genuinely absent" from "unknown,
+pre-fix baseline"). On `fda-recall-scraper` it is *correct as written*, and two one-line API probes
+proved it rather than a code reading: `search=_missing_:classification` and `_missing_:status` both
+return `NOT_FOUND`, so the guard can only ever be exercised by legacy flat-string baselines — which
+is precisely what its comment claims. **Before porting a fix to the next instance of a defect shape,
+probe whether the precondition holds there.** `_missing_:<field>` / `_exists_:<field>` (openFDA,
+Elasticsearch-backed) gives a yes/no in one request; the equivalent on any facetable API is a
+`count=<field>.exact` that enumerates the real value set and, by omission, proves nothing is null.
+The corollary caught a second false lead the same way: `termination_date` looked like a missing 3rd
+snapshot field until the same probes showed it moves in lockstep with `status` (5 divergent rows in
+29,415), so the existing status trigger already covers it.
+
+**Third: "the upstream feed has no update signal" is a finding worth recording, not a dead end.**
+The press-release half of `fda-recall-scraper` stores no snapshot at all, which looks like the same
+gap — but the FDA announcement pages expose only `Company Announcement Date` and `FDA Publish Date`,
+with no update-date field anywhere, and FDA's expansion pattern is a *new* page at a *new* URL (=
+new guid), which an id-only baseline already fires as `new`. There is nothing to snapshot. Writing
+that into `audit_dates.json` converts the Actor from "unchecked" to "positively cleared" and stops a
+future cycle re-deriving it. A clean negative that is *recorded* is worth nearly as much as a fix;
+an unrecorded one gets re-audited forever.
