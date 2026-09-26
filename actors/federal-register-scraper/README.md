@@ -47,7 +47,8 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 | --- | --- |
 | `dataset` | `published` (default) searches the full archive back to 1994. `publicInspection` returns documents that are **filed but not published yet** — see **Advance notice** below. |
 | `documentTypes` | `RULE`, `PRORULE`, `NOTICE`, `PRESDOCU`. All four by default. |
-| `agencies` | Slug (`environmental-protection-agency`) **or** full name — both are resolved against the official 472-agency list, and anything unrecognised is reported in the log instead of silently returning zero rows. **Filtering by a parent agency includes its sub-agencies**: `homeland-security-department` also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. |
+| `presidentialDocumentTypes` | Narrow `PRESDOCU` rows to a subtype: `executive_order`, `proclamation`, `memorandum`, `notice`, `determination`, `other`. Server-side filter, verified live (real counts: 1,567 / 4,436 / 807 / 784 / 801 / 60). Empty = all subtypes; no effect unless `PRESDOCU` is in `documentTypes`; ignored on the Public Inspection desk. |
+| `agencies` | Slug (`environmental-protection-agency`) **or** full name — both are resolved against the official 473-agency list, and anything unrecognised is reported in the log instead of silently returning zero rows. **Filtering by a parent agency includes its sub-agencies**: `homeland-security-department` also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. |
 | `publicationDateFrom` / `publicationDateTo` | `YYYY-MM-DD`. Defaults to the last 90 days; the archive goes back to **1994-01-03**. |
 | `searchQuery` | Full-text search across title and body. |
 | `significantOnly` | EO 12866 significant rules only. |

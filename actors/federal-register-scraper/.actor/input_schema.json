@@ -46,6 +46,33 @@
                 "PRESDOCU"
             ]
         },
+        "presidentialDocumentTypes": {
+            "title": "Presidential document subtypes",
+            "type": "array",
+            "description": "Narrow \"Presidential document\" (PRESDOCU) results to one or more subtypes — e.g. only Executive Orders, not the proclamations/memoranda/determinations/notices also filed under that same document type. Server-side filter (verified live 2026-09-26: executive_order=1567, proclamation=4436, memorandum=807, notice=784, determination=801, other=60 real documents). Leave empty for all subtypes. Ignored on the Public Inspection desk (not supported there) and has no effect unless PRESDOCU is among the Document types above.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "executive_order",
+                    "proclamation",
+                    "memorandum",
+                    "notice",
+                    "determination",
+                    "other"
+                ],
+                "enumTitles": [
+                    "Executive order",
+                    "Proclamation",
+                    "Memorandum",
+                    "Notice",
+                    "Determination",
+                    "Other presidential document"
+                ]
+            },
+            "uniqueItems": true,
+            "default": []
+        },
         "publicationDateFrom": {
             "title": "Published from",
             "type": "string",
@@ -61,7 +88,7 @@
         "agencies": {
             "title": "Agencies",
             "type": "array",
-            "description": "Agency slugs (from a federalregister.gov/agencies/<slug> URL) or full agency names \u2014 both are accepted and resolved against the official 472-agency list. Filtering by a parent agency includes its sub-agencies: \"homeland-security-department\" also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. Leave empty for all agencies.",
+            "description": "Agency slugs (from a federalregister.gov/agencies/<slug> URL) or full agency names \u2014 both are accepted and resolved against the official 473-agency list. Filtering by a parent agency includes its sub-agencies: \"homeland-security-department\" also returns Coast Guard, FEMA, CBP, TSA and USCIS documents. Leave empty for all agencies.",
             "editor": "stringList",
             "uniqueItems": true,
             "prefill": [

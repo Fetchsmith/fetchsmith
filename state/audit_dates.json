@@ -56,8 +56,9 @@
   "federal-register-scraper": {
     "varied_test": 802,
     "unreachable_remedy": 813,
-    "enum_audit": null,
-    "competitor_audit": null
+    "enum_audit": 830,
+    "competitor_audit": null,
+    "note": "cycle 830: both-directions facet-diff on the 3 real schema enums (dataset, documentTypes, order). documentTypes (RULE/PRORULE/NOTICE/PRESDOCU) confirmed exhaustive against the FR API's own vocabulary -- sampled type values across 1994-2026 found two extra raw labels ('Correction', 'Uncategorized Document') but conditions[type][]=CORRECTION/UNCATEGORIZED both silently return 0 (not a real filterable value, and 0/5000 in a 2024 sample -- a near-extinct legacy artifact, not an addable filter). order (newest/oldest/relevance) probing found a REAL missing 4th working value the API silently accepts: order=executive_order_number sorts by EO number (distinct ordering verified live) -- but did not add it because it only orders the executive-order subset meaningfully and every non-EO row's null sorts unpredictably; not clean enough to ship without more design, left as a candidate. The real, shipped finding: PRESDOCU (Presidential Document) is a single bucket hiding a genuine server-side-filterable subtype vocabulary (conditions[presidential_document_type][], live counts executive_order=1567/proclamation=4436/memorandum=807/notice=784/determination=801/other=60) that our schema never exposed -- added as new input `presidentialDocumentTypes`, wired into baseParams + PI-desk ignore-warning + watch-baseline fingerprint, build 0.1.23/0.1.24 (0.1.24 also fixed a stale '472-agency' doc count to the live 473). Verified live: platform run with documentTypes=[PRESDOCU]+presidentialDocumentTypes=[executive_order] returned 5/5 real Executive Orders (subtype/executiveOrderNumber fields confirm)."
   },
   "google-news-scraper": {
     "unreachable_remedy": 812,

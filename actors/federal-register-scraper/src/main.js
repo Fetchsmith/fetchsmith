@@ -45,6 +45,13 @@ const documentTypes = (input.documentTypes ?? Object.keys(TYPES))
     .map((t) => String(t).toUpperCase().trim())
     .filter((t) => Object.hasOwn(TYPES, t));
 
+const PRESIDENTIAL_DOCUMENT_TYPES = new Set([
+    'executive_order', 'proclamation', 'memorandum', 'notice', 'determination', 'other',
+]);
+const presidentialDocumentTypes = (input.presidentialDocumentTypes ?? [])
+    .map((t) => String(t).toLowerCase().trim())
+    .filter((t) => PRESIDENTIAL_DOCUMENT_TYPES.has(t));
+
 const searchQuery = String(input.searchQuery ?? '').trim();
 const significantOnly = input.significantOnly === true;
 const commentsOpenOnly = input.commentsOpenOnly === true;
@@ -157,7 +164,7 @@ async function apiGet(path, params, state = null) {
 }
 
 // The agency filter takes slugs. A wrong slug 400s the whole query, so user input is resolved
-// against the official agency list first (472 agencies) by slug, name or short name.
+// against the official agency list first (473 agencies, live-checked 2026-09-26) by slug, name or short name.
 async function resolveAgencies(wanted) {
     if (!wanted.length) return { slugs: [], unknown: [] };
     const list = await apiGet('/agencies.json', {});
@@ -226,6 +233,7 @@ function baseParams() {
         p['conditions[type][]'] = documentTypes;
     }
     if (agencySlugs.length) p['conditions[agencies][]'] = agencySlugs;
+    if (presidentialDocumentTypes.length) p['conditions[presidential_document_type][]'] = presidentialDocumentTypes;
     if (searchQuery) p['conditions[term]'] = searchQuery;
     if (significantOnly) p['conditions[significant]'] = 1;
     // "Comment period still open" = a closing date on or after today.
@@ -270,6 +278,7 @@ const watchCriteria = {
     // exactly the publication the buyer switched modes to catch.
     dataset,
     documentTypes: [...documentTypes].sort(),
+    presidentialDocumentTypes: [...presidentialDocumentTypes].sort(),
     agencies: [...agencySlugs].sort(),
     searchQuery,
     significantOnly,
@@ -573,6 +582,7 @@ if (publicInspection) {
         cfrTitle != null ? 'cfrTitle' : null,
         cfrPart ? 'cfrPart' : null,
         input.order && input.order !== 'newest' ? 'order' : null,
+        presidentialDocumentTypes.length ? 'presidentialDocumentTypes' : null,
     ].filter(Boolean);
     if (ignored.length) {
         log.warning(
@@ -594,6 +604,7 @@ if (publicInspection) {
         `Federal Register: types=[${documentTypes.join(',') || 'all'}] publication_date ${dateFrom}..${dateTo} `
         + `order=${order} maxResults=${maxResults}`
         + (agencySlugs.length ? ` agencies=[${agencySlugs.join(',')}]` : '')
+        + (presidentialDocumentTypes.length ? ` presidentialDocumentTypes=[${presidentialDocumentTypes.join(',')}]` : '')
         + (searchQuery ? ` searchQuery="${searchQuery}"` : '')
         + (significantOnly ? ' significantOnly' : '')
         + (commentsOpenOnly ? ' commentsOpenOnly' : '')
