@@ -26,7 +26,7 @@
         "agencyIcCodes": {
             "title": "NIH Institute / Center (IC)",
             "type": "array",
-            "description": "Administering institute abbreviations: NCI, NIAID, NHLBI, NIGMS, NIDDK, NINDS, NIMH, NIA, NICHD, NIDA, NIAMS, NEI, NIEHS, NIDCD, NIDCR, NIAAA, NIBIB, NHGRI, NIMHD, NINR, NLM, NCATS, NCCIH, FIC, OD, CC, CIT, CSR, NIOSH, plus AHRQ, CDC, FDA, HRSA, SAMHSA, ACF, ACL, ASPR, VA, OASH. Leave empty for all.",
+            "description": "Administering institute abbreviations: NCI, NIAID, NHLBI, NIGMS, NIDDK, NINDS, NIMH, NIA, NICHD, NIDA, NIAMS, NEI, NIEHS, NIDCD, NIDCR, NIAAA, NIBIB, NHGRI, NIMHD, NINR, NLM, NCATS, NCCIH, FIC, OD, CC, CIT, CSR, NIOSH, plus AHRQ, CDC, FDA, HRSA, SAMHSA, ACF, ACL, ASPR, VA, OASH, NCRR (defunct 2011, historical grants only), ADAMHA (pre-1992 predecessor agency), and the CDC sub-centers ATSDR, NCCDPHP, NCHHSTP, NCIPC, NCBDDD, NCEZID, NCHS. Leave empty for all.",
             "editor": "stringList",
             "uniqueItems": true
         },

@@ -143,12 +143,25 @@ function assertCriteria(criteria) {
 
 // Administering agency / NIH Institute & Center codes, used both as a user filter and as the
 // chunking dimension that walks past the 15000-row offset wall. NIH ICs plus the other HHS
-// agencies whose awards appear in RePORTER.
+// agencies whose awards appear in RePORTER. **This list must stay complete**: `splitCriteria`
+// below falls back to fanning out over exactly this array whenever a query has no `agencies`
+// filter, so any real administering agency missing here is silently dropped from every
+// unfiltered pull that needs to walk past the offset wall -- not just unavailable as a filter
+// value. cycle 834's facet-diff (union of `agencies:[...]` totals vs the unfiltered grand total)
+// found 9 real, verified-nonzero (live `meta.total`) administering agencies missing from the
+// original 38: `NCRR` (National Center for Research Resources, dissolved 2011, 232063 historical
+// rows -- by far the largest single gap), `ADAMHA` (pre-1992 predecessor agency, 143 rows), and
+// 7 CDC-internal centers that administer their own NIH RePORTER-listed grants separately from a
+// bare `CDC` code: `ATSDR` 1132, `NCCDPHP` 12252, `NCHHSTP` 15097, `NCIPC` 3987, `NCBDDD` 3113,
+// `NCEZID` 1364, `NCHS` 33. Closes ~269k of the ~294k-row gap between the pre-834 list's union
+// and the unfiltered total (2687442 vs 2981466); the remaining ~48k is presumed to be further
+// CDC/PHS sub-centers not yet identified -- see queue.md for the follow-up.
 const IC_CODES = [
     'NCI', 'NIAID', 'NHLBI', 'NIGMS', 'NIDDK', 'NINDS', 'NIMH', 'NIA', 'NICHD', 'NIDA',
     'NIAMS', 'NEI', 'NIEHS', 'NIDCD', 'NIDCR', 'NIAAA', 'NIBIB', 'NHGRI', 'NIMHD', 'NINR',
     'NLM', 'NCATS', 'NCCIH', 'FIC', 'OD', 'CC', 'CIT', 'CSR', 'NIOSH',
     'AHRQ', 'CDC', 'FDA', 'HRSA', 'SAMHSA', 'ACF', 'ACL', 'ASPR', 'VA', 'OASH',
+    'NCRR', 'ADAMHA', 'ATSDR', 'NCCDPHP', 'NCHHSTP', 'NCIPC', 'NCBDDD', 'NCEZID', 'NCHS',
 ];
 
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x !== null && x !== undefined && x !== '') : []);

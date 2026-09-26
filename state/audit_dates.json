@@ -92,8 +92,9 @@
   "nih-reporter-scraper": {
     "unreachable_remedy": 812,
     "varied_test": null,
-    "enum_audit": null,
-    "competitor_audit": null
+    "enum_audit": 834,
+    "competitor_audit": null,
+    "note": "cycle 834: both-directions facet-diff (cycle 828/829 technique) against NIH RePORTER's own /v2/projects/search meta.total found the 'agencies' (administering IC) fanout list -- IC_CODES in src/main.js, also used as the chunking dimension that walks past the 15000-row offset wall when no agencies filter is set -- was missing 9 real administering agencies: NCRR (dissolved 2011, 232063 historical rows, by far the largest gap), ADAMHA (pre-1992 predecessor agency, 143 rows), and 7 CDC-internal centers that administer grants separately from a bare CDC code -- NCHHSTP 15097, NCCDPHP 12252, NCIPC 3987, NCBDDD 3113, NCEZID 1364, ATSDR 1132, NCHS 33. Closes ~269k of the ~294k-row gap between the pre-834 38-code union and the unfiltered grand total (2687442 vs 2981466 live). This was silent DATA LOSS, not just a missing filter value: any unfiltered large pull that needed to walk past the offset wall via IC_CODES fanout would have dropped every one of these agencies' projects with no warning. Fixed IC_CODES + agencyIcCodes schema description (build 0.1.21), verified live (agencyIcCodes:['NCRR'], fiscalYears:[2010] -> 1699 real matched rows, sample project 5R25RR024503-04 / MD Anderson). Remaining ~48k-row gap presumed further unidentified CDC/PHS sub-centers -- follow-up queued, not yet closed. awardTypes enum (1-9) separately verified exhaustive: all 9 codes have live nonzero FY2024 counts, codes 0/10-12/A/X all return 0."
   },
   "remote-jobs-scraper": {
     "varied_test": 804,
