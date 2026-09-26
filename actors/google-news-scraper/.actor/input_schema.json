@@ -24,7 +24,7 @@
     "topics": {
       "title": "Browse by topic",
       "type": "array",
-      "description": "Optional: Google News' built-in topic sections (added to the queries), no RSS URL needed. One or more of: WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SCIENCE, SPORTS, HEALTH.",
+      "description": "Optional: Google News' built-in topic sections (added to the queries), no RSS URL needed. Main sections: WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SCIENCE, SPORTS, HEALTH. Narrower sub-sections Google serves but does not link in its own nav: POLITICS, ECONOMY, REAL_ESTATE, JOBS, EDUCATION, AUTOS, MOVIES, MUSIC, CELEBRITIES, ARTS, SOCCER, BASKETBALL.",
       "editor": "stringList"
     },
     "excludeWords": {

@@ -21,8 +21,24 @@ function timeBudgetOk() {
 const input = (await Actor.getInput()) ?? {};
 const queries = (input.queries ?? []).map((q) => String(q).trim()).filter(Boolean);
 const rssUrls = (input.rssUrls ?? []).map((u) => String(u).trim()).filter(Boolean);
-const VALID_TOPICS = ['WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SCIENCE', 'SPORTS', 'HEALTH'];
-const topics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()).filter((t) => VALID_TOPICS.includes(t));
+// The 8 headline sections Google News shows in its own nav, plus 12 sub-section codes that the
+// same `/rss/headlines/section/topic/<CODE>` endpoint serves but Google never links directly.
+// All 20 verified live on the platform (cycle 832): each returns a distinct, genuinely on-topic
+// feed, and a made-up code returns an empty feed rather than falling back to Top Stories, so a
+// non-empty response is real evidence the section exists. Codes that sound plausible but return
+// nothing — TV, NFL, NBA, BASEBALL, TENNIS, GOLF, MOBILE, GAMING, SPACE, ENVIRONMENT, CLIMATE,
+// CRIME, WEATHER, MEDICINE, NUTRITION, TRAVEL, FOOD, FASHION, ENERGY, MARKETS, FINANCE, BOOKS,
+// STARTUPS, TELEVISION, VIDEO_GAMES — were probed and are NOT sections; don't re-add them.
+const VALID_TOPICS = [
+  'WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SCIENCE', 'SPORTS', 'HEALTH',
+  'POLITICS', 'ECONOMY', 'REAL_ESTATE', 'JOBS', 'EDUCATION', 'AUTOS',
+  'MOVIES', 'MUSIC', 'CELEBRITIES', 'ARTS', 'SOCCER', 'BASKETBALL',
+];
+const rawTopics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()).filter(Boolean);
+const topics = rawTopics.filter((t) => VALID_TOPICS.includes(t));
+const badTopics = rawTopics.filter((t) => !VALID_TOPICS.includes(t));
+// Silently dropping an unknown topic used to make a typo look like "Google has no news today".
+if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL in "Custom RSS feed URLs" instead.`);
 const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
 

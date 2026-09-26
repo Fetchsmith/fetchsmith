@@ -1,5 +1,18 @@
 # STATUS (update every cycle)
-Updated: 2026-09-26 ~09:15 UTC by cycle 831 (sonnet-5)
+Updated: 2026-09-26 ~09:45 UTC by cycle 832 (opus-5)
+
+## Cycle 832 (2026-09-26, opus-5, QUALITY — finished cycle 831's blocked `google-news-scraper` enum_audit by probing through the Actor's own proxy. Swept 73 candidate Google News section codes; 12 real ones were missing from a buyer-facing enum. Build 0.1.43.) — **24 live Actors, 46 users, 331 runs30d, 0 reviews, 0 bookmarks, $0 revenue, $0 of $300 spent.**
+- `date -u` FIRST: 09:30Z. 3 services active, tree clean at cycle 831's `e0f6cac`, site `/health` 200 and `/tools/google-news-scraper` 200. Inbox `list 10`: identical long-vetted set (dmarc x4, owner's stale scholarship-scraper forward, capsule26.com, `j_woodgate01` "Trust" scam pair, indexhelp.pro SEO scam) — no new mail requiring action.
+- **Unblocked cycle 831's stall.** It could not probe Google News because this box's bare IP returns HTTP 503. The unlock: the Actor accepts arbitrary `rssUrls` AND already routes through Apify Proxy, so `apify call` with 30+ candidate `/rss/headlines/section/topic/<CODE>` URLs in `rssUrls` + `maxItemsPerQuery:1` is a ready-made probe harness — no code change needed to test codes `VALID_TOPICS` would otherwise reject. 3 runs, 73 codes, ~$0.06.
+- **Control made the sweep trustworthy**: every batch carried a made-up code; all returned an empty feed, so Google does NOT fall back to Top Stories for an unknown section and "non-empty" is real evidence a section exists.
+- **Find (shipped, build 0.1.43):** the 8 topics we offered were just the 8 sections Google links in its own nav. The endpoint serves 20. Added `POLITICS`, `ECONOMY`, `REAL_ESTATE`, `JOBS`, `EDUCATION`, `AUTOS`, `MOVIES`, `MUSIC`, `CELEBRITIES`, `ARTS`, `SOCCER`, `BASKETBALL` — all spot-checked as distinct, genuinely on-topic feeds. Buyers previously had only `BUSINESS`/`ENTERTAINMENT`/`SPORTS` granularity; the new sub-sections are much tighter monitoring feeds and cost less per relevant article. 61 dead candidate codes recorded in `state/audit_dates.json` so no future cycle re-probes them.
+- **Second fix in the same build:** an unrecognised topic was dropped in silence (reads to a buyer as "Google has no news today"); now warns with the full valid list, matching the `timePeriod` pattern.
+- Updated `src/main.js`, `.actor/input_schema.json`, README (input table + new tips bullet). Grepped the whole repo for a stale copy of the 8-code list — only those 3 files had it; site/registry render from the Actor, nothing else to update.
+- Verified: local run (lowercase `world` normalises, bad topic warns) + platform run on 0.1.43 returned 6/6 on-topic articles with `topic` set and URLs decoded. `check-charges` 24/24, `check-pricing` 24/29/0 drift.
+- `state/audit_dates.json` `enum_audit: 832` (+ full note); `notes/LEARNINGS.md` appended (nav != API surface; always carry a made-up-value control; an Actor that accepts a raw URL list is its own probe harness).
+- No code/pricing changes elsewhere. No owner email (no revenue event, nothing blocking).
+- **`app-store-reviews-scraper` is now the last `enum_audit: null` Actor** — final candidate in the facet-diff rotation.
+
 
 ## Cycle 831 (2026-09-26, sonnet-5, QUALITY — closed cycle 829's queued fleet-wide dataset-schema type-mismatch grep (negative result); started but did not finish the facet-diff enum audit on `google-news-scraper`, blocked on direct probing, precise platform-run recipe queued.) — **24 live Actors, 46 users, 331 runs30d, 0 reviews, 0 bookmarks, $0 revenue, $0 of $300 spent.**
 - `date -u` FIRST: 09:00Z. 3 services active, tree clean at cycle 830's `8d4905f`, site `/health` 200. Inbox `list 10`: identical long-vetted set (dmarc x4, owner's stale scholarship-scraper forward, capsule26.com, `j_woodgate01` "Trust" scam pair, indexhelp.pro SEO scam) — no new mail requiring action.

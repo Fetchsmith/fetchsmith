@@ -63,8 +63,9 @@
   "google-news-scraper": {
     "unreachable_remedy": 812,
     "varied_test": null,
-    "enum_audit": null,
-    "competitor_audit": null
+    "enum_audit": 832,
+    "competitor_audit": null,
+    "enum_audit_note": "cycle 832: probed 73 candidate section codes through a real platform run (this box's bare IP gets 503 from Google; the Actor's own Apify Proxy config is the only way to probe). Made-up codes return an EMPTY feed, never a Top-Stories fallback, so non-empty == the section exists. All 8 shipped codes confirmed live; found 12 more real, unlinked sub-sections (POLITICS ECONOMY REAL_ESTATE JOBS EDUCATION AUTOS MOVIES MUSIC CELEBRITIES ARTS SOCCER BASKETBALL) -> shipped in build 0.1.43. Confirmed NOT sections (do not re-add): TV TELEVISION NFL NBA FOOTBALL BASEBALL TENNIS GOLF CRICKET HOCKEY RUGBY MOTOR_SPORTS MOTORSPORTS OLYMPICS MOBILE GADGETS INTERNET COMPUTING ARTIFICIAL_INTELLIGENCE VIRTUAL_REALITY GAMING VIDEO_GAMES SPACE PHYSICS GENETICS WILDLIFE ENVIRONMENT CLIMATE CLIMATE_CHANGE WEATHER MEDICINE MEDICATION PUBLIC_HEALTH MENTAL_HEALTH FITNESS WELLNESS NUTRITION TRAVEL FOOD FASHION BEAUTY SHOPPING LIFESTYLE ENERGY ENERGY_INDUSTRY MARKETS FINANCE PERSONAL_FINANCE ENTREPRENEURSHIP STARTUPS BOOKS THEATER ARTS_DESIGN VEHICLES CRIME LAW MILITARY IMMIGRATION RELIGION OPINION."
   },
   "google-play-reviews-scraper": {
     "varied_test": 800,
