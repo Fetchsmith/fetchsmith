@@ -47,7 +47,7 @@
         "noticeTypes": {
             "title": "Notice types",
             "type": "array",
-            "description": "Which SAM.gov notice types to include. All types if left empty.",
+            "description": "Which SAM.gov notice types to include. All types if left empty. The last 4 (m/f/j/l) are legacy codes SAM.gov's own UI dropdown no longer lists and stopped issuing around 2019-2020, but ~97k real historical opportunities still carry them and are otherwise unreachable by this filter -- useful for historical research, not current solicitations.",
             "editor": "select",
             "items": {
                 "type": "string",
@@ -60,7 +60,11 @@
                     "s",
                     "g",
                     "i",
-                    "u"
+                    "u",
+                    "m",
+                    "f",
+                    "j",
+                    "l"
                 ],
                 "enumTitles": [
                     "Presolicitation",
@@ -71,7 +75,11 @@
                     "Special Notice",
                     "Sale of Surplus",
                     "Intent to Bundle",
-                    "Justification"
+                    "Justification",
+                    "Modification/Amendment/Cancel (legacy, retired ~2020)",
+                    "Foreign Government Standard (legacy, retired ~2019)",
+                    "Justification and Approval, J&A (legacy, retired ~2019)",
+                    "Fair Opportunity/Limited Sources Justification (legacy, retired ~2019)"
                 ]
             },
             "uniqueItems": true

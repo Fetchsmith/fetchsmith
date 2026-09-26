@@ -53,10 +53,20 @@ const DATA_TYPE_FAMILY = {
 
 // Confirmed live cycle 539: `notice_type` takes SAM's own single-letter codes (matches the
 // codes SAM shows in the UI dropdown / that come back on each row's `type.code`).
+// Cycle 835 facet-diff: single-letter probe a-z/0-9 against `notice_type=<c>` found 4 more real,
+// non-empty codes SAM's current UI dropdown never lists -- all 4 are legacy/retired (most recent
+// `modifiedDate` across all of them is 2020-03-31; none has posted since), predating the ~2019
+// notice-type consolidation, but the underlying historical rows are real and otherwise
+// unfilterable: m=1,058, f=187, j=86,674, l=9,520 (97,439 rows total). Kept separate from the 9
+// live codes above so the schema/README can flag them as historical-only.
 const NOTICE_TYPE_CODES = {
     p: 'Presolicitation', o: 'Solicitation', k: 'Combined Synopsis/Solicitation',
     r: 'Sources Sought', a: 'Award Notice', s: 'Special Notice', g: 'Sale of Surplus',
     i: 'Intent to Bundle', u: 'Justification',
+    m: 'Modification/Amendment/Cancel (legacy, retired ~2020)',
+    f: 'Foreign Government Standard (legacy, retired ~2019)',
+    j: 'Justification and Approval (J&A) (legacy, retired ~2019)',
+    l: 'Fair Opportunity/Limited Sources Justification (legacy, retired ~2019)',
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
