@@ -860,3 +860,22 @@ call returns 87 items unauthenticated and **88 with our `APIFY_TOKEN`** — the 
 run naming the surface and pointing at `bin/store-rank`. Cycles 818/819 used this same command for
 their competitor audits — that use (rivals' user counts and pricing) is legitimate; only the
 "we're not in the list" reading is wrong.
+
+## Cycle 822 — a never-verified schema claim was off by ~10x on the metric that actually matters
+
+`clinicaltrials-scraper`'s `rowsPerStudy` field said site mode "averages 5 sites (max seen:
+110)". No code comment backed this number — it looked like an eyeballed guess, not a
+measurement (unlike the fdaRegulationViolation/phases claims cycle 816 fixed, which both had
+dated source comments that had simply gone stale). Live-sampled 5,000 studies from CT.gov v2
+(`fields=protocolSection.contactsLocationsModule.locations`): the distribution is heavily
+right-skewed — **median 1 site, mean ~6** (the "5" was actually fine), but **max is 1,089, not
+110**, and 49/5,000 (~1%) of studies have over 100 sites. For a per-row-billed Actor, the max
+is the number a buyer needs to budget against, not the mean — understating it by 10x is worse
+than understating the mean would have been. Fixed the description to give median/mean/max
+separately and reframe the multiplier as "1x-1000x+ depending on trial size" instead of a flat
+"~5x". **Generalization: when auditing an undated numeric claim, check whether it's a mean or
+a max before deciding it's "close enough" — a skewed distribution's mean can be nearly right
+while its max is off by an order of magnitude, and for billing-relevant claims the max is
+usually the one that burns a buyer.** Same live-sampling method also confirmed
+`nih-reporter-scraper`'s "~3% of rows have no award_amount" (FY2024) at 2.66% over a
+10,000-project sample — that one held up, no fix needed.

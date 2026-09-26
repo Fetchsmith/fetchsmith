@@ -408,7 +408,7 @@
         "rowsPerStudy": {
             "title": "Row mode",
             "type": "string",
-            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. A single study averages 5 sites (max seen: 110), so site mode returns roughly 5x more billable rows for the same query.",
+            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. Site count per study is heavily skewed: median is 1 site, mean is ~6, and the largest trials run into the hundreds (max seen: 1,089 sites on one study, live-measured 2026-09-26). So site mode's row multiplier is close to 1x for most studies but can be 100x-1000x+ for the largest multi-site trials — budget for that if you're not filtering to a specific study.",
             "editor": "select",
             "enum": [
                 "study",
