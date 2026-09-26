@@ -14,9 +14,9 @@
     "stages": {
       "title": "Stages",
       "type": "array",
-      "description": "Which notice stages to return. 'tender' = live/closed opportunities to bid on (the default, and what most buyers want). 'award' = contract award notices, including the winning supplier. 'planning' = early pipeline notices. Leave as ['tender'] unless you want awards.",
+      "description": "Which notice stages to return. 'tender' = live/closed opportunities to bid on (the default, and what most buyers want). 'award' = contract award notices, including the winning supplier. 'planning' = early pipeline notices. 'contract' = the contract was signed. 'implementation' = performance/delivery-stage updates on an already-awarded contract. Leave as ['tender'] unless you want awards.",
       "editor": "select",
-      "items": { "type": "string", "enum": ["planning", "tender", "award"], "enumTitles": ["Planning (pipeline)", "Tender (opportunities)", "Award (winners)"] },
+      "items": { "type": "string", "enum": ["planning", "tender", "award", "contract", "implementation"], "enumTitles": ["Planning (pipeline)", "Tender (opportunities)", "Award (winners)", "Contract (signed)", "Implementation (delivery updates)"] },
       "default": ["tender"]
     },
     "updatedWithinDays": {

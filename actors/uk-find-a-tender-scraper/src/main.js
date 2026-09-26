@@ -9,7 +9,7 @@ function uniqStrings(arr) {
     return Array.from(new Set((arr ?? []).filter(Boolean)));
 }
 
-const VALID_STAGES = ['planning', 'tender', 'award'];
+const VALID_STAGES = ['planning', 'tender', 'award', 'contract', 'implementation'];
 const stages = (input.stages ?? ['tender'])
     .map((s) => String(s).toLowerCase().trim())
     .filter((s) => VALID_STAGES.includes(s));
@@ -99,6 +99,15 @@ if (webhookUrlRaw) {
 
 const PAGE_SIZE = 100; // hard API cap on both portals: limit=200 returns HTTP 400
 
+// Find a Tender's own "stages" filter only recognizes these 3 (verified cycle 838: probing
+// "contract"/"implementation"/every other real OCDS stage tag returns 0 rows with no error,
+// even over a decade-wide window, even though FTS's own data DOES carry contract- and
+// implementation-tagged releases — same "silently matches nothing" trap cycle 359 found for a
+// comma-joined multi-value stage). Contracts Finder's API is stricter and better-behaved: it
+// 400s on an invalid stage ("X is not a valid OCDS stage") and, probed the same way, genuinely
+// accepts 5 — planning/tender/award/contract/implementation, all with real non-trivial data.
+const FTS_STAGES = new Set(['planning', 'tender', 'award']);
+
 // The two official UK procurement portals. Find a Tender carries above-threshold notices
 // (a thin feed, ~7-8 tender-stage notices/day); Contracts Finder carries the much larger
 // sub-threshold flow (~18 tender-stage and 100+ award notices/day). Both publish the same
@@ -122,7 +131,13 @@ const SOURCES = {
             // value (which works fine on Contracts Finder, below) is silently treated as one
             // unrecognized stage string and matches NOTHING, with no error (verified live,
             // cycle 359: stages=tender,award -> 0 releases; stages=tender&stages=award -> 5).
-            for (const s of stages) u.searchParams.append('stages', s);
+            // If the buyer asked for "contract"/"implementation" (alone or mixed with a stage
+            // FTS does support), this filter can't express that at all — see FTS_STAGES above —
+            // so skip it entirely and let the client-side `matches()` stage check do the work
+            // against every release FTS has, instead of silently dropping real matching rows.
+            if (stages.length && stages.every((s) => FTS_STAGES.has(s))) {
+                for (const s of stages) u.searchParams.append('stages', s);
+            }
             return u.toString();
         },
         noticeUrl: (release) => (release.id ? `https://www.find-tender.service.gov.uk/Notice/${release.id}` : null),
@@ -305,6 +320,10 @@ function normalize(release, source, includeRaw) {
 // Client-side filters. The FTS API only supports stages/updatedFrom/updatedTo server-side,
 // so anything else has to be applied to the fetched page.
 function matches(row) {
+    // Normally redundant with the server-side stage filter (both portals apply it exactly
+    // when they can), but it's the ONLY filter for FTS rows fetched unfiltered above because
+    // "contract"/"implementation" was requested — see FTS_STAGES.
+    if (stages.length && !stages.some((s) => row.stage.includes(s))) return false;
     if (cpvCodes.length) {
         const hit = cpvPrefixes.some((prefix) => row.cpvCodes.some((have) => have.startsWith(prefix)));
         if (!hit) return false;

@@ -151,9 +151,9 @@
   "uk-find-a-tender-scraper": {
     "unreachable_remedy": 553,
     "varied_test": null,
-    "enum_audit": null,
+    "enum_audit": 838,
     "competitor_audit": null,
-    "note": "date per cycle 814's archive-grep range 526-553, not individually re-verified"
+    "note": "cycle 838: enum_audit \u2014 stages exclusion-probe on both FTS and Contracts Finder. FTS silently returns 0 for any stage outside {planning,tender,award}, no error, even though its own data has contract/implementation/*Update/*Cancellation/*Amendment tags. CF validates server-side (400 \"X is not a valid OCDS stage\") and genuinely accepts 5: planning/tender/award/contract/implementation, all with real non-trivial data. Shipped contract+implementation as new stages (build 0.1.37): CF gets them via its existing server filter unchanged; FTS skips its stages param entirely when either is requested and the Actor filters client-side instead (its own VALID_STAGES allowlist previously silently stripped them at input-parsing time before this fix, a second bug in the same spot). The still-finer variants (tenderCancellation, awardUpdate, contractAmendment, etc.) are real output-only tag values on both portals with no filterable equivalent on either API \u2014 not independently selectable, left undocumented as a filter (still shown correctly in the stage output field) since building a client-only substring-tier filter for them is a bigger, riskier change than this cycle's scope. Old unreachable_remedy date (553) is unrelated and untouched."
   },
   "us-federal-awards-scraper": {
     "unreachable_remedy": 812,
