@@ -1217,3 +1217,38 @@ Also re-confirmed cycle 850's null-vs-key-presence lesson in a second Actor: use
 snapshot key** as the "never captured" marker. Here `p: null` is the real snapshot of a comment hit
 (the Algolia index attaches no points to comments), exactly as `dateTerminated: null` is the real
 state of an open docket — a null-means-unknown convention silently breaks on the common row.
+
+## Cycle 853 — a watch-subset-shape check must first confirm a field-change alert was ever PROMISED
+`apple-podcasts-scraper` looked like the sweep's 8th candidate (cycle 852 flagged it as "very likely
+a counter case" by analogy to `hacker-news-scraper`'s rating/review counts) — wrong on two counts.
+First, `watchLabel` is hard-restricted to `dataType:"episodes"` only (`main.js:103-112`); review/
+podcast counts live under other dataTypes that have no watch mode at all, so the counter-mutation
+risk cycle 852 predicted never actually reaches watch-mode code — a guess made by analogy to a
+sibling Actor's schema, without first checking which dataType this Actor's watch mode even covers.
+Second, and more generally: the whole defect class assumes the Actor's own docs promise a
+field-*change* alert on an already-delivered id, and the baseline is too narrow to keep that promise.
+`apple-podcasts-scraper`'s README (the "Watch mode" section) promises only ONE thing — new episodes
+since last run — never a change alert on an existing episode's rating/duration/explicit-tag/etc.
+An id-only baseline is not a defect when nothing but newness was ever sold. **Before doing the usual
+row-shape-vs-diff-function comparison, read the Actor's own watch-mode README section first and ask
+"does this promise anything beyond new-item detection?" — if not, the sweep's target defect cannot
+exist here regardless of how the baseline is shaped, and it is a clean negative, not an unchecked one.**
+This is now the fleet's 2nd true clean negative (after `eu-ted-tenders-scraper`, cycle 851) but the
+first that clears on *promise scope* rather than upstream mutability — a distinct reason worth
+checking on the remaining unswept Actors (`clinicaltrials-scraper`, `federal-register-scraper`,
+`grants-gov-scraper`, `nih-reporter-scraper`, `sam-gov-opportunities-scraper`,
+`trademark-search-scraper`, `us-federal-awards-scraper`, `fec-campaign-finance-scraper`) before
+assuming a bare id baseline is automatically a gap.
+
+Separately, poking at `fec-campaign-finance-scraper` (also grep-score 0) surfaced a real open question
+not yet resolved: OpenFEC's `schedule_a`/`schedule_b`/`schedule_e` rows carry `original_sub_id`,
+`amendment_indicator`, `file_number`/`image_number`, and the `/v1/filings/` endpoint separately exposes
+`amendment_chain`/`most_recent_file_number`/`previous_file_number` — machinery that strongly suggests a
+committee's AMENDED report can re-file a full schedule and reissue brand-new `sub_id`s for line items
+whose real-world content (donor/amount/date) is byte-identical to a previously-delivered row. If true,
+that is the *opposite* risk from the sweep's usual shape: **over-charging** a watch-mode buyer on a
+report amendment, not silently missing a change. Not confirmed — every live sample pulled this cycle
+had `original_sub_id: null` (i.e. all first-filings, no observed corrections), and `schedule_a`'s
+`page=N` param does NOT paginate correctly for this endpoint (it silently re-returns page 1 — must use
+the `last_indexes`-based cursor the API documents, which this cycle's quick probe skipped). Left
+unconfirmed rather than guessed at; see queue.md for the exact follow-up recipe.

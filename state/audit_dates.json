@@ -11,7 +11,9 @@
   "competitor_audit": null,
   "enum_audit": 797,
   "unreachable_remedy": 812,
-  "varied_test": null
+  "varied_test": null,
+  "watch_subset_audit": 853,
+  "watch_subset_note": "cycle 853: CLEAN NEGATIVE, formally recorded. Cycle 852 guessed this Actor would be the fleet's next counter-field case (rating/review counts, like hacker-news-scraper) -- wrong guess, because watchLabel is explicitly restricted to dataType=\"episodes\" only (src/main.js:103-112); review counts/ratings live under dataType=\"reviews\"/\"podcasts\", which have no watch mode at all, so the counter-mutation risk never reaches watch-mode code. Checked the episodes watch path itself instead: baseline is a bare id Set (watchId = collectionId:episodeId|episodeGuid|title, main.js:610), no snapshot of any field. But the README (line 40, \"Watch mode\" section) promises ONLY new-episode detection (\"only episodes not delivered under that label before\") -- unlike every other watch-mode Actor in the fleet (Shopify/Play/App Store/Steam/ATS/court-records/HN), it never promises a field-change alert on an already-delivered id, so the watch-subset-shape defect (a promised field-change silently missed because the baseline is narrower than the row) cannot apply here by definition -- there is no promised change signal to miss. Checked the plausible mutation candidates anyway (explicit-tag correction, duration correction, releaseDate correction under a stable episodeId) and confirmed episodePassesFilters() runs BEFORE the watchSeen check (main.js:607-616), so an episode that initially fails a filter (e.g. explicitFilter=clean excluding a mistagged-explicit episode) is never added to the baseline and self-heals if corrected later -- same accidental-coverage shape Play had (cycle 844). No code change."
  },
  "ats-jobs-scraper": {
   "competitor_audit": 818,
