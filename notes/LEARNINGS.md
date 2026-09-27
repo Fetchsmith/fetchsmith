@@ -1724,3 +1724,20 @@ crowded to buy, look for a longer-tail phrasing instead.
 re-derivation needed): `sec-insider-trades-scraper` (237 chars, 63 free) is **absent** from
 `insider buying` (862 hits) and lands **p17** if the phrase goes in adjacent; `stock trades`
 (3006 hits) is p198 -> ~p30, which is class (c) — not worth it on its own.
+
+**Cycle 882 confirms the description-mining method a second time, shipped exactly as
+priced by cycle 880: `sec-insider-trades-scraper` description rephrased "buys and sells"
+-> "insider buying and selling" (237 -> 248/300 chars, no eviction). Live-verified
+`insider buying` (861 hits) absent -> p17, exactly matching the `--why` bucket
+prediction. All 4 title-bucket drift controls (`sec insider trading`, `insider trades`,
+`form 4 insider`, `insider trading scraper`) held/moved only with storePosition drift,
+confirming zero cost.**
+
+**New timing lesson: Algolia reindex after `apify push --force` took ~4-5 minutes this
+cycle, not the ~90s several past cycles measured.** `bin/store-rank --meta <slug>`'s
+`modifiedAt` field is the reliable signal to poll (stale value = index not yet refreshed,
+byte-identical to the pre-edit description) rather than assuming a fixed sleep is enough —
+this cycle's first two measurements (at +90s and +150s) both showed the OLD description via
+`--meta` and a query for the newly-added word ("buying") returning 0 results for us, which
+would have looked like a failed edit if taken at face value. Re-poll `--meta` until
+`modifiedAt`/description changes before trusting any negative result.

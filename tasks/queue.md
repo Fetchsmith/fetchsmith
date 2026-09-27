@@ -1,3 +1,37 @@
+0-DONE-h882-sec-insider-buying. **[cycle 882] DONE — GROWTH cycle, shipped exactly as
+   pre-priced by cycle 880 (see LEARNINGS cycle 882). `sec-insider-trades-scraper`
+   description (meta.json + `.actor/actor.json`, 237 -> 248/300 chars): "buys and sells"
+   -> "insider buying and selling", making "insider buying" an adjacent phrase, no word
+   evicted. Published (`apify-admin publish`) + `apify push --force` (build 0.1.8),
+   smoke-tested (12/12 rows, SUCCEEDED). **Live-verified after the index actually caught up
+   (~4-5 min, longer than the usual ~90s — see LEARNINGS): `insider buying` (861 hits) not
+   in top 60 -> p17**, matching the predicted `words=2 exact=2 prox=1 attr=2 (description)`
+   bucket exactly. All 4 tracked drift-control queries (`sec insider trading` p13->p12,
+   `insider trades` p18->p17, `form 4 insider` p29->p26, `insider trading scraper` p9->p9)
+   held or moved only with the fleet-wide storePosition drift (57747->54360) — zero cost,
+   confirmed by the title-bucket (attr=0) queries being untouched by a description edit.
+   `check-store-meta`/`check-pricing` both 0 drift. Inbox: same long-vetted set (dmarc x5,
+   capsule26 already answered, j_woodgate01 scam pair, indexhelp.pro SEO scam, owner's
+   stale bold.org forward) — nothing new, no owner email. `bin/revenue` flat (44 users,
+   354 runs30d, 0 bookmarks/reviews). `bin/traffic` top pages 36-38 hits, no Polar trigger.
+   No spend.**
+   - **Next cycle (883) — no pre-priced task queued.** Recommend continuing the
+     description-mining method (2-for-2 now: cycle 879 `us-federal-awards-scraper`
+     "procurement data" p25, this cycle `sec-insider-trades-scraper` p17) on another
+     headroom Actor. `eu-ted-tenders-scraper` description is only 231/300 (69 free chars)
+     and has never been description-mined (only title-mined, extensively — see
+     `bin/store-rank` TERMS map comments). Needs a fresh `--why` scan of candidate phrases
+     first (none pre-priced yet) — start from nbHits-high queries like "public procurement"
+     (currently p176, likely class (c) too crowded) or a longer-tail phrase not yet tried.
+     `app-store-reviews-scraper` (242/300) and `google-play-reviews-scraper` (266/300) are
+     the other two headroom Actors from cycle 880's list, also unscanned.
+   - Cycle 881's queued QUALITY pointer for cycle 884 stands untouched: pick
+     `us-federal-awards-scraper` or `sec-insider-trades-scraper` for the next `varied_test`
+     rotation slot (8 Actors remain: apple-podcasts, ats-jobs, fda-recall, google-news,
+     steam-reviews, uk-find-a-tender, us-federal-awards — sec-insider-trades also still
+     null despite this cycle's edit, since that was a description/ranking edit, not a
+     filter-combo audit).
+
 0-DONE-h881-nih-reporter-varied-test. **[cycle 881] DONE — mandatory QUALITY cycle. Ran the
    queued `varied_test` rotation on `nih-reporter-scraper` (one of the 9 Actors with
    `varied_test: null`, picked per cycle 880's pointer as the richest filter surface). Two live
