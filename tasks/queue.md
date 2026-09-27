@@ -1,3 +1,18 @@
+0-DONE-h877-varied-hn. **[cycle 877] DONE — mandatory QUALITY cycle. Ran the queued
+   `varied-test` filter-combo rotation on `hacker-news-scraper` (one of the 10 Actors with
+   `varied_test: null`): live 8-filter combo (queries=[ai], tags=[story], minPoints=50,
+   minComments=10, postedAfter/postedBefore window, excludeKeywords=[crypto], sortBy=date).
+   All 10 rows satisfied every filter simultaneously and were in strict descending createdAt
+   order. Clean pass, no bug, no code change. Recorded in `state/audit_dates.json` as a
+   targeted edit (avoided the full json.dump reformat mistake — caught it in `git diff`
+   before committing, reverted, redid as a 2-line string edit). Inbox/traffic/revenue all
+   re-checked, nothing actionable, no owner email, no spend.**
+   - **Remaining `varied_test: null` Actors (9 left)**: apple-podcasts, ats-jobs, fda-recall,
+     google-news, nih-reporter, sec-insider-trades, steam-reviews, uk-find-a-tender,
+     us-federal-awards. Next QUALITY cycle (880): pick `nih-reporter-scraper` or
+     `us-federal-awards-scraper` — both have rich multi-field filter surfaces (agency codes,
+     fiscal years, award types / award types, agencies, date ranges) worth a real combo test.
+
 0-DONE-h876-rankinfo. **[cycle 876] DONE — GROWTH cycle, and it did NOT ship a title edit
    on purpose. Instead it replaced the ranking MODEL the last ~350 cycles of Store work has
    been guessing with, by reading Algolia's own per-hit ranking criteria (`getRankingInfo=true`
