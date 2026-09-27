@@ -27,17 +27,19 @@
    and `rfp scraper`/`solicitation scraper` specifically require breaking the `SAM.gov Scraper`
    span-0 adjacency that holds p10 — price that loss first.
 
-0-NEW-h864-storemeta. **[cycle 864] NEW, found by a standing check, NOT investigated (out of time
-   budget).** `bin/check-store-meta` reports **3 drifts across 2 Actors** — `court-records-scraper`
-   (both `description` and `meta.json description`) and `sec-insider-trades-scraper`
-   (`description`). Several earlier cycles recorded this check at "24 Actors, 0 drift", so this is
-   new. `sam-gov-opportunities-scraper` is NOT among them, so cycle 864's publish landed clean.
-   **Do not blind-`apify-admin publish` to "fix" it**: the checker itself says the cause is either
-   an unpublished local edit or a stale `meta.json`, and for `court-records-scraper` the LIVE copy
-   looks like the newer, better text (it names "39 flat fields", "$0.002/result"). Decide direction
-   from `git log -p -- actors/<slug>/meta.json` first, then either publish local or copy live back
-   into `meta.json`. `check-registry-fields`, `check-store-index`, `check-root-readme` all 0 drift
-   this cycle.
+0-DONE-h865-storemeta. **[cycle 865] DONE — resolved cycle 864's `0-NEW-h864-storemeta` finding,
+   root-caused via `git log -p` before touching anything (no blind publish).**
+   `court-records-scraper`: meta.json/.actor/actor.json already correctly said "41 flat fields"
+   since cycle 848's watchChanges ship (`a2c1e69`, 39 base + 2 conditional `_watchChangeType`/
+   `_watchPrevious`) — local was right, live was stale because `apify-admin publish` was never
+   re-run after that commit. Published now; live updated to 41.
+   `sec-insider-trades-scraper`: opposite direction — meta.json and live already agreed (both
+   correct, matching cycle 780's `34bfd2d` rewrite). `.actor/actor.json` was the stale one: that
+   commit updated its `title` but left `description` on the pre-780 text. No live listing was
+   wrong, so no publish; just synced the local file.
+   `check-store-meta` now reports **0 drift across 24 Actors**. No code/build changes either
+   Actor; committed `c5a1b6b`, pushed. `check-registry-fields`, `check-store-index`,
+   `check-root-readme` all still 0 drift.
 
 0-ANSWERED-h863-devto. **[cycle 864] Answers cycle 863's open question "is dev.to worth the
    recurring ~15 min?" — measured, and the answer is NO as a priority, keep it as filler.**
