@@ -608,7 +608,36 @@ TERMS = {
     # matches -- a bad trade per the cycle-524 proximity rule ("one title wins ONE
     # multi-word query"). Left as-is; do not spend a slot rewriting this title
     # for "sam.gov scraper" specifically.
-    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp"],  # p9 p25 p53 p43
+    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination"],  # p9 p25 p53 p43
+    # cycle 864 (FIRST --attr title-block probe ever on this Actor; 17 queries). Title
+    # "SAM.gov Scraper – Contracts, Wage Determinations & Grants" (57/63) -> "SAM.gov
+    # Scraper – Federal Procurement, Wage Determinations" (58/63), published +
+    # `apify push --force` (build 0.1.25). Shipped win, live-verified ~2.5 min post-push:
+    # "federal procurement" (nbHits 436, 2-record block, 0 matchers with a better
+    # storePosition) **p240 -> p1**, matchLevel full, span 0, exactly as predicted.
+    # HELD byte-identical: "sam.gov scraper" p10 (span 0 preserved — the "SAM.gov
+    # Scraper" adjacency is the hard constraint on any edit here), "wage determination"
+    # p1 (2-record block, its own span-0 pair preserved), "sam.gov" p54,
+    # "sam.gov opportunities" p12.
+    # The trade evicted "Contracts," and "& Grants" (both concepts still in the
+    # meta.json description per the cycle-780 eviction rule). Measured cost was far
+    # SMALLER than the model predicts — see LEARNINGS cycle 864: "sam.gov contracts"
+    # p42 -> **p42 unchanged** and "sam.gov grants" p15 -> p16 even though both left
+    # their title block; only "contracts scraper" (90-record block, nbHits 29912,
+    # generic/unwinnable anyway) collapsed p61 -> p367. Leaving a LARGE title block
+    # from a mid-pack storePosition costs ~nothing; leaving a small one is what hurts.
+    # Sized and NOT pursued (no characters left at 58/63; all need a further eviction):
+    # "government bids" (nbHits 1752 — highest volume of the candidates, 7-record
+    # block, predicted ~p7), "rfp scraper" (354, predicted ~p5), "solicitation scraper"
+    # (272, 7-record block, only 1 better matcher, predicted ~p2), "federal contract
+    # opportunities" (592, predicted ~p12), "sam.gov api" (403, predicted ~p9),
+    # "contract opportunities" (3744, predicted ~p17), "federal contracts" (1792,
+    # 49-record block, predicted only ~p35), "federal grants" (609, 59-record block,
+    # ~p37), "government contracts scraper" (3167, ~p15). Note "rfp scraper" and
+    # "solicitation scraper" both need their word placed BEFORE "Scraper", which breaks
+    # the "SAM.gov Scraper" span-0 adjacency that holds p10 — do not ship either
+    # without first pricing that loss. DO NOT re-probe "sam.gov"/"contracts scraper":
+    # 94- and 90-record blocks, pinned by storePosition, nothing to win.
 }
 
 

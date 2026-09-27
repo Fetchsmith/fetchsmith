@@ -1465,3 +1465,49 @@ silently starve for the same reason a backlog item goes stale — nobody is chec
 happening at the stated cadence," only "is there a new instance of this class of bug to fix." Worth
 periodically auditing recurring-task compliance (last dev.to date vs. today, last guide audit date
 vs. today) the same way `check-actor-guides`/`check-backlinks` audit one-time coverage gaps.
+
+## Cycle 864 — leaving a LARGE Algolia title-match block costs almost nothing; the eviction side of a title trade has been systematically overpriced
+
+`bin/store-rank --attr`'s model prices a title edit as *gain* (join a small block, land near p1) minus
+*loss* (whatever query you evict falls out of its block). Cycles 780/782 treated that loss as expensive
+enough to reject candidate edits. Measured live this cycle on `sam-gov-opportunities-scraper`
+(title "SAM.gov Scraper – Contracts, Wage Determinations & Grants" -> "SAM.gov Scraper – Federal
+Procurement, Wage Determinations", build 0.1.25), the loss side was almost entirely imaginary:
+
+| query | nbHits | block size left | before | after |
+|---|---|---|---|---|
+| `sam.gov contracts` | 400 | 21 records | p42 | **p42 (unchanged)** |
+| `sam.gov grants` | 161 | 1 record | p15 | p16 |
+| `contracts scraper` | 29912 | 90 records | p61 | p367 |
+
+And the gain landed exactly as predicted: **`federal procurement` p240 -> p1** (nbHits 436, 2-record
+block, 0 title-matchers with a better `storePosition`, matchLevel `full`, span 0).
+
+**Mechanism:** when you leave a title block you do not fall to the bottom of the result set — you fall
+back on your description/slug match, which for a well-written listing is still a strong signal. If the
+block you left is large and your `storePosition` put you mid-pack *inside* it (p42 of a 21-matcher
+block sitting among 400 hits), the description-only position is about the same place, so the drop is
+~0. The collapse case (`contracts scraper` p61 -> p367) was a 90-record block on a 30k-hit generic
+query we were never going to win anyway. `sam.gov grants` is the interesting control: we were the
+**only** title-matcher (1-record block) and still only lost 1 rank.
+
+**How to price a title trade from now on:** the eviction cost is roughly *"how much of my current rank
+comes from the title match rather than the description match"*, and that share is small unless the
+evicted query is one where we sit in the **top few** of a **small** block. Concretely — evicting a
+query we hold at p1-p5 in a <5-record block is expensive and should still be refused (that is why
+`wage determination` p1 and the `SAM.gov Scraper` span-0 adjacency holding `sam.gov scraper` p10 were
+treated as untouchable constraints here); evicting anything sitting past ~p20, or anything in a
+20+-record block, is close to free and should not block an edit that buys a p1.
+
+**Corollary, and the reason this matters for revenue:** the title-trade lever is therefore much less
+exhausted than cycles 780-783 concluded. Three of the 24 Actors had never had a single `--attr` probe
+(`sam-gov-opportunities-scraper` — done here, `sec-insider-trades-scraper`, `steam-reviews-scraper` are
+the thin ones), and the "no characters left, would require an eviction" verdict recorded on several
+already-probed Actors was reached under the overpriced model and is worth re-deciding.
+
+**Also measured this cycle (answers the open question cycle 863 left):** dev.to is a real but tiny
+channel. All-time external referrers in `data/fetchsmith.db` (window starts 2026-09-09) show **14
+clicks from 5 dev.to articles** out of 10 published, vs **118 from Google organic** and **16 from
+apify.com** — Google organic on our own blog content is ~8x dev.to for the same zero marginal cost, and
+the Apify Store surface is where money actually changes hands. Dev.to is not worth prioritizing over a
+store-rank probe; keep it as filler when nothing better is queued.

@@ -1,4 +1,4 @@
-# SAM.gov Scraper – US Federal Contracts, Bids, Wage Determinations & Grants
+# SAM.gov Scraper – US Federal Procurement, Contracts, Bids, Wage Determinations & Grants
 
 Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with **no API key, no login, no proxy and no browser**. Filter by keyword, NAICS code, set-aside type, notice type, place-of-performance state and issuing organization, and optionally enrich every row with the contracting officer's contact details, NAICS codes, set-aside and place of performance.
 

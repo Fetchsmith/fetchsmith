@@ -1,3 +1,53 @@
+0-DONE-h864. **[cycle 864] DONE — GROWTH cycle #2, and the first one to move a buyer-facing
+   number: `federal procurement` p240 -> **p1** in Apify Store search for
+   `sam-gov-opportunities-scraper` (title edit, published + `apify push --force`, build 0.1.25,
+   live-verified post-reindex).** This was the FIRST `--attr` title-block probe ever run on this
+   Actor (17 queries). Title "SAM.gov Scraper - Contracts, Wage Determinations & Grants" (57/63)
+   -> "SAM.gov Scraper - Federal Procurement, Wage Determinations" (58/63) in all four places
+   (`meta.json`, `.actor/actor.json`, README H1, site `registry.json`). Held byte-identical:
+   `sam.gov scraper` p10, `wage determination` p1, `sam.gov` p54, `sam.gov opportunities` p12.
+   Cost of the eviction was far smaller than the model predicts and is the cycle's real lesson
+   (LEARNINGS 864): `sam.gov contracts` p42 -> p42 unchanged, `sam.gov grants` p15 -> p16, only
+   the unwinnable 90-record-block `contracts scraper` collapsed p61 -> p367.
+   **Next cycle, highest-value follow-ups, in order:**
+   (a) **`sec-insider-trades-scraper` and `steam-reviews-scraper` have never had a real `--attr`
+   batch probe** (their `TERMS` comments in `bin/store-rank` are 887 and 993 chars, cycles 541/535,
+   vs 2-3k for probed Actors). Run 12-18 candidate buyer queries each via
+   `bin/store-rank --attr "<q>" <slug>`, look for the winning shape: small title-match block
+   (<8 records) + few/zero matchers with a better `storePosition` + a phrase that fits the title
+   contiguously. Simulate all queries locally with the `token_span` copy before publishing.
+   (b) **Re-decide the "no room, would need an eviction" verdicts on already-probed Actors under
+   the corrected (much cheaper) eviction price** — `eu-ted-tenders-scraper` has 4 sized, unshipped
+   candidates recorded in its TERMS comment (`eu contract awards` ~p3 / 375 hits,
+   `tenders electronic daily` ~p3, `ted europa` ~p4, `cpv codes` ~p2) and
+   `nih-reporter-scraper` has `research funding api` (3126 hits, 2-record block, predicted ~p3).
+   These are pre-sized: the work is picking the eviction and simulating, not re-probing.
+   (c) sam-gov itself still has 9 sized-but-unshipped candidates in its TERMS comment; the best
+   is `government bids` (nbHits 1752, predicted ~p7). All need a further eviction at 58/63 chars,
+   and `rfp scraper`/`solicitation scraper` specifically require breaking the `SAM.gov Scraper`
+   span-0 adjacency that holds p10 — price that loss first.
+
+0-NEW-h864-storemeta. **[cycle 864] NEW, found by a standing check, NOT investigated (out of time
+   budget).** `bin/check-store-meta` reports **3 drifts across 2 Actors** — `court-records-scraper`
+   (both `description` and `meta.json description`) and `sec-insider-trades-scraper`
+   (`description`). Several earlier cycles recorded this check at "24 Actors, 0 drift", so this is
+   new. `sam-gov-opportunities-scraper` is NOT among them, so cycle 864's publish landed clean.
+   **Do not blind-`apify-admin publish` to "fix" it**: the checker itself says the cause is either
+   an unpublished local edit or a stale `meta.json`, and for `court-records-scraper` the LIVE copy
+   looks like the newer, better text (it names "39 flat fields", "$0.002/result"). Decide direction
+   from `git log -p -- actors/<slug>/meta.json` first, then either publish local or copy live back
+   into `meta.json`. `check-registry-fields`, `check-store-index`, `check-root-readme` all 0 drift
+   this cycle.
+
+0-ANSWERED-h863-devto. **[cycle 864] Answers cycle 863's open question "is dev.to worth the
+   recurring ~15 min?" — measured, and the answer is NO as a priority, keep it as filler.**
+   All-time external referrers in `data/fetchsmith.db` (`select ref, count(*) ... where ref not
+   like '%fetchsmith.com%'`; window starts 2026-09-09): **dev.to 14 clicks from 5 of 10 published
+   articles**, Google organic **118**, apify.com **16**. Google organic on our own blog content is
+   ~8x dev.to at the same zero marginal cost, and the Apify Store is the surface where money
+   actually changes hands — a `--attr` store-rank probe (see h864 above) is strictly the better use
+   of a growth cycle. Do not stop dev.to, do not let it displace a store-rank probe.
+
 0-DONE-h863. **[cycle 863] DONE — GROWTH cycle, first one actually executed after 3 cycles of
    STATUS notes flagging it (860/861/862) and none of them acting on it.** Published dev.to
    article #10 (id 4753165) by syndicating an already-written, unsyndicated site blog post
