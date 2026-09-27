@@ -140,7 +140,32 @@ TERMS = {
     # cycle — its title is 61/63 (only 2 chars free), so every one of those 4 needs a real eviction, unlike
     # this Actor's free append; left for a future cycle with time to price the eviction cost properly.
     "federal-register-scraper": ["federal register", "public inspection", "comment deadline", "proposed rules scraper"],  # cycle 546: title -> "...Public Inspection, Comment Deadlines" joined "public inspection" p3->p1. cycle 782: title was 63/63 chars with both owned phrases (public inspection p1/1445 hits, comment deadline p2/440 hits) already maxed at span 0 -- any further edit is a TRADE, not a free add (queue item opened cycle 781 after probing 5 candidates: presidential documents scraper/notice and comment scraper/proposed rules scraper/federal rulemaking scraper/cfr scraper, all requiring a word evicted). Picked "proposed rules scraper" (863 hits, highest nbHits of the 5, only 1 competing title-matcher) over the other candidates and traded away "comment deadline" (already documented in the meta.json description as "comment-close deadline", so the concept survives the listing even off the title, per the cycle-780 eviction rule). New title "Federal Register – Proposed Rules Scraper & Public Inspection" (61/63 chars) restructures word order so "Scraper" sits directly after "Proposed Rules" (needed for span 0 on a 3-word contiguous query) while "Public Inspection" stays a separate contiguous pair at the end. Simulated locally first (all 8 probed queries, only "comment deadline"/"notice and comment scraper"/etc lost span), then published + apify push --force (build 0.1.22), measured live ~75s post-reindex: "proposed rules scraper" p38 -> **p1** (beat the ~p2 local prediction), "public inspection" held **p1** byte-identical (0 regression), "federal register" p61->p57 (unaffected, storePosition drift only). Accepted cost: "comment deadline" p2 -> p11 (dropped out of the title block but stayed page-1-ish via a genuine 2-matcher block it's not part of -- not a big loss). Net: 1 real win on the higher-volume query (863 vs 440 hits), 1 accepted moderate loss, 2 unaffected. TERMS list above now includes "proposed rules scraper" for future tracking; "comment deadline" kept in the list too since it's still a real (if now title-less) ranking signal.
-    "grants-gov-scraper": ["grants.gov", "government grants", "nonprofit grants", "grant eligibility", "award details", "status eligibility", "grants gov scraper", "grants.gov scraper"],
+    "grants-gov-scraper": ["grants.gov", "government grants", "nonprofit grants", "grant eligibility", "award details", "status eligibility", "grants gov scraper", "grants.gov scraper", "grants database"],
+    # cycle 874 (FIRST --attr BATCH probe on this Actor; 16 new candidate queries). Title was
+    # exactly 63/63 chars with 4 protected spans, all already decent (nonprofit grants p1/220
+    # hits, award details p2/3649 hits, status eligibility p2/970 hits, grants.gov scraper p21 +
+    # grants gov scraper p26/263+723 hits via the "...Scraper" tail) -- no free junk to evict,
+    # unlike sam-gov/eu-ted's wins. Best find: "grants database" (nbHits 1683) had only a
+    # 1-record title block (predicted ~p2 from p758). Reaching it required breaking "Grants.gov"
+    # (splits into tokens "Grants"+"gov") away from "Scraper", since Database had to sit
+    # immediately after "Grants" in query order -- local token_span sim showed this only achieves
+    # span 1 (the literal "gov" sits between Grants and Database), NOT span 0, so the tool's own
+    # "valid only if contiguous" caveat meant the p2 prediction was NOT guaranteed. Chose to evict
+    # "Scraper" entirely (dropping "grants gov scraper"/"grants.gov scraper" from the title-match
+    # block outright) rather than "Nonprofit" (kept, protects the p1) or any part of "Status
+    # Eligibility Award Details" (kept, protects both p2s) -- same precedent as nih-reporter-scraper
+    # (cycle 554) and eu-ted-tenders-scraper (cycle 557), full word kept in README H1/site H1.
+    # New title "Nonprofit Grants.gov Database, Status Eligibility Award Details" (63/63).
+    # Published + apify push --force (build 0.1.38), live-verified ~75s post-reindex:
+    # **"grants database" p758 -> p2** (the span-1 caveat turned out NOT to bite -- landed exactly
+    # the naive full-join prediction, matchLevel 'full' confirmed genuine). Accepted costs, both far
+    # cheaper than modeled (same lesson as cycles 864/868/869/871/872): "grants gov scraper"
+    # p26 -> p29 (-3, not a cliff despite losing the title match outright) and "grants.gov scraper"
+    # p21 -> p24 (-3). Held byte-identical/inside drift: "nonprofit grants" p1, "award details" p2,
+    # "status eligibility" p2, "grants.gov" p64, "grant eligibility" p30 (drift-control query, span
+    # unchanged by construction -- storePosition drifted 70588 -> 70711 but this rank did not move
+    # at all, proving the small costs above are real edits, not drift). check-store-meta/
+    # check-pricing both 24/0 drift post-ship.
     # cycle 553: title "Grants.gov Scraper – Status, Eligibility & Award Details" (56 chars)
     # -> "Nonprofit Grants.gov Scraper – Status Eligibility Award Details" (63/63 chars).
     # Local token_span simulation (per standing practice) against ALL known-matching queries
