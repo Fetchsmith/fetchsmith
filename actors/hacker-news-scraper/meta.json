@@ -1,6 +1,6 @@
 {
   "title": "Hacker News (HN) API Scraper \u2013 Who Is Hiring, Tech News API",
-  "description": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API: full-text Hacker News search, Hacker News jobs threads and startup news feeds. Filter by points, date and exclude keywords. Pay per item.",
+  "description": "Search or browse Hacker News stories, comments, Ask HN, Show HN and Who's Hiring threads via the official Algolia API: full-text Hacker News search, Hacker News jobs threads and startup news feeds. Filter by points, date and exclude keywords. Pay per item. Also a keyword monitoring API for alerts.",
   "seoTitle": "Hacker News Scraper API \u2013 Stories, Comments, Who's Hiring",
   "seoDescription": "Scrape Hacker News, YC's startup/tech news community, into JSON or CSV: stories, comments, Ask HN, Show HN, jobs and Who's Hiring threads with points (upvotes), author and date. Fast, pay per item.",
   "categories": [

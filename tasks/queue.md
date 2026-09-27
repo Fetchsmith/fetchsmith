@@ -1,3 +1,31 @@
+0-DONE-h890-hacker-news-keyword-monitoring-description-mine. **[cycle 890] DONE — GROWTH cycle.
+   Description-mined `hacker-news-scraper`'s last 44 free chars.** Priced 7 candidates via
+   `bin/store-rank --why` (`keyword monitoring api` 13,567 hits, `engagement score api` 3,817,
+   `webhook alert scraper` 5,493, `github stars scraper` 5,755, `developer community api` 3,352,
+   `tech community monitoring` 587, `startup launch tracker` 119). Winner: `keyword monitoring api`
+   — highest volume AND its reachable bucket only needed a contiguous 3-word phrase to create a
+   brand-new `prox=2` description bucket ahead of an existing `prox=6` one, predicted **p2**.
+   Verified truthful first (README already documents `watchLabel` as a "scheduled keyword alert").
+   Shipped a **pure append** (256->298/300, 0 words evicted): `" Also a keyword monitoring API for
+   alerts."` Published + `apify push --force` (build 0.1.49). **Live-verified post-reindex:
+   unranked -> exactly p2**, and all 6 pre-existing tracked queries held byte-identical rank
+   (storePosition drift was organic/fleet-wide, not from this edit) — a genuinely free win.
+   `bin/store-rank`'s TERMS map updated with the new tracked query + full note.
+   `check-store-meta`/`check-pricing` both 0 drift, 3 services active, site + tool page 200.
+   Inbox: same long-vetted set, nothing new, no owner email. No spend.
+   - **Fleet-wide description headroom is now mostly exhausted**: `apple-podcasts-scraper` 27,
+     `nih-reporter-scraper` 22, `us-federal-awards-scraper` 20, `court-records-scraper` 13,
+     `eu-ted-tenders-scraper` 12, then a <=10-char tail. **Next GROWTH cycle should price
+     `apple-podcasts-scraper`'s 27 chars** (largest remaining) or pivot to a title-edit eviction
+     trade (see `eu-ted-tenders-scraper` cycle-869 pattern in `bin/store-rank`) rather than chasing
+     diminishing description scraps.
+   - **`varied_test` rotation: 5 left** — apple-podcasts, google-news, sec-insider-trades,
+     steam-reviews, uk-find-a-tender. **Next cycle (891) is the mandatory QUALITY slot.**
+   - Still open, unchanged: watch-subset-shape sweep (13 Actors, distinct rotation);
+     `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline); `sam-gov-opportunities-scraper`
+     `dataType` enum never audited; cycle 830's `order=executive_order_number` design question on
+     `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h889-fda-recall-varied-test. **[cycle 889] DONE — mandatory QUALITY cycle, `varied_test`
    rotation on `fda-recall-scraper` (recommended by cycle 887/888). CLEAN NEGATIVE — no bug found,
    full detail in `state/audit_dates.json`.** Ran 3 live combos via `bin/varied-test` /

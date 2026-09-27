@@ -428,7 +428,22 @@ TERMS = {
     # "hacker news search" (917) p85->p38 (untracked, measured). "hacker news" itself
     # is hopeless: 60+ title-matchers with a better storePosition, we sit ~p200.
     "hacker-news-scraper": ["hacker news", "hn api", "who is hiring", "tech news api",
-                            "startup news", "hacker news jobs"],
+                            "startup news", "hacker news jobs", "keyword monitoring api"],
+    # cycle 890 (final 44 free chars, pure append, 0 words evicted, 256->298/300):
+    # appended " Also a keyword monitoring API for alerts." — verified true against
+    # the existing `watchLabel` feature (README already calls it a "scheduled keyword
+    # alert" in the use-cases list and FAQ). Built as a contiguous 3-word run
+    # ("keyword monitoring API") landing prox=2, which beat the existing prox=6
+    # description bucket entirely and created a NEW prox=2 bucket ranked right after
+    # the sole name-attr record and ahead of both seoTitle prox=2 competitors.
+    # "keyword monitoring api" (13,567 hits, the highest-volume query ever priced for
+    # this Actor) predicted p2 from `--why`, live-verified post-reindex at exactly
+    # **p2**. All 6 pre-existing tracked queries held byte-identical rank
+    # (storePosition drifted 52016->51137 organically fleet-wide, not from this
+    # edit) — a genuinely free win, zero eviction cost. Fleet-wide description
+    # headroom is now exhausted below ~27 free chars per Actor (see queue.md sweep);
+    # next GROWTH cycle needs a fresh sweep or a title-edit trade, not another
+    # pure-append description mine.
     # cycle 568 (first --attr BATCH probe on this Actor, 16 queries). Title
     # "Hacker News (HN) API Scraper – Who Is Hiring, Jobs" (50/63) -> "...Who Is
     # Hiring, Tech News API" (59/63): spent the free character budget plus the
