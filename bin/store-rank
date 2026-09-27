@@ -422,7 +422,13 @@ TERMS = {
     # this script). Track the apostrophe-free phrasing here since that's what this
     # tool can verify; do not trust `--attr "who's hiring"`'s "0 records" verdict for
     # ANY slug — it is a tokenizer bug, not a real absence of a title-match block.
-    "hacker-news-scraper": ["hacker news", "hn api", "who is hiring", "tech news api"],  # cycle 523: "hn api" p227->p2 after title edit
+    # cycle 523: "hn api" p227->p2 after title edit.
+    # cycle 880 (description-mining into 123 chars of unused budget, no eviction):
+    # "startup news" (3228 hits) p15->p9, "hacker news jobs" (629) p146->p16,
+    # "hacker news search" (917) p85->p38 (untracked, measured). "hacker news" itself
+    # is hopeless: 60+ title-matchers with a better storePosition, we sit ~p200.
+    "hacker-news-scraper": ["hacker news", "hn api", "who is hiring", "tech news api",
+                            "startup news", "hacker news jobs"],
     # cycle 568 (first --attr BATCH probe on this Actor, 16 queries). Title
     # "Hacker News (HN) API Scraper – Who Is Hiring, Jobs" (50/63) -> "...Who Is
     # Hiring, Tech News API" (59/63): spent the free character budget plus the

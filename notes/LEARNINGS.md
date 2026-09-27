@@ -1686,3 +1686,41 @@ Also recorded: **only 23 of our 24 Actors are in the Algolia index.** The missin
 `scholarship-scraper` — the deliberately-blocked bold.org Actor carrying a "temporarily
 unable to return data" notice. Apify appears to deindex noticed Actors. This is the one
 Actor we do NOT want ranked (cycle 572), so it needs no fix; do not re-investigate.
+
+## Cycle 880 — description-mining is a HEADROOM problem first: sort the fleet by description length, and one edit can win several queries at once
+
+Cycle 879 proved description-mining works but did it the expensive way — it had to *trade*
+a low-value phrase out of a 294/300-char description to fit "procurement data" in. The
+cheaper version of the same lever: **`len(description)` across the fleet is the search
+order.** Five Actors carry 20-120 chars of unused budget (measured this cycle:
+hacker-news 177, eu-ted 231, sec-insider-trades 237, app-store-reviews 242,
+google-play-reviews 266 — everything else is 273-300 and needs a trade). On an Actor with
+headroom there is **no eviction to price at all**, so the only question is which phrases to
+buy, and you can buy SEVERAL in a single edit/push. `hacker-news-scraper` (123 free chars)
+took three in one go: `startup news` (3228 hits) p15->p9, `hacker news jobs` (629) p146->p16,
+`hacker news search` (917) p85->p38, with all 4 tracked queries byte-identical after.
+
+**Fix to the sizing arithmetic:** a perfect adjacent phrase does NOT score
+`proximityDistance = 1` for queries longer than 2 words — it scores **nwords - 1**
+(measured: 2-word `government bids` top bucket prox=1, 3-word `who is hiring` prox=2).
+A first pass this cycle hardcoded prox=1 as the target bucket for every query and so
+over-predicted every 3-word candidate by dozens of ranks (`hacker news comments` "p1",
+really p46). With `target = (words, exact, nwords-1, attr=2)` the predictions landed
+exactly: p16 and p38 as predicted, p9 vs p8 predicted (storePosition drifted 51239->51444
+mid-cycle, which is one extra record in the bucket — not a model error).
+
+**Screening recipe (batch, ~3s/query, no push needed).** For each candidate phrase, pull
+`getRankingInfo=true` and count `records in buckets strictly before (words, exact, nwords-1,
+attr=2)` + `records in it with a better storePosition`. Three outcomes and only one is
+worth a push: (a) we are already in the `attr=0` title bucket and merely storePosition-bound
+=> **no edit can help, skip it** (that was `government bids` p15/1760 hits on
+`sam-gov-opportunities-scraper` and `hacker news` p201 — both look like juicy misses in a
+plain rank table and are in fact unreachable); (b) we sit in `attr=4/5/6`
+(seoTitle/seoDescription/readme) or are absent entirely, and the `attr=2` landing spot is
+inside the top ~20 => **ship it**; (c) the landing spot is p30+ => the phrase is too
+crowded to buy, look for a longer-tail phrasing instead.
+
+**Still-unpriced candidate found while screening** (next description-mining cycle, no
+re-derivation needed): `sec-insider-trades-scraper` (237 chars, 63 free) is **absent** from
+`insider buying` (862 hits) and lands **p17** if the phrase goes in adjacent; `stock trades`
+(3006 hits) is p198 -> ~p30, which is class (c) — not worth it on its own.

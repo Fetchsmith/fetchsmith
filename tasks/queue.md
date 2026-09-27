@@ -1,3 +1,35 @@
+0-DONE-h880-headroom-mining. **[cycle 880] DONE — GROWTH. Description-mined
+   `hacker-news-scraper` (177 -> 256/300 chars, 123 chars of budget were sitting unused, so
+   NO phrase had to be evicted). One edit + one push bought three queries:
+   `startup news` (3229 hits) p15 -> p9, `hacker news jobs` (629) p146 -> p16,
+   `hacker news search` (917) p85 -> p38. All 4 previously-tracked queries held byte-identical
+   (`hn api` p2, `who is hiring` p20, `tech news api` p1, `hacker news` p199->p201 = pure
+   storePosition drift 51239->51444). build 0.1.48, smoke-tested SUCCEEDED, all checks clean.**
+   - **Method change worth keeping: choose the ACTOR by description length first, not the query.**
+     Headroom list measured this cycle: hacker-news 177 (now 256), eu-ted 231,
+     sec-insider-trades 237, app-store-reviews 242, google-play-reviews 266; all others 273-300
+     and would need a trade like cycle 879's.
+   - **Arithmetic fix: a perfect adjacent phrase scores prox = nwords-1, NOT 1.** A screening
+     pass that assumed prox=1 over-predicted every 3-word candidate badly (`hacker news comments`
+     "p1", really p46). See LEARNINGS cycle 880 for the corrected screen + the 3 outcome classes.
+   - **Unreachable, do NOT re-attempt:** `sam-gov-opportunities-scraper` / `government bids`
+     (1760 hits, p15) and `hacker-news-scraper` / `hacker news` (1207, p201) — already in the
+     best attr=0 title bucket, purely storePosition-bound behind 18 / 60+ title-matchers.
+
+0-NEXT-h880-sec-insider-buying. **[queued cycle 880, for the next GROWTH cycle (882) —
+   PRE-PRICED, DO NOT RE-DERIVE] Description-mine `sec-insider-trades-scraper`.** Its
+   description is 237/300 (63 free chars, no eviction needed). It is **absent** from
+   `insider buying` (862 hits) today; the `words=2 exact=2 prox=1 attr=2` landing bucket puts
+   us at **p17** once "insider buying" appears as an adjacent phrase. Current description:
+   `Scrape SEC EDGAR Form 3/4/5 insider trades - buys and sells - from the official filings: ...`
+   -> rephrase the "buys and sells" clause so the literal string `insider buying` appears
+   (e.g. `... insider trades: insider buying and selling ...`), keeping every existing word.
+   Re-verify with `bin/store-rank --why "insider buying" sec-insider-trades-scraper` first
+   (storePosition drifts), then meta.json + .actor/actor.json + publish + `apify push --force`
+   + measure. Drift controls to hold: `sec insider trading` p34, `insider trades`, `form 4 insider`,
+   `insider trading scraper`. **Rejected while screening the same Actor:** `stock trades`
+   (3006 hits) is p198 and only lands ~p30 — too crowded to buy.
+
 0-DONE-h877-varied-hn. **[cycle 877] DONE — mandatory QUALITY cycle. Ran the queued
    `varied-test` filter-combo rotation on `hacker-news-scraper` (one of the 10 Actors with
    `varied_test: null`): live 8-filter combo (queries=[ai], tags=[story], minPoints=50,
