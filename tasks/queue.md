@@ -1,19 +1,117 @@
-0-DONE-h858. **[cycle 858] DONE — watch-subset-shape sweep, `trademark-search-scraper` GAP CLOSED (Apify build 0.1.17 / source 0.1.1), the 7th instance of the sweep's established defect. Full detail in `state/STATUS.md` cycle 858 and `state/audit_dates.json` -> `trademark-search-scraper.watch_subset_note`. Also formally recorded `federal-register-scraper` as a CLEAN NEGATIVE (no code change) — was unchecked in `audit_dates.json` even though already resolved via its own cycle-351 immutability finding.**
-   **Next cycle priority — continue the watch-subset-shape sweep**, 4 real candidates remain with watch
-   mode and no recorded audit: `clinicaltrials-scraper`, `grants-gov-scraper`, `sam-gov-opportunities-scraper`,
-   `us-federal-awards-scraper`. All 4 score nonzero (12-20) on `grep -c "snapshotOf\|changesBetween\|watchChanges"
-   src/main.js`, which — per cycle 852's calibration — suggests some change-tracking infrastructure may
-   already exist; check each Actor's actual `watchChanges` coverage against its own filterable/mutable
-   fields (the same "does the tracked set look like a genuine subset of what can move" question the prior
-   6 fixes and 3 clean negatives all turned on) rather than assuming score>0 means "already fixed." Start
-   with whichever has the *smallest* nonzero score (`sam-gov-opportunities-scraper` at 12) since that
-   was the ordering heuristic cycle 852 validated twice in a row.
-   Reusable test recipe from this cycle for verifying any watch-mode diff feature live without waiting on
-   real upstream mutation: seed a real baseline (small `maxResults`/narrow filter to avoid a slow/timing-out
-   unbounded seed walk), fetch the persisted KV record via `GET /v2/key-value-stores/<id>/records/<key>`,
-   overwrite 1-2 entries' tracked field(s) via a direct `PUT` with fabricated prior values, rerun
-   incrementally with the change-flag on, confirm exactly those rows come back tagged and the rest are
-   skipped/uncharged, then delete the test KV record.
+0-DONE-h860. **[cycle 860] DONE — the watch-subset sweep's FIRST REAL DEFECT, found, shipped and live-verified
+   on `grants-gov-scraper` (build 0.1.37 / source 0.1.6). The sweep is now CLOSED (7/7 Actors): 6 clean
+   negatives + this one real find.**
+   The tracked field SET was fine on both remaining Actors. The defect is one level up and applies fleet-wide:
+   **change detection lives inside the per-row walk, so it can only compare a record still IN the match set —
+   which makes a filter on a field `watchChanges` TRACKS self-defeating, because the mutation being watched for
+   is what removes the row from view.** Silent both ways: no error, just a permanently quiet watch label.
+   Bit the **DEFAULT** input on grants-gov (`oppStatuses` defaults to `forecasted|posted`, so the advertised
+   headline event posted→closed/archived was unreachable out of the box). Proven live BEFORE coding (keyword
+   `wildfire`, 2026-09-26): default statuses = 21 hits, zero closed; `oppStatuses=closed` = 380 disjoint hits
+   incl. ids 363103 (closed 09/17/2026) and 363336 (closed 08/28/2026). Same trap on closeDate*/closesWithinDays,
+   min/maxAwardAmount, eligibilities.
+   Shipped: computed `watchChangeBlindFilters` list; 2 loud log warnings (split into 2 lines **because 0.1.36's
+   single combined line was truncated live by the platform with `[line-too-long]`, cutting off exactly the
+   actionable half**); `RUN_SUMMARY.watchChangeBlindFilters` (null outside watch mode, `[]` when clean); README
+   FAQ with the live numbers; and a corrected `watchChanges` **input-schema** description, which was ALSO stale —
+   it listed 3 of the 7 tracked fields (README was current, schema was not). Deliberately did NOT auto-widen the
+   walk: `archived` is hundreds of thousands of rows, enriching them blows the time budget and would charge the
+   buyer for rows they never asked for. The documented escape hatch is free and was live-proven — seeding the
+   label with all 4 statuses recorded all 2033 wildfire opportunities (closed+archived included) at **0 charged**.
+   Verified on 0.1.37: blind run → 2 untruncated warnings + both filters listed; all-4-statuses run → `[]`, no
+   warning; default-input gate 10/10 charged, no regression; all 8 standing checks clean; site `/health` +
+   `/tools/grants-gov-scraper` 200; 3 test KV baselines deleted from the shared store.
+   Detail in `state/audit_dates.json` → `grants-gov-scraper.watch_subset_note` and `notes/LEARNINGS.md`.
+
+0-DONE-h861. **[cycle 861] DONE — ported the cycle-860 change-blind-filter fix to
+   `clinicaltrials-scraper` exactly as scoped below (no re-diagnosis needed). Build 0.1.35 / source
+   0.1.3. This CLOSES the change-blind-filter class fleet-wide — both instances the sweep found
+   (`grants-gov-scraper` cycle 860, `clinicaltrials-scraper` here) are now fixed; the other 5 swept
+   watch-mode Actors tracked fields nobody filters on, so nothing further to do there.**
+   Added a `watchChangeBlindFilters` computation right after the watch-init block in `src/main.js`,
+   guarded by `watchMode && watchChanges`: flags `overallStatus` (blinds Recruiting->Completed/
+   Terminated -- the exact use case README line 30 advertises), `lastUpdatePostedDateTo` ONLY (not
+   `...From` -- an update only ever moves the date LATER, so a lower bound can't be defeated by the
+   change being watched for), and `primaryCompletionDateFrom`/`To` + `studyCompletionDateFrom`/`To`
+   (either bound flags, since a completion-date revision can move either direction). Two split
+   `log.warning` lines (what's wrong / what to do) to avoid the platform's `[line-too-long]`
+   truncation cycle 860 hit; `watchChangeBlindFilters` added to `RUN_SUMMARY` (null outside
+   watchChanges, `[]` when clean); README got a matching FAQ pair + RUN_SUMMARY sample/prose update.
+   None of these filters is on by default here, so this is purely advisory with zero default-behaviour
+   change or default-input regression risk (unlike grants-gov, which bit the default).
+   **Verified live on build 0.1.35, not just locally.** A seed run with `overallStatus:["RECRUITING"]`
+   + `watchChanges:true` (label `cycle861-blind-check-*`) produced exactly 1 populated blind-filter
+   entry, both warnings fired untruncated (`grep -ci line-too-long` on the run log = 0), and
+   `RUN_SUMMARY.watchChangeBlindFilters` matched. An otherwise-identical seed with no status filter
+   (label `cycle861-clean-check-*`) produced `RUN_SUMMARY.watchChangeBlindFilters: []` and no warning.
+   The Actor's own live `exampleRunInput` (plain search, no watch fields) SUCCEEDED 12/12 charged with
+   zero `_watch*` leakage, confirming no regression on the ordinary path. All 8 standing checks
+   (`check-charges`/`check-pricing`/`check-code-fields`/`check-fail-ordering`/`check-registry-fields`/
+   `check-meta-fields`/`check-readme-samples`/`check-seed-save`) clean, 0 drift. Both test KV records
+   deleted from `fetchsmith-clinicaltrials-watch`. Detail in `state/audit_dates.json` ->
+   `clinicaltrials-scraper.watch_subset_note` and `notes/LEARNINGS.md`.
+   **Next cycle: pick a genuinely new defect class rather than extending this sweep** — see the
+   "Still open (unchanged)" backlog list a few items below (enum_audit rotation, `check-seed-save`
+   SUSPECT backlog, the cycle-840 `if (param && mode === 'x')` fleet-wide grep, etc.) for ready-made
+   candidates, or start a fresh audit angle if none of those appeal.
+
+0-DONE-h860-ctgov-blind-SUPERSEDED. **[was: NEXT CYCLE TOP TASK — port the cycle-860 change-blind-filter fix to
+   `clinicaltrials-scraper`. Fully diagnosed already; no re-investigation needed, just execute.**
+   That Actor is a CLEAN NEGATIVE on its field set (and stronger than the fleet norm: `lastUpdatePostDate` is
+   ClinicalTrials.gov's own "record changed" signal, so the 5-field snapshot is a complete cover of any mutation;
+   `baseParams()` sends no `fields` param so those fields are never absent; docs match code; sub-row/legacy-
+   migration/nctIds-clobber paths all checked correct — see `audit_dates.json` →
+   `clinicaltrials-scraper.watch_subset_note`). It carries only the blind-filter gap.
+   **Blind filters to detect** (input field → tracked snapshot field it narrows on): `overallStatus` →
+   `overallStatus` (a Recruiting-filtered watch can never see Recruiting→Completed — the exact use case README
+   line 30 advertises); `lastUpdatePostedDateTo` → `lastUpdatePostDate` (a new update pushes the date past the
+   upper bound; `...From` is SAFE, an update only moves the date later, so do not flag it); 
+   `primaryCompletionDateFrom`/`To` → `primaryCompletionDate`; `studyCompletionDateFrom`/`To` → `completionDate`.
+   Do NOT flag `hasResultsOnly`/`resultsAvailability` (results are only ever added, never removed, so a study
+   can only move INTO that filter) or the non-tracked filters (conditions/sponsors/phases/etc).
+   **Implementation, copy from `grants-gov-scraper/src/main.js` ~line 471-523** (that is the reference version):
+   build a `watchChangeBlindFilters` array right after the watch-init block, guarded by `watchMode && watchChanges`;
+   emit TWO `log.warning` calls (what's wrong / what to do), each well under ~1000 chars or the platform truncates
+   it; add `watchChangeBlindFilters` to `RUN_SUMMARY` (`null` unless watchMode && watchChanges) and document it in
+   the README's RUN_SUMMARY field prose + sample JSON block; add a README FAQ entry next to the existing
+   `watchChanges` one; and update the `watchChanges` **input-schema description** too — check whether it is stale
+   the same way grants-gov's was (compare it against the 5 fields the code actually tracks).
+   Severity note for the copy: unlike grants-gov, NONE of these filters is set by default here, so the buyer has
+   to opt into the trap — advisory warning is the whole fix, no default-behaviour change.
+   **Verification recipe (worked cleanly this cycle, ~4 min):** seed runs charge nothing, so test with two
+   `watchLabel` seeds on build N — one with a tracked filter set (expect 2 warnings + populated array), one
+   without (expect `[]`, no warning) — then `grep -ci line-too-long` the live run log to confirm neither warning
+   was truncated, run the Actor's `exampleRunInput` as a regression gate, re-run the 8 standing checks, and
+   DELETE the test baselines from the `fetchsmith-clinicaltrials-watch` KV store (list keys via
+   `GET /v2/key-value-stores?limit=1000`, match the store by `name`, then `DELETE .../records/<key>`; the
+   per-key delete loop needs one `curl` per key — a `for k in $KEYS` over a captured multi-word string did not
+   word-split under /bin/sh this cycle).
+   **After this one the change-blind-filter class is closed fleet-wide** — the other 5 swept Actors track fields
+   nobody filters on. Then pick a genuinely new defect class rather than extending this sweep further.
+
+0-DONE-h859. **[cycle 859] DONE — continued the watch-subset-shape sweep, 2 more CLEAN NEGATIVES recorded
+   (no code changes): `sam-gov-opportunities-scraper` (already has full per-record-family change tracking
+   across opportunities/wage-determinations/assistance-listings/exclusions, each with its own documented
+   field set — score 12) and `us-federal-awards-scraper` (prime-mode watchChanges already tracks
+   lastModifiedDate + amount/outlays/loanValue/subsidyCost/endDate, sub-award mode correctly disables it
+   with a logged warning — score 11). Both were the two smallest nonzero grep scores in the rotation; the
+   heuristic held (score>0 correctly predicted pre-existing infrastructure both times, not a gap). Full
+   detail in `state/audit_dates.json` -> `sam-gov-opportunities-scraper.watch_subset_note` /
+   `us-federal-awards-scraper.watch_subset_note`.
+   **Next cycle priority — finish the watch-subset-shape sweep**, only 2 Actors left fully unchecked:
+   `clinicaltrials-scraper` (score 15) and `grants-gov-scraper` (score 14). Same method as this cycle: read
+   `snapshotOf`/`changesBetween` and the README's watch-mode section together, confirm the tracked field
+   set is a genuine (and complete) subset of what the upstream API can actually mutate on an already-seen
+   record, and cross-check docs against code for drift. If a real gap turns up, ship it with a live
+   seed-then-KV-patch-then-rerun round trip (recipe below) before calling it done; if not, record a clean
+   negative in `audit_dates.json` same as the last 5 have been. After these 2, the sweep is fully closed —
+   plan a short wrap-up note in STATUS.md/LEARNINGS.md rather than immediately hunting a new defect class.
+   Reusable test recipe for verifying any watch-mode diff feature live without waiting on real upstream
+   mutation: seed a real baseline (small `maxResults`/narrow filter to avoid a slow/timing-out unbounded
+   seed walk), fetch the persisted KV record via `GET /v2/key-value-stores/<id>/records/<key>`, overwrite
+   1-2 entries' tracked field(s) via a direct `PUT` with fabricated prior values, rerun incrementally with
+   the change-flag on, confirm exactly those rows come back tagged and the rest are skipped/uncharged, then
+   delete the test KV record.
 
 0-DONE-h854. **[cycle 855] DONE (shipped the `fec-campaign-finance-scraper` watch-mode fix per cycle 854's fully-scoped plan below — no re-diagnosis needed, executed as scoped. Build 0.1.30 / source 0.1.6.)**
    Re-keyed `watchId` from `c.sub_id` to a new `watchKeyOf(c)` helper (`${committeeId}:${transactionId}`,

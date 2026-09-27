@@ -484,6 +484,50 @@ if (watchMode) {
     }
 }
 
+// CHANGE-BLIND FILTERS (cycle 861, ported from grants-gov-scraper cycle 860). watchChanges can
+// only compare an already-delivered study against its snapshot if that study is still IN this
+// run's match set -- change detection lives inside the per-row walk, so a study the query no
+// longer returns is never compared and its change is never reported. That makes a filter ON A
+// FIELD watchChanges TRACKS self-defeating: the very mutation the buyer is watching for (e.g.
+// Recruiting -> Completed) is what removes the study from view. Unlike grants-gov, none of these
+// filters is set by default here, so the buyer has to opt into the trap -- this is advisory only,
+// no default-behaviour change. `lastUpdatePostedDateFrom` is deliberately NOT flagged: an update
+// only ever moves lastUpdatePostDate LATER, so a lower bound can never be defeated by the change
+// being watched for; `...To` can, since a fresh update can push the date past the upper bound.
+const watchChangeBlindFilters = [];
+if (watchMode && watchChanges) {
+    if (overallStatus.length) {
+        watchChangeBlindFilters.push('overallStatus (blinds an overallStatus change that moves a study OUT of the selected status(es) -- e.g. Recruiting -> Completed/Terminated)');
+    }
+    if (dateCriteria.lastUpdatePostedDateTo) {
+        watchChangeBlindFilters.push('lastUpdatePostedDateTo (blinds a fresh update whose lastUpdatePostDate moves past this upper bound)');
+    }
+    if (dateCriteria.primaryCompletionDateFrom || dateCriteria.primaryCompletionDateTo) {
+        watchChangeBlindFilters.push('primaryCompletionDateFrom/primaryCompletionDateTo (blinds a primaryCompletionDate revision that moves the readout date outside this window)');
+    }
+    if (dateCriteria.studyCompletionDateFrom || dateCriteria.studyCompletionDateTo) {
+        watchChangeBlindFilters.push('studyCompletionDateFrom/studyCompletionDateTo (blinds a completionDate revision that moves the readout date outside this window)');
+    }
+    if (watchChangeBlindFilters.length) {
+        log.warning(
+            `watchChanges is ON but ${watchChangeBlindFilters.length} of this run's filter(s) narrow on a field it `
+            + `tracks, so those changes can NEVER be reported -- the change itself removes the study from the `
+            + `match set, and only studies still in the match set are compared against the baseline: `
+            + `${watchChangeBlindFilters.join('; ')}.`,
+        );
+        // Deliberately a SECOND log line: the platform truncates an over-long one with
+        // "[line-too-long]" (seen live on grants-gov-scraper build 0.1.36), and the half that says
+        // what to do about it is the half worth keeping.
+        log.warning(
+            'Fix for the change-blind filter(s) above: for each field you want change alerts on, widen (or drop) the filter on THAT field for this watch '
+            + 'label -- filtering your own copy of the rows afterward instead. Widening costs nothing to backfill: a '
+            + 'label\'s FIRST run on a new filter set is a free baseline (0 studies charged), so studies the wider '
+            + 'query newly matches land in that baseline for free and are never charged. Studies NOT in the '
+            + 'baseline are still charged as new, as always. This warning is advisory -- the run continues exactly as configured.',
+        );
+    }
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // `apiGet` returns `null` for EVERY failure shape (non-200, non-JSON body, 4 exhausted retries,
@@ -1100,6 +1144,9 @@ const runSummary = {
     malformedIds: nctIds.length ? malformedIds : null,
     failedIds: nctIds.length ? failedIds : null,
     notReachedIds: nctIds.length ? notReachedIds : null,
+    // Machine-readable form of the change-blind-filter warning: a scheduled caller that never
+    // reads the log can assert on this being empty before trusting "no changes this run".
+    watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

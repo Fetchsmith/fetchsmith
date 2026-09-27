@@ -1,317 +1,319 @@
 {
-  "title": "Grants.gov Scraper input",
-  "type": "object",
-  "schemaVersion": 1,
-  "properties": {
-    "keyword": {
-      "title": "Keyword",
-      "type": "string",
-      "description": "Full-text search across the opportunity title and synopsis. Leave empty to return everything matching the other filters.",
-      "editor": "textfield",
-      "default": ""
+    "title": "Grants.gov Scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "keyword": {
+            "title": "Keyword",
+            "type": "string",
+            "description": "Full-text search across the opportunity title and synopsis. Leave empty to return everything matching the other filters.",
+            "editor": "textfield",
+            "default": ""
+        },
+        "oppStatuses": {
+            "title": "Opportunity status",
+            "type": "array",
+            "description": "Which opportunity statuses to include. Defaults to forecasted + posted (open for applications). \"Closed\" and \"archived\" are historical.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "forecasted",
+                    "posted",
+                    "closed",
+                    "archived"
+                ],
+                "enumTitles": [
+                    "Forecasted (upcoming)",
+                    "Posted (open now)",
+                    "Closed",
+                    "Archived"
+                ]
+            },
+            "uniqueItems": true,
+            "default": [
+                "forecasted",
+                "posted"
+            ]
+        },
+        "agencies": {
+            "title": "Agency codes",
+            "type": "array",
+            "description": "Grants.gov agency codes, e.g. \"NSF\", \"DOD-AMC\", \"USDA-NIFA\". Leave empty for all agencies. Codes are validated against the live agency list; an unrecognised code is dropped with a warning rather than silently returning zero results.",
+            "editor": "stringList",
+            "uniqueItems": true
+        },
+        "eligibilities": {
+            "title": "Applicant eligibility",
+            "type": "array",
+            "description": "Restrict to opportunities open to these applicant types.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "00",
+                    "01",
+                    "02",
+                    "04",
+                    "05",
+                    "06",
+                    "07",
+                    "08",
+                    "11",
+                    "12",
+                    "13",
+                    "20",
+                    "21",
+                    "22",
+                    "23",
+                    "25",
+                    "99"
+                ],
+                "enumTitles": [
+                    "State governments",
+                    "County governments",
+                    "City or township governments",
+                    "Special district governments",
+                    "Independent school districts",
+                    "Public and State controlled institutions of higher education",
+                    "Native American tribal governments (federally recognized)",
+                    "Public housing authorities/Indian housing authorities",
+                    "Native American tribal organizations (other than federally recognized)",
+                    "Nonprofits with 501(c)(3) status, other than higher education",
+                    "Nonprofits without 501(c)(3) status, other than higher education",
+                    "Private institutions of higher education",
+                    "Individuals",
+                    "For-profit organizations other than small businesses",
+                    "Small businesses",
+                    "Others",
+                    "Unrestricted"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "fundingCategories": {
+            "title": "Funding categories",
+            "type": "array",
+            "description": "Restrict to opportunities in these funding activity categories, e.g. Health, Education, Environment.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "ACA",
+                    "AG",
+                    "AR",
+                    "BC",
+                    "CD",
+                    "CP",
+                    "DPR",
+                    "ED",
+                    "ELT",
+                    "EN",
+                    "EIC",
+                    "ENV",
+                    "FN",
+                    "HL",
+                    "HO",
+                    "HU",
+                    "ISS",
+                    "IS",
+                    "IIJ",
+                    "LJL",
+                    "NR",
+                    "OZ",
+                    "O",
+                    "RA",
+                    "RT",
+                    "RD",
+                    "ST",
+                    "T"
+                ],
+                "enumTitles": [
+                    "Affordable Care Act",
+                    "Agriculture",
+                    "Arts",
+                    "Business and Commerce",
+                    "Community Development",
+                    "Consumer Protection",
+                    "Disaster Prevention and Relief",
+                    "Education",
+                    "Employment, Labor and Training",
+                    "Energy",
+                    "Energy Infrastructure and Critical Minerals and Materials",
+                    "Environment",
+                    "Food and Nutrition",
+                    "Health",
+                    "Housing",
+                    "Humanities",
+                    "Income Security and Social Services",
+                    "Information and Statistics",
+                    "Infrastructure Investment and Jobs Act",
+                    "Law, Justice and Legal Services",
+                    "Natural Resources",
+                    "Opportunity Zone Benefits",
+                    "Other",
+                    "Recovery Act",
+                    "Recreation and Tourism",
+                    "Regional Development",
+                    "Science and Technology / R&D",
+                    "Transportation"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "fundingInstruments": {
+            "title": "Funding instruments",
+            "type": "array",
+            "description": "Restrict to these award types.",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "CA",
+                    "G",
+                    "O",
+                    "PC"
+                ],
+                "enumTitles": [
+                    "Cooperative Agreement",
+                    "Grant",
+                    "Other",
+                    "Procurement Contract"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "cfda": {
+            "title": "CFDA / Assistance Listing number",
+            "type": "string",
+            "description": "Restrict to one Assistance Listing (CFDA) number, e.g. \"93.859\". Leave empty for all.",
+            "editor": "textfield"
+        },
+        "oppNum": {
+            "title": "Opportunity number",
+            "type": "string",
+            "description": "Look up a single opportunity by its exact funding opportunity number, e.g. \"PD-25-275Y\". When this or Opportunity numbers (batch) is set, all other filters are ignored.",
+            "editor": "textfield"
+        },
+        "oppNums": {
+            "title": "Opportunity numbers (batch)",
+            "type": "array",
+            "description": "Look up multiple opportunities by their exact funding opportunity numbers in one run -- e.g. to enrich a list of numbers you already have. Combined with Opportunity number above if both are set (duplicates removed). Grants.gov's API has no batch lookup, so this makes one lookup call per number; each is still an exact match across all four statuses, same as a single Opportunity number. When set, all other filters are ignored.",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        },
+        "sortBy": {
+            "title": "Sort order",
+            "type": "string",
+            "description": "Sort by open date, close date, or opportunity number. An unsupported value silently returns zero rows on Grants.gov's own API (no error), so only these live-validated options are offered. Opportunity number is the only sort that is stable across runs -- use it if you page a large result set over several runs and need the order not to shift as grants open and close.",
+            "editor": "select",
+            "enum": [
+                "",
+                "openDate|desc",
+                "openDate|asc",
+                "closeDate|desc",
+                "closeDate|asc",
+                "oppNum|asc",
+                "oppNum|desc"
+            ],
+            "enumTitles": [
+                "Default (most relevant)",
+                "Open date, newest first",
+                "Open date, oldest first",
+                "Close date, soonest last",
+                "Close date, soonest first",
+                "Opportunity number, A-Z (stable)",
+                "Opportunity number, Z-A (stable)"
+            ],
+            "default": ""
+        },
+        "enrich": {
+            "title": "Enrich with full detail (award amounts, eligibility text, synopsis)",
+            "type": "boolean",
+            "description": "Grants.gov's search results carry only 11 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis, and is charged at the enriched rate ($0.0015/result). Turn off for fast sweeps of just the thin fields, charged at the cheaper thin rate ($0.0007/result) — the price follows the data, per row. Forced on automatically if minAwardAmount/maxAwardAmount is set, since the amount only exists in the detail record.",
+            "default": true
+        },
+        "postedWithinDays": {
+            "title": "Posted within the last N days",
+            "type": "integer",
+            "description": "Only return opportunities posted in the last N days (Grants.gov's own \"Posted Date\" facet, verified live to accept any positive day count, not just its 3/7/14/21-day preset buttons). Cheap way to do an incremental daily pull instead of re-scanning the whole index. Leave empty for no date restriction. Ignored when Opportunity number is set, and ignored if Posted from/to below is set (they'd otherwise double-filter in confusing ways).",
+            "editor": "number",
+            "minimum": 1
+        },
+        "postedFrom": {
+            "title": "Posted from (YYYY-MM-DD)",
+            "type": "string",
+            "description": "Only return opportunities with an open (posted) date on or after this date. Unlike \"Posted within the last N days\" (which counts back from today), this is a fixed calendar date -- for pulling a specific historical window, e.g. everything posted in Q1. Grants.gov's own API has no server-side absolute-date filter, so this is applied client-side against each row's own open date (already present on every thin result row, no extra detail lookups needed). Leave empty for no lower bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
+            "editor": "textfield"
+        },
+        "postedTo": {
+            "title": "Posted to (YYYY-MM-DD)",
+            "type": "string",
+            "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
+            "editor": "textfield"
+        },
+        "closeDateFrom": {
+            "title": "Deadline from (YYYY-MM-DD)",
+            "type": "string",
+            "description": "Only return opportunities whose application deadline (close date) falls on or after this date. Use with \"Deadline to\" to answer the question grant seekers actually ask -- \"what closes in the next 30 days?\" -- instead of filtering on when something was posted. Applied client-side against each row's own close date (already present on every thin result row, no extra detail lookups). NOTE: forecasted opportunities have no firm deadline yet and Grants.gov returns an empty close date for them, as it also does for rolling/continuous announcements and RFIs -- those rows are dropped by this filter and counted separately in the run summary. Leave empty for no lower bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
+            "editor": "textfield"
+        },
+        "closeDateTo": {
+            "title": "Deadline to (YYYY-MM-DD)",
+            "type": "string",
+            "description": "Only return opportunities whose application deadline (close date) falls on or before this date. Same client-side filter and same no-deadline exclusions as \"Deadline from\". Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
+            "editor": "textfield"
+        },
+        "closesWithinDays": {
+            "title": "Closing within the next N days",
+            "type": "integer",
+            "description": "Only return opportunities whose application deadline falls within the next N days from today (resolves to today through today+N, same client-side filter and same no-deadline exclusions as \"Deadline from\"/\"Deadline to\"). Convenience for the most common cron use case -- \"what's closing soon\" -- without computing calendar dates yourself. Leave empty for no restriction. Ignored if Deadline from/to above is set (they'd otherwise double-filter in confusing ways).",
+            "editor": "number",
+            "minimum": 1
+        },
+        "minAwardAmount": {
+            "title": "Minimum award ceiling (USD)",
+            "type": "integer",
+            "description": "Only return opportunities whose award ceiling (the maximum a single award can pay) is at least this amount. Forces \"Enrich\" on, since the amount lives only in the per-opportunity detail record. Excludes: unposted \"forecast\" listings with no detail record at all (~3% of the index), AND opportunities whose detail record has no ceiling set at all -- Grants.gov spells this as the literal string \"none\", measured live at roughly a third to half of posted opportunities. This is common, not a rare edge case.",
+            "editor": "number",
+            "minimum": 0
+        },
+        "maxAwardAmount": {
+            "title": "Maximum award ceiling (USD)",
+            "type": "integer",
+            "description": "Only return opportunities whose award ceiling is at most this amount. Same exclusions as Minimum award ceiling: forces \"Enrich\" on and drops any opportunity with no usable ceiling (no detail record, or the detail record's ceiling is literally unset).",
+            "editor": "number",
+            "minimum": 0
+        },
+        "maxResults": {
+            "title": "Max results",
+            "type": "integer",
+            "description": "Stop after this many opportunities.",
+            "default": 100,
+            "minimum": 1,
+            "maximum": 20000
+        },
+        "watchLabel": {
+            "title": "Watch label (only new since last run)",
+            "type": "string",
+            "description": "Optional. Name a saved search (e.g. \"my-nsf-watch\") and this run returns ONLY opportunities not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded opportunities as \"new\". Ignored when Opportunity number is set.",
+            "editor": "textfield"
+        },
+        "watchChanges": {
+            "title": "Watch mode: also alert on deadline/status/forecast changes",
+            "type": "boolean",
+            "description": "Only used together with Watch label. When on, a run also re-delivers an opportunity you already have if its closing date, forecast-vs-posted status, opportunity status (posted/closed/archived), award ceiling/floor, last-updated date or eligibility text has changed since you last saw it -- e.g. a deadline extension, a forecast turning into a real posted opportunity, an opportunity closing early, or a revised funding range. The last four are only watched when Enrich is on (the default), since they only exist on the enriched detail record. Charged at the same per-row price as a new opportunity. Each changed row is tagged with `_watchChangeType` (one or more of `closeDate`, `docType`, `oppStatus`, `awardCeiling`, `awardFloor`, `lastUpdatedDate`, `applicantEligibilityDesc`) plus the previous value(s) under `_watchPrevious`. IMPORTANT: do not also FILTER on a field you want change alerts on -- the change itself would drop the opportunity out of your match set and it could never be reported. In particular the default Opportunity statuses (forecasted + posted) hide every posted->closed transition: set all four statuses to catch closures. Widening is free to backfill (a new filter set gets a free 0-row baseline run). The run logs a warning and fills RUN_SUMMARY.watchChangeBlindFilters whenever a filter is hiding changes this way. Off by default so existing watches keep their current behaviour.",
+            "default": false
+        },
+        "webhookUrl": {
+            "title": "Webhook URL (notify on completion)",
+            "type": "string",
+            "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes -- opportunities pushed, how many were newly enriched vs. thin, watch-label new/changed counts if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging -- it fires after every opportunity has already been pushed and charged. Leave empty to skip.",
+            "editor": "textfield"
+        }
     },
-    "oppStatuses": {
-      "title": "Opportunity status",
-      "type": "array",
-      "description": "Which opportunity statuses to include. Defaults to forecasted + posted (open for applications). \"Closed\" and \"archived\" are historical.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "forecasted",
-          "posted",
-          "closed",
-          "archived"
-        ],
-        "enumTitles": [
-          "Forecasted (upcoming)",
-          "Posted (open now)",
-          "Closed",
-          "Archived"
-        ]
-      },
-      "uniqueItems": true,
-      "default": [
-        "forecasted",
-        "posted"
-      ]
-    },
-    "agencies": {
-      "title": "Agency codes",
-      "type": "array",
-      "description": "Grants.gov agency codes, e.g. \"NSF\", \"DOD-AMC\", \"USDA-NIFA\". Leave empty for all agencies. Codes are validated against the live agency list; an unrecognised code is dropped with a warning rather than silently returning zero results.",
-      "editor": "stringList",
-      "uniqueItems": true
-    },
-    "eligibilities": {
-      "title": "Applicant eligibility",
-      "type": "array",
-      "description": "Restrict to opportunities open to these applicant types.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "00",
-          "01",
-          "02",
-          "04",
-          "05",
-          "06",
-          "07",
-          "08",
-          "11",
-          "12",
-          "13",
-          "20",
-          "21",
-          "22",
-          "23",
-          "25",
-          "99"
-        ],
-        "enumTitles": [
-          "State governments",
-          "County governments",
-          "City or township governments",
-          "Special district governments",
-          "Independent school districts",
-          "Public and State controlled institutions of higher education",
-          "Native American tribal governments (federally recognized)",
-          "Public housing authorities/Indian housing authorities",
-          "Native American tribal organizations (other than federally recognized)",
-          "Nonprofits with 501(c)(3) status, other than higher education",
-          "Nonprofits without 501(c)(3) status, other than higher education",
-          "Private institutions of higher education",
-          "Individuals",
-          "For-profit organizations other than small businesses",
-          "Small businesses",
-          "Others",
-          "Unrestricted"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "fundingCategories": {
-      "title": "Funding categories",
-      "type": "array",
-      "description": "Restrict to opportunities in these funding activity categories, e.g. Health, Education, Environment.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "ACA",
-          "AG",
-          "AR",
-          "BC",
-          "CD",
-          "CP",
-          "DPR",
-          "ED",
-          "ELT",
-          "EN",
-          "EIC",
-          "ENV",
-          "FN",
-          "HL",
-          "HO",
-          "HU",
-          "ISS",
-          "IS",
-          "IIJ",
-          "LJL",
-          "NR",
-          "OZ",
-          "O",
-          "RA",
-          "RT",
-          "RD",
-          "ST",
-          "T"
-        ],
-        "enumTitles": [
-          "Affordable Care Act",
-          "Agriculture",
-          "Arts",
-          "Business and Commerce",
-          "Community Development",
-          "Consumer Protection",
-          "Disaster Prevention and Relief",
-          "Education",
-          "Employment, Labor and Training",
-          "Energy",
-          "Energy Infrastructure and Critical Minerals and Materials",
-          "Environment",
-          "Food and Nutrition",
-          "Health",
-          "Housing",
-          "Humanities",
-          "Income Security and Social Services",
-          "Information and Statistics",
-          "Infrastructure Investment and Jobs Act",
-          "Law, Justice and Legal Services",
-          "Natural Resources",
-          "Opportunity Zone Benefits",
-          "Other",
-          "Recovery Act",
-          "Recreation and Tourism",
-          "Regional Development",
-          "Science and Technology / R&D",
-          "Transportation"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "fundingInstruments": {
-      "title": "Funding instruments",
-      "type": "array",
-      "description": "Restrict to these award types.",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": [
-          "CA",
-          "G",
-          "O",
-          "PC"
-        ],
-        "enumTitles": [
-          "Cooperative Agreement",
-          "Grant",
-          "Other",
-          "Procurement Contract"
-        ]
-      },
-      "uniqueItems": true
-    },
-    "cfda": {
-      "title": "CFDA / Assistance Listing number",
-      "type": "string",
-      "description": "Restrict to one Assistance Listing (CFDA) number, e.g. \"93.859\". Leave empty for all.",
-      "editor": "textfield"
-    },
-    "oppNum": {
-      "title": "Opportunity number",
-      "type": "string",
-      "description": "Look up a single opportunity by its exact funding opportunity number, e.g. \"PD-25-275Y\". When this or Opportunity numbers (batch) is set, all other filters are ignored.",
-      "editor": "textfield"
-    },
-    "oppNums": {
-      "title": "Opportunity numbers (batch)",
-      "type": "array",
-      "description": "Look up multiple opportunities by their exact funding opportunity numbers in one run -- e.g. to enrich a list of numbers you already have. Combined with Opportunity number above if both are set (duplicates removed). Grants.gov's API has no batch lookup, so this makes one lookup call per number; each is still an exact match across all four statuses, same as a single Opportunity number. When set, all other filters are ignored.",
-      "editor": "stringList",
-      "items": { "type": "string" },
-      "uniqueItems": true
-    },
-    "sortBy": {
-      "title": "Sort order",
-      "type": "string",
-      "description": "Sort by open date, close date, or opportunity number. An unsupported value silently returns zero rows on Grants.gov's own API (no error), so only these live-validated options are offered. Opportunity number is the only sort that is stable across runs -- use it if you page a large result set over several runs and need the order not to shift as grants open and close.",
-      "editor": "select",
-      "enum": [
-        "",
-        "openDate|desc",
-        "openDate|asc",
-        "closeDate|desc",
-        "closeDate|asc",
-        "oppNum|asc",
-        "oppNum|desc"
-      ],
-      "enumTitles": [
-        "Default (most relevant)",
-        "Open date, newest first",
-        "Open date, oldest first",
-        "Close date, soonest last",
-        "Close date, soonest first",
-        "Opportunity number, A-Z (stable)",
-        "Opportunity number, Z-A (stable)"
-      ],
-      "default": ""
-    },
-    "enrich": {
-      "title": "Enrich with full detail (award amounts, eligibility text, synopsis)",
-      "type": "boolean",
-      "description": "Grants.gov's search results carry only 11 thin fields (no award amounts, no eligibility text, no description). When on (default), each row is joined with a second call to fetch award ceiling/floor, eligibility text, funding instrument/category and the full synopsis, and is charged at the enriched rate ($0.0015/result). Turn off for fast sweeps of just the thin fields, charged at the cheaper thin rate ($0.0007/result) — the price follows the data, per row. Forced on automatically if minAwardAmount/maxAwardAmount is set, since the amount only exists in the detail record.",
-      "default": true
-    },
-    "postedWithinDays": {
-      "title": "Posted within the last N days",
-      "type": "integer",
-      "description": "Only return opportunities posted in the last N days (Grants.gov's own \"Posted Date\" facet, verified live to accept any positive day count, not just its 3/7/14/21-day preset buttons). Cheap way to do an incremental daily pull instead of re-scanning the whole index. Leave empty for no date restriction. Ignored when Opportunity number is set, and ignored if Posted from/to below is set (they'd otherwise double-filter in confusing ways).",
-      "editor": "number",
-      "minimum": 1
-    },
-    "postedFrom": {
-      "title": "Posted from (YYYY-MM-DD)",
-      "type": "string",
-      "description": "Only return opportunities with an open (posted) date on or after this date. Unlike \"Posted within the last N days\" (which counts back from today), this is a fixed calendar date -- for pulling a specific historical window, e.g. everything posted in Q1. Grants.gov's own API has no server-side absolute-date filter, so this is applied client-side against each row's own open date (already present on every thin result row, no extra detail lookups needed). Leave empty for no lower bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
-      "editor": "textfield"
-    },
-    "postedTo": {
-      "title": "Posted to (YYYY-MM-DD)",
-      "type": "string",
-      "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
-      "editor": "textfield"
-    },
-    "closeDateFrom": {
-      "title": "Deadline from (YYYY-MM-DD)",
-      "type": "string",
-      "description": "Only return opportunities whose application deadline (close date) falls on or after this date. Use with \"Deadline to\" to answer the question grant seekers actually ask -- \"what closes in the next 30 days?\" -- instead of filtering on when something was posted. Applied client-side against each row's own close date (already present on every thin result row, no extra detail lookups). NOTE: forecasted opportunities have no firm deadline yet and Grants.gov returns an empty close date for them, as it also does for rolling/continuous announcements and RFIs -- those rows are dropped by this filter and counted separately in the run summary. Leave empty for no lower bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
-      "editor": "textfield"
-    },
-    "closeDateTo": {
-      "title": "Deadline to (YYYY-MM-DD)",
-      "type": "string",
-      "description": "Only return opportunities whose application deadline (close date) falls on or before this date. Same client-side filter and same no-deadline exclusions as \"Deadline from\". Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
-      "editor": "textfield"
-    },
-    "closesWithinDays": {
-      "title": "Closing within the next N days",
-      "type": "integer",
-      "description": "Only return opportunities whose application deadline falls within the next N days from today (resolves to today through today+N, same client-side filter and same no-deadline exclusions as \"Deadline from\"/\"Deadline to\"). Convenience for the most common cron use case -- \"what's closing soon\" -- without computing calendar dates yourself. Leave empty for no restriction. Ignored if Deadline from/to above is set (they'd otherwise double-filter in confusing ways).",
-      "editor": "number",
-      "minimum": 1
-    },
-    "minAwardAmount": {
-      "title": "Minimum award ceiling (USD)",
-      "type": "integer",
-      "description": "Only return opportunities whose award ceiling (the maximum a single award can pay) is at least this amount. Forces \"Enrich\" on, since the amount lives only in the per-opportunity detail record. Excludes: unposted \"forecast\" listings with no detail record at all (~3% of the index), AND opportunities whose detail record has no ceiling set at all -- Grants.gov spells this as the literal string \"none\", measured live at roughly a third to half of posted opportunities. This is common, not a rare edge case.",
-      "editor": "number",
-      "minimum": 0
-    },
-    "maxAwardAmount": {
-      "title": "Maximum award ceiling (USD)",
-      "type": "integer",
-      "description": "Only return opportunities whose award ceiling is at most this amount. Same exclusions as Minimum award ceiling: forces \"Enrich\" on and drops any opportunity with no usable ceiling (no detail record, or the detail record's ceiling is literally unset).",
-      "editor": "number",
-      "minimum": 0
-    },
-    "maxResults": {
-      "title": "Max results",
-      "type": "integer",
-      "description": "Stop after this many opportunities.",
-      "default": 100,
-      "minimum": 1,
-      "maximum": 20000
-    },
-    "watchLabel": {
-      "title": "Watch label (only new since last run)",
-      "type": "string",
-      "description": "Optional. Name a saved search (e.g. \"my-nsf-watch\") and this run returns ONLY opportunities not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded opportunities as \"new\". Ignored when Opportunity number is set.",
-      "editor": "textfield"
-    },
-    "watchChanges": {
-      "title": "Watch mode: also alert on deadline/status/forecast changes",
-      "type": "boolean",
-      "description": "Only used together with Watch label. When on, a run also re-delivers an opportunity you already have if its closing date, forecast-vs-posted status, or opportunity status (posted/closed/archived) has changed since you last saw it -- e.g. a deadline extension, a forecast turning into a real posted opportunity, or an opportunity closing early. Charged at the same per-row price as a new opportunity. Each changed row is tagged with `_watchChangeType` (one or more of `closeDate`, `docType`, `oppStatus`) plus the previous value(s) under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
-      "default": false
-    },
-    "webhookUrl": {
-      "title": "Webhook URL (notify on completion)",
-      "type": "string",
-      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes -- opportunities pushed, how many were newly enriched vs. thin, watch-label new/changed counts if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging -- it fires after every opportunity has already been pushed and charged. Leave empty to skip.",
-      "editor": "textfield"
-    }
-  },
-  "required": []
+    "required": []
 }

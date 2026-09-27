@@ -157,6 +157,11 @@ No — "new" is always decided per **study** (`nctId`), never per site row. A tr
 **What does `watchChanges` add, and does it cost extra to turn on?**
 No extra fee — a changed study is billed at the same per-row price as a new one (exploded per-site same as any other row if `rowsPerStudy: "site"`). Plain `watchLabel` only ever tells you about studies it has never delivered before; it stays silent forever about one it already sent you, even if that trial later stops recruiting or its enrollment target changes. Set `watchChanges: true` and each run also compares every already-delivered study's `overallStatus`, `lastUpdatePostDate`, `enrollmentCount`, `primaryCompletionDate` and `completionDate` against what they looked like last time; if any moved, the row is re-delivered tagged with `_watchChangeType` (which field(s) changed) and `_watchPrevious` (what they used to be). Verified live: seeding a baseline, editing 2 studies' recorded status/enrollment count directly, then rerunning returned exactly those 2 rows with the correct change tags and nothing else — and a plain unchanged rerun after that returned 0 rows again. Existing watch labels created before this feature shipped work immediately; the first run under `watchChanges` just starts detecting drift from that point forward rather than reporting an artificial backlog.
 
+**Important: don't filter on the field you're watching for changes (`overallStatus` catches most people).**
+Change detection can only compare a study that is still **in this run's match set** — so a filter on a field `watchChanges` tracks is self-defeating: the very change you're watching for is what removes the row from view, and you never hear about it. The clearest case: a watch scoped to `overallStatus: ["RECRUITING"]` (the exact "watch a sponsor's pipeline" use case this README advertises) can never report a study moving Recruiting → Completed/Terminated, because that move is what drops it out of the filter. The same trap applies to `lastUpdatePostedDateTo` (a fresh update pushes `lastUpdatePostDate` past your upper bound and the study vanishes — `lastUpdatePostedDateFrom` is safe, since an update only ever moves the date later) and to `primaryCompletionDateFrom`/`primaryCompletionDateTo`/`studyCompletionDateFrom`/`studyCompletionDateTo` (a revised readout date moves outside the window). None of these filters is on by default, so you have to opt into the trap, but it's easy to do without noticing.
+
+**What to do:** for each field you want alerts on, drop or widen the filter on *that field* for this watch label and filter your own copy of the rows afterward instead. **Widening costs nothing to backfill:** a label's first run on a new filter set is a free baseline (0 studies charged), so every historical study the wider query newly matches lands in that baseline for free and is never charged; only genuinely new and genuinely changed studies are billed from then on. Each run that has a change-blind filter set says so in two log warnings and lists them in `RUN_SUMMARY.watchChangeBlindFilters` (an empty array means nothing is blinding change detection), so a scheduled caller can assert on that field before trusting a quiet "no changes this run".
+
 **How is `webhookUrl` different from Apify's own platform webhooks?**
 Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, `scanned`, `pages`, a full `summary` object identical to the `RUN_SUMMARY` record below, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
@@ -178,7 +183,8 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
   "complete": false,
   "incompleteReason": "max-results",
   "incompleteDetail": "maxResults=5",
-  "maxResults": 5
+  "maxResults": 5,
+  "watchChangeBlindFilters": null
 }
 ```
 
@@ -192,6 +198,8 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 | `search-request-failed` | ClinicalTrials.gov stopped answering mid-walk (after 4 retries). **The rows you got are real, but they are not all of them.** |
 | `lookup-request-failed` | One or more `nctIds` could never be checked. |
 | `empty-page-with-token` | A page came back empty while pagination said there was more. |
+
+`watchChangeBlindFilters` (`null` unless `watchChanges` is on) lists any filter in this run that narrows on a field `watchChanges` tracks and therefore hides those changes — an empty array means nothing is blinding change detection this run; see "don't filter on the field you're watching" above.
 
 **In `nctIds` mode, what's the difference between `notFoundIds`, `malformedIds` and `failedIds`?**
 They are three different facts and folding them together produces a false one. `notFoundIds` means we asked, the registry answered, and it does not hold that study — a fact you can act on. `malformedIds` means ClinicalTrials.gov rejected the id's format outright. `failedIds` means we never got an answer for it (timeout or repeated 5xx): those studies are **not** known to be missing, and re-running for just those ids is usually all that's needed. `notReachedIds` lists ids the run never got to because `maxResults` or a charge limit stopped it first — their absence from the other three lists would otherwise read as "we checked and there was nothing there".

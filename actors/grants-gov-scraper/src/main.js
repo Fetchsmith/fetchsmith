@@ -468,6 +468,60 @@ if (watchMode) {
     }
 }
 
+// CHANGE-BLIND FILTERS (cycle 860). watchChanges can only ever compare an already-delivered
+// opportunity against its snapshot if that opportunity is still IN this run's match set -- change
+// detection lives inside the per-row walk, so a row the query no longer returns is never compared
+// and its change is never reported. That makes a filter ON A FIELD watchChanges TRACKS
+// self-defeating: the very mutation the buyer is watching for is what removes the row from view.
+// Proven live against the real API (keyword "wildfire", 2026-09-26): the DEFAULT
+// oppStatuses=forecasted|posted returned 21 hits, none of them closed, while oppStatuses=closed
+// returned 380 disjoint hits including ids 363103 (closed 09/17/2026) and 363336 (closed
+// 08/28/2026) -- opportunities a month-old watch label would be holding in its baseline, whose
+// posted->closed transition it can therefore never report. This is the DEFAULT input shape, so the
+// headline watchChanges promise ("posted -> closed/archived") was silently unreachable unless the
+// buyer widened oppStatuses by hand. Cannot be fixed by widening the walk ourselves: `archived` is
+// hundreds of thousands of rows, and enriching them all would blow the run's time budget while
+// delivering closed/archived opportunities the buyer never asked for. So it is named loudly and
+// documented instead -- the buyer chooses, and the escape hatch is free (a SEED run charges
+// nothing, so seeding the label with all 4 statuses backfills the history at zero cost).
+const watchChangeBlindFilters = [];
+if (watchMode && watchChanges) {
+    const wantedStatuses = new Set(oppStatuses.split('|').filter(Boolean));
+    const missingStatuses = ['forecasted', 'posted', 'closed', 'archived'].filter((s) => !wantedStatuses.has(s));
+    if (missingStatuses.length) {
+        watchChangeBlindFilters.push(`oppStatuses (excludes ${missingStatuses.join(', ')}; blinds oppStatus/docType changes INTO ${missingStatuses.length > 1 ? 'those statuses' : 'that status'})`);
+    }
+    if (hasCloseDateFilter || closesWithinDays !== null) {
+        watchChangeBlindFilters.push(`${closesWithinDays !== null ? 'closesWithinDays' : 'closeDateFrom/closeDateTo'} (blinds a closeDate change that moves the deadline outside the window -- the deadline amendments watchChanges exists to catch)`);
+    }
+    if (minAwardAmount !== null || maxAwardAmount !== null) {
+        watchChangeBlindFilters.push('minAwardAmount/maxAwardAmount (blinds an awardCeiling change that moves the ceiling outside the range)');
+    }
+    if (eligibilities) {
+        watchChangeBlindFilters.push('eligibilities (blinds an eligibility change that drops the opportunity out of the selected categories)');
+    }
+    if (watchChangeBlindFilters.length) {
+        log.warning(
+            `watchChanges is ON but ${watchChangeBlindFilters.length} of this run's filter(s) narrow on a field it `
+            + `tracks, so those changes can NEVER be reported -- the change itself removes the opportunity from the `
+            + `match set, and only opportunities still in the match set are compared against the baseline: `
+            + `${watchChangeBlindFilters.join('; ')}.`,
+        );
+        // Deliberately a SECOND log line: the platform truncates an over-long one with
+        // "[line-too-long]" (seen live on build 0.1.36, which cut this Actor's warning off exactly
+        // here), and the half that says what to do about it is the half worth keeping.
+        log.warning(
+            'Fix for the change-blind filter(s) above: for each field you want change alerts on, widen (or drop) the filter on THAT field for this watch '
+            + 'label -- e.g. set oppStatuses to all four (forecasted, posted, closed, archived) to catch closures, and '
+            + 'leave the deadline/award-amount filters off the watch query, filtering your own copy of the rows '
+            + 'instead. Widening costs nothing to backfill: a label\'s FIRST run on a new filter set is a free '
+            + 'baseline (0 rows charged), so the historical opportunities the wider query newly matches land in that '
+            + 'baseline for free and are never charged. Opportunities NOT in the baseline are still charged as new, '
+            + 'as always. This warning is advisory -- the run continues exactly as configured.',
+        );
+    }
+}
+
 // Grants.gov has TWO opposite silent-failure modes, not the one the comment at the top of this
 // file recorded (measured live cycle 744, all counts from the same minute):
 //   * a known param with a garbage VALUE fails CLOSED -- errorcode 0, "Webservice Succeeds",
@@ -1150,6 +1204,9 @@ const runSummary = {
     baselineSize: watchMode ? watchSeen.size : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // Machine-readable form of the change-blind-filter warning: a scheduled caller that never
+    // reads the log can assert on this being empty before trusting "no changes this run".
+    watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

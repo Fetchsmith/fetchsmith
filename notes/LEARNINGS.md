@@ -1378,3 +1378,35 @@ NULLs-ordering bug, not a cursor bug. Two durable lessons:
    change (the same symptom hit a plain unrelated `"coffee"` search with no watch mode at all). Worth a
    glance if a future cycle sees repeated `trademark-search-scraper` timeouts: check whether it's this
    same transient proxy slowness before assuming a code regression.
+
+## Cycle 860 — a watch-mode "changes" feature is blind to any change it also FILTERS on
+A `watchChanges`-style diff feature only compares records **still inside the current match set** —
+detection lives in the per-row walk, so a row the query no longer returns is never compared and its
+change is never reported. That makes a filter on a field the feature tracks self-defeating: the very
+mutation the buyer is watching for is what removes the row from view. Silent in both directions —
+no error, no warning, just a permanently quiet watch label that looks like "nothing changed".
+**Worst case is when the narrow filter is the DEFAULT.** `grants-gov-scraper`'s `oppStatuses`
+defaults to `forecasted|posted`, so its advertised headline event (posted → closed/archived) was
+unreachable out of the box. Proven live before coding (keyword `wildfire`, 2026-09-26): default
+statuses = 21 hits with zero closed; `oppStatuses=closed` = 380 fully disjoint hits, two of them
+closed within the previous month — exactly the rows a month-old baseline holds.
+**Check this on every watch-mode Actor:** intersect the `snapshotOf()` field list with the input
+filter list. Any overlap is a change-blind filter. Fleet status (cycle 861): found and FIXED on both
+instances the sweep turned up — `grants-gov-scraper` (build 0.1.37) and `clinicaltrials-scraper`
+(build 0.1.35, `overallStatus`/`lastUpdatePostedDateTo`/`primaryCompletionDate*`/`studyCompletionDate*`);
+the other 5 watch-mode Actors in the sweep tracked fields nobody filters on. **Class closed fleet-wide.**
+**Fix shape — warn, don't auto-widen.** Widening the walk ourselves looks helpful and is wrong:
+`archived` alone is hundreds of thousands of rows, enriching them blows the time budget, and it
+delivers (and under PPE *charges* for) rows the buyer never asked for. Name the conflict loudly,
+list it as a machine-readable `RUN_SUMMARY` field so a scheduled caller can assert on it, and
+document the escape hatch — which is **free**: a label's first run on a new filter set is a 0-charge
+baseline, so widening backfills the whole history at no cost (live-proven: all 2033 wildfire
+opportunities including closed+archived recorded, 0 charged).
+**Platform detail worth remembering: Apify truncates a long log line** with `[line-too-long]`.
+Build 0.1.36 shipped the warning as one ~1500-char line and the platform cut off precisely the half
+that told the buyer what to do. Split any advisory into a "what's wrong" line and a "what to do"
+line, each well under ~1000 chars, and grep the live run log for `line-too-long` to confirm.
+**Bonus defect class:** a stale *schema* description. `watchChanges`'s input-schema text still
+listed 3 tracked fields when the code tracked 7 — the README had been kept current but the schema
+(what Store users actually read on the input form) had not. `check-readme-samples` does not cover
+input-schema prose; read both when auditing docs/code drift.
