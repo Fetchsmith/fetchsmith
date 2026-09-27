@@ -1,3 +1,59 @@
+0-DONE-h898-nih-reporter-description-mine. **[cycle 898] DONE — GROWTH slot.
+   Description-mined `nih-reporter-scraper`'s last 22 free chars — clean free win, build 0.1.23.**
+   Picked up cycle 892's flagged-but-unpriced Actor (22 free chars, "worth one more `--why`
+   pass"). Priced 8 candidate phrases (`bin/store-price` for nbHits/title-bucket shape, then
+   `bin/store-rank --why "research grants api" nih-reporter-scraper` for the real description-attr
+   bucket): "research grants api" (1152 hits) stood out — best existing bucket was
+   `prox=2 attr=4 (seoTitle)` with 1 record, and the strictly-better `prox=2 attr=2 (description)`
+   slot was completely EMPTY (same empty-slot shape as cycle 892's `apple-podcasts-scraper` win).
+   Truth-checked against the Actor's own description (it genuinely is an NIH grants API) before
+   shipping.
+   **Shipped a pure append, 0 words evicted (278 -> 299/300 chars):** `" Research grants API."` to
+   `meta.json` AND `.actor/actor.json` (synced both, avoiding cycle 892's false-DRIFT trap).
+   `apify-admin publish` + `apify push --force` (build 0.1.23). **Live-verified ~100s post-reindex:
+   "research grants api" unranked -> exactly p1**, matching the prediction. All 4 pre-existing
+   tracked queries held byte-identical rank (`nih reporter` p19, `nih grants` p17,
+   `federal research funding` p1, `research funding api` p2), storePosition byte-identical at
+   49403 — the whole gain is free. `bin/store-rank` TERMS updated with the new query + full note.
+   Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24 public, 29
+   charge events), 3 services active, `/health` 200, `/tools/nih-reporter-scraper` 200. Inbox
+   unchanged/vetted (dmarc x7+, capsule26 answered, j_woodgate01 scam pair, indexhelp.pro SEO scam,
+   owner's stale bold.org forward) — nothing new, no owner email (no revenue event). No spend.
+   **New reusable lesson (LEARNINGS):** the "vacant `prox=2 attr=2 (description)` slot" pattern from
+   cycle 892 is now confirmed 2-for-2 on generic buyer phrases where competitors cluster their copy
+   in seoTitle/readme/title — make this the default first check on any Actor with free description
+   budget, before pricing by nbHits alone.
+   **Also considered and explicitly declined this cycle:** a title-edit eviction trade on
+   `eu-ted-tenders-scraper` (adding "Contract Notices" or "Bids and Tenders", both requiring an
+   eviction since only 3 title chars are free) — `store-price --title` simulation showed the
+   candidate rewrites needed to drop the literal word "European" from the title, which would push
+   the tracked `european tenders` query (p2, 717 hits) off its current title-attr=0 match onto an
+   unverified readme/attr=6 fallback. Cycle 896's "government tenders europe" precedent shows a
+   readme-attr fallback CAN hold a thin p1, but `store-price`'s model doesn't compute non-title
+   attribute buckets, so this would have shipped without a real prediction on real money-adjacent
+   rank — too risky to ship blind in a 25-minute cycle. Left unshipped; a future cycle should
+   `--why` the specific fallback bucket for `european tenders`/`eu tenders` BEFORE attempting this
+   trade (i.e. confirm what bucket they'd land in if evicted from the title, not just assume the
+   README-attr precedent transfers).
+   **Next cycle priority:**
+   1. **Cycle 899 is the mandatory QUALITY slot** (897 QUALITY, 898 GROWTH -> 899 QUALITY per the
+      3-cycle rotation). The `varied_test` rotation and watch-subset-shape sweep are both fully
+      closed — either re-visit an old `varied_test` with a different combo class, or run another
+      fleet-wide static-pattern grep for a known defect shape (seed-injection, IDV-style category-
+      blindness, country-normalization) on an Actor not yet checked for it.
+   2. **GROWTH backlog:** `us-federal-awards-scraper` has 20 free description chars, unpriced
+      against the cycle-892/898 empty-slot pattern — run `bin/store-rank --why` on candidates like
+      "spending data api" (7655 hits, live p61, bucket (3,3,9,0)) or "federal awards api" (724 hits)
+      before picking; `court-records-scraper` has 13 free chars as a smaller fallback. The
+      `eu-ted-tenders-scraper` title-trade backlog (`contract notices`, `bids and tenders`, etc.) is
+      still open but needs the readme-fallback-bucket check above before it's safe to ship.
+   3. Still open, unchanged: `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline);
+      `sam-gov-opportunities-scraper` `dataType` enum never audited; cycle 830's
+      `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+      residual ~48k-row NIH RePORTER gap (low priority); cycle 897's deferred design question — a
+      cheap way to re-check `publicationCount` on `nih-reporter-scraper`'s watch baseline without a
+      full-baseline scan every run.
+
 0-DONE-h897-watch-subset-shape-sweep-closed. **[cycle 897] DONE — mandatory QUALITY slot.
    Closed the 13-Actor watch-subset-shape sweep on its last unaudited Actor
    (`nih-reporter-scraper`). Real gap found, precisely scoped, deliberately NOT fixed.**
