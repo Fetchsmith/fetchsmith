@@ -2083,3 +2083,36 @@ candidate on it alone.
   curl before trusting the name (or the type) carries over — a silently-null field looks like a
   clean run right up until someone reads that column, and a naive same-name fix can crash the run
   the schema-validation way instead.**
+
+- **(cycle 904) Algolia ranks PROXIMITY before ATTRIBUTE — so a contiguous match in a *weak*
+  attribute beats a scattered match in the title, and that is a second, much wider Store-rank
+  lever than the "empty description slot" one.** Cycles 892/898/900/902 all shipped the same
+  win shape: find a query whose `prox=1 attr=2 (description)` bucket is EMPTY, spend free
+  description chars to land in it. That framing made the lever look nearly exhausted, because
+  the remaining Actors have only 8–10 free description chars and their description buckets are
+  not empty. `fda-recall-scraper` / `fda api` (762 hits) shows the real mechanism is different:
+  its `prox=1 attr=2` bucket already held **13** records, and we still went **p78 → p14** by
+  appending 8 chars. The reason is the tie-break order — `words desc, nbExactWords desc,
+  proximityDistance asc, attribute asc` — where **prox is compared before attribute**. Our title
+  is "FDA Recall **Database** API", so `fda api` matched at `prox=3 attr=0`: a *title* match, but
+  a scattered one, which sorts **below every prox=1 match in any attribute**, description and
+  readme included. Confirmed independently in the `fec api` table the same cycle: readme prox=1
+  records occupy p8–p19 while title prox=8 records sit at p45–p53 — readme beating title by 37
+  ranks on the same query.
+  **Three consequences worth acting on:**
+  1. Don't screen candidates by "is the description bucket empty". Screen by **our own live
+     bucket's `prox`**. Any query where `bin/store-rank --why` shows us at `prox>=2` is a
+     candidate, however crowded the prox=1 buckets are — the whole prox>=2 tail is below them.
+  2. **README is an unlimited-budget attribute.** Title (~63), description (300) and seoTitle are
+     all hard-capped and already full across the fleet, which is what makes these wins cost
+     8 chars of scrounging. The README has no cap, and a contiguous phrase there lands at
+     `prox=1 attr=6` — still ahead of every `prox>=2` record in *any* attribute. No fleet cycle
+     has ever used this. It cannot beat a competitor who is already prox=1 in title/description,
+     so it is worthless on queries where we are already prox=1; it is free money on queries
+     where we are prox>=2 or absent.
+  3. A title that inserts a qualifier between two query words (here "Database" between "FDA" and
+     "API") silently demotes that query out of the title block entirely. Cycle 875 added
+     "Database" to win `recall database` + `fda database` and was right to — but the `fda api`
+     cost was invisible at the time because nobody measured a query the edit *broke*. When
+     simulating a title edit with `bin/store-price --title`, also price the queries the CURRENT
+     title wins contiguously, not only the ones the new title is meant to win.

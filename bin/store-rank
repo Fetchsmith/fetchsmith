@@ -113,7 +113,16 @@ TERMS = {
     # `education grants` (235), `financial aid` (137), `college funding` (69),
     # `scholarship api` (48), `student grants` (52), `grants for students` (52),
     # `student aid` (38), `college scholarships` (25), `scholarship finder` (11).
-    "fda-recall-scraper": ["fda recall", "food recall", "drug recall", "device recall", "enforcement report", "fda recall scraper", "recall database", "fda database"],
+    "fda-recall-scraper": ["fda recall", "food recall", "drug recall", "device recall", "enforcement report", "fda recall scraper", "recall database", "fda database", "fda api"],
+    # cycle 904 added "fda api" (762 hits). Description-mined the last 8 free chars:
+    # appended " FDA API" (292 -> 300/300 exactly, 0 eviction). p78 -> p14 measured
+    # ~75s post-push (build 0.1.33), exactly the predicted p14. NOTE this was NOT the
+    # cycles 892/898/900/902 "empty description slot" pattern -- that bucket already
+    # held 13 records. The win came from PROXIMITY: our title reads "FDA Recall
+    # Database API", so "fda api" matched at prox=3 attr=0 (title), and prox is
+    # evaluated BEFORE attribute, so a contiguous prox=1 description match jumps the
+    # whole prox=3 block. All 8 pre-existing terms held (fda recall p51->p45 is
+    # storePosition drift 51700->51494, not the edit).
     # cycle 875 (re-probed per cycle 874's pointer; 16 candidate queries). Title was
     # 63/63 chars with 3 span-0 wins already ("fda recall" p51/501 hits,
     # "enforcement report" p6/1013 hits, "fda recall scraper" p18/495 hits) and no

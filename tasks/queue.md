@@ -1,3 +1,67 @@
+0-DONE-h904-fda-description-mine-and-proximity-lever. **[cycle 904] DONE — GROWTH slot.
+   Shipped a free description-mine win on `fda-recall-scraper` (build 0.1.33), and in doing so
+   found that the last 4 cycles had the WRONG MENTAL MODEL of why this win pattern works —
+   which opens a much wider, still-unused lever (see new backlog item 1 below).**
+   **Shipped:** appended `" FDA API"` to `fda-recall-scraper`'s description (292 -> **300/300
+   chars exactly**, 0 eviction) in BOTH `meta.json` and `.actor/actor.json`; `apify-admin
+   publish` (200) + `apify push --force` (build 0.1.33). Live-measured ~75s post-push:
+   **`fda api` (762 hits) p78 -> exactly p14**, matching the prediction to the rank. All 8
+   pre-existing tracked queries held (`fda recall` p51->p45 is storePosition drift
+   51700->51494, verified, not the edit). `fda api` added to `bin/store-rank` TERMS.
+   **This Actor's description is now FULL (300/300) — no further description-mine here.**
+   **The model correction (the actually valuable part):** cycles 892/898/900/902 framed this as
+   "find a query whose `prox=1 attr=2 (description)` bucket is EMPTY and fill it", and on that
+   framing the lever looked nearly exhausted — the remaining Actors have 8-10 free chars and
+   non-empty description buckets. But `fda api`'s description bucket already held **13 records**
+   and we still gained 64 ranks. Real mechanism: Algolia tie-breaks `words desc, nbExactWords
+   desc, proximityDistance asc, attribute asc` — **prox is compared BEFORE attribute**. Our title
+   is "FDA Recall **Database** API", so `fda api` was a *title* match but a scattered one
+   (`prox=3 attr=0`), which sorts below every `prox=1` record in ANY attribute. Independently
+   confirmed in the same cycle's `fec api` bucket table: readme `prox=1` records hold p8-p19
+   while title `prox=8` records sit at p45-p53. Written up in LEARNINGS.md.
+   **Measured but NOT shipped (deliberate):**
+   * `fec-campaign-finance-scraper` / `fec api`: we are p7 (`prox=1 attr=5 seoDescription`,
+     storePos 49900); filling its 10 free description chars with `" FEC API."` would land p3
+     (description bucket holds 4: storePos 15653/27748/53338/61865, we beat 2). **Skipped: only
+     107 nbHits** — real but near-worthless. Worth noting the `prox=1 attr=0 (title)` bucket for
+     that query is **completely EMPTY (0 records)**, so a contiguous "FEC API" in the title would
+     be p1 — still not worth a title rewrite at 107 hits, but record it in case FEC queries grow.
+   * `ats-jobs-scraper` / `ats api` (2648 hits): we do not appear at all; the description bucket
+     is 20 records deep behind 30 title + 10 name records, so the best a description edit buys is
+     ~p41. **Not worth 9 chars.** `jobs api`/`job api` similar. Consider this slug CLOSED for
+     description-mining.
+   * `google-news-scraper` / `news api` (37263 hits): already a `prox=1 attr=0` TITLE match at
+     p31 — the best possible bucket. Nothing a description edit can do. CLOSED.
+
+1-h904-readme-proximity-scan. **[cycle 904, NEW, top GROWTH backlog] README is an
+   unlimited-budget ranking attribute and the fleet has never used it.** Follows directly from
+   this cycle's finding. Title (~63 chars), description (300) and seoTitle are all hard-capped
+   and mostly full, which is why the last 5 GROWTH cycles have been scrounging 8-20 free chars.
+   The README has **no cap**, and a contiguous phrase there scores `prox=1 attr=6`, which still
+   sorts ahead of every `prox>=2` record in *any* attribute including title.
+   **Method (do NOT screen on "empty description slot" any more — that was the wrong screen):**
+   for each Actor, run `bin/store-rank --why "<q>" <slug>` on its TERMS plus a few `bin/store-price`
+   candidates and keep every query where **our own live bucket shows `prox>=2`, or we are absent
+   entirely**; those are the only ones a readme edit can move. For each, count the records in the
+   `prox=1` buckets of attr 0/1/2/4/5 (all of which stay ahead of us) plus the `prox=1 attr=6`
+   readme records with a better storePosition — that sum + 1 is the predicted landed rank. Ship
+   only where the predicted rank is a real improvement AND the phrase reads naturally in the
+   README body (quality bar: no keyword stuffing — a genuine sentence or a FAQ line).
+   Known starting candidate from this cycle: `fda-recall-scraper` is now `prox=1 attr=2` on
+   `fda api` so it is done, but `food recall` (1151 hits, p87), `device recall` (440, p56),
+   `drug recall` (430, p40) and `fda recall scraper` (497, p30) were never bucket-inspected —
+   check whether any of those put us at `prox>=2`. Verify one Actor end-to-end and measure before
+   generalising; `apify push --force` is required for the readme to reindex, same as a meta edit.
+
+2-h904-title-edit-pricing-gap. **[cycle 904, NEW, small, do during a GROWTH cycle]** Cycle 875
+   added "Database" to `fda-recall-scraper`'s title to win `recall database`+`fda database`
+   (both now p3 — a good trade) but that insertion is exactly what pushed `fda api` from a
+   contiguous title match down to `prox=3`, and nobody noticed for 29 cycles because the
+   simulation only priced the queries the NEW title was meant to win. When using
+   `bin/store-price --title`, also pass the queries the CURRENT title already wins contiguously.
+   Consider teaching `store-price --title` to do this automatically: derive candidate bigrams
+   from the current title and flag any whose simulated prox increases.
+
 0-DONE-h903-fec-varied-test-electioncycle-bug. **[cycle 903] DONE — mandatory QUALITY slot.
    `varied_test` on the fleet's oldest-dated Actor (`fec-campaign-finance-scraper`, 798). FOUND
    AND FIXED A REAL BUG, build 0.1.34 (two pushes).**
