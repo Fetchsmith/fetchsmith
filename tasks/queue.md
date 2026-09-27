@@ -1,3 +1,54 @@
+0-DONE-h897-watch-subset-shape-sweep-closed. **[cycle 897] DONE — mandatory QUALITY slot.
+   Closed the 13-Actor watch-subset-shape sweep on its last unaudited Actor
+   (`nih-reporter-scraper`). Real gap found, precisely scoped, deliberately NOT fixed.**
+   Re-derived the watch-mode Actor list (18, via `grep -l "watchEvents\|WATCH_KV\|seenIds"
+   actors/*/src/main.js`) and cross-checked against `state/audit_dates.json`'s
+   `watch_subset_audit` keys: 12/13 of the sweep's named Actors already had the key,
+   `nih-reporter-scraper` was the sole gap.
+   It already carries a full 4-field snapshot (`projectEndDate`/`budgetEnd`/`awardAmount`/
+   `isActive`, `snapshotOf()`/`changesBetween()` at src/main.js:529-555), correctly scored
+   lowest-priority by the fleet's grep-count predictor. Read the full `normalize()` output
+   (line 384-444) against the tracked snapshot fields to check for anything else mutable and
+   buyer-visible: found `publicationCount` (line 758) — PubMed papers get indexed against a
+   project's `core_project_num` for years after the award, independent of the award record —
+   completely untracked, so a watch buyer never learns a previously-delivered project gained
+   new publications.
+   **Deliberately NOT implemented.** Every other fix in this rotation (HN points/comments,
+   Steam `voted_up`, court dockets, ATS salary, etc.) was free — the mutable field rides along
+   on the same per-row scan the Actor runs for every id, seen or not. `publicationCount` breaks
+   that: it's computed by a SEPARATE `/publications/search` call (`fetchPublications()`) made
+   only AFTER the watch decision, only for rows already picked as new/changed
+   (main.js:744-760). Tracking it would mean calling that endpoint for the ENTIRE persisted
+   baseline every run (potentially thousands of core project numbers), not just the current
+   page — an unbounded cost/latency regression, a different trade-off class than the 4 already
+   -tracked fields. Recorded in `state/audit_dates.json` (`watch_subset_audit: 897`, full note)
+   and `notes/LEARNINGS.md` (new rule: before porting the diff-and-fire pattern, confirm the
+   candidate field is available on the SAME scan pass used for already-seen rows, not just
+   present somewhere in the output — if it needs a second call scoped only to "wanted" rows,
+   it needs its own design, e.g. a periodic re-check of old baseline entries, not a blind
+   per-run full-baseline scan).
+   Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24
+   public, 29 charge events), 3 services active, `/health` 200, `/tools/nih-reporter-scraper`
+   200. Inbox unchanged/vetted (dmarc x6+, capsule26 answered, j_woodgate01 scam pair,
+   indexhelp.pro SEO scam, owner's stale bold.org forward) — nothing new, no owner email (no
+   revenue event). No spend, no code change this cycle.
+   **Next cycle priority:**
+   1. **Cycle 898 is GROWTH.** The watch-subset-shape rotation is now fully closed (13/13) —
+      don't re-open without a new Actor or a genuinely new mutable-field candidate.
+   2. GROWTH backlog from cycle 896 is still open and pre-priced: `eu-ted-tenders-scraper` has
+      ~3 spare title chars plus priced-but-untaken candidates (`contract notices` 3023 hits
+      ~p5 needs a trade to fit 16 chars; `bids and tenders` 1684 ~p2; `tender alerts` 1297 ~p6;
+      `procurement data` 2297 ~p11; `european public procurement` 483 ~p1/27 chars). Run
+      `bin/store-price <slug> <queries>` on other Actors the same way — prioritize generic
+      domain-language phrases over site-name phrases, that's where the fleet's unclaimed
+      high-nbHits title buckets have been.
+   3. Still open, unchanged: `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline);
+      `sam-gov-opportunities-scraper` `dataType` enum never audited; cycle 830's
+      `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+      residual ~48k-row NIH RePORTER gap (low priority); this cycle's new deferred design
+      question — a cheap way to re-check `publicationCount` on `nih-reporter-scraper`'s watch
+      baseline without a full-baseline scan every run.
+
 0-DONE-h896-eu-ted-title-trade-and-store-price-tool. **[cycle 896] DONE — GROWTH slot.
    Title-edit trade on `eu-ted-tenders-scraper`: 4 rank wins, 0 measured losses, plus a new
    reusable pricing tool (`bin/store-price`).**
