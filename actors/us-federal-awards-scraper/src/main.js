@@ -252,6 +252,26 @@ if (expiringAfterDays != null && expiringWithinDays != null && expiringAfterDays
 if (expiringWithinDays != null && isSubaward) {
   log.warning('"expiringWithinDays"/"expiringAfterDays" only apply in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date. Ignoring.');
 }
+// Categories whose rows carry no period-of-performance end date at all, so the client-side
+// expiring filter below can never keep one: loans have no "End Date" in the API's own loan
+// field mapping, and IDVs do request it but USAspending returns null for every single one
+// (live-verified cycle 884: 10/10 IDVs, 4 agencies, start years 2008-2025, all endDate null).
+// Warn up front rather than returning a silent zero -- same rule as the subaward warning above.
+const NO_END_DATE_CATEGORIES = new Set(['idvs', 'loans']);
+if (expiringWithinDays != null && !isSubaward) {
+  const blind = categories.filter((c) => NO_END_DATE_CATEGORIES.has(c));
+  const usable = categories.filter((c) => !NO_END_DATE_CATEGORIES.has(c));
+  if (blind.length) {
+    log.warning(
+      `"expiringWithinDays" can never match award categor${blind.length > 1 ? 'ies' : 'y'} [${blind.join(', ')}] `
+      + '-- USAspending reports no period-of-performance end date for those, so every such row is dropped. '
+      + (usable.length
+          ? `Only [${usable.join(', ')}] can match this run.`
+          : 'That is every category you selected, so this run will return zero rows: drop "expiringWithinDays", '
+            + 'or add a category that does carry an end date (contracts, grants, direct_payments, other_financial_assistance).'),
+    );
+  }
+}
 const includeOpportunityScore = Boolean(input.includeOpportunityScore);
 if (includeOpportunityScore && isSubaward) {
   log.warning('"includeOpportunityScore" only applies in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date to score recompete urgency from. Ignoring.');
@@ -960,7 +980,7 @@ if (pushed === 0 && !watchMode) {
             : '')
         + (expiringWithinDays != null
             ? ` (${isSubaward ? 6 : 5}) "expiringWithinDays"=${expiringWithinDays}${expiringAfterDays != null ? ` with "expiringAfterDays"=${expiringAfterDays}` : ''} `
-                + 'is a narrow window and only counts contracts/grants/IDVs (not loans, which report no period-of-performance end date) — try widening it or dropping it to confirm awards exist at all first.'
+                + 'is a narrow window and only counts categories that report a period-of-performance end date — contracts, grants, direct payments and other financial assistance, but NOT IDVs or loans, which report none and are always dropped. Try widening it or dropping it to confirm awards exist at all first.'
             : ''),
     );
 }

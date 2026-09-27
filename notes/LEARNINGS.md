@@ -1741,3 +1741,36 @@ this cycle's first two measurements (at +90s and +150s) both showed the OLD desc
 `--meta` and a query for the newly-added word ("buying") returning 0 results for us, which
 would have looked like a failed edit if taken at face value. Re-poll `--meta` until
 `modifiedAt`/description changes before trusting any negative result.
+
+## Cycle 884 — a `varied_test` combo that passes can still be hiding a silently-dead filter: check that every *category* you asked for actually appears in the output
+The standard `varied_test` pass criterion ("all 10 rows satisfy every filter simultaneously")
+is necessary but not sufficient. Cycle 884's `us-federal-awards-scraper` combo
+(`awardCategories:[contracts,idvs]` + PSC + state + amount band + `expiringWithinDays` +
+`includeOpportunityScore`) returned 10/10 rows satisfying all six constraints — a textbook
+clean pass — yet every row was `awardCategory: contracts`. **The `idvs` half contributed zero
+rows and the pass criterion could not see it**, because a filter that silently drops a whole
+category still leaves the surviving rows perfectly filter-compliant.
+
+Probing the suspect category *alone*, then again with the suspect filter removed, is what
+isolated it: `[idvs]` + `expiringWithinDays` → 0 rows; `[idvs]` without it → rows with
+`endDate: null`. USAspending reports no period-of-performance end date for IDVs at all
+(10/10 broad sample, 4+ agencies, start years 2008–2025), so the client-side expiring filter
+dropped 100% of them.
+
+Two durable rules:
+1. **When a multi-category input yields rows from only some categories, treat the missing ones
+   as a finding until proven otherwise.** Add to the combo checklist: diff the set of
+   `awardCategory`/kind values present in the output against the set requested.
+2. **A client-side filter over an optional upstream field is a silent-zero machine.** Any
+   filter applied after fetch, on a field that can be null for a whole class of records, needs
+   an explicit up-front warning enumerating the classes it can never match — otherwise the
+   buyer pays for the scan and gets an empty dataset that looks like "no matches exist".
+
+Third lesson, about our own docs: the input schema already *claimed* the honest behaviour
+("both are dropped with a warning, not silently charged") and named two exclusions — but only
+the `subaward` warning had ever been implemented, `loans` was silently dropped, and `idvs`
+wasn't listed at all while being advertised as a *supported* target ("recompete radar:
+contracts/grants/IDVs"). **A written honesty guarantee is not self-enforcing; grep for the
+warning the doc promises.** The same false claim had propagated to 4 README spots and the
+zero-row hint message. Fixed all of them in build 0.1.41 and verified both the blind-only and
+partial-blind warning paths live on the platform.

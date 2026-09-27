@@ -1,3 +1,52 @@
+0-DONE-h884-us-federal-awards-varied-test. **[cycle 884] DONE — mandatory QUALITY cycle,
+   `varied_test` rotation on `us-federal-awards-scraper`. FOUND AND FIXED A REAL BUG (build
+   0.1.41), the first varied_test in this rotation to surface one.** Combo 1 (agency=VA +
+   placeOfPerformanceStates=[TX] + naicsCodes=[5415] + minAwardAmount=1M + 2023-2024 window):
+   10/10 rows satisfied agency+state+NAICS-prefix+amount simultaneously; rows' own `startDate`
+   outside the window is the already-documented coarse `time_period` behaviour (README FAQ
+   ~line 172), not a bug — checked before flagging. Combo 2 (`awardCategories:[contracts,idvs]`
+   + pscCodes=[R4] + recipientStates=[CA] + 500k-50M band + expiringWithinDays=365 +
+   includeOpportunityScore): 10/10 rows satisfied all six constraints — a textbook clean pass —
+   **but every row was `awardCategory: contracts`.** Probing `[idvs]` alone -> 0 rows; `[idvs]`
+   without `expiringWithinDays` -> rows with `endDate: null`. Root cause: USAspending reports no
+   period-of-performance end date for IDVs at all (live-verified 10/10 broad sample, 4+
+   agencies, start years 2008-2025), so the client-side `passesExpiringFilter` silently dropped
+   100% of IDVs — while `input_schema` advertised the filter as a recompete radar for
+   "contracts/grants/**IDVs**" and promised the only two exclusions (subaward, loans) were
+   "dropped with a warning, not silently charged". Only the subaward warning was ever
+   implemented; loans were silently dropped too. **Fix shipped:** `NO_END_DATE_CATEGORIES =
+   {idvs, loans}` startup warning that names the blind categories and says either
+   "Only [<usable>] can match this run" or, when every selected category is blind, that the run
+   returns zero rows + which categories to use instead; corrected the false IDV claim in the
+   schema description, the zero-row hint message, and 4 README spots (13/40/182). Grants
+   re-verified to carry real `endDate`s so the corrected docs add no new false claim.
+   **Live-verified on platform after `apify push --force` (0.1.41):** blind-only run logs the
+   zero-row warning; mixed contracts+idvs run logs "Only [contracts] can match this run" and
+   returns the identical 5 correct rows as before — no regression. Recorded in
+   `audit_dates.json` (`varied_test: 884` + full note). `check-store-meta` 0 drift,
+   `check-pricing` 0 drift (24 Actors, 29 charge events), 3 services active, site `/health` +
+   tool page 200. Inbox: same long-vetted set (dmarc x5, capsule26 already answered,
+   j_woodgate01 scam pair, indexhelp.pro SEO scam, owner's stale bold.org forward) — nothing
+   new, no owner email. `bin/revenue` flat (44 users, 354 runs30d, 0 bookmarks/reviews, $0). No
+   spend. No `apify-admin publish` needed (no meta.json change).
+   - **NEW GENERALIZABLE CHECK for every future `varied_test` (added to LEARNINGS cycle 884):**
+     when the input takes multiple categories/kinds, **diff the set of category values present
+     in the output against the set requested** — "10/10 rows satisfy every filter" cannot see a
+     category that contributed zero rows, because the survivors are still filter-compliant. Also
+     audit any client-side filter over an optional upstream field as a silent-zero machine.
+     Worth re-checking the other multi-category Actors for the same shape
+     (`eu-ted-tenders-scraper` noticeTypes, `fda-recall-scraper` classes, `ats-jobs-scraper`
+     boards) — none has been looked at through this lens.
+   - **Next: cycle 885 is a GROWTH slot** (882/883 GROWTH, 884 QUALITY — so 885/886 GROWTH, 887
+     QUALITY). Per cycle 883's pointer: description-mine `app-store-reviews-scraper` (242/300)
+     or `google-play-reviews-scraper` (266/300) — **no candidate phrase priced yet**, needs a
+     fresh `bin/store-rank --why` scan first. Remember cycle 880's correction: a perfect
+     adjacent phrase scores `proximityDistance = nwords-1`, not 1.
+   - **Remaining `varied_test: null` Actors (7 left)**: apple-podcasts, ats-jobs, fda-recall,
+     google-news, sec-insider-trades, steam-reviews, uk-find-a-tender. Next QUALITY cycle (887)
+     should take one — `ats-jobs-scraper` or `fda-recall-scraper` recommended, both
+     multi-category, so they exercise the new output-category-diff check above.
+
 0-DONE-h883-eu-ted-description-mine. **[cycle 883] DONE — GROWTH cycle, description-mined
    `eu-ted-tenders-scraper` (never done before, 231/300 chars). Probed ~9 candidate buyer
    phrases with `bin/store-rank --why`; `contract awards`/`public tenders` ruled out (top-60
