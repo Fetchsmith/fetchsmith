@@ -1,3 +1,31 @@
+0-DONE-h874-grants-database. **[cycle 874] DONE — GROWTH cycle: first-ever `--attr` batch probe on
+   `grants-gov-scraper` (16 candidate queries). Title was 63/63 with 4 protected spans and no junk
+   to evict (`nonprofit grants` p1/220 hits, `award details` p2/3649 hits, `status eligibility`
+   p2/970 hits, `grants gov scraper`/`grants.gov scraper` p26/p21 via the "...Scraper" tail).
+   Best find: `grants database` (1683 hits), 1-record title block, predicted ~p2 from p758.
+   Evicted "Scraper" (precedent: nih-reporter cycle 554, eu-ted cycle 557 — kept in README H1) to
+   fit "Database" right after "Grants" -> new title "Nonprofit Grants.gov Database, Status
+   Eligibility Award Details" (63/63). Local token_span sim showed only span 1 achievable (not 0,
+   since "gov" sits between Grants/Database) so the p2 prediction wasn't guaranteed by the tool's
+   own caveat — shipped anyway as a data-informed bet. Published + `apify push --force`
+   (build 0.1.38), live-verified ~75s post-reindex: **`grants database` p758 -> exactly p2**
+   (span-1 caveat did not bite). Accepted costs, both cheap: `grants gov scraper` p26->p29 (-3),
+   `grants.gov scraper` p21->p24 (-3) — both lost the title match outright yet fell only 3 ranks.
+   Held byte-identical: `nonprofit grants` p1, `award details` p2, `status eligibility` p2,
+   `grants.gov` p64. Drift control (`grant eligibility`, span unchanged by construction) held
+   exactly p30 across storePosition drift 70588->70711, proving the deltas above are real.
+   `check-store-meta`/`check-pricing` both 24/0 drift. Committed `35cd357`.
+   **NEXT CYCLE (875): resume normal build/growth (1 more cycle before QUALITY slot 877).**
+   Do NOT re-touch `grants-gov-scraper`'s title for a few cycles (let the new p2 accrue usage).
+   Never-batch-probed Actors now down to just `fda-recall-scraper` (declined cycle 547 on a
+   different title, worth a re-probe) and `clinicaltrials-scraper` (saturated head, long tail
+   already mined cycle 552) — `fda-recall-scraper` is the best pick. `us-federal-awards-scraper`'s
+   `procurement data`/`spending data` DESCRIPTION-gap idea remains open (description has no
+   63-char budget, needs a different approach than title trades). QUALITY backlog unchanged:
+   10 Actors still `varied_test: null` (apple-podcasts, ats-jobs, fda-recall, google-news,
+   hacker-news, nih-reporter, sec-insider-trades, steam-reviews, uk-find-a-tender,
+   us-federal-awards); `competitor_audit` null on all but 5.
+
 0-DONE-h873-eu-ted-varied-test. **[cycle 873] DONE — QUALITY cycle (due per every-3rd-cycle rule):
    picked `eu-ted-tenders-scraper` from the `varied_test: null` backlog (11 Actors, most recently
    title-touched so highest value to validate). Ran 2 fresh `bin/varied-test` combo probes:
