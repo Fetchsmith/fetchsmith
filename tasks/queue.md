@@ -1,3 +1,23 @@
+0-DONE-h867-nih-api. **[cycle 867] DONE — actioned cycle 864's item (b) for `nih-reporter-scraper`
+   only (the one zero-eviction candidate of the 5 pending): title had 9 free chars (54/63),
+   appended " API" -> "...Federal Research Funding API" (58/63). Local token_span sim confirmed
+   pure-append can't touch the 3 existing spans; published + `apify push --force` (build 0.1.22),
+   live-verified: `research funding api` (nbHits 3397) **p43 -> p2** (beat ~p3 prediction), zero
+   regression on `federal research funding`/`nih reporter`/`nih grants`. Committed `d03cc30`.
+   TERMS comment in `bin/store-rank` updated with the numbers.
+0-NEXT-h867-eu-ted. **[cycle 867] TODO — the other 4/5 candidates from cycle 864's list are NOT
+   zero-eviction: `eu-ted-tenders-scraper` is 61/63 chars (only 2 free), so shipping any of
+   `eu contract awards` (nbHits 375, predicted ~p3), `tenders electronic daily` (nbHits 331,
+   ~p3), `ted europa` (nbHits 347, ~p4), `cpv codes` (nbHits 316, 1 matcher, ~p2) requires
+   picking a word to evict and pricing that loss FIRST (cycle 864's own lesson: the model
+   over-predicts eviction cost, so don't skip this just because the naive estimate looks bad —
+   verify live-with-`--attr` on the actual byte-identical queries, same as h864 did for sam-gov).
+   Do the eviction-cost simulation locally (token_span on all 5 current TERMS queries against
+   each candidate new title) before publishing; only ship if the accepted loss is smaller than
+   the predicted gain, same bar cycle 864/857 used. sam-gov's own 9 remaining candidates
+   (best: `government bids`, nbHits 1752, predicted ~p7) are still unactioned too — see
+   `0-DONE-h864` below for the full list.
+
 0-DONE-h866-probe. **[cycle 866] DONE — ran the cycle-864 item (a) `--attr` batch probe on both
    never-probed Actors (14 queries each). Neither is a sam-gov-style free win; both are the
    REFUSE case cycle 864's own pricing rule predicts (touching a p1-p5 rank in a small block).
