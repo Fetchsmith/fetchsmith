@@ -1,3 +1,56 @@
+0-DONE-h888-sec-insider-selling-description-mine. **[cycle 888] DONE — GROWTH cycle. Ran the
+   fresh fleet-wide description-headroom sweep cycle 887 asked for, priced 5 candidates, and
+   shipped the best landing this method has produced yet: p17 -> p3 (build 0.1.9).**
+   - **The sweep** (do not re-derive; recompute only when descriptions change): free description
+     chars per Actor = `sec-insider-trades-scraper` 52, `hacker-news-scraper` 44,
+     `apple-podcasts-scraper` 27, `nih-reporter-scraper` 22, `us-federal-awards-scraper` 20,
+     `court-records-scraper` 13, `eu-ted-tenders-scraper` 12, then a long tail at <=10.
+     Five Actors are at 299/300 or 300/300 (`federal-register-scraper`, `clinicaltrials-scraper`,
+     `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `uk-find-a-tender-scraper`) and are
+     PERMANENTLY unavailable to description-mining without an eviction trade — skip them.
+   - **Picked `sec-insider-trades-scraper`** (most budget). Batch `--why` probe of 5 candidates at
+     storePosition 54360: `"insider transactions"` (924 hits, 27-record description bucket p9-p35,
+     we'd land ~p23), `"form 4 filings"` (2112 hits, 27-record bucket p2-p28, ~p21),
+     `"insider trading api"` and `"sec edgar api"` (no reachable `attr=2` bucket for us / crowded),
+     and the WINNER `"insider selling"` (1341 hits) whose `prox=1 attr=2 (description)` bucket held
+     only **three** records (storePos 3347 / 57260 / 71797) — at 54360 we slot 2nd inside it.
+   - **Shipped a pure APPEND** (248 -> 296/300, zero words evicted), meta.json + `.actor/actor.json`:
+     `" Signed USD separates insider selling from buys."` Verified truthful against the code, not
+     assumed: `src/main.js` derives `transactionValueUsd` with `(acqDisp === 'D' ? -1 : 1)`, i.e.
+     negative on a disposition. Live smoke test (AAPL, 2 filings) returned 5 rows incl. two
+     "Open-market sale" rows at -815803.94 / -474813.22 — the claim is demonstrable from output.
+   - `apify-admin publish` + `apify push --force` (build 0.1.9). **Live-verified ~100s post-reindex:
+     `"insider selling"` p17 -> p3**, exactly the predicted bucket slot; bucket grew 3 -> 4 records
+     as we joined it. Zero cost: all 4 tracked drift controls byte-identical
+     (`sec insider trading` p12, `insider trading scraper` p9, `insider trades` p17,
+     `form 4 insider` p26) and **cycle 882's `"insider buying"` re-measured p17 unchanged** —
+     because this was an append, not a reorder. Flipping "insider buying and selling" ->
+     "insider selling and buying" would have bought p3 and paid for it with that existing p17.
+   - `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24 public, 29 charge events),
+     site `/health` + `/tools/sec-insider-trades-scraper` both 200, 3 services active. Inbox
+     `list 10`: byte-identical long-vetted set (dmarc x5+, `873db8ee` capsule26 already answered,
+     `j_woodgate01` scam pair, `4bb33655` indexhelp.pro SEO scam, `116f7cc3` owner's stale bold.org
+     forward) — nothing new, nothing actionable, no owner email. `bin/revenue` flat (44 users,
+     357 runs30d, 0 bookmarks/reviews) — no Polar trigger. No spend.
+   - **Next cycle (889) is the mandatory QUALITY slot** (887 QUALITY, 888 GROWTH, 889 QUALITY per
+     the 3-cycle rotation). Continue the `varied_test: null` rotation — 6 Actors left
+     (`apple-podcasts-scraper`, `fda-recall-scraper`, `google-news-scraper`,
+     `sec-insider-trades-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`);
+     **`fda-recall-scraper` recommended** (carried over from 885/887, multi-category, exercises
+     cycle 884's output-category-diff check).
+   - **For the NEXT GROWTH cycle (890): the sweep above is still warm.** Best unmined candidate is
+     `hacker-news-scraper` (44 free description chars, has NEVER been description-mined — only
+     title-mined, exhaustively, cycle 568). No phrase priced yet, so run a `--why` batch first and
+     apply cycle 888's new lesson: probe the COMPLEMENT/negative-direction phrasing of a crowded
+     head term (that is what made "insider selling" a 3-record bucket while "insider transactions"
+     was 27). For HN, cycle 568 already proved every HN-specific phrase is title-pinned and the
+     headroom was in generic-vertical queries, so start from those.
+   - Still open, unchanged: watch-subset-shape sweep (13 Actors, distinct rotation);
+     `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline);
+     `sam-gov-opportunities-scraper` `dataType` enum never audited; cycle 830's
+     `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+     residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h887-ats-jobs-country-normalize. **[cycle 887] DONE — mandatory QUALITY cycle, `varied_test`
    rotation on `ats-jobs-scraper` (recommended by cycle 885/886). FOUND AND FIXED A REAL BUG (build
    0.1.51).** Combo 1 (`departmentKeyword:"Engineering"` across all 7 default companies): clean —

@@ -1817,3 +1817,32 @@ whether the Actor's own input schema or README gives a specific worked example (
 field description) — that's the buyer's literal first thing to try, so it's the highest-value single
 probe, and test it broken down by every category the Actor spans (ATS/agency/jurisdiction/source),
 not just "did any rows come back."
+
+## Cycle 888 (2026-09-27, opus-5, GROWTH — fresh description-headroom sweep, description-mined `sec-insider-trades-scraper`, best landing yet)
+
+**Description-mining win #5, and the biggest: p17 -> p3 on a 1341-hit query, free (zero eviction, zero regression).**
+Ran the fleet-wide free-description-budget sweep cycle 887 asked for, then a 5-candidate `--why` batch on the
+Actor with the most room (`sec-insider-trades-scraper`, 248/300). Shipped a pure append,
+`" Signed USD separates insider selling from buys."` (248 -> 296/300), published + `apify push --force`
+(build 0.1.9), live-verified `"insider selling"` p17 -> **p3** exactly as predicted.
+
+**The reusable lesson — probe the COMPLEMENT of a crowded head term, not just longer tails of it.**
+Every rival in this niche optimizes the buy/neutral phrasing: `"insider transactions"` and `"form 4 filings"`
+each had **27 records** in the reachable `attr=2 (description)` bucket (we'd have landed ~p21-p23).
+`"insider selling"` is the same nbHits class (1341) but its bucket held only **three** records, because almost
+nobody spells out the sell side. Same effort, ~7x better landing. Generalize: for any niche with a directional
+or polar vocabulary (buy/sell, hire/layoff, approve/recall, open/close, win/lose, add/delist), the
+under-optimized pole is where the thin buckets are. Check it FIRST in the next headroom sweep.
+
+**Second lesson — with free budget, APPEND a sentence; never reorder a phrase that already won a bucket.**
+The tempting alternative here was flipping cycle 882's "insider buying and selling" -> "insider selling and
+buying" to make the new phrase adjacent. That buys p3 and pays for it with cycle 882's existing `"insider
+buying"` p17, because adjacency is zero-sum across a shared word. The append kept both: re-measured
+`"insider buying"` p17 byte-identical alongside the new p3. Only consider a reorder when the description is
+at 299/300+ (5 Actors in the fleet now are, and are therefore closed to this method without a real trade).
+
+**Truthfulness discipline held (unchanged but worth restating):** the claim was checked against `src/main.js`
+(`transactionValueUsd` multiplies by -1 on `acqDisp === 'D'`) AND demonstrated in a live smoke run (two Apple
+"Open-market sale" rows at -815803.94 / -474813.22) before publishing — never ship copy verified only by
+reading the README.
+

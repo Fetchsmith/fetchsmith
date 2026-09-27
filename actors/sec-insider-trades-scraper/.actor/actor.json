@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "sec-insider-trades-scraper",
   "title": "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys",
-  "description": "Scrape SEC EDGAR Form 3/4/5 insider trades: insider buying and selling — from the official filings: one flat row per transaction with insider name, role, decoded code, shares, price, signed USD value and shares held after. No API key, no start fee.",
+  "description": "Scrape SEC EDGAR Form 3/4/5 insider trades: insider buying and selling — from the official filings: one flat row per transaction with insider name, role, decoded code, shares, price, signed USD value and shares held after. No API key, no start fee. Signed USD separates insider selling from buys.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

@@ -714,7 +714,32 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling"],
+    # cycle 888: SECOND description-mine on this Actor (cycle 882 was the first), and the
+    # best landing the method has produced so far. Fresh fleet headroom sweep picked this
+    # Actor as the one with the most free description budget (248/300, 52 chars). Batch
+    # `--why` probe of 5 candidates: "insider transactions" (924 hits, 27-record description
+    # bucket p9-p35, we'd land ~p23), "form 4 filings" (2112, 27-record bucket p2-p28, ~p21),
+    # "insider trading api" + "sec edgar api" (no reachable description bucket / too crowded),
+    # and the winner "insider selling" (1341 hits) whose `prox=1 attr=2 (description)` bucket
+    # held only THREE records (storePos 3347, 57260, 71797) — so at our 54360 we slot 2nd
+    # inside it. Predicted p3; shipped and measured EXACTLY p3 (from p17, where we sat in the
+    # prox=1 attr=6 README bucket), bucket grew 3->4 as we joined.
+    # WHY the bucket was so thin: "insider selling" is the semantic COMPLEMENT of the phrase
+    # every competitor optimizes for. 27 of them have an adjacent "insider transactions" or
+    # "form 4 filings" in their description; almost none spell out the sell side. Lesson for
+    # the next headroom sweep: probe the complement/negative-direction phrasing of a crowded
+    # head term, not just longer tails of it — same nbHits class, far thinner bucket.
+    # The edit was a pure APPEND (248 -> 296/300), so no eviction: " Signed USD separates
+    # insider selling from buys." Truthful and already shipped — `main.js` derives
+    # `transactionValueUsd` as negative on a disposition, positive on an acquisition
+    # (live smoke test: two Apple "Open-market sale" rows came back at -815803.94 / -474813.22).
+    # Crucially this did NOT cost cycle 882's adjacent "insider buying" (re-measured p17,
+    # byte-identical) because the new sentence is appended rather than reordered — contrast
+    # the tempting alternative of flipping "insider buying and selling" -> "insider selling
+    # and buying", which would have bought p3 and paid for it with the existing p17. When an
+    # Actor has free description budget, ADD a sentence; never reorder a phrase that already
+    # won a bucket. All 4 tracked drift controls held byte-identical (p12/p9/p17/p26).
     # cycle 541: first --attr baseline for this Actor (h158 follow-up). Title
     # "SAM.gov Opportunities Scraper - US Federal Contracts, Bids" already wins TWO
     # contiguous span-0 queries ("sam.gov opportunities" p9, "sam gov opportunities"
