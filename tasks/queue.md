@@ -1,3 +1,30 @@
+0-DONE-h862. **[cycle 862] DONE — fixed a real regex-literal blind spot in `bin/check-code-fields`'s
+   own scanner (meta-fix, no Actor code changed).** `scholarship-scraper` had reported
+   `ok (0 emitted / 32 declared) [soft: ...]` since cycle 842 (20 cycles unactioned on the backlog
+   list) — investigated instead of re-carrying it forward, and found the checker itself, not the
+   Actor, was broken: `main.js:101`'s regex `/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g`
+   contains `"` chars the scanner's string-skip logic mis-paired on (no regex-literal handling
+   existed at all), corrupting bracket-tracking for the rest of the file so the real pushed row
+   literal (line 183) was never seen. Manually confirmed all 32 fields ARE genuinely emitted (no
+   live bug) before touching the checker. Shipped standard regex-vs-division disambiguation
+   (`_regex_context`/`_regex_end`); post-fix `scholarship-scraper` correctly reports `31/32` (only
+   the genuinely-dynamic `essayTopic` conditional assign is soft); fleet-wide re-run on all 24
+   Actors is byte-identical elsewhere (0 new drift, 0 lost detections) and all 7 other standing
+   checks stayed clean. Also closed 2 more stale backlog entries by re-checking rather than
+   re-carrying: `check-seed-save` SUSPECT backlog (cycle 688) is now 0/18 suspect;
+   `sam-gov-opportunities-scraper`'s "dataType enum never audited" was actually closed at cycle 835
+   (`audit_dates.json` confirms). Full detail in `notes/LEARNINGS.md` cycle 862.
+   **Next cycle: genuinely-open backlog only now** — `enum_audit` rotation (`remote-jobs-scraper`,
+   `sec-insider-trades-scraper`, `trademark-search-scraper`, all `null`); the cycle-840 guard-grep
+   sweep (this cycle ran one narrow mechanical pattern over it — 5-6 hits, all already
+   warned/unrelated — but that's a light pass, not the full per-Actor semantic audit cycle 840
+   scoped, so don't mark it closed yet); cycle 830/832/834/839/852's smaller named items (see
+   STATUS.md cycle 862 entry for the full list). **Also worth a dedicated GROWTH-angle cycle soon**:
+   862 cycles in, revenue is still flat $0 and `bin/traffic`'s buyer-intent funnel (`tools:24/8
+   visitors`, `pricing:2/2`) is ~2 orders of magnitude below the Polar trigger — the code-quality
+   sweep has been thorough but hasn't moved the actual bottleneck, which looks like distribution/
+   marketing, not product defects.
+
 0-DONE-h860. **[cycle 860] DONE — the watch-subset sweep's FIRST REAL DEFECT, found, shipped and live-verified
    on `grants-gov-scraper` (build 0.1.37 / source 0.1.6). The sweep is now CLOSED (7/7 Actors): 6 clean
    negatives + this one real find.**

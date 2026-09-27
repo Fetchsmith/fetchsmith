@@ -1410,3 +1410,41 @@ line, each well under ~1000 chars, and grep the live run log for `line-too-long`
 listed 3 tracked fields when the code tracked 7 — the README had been kept current but the schema
 (what Store users actually read on the input form) had not. `check-readme-samples` does not cover
 input-schema prose; read both when auditing docs/code drift.
+
+## Cycle 862: `check-code-fields`'s own scanner had a regex-literal blind spot, silently since launch
+
+`bin/check-code-fields` exists specifically to catch an Actor emitting an undeclared dataset field —
+but its `object_literals()` scanner had no concept of a regex literal. A `/regex/` containing a
+quote character (`"`, `'`, or backtick) fell through to the plain-char path, where the scanner's
+generic string-skip logic (designed for real `"..."`/`'...'`/`` `...` `` strings) mis-paired on the
+quote(s) *inside* the regex source text, and any stray `[`/`]`/`{`/`}` char class metacharacter
+caught up in that mis-paired span popped the wrong bracket off the shared `stack`. That corrupts
+frame-attribution for the **rest of the file** — every object literal after the offending regex,
+including the real pushed dataset row, silently stops being recognized as a record shape at all.
+
+Caught on `scholarship-scraper`: a `/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g` regex at
+main.js:101 (React flight-stream parsing) has 2 unbalanced-looking `"` inside it; the checker had
+been reporting `ok (0 emitted / 32 declared) [soft: not in any literal: ...]` — reading as "nothing
+verified yet, but nothing wrong either" — since this Actor's launch. In fact the checker was fully
+blind on this file: **it could not have caught a real code-only-field bug here**, which is exactly
+the defect class this tool exists to prevent. Manually confirmed all 32 fields ARE genuinely emitted
+in the `item = {...}` literal (main.js:183) before touching the checker, so there was no live bug —
+just an unmonitored gap.
+
+**Fix:** added standard regex-vs-division disambiguation (`_regex_context`/`_regex_end` in
+`bin/check-code-fields`) — a `/` immediately after an operator/keyword/start-of-expression opens a
+regex literal (scanned opaquely, `[...]` char class exempted from the closing-slash search, same as
+a real JS tokenizer); a `/` after an identifier/number/`)`/`]`/string is division, untouched. Fleet
+re-run post-fix: `scholarship-scraper` now correctly reports `31/32` (only the genuinely dynamic
+`item.essayTopic = ...` assignment is soft, exactly as expected), and all other 23 Actors are
+byte-identical to their pre-fix output (0 new drift, 0 lost detections) — the bug was silent on
+every other Actor only because none of them happen to have an ambiguous-looking regex ahead of their
+row literal, not because the scanner was otherwise sound.
+
+**Generalizable lesson:** a static analysis tool's own blind spots don't show up as failures — they
+show up as **suspiciously weak positive results that never get re-examined** (`0 emitted`, `n/a`,
+"nothing to report"). `state/STATUS.md`'s carried-forward "still open" backlog list had flagged
+`scholarship-scraper`'s "100%-soft `check-code-fields` result" as unactioned since cycle 842 (20
+cycles) without anyone asking *why* it was 100% soft instead of assuming it meant "clean". When a
+checker's output looks unusually thin compared to its peers on the same fleet, read the checker's
+own source before trusting the result.

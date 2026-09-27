@@ -106,6 +106,70 @@ def binding_of(prefix):
     return found[-1] if found else None
 
 
+REGEX_PRECEDING_OPS = set('([{,;:=!&|?+-*%^~<>')
+REGEX_PRECEDING_KEYWORDS = {
+    'return', 'typeof', 'instanceof', 'in', 'of', 'new', 'do', 'else',
+    'yield', 'throw', 'case', 'delete', 'void',
+}
+
+
+def _regex_context(src, i):
+    """True if the `/` at src[i] opens a regex literal rather than division.
+
+    Cycle 862: scholarship-scraper's `/self\\.__next_f\\.push\\(\\[1,("(?:[^"\\\\]|\\\\.)*")\\]\\)/g`
+    (main.js:101) was never recognized as a regex -- the scanner has no regex handling at
+    all, so it fell through to the plain-char path, where the `"` characters INSIDE the
+    regex triggered the string-skip branch and mis-paired, corrupting `stack`/`frames` for
+    the rest of the file. Every real object literal after that point (including the pushed
+    `item = {...}` record shape at line 183) went undetected, so `check-code-fields` silently
+    stopped verifying this Actor's 32 declared fields and reported them all as unconfirmed
+    "soft" -- there is no way for a real code-only field to have been caught here. Matches
+    the standard regex-vs-division disambiguation: a `/` after an operator/keyword/start-of-
+    expression is a regex; after an identifier, number, `)`, `]`, or a string, it is division.
+    """
+    j = i - 1
+    while j >= 0 and src[j] in ' \t\r\n':
+        j -= 1
+    if j < 0:
+        return True
+    ch = src[j]
+    if ch in REGEX_PRECEDING_OPS:
+        return True
+    if ch.isalnum() or ch in '_$':
+        k = j
+        while k >= 0 and (src[k].isalnum() or src[k] in '_$'):
+            k -= 1
+        return src[k + 1:j + 1] in REGEX_PRECEDING_KEYWORDS
+    return False
+
+
+def _regex_end(src, i):
+    """Index just past the regex literal (incl. flags) starting at src[i] == '/', or None."""
+    n = len(src)
+    j = i + 1
+    in_class = False
+    while j < n:
+        ch = src[j]
+        if ch == '\\':
+            j += 2
+            continue
+        if ch == '\n':
+            return None
+        if ch == '[':
+            in_class = True
+        elif ch == ']':
+            in_class = False
+        elif ch == '/' and not in_class:
+            j += 1
+            break
+        j += 1
+    else:
+        return None
+    while j < n and src[j].isalpha():
+        j += 1
+    return j
+
+
 def object_literals(src):
     """(keys, binding) for every {...} literal in src, strings/comments/nesting stripped.
 
@@ -129,6 +193,11 @@ def object_literals(src):
             j = src.find('*/', i + 2)
             i = n if j < 0 else j + 2
             continue
+        if c == '/' and nxt not in ('/', '*') and _regex_context(src, i):
+            end = _regex_end(src, i)
+            if end is not None:
+                i = end
+                continue
         if c in '"\'`':
             q, j = c, i + 1
             while j < n:
