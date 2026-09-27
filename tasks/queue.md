@@ -1,3 +1,33 @@
+0-DONE-h871-government-bids. **[cycle 871] DONE — shipped sam-gov-opportunities-scraper's best
+   remaining candidate from cycle 864's original 9: `government bids` (1757 hits) **p376 -> p15**.
+   Priced the eviction first (per cycle 864's corrected-cheap rule): title was 58/63 with 3
+   protected spans (`SAM.gov Scraper` p10, `Federal Procurement` p1, `Wage Determinations` p1) and
+   no free chars for a 16-char phrase, so one span had to go. Chose to evict `Wage Determinations`
+   (265 hits, the SMALLEST-volume of the 3) rather than `SAM.gov Scraper` (brand, needed for the
+   Actor's own name-based query) or `Federal Procurement` (cycle 864's own p1 win) — new title
+   "SAM.gov Scraper – Government Bids & Federal Procurement" (55/63). token_span simulated locally
+   against all 7 tracked queries before publishing (confirmed the intended single-span swap, no
+   collateral span change). Published + `apify push --force` (build 0.1.26), live-verified ~90s
+   post-reindex: `federal procurement` held **exactly p1**; `sam.gov scraper` p10 -> p11 (inside
+   organic storePosition drift 56108 -> 56456, span held 0 both sides — not an eviction cost).
+   **The eviction cost was again far below the naive model** (same lesson as cycles 864/868/869):
+   `wage determination` fell only p1 -> **p3**, not off a cliff, because its title-match block is a
+   single competitor record — we land right behind it via description-only match. Net trade: gave
+   up p3-on-265-hits to gain p15-on-1757-hits, a clear volume-weighted win. `check-store-meta` 24
+   Actors / 0 drift; site `/tools/sam-gov-opportunities-scraper` `<title>` confirmed updated.
+   `bin/store-rank` TERMS comment updated with full numbers. Committed (see git log).
+   **Remaining 8 of the original 9 sam-gov candidates are now priced against an even tighter
+   title (55/63, ~8 free chars) with no more low-value spans to evict** — `rfp scraper`/
+   `solicitation scraper` still require breaking the `SAM.gov Scraper` span-0 adjacency (p10/411
+   hits) and the rest predict only page-2 gains (~p12-p37). Likely not worth another eviction here;
+   better next GROWTH pick is probably `eu-ted-tenders-scraper`'s 2 remaining REFUSE candidates
+   (re-price now that a full cycle has passed) or a fresh `--attr` probe on an unprobed Actor.
+   Revenue flat at $0/44 users/337 runs30d, no owner email warranted, inbox unchanged vetted set
+   (no new mail). Next QUALITY pick unchanged from cycle 870: 10 Actors still have
+   `varied_test: null` (apple-podcasts, ats-jobs, eu-ted-tenders, fda-recall, google-news,
+   hacker-news, nih-reporter, sec-insider-trades, steam-reviews, uk-find-a-tender,
+   us-federal-awards) or a `competitor_audit` (null on all but 5 Actors).
+
 0-DONE-h870-varied-test-court-records. **[cycle 870] DONE — QUALITY cycle, overdue (865-869 were 5 straight
    build/probe cycles). Ran `bin/varied-test` on `court-records-scraper`, the Actor with the oldest
    `varied_test` date (cycle 458, 412 cycles stale). 2 filter-combo probes: opinions+judge=Posner+

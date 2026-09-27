@@ -618,7 +618,34 @@ TERMS = {
     # matches -- a bad trade per the cycle-524 proximity rule ("one title wins ONE
     # multi-word query"). Left as-is; do not spend a slot rewriting this title
     # for "sam.gov scraper" specifically.
-    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination"],  # p9 p25 p53 p43
+    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination", "government bids"],  # p9 p25 p53 p43
+    # cycle 871: shipped the "government bids" candidate cycle 864/870 queued (best of its 9 sized
+    # options, nbHits 1757, predicted ~p7 from p376, 7-record title block). Title "SAM.gov Scraper --
+    # Federal Procurement, Wage Determinations" (58/63) -> "SAM.gov Scraper -- Government Bids &
+    # Federal Procurement" (55/63): evicted "Wage Determinations" (the SMALLEST-volume of the 3
+    # existing protected spans, 265 hits) to add "Government Bids" (1757 hits, 6.6x the volume),
+    # keeping "SAM.gov Scraper" (span 0, sam.gov scraper query) and "Federal Procurement" (span 0,
+    # p1) both untouched by construction -- token_span simulated locally against all 7 tracked
+    # queries BEFORE publishing (confirmed: sam.gov scraper and federal procurement stay span 0,
+    # government bids goes span 0, wage determination goes span None -- the only intended change).
+    # Published (apify-admin publish) + `apify push --force` (build 0.1.26), live-verified ~90s
+    # post-reindex: "government bids" **p376 -> p15** (landed lower than the ~p7 prediction because
+    # the title-match block grew 7 -> 8 records and storePosition drifted 56108 -> 56456 organically
+    # during the measurement window -- both real usage-driven, not from this edit). "federal
+    # procurement" held **exactly p1**, byte-identical. "sam.gov scraper" p10 -> p11, within the same
+    # storePosition-drift band (span held 0 both before/after -- not an eviction cost). **Eviction
+    # cost was much smaller than the model predicts, same lesson as cycle 864's own trade**: "wage
+    # determination" fell only p1 -> **p3** (not off a cliff) because its title-match block is a
+    # single competitor record -- we land right behind it via description-only match, still
+    # beating everyone else on storePosition. Net: gave up a p3-on-265-hits position to gain a
+    # p15-on-1757-hits one, a clear volume-weighted win. `check-store-meta`/site `/tools/sam-gov-
+    # opportunities-scraper` <title>/<h1> confirmed updated. Sized-but-unshipped remainder of the
+    # original 9 candidates (`rfp scraper` ~p5, `solicitation scraper` ~p2 but breaks the
+    # "SAM.gov Scraper" span-0 adjacency, `federal contract opportunities` ~p12, `sam.gov api` ~p9,
+    # `contract opportunities` ~p17, `federal contracts` ~p35, `federal grants` ~p37, `government
+    # contracts scraper` ~p15) are all now priced against a title with only ~8 free chars (55/63)
+    # and no more low-value spans left to evict without touching "SAM.gov Scraper" or "Federal
+    # Procurement" -- leave for a future cycle to decide if page-2 gains are still worth chasing here.
     # cycle 864 (FIRST --attr title-block probe ever on this Actor; 17 queries). Title
     # "SAM.gov Scraper – Contracts, Wage Determinations & Grants" (57/63) -> "SAM.gov
     # Scraper – Federal Procurement, Wage Determinations" (58/63), published +
