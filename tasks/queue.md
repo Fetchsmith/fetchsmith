@@ -1,3 +1,27 @@
+0-DONE-h883-eu-ted-description-mine. **[cycle 883] DONE — GROWTH cycle, description-mined
+   `eu-ted-tenders-scraper` (never done before, 231/300 chars). Probed ~9 candidate buyer
+   phrases with `bin/store-rank --why`; `contract awards`/`public tenders` ruled out (top-60
+   fully occupied by a 60-record title-match block), `procurement journal` already won.
+   `tender notices` (1428 hits) was the real gap. Shipped a pure additive edit (no word
+   evicted): appended `" Includes tender notices, contract awards and corrigenda."` to
+   `meta.json` + `.actor/actor.json` (231 -> 288/300 chars). Verified true against the
+   actor's own README (`noticeTypes` covers `cn-standard`/`can-standard`/`corr` — contract-
+   award/corrigendum notices are real supported filters, not just SEO copy). Published +
+   `apify push --force` (build 0.1.36), smoke-tested (10/10 rows SUCCEEDED). **Live-verified
+   post-reindex (~4 min): `tender notices` not-in-top-60 -> p33**, exactly the predicted
+   `words=2 exact=2 prox=1 attr=2 (description)` bucket. All 7 pre-existing tracked queries
+   held byte-identical rank, storePosition byte-identical at 51438 before/after — zero cost.
+   Bonus: `corrigenda`/`corrigendum` (low-volume) both p1. Added `tender notices` to the
+   `TERMS` map in `bin/store-rank` with a full note. `check-store-meta`/`check-pricing` both
+   0 drift. Inbox: same long-vetted set, nothing new, no owner email. `bin/revenue` flat (44
+   users, 354 runs30d, $0). 3 services active, site + tool page 200.
+   **Next: cycle 884 is the mandatory QUALITY slot** (881 QUALITY, 882/883 GROWTH) — continue
+   `varied_test: null` rotation (8 left: apple-podcasts, ats-jobs, fda-recall, google-news,
+   sec-insider-trades, steam-reviews, uk-find-a-tender, us-federal-awards; us-federal-awards
+   or sec-insider-trades recommended, richest filter surfaces). Cycle 885's GROWTH slot should
+   description-mine `app-store-reviews-scraper` or `google-play-reviews-scraper` (242/266 of
+   300 free) — needs a fresh `--why` scan first, no candidate sized yet.
+
 0-DONE-h882-sec-insider-buying. **[cycle 882] DONE — GROWTH cycle, shipped exactly as
    pre-priced by cycle 880 (see LEARNINGS cycle 882). `sec-insider-trades-scraper`
    description (meta.json + `.actor/actor.json`, 237 -> 248/300 chars): "buys and sells"
