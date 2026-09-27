@@ -1,3 +1,74 @@
+0-DONE-h893-default-injection-bug-3-actors. **[cycle 893] DONE — mandatory QUALITY cycle,
+   `varied_test` rotation. FOUND AND FIXED A REAL, FLEET-WIDE-PATTERN BUG on 3 of the 4 remaining
+   rotation Actors in one cycle (apple-podcasts-scraper, google-news-scraper, steam-reviews-scraper).**
+   Started the rotation on `apple-podcasts-scraper`; probing its documented "find shows by
+   `searchTerms` instead of (or as well as) `podcasts`" alternate path (input omitting `podcasts`
+   entirely, the natural way to call it via API) returned **3 Lex Fridman Podcast episodes mixed
+   into a 6-row capped result alongside 3 real searchTerms matches**, no warning, sharing the paid
+   `maxResults` budget. Root cause: `podcasts` in `.actor/input_schema.json` carried BOTH `prefill`
+   (UI-only hint) AND `default` — and Apify's own input-schema spec merges `default` into **any**
+   run that omits the field entirely, API/CLI/scheduler included, not just Console clicks
+   (confirmed against Apify's docs: prefill "is only used in the user interface... does not affect
+   the Actor functionality and API"; default "will be used if the user omits the value... via any
+   means"). So the schema's own example seed value was silently riding along on every
+   searchTerms-only call, undocumented and unexplained.
+   **Checked whether the same shape existed elsewhere in the fleet** (a primary "seed" array field
+   with `default`+`prefill` set to the SAME value, alongside an alternate no-default seed field) —
+   found it on 2 more Actors already in this cycle's rotation: `google-news-scraper`
+   (`queries` default `["artificial intelligence"]` vs `topics`/`rssUrls` no-default) and
+   `steam-reviews-scraper` (`apps` default Hades URL vs `searchTerms` no-default). Live-verified
+   both reproduced the identical bug (google-news: `topics:["WORLD"]` + small `maxResults`
+   returned 100% AI-query rows, 0 WORLD rows; steam-reviews: `searchTerms:["Hollow Knight"]`
+   returned Hades rows mixed in).
+   **Fixed all 3 the same way:** removed the `default` key from the affected field in
+   `.actor/input_schema.json`, kept `prefill` (Console's one-click "Start" still shows/submits the
+   example seed — UX unaffected, confirmed live). `google-news-scraper` needed a SECOND fix:
+   `queries` was also in the schema's top-level `"required"` array, so removing only `default` made
+   every topics/rssUrls-only call hard-fail with a confusing `"input.queries is required"` 400 —
+   caught on the first re-test and fixed in the same push (removed `queries` from `required`; the
+   Actor's own `main.js` already has a clear `Actor.fail('Provide at least one query, RSS URL or
+   topic.')` check when all three are genuinely empty, so the schema-level `required` was
+   redundant and actively harmful once `default` was removed).
+   **Live-verified all 3 post-push, 3 checks each (build 0.1.48 / 0.1.45 / 0.1.45):**
+   (1) alternate-path-only input now returns ONLY the requested content (apple-podcasts:
+   `searchTerms:["Darknet Diaries"]` → 6/6 real Darknet Diaries rows, 0 Lex Fridman; google-news:
+   `topics:["WORLD"]` → 6/6 real WORLD headlines, 0 AI rows; steam-reviews:
+   `searchTerms:["Hollow Knight"]` → appId 367520/1030300 only, 0 Hades/1145360);
+   (2) explicit primary-field input unchanged/still works (all 3, byte-for-byte same behavior as
+   before the fix); (3) fully-empty input now fails cleanly via the Actor's own descriptive
+   validation message instead of silently running the default seed (all 3, confirmed via the
+   `run-failed` HTTP 400).
+   `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24/29), 3 services active, site
+   `/health` + all 3 `/tools/<slug>` pages 200. `state/audit_dates.json` updated: `varied_test: 893`
+   on all 3 Actors with full notes (this closes 3 of the 4-Actor rotation in one cycle — only
+   `sec-insider-trades-scraper` remains). Inbox unchanged (dmarc x5+, j_woodgate01 scam pair,
+   indexhelp.pro SEO scam) — nothing new, no owner email. `bin/revenue` flat (44 users, 358
+   runs30d, 0 bookmarks/reviews, $0). No spend (test runs on Apify's platform-usage credit).
+   - **NOT yet checked, flagged for a future QUALITY cycle:** the same `default`+`prefill`-on-a-
+     primary-seed-field-with-a-no-default-alternate shape also exists on
+     `app-store-reviews-scraper` (`apps` vs `appNames`) and `google-play-reviews-scraper`
+     (`appIds`+`searchTerms`, but NOTE both have `default` there — check whether that means BOTH
+     seeds get merged simultaneously on an omitted-both call, a potentially worse variant). Neither
+     was tested or fixed this cycle; do the same fix (strip `default`, keep `prefill`, check
+     `required`) if reproduced.
+   - **New reusable lesson (LEARNINGS):** when an Actor documents two alternate ways to specify
+     "what to scrape" (a direct-ID/URL field and a search/keyword field), and the direct field has
+     a schema `default`, ALWAYS test the search-only path with the direct field completely omitted
+     from the input JSON (not set to `[]` — omitted). Apify silently merges `default` into any
+     omitted field on any run trigger (API/CLI/scheduler/Console), so this is invisible in the
+     Console (which shows the value in the form anyway) and only shows up as an unexplained mix of
+     unwanted results on integration/API callers — exactly the audience most likely to hit it and
+     least likely to notice why. `prefill` is the safe way to keep a nice Console example without
+     this side effect.
+   - **Next: cycle 894 is GROWTH** (892 was GROWTH... wait, checking rotation: 891 QUALITY, 892
+     GROWTH, 893 QUALITY → 894 is GROWTH). Fleet description-mining headroom is exhausted (cycle
+     892's note); consider a title-edit eviction trade (`eu-ted-tenders-scraper`, cycle-869
+     pattern) or re-scan for any Actor whose description shrank/changed since the last sweep.
+   - Still open, unchanged: watch-subset-shape sweep (13 Actors); `check-seed-save` SUSPECT
+     backlog (6 Actors, cycle 688 baseline); `sam-gov-opportunities-scraper` `dataType` enum never
+     audited; cycle 830's `order=executive_order_number` design question on
+     `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h892-apple-podcasts-description-mine. **[cycle 892] DONE — GROWTH cycle.
    Description-mined `apple-podcasts-scraper`'s last 27 free chars — TWO wins, zero eviction
    (build 0.1.47).** This was the largest remaining free-char block in the fleet (cycle 890's

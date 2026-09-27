@@ -25,9 +25,6 @@
       "editor": "stringList",
       "prefill": [
         "https://store.steampowered.com/app/1145360/Hades/"
-      ],
-      "default": [
-        "https://store.steampowered.com/app/1145360/Hades/"
       ]
     },
     "searchTerms": {

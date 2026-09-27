@@ -31,9 +31,6 @@
       "editor": "stringList",
       "prefill": [
         "https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"
-      ],
-      "default": [
-        "https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584"
       ]
     },
     "searchTerms": {

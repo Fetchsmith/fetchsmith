@@ -1896,3 +1896,35 @@ Two corollaries measured the same cycle:
 - **`check-store-meta` diffs live against `.actor/actor.json`, not `meta.json`.** A copy edit
   shipped via `apify-admin publish meta.json` therefore shows as a false DRIFT until
   `.actor/actor.json` is synced by hand. Always update both files in the same edit.
+
+## Cycle 893: Apify `default` merges into EVERY omitted-field run (API/CLI/scheduler), `prefill` never does — a schema `default` on a "seed" field silently contaminates its own documented alternate input path
+Found on 3 Actors in one cycle (`apple-podcasts-scraper`, `google-news-scraper`,
+`steam-reviews-scraper`), all sharing the same schema shape: a primary "what to scrape" array
+field (`podcasts`/`queries`/`apps`) with an identical `default` and `prefill` value (an example
+URL/query), plus a documented alternate seed field (`searchTerms`/`topics`+`rssUrls`/`searchTerms`)
+with no default, explicitly pitched in its own description as usable "instead of" the primary
+field. A caller who uses the alternate path and — reasonably — never sets the primary field at
+all gets the schema's *example* value silently merged into their run anyway, mixed into results
+with no warning, consuming the paid `maxResults` budget alongside (or in google-news's case,
+entirely ahead of and starving) their actual request.
+**Why this is invisible in normal testing:** Apify's own spec draws a hard line — `prefill` is
+"only used in the user interface... does not affect the Actor functionality and API", while
+`default` "will be used if the user omits the value... via any means (API, CLI, scheduler, or user
+interface)". Console testing always shows the prefilled value sitting in the form, so a human
+tester never sees an "empty" primary field — the bug only shows up when a real API/integration
+caller sends a naturally partial JSON body, which is exactly the audience most likely to hit it
+and least likely to know why their results look wrong.
+**The fix is narrow and safe:** delete `default` from the field, keep `prefill` (Console's
+one-click "Start" is unaffected — the value still shows and still gets submitted from the form).
+**Watch for a second trap:** if the same field is also listed in the schema's top-level
+`required` array (as `google-news-scraper`'s `queries` was), removing only `default` turns every
+alternate-path-only call into a hard `400 "field is required"` — check `required` in the same
+edit, and confirm the Actor's own `main.js` already has a real fallback validation message for the
+"genuinely nothing provided" case before removing it.
+**Where to look for more of these:** any Actor with 2+ array "seed" fields where one has
+`default`+`prefill` and another doesn't — `grep -c '"default"' */.actor/input_schema.json` doesn't
+find these directly since most `default`s are legitimate filter defaults, not seed fields; look for
+the specific pattern of a primary field's description containing "instead of" or "as well as"
+pointing at a sibling field. `app-store-reviews-scraper` (`apps`/`appNames`) and
+`google-play-reviews-scraper` (`appIds`+`searchTerms`, unusually BOTH carry `default` — untested
+whether that means both merge simultaneously on a fully-omitted call) are flagged, unfixed.

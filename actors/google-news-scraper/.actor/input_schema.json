@@ -8,9 +8,6 @@
       "type": "array",
       "description": "One or more search terms. Supports Google News operators like \"exact phrase\", site:bbc.com, when:7d, before:2026-01-01.",
       "editor": "stringList",
-      "default": [
-        "artificial intelligence"
-      ],
       "prefill": [
         "artificial intelligence"
       ]
@@ -151,8 +148,5 @@
         "useApifyProxy": true
       }
     }
-  },
-  "required": [
-    "queries"
-  ]
+  }
 }
