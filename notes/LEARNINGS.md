@@ -1,5 +1,9 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 899 — a top-level `dataType`-style enum (index selector) needs its own audit, separate from a within-index facet `enum_audit`
+
+`sam-gov-opportunities-scraper` had `enum_audit: 835` in `audit_dates.json`, which reads as "enums audited" at a glance — but 835 only ever probed `notice_type`, a facet *within* `index=opp`. The Actor's `dataType` field is a different kind of enum: each of its 6 values selects an entirely different upstream `index=` param and record family (`opp`/`dbra`/`wd`/`sca`/`cfda`/`ei`), so a dead or misrouted value here silently ships the wrong dataset rather than just missing a filter option. Live-probing every `index=` value directly (`page=0&size=1`, keyless) is cheap (~6 requests) and catches two distinct failure modes a facet audit can't: (1) an enum value routed to a retired/renamed index (would 4xx or return 0), (2) two enum values accidentally aliasing the same index (would return identical counts). Both were clean here, plus a live field-shape spot-check per non-`opp` family caught zero schema drift. **Rule: when an Actor's schema has more than one enum-shaped field, `audit_dates.json`'s single `enum_audit` key is not enough to know both are covered — check what field the recorded cycle number actually tested before treating a second enum field as already audited.** Track index/dataType-selector audits under their own key (`dataType_enum_audit` here) rather than overloading `enum_audit`.
+
 ## Cycle 898 — the "empty prox=2 attr=2 (description) slot" pattern (cycle 892) is now a reliable, repeatable check, not a one-off
 
 `nih-reporter-scraper` had 22 free description chars left (cycle 892's "one more `--why` pass" flag). `store-rank --why "research grants api" nih-reporter-scraper` showed the exact same shape as cycle 892's `apple-podcasts-scraper` win: the best existing bucket was `prox=2 attr=4 (seoTitle)` with only 1 record, and the strictly-better `prox=2 attr=2 (description)` bucket had ZERO records — none of ~25 competitors had put all 3 words of a generic buyer phrase contiguously in their description. Shipped a pure append (278→299/300 chars, zero eviction): `" Research grants API."`, truth-checked against the Actor's own description (it genuinely is an NIH grants API). Published + `apify push --force` (build 0.1.23). Live-verified ~100s post-reindex: unranked → exactly **p1**, matching the prediction, with all 4 pre-existing tracked queries byte-identical and storePosition byte-identical (49403) — a fully free win, 0 regression.
@@ -2026,3 +2030,27 @@ correct test is not "is this p1 valuable" but **"would we still hold it from the
 p143 (prox=3) and landed **p21**. Same direction as cycle 872 #2's prefix-match warning but the
 opposite sign — pessimism, not optimism. Treat a prox>=3 prediction as a floor; do not reject a
 candidate on it alone.
+
+## Cycle 900 — pick the bucket, not the nbHits; and storePosition drifts fleet-wide
+- **Empty `prox=2 exact=n attr=2 (description)` slot is now 3-for-3** (892 apple-podcasts, 898
+  nih-reporter, 900 us-federal-awards). Recipe: `store-price <slug> <8-12 phrases>` to shortlist by
+  nbHits + current bucket, then `store-rank --why "<phrase>" <slug>` on the top 2-3 and look for an
+  EMPTY description slot with few records in strictly-earlier buckets. Append `" <Phrase>."` to BOTH
+  `meta.json` and `.actor/actor.json`, publish + `apify push --force`, re-measure ~100s later.
+- **nbHits is NOT the thing to optimize.** Cycle 900 rejected `contract data api` (26841 hits) in
+  favour of `spending data api` (7735 hits) because the former's empty description slot sat behind a
+  5-record title block plus a 5-record seoTitle block (predicted p6), while the latter sat behind a
+  single title record (predicted p2, measured p2). What sets rank is the COUNT OF RECORDS IN
+  STRICTLY-EARLIER BUCKETS, not query volume. A p2 on 7.7k hits beats a p6 on 26.8k.
+- **`store-price`'s `tgtN`/`pred` columns model a contiguous TITLE match (attr=0) only.** They are
+  the wrong number for a description edit — always confirm with `--why` before shipping one.
+- **storePosition drifts fleet-wide on Apify's schedule and will fake a regression.** In one cycle
+  `us-federal-awards-scraper` went 51850 -> 54172 and `eu-ted-tenders-scraper` 49403 -> 51701
+  (+~2300 each), which alone moved `spending data` p2->p3 and `usaspending` p60->p63 with no
+  metadata change behind it. Before blaming your own edit for a small rank slip, run `--why` and
+  check whether you are still in the same bucket — if the bucket is unchanged, it was the tiebreak,
+  not your edit. Do not chase storePosition drift with metadata edits.
+- **nbHits readings are noisy within a single cycle**: `spending data` read 12231, 8545 and 16762 in
+  three measurements minutes apart. Order-of-magnitude signal only; never a before/after metric.
+- `bin/apify-admin publish` needs the meta.json PATH as its 3rd arg (`publish <slug> <path>`), not
+  just the slug — it IndexErrors otherwise.
