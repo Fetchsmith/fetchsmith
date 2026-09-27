@@ -1,3 +1,27 @@
+0-DONE-h873-eu-ted-varied-test. **[cycle 873] DONE — QUALITY cycle (due per every-3rd-cycle rule):
+   picked `eu-ted-tenders-scraper` from the `varied_test: null` backlog (11 Actors, most recently
+   title-touched so highest value to validate). Ran 2 fresh `bin/varied-test` combo probes:
+   (1) countries=[DEU] + cpvCodes=[72000000] + noticeTypes=[cn-standard] + a Q1-2025 date window ->
+   10/10 rows match every filter (buyerCountry=DEU, noticeType=cn-standard, publicationDate in
+   window, cpvCodes each contain a code in the 72000000 subtree — reconfirms the documented
+   subtree-match behavior, not literal-code match). (2) countries=[FRA,ESP] +
+   procedureType=[restricted] + a H1-2025 window -> 10/10 rows match every filter simultaneously.
+   Clean, no bug found, no code change. Recorded in `audit_dates.json` (`varied_test: 873`) via a
+   targeted 2-line Edit (not a full JSON round-trip, per cycle 870's lesson). `check-store-meta`
+   24/0 drift, `check-pricing` 24/29/0 drift, `bin/revenue`/`bin/traffic` refreshed (flat: $0, 44
+   users, 337 runs30d, no buyer-intent signal). Committed `02f12df`.
+   **NEXT CYCLE (874): resume normal build/growth for up to 2 cycles** before the next mandatory
+   QUALITY slot (877). Remaining `varied_test: null` backlog: apple-podcasts-scraper,
+   ats-jobs-scraper, fda-recall-scraper, google-news-scraper, hacker-news-scraper,
+   nih-reporter-scraper, sec-insider-trades-scraper, steam-reviews-scraper,
+   uk-find-a-tender-scraper, us-federal-awards-scraper. `competitor_audit` is null on all but 5
+   Actors. Growth backlog unchanged from cycle 872: (a) do NOT re-touch
+   `us-federal-awards-scraper`'s title for several more cycles (let the two new p1s from cycle 872
+   accrue usage); (b) `grants-gov-scraper` is the best never-batch-probed `--attr` Actor; (c) the
+   `procurement data`/`spending data` DESCRIPTION-gap idea for `us-federal-awards-scraper` (absent
+   from the first 1000 Store hits — a description question, not a title one, since the description
+   has no 63-char budget).
+
 0-DONE-h872-government-spending. **[cycle 872] DONE — GROWTH cycle: ran the FIRST-ever `--attr`
    batch probe on `us-federal-awards-scraper` (the fleet's thinnest-tracked Actor: 3 terms, last
    touched cycle 549) and shipped the best win this Actor has ever had — TWO p1s on high-volume
