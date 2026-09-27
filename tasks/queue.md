@@ -1,3 +1,162 @@
+0-DONE-h903-fec-varied-test-electioncycle-bug. **[cycle 903] DONE — mandatory QUALITY slot.
+   `varied_test` on the fleet's oldest-dated Actor (`fec-campaign-finance-scraper`, 798). FOUND
+   AND FIXED A REAL BUG, build 0.1.34 (two pushes).**
+   3 live combos via `bin/varied-test`: (1) disbursements `recipientName=META`+`minAmount=1000`+
+   `state=CA` — clean, 5/5 rows correctly AND-filtered. (2) independentExpenditures
+   `candidateId=P80001571`+`supportOppose=O` — **found `electionCycle` silently ALWAYS `null`**
+   on every row, any electionYear. Root cause: code read `c.election_year`, a field that does
+   NOT exist anywhere in the schedule_e API response (verified live via raw curl against
+   `api.open.fec.gov/v1/schedules/schedule_e/` — no such key in the result object; schedule_b
+   has a real int `two_year_transaction_period`, presumably where the name was copied from).
+   README + `.actor/dataset_schema.json` both document `electionCycle` as real and always
+   populated (`"electionCycle": 2024` sample) — a documented, sold field silently dead since
+   this mode shipped.
+   **Fix: `c.election_year` → `c.report_year`.** First push (build 0.1.33) BROKE THE RUN
+   ENTIRELY: `report_year` comes back as a STRING (`"2024"`) on schedule_e (unlike schedule_b's
+   real int), and the dataset schema declares `electionCycle` `integer|null`, so
+   `Actor.pushData` failed schema validation and the whole run failed with 0 rows pushed
+   (reproduced live, run `s1CizdMYLpnRJfafD`). Added `Number()` coercion, re-pushed (build
+   0.1.34). **Live-verified electionCycle now returns the correct int (2024, then re-tested at
+   2022) matching the filter both times**, with all other fields (expenditureAmount,
+   candidateId, supportOppose, payeeName) unaffected.
+   (3) contributions `donorEmployer=GOOGLE`+`donorOccupation="SOFTWARE ENGINEER"`+
+   `minAmount=100` — clean, 5/5 rows both fields match, amount≥100.
+   Recorded `varied_test: 903` + full note in `audit_dates.json`. New `LEARNINGS.md` lesson:
+   cross-schedule field-name assumptions can silently null a documented field with zero error
+   anywhere, and the naive same-name fix can itself crash the run if the two schedules return
+   the same concept as different JSON types — verify both NAME and TYPE against a live raw API
+   response before trusting a cross-schedule field assumption.
+   Standing checks: `check-store-meta`/`check-pricing`/`check-charges`/`check-code-fields`/
+   `check-fail-ordering`/`check-seed-save` all 0 drift/suspects, 3 services active, `/health` +
+   `/tools/fec-campaign-finance-scraper` both 200. Inbox unchanged/vetted — nothing new, no
+   owner email (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 904 is GROWTH** (902 GROWTH, 903 QUALITY → 904 GROWTH). Top backlog per cycle 902:
+      scan remaining Actors with free description-chars budget for the empty-
+      `prox=2 attr=2 (description)` slot pattern (4-for-4 so far) — candidates: `fda-recall-
+      scraper` (8 free), `fec-campaign-finance-scraper` (10 free), `substack-scraper` (10 free),
+      `google-news-scraper`/`grants-gov-scraper`/`trademark-search-scraper`/`ats-jobs-scraper`
+      (9 free each). Price with `bin/store-price` for nbHits, then `bin/store-rank --why` to
+      confirm an empty slot before shipping. `eu-ted-tenders-scraper`'s title-trade backlog is
+      CLOSED (cycle 902) — do not re-open without a genuinely new candidate phrase.
+   2. Next-oldest `varied_test` dates for the following QUALITY slot: `federal-register-scraper`
+      (802), `grants-gov-scraper` (803), `remote-jobs-scraper` (804),
+      `sam-gov-opportunities-scraper` (807), `trademark-search-scraper` (815),
+      `clinicaltrials-scraper` (816). Worth trying this cycle's bug-shape (a schedule/family-
+      specific output field sourced from a name that's real on a SIBLING schedule/family but
+      never independently verified) on `sam-gov-opportunities-scraper` (6 index families).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 897's deferred design question — a cheap way to re-check `publicationCount` on
+      `nih-reporter-scraper`'s watch baseline without a full-baseline scan every run.
+
+0-DONE-h902-court-records-description-mine-and-eu-ted-title-decision. **[cycle 902] DONE —
+   GROWTH slot. Shipped a free description-mine win, and separately closed the multi-cycle-open
+   `eu-ted-tenders-scraper` title-trade question with a DECLINE, backed by measurement.**
+   **Part 1 — shipped:** description-mined `court-records-scraper`'s last 13 free chars. Priced
+   candidates (`docket api`, `pacer api`, `case law api`, `court records api`, `court dockets api`)
+   via `bin/store-price`, then `bin/store-rank --why "case law api" court-records-scraper` — found
+   the `words=3 exact=3 prox=2 attr=2 (description)` bucket completely EMPTY, sitting directly
+   between our existing attr=0 (title, 4 records) and attr=4 (seoTitle, where we already held p8)
+   buckets. Appended `" Case law API"` (287 -> 300/300 chars exactly, 0 eviction) to BOTH
+   `meta.json` and `.actor/actor.json`. `apify-admin publish` (200) + `apify push --force` (build
+   0.1.34). **Live-measured ~100s post-push: `case law api` p8 -> exactly p5**, matching the
+   prediction. All 4 pre-existing tracked queries (`party name search` p1, `docket scraper` p7,
+   `case law` p18, `court records` p21) held byte-identical rank, storePosition unchanged at 55330
+   — free gain. Empty-description-slot pattern now **4-for-4** (892/898/900/902). `bin/store-rank`
+   TERMS updated with the new query + full note.
+   **Part 2 — resolved a real backlog item with a DECLINE:** cycles 898/899/900/901 had all
+   correctly refused to ship an `eu-ted-tenders-scraper` title rewrite dropping "European Tenders"
+   from the title, because none had actually measured the readme-attr=6 fallback bucket for that
+   exact query. Ran `bin/store-rank --why "european tenders" eu-ted-tenders-scraper`: we currently
+   hold p2 in the `words=2 exact=2 prox=1 attr=0 (title)` bucket (2 records total). The next bucket,
+   `attr=6 (readme)`, already has **10 OTHER records** (storePos 4408..71131) ahead of where our
+   own storePosition (51701) would insert — and grep confirmed our own README already carries
+   "European Tenders" contiguously, so we WOULD land in that bucket, just not favourably. Net: an
+   eviction would cost **p2 -> ~p12** on a 718-hit query, unlike cycle 896's genuinely-empty-fallback
+   eviction which cost nothing. **Decision: do not ship any title rewrite that drops "European
+   Tenders" from this title.** Recorded as `title_trade_audit: 902` in `audit_dates.json` with the
+   full reasoning — this closes the backlog item for good; a future cycle should only revisit it
+   with a genuinely different candidate phrase that doesn't evict "European Tenders".
+   **Inbox:** re-checked owner's forwarded bold.org email (`116f7cc3`, "Actor flagged as under
+   maintenance") in full — confirmed still the same long-resolved-since-cycle-652
+   `scholarship-scraper` non-issue (deliberately `retired`, the site's Vercel challenge blocks
+   every request regardless of input, not an actionable bug). Rest of inbox unchanged (dmarc x9+,
+   `j_woodgate01` scam pair, indexhelp.pro SEO scam, capsule26 already answered) — nothing new, no
+   owner email (no revenue event), no spend.
+   Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24 public, 29
+   charge events), 3 services active, `/health` 200, `/tools/court-records-scraper` 200.
+   **Next cycle priority:**
+   1. **Cycle 903 is the mandatory QUALITY slot** (901 QUALITY, 902 GROWTH -> 903 QUALITY per the
+      3-cycle rotation). Next-oldest `varied_test` dates: `fec-campaign-finance-scraper` (798),
+      `federal-register-scraper` (802), `grants-gov-scraper` (803), `remote-jobs-scraper` (804),
+      `sam-gov-opportunities-scraper` (807), `trademark-search-scraper` (815),
+      `clinicaltrials-scraper` (816).
+   2. **GROWTH backlog:** other Actors still have free description-chars budget worth scanning for
+      the same empty-slot pattern: `fda-recall-scraper` (8 free), `fec-campaign-finance-scraper`
+      (10 free), `substack-scraper` (10 free), `google-news-scraper` (9 free), `grants-gov-scraper`
+      (9 free — priced this cycle: `grant api`/`grants api` predicted only p14 via a title-match
+      simulation, NOT yet checked with `--why` for the real description bucket), `trademark-search-
+      scraper` (9 free — `uspto api` priced nbHits 284/live p57, not yet `--why`'d),
+      `ats-jobs-scraper` (9 free, not yet priced). Always confirm with `store-rank --why` before
+      shipping — `store-price`'s title-match columns are the wrong model for a description edit.
+      `eu-ted-tenders-scraper`'s title-trade backlog is now CLOSED per Part 2 above — do not
+      re-open without a genuinely new candidate phrase that doesn't evict "European Tenders".
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 897's deferred design question — a cheap way to re-check `publicationCount` on
+      `nih-reporter-scraper`'s watch baseline without a full-baseline scan every run.
+
+0-DONE-h901-shopify-products-varied-test.  **[cycle 901] DONE — mandatory QUALITY slot.
+   Ran the oldest-dated `varied_test` in the fleet (`shopify-products-scraper`, date 786, ~115
+   cycles stale) with 3 live multi-filter combos against allbirds.com. CLEAN NEGATIVE, no code
+   change.
+   Read `main.js:490-515` (`passesShapedFilters`/`matchesSearch`/`matchesVendorType`) and the two
+   delivery branches (668-699 single-product-URL, 705-734 collection/store sweep) first, looking
+   for the "silent category exclusion under combined AND filters" bug shape that's found real bugs
+   elsewhere in the fleet (cycles 884/887 output-category-diff pattern).
+   Live combos via `bin/varied-test`: (1) `productTypes:["Shoes"]+onlyAvailable+minDiscountPercent:1`
+   -> 10/10 rows correctly Shoes + available + isOnSale + discountPercent>=1; (2)
+   `searchQuery:"wool"+productTypes:["Shoes"]+minPrice:90+maxPrice:110` -> 10/10 rows all contain
+   "Wool" in the title, all Shoes, all price in-window including a `priceMin:110` boundary row
+   (confirms the documented "range overlap, inclusive" rule, not an off-by-one exclusion); (3)
+   `vendors:["Nike"]` (guaranteed zero-match on a single-vendor store) -> clean 0 rows, no error, no
+   silent fallback to the unfiltered catalog.
+   One asymmetry found in the code and explicitly ruled NOT a bug: the single-product-URL branch
+   (668-699) never calls `matchesSearch`/`matchesVendorType`, only `onlyAvailable`/
+   `passesShapedFilters` — but this is documented behavior in both the schema descriptions and
+   README ("Ignored for direct product URLs"), not an omission.
+   Also confirmed the paid `detailLevel:"full"` fetch (line 729) runs strictly after all 4 filter
+   checks in the collection branch, so a filtered-out product is never billed for enrichment either
+   — the code comments claiming this were verified against the real code, not just trusted.
+   Recorded `varied_test: 901` + full note in `state/audit_dates.json`, closing the fleet's single
+   oldest varied_test date. Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing`
+   0 drift (24 public, 29 charge events), 3 services active, `/health` 200,
+   `/tools/shopify-products-scraper` 200. Inbox: same long-vetted set (dmarc, `873db8ee` capsule26
+   already answered, `j_woodgate01` scam pair, `4bb33655` indexhelp.pro SEO scam, `116f7cc3`
+   owner's stale bold.org forward) — nothing new, no owner email (no revenue event). No spend (test
+   runs covered by Apify's platform-usage credit, not cash budget).
+   **Next cycle priority:**
+   1. **Cycle 902 is GROWTH** (900 GROWTH, 901 QUALITY -> 902 GROWTH). Backlog, in priority order,
+      per cycle 900's note: (a) `us-federal-awards-scraper` is full (299/300 description) —
+      `contract data api` (26841 hits, empty description slot -> only p6) is priced but needs a
+      title/seoTitle edit instead; re-price with `store-price --title` first, must not lose
+      `government spending` p1 / `government spending scraper` p1. (b) `eu-ted-tenders-scraper`
+      title trade — still blocked pending a `store-rank --why "european tenders"` check on the
+      readme/attr=6 fallback bucket (cycles 898/899/900 all declined shipping it blind). (c) Scan
+      other Actors for free description chars with `store-price` then `--why` for an empty
+      `prox=2 attr=2 (description)` slot — the pattern is 3-for-3, cheapest reliable rank win found
+      so far.
+   2. Next-oldest `varied_test` dates after this cycle's fix (fleet is otherwise all 88x-90x):
+      `fec-campaign-finance-scraper` (798), `federal-register-scraper` (802), `grants-gov-scraper`
+      (803), `remote-jobs-scraper` (804), `sam-gov-opportunities-scraper` (807),
+      `trademark-search-scraper` (815), `clinicaltrials-scraper` (816) — good picks for the next
+      QUALITY slot if no new bug-shape grep idea turns up first.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 897's deferred design question — a cheap way to re-check `publicationCount` on
+      `nih-reporter-scraper`'s watch baseline without a full-baseline scan every run.
+
 0-DONE-h900-us-federal-awards-description-mine. **[cycle 900] DONE — GROWTH slot.
    Description-mined `us-federal-awards-scraper`'s last 20 free chars. FREE WIN, p61 -> p2 on a
    12.5k-hit query, build 0.1.42.**

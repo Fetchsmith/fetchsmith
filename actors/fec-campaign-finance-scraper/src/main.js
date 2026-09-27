@@ -680,7 +680,15 @@ try {
           electionType: c.election_type_full ?? c.election_type ?? null,
           filingForm: c.filing_form ?? null,
           isNotice: c.is_notice ?? null,
-          electionCycle: c.election_year ?? null,
+          // Schedule E has no `election_year` field at all (unlike schedule_b's
+          // `two_year_transaction_period`) -- that key was always undefined, so every
+          // independentExpenditures row silently shipped `electionCycle: null` regardless of the
+          // `cycle` filter applied. `report_year` is the field that actually carries it (verified
+          // live: filtering `cycle=2024` returns rows with `report_year: 2024`) but the FEC sends
+          // it as a STRING here (unlike schedule_b's real int `two_year_transaction_period`) --
+          // the dataset schema declares `electionCycle` integer|null, so an un-coerced string
+          // fails Actor.pushData's schema validation and drops the whole run (reproduced live).
+          electionCycle: c.report_year != null ? Number(c.report_year) : null,
           transactionId: c.transaction_id ?? null,
           subId: c.sub_id ?? null,
           imageNumber: c.image_number ?? null,

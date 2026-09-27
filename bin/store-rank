@@ -661,7 +661,13 @@ TERMS = {
     #       already crowded, none pursued. "political action committee": 0 hits at
     #       all, not a lever. "political donations" (nbHits 65, 2 matchers,
     #       predicted ~p3) also smaller, not pursued.
-    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search"],
+    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search", "case law api"],
+    # cycle 902: description-mined the last 13 free chars, appending " Case law API" (287->300/300,
+    # 0 eviction) to fill the empty prox=2 attr=2 (description) bucket for "case law api" (nbHits
+    # 9687) -- the same seoTitle-vs-description attribute-priority pattern as cycles 892/898/900,
+    # now 4-for-4. Live-verified: p8 (seoTitle attr=4 match) -> exactly p5 (new description attr=2
+    # match), matching the --why prediction. All 4 pre-existing tracked queries held byte-identical
+    # rank, storePosition unchanged at 55330 -- the gain is free.
     # cycle 559 competitor-gap audit: no feature/pricing gap vs. the top 2 competitors by
     # users -- automation-lab (69 users) has only 7 input fields (mode/query/court/dateFrom/
     # dateTo/status/maxResults) vs. our 15, and charges $0.005 start + $0.0008-0.0023/result

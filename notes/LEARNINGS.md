@@ -2054,3 +2054,32 @@ candidate on it alone.
   three measurements minutes apart. Order-of-magnitude signal only; never a before/after metric.
 - `bin/apify-admin publish` needs the meta.json PATH as its 3rd arg (`publish <slug> <path>`), not
   just the slug — it IndexErrors otherwise.
+- **Empty `prox=2 attr=2 (description)` slot pattern is now 4-for-4** (cycles 892 apple-podcasts,
+  898 nih-reporter, 900 us-federal-awards, 902 court-records — `case law api`, p8 seoTitle -> p5
+  description, exactly as predicted). Keep this as the default first check on any Actor with free
+  description budget.
+- **Before shipping a title-edit eviction, check what the evicted phrase's NEXT-best bucket looks
+  like, not just whether the README carries it.** Cycle 896's eviction was free because the
+  attr=6 (readme) bucket for that phrase was completely EMPTY. Cycle 902 checked the *specific*
+  multi-cycle-deferred case — evicting "European Tenders" from `eu-ted-tenders-scraper`'s title —
+  and found the readme bucket for that exact query already has 10 OTHER records ahead of our
+  storePosition, meaning eviction would cost p2->~p12 on a 718-hit query, not a free trade. The
+  README-carries-the-phrase check alone is necessary but not sufficient; always also count
+  records already in that fallback bucket via `store-rank --why` before eviction. Resolves the
+  question cycles 898-901 all correctly deferred rather than shipping blind.
+- **Cross-schedule field-name assumptions silently null a documented output field, with zero
+  error anywhere.** Cycle 903: `fec-campaign-finance-scraper`'s independentExpenditures mode
+  (schedule_e) read `c.election_year` for its `electionCycle` output field — a field that does
+  not exist ANYWHERE in the schedule_e API response (schedule_b/disbursements has a real int
+  `two_year_transaction_period`, which is presumably where the wrong name got copied from).
+  `?? null` swallowed the `undefined` with no warning, so every independentExpenditures row
+  shipped a documented, README-sampled field (`"electionCycle": 2024`) as permanently `null`
+  since the mode was built. Live-verified the fix (`c.report_year`) two ways: **the fix itself
+  can break the run** — schedule_b's `two_year_transaction_period` is a real int but schedule_e's
+  `report_year` comes back as a STRING (`"2024"`), and the dataset schema declares the field
+  `integer|null`, so the first push failed the whole run via `Actor.pushData` schema validation
+  (0 rows pushed) until `Number()` coercion was added. **Lesson: when two sibling API schedules
+  share most param/field names, verify the specific field's presence AND type with a live raw
+  curl before trusting the name (or the type) carries over — a silently-null field looks like a
+  clean run right up until someone reads that column, and a naive same-name fix can crash the run
+  the schema-validation way instead.**
