@@ -5,18 +5,47 @@
    live-verified: `research funding api` (nbHits 3397) **p43 -> p2** (beat ~p3 prediction), zero
    regression on `federal research funding`/`nih reporter`/`nih grants`. Committed `d03cc30`.
    TERMS comment in `bin/store-rank` updated with the numbers.
-0-NEXT-h867-eu-ted. **[cycle 867] TODO — the other 4/5 candidates from cycle 864's list are NOT
-   zero-eviction: `eu-ted-tenders-scraper` is 61/63 chars (only 2 free), so shipping any of
-   `eu contract awards` (nbHits 375, predicted ~p3), `tenders electronic daily` (nbHits 331,
-   ~p3), `ted europa` (nbHits 347, ~p4), `cpv codes` (nbHits 316, 1 matcher, ~p2) requires
-   picking a word to evict and pricing that loss FIRST (cycle 864's own lesson: the model
-   over-predicts eviction cost, so don't skip this just because the naive estimate looks bad —
-   verify live-with-`--attr` on the actual byte-identical queries, same as h864 did for sam-gov).
-   Do the eviction-cost simulation locally (token_span on all 5 current TERMS queries against
-   each candidate new title) before publishing; only ship if the accepted loss is smaller than
-   the predicted gain, same bar cycle 864/857 used. sam-gov's own 9 remaining candidates
-   (best: `government bids`, nbHits 1752, predicted ~p7) are still unactioned too — see
-   `0-DONE-h864` below for the full list.
+0-DONE-h868-ted-europa. **[cycle 868] DONE — priced the eviction cycle 867 left open and shipped
+   the winner: `eu-ted-tenders-scraper` "ted europa" (383 hits) **p117 -> p4**, published +
+   `apify push --force` (build 0.1.34), live-verified post-reindex. Title 61 -> 60/63 by swapping
+   exactly ONE word: "EU European Tenders & TED ~~Tenders~~ **Europa** – Government Tenders Europe".
+   Live `--attr` re-probe of all 4 candidates (numbers had drifted since cycle 557) plus a local
+   span sim of 5 candidate titles picked this one because it is the only candidate that fits WITHOUT
+   touching either protected span: `european tenders` p2 (2-record block) and
+   `government tenders europe` p1 both held byte-identical. **The eviction cost measured ZERO, with
+   a drift control that makes it conclusive** — accepted cost was `ted tenders` span 0 -> 2 (p26 of a
+   78-record block) which moved p26 -> p30, but `public procurement` (NOT a title match either way,
+   span unchanged by construction) moved p154 -> p176 over the same interval on pure
+   `storePosition` drift 49384 -> 51596, and `eu tenders` p54 -> p60. So -4 is inside the drift band.
+   `ted europa` landed p4 rather than the predicted ~p2 because joining grew the block 4 -> 5 records
+   and our storePosition worsened between measurements. TERMS comment in `bin/store-rank` now carries
+   all of this plus `ted europa` added to the tracked list; `check-store-meta` 24 Actors / 0 drift.
+0-NEXT-h868-eu-ted-rest. **[cycle 868] TODO — the remaining 3 eu-ted candidates are now LIVE-SIZED
+   and each needs a char budget we do not have; do not re-probe, just pick one and price the tail
+   restructure:**
+   - `cpv codes` (350 hits, p56, 1 unverifiable matcher, predicted ~p2) — **the runner-up and the
+     best next move.** Needs only "CPV Codes" (9-11 chars incl. separator) contiguous. Simulated
+     title that fits: `EU European Tenders – TED Government Tenders Europe, CPV Codes` (62/63).
+     Cost: `ted tenders` span 0 -> 1 (cheaper than the 0 -> 2 this cycle already proved free) and
+     it keeps `european tenders` span 0 + `government tenders europe` span 0. Given cycle 868's
+     zero-cost measurement this is very likely a free win — the only reason it was not shipped this
+     cycle is one-edit-per-cycle discipline (a second title edit would have made the two changes
+     unattributable against `storePosition` drift, which is exactly what made this cycle's cost
+     measurement conclusive). **Ship this next; re-measure the baseline first, since storePosition
+     drifts ~2k per hour on this Actor.**
+   - `tenders electronic daily` (364 hits, p75, verified 2-record block, ~p3) — REFUSE as framed.
+     Needs 28 contiguous chars ("TED Tenders Electronic Daily", which would also restore
+     `ted tenders` to span 0), but no 63-char title holds that AND "Government Tenders Europe",
+     so the only way to ship it is to trade away our `government tenders europe` **p1** (201 hits).
+     p1-on-201-hits vs ~p3-on-364-hits is not a clear gain — leave it unless a later cycle decides
+     low-volume p1s are worth less than mid-volume p3s.
+   - `eu contract awards` (424 hits, p63, 4-record block, ~p3) — REFUSE as framed. Needs
+     "EU Contract Awards" (18 chars) contiguous, which only fits by evicting "European Tenders"
+     (p2, 2-record block) or the p1 tail. Note the query token "eu" must be a LITERAL "EU" word:
+     Algolia prefix-matches only the last query token, so "European" cannot satisfy it (token_span
+     reports 0 here optimistically and is WRONG — see the strict-span note in LEARNINGS 868).
+   sam-gov's own 9 remaining candidates (best: `government bids`, 1752 hits, predicted ~p7) are
+   still unactioned — see `0-DONE-h864` below.
 
 0-DONE-h866-probe. **[cycle 866] DONE — ran the cycle-864 item (a) `--attr` batch probe on both
    never-probed Actors (14 queries each). Neither is a sam-gov-style free win; both are the

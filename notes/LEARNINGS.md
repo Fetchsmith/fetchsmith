@@ -1538,3 +1538,42 @@ sizing (nbHits, predicted rank, exact conflicting current rank) is recorded in `
 next wants to spend a live test-and-revert cycle on it; do not publish either title from the numbers
 alone, they were derived from the local `token_span` heuristic, not confirmed live like cycle 864's
 edit was before shipping.
+
+## Cycle 868 (2026-09-27) — two durable store-rank lessons: a measurement technique, and a bug in our own simulator
+
+**1. Always include a span-unchanged-by-construction query as a DRIFT CONTROL when pricing a title
+eviction.** Cycles 780-783 concluded the title-trade lever was exhausted, and cycle 864 corrected that
+by finding eviction costs far below the model — but both were reading raw before/after ranks, which
+conflate the span change with `storePosition` drift. `storePosition` is Apify's cumulative-usage
+tiebreaker and it moves on its own: on `eu-ted-tenders-scraper` it went 49384 -> 51596 inside a single
+~10-minute cycle, which alone cost -22 positions on `public procurement` (p154 -> p176) and -6 on
+`eu tenders` (p54 -> p60). Against that band, the "cost" of this cycle's eviction — `ted tenders`
+span 0 -> 2, p26 -> p30 in a 78-record block — is indistinguishable from zero. **The technique:
+before publishing, pick 1-2 tracked queries whose span the new title provably does NOT change
+(ideally one that is not a title match at all, so no span exists), measure them in the same before
+and after runs, and subtract their movement as the drift baseline.** Without a control you cannot
+tell a real -4 from a drift -4, and the whole point of the cycle-864 pricing rule is knowing which.
+Corollary: measure the baseline in the SAME cycle you publish, never reuse a TERMS comment's number
+from 300 cycles ago (cycle 557's four candidate ranks had all drifted 5-20 positions by now).
+
+**2. `token_span`'s prefix rule is OPTIMISTIC and can say 0 where Algolia scores no match at all.**
+It uses `words[i].startswith(tok)` for EVERY query token. Real Algolia defaults to
+`queryType: prefixLast` — only the LAST token of the query is prefix-matched; earlier tokens need a
+whole-word (or typo-tolerant, min 4 chars) match. So for `eu tenders`, `token_span` happily reports
+span 0 via "**Eu**ropean Tenders", but Algolia needs a literal "EU" word, which is why cycle 557's
+hedge (keeping the literal "EU" *and* "European") was right for a reason cycle 557 only half-stated.
+This matters whenever a candidate query's non-final token is a prefix of a word we already have:
+`ted europa` looked unreachable-but-adjacent because we had "Europe", yet "europe".startswith("europa")
+is False in either direction, so a literal "Europa" was mandatory. **When simulating, compute BOTH
+spans** (there is a 12-line `strict_span` in this cycle's transcript: `w == t` for non-final tokens,
+`w.startswith(t)` for the last) and trust the strict one for go/no-go. Do not "fix" `token_span`
+itself — its optimism is load-bearing for the block-membership check `title_match`, which genuinely
+is prefix-ish, and every historical TERMS number was recorded against the current behaviour.
+
+**3. The cheapest title wins are one-word swaps that leave every protected span alone.** This cycle
+beat three better-predicted candidates (`eu contract awards` ~p3/424 hits, `tenders electronic daily`
+~p3/364 hits, `cpv codes` ~p2/350 hits) by shipping the only one that needed no char budget at all:
+"& TED **Tenders**" -> "& TED **Europa**" is 1 char shorter and touches neither the 2-record block
+holding `european tenders` at p2 nor the `government tenders europe` p1 tail. Before pricing an
+eviction, enumerate swaps of words the title already spends and check whether any candidate is
+spelled by a *substitution* rather than an insertion.
