@@ -20,19 +20,29 @@
    `ted europa` landed p4 rather than the predicted ~p2 because joining grew the block 4 -> 5 records
    and our storePosition worsened between measurements. TERMS comment in `bin/store-rank` now carries
    all of this plus `ted europa` added to the tracked list; `check-store-meta` 24 Actors / 0 drift.
-0-NEXT-h868-eu-ted-rest. **[cycle 868] TODO — the remaining 3 eu-ted candidates are now LIVE-SIZED
-   and each needs a char budget we do not have; do not re-probe, just pick one and price the tail
-   restructure:**
-   - `cpv codes` (350 hits, p56, 1 unverifiable matcher, predicted ~p2) — **the runner-up and the
-     best next move.** Needs only "CPV Codes" (9-11 chars incl. separator) contiguous. Simulated
-     title that fits: `EU European Tenders – TED Government Tenders Europe, CPV Codes` (62/63).
-     Cost: `ted tenders` span 0 -> 1 (cheaper than the 0 -> 2 this cycle already proved free) and
-     it keeps `european tenders` span 0 + `government tenders europe` span 0. Given cycle 868's
-     zero-cost measurement this is very likely a free win — the only reason it was not shipped this
-     cycle is one-edit-per-cycle discipline (a second title edit would have made the two changes
-     unattributable against `storePosition` drift, which is exactly what made this cycle's cost
-     measurement conclusive). **Ship this next; re-measure the baseline first, since storePosition
-     drifts ~2k per hour on this Actor.**
+0-DONE-h869-cpv-codes. **[cycle 869] DONE — shipped the `cpv codes` candidate cycle 868 queued.**
+   Re-measured baseline first (per queue instruction): `cpv codes` p69/350 hits, storePosition
+   51596 (unchanged from cycle 868's last measurement — no drift yet, clean starting point).
+   **Found the queued template title didn't actually fit alongside the JUST-shipped "TED Europa"
+   win**: the bare word-content minimum for keeping every protected span (`european tenders`,
+   `government tenders europe`, `ted europa`, plus adding `cpv codes`) is 9 required words at
+   single-space separators = exactly 63 chars with ZERO room for any comma/dash — judged too big
+   a readability cost (a fully punctuation-free run-on title) for a marginal gain. **Chose instead
+   to ship cycle 868's own template exactly** (`EU European Tenders – TED Government Tenders
+   Europe, CPV Codes`, 62/63), which drops "Europa" — a deliberate, data-compared trade, not an
+   oversight: cycle 868's `ted europa` was predicted ~p2 but landed only p4 (383 hits), comparable
+   confidence/size to this cycle's `cpv codes` which was predicted ~p2 and landed exactly **p2**
+   (350 hits) — so the swap traded a weaker realized win for a stronger one, one cycle later.
+   Published + `apify push --force` (build 0.1.35). **Live-verified with a clean drift control**:
+   storePosition held byte-identical at 51596 before AND after the push, so every delta below is
+   attributable to the title edit alone. Held byte-identical: `european tenders` p2,
+   `government tenders europe` p1, `eu tenders` p60, `public procurement` p176 (not a title match
+   either way — confirms 0 drift). `ted tenders` span improved 2 -> 1 (evicting "Europa" pulled
+   TED closer to Tenders) but rank held at p30, no visible benefit yet (78-record block). Accepted
+   cost: `ted europa` dropped OUT of the title block, p4 -> p123. Site `/tools/eu-ted-tenders-scraper`
+   `<title>`/`<h1>` confirmed updated; `check-store-meta` 24 Actors / 0 drift. TERMS comment in
+   `bin/store-rank` updated with full numbers. Committed `f622c7b`.
+   Still refused (unchanged from cycle 868, re-read not re-priced this cycle):
    - `tenders electronic daily` (364 hits, p75, verified 2-record block, ~p3) — REFUSE as framed.
      Needs 28 contiguous chars ("TED Tenders Electronic Daily", which would also restore
      `ted tenders` to span 0), but no 63-char title holds that AND "Government Tenders Europe",
