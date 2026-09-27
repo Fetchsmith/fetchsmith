@@ -184,7 +184,51 @@ TERMS = {
     # "clinical trial sites"/"recruiting trials"/"oncology trials" all need "clinical trial(s)"
     # as contiguous tokens, impossible while the title leads with "ClinicalTrials.gov"
     # (Algolia tokenizes that as clinicaltrials+gov, NOT clinical+trials).
-    "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
+    "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward", "government spending", "government spending scraper"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
+    # cycle 872 (FIRST --attr BATCH probe on this Actor; 19 queries). Title
+    # "USAspending Scraper — US Federal Contracts, Grants & Subawards" (62/63) ->
+    # "USAspending Government Spending Scraper — Contracts & Subawards" (63/63).
+    # The probe found the cycle-548 tiny-block shape on a HIGH-volume query, which is
+    # rare: `government spending scraper` (nbHits 1637) had a title-match block of
+    # exactly ONE competitor record, verified genuine (its p1 has real matchLevel
+    # 'full'), and that competitor's storePosition is worse than ours -> predicted p1.
+    # `government spending` (nbHits 1342) was a 3-record block -> predicted ~p3. Both
+    # need the same contiguous phrase, so ONE 27-char insertion buys both.
+    # Measured live ~75s post-publish + `apify push --force` (build 0.1.38):
+    #   government spending scraper (1637 hits) p238 -> **p1**   span None -> 0
+    #   government spending         (1342 hits) p218 -> **p1**   span None -> 0  (beat ~p3)
+    #   government spending data    (1621 hits) p512 -> p48      span None -> 1 (partial)
+    #   subawards p1 / subaward p2 HELD (we are still the only title-matcher there)
+    # PAID FOR, all priced before publishing and accepted deliberately:
+    #   usaspending scraper (462 hits) p27 -> p53: span 0 -> 2. One "Scraper" cannot be
+    #     adjacent-after both "USAspending" and "Spending"; duplicating the word was
+    #     rejected on Store-title readability. -26 ranks is the real, measured price of
+    #     a span 0 -> 2 proximity demotion inside a 53-record block — much cheaper than
+    #     cycle 524's "worth ~hundreds of ranks" estimate, and p27 was already invisible.
+    #   federal contracts (1793 hits) p62 -> p134 and federal grants (609) p39 -> p116:
+    #     both lost the title match outright ("Federal"/"Grants" evicted). Both were
+    #     page-3+ ranks carrying no traffic; the concepts survive in the description,
+    #     per the cycle-780/782 eviction rule.
+    # DRIFT CONTROL (3 queries whose span is unchanged BY CONSTRUCTION) says all of the
+    # above is the title edit, not drift: federal spending p149 -> p147, federal awards
+    # p66 -> p64, award data p121 -> p117 — a uniform +2..+4 band explained by
+    # storePosition improving on its own, 55831 -> 54031, over the same window.
+    # `usaspending.gov` (212 hits) is the one MISS: "Government" prefix-matches the last
+    # query token "gov", so we joined its 26-record title block exactly as token_span
+    # predicted (in_title False -> True) yet rank moved only p64 -> p62, nowhere near the
+    # predicted ~p18. Lesson: the `--attr` "16 matchers have a better storePosition"
+    # prediction assumes the block is ordered by storePosition alone; on a query where
+    # the match is a PREFIX of a longer word ("gov" in "Government"), Algolia's exact/
+    # typo criteria appear to rank us below the literal matchers first. Do not size a
+    # prefix-satisfied candidate off the plain block-position arithmetic.
+    # Still open on this Actor (sized live cycle 872, NOT shipped): `federal contract
+    # data` (1671 hits, 9-block, ~p8), `award data` (5764 hits, 12-block, ~p10),
+    # `usaspending api` (456, 13-block, ~p11), `naics code` (552, 2-block, ~p3),
+    # `federal spending data` (666, 2-block, ~p3) — all need characters the 63/63 title
+    # no longer has, so each is now a TRADE against the two p1s above. `government
+    # contracts` (3212 hits, 33-block, ~p29) and `contract awards` (1890, 61-block, ~p46)
+    # are mid-pack joins, not worth a trade. `procurement data`/`spending data`: we do
+    # not match at all (not in first 1000 hits) — description gap, not a title question.
     # cycle 549 second-rotation competitor-gap audit: no feature/pricing gap (25 input
     # fields incl. subaward mode/watchChanges/recompete-alerts/pass-through-tracing vs
     # leader parseforge/usaspending-scraper's 14 fields at $0.16 start + $0.012/result;

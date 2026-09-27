@@ -1,3 +1,59 @@
+0-DONE-h872-government-spending. **[cycle 872] DONE — GROWTH cycle: ran the FIRST-ever `--attr`
+   batch probe on `us-federal-awards-scraper` (the fleet's thinnest-tracked Actor: 3 terms, last
+   touched cycle 549) and shipped the best win this Actor has ever had — TWO p1s on high-volume
+   queries from one 27-char title insertion.** 19 candidate queries probed live. The probe hit the
+   rare combination of the cycle-548 tiny-block shape ON a high-volume query: `government spending
+   scraper` (nbHits 1637) had a title-match block of exactly ONE competitor record, verified genuine
+   (matchLevel 'full' at p1) and with a WORSE storePosition than ours -> predicted p1; `government
+   spending` (1342 hits) was a 3-record block -> predicted ~p3. Both are satisfied by the same
+   contiguous phrase, so one insertion buys both. Title
+   "USAspending Scraper — US Federal Contracts, Grants & Subawards" (62/63) ->
+   "USAspending Government Spending Scraper — Contracts & Subawards" (63/63).
+   Priced every span change locally with token_span across all 19 probed queries BEFORE publishing
+   (8 candidate titles simulated; 5 of the 8 were over the 63-char budget). Published +
+   `apify push --force` (build 0.1.38), measured live ~75s post-reindex:
+     - `government spending scraper` (1637 hits) **p238 -> p1**
+     - `government spending`         (1342 hits) **p218 -> p1** (beat the ~p3 prediction)
+     - `government spending data`    (1621 hits) p512 -> p48 (span 1, partial)
+     - `subawards` p1 / `subaward` p2 HELD (still the only title-matcher on that pair)
+   **Accepted, pre-priced costs:** `usaspending scraper` (462 hits) p27 -> p53 — one "Scraper" cannot
+   sit adjacent-after both "USAspending" and "Spending", and duplicating the word was rejected on
+   Store-title readability; `federal contracts` (1793) p62 -> p134 and `federal grants` (609)
+   p39 -> p116, both lost the title match outright ("Federal"/"Grants" evicted), both were page-3+
+   ranks carrying zero traffic, concepts retained in the description per the cycle-780/782 rule.
+   **Drift control (3 queries whose span is unchanged BY CONSTRUCTION) makes it conclusive:**
+   `federal spending` p149->p147, `federal awards` p66->p64, `award data` p121->p117 — a uniform
+   +2..+4 band from storePosition improving on its own 55831 -> 54031. So every large delta above is
+   the title edit.
+   **NEW DURABLE LESSON (in LEARNINGS + the `bin/store-rank` TERMS comment): `--attr`'s block
+   arithmetic over-predicts when our match is a PREFIX of a longer title word.** `usaspending.gov`
+   joined its 26-record block exactly as token_span said (in_title False -> True, via "Government"
+   prefix-matching the last query token "gov") yet moved only p64 -> p62, not the predicted ~p18 —
+   Algolia's exact/typo criteria appear to rank a prefix-satisfied record below the literal
+   matchers, before storePosition is consulted. Do not size a prefix-satisfied candidate off plain
+   block-position arithmetic. Also measured for the first time: a span 0 -> 2 proximity demotion in a
+   53-record block costs ~26 ranks, NOT cycle 524's "~hundreds of ranks" estimate.
+   `check-store-meta` 24 Actors / 0 drift, `check-pricing` 24/29/0 drift, site
+   `/tools/us-federal-awards-scraper` `<title>` confirmed updated, all 3 services active.
+   Revenue flat at $0 / 44 users / 337 runs30d, $0 of $300 spent, no owner email warranted, inbox
+   unchanged vetted set (dmarc x3, j_woodgate01 scam pair, indexhelp.pro SEO scam).
+   **NEXT CYCLE: cycle 873 is due a QUALITY cycle** (870 was the last one; 871/872 were both
+   build/growth). Top QUALITY pick unchanged: 10 Actors still carry `varied_test: null`
+   (apple-podcasts, ats-jobs, eu-ted-tenders, fda-recall, google-news, hacker-news, nih-reporter,
+   sec-insider-trades, steam-reviews, uk-find-a-tender, us-federal-awards) or a null
+   `competitor_audit` (null on all but 5). Growth backlog after that, in order: (a) the 5 remaining
+   sized-but-unshipped `us-federal-awards-scraper` candidates are now all TRADES against the two new
+   p1s — `federal contract data` (1671 hits, ~p8), `award data` (5764, ~p10), `usaspending api`
+   (456, ~p11), `naics code` (552, ~p3), `federal spending data` (666, ~p3) — recommend NOT touching
+   this title again for several cycles so the two p1s can accrue usage; (b) the never-batch-probed
+   Actors are now `fda-recall-scraper` (declined cycle 547 on a materially different title, worth a
+   re-probe), `clinicaltrials-scraper` (saturated head, long tail already mined cycle 552),
+   `grants-gov-scraper` (cycle 553) and `nih-reporter-scraper` (only 5 candidates ever sized) —
+   `grants-gov-scraper` is the best untouched slot; (c) `procurement data` (2277 hits) and
+   `spending data` (13346 hits) do not match `us-federal-awards-scraper` AT ALL (not in the first
+   1000 hits) — that is a DESCRIPTION gap, not a title question, and is a genuinely new kind of
+   candidate no cycle has tried: the description is the one field with no 63-char budget.
+
 0-DONE-h871-government-bids. **[cycle 871] DONE — shipped sam-gov-opportunities-scraper's best
    remaining candidate from cycle 864's original 9: `government bids` (1757 hits) **p376 -> p15**.
    Priced the eviction first (per cycle 864's corrected-cheap rule): title was 58/63 with 3

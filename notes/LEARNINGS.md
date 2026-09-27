@@ -1577,3 +1577,41 @@ beat three better-predicted candidates (`eu contract awards` ~p3/424 hits, `tend
 holding `european tenders` at p2 nor the `government tenders europe` p1 tail. Before pricing an
 eviction, enumerate swaps of words the title already spends and check whether any candidate is
 spelled by a *substitution* rather than an insertion.
+
+## Cycle 872 — Store-title ranking: the prefix-match prediction trap, and the real price of a proximity demotion
+
+**1. `--attr`'s "predicted rank if we join the title block" is WRONG when our match is a prefix of a
+longer title word.** The prediction is pure block arithmetic: count the title-matchers with a better
+`storePosition` than us, add 1. That assumes every member of the block is ranked by `storePosition`
+alone, i.e. that all matches are equivalent in Algolia's earlier criteria. They are not. This cycle's
+new title made "Government" prefix-match the last token of `usaspending.gov` ("gov"), so we joined
+that 26-record block exactly as `token_span`/`title_match` predicted (`in_title` False -> True) —
+and rank moved only **p64 -> p62**, versus the predicted ~p18. The literal "USAspending.gov"
+title-matchers stay ahead of us on the exact/typo criteria, which are evaluated before
+`storePosition`. So: a candidate satisfied by a *literal word* is worth its predicted rank; a
+candidate satisfied only by a *prefix* of a word we already have is worth close to nothing. Size it
+at zero unless you are willing to spend the cycle proving otherwise. (This is the flip side of
+LEARNINGS cycle 868 #2 — that entry warned `token_span` over-reports *membership*; this one is about
+over-reporting *position* even when membership is real.)
+
+**2. A span 0 -> 2 proximity demotion inside a 53-record block costs ~26 ranks, not "hundreds".**
+Cycle 524's estimate ("rewriting the title so the query reads as a literal adjacent phrase is worth
+~hundreds of ranks") has been quoted as a *cost* model by several cycles refusing trades. Measured
+directly for the first time here: `usaspending scraper` (nbHits 462, 53-record block) went p27 -> p53
+when its span went 0 -> 2. That is the same direction cycle 524 found but an order of magnitude
+smaller, and it is the third independent measurement (with 864/868/869/871) showing the naive
+eviction-cost model is far too pessimistic. Practical rule: **price a proximity demotion as tens of
+ranks inside its block, and a lost title match outright as ~2x the rank** (`federal contracts`
+p62 -> p134, `federal grants` p39 -> p116 this cycle) — then weigh both against the win's nbHits.
+
+**3. The highest-value shape found so far: a tiny verified title block on a HIGH-volume query.**
+Cycle 548's "zero/one-matcher block" shape had only ever been found on long-tail queries (127-611
+nbHits), so the wins were p1s nobody searches. `government spending scraper` (nbHits **1637**) had a
+block of exactly ONE record whose `storePosition` was worse than ours -> a genuine, available p1 on a
+high-volume query, and `government spending` (1342) was a 3-record block satisfied by the SAME
+27-char phrase. Both landed p1. **So when batch-probing, do not filter candidates to the long tail:
+probe the 1000-5000-nbHits phrasings too and check block size, because block size and nbHits are
+much less correlated than they look** — `contract awards` (1890 hits) has 61 matchers while
+`government spending scraper` (1637 hits) had 1. The generalizable pattern for why: competitors title
+their Actors after the *site* ("USAspending", "SAM.gov"), so the generic *domain-language* phrase a
+buyer actually types can be completely unclaimed even at high volume.
