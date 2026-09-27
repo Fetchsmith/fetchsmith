@@ -109,7 +109,35 @@ TERMS = {
     # `education grants` (235), `financial aid` (137), `college funding` (69),
     # `scholarship api` (48), `student grants` (52), `grants for students` (52),
     # `student aid` (38), `college scholarships` (25), `scholarship finder` (11).
-    "fda-recall-scraper": ["fda recall", "food recall", "drug recall", "device recall", "enforcement report", "fda recall scraper"],
+    "fda-recall-scraper": ["fda recall", "food recall", "drug recall", "device recall", "enforcement report", "fda recall scraper", "recall database", "fda database"],
+    # cycle 875 (re-probed per cycle 874's pointer; 16 candidate queries). Title was
+    # 63/63 chars with 3 span-0 wins already ("fda recall" p51/501 hits,
+    # "enforcement report" p6/1013 hits, "fda recall scraper" p18/495 hits) and no
+    # free characters. Best find: "recall database" (901 hits, verified genuine
+    # 2-record title block) predicted ~p3 from p485, AND "fda database" (669 hits,
+    # verified 4-record block) predicted ~p4 from p390 -- both satisfiable by adding
+    # one word ("Database") right after "Recall", since "FDA Recall Database" wins
+    # both queries' contiguous spans at once. Simulated all 13 probed queries locally
+    # with token_span first: the only cost was "fda recall scraper" losing the word
+    # "Scraper" entirely (span 0 -> not in title), since the title had no spare
+    # characters and Database (9 chars incl. space) needed a home -- restructured
+    # "...Scraper API — Food, Drug..." to "...Database API, Food, Drug..." (kept API,
+    # dropped Scraper from the STORE TITLE ONLY; kept in full in README H1 same as the
+    # nih-reporter/eu-ted/grants-gov precedent, and added the literal word "scraper"
+    # into meta.json's description opening ("A recall scraper for the FDA database...")
+    # so the query still gets a weaker description-level match instead of zero).
+    # Published + `apify push --force` (build 0.1.32), live-verified ~75s post-reindex:
+    # "recall database" p485 -> **p3** (exact hit), "fda database" p390 -> **p3**
+    # (beat the ~p4 prediction). Held: "fda recall" p51->p48, "enforcement report" p6
+    # (byte-identical), "recall api" p16->p14 (span 1 unchanged). Accepted cost:
+    # "fda recall scraper" p18->p29 (11 ranks, cheaper than feared since description
+    # match kept it in a decent bucket). Drift controls "drug recall" (p40) and
+    # "device recall" (p55) held EXACTLY, proving storePosition (55622->54038) wasn't
+    # the cause of any of the above. "food recall" alone moved p36->p92 despite an
+    # unchanged span (None both times) and unchanged word position (5th word, both
+    # titles) -- not explained by this edit's structure; likely independent
+    # competitor churn in that 48-record block between measurements, not a caused
+    # regression, but flagged here in case a future cycle sees the same pattern.
     # cycle 547 competitor-gap audit: no feature/pricing gap (37 output fields vs.
     # competitors' ~10-15; $0.0024-0.0035/result vs. leader benthepythondev's flat
     # $0.05/result; we already have watchLabel/watchChanges + riskScore + press

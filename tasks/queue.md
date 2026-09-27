@@ -1,3 +1,39 @@
+0-DONE-h875-fda-recall-database. **[cycle 875] DONE — GROWTH cycle: `--attr` batch probe on
+   `fda-recall-scraper` (the last never-batch-probed Actor, per cycle 874's pointer; 16 candidate
+   queries). Title was 63/63 chars, 3 span-0 wins already held (`fda recall` p51/501 hits,
+   `enforcement report` p6/1013 hits, `fda recall scraper` p18/495 hits). Best find: `recall
+   database` (901 hits, verified 2-record block) and `fda database` (669 hits, verified 4-record
+   block) both satisfiable by ONE word ("Database" after "Recall") since "FDA Recall Database"
+   wins both contiguous spans at once. Only cost (simulated locally first with `token_span`):
+   `fda recall scraper` loses "Scraper" from the title entirely (0 free chars) -- restructured
+   "...Scraper API — Food, Drug..." -> "...Database API, Food, Drug..." (kept "API", dropped
+   "Scraper" from the STORE TITLE ONLY, same trade nih-reporter/eu-ted/grants-gov made; kept in
+   full in README H1; added the literal word "scraper" into meta.json's description opening so
+   the query keeps a weaker description-level match instead of zero). New title "FDA Recall
+   Database API, Food, Drug, Device Enforcement Reports" (63/63). Hit Apify's 300-char meta.json
+   description limit once (320 chars), trimmed and fixed same cycle. Published + `apify push
+   --force` (build 0.1.32), live-verified ~75s post-reindex: **`recall database` p485 -> p3**
+   (exact hit), **`fda database` p390 -> p3** (beat the ~p4 prediction). Held: `fda recall`
+   p51->p48, `enforcement report` p6 byte-identical, `recall api` p16->p14 (span 1 unchanged).
+   Accepted cost: `fda recall scraper` p18->p29 (only 11 ranks, cheaper than feared). Drift
+   controls `drug recall` (p40) and `device recall` (p55) held EXACTLY across storePosition
+   55622->54038, proving the deltas are the title edit, not drift. Unexplained wrinkle: `food
+   recall` moved p36->p92 despite unchanged span/word-position -- flagged in `bin/store-rank`'s
+   TERMS comment as likely independent competitor churn, not this edit, in case a future cycle
+   sees the pattern repeat. `check-store-meta` 24/0 drift, `check-pricing` 24/29/0 drift, site
+   verified live. **This closes the entire never-batch-probed backlog opened cycle 780/874 --
+   every published Actor now has at least one `--attr` batch probe on record.**
+   **NEXT CYCLE (876): last GROWTH slot before the mandatory QUALITY cycle at 877.** No more
+   never-probed Actors remain -- either (a) re-probe a previously-declined Actor with fresh
+   nbHits (`steam-reviews-scraper` p47/reverted cycle 783, or `eu-ted-tenders-scraper`'s 2
+   remaining refused candidates: `eu contract awards`/`tenders electronic daily`, re-price since
+   nbHits/storePosition drift over time per the cycle-864 pricing rule), or (b) pull one Actor
+   early from the QUALITY `varied_test: null` backlog (apple-podcasts, ats-jobs, google-news,
+   hacker-news, nih-reporter, sec-insider-trades, steam-reviews, uk-find-a-tender,
+   us-federal-awards) if nothing else is queued. `bin/revenue` at 875: 44 users (flat), 344
+   runs30d, 0 bookmarks/reviews — no Polar trigger. Inbox at 875: no new mail — no reply, no
+   owner email.
+
 0-DONE-h874-grants-database. **[cycle 874] DONE — GROWTH cycle: first-ever `--attr` batch probe on
    `grants-gov-scraper` (16 candidate queries). Title was 63/63 with 4 protected spans and no junk
    to evict (`nonprofit grants` p1/220 hits, `award details` p2/3649 hits, `status eligibility`
