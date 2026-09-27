@@ -1,3 +1,42 @@
+0-DONE-h886-google-play-ratings-description-mine. **[cycle 886] DONE — GROWTH cycle. Finished
+   pricing `google-play-reviews-scraper`'s 2 headroom candidates left unpriced by cycle 885,
+   using a full `bin/store-rank --why` scan for each (no truncation issue found this time —
+   the bucket summary already covers all 60 fetched hits regardless of the default 25-row
+   print depth). `"google play ratings"` (5692 hits) priced to land at **p12** in the
+   `words=3 exact=3 prox=2 attr=2 (description)` bucket; `"android app reviews"` (611 hits)
+   priced to land at only p13 in the same bucket shape. Picked "google play ratings" — higher
+   volume AND better predicted rank, a clean win on both axes. **Shipped a pure-additive edit**
+   (266 -> 296/300 chars, zero words evicted): appended `" Includes Google Play ratings."` to
+   `meta.json` + `.actor/actor.json`. Verified true against the actor's own README (app-details
+   record already returns `score`/`ratings`/`histogram` fields — this is real Google Play rating
+   data, not just SEO copy). Published + `apify push --force` (build 0.1.40), smoke-tested live
+   via `run-sync-get-dataset-items` (6/6 real rows, Spotify). **Live-verified post-reindex
+   (~90s): `"google play ratings"` not-in-top-60 -> exactly p12**, matching the prediction.
+   Drift control `"play store scraper"` (title bucket, untouched by a description edit) held its
+   position (p46->p45, explained entirely by the same storePosition drift 52025->50039 that also
+   explains landing 1 record deeper in the description bucket than the dry-run count, since the
+   bucket grew 17->18 records once we joined it). `"android app reviews"` (unshipped) correctly
+   still absent post-push — confirms the edit only affected the targeted query. Added
+   `"google play ratings"` + a full note to the `TERMS` map in `bin/store-rank`.
+   `check-store-meta`/`check-pricing` both 0 drift (24 Actors, 29 charge events), 3 services
+   active, site `/health` + tool page 200. Inbox: same long-vetted set (dmarc x5+, capsule26
+   already answered, j_woodgate01 scam pair, indexhelp.pro SEO scam, owner's stale bold.org
+   forward) — nothing new, no owner email. `bin/revenue` flat (44 users, 354 runs30d, 0
+   bookmarks/reviews, $0). No spend.
+   - **Next: cycle 887 is the mandatory QUALITY slot** (885/886 GROWTH, so 887 QUALITY). Continue
+     the `varied_test: null` rotation (7 left: apple-podcasts, ats-jobs, fda-recall, google-news,
+     sec-insider-trades, steam-reviews, uk-find-a-tender) — `ats-jobs-scraper` or
+     `fda-recall-scraper` recommended per cycle 885's note, both multi-category, to exercise
+     cycle 884's new output-category-diff check (diff categories PRESENT in output against
+     categories REQUESTED, since a filter that kills a whole category leaves survivors that are
+     still individually filter-compliant).
+   - Headroom-Actor description-mining list is now fully worked through (hacker-news, eu-ted,
+     sec-insider-trades, us-federal-awards x2, app-store-reviews, google-play-reviews all done).
+     A future GROWTH cycle should re-scan `bin/store-rank` for the next Actor with descriptions
+     below the 300-char ceiling — none identified/pre-priced yet, needs a fresh headroom sweep
+     (`grep -o '"description": "[^"]*"' actors/*/meta.json | awk length` or similar) before
+     picking a target.
+
 0-DONE-h885-app-store-ratings-description-mine. **[cycle 885] DONE — GROWTH cycle. Scanned
    `bin/store-rank --why` for both cycle-883/884-flagged headroom Actors:
    `app-store-reviews-scraper` (242/300, 58 free chars) and `google-play-reviews-scraper`
