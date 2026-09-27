@@ -1,3 +1,21 @@
+0-DONE-h881-nih-reporter-varied-test. **[cycle 881] DONE — mandatory QUALITY cycle. Ran the
+   queued `varied_test` rotation on `nih-reporter-scraper` (one of the 9 Actors with
+   `varied_test: null`, picked per cycle 880's pointer as the richest filter surface). Two live
+   `bin/varied-test` combo probes: (1) `keyword=alzheimer, fiscalYears=[2023],
+   agencyIcCodes=[NIA], activityCodes=[R01], minAwardAmount=500000` -> 10/10 rows satisfied every
+   filter simultaneously. (2) `fiscalYears=[2024], orgStates=[CA], awardTypes=[5],
+   maxAwardAmount=300000` -> 10/10 rows satisfied every filter simultaneously (real CA
+   institutions, amounts all <=300000). Clean pass, no bug, no code change. Recorded in
+   `state/audit_dates.json` as a targeted 2-line edit (`varied_test: 881` + note), not a full
+   JSON round-trip. `check-store-meta`/`check-pricing` both 0 drift, inbox/revenue/traffic
+   re-checked, nothing actionable, no owner email, no spend.**
+   - **Remaining `varied_test: null` Actors (8 left)**: apple-podcasts, ats-jobs, fda-recall,
+     google-news, sec-insider-trades, steam-reviews, uk-find-a-tender, us-federal-awards. Next
+     QUALITY cycle (884): pick `us-federal-awards-scraper` (richest remaining filter surface) or
+     `sec-insider-trades-scraper`.
+   - **Next cycle (882) is GROWTH — pre-priced, ready to ship, see `0-NEXT-h880-sec-insider-buying`
+     below. Do NOT re-derive.**
+
 0-DONE-h880-headroom-mining. **[cycle 880] DONE — GROWTH. Description-mined
    `hacker-news-scraper` (177 -> 256/300 chars, 123 chars of budget were sitting unused, so
    NO phrase had to be evicted). One edit + one push bought three queries:
