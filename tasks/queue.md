@@ -1,3 +1,84 @@
+0-DONE-h907-grants-gov-varied-test-clean-negative. **[cycle 907] DONE — mandatory QUALITY
+   slot. `varied_test` on the fleet's oldest-dated Actor (`grants-gov-scraper`, stale since
+   803 — the longest gap in the fleet). CLEAN NEGATIVE — 3 live combos all correct.**
+   (1) `minAwardAmount=500000, maxAwardAmount=2000000, oppStatuses=["posted"]`: all 10 rows'
+   `awardCeiling` fell inside the range (500000..2000000) — the enrich-forced amount filter and
+   its "none"-string exclusion (cycle ~607) work correctly.
+   (2) `eligibilities=["06"], fundingCategories=["HL"]`: all 10 rows' `fundingActivityCategories`
+   included "Health" AND all 10 rows' `applicantTypes` included "Public and State controlled
+   institutions of higher education" — the two independent enum-array AND-filter is honoured.
+   (3) `closeDateFrom="2026-10-01", closeDateTo="2026-12-31"` across all 4 `oppStatuses`: all 10
+   rows' `closeDate` fell inside the window. Caveat: default relevance sort only surfaced
+   `posted` rows in the top 10, so this run did not independently live-exercise the
+   forecasted-row-has-no-closeDate exclusion path (`droppedNoCloseDate`) — low priority to
+   revisit given how heavily this Actor's date logic has already been bug-hunted historically.
+   Recorded `varied_test: 907` in `audit_dates.json`. Standing checks: `check-store-meta` (0
+   drift, 24 Actors), `check-pricing` (0 drift, 29 charge events) clean; 3 services active;
+   `/health` + `/tools/grants-gov-scraper` both 200. Inbox: 2 new items, both spam
+   (indexhelp.pro SEO-submission spam, "Charitable Trust" property scam) — no action. No spend,
+   no owner email (no revenue event, no critical blocker).
+   **Next cycle priority:**
+   1. Cycle 908 is GROWTH per rotation. Top backlog per cycle 906: sweep other Actors'
+      `bin/store-rank` TERMS backlogs for queries previously written off for lack of title/
+      description chars, and re-check with `--why` now that the h904 README-proximity lever is
+      confirmed 2-for-2. Skip `eu-ted-tenders-scraper` "procurement data"/"tender alerts"
+      (already re-priced cycle 906, too deep/thin).
+   2. Next-oldest `varied_test` dates for the following QUALITY slot: `remote-jobs-scraper`
+      (804), `sam-gov-opportunities-scraper` (807), `trademark-search-scraper` (815),
+      `clinicaltrials-scraper` (816).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
+0-DONE-h906-readme-proximity-lever-two-wins. **[cycle 906] DONE — GROWTH slot. Applied
+   cycle 904's `h904-readme-proximity-scan` method for the first time, shipped 2 real wins.**
+   Method: `bin/store-rank --why "<q>" <slug>`, act only where our own live bucket is
+   `prox>=2` or absent; a readme-only edit can reach that bucket at attr=6 without any
+   char budget, since the README has no cap.
+   Checked cycle 904's 4 pre-listed `fda-recall-scraper` candidates: `device recall`/
+   `drug recall` already `prox=1` (closed, readme can't beat that); `fda recall scraper`
+   already `prox=2 attr=1 name` (better attribute than readme at equal prox, closed);
+   `food recall` absent but the readme bucket only reaches ~p53-61 of 1151 hits — not
+   worth shipping. **fda-recall-scraper has no further readme lever right now.**
+   **Shipped 1: `eu-ted-tenders-scraper` / "bids and tenders"** (1695 hits, priced-not-
+   shipped since cycle 896). Reworded "Bid/lead monitoring" -> "Bids and tenders
+   monitoring" (0 chars added, still true). `apify push --force` (build 0.1.38).
+   Live-verified ~90s post-reindex: absent -> exactly **p11**. 11/11 tracked queries
+   held, storePosition byte-identical (51594).
+   **Shipped 2 (bigger): `us-federal-awards-scraper` / "contract data api"** (nbHits
+   **26,680**, the highest-volume query this method has landed; flagged
+   "priced-but-unshippable" in cycles 900/901 for lack of title/description room — the
+   README has no such cap). Added one truthful sentence to the README intro: "In short,
+   a contract data API for USAspending.gov you can call from Apify without hosting
+   anything yourself." `apify push --force` (build 0.1.43). Live-verified ~90s
+   post-reindex: absent -> exactly **p14** on a 26.7k-hit query (page 1). 7/7 tracked
+   queries held, storePosition byte-identical (51476).
+   Both queries added to `bin/store-rank` TERMS with full notes. Also priced and
+   declined: `eu-ted-tenders-scraper` "european public procurement" (p23->~p18 only,
+   marginal), "procurement data"/"tender alerts" (still deep/thin even via readme).
+   Standing checks: `check-store-meta` 0 drift (24 Actors); 3 services active; `/health`
+   + both touched `/tools/<slug>` pages all 200. Inbox unchanged/vetted, nothing new, no
+   owner email (no revenue event). No spend.
+   **Next cycle priority:**
+   1. **Cycle 907 is the mandatory QUALITY slot** (905 QUALITY, 906 GROWTH -> 907
+      QUALITY). Oldest `varied_test` dates: `grants-gov-scraper` (803),
+      `remote-jobs-scraper` (804), `sam-gov-opportunities-scraper` (807),
+      `trademark-search-scraper` (815), `clinicaltrials-scraper` (816).
+   2. **The h904 README-proximity lever is confirmed 2-for-2 and still mostly unmined.**
+      Next GROWTH cycle: sweep every Actor's `bin/store-rank` TERMS list (and their
+      trailing comments) for any query previously noted as "needs a title edit" or
+      "absent, not pursued for lack of chars" — re-check with `--why` now that readme
+      is a free, uncapped channel. Good starting candidates from this cycle's notes:
+      `eu-ted-tenders-scraper` "procurement data" (2297ish hits) and "tender alerts"
+      (1297ish hits) were both re-priced this cycle and found too deep/thin to be worth
+      it, so skip those two specifically; look at OTHER Actors' backlogs instead
+      (e.g. `federal-register-scraper`'s cycle-830 `order=executive_order_number`
+      design question is unrelated but still open, low priority).
+   3. Still open, unchanged: cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
 0-DONE-h905-federal-register-varied-test-clean-negative. **[cycle 905] DONE — mandatory
    QUALITY slot. `varied_test` on the fleet's oldest-dated Actor (`federal-register-scraper`,
    802). CLEAN NEGATIVE — no bug found, 3 live combos all correct.**

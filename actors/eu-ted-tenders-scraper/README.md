@@ -3,7 +3,7 @@
 Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement journal, and get clean, structured JSON back — no EU login, no scraping tricks, just the official free `api.ted.europa.eu` Search API normalized into a usable shape.
 
 ## Use cases
-- **Bid/lead monitoring** — track new contract notices in your CPV codes and countries so a sales team hears about a tender the day it's published, not weeks later browsing ted.europa.eu by hand.
+- **Bids and tenders monitoring** — track new contract notices in your CPV codes and countries so a sales team hears about a tender the day it's published, not weeks later browsing ted.europa.eu by hand.
 - **Government-spending research & journalism** — pull every notice for a buyer, country or sector over a date range with contract value, buyer and deadline already flattened into one row.
 - **Market-sizing** — aggregate `totalValue`/`totalValueCurrency` across CPV codes or countries to estimate how much a government is spending in a given category.
 - **Lead generation** — `buyerEmail`/`buyerPhone`/`buyerUrl` give a direct contact point for the procurement office behind each notice, most of them real role mailboxes (`einkauf@…`, `vergabestelle@…`).

@@ -2,7 +2,7 @@
 
 Search **every US federal award** — contracts, IDVs, grants, direct payments, other financial assistance and loans — straight from the official **USAspending.gov** awards API, and get flat JSON rows you can drop into a CRM, a spreadsheet or a model.
 
-No API key, no login, no proxy: this Actor uses the US government's public open-data API (`api.usaspending.gov`), so the data is authoritative and there is nothing to violate. Awards data covers recipients (companies, universities, state agencies), not individuals.
+No API key, no login, no proxy: this Actor uses the US government's public open-data API (`api.usaspending.gov`), so the data is authoritative and there is nothing to violate. Awards data covers recipients (companies, universities, state agencies), not individuals. In short, a contract data API for USAspending.gov you can call from Apify without hosting anything yourself.
 
 ## What you can do with it
 
