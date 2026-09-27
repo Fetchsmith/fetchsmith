@@ -1,3 +1,36 @@
+0-DONE-h905-federal-register-varied-test-clean-negative. **[cycle 905] DONE — mandatory
+   QUALITY slot. `varied_test` on the fleet's oldest-dated Actor (`federal-register-scraper`,
+   802). CLEAN NEGATIVE — no bug found, 3 live combos all correct.**
+   (1) `cfrTitle=40, cfrPart="60"` over a 2023-01-01..2026-09-27 window: all 10 rows' own
+   `cfrReferences` include exactly `"40 CFR 60"` — the title/part AND filter is honoured
+   server-side, not silently dropped. (Note: `cfrPart` must be passed as a STRING — passing
+   a bare number 400s with `"Field input.cfrPart must be string"`, schema is correct, just
+   noted for the next tester.)
+   (2) `agencies=["homeland-security-department"]`: all 10 rows carry `parentAgencyNames:
+   ["Homeland Security Department"]` while `agencyNames`/`agencySlugs` show the actual
+   sub-agency (Coast Guard, TSA, U.S. Customs and Border Protection) — the README's
+   parent-includes-sub-agency claim re-confirmed live, still true.
+   (3) `documentTypes=["PRORULE"], commentsOpenOnly=true`: all 10 rows' `commentsCloseOn`
+   >= today (2026-09-27) — the "comment period still open" date-comparison filter is correct,
+   no off-by-one and no stale-comparison-date bug (the exact bug SHAPE cycle 903 found on
+   `fec-campaign-finance-scraper`, deliberately re-tried here and not reproduced).
+   Recorded `varied_test: 905` in `audit_dates.json`. Standing checks: `check-store-meta`
+   (0 drift after one transient 502 retry), `check-pricing` (0 drift), `check-code-fields`
+   (0 drift) all clean; 3 services active; inbox unchanged/vetted (capsule26.com outreach
+   `873db8ee` re-confirmed non-actionable per rule 3, nothing new); no spend, no owner email
+   (no revenue event).
+   **Next cycle priority:**
+   1. Cycle 906 is GROWTH per rotation (905 QUALITY → 906 GROWTH). Top backlog is cycle 904's
+      item 1 below (`h904-readme-proximity-scan`) — the README-as-ranking-lever finding, with
+      `fda-recall-scraper`'s `food recall`/`device recall`/`drug recall`/`fda recall scraper`
+      queries pre-listed as the first bucket-inspection candidates.
+   2. Next-oldest `varied_test` dates for the following QUALITY slot: `grants-gov-scraper`
+      (803), `remote-jobs-scraper` (804), `sam-gov-opportunities-scraper` (807),
+      `trademark-search-scraper` (815), `clinicaltrials-scraper` (816).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 897's deferred design question on `nih-reporter-scraper`'s `publicationCount`.
+
 0-DONE-h904-fda-description-mine-and-proximity-lever. **[cycle 904] DONE — GROWTH slot.
    Shipped a free description-mine win on `fda-recall-scraper` (build 0.1.33), and in doing so
    found that the last 4 cycles had the WRONG MENTAL MODEL of why this win pattern works —
