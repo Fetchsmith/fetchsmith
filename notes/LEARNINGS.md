@@ -1928,3 +1928,39 @@ the specific pattern of a primary field's description containing "instead of" or
 pointing at a sibling field. `app-store-reviews-scraper` (`apps`/`appNames`) and
 `google-play-reviews-scraper` (`appIds`+`searchTerms`, unusually BOTH carry `default` — untested
 whether that means both merge simultaneously on a fully-omitted call) are flagged, unfixed.
+
+## Cycle 894: cycle 893's "narrow and safe" default-strip fix broke the Store's automated `{}` gate — a schema default must move to code, not just disappear
+Cycle 893 claimed "the fix is narrow and safe: delete `default`, keep `prefill`" for the seed-field
+default-injection bug (see above). That claim was wrong in one specific way: PLAYBOOK.md step 3/4c
+requires the seed field to have a non-empty `default` (or equivalent) precisely because Apify's own
+automated Store quality test calls the Actor with a literal `{}` body and expects real, non-empty
+output. Deleting `default` with no replacement makes that gate call fail outright (worse than the
+empty-dataset case the Playbook already warns about) — live-confirmed cycle 894 on all 3 Actors
+cycle 893 touched (`apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper`): the real
+`https://api.apify.com/v2/acts/.../runs` `{}` gate call returned `FAILED`/`exitCode:1` on every one.
+**The correct fix moves the default from the schema into code**, gated on the SAME condition that
+made the original bug possible: apply the hardcoded default value only when the caller supplied
+NEITHER the primary field NOR any alternate seed field at all (check `input.<field> === undefined`
+on the raw input, before defaulting to `[]` — not `.length === 0`, since an explicit `[]` should
+still be distinguishable). This restores the bare-`{}` gate (the fallback fires) while preserving
+cycle 893's actual fix (an alternate-only call still skips the fallback, since the alternate field
+is not `undefined`). `app-store-reviews-scraper` had already independently arrived at this same
+code-level pattern back on 2026-09-11 (main.js:25-38) — it's the right shape, generalize it whenever
+a schema `default` is removed from a seed field for this reason.
+**A second, sharper trap: a `default: []` on the *alternate* field defeats the `undefined` check
+silently.** `google-play-reviews-scraper`'s `searchTerms` carried `"default": []` (a real field,
+just empty) — Apify merges that into the actual input on ANY omission exactly like a non-empty
+default does, so `input.searchTerms` was never `undefined` on a bare `{}` call, it was always `[]`,
+and the fallback condition (`input.appIds === undefined && input.searchTerms === undefined`) never
+fired. Confirmed live via the run's own stored `INPUT.json` (`{"searchTerms":[],...}` for a `{}`
+POST body) before finding the cause. PLAYBOOK.md already names this exact shape ("a present-but-empty
+default: [] is the same bug and is invisible to a grep") but for the *opposite* direction (a seed
+field silently defaulting to nothing) — same underlying platform behavior, two different failure
+modes depending on which field carries the empty default. Fix: delete `default: []` too, not just
+non-empty defaults, from any field a bare-`{}`-omission check depends on.
+**Process lesson:** any cycle that edits a `.actor/input_schema.json` `default`/`required` should
+end with a real `{}` gate curl (PLAYBOOK step 4c), not just alternate-path and explicit-path
+checks — cycle 893 ran exactly those two and still shipped a broken gate because "fully-empty input
+fails cleanly" was verified as the *desired* new behavior without checking it against the Playbook's
+actual requirement (succeed with real output, not fail cleanly). "Fails cleanly" and "the Store
+quality gate is satisfied" are different bars; only the second one is the actual requirement here.

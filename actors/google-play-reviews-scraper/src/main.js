@@ -40,8 +40,19 @@ function toAppId(raw) {
   return null;
 }
 
-const appIds = (input.appIds ?? []).map(toAppId).filter(Boolean);
+let appIds = (input.appIds ?? []).map(toAppId).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((s) => String(s).trim()).filter(Boolean);
+// "appIds" used to carry a schema-level "default": ["com.spotify.music"] so Apify's automated
+// Store quality test (a bare `{}` API call) had real output to check. But Apify silently merges a
+// schema default into ANY run that omits the field, including a searchTerms-only API call, mixing
+// an uninvited Spotify review batch into billed results with no warning (same bug class fixed on
+// apple-podcasts-scraper/google-news-scraper/steam-reviews-scraper, cycle 893). Fix: no schema
+// default; replicate it here instead, but only when the caller supplied NEITHER seed field at all
+// (true `{}` omission, not an explicit "appIds": []), so a searchTerms-only call is never polluted.
+if (input.appIds === undefined && input.searchTerms === undefined) {
+  appIds = ['com.spotify.music'];
+  log.info('No "appIds" or "searchTerms" given: running the example app so this call returns real output.');
+}
 const country = String(input.country ?? 'us').toLowerCase();
 const lang = String(input.language ?? 'en').toLowerCase();
 const sortName = String(input.sort ?? 'NEWEST').toUpperCase();

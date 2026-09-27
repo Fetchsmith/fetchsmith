@@ -19,7 +19,7 @@ function timeBudgetOk() {
   return true;
 }
 const input = (await Actor.getInput()) ?? {};
-const queries = (input.queries ?? []).map((q) => String(q).trim()).filter(Boolean);
+let queries = (input.queries ?? []).map((q) => String(q).trim()).filter(Boolean);
 const rssUrls = (input.rssUrls ?? []).map((u) => String(u).trim()).filter(Boolean);
 // The 8 headline sections Google News shows in its own nav, plus 12 sub-section codes that the
 // same `/rss/headlines/section/topic/<CODE>` endpoint serves but Google never links directly.
@@ -39,6 +39,17 @@ const topics = rawTopics.filter((t) => VALID_TOPICS.includes(t));
 const badTopics = rawTopics.filter((t) => !VALID_TOPICS.includes(t));
 // Silently dropping an unknown topic used to make a typo look like "Google has no news today".
 if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL in "Custom RSS feed URLs" instead.`);
+// Cycle 893 removed the schema-level "default" on "queries" because Apify silently merges it into
+// ANY run that omits the field, including a topics/rssUrls-only API call -- polluting billed
+// results with an uninvited example query. But Apify's own automated Store quality test calls with
+// a literal `{}` body and expects real, non-empty output (see PLAYBOOK.md step 3/4c). Replicate the
+// default here instead, but only when the caller supplied NONE of the three seed fields at all
+// (true `{}` omission, not an explicit "queries": []), so a topics/rssUrls-only call is never
+// polluted.
+if (input.queries === undefined && input.rssUrls === undefined && input.topics === undefined) {
+  queries = ['artificial intelligence'];
+  log.info('No "queries", "rssUrls" or "topics" given: running the example query so this call returns real output.');
+}
 const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
 

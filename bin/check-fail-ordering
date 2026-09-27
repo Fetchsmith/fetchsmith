@@ -35,17 +35,18 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1048): (
+    ("apple-podcasts-scraper", 1060): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, the code records watch ids and `continue`s (line 611) without ever calling "
         "pushResult(), so a seed run's charge count is provably 0 and there is no charge "
-        "record to lose. Re-verified cycle 841 by re-reading lines 595-1055 against this "
-        "exact invariant (still holds, no logic change): seedErrors is only populated at "
-        "lines 824/999/1017, all three `if (seeding) seedErrors.push(...)`, and seedErrors.length "
-        "can only be nonzero when seeding=true, during which no charge call is reachable. "
-        "Line shifted from 1024 (cycle 714 baseline) -- text added earlier in the file, no "
-        "logic change here."
+        "record to lose. Re-verified cycle 894 by re-reading the guard at its new location "
+        "(still holds, no logic change): `if (watchMode && seedErrors.length) { await "
+        "Actor.fail(...) }`, byte-identical condition to the cycle-841 re-verification. Line "
+        "shifted from 1048 to 1060 -- cycle 894 added a 12-line default-fallback block near the "
+        "top of the file (restores a bare-`{}` Store-gate default without reintroducing the "
+        "default-seed-injection bug), pushing every later line down by 12; no logic changed "
+        "between the two re-verifications."
     ),
     ("app-store-reviews-scraper", 907): (
         "input validation on the resolved `apps` list, fired before the app/country loop "

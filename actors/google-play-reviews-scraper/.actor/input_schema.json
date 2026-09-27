@@ -8,9 +8,6 @@
       "type": "array",
       "description": "Google Play package names (e.g. com.spotify.music) OR full Play Store URLs (e.g. https://play.google.com/store/apps/details?id=com.spotify.music&hl=en) — paste either, the package name is extracted from the URL's ?id= param.",
       "editor": "stringList",
-      "default": [
-        "com.spotify.music"
-      ],
       "prefill": [
         "com.spotify.music"
       ]
@@ -19,8 +16,7 @@
       "title": "Search terms",
       "type": "array",
       "description": "Alternative to App IDs: search terms; the top matching app(s) for each term will have their reviews fetched.",
-      "editor": "stringList",
-      "default": []
+      "editor": "stringList"
     },
     "country": {
       "title": "Country code",

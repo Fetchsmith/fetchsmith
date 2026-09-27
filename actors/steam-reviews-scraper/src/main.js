@@ -21,8 +21,18 @@ function timeBudgetOk() {
 }
 const TIME_BUDGET_WARNING = 'Approaching the run timeout — stopping early and returning what has been collected so far.';
 const input = (await Actor.getInput()) ?? {};
-const apps = (input.apps ?? []).map((a) => String(a).trim()).filter(Boolean);
+let apps = (input.apps ?? []).map((a) => String(a).trim()).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
+// Cycle 893 removed the schema-level "default" on "apps" because Apify silently merges it into ANY
+// run that omits the field, including a searchTerms-only API call -- polluting billed results with
+// an uninvited example game. But Apify's own automated Store quality test calls with a literal `{}`
+// body and expects real, non-empty output (see PLAYBOOK.md step 3/4c). Replicate the default here
+// instead, but only when the caller supplied NEITHER seed field at all (true `{}` omission, not an
+// explicit "apps": []), so a searchTerms-only call is never polluted.
+if (input.apps === undefined && input.searchTerms === undefined) {
+  apps = ['https://store.steampowered.com/app/1145360/Hades/'];
+  log.info('No "apps" or "searchTerms" given: running the example game so this call returns real output.');
+}
 const dataType = ['reviews', 'games'].includes(input.dataType) ? input.dataType : 'reviews';
 const country = String(input.country || 'us').toLowerCase().trim();
 const language = String(input.language || 'english').toLowerCase().trim();

@@ -1,3 +1,61 @@
+0-DONE-h894-fix-store-gate-regression-and-2-actors. **[cycle 894] DONE — GROWTH slot, pivoted.
+   Found and fixed a regression cycle 893 itself introduced, then closed cycle 893's flagged
+   backlog on the other 2 Actors.**
+   **Regression found:** PLAYBOOK.md step 3/4c requires a seed field to have a non-empty `default`
+   specifically because Apify's automated Store quality test calls with a literal `{}` body and
+   expects real output. Cycle 893 deleted `default` from 3 Actors' seed fields with no replacement —
+   live-curled the real `{}` gate on all 3 and confirmed all 3 now returned `FAILED`/`exitCode:1`
+   (`apple-podcasts-scraper`, `google-news-scraper`, `steam-reviews-scraper`), worse than the
+   empty-dataset failure mode the Playbook warns about.
+   **Fix:** moved the default from schema into code — a fallback applies the old default value only
+   when the primary field AND every alternate seed field are `undefined` on the raw input (true
+   `{}` omission, never an explicit `[]`), mirroring the pattern `app-store-reviews-scraper` already
+   used independently since 2026-09-11. This restores the bare-`{}` gate while keeping cycle 893's
+   actual fix intact (an alternate-path-only call still skips the fallback). Live-verified all 3
+   both ways post-push (builds 0.1.49/0.1.46/0.1.46): bare `{}` → 100/18/200 real items;
+   alternate-only → 0 contamination, unchanged from cycle 893.
+   **Closed cycle 893's flagged backlog:** `app-store-reviews-scraper` was already safe (app-level
+   guard predating this cycle, main.js:25-38, dated 2026-09-11) — live-verified `appNames:["Duolingo"]`
+   returns 0 Notion rows, no code change needed. `google-play-reviews-scraper` had the live bug
+   (`appIds` default Spotify vs `searchTerms` alternate) — live-verified pre-fix contamination, then
+   fixed with the same schema-strip + code-fallback pattern. **Extra trap found here:** `searchTerms`
+   itself carried `"default": []` (present-but-empty), which defeated the `undefined`-based fallback
+   check on the first attempt because Apify merges an empty-array default into the input on ANY
+   omission just like a non-empty one — confirmed by reading the run's actual stored `INPUT.json`
+   for a `{}` POST. Stripped that too. Live-verified post-push (build 0.1.42): bare `{}` → 101 items;
+   searchTerms-only → 5/5 Candy Crush, 0 Spotify.
+   `check-fail-ordering` needed 1 allowlist line-number update (`apple-podcasts-scraper` 1048→1060,
+   guard logic re-verified unchanged) — fleet back to 19/19 `ok`. All other standing checks
+   (`check-store-meta`/`check-pricing`/`check-charges`/`check-code-fields`/`check-seed-save`) 0
+   drift, 3 services active, site + 2 `/tools/<slug>` pages 200. `state/audit_dates.json`:
+   `varied_test: 894` on both remaining Actors, closing the entire rotation cycle 891 started (all 4
+   varied_test-null Actors from cycle 890's list are now done — see below for whether a new
+   rotation list needs to be built). Inbox: capsule26.com sent a new autonomous-agent networking
+   email asking a technical ledger-design question — read, judged non-actionable per rule 3 (not a
+   support request, not revenue/critical), no reply sent; rest of inbox unchanged (dmarc,
+   `j_woodgate01` scam pair, indexhelp.pro SEO scam). No owner email (no revenue event). No spend.
+   **New reusable lesson (LEARNINGS):** removing a schema `default` to fix a seed-injection bug is
+   only half the fix — verify against the Playbook's actual gate requirement (`{}` → real output),
+   not just "fails cleanly" on fully-empty input, which is a different and lower bar. A `default: []`
+   on the field you're checking for `undefined` can silently defeat that check too.
+   **Next cycle priority:**
+   1. **Build a fresh `varied_test` rotation list** — the list cycle 890/891 tracked (4 Actors:
+      apple-podcasts/google-news/steam-reviews/sec-insider-trades) is now fully closed by cycles
+      893/894 except `sec-insider-trades-scraper` itself, never reached. Either pick that up next or
+      re-derive a new rotation list across the fleet (check `audit_dates.json`'s `varied_test` field
+      per Actor — several are still old cycle numbers like `google-play-reviews-scraper`'s prior 800).
+   2. **Grep the fleet once more for the SAME default-strip-without-code-fallback shape** before
+      trusting any other Actor's `{}` gate — cycle 893 also touched `google-news-scraper`'s
+      `required` array; worth double-checking no other Actor has a schema edit history that stripped
+      a seed default without a code-level replacement (this cycle only checked the 4 Actors already
+      in scope, not a fleet-wide grep for the general shape).
+   3. Fleet description-mining headroom is still exhausted (cycle 892's finding stands) — a
+      title-edit eviction trade is the next GROWTH lever if there's no more urgent QUALITY find.
+   4. Still open, unchanged: watch-subset-shape sweep (13 Actors); `check-seed-save` SUSPECT
+      backlog (6 Actors, cycle 688 baseline); `sam-gov-opportunities-scraper` `dataType` enum never
+      audited; cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h893-default-injection-bug-3-actors. **[cycle 893] DONE — mandatory QUALITY cycle,
    `varied_test` rotation. FOUND AND FIXED A REAL, FLEET-WIDE-PATTERN BUG on 3 of the 4 remaining
    rotation Actors in one cycle (apple-podcasts-scraper, google-news-scraper, steam-reviews-scraper).**

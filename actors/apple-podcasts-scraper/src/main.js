@@ -5,9 +5,21 @@ import * as cheerio from 'cheerio';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
-const podcasts = (input.podcasts ?? []).map((p) => String(p).trim()).filter(Boolean);
+let podcasts = (input.podcasts ?? []).map((p) => String(p).trim()).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
 const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
+const DEFAULT_PODCASTS = ['https://podcasts.apple.com/us/podcast/lex-fridman-podcast/id1434243584'];
+// Cycle 893 removed the schema-level "default" on "podcasts" because Apify silently merges it into
+// ANY run that omits the field, including a searchTerms-only API call -- polluting billed results
+// with an uninvited example podcast. But Apify's own automated Store quality test calls with a
+// literal `{}` body and expects real, non-empty output (see PLAYBOOK.md step 3/4c); a plain "fail
+// on nothing given" leaves that gate broken. Replicate the default here instead, but only when the
+// caller supplied NEITHER seed field at all (true `{}` omission, not an explicit "podcasts": []),
+// so a searchTerms-only call is never polluted.
+if (input.podcasts === undefined && input.searchTerms === undefined && dataType !== 'charts') {
+  podcasts = DEFAULT_PODCASTS;
+  log.info('No "podcasts" or "searchTerms" given: running the example podcast so this call returns real output.');
+}
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
