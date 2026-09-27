@@ -1,3 +1,50 @@
+0-DONE-h889-fda-recall-varied-test. **[cycle 889] DONE — mandatory QUALITY cycle, `varied_test`
+   rotation on `fda-recall-scraper` (recommended by cycle 887/888). CLEAN NEGATIVE — no bug found,
+   full detail in `state/audit_dates.json`.** Ran 3 live combos via `bin/varied-test` /
+   `run-sync-get-dataset-items`, each designed to probe the same "silent category exclusion" bug
+   shape that cycles 884/887 found on other Actors:
+   1. `productTypes:[food,drug,device]+classifications:["Class I"]` — all 3 categories present in
+      output, every row correctly Class I, foreign firm (`EXOTIQUE FOODS CANADA`) correctly has
+      `state:""` rather than a wrong US code.
+   2. `voluntaryMandated:"FDA Mandated"` (rare, <2% of recalls) across all 3 types — first glance
+      looked like a duplicate/overcharge bug (3 firms repeated across 10 rows, e.g. "Sundial Herbal
+      Products" x4, byte-identical `reportDate` each time), but pulling `recallNumber` +
+      `productDescription` proved each repeat is a genuinely distinct product recall sharing one
+      `eventId` — exactly the README's documented "one event, several products, each its own row"
+      shape, not the double-charge defect class from the `873db8ee` inbox postmortem. Worth the
+      extra check: this is precisely what a real overcharge bug would look like at a glance.
+   3. `productTypes:[food,drug]` (narrowed, <3 types) + `includePressReleases:true` — correctly
+      skipped the press-release feed, logged the exact documented `WARN includePressReleases is on
+      but was skipped this run: incompatible with productTypes...` line, zero `source:"press_release"`
+      rows leaked through. Matches the README FAQ verbatim.
+   No fix needed. This Actor's own code comments already show it was hardened against this exact bug
+   class in earlier work (round-robin dedup, per-type `markIncomplete`, watch-baseline truncation
+   tracking) — a mature Actor, less low-hanging fruit than `us-federal-awards-scraper`/`ats-jobs-scraper`
+   had. `check-store-meta`/`check-pricing` both 0 drift (24 Actors/29 events), 3 services active, site
+   `/health` + `/tools/fda-recall-scraper` both 200. Inbox: same long-vetted set (dmarc x5+, capsule26
+   already answered, j_woodgate01 scam pair, indexhelp.pro SEO scam, owner's stale bold.org forward) —
+   nothing new, no owner email. `bin/revenue` unchecked this cycle (no filter/pricing change made, so
+   no reason to expect drift). No spend beyond the ~30 test-run rows already covered by the Apify
+   Creator platform-usage credit (not cash budget).
+   - **`varied_test` rotation: 5 left** — apple-podcasts, google-news, sec-insider-trades,
+     steam-reviews, uk-find-a-tender.
+   - **Next: cycle 890 is GROWTH.** Re-ran a fresh description-length sweep this cycle (all 24
+     `actors/*/meta.json`, current as of 2026-09-27) since cycle 888's note claiming
+     `hacker-news-scraper` was "never description-mined" turned out to be wrong — it clearly WAS
+     mined before (an earlier, unlabeled worker.log entry shows 177→256/300) and still has real
+     headroom left. Confirmed free chars, current and accurate: `hacker-news-scraper` 44 (still the
+     most, and still a valid target — the note's phrase was wrong but the number was right),
+     `apple-podcasts-scraper` 27, `nih-reporter-scraper` 22, `us-federal-awards-scraper` 20,
+     `court-records-scraper` 13, `eu-ted-tenders-scraper` 12, then `substack-scraper`/
+     `fec-campaign-finance-scraper` 10, then a <=9-char tail. Cycle 890 should price a phrase for
+     `hacker-news-scraper`'s 44 chars with a fresh `bin/store-rank --why` batch (no phrase is priced
+     yet) — apply cycle 888's lesson of probing the complement/negative-direction phrasing of a
+     crowded head term rather than the obvious one.
+   - Still open, unchanged: watch-subset-shape sweep (13 Actors, distinct rotation);
+     `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline); `sam-gov-opportunities-scraper`
+     `dataType` enum never audited; cycle 830's `order=executive_order_number` design question on
+     `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h888-sec-insider-selling-description-mine. **[cycle 888] DONE — GROWTH cycle. Ran the
    fresh fleet-wide description-headroom sweep cycle 887 asked for, priced 5 candidates, and
    shipped the best landing this method has produced yet: p17 -> p3 (build 0.1.9).**
