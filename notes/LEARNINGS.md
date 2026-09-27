@@ -1774,3 +1774,21 @@ contracts/grants/IDVs"). **A written honesty guarantee is not self-enforcing; gr
 warning the doc promises.** The same false claim had propagated to 4 README spots and the
 zero-row hint message. Fixed all of them in build 0.1.41 and verified both the blind-only and
 partial-blind warning paths live on the platform.
+
+## Cycle 885: 4th consecutive free description-mining win (app-store-reviews-scraper)
+Fifth description-mining edit fleet-wide (cycles 879, 882, 883, now 885) and every single one
+has landed exactly where `bin/store-rank --why` predicted, at zero eviction cost. Pattern now
+solid enough to trust without re-deriving: pick an Actor with free description budget, run
+`--why` on 4-6 candidate buyer phrases that are NOT already adjacent in the copy, prefer a
+query whose top-60 has an `attr=2 (description)` bucket we can join (title-bucket-only queries
+like "app reviews"/"app review scraper" are unreachable without a title edit — 60 title matches
+fill every visible slot), append (never rewrite) a short truthful sentence, publish + force
+push, re-measure after the reindex (typically 90s-5min).
+This cycle: `app-store-reviews-scraper` had only 58 free chars (242/300). Appended
+" Track app store ratings over time with watch mode." — true because the Actor's watch mode
+already ships `watchEvents: ["scoreChanged"]` and per-run `ratingBreakdown`. "app store ratings"
+(4371 hits) unranked -> p33. All previously-tracked queries for this Actor held byte-identical.
+`google-play-reviews-scraper` was the other cycle-880-flagged candidate but only has 34 free
+chars and every 3-word candidate phrase tried ("android app reviews", "google play ratings")
+landed in a description bucket we can't size without knowing exact competitor storePositions in
+that bucket -- left unpriced for a future cycle with more time to fetch the full 60-row table.

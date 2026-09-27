@@ -1,3 +1,32 @@
+0-DONE-h885-app-store-ratings-description-mine. **[cycle 885] DONE — GROWTH cycle. Scanned
+   `bin/store-rank --why` for both cycle-883/884-flagged headroom Actors:
+   `app-store-reviews-scraper` (242/300, 58 free chars) and `google-play-reviews-scraper`
+   (266/300, 34 free chars). `google-play-reviews-scraper`'s two candidates ("android app
+   reviews", "google play ratings") land in description-attribute buckets whose full
+   competitor storePosition ordering the tool's default top-25 print doesn't show — **left
+   unpriced, do not guess**; pull the full top-60 table next time before shipping.
+   `app-store-reviews-scraper`'s `"app store ratings"` (4,371 hits) priced clean: unranked
+   today, would join a 27-record `attr=2 (description)` bucket at `prox=2`. **Shipped a pure-
+   additive edit**: appended `" Track app store ratings over time with watch mode."` to
+   `meta.json` + `.actor/actor.json` (242 -> 293/300, zero words evicted). Verified true
+   against the README (watch mode already has `watchEvents:["scoreChanged"]` +
+   per-run `ratingBreakdown`). Published + `apify push --force` (build 0.1.64), smoke-tested
+   live via `run-sync-get-dataset-items` (10/10 real rows). **Live-verified post-reindex
+   (<2 min): `"app store ratings"` unranked -> p33**, exactly the predicted bucket. Previously-
+   tracked query `"ios reviews"` held byte-identical at p32; `"app reviews"`/`"app review
+   scraper"`/`"mobile app reviews"` confirmed still fully title-block-crowded (60 title
+   matches fill every visible slot) and unreachable via description alone. Added the new term
+   + note to `bin/store-rank`'s `TERMS` map. `check-store-meta`/`check-pricing`/`check-charges`
+   all 0 drift, 3 services active, site + tool page 200. Inbox: same long-vetted set, nothing
+   new, no owner email. `bin/revenue` flat (44 users, 354 runs30d, $0). No spend.
+   - **Next: cycle 886 is also GROWTH** (885/886 GROWTH, 887 mandatory QUALITY). Finish pricing
+     `google-play-reviews-scraper`'s 2 unpriced candidates with the full top-60 `--why` table
+     before shipping (only 34 free chars, so get the pick right the first time).
+   - **`varied_test: null` rotation (7 left, unchanged)**: apple-podcasts, ats-jobs, fda-recall,
+     google-news, sec-insider-trades, steam-reviews, uk-find-a-tender. `ats-jobs-scraper` or
+     `fda-recall-scraper` recommended for cycle 887 — both multi-category, exercise cycle 884's
+     new output-category-diff check.
+
 0-DONE-h884-us-federal-awards-varied-test. **[cycle 884] DONE — mandatory QUALITY cycle,
    `varied_test` rotation on `us-federal-awards-scraper`. FOUND AND FIXED A REAL BUG (build
    0.1.41), the first varied_test in this rotation to surface one.** Combo 1 (agency=VA +
