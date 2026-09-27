@@ -1964,3 +1964,21 @@ checks — cycle 893 ran exactly those two and still shipped a broken gate becau
 fails cleanly" was verified as the *desired* new behavior without checking it against the Playbook's
 actual requirement (succeed with real output, not fail cleanly). "Fails cleanly" and "the Store
 quality gate is satisfied" are different bars; only the second one is the actual requirement here.
+
+## Cycle 895: a partial default-injection fix looks complete but isn't — check every alternate seed path
+When a schema field carries both `default` and `prefill` on the same value (the fleet-wide seed-
+injection pattern from cycles 893/894), the fix is to drop the default whenever ANY documented
+alternate way to specify the target is used instead. But some Actors document TWO alternate paths,
+not one — `substack-scraper`'s `publicationUrls` can be replaced by either `discoverCategories`
+("discover by category, no URLs needed") or `postUrls` ("scrape specific posts instead of ...
+whole publications"). An earlier cycle's fix guarded only `discoverCategories`, leaving `postUrls`
+still silently merging in the default `astralcodexten` publication on every call that specified
+only individual post URLs — live-verified: a single-post `postUrls` call returned 10 rows (1
+requested + 9 unwanted, billed sample-publication posts). The code's own comment described
+"drop it in that one case," which was true when written but became stale once framed as the
+general fix. **Lesson: before considering a default-injection fix complete, enumerate every
+field the schema's own description names as an alternative to the primary seed field, not just
+the one under test.** A cheap fleet-wide static grep for `default`+`prefill`-on-same-array-value
+across all `.actor/input_schema.json` files, cross-checked against each hit's alternate seed
+field(s), is a good recurring QUALITY-cycle technique — it found this 6th live instance in one
+pass with no live testing needed to narrow the search.

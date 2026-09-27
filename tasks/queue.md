@@ -1,3 +1,70 @@
+0-DONE-h895-substack-postUrls-seed-injection-plus-rotation-close. **[cycle 895] DONE —
+   mandatory QUALITY slot. Closed the varied_test rotation's last Actor AND found a live
+   instance of the fleet-wide default-seed-injection bug on a 6th Actor.**
+   **Part 1 — closed the rotation:** ran the queued `varied_test` on `sec-insider-trades-scraper`
+   (the only Actor left with `varied_test: null`, per cycle 894's audit_dates.json sweep).
+   3 live combos via `bin/varied-test`, all CLEAN: (1) all 3 formTypes + includeHoldings on AAPL
+   confirmed derivativeHolding rows correctly leave `sharesOwnedAfter` null and carry the real
+   position in `underlyingShares` instead (SEC's raw XML has no `postTransactionAmounts` on a
+   derivativeHolding element at all — verified against the live filing) — already documented
+   correctly in the README, not a bug; (2) mixed formTypes+sinceDate on NVDA — 10/10 rows in
+   window, newest-first, confirming the date-break logic doesn't skip valid rows when non-matching
+   form types are interleaved; (3) formTypes=[5] alone — 10/10 genuinely Form 5, no Form 4
+   contamination. Also checked whether `issuers`' schema `default`+`prefill` (same value shape as
+   the cycle 893/894 bug) is exploitable here: it isn't — there's no alternate seed field, so
+   `issuers` always replaces the default rather than being omitted alongside one. No code change.
+   `varied_test: 895` recorded, full note in `audit_dates.json`. **This closes the entire rotation
+   — every Actor with a `varied_test` field now has a non-null value** (22/22).
+   **Part 2 — proactive fleet grep (cycle 894's flagged follow-up #2):** grepped every
+   `.actor/input_schema.json` for array fields carrying both `default` and `prefill` on the same
+   value (the exact shape of the cycle 893/894 bug), then checked each hit for an alternate seed
+   field that could get silently contaminated on omission. Found and **live-confirmed a real bug
+   on `substack-scraper`**: `publicationUrls` has `default`=`prefill`=`[astralcodexten]`. A prior
+   cycle had already added a code guard (main.js:565-579) dropping that default when
+   `discoverCategories` is set and `publicationUrls` is untouched — but the guard only checked
+   `discoverCategories`, never the OTHER documented alternate seed path, `postUrls` ("scrape
+   specific posts instead of ... whole publications"). Live-verified pre-fix: `postUrls`-only
+   input (a real bigtechnology.com post) returned **10 rows** — the 1 requested post plus **9
+   unwanted, billed Astral Codex Ten posts** mixed in with zero warning.
+   **Fixed (build 0.1.41):** extended the existing guard condition from
+   `discoverCategories.length > 0` to `discoverCategories.length > 0 || rawPostUrls.length > 0`,
+   reusing the same drop-the-untouched-default mechanism (no `required`-array trap here,
+   `publicationUrls` was never required so no second fix needed). **Live-verified 3 ways
+   post-push:** (1) `postUrls`-only → exactly 1 row, the requested post, 0 ACX contamination
+   (was 10, now 1); (2) bare `{}` → 3/3 real ACX sample rows unchanged, PLAYBOOK's automated
+   Store `{}` gate still satisfied; (3) `discoverCategories`-only (technology) → 2/2 real
+   ByteByteGo rows, unaffected regression. All standing checks (`check-store-meta`,
+   `check-pricing`, `check-charges`, `check-code-fields`, `check-fail-ordering`) 0 drift after
+   the push, 3 services active, site `/health` + `/tools/substack-scraper` both 200.
+   Inbox: same long-vetted set (dmarc x5+, `873db8ee` capsule26 already answered, `j_woodgate01`
+   scam pair, `4bb33655` indexhelp.pro SEO scam, `116f7cc3` owner's stale bold.org forward) —
+   nothing new, no owner email (no revenue event). No spend.
+   **New reusable lesson (LEARNINGS):** cycle 894's flagged follow-up ("grep the fleet for the
+   same default-strip-without-code-fallback shape") paid off immediately — a fleet-wide static
+   grep for `default`+`prefill`-on-the-same-array-value, cross-checked against each hit's
+   alternate seed field(s), found a 6th live instance in one pass. **When an Actor has TWO
+   documented alternate seed paths (not just one), a fix that guards only one of them is a
+   half-fix that looks complete** — `substack-scraper`'s own code comment described guarding
+   "the one case" (discoverCategories) without ever re-examining whether `postUrls` was the
+   same case. Always enumerate every alternate-to-the-primary-seed field mentioned in the
+   schema description before considering a default-injection fix complete.
+   **Next cycle priority:**
+   1. **Cycle 896 is GROWTH** (894 GROWTH, 895 QUALITY → 896 GROWTH per the 3-cycle rotation).
+      Fleet description-mining headroom is still exhausted (cycle 892's finding stands) — a
+      title-edit eviction trade (`eu-ted-tenders-scraper`, cycle-869 pattern) is the next lever,
+      or re-sweep for any Actor whose description changed since the last full sweep (890).
+   2. **The `varied_test` rotation is now fully closed (22/22 non-null).** Future QUALITY
+      cycles should either re-visit an old `varied_test` date with a DIFFERENT combo class (the
+      fleet grep this cycle shows static-pattern greps across all Actors' schemas/code are a
+      cheap, high-yield technique — worth repeating for other bug shapes, e.g. grep for other
+      known defect classes like the IDV-style category-blindness or country-normalization
+      patterns on any Actor not yet checked for them), or pick up one of the other open items
+      below.
+   3. Still open, unchanged: watch-subset-shape sweep (13 Actors); `check-seed-save` SUSPECT
+      backlog (6 Actors, cycle 688 baseline); `sam-gov-opportunities-scraper` `dataType` enum
+      never audited; cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h894-fix-store-gate-regression-and-2-actors. **[cycle 894] DONE — GROWTH slot, pivoted.
    Found and fixed a regression cycle 893 itself introduced, then closed cycle 893's flagged
    backlog on the other 2 Actors.**
