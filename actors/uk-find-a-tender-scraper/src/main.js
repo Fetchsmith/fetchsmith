@@ -16,6 +16,37 @@ const stages = (input.stages ?? ['tender'])
 const VALID_SOURCES = ['fts', 'cf'];
 const sources = uniqStrings((input.sources ?? ['fts', 'cf']).map((s) => String(s).toLowerCase().trim()))
     .filter((s) => VALID_SOURCES.includes(s));
+
+// Contracts Finder's "stages" API parameter silently accepts "contract"/"implementation" (no
+// 400, unlike a genuinely invalid value) but its OCDS feed never actually tags a release either
+// way -- live-verified cycle 891: querying it for stages=contract or stages=implementation
+// returns the exact same award/awardUpdate-tagged releases as querying for stages=award (same
+// 90/10 split, same records), and an unfiltered 800-release sample across a year never produced
+// a single "contract" or "implementation" tag. Since matches() below only trusts the real
+// release tag, CF can never deliver a row for either value -- only Find a Tender's own tag can
+// (verified separately, cycle 838). This directly contradicted this Actor's own README/FAQ claim
+// that CF "handles all 5 values correctly" with "genuine data" -- corrected there too.
+const CF_BLIND_STAGES = ['contract', 'implementation'];
+const cfBlindStages = stages.filter((s) => CF_BLIND_STAGES.includes(s));
+if (cfBlindStages.length && sources.includes('cf')) {
+    const usableByCf = stages.filter((s) => !CF_BLIND_STAGES.includes(s));
+    const ftsExcluded = !sources.includes('fts');
+    log.warning(
+        `Contracts Finder's OCDS feed never tags a release "${cfBlindStages.join('" or "')}" -- it only ever uses `
+        + `planning/tender/award/awardUpdate tags, even though its "stages" API parameter silently accepts `
+        + `${cfBlindStages.join('/')} (returning the same releases as "award", not distinct data). Contracts Finder `
+        + `can never contribute a row for ${cfBlindStages.join('/')} -- only Find a Tender's own tag can. `
+        + (ftsExcluded
+            ? (usableByCf.length
+                ? `"fts" is excluded from sources, so this run will only match ${usableByCf.join('/')} (from Contracts Finder); `
+                  + `nothing will ever match ${cfBlindStages.join('/')} this way.`
+                : `"fts" is excluded from sources and no other stage was requested, so this run cannot return anything at all. `
+                  + 'Add "fts" to sources, or add "planning"/"tender"/"award" to stages.')
+            : `Find a Tender will supply any ${cfBlindStages.join('/')} matches; Contracts Finder rows in this run `
+              + `will only cover ${usableByCf.length ? usableByCf.join('/') : 'nothing'}.`),
+    );
+}
+
 const updatedWithinDays = Math.min(Math.max(Number(input.updatedWithinDays ?? 7), 1), 365);
 
 // Absolute date window. When either bound is given it overrides the relative
@@ -103,9 +134,12 @@ const PAGE_SIZE = 100; // hard API cap on both portals: limit=200 returns HTTP 4
 // "contract"/"implementation"/every other real OCDS stage tag returns 0 rows with no error,
 // even over a decade-wide window, even though FTS's own data DOES carry contract- and
 // implementation-tagged releases — same "silently matches nothing" trap cycle 359 found for a
-// comma-joined multi-value stage). Contracts Finder's API is stricter and better-behaved: it
-// 400s on an invalid stage ("X is not a valid OCDS stage") and, probed the same way, genuinely
-// accepts 5 — planning/tender/award/contract/implementation, all with real non-trivial data.
+// comma-joined multi-value stage). Contracts Finder's API doesn't 400 on "contract" or
+// "implementation" either, but don't read that as support: live-verified cycle 891, both values
+// return the identical award/awardUpdate-tagged releases "award" itself returns, and CF's own
+// feed never emits a "contract" or "implementation" tag at all (0 of 800 sampled over a year) —
+// see the CF_BLIND_STAGES warning above. CF's filter is only genuinely correct for its other 3
+// values (planning/tender/award).
 const FTS_STAGES = new Set(['planning', 'tender', 'award']);
 
 // The two official UK procurement portals. Find a Tender carries above-threshold notices
@@ -889,6 +923,10 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
+    // Non-empty only when "stages" included "contract" and/or "implementation" -- see the
+    // CF_BLIND_STAGES warning above. Contracts Finder's OCDS feed never tags a release either
+    // way, so these values can only ever be matched via Find a Tender.
+    cfBlindStagesRequested: cfBlindStages.length ? cfBlindStages : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

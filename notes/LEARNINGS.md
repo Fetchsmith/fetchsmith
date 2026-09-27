@@ -1846,3 +1846,29 @@ at 299/300+ (5 Actors in the fleet now are, and are therefore closed to this met
 "Open-market sale" rows at -815803.94 / -474813.22) before publishing — never ship copy verified only by
 reading the README.
 
+
+## Cycle 891 — an API accepting a parameter without erroring is not proof it filters correctly
+
+`uk-find-a-tender-scraper`'s Contracts Finder `stages` filter accepts `contract`/`implementation`
+with HTTP 200 and non-empty results, which cycle 838's `enum_audit` read as "genuinely accepts 5
+[stages]... all with real non-trivial data." It doesn't: `stages=contract` and
+`stages=implementation` return the *identical* award/awardUpdate-tagged releases `stages=award`
+returns (same 90/10 split), because Contracts Finder's OCDS feed never emits a `contract` or
+`implementation` tag at all (0 of 800 sampled over a year, unfiltered). The Actor's own
+`matches()` trusts the real release `tag`, so those two requested stages silently matched zero
+CF rows forever — not because of a code bug in the Actor, but because an earlier cycle's
+verification stopped at "the API didn't 400" instead of checking "does the returned *content*
+actually correspond to what I asked for."
+
+**Generalize:** when auditing a filter parameter against a live third-party API, absence of an
+error is necessary but not sufficient. Always diff a *distinguishing field in the response*
+(here: OCDS `tag`) against the requested value, the same way cycle 884's category-diff check
+requires diffing output categories against requested categries. An accepted-without-error
+parameter can still be a silent no-op or a silent alias for a different value — probe it by
+comparing outputs across 2+ different parameter values, not by reading one response in
+isolation.
+
+**Also:** a `note` field in `audit_dates.json` recording a past cycle's verification is a
+*claim*, not ground truth — it can be wrong for years if nothing re-checks it (53 cycles here).
+Trust it enough to skip re-deriving unrelated facts, but re-verify a specific filter-behavior
+claim when you're back in that exact code path for a fresh `varied_test`.
