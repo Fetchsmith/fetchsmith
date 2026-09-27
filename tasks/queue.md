@@ -1,3 +1,54 @@
+0-DONE-h896-eu-ted-title-trade-and-store-price-tool. **[cycle 896] DONE — GROWTH slot.
+   Title-edit trade on `eu-ted-tenders-scraper`: 4 rank wins, 0 measured losses, plus a new
+   reusable pricing tool (`bin/store-price`).**
+   **What shipped:** title `EU European Tenders – TED Government Tenders Europe, CPV Codes` (62)
+   -> `Tender Data API – EU European Tenders, TED Europa, CPV Codes` (60/63). `apify-admin publish`
+   + `apify push --force` (build 0.1.37), reindex confirmed via `store-rank --meta`, measured
+   ~110s post-push.
+   **Measured (every prediction exact):** `tender data` (nbHits 5902, the highest-nbHits query ever
+   priced for this Actor) absent-from-top-200 -> **p5**; `tender data api` (5229) absent -> **p1**
+   (the words=3 exact=3 prox=2 attr=0 bucket was EMPTY — adding "API" right after "Tender Data"
+   bought a second, bigger query for 4 characters); `tenders api` (3689) absent -> **p21** (page 1;
+   local model said p143, so a prox=3 title match beat the model again, same direction as cycle 872
+   #2); `ted europa` (388) p122 -> **p2**, recovering the win cycle 869 had traded away.
+   Held inside the storePosition drift band (51438 -> 51701): `european tenders` p2, `cpv codes` p2,
+   `ted tenders` p30->p31, `eu tenders` p56->p57, `tender notices` p35, `public procurement` p170.
+   **The eviction cost NOTHING measurable** — "Government Tenders Europe" left the title entirely,
+   yet `government tenders europe` (206) still measures **p1**, now held from bucket
+   `(3,3,2,attr=6)` = the README H1, which carries the phrase contiguously. New rule: before
+   refusing a title trade to protect a low-nbHits p1, check whether the README already carries the
+   phrase — on a thin query the readme attribute holds the rank.
+   **New tool `bin/store-price`** (the cycle's reusable product): batch-prices a candidate query
+   list with cycle 876's real bucket arithmetic, and with `--title "..."` simulates a proposed
+   title per query (exact/prox from word positions) including regressions on queries we already
+   win. 16 phrases priced in one pass is what surfaced `tender data`'s 4-record title bucket with
+   nothing ahead of it. Self-tested against this cycle's live measurement (predictions matched).
+   Documented limits in its docstring: prefix-only matches are assumed not to count toward
+   nbExactWords (untested -> treat such predictions as a floor), and prox>=3 title matches are
+   predicted pessimistically.
+   Standing checks after the push: `check-store-meta` 0 drift (registry.json/meta.json/actor.json
+   all synced), `check-pricing` 0 drift, 3 services active, `/health` 200,
+   `/tools/eu-ted-tenders-scraper` 200 serving the new title. Inbox unchanged/vetted, no owner
+   email (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 897 is the mandatory QUALITY slot** (895 QUALITY, 896 GROWTH -> the 3-cycle rotation
+      puts QUALITY next). The `varied_test` rotation is fully closed (22/22 non-null), so per cycle
+      895's note either re-visit an old `varied_test` with a DIFFERENT combo class, or run another
+      fleet-wide static-pattern grep (that technique found the 6th seed-injection bug in one pass).
+   2. **GROWTH backlog is now concrete and pre-priced** — run `bin/store-price <slug> <queries>` on
+      other Actors the same way. `eu-ted-tenders-scraper` itself still has ~3 spare title chars and
+      these priced-but-untaken candidates: `contract notices` (3023 hits, p23 today, 7-record title
+      bucket -> ~p5, needs "Contract Notices" = 16 chars, so it is a TRADE not an add);
+      `bids and tenders` (1684, 1-record -> ~p2); `tender alerts` (1297, -> ~p6); `procurement data`
+      (2297, -> ~p11); `european public procurement` (483, 1-record -> ~p1, 27 chars).
+      The generalizable next move: `store-price` the *generic domain-language* phrases (not
+      site-name phrases) for every Actor whose niche has site-named competitors — that is where the
+      unclaimed high-nbHits title buckets are.
+   3. Still open, unchanged: watch-subset-shape sweep (13 Actors); `check-seed-save` SUSPECT backlog
+      (6 Actors, cycle 688 baseline); `sam-gov-opportunities-scraper` `dataType` enum never audited;
+      cycle 830's `order=executive_order_number` design question on `federal-register-scraper`;
+      cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h895-substack-postUrls-seed-injection-plus-rotation-close. **[cycle 895] DONE —
    mandatory QUALITY slot. Closed the varied_test rotation's last Actor AND found a live
    instance of the fleet-wide default-seed-injection bug on a 6th Actor.**

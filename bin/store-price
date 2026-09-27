@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""store-price — batch-price candidate Store queries AND simulate a title edit.
+
+Added cycle 896. `bin/store-rank --why "<q>" <slug>` prints the bucket table for ONE
+query, which is the right model (cycle 876) but too slow to shop with: pricing 16
+candidate phrases by hand is 16 invocations of eyeball arithmetic. This does the same
+arithmetic mechanically for a whole candidate list, and — given a proposed title — also
+predicts the rank that title would land on each query, so an edit is simulated before
+it is shipped.
+
+Ranking model (Apify's real pipeline, cycle 876):
+    nbTypos asc -> words desc -> nbExactWords DESC -> proximityDistance asc
+    -> attribute (firstMatchedWord//1000) asc -> storePosition asc
+Predicted rank in a target bucket = (records in strictly-earlier buckets)
+    + (records in the target bucket with a better storePosition) + 1.
+
+Usage:
+  bin/store-price <slug> "query one" "query two" ...
+      For each query: nbHits, our live rank+bucket, and the rank we would get if the
+      query became a CONTIGUOUS TITLE match (target bucket words=n exact=n prox=n-1
+      attr=0). This is the shopping list — look for a small `tgtN` with `ahead`=0.
+  bin/store-price <slug> --title "Proposed Title" "query one" "query two" ...
+      Also simulates the proposed title per query (exact/prox from the title's own word
+      positions) and predicts the rank it lands, including regressions on queries the
+      current title already wins. Run this before every title edit.
+
+Known model limits (both seen live, both in the SAFE direction):
+  * prefix matching: only the LAST query token is prefix-matched (cycle 868), and a
+    prefix-only match is assumed NOT to count toward nbExactWords — untested, so a
+    prediction that depends on it is a floor, not an estimate.
+  * a non-contiguous (prox>=3) title match is predicted pessimistically: cycle 896
+    modelled `tenders api` at p143 and it landed p21.
+Measurement, not simulation, is still the source of truth: re-run `bin/store-rank
+<slug>` ~100s after `apify push --force` and compare against the prediction.
+"""
+import itertools
+import re
+import sys
+import time
+
+sys.path.insert(0, "/root/agent/bin")
+import importlib.util
+
+# store-rank has no .py extension, so spec_from_file_location needs an explicit loader.
+from importlib.machinery import SourceFileLoader
+
+_spec = importlib.util.spec_from_loader(
+    "storerank", SourceFileLoader("storerank", "/root/agent/bin/store-rank"))
+sr = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(sr)
+
+
+def words(title):
+    return [w for w in re.split(r"[^a-z0-9\.]+", title.lower()) if w]
+
+
+def simulate(title, query):
+    """(words, nbExactWords, proximityDistance) this title would score on query."""
+    tw, qt = words(title), query.lower().split()
+    pos = []
+    for i, t in enumerate(qt):
+        exact = [j for j, w in enumerate(tw) if w == t]
+        pref = [j for j, w in enumerate(tw) if w.startswith(t) and w != t] if i == len(qt) - 1 else []
+        if not exact and not pref:
+            return None
+        pos.append((exact, pref))
+    best = None
+    for combo in itertools.product(*[e + p for e, p in pos]):
+        nex = sum(1 for k, (e, _p) in enumerate(pos) if combo[k] in e)
+        cand = (-nex, max(combo) - min(combo))
+        if best is None or cand < best[0]:
+            best = (cand, nex, max(combo) - min(combo))
+    return {"words": len(qt), "exact": best[1], "prox": best[2]}
+
+
+def bucket(hit):
+    ri = hit.get("_rankingInfo", {})
+    f = ri.get("firstMatchedWord")
+    return (ri.get("words"), ri.get("nbExactWords"), ri.get("proximityDistance"),
+            (f // 1000) if isinstance(f, int) else None)
+
+
+def order(k):
+    return (-(k[0] or 0), -(k[1] or 0),
+            k[2] if k[2] is not None else 9999, k[3] if k[3] is not None else 99)
+
+
+def predict(hits, target, our_sp):
+    ahead = sum(1 for h in hits if order(bucket(h)) < order(target))
+    same = [h for h in hits if bucket(h) == target]
+    better = sum(1 for h in same if (h.get("storePosition") or 999999) < our_sp)
+    return ahead + better + 1, len(same), ahead
+
+
+def main(argv):
+    if len(argv) < 2:
+        print(__doc__)
+        return 2
+    slug, rest = argv[0], argv[1:]
+    title = None
+    if rest and rest[0] == "--title":
+        title, rest = rest[1], rest[2:]
+    if not rest:
+        print("no queries given", file=sys.stderr)
+        return 2
+    if title:
+        print(f"proposed title ({len(title)}/63 chars): {title}")
+    print(f"{'query':30} {'nbHits':>7} {'live':>5} {'liveBucket':>16} "
+          f"{'titleHit':>9} {'tgtN':>5} {'pred':>6}{'   newTitle -> pred' if title else ''}")
+    for q in rest:
+        r = sr.search(q, hits=200, ranking_info=True)
+        hits = r["hits"]
+        live, our_sp = None, None
+        for i, h in enumerate(hits, 1):
+            if h.get("username") == "fetchsmith" and h.get("name") == slug:
+                live, our_sp = (i, bucket(h)), h.get("storePosition")
+        sp = our_sp or 51438
+        n = len(q.split())
+        p, tn, _ = predict(hits, (n, n, max(n - 1, 0), 0), sp)
+        row = (f"{q[:30]:30} {r['nbHits']:>7} {str(live[0]) if live else '-':>5} "
+               f"{str(live[1]) if live else '-':>16} {'contig':>9} {tn:>5} {'p'+str(p):>6}")
+        if title:
+            s = simulate(title, q)
+            if s is None:
+                row += "   no match"
+            else:
+                np_, ntn, _ = predict(hits, (s["words"], s["exact"], s["prox"], 0), sp)
+                row += (f"   exact={s['exact']} prox={s['prox']} -> p{np_}"
+                        f" (bucket holds {ntn})")
+        print(row)
+        time.sleep(0.2)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

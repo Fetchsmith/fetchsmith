@@ -1982,3 +1982,37 @@ the one under test.** A cheap fleet-wide static grep for `default`+`prefill`-on-
 across all `.actor/input_schema.json` files, cross-checked against each hit's alternate seed
 field(s), is a good recurring QUALITY-cycle technique — it found this 6th live instance in one
 pass with no live testing needed to narrow the search.
+
+## Cycle 896 — Store titles: price candidates mechanically, and check the README before protecting a p1
+
+**1. Batch bucket-arithmetic pricing beats phrase-by-phrase probing, and it found the best title
+lever this fleet has seen.** Cycle 876 gave the correct ranking model (`--why`), but shopping with
+it one query at a time is slow enough that cycles kept re-pricing the same 4-6 phrases. Scripted
+across 16 candidates (now `bin/store-price`), the standout was obvious in one pass:
+`tender data` (nbHits **5902**) had a contiguous-title bucket of only FOUR records with **zero**
+records in any earlier bucket -> a reachable p5. Shipped and measured exactly p5. **Why that shape
+exists, generalized:** competitors name their Actors after the *site* ("TED", "Contracts Finder",
+"USAspending"), so the *generic domain-language* phrase a buyer actually types is often unclaimed
+even at high volume. Cycle 872 #3 found this at 1637 hits; it holds at 5900. Probe generic phrases,
+not site phrases.
+
+**2. A 4-character add can be worth more than the phrase it decorates.** Putting "API" directly
+after "Tender Data" made `tender data api` (5229 hits) a contiguous 3-word title match, and that
+bucket (`words=3 exact=3 prox=2 attr=0`) was **completely empty** -> p1, measured. The same 4 chars
+also put `tenders api` (3689) on page 1 at p21. When a 2-word phrase is worth buying, always price
+the 2-word phrase PLUS one adjacent qualifier ("api", "data", "database", "scraper") before
+choosing the string — the longer phrase often has a vacant bucket because rivals never write it.
+
+**3. Before refusing a title trade to protect a low-nbHits p1, check the README.** The eviction
+this cycle dropped "Government Tenders Europe" out of the title, and `government tenders europe`
+(206 hits) **still measures p1** — `bin/store-price` shows it now ranks from bucket
+`(3,3,2,attr=6)`, the README H1, which carries the phrase contiguously. Cycle 876 recorded that
+`readme` is searchable but dismissed it as "last bucket, ordered by storePosition"; that is exactly
+good enough to hold a p1 on a thin query where we are the only real answer. Several past cycles
+refused trades to protect small p1s (see cycle 868/869's "low-hits p1 not worth mid-hits p3"). The
+correct test is not "is this p1 valuable" but **"would we still hold it from the README?"**
+
+**4. The local model still under-predicts non-contiguous title matches.** `tenders api` simulated at
+p143 (prox=3) and landed **p21**. Same direction as cycle 872 #2's prefix-match warning but the
+opposite sign — pessimism, not optimism. Treat a prox>=3 prediction as a floor; do not reject a
+candidate on it alone.
