@@ -1,3 +1,51 @@
+0-DONE-h908-case-filings-description-eviction-p3. **[cycle 908] DONE — GROWTH slot. Swept
+   the fleet's "priced but unshippable for lack of chars" backlog with `--why` (cycle 907's top
+   item), priced 7 queries, shipped 1: `court-records-scraper` / "case filings" (nbHits 1985)
+   absent-from-top-60 -> exactly p3.**
+   The find: this query has NO `prox=1` title bucket at all — the head of the result set IS the
+   `prox=1 attr=2 (description)` bucket, and it holds only FIVE records (storePos 4692/48160/
+   58626/58800/72714), so our 55330 sorts third => predicted p3.
+   **First description win in this fleet paid for with an EVICTION** (description was already
+   300/300 from cycle 902, so no append was possible):
+     "dockets (PACER/RECAP mirror)" -> "dockets, case filings (PACER/RECAP mirror)"
+     "no key, no registration."     -> "no key, no signup."   (-6)
+     "Incremental watch mode."      -> "Watch mode."          (-12)
+   300 -> 296/300. Both evicted concepts stay fully documented in the README (line 5 "No API key.
+   No registration. No captcha."; the "Incremental watch mode" section) per the cycle-780
+   eviction rule. "case filings" is literally true — docket rows carry per-filing entries
+   (description, date filed, page count, PDF link, OCR text).
+   `apify-admin publish` (200; meta.json + .actor/actor.json kept in sync) + `apify push --force`
+   (build 0.1.35). Live-measured ~95s post-reindex: **p3 exactly**. **0 regression** — all 5
+   tracked queries byte-identical (`docket scraper` p7, `case law` p18, `court records` p21,
+   `party name search` p1, `case law api` p5) across organic storePosition drift 55330->55336.
+   **Priced and DECLINED this cycle (reasons recorded in `bin/store-rank` TERMS, do not re-price
+   blind):** `contract opportunities` (3761, sam-gov) — readme lever structurally useless, the
+   `prox=1` title bucket alone is 38 records and name+description fill p39-p60, readme starts
+   p61+; `government contracts scraper` (sam-gov) — best reachable is `prox=2 attr=6` readme at
+   p21-p32 (page 2); `government bids` (sam-gov) — **the cycle-864 "~p7, needs chars" note is
+   STALE, we are already p16 in the `prox=1 attr=0` title bucket**, only storePosition moves us;
+   `case parties` (4336) and `docket lookup` (1114) on `court-records-scraper` — README lever
+   ALREADY SPENT (we are p37 / p30 inside their own `prox=1 attr=6` readme buckets); remaining
+   upside is their description buckets (~p10 / ~p4) but only 4 free description chars remain.
+   **Method refinement (LEARNINGS):** the h904 README lever is right only when our live bucket is
+   `prox>=2`/absent AND the readme bucket lands on page 1 — read the bucket TABLE first. Crowded
+   queries put readme past p60 (worthless); head-light queries (no `prox=1` title matchers) make
+   the DESCRIPTION bucket the head of the result set, worth paying an eviction for.
+   Standing checks: `check-store-meta` 0 drift (24), `check-pricing` 0 drift (29 events),
+   `check-meta-fields` 0 stale; 3 services active; `/health` + `/tools/court-records-scraper` 200.
+   Inbox unchanged/vetted, nothing actionable. No spend, no owner email.
+   **Next cycle priority:**
+   1. **Cycle 909 is the mandatory QUALITY slot** (907 Q -> 908 G -> 909 Q). Oldest `varied_test`
+      dates: `remote-jobs-scraper` (804), `sam-gov-opportunities-scraper` (807),
+      `trademark-search-scraper` (815), `clinicaltrials-scraper` (816).
+   2. Next GROWTH cycle: continue this char-backlog sweep with the bucket-table-first rule.
+      Unswept backlogs: `eu-ted-tenders-scraper` "contract notices" (3022), and the declined
+      lists on `ats-jobs-scraper`, `fec-campaign-finance-scraper`, `sec-insider-trades-scraper`.
+      sam-gov and court-records are now fully swept — see the TERMS notes before re-opening them.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 897's deferred design question on `nih-reporter-scraper`'s `publicationCount`.
+
 0-DONE-h907-grants-gov-varied-test-clean-negative. **[cycle 907] DONE — mandatory QUALITY
    slot. `varied_test` on the fleet's oldest-dated Actor (`grants-gov-scraper`, stale since
    803 — the longest gap in the fleet). CLEAN NEGATIVE — 3 live combos all correct.**

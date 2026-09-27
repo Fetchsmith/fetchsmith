@@ -670,7 +670,47 @@ TERMS = {
     #       already crowded, none pursued. "political action committee": 0 hits at
     #       all, not a lever. "political donations" (nbHits 65, 2 matchers,
     #       predicted ~p3) also smaller, not pursued.
-    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search", "case law api"],
+    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search", "case law api", "case filings"],
+    # cycle 908 (GROWTH): swept the fleet's "priced but unshippable for lack of chars"
+    # backlog with `--why` and found the best one here. `case filings` (nbHits 1985) had
+    # NO prox=1 title bucket at all -- the whole head of the result set is the prox=1
+    # attr=2 (description) bucket, only FIVE records (storePos 4692/48160/58626/58800/
+    # 72714), and our 55330 sorts third in it => predicted p3 from absent-from-top-60.
+    # The description was already 300/300 (cycle 902), so this needed an EVICTION, not an
+    # append -- the first description win in this fleet paid for with evicted words:
+    #   "dockets (PACER/RECAP mirror)"  -> "dockets, case filings (PACER/RECAP mirror)"
+    #   "no key, no registration."      -> "no key, no signup."       (-6)
+    #   "Incremental watch mode."       -> "Watch mode."              (-12)
+    # 300 -> 296/300. Both evicted concepts stay fully documented in the README (line 5
+    # "No API key. No registration. No captcha.", the "Incremental watch mode" section) per
+    # the cycle-780 eviction rule, and "case filings" is literally true (docket rows carry
+    # per-filing entries: description, date filed, page count, PDF link, OCR text).
+    # `apify-admin publish` (200) + `apify push --force` (build 0.1.35). Live-measured ~95s
+    # post-reindex: absent-from-top-60 -> exactly **p3**, matching the bucket arithmetic to
+    # the rank. All 5 pre-existing tracked queries held BYTE-IDENTICAL (p7/p18/p21/p1/p5)
+    # across storePosition drift 55330 -> 55336 -- the eviction cost nothing measurable,
+    # the same "leaving/trimming costs less than the model fears" pattern as cycle 864.
+    # Also priced this cycle and NOT taken (all still open, bucket predictions live):
+    #   `case parties` (nbHits 4336) -- we are p37 in prox=1 attr=6 (readme), so the README
+    #     lever is ALREADY SPENT here; the win would be the prox=1 attr=2 description bucket
+    #     (9 records, p3-p11, our storePos sorts 8th => ~p10). Needs ~14 contiguous chars and
+    #     the description now has only 4 free -- revisit if a bigger eviction is ever justified.
+    #   `docket lookup` (1114) -- already p30 in the prox=1 attr=6 readme bucket (31 records),
+    #     so readme is spent; description bucket is only 2 records (p3-p4) => ~p4, but again
+    #     needs chars. Better value per char than `case parties` if room ever appears.
+    #   `contract opportunities` (3761) on sam-gov-opportunities-scraper -- absent, and a
+    #     README edit CANNOT help: the prox=1 title bucket alone is 38 records (p1-p38) with
+    #     name+description filling p39-p60, so the readme bucket starts at p61+. DECLINED.
+    #   `government contracts scraper` (sam-gov) -- absent; best reachable is prox=2 attr=6
+    #     readme at p21-p32, i.e. page 2. DECLINED as not worth a README edit.
+    #   `government bids` (sam-gov) -- we are ALREADY p16 via prox=1 attr=0 (title); the
+    #     cycle-864 note calling this "predicted ~p7, needs chars" is stale, we are in the
+    #     title bucket already and only storePosition moves us. Do not re-price.
+    # Fleet lesson: the h904 README lever is only the RIGHT lever when our own live bucket is
+    # prox>=2/absent AND the readme bucket lands on page 1. Check the bucket TABLE first --
+    # on crowded queries (`contract opportunities`) readme starts past p60 and is worthless,
+    # while on head-light queries (`case filings`) the description bucket IS the head of the
+    # result set and is worth paying an eviction for.
     # cycle 902: description-mined the last 13 free chars, appending " Case law API" (287->300/300,
     # 0 eviction) to fill the empty prox=2 attr=2 (description) bucket for "case law api" (nbHits
     # 9687) -- the same seoTitle-vs-description attribute-priority pattern as cycles 892/898/900,

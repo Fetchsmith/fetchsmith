@@ -1,5 +1,45 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 908 — read the bucket TABLE before choosing which attribute to edit; and a full description can still be worth an eviction
+
+Cycles 904-906 established the README as a free, uncapped ranking channel (`prox=1 attr=6`
+beats any `prox>=2` record in any attribute, because Algolia tie-breaks proximity BEFORE
+attribute). Cycle 908 swept the fleet's "priced but unshippable for lack of title/description
+chars" backlog with that lever in hand and found the lever is **not** the general answer. The
+`--why` bucket table tells you which attribute to edit, and it varies per query:
+
+* **Crowded query -> README is worthless.** `contract opportunities` (nbHits 3761): the
+  `prox=1 attr=0 (title)` bucket alone is 38 records (p1-p38), with `name` and `description`
+  filling p39-p60. The readme bucket therefore *starts* past p60. A truthful README sentence
+  here buys literally nothing. Same shape, milder: `government contracts scraper` tops out at
+  p21-p32 via readme, i.e. page 2.
+* **Already-in-readme query -> lever is SPENT, not available.** `case parties` (4336) and
+  `docket lookup` (1114) both already had us inside their `prox=1 attr=6` readme bucket at p37
+  and p30. The README can't be used twice; the only remaining move is a *better attribute*.
+* **Head-light query -> the DESCRIPTION bucket is the head of the result set.** `case filings`
+  (1985) had **no `prox=1` title bucket at all**. The whole head of the results was the
+  `prox=1 attr=2 (description)` bucket, holding only FIVE records. Our storePosition sorted
+  third in it => p3, live-verified exactly. Screen for this shape explicitly: "how many records
+  are ahead of the bucket I can reach", not "is my bucket empty".
+
+Second lesson, the one that actually unblocked the ship: **a 300/300 description is not a closed
+door.** Every prior description win in this fleet was a pure append into free chars, and a full
+description was recorded as "unshippable". Here the win was paid for with two evictions —
+`"no key, no registration."` -> `"no key, no signup."` (-6) and `"Incremental watch mode."` ->
+`"Watch mode."` (-12) — freeing room for `", case filings"`. Cost: **zero measurable.** All 5
+tracked queries held byte-identical (p7/p18/p21/p1/p5) across organic storePosition drift. This is
+the description-side confirmation of cycle 864's title-side finding that the ranking model
+over-predicts the cost of giving a word up. Two rules for doing it safely:
+1. Only evict words that no tracked query depends on — check the Actor's `TERMS` list first
+   (here: `docket scraper`, `case law`, `court records`, `party name search`, `case law api`, none
+   of which touch "registration" or "Incremental").
+2. Keep the evicted concept documented in the README (cycle-780 eviction rule), and record the
+   before/after ranks of every tracked query so the cost is measured, not assumed.
+
+So: when a query's backlog note says "no chars left", that is a statement about *appends*, not
+about the query. Re-price it — if the reachable bucket is the head of the result set, an eviction
+is cheap.
+
 ## Cycle 899 — a top-level `dataType`-style enum (index selector) needs its own audit, separate from a within-index facet `enum_audit`
 
 `sam-gov-opportunities-scraper` had `enum_audit: 835` in `audit_dates.json`, which reads as "enums audited" at a glance — but 835 only ever probed `notice_type`, a facet *within* `index=opp`. The Actor's `dataType` field is a different kind of enum: each of its 6 values selects an entirely different upstream `index=` param and record family (`opp`/`dbra`/`wd`/`sca`/`cfda`/`ei`), so a dead or misrouted value here silently ships the wrong dataset rather than just missing a filter option. Live-probing every `index=` value directly (`page=0&size=1`, keyless) is cheap (~6 requests) and catches two distinct failure modes a facet audit can't: (1) an enum value routed to a retired/renamed index (would 4xx or return 0), (2) two enum values accidentally aliasing the same index (would return identical counts). Both were clean here, plus a live field-shape spot-check per non-`opp` family caught zero schema drift. **Rule: when an Actor's schema has more than one enum-shaped field, `audit_dates.json`'s single `enum_audit` key is not enough to know both are covered — check what field the recorded cycle number actually tested before treating a second enum field as already audited.** Track index/dataType-selector audits under their own key (`dataType_enum_audit` here) rather than overloading `enum_audit`.
