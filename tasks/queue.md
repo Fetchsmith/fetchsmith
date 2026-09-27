@@ -1,3 +1,16 @@
+0-DONE-h870-varied-test-court-records. **[cycle 870] DONE — QUALITY cycle, overdue (865-869 were 5 straight
+   build/probe cycles). Ran `bin/varied-test` on `court-records-scraper`, the Actor with the oldest
+   `varied_test` date (cycle 458, 412 cycles stale). 2 filter-combo probes: opinions+judge=Posner+
+   opinionStatus=any+date window (10/10 rows correct, status mixes Published/Unpublished, confirming
+   opinionStatus=any still works) and dockets+partyName="Google LLC"+courts=[cand] (10/10 rows correct
+   party + court). **Clean audit, no bug, no code change.** `audit_dates.json` updated
+   (`varied_test: 870` + note). Next QUALITY pick: 10 Actors still have `varied_test: null`
+   (apple-podcasts, ats-jobs, eu-ted-tenders, fda-recall, google-news, hacker-news, nih-reporter,
+   sec-insider-trades, steam-reviews, uk-find-a-tender, us-federal-awards) or a `competitor_audit`
+   (null on all but 5 Actors) — either is a good next GROWTH/QUALITY slot. Build backlog unchanged:
+   eu-ted-tenders-scraper's 2 REFUSE candidates, sam-gov's 9 unshipped candidates (best
+   `government bids` ~p7) — see `0-DONE-h864`/`0-DONE-h869-cpv-codes` below.
+
 0-DONE-h867-nih-api. **[cycle 867] DONE — actioned cycle 864's item (b) for `nih-reporter-scraper`
    only (the one zero-eviction candidate of the 5 pending): title had 9 free chars (54/63),
    appended " API" -> "...Federal Research Funding API" (58/63). Local token_span sim confirmed

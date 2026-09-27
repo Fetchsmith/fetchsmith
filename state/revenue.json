@@ -1,5 +1,5 @@
 {
- "ts": 1790480292,
+ "ts": 1790483436,
  "date": "2026-09-27",
  "apify": {
   "google-news-scraper": {
@@ -422,8 +422,8 @@
   },
   "remote-jobs-scraper": {
    "public": true,
-   "users": 3,
-   "users30d": 2,
+   "users": 1,
+   "users30d": 1,
    "runs30d": 6,
    "runs": 47,
    "ext_ok30d": 6,
@@ -462,7 +462,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 24,
-  "users": 46,
+  "users": 44,
   "runs30d": 337,
   "ext_ok30d": 334,
   "ext_bad30d": 3,
