@@ -1615,3 +1615,74 @@ much less correlated than they look** — `contract awards` (1890 hits) has 61 m
 `government spending scraper` (1637 hits) had 1. The generalizable pattern for why: competitors title
 their Actors after the *site* ("USAspending", "SAM.gov"), so the generic *domain-language* phrase a
 buyer actually types can be completely unclaimed even at high volume.
+
+## Cycle 876 — Apify Store search: the ACTUAL Algolia ranking pipeline (supersedes the cycle-520/524 model)
+
+Everything the fleet has done to Store metadata for ~350 cycles rested on one
+heuristic from cycle 520: "a title match outranks a description-only match, and
+within a match group `storePosition` decides." That is true but very coarse. Passing
+`getRankingInfo=true` to the same anonymous Algolia query we already use exposes the
+real criteria per hit, and they are **not Algolia's documented default order**.
+
+**Measured pipeline (Apify's `prod_PUBLIC_STORE`):**
+
+    nbTypos asc -> words desc -> nbExactWords DESC -> proximityDistance asc
+    -> attribute (firstMatchedWord) asc -> storePosition asc
+
+Proof it is not the documented order (`attribute` and `proximity` are normally after
+`exact`, but `proximity` is normally BEFORE `attribute` *and* `exact` is after both):
+on query `typed fields incl recipient`, p2 had proximityDistance **24** and still beat
+p4's **17**, because p2 had nbExactWords 4 vs p4's 3. Within each (exact, prox) group
+the attribute index sorts, and storePosition sorts inside that. Verified consistent on
+4 independent queries.
+
+**`firstMatchedWord` = attributeIndex * 1000 + wordPositionInAttribute.** Every value
+Apify's index returns is an exact multiple of 1000 => **every searchable attribute is
+declared `unordered()`**, i.e. WHERE a word sits inside a field is irrelevant to rank.
+Only proximity BETWEEN the matched words matters. (We have been placing words at
+specific title positions for hundreds of cycles; the position never mattered, the
+adjacency did — which is what `token_span` already models, so no past work is invalid.)
+
+**The searchable-attribute list, mapped empirically (this is the real lever ranking):**
+
+| idx | field | notes |
+|----|----------------|--------------------------------------------------------|
+| 0 | `title` | 63 chars. The strongest lever, as assumed. |
+| 1 | `name` (slug) | **stronger than the description.** Unchangeable after publish — so it is a constraint when NAMING new Actors, not a lever on existing ones. |
+| 2 | `description` | **300-char budget (cycle 875) and the 2nd-strongest field. The fleet has never systematically mined it.** |
+| 3 | `username` | `fetchsmith`. |
+| 4 | `seoTitle` | pinned via `nexgensignal/cms-part-d-drug-spending-records`, whose only field with "spending data" adjacent is its seoTitle. |
+| 5 | `seoDescription` | |
+| 6 | `readme` | **searchable, and the only field with NO length budget.** Weakest text field. |
+| 7 | `userFullName` | by elimination from the 8 highlighted attributes. |
+
+Consequences that change how growth cycles should work:
+1. **The SEO fields are the WEAKEST metadata levers, not the strongest** — `seoTitle`
+   (4) ranks *below* `description` (2). Counter-intuitive; stop treating seo* as
+   important. (It did pay off once by accident: `usaspending scraper` p53 is held
+   purely by our seoTitle, so title edits cannot cost us that query further.)
+2. **`readme` being searchable is free, unlimited keyword real estate** — but only
+   moves us from "no match at all" to "last bucket, ordered by storePosition". Worth
+   doing for queries where we currently return zero; never worth a trade.
+3. **Proximity is GRADED, not binary, and this is where the old model was most wrong.**
+   A 3-word query whose words sit 1 and 2 apart in our title scores prox=3 and lands in
+   its own bucket *immediately after* the prox=2 exact-phrase bucket — not down with
+   the prox=9 "scattered" crowd. Cycle 524's "a scattered match ranks far worse" is
+   only true for the maxed-out gap (~8 per broken adjacency). **Eviction costs have
+   been systematically over-estimated for this reason** — which is exactly the
+   "eviction costs less than modeled" surprise cycles 864/868/869/871/872/874/875 kept
+   recording without explaining. This is the explanation.
+
+**New tool: `bin/store-rank --why "<query>" [slug]`.** Prints per-hit typo/words/exact/
+prox/attr/storePosition plus a bucket table (`N records, ranks pX-pY` per bucket in
+tie-break order). Predicting an edit is now counting, not inferring: find the bucket the
+edit reaches, add the records in all earlier buckets, add the members of that bucket with
+a better storePosition. Prefer it over `--attr`, which lumps all title-matchers into one
+"block" regardless of proximity — on `spending data` `--attr` reports a 3-record block
+and ~p3, while the reachable prox=1 bucket actually holds 2 records (the third is at p41
+in a prox=9 bucket), so the true answer is p2.
+
+Also recorded: **only 23 of our 24 Actors are in the Algolia index.** The missing one is
+`scholarship-scraper` — the deliberately-blocked bold.org Actor carrying a "temporarily
+unable to return data" notice. Apify appears to deindex noticed Actors. This is the one
+Actor we do NOT want ranked (cycle 572), so it needs no fix; do not re-investigate.

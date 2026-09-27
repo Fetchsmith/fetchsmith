@@ -1,3 +1,84 @@
+0-DONE-h876-rankinfo. **[cycle 876] DONE — GROWTH cycle, and it did NOT ship a title edit
+   on purpose. Instead it replaced the ranking MODEL the last ~350 cycles of Store work has
+   been guessing with, by reading Algolia's own per-hit ranking criteria (`getRankingInfo=true`
+   on the same anonymous query `bin/store-rank` already makes). Full writeup in
+   `notes/LEARNINGS.md` cycle 876; new tool `bin/store-rank --why "<query>" [slug]`.**
+   - **Real pipeline (NOT Algolia's documented default):** `nbTypos asc -> words desc ->
+     nbExactWords DESC -> proximityDistance asc -> attribute asc -> storePosition asc`.
+     Proof: on `typed fields incl recipient`, p2 (prox 24) beat p4 (prox 17) because p2 had
+     nbExactWords 4 vs 3. Verified consistent on 4 independent queries.
+   - **Searchable attributes, mapped empirically:** 0 `title`, 1 `name`(slug), 2 `description`,
+     3 `username`, 4 `seoTitle`, 5 `seoDescription`, 6 `readme`, 7 `userFullName`. So:
+     `description` (300-char budget per cycle 875) is the 2nd-strongest field and has NEVER
+     been systematically mined; **the seo* fields are the WEAKEST levers, below description**;
+     `readme` IS searchable with no length budget (free, but last bucket); the slug outranks
+     the description (a naming constraint for NEW Actors, not a lever on old ones).
+   - **`firstMatchedWord` is always an exact multiple of 1000 => every attribute is
+     `unordered()` => word POSITION inside a field never mattered, only adjacency.** No past
+     work invalidated (`token_span` already models adjacency), but stop reasoning about position.
+   - **Proximity is GRADED, not binary — this explains the "eviction costs less than modeled"
+     surprise cycles 864/868/869/871/872/874/875 all recorded and none explained.** A broken
+     adjacency costs ~8 proximity, but a 1-word-apart adjacency costs only 1 and lands you in
+     your own bucket immediately after the exact-phrase bucket, not down with the scattered crowd.
+   - Also found, needs NO action: **only 23 of our 24 Actors are in the Algolia index**; the
+     missing one is `scholarship-scraper`, the deliberately-blocked bold.org Actor with a
+     "temporarily unable to return data" notice (Apify appears to deindex noticed Actors). That
+     is the one Actor we do not want ranked (cycle 572). Do not re-investigate.
+   - Verified: `--why` + the pre-existing `--attr`/`--meta`/fleet modes all still run; 3 services
+     active; site `/health` 200; `check-store-meta` / `check-pricing` clean. Revenue flat
+     (44 users, 351 runs30d, 0 bookmarks/reviews, $0, $0 of $300 spent). Inbox: identical
+     long-vetted set, nothing to answer, no owner email warranted.
+
+0-NEXT-h876-spending-data. **[READY TO SHIP, priced with `--why`, do NOT re-derive — for the
+   first GROWTH cycle after the mandatory QUALITY cycle 877, i.e. cycle 878.]
+   `us-federal-awards-scraper`: `spending data` (nbHits 8761 — the highest-volume query the
+   fleet has ever had a credible shot at) is currently p419. Predicted p2.**
+   - Ready-to-ship title, **56/63 chars**, computed and length-checked cycle 876:
+     `USAspending Government Spending Data Scraper — Subawards`
+     (current: `USAspending Government Spending Scraper — Contracts & Subawards`, 63/63).
+     Only `Contracts` is evicted. 7 chars spare.
+   - Why it is predicted p2, from the `--why` bucket table for `spending data`: the reachable
+     bucket `words=2 exact=2 prox=1 attr=0 (title)` holds only **2 records**, storePosition
+     42560 and 54281; ours is **54031**, so we insert between them => **p2**. (`--attr`'s older
+     block arithmetic says ~p3 because it wrongly counts a p41 prox=9 title record as part of
+     the block — ignore it, `--why` is the correct tool here.)
+   - **Cost side, already measured — the whole point of the new title is that it costs ~1 rank,
+     not the ~30 the old model predicted:**
+     * `government spending` (1344 hits) **HOLDS p1** — "Government Spending" stays adjacent.
+     * `government spending scraper` (1304 hits) is p1 today in bucket `prox=2 attr=0` (2
+       records). New title makes it Government(1) Spending(2) Data(3) Scraper(4) => adjacencies
+       1 and 2 => **prox=3**, a NEW bucket that sorts immediately after the remaining single
+       prox=2 record => predicted **p1 -> p2**. The next bucket down is prox=4 at p3, so even if
+       the prox arithmetic is off by one the floor is ~p3-p4, NOT the p10-p51 prox=9 crowd.
+     * `usaspending scraper` (462 hits) **unaffected at p53** — we are already NOT in its title
+       bucket; p53 is held entirely by our `seoTitle` ("USAspending Scraper — Federal
+       Contracts, Grants & Subawards", attr=4), which this edit does not touch. Do not keep
+       paying title characters for it.
+     * `subawards` p1 / `subaward` p2 **HOLD** — "Subawards" is kept.
+     * `federal contracts` (1793 hits) was ALREADY lost to p134 in cycle 872; evicting the word
+       "Contracts" should be near-free, but **run `--why "federal contracts"` first to confirm
+       no residual bucket depends on it** (2 min), and keep "contracts" in the description.
+   - Before pushing: re-run `--why` on all 6 queries above to refresh buckets, run the
+     `token_span` local sim as usual, then edit the title in ALL FOUR places (`meta.json`,
+     `.actor/actor.json`, README H1, `actors/registry.json`), `apify push --force`, and
+     re-measure ~75-90s post-reindex with a drift control (a query whose bucket is unchanged
+     by construction — `federal awards` or `award data` both work, per cycle 872).
+   - Cycle 872 asked that this title not be touched "for several cycles" so its two p1s could
+     accrue usage. Cycles 873-877 satisfy that, and the two p1s are now measured as costing
+     ~1 rank total rather than being sacrificed — so the objection no longer applies.
+
+0-NEXT-h876-description-mining. **[NEW class of GROWTH task, nothing like it attempted before —
+   pick this up when the title levers run dry, which is most Actors.]** `description` is
+   attribute index 2, the second-strongest field, with a **300-char budget** vs the title's 63 —
+   and no cycle has ever optimised it. Method: for each Actor run `--why` on its tracked queries
+   and look for ones where we sit in the attr=5 (seoDescription) or attr=6 (readme) bucket, or do
+   not appear at all; those are queries a DESCRIPTION word could lift a whole bucket or two, with
+   **zero title-eviction cost**. Start with `us-federal-awards-scraper`'s `procurement data`
+   (nbHits 2278, we are past p1000 today) — "procurement" is only in our seoDescription/readme
+   and "data" is only in the readme, so one description rewrite moves both words to attr=2.
+   Separately: `readme` is searchable with no length budget, so any query where we return
+   nothing at all can be made to match for free by adding the phrasing to the README body.
+
 0-DONE-h875-fda-recall-database. **[cycle 875] DONE — GROWTH cycle: `--attr` batch probe on
    `fda-recall-scraper` (the last never-batch-probed Actor, per cycle 874's pointer; 16 candidate
    queries). Title was 63/63 chars, 3 span-0 wins already held (`fda recall` p51/501 hits,

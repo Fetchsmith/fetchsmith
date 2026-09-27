@@ -40,6 +40,10 @@ Usage:
   bin/store-rank --query "fda recall"   # leaderboard for an arbitrary query
   bin/store-rank --attr "courtlistener" <slug>   # title-match block analysis +
                                                  # predicted rank if <slug> joined it
+  bin/store-rank --why "spending data" <slug>    # cycle 876: the REAL Algolia ranking
+                                                 # criteria per hit (getRankingInfo) +
+                                                 # the bucket table. Prefer this over
+                                                 # --attr for sizing an edit; see why().
 Exit 0 always (informational); prints a summary line.
 """
 import json
@@ -775,9 +779,38 @@ TERMS = {
 }
 
 
-def search(query, hits=1000):
+# Cycle 876: `firstMatchedWord` in `_rankingInfo` decodes as
+# attributeIndex * 1000 + wordPositionInAttribute. Every value Apify's index ever
+# returns is an exact multiple of 1000, which means every searchable attribute is
+# declared `unordered()` — WORD POSITION INSIDE A FIELD DOES NOT AFFECT RANK (only
+# proximity BETWEEN the matched words does). The index below was mapped empirically
+# (cycle 876) by querying phrases that can only match one attribute and reading
+# `firstMatchedWord` on hits inside the top-5 real-highlight window:
+#   0 title | 1 name (the slug!) | 2 description | 3 username
+#   4 seoTitle | 5 seoDescription | 6 readme | 7 userFullName
+# (4 was pinned via nexgensignal/cms-part-d-drug-spending-records, whose ONLY field
+#  containing "spending data" adjacently is its seoTitle; 7 is then userFullName by
+#  elimination from the 8 highlighted=searchable attributes.)
+# NOTE the counter-intuitive part: seoTitle (4) ranks BELOW description (2). The SEO
+# fields are the WEAKEST metadata levers, not the strongest.
+# Consequences, all new and all actionable:
+#   - `description` (2) is the SECOND-strongest text field, ahead of seoDescription
+#     and readme. It has a 300-char budget (cycle 875) vs the title's 63 — the fleet
+#     has never systematically mined it.
+#   - the SLUG (1) outranks the description. Slugs are effectively unchangeable, so
+#     this is a constraint to respect when naming NEW Actors, not a lever on old ones.
+#   - `readme` (6) IS searchable and has no length budget at all, but it is the
+#     weakest field: a readme-only match loses to every description match regardless
+#     of storePosition. Useful only to go from "no match at all" to "some match".
+ATTR_INDEX = {0: "title", 1: "name", 2: "description", 3: "username",
+              4: "seoTitle", 5: "seoDescription", 6: "readme", 7: "userFullName"}
+
+
+def search(query, hits=1000, ranking_info=False):
     url = f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query"
     params = f"query={urllib.parse.quote(query)}&hitsPerPage={hits}"
+    if ranking_info:
+        params += "&getRankingInfo=true"
     req = urllib.request.Request(
         url,
         data=json.dumps({"params": params}).encode(),
@@ -810,6 +843,82 @@ def leaderboard(query):
                 f"{s.get('totalUsers',0):>6} {s.get('totalRuns',0):>7}"
             )
     print(f"\nnbHits={r['nbHits']} for {query!r}")
+
+
+def why(query, slug=None, depth=25):
+    """Print Apify's ACTUAL Algolia ranking criteria for a query, in tie-break order.
+
+    Cycle 876. Supersedes the cycle-520 "count the title-match block" heuristic as the
+    primary sizing tool: `--attr` infers the block by string-matching titles ourselves,
+    which is why it has repeatedly mis-predicted (prefix matches, cycle 872). This reads
+    the criteria Algolia itself used, straight off `getRankingInfo=true`.
+
+    The pipeline, measured on Apify's index (NOT Algolia's documented default — Apify
+    has moved `exact` ahead of `proximity` and `attribute`):
+
+        nbTypos asc -> words desc -> nbExactWords DESC -> proximityDistance asc
+        -> attribute (firstMatchedWord) asc -> storePosition asc
+
+    Proof it is not the documented order (cycle 876, query 'typed fields incl recipient'):
+    p2 had proximityDistance 24 and still beat p4's 17, because p2 had nbExactWords 4 vs
+    p4's 3. And within each (exact, prox) group the attribute index sorts, then
+    storePosition sorts inside that. Every group we have ever called a "title-match
+    block" is really the `attribute == 0` group of one (exact, prox) bucket.
+
+    So to predict where a metadata edit lands us: find the (exact, prox, attribute)
+    bucket the edit would move us into, then count the records already ahead of that
+    bucket, plus the records inside it with a better storePosition. That is what the
+    per-bucket summary at the bottom of this output gives you directly.
+    """
+    r = search(query, hits=max(depth, 60), ranking_info=True)
+    hits = r["hits"]
+    print(f"query {query!r}  nbHits={r['nbHits']}  (showing {min(depth, len(hits))})")
+    print(f"{'#':>4} {'typo':>4} {'word':>4} {'exact':>5} {'prox':>4} {'attr':>5} "
+          f"{'attribute':22} {'storePos':>9}  actor")
+    ours = []
+    for i, h in enumerate(hits, 1):
+        ri = h.get("_rankingInfo", {})
+        fmw = ri.get("firstMatchedWord")
+        ai = (fmw // 1000) if isinstance(fmw, int) else None
+        mine = h.get("username") == "fetchsmith" and (slug is None or h.get("name") == slug)
+        if mine:
+            ours.append((i, ri, h))
+        if i > depth and not mine:
+            continue
+        mark = " <<< US" if mine else ""
+        print(f"{i:>4} {ri.get('nbTypos'):>4} {ri.get('words'):>4} "
+              f"{ri.get('nbExactWords'):>5} {ri.get('proximityDistance'):>4} {str(ai):>5} "
+              f"{ATTR_INDEX.get(ai, '?'):22} {str(h.get('storePosition')):>9}  "
+              f"{h.get('username','')}/{h.get('name','')}{mark}")
+
+    # Bucket summary: how many records sit in each (exact, prox, attribute) bucket.
+    # A bucket you can reach by an edit puts you AFTER every earlier bucket and after
+    # the members of your own bucket with a better storePosition — nothing else.
+    from collections import Counter
+    buckets = Counter()
+    for h in hits:
+        ri = h.get("_rankingInfo", {})
+        fmw = ri.get("firstMatchedWord")
+        buckets[(ri.get("words"), ri.get("nbExactWords"), ri.get("proximityDistance"),
+                 (fmw // 1000) if isinstance(fmw, int) else None)] += 1
+    print(f"\nbuckets in tie-break order (words desc, exact desc, prox asc, attr asc):")
+    running = 0
+    keyf = lambda k: (-(k[0] or 0), -(k[1] or 0), k[2] if k[2] is not None else 9999,
+                      k[3] if k[3] is not None else 99)
+    for k in sorted(buckets, key=keyf)[:14]:
+        n = buckets[k]
+        print(f"  words={k[0]} exact={k[1]} prox={k[2]} attr={k[3]}"
+              f" ({ATTR_INDEX.get(k[3], '?')}): {n:>4} records, ranks p{running+1}-p{running+n}")
+        running += n
+    if ours:
+        i, ri, h = ours[0]
+        fmw = ri.get("firstMatchedWord")
+        print(f"\nUS: p{i} in bucket words={ri.get('words')} exact={ri.get('nbExactWords')} "
+              f"prox={ri.get('proximityDistance')} attr={(fmw // 1000) if isinstance(fmw, int) else None}"
+              f" storePosition={h.get('storePosition')}")
+    elif slug:
+        print(f"\nUS: {slug} does not appear in the first {len(hits)} hits for this query.")
+    return 0
 
 
 def meta(slug):
@@ -1078,6 +1187,11 @@ def main():
             print('usage: store-rank --attr "<query>" <slug>', file=sys.stderr)
             return 2
         return attr(args[1], args[2])
+    if args and args[0] == "--why":
+        if len(args) < 2:
+            print('usage: store-rank --why "<query>" [slug]', file=sys.stderr)
+            return 2
+        return why(args[1], args[2] if len(args) > 2 else None)
     if args and args[0] == "--query":
         leaderboard(" ".join(args[1:]))
         return 0
@@ -1115,9 +1229,14 @@ def main():
         f"Top-20 on {top20}/{total} probed queries. Within a match group rank is driven\n"
         f"by `storePosition` (Apify-computed, ascending, not settable) — but a TITLE\n"
         f"match outranks a description-only match first (cycle 520). For a query we\n"
-        f"place badly on, run `store-rank --attr \"<query>\" <slug>` before concluding\n"
-        f"nothing can be done: it says whether we are outside the title block and what\n"
-        f"rank joining it would actually buy."
+        f"place badly on, run `store-rank --why \"<query>\" <slug>` (cycle 876) before\n"
+        f"concluding nothing can be done: it prints Algolia's own per-hit ranking\n"
+        f"criteria and the (exact, proximity, attribute) bucket table, so the rank an\n"
+        f"edit would buy is counted, not inferred. `--attr` is the older, coarser tool:\n"
+        f"it lumps every title-matcher into one 'block' regardless of proximity — e.g.\n"
+        f"on 'spending data' it reports a 3-record block and ~p3, while `--why` shows\n"
+        f"the reachable prox=1 bucket holds only 2 records (the third sits at p41 in a\n"
+        f"prox=9 bucket), so the real answer is p2. Prefer `--why`."
     )
     return 0
 
