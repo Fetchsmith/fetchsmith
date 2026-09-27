@@ -1792,3 +1792,28 @@ already ships `watchEvents: ["scoreChanged"]` and per-run `ratingBreakdown`. "ap
 chars and every 3-word candidate phrase tried ("android app reviews", "google play ratings")
 landed in a description bucket we can't size without knowing exact competitor storePositions in
 that bucket -- left unpriced for a future cycle with more time to fetch the full 60-row table.
+
+## Cycle 887 — when an Actor's docs give a worked example for a filter, test that exact example first; a cross-source "normalized" field can be normalized on some sources and raw on others
+`ats-jobs-scraper`'s `locationKeyword` schema/README description uses "United States" as its own
+worked example of matching the "normalized breakdown" even when the posting's own text only says
+a city/state. That claim was TRUE for Greenhouse/Ashby/Workday (their `country` field already
+resolves to full English names via `location.js`'s `parseLocation` or the upstream API itself) but
+FALSE for Lever (`country: "US"/"GB"/"CA"`), SmartRecruiters (`country: "us"`, lowercase) and
+Recruitee (`country: "Nederland"`, the board's own Dutch locale name) — none of those raw values
+contain "united states" as a substring, so the exact documented example silently dropped 100% of
+those 3 ATSes' genuinely-matching rows, with a normal per-row filter check ("every returned row
+satisfies the query") never able to catch it, since the rows that DID come back (from the other
+4 ATSes) were all correct. Only a category breakdown (rows returned per ATS) exposed it — same
+technique as cycle 884's IDV bug, generalizing further: the silently-excluded "category" here
+wasn't a missing field (the documented exception pattern, e.g. cycle 784's Greenhouse
+`employmentType`) but an *inconsistent vocabulary* on a field that IS present everywhere. Fixed at
+the root with a small code→name alias map (`normalizeCountry()`, build 0.1.51) applied only to the
+3 affected mappers, since a value arriving in a dedicated structured API `country` field is safe to
+expand unambiguously (unlike `location.js`'s deliberately-conservative prose parser, which refuses
+to treat a bare 2-letter token in free text as a country code because it's usually a US state
+abbreviation there — a different problem with a different correct answer).
+**Generalize for future `varied_test` passes**: before inventing filter combos from scratch, check
+whether the Actor's own input schema or README gives a specific worked example (not just a generic
+field description) — that's the buyer's literal first thing to try, so it's the highest-value single
+probe, and test it broken down by every category the Actor spans (ATS/agency/jurisdiction/source),
+not just "did any rows come back."

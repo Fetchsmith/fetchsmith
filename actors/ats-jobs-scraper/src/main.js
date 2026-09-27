@@ -458,6 +458,29 @@ function normalizeInterval(raw) {
   return s === 'none' ? null : s;
 }
 
+// Lever, Recruitee and SmartRecruiters each expose `country` as a raw structured API field (not
+// free text to parse — see location.js for that harder problem), but the raw values are not
+// consistent English country names: Lever sends bare ISO-ish codes ("US"/"GB"/"CA"), SmartRecruiters
+// sends a lowercase code ("us"), Recruitee sends the board's own locale name ("Nederland"). This
+// silently broke the exact example the README/schema promise (`locationKeyword: "United States"`
+// matches the normalized breakdown) for every one of those three ATSes — live-verified cycle 887:
+// leverdemo's 10 US postings and ElasticBandCompany's 2 US postings all vanished from a
+// "United States" search, 0/13 rows, with no warning. Unlike location.js's prose parser, a value
+// arriving in a dedicated `country` API field is unambiguous, so short codes are safe to expand here.
+const COUNTRY_CODE_ALIASES = {
+  us: 'United States', usa: 'United States', gb: 'United Kingdom', uk: 'United Kingdom',
+  ca: 'Canada', au: 'Australia', nz: 'New Zealand', de: 'Germany', fr: 'France', es: 'Spain',
+  it: 'Italy', pt: 'Portugal', nl: 'Netherlands', nederland: 'Netherlands', be: 'Belgium',
+  ch: 'Switzerland', at: 'Austria', se: 'Sweden', no: 'Norway', dk: 'Denmark', fi: 'Finland',
+  ie: 'Ireland', pl: 'Poland', in: 'India', sg: 'Singapore', jp: 'Japan', cn: 'China',
+  hk: 'Hong Kong', br: 'Brazil', mx: 'Mexico', za: 'South Africa', ae: 'United Arab Emirates',
+  il: 'Israel',
+};
+function normalizeCountry(raw) {
+  if (!raw) return raw ?? null;
+  return COUNTRY_CODE_ALIASES[String(raw).trim().toLowerCase()] ?? raw;
+}
+
 // Pay figures arrive as display strings on the boards that print rather than publish them, and the
 // thousands separator is not a constant: airbnb's euro ranges read "€71.000" (dot = thousands) while
 // its dollar ranges read "$123,000" (comma = thousands), and an hourly range reads "$32.50". So the
@@ -655,7 +678,7 @@ async function fetchLever(slug) {
       employmentType: j.categories?.commitment ?? null, workplaceType: j.workplaceType ?? null,
       isRemote: j.workplaceType ? /remote/i.test(j.workplaceType) : (j.categories?.location ? /remote/i.test(j.categories.location) : null),
       location: j.categories?.location ?? null, secondaryLocations: (j.categories?.allLocations ?? []).slice(1),
-      country: j.country ?? null, region: null, city: null,
+      country: normalizeCountry(j.country), region: null, city: null,
       salaryMin: j.salaryRange?.min ?? null, salaryMax: j.salaryRange?.max ?? null, salaryCurrency: j.salaryRange?.currency ?? null,
       salaryInterval: normalizeInterval(j.salaryRange?.interval),
       publishedAt: j.createdAt ? new Date(j.createdAt).toISOString() : null, updatedAt: null,
@@ -676,7 +699,7 @@ async function fetchRecruitee(slug) {
       workplaceType: o.remote ? 'remote' : (o.on_site ? 'onsite' : (o.hybrid ? 'hybrid' : null)), isRemote: !!o.remote,
       location: o.location ?? null,
       secondaryLocations: (Array.isArray(o.locations) ? o.locations : []).slice(1).map((l) => (typeof l === 'string' ? l : (l?.city ?? l?.name))).filter(Boolean),
-      country: o.country ?? null, region: o.state_name ?? null, city: o.city ?? null,
+      country: normalizeCountry(o.country), region: o.state_name ?? null, city: o.city ?? null,
       // Recruitee serves salary.min/max as numeric strings (e.g. "2600"), not numbers — coerce or
       // the dataset schema's declared `number` type rejects the push (found live, cycle 197).
       salaryMin: o.salary?.min != null ? Number(o.salary.min) : null,
@@ -758,7 +781,7 @@ async function fetchSmartRecruiters(slug) {
       isRemote: !!loc.remote,
       location: [loc.city, loc.region, loc.country].filter(Boolean).join(', ') || (loc.remote ? 'Remote' : null),
       secondaryLocations: [],
-      country: loc.country || null, region: loc.region || null, city: loc.city || null,
+      country: normalizeCountry(loc.country), region: loc.region || null, city: loc.city || null,
       // No compensation field observed on any real posting checked cycle 198 — leave null.
       salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
       publishedAt: p.releasedDate ?? null, updatedAt: null,
