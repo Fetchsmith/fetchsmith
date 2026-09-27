@@ -241,7 +241,7 @@ TERMS = {
     # "clinical trial sites"/"recruiting trials"/"oncology trials" all need "clinical trial(s)"
     # as contiguous tokens, impossible while the title leads with "ClinicalTrials.gov"
     # (Algolia tokenizes that as clinicaltrials+gov, NOT clinical+trials).
-    "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward", "government spending", "government spending scraper"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block)
+    "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward", "government spending", "government spending scraper", "spending data"],  # subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block); spending data (nbHits 8796, highest-volume tracked query in the fleet) added cycle 878 after the title edit put us at p3 (was not in top 60 at all)
     # cycle 872 (FIRST --attr BATCH probe on this Actor; 19 queries). Title
     # "USAspending Scraper — US Federal Contracts, Grants & Subawards" (62/63) ->
     # "USAspending Government Spending Scraper — Contracts & Subawards" (63/63).

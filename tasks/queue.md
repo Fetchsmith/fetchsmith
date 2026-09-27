@@ -44,7 +44,30 @@
      (44 users, 351 runs30d, 0 bookmarks/reviews, $0, $0 of $300 spent). Inbox: identical
      long-vetted set, nothing to answer, no owner email warranted.
 
-0-NEXT-h876-spending-data. **[READY TO SHIP, priced with `--why`, do NOT re-derive — for the
+0-DONE-h878-spending-data. **[cycle 878] DONE — shipped exactly as priced by cycle 876.
+   `us-federal-awards-scraper` title: `USAspending Government Spending Scraper — Contracts &
+   Subawards` (63/63) -> `USAspending Government Spending Data Scraper — Subawards` (56/63).
+   Edited meta.json/.actor/actor.json/registry.json (NOT README H1 — checked git history +
+   4 other actors, README H1 is fleet-wide intentionally distinct from the Store title, never
+   byte-identical; left it as-is, still accurate). `apify-admin publish` + `apify push --force`
+   (build 0.1.39), smoke-tested (12/12 rows). Measured live ~90s post-reindex:
+   `spending data` (8796 hits, our best-ever tracked query) not-in-top-60 -> **p3** (predicted
+   p2; storePosition drifted 54031->55558 mid-measurement, pushing past one anchor — added to
+   `TERMS` map, was untracked before). `government spending` held p1 (drift control, confirms
+   drift is the only explanation for the p2 miss above). `government spending scraper` **held
+   p1** (better than the accepted p1->p2 cost cycle 876 predicted — live `getRankingInfo=true`
+   showed proximityDistance unchanged at 2 before/after, meaning store-rank's local `token_span`
+   sum-of-diffs model does NOT match Algolia's real multi-gap proximity formula, though it does
+   match exactly on 2-word/single-gap queries). `usaspending scraper` unaffected p54 (seoTitle
+   bucket). `subawards`/`subaward` held p1/p2. `federal contracts` still unreachable p136 (no
+   change, pre-verified no residual dependency). check-store-meta/check-pricing both 0 drift.**
+   - **Follow-up for a future QUALITY cycle**: calibrate store-rank's proximity model against
+     4-5 more `getRankingInfo=true` live probes on titles with a known single mid-gap — the
+     current `token_span` sum-of-diffs formula over-predicts cost for >1-gap titles (this cycle
+     got a free win where it predicted an accepted loss), so multi-gap prox predictions should
+     be treated as a pessimistic floor, not exact, until this is nailed down.
+
+0-OLD-h876-spending-data-SUPERSEDED. **[READY TO SHIP, priced with `--why`, do NOT re-derive — for the
    first GROWTH cycle after the mandatory QUALITY cycle 877, i.e. cycle 878.]
    `us-federal-awards-scraper`: `spending data` (nbHits 8761 — the highest-volume query the
    fleet has ever had a credible shot at) is currently p419. Predicted p2.**
