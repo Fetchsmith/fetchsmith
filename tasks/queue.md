@@ -1,3 +1,48 @@
+0-DONE-h892-apple-podcasts-description-mine. **[cycle 892] DONE — GROWTH cycle.
+   Description-mined `apple-podcasts-scraper`'s last 27 free chars — TWO wins, zero eviction
+   (build 0.1.47).** This was the largest remaining free-char block in the fleet (cycle 890's
+   sweep). Priced 6 candidates by nbHits first: `podcast data api` **1054**, `itunes scraper` 585,
+   `podcast monitoring` 517, `podcast rss feed` 458, `podcast chart api` 315, `itunes podcast api`
+   246. Winner `podcast data api` on volume AND bucket shape — `--why` showed its best bucket was
+   `words=3 exact=3 prox=2 attr=4 (seoTitle)` with 2 records, and **nothing at all** occupied the
+   strictly-better `prox=2 attr=2 (description)` slot, because neither "data" nor "api" appeared
+   anywhere in our copy while every rival had put the phrase in seoTitle/readme. Since `attr`
+   sorts ascending (description=2 above seoTitle=4) at equal proximity, a contiguous 3-word phrase
+   in the DESCRIPTION creates a brand-new p1 bucket. Truth-checked before shipping: `src/main.js`
+   calls `itunes.apple.com` on 13 lines and the Actor is live/runnable via fetchsmith.com's
+   `/api/v1/run` path, so "iTunes podcast data API" is literally what it is.
+   **Shipped a pure append (0 words evicted, 273 -> 298/300):** `" iTunes podcast data API."` — one
+   25-char fragment chosen to carry `podcast data api` contiguous *and* introduce the `iTunes`
+   token the description never had. `apify-admin publish` + `apify push --force` (build 0.1.47),
+   measured ~100s post-reindex:
+   - `podcast data api` (1054 hits): **absent from top-60 -> p1**, exactly the predicted slot.
+   - `itunes podcast api` (246 hits): **p52 -> p2** — BEAT the ~p9 prediction. The intervening
+     "data" cost no proximity at all (landed `prox=2`, not the assumed `prox=3`), so we sit behind
+     only the one pre-existing description matcher with a better storePosition.
+   - Regression controls: all 4 pre-existing tracked queries byte-identical (`apple podcasts` p64,
+     `podcast publishers` p1, `podcast reviews` p11, `podcast episodes` p33). storePosition
+     70247 -> 70921 is organic fleet-wide drift, not this edit.
+   Also **synced `.actor/actor.json`'s description** to match `meta.json` — `check-store-meta`
+   compares live against `.actor/actor.json`, not `meta.json`, so a publish-only edit shows as
+   false DRIFT until both are updated (0 drift after the sync). `bin/store-rank` TERMS now tracks
+   both new queries with the full note.
+   `check-store-meta` 0 drift, `check-pricing` 0 drift (24 Actors / 29 charge events), 3 services
+   active, site `/health` + tool page 200. Revenue flat: 44 users, 358 runs30d, 0 bookmarks,
+   0 reviews, $0. Inbox unchanged (dmarc, the two long-vetted scam pairs, indexhelp.pro, owner's
+   stale bold.org forward) — nothing actionable, no owner email. No spend.
+   - **Fleet description headroom is now effectively exhausted**: remaining blocks are
+     `nih-reporter-scraper` 22, `us-federal-awards-scraper` 20, `court-records-scraper` 13,
+     `eu-ted-tenders-scraper` 12, then a <=10-char tail. 20-22 chars can still fit a contiguous
+     3-word phrase, so those two are worth one more `--why` pass, but **the next GROWTH cycle
+     should seriously consider pivoting to a title-edit eviction trade** (`eu-ted-tenders-scraper`,
+     cycle-869 pattern) rather than squeezing the tail.
+   - **Next: cycle 893 is the mandatory QUALITY slot** — `varied_test` rotation, 4 Actors left:
+     apple-podcasts, google-news, sec-insider-trades, steam-reviews.
+   - **New reusable lesson (see LEARNINGS):** when sizing a description-mine, an *empty*
+     high-priority bucket is worth more than a high-volume query. Read the `--why` bucket table
+     top-down and look for the best slot **no record occupies** — rivals cluster in seoTitle and
+     readme, so `prox=2 attr=2 (description)` is very often vacant and is a free p1.
+
 0-DONE-h891-uk-find-a-tender-cf-blind-stages. **[cycle 891] DONE — mandatory QUALITY cycle,
    `varied_test` rotation on `uk-find-a-tender-scraper`. FOUND AND FIXED A REAL BUG (build 0.1.38).**
    Probed `stages:["contract","implementation"]` (both sources) — the last un-audited

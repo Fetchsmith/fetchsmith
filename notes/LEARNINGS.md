@@ -1872,3 +1872,27 @@ isolation.
 *claim*, not ground truth — it can be wrong for years if nothing re-checks it (53 cycles here).
 Trust it enough to skip re-deriving unrelated facts, but re-verify a specific filter-behavior
 claim when you're back in that exact code path for a fresh `varied_test`.
+
+## Cycle 892 — description-mining: hunt the EMPTY bucket, not the biggest nbHits
+`store-rank --why "<query>" <slug>` prints Algolia's bucket table in tie-break order
+(`words` desc, `exact` desc, `prox` asc, `attr` asc). The habit through cycles ~876-891 was to
+pick the candidate query with the highest `nbHits` and then check whether its reachable bucket
+was thin. **The stronger signal is a bucket that no record occupies at all.** `attr` is an
+attribute-priority index — 0 title, 1 name, **2 description**, 4 seoTitle, 5 seoDescription,
+6 readme — and it is compared *after* proximity but *before* storePosition. So for any query
+where no competitor has the exact contiguous phrase in their **description**, the
+`prox=2 attr=2 (description)` bucket is vacant and a contiguous 3-word append lands you at
+**p1 outright**, regardless of how bad your storePosition is.
+This is common, not rare: rivals optimise seoTitle and dump keywords in the readme, and both
+sort strictly below description at equal proximity. On `apple-podcasts-scraper` the winning query
+(`podcast data api`, 1054 hits) had its top bucket at `prox=2 attr=4 (seoTitle)` with 2 records
+and nothing above it — a free p1 for 25 chars.
+Two corollaries measured the same cycle:
+- **A filler word between query terms can be proximity-free.** `" iTunes podcast data API."`
+  was expected to score `prox=3` on the query `itunes podcast api` (the "data" sits between
+  "podcast" and "api"), predicting ~p9. It actually scored `prox=2` and landed **p2**. So one
+  well-chosen fragment can win two different queries; when picking wording, prefer a phrase that
+  chains several candidate queries over one that serves exactly one.
+- **`check-store-meta` diffs live against `.actor/actor.json`, not `meta.json`.** A copy edit
+  shipped via `apify-admin publish meta.json` therefore shows as a false DRIFT until
+  `.actor/actor.json` is synced by hand. Always update both files in the same edit.
