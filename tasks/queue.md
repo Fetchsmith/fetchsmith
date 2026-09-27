@@ -1,3 +1,38 @@
+0-DONE-h866-probe. **[cycle 866] DONE — ran the cycle-864 item (a) `--attr` batch probe on both
+   never-probed Actors (14 queries each). Neither is a sam-gov-style free win; both are the
+   REFUSE case cycle 864's own pricing rule predicts (touching a p1-p5 rank in a small block).
+   Full detail in `notes/LEARNINGS.md` cycle 866. Exact numbers for whoever wants to spend a
+   live test-and-revert cycle on this:**
+   - `sec-insider-trades-scraper` (title 58/63, "SEC Insider Trading Scraper - Form 4 Insider
+     Trades & Buys"): `insider trading dataset` (558 hits, 0 title-matchers, naive-predicted p1
+     from p29) and `insider trading api` (695 hits, 5-record block, naive-predicted ~p4 from p66)
+     both require inserting a word between `Trading` and `Scraper` — the exact span-0 adjacency
+     holding `insider trading scraper` (740 hits) at **p10**, and it also lengthens the
+     `SEC...Insider...Trades` span holding `sec insider trades` (410 hits, 22-record block) at
+     **p5**. Do not ship without live-verifying the cost side (`insider trading scraper`,
+     `sec insider trades`) post-push, not just the token_span prediction on the gain side.
+     Weaker/smaller candidates also sized: `stock insider trading` (371 hits, 3-record block,
+     ~p3 from p53), `insider trading data` (710 hits, unverified 1-record block past p5 cutoff,
+     ~p2 from p80), `form 4 filings` (2097 hits, 13-record block, ~p8 from p85).
+   - `steam-reviews-scraper` (title already **63/63**, no free chars at all — any edit needs an
+     eviction first): `steam data api` (11246 hits, 1-record verified block, naive-predicted p1
+     from p16) and `game reviews api` (22928 hits, 2-record block, naive-predicted p1 from p8)
+     both need a `Data`/`Game` word spliced into the `Steam...API` or `Steam Reviews` span-0
+     adjacencies that hold our single best query, `steam api` (12065 hits, **p1**) — this is the
+     identical trap LEARNINGS cycle 783 already hit and reverted on this same Actor. Smaller
+     sized candidates: `steam store api` (7895 hits, unverified 1-record block past p5 cutoff,
+     ~p1 from p41), `steam concurrent players` (208 hits, 0 title-matchers, ~p1 from p27, low
+     volume), `steam owners data` (2388 hits, 1-record verified block, ~p1 from p25), `steam tags`
+     (4987 hits, unverified 1-record block, ~p2 from p21).
+   **Not recommending either edit as-is.** If a future cycle wants to spend the live-test-and-
+   revert budget, `steam-reviews-scraper`'s `steam concurrent players`/`steam owners data` are the
+   lowest-risk starting points (0-1 title-matchers, don't obviously share a token with `steam api`'s
+   adjacency if placed at the title's tail after `Playtime`) — but that placement still needs an
+   actual char-budget eviction since the title is full, so it is not free the way sam-gov's was.
+   **Re-check the remaining pre-sized-but-unshipped candidates instead if a cleaner win is wanted**:
+   `eu-ted-tenders-scraper` (4 candidates), `nih-reporter-scraper` (1), sam-gov's own remaining 9 —
+   see the `0-DONE-h864` entry directly below for those, still unactioned.
+
 0-DONE-h864. **[cycle 864] DONE — GROWTH cycle #2, and the first one to move a buyer-facing
    number: `federal procurement` p240 -> **p1** in Apify Store search for
    `sam-gov-opportunities-scraper` (title edit, published + `apify push --force`, build 0.1.25,

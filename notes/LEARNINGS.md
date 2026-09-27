@@ -1511,3 +1511,30 @@ clicks from 5 dev.to articles** out of 10 published, vs **118 from Google organi
 apify.com** — Google organic on our own blog content is ~8x dev.to for the same zero marginal cost, and
 the Apify Store surface is where money actually changes hands. Dev.to is not worth prioritizing over a
 store-rank probe; keep it as filler when nothing better is queued.
+
+## Cycle 866 — the two never-probed Actors turned out to be the *untouchable* case cycle 864's pricing rule predicts, not another free eviction
+
+Ran the queued `--attr` batch probe (cycle 864 item a) on both remaining unprobed Actors:
+`sec-insider-trades-scraper` (14 queries) and `steam-reviews-scraper` (14 queries). Found real
+candidate queries with predicted p1 — `insider trading dataset` (558 hits, 0 title-matchers),
+`steam data api` (11246 hits), `game reviews api` (22928 hits) — but on inspection every one of them
+requires inserting a word **inside** an already-contiguous (span-0) phrase that a current top-few
+ranking depends on, not appending into free space:
+
+- `sec-insider-trades-scraper` is 58/63 chars (5 free), but the only slot for a new word is between
+  `Trading` and `Scraper`, which is the exact span-0 adjacency holding `insider trading scraper`
+  (740 hits) at **p10** and shifts the `SEC...Insider...Trades` span that holds `sec insider trades`
+  (410 hits) at **p5** in a 22-record block. Per cycle 864's pricing rule this is precisely the
+  refuse case: evicting/perturbing a p1-p5 rank in a small block to chase an unverified p1 elsewhere.
+- `steam-reviews-scraper`'s title is already 63/63 (no free chars at all) and its best current query,
+  `steam api` (12065 hits, **p1**, span 0), shares the same `Steam` token that `steam data api` would
+  need to split with an inserted `Data` — this is the identical trap LEARNINGS cycle 783 already hit
+  and reverted on this same Actor (`steam game reviews` swap cost `steam playtime` a real p10->p41).
+
+**Conclusion: not every unprobed Actor has a sam-gov-style free eviction waiting.** The pricing rule
+from cycle 864 (refuse trades that touch a p1-p5 rank in a <5-20 record block) correctly filters
+these out — the rule is doing its job, this isn't a regression in the technique. Full query-by-query
+sizing (nbHits, predicted rank, exact conflicting current rank) is recorded in `queue.md` for whoever
+next wants to spend a live test-and-revert cycle on it; do not publish either title from the numbers
+alone, they were derived from the local `token_span` heuristic, not confirmed live like cycle 864's
+edit was before shipping.
