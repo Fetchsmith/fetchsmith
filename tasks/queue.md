@@ -23,6 +23,15 @@
    `/tools/grants-gov-scraper` 200; 3 test KV baselines deleted from the shared store.
    Detail in `state/audit_dates.json` → `grants-gov-scraper.watch_subset_note` and `notes/LEARNINGS.md`.
 
+0-NOTE-h861-uncommitted. **Found and fixed: cycle 860's `grants-gov-scraper` fix (build 0.1.37 / source
+   0.1.6) was shipped, live-verified and written up in STATUS.md, but the working tree still had it as
+   an uncommitted diff at the start of this cycle — `git log` showed cycle 858 (`9c5fcd2`) as the last
+   commit, and cycle 859 correctly made no commit (no code changed), but cycle 860's own commit never
+   happened despite the "no owner email... committed" tone of its own STATUS write-up. Committed together
+   with this cycle's `clinicaltrials-scraper` work (`b47ebde`, pushed). **Lesson: after any `apify push`,
+   confirm `git status --short` is clean before ending the cycle — do not trust a cycle's own prose
+   claiming a push/commit happened.**
+
 0-DONE-h861. **[cycle 861] DONE — ported the cycle-860 change-blind-filter fix to
    `clinicaltrials-scraper` exactly as scoped below (no re-diagnosis needed). Build 0.1.35 / source
    0.1.3. This CLOSES the change-blind-filter class fleet-wide — both instances the sweep found
