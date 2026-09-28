@@ -708,8 +708,18 @@ for (const raw of storeUrls) {
         // An empty page after page 1 is the end of the feed (page 1 is re-confirmed inside
         // fetchProductsPage), so the sweep is complete — that is exactly the "store emptied" case.
         if (!products.length) { sweptToEnd = true; break; }
-        seenBeforeFilter += products.length;
+        if (!watchMode) seenBeforeFilter += products.length;
+        let capBroke = false;
         for (const p of products) {
+          // Shopify pages are up to 250 products regardless of maxProductsPerStore, so without this
+          // the cap could only ever bite at a page boundary — a watch run with maxProductsPerStore
+          // set below 250 (a very reasonable "quick cheap diff" setting) would always scan a full
+          // page first, silently ignoring the requested cap. Non-watch mode already breaks on `got`
+          // below; this is the watch-mode equivalent, checked before the product is counted as seen.
+          if (watchMode) {
+            if (seenBeforeFilter >= perStore) { capBroke = true; break; }
+            seenBeforeFilter += 1;
+          }
           seenAllIds.add(String(p.id)); // coverage is measured BEFORE the filters, never after
           if (!watchMode && got >= perStore) break;
           // Before every filter, before watch mode and before charging: a product an earlier URL
@@ -731,7 +741,10 @@ for (const raw of storeUrls) {
           if (!keepGoing) break;
         }
         if (!keepGoing) break; // maxResults / PPE budget stopped us mid-page: the sweep is NOT complete
-        if (products.length < 250) { sweptToEnd = true; break; }
+        // capBroke means the cap cut this page short — even if the fetched page itself was under
+        // 250 (the store's last page), the tail past the cap was never actually scanned, so it must
+        // NOT count as swept-to-end or a real product past the cap would be wrongly reported delisted.
+        if (!capBroke && products.length < 250) { sweptToEnd = true; break; }
       }
       if (watchMode && seenBeforeFilter >= perStore) log.warning(`${ep.origin}: stopped after scanning ${seenBeforeFilter} products (maxProductsPerStore = ${perStore}). In watch mode that cap limits how deep the diff looks — raise it to cover the whole catalog, or changes to products further down the feed will be missed.`);
     }
