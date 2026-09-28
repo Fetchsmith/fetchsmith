@@ -1,3 +1,52 @@
+0-DONE-h938-freetext-enum-sweep. **[cycle 938] DONE — GROWTH slot. `1-h936-freetext-enum-sweep`:
+   fleet sweep of free-text input fields bound to a closed upstream vocabulary. CLEAN sweep of 7
+   fields, no code change. Filed one properly-scoped follow-up instead of rushing a risky fix.**
+   Grepped all 24 Actors' input schemas for string/stringList fields with an "e.g./example" hint
+   and no declared enum — the class the `enum_audit` rotation never covered (declared schema enums
+   only), which is where the cycle-936 `trademark-search-scraper` bug lived. Most hits are genuine
+   full-text search fields (name/keyword/description), not closed vocabularies — out of scope.
+   Narrowed to 7 real closed-vocabulary candidates and verified each live:
+   - `substack-scraper.discoverCategories`: already validates against a live fetch of
+     `substack.com/api/v1/categories`, warns on unknown slugs. Clean.
+   - `fec-campaign-finance-scraper.party` (DEM/REP/IND/LIB): verified live against OpenFEC —
+     all 4 real, case-insensitive, garbage fails closed (0 rows, HTTP 200, already covered by the
+     Actor's own filter-name-canary guard for the dropped-param case). Clean.
+   - `nih-reporter-scraper.activityCodes` (R01/R21/R43/F32/K99/U54/P01/N01): verified live against
+     NIH RePORTER — all 8 real, case-insensitive, garbage returns HTTP 400 (fails closed). Clean.
+   - `sam-gov-opportunities-scraper.setAsideTypes` (SBA): verified live against the public
+     sam.gov search backend — unfiltered 5,629,781 vs `SBA` 1,204,488 vs `8A` 20,733 (real
+     narrowing) vs garbage 0 (fails closed, matches the Actor's documented FILTER_CANARY design).
+     Clean.
+   - `us-federal-awards-scraper.recipientTypes`: already live-verified 2026-09-18 (10 days ago)
+     with an honest in-schema disclosure of the "misspelled category returns 0 rows" behavior.
+     Clean, no action.
+   - `court-records-scraper.courts`: schema already honestly discloses "An unrecognised ID is not
+     rejected upstream — it silently matches nothing," and the 5 doc examples (scotus/ca9/cand/
+     cacb/nysd) all verified present in the Actor's own shipped 472-court `court-jurisdictions.json`
+     (CourtListener `in_use=true` only). **Considered adding a runtime warning for court IDs absent
+     from that list (the cycle-936 trademark pattern), then checked CourtListener's `in_use=false`
+     set live and found 2,887 MORE real, searchable court IDs absent from our shipped list** — e.g.
+     `ptab` (Patent Trial and Appeal Board), a court people genuinely search. A warning built on the
+     472-court list alone would false-positive on exactly these legitimate searches — worse than the
+     status quo's honest, already-disclosed limitation. **Did not ship a fix; filed the properly-
+     scoped follow-up below instead of rushing one.**
+   - `eu-ted-tenders-scraper.countries`/`cpvCodes` and `fda-recall-scraper.countries`: not yet
+     empirically checked this cycle (ISO 3166 / CPV are external standards we don't own, FDA's
+     country field is lower-risk free text) — left in backlog.
+   `check-pricing` 0 drift/29. No `audit_dates.json` key added (one-time fleet grep, not a
+   per-actor rotation). 3 services active, site 200s, no spend, no owner email needed.
+   **New backlog — `1-h938-court-jurisdictions-coverage`:** before adding any validation/warning on
+   `court-records-scraper`'s `courts` input, fetch and merge CourtListener's `in_use=false` courts
+   (2,887 of them, via `courtlistener.com/api/rest/v4/courts/?in_use=false`) into
+   `court-jurisdictions.json` alongside the existing 472 `in_use=true` ones, and spot-check that a
+   sample of "not in use" courts (ptab, bpai, historical circuit courts) still return real search
+   results through the Actor's actual query path — not just the courts list endpoint — before
+   treating "absent from the merged list" as a reliable unknown-code signal.
+   **Remaining freetext-enum-sweep backlog:** `eu-ted-tenders-scraper.countries`/`cpvCodes`,
+   `fda-recall-scraper.countries` (not yet empirically checked).
+   **Next cycle (939) is QUALITY per rotation.** Oldest `varied_test` candidates:
+   `app-store-reviews-scraper` / `google-play-reviews-scraper` (894).
+
 0-DONE-h937-steam-reviews-varied-test. **[cycle 937] DONE — mandatory QUALITY slot.
    `varied_test` on `steam-reviews-scraper` (fleet's oldest at 893). CLEAN NEGATIVE — no bug found,
    no code change.**
