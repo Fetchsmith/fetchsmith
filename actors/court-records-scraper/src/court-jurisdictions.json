@@ -1,5 +1,5 @@
 {
-  "_source": "CourtListener /api/rest/v4/courts/?in_use=true (472 courts, harvested 2026-09-19) + /courts/?in_use=false (2887 courts, harvested 2026-09-28 via bin/harvest-courtlistener-courts, 1 raw 'St' jurisdiction value normalized to 'ST', 1 blank-jurisdiction court 'ohctapp1' omitted so it falls back to null) + OPTIONS jurisdiction choices (23 codes, confirmed 2026-09-19). In-use courts are authoritative on any id collision (none occurred).",
+  "_source": "CourtListener /api/rest/v4/courts/?in_use=true (472 courts, harvested 2026-09-19) + /courts/?in_use=false (2887 courts, harvested 2026-09-28 via bin/harvest-courtlistener-courts, 1 raw 'St' jurisdiction value normalized to 'ST') + OPTIONS jurisdiction choices (23 codes, confirmed 2026-09-19). In-use courts are authoritative on any id collision (none occurred). 3359 courts = CourtListener's own full declared court count (verified live 2026-09-28: /courts/?page_size=1 reports count=3359), so presence of a key here is an exhaustive test of whether a court id exists upstream. 'ohctapp1' has a blank jurisdiction upstream and is mapped to null rather than omitted, so that a real court is never mistaken for an unknown id.",
   "codes": {
     "F": "Federal Appellate",
     "FD": "Federal District",
@@ -1702,6 +1702,7 @@
     "ohcirctwood": "ST",
     "ohcirctwyandot": "ST",
     "ohcirctwyandott": "ST",
+    "ohctapp1": null,
     "ohctapp10": "ST",
     "ohctapp10frankl": "ST",
     "ohctapp11": "ST",

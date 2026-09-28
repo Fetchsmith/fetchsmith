@@ -5,16 +5,25 @@ import { readFileSync } from 'node:fs';
 
 // courtId -> human-readable jurisdiction label ("Federal District", "State Supreme", ...).
 // Harvested from CourtListener's own /courts/ (both in_use=true, 472 courts, and in_use=false,
-// 2887 more — e.g. ptab, bpai, ag — 3358 total) with the code->label table taken from the
+// 2887 more — e.g. ptab, bpai, ag — 3359 total) with the code->label table taken from the
 // OPTIONS endpoint's jurisdiction choices, so all of it is the API's own values rather than
-// hand-written. Courts genuinely absent from the map (a handful with no jurisdiction on file
-// upstream) stay null by design. readFileSync + import.meta.url rather than an import
-// attribute: the apify/actor-node:20 image's exact patch level isn't guaranteed >= 20.10.
+// hand-written. 3359 is CourtListener's own full declared court count (verified live
+// 2026-09-28), which is what makes `knownCourt()` below an exhaustive existence test rather
+// than a guess. A court with a blank jurisdiction upstream (ohctapp1) is present with a null
+// value rather than omitted, so a real court can never read as an unknown id.
+// readFileSync + import.meta.url rather than an import attribute: the apify/actor-node:20
+// image's exact patch level isn't guaranteed >= 20.10.
 const JURISDICTIONS = JSON.parse(readFileSync(new URL('./court-jurisdictions.json', import.meta.url), 'utf8'));
 
 function jurisdictionFor(courtId) {
     if (!courtId) return null;
     return JURISDICTIONS.codes[JURISDICTIONS.courts[courtId]] ?? null;
+}
+
+// Distinct from jurisdictionFor(): "the map has no label for this court" and "this court does
+// not exist" are different facts, and only the second one is worth warning a buyer about.
+function knownCourt(courtId) {
+    return Object.prototype.hasOwnProperty.call(JURISDICTIONS.courts, courtId);
 }
 
 await Actor.init();
@@ -101,8 +110,9 @@ if (!Object.hasOwn(SORT_PARAM, sortByRaw)) {
 }
 
 // CourtListener court IDs are the short slugs in a courtlistener.com/court/<id>/ URL
-// ("scotus", "ca9", "cand", "cacb", ...). 400+ exist, so this is free text rather than an
-// enum; an unknown id is not an error upstream, it just matches nothing — warned about below.
+// ("scotus", "ca9", "cand", "cacb", ...). 3359 exist, so this is free text rather than an
+// enum; an unknown id is not an error upstream, it just matches nothing — warned about below
+// (see the `unknownCourts` check, after the startUrl block that can replace this value).
 let courts = (Array.isArray(input.courts) ? input.courts : String(input.courts ?? '').split(','))
     .map((c) => String(c).trim().toLowerCase())
     .filter(Boolean);
@@ -250,6 +260,30 @@ if (startUrlRaw) {
             + 'maxResults and watchLabel always apply regardless of startUrl.',
         );
     }
+}
+
+// Checked here, after the startUrl block above, because a pasted URL can replace `courts`
+// wholesale. CourtListener does NOT reject an unknown court id — verified live 2026-09-28:
+// `?type=r&court=notarealcourt123` returns a clean `count: 0` with HTTP 200, exactly like a
+// real court that happens to have no matching records. A buyer who typos a slug therefore
+// gets a plausible-looking empty run and no hint why. The bundled map is CourtListener's own
+// complete 3359-court list, so "absent from it" is a real existence check, not a guess.
+// Deliberately warn-only, never drop: dropping every unknown id could empty `courts` and turn
+// a narrow search into a whole-corpus walk the buyer pays for row by row, which is the failure
+// mode the index-narrowing logic below exists to prevent.
+const unknownCourts = courts.filter((c) => !knownCourt(c));
+if (unknownCourts.length) {
+    const allUnknown = unknownCourts.length === courts.length;
+    log.warning(
+        `courts contains ${unknownCourts.length} id(s) CourtListener does not publish: ${unknownCourts.join(', ')}. `
+        + 'Court ids are the short slug in a courtlistener.com/court/<id>/ URL ("scotus", "ca9", "cand", "cacb"), '
+        + 'not a court name or a state code. CourtListener accepts an unknown id silently and matches nothing, so '
+        + (allUnknown
+            ? 'this run will return 0 rows — the ids are still sent as given rather than dropped, because dropping '
+              + 'them would widen the search to every court instead of failing visibly. Fix the ids and re-run.'
+            : 'these ids contribute nothing and the run covers only the recognised ones '
+              + `(${courts.filter(knownCourt).join(', ')}).`),
+    );
 }
 
 // Narrow the indexes to the ones that can actually honour the field searches that are set —

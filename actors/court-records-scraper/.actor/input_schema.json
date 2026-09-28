@@ -30,7 +30,7 @@
     "courts": {
       "title": "Courts",
       "type": "array",
-      "description": "CourtListener court IDs — the short slug in a courtlistener.com/court/<id>/ URL. Examples: \"scotus\" (Supreme Court), \"ca9\" (9th Circuit), \"cand\" (N.D. Cal.), \"cacb\" (Bankr. C.D. Cal.), \"nysd\" (S.D.N.Y.). 400+ federal and state courts exist. Leave empty for all courts. An unrecognised ID is not rejected upstream — it silently matches nothing.",
+      "description": "CourtListener court IDs — the short slug in a courtlistener.com/court/<id>/ URL. Examples: \"scotus\" (Supreme Court), \"ca9\" (9th Circuit), \"cand\" (N.D. Cal.), \"cacb\" (Bankr. C.D. Cal.), \"nysd\" (S.D.N.Y.). 3,359 federal, state and specialty courts exist. Leave empty for all courts. An unrecognised ID is not rejected upstream — it silently matches nothing — so this Actor checks every ID against CourtListener's own full court list and warns in the run log naming any it does not publish.",
       "editor": "stringList",
       "uniqueItems": true,
       "prefill": [

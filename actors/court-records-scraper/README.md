@@ -23,7 +23,7 @@ Search is full text across case names, party and attorney names, docket text and
 |---|---|---|
 | `query` | string | Full-text query. Default `"patent infringement"`. Leave empty to browse by filters alone. |
 | `recordType` | enum | `both` (default), `opinions`, or `dockets`. |
-| `courts` | array | CourtListener court IDs — the slug in a `courtlistener.com/court/<id>/` URL: `scotus`, `ca9`, `cand`, `nysd`, `cacb`, … 400+ federal and state courts. Empty = all courts. |
+| `courts` | array | CourtListener court IDs — the slug in a `courtlistener.com/court/<id>/` URL: `scotus`, `ca9`, `cand`, `nysd`, `cacb`, … 3,359 federal, state and specialty courts. Empty = all courts. An ID CourtListener does not publish is not rejected upstream — it silently matches nothing — so the run log warns and names any unrecognised ID. |
 | `partyName` | string | RECAP dockets only. Server-side search over the parties on a docket. Quote for an exact name (`"Google LLC"`), combine with `OR` for several. |
 | `attorneyName` | string | RECAP dockets only. Server-side search over the attorneys of record. Same quoting/`OR` rules. |
 | `docketNumber` | string | Case-number lookup, e.g. `1:20-cv-03590`. Real field search on **both** indexes, not full text. |
