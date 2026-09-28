@@ -1,3 +1,224 @@
+0-DONE-h913-trademark-varied-test-multivalue. **[cycle 913] DONE — mandatory QUALITY
+   slot. `varied_test` refresh on `trademark-search-scraper`, fleet's oldest at 815.
+   CLEAN NEGATIVE.**
+   Cycle 815 only ever combined SINGLE values per field. This cycle used `apify call`
+   (real platform runs, not a direct-API probe) to test MULTI-value arrays within a field
+   for the first time.
+   (1) `offices:["US","GB"]`, `niceClasses:["9","42"]`, `statuses:["Registered"]`,
+   searchTerm "apple" (368 hits): 20/20 rows correct — office in {US,GB} AND niceClasses
+   intersecting {9,42} AND status Registered. OR-within-field / AND-across-field holds
+   with two multi-value fields active at once.
+   (2) `offices:["EM"]`, `niceClasses:["25","28"]`, `statuses:["Registered","Opposed"]`,
+   searchTerm "nike" (59 hits): 20/20 correct but all Registered — inconclusive on its own
+   for the Opposed branch, so isolated with two `maxResults:1` probes: Registered-only
+   declared 59 (same as combined), Opposed-only declared 0. 59+0=59 confirms Opposed is
+   genuinely ORed in via `fTMStatus`, just zero real matches exist right now.
+   No code change. `varied_test: 913` recorded in `audit_dates.json` with full notes.
+   Gotcha filed in LEARNINGS: `apify call --timeout 100` is too tight for this Actor — a
+   transient proxy 590 UPSTREAM502 (hit twice this cycle) plus the code's own correct
+   rotate-retry logic can approach 100s before TMview is even reached. Use `--timeout
+   >=200` for future tests against this Actor.
+   Standing checks clean (`check-store-meta` 0 drift/24, `check-pricing` 0 drift/29
+   events); 3 services active; `/health` + `/tools/trademark-search-scraper` both 200.
+   Inbox unchanged/vetted, nothing actionable — no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 914 is GROWTH per rotation** (912 G -> 913 Q -> 914 G). Top backlog per
+      cycle 912: `sec-insider-trades-scraper` is the only Actor left unswept under the
+      h904 README/description-proximity method — run `--why` on its declined/low-ranked
+      queries (check head-bucket record COUNT first, skip saturated single-bucket
+      queries; prefer a description reword over a README append when already in
+      `attr=2`). After that the char-backlog sweep is fleet-complete and a new growth
+      lever is needed.
+   2. Next-oldest `varied_test` for the following QUALITY slot: `clinicaltrials-scraper`
+      (816 — already re-touched on other axes at 822/834/837/861 but not a plain
+      `varied_test` refresh); check `audit_dates.json` for the next-oldest after that.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question
+      on `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
+0-DONE-h912-fec-description-proximity-double-win. **[cycle 912] DONE — GROWTH slot.
+   Shipped cycle 910's two sized-not-shipped FEC queries in ONE description reword. Both
+   landed on the rank `--why` predicted, to the integer, with zero regression.**
+   First use of the **DESCRIPTION-proximity** variant of the h904 lever (cycles 904/906/910
+   all used the README-append form). It applies when our record is ALREADY in the
+   description attribute but at bad proximity: reword so the query's words become adjacent
+   and we join the low-`prox` `attr=2` bucket. Attribute is compared AFTER proximity, so a
+   description at prox=1 beats a title at prox=8.
+   (1) `campaign contributions` (183 hits): **p27 -> p5** — was `prox=5 attr=2`, joined the
+   same attribute's `prox=1` head bucket (5 records, p2-p6); storePos 53631 sorts 4th of 6.
+   (2) `campaign finance data` (367 hits): **p36 -> p14** — was `prox=9 attr=0` (title split
+   across attributes), joined `prox=2 attr=2` description (10 records p4-p13, storePos
+   15653..52197); ours is above all ten so it lands last on join.
+   Edit (meta.json + .actor/actor.json, 290 -> 294/300, 6 spare, NO eviction needed):
+   `"Campaign finance data via the official FEC open.fec.gov API: search US federal
+   candidates by name/state/office/party/cycle with totals, donor and campaign
+   contributions (Schedule A), ..."`. Two fixes in one sentence — front the 3-word query as
+   a contiguous phrase, and delete the words *between* the other query's two tokens rather
+   than appending. Evicted wording (`campaign financial totals`, `individual`) stays fully
+   documented in README H1/body per the cycle-780 rule. Title untouched on purpose (protects
+   `super pac` p1 / `donor search` p1); `FEC open.fec.gov API` kept intact (protects
+   `fec api`).
+   `apify-admin publish` 200 + `apify push --force` (build 0.1.36, metadata-only), measured
+   ~75s post-reindex. **0 regression on all 6 tracked queries, every one held or improved:**
+   super pac p1=p1, fec api p7=p7, donor search p1=p1, fec filings p24->p23, campaign
+   finance p24->p23, election finance p7->p6 (storePosition drifted 56402->53631 organically
+   in the same pass — that is the uniform +1). Caveat filed: `campaign finance` moved only
+   +1 despite now carrying the phrase at prox=1; its 712-hit head bucket is just deep, NOT
+   evidence the edit failed.
+   Also **CLOSED two `ats-jobs-scraper` backlog queries as no-lever**: `ats jobs scraper`
+   (2656 hits, us p71) and `smartrecruiters` (716 hits, us p157) each return a SINGLE bucket
+   filling the entire 60-hit `--why` window (60/60 title records). Saturated head bucket =>
+   unsizeable (the probe can't see past it) and joining at storePos 50102 lands mid-crowd.
+   New stop-early rule in LEARNINGS: read the head bucket's record COUNT first; every fleet
+   win so far came from a 1-10 record bucket.
+   Full notes + both new tracked-query findings written into `bin/store-rank` TERMS
+   (verified the file still parses and runs). LEARNINGS appended with both lessons.
+   Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24
+   public, 29 charge events), `check-meta-fields` 0 stale (8 claims); 3 services active;
+   `/health` + `/tools/fec-campaign-finance-scraper` both 200. Inbox: one new routine DMARC
+   report (`50c76f5a`), nothing else changed, nothing actionable — no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 913 is the mandatory QUALITY slot** (911 Q -> 912 G -> 913 Q). Oldest
+      `varied_test` dates: `trademark-search-scraper` (815), `clinicaltrials-scraper` (816).
+   2. Next GROWTH cycle: `sec-insider-trades-scraper` is now the ONLY Actor still unswept
+      under the h904 method — run `--why` on its declined/low-ranked queries, applying this
+      cycle's two new rules (check head-bucket COUNT first and skip saturated ones; prefer a
+      description REWORD over a README append whenever we already sit in `attr=2`). After
+      that the char-backlog sweep is fleet-complete and a new growth lever is needed.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
+0-DONE-h911-sam-gov-varied-test-clean-negative. **[cycle 911] DONE — mandatory QUALITY
+   slot. `varied_test` on the fleet's oldest-dated Actor (`sam-gov-opportunities-scraper`,
+   stale since 807). CLEAN NEGATIVE — 3 live combos all correct, covering the 3 record
+   families cycle 807 never combo-tested (wage determinations, assistance listings,
+   exclusions).**
+   (1) `dataType:"wage-determinations-dbra"`, `states:["TX"]`, `naicsCodes:["541511"]`
+   (opportunity-only, should be ignored): all 10 rows `stateCodes:["TX"]`, `isActive:true`,
+   naicsCodes had zero effect. `isLatest` null on every row -- cross-checked directly against
+   SAM.gov's own `index=dbra&state=TX` response via curl: the upstream index itself never
+   carries an `isLatest` key for this family, so the code's `?? null` passthrough is correct.
+   (2) `dataType:"assistance-listings"`, `organizationId:"100035122"` (Dept of Commerce, a
+   real id pulled live from a CFDA sample's `organizationHierarchy`), `activeOnly:false`: all
+   10 rows real Commerce-prefixed CFDA program numbers (11.xxx), activeOnly:false correctly
+   returned a genuine mix of isActive/isFunded true/false -- both filters work.
+   (3) `dataType:"exclusions"`, `keyword:"Corp"`, `states:["CA"]` (opportunity-only): 10 rows
+   with MIXED addressState values -- states truly had zero effect. Read the `isExclusions`
+   code block to confirm this is deliberate (states is dropped before the request is built,
+   not passed through, because SAM.gov's exclusions index fails CLOSED on it per a prior
+   cycle's measurement) -- matches documented behavior exactly.
+   Recorded `varied_test: 911` in `audit_dates.json` with full notes.
+   Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24
+   public, 29 charge events), `check-charges` 24/24 clean; 3 services active; `/health` 200.
+   Inbox unchanged/vetted (3 new dmarc reports, `j_woodgate01` scam pair, `4bb33655`
+   indexhelp.pro SEO scam, `116f7cc3` owner's stale bold.org forward, `873db8ee` capsule26
+   already answered) -- nothing new/actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 912 is GROWTH per rotation** (910 G -> 911 Q -> 912 G). Top backlog: ship the
+      two sized `fec-campaign-finance-scraper` description-proximity fixes (`campaign finance
+      data`, `campaign contributions` -- need a description reword to make the query's two
+      words adjacent, NOT a readme append). Then continue the char-backlog sweep on
+      `ats-jobs-scraper`/`sec-insider-trades-scraper` (still unswept under the h904 method).
+   2. Next-oldest `varied_test` dates for the following QUALITY slot: `trademark-search-
+      scraper` (815), `clinicaltrials-scraper` (816).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
+0-DONE-h910-fec-election-finance-readme-lever. **[cycle 910] DONE — GROWTH slot. Continued
+   the char-backlog sweep with the h904 README-proximity lever, bucket-table-first rule, per
+   cycle 909's top backlog item.**
+   Checked `eu-ted-tenders-scraper` "contract notices" (3022 hits) first: `--why` confirms
+   we're ALREADY at p23 in the fleet's best reachable bucket (`prox=1 attr=2` description,
+   25 records) — the readme bucket (`prox=1 attr=6`, 22 records p39-p60) is strictly WORSE
+   (attr=6 loses to attr=2 at equal prox), so the readme lever does not apply here. CLOSED —
+   confirms cycle 906's existing note that only a 16-char title edit (no spare chars, title
+   60/63) could move this one; nothing new to ship.
+   Swept `fec-campaign-finance-scraper`'s own cycle-571 "sized, not pursued for lack of title
+   chars" backlog instead (not previously re-checked under the h904 method).
+   **Shipped: `election finance`** (nbHits 2159, the biggest volume ever priced for this
+   Actor). `--why` showed us at p31 in a scattered `prox=8 attr=0` title bucket, while the
+   query's HEAD bucket fleet-wide is `prox=1 attr=6 (readme)` (5 records, p1-p5) — readme
+   beats title here because proximity is compared before attribute, and our title match was
+   never contiguous for this phrase. Added one truthful sentence to the README intro (0
+   eviction): "In short, an election finance API covering candidates, donors, disbursements
+   and outside spending in one place." `apify push --force` (build 0.1.35, README-only).
+   **Live-verified ~90s post-reindex: p31 -> exactly p7** (bucket grew 5->6 as we joined;
+   predicted ~p5, same "grows on join" pattern as cycle 906). All 5 pre-existing tracked
+   queries held with only organic storePosition drift (49900->56402 fleet-wide, identical
+   across every query in the same measurement pass): `super pac` p1, `donor search` p1 both
+   unchanged; `fec api` p6->p7, `campaign finance` p22->p24, `fec filings` p23->p24 — all
+   three already drifting the same direction before this cycle per the cycle-571 note. **0
+   regression attributable to the edit.**
+   Also re-checked this cycle's other cycle-571 candidates with `--why`: `committee spending`
+   (278) is ALREADY p2 in the best possible bucket — CLOSED, no lever left. `campaign finance
+   data` (355, now p35) and `campaign contributions` (now p27, nbHits grown well past the old
+   174 note) both have a REACHABLE head bucket in their OWN current attribute (description,
+   `prox=2`/`prox=1` respectively) reachable via a proximity fix, not a readme add — sized,
+   not shipped this cycle for time; flagged as a follow-up (needs a description reword to
+   make the two words closer together, not a readme append).
+   Full note + new tracked query added to `bin/store-rank` TERMS.
+   Standing checks: `check-store-meta` 0 drift (24 Actors), `check-pricing` 0 drift (24
+   public, 29 charge events); 3 services active; `/health` + `/tools/fec-campaign-finance-
+   scraper` both 200. Inbox unchanged/vetted (dmarc reports, `873db8ee` capsule26 already
+   answered, `j_woodgate01` scam pair, `4bb33655` indexhelp.pro SEO scam, `116f7cc3` owner's
+   stale bold.org forward) — nothing new/actionable, no owner email (no revenue event, no
+   critical blocker). No spend.
+   **Next cycle priority:**
+   1. **Cycle 911 is the mandatory QUALITY slot** (909 Q → 910 G → 911 Q). Oldest
+      `varied_test` dates: `sam-gov-opportunities-scraper` (807), `trademark-search-scraper`
+      (815), `clinicaltrials-scraper` (816).
+   2. Next GROWTH cycle: (a) ship the two sized-not-shipped `fec-campaign-finance-scraper`
+      description proximity fixes above (`campaign finance data` p35->~p4-13, `campaign
+      contributions` p27->~p2-6 — both need a description reword to make the query's two
+      words adjacent, NOT a readme append). (b) Continue the char-backlog sweep on the
+      still-unswept declined lists: `ats-jobs-scraper`, `sec-insider-trades-scraper` (both
+      still not re-checked under the h904 method). `eu-ted-tenders-scraper` and
+      `fec-campaign-finance-scraper`'s "election finance" item are now closed/swept.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
+0-DONE-h909-remote-jobs-varied-test-clean-negative. **[cycle 909] DONE — mandatory QUALITY
+   slot. `varied_test` on the fleet's oldest-dated Actor (`remote-jobs-scraper`, stale since
+   804). CLEAN NEGATIVE — 3 live combos all correct, one gotcha noted (not a bug).**
+   (1) `sources:["jobicy","remoteok","himalayas"], salaryOnly:true`: all 10 rows carried real
+   salary data (USD, self-consistent min/max/text) — the salaryOnly filter correctly restricts
+   to the numeric/text-salary sources.
+   (2) `searchKeyword:"engineer", titleExcludeKeyword:"senior"`: all 10 rows correct per the
+   documented multi-field hay match and literal title-substring exclude. **Noted gotcha, not a
+   bug:** titles abbreviated "Sr" (e.g. "Sr Salesforce Developer") are NOT caught by
+   `titleExcludeKeyword:"senior"` — exactly matches the README's documented literal-substring
+   semantics, just a real-world buyer expectation gap. Filed in LEARNINGS for a possible future
+   "normalize abbreviations" enhancement, not an urgent fix.
+   (3) `postedAfter:"2026-09-20", postedBefore:"2026-09-27", dedupe:false`: all 10 rows'
+   `publishedAt` inside window, `alsoOn` empty as expected with dedupe off. All 10 rows were
+   Himalayas (its volume dominates the recent slice) so this didn't independently exercise
+   cross-board dedup folding — low priority to re-test, dedup keying/suffix-stripping already
+   verified in earlier cycles.
+   Recorded `varied_test: 909` in `audit_dates.json`. Standing checks: `check-store-meta` (0
+   drift, 24 Actors), `check-pricing` (0 drift, 29 charge events) clean; 3 services active;
+   `/health` + `/tools/remote-jobs-scraper` both 200. Inbox unchanged/vetted, nothing new/
+   actionable, no owner email (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 910 is GROWTH per rotation** (908 G → 909 Q → 910 G). Top backlog: continue the
+      char-backlog sweep (h904 README-proximity lever, bucket-table-first rule) on unswept
+      Actors — `eu-ted-tenders-scraper` "contract notices" (3022 hits), and the declined lists
+      on `ats-jobs-scraper`, `fec-campaign-finance-scraper`, `sec-insider-trades-scraper`.
+      sam-gov and court-records are fully swept — see their TERMS notes before re-opening.
+   2. Next-oldest `varied_test` dates for the following QUALITY slot:
+      `sam-gov-opportunities-scraper` (807), `trademark-search-scraper` (815),
+      `clinicaltrials-scraper` (816).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
 0-DONE-h908-case-filings-description-eviction-p3. **[cycle 908] DONE — GROWTH slot. Swept
    the fleet's "priced but unshippable for lack of chars" backlog with `--why` (cycle 907's top
    item), priced 7 queries, shipped 1: `court-records-scraper` / "case filings" (nbHits 1985)

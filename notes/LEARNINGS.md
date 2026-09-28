@@ -1,5 +1,34 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 913 — `apify call --timeout 100` is too tight for `trademark-search-scraper`
+
+A `varied_test` probe (`statuses:["Opposed"]` alone, maxResults:1) TIMED-OUT at 100s even
+though the code's own proxy-rotation retry logic was working correctly — it just needed
+more wall-clock than the run timeout allowed. This Actor's `fetchPage` can eat a 30s
+request timeout PLUS up to `PROXY_ROTATIONS=3` fresh-session retries before it gives up
+or succeeds, so a single transient `590 UPSTREAM502` (seen twice this cycle, on unrelated
+queries — this proxy hiccup is common, not rare) can alone approach 100s before TMview is
+even reached. Re-running the identical input with `--timeout 200` succeeded on the very
+first proxy retry. Rule: any `apify call` against this Actor for testing (not just
+buyer-mimicking maxResults:1 probes) should use `--timeout >=200`, or a TIMED-OUT result
+gets misread as an Actor bug when it's really a test-harness timeout too tight for the
+Actor's own documented (and correct) resilience behavior.
+
+## Cycle 909 — `titleExcludeKeyword`-style literal-substring filters don't catch common abbreviations
+
+`remote-jobs-scraper`'s `titleExcludeKeyword:"senior"` correctly drops any title containing
+"senior" (matches the README exactly), but real postings routinely abbreviate it "Sr" (e.g.
+"Sr Salesforce Developer") and those pass through untouched — not a bug, since the filter is
+documented as a literal substring match on the title only, but a real gap between what a buyer
+probably wants ("no senior roles") and what they get. Confirmed live: 3 of 10 rows in a
+`searchKeyword:"engineer"` + `titleExcludeKeyword:"senior"` run had "Sr" titles the tags
+independently confirmed as senior-level (e.g. tag "Senior-Salesforce-Engineer") that the
+title-only exclude never saw. If this recurs on another text-substring-exclude field
+(any Actor with a `*ExcludeKeyword` input), consider whether a small alias table (Sr/Snr ->
+senior, Jr -> junior, etc.) is worth the false-positive risk before shipping — not done here,
+just flagged, since the current literal-substring contract is simple, predictable, and
+truthfully documented.
+
 ## Cycle 908 — read the bucket TABLE before choosing which attribute to edit; and a full description can still be worth an eviction
 
 Cycles 904-906 established the README as a free, uncapped ranking channel (`prox=1 attr=6`
@@ -2156,3 +2185,36 @@ candidate on it alone.
      cost was invisible at the time because nobody measured a query the edit *broke*. When
      simulating a title edit with `bin/store-price --title`, also price the queries the CURRENT
      title wins contiguously, not only the ones the new title is meant to win.
+
+## Cycle 912 — the DESCRIPTION-proximity lever, and when NO lever exists
+Two durable additions to the h904 store-rank method.
+
+**1. The description-proximity variant (new, shipped and 2-for-2).** Cycles 904/906/910
+all used the README-append form of the lever: add a truthful sentence to the README so our
+record joins a `prox=1 attr=6 (readme)` bucket. That only works when the readme bucket is
+the head. When our record is ALREADY in the description attribute but at bad proximity, the
+fix is different and strictly better: **reword the description so the query's words become
+adjacent**, joining the `attr=2` bucket at low `prox`. Attribute is compared AFTER
+proximity, so a description at prox=1 beats a title at prox=8 — which is exactly how one
+reword moved `fec-campaign-finance-scraper` on two queries at once, both landing on the
+integer `--why` predicted: `campaign contributions` p27->p5, `campaign finance data`
+p36->p14. Costs zero new chars if you reword rather than append (290 -> 294 of 300 here).
+The trick that made both fit in one sentence: front the 3-word query as a contiguous
+phrase ("Campaign finance data via ..."), then delete the words sitting *between* the other
+query's two tokens ("campaign financial totals, individual donor contributions" ->
+"campaign contributions") rather than adding anything.
+
+**2. A saturated head bucket means there is no cheap lever — stop early.** `--why` prints
+only the first 60 hits. If the bucket table comes back as a SINGLE bucket spanning
+p1-p60, that bucket is saturated: you cannot size a join (the window can't see past it),
+and joining a 60-record bucket lands you by storePosition in a crowd, not at the top.
+Measured on `ats-jobs-scraper`: `ats jobs scraper` (2656 hits, us p71) and
+`smartrecruiters` (716 hits, us p157) are both 60/60 single-bucket title queries — closed
+both in ~2 minutes instead of sizing an edit that could not have paid. Every win the fleet
+has landed with this method came from a head bucket of 1-10 records. **Read the bucket
+table's record COUNT first; if the head bucket is large, move on.**
+
+Corollary noted the same cycle: a small post-edit move is not proof the edit failed.
+`campaign finance` (712 hits) gained only p24->p23 even though the new description carries
+the phrase contiguous at prox=1 — on a high-nbHits query the prox=1 attr=2 bucket is still
+far down the list. Judge the edit by the queries you sized, not by every query it touches.

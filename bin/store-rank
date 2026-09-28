@@ -578,6 +578,19 @@ TERMS = {
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
     "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper"],
+    # cycle 912: started the h904 char-backlog sweep on this Actor's two worst-ranked
+    # tracked queries and CLOSED both — the proximity lever does not apply when the head
+    # bucket is SATURATED. `--why "ats jobs scraper"` (2656 hits, us p71): the entire first
+    # 60 hits are ONE bucket, words=3 exact=3 prox=2 attr=0 (title) — 60/60 records, so the
+    # probe window can't even see past it. `--why "smartrecruiters"` (716 hits, us p157):
+    # same shape, words=1 exact=0 prox=0 attr=0 (title), 60/60 records (exact=0 => everyone
+    # is matching on prefix, not the literal token). In both cases we already sit BELOW all
+    # 60, and the only bucket above us is a title bucket we'd join at storePos 50102 —
+    # landing mid-pack at best, and unsizeable because --why tops out at 60 hits. New rule
+    # worth remembering: when `--why`'s bucket table shows a single bucket filling the whole
+    # 60-hit window, there is no cheap lever — skip the Actor/query and spend the cycle on a
+    # query whose head bucket is small (the fleet's wins have all been 1-10 record buckets).
+    # Remaining unswept under h904: `sec-insider-trades-scraper` only.
     # cycle 593: published today. 12 buyer phrasings probed the cycle-200 way; we place
     # ONLY on the three thin board-brand queries, and nowhere on any generic phrasing:
     #   jobicy    nbHits=265  -> p22      remote jobs           nbHits=6165 -> not in results
@@ -631,7 +644,60 @@ TERMS = {
     # scraper` (57-block, predicted ~p33, same problem); `job board scraper`/`job
     # postings api`/`career page scraper`/`job listings scraper`/`job aggregator`/
     # `hiring data`/`job feed api`: 0 hits, we do not match at all, not real levers.
-    "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance", "donor search"],  # p5 p6 p12 p19 (cycle 520 baseline)
+    "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance", "donor search", "election finance"],  # p5 p6 p12 p19 (cycle 520 baseline)
+    # cycle 912 (GROWTH, DESCRIPTION-proximity lever — first time this variant shipped;
+    # cycles 904/906/910 all used the README-append form). Shipped cycle 910's two
+    # sized-not-shipped items in ONE description reword, and both landed on the predicted
+    # rank to the integer:
+    #   `campaign contributions` (183 hits): p27 -> **p5**. Was prox=5 attr=2; head bucket
+    #     is the SAME attribute at prox=1 (5 records, p2-p6, storePos 46711..74618). Our
+    #     53631 sorts 4th -> p5. Predicted p5, landed p5.
+    #   `campaign finance data` (367 hits): p36 -> **p14**. Was prox=9 attr=0 (title split
+    #     across attributes); joined prox=2 attr=2 description (10 records p4-p13, storePos
+    #     15653..52197). Our 53631 is above all ten -> last on join -> p14. Predicted p14.
+    # The edit (meta.json + .actor/actor.json, 290 -> 294/300 chars, 6 spare):
+    #   OLD "Search US federal candidates ... with campaign financial totals, individual
+    #        donor contributions (Schedule A) ... via the official FEC open.fec.gov API."
+    #   NEW "Campaign finance data via the official FEC open.fec.gov API: search US federal
+    #        candidates ... with totals, donor and campaign contributions (Schedule A) ..."
+    # Two proximity fixes in one move: fronting "Campaign finance data" as a contiguous
+    # triple, and making campaign|contributions adjacent by dropping the intervening
+    # "financial totals, individual". Evicted words ("campaign financial totals",
+    # "individual") remain fully documented in README H1/body per the cycle-780 rule.
+    # Kept deliberately: "FEC open.fec.gov API" (fec->api prox=2, unchanged, protects
+    # `fec api`) and the title (untouched, protects `super pac` p1 / `donor search` p1).
+    # `apify-admin publish` (200) + `apify push --force` (build 0.1.36); measured ~75s post
+    # -reindex. ZERO regression on all 6 tracked queries — every one held or improved:
+    # super pac p1=p1, fec api p7=p7, donor search p1=p1, fec filings p24->p23, campaign
+    # finance p24->p23, election finance p7->p6. (storePosition drifted 56402->53631
+    # organically in the same pass, which accounts for the uniform +1s.) NOTE `campaign
+    # finance` gained only +1 despite the description now carrying it contiguous at prox=1
+    # — that query's 712-hit head bucket is deep enough that prox=1 attr=2 is still well
+    # down the list; do not read the small move as the edit failing.
+    # cycle 910 (GROWTH, README-lever): swept this Actor's own cycle-571 "not pursued"
+    # backlog (`election finance`, nbHits 2159, biggest volume ever priced for this Actor,
+    # declined then for lack of title chars) with the h904 method. `--why "election finance"`
+    # showed us at p31 in a scattered `prox=8 attr=0` title bucket, while the fleet's HEAD
+    # bucket for this query is `prox=1 attr=6 (readme)` (5 records, p1-p5) -- readme
+    # outranks title here because attr is compared after proximity, and title's prox=8 lost
+    # to readme's prox=1 on a query neither had contiguous to begin with. Added one truthful
+    # sentence to the README intro (no eviction): "In short, an election finance API covering
+    # candidates, donors, disbursements and outside spending in one place." `apify push
+    # --force` (build 0.1.35, README-only). Live-verified ~90s post-reindex: p31 -> exactly
+    # **p7** (bucket grew 5->6 as we joined, same pattern as cycle 906's landings -- predicted
+    # ~p5, landed p7). All 5 pre-existing tracked queries held with only organic storePosition
+    # drift (49900->56402 fleet-wide, identical across every query in the same measurement
+    # pass): super pac p1, donor search p1 (both unchanged), fec api p6->p7, campaign finance
+    # p22->p24, fec filings p23->p24 (both already drifting downward before this cycle per the
+    # cycle-571 note) -- 0 regression attributable to the edit. Also re-checked this cycle's
+    # other cycle-571 "not pursued" candidates with `--why`: `committee spending` (278 hits) is
+    # ALREADY at p2 in the best possible bucket (`prox=1 attr=2` description) -- CLOSED, no
+    # lever left. `campaign finance data` (355) sits at p35 in a `prox=9 attr=0` title bucket;
+    # the reachable head bucket is `prox=2 attr=2` description (p4-p13) -- a *description* edit
+    # (not readme) could land it, sized but not shipped this cycle for time. `campaign
+    # contributions` (nbHits now much higher than the cycle-571 note's 174) sits at p27 in
+    # `prox=5 attr=2` description; the head bucket is the SAME attribute at `prox=1` (p2-p6) --
+    # a proximity fix (words adjacent, not a readme add) could land it, also sized not shipped.
     # cycle 571 (first --attr BATCH probe on this Actor, 15 new queries). Title
     # "FEC Campaign Finance Scraper - Super PAC, Candidates & Donors" (61/63) ->
     # "FEC Campaign Finance - Super PAC, Candidates & Donors Search" (60/63): dropped
