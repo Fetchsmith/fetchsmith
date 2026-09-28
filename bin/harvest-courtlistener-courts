@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Harvest CourtListener's full court list (in_use=false) into state/, resumably.
+
+Why this exists (cycle 940): court-records-scraper ships src/court-jurisdictions.json
+built from /courts/?in_use=true only (472 courts), so rows from any of the 2,887
+in_use=false courts get courtJurisdiction:null. Those courts are NOT empty --
+measured live cycle 940: `ag` -> 2,529 opinions, `circtdal` -> 7, and a 120-court
+sample of them -> 497,510 opinions. So the gap is real and worth closing.
+
+The blocker is throughput, not access: anonymous CourtListener is throttled to
+5 req/min, /courts/ ignores page_size (hard 20/page), and there is no bulk export
+(storage.courtlistener.com/bulk-data/ is 404). 2887/20 = 145 pages ~= 31 min of
+wall clock, which does not fit one worker cycle. Hence: resumable. Run it in the
+background, re-run it to continue, and it is a no-op once complete.
+
+Usage:
+  harvest-courtlistener-courts            # harvest/resume until done
+  harvest-courtlistener-courts --status    # print progress, fetch nothing
+"""
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.request
+
+STATE = '/root/agent/state/courtlistener_courts_notinuse.json'
+START = 'https://www.courtlistener.com/api/rest/v4/courts/?in_use=false'
+UA = {'User-Agent': 'FetchSmith/1.0 (+https://fetchsmith.com)'}
+# 5 req/min measured; 13s leaves headroom for the clock not lining up with theirs.
+GAP = 13.0
+
+_last = [0.0]
+
+
+def fetch(url, tries=5):
+    for i in range(tries):
+        wait = GAP - (time.time() - _last[0])
+        if wait > 0:
+            time.sleep(wait)
+        _last[0] = time.time()
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            with urllib.request.urlopen(req, timeout=90) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            # 429 here is routine, not an error: back off and keep the cursor.
+            if e.code == 429 and i < tries - 1:
+                time.sleep(40)
+                continue
+            raise
+        except Exception:
+            if i < tries - 1:
+                time.sleep(20)
+                continue
+            raise
+    raise RuntimeError('unreachable')
+
+
+def load():
+    if os.path.exists(STATE):
+        with open(STATE) as f:
+            return json.load(f)
+    return {'complete': False, 'next': START, 'declared_count': None, 'courts': {}}
+
+
+def save(st):
+    tmp = STATE + '.tmp'
+    with open(tmp, 'w') as f:
+        json.dump(st, f, indent=0, sort_keys=True)
+    os.replace(tmp, STATE)  # atomic: a kill mid-write must not corrupt the resume point
+
+
+def main():
+    st = load()
+    if '--status' in sys.argv:
+        print(f"complete={st['complete']} harvested={len(st['courts'])} "
+              f"declared={st['declared_count']} next={'(done)' if not st['next'] else 'pending'}")
+        return 0
+    if st['complete']:
+        print(f"already complete: {len(st['courts'])} in_use=false courts in {STATE}")
+        return 0
+
+    pages = 0
+    while st['next']:
+        d = fetch(st['next'])
+        st['declared_count'] = d.get('count')
+        for c in d['results']:
+            # Keep only what the jurisdiction map needs, not the whole record.
+            st['courts'][c['id']] = {
+                'jurisdiction': c.get('jurisdiction'),
+                'full_name': c.get('full_name'),
+                'start_date': c.get('start_date'),
+                'end_date': c.get('end_date'),
+            }
+        st['next'] = d.get('next')
+        pages += 1
+        save(st)  # save every page: resume costs at most one refetch
+        print(f"page {pages}: {len(st['courts'])}/{st['declared_count']}", flush=True)
+
+    st['complete'] = True
+    save(st)
+    print(f"COMPLETE: {len(st['courts'])} in_use=false courts -> {STATE}")
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,1927 @@
+{
+"complete": false,
+"courts": {
+"ag": {
+"end_date": null,
+"full_name": "United States Attorneys General",
+"jurisdiction": "FS",
+"start_date": null
+},
+"ald": {
+"end_date": "1824-03-10",
+"full_name": "District Court, D. Alabama",
+"jurisdiction": "FD",
+"start_date": "1820-04-21"
+},
+"ard": {
+"end_date": "1851-03-03",
+"full_name": "United States District Court for the District of Arkansas",
+"jurisdiction": "FD",
+"start_date": "1836-06-15"
+},
+"arizsuper": {
+"end_date": null,
+"full_name": "Arizona Superior Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"bpai": {
+"end_date": "2012-09-15",
+"full_name": "Board of Patent Appeals and Interferences",
+"jurisdiction": "FS",
+"start_date": null
+},
+"caca": {
+"end_date": "1812-04-30",
+"full_name": "Circuit Court for California",
+"jurisdiction": "F",
+"start_date": "1804-10-01"
+},
+"calctapp1d": {
+"end_date": null,
+"full_name": "California Court of Appeal, 1st District",
+"jurisdiction": "SA",
+"start_date": null
+},
+"calctapp2d": {
+"end_date": null,
+"full_name": "California Court of Appeal, 2nd District",
+"jurisdiction": "SA",
+"start_date": null
+},
+"calctapp3d": {
+"end_date": null,
+"full_name": "California Court of Appeal, 3rd District",
+"jurisdiction": "SA",
+"start_date": null
+},
+"calctapp4d": {
+"end_date": null,
+"full_name": "California Court of Appeal, 4th District",
+"jurisdiction": "SA",
+"start_date": null
+},
+"calctapp5d": {
+"end_date": null,
+"full_name": "California Court of Appeal, 5th District",
+"jurisdiction": "SA",
+"start_date": null
+},
+"calctapp6d": {
+"end_date": null,
+"full_name": "California Court of Appeal, 6th District",
+"jurisdiction": "SA",
+"start_date": null
+},
+"caldistct": {
+"end_date": "1879-12-31",
+"full_name": "California District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"caljp": {
+"end_date": null,
+"full_name": "State of California Commission On Judicial Performance",
+"jurisdiction": "C",
+"start_date": null
+},
+"caljustct": {
+"end_date": null,
+"full_name": "Califonia Justice Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctbut": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Butte County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctcol": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Colusa County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctfre": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Fresno County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctgle": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Glenn County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustcthum": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Humboldt County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctker": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Kern County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctkin": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Kings County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctla": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Los Angeles County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctlak": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Lake County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctmad": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Madera County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctmen": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Mendocino County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctmno": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Mono County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctmpa": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Mariposa County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctnev": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Nevada County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctpla": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Placer County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctplu": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Plumas County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctsbd": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, San Bernardino County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctsbt": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, San Benito County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustctsis": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Siskiyou County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustcttul": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Tulare County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caljustcttuo": {
+"end_date": "2001-01-01",
+"full_name": "California Justice Court, Tuolumne County",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunct": {
+"end_date": null,
+"full_name": "Municipal Court of California",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctala": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Alameda",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctalp": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Alpine",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctama": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Amador",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctbut": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Butte",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctcal": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Calaveras",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctcc": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Contra Costa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctcol": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Colusa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctdn": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Del Norte",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmuncted": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of El Dorado",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctfre": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Fresno",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctgle": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Glenn",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmuncthum": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Humboldt",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctimp": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Imperial",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctiny": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Inyo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctker": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Kern",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctkin": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Kings",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctla": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Los Angeles",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctlak": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Lake",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctlas": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Lassen",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmad": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Madera",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmen": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Mendocino",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmer": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Merced",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmno": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Mono",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmod": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Modoc",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmon": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Monterey",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmpa": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Mariposa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctmrn": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Marin",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctnap": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Napa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctnev": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Nevada",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctora": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Orange",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctpla": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Placer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctplu": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Plumas",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctriv": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Riverside",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsac": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Sacramento",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsb": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Santa Barbara",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsbd": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Bernardino",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsbt": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Benito",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctscl": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Santa Clara",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctscr": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Santa Cruz",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsd": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Diego",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsf": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Francisco",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsha": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Shasta",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsie": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Sierra",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsis": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Siskiyou",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsj": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Joaquin",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctslo": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Luis Obispo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsm": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of San Mateo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsol": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Solano",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctson": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Sonoma",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsta": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Stanislaus",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctsut": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Sutter",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctteh": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Tehama",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmuncttri": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Trinity",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmuncttul": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Tulare",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmuncttuo": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Tuolumne",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctven": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Ventura",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctyol": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Yolo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calmunctyub": {
+"end_date": "2001-01-01",
+"full_name": "Municipal Court of California, County of Yuba",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calofcadmhrg": {
+"end_date": null,
+"full_name": "California Office of Administrative Hearings",
+"jurisdiction": "SS",
+"start_date": null
+},
+"calsuperct": {
+"end_date": null,
+"full_name": "California Superior Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctala": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Alameda",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctalp": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Alpine",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctama": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Amador",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctbut": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Butte",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctcal": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Calaveras",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctcc": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Contra Costa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctcol": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Colusa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctdn": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Del Norte",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppcted": {
+"end_date": null,
+"full_name": "Superior Court of California, County of El Dorado",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctfre": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Fresno",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctgle": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Glenn",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppcthum": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Humboldt",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctimp": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Imperial",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctiny": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Inyo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctker": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Kern",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctkin": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Kings",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctla": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Los Angeles",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctlak": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Lake",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctlas": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Lassen",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmad": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Madera",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmen": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Mendocino",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmer": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Merced",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmno": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Mono",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmod": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Modoc",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmon": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Monterey",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmpa": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Mariposa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctmrn": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Marin",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctnap": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Napa",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctnev": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Nevada",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctora": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Orange",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctpla": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Placer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctplu": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Plumas",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctriv": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Riverside",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsac": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Sacramento",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsb": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Santa Barbara",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsbd": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Bernardino",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsbt": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Benito",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctscl": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Santa Clara",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctscr": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Santa Cruz",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsd": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Diego",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsf": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Francisco",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsha": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Shasta",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsie": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Sierra",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsis": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Siskiyou",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsj": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Joaquin",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctslo": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Luis Obispo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsm": {
+"end_date": null,
+"full_name": "Superior Court of California, County of San Mateo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsol": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Solano",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctson": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Sonoma",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsta": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Stanislaus",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctsut": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Sutter",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctteh": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Tehama",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppcttri": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Trinity",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppcttul": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Tulare",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppcttuo": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Tuolumne",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctven": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Ventura",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctyol": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Yolo",
+"jurisdiction": "ST",
+"start_date": null
+},
+"calsuppctyub": {
+"end_date": null,
+"full_name": "Superior Court of California, County of Yuba",
+"jurisdiction": "ST",
+"start_date": null
+},
+"caluneinsappbd": {
+"end_date": null,
+"full_name": "California Unemployment Insurance Appeals Board",
+"jurisdiction": "SS",
+"start_date": null
+},
+"circtcapefearnc": {
+"end_date": "1872-12-31",
+"full_name": "U.S. Circuit Court District of Cape Fear (North Carolina)",
+"jurisdiction": "F",
+"start_date": "1801-01-01"
+},
+"circtdal": {
+"end_date": "1874-12-31",
+"full_name": "U.S. Circuit Court for the District of Alabama",
+"jurisdiction": "F",
+"start_date": "1873-01-01"
+},
+"circtdalb": {
+"end_date": "1872-12-31",
+"full_name": "U.S. Circuit Court District of Albemarle (North Carolina)",
+"jurisdiction": "F",
+"start_date": "1801-01-01"
+},
+"circtdalbanyny": {
+"end_date": "1802-12-31",
+"full_name": "U.S. Circuit Court for the District of Albany New York",
+"jurisdiction": "F",
+"start_date": "1801-01-01"
+},
+"circtdar": {
+"end_date": "1851-12-31",
+"full_name": "U.S. Circuit Court for the District of Arkansas",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtdca": {
+"end_date": "1863-12-31",
+"full_name": "U.S. Circuit Court for the District of California",
+"jurisdiction": "F",
+"start_date": "1855-01-01"
+},
+"circtdco": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Colorado",
+"jurisdiction": "F",
+"start_date": "1876-01-01"
+},
+"circtdct": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Connecticut",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtddc": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of District of Columbia",
+"jurisdiction": "F",
+"start_date": "1801-01-01"
+},
+"circtdedenton": {
+"end_date": "1797-12-31",
+"full_name": "U.S. Circuit Court District of Edenton (North Carolina)",
+"jurisdiction": "F",
+"start_date": "1794-01-01"
+},
+"circtdel": {
+"end_date": "1912-01-01",
+"full_name": "U.S. Circuit Court for the District of Delaware",
+"jurisdiction": "F",
+"start_date": "1789-09-24"
+},
+"circtdga": {
+"end_date": "1848-12-31",
+"full_name": "U.S. Circuit Court for the District of Georgia",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdia": {
+"end_date": "1882-12-31",
+"full_name": "U.S. Circuit Court for the District of Iowa",
+"jurisdiction": "F",
+"start_date": "1862-01-01"
+},
+"circtdid": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Idaho",
+"jurisdiction": "F",
+"start_date": "1890-01-01"
+},
+"circtdil": {
+"end_date": "1855-12-31",
+"full_name": "U.S. Circuit Court for the District of Illinois",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtdin": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Indiana",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtdks": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Kansas",
+"jurisdiction": "F",
+"start_date": "1862-01-01"
+},
+"circtdky": {
+"end_date": "1901-12-31",
+"full_name": "U.S. Circuit Court for the District of Kentucky",
+"jurisdiction": "F",
+"start_date": "1807-01-01"
+},
+"circtdla": {
+"end_date": "1849-12-31",
+"full_name": "U.S. Circuit Court for the District of Louisiana",
+"jurisdiction": "F",
+"start_date": "1845-01-01"
+},
+"circtdma": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Massachusetts",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdmd": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Maryland",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdme": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Maine",
+"jurisdiction": "F",
+"start_date": "1820-01-01"
+},
+"circtdmi": {
+"end_date": "1862-12-31",
+"full_name": "U.S. Circuit Court for the District of Michigan",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtdmn": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Minnesota",
+"jurisdiction": "F",
+"start_date": "1862-01-01"
+},
+"circtdmo": {
+"end_date": "1872-12-31",
+"full_name": "U.S. Circuit Court for the District of Missouri",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtdms": {
+"end_date": null,
+"full_name": "U.S. Circuit Court for the District of Mississippi",
+"jurisdiction": "F",
+"start_date": null
+},
+"circtdmt": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Montana",
+"jurisdiction": "F",
+"start_date": "1889-01-01"
+},
+"circtdnd": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of North Dakota",
+"jurisdiction": "F",
+"start_date": "1889-01-01"
+},
+"circtdne": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Nebraska",
+"jurisdiction": "F",
+"start_date": "1867-01-01"
+},
+"circtdnewbern": {
+"end_date": "1797-12-31",
+"full_name": "U.S. Circuit Court District of New Bern (North Carolina)",
+"jurisdiction": "F",
+"start_date": "1794-01-01"
+},
+"circtdnh": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of New Hampshire",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdnj": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of New Jersey",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdnv": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Nevada",
+"jurisdiction": "F",
+"start_date": "1865-01-01"
+},
+"circtdoh": {
+"end_date": "1855-12-31",
+"full_name": "U.S. Circuit Court for the District of Ohio",
+"jurisdiction": "F",
+"start_date": "1801-01-01"
+},
+"circtdor": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Oregon",
+"jurisdiction": "F",
+"start_date": "1863-01-01"
+},
+"circtdpa": {
+"end_date": "1818-12-31",
+"full_name": "U.S. Circuit Court for the District of Pennsylvania",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdpamptico": {
+"end_date": "1872-12-31",
+"full_name": "U.S. Circuit Court District of Pamptico (North Carolina)",
+"jurisdiction": "F",
+"start_date": "1801-01-01"
+},
+"circtdri": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Rhode Island",
+"jurisdiction": "F",
+"start_date": "1790-01-01"
+},
+"circtdsc": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of South Carolina",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdsd": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of South Dakota",
+"jurisdiction": "F",
+"start_date": "1889-01-01"
+},
+"circtdterrar": {
+"end_date": "1836-12-31",
+"full_name": "U.S. Circuit Court for the District of Territory of Arkansas",
+"jurisdiction": "F",
+"start_date": "1819-01-01"
+},
+"circtdtx": {
+"end_date": "1857-02-21",
+"full_name": "U.S. Circuit Court for the District of Texas",
+"jurisdiction": "F",
+"start_date": "1845-12-29"
+},
+"circtdut": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Utah",
+"jurisdiction": "F",
+"start_date": "1894-01-01"
+},
+"circtdva": {
+"end_date": "1819-12-31",
+"full_name": "U.S. Circuit Court for the District of Virginia",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"circtdvt": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Vermont",
+"jurisdiction": "F",
+"start_date": "1791-01-01"
+},
+"circtdwa": {
+"end_date": "1905-12-31",
+"full_name": "U.S. Circuit Court for the District of Washington",
+"jurisdiction": "F",
+"start_date": "1889-01-01"
+},
+"circtdwi": {
+"end_date": "1870-12-31",
+"full_name": "U.S. Circuit Court for the District of Wisconsin",
+"jurisdiction": "F",
+"start_date": "1862-01-01"
+},
+"circtdwilm": {
+"end_date": "1797-12-31",
+"full_name": "U.S. Circuit Court District of Wilmington (North Carolina)",
+"jurisdiction": "F",
+"start_date": "1794-01-01"
+},
+"circtdwv": {
+"end_date": "1901-12-31",
+"full_name": "U.S. Circuit Court for the District of West Virginia",
+"jurisdiction": "F",
+"start_date": "1864-01-01"
+},
+"circtdwy": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Wyoming",
+"jurisdiction": "F",
+"start_date": "1890-01-01"
+},
+"circtedar": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Arkansas",
+"jurisdiction": "F",
+"start_date": "1851-01-01"
+},
+"circtedil": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the Eastern District of Illinois",
+"jurisdiction": "F",
+"start_date": "1905-01-01"
+},
+"circtedky": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Kentucky",
+"jurisdiction": "F",
+"start_date": "1901-01-01"
+},
+"circtedla": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Louisiana",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtedmi": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Michigan",
+"jurisdiction": "F",
+"start_date": "1863-01-01"
+},
+"circtedmo": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Missouri",
+"jurisdiction": "F",
+"start_date": "1857-01-01"
+},
+"circtednc": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern North Carolina",
+"jurisdiction": "F",
+"start_date": "1872-01-01"
+},
+"circtedny": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern New York",
+"jurisdiction": "F",
+"start_date": "1865-01-01"
+},
+"circtedok": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Oklahoma",
+"jurisdiction": "F",
+"start_date": "1906-01-01"
+},
+"circtedpa": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Pennsylvania",
+"jurisdiction": "F",
+"start_date": "1818-01-01"
+},
+"circtedsc": {
+"end_date": null,
+"full_name": "United States Circuit Court for the Eastern District of South Carolina",
+"jurisdiction": "F",
+"start_date": null
+},
+"circtedtn": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Tennessee",
+"jurisdiction": "F",
+"start_date": "1808-01-01"
+},
+"circtedtx": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Texas",
+"jurisdiction": "F",
+"start_date": "1862-01-01"
+},
+"circtedva": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Virginia",
+"jurisdiction": "F",
+"start_date": "1819-01-01"
+},
+"circtedwa": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Washington",
+"jurisdiction": "F",
+"start_date": "1905-01-01"
+},
+"circtedwi": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Eastern Wisconsin",
+"jurisdiction": "F",
+"start_date": "1870-01-01"
+},
+"circtmdal": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Middle Alabama",
+"jurisdiction": "F",
+"start_date": "1839-01-01"
+},
+"circtmdpa": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Middle Pennsylvania",
+"jurisdiction": "F",
+"start_date": "1901-01-01"
+},
+"circtmdtn": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Middle Tennessee",
+"jurisdiction": "F",
+"start_date": "1839-01-01"
+},
+"circtmissterr": {
+"end_date": null,
+"full_name": "U.S. Circuit Court for the Mississippi Territory",
+"jurisdiction": "F",
+"start_date": null
+},
+"circtnc": {
+"end_date": "1912-01-01",
+"full_name": "U.S. Circuit Court for the District of North Carolina",
+"jurisdiction": "F",
+"start_date": "1790-06-04"
+},
+"circtndal": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern Alabama",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtndca": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern California",
+"jurisdiction": "F",
+"start_date": "1863-01-01"
+},
+"circtndfl": {
+"end_date": null,
+"full_name": "United States Circuit Court for the Northern District of Florida",
+"jurisdiction": "F",
+"start_date": null
+},
+"circtndga": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the Northern District of Georgia",
+"jurisdiction": "F",
+"start_date": "1848-01-01"
+},
+"circtndil": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the Northern District of Illnois",
+"jurisdiction": "F",
+"start_date": "1855-01-01"
+},
+"circtndms": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern Mississippi",
+"jurisdiction": "F",
+"start_date": "1838-01-01"
+},
+"circtndny": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern New York",
+"jurisdiction": "F",
+"start_date": "1814-01-01"
+},
+"circtndoh": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern Ohio",
+"jurisdiction": "F",
+"start_date": "1855-01-01"
+},
+"circtndtx": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern Texas",
+"jurisdiction": "F",
+"start_date": "1879-01-01"
+},
+"circtndwv": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern West Virginia",
+"jurisdiction": "F",
+"start_date": "1901-01-01"
+},
+"circtnia": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Northern Iowa",
+"jurisdiction": "F",
+"start_date": "1882-01-01"
+},
+"circtny": {
+"end_date": null,
+"full_name": "U.S. Circuit Court for New York",
+"jurisdiction": "F",
+"start_date": null
+},
+"circtsdal": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern Alabama",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtsdca": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern California",
+"jurisdiction": "F",
+"start_date": "1863-01-01"
+},
+"circtsdfl": {
+"end_date": null,
+"full_name": "United States Circuit Court for the Southern District of Florida",
+"jurisdiction": "F",
+"start_date": null
+},
+"circtsdga": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the Southern District of Georgia",
+"jurisdiction": "F",
+"start_date": "1848-01-01"
+},
+"circtsdia": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the Southern District of Iowa",
+"jurisdiction": "F",
+"start_date": "1882-01-01"
+},
+"circtsdil": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the Southern District of Illnois",
+"jurisdiction": "F",
+"start_date": "1855-01-01"
+},
+"circtsdms": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern Mississippi",
+"jurisdiction": "F",
+"start_date": "1838-01-01"
+},
+"circtsdny": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern New York",
+"jurisdiction": "F",
+"start_date": "1814-01-01"
+},
+"circtsdoh": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern Ohio",
+"jurisdiction": "F",
+"start_date": "1855-01-01"
+},
+"circtsdtex": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern Texas",
+"jurisdiction": "F",
+"start_date": "1902-01-01"
+},
+"circtsdwv": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Southern West Virginia",
+"jurisdiction": "F",
+"start_date": "1901-01-01"
+},
+"circttenn": {
+"end_date": "1912-01-01",
+"full_name": "U.S. Circuit Court for the District of Tennessee",
+"jurisdiction": "F",
+"start_date": "1807-02-24"
+},
+"circtwdar": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Arkansas",
+"jurisdiction": "F",
+"start_date": "1851-01-01"
+},
+"circtwdky": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Kentucky",
+"jurisdiction": "F",
+"start_date": "1901-01-01"
+},
+"circtwdla": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Louisiana",
+"jurisdiction": "F",
+"start_date": "1837-01-01"
+},
+"circtwdmi": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Michigan",
+"jurisdiction": "F",
+"start_date": "1863-01-01"
+},
+"circtwdmo": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Missouri",
+"jurisdiction": "F",
+"start_date": "1857-01-01"
+},
+"circtwdnc": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western North Carolina",
+"jurisdiction": "F",
+"start_date": "1872-01-01"
+},
+"circtwdny": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western New York",
+"jurisdiction": "F",
+"start_date": "1900-01-01"
+},
+"circtwdok": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Oklahoma",
+"jurisdiction": "F",
+"start_date": "1906-01-01"
+},
+"circtwdpa": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Pennsylvania",
+"jurisdiction": "F",
+"start_date": "1818-01-01"
+},
+"circtwdtex": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Texas",
+"jurisdiction": "F",
+"start_date": "1862-01-01"
+},
+"circtwdtn": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Tennessee",
+"jurisdiction": "F",
+"start_date": "1808-01-01"
+},
+"circtwdva": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Virginia",
+"jurisdiction": "F",
+"start_date": "1819-01-01"
+},
+"circtwdwa": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Washington",
+"jurisdiction": "F",
+"start_date": "1905-01-01"
+},
+"circtwdwi": {
+"end_date": "1911-12-31",
+"full_name": "U.S. Circuit Court for the District of Western Wisconsin",
+"jurisdiction": "F",
+"start_date": "1870-01-01"
+},
+"colctyct": {
+"end_date": null,
+"full_name": "Colorado County Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctarapaho": {
+"end_date": null,
+"full_name": "Arapahoe County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctbent": {
+"end_date": null,
+"full_name": "Bent County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctdouglas": {
+"end_date": null,
+"full_name": "Douglas County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctfremont": {
+"end_date": null,
+"full_name": "Fremont County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctgarfiel": {
+"end_date": null,
+"full_name": "Garfield County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctlarimer": {
+"end_date": null,
+"full_name": "Larimer County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctmeyer": {
+"end_date": null,
+"full_name": "Meyer County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctotero": {
+"end_date": null,
+"full_name": "Otero County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctpitkin": {
+"end_date": null,
+"full_name": "Pitkin County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctpueblo": {
+"end_date": null,
+"full_name": "Pueblo County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"colctyctteller": {
+"end_date": null,
+"full_name": "Teller County District Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"coregsalina": {
+"end_date": null,
+"full_name": "Salina Register and Receiver",
+"jurisdiction": "SS",
+"start_date": null
+},
+"cosuperct": {
+"end_date": null,
+"full_name": "Coloardo Superior Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"cosuperctdenver": {
+"end_date": null,
+"full_name": "Denver Superior Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"dccrimct": {
+"end_date": null,
+"full_name": "District of Columbia Criminal Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"dcorphanct": {
+"end_date": null,
+"full_name": "District of Columbia Orphans' Court",
+"jurisdiction": "SS",
+"start_date": null
+},
+"delgensess": {
+"end_date": null,
+"full_name": "Court of General Sessions of The Peace And Jail Delivery of Delaware",
+"jurisdiction": "ST",
+"start_date": null
+},
+"deloyerterm": {
+"end_date": "1951-12-31",
+"full_name": "Delaware Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": "1831-01-01"
+},
+"deptinterior": {
+"end_date": null,
+"full_name": "Department of Interior",
+"jurisdiction": "FS",
+"start_date": null
+},
+"fld": {
+"end_date": "1847-02-23",
+"full_name": "District Court, D. Florida",
+"jurisdiction": "FD",
+"start_date": "1845-03-03"
+},
+"gad": {
+"end_date": "1848-08-11",
+"full_name": "District Court, D. Georgia",
+"jurisdiction": "FD",
+"start_date": "1789-09-24"
+},
+"iad": {
+"end_date": "1882-07-20",
+"full_name": "District Court, D. Iowa",
+"jurisdiction": "FD",
+"start_date": null
+},
+"kyd": {
+"end_date": "1901-02-12",
+"full_name": "District Court, D. Kentucky",
+"jurisdiction": "FD",
+"start_date": "1789-09-24"
+},
+"lad": {
+"end_date": "1881-03-03",
+"full_name": "District Court, D. Louisiana",
+"jurisdiction": "FD",
+"start_date": "1812-04-08"
+},
+"michd": {
+"end_date": "1863-02-24",
+"full_name": "District Court, D. Michigan",
+"jurisdiction": "FD",
+"start_date": "1836-07-01"
+},
+"missd": {
+"end_date": "1838-06-18",
+"full_name": "District Court, D. Mississippi",
+"jurisdiction": "FD",
+"start_date": "1818-04-03"
+},
+"mod": {
+"end_date": "1857-03-03",
+"full_name": "District Court, D. Missouri",
+"jurisdiction": "FD",
+"start_date": "1822-03-16"
+},
+"montereydistct": {
+"end_date": "1879-12-31",
+"full_name": "Monterey District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"ncd": {
+"end_date": "1802-04-29",
+"full_name": "District Court, D. North Carolina",
+"jurisdiction": "FD",
+"start_date": "1790-06-04"
+},
+"nyd": {
+"end_date": "1814-04-09",
+"full_name": "District Court, D. New York",
+"jurisdiction": "FD",
+"start_date": "1789-09-24"
+},
+"okd": {
+"end_date": null,
+"full_name": "United States District Court for the District of Oklahoma",
+"jurisdiction": "FD",
+"start_date": null
+},
+"padeptjust": {
+"end_date": null,
+"full_name": "Pennsylvania Department of Justice",
+"jurisdiction": "FS",
+"start_date": null
+},
+"philadeptjust": {
+"end_date": null,
+"full_name": "Philadelphia Department of Justice",
+"jurisdiction": "FS",
+"start_date": null
+},
+"placerdistct": {
+"end_date": "1879-12-31",
+"full_name": "Placer District Court, California",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"ptab": {
+"end_date": null,
+"full_name": "Patent Trial and Appeal Board",
+"jurisdiction": "FS",
+"start_date": "2012-09-16"
+},
+"sacdistct": {
+"end_date": "1879-12-31",
+"full_name": "Sacramento District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"santacruzdistct": {
+"end_date": "1879-12-31",
+"full_name": "Santa Cruz District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"sfdistct": {
+"end_date": "1879-12-31",
+"full_name": "San Fransisco District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"shastadistct": {
+"end_date": "1879-12-31",
+"full_name": "Shasta District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"siskiyoudistct": {
+"end_date": "1879-12-31",
+"full_name": "Siskiyou District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"superctsdfla": {
+"end_date": "1845-12-31",
+"full_name": "Superior Court, S. D. Florida",
+"jurisdiction": "FD",
+"start_date": "1828-01-01"
+},
+"texd": {
+"end_date": "1857-02-21",
+"full_name": "District Court, D. Texas",
+"jurisdiction": "FD",
+"start_date": "1845-12-29"
+},
+"trinitydistct": {
+"end_date": "1879-12-31",
+"full_name": "Trinity District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"usberlinct": {
+"end_date": null,
+"full_name": " United States Court of Berlin",
+"jurisdiction": "FS",
+"start_date": null
+},
+"uscirct": {
+"end_date": "1911-12-31",
+"full_name": "United States Circuit Court",
+"jurisdiction": "F",
+"start_date": "1789-01-01"
+},
+"usdistct": {
+"end_date": null,
+"full_name": "United States District Court",
+"jurisdiction": "FD",
+"start_date": "1789-01-01"
+},
+"uslandoffice": {
+"end_date": null,
+"full_name": "United States Land Office",
+"jurisdiction": "FS",
+"start_date": null
+},
+"ussurveyor": {
+"end_date": null,
+"full_name": "United States Surveyor",
+"jurisdiction": "FS",
+"start_date": null
+},
+"vad": {
+"end_date": "1819-02-04",
+"full_name": "District Court, D. Virginia",
+"jurisdiction": "FD",
+"start_date": "1789-09-24"
+},
+"washd": {
+"end_date": "1905-03-02",
+"full_name": "District Court, D. Washington",
+"jurisdiction": "FD",
+"start_date": "1890-04-05"
+},
+"wisd": {
+"end_date": "1870-06-30",
+"full_name": "District Court, D. Wisconsin",
+"jurisdiction": "FD",
+"start_date": "1848-05-29"
+},
+"wvad": {
+"end_date": "1901-01-22",
+"full_name": "District Court, D. West Virginia",
+"jurisdiction": "FD",
+"start_date": "1864-06-11"
+},
+"yrekadistct": {
+"end_date": "1879-12-31",
+"full_name": "Yreka District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+},
+"yubadistct": {
+"end_date": "1879-12-31",
+"full_name": "Yuba District Court",
+"jurisdiction": "ST",
+"start_date": "1849-01-01"
+}
+},
+"declared_count": 2887,
+"next": "https://www.courtlistener.com/api/rest/v4/courts/?in_use=false&page=17"
+}

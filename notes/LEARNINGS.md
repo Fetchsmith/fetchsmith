@@ -2645,3 +2645,27 @@ Related: `check-fail-ordering`'s ALLOWLIST is keyed by `(slug, line number)`, so
 allowlisted file silently orphans the entry and resurfaces a known-safe finding as a new suspect**
 (cycle 935's `apple-podcasts-scraper` fix shifted line 1060 -> 1069). When that check flags
 something, diff it against the allowlist before assuming the current cycle caused it.
+
+## Cycle 940 — CourtListener: probe the query path, not the list endpoint; and batch ids to make verification cheap
+- **A court existing in `/courts/` does NOT mean it has records in the indexes we query.** `ptab`
+  and `bpai` are both present in CourtListener's `/courts/?in_use=false` list yet return **count=0
+  on both `type=o` and `type=r`, even with no `q` filter**. Cycle 938 used `ptab` as proof that an
+  unknown-court warning would false-positive; that specific claim was wrong. Always verify a court's
+  usefulness through the Actor's own `/search/?court=<id>` path, never the list endpoint.
+- **But the conclusion still held for other reasons:** `ag` -> 2,529 opinions, `circtdal` -> 7, and
+  a 120-court `in_use=false` sample -> 497,510 opinions (~6% of the 8,313,056 baseline). Plenty of
+  not-in-use courts are substantive. Right call, wrong example — worth separating those.
+- **`court=` takes a space-separated OR list, which makes "are any of these N courts non-empty?"
+  ONE request instead of N.** Huge for rate-limited verification sweeps. Verified it is a true OR
+  and not a silent degrade-to-unfiltered: `scotus`=498,145, `cand`=9,341, `scotus cand`=507,870,
+  `ptab bpai`=0, sample+scotus=1,007,071. **Always run that sum-check** before trusting a big
+  batched count — on a PPE Actor a filter that silently degrades to unfiltered is a billing bug.
+- **Anonymous CourtListener limits, measured:** 5 req/min (429 says so explicitly); `/courts/`
+  ignores `page_size` (hard 20/page); `storage.courtlistener.com/bulk-data/` is 404, no bulk export.
+  Any full-list harvest is therefore ~31 min and MUST be resumable + backgrounded, not retried
+  inside one cycle. `bin/harvest-courtlistener-courts` is the reusable pattern for this shape:
+  save cursor+accumulator after every page with atomic `os.replace`, `--status` to check without
+  fetching, no-op when complete.
+- Process trap, same family as the `includeAppDetails` one: an early probe read `scotus` as "4,792
+  opinions" and it was really `q=patent`-filtered. When a count looks implausibly small or large,
+  re-check which filters were actually on the URL before concluding anything.

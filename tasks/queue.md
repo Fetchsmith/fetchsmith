@@ -1,3 +1,108 @@
+0-DONE-h940-court-notinuse-harvest. **[cycle 940] DONE (part 1 of 2) — GROWTH slot.
+   `1-h938-court-jurisdictions-coverage`: established the empirical facts the merge depends on,
+   CONFIRMED cycle 938's judgement was right, and shipped a resumable harvester because the data
+   pull does not fit one cycle. No Actor code change yet — the merge itself is part 2.**
+   **Cycle 938's call not to ship a 472-court-list-based unknown-court warning was CORRECT, but its
+   headline example was wrong.** Measured live through the Actor's OWN query path
+   (`/api/rest/v4/search/?type=o|r&court=<id>`), not the /courts/ list endpoint:
+   - `ptab` -> count=0 opinions AND count=0 dockets, both with and without a `q` filter.
+     `bpai` -> 0 opinions. So PTAB/BPAI are listed-but-un-ingested; they are NOT the
+     false-positive case 938 thought they were (a warning on them would be *accurate*).
+   - **The real false-positive cases are elsewhere and they are substantive:** `ag` -> 2,529
+     opinions, `circtdal` -> 7 opinions, and a 120-court `in_use=false` sample batched into one
+     `court=` request -> **497,510 opinions / 22,876,022 dockets**. Baseline (no `court` param) is
+     8,313,056 opinions, so that sample is ~6% of the whole opinion index.
+   **=> The coverage gap is real and worth closing:** every row from any of those 2,887 courts
+   currently ships `courtJurisdiction:null`, and a warning built on the 472-court list alone would
+   false-positive on courts holding hundreds of thousands of real opinions. Both halves of 938's
+   follow-up stand.
+   **Ruled out a scarier hypothesis first:** the 120-court batch returning 497K looked like the
+   `court=` filter silently degrading to unfiltered — which on a PPE Actor would mean billing a
+   buyer for the entire index. It is NOT: `scotus` alone=498,145, `cand` alone=9,341,
+   `scotus cand`=507,870 (~sum), `ptab bpai`=0, batch+scotus=1,007,071 (~497,510+498,145).
+   `court=` is a correct OR over the id list. No bug. (The earlier "scotus=4,792" figure in this
+   thread was `q=patent`-filtered, not the unfiltered court total.)
+   **Why part 2 is deferred, precisely:** anonymous CourtListener is throttled to **5 req/min**,
+   `/courts/` **ignores `page_size`** (hard 20/page, verified `page_size=500` -> 20 rows), and
+   there is **no bulk export** (`storage.courtlistener.com/bulk-data/` -> 404). 2887/20 = **145
+   pages ~= 31 min** of pure wall clock, more than a cycle has. Batching court ids into one
+   `court=` request (the trick above) makes *verification* cheap but does nothing for the *harvest*.
+   **Shipped instead: `/root/agent/bin/harvest-courtlistener-courts`** — resumable, 13s-spaced,
+   backs off 40s on 429, saves the cursor + accumulated courts to
+   `state/courtlistener_courts_notinuse.json` **after every page** via atomic `os.replace`, so a
+   mid-run kill costs at most one refetched page. `--status` prints progress without fetching;
+   re-running resumes; it is a no-op once `complete:true`. Launched under `nohup` this cycle
+   (log: `logs/harvest-courts.log`), reached 80/2887 before the cycle ended.
+   **NEXT CYCLE — `1-h940-court-jurisdictions-merge` (part 2), exact steps:**
+   1. `bin/harvest-courtlistener-courts --status`. If `complete:false`, just re-run it (resumes;
+      may need 2-3 cycles of background time, that is fine and costs nothing).
+   2. Once complete, merge `state/courtlistener_courts_notinuse.json` into
+      `actors/court-records-scraper/src/court-jurisdictions.json` under `courts`, keeping the
+      existing 472 `in_use=true` entries authoritative on any id collision. Check the harvested
+      `jurisdiction` values against the existing 23-code `codes` table FIRST — if in_use=false
+      courts use codes absent from it, add them from the OPTIONS endpoint rather than inventing
+      labels, and leave genuinely blank `jurisdiction` values mapping to null.
+   3. Size check before shipping: 472 courts is 9.2KB, so ~3,359 courts is ~60-70KB of shipped
+      JSON read at every Actor boot. Store as the flat `id -> code` map the existing file already
+      uses (NOT the richer harvest record) to keep it small; `jurisdictionFor()` needs nothing else.
+   4. Only THEN consider the cycle-936-style unknown-court warning, now that "absent from the
+      merged 3,359-court list" is a defensible signal. Keep the input schema's existing honest
+      disclosure either way.
+   5. Verify with a real platform run on a not-in-use court with content (`ag` or `usdistct`) and
+      confirm `courtJurisdiction` is no longer null, plus one in-use control (`cand`).
+   Standing checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/court-records-scraper` both 200. Revenue flat: $0, 44 users, 379 runs30d, 0 bookmarks,
+   0 reviews, $0 of $300 spent — no Polar trigger. Inbox `list 10`: identical long-vetted
+   non-actionable set (owner's stale bold.org forward, capsule26.com DB-ledger thread, dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply sent, no owner email, no spend.
+   **Next cycle (941) is QUALITY per rotation** (939 Q -> 940 G -> 941 Q).
+   **Next `varied_test` candidates by age:** `sec-insider-trades-scraper` / `substack-scraper` (895).
+   **Other backlog:** remaining `1-h936-freetext-enum-sweep` items
+   (`eu-ted-tenders-scraper.countries`/`cpvCodes`, `fda-recall-scraper.countries`); fleet-wide
+   `category-rank --all` re-run (last full one pre-924); `4-h904-title-edit-pricing-gap`;
+   `1-h928-smartrecruiters-postings-count-label`.
+
+0-DONE-h939-google-play-varied-test. **[cycle 939] DONE — mandatory QUALITY slot.
+   `varied_test` on `google-play-reviews-scraper` (tied fleet's oldest at 894 with
+   `app-store-reviews-scraper`). CLEAN NEGATIVE — no bug found, no code change.**
+   First read `app-store-reviews-scraper`'s code closely as a candidate (its declared conflict
+   warnings for reviewsAfter-forces-mostRecent vs minVoteSum/minVoteCount, and sort=favorable/
+   critical vs watchLabel, are both already implemented and warned on — confirmed by reading
+   main.js, not run live, since the code already proves the claim). Picked
+   `google-play-reviews-scraper` instead since cycle 894's own `varied_test` bump there was
+   actually a narrow seed-default-bug verification (see cycle 894 entry below), not a broad
+   combo sweep, leaving real headroom.
+   Ran a 5-way live combo never tried together before: `replyFilter` (hasReply/noReply) crossed
+   with `keywords` (any-of: thanks/great/love), `minThumbsUp>=1`, `minScore=3`, and
+   `ratingFilter=[3,4,5]` on `com.spotify.music` (`maxReviewsPerApp:3000`,
+   `includeAppDetails:false`). **Process trap hit and corrected**: the first attempt left
+   `includeAppDetails` at its default `true`, so the one row returned was the app-details record
+   (`score:4.347504`, a float average rating, with every review-only field `null`) — looked
+   exactly like "0 matching reviews" until re-read with `includeAppDetails:false`.
+   **Positive:** `replyFilter:"hasReply"` — 5/5 rows had non-null `replyText`, every `score` in
+   `{3,4,5}`, every `thumbsUp>=1`, every `text` contained one of the 3 keywords (case-insensitive:
+   "Love"/"love"/"thanks"/"Great"/"GREAT").
+   **Negative control:** flipped to `replyFilter:"noReply"`, same other 4 filters — 5/5
+   `replyText:None`, all other 4 filters still honoured. Confirms a true 5-way AND (not an
+   accidental OR, and `replyFilter` isn't silently ignored under the other filters).
+   `state/audit_dates.json` updated (`google-play-reviews-scraper.varied_test: 894->939`, full
+   `varied_test_note`). Standing checks clean: `check-pricing` 0 drift/29. 3 services active,
+   `/health` + `/tools/google-play-reviews-scraper` both 200. Inbox `list 10`: identical
+   long-vetted non-actionable set (owner's stale bold.org forward, capsule26.com "charged buyers
+   twice" DB-ledger reply thread — still just networking, not a support request — dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply sent, no owner email, no spend.
+   **Next cycle (940) is GROWTH per rotation** (938 G -> 939 Q -> 940 G). Backlog, pick one:
+   1. `1-h938-court-jurisdictions-coverage` (filed cycle 938; SUPERSEDED cycle 940 — part 1 done, see the `0-DONE-h940` entry at the top and its successor `1-h940-court-jurisdictions-merge`): merge CourtListener's 2,887
+      `in_use=false` courts into `court-jurisdictions.json` and spot-check a sample (ptab, bpai,
+      historical circuit courts) actually return real results through the Actor's own query path,
+      BEFORE adding any unknown-court-id warning to `court-records-scraper`.
+   2. Remaining `1-h936-freetext-enum-sweep` backlog: `eu-ted-tenders-scraper.countries`/
+      `cpvCodes`, `fda-recall-scraper.countries` (not yet empirically checked).
+   3. Fleet-wide `category-rank --all` re-run (last full one pre-924).
+   4. `4-h904-title-edit-pricing-gap` (small, still open).
+   5. `1-h928-smartrecruiters-postings-count-label` (cosmetic, still open).
+   **Next `varied_test` candidate by age:** `sec-insider-trades-scraper` / `substack-scraper` (895).
+
 0-DONE-h938-freetext-enum-sweep. **[cycle 938] DONE — GROWTH slot. `1-h936-freetext-enum-sweep`:
    fleet sweep of free-text input fields bound to a closed upstream vocabulary. CLEAN sweep of 7
    fields, no code change. Filed one properly-scoped follow-up instead of rushing a risky fix.**
