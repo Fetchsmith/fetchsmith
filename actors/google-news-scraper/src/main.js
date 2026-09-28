@@ -115,14 +115,33 @@ const dropAfterMs = publishedAfter ? Date.parse(`${publishedAfter}T00:00:00Z`) -
 const dropBeforeMs = publishedBefore ? Date.parse(`${publishedBefore}T00:00:00Z`) + 86_400_000 : null;
 const enforceDates = dropAfterMs != null || dropBeforeMs != null;
 let outOfWindowDropped = 0;
-function farOutsideWindow(publishedAt) {
-  if (!enforceDates) return false;
+function farOutsideWindowMs(publishedAt, afterMs, beforeMs) {
   const t = Date.parse(publishedAt);
   if (!Number.isFinite(t)) return false; // unparseable pubDate: not evidence of a violation
-  return (dropAfterMs != null && t < dropAfterMs) || (dropBeforeMs != null && t >= dropBeforeMs);
+  return (afterMs != null && t < afterMs) || (beforeMs != null && t >= beforeMs);
 }
-// Don't double-apply if the customer already typed the operator into the query themselves.
+function farOutsideWindow(publishedAt) {
+  if (!enforceDates) return false;
+  return farOutsideWindowMs(publishedAt, dropAfterMs, dropBeforeMs);
+}
+// Don't double-apply OUR window if the customer already typed the operator into the query
+// themselves — but the leak this backstop exists for (cycle 788) bites just as hard on a
+// customer-typed after:/before: as it does on ours, so pull their own dates out of the query text
+// and police those instead of skipping enforcement outright (measured live, cycle 933: 3/100 items
+// landed months to years outside a query-text `after:2026-06-01 before:2026-06-10 -site:...`
+// window, with zero drop/warning before this fix, because enforceDates is only ever set from the
+// publishedAfter/publishedBefore schema fields).
 const hasOwnTimeOp = (q) => /\b(when|after|before):/i.test(q);
+const OWN_AFTER_RE = /\bafter:(\d{4}-\d{2}-\d{2})\b/i;
+const OWN_BEFORE_RE = /\bbefore:(\d{4}-\d{2}-\d{2})\b/i;
+function ownWindowMs(query) {
+  const a = query.match(OWN_AFTER_RE);
+  const b = query.match(OWN_BEFORE_RE);
+  return {
+    afterMs: a ? Date.parse(`${a[1]}T00:00:00Z`) - 86_400_000 : null,
+    beforeMs: b ? Date.parse(`${b[1]}T00:00:00Z`) + 86_400_000 : null,
+  };
+}
 const hl = input.language || 'en-US';
 const gl = (input.country || 'US').toUpperCase();
 const ceid = `${gl}:${hl.split('-')[0]}`;
@@ -356,9 +375,16 @@ for (const feed of feeds) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     if (seen.has(it.guid)) continue; seen.add(it.guid);
     allDuped = false;
-    // Only search feeds carry our date operators; topics/custom RSS URLs are fixed feeds, and a query
-    // with the customer's own when:/after:/before: never got our suffix, so neither is ours to police.
-    if (feed.query && !hasOwnTimeOp(feed.query) && farOutsideWindow(it.publishedAt)) { outOfWindowDropped += 1; continue; }
+    // Only search feeds carry a date window at all; topics/custom RSS URLs are fixed feeds. A query
+    // with the customer's own when:/after:/before: never got our timeSuffix appended, but if it used
+    // after:/before: specifically (when: is not implicated in the leak, per cycle 788) its own dates
+    // define the window we police, in place of (not in addition to) our own publishedAfter/Before.
+    if (feed.query) {
+      const ownTimeOp = hasOwnTimeOp(feed.query);
+      const { afterMs, beforeMs } = ownTimeOp ? ownWindowMs(feed.query) : { afterMs: dropAfterMs, beforeMs: dropBeforeMs };
+      const active = ownTimeOp ? (afterMs != null || beforeMs != null) : enforceDates;
+      if (active && farOutsideWindowMs(it.publishedAt, afterMs, beforeMs)) { outOfWindowDropped += 1; continue; }
+    }
     const url = decode ? (await decodeUrl(it.googleNewsUrl)) : null;
     let article = {};
     if (fetchBody) {

@@ -2545,3 +2545,24 @@ only, which would have silently dropped company-name and title-phrase matches th
 keep. It doesn't (`tag=Smartling` → 2 Smartling rows, `tag=Payments`/`Cybersecurity` hit titles and
 industries), but "is the server-side pass narrower than what we promise?" is the question that turns
 a filter-claim audit into a row-loss audit.
+
+## Cycle 933 — a documented alternate input path can silently re-open a bug already fixed on the primary one
+`google-news-scraper`'s cycle-788 backstop for the `excludeSites` + explicit-date-window Google leak
+(feed leaks articles months-to-years outside the window, ~3-7/100) was wired to fire only off the
+`publishedAfter`/`publishedBefore` **schema fields**. But the `queries` field's own description
+documents a second way to set the same date window: typing `after:`/`before:` straight into the query
+text (Google's own operators). The code even has a guard (`hasOwnTimeOp`) for this — but it uses that
+guard to *skip* the backstop entirely ("not ours to police"), rather than pulling the customer's own
+dates out of the query text and policing THAT window instead. Result: a buyer using the documented
+query-text path got the identical leak, with zero drop and zero warning, silently charged for it —
+verified live with a 3-shape curl matrix on the raw feed (3/100 leaked on the repro shape, matching
+cycle 788's order of magnitude, including a 2015/2016 item on a June-2026 window). Fixed by extracting
+`after:`/`before:` from the query text itself and applying the same drop/tolerance logic per-feed
+instead of bypassing it. **The generalizable lesson: when a README documents two ways to set the same
+logical input (a structured field vs. an operator typed into free text), a fix or backstop applied to
+one path does not automatically cover the other — check whether every alternate path documented for a
+field reaches the same protection, not just the one the original bug report used.** This is the same
+shape as cycle 926's resolve-then-filter generalization and cycle 893's default-vs-prefill fleet sweep:
+a feature added to protect path A silently leaves path B exposed, and nothing in path B's own tests
+would ever surface it because path B in isolation is fine — only the same cross-path combination that
+broke path A also breaks path B.
