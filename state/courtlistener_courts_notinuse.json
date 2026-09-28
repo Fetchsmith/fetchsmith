@@ -1,5 +1,5 @@
 {
-"complete": false,
+"complete": true,
 "courts": {
 "admiraltyctsc": {
 "end_date": null,
@@ -1741,6 +1741,12 @@
 "jurisdiction": "FS",
 "start_date": null
 },
+"fcc": {
+"end_date": null,
+"full_name": "Decisions of the Federal Communications Commission",
+"jurisdiction": "C",
+"start_date": null
+},
 "flacirct": {
 "end_date": null,
 "full_name": "Circuit Court for the Judicial Circuits of Florida",
@@ -3223,6 +3229,18 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"highctjchuk": {
+"end_date": null,
+"full_name": "High Court of Justice, Chancery Division",
+"jurisdiction": "I",
+"start_date": null
+},
+"houseoflordsuk": {
+"end_date": null,
+"full_name": "House of Lords (UK)",
+"jurisdiction": "I",
+"start_date": null
+},
 "iad": {
 "end_date": "1882-07-20",
 "full_name": "District Court, D. Iowa",
@@ -3257,6 +3275,66 @@
 "end_date": null,
 "full_name": "Jacksonville Civil Service Board",
 "jurisdiction": "SS",
+"start_date": null
+},
+"judcoun": {
+"end_date": null,
+"full_name": "Circuit Judicial Councils",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun10": {
+"end_date": null,
+"full_name": "Judicial Council of The Tenth Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun2": {
+"end_date": null,
+"full_name": "Judicial Council of The Second Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun3": {
+"end_date": null,
+"full_name": "Judicial Council of The Third Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun5": {
+"end_date": null,
+"full_name": "Judicial Council of The Fifth Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun6": {
+"end_date": null,
+"full_name": "Judicial Council of The Sixth Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun7": {
+"end_date": null,
+"full_name": "Judicial Council of The Seventh Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun8": {
+"end_date": null,
+"full_name": "Judicial Council of The Eighth Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoun9": {
+"end_date": null,
+"full_name": "Judicial Council of The Ninth Circuit",
+"jurisdiction": "FS",
+"start_date": null
+},
+"judcoundc": {
+"end_date": null,
+"full_name": "Judicial Council of the District of Columbia Circuit",
+"jurisdiction": "FS",
 "start_date": null
 },
 "kycirct": {
@@ -12181,6 +12259,24 @@
 "jurisdiction": "ST",
 "start_date": "1849-01-01"
 },
+"slcregrec": {
+"end_date": null,
+"full_name": "Salt Lake City Register and Receiver",
+"jurisdiction": "SS",
+"start_date": null
+},
+"stp": {
+"end_date": null,
+"full_name": "United States Special Tribunals of Pennsylvania",
+"jurisdiction": "SS",
+"start_date": null
+},
+"sttex": {
+"end_date": null,
+"full_name": "United States Special Tribunal of Texas",
+"jurisdiction": "SS",
+"start_date": null
+},
 "supbenbaltcty": {
 "end_date": null,
 "full_name": "Supreme Bench of Baltimore City",
@@ -12277,9 +12373,129 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"texctyct100": {
+"end_date": null,
+"full_name": "Texas City Court, Lamar City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct101": {
+"end_date": null,
+"full_name": "Texas City Court, Leon City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct102": {
+"end_date": null,
+"full_name": "Texas City Court, Liberty City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct103": {
+"end_date": null,
+"full_name": "Texas City Court, Lubbock City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct104": {
+"end_date": null,
+"full_name": "Texas City Court, McCulloch City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct105": {
+"end_date": null,
+"full_name": "Texas City Court, McLennan City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct106": {
+"end_date": null,
+"full_name": "Texas City Court, McLennan City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct107": {
+"end_date": null,
+"full_name": "Texas City Court, Midland City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct108": {
+"end_date": null,
+"full_name": "Texas City Court, Montgomery City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct109": {
+"end_date": null,
+"full_name": "Texas City Court, Montgomery City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texctyct11": {
 "end_date": null,
 "full_name": "Texas City Court, Bexar City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct110": {
+"end_date": null,
+"full_name": "Texas City Court, Montgomery City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct111": {
+"end_date": null,
+"full_name": "Texas City Court, Montgomery City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct112": {
+"end_date": null,
+"full_name": "Texas City Court, Montgomery City Court at Law No. 4",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct113": {
+"end_date": null,
+"full_name": "Texas City Court, Montgomery City Court at Law No. 5",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct114": {
+"end_date": null,
+"full_name": "Texas City Court, Nacogdoches City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct115": {
+"end_date": null,
+"full_name": "Texas City Court, Nueces City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct116": {
+"end_date": null,
+"full_name": "Texas City Court, Nueces City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct117": {
+"end_date": null,
+"full_name": "Texas City Court, Nueces City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct118": {
+"end_date": null,
+"full_name": "Texas City Court, Nueces City Court at Law No. 4",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct119": {
+"end_date": null,
+"full_name": "Texas City Court, Nueces City Court at Law No. 5",
 "jurisdiction": "ST",
 "start_date": null
 },
@@ -12289,9 +12505,129 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"texctyct120": {
+"end_date": null,
+"full_name": "Texas City Court, Ochiltree City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct121": {
+"end_date": null,
+"full_name": "Texas City Court, Orange City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct122": {
+"end_date": null,
+"full_name": "Texas City Court, Orange City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct123": {
+"end_date": null,
+"full_name": "Texas City Court, Panola City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct124": {
+"end_date": null,
+"full_name": "Texas City Court, Parker City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct125": {
+"end_date": null,
+"full_name": "Texas City Court, Polk City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct126": {
+"end_date": null,
+"full_name": "Texas City Court, Polk City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct127": {
+"end_date": null,
+"full_name": "Texas City Court, Potter City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct128": {
+"end_date": null,
+"full_name": "Texas City Court, Potter City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct129": {
+"end_date": null,
+"full_name": "Texas City Court, Red River City",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texctyct13": {
 "end_date": null,
 "full_name": "Texas City Court, Bowie City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct130": {
+"end_date": null,
+"full_name": "Texas City Court, San Jacinto City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct131": {
+"end_date": null,
+"full_name": "Texas City Court, San Patricio City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct132": {
+"end_date": null,
+"full_name": "Texas City Court, San Patricio City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct133": {
+"end_date": null,
+"full_name": "Texas City Court, Smith City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct134": {
+"end_date": null,
+"full_name": "Texas City Court, Tarrant City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct135": {
+"end_date": null,
+"full_name": "Texas City Court, Tarrant City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct136": {
+"end_date": null,
+"full_name": "Texas City Court, Tarrant City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct137": {
+"end_date": null,
+"full_name": "Texas City Court, Tarrant City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct138": {
+"end_date": null,
+"full_name": "Texas City Court, Taylor City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct139": {
+"end_date": null,
+"full_name": "Texas City Court, Travis City",
 "jurisdiction": "ST",
 "start_date": null
 },
@@ -12301,9 +12637,117 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"texctyct140": {
+"end_date": null,
+"full_name": "Texas City Court, Travis City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct141": {
+"end_date": null,
+"full_name": "Texas City Court, Travis City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct142": {
+"end_date": null,
+"full_name": "Texas City Court, Travis City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct143": {
+"end_date": null,
+"full_name": "Texas City Court, Trinity City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct144": {
+"end_date": null,
+"full_name": "Texas City Court, Val Verde City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct145": {
+"end_date": null,
+"full_name": "Texas City Court, Walker City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct146": {
+"end_date": null,
+"full_name": "Texas City Court, Waller City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct147": {
+"end_date": null,
+"full_name": "Texas City Court, Waller City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct148": {
+"end_date": null,
+"full_name": "Texas City Court, Wash. City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct149": {
+"end_date": null,
+"full_name": "Texas City Court, Webb City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texctyct15": {
 "end_date": null,
 "full_name": "Texas City Court, Brazoria City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct150": {
+"end_date": null,
+"full_name": "Texas City Court, Webb City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct151": {
+"end_date": null,
+"full_name": "Texas City Court, Wichita City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct152": {
+"end_date": null,
+"full_name": "Texas City Court, Willacy City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct153": {
+"end_date": null,
+"full_name": "Texas City Court, Williamson City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct154": {
+"end_date": null,
+"full_name": "Texas City Court, Williamson City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct155": {
+"end_date": null,
+"full_name": "Texas City Court, Williamson City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct156": {
+"end_date": null,
+"full_name": "Texas City Court, Williamson City Court at Law No. 4",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct157": {
+"end_date": null,
+"full_name": "Texas City Court, Young City",
 "jurisdiction": "ST",
 "start_date": null
 },
@@ -12571,9 +13015,93 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"texctyct56": {
+"end_date": null,
+"full_name": "Texas City Court, Fort Bend City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct57": {
+"end_date": null,
+"full_name": "Texas City Court, Fort Bend City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct58": {
+"end_date": null,
+"full_name": "Texas City Court, Fort Bend City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct59": {
+"end_date": null,
+"full_name": "Texas City Court, Fort Bend City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texctyct6": {
 "end_date": null,
 "full_name": "Texas City Court, Bell City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct60": {
+"end_date": null,
+"full_name": "Texas City Court, Fort Bend City Court at Law No. 4",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct61": {
+"end_date": null,
+"full_name": "Texas City Court, Franklin City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct62": {
+"end_date": null,
+"full_name": "Texas City Court, Galveston City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct63": {
+"end_date": null,
+"full_name": "Texas City Court, Galveston City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct64": {
+"end_date": null,
+"full_name": "Texas City Court, Galveston City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct65": {
+"end_date": null,
+"full_name": "Texas City Court, Galveston City Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct66": {
+"end_date": null,
+"full_name": "Texas City Court, Grayson City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct67": {
+"end_date": null,
+"full_name": "Texas City Court, Gregg City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct68": {
+"end_date": null,
+"full_name": "Texas City Court, Guadalupe City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct69": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City",
 "jurisdiction": "ST",
 "start_date": null
 },
@@ -12583,15 +13111,195 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"texctyct70": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Criminal Court at Law No.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct71": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Criminal Court at Law No.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct72": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Criminal Court at Law No.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct73": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Civ. Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct74": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Civ. Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct75": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Civ. Court at Law No. 3",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct76": {
+"end_date": null,
+"full_name": "Texas City Court, Harris City Civ. Court at Law No. 4",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct77": {
+"end_date": null,
+"full_name": "Texas City Court, Hays City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct78": {
+"end_date": null,
+"full_name": "Texas City Court, Henderson City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct79": {
+"end_date": null,
+"full_name": "Texas City Court, Hidalgo City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texctyct8": {
 "end_date": null,
 "full_name": "Texas City Court, Bexar City",
 "jurisdiction": "ST",
 "start_date": null
 },
+"texctyct80": {
+"end_date": null,
+"full_name": "Texas City Court, Hidalgo City Court at Law No. 4",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct81": {
+"end_date": null,
+"full_name": "Texas City Court, Hidalgo City Court at Law No. 5",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct82": {
+"end_date": null,
+"full_name": "Texas City Court, Hidalgo City Court at Law No. 6",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct83": {
+"end_date": null,
+"full_name": "Texas City Court, Hidalgo City Court at Law No. 7",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct84": {
+"end_date": null,
+"full_name": "Texas City Court, Hidalgo City Court at Law No. 8",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct85": {
+"end_date": null,
+"full_name": "Texas City Court, Hill City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct86": {
+"end_date": null,
+"full_name": "Texas City Court, Hood City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct87": {
+"end_date": null,
+"full_name": "Texas City Court, Hopkins City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct88": {
+"end_date": null,
+"full_name": "Texas City Court, Houston City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct89": {
+"end_date": null,
+"full_name": "Texas City Court, Howard City",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texctyct9": {
 "end_date": null,
 "full_name": "Texas City Court, Bexar City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct90": {
+"end_date": null,
+"full_name": "Texas City Court, Jasper City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct91": {
+"end_date": null,
+"full_name": "Texas City Court, Jefferson City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct92": {
+"end_date": null,
+"full_name": "Texas City Court, Jefferson City Court at Law No. 1",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct93": {
+"end_date": null,
+"full_name": "Texas City Court, Jefferson City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct94": {
+"end_date": null,
+"full_name": "Texas City Court, Karnes City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct95": {
+"end_date": null,
+"full_name": "Texas City Court, Kaufman City Court at Law No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct96": {
+"end_date": null,
+"full_name": "Texas City Court, Kendall City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct97": {
+"end_date": null,
+"full_name": "Texas City Court, Kerr City",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct98": {
+"end_date": null,
+"full_name": "Texas City Court, Kerr City Court at Law",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texctyct99": {
+"end_date": null,
+"full_name": "Texas City Court, Kleberg City",
 "jurisdiction": "ST",
 "start_date": null
 },
@@ -15655,6 +16363,18 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"texprobct": {
+"end_date": null,
+"full_name": "Texas Probate Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"texprobct1": {
+"end_date": null,
+"full_name": "Texas Probate Court, Dallas No. 2",
+"jurisdiction": "ST",
+"start_date": null
+},
 "texrevtrib": {
 "end_date": null,
 "full_name": "Texas Court of Review Tribunal",
@@ -15787,6 +16507,12 @@
 "jurisdiction": "FD",
 "start_date": "1789-01-01"
 },
+"usjudconfcomdis": {
+"end_date": null,
+"full_name": "United States Judicial Conference Committee on Judicial Conduct and Disability",
+"jurisdiction": "FS",
+"start_date": null
+},
 "uslandoffice": {
 "end_date": null,
 "full_name": "United States Land Office",
@@ -15805,11 +16531,761 @@
 "jurisdiction": "FS",
 "start_date": null
 },
+"vacc": {
+"end_date": null,
+"full_name": "Virginia Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccaccomack": {
+"end_date": null,
+"full_name": "Accomack County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccalbemarle": {
+"end_date": null,
+"full_name": "Albemarle County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccalexandria": {
+"end_date": null,
+"full_name": "Alexandria County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccalleghany": {
+"end_date": null,
+"full_name": "Alleghany County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccamelia": {
+"end_date": null,
+"full_name": "Amelia County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccamherst": {
+"end_date": null,
+"full_name": "Amherst County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccarlington": {
+"end_date": null,
+"full_name": "Arlington County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccaugusta": {
+"end_date": null,
+"full_name": "Augusta County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbath": {
+"end_date": null,
+"full_name": "Bath County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbedford": {
+"end_date": null,
+"full_name": "Bedford County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbotetourt": {
+"end_date": null,
+"full_name": "Botetourt County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbristol": {
+"end_date": null,
+"full_name": "Bristol County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbrunswick": {
+"end_date": null,
+"full_name": "Brunswick County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbuchanan": {
+"end_date": null,
+"full_name": "Buchanan County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccbuckingham": {
+"end_date": null,
+"full_name": "Buckingham County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccampbell": {
+"end_date": null,
+"full_name": "Campbell County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccaroline": {
+"end_date": null,
+"full_name": "Caroline County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccarroll": {
+"end_date": null,
+"full_name": "Carroll County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccharles": {
+"end_date": null,
+"full_name": "Charles City County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccharlottesv": {
+"end_date": null,
+"full_name": "Charlottesville County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccchesapeake": {
+"end_date": null,
+"full_name": "Chesapeake County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccchesterfiel": {
+"end_date": null,
+"full_name": "Chesterfield County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccclarke": {
+"end_date": null,
+"full_name": "Clarke County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccolonialh": {
+"end_date": null,
+"full_name": "Colonial Heights County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacccraig": {
+"end_date": null,
+"full_name": "Craig County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccculpeper": {
+"end_date": null,
+"full_name": "Culpeper County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccdanville": {
+"end_date": null,
+"full_name": "Danville County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccdickenson": {
+"end_date": null,
+"full_name": "Dickenson County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccdinwiddie": {
+"end_date": null,
+"full_name": "Dinwiddie County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccessex": {
+"end_date": null,
+"full_name": "Essex County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfairfax": {
+"end_date": null,
+"full_name": "Fairfax County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfauquier": {
+"end_date": null,
+"full_name": "Fauquier County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfloyd": {
+"end_date": null,
+"full_name": "Floyd County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfluvanna": {
+"end_date": null,
+"full_name": "Fluvanna County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfranklin": {
+"end_date": null,
+"full_name": "Franklin County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfrederick": {
+"end_date": null,
+"full_name": "Frederick County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccfredericksb": {
+"end_date": null,
+"full_name": "Fredericksburg County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccgiles": {
+"end_date": null,
+"full_name": "Giles County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccgloucester": {
+"end_date": null,
+"full_name": "Gloucester County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccgoochland": {
+"end_date": null,
+"full_name": "Goochland County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccgrayson": {
+"end_date": null,
+"full_name": "Grayson County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccgreene": {
+"end_date": null,
+"full_name": "Greene County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccgreensville": {
+"end_date": null,
+"full_name": "Greensville County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchalifax": {
+"end_date": null,
+"full_name": "Halifax County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchampton": {
+"end_date": null,
+"full_name": "Hampton County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchanover": {
+"end_date": null,
+"full_name": "Hanover County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchenrico": {
+"end_date": null,
+"full_name": "Henrico County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchenry": {
+"end_date": null,
+"full_name": "Henry County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchighland": {
+"end_date": null,
+"full_name": "Highland County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacchopewell": {
+"end_date": null,
+"full_name": "Hopewell County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccisle": {
+"end_date": null,
+"full_name": "Isle of Wight County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacckinggeorge": {
+"end_date": null,
+"full_name": "King George County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacckingwilliam": {
+"end_date": null,
+"full_name": "King William County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacclancaster": {
+"end_date": null,
+"full_name": "Lancaster County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccloudoun": {
+"end_date": null,
+"full_name": "Loudoun County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacclouisa": {
+"end_date": null,
+"full_name": "Louisa County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacclynchburg": {
+"end_date": null,
+"full_name": "Lynchburg County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccmadison": {
+"end_date": null,
+"full_name": "Madison County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccmartinsvill": {
+"end_date": null,
+"full_name": "Martinsville County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccmathews": {
+"end_date": null,
+"full_name": "Mathews County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccmecklenburg": {
+"end_date": null,
+"full_name": "Mecklenburg County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccmiddlesex": {
+"end_date": null,
+"full_name": "Middlesex County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccmontgomery": {
+"end_date": null,
+"full_name": "Montgomery County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnelson": {
+"end_date": null,
+"full_name": "Nelson County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnewkent": {
+"end_date": null,
+"full_name": "New Kent County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnewportnew": {
+"end_date": null,
+"full_name": "Newport News County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnorfolk": {
+"end_date": null,
+"full_name": "Norfolk County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnorthampton": {
+"end_date": null,
+"full_name": "Northampton County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnorthumberl": {
+"end_date": null,
+"full_name": "Northumberland County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccnottoway": {
+"end_date": null,
+"full_name": "Nottoway County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccpage": {
+"end_date": null,
+"full_name": "Page County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccpatrick": {
+"end_date": null,
+"full_name": "Patrick County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccpetersburg": {
+"end_date": null,
+"full_name": "Petersburg County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccpittsylvani": {
+"end_date": null,
+"full_name": "Pittsylvania County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccportsmouth": {
+"end_date": null,
+"full_name": "Portsmouth County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccpowhatan": {
+"end_date": null,
+"full_name": "Powhatan County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccprinceedwa": {
+"end_date": null,
+"full_name": "Prince Edward County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccprincegeo": {
+"end_date": null,
+"full_name": "Prince George County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccprincewill": {
+"end_date": null,
+"full_name": "Prince William County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccpulaski": {
+"end_date": null,
+"full_name": "Pulaski County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccradford": {
+"end_date": null,
+"full_name": "Radford County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccrappahannoc": {
+"end_date": null,
+"full_name": "Rappahannock County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccrichcity": {
+"end_date": null,
+"full_name": "Richmond City Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccrichmondcty": {
+"end_date": null,
+"full_name": "Richmond County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccroanokecty": {
+"end_date": null,
+"full_name": "Roanoke County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccrockbridge": {
+"end_date": null,
+"full_name": "Rockbridge County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccrockingham": {
+"end_date": null,
+"full_name": "Rockingham County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccrussell": {
+"end_date": null,
+"full_name": "Russell County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccsalem": {
+"end_date": null,
+"full_name": "Salem County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccscott": {
+"end_date": null,
+"full_name": "Scott County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccshenandoah": {
+"end_date": null,
+"full_name": "Shenandoah County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccsmyth": {
+"end_date": null,
+"full_name": "Smyth County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccsouthampton": {
+"end_date": null,
+"full_name": "Southampton County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccspotsylvani": {
+"end_date": null,
+"full_name": "Spotsylvania County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccstafford": {
+"end_date": null,
+"full_name": "Stafford County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccstaunton": {
+"end_date": null,
+"full_name": "Staunton County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccsuffolk": {
+"end_date": null,
+"full_name": "Suffolk County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccsurry": {
+"end_date": null,
+"full_name": "Surry County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccsussex": {
+"end_date": null,
+"full_name": "Sussex County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacctazewell": {
+"end_date": null,
+"full_name": "Tazewell County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccvabeach": {
+"end_date": null,
+"full_name": "Virginia Beach County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwarren": {
+"end_date": null,
+"full_name": "Warren County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwashington": {
+"end_date": null,
+"full_name": "Washington County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwaynesboro": {
+"end_date": null,
+"full_name": "Waynesboro County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwestmorelan": {
+"end_date": null,
+"full_name": "Westmoreland County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwilliams": {
+"end_date": null,
+"full_name": "Williamsburg and James County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwinchester": {
+"end_date": null,
+"full_name": "Winchester County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwise": {
+"end_date": null,
+"full_name": "Wise & Norton County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccwythe": {
+"end_date": null,
+"full_name": "Wythe County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vaccyork": {
+"end_date": null,
+"full_name": "York County Poquoson County Circuit Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vachanct": {
+"end_date": null,
+"full_name": "Virginia Chancery Court",
+"jurisdiction": "ST",
+"start_date": "1802-01-01"
+},
+"vachanctnorf": {
+"end_date": null,
+"full_name": "Norfolk Chancery Court, Virginia",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vachanctrich": {
+"end_date": null,
+"full_name": "Richmond Chancery Court, Virginia",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacorpct": {
+"end_date": null,
+"full_name": "Virginia Coporation Court",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacorpctradford": {
+"end_date": null,
+"full_name": "Radford Corporation Court, Va.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacorpctsbris": {
+"end_date": null,
+"full_name": "Bristol Corporation Court, Va.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacorpctslynch": {
+"end_date": null,
+"full_name": "Lynchburg Corporation Court, Va.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacorpctsnorf": {
+"end_date": null,
+"full_name": "South Norfolk Corporation Court, Va.",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vacorpctwinche": {
+"end_date": null,
+"full_name": "Winchester Corporation Court, Va.",
+"jurisdiction": "ST",
+"start_date": null
+},
 "vad": {
 "end_date": "1819-02-04",
 "full_name": "District Court, D. Virginia",
 "jurisdiction": "FD",
 "start_date": "1789-09-24"
+},
+"vagensess": {
+"end_date": null,
+"full_name": "General Court of Virginia",
+"jurisdiction": "SS",
+"start_date": null
+},
+"vamedmalrevpan": {
+"end_date": null,
+"full_name": "Medical Malpractice Review Panel",
+"jurisdiction": "ST",
+"start_date": null
+},
+"vimunict": {
+"end_date": null,
+"full_name": "Municipal Court of The Virgin Islands",
+"jurisdiction": "TT",
+"start_date": null
+},
+"vipolct": {
+"end_date": null,
+"full_name": "Police Court of The Virgin Islands",
+"jurisdiction": "TT",
+"start_date": null
+},
+"visuper": {
+"end_date": null,
+"full_name": "Superior Court of The Virgin Islands",
+"jurisdiction": "TT",
+"start_date": null
 },
 "washd": {
 "end_date": "1905-03-02",
@@ -15829,6 +17305,12 @@
 "jurisdiction": "FD",
 "start_date": "1864-06-11"
 },
+"wvctcl": {
+"end_date": null,
+"full_name": "West Virginia Court of Claims",
+"jurisdiction": "ST",
+"start_date": null
+},
 "yrekadistct": {
 "end_date": "1879-12-31",
 "full_name": "Yreka District Court",
@@ -15843,5 +17325,5 @@
 }
 },
 "declared_count": 2887,
-"next": "https://www.courtlistener.com/api/rest/v4/courts/?in_use=false&page=133"
+"next": null
 }

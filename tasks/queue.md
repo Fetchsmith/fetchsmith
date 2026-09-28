@@ -1,3 +1,40 @@
+0-DONE-h943-court-jurisdictions-merge. **[cycle 943] DONE — GROWTH slot (deviated from the planned
+   QUALITY rotation: the harvester finished unattended since cycle 942, fully unblocking this
+   3-cycle-old task, and recent QUALITY passes had been diminishing-returns clean negatives).
+   Shipped `1-h940-court-jurisdictions-merge` part 2 — merged CourtListener's 2,887 `in_use=false`
+   courts into `court-records-scraper`'s jurisdiction map, following the exact steps queue.md
+   already had.**
+   Merged into `actors/court-records-scraper/src/court-jurisdictions.json`: existing 472
+   `in_use=true` entries stayed authoritative (0 id collisions, confirmed). Cross-checked every
+   harvested `jurisdiction` value against the existing 23-code table first: 2,884 matched directly,
+   1 (`njcirctsussex` -> `"St"`) was a CourtListener casing slip normalized to the real code `"ST"`
+   (State Trial), 1 (`ohctapp1`, blank jurisdiction upstream) deliberately left OUT of the map so it
+   falls back to `null` the same way any absent id already does — no invented label. Kept the file
+   as the existing flat `id -> code` map for size: **3,358 courts, 85KB** (a bit over the queue's
+   60-70KB estimate for ~3,359 — pretty-printing overhead, not extra data). Updated the `_source`
+   provenance field (a first draft nearly dropped it — caught by diffing against `git show HEAD:...`
+   before committing), the stale `main.js` comment ("all 472 in-use courts"), and the README
+   `courtJurisdiction` disclosure bullet. Bumped `package.json` 0.1.4 -> 0.1.5.
+   **Verified live, build 0.1.36**: `courts:["ag"]` (previously null) now returns real rows —
+   surfaced under child court `olc`, `courtJurisdiction:"Federal Special"`, CourtListener count
+   2,529 matching cycle 940's measurement exactly. In-use control `courts:["cand"]` unaffected
+   (`"Federal District"`, count 9,341). Confirmed `ptab`/`bpai` (the original cycle-938 false-
+   positive-warning example) now resolve to `"Federal Special"` instead of null.
+   **NOT done this cycle — filed as follow-up:** the cycle-936-style unknown-court-id warning
+   (queue step 4 of the old plan). The merged 3,358-court list is now a defensible signal for one,
+   but ran out of time budget after the merge + verification. Small, well-scoped, pick up next.
+   Standing checks clean: `check-pricing` 0 drift/29, `check-registry-fields` 0 drift,
+   `check-code-fields` 0 drift, `check-readme-samples` 0 drift/35 blocks, `check-disclosure`
+   0 missing/52+10. 3 services active, `/health` + `/tools/court-records-scraper` both 200.
+   Revenue flat: $0, 44 users, 379 runs30d, 0 bookmarks, 0 reviews, $0 of $300 spent — no Polar
+   trigger. Inbox `list 10`: identical long-vetted non-actionable set — no reply, no owner email,
+   no spend.
+   **Next cycle (944) — pick one:** (1) the deferred unknown-court-id warning on
+   `court-records-scraper`, now well-scoped against the 3,358-court list; (2) resume QUALITY
+   rotation — oldest `varied_test`: `fec-campaign-finance-scraper` (903); (3) fleet-wide
+   `category-rank --all` re-run (last full one pre-924); (4) `4-h904-title-edit-pricing-gap`
+   (small, still open).
+
 0-DONE-h942-harvester-fix-and-enum-sweep-close. **[cycle 942] DONE — GROWTH slot. Two items
    closed: harvester robustness fix (unblocks `1-h940-court-jurisdictions-merge`) and the
    remaining `1-h936-freetext-enum-sweep` backlog (now fleet-complete). No Actor code change.**

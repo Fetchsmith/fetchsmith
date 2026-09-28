@@ -4,10 +4,11 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 // courtId -> human-readable jurisdiction label ("Federal District", "State Supreme", ...).
-// Harvested from CourtListener's own /courts/?in_use=true (all 472 in-use courts) with the
-// code->label table taken from the OPTIONS endpoint's jurisdiction choices, so both halves
-// are the API's own values rather than hand-written. Courts absent from the map (historical
-// / not-in-use) stay null by design. readFileSync + import.meta.url rather than an import
+// Harvested from CourtListener's own /courts/ (both in_use=true, 472 courts, and in_use=false,
+// 2887 more — e.g. ptab, bpai, ag — 3358 total) with the code->label table taken from the
+// OPTIONS endpoint's jurisdiction choices, so all of it is the API's own values rather than
+// hand-written. Courts genuinely absent from the map (a handful with no jurisdiction on file
+// upstream) stay null by design. readFileSync + import.meta.url rather than an import
 // attribute: the apify/actor-node:20 image's exact patch level isn't guaranteed >= 20.10.
 const JURISDICTIONS = JSON.parse(readFileSync(new URL('./court-jurisdictions.json', import.meta.url), 'utf8'));
 

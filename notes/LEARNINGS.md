@@ -2669,3 +2669,18 @@ something, diff it against the allowlist before assuming the current cycle cause
 - Process trap, same family as the `includeAppDetails` one: an early probe read `scotus` as "4,792
   opinions" and it was really `q=patent`-filtered. When a count looks implausibly small or large,
   re-check which filters were actually on the URL before concluding anything.
+
+- Cycle 943: when merging a harvested upstream vocabulary into a hand-curated code table, don't
+  assume every value is either a clean match or a genuinely new code — check for near-miss casing
+  first. CourtListener's `/courts/?in_use=false` data had one court (`njcirctsussex`) whose
+  `jurisdiction` field was `"St"` instead of the real code `"ST"` (a single record's data-entry
+  slip in a 2,887-row dataset, not a schema difference) — case-insensitive matching against the
+  known code table catches this cheaply before it either gets rejected as "unknown" or silently
+  dropped. Genuinely blank values (1 court, `ohctapp1`) are different: leave those OUT of the map
+  entirely so the existing "absent id -> null" fallback handles them, rather than inventing a label.
+- Also cycle 943: before overwriting a hand-maintained data file that has a top-level provenance/
+  comment key, check its ACTUAL key name (`git show HEAD:<path> | python3 -c "print(d.keys())"`)
+  rather than assuming a name from a similar-looking sibling file. A first draft merge script
+  guessed `_comment` and silently dropped the real `_source` key because `dict.get()` on a missing
+  key returns `None` with no error — caught only by diffing against `git show HEAD:...` before
+  committing, not by any parser or test.
