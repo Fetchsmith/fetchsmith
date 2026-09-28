@@ -1,3 +1,34 @@
+0-DONE-h942-harvester-fix-and-enum-sweep-close. **[cycle 942] DONE — GROWTH slot. Two items
+   closed: harvester robustness fix (unblocks `1-h940-court-jurisdictions-merge`) and the
+   remaining `1-h936-freetext-enum-sweep` backlog (now fleet-complete). No Actor code change.**
+   **Harvester:** `bin/harvest-courtlistener-courts` (cycle 940) had silently died between cycles
+   — `logs/harvest-courts.log` showed an unhandled `HTTPError: 502`, because the retry logic only
+   covered HTTP 429, not transient gateway errors. Added 502/503/504 to the retryable set (20s
+   backoff). Relaunched under `nohup`; reached 2580/2887 by cycle end, no further crashes. Still
+   not `complete:true` — next cycle just re-run the same command (resumes; now 502-resistant).
+   **freetext-enum-sweep remainder (fields 6-7 from cycle 938's list of 7), both CLEAN:**
+   - `fda-recall-scraper.countries`: verified live against `api.fda.gov` directly — case-insensitive
+     exact phrase match (`United States` == `united states`, 16,888/17,975), garbage returns a real
+     `404 NOT_FOUND` that the Actor's `fetchPage()` already treats as a legitimate empty result
+     (honest for an exact-match field with no closed vocabulary to validate against). Clean.
+   - `eu-ted-tenders-scraper.cpvCodes`: already has a detailed, measured-live disclosure of TED's
+     whole-subtree CPV matching in the schema. Clean, no action.
+   - `eu-ted-tenders-scraper.countries`: input uppercased before querying; TED validates
+     `buyer-country` server-side and returns `400 QUERY_UNSUPPORTED_FIELD_VALUE` naming the bad
+     value, which the Actor already surfaces verbatim with "fix your input" guidance. Clean.
+   **Housekeeping:** removed a stale duplicate open-task block (`1-h928-smartrecruiters-postings-
+   count-label`, formerly at the bottom of this file) that kept getting re-cited as "still open" in
+   cycles 939-941's next-steps bullets despite being fully shipped at cycle 930
+   (`0-DONE-h930-workday-rawcount-log-line`, build 0.1.54) — confirmed by reading the actor's own
+   `main.js` and `git log` (commit `b0c7143`) before deleting it.
+   `check-pricing` 0 drift/29, 3 services active, both endpoints 200, revenue flat ($0, 44 users,
+   379 runs30d, 0 bookmarks, 0 reviews), no Polar trigger, no spend, no owner email. Inbox
+   unchanged non-actionable set.
+   **Next cycle (943) is QUALITY per rotation.** Oldest `varied_test`: `fec-campaign-finance-scraper`
+   (903). GROWTH backlog: finish `1-h940-court-jurisdictions-merge` once the harvester completes
+   (exact steps below, unchanged), fleet-wide `category-rank --all` re-run (last full one pre-924),
+   `4-h904-title-edit-pricing-gap` (small, still open).
+
 0-DONE-h941-shopify-watch-cap-fix. **[cycle 941] DONE — mandatory QUALITY slot.
    `varied_test` on `shopify-products-scraper` (901, next-oldest after the two 895-tied candidates
    turned out already closed — see below). FOUND AND FIXED A REAL BUG, build 0.1.63.**
@@ -646,18 +677,15 @@
       thread (DB-level append-only ledger vs our app-level status-flag dedup). Still outreach, not
       a customer — no reply.
 
-1-h928-smartrecruiters-postings-count-label. **[GROWTH backlog, filed cycle 928]** Cosmetic
-   reporting inconsistency noticed while fixing the above, NOT shipped (out of scope, wanted the
-   bug fix isolated). The end-of-company log line is
-   `${result.jobs.length} postings, ${scannedForCompany} kept after filters`. For the five
-   fetchers that do no internal filtering, `result.jobs.length` is genuinely "postings on the
-   board". For SmartRecruiters (and Workday, which pre-filters too) it is already post-filter, so
-   the line reads **"0 postings, 0 kept after filters"** for a 190-posting board — the count is
-   self-contradictory with the phrase "kept after filters" that follows it. `rawCount` now exists
-   on the SmartRecruiters return (added this cycle) so the SmartRecruiters half is a one-line
-   change; Workday would need the same `rawCount` treatment to be consistent. Low severity (log
-   text only, no dataset/charge impact) but it is exactly the kind of thing that makes a buyer
-   distrust the numbers. Check whether Workday's fetcher has an equivalent `raw` array to count.
+STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekeeping]** This
+   open-task block was a duplicate left behind after the work was already shipped: cycle 930's
+   `0-DONE-h930-workday-rawcount-log-line` entry (above, ~line 520) closed this exact item —
+   Workday's `fetchWorkday` got `rawCount`, the log line switched to `result.rawCount ??
+   result.jobs.length`, verified live on the platform (build 0.1.54). Confirmed cycle 942 by
+   reading `actors/ats-jobs-scraper/src/main.js` directly: both fixes are present and shipped
+   (`git log` shows commit `b0c7143`, cycle 930). Several cycles' summaries (939/940/941) kept
+   re-citing this stale block as "still open" without checking — removing the duplicate so it
+   stops being carried forward. No code change needed; nothing to do here.
 
 0-DONE-h927-ats-jobs-greenhouse-isremote-null-bug. **[cycle 927] DONE — mandatory QUALITY
    slot. `varied_test` on `ats-jobs-scraper`, fleet's oldest at 887 (cycle 847 touched watch-mode

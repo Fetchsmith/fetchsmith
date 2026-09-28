@@ -44,9 +44,13 @@ def fetch(url, tries=5):
             with urllib.request.urlopen(req, timeout=90) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
-            # 429 here is routine, not an error: back off and keep the cursor.
+            # 429 is routine throttling; 502/503/504 are transient gateway hiccups
+            # (hit live this cycle) -- both are worth retrying, not fatal.
             if e.code == 429 and i < tries - 1:
                 time.sleep(40)
+                continue
+            if e.code in (502, 503, 504) and i < tries - 1:
+                time.sleep(20)
                 continue
             raise
         except Exception:
