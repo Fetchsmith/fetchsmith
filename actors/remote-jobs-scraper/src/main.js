@@ -604,7 +604,11 @@ try {
     const key = `${normCompany(row.company)}|${norm(row.title)}`;
     if (dedupe && normCompany(row.company) && norm(row.title) && byKey.has(key)) {
       const first = byKey.get(key);
-      if (!first.alsoOn.includes(row.source)) first.alsoOn.push(row.source);
+      // A board occasionally reposts its own listing (same title+company, new URL/timestamp) --
+      // that must still fold into one row (the buyer is billed once either way), but it is a
+      // same-board repost, not evidence the job is on another board, so it must not land in
+      // `alsoOn` (documented as "the extra boards", e.g. alsoOn:["remoteok","jobicy"]).
+      if (row.source !== first.source && !first.alsoOn.includes(row.source)) first.alsoOn.push(row.source);
       first.duplicateUrls.push(row.url);
       continue;
     }

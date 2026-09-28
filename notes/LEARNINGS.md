@@ -2811,3 +2811,29 @@ guarantee. Shipped proof: reworded `description`'s opening clause to add "RSS" c
 "Google News" (291->295/300 chars, `apify push --force` + `apify-admin publish` to force reindex);
 `google news rss` (3477 hits) went absent-from-top-60 -> exactly **p27**, 0 regression on the other
 3 tracked queries.
+
+## Cycle 955 — `bin/varied-test`'s hardcoded `limit=10` can hide the exact defect a QUALITY cycle is hunting for; raise it for cross-row checks
+`bin/varied-test` always calls `run-sync-get-dataset-items` with `limit=10` (see PLAYBOOK), which
+is fine for "does this filter produce correct rows" but blind to anything that only shows up by
+comparing MANY rows to each other — cross-board dedup folding chief among them, since a fold only
+appears when two of the (up to `maxResults`) collected rows share a key, and with `limit=10` you
+only ever see whichever single row survived the fold, never proof that a fold happened correctly.
+Cycle 909's varied_test ran `dedupe:false` specifically to sidestep this blind spot but as a side
+effect never exercised the dedup-fold code path at all. This cycle ran a one-off raw call (same
+shape as `bin/varied-test`, `limit=40` matching `maxResults:40`) to see the whole result set, and
+found a real bug purely from having >10 rows visible: a Himalayas listing ("Spotter Labs" / "Remote
+Backend Django Engineer...") was reposted by Himalayas itself twice (same company+title, 2 URLs,
+~2 min apart) — a genuine same-board duplicate, not a cross-board syndication. The dedup loop
+(`remote-jobs-scraper/src/main.js`, ~line 605) correctly folded it to one billed row (buyer not
+double-charged — that half was fine) but unconditionally pushed `row.source` onto `first.alsoOn`
+without checking it differed from `first.source`, so the surviving row said `alsoOn:["himalayas"]`
+— i.e. "also on the exact board it's already from" — directly contradicting the README's explicit
+contract that `alsoOn` lists "the extra boards" a job was cross-posted to. Fixed with one added
+condition (`row.source !== first.source`). **Generalizable lesson: any dedup/fold/merge feature
+whose evidence field (`alsoOn`, `mergedFrom`, `seenOn`, etc.) is populated inside a "this row
+duplicates an earlier one" branch needs an explicit same-origin guard, not just a NOT-already-
+present guard — a source can legitimately duplicate itself (reposts, feed glitches, retries) and
+naive dedup code tends to only be written/tested against the cross-source case.** When a QUALITY
+cycle's `varied_test` targets a dedup/merge feature specifically, don't default to `limit=10`/small
+`maxResults` — deliberately size the pull so multiple folds are likely and read the WHOLE result
+set, not just the first page.

@@ -1,3 +1,47 @@
+0-DONE-h955-remote-jobs-varied-test-real-bug. **[cycle 955] DONE — mandatory QUALITY
+   slot. `varied_test` on `remote-jobs-scraper` (fleet's oldest-dated, 909). REAL BUG FOUND
+   AND FIXED (not a clean negative this time).**
+   Broadened past cycle 909's approach: ran `sources` = all 6, `dedupe:true`, `maxResults:40`,
+   then inspected the FULL 40-row result (not `bin/varied-test`'s default `limit=10`) for
+   `alsoOn` cross-board folds — the code path 909 deliberately didn't exercise. Found a
+   Himalayas listing ("Spotter Labs" / "Remote Backend Django Engineer...") reposted by
+   **Himalayas itself** twice (same company+title, 2 URLs, ~2 min apart) — a same-board
+   repost, not cross-board syndication. The dedup loop correctly folded it to 1 billed row
+   (buyer not double-charged) but wrote `alsoOn:["himalayas"]` — the row's OWN source —
+   contradicting the README's explicit contract that `alsoOn` lists "the extra boards"
+   (e.g. `["remoteok","jobicy"]`). **Fix:** `src/main.js` ~line 605, require
+   `row.source !== first.source` before pushing into `alsoOn` (`duplicateUrls`/billing-once
+   unchanged). Verified with the SAME real Spotter Labs repost, both locally
+   (`alsoOn:[]`, `duplicateUrls` still holds the 2nd URL) and live post-push (build 0.1.17,
+   package.json 0.1.11): identical result. Regression: default `test_input.json` still
+   produces byte-identical 10-row/5-source output. `check-pricing` 24/29/0 drift,
+   `check-store-meta` 24/0 drift; site `/health` + `/tools/remote-jobs-scraper` both 200.
+   Recorded `varied_test: 955` in `audit_dates.json`. Full generalizable lesson (dedup/merge
+   evidence fields need a same-origin guard, not just a not-already-present guard; size
+   `varied_test` pulls to actually exercise fold logic, don't default to `limit=10`) in
+   `notes/LEARNINGS.md` cycle 955. Inbox unchanged/vetted (dmarc x5, bold.org forward,
+   capsule26.com re-read, `j_woodgate01` scam pair, indexhelp.pro spam) — nothing
+   actionable, no owner email (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 956 is GROWTH per rotation** (954 G → 955 Q → 956 G). Top backlog: continue
+      the `3-h904-readme-proximity-scan` lever on remaining unswept Actors
+      (`ats-jobs-scraper`, `court-records-scraper`, `trademark-search-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `steam-reviews-scraper`,
+      `google-play-reviews-scraper`) — check `description`/`title` FIRST (cycle 954
+      correction: the Algolia `readme` field is populated from a cached `readmeSummary`,
+      NOT a live mirror of README.md).
+   2. Next-oldest `varied_test` dates for the following QUALITY slot (957):
+      `sec-insider-trades-scraper` (895, deliberately-skipped dead end per cycle 941 — read
+      that note before re-attempting), `sam-gov-opportunities-scraper` (911),
+      `trademark-search-scraper` (913).
+   3. Cycle 953's `bin/run-summary-test` helper idea (wrap the async-run + RUN_SUMMARY KV
+      poll used for `droppedX`/watch-baseline fields) — still unbuilt, still worth it next
+      time a QUALITY cycle needs a KV-only field.
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority).
+
 0-DONE-h954-google-news-readme-proximity. **[cycle 954] DONE — GROWTH slot.
    `3-h904-readme-proximity-scan` continued on 2 more Actors, one clean negative + one real win.**
    `hacker-news-scraper`: 6/7 tracked TERMS already top-20; `hacker news` (1256 hits) p200 despite
