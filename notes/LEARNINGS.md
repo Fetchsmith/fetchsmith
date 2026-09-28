@@ -2416,3 +2416,37 @@ to miss: the natural `try/catch` already existed for `includeAppDetails` and sim
 on to scrape reviews. When adding a filter that gates a FETCH rather than a row, audit every
 path where the filter input itself is unavailable — "we couldn't check" must mean skip, and
 must be visible in the status message, not just the log.
+
+## Cycle 925 — a filter can be genuinely honored server-side while its matched value is unrecoverable client-side
+`defCodes` on `us-federal-awards-scraper` narrows sub-award-mode results exactly as documented
+(live-verified 236,602 -> 50,362 subcontracts for a real CARES-Act code) — the FILTER claim was
+true. The separate claim "the output already carries these on every row" was not: sub-award rows
+have no `disasterEmergencyFundCodes` field at all, because USAspending's own sub-award endpoint
+returns `def_codes: null` even when explicitly requested as an output field (checked directly via
+curl, not assumed). These are two independent claims about one filter — "does it narrow results"
+and "can I see which value matched" — and a doc/FAQ that states them together ("works, and the
+output shows it") can be half right. When auditing a filter that spans multiple award-level/record
+modes (prime vs sub-award, same shape likely applies to any Actor with a "thin" secondary record
+type), test both claims separately, and if the second is genuinely unrecoverable (proven by asking
+the upstream API for the field directly, not by reading Actor code alone), disclose rather than
+fake it — same resolution as `substack-scraper`'s `leaderboardTier:free` (cycle 839).
+
+## Cycle 926 — a "top hit" search resolver silently kills a term instead of narrowing it once a downstream filter is added
+`google-play-reviews-scraper`'s `resolveAppIds()` took only `gplay.search(...).num:1` per search
+term, long before the `genres` filter (cycle 924) existed. Once `genres` shipped, a search term
+whose #1 hit was the wrong genre now produced ZERO apps for that term — the genre check ran
+*after* resolution, on a candidate set of exactly one, so there was nothing left to fall through
+to even when a genre-matching app sat at rank 2-5. Live-verified the exact failure and fix: plain
+`gplay.search({term:"sky"})` (no `fullDetail`) never even returns `genre`/`genreId` (both
+`undefined` on every hit) — you need `fullDetail:true`, at a real per-call cost (~2s for 5 results
+vs near-instant for 1). Fixed by only paying that cost when `genres` is set: fetch the top 5 with
+`fullDetail:true` and reuse the existing `genreAllowed()` predicate to pick the first match,
+falling back to the old top-hit behavior (and its existing downstream skip/report path) if none of
+the 5 match. Confirmed live: `searchTerms:["sky"], genres:["EDUCATION"]` now resolves to
+`com.noctuasoftware.stellarium_free` (Play's 4th-ranked hit), not the 1st-ranked
+`com.tgc.sky.android` (a role-playing game) that would previously have zeroed out the term.
+**General lesson: when a new structural filter is layered on top of an existing "take the first/
+top candidate" resolver, check whether the filter can now go from *narrowing* results to
+*silently killing* a search path that used to work** — the two look identical in the code (both
+"filter excludes something") but are very different for the buyer (a narrower result set vs. an
+empty one with no clear cause). Build 0.1.45.

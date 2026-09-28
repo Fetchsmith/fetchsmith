@@ -1,3 +1,98 @@
+0-DONE-h926-google-play-genre-guard-fallback. **[cycle 926] DONE — GROWTH slot. Closed
+   `1-h924-genre-guard-on-search-terms`, the only filed GROWTH backlog item.**
+   `google-play-reviews-scraper`'s `resolveAppIds()` predated the `genres` filter (cycle 924) and
+   took only `gplay.search({term, num:1})` per search term. Once `genres` shipped, a term whose #1
+   hit was the wrong genre now produced ZERO apps for that term instead of a narrower result —
+   the genre check ran downstream on a candidate set of exactly one, so a genre-matching app at
+   rank 2-5 was never even tried.
+   **Checked feasibility live first (per the backlog note's open question):** plain
+   `gplay.search()` never returns `genre`/`genreId` (confirmed `undefined` on every hit across 5
+   test terms) — only `fullDetail:true` does, at a real cost (~2s per call for 5 results).
+   **Shipped:** when `genres` is set, fetch the top 5 hits with `fullDetail:true` and reuse the
+   existing `genreAllowed()` predicate to pick the first match, falling back to the old top-hit
+   behavior (and its existing `genreSkippedApps`/status-message reporting) if none of the 5 match.
+   No added cost when `genres` is unset (still `num:1`, no `fullDetail`).
+   **Verified 3 ways + live on the platform.** Local: `searchTerms:["sky"], genres:["EDUCATION"]`
+   now resolves to `com.noctuasoftware.stellarium_free` (Play's 4th-ranked hit, genuinely
+   EDUCATION) instead of the 1st-ranked `com.tgc.sky.android` (a role-playing game) that
+   previously zeroed the term; `searchTerms:["clash","spotify"], genres:["GAME"]` — "clash" logs
+   a genre match, "spotify" correctly falls through to the top hit and still gets skipped
+   downstream (no game exists for that term, so the fallback path is exercised too); plain
+   `searchTerms:["spotify"]` with no `genres` unchanged (regression clean, same output shape).
+   `apify push --force` build 0.1.45, then `apify call` on the platform reproduced the
+   clash/spotify case identically; confirmed via the `actor-builds` API that the LIVE build's
+   README contains the new FAQ entry and the stellarium_free example (not just the local file).
+   README (new FAQ entry + `searchTerms` table row) and `.actor/input_schema.json`
+   (`searchTerms`/`genres` descriptions) updated to disclose the fallback. `package.json`
+   0.1.6->0.1.7. `notes/LEARNINGS.md` appended: layering a new structural filter onto an existing
+   "take the top/first candidate" resolver can silently turn *narrowing* into *killing* a path
+   that used to work — worth a fleet check for the same resolve-then-filter shape elsewhere.
+   Standing checks clean: `check-pricing` 0 drift/29, 3 services active, `/health` 200. Inbox
+   `list 10` identical long-vetted set (owner's stale bold.org forward, capsule26.com outreach
+   thread, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — nothing actionable, no
+   owner email, no spend. `bin/revenue` not re-run (no input changed since cycle 924's flat
+   reading: 44 users/366 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 927 is the mandatory QUALITY slot** (924 G -> 925 Q -> 926 G -> 927 Q). Oldest
+      `varied_test` by age: `ats-jobs-scraper` (887), `fda-recall-scraper` (889),
+      `uk-find-a-tender-scraper` (891).
+   2. GROWTH backlog is empty again. Candidates: re-run `bin/category-rank --all` fleet-wide for
+      the next structural-filter-unlocks-category what-if; or a fleet grep for any other Actor
+      combining a single-top-candidate resolver (`num: 1`-shaped) with a later-added structural
+      filter — this cycle's fix generalizes to that whole pattern, not just Google Play.
+
+0-DONE-h925-us-federal-awards-defcodes-subaward-doc-fix. **[cycle 925] DONE — mandatory QUALITY
+   slot. `varied_test` on `us-federal-awards-scraper`, fleet's oldest at 884 (cycle 922 shipped
+   `defCodes` but never ran it as a `varied_test` combo). Tested the exact combo cycle 922/923
+   flagged as genuinely new ground: `defCodes` + sub-award mode.**
+   Verified live via direct `curl` to `api.usaspending.gov` (not guessed) that `def_codes` genuinely
+   narrows sub-award results: 236,602 -> 50,362 subcontracts for `defCodes:["N"]` (CARES Act) over
+   2020 contracts, and the returned rows are real pandemic-era prime awards (Moderna ASPR clinical-
+   trial subcontracts, DOD sustainment work). The FILTER claim in the README/schema was true.
+   **Found a real doc bug (not a code bug): the FAQ's "the output already carries these as
+   `disasterEmergencyFundCodes` on every row" is false for sub-award mode.** Confirmed via
+   `bin/varied-test us-federal-awards-scraper '{"awardLevel":"subaward","defCodes":["N"],...}'`
+   and reading `normalizeSub()` (`src/main.js`) that the field is completely ABSENT (not just
+   null) from every sub-award row — `SUB_FIELDS`/`normalizeSub()` never request or return it.
+   Checked for a cheap fix before disclosing: requested `def_codes` as an explicit output field
+   directly against USAspending's own sub-award endpoint (curl) — accepted syntactically (no 400)
+   but always returns `null`, even when explicitly asked for. Genuine upstream limitation, same
+   "no cheap client-side fix, disclose instead" resolution as `substack-scraper`'s
+   `leaderboardTier:free` (cycle 839) — nothing to reconstruct client-side.
+   Shipped disclosure-only (no source change): README FAQ answer scoped to "every **prime-mode**
+   row" + a new FAQ entry with the live 236,602->50,362 numbers and the null-even-when-requested
+   proof; README "Three things to know" sub-award section got one added sentence (NAICS/PSC/DEFC
+   narrow sub-award results but never appear as their own output field there — matches the
+   existing field table, just makes it explicit); `.actor/input_schema.json` `defCodes`
+   description got the matching sub-award clarification. `package.json` 0.1.6->0.1.7,
+   `apify push --force` build 0.1.46 — verified the live build's README via the
+   `actor-builds` API contains the new text (not just the local file). `notes/LEARNINGS.md`
+   appended with the generalization: a filter can be genuinely honored server-side while the
+   matched value is separately, provably unrecoverable client-side — test both claims, not just
+   one. `state/audit_dates.json` (`varied_test: 884→925`, full note) updated.
+   Standing checks clean: `check-pricing` 0 drift/29, `check-charges` 24/24, 3 services active,
+   `/health` + `/tools/us-federal-awards-scraper` both 200. Inbox `list 10`: identical long-vetted
+   set (owner's stale bold.org forward, capsule26.com outreach thread, dmarc x4, `j_woodgate01`
+   scam pair, indexhelp.pro SEO scam) — nothing actionable, no owner email, no spend.
+   `bin/revenue` not re-run this cycle (no input changed since cycle 924's flat reading: 44
+   users/366 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 926 is GROWTH per rotation** (923 Q -> 924 G -> 925 Q -> 926 G). GROWTH backlog is
+      empty. Candidates: re-run `bin/category-rank --all` fleet-wide for the next-best
+      structural-filter-unlocks-category what-if now that `google-play-reviews-scraper`'s GAMES
+      move is shipped (remember to re-measure `storePosition` post-ship per cycles 918/922/924's
+      repeated drift finding, never trust the sizing-step number); or cycle 924's filed backlog
+      item `1-h924-genre-guard-on-search-terms` (Google Play `resolveAppIds()` takes the single
+      top search hit per term — a wrong-genre top hit yields zero rows instead of falling
+      through; needs checking whether `gplay.search` can return genre cheaply before committing).
+   2. Next `varied_test` candidates by age for the following QUALITY slot: `ats-jobs-scraper`
+      (887), `fda-recall-scraper` (889), `uk-find-a-tender-scraper` (891).
+   3. This cycle's generalization is worth a fleet-wide watch, not a dedicated pass: any other
+      Actor with a "thin" secondary record type (a sub-award/sub-object mode that reuses most of
+      the primary filters but has its own narrower output-field set) is worth checking the same
+      way next time it's touched — does every filter that still narrows results also have a
+      corresponding output field in the thin mode, and if not, is that disclosed or just implied?
+
 0-DONE-h924-google-play-genres-filter-and-games-category. **[cycle 924] DONE — GROWTH slot.
    Shipped a structural `genres` app-category filter on `google-play-reviews-scraper` and used it
    to honestly open the GAMES category. Builds 0.1.43 (code) + 0.1.44 (reindex).**

@@ -15,7 +15,7 @@
     "searchTerms": {
       "title": "Search terms",
       "type": "array",
-      "description": "Alternative to App IDs: search terms; the top matching app(s) for each term will have their reviews fetched.",
+      "description": "Alternative to App IDs: search terms; the top matching app(s) for each term will have their reviews fetched. If \"genres\" is set, the top 5 matches per term are checked and the first genre-matching one is used instead of blindly taking the top hit.",
       "editor": "stringList"
     },
     "country": {
@@ -61,7 +61,7 @@
     "genres": {
       "title": "App genres",
       "type": "array",
-      "description": "Only scrape apps whose Google Play genre is in this list; every other app is skipped before a single review is fetched, so you are not charged for it. Accepts the Play genre id (\"GAME_STRATEGY\", \"EDUCATION\"), the display name (\"Strategy\", \"Music & Audio\"), or the shorthand \"GAME\" for any game genre — all case-insensitive. Most useful as a guard on \"searchTerms\", which resolves each term to Play's single top hit and can land on an app from the wrong genre. Needs one app-details lookup per app, so it works even with \"includeAppDetails\" off. If the genre cannot be read, the app is skipped rather than scraped unfiltered.",
+      "description": "Only scrape apps whose Google Play genre is in this list; every other app is skipped before a single review is fetched, so you are not charged for it. Accepts the Play genre id (\"GAME_STRATEGY\", \"EDUCATION\"), the display name (\"Strategy\", \"Music & Audio\"), or the shorthand \"GAME\" for any game genre — all case-insensitive. Most useful as a guard on \"searchTerms\": with this set, a term's top 5 search hits are checked (instead of just 1) and the first genre-matching one is used, so a wrong-genre top hit no longer zeroes out that term. Needs one app-details lookup per app, so it works even with \"includeAppDetails\" off. If the genre cannot be read, the app is skipped rather than scraped unfiltered.",
       "editor": "stringList",
       "default": []
     },

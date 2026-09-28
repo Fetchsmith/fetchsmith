@@ -355,16 +355,27 @@ async function pushResult(item, watchId = null, metaCode = META_UNKNOWN) {
 
 async function resolveAppIds() {
   const resolved = [...appIds];
+  // A plain search() result carries no genre field (verified live 2026-09-28: undefined on every
+  // hit) -- only fullDetail:true does. With a "genres" filter set, taking just the top hit (num: 1)
+  // meant a search term whose #1 result was the wrong genre yielded ZERO apps for that term, even
+  // when its #2-#5 hits matched -- the filter was silently killing search terms instead of merely
+  // narrowing them. When "genres" is set we instead pull the top 5 with fullDetail and keep the
+  // first one that already passes genreAllowed(); if none of the 5 match, we fall back to the top
+  // hit so the existing downstream genreSkippedApps/status-message reporting still explains why.
   for (const [i, term] of searchTerms.entries()) {
     if (!timeBudgetOk()) {
       log.warning(`Approaching the run timeout — skipping the remaining ${searchTerms.length - i} search-term lookup(s).`);
       break;
     }
     try {
-      const results = await gplay.search({ term, num: 1, lang, country });
+      const results = genres.length
+        ? await gplay.search({ term, num: 5, lang, country, fullDetail: true })
+        : await gplay.search({ term, num: 1, lang, country });
       if (results.length) {
-        log.info(`Search "${term}" -> ${results[0].appId}`);
-        resolved.push(results[0].appId);
+        const picked = genres.length ? (results.find((r) => genreAllowed(r)) ?? results[0]) : results[0];
+        const matched = genres.length && genreAllowed(picked);
+        log.info(`Search "${term}" -> ${picked.appId}${genres.length ? (matched ? ` (genre match: ${picked.genre})` : ' (no genre match in top 5, falling back to top hit; the "genres" filter will skip it downstream)') : ''}`);
+        resolved.push(picked.appId);
       } else {
         log.warning(`No app found for search term "${term}"`);
       }
