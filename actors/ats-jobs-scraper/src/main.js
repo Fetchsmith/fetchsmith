@@ -972,7 +972,10 @@ async function fetchWorkday(slug) {
     }
   }
   kept.forEach((j) => { delete j._externalPath; });
-  return { jobs: kept, partial };
+  // `rawCount` is the board's size BEFORE the `passesFilters` pre-filter above ran, same shape as
+  // SmartRecruiters' `rawCount` (h928) — Workday pre-filters internally too, so `jobs.length` alone
+  // is already post-filter and cannot answer "does this board exist" or label a log line honestly.
+  return { jobs: kept, partial, rawCount: raw.length };
 }
 
 const FETCHERS = {
@@ -1120,7 +1123,12 @@ try {
       if (pushed > before) deliveredForCompany += 1;
       if (!keepGoing) break;
     }
-    log.info(`${ats}:${slug} — ${result.jobs.length} postings, ${scannedForCompany} kept after filters`
+    // `rawCount` (board size before SmartRecruiters'/Workday's internal pre-filter) when present,
+    // else `jobs.length` (already the raw size for the other five fetchers, which pre-filter nothing).
+    // Using `jobs.length` alone here was the log-line half of h928's bug: for SmartRecruiters/Workday
+    // it is already post-pre-filter, so a narrow filter could print the self-contradictory
+    // "0 postings, 0 kept after filters" for a real, populated board.
+    log.info(`${ats}:${slug} — ${result.rawCount ?? result.jobs.length} postings, ${scannedForCompany} kept after filters`
       + (watchMode ? `, ${deliveredForCompany} delivered (new or salary-added).` : '.'));
     if (pushed >= maxResults) break;
     // A seeding run pushes nothing, so the maxResults stop above can never fire for it.

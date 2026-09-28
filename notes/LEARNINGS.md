@@ -2503,3 +2503,14 @@ filters" under `ats:"smartrecruiters"`. When two code paths that should agree di
 difference localizes the bug faster than any amount of staring at either path alone. Worth running
 explicitly as a test technique: for any Actor with an auto/explicit mode pair, run both on the same
 input and diff the status lines.
+
+## Cycle 930 — closing a backlog item fully means re-checking every reader of the fixed value
+Cycle 928 fixed `ats-jobs-scraper`'s `rawCount` proxy for exactly one reader (`fetchAuto`'s
+existence check) and explicitly filed the *other* reader — the "N postings, M kept after filters"
+log line — as a separate backlog item rather than fixing it in the same pass "to keep the bug fix
+isolated." That discipline paid off: the log line turned out to have the identical bug on Workday
+too (never mentioned in 928's writeup, since 928 only tested SmartRecruiters), caught only because
+this cycle re-derived the log line's correctness from scratch instead of assuming "the rawCount fix
+already covers it." **Lesson: when a value is found to have two meanings under one name, don't stop
+at fixing the first caller that broke — grep every reader of that value and check each one's
+assumption separately, even readers that "looked fine" because no bug report pointed at them yet.**
