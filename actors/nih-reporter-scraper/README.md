@@ -10,6 +10,7 @@ No API key, no login, no proxy. Public data only.
 - **University research offices & grant consultants** — benchmark awards by institute, activity code (R01 vs R21 vs SBIR R43/R44) or peer institution.
 - **Research-tooling and CRO sales teams** — find labs that just received a new (`awardType: "1"`) award in your space, with the institution and city attached.
 - **Bibliometrics / science-of-science** — a funding-to-publication link for a whole field in one dataset.
+- **COVID-19 research funding tracking** — NIH RePORTER carries **58,561 projects** matching COVID-19 in the title, terms or abstract (verified live via `keyword: "COVID-19"`); pair it with `fiscalYears` to see funding shift year over year as the pandemic response evolved.
 
 ## Three things this Actor does that the API doesn't
 

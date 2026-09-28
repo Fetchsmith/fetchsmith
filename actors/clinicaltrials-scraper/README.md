@@ -29,6 +29,7 @@ Name a `watchLabel` and every later run on the same saved search returns **only 
 - **Site-selection teams** finding which facilities run trials for a given condition (`rowsPerStudy: "site"`).
 - **Investor / market research** watching a sponsor's pipeline by phase and status; add `watchChanges` to get alerted when a trial they already logged is upgraded, terminated, or has its readout date slip.
 - **Patient-advocacy and recruitment groups** finding actively recruiting trials near a location.
+- **COVID-19 and long-COVID researchers** pulling COVID trials by status, phase and site: `conditions: "COVID-19"` matches 10,246 registered studies (338 currently recruiting) and `"long COVID"` matches 733, and the COVID data comes back as the registry's own record — see the FAQ below.
 
 ## Input
 
@@ -122,6 +123,9 @@ Ask the API for `pageSize=1001` and it doesn't 400 — it silently returns **200
 
 **I already have a list of NCT IDs — can I just fetch those?**
 Yes, set `nctIds` (e.g. `"NCT04368728, NCT03854955"`) instead of the search filters. ClinicalTrials.gov's own API 400s the *entire* request if even one ID in a batch is malformed or doesn't exist — we've verified this live and handle it for you: bad IDs are dropped individually with a named warning, and the rest of your batch still comes back.
+
+**Does this cover COVID-19 and long-COVID trials?**
+Yes — COVID is just another condition here, so `conditions: "COVID-19"` matches 10,246 registered studies (338 of them currently recruiting, measured live 2026-09-28) and `conditions: "long COVID"` matches 733. Narrow with the ordinary filters: `overallStatus: ["RECRUITING"]` for open enrolment, `phases` for interventional stage, `rowsPerStudy: "site"` for one row per participating facility. Every row is copied straight from the registry, so the COVID data you get back is the sponsor's own record — no modelling and no case-count estimates — and that is why COVID trials, post-acute-sequelae (PASC) studies and vaccine follow-up studies all come through the same single condition filter.
 
 **Why did I get zero rows?**
 Filters are ANDed — combining a narrow condition, sponsor and location at once often genuinely matches nothing. Drop one filter and retry. Also, `phases` only applies to interventional studies with a phase assigned; pairing it with `studyTypes: ["OBSERVATIONAL"]` always returns nothing.

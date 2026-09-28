@@ -5,7 +5,8 @@
   "seoDescription": "Export NIH grants and NIH-funded biomedical research projects via the official NIH RePORTER API. Award amounts, PIs, institutions, study sections and linked PubMed publications.",
   "categories": [
     "LEAD_GENERATION",
-    "BUSINESS"
+    "BUSINESS",
+    "COVID_19"
   ],
   "events": {
     "result": {

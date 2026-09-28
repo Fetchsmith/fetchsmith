@@ -146,7 +146,7 @@
     "keywords": {
       "title": "Keywords (full-text)",
       "type": "string",
-      "description": "Free-text search across the notice's title, description and buyer name (TED's FT~ full-text operator). Example: \"cloud hosting\". Leave empty to match everything in your other filters.",
+      "description": "Free-text search using TED's FT~ full-text operator. Example: \"cloud hosting\". Verified live (cycle 919): this matches against the WHOLE notice text TED indexes, not just title/description/buyer name -- e.g. a search for \"software\" matched a notice whose only occurrence of the word was in its technical-capacity/selection-criteria text, which is not one of this Actor's output fields. A returned row may not visibly contain your keyword anywhere in its output. Leave empty to match everything in your other filters.",
       "editor": "textfield"
     },
     "expertQuery": {

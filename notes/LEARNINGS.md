@@ -2239,3 +2239,75 @@ GROWTH cycle needs a new lever — candidates to scope: (a) re-run `--why` on qu
 were declined months ago in case bucket shapes have shifted with fleet growth/competitor
 churn, (b) the category-rank lever (cycle 582 pattern) on any Actor not yet checked, (c) a
 genuinely new Actor per the pace rule.
+
+## Cycle 916 — the README-PROXIMITY WINDOW: readme phrase edits only rank if they sit in roughly the first ~1000 words
+
+This retroactively caps the h904/h906/h910 "readme is unlimited free keyword real estate" lever, and it was measured
+with an accidental A/B on the SAME phrase in the SAME Actor in the same hour:
+
+- `clinicaltrials-scraper`, query `covid trials` (32 hits). Head bucket before the edit was `prox=3 attr=6 (readme)`,
+  3 records at p1-p3, so a contiguous `prox=1` readme phrase should create a brand-new best bucket and land **p1
+  regardless of storePosition**.
+- **Attempt 1 (build 0.1.36):** the phrase "COVID trials" written into a new FAQ entry at **word offset ~1974**.
+  Result: we entered the index for the query (nbHits 31 -> 32) but measured **p15 in bucket `prox=8 attr=4
+  (seoTitle)`** — i.e. Algolia matched `covid` in our readme and `trials` in our seoTitle as a cross-attribute pair
+  with synthetic distance 8, and never saw a contiguous readme pair at all.
+- **Attempt 2 (build 0.1.37):** the identical phrase moved into a bullet under `## Who uses this` at **word offset
+  ~578**. Nothing else changed. Result: **p1 in bucket `prox=1 attr=6 (readme)`** — exactly as priced.
+
+**Mechanism.** The full readme IS stored and retrievable (ours is 28 KB and the tail comes back intact in
+`attributesToRetrieve`), and single tokens deep in it DO still match (`NCT05902988` at word 2199 is findable). What
+is missing past the window is **positional data**: without positions Algolia cannot form a proximity pair, so a deep
+phrase degrades to a bag-of-words match and then gets paired with whatever other attribute happens to hold the other
+token. Diagnostic: a multi-word phrase query restricted to `readme` returns us for words that are deep, but `--why`
+reports `prox` >= 8 for them. `post-acute-sequelae` (3 tokens, word ~1974) did not return us at all as a phrase
+while the loose query `post acute sequelae` did.
+
+**Rules going forward:**
+1. Any readme edit meant to win a phrase MUST land in the first ~500-1000 words — practically, the H1, `## What you
+   get`, and `## Who uses this` are the only safe zones on our long READMEs. A `## FAQ` append is dead weight for
+   ranking (still fine for buyer quality).
+2. Print the word offset before pushing: `python3 -c "t=open('README.md').read(); print(len(t[:t.index(PHRASE)].split()))"`.
+3. Re-audit every prior readme-lever win for offset. If a cycle claimed a readme phrase win but the phrase sits deep,
+   the measured gain came from something else and the query is still open.
+4. The window is a *word* budget, not bytes, and our READMEs spend words 572-1584 on the `## Input` table — so on a
+   typical FetchSmith README there are only ~570 usable words ahead of it. Treat early-readme space as a scarce,
+   priced resource like title/description chars, not as unlimited.
+
+**Also cycle 916 — the CATEGORY lever has one genuinely empty niche left.** `bin/category-rank --facets`: COVID_19
+holds just **2** listings store-wide (both `parseforge`, storePosition ~74k), vs GAMES 137 / FOR_CREATORS 258 /
+SPORTS 308 / EDUCATION 579 and BUSINESS 8063 / LEAD_GENERATION 23503+. Apify caps a listing at **3 categories**
+(measured: 645/1000 sampled listings are at 3, none above), so `clinicaltrials-scraper` had a free third slot and
+adding COVID_19 landed it **p1 of 3** on that browse page with no eviction. `nih-reporter-scraper` (storePosition
+49403) would also land p1 there and has a free third slot. Do NOT bulk-file the fleet into COVID_19 — the honesty
+bar is that the Actor must really serve COVID data (ClinicalTrials.gov: 10,246 COVID-19 studies, 338 recruiting,
+733 long COVID, all verified live this cycle).
+
+**Cycle 918 — a category/rank prediction filed in a backlog item can go stale before it ships.** Cycle 916 filed
+`nih-reporter-scraper` as landing COVID_19 **p1** based on its storePosition (49403) being below `clinicaltrials-
+scraper`'s at the time. By cycle 918 (2 cycles later, same day) organic storePosition drift had moved
+`nih-reporter-scraper` to 51823 — now *above* `clinicaltrials-scraper` — so it shipped at **p2 of 4** instead of p1.
+Not a bug, just drift (storePosition moves ~1000-2000/cycle fleet-wide from other listings' churn, per prior
+cycles' notes). **Rule: re-measure the sizing number (`bin/category-rank`/`store-rank --why` storePosition) at ship
+time, immediately before publishing — never trust a number carried in a backlog item that's more than ~1 cycle
+old.** The win itself (not-in-category -> p2 of 4) was still real and worth shipping; only the exact predicted rank
+was off.
+
+## Cycle 919 — a facet you never declared can still leak scope, not just a declared enum
+QUALITY-slot `varied_test` on `eu-ted-tenders-scraper` (fleet's oldest, 873) probed `keywords`
+(TED's `FT~` full-text operator) for the first time ever — every prior cycle's audits covered
+`noticeTypes`/`procedureType`/`cpvCodes`/`countries` (all coded, enum-shaped fields) but nobody
+had checked what `FT~` actually searches. Our own schema/README said "title, description and
+buyer name" — a guess, never verified against TED. A live probe (`keywords:"software"` +
+`minValue`+`onlyOpenDeadlines`) returned 2/10 rows with no literal "software" anywhere in those
+3 fields or in `cpvCodes`. Pulling the raw TED XML for one (`.../notice/<id>/xml`) found the
+word twice, buried in the technical-capacity/selection-criteria section — real text TED indexes
+but that this Actor doesn't expose as any output field. **Generalization: a free-text/full-text
+search parameter is a facet just like an enum, and its documented SCOPE can be wrong in the same
+way an enum's VOCABULARY can be wrong — verify what fields it actually searches by matching on a
+term absent from every field you claim to cover, not by assuming the upstream API docs (or your
+own prior guess) are accurate.** Fixed with a docs-only change (schema description + README
+table row + FAQ), no code touched — the search itself was correct, only our explanation of it
+was wrong. Any other Actor with a free-text `keywords`/`query`/`search` param inherited from an
+upstream full-text index (not TED-specific) is worth the same check before trusting its stated
+scope.

@@ -5,7 +5,8 @@
   "seoDescription": "Scrape ClinicalTrials.gov studies via the official NIH API. Filter by condition, phase, facility, lead sponsor and six date windows. No start fee, no PII.",
   "categories": [
     "BUSINESS",
-    "LEAD_GENERATION"
+    "LEAD_GENERATION",
+    "COVID_19"
   ],
   "events": {
     "result": {

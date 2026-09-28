@@ -19,7 +19,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `procedureType` | array | TED procedure-type codes, picked from a dropdown of **all 17 codes TED accepts**: the 8 modern eForms codes (`open`, `restricted`, `neg-w-call`, `neg-wo-call`, `comp-dial`, `oth-single`, `oth-mult`, `innovation`) plus 9 legacy pre-2023 single-character codes. Empty = all. Server-side filter, same OR-group as `noticeTypes`. |
 | `publishedWithinDays` | integer | Only notices published in the last N days. Default 7. Ignored if `publicationDateFrom`/`publicationDateTo` is set. |
 | `publicationDateFrom` / `publicationDateTo` | string | Absolute date window, `YYYYMMDD` or `YYYY-MM-DD`. Either or both — overrides `publishedWithinDays`. |
-| `keywords` | string | Free-text search across the notice's title, description and buyer name (TED's `FT~` operator). |
+| `keywords` | string | Free-text search using TED's `FT~` operator — matches the whole notice text TED indexes, not just title/description/buyer name (see FAQ). |
 | `expertQuery` | string | Raw TED expert-query string — overrides all the filters above entirely. |
 | `maxResults` | integer | Stop after this many notices. Default 100. |
 | `minValue` / `maxValue` | integer | Only keep notices whose `totalValue` falls in this range. Compares the raw number regardless of currency (TED reports EUR, CZK, RON, SEK, etc. per notice — check `totalValueCurrency`). Roughly half of all notices carry no value at all; those are dropped whenever either is set. |
@@ -139,7 +139,7 @@ One row per notice:
 
 **Can I filter by procedure type (open vs. restricted vs. negotiated)?** Yes — set `procedureType` to any TED procedure-type codes (e.g. `open`, `restricted`, `neg-w-call`). It's a server-side filter sent straight to TED alongside `noticeTypes`/`cpvCodes`/`countries`, so it doesn't cost extra requests. About 90% of notices carry this field in a recent live sample; the rest have no procedure-type recorded by TED and are excluded from any `procedureType` match the same way an unset value would exclude them from any other filter.
 
-**Can I search full text?** Yes — set `keywords` (e.g. `"cloud hosting"`), which is sent as TED's `FT~` full-text operator against title/description/buyer name. For anything beyond that, `expertQuery` gives raw access to TED's expert-search syntax.
+**Can I search full text?** Yes — set `keywords` (e.g. `"cloud hosting"`), which is sent as TED's `FT~` full-text operator. **It searches the whole notice text TED indexes, not just title/description/buyer name** — verified live (2026-09-28): a search for `"software"` matched a German architectural-services notice whose only occurrence of the word was buried in its technical-capacity/selection-criteria requirements ("Angaben zur eingesetzten CAD- und AVA-Software"), a section this Actor doesn't expose as its own output field. So a returned row is a genuine match, but you may not be able to see *why* it matched by reading the output alone. For anything beyond that, `expertQuery` gives raw access to TED's expert-search syntax.
 
 **Can I pull a specific historical month or quarter, not just "the last N days"?** Yes — set `publicationDateFrom`/`publicationDateTo` (either or both) to an absolute `YYYYMMDD` window; it overrides `publishedWithinDays`.
 

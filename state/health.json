@@ -1,5 +1,5 @@
 {
- "ts": 1790479802,
+ "ts": 1790566202,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -306,11 +306,20 @@
    "err": null
   },
   "trademark-search-scraper": {
-   "ok": false,
-   "status": 400,
-   "items": 0,
-   "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: WMLPPrtHiTdqdSARo, status: TIMED-OUT).\"\n  }\n}"
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "st13",
+    "url",
+    "trademarkName",
+    "office",
+    "status",
+    "trademarkType",
+    "applicationNumber"
+   ],
+   "err": null
   },
   "sam-gov-opportunities-scraper": {
    "ok": true,

@@ -225,7 +225,16 @@ TERMS = {
     # joined) NOT pursued: no spare characters and no arrangement makes it contiguous
     # without re-breaking one of the above; leave for a future slot only if "nonprofit
     # grants" or the scraper/details/eligibility wins are ever judged lower-value.
-    "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov", "patient recruitment", "nct id"],
+    "clinicaltrials-scraper": ["clinical trials", "clinicaltrials.gov", "patient recruitment", "nct id",
+                              # cycle 916: won by a README bullet in "Who uses this" (word ~578),
+                              # NOT by a meta edit. "covid trials" (32 hits) off-page -> p1 in a
+                              # NEW prox=1 attr=6 bucket ahead of the old prox=3 head; "covid data"
+                              # (147 hits) off-page -> p4. Both predicted exactly. See the
+                              # README-PROXIMITY WINDOW note in LEARNINGS before copying this:
+                              # the SAME phrase placed at word ~1974 (deep in the FAQ) measured
+                              # prox=8 / p15, because Algolia only keeps word POSITIONS for roughly
+                              # the first ~1000 words of the readme attribute.
+                              "covid trials", "covid data"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
     # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full

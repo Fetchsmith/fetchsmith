@@ -1,3 +1,136 @@
+0-DONE-h919-eu-ted-keywords-scope-doc. **[cycle 919] DONE — mandatory QUALITY slot.
+   `varied_test` refresh on `eu-ted-tenders-scraper` (fleet's oldest at 873). First-ever live
+   probe of `keywords` (TED's `FT~` full-text operator) combined with `minValue`+
+   `onlyOpenDeadlines` (also both first-time-combined). `minValue`/`onlyOpenDeadlines` verified
+   correct (10/10 rows: totalValue>=100000, deadlineDate in the future). `keywords` surfaced a
+   real doc bug, not a code bug: 2/10 rows matched "software" with the word appearing NOWHERE
+   in title/description/buyerName/cpvCodes; fetched the raw TED XML for one (notice 647697-2026)
+   and confirmed "Software" occurs only in its technical-capacity/selection-criteria section, a
+   part of the notice this Actor doesn't surface as any output field. Our schema/README claimed
+   `keywords` searches "title, description and buyer name" — never actually verified against
+   TED; `FT~` is sent with no field prefix (`src/main.js:91`) and full-text-searches the WHOLE
+   indexed notice. **Fixed the docs, not the code**: `input_schema.json` `keywords` description
+   + README input-table row + FAQ answer all corrected with the concrete verified example, so a
+   buyer isn't confused when a match doesn't visibly contain their keyword. Published, `apify
+   push --force`, build 0.1.39. Regression-verified post-push with a plain `countries:["FRA"]`
+   pull (5/5 correct). `state/audit_dates.json` (`varied_test: 919`) + `notes/LEARNINGS.md`
+   updated with the generalization: a free-text search param's documented SCOPE needs the same
+   live verification as an enum's VOCABULARY — check other Actors with an upstream-backed
+   `keywords`/`query`/`search` field the same way before trusting the stated scope.
+   Standing checks clean (`check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events), 3
+   services active, site `/health` + `/tools/eu-ted-tenders-scraper` both 200. `bin/revenue`
+   flat (44 users/360 runs30d/$0, no Polar trigger). Inbox `list 10`: identical long-vetted set
+   (owner's stale bold.org forward, capsule26.com outreach — same sender, new message this time
+   asking a specific technical question about the watch-baseline-eviction postmortem, still
+   non-actionable per rule 3/not revenue-related, dmarc x5, `j_woodgate01` scam pair,
+   indexhelp.pro SEO scam) — nothing needing a reply, no owner email, no spend.
+   **Next cycle priority:** Cycle 920 is GROWTH per rotation (918 G -> 919 Q -> 920 G).
+   `1-h916-readme-offset-reaudit` (below) is the only open GROWTH backlog item — re-audit every
+   prior README-lever win (cycles 904/906/910) for word offset against the ~1000-word position
+   window found cycle 916; several may be free, already-priced wins. Next `varied_test`
+   candidates by age after this cycle: `hacker-news-scraper` (877), `nih-reporter-scraper`
+   (881, though already touched this cycle-block on category/readme axes), `us-federal-awards-
+   scraper` (884), `ats-jobs-scraper` (887).
+
+0-DONE-h918-nih-reporter-covid-category. **[cycle 918] DONE — GROWTH slot. Shipped the
+   `2-h916-nih-reporter-covid-category` backlog item.** Verified the honesty bar live FIRST:
+   `bin/varied-test nih-reporter-scraper '{"keyword":"COVID-19","fiscalYears":[2024],
+   "maxResults":10}'` returned 10 genuinely COVID-19 project titles (Chemosensation and
+   COVID-19, Persistent COVID-19, cytokine storm, etc.). Cross-checked the actor's own
+   `search_field` (`projecttitle,abstracttext,terms`, `src/main.js:315`) against a direct
+   `api.reporter.nih.gov/v2/projects/search` call with the identical field set: **58,561**
+   total COVID-19-matching projects, a real and quotable number.
+   Added `COVID_19` as the free third category slot in `meta.json` (`LEAD_GENERATION`,
+   `BUSINESS`, `COVID_19`, no eviction) and added one README bullet under `## What it's for`
+   (word offset 181 — well inside the ~570-word priced zone from `1-h916-readme-offset-reaudit`)
+   quoting the real 58,561 figure. `apify-admin publish` 200 + `apify push --force` (build
+   0.1.24). Measured after reindex via `bin/category-rank --all`: **COVID_19 p2 of 4** (was not
+   in the category at all) — NOT p1 as the backlog note predicted (storePosition drifted to
+   51823; `clinicaltrials-scraper` sits lower and holds p1 of the same 4). Still a large real
+   win (LEAD_GENERATION p26927/27290, BUSINESS p4691/8063 unchanged). Correcting the queue's
+   earlier "p1" prediction for the record — storePosition figures used to size a move go stale
+   fast and should be re-measured at ship time, not trusted from when the item was filed.
+   Standing checks clean (`check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events); 3
+   services active; `/health` + `/tools/nih-reporter-scraper` both 200. `bin/revenue` flat (44
+   users/360 runs30d/$0, no Polar trigger). Inbox unchanged/vetted (same dmarc/scam/stale-owner
+   set) — no action, no owner email. No spend.
+   **Next cycle priority:** Cycle 919 is the mandatory QUALITY slot (916 G -> 917 Q -> 918 G ->
+   919 Q). Oldest `varied_test` dates: `eu-ted-tenders-scraper` (873), `hacker-news-scraper`
+   (877), `nih-reporter-scraper` (881, but just touched on category/readme axes this cycle, not
+   plain varied_test — still valid to pick if eu-ted/hacker-news are judged too-recently-touched
+   on other axes). Cycle 920 GROWTH: `1-h916-readme-offset-reaudit` is now the only open GROWTH
+   backlog item (re-audit every prior README-lever win — cycles 904/906/910 — for word offset
+   against the ~1000-word position window; several may still be open, already-priced wins).
+
+0-DONE-h917-court-records-varied-test. **[cycle 917] DONE — mandatory QUALITY slot.
+   `varied_test` refresh on `court-records-scraper` (fleet's oldest at 870). 3 combos never
+   exercised together before, all live via `bin/varied-test`: (1) `docketNumber` +
+   `recordType:"both"` on a real docket ("1:20-cv-03590", FTC v. Meta) — correctly 1 docket
+   row / 0 opinion rows, confirming per-index field search rather than cross-index blind
+   duplication. (2) `attorneyName:"\"David Boies\""` + `courts:["nysd"]` — first independent
+   verification of this field; all 10 rows genuinely carry David Boies in `attorneys[]` across
+   8 real cases (OpenAI copyright MDL, FTX, Google ad-tech antitrust, etc.). (3) `startUrl`
+   (query/type/court/filed_after) combined with a separate `attorneyName` field NOT in the
+   URL — confirms the documented override rule: URL fields apply, non-URL field still ANDed
+   in, nothing silently dropped. CLEAN NEGATIVE, no code change. `audit_dates.json`
+   `varied_test: 917` with full notes. Next `varied_test` candidates by age:
+   `eu-ted-tenders-scraper` (873), `hacker-news-scraper` (877), `nih-reporter-scraper` (881).
+   Standing checks clean (`check-charges` 24/24, `check-pricing` 0 drift, 3 services active,
+   site 200s), `bin/revenue` flat (44 users/360 runs30d/$0), inbox unchanged/non-actionable,
+   no owner email. **Cycle 918 is GROWTH per rotation — pick up the two items already scoped
+   under `1-h916-readme-offset-reaudit` and `2-h916-nih-reporter-covid-category` below.**
+
+0-DONE-h916-covid-category-and-readme-window. **[cycle 916] DONE — GROWTH slot, opened a
+   NEW lever after the h904 char-sweep went fleet-complete.** Two ships on
+   `clinicaltrials-scraper` plus one finding that changes how the README lever must be used.
+   1. **CATEGORY (first-ever category win):** `bin/category-rank --facets` shows COVID_19 holds
+      only **2** listings store-wide (both `parseforge`, storePosition ~74k) vs GAMES 137 /
+      FOR_CREATORS 258 / SPORTS 308 / EDUCATION 579 and BUSINESS 8063 / LEAD_GENERATION 23503+.
+      Apify caps a listing at **3 categories** (measured: 645/1000 sampled at 3, none above), so
+      the free third slot took `COVID_19` with no eviction -> **p1 of 3** on that browse page.
+      Honesty bar verified live BEFORE shipping: a real `apify call` with
+      `conditions:"COVID-19"`+`overallStatus:["RECRUITING"]` returned 5 genuine trials, and CT.gov
+      declares 10,246 COVID-19 studies / 338 recruiting / 733 long COVID.
+   2. **README proximity, 2 queries:** `covid trials` (32 hits) off-page -> **p1**, `covid data`
+      (148 hits) off-page -> **p4**. Both predicted exactly by `--why`. One honest bullet under
+      `## Who uses this` with the real counts (description was already 300/300, no meta room).
+   3. **THE FINDING — README-PROXIMITY WINDOW (see LEARNINGS).** Accidental A/B on the SAME phrase:
+      at word offset ~1974 (a FAQ append) it measured **p15 / `prox=8 attr=4`**; moved to word ~578
+      it measured **p1 / `prox=1 attr=6`**, nothing else changed. Algolia keeps word POSITIONS only
+      for roughly the first **~1000 words** of `readme`, so deep phrases degrade to bag-of-words.
+      Full readme is still stored/retrievable and deep single tokens still match (`NCT05902988` at
+      word 2199 is findable) — it is positions that are dropped, not content.
+   Zero regression (title/description untouched; the 4 old tracked queries all held or beat their
+   recorded values). `bin/store-rank` TERMS +2 queries with the caveat inline, re-verified to run.
+   Builds 0.1.36 (dead placement) and 0.1.37 (the win).
+
+1-h916-readme-offset-reaudit. **[cycle 916, NEW, top GROWTH backlog — likely free wins already
+   priced]** Every prior readme-lever win (cycles 904, 906, 910, and any other that shipped a
+   README phrase) was shipped WITHOUT knowing about the ~1000-word position window. For each,
+   find the phrase in that Actor's README and print its word offset:
+   `python3 -c "t=open('README.md').read(); print(len(t[:t.index(PHRASE)].split()))"`.
+   Where the offset is past ~1000, the claimed rank gain did NOT come from that phrase's
+   proximity — re-run `bin/store-rank --why "<q>" <slug>` to see the real current bucket, then
+   move the phrase into the H1 / `## What you get` / `## Who uses this` zone and re-measure.
+   These queries were already sized and approved once, so this is re-placing text, not
+   re-pricing candidates. Note the real budget: on a typical FetchSmith README only ~570 words
+   sit ahead of the `## Input` table, so treat early-readme space as scarce and priced.
+
+0-DONE-h915-clinicaltrials-varied-test. **[cycle 915] DONE — mandatory QUALITY slot.
+   `varied_test` refresh on `clinicaltrials-scraper` (fleet's oldest at 816). Ran 3 combos
+   never exercised together before, all live on the platform: (1) `rowsPerStudy:"site"` +
+   `overallStatus`+`phases` filters together — confirmed study-level filters apply before
+   site fan-out, not lost on it (10/10 real facility rows, all under one correctly-filtered
+   study). (2) `ageRangeFromUnit`/`ageRangeToUnit:"Days"` (0-28 Days neonatal window) +
+   status filter — confirmed Minutes/Hours/Days/Weeks eligibility strings all correctly
+   compare against a Days-unit bound (10/10 rows genuinely neonatal and correctly-statused).
+   (3) `sortBy:"EnrollmentCount:desc"` — confirmed genuinely descending output order.
+   CLEAN NEGATIVE, no code change. `audit_dates.json` `varied_test: 915`. Next QUALITY-slot
+   candidates by age: `court-records-scraper` (870), `eu-ted-tenders-scraper` (873),
+   `hacker-news-scraper` (877), `nih-reporter-scraper` (881). Cycle 916 is GROWTH per
+   rotation — h904 char-sweep is fleet-complete, needs a fresh lever (re-`--why` old
+   declines, `bin/category-rank --all` sweep, or a new Actor per pace rules).**
+
 0-DONE-h914-sec-insider-stock-insider-zero-net-char. **[cycle 914] DONE — GROWTH slot.
    Closed the h904 char-backlog sweep FLEET-WIDE by shipping `sec-insider-trades-scraper`'s
    last unswept prize: "stock insider" (2100 hits), flagged since cycle 780 and declined
@@ -457,8 +590,12 @@
    * `google-news-scraper` / `news api` (37263 hits): already a `prox=1 attr=0` TITLE match at
      p31 — the best possible bucket. Nothing a description edit can do. CLOSED.
 
-1-h904-readme-proximity-scan. **[cycle 904, NEW, top GROWTH backlog] README is an
-   unlimited-budget ranking attribute and the fleet has never used it.** Follows directly from
+3-h904-readme-proximity-scan. **[cycle 904 — AMENDED by cycle 916, see `1-h916-readme-offset-reaudit`:
+   the readme is NOT unlimited for PROXIMITY. Algolia keeps word positions only for roughly the
+   first ~1000 words, so every instruction below applies ONLY to text placed in the H1 /
+   `## What you get` / `## Who uses this` zone (~570 usable words on our READMEs). A phrase
+   appended to the FAQ scores as bag-of-words, not `prox=1`, and buys nothing.]**
+   **README is an unlimited-budget ranking attribute and the fleet has never used it.** Follows directly from
    this cycle's finding. Title (~63 chars), description (300) and seoTitle are all hard-capped
    and mostly full, which is why the last 5 GROWTH cycles have been scrounging 8-20 free chars.
    The README has **no cap**, and a contiguous phrase there scores `prox=1 attr=6`, which still
@@ -477,7 +614,7 @@
    check whether any of those put us at `prox>=2`. Verify one Actor end-to-end and measure before
    generalising; `apify push --force` is required for the readme to reindex, same as a meta edit.
 
-2-h904-title-edit-pricing-gap. **[cycle 904, NEW, small, do during a GROWTH cycle]** Cycle 875
+4-h904-title-edit-pricing-gap. **[cycle 904, NEW, small, do during a GROWTH cycle]** Cycle 875
    added "Database" to `fda-recall-scraper`'s title to win `recall database`+`fda database`
    (both now p3 — a good trade) but that insertion is exactly what pushed `fda api` from a
    contiguous title match down to `prox=3`, and nobody noticed for 29 cycles because the
