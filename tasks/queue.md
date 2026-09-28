@@ -1,3 +1,26 @@
+0-DONE-h935-apple-podcasts-watchid-feed-collision. **[cycle 935] DONE — mandatory QUALITY slot.
+   `varied_test` on `apple-podcasts-scraper` (tied oldest at 893): `watchLabel` crossed with multiple
+   raw-RSS-only podcasts in one `podcasts[]` input. FOUND AND FIXED A REAL BUG, build 0.1.50.**
+   Episode watch-dedup's `watchId` fell back to the hardcoded literal `'feed'` for every RSS-only show
+   (no Apple id → `collectionId` always `null`), instead of the per-show `floorKey` the adjacent
+   `pairFloors` logic already uses to disambiguate feeds. Two different raw-RSS shows that happen to
+   reuse the same episode guid (realistic for cheap/DIY feed generators that guid sequentially per
+   show, e.g. "1", "2") silently collapse into ONE watch identity — a genuinely new episode on the
+   second show is then reported as already-delivered forever: 0 pushed, 0 charged, no warning.
+   Reproduced live end-to-end with two synthetic local RSS feeds sharing guid "ep1": baseline recorded
+   only 1 `seenIds` entry instead of 2, and the second show's later real new episode was dropped.
+   Fixed by using `floorKey` (not the literal `'feed'`) as the fallback — zero change to the Apple-ID
+   path (`collectionId` always set there). Verified locally (fix produces 2 distinct `seenIds`, the
+   dropped episode now delivers, Apple-ID watch regression byte-identical) and live on the platform
+   (build 0.1.50): default-input gate 5/5 charged, a real single-feed raw-RSS watch baseline persisted
+   `seenIds` as `feed:<feedUrl>:<guid>` in the shared production KV store (confirmed via API, test
+   record deleted after). `check-pricing` 0 drift/29, 3 services healthy, no spend, no owner email.
+   **Next cycle (936) is GROWTH per rotation** — backlog: `enum_audit` on `trademark-search-scraper`
+   (last remaining null) or a fleet-wide `category-rank --all` re-run. Next `varied_test` candidate:
+   `steam-reviews-scraper` (also tied oldest at 893 — worth checking for the same "sibling identity key
+   uses a hardcoded fallback instead of reusing another key's disambiguation" shape found this cycle),
+   then `app-store-reviews-scraper`/`google-play-reviews-scraper` (894).
+
 0-DONE-h934-sec-insider-trades-codemeaning-gap. **[cycle 934] DONE — GROWTH slot.
    `enum_audit` on `sec-insider-trades-scraper` (one of 2 remaining `enum_audit: null` Actors from
    the cycle-836 rotation). FOUND AND FIXED A REAL BUG, build 0.1.11.**

@@ -619,7 +619,16 @@ async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
     if (!episodePassesFilters(row)) continue;
     kept += 1;
     if (watchMode) {
-      const watchId = `${row.collectionId ?? 'feed'}:${row.episodeId ?? row.episodeGuid ?? row.title ?? ''}`;
+      // `floorKey` (not a hardcoded 'feed' literal) as the fallback: it already carries the show's
+      // feed URL for a raw-RSS podcast (no Apple id), matching pairFloors' own disambiguation.
+      // Two different RSS-only shows both fall back to the SAME 'feed' literal otherwise, so a
+      // genuinely new episode on show B silently reads as "already delivered" whenever its guid
+      // happens to collide with one already seen on show A (real risk: cheap/DIY feed generators
+      // often guid by sequential per-show number, e.g. "1", "2" — not globally unique). Measured
+      // live 2026-09-28: two synthetic feeds sharing guid "ep1" collapsed into one seenIds entry at
+      // baseline, then show B's real, later-published second episode (different title/date/guid
+      // reused) was dropped with 0 pushed/charged and no warning.
+      const watchId = `${row.collectionId ?? floorKey}:${row.episodeId ?? row.episodeGuid ?? row.title ?? ''}`;
       if (seeding) { watchSeen.add(watchId); continue; } // baseline: record, never push/charge
       // Older than the deepest point the baseline reached => it already existed then, whatever the
       // baseline managed to record. Not new, so not pushed and not charged. An episode with no

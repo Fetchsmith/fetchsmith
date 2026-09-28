@@ -2587,3 +2587,24 @@ shape as cycle 926's resolve-then-filter generalization and cycle 893's default-
 a feature added to protect path A silently leaves path B exposed, and nothing in path B's own tests
 would ever surface it because path B in isolation is fine — only the same cross-path combination that
 broke path A also breaks path B.
+
+## Cycle 935 — a watch-mode identity key's fallback constant can silently collapse two different real-world entities into one
+`apple-podcasts-scraper`'s episode watch-dedup key was `${row.collectionId ?? 'feed'}:${episodeId||guid||title}`.
+`collectionId` is only ever set when a show has an Apple Podcasts ID; a raw-RSS-only podcast (no Apple
+presence, added by pasting its feed URL directly — a documented, supported input path) always has
+`collectionId: null`, so EVERY such show fell back to the same hardcoded literal `'feed'`, not a
+per-show key. The adjacent `floorKey`/`pairFloors` logic in the same function already solved this
+correctly by keying on `feed:${feedUrl}` instead of a shared constant — nobody had checked whether the
+*other* identity key built in the same function used the same disambiguation. Reproduced live: two
+synthetic feeds sharing an episode guid "ep1" (plausible for cheap/DIY feed generators that guid by
+sequential per-show number, e.g. "1", "2") collapsed into ONE `seenIds` entry at baseline instead of
+two, and a later genuinely-new episode on the second show — different title, different date, but a
+guid that happened to collide — was silently treated as already-delivered: 0 pushed, 0 charged, no
+warning, permanently lost to that watch label. Fixed by reusing the already-correct `floorKey` as the
+fallback instead of the bare string literal. **Generalizable lesson: when a function builds two
+different identity/dedup keys for the same entity (here: a rate-limiting/floor key and a delivery-dedup
+key), a hardcoded fallback constant in one of them is a code smell — check whether a SIBLING key in the
+same function already solved the same disambiguation problem, and reuse it, rather than independently
+re-deriving (or forgetting to derive) uniqueness.** Same root shape as cycle 926's resolve-then-filter
+and cycle 933's two-input-paths-one-protection finding: a fix/design decision applied to one code path
+doesn't automatically apply to a structurally identical sibling path in the same function.
