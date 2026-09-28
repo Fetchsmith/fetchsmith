@@ -234,7 +234,52 @@ TERMS = {
                               # the SAME phrase placed at word ~1974 (deep in the FAQ) measured
                               # prox=8 / p15, because Algolia only keeps word POSITIONS for roughly
                               # the first ~1000 words of the readme attribute.
-                              "covid trials", "covid data"],
+                              "covid trials", "covid data",
+                              # cycle 952 (GROWTH, h904 README-proximity method — 4th Actor fully
+                              # screened). Screened all 6 pre-existing TERMS first (fast, per the
+                              # cycle-948 revised guidance): clean negative, every one already at
+                              # its query's floor prox in an attribute >= readme ("clinical trials"
+                              # p79 (2,2,1,0), "clinicaltrials.gov" p49 (1,0,0,0), "patient
+                              # recruitment"/"nct id" p1, "covid trials" p1 / "covid data" p5 both
+                              # already prox=1 attr=6). Zero levers on the tracked list — same
+                              # result as cycles 946/948/950. Went straight to bin/store-price on
+                              # 16 fresh domain phrases; the money finding is that THREE of them
+                              # had NO prox=2 bucket at all (nobody in the whole 60-hit window
+                              # matched contiguously), so one contiguous readme sentence lands p1
+                              # outright: "clinical research api" (2148 hits, absent), "study
+                              # results api" (5158 hits, absent), "medical data api" (1888 hits,
+                              # absent). Plus "clinical trial registry" (340 hits) sat at p25 in a
+                              # prox=5 attr=6 bucket, 3 records behind the prox=2 head -> predicted
+                              # p13. Shipped README-only build 0.1.38, 3 edits, all truthful:
+                              # (1) reworded the H1 intro "the US NIH/NLM registry of clinical
+                              # trials ... no API key, no login, no proxy. 602,520+ studies" ->
+                              # "the US NIH/NLM clinical trial registry ... a clinical research API
+                              # with no key, no login and no proxy. 602,520+ clinical trials" —
+                              # ONE rewording carrying TWO target phrases contiguously while
+                              # KEEPING "clinical trials" contiguous (deliberate: that term's match
+                              # is attr=0/title so the readme copy is redundant, but don't remove a
+                              # phrase you haven't proved is redundant); (2) one new sentence after
+                              # the field table naming `hasResults`/`primaryOutcomes`/
+                              # `resultsFirstPostDate` -> "study results api"; (3) one clause on the
+                              # existing no-PII paragraph ("A medical data API can be useful without
+                              # reselling named individuals") -> "medical data api".
+                              # Confirmed all 4 phrases in the build's actorDefinition.readme via
+                              # the platform API BEFORE measuring (946's lesson). Live ~120s post-
+                              # reindex, ALL FOUR predictions exact: "clinical research api" p1,
+                              # "study results api" p1, "medical data api" p1, "clinical trial
+                              # registry" p25 -> p13. Zero bucket regression: all 6 pre-existing
+                              # TERMS held byte-identical buckets; "clinical trials" p79->p88,
+                              # "clinicaltrials.gov" p49->p56, "covid data" p5->p6 are ALL
+                              # storePosition drift (50989 -> 55451 fleetwide), re-verified by
+                              # re-reading each bucket tuple, not assumed.
+                              # Placement check that made this safe: every new phrase sits at readme
+                              # word 16/27/398/475 (well inside the ~1000-word prox window) and the
+                              # +49 words pushed "covid trials"/"covid data" from word 578 -> 627,
+                              # still attr=6 (the boundary is attr = firstMatchedWord//1000, so a
+                              # top-of-readme insertion can demote a LATER match one attr bucket —
+                              # check the shifted offsets before shipping, not after).
+                              "clinical research api", "study results api", "medical data api",
+                              "clinical trial registry"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
     # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full

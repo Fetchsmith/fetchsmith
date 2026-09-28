@@ -1,6 +1,6 @@
 # ClinicalTrials.gov Scraper – Patient Recruitment & NCT IDs
 
-Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical trials, using its own official API v2 — no API key, no login, no proxy. 602,520+ studies covered.
+Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM clinical trial registry, using its own official API v2 — a clinical research API with no key, no login and no proxy. 602,520+ clinical trials covered.
 
 ## What you get
 
@@ -19,7 +19,9 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM registry of clinical t
 | `interventions` | Type + name for every drug/device/procedure arm. |
 | `studyUrl` | Direct link to the public study page. |
 
-**We do not ship contact people, phone numbers or emails — ever.** ClinicalTrials.gov's own API returns named individuals and personal email addresses in `centralContacts`/location `contacts` (we found a real `@gmail.com` in a live sample). Several competitor Actors resell that as a "contact finder." We deliberately drop it; `locations`/`site` carries facility, city, state, country and geo-coordinates only.
+With `hasResults`, `primaryOutcomes` and `resultsFirstPostDate` flat on every row, this doubles as a study results API: set `resultsAvailability` to return only trials that have actually reported, or only the ones that never did.
+
+**We do not ship contact people, phone numbers or emails — ever.** ClinicalTrials.gov's own API returns named individuals and personal email addresses in `centralContacts`/location `contacts` (we found a real `@gmail.com` in a live sample). Several competitor Actors resell that as a "contact finder." We deliberately drop it; `locations`/`site` carries facility, city, state, country and geo-coordinates only. A medical data API can be useful without reselling named individuals.
 
 Name a `watchLabel` and every later run on the same saved search returns **only studies new since the last run**, so a scheduled competitive-intelligence pull never re-delivers or re-charges for the same trial twice; add `watchChanges` and it also catches a study's **status changing** (e.g. Recruiting → Completed/Terminated), a **protocol amendment updating its enrollment count**, or its **completion date slipping**.
 

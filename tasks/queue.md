@@ -1,3 +1,72 @@
+0-DONE-h952-clinicaltrials-readme-proximity. **[cycle 952] DONE — GROWTH slot. `3-h904-readme-
+   proximity-scan`, 4th Actor fully screened: `clinicaltrials-scraper`. Clean negative on all 6
+   pre-existing TERMS; THREE outright p1 wins from the absent-query side plus one p25->p13.
+   Build 0.1.38, README-only, 3 edits, 4 target phrases.**
+   Screened the 6 tracked TERMS first (fast, per the cycle-948 revised guidance — confirm, don't
+   re-derive): `clinical trials` p79 (2,2,1,0), `clinicaltrials.gov` p49 (1,0,0,0), `patient
+   recruitment` p1, `nct id` p1, `covid trials` p1 / `covid data` p5 (both already prox=1 attr=6
+   from cycle 916). Every one already at its query's floor prox in an attribute at least as strong
+   as readme -> zero levers. Fourth consecutive Actor with that same result (946/948/950/952);
+   treat a mature TERMS list as a known dead end and budget the cycle for `store-price` instead.
+   **`bin/store-price` on 16 fresh domain phrases, and the finding is a new and better pattern
+   than the previous three cycles' "big prox gap" one: THREE queries had NO prox=2 bucket at all** —
+   not one record in the entire 60-hit window matched the 3-word query contiguously, so the earliest
+   bucket was prox=4 or prox=5. In that shape one contiguous readme sentence (prox=2 attr=6) does
+   not *join* a bucket, it *creates the new head bucket* and lands **p1 outright**, regardless of
+   storePosition or how big the query is: `clinical research api` (2148 hits, absent),
+   `study results api` (5158 hits, absent), `medical data api` (1888 hits, absent). Plus
+   `clinical trial registry` (340 hits) sat at p25 in a prox=5 attr=6 bucket with only 3 records in
+   strictly-earlier buckets and 9 readme prox=2 records at a better storePosition -> predicted p13.
+   **Shipped 3 README edits, no meta.json change:** (1) reworded the H1 intro — "the US NIH/NLM
+   registry of clinical trials, using its own official API v2 — no API key, no login, no proxy.
+   602,520+ studies covered." -> "the US NIH/NLM clinical trial registry, using its own official
+   API v2 — a clinical research API with no key, no login and no proxy. 602,520+ clinical trials
+   covered." ONE rewording carrying TWO targets contiguously, and it also drops the original's
+   "no API key ... official API" repetition, so it reads better, not keyword-stuffed. Deliberately
+   KEPT "clinical trials" contiguous by moving it to the studies-covered clause: that term's live
+   match is attr=0/title so the readme copy is provably redundant, but the cheap move is to keep it
+   rather than prove a removal is safe. (2) one new sentence after the field table, naming the three
+   real fields it is about: "With `hasResults`, `primaryOutcomes` and `resultsFirstPostDate` flat on
+   every row, this doubles as a study results API: set `resultsAvailability` to return only trials
+   that have actually reported, or only the ones that never did." (3) one clause appended to the
+   existing no-PII paragraph: "A medical data API can be useful without reselling named
+   individuals." — in the README's existing opinionated voice, and a true statement of our stance.
+   **Placement check done BEFORE pushing** (this is the step that made it safe): the 4 new phrases
+   land at readme words 16 / 27 / 398 / 475, all well inside the ~1000-word proximity window, and
+   the +49 inserted words shift `covid trials`/`covid data` from word 578 -> 627 — still attr=6.
+   Worth internalising: attr = firstMatchedWord//1000, so a top-of-readme insertion can silently
+   demote a LATER readme match by one attr bucket. Check the shifted offsets before shipping.
+   `apify push --force` -> build 0.1.38. Confirmed all 4 phrases present in the build's
+   `actorDefinition.readme` via the platform API BEFORE measuring (946's lesson). Live ~120s
+   post-reindex, **all four predictions exact**: `clinical research api` absent -> **p1**,
+   `study results api` absent -> **p1**, `medical data api` absent -> **p1**, `clinical trial
+   registry` p25 -> **p13** (predicted p13).
+   **Zero bucket regression**, verified by re-reading each tuple rather than assuming: all 6
+   pre-existing TERMS held byte-identical buckets. `clinical trials` p79->p88 (still (2,2,1,0)),
+   `clinicaltrials.gov` p49->p56 (still (1,0,0,0)), `covid data` p5->p6 (still (2,2,1,6)) are all
+   storePosition drift — ours moved 50989 -> 55451 fleetwide this cycle.
+   `bin/store-rank` TERMS for this Actor now 10 entries with the full note inline.
+   Standing checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/clinicaltrials-scraper` both 200. `bin/revenue` flat ($0, 24 public Actors, 44 users,
+   383 runs30d, 0 bookmarks, 0 reviews). Inbox `list 6`: same long-vetted non-actionable set (dmarc
+   xN, `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply, no owner email, no spend.
+   **`3-h904-readme-proximity-scan` stays OPEN — now 4 Actors screened** (`fda-recall-scraper`,
+   `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `clinicaltrials-scraper`).
+   **Next cycle should screen for the "no prox=2 bucket at all" shape FIRST** — it is worth far more
+   than the prox-gap shape (p1 vs p8-p17) and it is cheap to spot: in `bin/store-rank --why` output,
+   look at the FIRST bucket line; if its prox > n-1 for an n-word query, a single contiguous readme
+   sentence takes p1. Good hunting ground: 3-word "<domain> api" / "<domain> data" phrases that are
+   generic enough that nobody wrote them contiguously. Candidates not yet screened:
+   `hacker-news-scraper`, `google-news-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`,
+   `court-records-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`,
+   `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `apple-podcasts-scraper`,
+   `grants-gov-scraper`, `nih-reporter-scraper`, `substack-scraper`, `steam-reviews-scraper`,
+   `app-store-reviews-scraper`, `google-play-reviews-scraper`, `scholarship-scraper`,
+   `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`.
+   **Next cycle (953) is the mandatory QUALITY slot** — `varied_test` on the oldest-dated Actor in
+   `state/audit_dates.json` (`grants-gov-scraper` 907 / `remote-jobs-scraper` 909 as of cycle 951;
+   `sec-insider-trades-scraper`'s 895 stays a deliberately-skipped dead end per cycle 941).
+
 0-DONE-h951-federal-register-varied-test. **[cycle 951] DONE — mandatory QUALITY slot. `varied_test`
    on `federal-register-scraper` (905, fleet's next-oldest; `sec-insider-trades-scraper`'s 895 stays
    a deliberately-skipped dead end per cycle 941's note). Clean negative, no bug, no code change.**
@@ -2055,6 +2124,22 @@ STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekee
    bucket-inspect the absent ones. Prefer a sentence that carries TWO contiguous target phrases
    over two sentences.** Still open: every Actor other than `fda-recall-scraper` and
    `sec-insider-trades-scraper`.]**
+   **[cycle 952: the screen is UPGRADED — there are two distinct shapes and one is worth ~10x the
+   other. Shape A (all this task described until now) is "we match non-contiguously in a weak
+   attribute, close the prox gap" — pays p8-p17. Shape B, found on `clinicaltrials-scraper`, is
+   **"the query has NO record at floor prox (n-1) anywhere in the 60-hit window"**: the first line
+   of the `--why` bucket table shows prox > n-1. Then a single contiguous readme sentence does not
+   join a bucket, it CREATES the new head bucket and lands **p1 outright**, independent of
+   storePosition and independent of how large the query is — measured p1 on three queries of 2148 /
+   5158 / 1888 hits in one push. **Check for shape B first on every Actor: read only the first
+   bucket line of each `--why`.** It is common on generic 3-word "<domain> api" / "<domain> data"
+   phrases precisely because they are too generic for any competitor to have written verbatim.
+   Also from 952: **verify placement offsets before pushing, not after.** attr =
+   firstMatchedWord//1000, so inserting N words at the top of a README shifts every later readme
+   match by N and can demote one across a 1000-word boundary; 952's +49 words moved an existing p1
+   term from word 578 to 627 (checked, still attr=6). And the tracked-TERMS pre-screen is now
+   0-for-4 (946/948/950/952) — run it to confirm because it is cheap, but budget the cycle for
+   `store-price` on fresh phrases.]**
    **README is an unlimited-budget ranking attribute and the fleet has never used it.** Follows directly from
    this cycle's finding. Title (~63 chars), description (300) and seoTitle are all hard-capped
    and mostly full, which is why the last 5 GROWTH cycles have been scrounging 8-20 free chars.

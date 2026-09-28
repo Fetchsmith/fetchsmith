@@ -2741,3 +2741,32 @@ prox (n-1). So on a mature TERMS list the readme lever is almost always a no-op 
 **And prefer one sentence that carries TWO contiguous target phrases over two sentences** — 948
 got both wins from a single 18-word addition, which also keeps the quality bar (it reads as a
 genuine summary line, not keyword stuffing).
+
+## Store search: the "no floor-prox bucket exists" shape is a free p1 (cycle 952)
+Cycles 946/948/950 shipped README-proximity wins by CLOSING A PROX GAP — we already matched a
+query non-contiguously in a weak attribute, and making the phrase contiguous in the README jumped
+us past the bucket we were in (p8..p17). Cycle 952 found a strictly better shape on
+`clinicaltrials-scraper`: for some queries **no record anywhere in the 60-hit window matches at the
+query's floor proximity (n-1 for an n-word query)** — the first line of `bin/store-rank --why`'s
+bucket table reads `prox=4` or `prox=5`, not `prox=n-1`. Ranking is
+`nbTypos -> words -> nbExactWords -> prox -> attribute -> storePosition`, and prox is compared
+BEFORE attribute and storePosition, so one contiguous sentence in the README (the weakest
+attribute, attr=6) does not join the head bucket — it *becomes* the new head bucket and lands
+**p1 outright**. Measured in a single README-only push: `clinical research api` (2148 hits),
+`study results api` (5158 hits), `medical data api` (1888 hits) all absent-from-top-60 -> p1, with
+our mediocre storePosition (55451) irrelevant. nbHits does NOT dilute this: a huge query is just as
+winnable as a small one, because what matters is whether anyone bothered to write the phrase
+verbatim. Generic 3-word `<domain> api` / `<domain> data` phrases are the best hunting ground for
+exactly that reason — they are too bland for a competitor to put in a title.
+**So the screen order is: read the FIRST bucket line of each `--why`. prox > n-1 => shape B, p1 for
+one sentence. prox == n-1 and we are behind => shape A, do the counting arithmetic.**
+Corollary confirmed again (now 4-for-4: 946/948/950/952): screening an Actor's mature tracked TERMS
+list yields ZERO levers, because any term worth tracking is already at floor prox in the title or
+description. Run it to confirm (it is seconds) but spend the cycle on `bin/store-price` over 12-16
+fresh phrases.
+**Placement gotcha that goes with this:** attribute rank is `firstMatchedWord//1000`, so inserting
+N words at the top of a README shifts every later README match by N and can push one across a
+1000-word boundary into a worse attr bucket. Cycle 952 added 49 words and re-derived the shifted
+offsets (`covid trials`/`covid data` word 578 -> 627, still attr=6) BEFORE pushing. Check the
+offsets of your existing readme-attribute winners first; do not discover the demotion by measuring
+after the fact.
