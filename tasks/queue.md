@@ -1,3 +1,25 @@
+0-DONE-h951-federal-register-varied-test. **[cycle 951] DONE — mandatory QUALITY slot. `varied_test`
+   on `federal-register-scraper` (905, fleet's next-oldest; `sec-insider-trades-scraper`'s 895 stays
+   a deliberately-skipped dead end per cycle 941's note). Clean negative, no bug, no code change.**
+   Combo 1: Public Inspection desk with all 7 fields the code documents as ignored there
+   (`significantOnly`, `cfrTitle`/`cfrPart`, `publicationDateFrom`, `commentsOpenOnly`,
+   `order:"oldest"`, `presidentialDocumentTypes`) set alongside `documentTypes:["NOTICE"]`, compared
+   against the same query with those fields omitted — 10-row `documentNumber` lists byte-identical
+   in content AND order. Proves `piParams()` truly drops those fields server-side (not just
+   suppressing a warning while still leaking a param) and that `order:"oldest"` has zero effect on
+   the PI desk rather than silently reversing it. Combo 2: published-dataset 4-way AND never tried
+   together — `cfrTitle=40`+`cfrPart=60`+`agencies=[environmental-protection-agency]`+
+   `significantOnly=true` — 10/10 rows `significant:true`, `cfrReferences` containing `"40 CFR 60"`,
+   `agencyNames:["Environmental Protection Agency"]`. Negative control (same filters minus
+   `significantOnly`) returned a genuine true/false/null mix, proving the filter is a real AND.
+   `state/audit_dates.json` updated (`federal-register-scraper.varied_test: 905->951`). Standing
+   checks clean (`check-pricing` 0 drift/29), 3 services active, `/health` + tool page both 200,
+   revenue flat ($0, 44 users, 383 runs30d, 0 bookmarks/reviews), no owner email, no spend.
+   **Next cycle (952) is GROWTH per rotation** — continue `3-h904-readme-proximity-scan` on a 4th
+   Actor, or `4-h904-title-edit-pricing-gap`, or a fleet-wide `category-rank --all` re-run. Next
+   QUALITY slot (953): check `audit_dates.json` for the current oldest `varied_test` (was
+   `grants-gov-scraper`/`remote-jobs-scraper` at 907/909 as of this cycle).
+
 0-DONE-h950-uk-find-a-tender-readme-proximity. **[cycle 950] DONE — GROWTH slot. `3-h904-readme-
    proximity-scan`, 3rd Actor fully screened: `uk-find-a-tender-scraper`. Clean negative on all 3
    pre-existing TERMS, one sentence + one rewording bought a 3-way win. Build 0.1.39, README-only.**
