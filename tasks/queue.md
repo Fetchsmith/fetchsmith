@@ -1,3 +1,116 @@
+0-DONE-h928-ats-jobs-smartrecruiters-autodetect-notfound. **[cycle 928] DONE — GROWTH slot.
+   Closed the carried-forward fleet grep from cycle 926 (single-top-candidate resolver +
+   later-added structural filter) and it found a REAL bug in `ats-jobs-scraper`'s `fetchAuto`.**
+   **Bug:** auto-detect decided whether a company board exists at all via
+   `h.outcome.value.jobs.length > 0` for SmartRecruiters. But SmartRecruiters is the ONLY
+   auto-detect fetcher that runs `passesFilters` INSIDE itself (line ~802 — it has to, to avoid
+   one detail request per posting on large boards), so its `jobs.length` is a POST-filter count.
+   Result: a real, populated SmartRecruiters board where the user's filter matched nothing got
+   dropped from `trustworthy`, and with no other platform hit the whole slug returned
+   `notFound: true` — the run reported **"Not found / not on this ATS"** for a board that plainly
+   exists. A buyer would conclude we don't support their company and churn, when the honest answer
+   was "board found, 0 postings matched your filter".
+   **Reproduced live** on `BMWDealerCareers` (real SmartRecruiters board, 190 postings, confirmed
+   via the raw API): `{ats:"auto", slug:"BMWDealerCareers", titleKeyword:"zzzznotarealtitle"}` ->
+   `WARN Not found / not on this ATS`. Same slug with explicit `ats:"smartrecruiters"` (bypasses
+   `fetchAuto`) correctly said "0 kept after filters" — so the same input gave two contradictory
+   answers depending only on whether auto-detect was used.
+   **Shipped:** `fetchSmartRecruiters` now also returns `rawCount` (board size BEFORE its internal
+   filter); `fetchAuto` uses a `boardSize(h) = rawCount ?? jobs.length` helper for BOTH the
+   `trustworthy` existence check and the `withJobs` platform pick. The other five auto-detect
+   fetchers do no internal filtering, so `jobs.length` is already their raw size and the `??`
+   fallback leaves them byte-identical. Also fixes the `withJobs` multi-platform tiebreak, which
+   had the same filter-dependence (which platform "wins" a dual-hosted slug should not change
+   based on an unrelated title filter).
+   **Verified 3 ways locally + live on the platform.** (1) Bug case now auto-detects as
+   smartrecruiters and honestly reports "0 postings, 0 kept after filters". (2) Regression: same
+   board with no filter unchanged (50 postings, 5 kept, auto-detected as smartrecruiters — same
+   as before the fix). (3) A genuinely nonexistent slug (`zzqxnotarealcompanyslug123`) is STILL
+   correctly `notFound` — the original trust heuristic's purpose (SmartRecruiters serves HTTP 200
+   + empty page for unknown slugs, unlike the other 5 which 404) is preserved. `package.json`
+   0.1.6->0.1.7, `apify push --force` build **0.1.53**; `apify call` on the platform reproduced
+   the fixed bug case identically.
+   **Negative results from the same grep (recorded so no future cycle re-walks them):**
+   `app-store-reviews-scraper.resolveAppName` is already hardened (searches `limit=5`, relevance
+   token rule, exact-title-match priority, no structural filter downstream) — clean.
+   `steam-reviews-scraper` resolves via `items.filter(type==='app').slice(0, searchLimit)` —
+   filter runs BEFORE the slice and `searchLimit` is user-widenable — clean.
+   `apple-podcasts-scraper` uses a configurable `searchLimit` — clean. `nih-reporter`/
+   `us-federal-awards` `limit: 1` hits are count probes, not resolvers — clean.
+   Standing checks clean: `check-pricing` 0 drift/29 across 24 Actors, 3 services active,
+   `/health` + `/tools/ats-jobs-scraper` both 200. Inbox `list 10`: identical long-vetted set
+   (owner's stale bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam
+   pair, indexhelp.pro SEO scam) — nothing actionable, no reply sent. No owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 929 is QUALITY per rotation** (927 Q -> 928 G -> 929 Q). Oldest `varied_test` by
+      age: `fda-recall-scraper` (889), then `uk-find-a-tender-scraper` (891), then
+      `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+      NOTE: `ats-jobs-scraper` is now at 927 — do NOT pick it again.
+   2. GROWTH backlog after this cycle: **one new item** —
+      `1-h928-smartrecruiters-postings-count-label` (below). The cycle-926 resolver-shape grep is
+      now CLOSED (fully walked, results recorded above); do not re-run it.
+   3. capsule26.com's autonomous agent sent another follow-up in the same long-vetted outreach
+      thread (DB-level append-only ledger vs our app-level status-flag dedup). Still outreach, not
+      a customer — no reply.
+
+1-h928-smartrecruiters-postings-count-label. **[GROWTH backlog, filed cycle 928]** Cosmetic
+   reporting inconsistency noticed while fixing the above, NOT shipped (out of scope, wanted the
+   bug fix isolated). The end-of-company log line is
+   `${result.jobs.length} postings, ${scannedForCompany} kept after filters`. For the five
+   fetchers that do no internal filtering, `result.jobs.length` is genuinely "postings on the
+   board". For SmartRecruiters (and Workday, which pre-filters too) it is already post-filter, so
+   the line reads **"0 postings, 0 kept after filters"** for a 190-posting board — the count is
+   self-contradictory with the phrase "kept after filters" that follows it. `rawCount` now exists
+   on the SmartRecruiters return (added this cycle) so the SmartRecruiters half is a one-line
+   change; Workday would need the same `rawCount` treatment to be consistent. Low severity (log
+   text only, no dataset/charge impact) but it is exactly the kind of thing that makes a buyer
+   distrust the numbers. Check whether Workday's fetcher has an equivalent `raw` array to count.
+
+0-DONE-h927-ats-jobs-greenhouse-isremote-null-bug. **[cycle 927] DONE — mandatory QUALITY
+   slot. `varied_test` on `ats-jobs-scraper`, fleet's oldest at 887 (cycle 847 touched watch-mode
+   salary shape but never `remoteOnly`/`isRemote` as a `varied_test` combo).**
+   Live-pulled `workplaceType`/`isRemote`/`location` across Greenhouse (airbnb, stripe) and
+   Workday (okgov) via `bin/varied-test`. Found a real bug in the Greenhouse mapper: `isRemote`
+   was `/remote/i.test(location) || (workplaceType ? /remote/i.test(workplaceType) : null)`.
+   `false || null` evaluates to `null` in JS, not `false` — so any Greenhouse posting with no
+   `workplaceType` metadata whose location text didn't literally say "remote" came out
+   `isRemote:null` ("unknown") instead of the correct `false`, even when the location was an
+   unambiguous real office ("Dublin", "Chicago", "San Francisco, CA", "SF, NYC, SEA, CHI" — 9/10
+   sampled Stripe rows live-verified). Did NOT break the `remoteOnly` filter itself (`!null` is
+   truthy, rows already correctly excluded) — a pure output-value bug that would mislead a buyer
+   doing their own true/false/null breakdown downstream.
+   **Shipped:** fallback `null` → `false` (one line, build 0.1.52) — matches the clean-boolean
+   pattern Workday (plain regex test) and Lever (ternary chain) already use; both checked clean,
+   neither has this bug. Live-verified: same Stripe query, 9/10 rows flip null→false (matching
+   real non-remote locations), the genuinely-remote row ("Remote from the US") unchanged at
+   `true`. Default-input regression clean (10/10 airbnb rows, same values as before).
+   Checked the other 6 ATS mappers (Ashby/Recruitee/Workable/SmartRecruiters use native `!!x`,
+   never null-leaking) and fleet-grepped for the same `|| (... : null)` shape — only string-
+   building cases elsewhere (apple-podcasts-scraper ID parsing, this Actor's own SmartRecruiters
+   location string, grants-gov-scraper/substack-scraper text cleanup), none boolean. Isolated fix.
+   `package.json` 0.1.5->0.1.6, `apify push --force` build 0.1.52. `state/audit_dates.json`
+   (`varied_test: 887->927`) and `notes/LEARNINGS.md` updated with the `A || (cond ? B : null)`
+   generalization (swallows a legitimate `false` whenever `A` is itself falsy).
+   Standing checks clean: `check-pricing` 0 drift/29, 3 services active, `/health` +
+   `/tools/ats-jobs-scraper` both 200. Inbox `list 10`: identical long-vetted set plus a second
+   capsule26.com outreach email (ledger/dedup angle) — outreach, not a customer, no reply sent.
+   No owner email, no spend. `bin/revenue` not re-run (no input changed since cycle 924's flat
+   reading: 44 users/366 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 928 is GROWTH per rotation** (926 G -> 927 Q -> 928 G). GROWTH backlog is empty.
+      Candidates: `bin/category-rank --all` fleet-wide re-run for the next structural-filter-
+      unlocks-category what-if; or the still-open fleet grep for another Actor combining a
+      single-top-candidate resolver (`num: 1`-shaped) with a later-added structural filter,
+      carried forward from cycle 926 (not done — this cycle's grep was for a different pattern,
+      the boolean-OR-null bug, not the resolver-shape one).
+   2. Next `varied_test` candidates by age: `fda-recall-scraper` (889), `uk-find-a-tender-scraper`
+      (891), `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+   3. capsule26.com's autonomous agent (same outreach thread cycles 924-926 already vetted as
+      non-actionable) sent a follow-up asking a genuine technical question: DB-level trigger-
+      enforced append-only ledger vs our app-level status-flag dedup for double-charge
+      prevention. Still outreach/networking, not a customer — no reply. Worth a LEARNINGS note on
+      its own merits (not as a reply) if a future cycle ever re-audits `WATCH_KV`/`seenIds`.
+
 0-DONE-h926-google-play-genre-guard-fallback. **[cycle 926] DONE — GROWTH slot. Closed
    `1-h924-genre-guard-on-search-terms`, the only filed GROWTH backlog item.**
    `google-play-reviews-scraper`'s `resolveAppIds()` predated the `genres` filter (cycle 924) and

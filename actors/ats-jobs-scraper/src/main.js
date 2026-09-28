@@ -628,7 +628,7 @@ async function fetchGreenhouse(slug) {
       return {
         company: slug, atsSource: 'greenhouse', jobId: String(j.id), title: j.title?.trim() ?? null,
         department, team, departmentPath: deptPath.length ? deptPath : null, employmentType: null,
-        workplaceType, isRemote: /remote/i.test(j.location?.name ?? '') || (workplaceType ? /remote/i.test(workplaceType) : null),
+        workplaceType, isRemote: /remote/i.test(j.location?.name ?? '') || (workplaceType ? /remote/i.test(workplaceType) : false),
         location: j.location?.name ?? null, secondaryLocations: (j.offices ?? []).slice(1).map((o) => o.name),
         country: geo.country, region: geo.region, city: geo.city,
         salaryMin: pay.min, salaryMax: pay.max, salaryCurrency: pay.currency, salaryInterval: pay.interval,
@@ -822,7 +822,9 @@ async function fetchSmartRecruiters(slug) {
     }
   }
   kept.forEach((j) => { delete j._rawId; });
-  return { jobs: kept };
+  // `rawCount` is the board's size BEFORE passesFilters ran above. fetchAuto uses it (not
+  // jobs.length) to decide whether the board exists at all — see the note there.
+  return { jobs: kept, rawCount: raw.length };
 }
 
 // Workday's slug is not a single company identifier like the other five ATSes — its public
@@ -993,9 +995,17 @@ async function fetchAuto(slug) {
   // trustworthy evidence the slug is a real board there versus not on any platform. Only count it
   // when it actually has jobs; the other 5 fetchers all 404/non-200 on a truly unknown slug, so an
   // empty hit from one of those is a genuine (real board, zero current openings) signal.
-  const trustworthy = hits.filter((h) => h.ats !== 'smartrecruiters' || h.outcome.value.jobs.length > 0);
+  // Board size BEFORE any filtering. SmartRecruiters is the only auto-detect fetcher that runs
+  // passesFilters inside itself (it must, to avoid one detail request per posting on large
+  // boards), so its `jobs.length` is a POST-filter count and cannot answer "does this board
+  // exist" — `rawCount` can. Using jobs.length here was a real bug (cycle 928): a filter that
+  // matched nothing turned a real, populated SmartRecruiters board into "not found on any
+  // platform" (reproduced live on BMWDealerCareers, 190 postings, with a no-match titleKeyword).
+  // The other five fetchers do no internal filtering, so jobs.length is already their raw size.
+  const boardSize = (h) => h.outcome.value.rawCount ?? h.outcome.value.jobs.length;
+  const trustworthy = hits.filter((h) => h.ats !== 'smartrecruiters' || boardSize(h) > 0);
   if (!trustworthy.length) return { jobs: [], notFound: true };
-  const withJobs = trustworthy.find((h) => h.outcome.value.jobs.length > 0);
+  const withJobs = trustworthy.find((h) => boardSize(h) > 0);
   const chosen = withJobs ?? trustworthy[0];
   if (trustworthy.length > 1) {
     log.info(`${slug} — auto-detect matched on multiple platforms (${trustworthy.map((h) => h.ats).join(', ')}), using ${chosen.ats}.`);

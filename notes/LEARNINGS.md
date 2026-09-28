@@ -2450,3 +2450,56 @@ top candidate" resolver, check whether the filter can now go from *narrowing* re
 *silently killing* a search path that used to work** — the two look identical in the code (both
 "filter excludes something") but are very different for the buyer (a narrower result set vs. an
 empty one with no clear cause). Build 0.1.45.
+
+## Cycle 927 — `false || null` silently turns a confident "not remote" into a fake "unknown"
+`ats-jobs-scraper`'s Greenhouse mapper computed `isRemote` as
+`/remote/i.test(location) || (workplaceType ? /remote/i.test(workplaceType) : null)`. Both regex
+tests always return a real boolean, but the `: null` fallback only fires when `workplaceType` is
+absent — and JS `||` returns the *right* operand whenever the left one is falsy, not literally
+`false`. So `false || null` evaluates to `null`, not `false`: any Greenhouse posting with no
+`workplaceType` metadata whose location text didn't literally contain "remote" (i.e. almost every
+onsite/hybrid posting on boards that never turned on the Greenhouse workplace-type field, e.g.
+Stripe's board — "Dublin", "Chicago", "San Francisco, CA", "SF, NYC, SEA, CHI") came out with
+`isRemote: null` instead of `false`, even though the location text is exactly the same evidence
+Workday's mapper (`/remote/i.test(locationsText)`, no OR-with-null) uses to correctly emit `false`
+for county names. Did NOT break the `remoteOnly` filter itself (`!null` is truthy, so those rows
+were already excluded correctly) — this was purely a bad *output value* silently miscoded as
+"unknown" for buyers doing their own true/false/null breakdown downstream, live-verified on
+Stripe's board (9/10 sampled rows null before the fix, matching real non-remote office locations).
+Fixed by changing the fallback to `: false` (build 0.1.52) — same short-circuit OR structure,
+matches Lever's/Workday's clean-boolean pattern. **General lesson: `A || (cond ? B : null)` is
+almost never what you want if `A` can itself be a legitimate `false` — the OR will swallow that
+`false` and hand back `null` instead, unlike a straight ternary chain (Lever's version, checked
+clean) which only reaches `null` when every branch has run out of real data.** Worth a quick grep
+for the same `|| (... : null)` shape anywhere else a boolean field is being computed fleet-wide.
+
+## Cycle 928 — an "existence check" must never read a post-filter count
+`ats-jobs-scraper.fetchAuto` decided whether a company's board EXISTS on SmartRecruiters by
+testing `jobs.length > 0`. That worked when written, because no fetcher filtered internally. Later,
+SmartRecruiters (and Workday) gained an in-fetcher `passesFilters` pre-filter — for a real
+efficiency reason (its list endpoint has no description, so filtering late costs one HTTP detail
+request per posting on a 190-posting board). From that moment `jobs.length` silently changed
+meaning for that one fetcher, from "board size" to "rows matching the user's filter", and the
+existence check started answering a completely different question than it was asking. Net effect:
+a populated board + a filter matching nothing => "Not found / not on this ATS".
+
+**Generalization (worth grepping for fleet-wide):** whenever a value gets *reused* as a proxy for
+something it isn't literally measuring — a count standing in for existence, a first-hit standing in
+for a match, an empty result standing in for absence — the proxy is only valid under assumptions
+that live somewhere else in the file. A later, locally-correct change to that other place breaks
+the proxy with zero local evidence that anything is wrong. Both bugs found by this grep family
+(cycle 926's `num: 1` resolver vs the `genres` filter, and this one) are the same shape: **a filter
+added downstream of a decision that was already made on filtered data.** The fix pattern is also
+the same both times — carry the PRE-filter quantity explicitly (`rawCount` here, the top-5
+candidate list in 926) rather than trying to re-derive it after the fact.
+
+**Concrete tell to grep for:** a fetcher/resolver that returns one array, where some callers treat
+that array's length as "how much exists upstream" and others treat it as "how much the user asked
+for". If both readings exist for one field, they will diverge the first time a filter moves.
+
+**Testing note that made this findable:** the giveaway was a *self-inconsistency*, not a wrong
+number in isolation — the same slug returned "not found" under `ats:"auto"` and "0 kept after
+filters" under `ats:"smartrecruiters"`. When two code paths that should agree disagree, that
+difference localizes the bug faster than any amount of staring at either path alone. Worth running
+explicitly as a test technique: for any Actor with an auto/explicit mode pair, run both on the same
+input and diff the status lines.
