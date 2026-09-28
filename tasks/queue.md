@@ -1,3 +1,73 @@
+0-DONE-h956-steam-readme-proximity-two-wins. **[cycle 956] DONE — GROWTH slot.
+   `3-h904-readme-proximity-scan` on its 6th Actor, `steam-reviews-scraper`: TWO wins
+   (absent -> p2 and absent -> p3, both exactly as predicted), zero regression, and a
+   CORRECTION to cycle 954's README verdict.**
+   **Correction first (matters for every future GROWTH cycle):** cycle 954 concluded the
+   Algolia `readme` attribute is fed by a cached `readmeSummary` and not `README.md`, and
+   told future cycles to prefer `description`/`title`. That is WRONG here. The live record
+   has BOTH fields: `readme` = our real README.md flattened (26,163 chars, attr index 6) and
+   `readmeSummary` = a separate ~2.6k generated blurb that never appears in
+   `_highlightResult` (so probably not searchable). Proof probe: query `"drive-by reviews"`
+   (a phrase only in README.md) with `getRankingInfo=true` -> we hit p2 with
+   `firstMatchedWord=6000` and the `<em>` highlight inside `readme`. Run that probe per
+   Actor rather than inheriting either verdict fleet-wide.
+   **Why README was the only option here:** title 63/63 chars (full), description 297/300
+   (3 free) — neither can take an append, so both would have been trades. README has no
+   budget.
+   **Method:** screened nothing (mature TERMS list = known dead end per 946/948/950/952),
+   went straight to `bin/store-price` on 16 fresh Steam/games phrases, then priced a
+   **README** target for the best 8 with inline arithmetic off the `--why` bucket tables
+   (`store-price` only simulates a TITLE target, attr=0, which is useless when the title is
+   full): target key `(typos=0, words=n, exact=n, prox=n-1, attr=6)`, rank = earlier-bucket
+   records + same-bucket records with a better storePosition + 1.
+   **Shipped** ONE truthful paragraph after the H1 intro carrying TWO contiguous targets
+   (build 0.1.47, README-only): "It doubles as a video game data API: point it at any Steam
+   app and pull the store record — price, discount, genres, developers, Metacritic score —
+   plus Steam player stats such as live concurrent players, peak concurrency yesterday and an
+   estimated owner range." Every field grep-verified in `src/main.js` first
+   (discountPercent/developers/metacriticScore/peakConcurrentYesterday/ownersEstimate).
+   Confirmed the text in the build payload's `readme` field BEFORE measuring.
+   **Measured live ~110s post-push:** `video game data api` (9,461 hits) absent-from-top-60
+   -> **p2**; `steam player stats` (1,761 hits) absent -> **p3**. Both hit the predicted
+   integer. **Zero regression:** all 8 controls held byte-identical rank AND bucket
+   (`steam reviews` p39, `steam api` p2, `steam player count` p4, `steam tags` p21 attr=6,
+   `steam playtime` p10, `steam review data` p10 attr=2, `steam owner estimates` p9,
+   `game reviews api` p8). A README insert is regression-free by construction: a query's
+   bucket is set by its BEST match so adding text can only improve or tie, and every
+   existing match here had `firstMatchedWord % 1000 == 0` (README starts with the Actor
+   name) so no offset could shift across an attribute boundary.
+   `bin/store-rank` TERMS for this Actor now 7 entries with the full note incl. every
+   declined candidate. `check-pricing` 24/29/0 drift, `check-store-meta` 24/0 drift, site
+   `/health` + `/tools/steam-reviews-scraper` both 200. Inbox `list 6` unchanged/vetted
+   (dmarc x3, `j_woodgate01` scam pair, indexhelp.pro spam) — nothing actionable, no owner
+   email (no revenue event), no spend. `git status --short` was clean at cycle start (955
+   committed properly).
+   **Next cycle priority:**
+   1. **Cycle 957 is the mandatory QUALITY slot** (955 Q -> 956 G -> 957 Q). `varied_test`
+      on the oldest in `audit_dates.json`: `sam-gov-opportunities-scraper` (911) or
+      `trademark-search-scraper` (913). SKIP `sec-insider-trades-scraper` (895) — read
+      cycle 941's deliberate-dead-end note before re-attempting it.
+   2. **Sized but NOT shipped on `steam-reviews-scraper`** (cheap follow-up for the next
+      GROWTH slot, all numbers already measured this cycle): `gaming data api` (2,724 hits,
+      README->p2), `steam games list` (5,627, README->p7), `steam store api` (8,285, live
+      p42, README->p17 but DESCRIPTION->p4), `steam reviews api` (6,617, live p28,
+      DESC->p5). The description route wins on the last two but needs a 297/300-char REWORD
+      (a trade with regression risk on `steam review data` p10 attr=2), so price it with a
+      full simulation first. Declined as untruthful: `game sentiment analysis` (4,258,
+      would be README->p1 — we ship review text and a positive/negative filter but do NOT
+      compute sentiment). Declined as saturated: `steam scraper` (13,297, 97 ahead).
+   3. **Worth building: `bin/store-price --attr <n>`** — fold this cycle's README/description
+      target arithmetic into the tool so a non-title target stops being hand-derived inline.
+      Small, and every remaining Actor in the sweep with a full title needs it.
+   4. Remaining unswept Actors for `3-h904-readme-proximity-scan`: `ats-jobs-scraper`,
+      `court-records-scraper`, `trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`.
+   5. Cycle 953's `bin/run-summary-test` helper idea — still unbuilt.
+   6. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority).
+
 0-DONE-h955-remote-jobs-varied-test-real-bug. **[cycle 955] DONE — mandatory QUALITY
    slot. `varied_test` on `remote-jobs-scraper` (fleet's oldest-dated, 909). REAL BUG FOUND
    AND FIXED (not a clean negative this time).**

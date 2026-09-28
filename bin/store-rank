@@ -498,7 +498,45 @@ TERMS = {
     # gained a second contiguous "Steam Player Count" phrase, p29 -> p5 (predicted ~p9).
     # "steam reviews" p43->p39 and "steam api" p2->p1 in the same window, but storePosition
     # also moved 53371->51071 on its own, so only the player-count jump is causally clean.
-    "steam-reviews-scraper": ["steam reviews", "steam api", "steam player count"],
+    # cycle 956 (GROWTH, h904 README-proximity method — 6th Actor swept; README lever, build
+    # 0.1.47, README-only, ONE new paragraph carrying TWO contiguous targets). Title was full
+    # (63/63) and description 297/300, so neither could take an append -> README (attr=6) was
+    # the only free field. **First: cycle 954's conclusion that the Algolia `readme` attribute is
+    # fed by `readmeSummary` and not README.md is WRONG (at least here) — the live record has BOTH
+    # fields, `readme` is our real README.md flattened (26163 chars) and `readmeSummary` is a
+    # separate ~2.6k LLM-written blurb that does not appear in `_highlightResult` at all (so it is
+    # probably not searchable). Verified by querying "drive-by reviews" (a phrase only in
+    # README.md): we hit p2 with firstMatchedWord=6000 and the <em> highlight inside `readme`.
+    # So README edits ARE a live attr=6 lever; re-check per Actor with that highlight probe rather
+    # than trusting 954's blanket claim.** Priced 16 fresh domain phrases with `bin/store-price`,
+    # then computed the README-contiguous (prox=n-1, attr=6) landing rank for the best 8 directly
+    # from the `--why` bucket tables. Winners were both shape-A-ish: `video game data api` (9461
+    # hits, absent from top-60; head bucket was prox=3 attr=6 with a single record at storePos
+    # 41153) and `steam player stats` (1761 hits, absent; 1 record strictly earlier, 1 ahead in
+    # bucket). Shipped ONE truthful paragraph after the H1 intro: "It doubles as a video game data
+    # API: point it at any Steam app and pull the store record — price, discount, genres,
+    # developers, Metacritic score — plus Steam player stats such as live concurrent players, peak
+    # concurrency yesterday and an estimated owner range." (every field grep-verified in
+    # src/main.js: discountPercent/developers/metacriticScore/peakConcurrentYesterday/ownersEstimate).
+    # Confirmed the text in the build payload's `readme` field BEFORE measuring, then measured live
+    # ~110s post-push: `video game data api` absent -> **p2**, `steam player stats` absent -> **p3**
+    # — both exactly the predicted rank. ZERO regression: all 8 controls (incl. the two other
+    # readme/description-bucket terms `steam tags` p21 attr=6 and `steam review data` p10 attr=2)
+    # held byte-identical rank AND bucket. A README APPEND/INSERT is regression-free by
+    # construction on this index: a query's bucket is set by its BEST match, so adding text can
+    # only improve or tie — and `firstMatchedWord` offsets here are all 0 within their attribute
+    # (README starts "# Steam Reviews Scraper", so "Steam" is word 0), so an insert after line 3
+    # cannot shift an existing readme match's offset either.
+    # Sized but NOT shipped (next cycle on this Actor): `gaming data api` (2724 hits, README->p2),
+    # `steam games list` (5627, README->p7), `steam store api` (8285, live p42, README->p17 but
+    # DESCRIPTION->p4), `steam reviews api` (6617, live p28, DESC->p5) — the description route is
+    # strictly better on the last two but needs a 297/300-char REWORD (a trade), not an append.
+    # Declined as untruthful: `game sentiment analysis` (4258 hits, absent, would be README->p1 —
+    # we ship review text and a negative/positive filter but do NOT compute sentiment).
+    # Declined as saturated: `steam scraper` (13297, 97 records ahead in the title head bucket).
+    "steam-reviews-scraper": ["steam reviews", "steam api", "steam player count",
+                              "video game data api", "steam player stats", "steam tags",
+                              "steam review data"],
     # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
     # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
     # full). Confirmed the h143/h145(b) apostrophe caveat: querying "who's hiring"

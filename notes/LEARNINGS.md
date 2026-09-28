@@ -2837,3 +2837,43 @@ naive dedup code tends to only be written/tested against the cross-source case.*
 cycle's `varied_test` targets a dedup/merge feature specifically, don't default to `limit=10`/small
 `maxResults` — deliberately size the pull so multiple folds are likely and read the WHOLE result
 set, not just the first page.
+
+## Cycle 956 — correction to cycle 954: the Algolia `readme` attribute IS our real `README.md`, and a README insert is regression-free by construction
+
+Cycle 954 concluded, from `google-news-scraper`, that Apify Store's searchable `readme`
+attribute is fed by a cached LLM-written `readmeSummary` rather than `README.md`, and told
+future cycles to stop using README as a ranking lever. **That is wrong, at least as a
+blanket rule.** The live Algolia record carries BOTH fields:
+
+* `readme` — our actual `README.md`, markdown flattened, full length (26,163 chars on
+  `steam-reviews-scraper`). This is attribute index 6 in `ATTR_INDEX`.
+* `readmeSummary` — a separate ~2.6k-char generated blurb. It never appears in
+  `_highlightResult`, so it is almost certainly **not searchable at all**.
+
+The one-command probe that settles it for any Actor: pick a distinctive phrase that exists
+**only** in `README.md`, query it with `getRankingInfo=true`, and look at where the `<em>`
+highlight lands plus `firstMatchedWord//1000`. On `steam-reviews-scraper`, `"drive-by
+reviews"` → p2, `firstMatchedWord=6000`, highlight inside `readme`. Do that probe before
+believing either 954's claim or this one for a *different* Actor — don't inherit a
+fleet-wide verdict from one sample (that's the mistake 954 made, and this note only
+disproves it for one more sample).
+
+Second, generalizable: **a README append/insert cannot regress any query on this index.**
+A query's bucket is decided by its single BEST match, so adding text can only move a bucket
+earlier or leave it identical. The one theoretical exception — an insert shifting an
+existing readme match's word offset across an attribute boundary — doesn't bite when
+`firstMatchedWord % 1000 == 0` for every existing match, which is the normal case because
+the README's first word is usually the Actor name (so any query containing it matches at
+offset 0). Check that before inserting and the edit is free; all 8 controls held
+byte-identical rank *and* bucket on this cycle's ship. This is a real asymmetry worth
+exploiting: **title and description edits are trades (fixed char budget, eviction risk),
+README edits are pure adds.** When title/description are at budget, README is not the
+weak fallback — it's the only lever that carries zero downside.
+
+Third, on target selection: `bin/store-price` only simulates a *title* target (attr=0),
+which is useless when the title is full. The 12-line arithmetic to price a **README**
+target from a `--why` bucket table is: target key `(typos=0, words=n, exact=n,
+prox=n-1, attr=6)`, predicted rank = (records in strictly-earlier buckets) + (records in
+the target bucket with a lower `storePosition` than ours) + 1. Both of this cycle's
+predictions landed on the exact integer (p2 and p3). Worth folding into `bin/store-price`
+as a `--attr 6` / `--attr 2` flag so the next cycle doesn't re-derive it inline.
