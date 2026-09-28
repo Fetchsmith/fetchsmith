@@ -4,7 +4,7 @@ Search registered trademarks across **70+ national and regional trademark office
 
 ## What it does
 - Sends your search term to TMview's public search API and returns matching trademarks as structured JSON, one row per mark.
-- Filter by office (country/region), Nice classification class, and trademark status (Registered, Filed, Expired, Ended, Withdrawn, ...).
+- Filter by office (country/region), Nice classification class, and trademark status (TMview's four values: `Registered`, `Filed`, `Ended`, `Expired`).
 - Pay per result: you are charged only for rows actually returned. HTTP-only (no browser), so runs are fast and cheap.
 
 ## Input
@@ -13,7 +13,7 @@ Search registered trademarks across **70+ national and regional trademark office
 | `searchTerm` | string | Word or brand to search for (contains-match). Default `"coffee"`. |
 | `offices` | array | Two-letter office codes, e.g. `US` (USPTO), `EM` (EUIPO), `GB`, `DE`, `FR`, `JP`, `CN`, `WO` (WIPO). Leave empty to search all 70+ offices. |
 | `niceClasses` | array | Restrict to Nice classification classes, e.g. `"25"` (clothing), `"9"` (software). Leave empty for all classes. |
-| `statuses` | array | Restrict to statuses, e.g. `Registered`, `Filed`, `Expired`, `Ended`, `Withdrawn`. Leave empty for all. |
+| `statuses` | array | Restrict to statuses. TMview recognises exactly four, case-sensitively: `Registered`, `Filed`, `Ended`, `Expired`. Anything else matches nothing — the run warns and says so in its status message rather than silently returning an empty dataset. Leave empty for all. |
 | `maxResults` | integer | Stop after this many trademarks (default 50, max 5000). |
 | `watchLabel` | string | Optional watch-mode label. The first run under a label seeds a baseline (0 rows returned, 0 charged); every later run on the same label + search returns and charges only marks not already delivered — a scheduled "alert me on new filings" feed instead of the same full result set every time. Leave unset for a plain, repeatable search. |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver a mark you already have if its `status` changed since you last saw it (e.g. `Filed` → `Registered`) instead of only ever reporting brand-new filings. Default `false` — see FAQ. |
@@ -66,7 +66,7 @@ No. This is a fast screening tool over TMview's public index. For legal clearanc
 It keys a baseline by `st13` (the stable per-record id) against the exact combination of `searchTerm`/`offices`/`niceClasses`/`statuses` you pass — change any of those and the label starts a fresh baseline. Plain `watchLabel` tracks new-to-the-baseline marks (e.g. a fresh filing that now matches your search); set `watchChanges: true` to also catch a status move on a mark you already have.
 
 **What does `watchChanges` add, and does it cost extra?**
-No extra fee — a changed mark is billed at the same per-row price as a new one. Plain `watchLabel` stays silent forever about a mark it already delivered, even once its `status` moves from `Filed` to `Registered`, or into `Opposed`/`Expired`/`Withdrawn` — exactly the moment an opposition or renewal watch cares about most. Set `watchChanges: true` and each run also compares every already-delivered mark's `status` against what it looked like last time; if it moved, the row is re-delivered tagged with `_watchChangeType: ["status"]` and `_watchPrevious: { "status": "<old value>" }`. Off by default so existing watch labels keep their current behaviour; a label created before this shipped just starts detecting status drift from its next run onward, not an artificial backlog of every status move since the baseline was first seeded.
+No extra fee — a changed mark is billed at the same per-row price as a new one. Plain `watchLabel` stays silent forever about a mark it already delivered, even once its `status` moves from `Filed` to `Registered`, or into `Ended`/`Expired` — exactly the moment an opposition or renewal watch cares about most. Set `watchChanges: true` and each run also compares every already-delivered mark's `status` against what it looked like last time; if it moved, the row is re-delivered tagged with `_watchChangeType: ["status"]` and `_watchPrevious: { "status": "<old value>" }`. Off by default so existing watch labels keep their current behaviour; a label created before this shipped just starts detecting status drift from its next run onward, not an artificial backlog of every status move since the baseline was first seeded.
 
 **Baseline size cap.** The recorded baseline holds at most 20,000 mark ids per label; once a label's cumulative baseline grows past that, the oldest ids are dropped to bound the record's size. A dropped id is treated as "new" again on a later run and re-charged, even though you already paid for it. This only bites a label with a very high cumulative volume of matches over many runs — narrowing the search (tighter `searchTerm`, fewer `offices`, specific `niceClasses`/`statuses`) keeps a baseline well under the cap. A run that actually drops ids says so explicitly in its log and status message, and reports the exact counts as `baselineTruncated`/`baselineTruncatedTotal` in the `webhookUrl` payload.
 
@@ -78,7 +78,7 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 
 ## Use cases
 - **Brand clearance screening** — check a proposed name against 70+ offices before filing, in one search instead of dozens.
-- **Opposition watch** — set `watchLabel` and re-run a competitor's or your own portfolio's search on a schedule to get alerted only on newly-filed marks matching it, instead of re-downloading and re-paying for the same result set every run. `oppositionPeriodStart`/`oppositionDeadline` tell you the exact window still open on each newly-filed mark. Add `watchChanges` to also get alerted the moment a watched mark's own status moves — into `Registered` (opposition window closing), or into `Opposed` — instead of only on brand-new filings.
+- **Opposition watch** — set `watchLabel` and re-run a competitor's or your own portfolio's search on a schedule to get alerted only on newly-filed marks matching it, instead of re-downloading and re-paying for the same result set every run. `oppositionPeriodStart`/`oppositionDeadline` tell you the exact window still open on each newly-filed mark. Add `watchChanges` to also get alerted the moment a watched mark's own status moves — into `Registered` (opposition window closing), or into `Ended`/`Expired` — instead of only on brand-new filings.
 - **Renewal tracking** — filter your own portfolio search to `Registered` marks and sort by `expirationDate` to see which registrations need renewing next, per office.
 - **Competitor portfolio mapping** — pull every mark an applicant holds by searching their brand name and reviewing `applicantNames`/`office`/`niceClasses` across results.
 

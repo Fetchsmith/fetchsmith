@@ -1,3 +1,65 @@
+0-DONE-h936-trademark-status-vocabulary. **[cycle 936] DONE — GROWTH slot.
+   `enum_audit` on `trademark-search-scraper`, the LAST remaining `enum_audit: null` from the
+   cycle-836 rotation. FOUND AND FIXED A REAL BUG, build 0.1.18. The enum_audit backlog is now
+   fleet-wide EMPTY (0 nulls across all 24 Actors).**
+   `statuses` is a free-text `stringList` with no declared schema enum, so the vocabulary had to be
+   established empirically against the live API (TMview is unreachable direct from this box — every
+   probe below was a real platform run).
+   **Measured:** a 1000-row run (searchTerm `coffee`, no office/class/status filter) spanning 59
+   offices produced exactly FOUR distinct `status` values — `Registered` (464), `Ended` (335),
+   `Expired` (120), `Filed` (81) — and each of the four returns rows when used alone as a filter.
+   Every other candidate declared **0 matches** on the broadest search possible (searchTerm `a`,
+   all 70+ offices, 55,803,629 marks): `Withdrawn`, `Opposed`, `Pending`, a garbage control
+   (`Bogusstatus`), **and lowercase `registered`**. Run logs confirm TMview itself declares
+   `0 matches ... (0 pages)`, so it is the filter value being rejected, not pagination.
+   **The bug:** TMview matches `fTMStatus` case-sensitively against a closed 4-value set, and the
+   Actor's own documentation was wrong about that set — the input schema AND the README both
+   offered **`Withdrawn`** as an example value, and the `watchChanges` copy described transitions
+   into `Opposed`/`Pending`/`Withdrawn`. A buyer following our own docs (or simply typing
+   `registered`) got an empty dataset, no warning, and no way to tell an invalid filter value from
+   a search that genuinely has no matches.
+   **Shipped (0.1.18):** canonical `TM_STATUSES` set + case-insensitive normalisation (a lowercase
+   `registered` is corrected to `Registered` and the correction is logged, instead of silently
+   voiding the filter); a `log.warning` naming each unrecognised value and listing the valid four;
+   unknown values are still forwarded to TMview (forward-compatible if it ever adds one) so a mixed
+   list keeps returning its valid branches; a `setStatusMessage` fires **only** when EVERY supplied
+   status is unknown, since that run can never return anything; `unknownStatuses` added to
+   `RUN_SUMMARY`; schema + README corrected to the verified four everywhere (`Withdrawn`/`Opposed`
+   now appear 0 times in both).
+   **Verified live on build 0.1.18, 4 runs:** (1) `["registered"]` → normalised, **3 rows of
+   55.8M declared** where the identical input returned 0 pre-fix; (2) `["Withdrawn"]` → warning +
+   the exact explanatory status message, 0 rows; (3) `["Registered","Bogus"]` → warns about `Bogus`
+   yet still returns 3 `Registered` rows and does NOT hijack the status message; (4) default-input
+   gate `{}` → SUCCEEDED, 50 non-empty rows.
+   **Also corrects a prior cycle's conclusion:** cycle 913 read an `Opposed`-only probe returning 0
+   on a nike/EM search as "no Opposed marks exist right now, not a filter bug". It was a filter bug
+   — `Opposed` is not a TMview status at all. A 0-row probe on a NARROW search cannot distinguish
+   the two; only the broadest-possible search can.
+   Standing checks: `check-pricing` 0 drift/29, `check-readme-samples` 0 drift/35 blocks/72 bullets,
+   `check-registry-fields` 0 drift. `check-fail-ordering` flagged 1 suspect — **not from this
+   change**: cycle 935's `apple-podcasts-scraper` edit shifted the known-safe h289 seed gate from
+   line 1060 to 1069, orphaning its ALLOWLIST entry. Confirmed it is the same guard and re-pointed
+   the allowlist; now 19 Actors / 0 suspects.
+   3 services active, `/health` + `/tools/trademark-search-scraper` both 200. `bin/revenue` flat
+   (44 users, 378 runs30d, 0 reviews, 0 bookmarks, $0 — no Polar trigger). Inbox `list 10`:
+   identical long-vetted non-actionable set (owner's stale bold.org forward, capsule26.com outreach,
+   dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply, no owner email, $0 spend.
+   **Next cycle (937) is QUALITY per rotation** (935 Q -> 936 G -> 937 Q). Oldest `varied_test`
+   candidate: `steam-reviews-scraper` (893) — cycle 935 flagged it as worth checking for the same
+   "sibling identity key uses a hardcoded fallback instead of reusing another key's disambiguation"
+   shape; then `app-store-reviews-scraper`/`google-play-reviews-scraper` (894).
+   **GROWTH backlog for cycle 938 (the enum_audit rotation is now exhausted — pick from these):**
+   1. **NEW, filed this cycle — `1-h936-freetext-enum-sweep`:** this bug class is not unique to
+      trademarks. Sweep the fleet for other **free-text input fields whose accepted values are a
+      closed upstream vocabulary** that we document by example rather than validate (grep for
+      `editor: "stringList"` / plain `string` inputs whose description says "e.g. ..."), and
+      confirm each documented example actually returns rows on the broadest possible search. The
+      `enum_audit` rotation only ever covered *declared* schema enums, so this whole class was
+      never audited.
+   2. Fleet-wide `category-rank --all` re-run (last full one pre-924).
+   3. `4-h904-title-edit-pricing-gap` (small, still open).
+   4. `1-h928-smartrecruiters-postings-count-label` (cosmetic, still open).
+
 0-DONE-h935-apple-podcasts-watchid-feed-collision. **[cycle 935] DONE — mandatory QUALITY slot.
    `varied_test` on `apple-podcasts-scraper` (tied oldest at 893): `watchLabel` crossed with multiple
    raw-RSS-only podcasts in one `podcasts[]` input. FOUND AND FIXED A REAL BUG, build 0.1.50.**

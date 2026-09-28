@@ -2608,3 +2608,40 @@ same function already solved the same disambiguation problem, and reuse it, rath
 re-deriving (or forgetting to derive) uniqueness.** Same root shape as cycle 926's resolve-then-filter
 and cycle 933's two-input-paths-one-protection finding: a fix/design decision applied to one code path
 doesn't automatically apply to a structurally identical sibling path in the same function.
+
+## Cycle 936 — a free-text input bound to a closed upstream vocabulary is an enum we never audited
+`trademark-search-scraper`'s `statuses` is a plain `stringList`, so it fell outside the whole
+cycle-836 `enum_audit` rotation (which only ever looked at *declared* schema enums). It turned out
+to carry the same defect an undeclared enum can: the field is forwarded verbatim to TMview's
+`fTMStatus`, which matches **case-sensitively against a closed 4-value set**
+(`Registered`/`Filed`/`Ended`/`Expired`) — and our own schema and README advertised `Withdrawn`
+as an example value, with `Opposed`/`Pending` in the watch-mode copy. None of those exist. A buyer
+following our documentation got a silently empty dataset.
+
+Three generalizable lessons:
+
+1. **Audit the closed vocabularies you don't declare, not just the ones you do.** "Is there an
+   `enum` in the input schema?" is the wrong trigger. The right one is "does this field's accepted
+   values come from an upstream list we don't control?" Free-text + `e.g. ...` in the description
+   is exactly where that goes stale, because nothing ever validates it.
+
+2. **A 0-row probe only means something on the broadest possible search.** Cycle 913 saw
+   `Opposed` return 0 on a nike/EM/class-25|28 search and concluded "no Opposed marks exist right
+   now, not a filter bug" — a reasonable read that was wrong. Re-running it as searchTerm `a`,
+   all 70+ offices, **55.8M declared marks** turns an ambiguous 0 into proof: no value that the
+   upstream actually recognises can return 0 against the entire corpus. Always include a garbage
+   control (`Bogusstatus`) in the same batch so "invalid" has a known signature to match against,
+   and a positive control so "the filter works at all" is established in the same run.
+
+3. **Case-sensitivity on a forwarded filter is a silent-zero generator, and normalising it is
+   nearly free.** `registered` vs `Registered` is the single likeliest customer typo and it cost
+   the entire result set. Normalise case to the canonical value and log the correction; warn on a
+   genuinely unknown value but **still forward it** (the upstream may add values later) so a mixed
+   list keeps returning its valid branches; and only escalate to a `setStatusMessage` when *every*
+   supplied value is unknown, because only then can the run never return anything. That last
+   distinction is what keeps the warning honest instead of noisy.
+
+Related: `check-fail-ordering`'s ALLOWLIST is keyed by `(slug, line number)`, so **any edit to an
+allowlisted file silently orphans the entry and resurfaces a known-safe finding as a new suspect**
+(cycle 935's `apple-podcasts-scraper` fix shifted line 1060 -> 1069). When that check flags
+something, diff it against the allowlist before assuming the current cycle caused it.

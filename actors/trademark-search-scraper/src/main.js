@@ -14,7 +14,35 @@ const searchTerm = String(input.searchTerm ?? '').trim();
 const offices = Array.isArray(input.offices) ? input.offices.filter(Boolean) : [];
 const niceClasses = (Array.isArray(input.niceClasses) ? input.niceClasses : [])
   .map((c) => String(c).trim()).filter(Boolean);
-const statuses = (Array.isArray(input.statuses) ? input.statuses : []).filter(Boolean);
+// TMview's `fTMStatus` vocabulary is exactly these four, and it matches them case-sensitively
+// (verified cycle 936 against the live API: a 1000-row sample spanning 59 offices produced only
+// these four values, and each one on its own returns rows; every other plausible value --
+// including `Withdrawn`, which this Actor's own schema/README used to offer as an example, plus
+// `Opposed` and `Pending`, which the watch-mode copy suggested -- makes TMview declare 0 matches
+// even on the broadest possible search, as does a lowercase `registered`). An unrecognised value
+// is therefore not "no marks match it": it silently voids that branch of the filter, and before
+// this guard the run just finished with an empty dataset and nothing to tell the buyer apart from
+// a genuinely empty result set.
+const TM_STATUSES = ['Registered', 'Filed', 'Ended', 'Expired'];
+const TM_STATUS_BY_LOWER = new Map(TM_STATUSES.map((s) => [s.toLowerCase(), s]));
+const unknownStatuses = [];
+const statuses = (Array.isArray(input.statuses) ? input.statuses : [])
+  .map((s) => String(s).trim()).filter(Boolean)
+  .map((s) => {
+    const canonical = TM_STATUS_BY_LOWER.get(s.toLowerCase());
+    if (!canonical) { unknownStatuses.push(s); return s; }
+    if (canonical !== s) log.info(`Trademark status "${s}" matched TMview's "${canonical}" — TMview compares these case-sensitively, so it was corrected for you.`);
+    return canonical;
+  });
+// Forward-compatible: an unknown value is still sent (TMview may add statuses), but say so loudly,
+// and say it twice when EVERY value is unknown, because then the run cannot return anything at all.
+if (unknownStatuses.length) {
+  log.warning(
+    `Trademark status ${unknownStatuses.map((s) => `"${s}"`).join(', ')} is not one of the values TMview recognises `
+    + `(${TM_STATUSES.join(', ')}) — TMview matches no marks at all against it, so this narrows your results to nothing `
+    + 'rather than widening them. Fix the spelling or drop it.',
+  );
+}
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
@@ -417,12 +445,21 @@ await Actor.setValue('RUN_SUMMARY', {
   complete,
   stoppedByCap,
   error: runError,
+  unknownStatuses,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
   watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
   watchChangedCount: watchMode && !seeding ? changedCount : null,
 });
-if (stoppedByCap) {
+// An empty dataset caused purely by an unrecognised status filter looks identical, from the
+// Console, to a search that genuinely has no matches -- so name the cause there, not just in the
+// log. Only when EVERY supplied status is unknown: a mixed list still returns its valid branches.
+if (pushed === 0 && statuses.length > 0 && unknownStatuses.length === statuses.length) {
+  await Actor.setStatusMessage(
+    `0 results because the status filter ${unknownStatuses.map((s) => `"${s}"`).join(', ')} matches nothing in TMview — `
+    + `it only recognises ${TM_STATUSES.join(', ')} (case-sensitive). This is a filter-value problem, not an empty search.`,
+  );
+} else if (stoppedByCap) {
   await Actor.setStatusMessage(
     `Pushed ${pushed.toLocaleString('en-US')} of ${declaredMatches?.toLocaleString('en-US') ?? '?'} matches TMview declared for this search — `
     + 'stopped early because of this run\'s own maxResults or Apify cost limit, not because TMview ran out of results. '
