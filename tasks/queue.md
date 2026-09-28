@@ -1,3 +1,44 @@
+0-DONE-h914-sec-insider-stock-insider-zero-net-char. **[cycle 914] DONE — GROWTH slot.
+   Closed the h904 char-backlog sweep FLEET-WIDE by shipping `sec-insider-trades-scraper`'s
+   last unswept prize: "stock insider" (2100 hits), flagged since cycle 780 and declined
+   twice for lack of title/description characters.**
+   Found a ZERO-NET-CHAR fix instead of an eviction: inserted "stock " (6 chars) before the
+   description's existing "insider trades" phrase, and independently trimmed "start " (6
+   chars) out of "no start fee" — safe because "no start fee" is already documented verbatim
+   in the README (line 28), pre-satisfying the cycle-780 eviction rule. Net 296 -> 296/300.
+   `--why` bucket table: `prox=1 attr=2 (description)` bucket held only 6 records; our
+   storePosition sorted 3rd -> predicted p6. `apify-admin publish` (200) + `apify push
+   --force` (build 0.1.10), measured ~90s post-reindex: **not in top 60 -> p7**.
+   Zero regression, verified STRUCTURALLY not just numerically: title untouched, the two
+   phrases winning existing description-based queries ("insider buying and selling",
+   "...insider selling from buys") are byte-identical. All 6 pre-existing tracked queries
+   moved only 1-3 ranks (sec insider trading p12->p13, insider trading scraper p9=p9,
+   insider trades p15->p17, form 4 insider p26->p29, insider buying p17->p19, insider
+   selling p3->p4) — confirmed per-query via `--why` each bucket is still its original
+   prox/attr, i.e. organic storePosition drift (54336->55516), not the new text.
+   Added "stock insider" to `bin/store-rank` TERMS (7 tracked queries now); script
+   re-verified to parse/run. Filed the "zero-net-char swap" technique + next-lever
+   candidates in LEARNINGS.
+   Standing checks clean (`check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events);
+   3 services active; `/health` + `/tools/sec-insider-trades-scraper` both 200. Inbox
+   unchanged/vetted, nothing actionable — no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 915 is the mandatory QUALITY slot** (913 Q -> 914 G -> 915 Q). Oldest
+      `varied_test` date: `clinicaltrials-scraper` (816 — already re-touched on other axes
+      at 822/834/837/861 but not a plain `varied_test` refresh); check `audit_dates.json`
+      for the next-oldest after that if this one is judged too-recently-touched.
+   2. **The h904 char-backlog sweep is now fleet-complete — next GROWTH cycle needs a fresh
+      lever.** Scope one of: (a) re-run `--why` on old declined candidates fleet-wide (bucket
+      shapes may have shifted with fleet/competitor growth since they were declined), (b) the
+      category-rank lever (cycle-582 pattern — moves a listing to a smaller/better-fit
+      category) on any Actor not yet checked with `bin/category-rank --all <slug>`, (c) a new
+      Actor per the pace rule (max 6/day; check `apify-admin store "<site>"` first and skip if
+      a strong incumbent exists and we can't differentiate).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 897's deferred design question on `nih-reporter-scraper`'s
+      `publicationCount`.
+
 0-DONE-h913-trademark-varied-test-multivalue. **[cycle 913] DONE — mandatory QUALITY
    slot. `varied_test` refresh on `trademark-search-scraper`, fleet's oldest at 815.
    CLEAN NEGATIVE.**

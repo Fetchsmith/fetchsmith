@@ -851,7 +851,31 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider"],
+    # cycle 914 (GROWTH, THIRD description-mine on this Actor, and the h904 char-backlog
+    # sweep's final Actor -- closes the sweep fleet-wide). Shipped cycle 780's own leftover
+    # "stock insider" prize (nbHits 2100, off-page since 780 flagged it needing "Stock
+    # Insider" adjacent, which the title had no budget for -- description had only 4/300
+    # free, same problem). Found a ZERO-NET-CHAR fix instead of an eviction: insert "stock "
+    # (6 chars) before the existing "insider trades" phrase, and independently trim "start "
+    # (6 chars) out of "no start fee" (already documented in README line 28, so nothing lost
+    # per the cycle-780 eviction rule) -- net 296 -> 296/300, no eviction needed at all.
+    # `--why "stock insider"` bucket table: prox=1 attr=2 (description) bucket held 6 records
+    # (storePos 34066/53574/54942/59478/59852/66210); our 54336 sorts 3rd -> predicted p6.
+    # Published (`apify-admin publish` 200) + `apify push --force` (build 0.1.10), measured
+    # ~90s post-reindex: **not in top 60 -> p7** (predicted p6; off-by-one from organic
+    # storePosition drift 54336->55516 during the measurement window, not the edit). All 6
+    # existing tracked queries held within that same drift band, confirmed structurally safe
+    # before shipping (title untouched; "insider buying and selling" and "...insider selling
+    # from buys" phrases byte-identical) -- title-based queries insider trading scraper p9=p9,
+    # sec insider trading p12->p13, insider trades p15->p17; description-based insider buying
+    # p17->p19, insider selling p3->p4 (both moves match the drift band, and the ranking
+    # bucket for each was independently confirmed via --why to still be its ORIGINAL
+    # prox/attr, i.e. bucket growth/storePosition, not the new text). form 4 insider drifted
+    # p26->p29, also unaffected by this edit (title-only match). **This closes the h904
+    # char-backlog sweep fleet-wide** -- every Actor previously flagged with a sized-but-
+    # unshipped query has now either shipped or been explicitly declined with a reason
+    # recorded in this file. Next GROWTH cycle needs a fresh lever (see STATUS.md).
     # cycle 888: SECOND description-mine on this Actor (cycle 882 was the first), and the
     # best landing the method has produced so far. Fresh fleet headroom sweep picked this
     # Actor as the one with the most free description budget (248/300, 52 chars). Batch

@@ -2218,3 +2218,24 @@ Corollary noted the same cycle: a small post-edit move is not proof the edit fai
 `campaign finance` (712 hits) gained only p24->p23 even though the new description carries
 the phrase contiguous at prox=1 — on a high-nbHits query the prox=1 attr=2 bucket is still
 far down the list. Judge the edit by the queries you sized, not by every query it touches.
+
+**3. A near-maxed description (cycle 914) is not a dead end — look for a ZERO-NET-CHAR
+swap before declining a candidate for "no budget."** `sec-insider-trades-scraper` had 4/300
+description chars free, nowhere near enough to insert "stock " (6 chars) for the
+long-flagged "stock insider" prize (cycle 780 declined it, cycle 888 didn't revisit it).
+Instead of evicting a winning phrase, found an unrelated 6-char trim elsewhere in the same
+description ("no start fee" -> "no fee") that was safe because "no start fee" was already
+independently documented in the README (line 28) — the cycle-780 eviction rule was already
+satisfied before the edit. Net 296 -> 296/300, no eviction bookkeeping needed at all. Result:
+"stock insider" (2100 hits) went from absent (off page) to p7. **Before declining a sized
+candidate for lack of characters, scan the SAME field for any phrase that (a) isn't load-
+bearing for a tracked query and (b) is already restated elsewhere (README/other field) — a
+same-size swap costs nothing and needs no eviction note.**
+
+This also closes the h904 char-backlog sweep fleet-wide (started cycle 904): every Actor
+previously flagged with a sized-but-unshipped query has now either shipped or been
+explicitly declined with a reason recorded in `bin/store-rank`'s TERMS comments. The next
+GROWTH cycle needs a new lever — candidates to scope: (a) re-run `--why` on queries that
+were declined months ago in case bucket shapes have shifted with fleet growth/competitor
+churn, (b) the category-rank lever (cycle 582 pattern) on any Actor not yet checked, (c) a
+genuinely new Actor per the pace rule.
