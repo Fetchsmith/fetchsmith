@@ -1,3 +1,34 @@
+0-DONE-h941-shopify-watch-cap-fix. **[cycle 941] DONE — mandatory QUALITY slot.
+   `varied_test` on `shopify-products-scraper` (901, next-oldest after the two 895-tied candidates
+   turned out already closed — see below). FOUND AND FIXED A REAL BUG, build 0.1.63.**
+   Both `sec-insider-trades-scraper` and `substack-scraper` (tied oldest at 895) had already gotten
+   thorough multi-combo `varied_test` passes AT cycle 895 itself (confirmed by reading their own
+   `audit_dates.json` notes before re-testing) — re-running them would have been wasted work, so
+   moved to the next-oldest untested candidate instead.
+   **The bug:** `input_schema.json` documents `maxProductsPerStore` as capping products SCANNED per
+   store in watch mode, but `main.js`'s scan loop only checked the cap at page boundaries
+   (`scanCapped()` in the outer `for` condition). Shopify always returns pages of up to 250
+   products, so ANY cap below 250 was silently ignored for the first page — live-reproduced twice:
+   `maxProductsPerStore:40` and `:10` both logged "stopped after scanning 250 products". Every
+   watch-mode buyer setting a cheap low cap (a reasonable, documented use case) was scanning 6x+
+   more of the target store than requested.
+   **Fixed carefully:** moved the cap check into the per-product loop (mirroring non-watch mode's
+   existing `got >= perStore` break). Caught a second-order bug in the first draft before shipping —
+   if the cap break coincides with a store's genuinely-short last page, the old
+   `products.length < 250` test would wrongly set `sweptToEnd = true` even though the tail past the
+   cap was never scanned, which would falsely report real still-listed products as "delisted" on the
+   next run. Added a `capBroke` flag so a cap-cut page can never satisfy `sweptToEnd`.
+   **Verified live end-to-end**, build 0.1.63: post-fix run with `maxProductsPerStore:40` now logs
+   "stopped after scanning 40 products" exactly (was 250 pre-fix). Default-input regression (bare
+   `{}`, non-watch, 10 rows) unaffected. Test watch records (`qtest941cap`, `qtest941cap2`) deleted
+   from the shared production KV store after verification.
+   Standing checks clean post-fix: `check-pricing` 0 drift/29, `check-code-fields` 0 drift,
+   `check-fail-ordering` 0 suspects/19. 3 services active, site + tool page 200. Committed and
+   pushed (`cbfbca3`). `state/audit_dates.json` updated. Inbox re-checked: both items that looked
+   new (owner's bold.org forward, capsule26.com reply) confirmed already-resolved via
+   `worker.log` grep — no reply, no owner email, no spend.
+   **Next `varied_test` candidate by age:** `fec-campaign-finance-scraper` (903).
+
 0-DONE-h940-court-notinuse-harvest. **[cycle 940] DONE (part 1 of 2) — GROWTH slot.
    `1-h938-court-jurisdictions-coverage`: established the empirical facts the merge depends on,
    CONFIRMED cycle 938's judgement was right, and shipped a resumable harvester because the data

@@ -11479,6 +11479,366 @@
 "jurisdiction": "ST",
 "start_date": null
 },
+"paoytermcterie": {
+"end_date": null,
+"full_name": "Erie County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctfayet": {
+"end_date": null,
+"full_name": "Fayette County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctfrank": {
+"end_date": null,
+"full_name": "Franklin County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctfulto": {
+"end_date": null,
+"full_name": "Fulton County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctgreen": {
+"end_date": null,
+"full_name": "Greene County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctjeffe": {
+"end_date": null,
+"full_name": "Jefferson County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctjunia": {
+"end_date": null,
+"full_name": "Juniata County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctlacka": {
+"end_date": null,
+"full_name": "Lackawanna County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctlanca": {
+"end_date": null,
+"full_name": "Lancaster County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctlawre": {
+"end_date": null,
+"full_name": "Lawrence County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctleban": {
+"end_date": null,
+"full_name": "Lebanon County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctlehig": {
+"end_date": null,
+"full_name": "Lehigh County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctluzer": {
+"end_date": null,
+"full_name": "Luzerne County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctmerce": {
+"end_date": null,
+"full_name": "Mercer County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctmontg": {
+"end_date": null,
+"full_name": "Montgomery County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctnorth": {
+"end_date": null,
+"full_name": "Northampton County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctperry": {
+"end_date": null,
+"full_name": "Perry County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctphila": {
+"end_date": null,
+"full_name": "Philadelphia County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctschuy": {
+"end_date": null,
+"full_name": "Schuylkill County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctsomer": {
+"end_date": null,
+"full_name": "Somerset County Ct. Oyer & Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctvenan": {
+"end_date": null,
+"full_name": "Venango County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctwestm": {
+"end_date": null,
+"full_name": "Westmoreland County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paoytermctyork": {
+"end_date": null,
+"full_name": "York County Court of Oyer and Terminer",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessadams": {
+"end_date": null,
+"full_name": "Adams County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessallegh": {
+"end_date": null,
+"full_name": "Allegheny County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessarmstr": {
+"end_date": null,
+"full_name": "Armstrong County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessbeaver": {
+"end_date": null,
+"full_name": "Beaver County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessbedfor": {
+"end_date": null,
+"full_name": "Bedford County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessberks": {
+"end_date": null,
+"full_name": "Berks County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessblair": {
+"end_date": null,
+"full_name": "Blair County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessbradfo": {
+"end_date": null,
+"full_name": "Bradford County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessbucks": {
+"end_date": null,
+"full_name": "Bucks County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessbutler": {
+"end_date": null,
+"full_name": "Butler County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscambri": {
+"end_date": null,
+"full_name": "Cambria County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscamero": {
+"end_date": null,
+"full_name": "Cameron County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscarbon": {
+"end_date": null,
+"full_name": "Carbon County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscentre": {
+"end_date": null,
+"full_name": "Centre County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscheste": {
+"end_date": null,
+"full_name": "Chester County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessclario": {
+"end_date": null,
+"full_name": "Clarion County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessclearf": {
+"end_date": null,
+"full_name": "Clearfield County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessclinto": {
+"end_date": null,
+"full_name": "Clinton County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscolumb": {
+"end_date": null,
+"full_name": "Columbia County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscrawfo": {
+"end_date": null,
+"full_name": "Crawford County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesscumber": {
+"end_date": null,
+"full_name": "Cumberland County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessdauphi": {
+"end_date": null,
+"full_name": "Dauphin County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessdelawa": {
+"end_date": null,
+"full_name": "Delaware County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesselk": {
+"end_date": null,
+"full_name": "Elk County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesserie": {
+"end_date": null,
+"full_name": "Erie County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessfayett": {
+"end_date": null,
+"full_name": "Fayette County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessfrankl": {
+"end_date": null,
+"full_name": "Franklin County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessfulton": {
+"end_date": null,
+"full_name": "Fulton County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessgreene": {
+"end_date": null,
+"full_name": "Greene County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesshuntin": {
+"end_date": null,
+"full_name": "Huntingdon County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessindian": {
+"end_date": null,
+"full_name": "Indiana County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessjeffer": {
+"end_date": null,
+"full_name": "Jefferson County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsessjuniat": {
+"end_date": null,
+"full_name": "Juniata County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesslackaw": {
+"end_date": null,
+"full_name": "Lackawanna County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesslancas": {
+"end_date": null,
+"full_name": "Lancaster County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"paqtrsesslawren": {
+"end_date": null,
+"full_name": "Lawrence County Court of Quarter Sessions",
+"jurisdiction": "ST",
+"start_date": null
+},
+"pennctqtrsess": {
+"end_date": null,
+"full_name": "Pennsylvania Court of Quarter Sessions",
+"jurisdiction": "SS",
+"start_date": null
+},
 "philactnp": {
 "end_date": null,
 "full_name": "Philadelphia Court of Nisi Prius",
@@ -11643,5 +12003,5 @@
 }
 },
 "declared_count": 2887,
-"next": "https://www.courtlistener.com/api/rest/v4/courts/?in_use=false&page=98"
+"next": "https://www.courtlistener.com/api/rest/v4/courts/?in_use=false&page=101"
 }
