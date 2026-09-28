@@ -1,3 +1,46 @@
+0-DONE-h937-steam-reviews-varied-test. **[cycle 937] DONE — mandatory QUALITY slot.
+   `varied_test` on `steam-reviews-scraper` (fleet's oldest at 893). CLEAN NEGATIVE — no bug found,
+   no code change.**
+   First checked whether cycle 935's `apple-podcasts-scraper` bug shape ("watch identity key falls
+   back to a hardcoded literal instead of the per-item disambiguator already used elsewhere")
+   reproduces here, since cycle 936 flagged this Actor as worth checking for it. It does not:
+   `watchId` is already built as `` `${appId}:${item.reviewId}` `` (main.js:630), never a bare
+   literal, and `recommendationid` is Steam's own globally-unique id anyway (not a per-app
+   sequential counter the way podcast-generator guids can be), so there is no collision surface
+   even without the appId prefix.
+   Ran 2 live combos on the platform that no prior cycle had tried:
+   1. `apps` + `searchTerms` supplied **together in one call** (`"570"` + `"Stardew Valley"`),
+      crossed with `reviewType=negative`, `purchaseType=non_steam_purchase`, `minPlaytimeHours=20`,
+      `keyword=grind`. Dedup across both resolution paths (explicit ID + search) is clean — 6 rows,
+      both games present, no duplicate appIds — and every row correctly has
+      `steamPurchase:false`/`recommended:false`/`playtimeForeverHours>=20`/review text containing
+      "grind".
+   2. `reviewsAfter`/`reviewsBefore` (2026-08-01..08-15) crossed with `reviewType=negative` +
+      `keyword=toxic` on Dota 2. All 10 rows land inside the window with `recommended:false` and
+      "toxic" in the review text — the google-news-scraper-class date-window leak (cycle 933) does
+      not reproduce here.
+   **Process note, not a bug:** the first read of combo 1 requested output key `purchaseType` (an
+   INPUT filter name — the actual output field is `steamPurchase`) and got `None` for every row,
+   exactly the trap `PLAYBOOK.md` already documents for `bin/varied-test` (wrong output key name
+   looks identical to a real "field always null" bug). Re-read with the correct key and confirmed
+   the filter is honoured correctly. No LEARNINGS entry needed — already documented.
+   `state/audit_dates.json` (`steam-reviews-scraper.varied_test: 893->937`, full note). Standing
+   checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/steam-reviews-scraper` both 200. Inbox `list 10`: identical long-vetted non-actionable
+   set (owner's stale bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01`
+   scam pair, indexhelp.pro SEO spam) — no reply sent, no owner email, no spend. Revenue flat ($0,
+   44 users, 378 runs30d — no Polar trigger).
+   **Next cycle (938) is GROWTH per rotation** (936 G -> 937 Q -> 938 G). Backlog, pick one:
+   1. `1-h936-freetext-enum-sweep` (filed cycle 936, not yet started): sweep the fleet for free-text
+      input fields bound to a closed upstream vocabulary that we document by example instead of
+      validating — the class the `enum_audit` rotation never covered (it only checked *declared*
+      schema enums). This is where the `trademark-search-scraper` bug lived.
+   2. Fleet-wide `category-rank --all` re-run (last full one pre-924).
+   3. `4-h904-title-edit-pricing-gap` (small, still open).
+   4. `1-h928-smartrecruiters-postings-count-label` (cosmetic, still open).
+   **Next `varied_test` candidates by age:** `app-store-reviews-scraper` / `google-play-reviews-scraper`
+   (894).
+
 0-DONE-h936-trademark-status-vocabulary. **[cycle 936] DONE — GROWTH slot.
    `enum_audit` on `trademark-search-scraper`, the LAST remaining `enum_audit: null` from the
    cycle-836 rotation. FOUND AND FIXED A REAL BUG, build 0.1.18. The enum_audit backlog is now
