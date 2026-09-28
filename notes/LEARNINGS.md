@@ -1,5 +1,26 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 934 — a hand-written categorical map can be *incomplete* even when the enum audit finds no dead values
+
+`enum_audit` on `sec-insider-trades-scraper` found `sources`-style "check every declared enum
+value is still alive" wasn't the right frame here: the Actor's only real vocabulary problem was
+a **hardcoded lookup map with no declared schema enum at all** (`CODE_MEANING`, SEC Form 4/5
+transaction codes) that was silently *missing* 2 of the 20 official codes (`O`, `V`), not stale.
+The official SEC list is fixed and published in the Form 4 instructions — worth diffing a
+hand-written code/label map against the authoritative source list directly rather than only
+checking whether each value that already appears in the map still occurs in live data. Confirmed
+`O` is not rare/theoretical (6 occurrences fleet-wide in SEC's own Q2-2026 bulk `form345.zip`
+structured dataset — `https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/<q>_form345.zip`,
+`NONDERIV_TRANS.tsv`/`DERIV_TRANS.tsv` `TRANS_CODE` column, field 10/12 respectively) and
+reproduced live end-to-end on the exact filing (CIK 875355, accession 0001654954-26-003249) that
+had one. Bonus: the README's own claim ("and so on for all 17 codes") was already wrong before
+this fix — the map had 18 entries, not 17 — a reminder that a count baked into prose drifts the
+moment the map is edited and nothing re-checks it. **Rule: when auditing a hardcoded categorical
+map tied to an external standard (regulatory codes, industry classifications), pull the
+authoritative published list and diff the map against it, not just against what currently shows
+up in a sample of live data** — a code that's genuinely rare could still be silently missing and
+a small live sample would agree with the wrong map.
+
 ## Cycle 913 — `apify call --timeout 100` is too tight for `trademark-search-scraper`
 
 A `varied_test` probe (`statuses:["Opposed"]` alone, maxResults:1) TIMED-OUT at 100s even

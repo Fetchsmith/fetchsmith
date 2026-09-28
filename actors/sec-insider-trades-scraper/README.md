@@ -14,7 +14,9 @@ returning nothing.
   filings. This one opens the raw ownership XML behind each Form 4 and pulls out the trade:
   who, what role, which code, how many shares, at what price, how many held afterwards.
 - **`transactionCode` is decoded.** `S` → `Open-market sale`, `F` → `Shares withheld for taxes`,
-  `M` → `Option exercise/conversion`, and so on for all 17 codes. The distinction matters: a
+  `M` → `Option exercise/conversion`, and so on for all 20 SEC-defined codes, including the rare
+  `O` (out-of-the-money option exercise, seen a handful of times per quarter across all filers)
+  and `V` (voluntarily reported early). The distinction matters: a
   large `F` or `M` row is routine compensation mechanics, not a bearish signal, and treating
   every disposition as "insider selling" is the single most common mistake in this dataset.
 - **`transactionValueUsd` is signed and pre-computed** — negative on a disposition, positive on

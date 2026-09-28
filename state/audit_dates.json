@@ -159,7 +159,7 @@
   },
   "sec-insider-trades-scraper": {
     "competitor_audit": 810,
-    "enum_audit": null,
+    "enum_audit": "934: transactionCode CODE_MEANING map (17->18 real, README claimed 17) was missing 2 of the 20 official SEC codes (O, V); confirmed O occurs live (6x in 2026Q2 bulk data + a live repro filing, CIK 875355) and was silently rendering transactionCodeMeaning:null. Added both, fixed README count claim, build 0.1.11.",
     "note": "price cut to $0.0018/row cycle 810; usage watched since, no movement as of cycle 814",
     "unreachable_remedy": null,
     "varied_test": 895,

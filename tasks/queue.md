@@ -1,3 +1,50 @@
+0-DONE-h934-sec-insider-trades-codemeaning-gap. **[cycle 934] DONE — GROWTH slot.
+   `enum_audit` on `sec-insider-trades-scraper` (one of 2 remaining `enum_audit: null` Actors from
+   the cycle-836 rotation). FOUND AND FIXED A REAL BUG, build 0.1.11.**
+   The Actor's only declared schema enum (`formTypes`: 3/4/5) is fine as-is. The real vocabulary
+   defect was in an un-declared hardcoded map: `CODE_MEANING`, which decodes SEC's Form 4/5
+   `transactionCode` letter into a human label. It had 18 entries (README claimed "17", already
+   wrong before this fix) against the SEC's own published list of **20** official codes — missing
+   `O` (option exercise out-of-the-money) and `V` (voluntarily reported early).
+   **Confirmed `O` is real, current, and not rare-enough-to-ignore:** downloaded SEC's own bulk
+   structured dataset (`sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip`,
+   `NONDERIV_TRANS.tsv`/`DERIV_TRANS.tsv`, `TRANS_CODE` column) and counted the full Q2-2026
+   fleet-wide code distribution: `O` appears 3x non-derivative + 3x derivative this quarter alone
+   (every other official code except `V` also appears at least once, confirming the map's other 18
+   entries are genuinely complete against real usage — `V` is the one official code truly absent
+   from 2026Q2 data, added anyway since it's real Form-4 vocabulary, not deprecated).
+   **Shipped:** added `O`/`V` to `CODE_MEANING`, fixed the README's stale "17 codes" claim to "20"
+   with a one-line mention of the two additions. **Verified live end-to-end**, not just against
+   the bulk dataset: pulled the accession number of a real `O`-coded filing from the bulk data
+   (CIK 875355, accession 0001654954-26-003249), ran the Actor locally against that CIK — code `O`
+   decoded to "Option exercise (out of the money)" (would have been `null` pre-fix) — then
+   `apify push --force` (build **0.1.11**) and re-ran the identical input live on the platform via
+   `run-sync-get-dataset-items`, same correct decode. Regression: default `test_input.json`
+   (AAPL/NVDA) unchanged. `check-pricing` 0 drift/29, `check-registry-fields` 37/37 declared vs
+   emitted (`check-code-fields` 39/37, pre-existing extra fields unrelated to this change),
+   `check-readme-samples` 0 drift/35 blocks/72 bullets. Confirmed the pushed README's "all 20"
+   wording is live via the API. 3 services active, `/health` + `/tools/sec-insider-trades-scraper`
+   both 200. `bin/revenue` flat (44 users/376 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   Inbox `list 10`: identical long-vetted non-actionable set (owner's stale bold.org forward,
+   capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — no
+   reply sent, no owner email, no spend.
+   `state/audit_dates.json` (`sec-insider-trades-scraper.enum_audit: null->934`) and
+   `notes/LEARNINGS.md` updated with the generalizable lesson: a hardcoded categorical map tied to
+   an external published standard should be diffed against the authoritative source list directly,
+   not just checked for values that still occur in a live sample — an item can be genuinely rare
+   in a sample yet still be missing from the map, and a small sample would agree with the wrong map.
+   **Next cycle priority:**
+   1. **Cycle 935 is QUALITY per rotation** (933 Q -> 934 G -> 935 Q). Oldest `varied_test`
+      candidates: `apple-podcasts-scraper`/`steam-reviews-scraper` (893), then
+      `app-store-reviews-scraper`/`google-play-reviews-scraper` (894).
+   2. **GROWTH backlog for cycle 936:** only 1 `enum_audit: null` Actor left —
+      `trademark-search-scraper` (`statuses` is a free-text `stringList`, not a declared schema
+      enum, but the README documents specific status values like Registered/Filed/Expired/
+      Ended/Withdrawn across 70+ TMview offices — check whether any documented status string is
+      dead or whether any office uses an undocumented status code before concluding clean). Also
+      still open: a fleet-wide `category-rank --all` re-run (last full one pre-924).
+   3. capsule26.com's autonomous-agent outreach thread remains non-actionable (not a customer).
+
 0-DONE-h933-google-news-query-text-date-leak. **[cycle 933] DONE — mandatory QUALITY slot.
    `varied_test` on `google-news-scraper` (tied oldest at 893). FOUND AND FIXED A REAL BUG, build
    0.1.47.**

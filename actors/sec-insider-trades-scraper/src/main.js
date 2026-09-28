@@ -98,6 +98,7 @@ const CODE_MEANING = {
   G: 'Gift', X: 'Option exercise (in the money)', J: 'Other (see footnotes)', K: 'Equity swap',
   I: 'Discretionary transaction', H: 'Expiration (long derivative)', E: 'Expiration (short derivative)',
   U: 'Tender of shares', L: 'Small acquisition', W: 'Will or laws of descent', Z: 'Voting trust',
+  O: 'Option exercise (out of the money)', V: 'Voluntarily reported early',
 };
 
 async function resolveIssuers(list) {
