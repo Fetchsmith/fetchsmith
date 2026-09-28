@@ -7,9 +7,11 @@ Search **UK public-sector procurement notices** — live tender opportunities, c
 
 Searching only one portal means missing most of the UK market. This Actor queries both by default, normalizes them into a single row shape, dedupes them, and tags every row with a `source` field (`fts` / `cf`) so you always know which portal it came from.
 
-Both portals speak [OCDS](https://standard.open-contracting.org/) — deeply nested release packages where the buyer's email is four levels down inside a `parties[]` array, the CPV codes are scattered across `tender.items[].additionalClassifications[]`, and the awarded value usually isn't on the award at all. The two portals also disagree in small ways (Contracts Finder has no lots and puts SME suitability and the contract period on the tender; Find a Tender puts them per lot). This Actor flattens and reconciles all of it into one row per notice.
+Both portals publish [open contracting data](https://standard.open-contracting.org/) (OCDS) — deeply nested release packages where the buyer's email is four levels down inside a `parties[]` array, the CPV codes are scattered across `tender.items[].additionalClassifications[]`, and the awarded value usually isn't on the award at all. The two portals also disagree in small ways (Contracts Finder has no lots and puts SME suitability and the contract period on the tender; Find a Tender puts them per lot). This Actor flattens and reconciles all of it into one row per notice.
 
 **Post-Brexit UK notices are not in EU TED**, so this is additive coverage if you already track EU procurement (see our [EU TED Tenders Scraper](https://apify.com/fetchsmith/eu-ted-tenders-scraper)).
+
+In short: a government contracts UK tenders API covering Find a Tender and Contracts Finder in one deduplicated feed.
 
 ## What you get
 

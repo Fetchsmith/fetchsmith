@@ -1,3 +1,47 @@
+0-DONE-h950-uk-find-a-tender-readme-proximity. **[cycle 950] DONE — GROWTH slot. `3-h904-readme-
+   proximity-scan`, 3rd Actor fully screened: `uk-find-a-tender-scraper`. Clean negative on all 3
+   pre-existing TERMS, one sentence + one rewording bought a 3-way win. Build 0.1.39, README-only.**
+   Screened the 3 tracked TERMS with `--why` per the revised (cycle-948) guidance — confirm fast,
+   don't re-derive: `find a tender` prox=2 attr=0 (title) p29, `public sector tenders` prox=2
+   attr=0 (title) p3, `uk tenders` prox=1 attr=5 (seoDescription) p52 — all already at floor prox
+   (n-1) in an attribute at least as strong as readme. Zero levers, as expected.
+   **Went straight to `bin/store-price` on 16 fresh domain phrases.** 3 stood out: we already
+   matched them SOMEWHERE (title/seoTitle/seoDescription/readme) but non-contiguously, with a large
+   prox gap to the 3-word floor (prox=2) — since Algolia sorts prox before attr, closing that gap
+   via a readme edit (attr=6, the weakest attribute) still jumps straight past the current bucket:
+   `government contracts uk` (724 hits, was prox=8 attr=5, p57), `uk tenders api` (700 hits, was
+   prox=7 attr=4, p49), `open contracting data` (885 hits, was prox=9 attr=6 — already in the
+   readme but scattered, p39).
+   **Shipped 2 edits, no meta.json change:** (1) reworded "Both portals speak OCDS" -> "Both
+   portals publish open contracting data (OCDS)" — literally spells out the acronym, true and
+   natural, lands `open contracting data` contiguous. (2) added one new sentence after the
+   Post-Brexit paragraph: "In short: a government contracts UK tenders API covering Find a Tender
+   and Contracts Finder in one deduplicated feed." — deliberately overlapping at the word "uk" so
+   ONE sentence carries both `government contracts uk` and `uk tenders api` as contiguous 3-word
+   substrings (the cycle-948 double-win pattern, this time a triple).
+   `apify push --force` -> build 0.1.39. Confirmed both phrases landed in the build's
+   `actorDefinition.readme` via the platform API BEFORE measuring (946's lesson). Live ~90s
+   post-reindex, all 3 predictions near-exact: `government contracts uk` p57 -> **p8** (predicted
+   p8), `uk tenders api` p49 -> **p7** (predicted p7), `open contracting data` p39 -> **p17**
+   (predicted p17). **Zero regression**: all 3 pre-existing TERMS held byte-identical bucket AND
+   rank (p29/p52/p3); only storePosition drifted (70610 -> 72226 fleetwide), not caused by the edit.
+   `bin/store-rank` TERMS for this Actor now 6 entries, full note recorded inline.
+   Standing checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/uk-find-a-tender-scraper` both 200. `bin/revenue`/inbox not re-checked this cycle beyond
+   the cycle-949 baseline (unchanged long-vetted non-actionable set) — no reply, no owner email,
+   no spend.
+   **`3-h904-readme-proximity-scan` stays OPEN — now 3 Actors screened** (`fda-recall-scraper`,
+   `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`). Next: pick another Actor with a short
+   TERMS list from `bin/store-rank` (candidates not yet screened: `clinicaltrials-scraper`,
+   `hacker-news-scraper`, `google-news-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`,
+   `court-records-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`,
+   `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `apple-podcasts-scraper`,
+   `steam-reviews-scraper`, `app-store-reviews-scraper`, `google-play-reviews-scraper`,
+   `fec-campaign-finance-scraper`), confirm its TERMS fast, then `store-price` 12-16 fresh phrases
+   and bucket-inspect the biggest prox gaps first (the pattern that's now won 3-for-3 on shopping,
+   0-for-3 on re-screening tracked terms).
+   **Next QUALITY slot (951): `federal-register-scraper`** (905, next-oldest `varied_test`).
+
 0-DONE-h949-substack-varied-test. **[cycle 949] DONE — mandatory QUALITY slot, oldest-dated
    `varied_test` tied in the fleet: `substack-scraper` (895, tied with `sec-insider-trades-scraper`
    which got GROWTH work instead at 948). Clean negative, no bug found, no code change.**

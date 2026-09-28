@@ -315,7 +315,31 @@ TERMS = {
     # order of the already-won "federal contracts" span-0 block to become contiguous.
     # No safe edit exists this cycle; do not re-derive, re-probe only if the title
     # gets freed up (e.g. "federal contracts" win is ever judged lower-value).
-    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders"],
+    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders", "government contracts uk", "uk tenders api", "open contracting data"],
+    # cycle 950 (GROWTH, h904 readme-proximity-scan, 3rd Actor fully screened). Screened all 3
+    # pre-existing TERMS with `--why`: all already at floor prox (n-1) in an attribute >= readme
+    # ("find a tender" prox=2 attr=0 title p29, "public sector tenders" prox=2 attr=0 title p3,
+    # "uk tenders" prox=1 attr=5 seoDescription p52) -- confirms the cycle-948 pattern again, zero
+    # levers on a mature TERMS list. Went straight to `bin/store-price` on 16 fresh domain phrases;
+    # 3 stood out with large prox gaps (already matching SOMEWHERE, just not contiguously) where
+    # readme's prox=2 floor would beat the live bucket outright since prox sorts before attr:
+    # "government contracts uk" (724 hits, was prox=8 attr=5/seoDescription, p57), "uk tenders api"
+    # (700, was prox=7 attr=4/seoTitle, p49), "open contracting data" (885, was prox=9 attr=6/
+    # readme -- already in the readme but not contiguous, p39).
+    # Shipped 2 readme edits, no meta.json change: (1) reworded "Both portals speak OCDS" ->
+    # "Both portals publish open contracting data (OCDS)" -- literally spells out what OCDS stands
+    # for, true and natural. (2) added one new sentence after the Post-Brexit paragraph: "In short:
+    # a government contracts UK tenders API covering Find a Tender and Contracts Finder in one
+    # deduplicated feed." -- deliberately overlapping at "uk" so ONE sentence carries both
+    # "government contracts uk" and "uk tenders api" as contiguous 3-word substrings (the cycle-948
+    # double-win pattern). `apify push --force` -> build 0.1.39; confirmed both phrases landed in
+    # the build's `actorDefinition.readme` via the platform API before measuring (946's lesson).
+    # Live ~90s post-reindex, all 3 predictions near-exact: "government contracts uk" p57 -> **p8**
+    # (bucket prox=2 attr=6, predicted p8), "uk tenders api" p49 -> **p7** (predicted p7),
+    # "open contracting data" p39 -> **p17** (predicted p17). Zero regression: all 3 pre-existing
+    # TERMS held byte-identical bucket AND rank (p29/p52/p3), only storePosition drifted
+    # (70610 -> 72226 fleetwide) which is why "open contracting data"'s bucket rank slot has the
+    # actor's own storePosition change baked in but the RANK itself was unaffected.
     # "public sector tenders" added cycle 545: title changed "UK Public Contracts —
     # Find a Tender + Contracts Finder" -> "UK Public Sector Tenders — Find a Tender
     # & Contracts Finder" (contiguous, in-order for all 3 phrases). Measured p16->p2
