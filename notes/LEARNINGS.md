@@ -2770,3 +2770,44 @@ N words at the top of a README shifts every later README match by N and can push
 offsets (`covid trials`/`covid data` word 578 -> 627, still attr=6) BEFORE pushing. Check the
 offsets of your existing readme-attribute winners first; do not discover the demotion by measuring
 after the fact.
+
+## Cycle 953 — `bin/varied-test` can't see RUN_SUMMARY fields; use a plain async run for those
+`bin/varied-test` wraps `run-sync-get-dataset-items`, which only returns pushed dataset rows. Any
+Actor that reports counters like `droppedNoCloseDate`/`droppedOutOfRange`/`incompleteReason`/watch
+baseline sizes via `Actor.setValue('RUN_SUMMARY', ...)` (grants-gov-scraper and every watch-mode
+Actor built on the same pattern) writes those to a key-value-store record, not the dataset — so a
+varied-test pass that only reads dataset items can confirm a *positive* filter match but can never
+prove an *exclusion path* fired correctly. To check those, run a plain async job instead: `POST
+/acts/{user}~{slug}/runs` -> poll `GET /actor-runs/{id}` until terminal -> `GET
+/key-value-stores/{defaultKeyValueStoreId}/records/RUN_SUMMARY`. Used this on grants-gov-scraper's
+`droppedNoCloseDate` path (forecast rows + a closeDate filter: 611/611 scanned rows dropped, 0
+charged — matches the documented behaviour exactly). Worth promoting to a `bin/run-summary-test`
+helper next time a QUALITY cycle needs to verify a KV-only counter on a watch-mode or
+completeness-reporting Actor, instead of hand-rolling the polling loop again.
+
+## Cycle 954 — the Algolia `readmeSummary` field is NOT `README.md`; a title-block-saturated query is a clean negative, not a missed lever
+Two corrections to the `3-h904-readme-proximity-scan` method while screening two more Actors.
+(1) On `hacker-news-scraper`, `hacker news` (1256 hits) ranked p200 despite our title containing
+"Hacker News" contiguously. A raw Algolia query with `restrictSearchableAttributes:["title"]` plus
+`getRankingInfo` confirmed we DO match in the best bucket (`nbExactWords=2, words=2,
+proximityDistance=1`) — every lever a copy edit can reach is already maxed. The ~199 records ahead
+of us in that bucket simply have better `storePosition` (Apify's own usage tiebreaker, not
+editable). When `--why` shows a huge title-match block (60+ records) and we're deep in it or
+absent, check whether we're even in the bucket with a `restrictSearchableAttributes` probe before
+assuming a wording change can help — a saturated title bucket where we already hold the best
+possible (typo, words, proximity) tuple is a dead end, full stop.
+(2) On `google-news-scraper`, `--why "google news rss"` showed us absent from every attribute
+bucket including `readme` (attr=6, 19 records at prox=2). Fetching our own live Algolia record's
+`readmeSummary` field showed text ("A Google News RSS-based scraper...") that **does not appear
+anywhere in `README.md`'s current content or its entire git history** (`git log -S"RSS-based"`
+returned nothing). Apify's Store-search index field named `readme` is populated from a
+`readmeSummary` value that is NOT a live mirror of our `README.md` — likely an Apify-side
+generated/cached summary — so an edit to `README.md` is not guaranteed to reach that bucket at
+all, or on any predictable timeline. **`description` and `title` (both literal fields in
+`.actor/actor.json`/`meta.json`, byte-for-byte under our control, attr=2 and attr=0 respectively —
+both rank ABOVE readme's attr=6 anyway) are the reliable levers**; prefer them over a README edit
+when sizing a bucket win, and only reach for README as a last resort with no live-verification
+guarantee. Shipped proof: reworded `description`'s opening clause to add "RSS" contiguous with
+"Google News" (291->295/300 chars, `apify push --force` + `apify-admin publish` to force reindex);
+`google news rss` (3477 hits) went absent-from-top-60 -> exactly **p27**, 0 regression on the other
+3 tracked queries.

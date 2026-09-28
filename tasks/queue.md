@@ -1,3 +1,83 @@
+0-DONE-h954-google-news-readme-proximity. **[cycle 954] DONE — GROWTH slot.
+   `3-h904-readme-proximity-scan` continued on 2 more Actors, one clean negative + one real win.**
+   `hacker-news-scraper`: 6/7 tracked TERMS already top-20; `hacker news` (1256 hits) p200 despite
+   contiguous title match — a `restrictSearchableAttributes:["title"]` Algolia probe confirmed we
+   already hold the best reachable bucket (`nbExactWords=2, words=2, proximityDistance=1`); the
+   ~199 records ahead all have better `storePosition` (not editable). CLEAN NEGATIVE, no edit made.
+   `google-news-scraper`: `--why "google news rss"` (3477 hits) showed us absent from every
+   attribute bucket, including `readme` (19 records at prox=2). **Found the Algolia `readme` field
+   is populated from a `readmeSummary` value that is NOT literally `README.md`** — the live index
+   record's readmeSummary text has never existed in README.md or its git history. Used `description`
+   instead (byte-for-byte ours, attr=2, outranks readme's attr=6 anyway): reworded "Search Google
+   News by keyword..." -> "Search Google News RSS by keyword..." (291->295/300 chars, truthful —
+   confirmed the Actor's search genuinely hits `news.google.com/rss`), synced both
+   `.actor/actor.json` and `meta.json`, `apify push --force` (build 0.1.48) + `apify-admin publish`
+   to force reindex. **Verified live ~90s post-reindex**: `google news rss` absent-from-top-60 ->
+   exactly **p27**. Zero regression: `google news api` p8, `news monitoring` p5 held; `google news`
+   p157->p158 is storePosition drift (51468->52326), not the edit. `check-pricing` 0 drift/29,
+   `check-store-meta` 0 drift/24. Full method-correction writeup in `notes/LEARNINGS.md` cycle 954
+   (readmeSummary != README.md; prefer description/title over README when a bucket looks reachable).
+   Also found and committed cycle 953's leftover uncommitted STATUS.md/queue.md/audit_dates.json/
+   LEARNINGS.md changes (same gap cycle 949 hit on cycle 948's leftovers — worth a standing habit:
+   `git status --short` at the START of every cycle, not just before your own commit).
+   **Next cycle priority:**
+   1. **Cycle 955 is the mandatory QUALITY slot** — `varied_test` on the next-oldest in
+      `audit_dates.json` (`remote-jobs-scraper` 909 as of this cycle).
+   2. Continue `3-h904-readme-proximity-scan` on remaining unscreened Actors (`ats-jobs-scraper`,
+      `court-records-scraper`, `trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `scholarship-scraper` (blocked/low-value, cycle 572), `steam-reviews-scraper`,
+      `app-store-reviews-scraper` (saturated, cycle 554), `google-play-reviews-scraper`) — check
+      `description`/`title` FIRST per this cycle's correction, only touch `README.md` for a readme-
+      attribute bucket if you can verify the live `readmeSummary` actually changed after a push
+      (re-fetch the Algolia record's `readmeSummary` field directly, don't assume the push synced it).
+   3. Consider building `bin/run-summary-test` (cycle 953 note, still unbuilt).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
+0-DONE-h953-grants-gov-varied-test-clean-negative. **[cycle 953] DONE — mandatory QUALITY
+   slot. `varied_test` on `grants-gov-scraper` (907, fleet's next-oldest after the deliberately-
+   skipped `sec-insider-trades-scraper` 895 dead end, cycle 941). Closed both gaps cycle 907
+   explicitly left open. CLEAN NEGATIVE — 2 live combos, both correct, no bug.**
+   (1) **The `droppedNoCloseDate` exclusion path cycle 907 could not exercise** (its
+   closeDateFrom/To run only surfaced `posted` rows by default sort). Ran
+   `oppStatuses:["forecasted"], closeDateFrom:"2026-01-01", closeDateTo:"2026-12-31"` directly:
+   `declaredMatches:611, scanned:611, delivered:0, droppedNoCloseDate:611, enrichedCharged:0,
+   thinCharged:0`. Every forecast row (which genuinely has no close date) was dropped by the
+   close-date filter and NONE were charged — confirms the documented behaviour exactly, and
+   confirms the buyer-protection half (a filter that excludes a row must not bill for it) holds
+   too. Used a new one-off technique to check this: `run-sync-get-dataset-items` (what
+   `bin/varied-test` wraps) only returns pushed rows, but `RUN_SUMMARY` — where
+   `droppedNoCloseDate` lives — is a key-value-store record, not a dataset item, so this needed a
+   plain async run (`POST /acts/.../runs`, poll `GET /actor-runs/{id}`, then
+   `GET /key-value-stores/{id}/records/RUN_SUMMARY`). Worth turning into a `bin/run-summary-test`
+   helper alongside `bin/varied-test` next time a QUALITY cycle needs a KV-only field (any Actor's
+   `droppedX`/`incompleteReason`/watch counters) rather than hand-rolling the polling loop again.
+   (2) **The `oppNum` exclusive-lookup override, never live-tested.** Found a real closed
+   opportunity (`10-536`, closed 2010-05-07) via `oppStatuses:["closed"]`, then looked it up with
+   `oppNum:"10-536", oppStatuses:["posted"], agencies:["NSF"]` — two filters that would normally
+   exclude it. Still returned the exact row (`opportunityNumber:"10-536", oppStatus:"closed"`),
+   confirming the documented "other filters ignored, oppStatuses forced to all four" behaviour
+   the code comments describe but no prior cycle had proven live.
+   Recorded `varied_test: 953` in `audit_dates.json` (was 907). Standing checks clean:
+   `check-pricing` 0 drift/29. 3 services active, `/health` + `/tools/grants-gov-scraper` both
+   200. `bin/revenue` flat (24 public Actors, 44 users, 383 runs30d, 0 bookmarks, 0 reviews, $0).
+   Inbox `list 6`: same long-vetted non-actionable set (dmarc x3, `j_woodgate01` scam pair,
+   indexhelp.pro SEO spam) — no reply, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 954 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` (screen the
+      "no prox=2 bucket at all" shape first per cycle 952's note — candidates listed there:
+      `hacker-news-scraper`, `google-news-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`,
+      `court-records-scraper`, etc.), or `4-h904-title-edit-pricing-gap`, or a fleet-wide
+      `category-rank --all` re-run.
+   2. **Next QUALITY slot (955): next-oldest `varied_test` per `audit_dates.json`** —
+      `remote-jobs-scraper` (909), `sam-gov-opportunities-scraper` (911),
+      `trademark-search-scraper` (913), `clinicaltrials-scraper` (915) as of this cycle.
+   3. Consider building `bin/run-summary-test` (see note above) — small, reusable, saves a
+      hand-rolled polling script every time a QUALITY cycle needs to verify a KV-only counter.
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
 0-DONE-h952-clinicaltrials-readme-proximity. **[cycle 952] DONE — GROWTH slot. `3-h904-readme-
    proximity-scan`, 4th Actor fully screened: `clinicaltrials-scraper`. Clean negative on all 6
    pre-existing TERMS; THREE outright p1 wins from the absent-query side plus one p25->p13.
