@@ -98,7 +98,7 @@
         "searchQuery": {
             "title": "Search query",
             "type": "string",
-            "description": "Full-text search across the document title and body. Leave empty to return everything matching the other filters.",
+            "description": "Full-text search across the document title and body. It matches a passing mention anywhere in the body, not just documents about the term, so for a topical search set order to 'relevance' (with the default 'newest' you get the most recent documents that merely mention it). Leave empty to return everything matching the other filters.",
             "editor": "textfield"
         },
         "significantOnly": {

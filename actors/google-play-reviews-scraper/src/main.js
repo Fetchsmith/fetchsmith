@@ -59,6 +59,23 @@ const sortName = String(input.sort ?? 'NEWEST').toUpperCase();
 const sort = gplay.sort[sortName] ?? gplay.sort.NEWEST;
 const maxReviewsPerApp = Math.min(Number(input.maxReviewsPerApp ?? 100), 5000);
 const includeAppDetails = input.includeAppDetails !== false;
+// Structural app-category filter. Google Play gives every app a genre pair on its details record
+// -- a display name ("Strategy", "Education") and a stable id ("GAME_STRATEGY", "EDUCATION",
+// verified live 2026-09-28) -- so this is a real field on the source, not a guess from the title.
+// Accepted forms are the id, the display name, or the family shorthand "GAME" (every GAME_* id),
+// all case-insensitive; a value that matches nothing simply keeps every app out, which is the
+// fail-CLOSED direction (you are never charged for rows a mistyped genre let through).
+const genres = (input.genres ?? []).map((s) => String(s).trim()).filter(Boolean);
+const genresWanted = new Set(genres.map((s) => s.toUpperCase().replace(/[\s&]+/g, '_')));
+const genreFamilyWanted = new Set([...genresWanted].filter((g) => !g.includes('_')));
+function genreAllowed(app) {
+  if (!genresWanted.size) return true;
+  const id = String(app?.genreId ?? '').toUpperCase();
+  const name = String(app?.genre ?? '').toUpperCase().replace(/[\s&]+/g, '_');
+  if (genresWanted.has(id) || genresWanted.has(name)) return true;
+  // "GAME" matches GAME_STRATEGY/GAME_CASUAL/...; Play has no bare "GAME" id on an app record.
+  return [...genreFamilyWanted].some((fam) => id.startsWith(`${fam}_`));
+}
 const maxResults = Math.min(Number(input.maxResults ?? 500), 20000);
 const minScore = input.minScore != null ? Number(input.minScore) : null;
 const maxScore = input.maxScore != null ? Number(input.maxScore) : null;
@@ -207,6 +224,7 @@ if (watchMode) {
     ...(minThumbsUp != null ? { minThumbsUp } : {}),
     ...(replyFilter !== 'any' ? { replyFilter } : {}),
     ...(minReviewLength != null ? { minReviewLength } : {}),
+    ...(genres.length ? { genres } : {}),
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
@@ -424,6 +442,8 @@ const filteredOutApps = []; // reviews existed but rating/keyword/appVersion/thu
 const depthCappedApps = [];
 const erroredApps = [];
 const invalidApps = []; // app() confirmed the appId doesn't exist -- not a country/language issue
+const genreSkippedApps = []; // the "genres" filter excluded the app before any review was fetched
+const genreUnknownApps = []; // "genres" set but app() failed, so the app was skipped, not guessed
 const seenReviewIds = new Set();
 let duplicatesSkipped = 0;
 let unidentifiedSkipped = 0; // watch mode only: reviews Google Play returned without an id
@@ -449,14 +469,23 @@ for (const appId of resolvedAppIds) {
   // have at least one new review: an app snapshot is not a discrete new event, and charging for
   // one on every scheduled run would defeat the "nothing new costs nothing" promise.
   let pendingAppRecord = null;
-  if (includeAppDetails) {
+  // A "genres" filter needs the app-details record even when the buyer did not ask for one in the
+  // output: the genre only exists there, not on a review row.
+  if (includeAppDetails || genresWanted.size) {
     try {
       const app = await gplay.app({ appId, lang, country });
-      if (watchMode) {
-        if (!appSeeding) pendingAppRecord = mapAppDetails(app);
-      } else {
-        const keepGoing = await pushResult(mapAppDetails(app));
-        if (!keepGoing) break;
+      if (!genreAllowed(app)) {
+        genreSkippedApps.push(`${appId} (${app.genreId ?? 'unknown'})`);
+        log.info(`${appId}: genre "${app.genre}" (${app.genreId}) is not in your "genres" filter — skipping this app, no reviews fetched or charged.`);
+        continue;
+      }
+      if (includeAppDetails) {
+        if (watchMode) {
+          if (!appSeeding) pendingAppRecord = mapAppDetails(app);
+        } else {
+          const keepGoing = await pushResult(mapAppDetails(app));
+          if (!keepGoing) break;
+        }
       }
     } catch (e) {
       // app() throws on an unknown package name; reviews() does not -- it just returns zero
@@ -464,6 +493,14 @@ for (const appId of resolvedAppIds) {
       appIdInvalid = /not found/i.test(e.message);
       if (appIdInvalid) invalidApps.push(appId);
       log.warning(`app() failed for ${appId}: ${e.message}`);
+      // With a "genres" filter set there is no genre to check against, so the app is skipped
+      // rather than scraped: failing OPEN here would bill for exactly the rows the filter exists
+      // to exclude.
+      if (genresWanted.size) {
+        genreUnknownApps.push(appId);
+        log.warning(`${appId}: cannot read its genre, and a "genres" filter is set — skipping this app instead of scraping it unfiltered.`);
+        continue;
+      }
     }
   }
   if (stop) break;
@@ -614,7 +651,7 @@ if (watchMode) {
   }
 }
 
-log.info(`Done. Pushed ${pushed} items.${duplicatesSkipped ? ` Skipped ${duplicatesSkipped} duplicate review(s) (not charged).` : ''}${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
+log.info(`Done. Pushed ${pushed} items.${genreSkippedApps.length + genreUnknownApps.length ? ` Skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s) on the "genres" filter (no reviews fetched or charged).` : ''}${duplicatesSkipped ? ` Skipped ${duplicatesSkipped} duplicate review(s) (not charged).` : ''}${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
 
 // An early stop silently truncates the APP LIST, not just the row count: apps after the stopping
 // point were never fetched at all, and none of the per-app buckets below (emptyApps,
@@ -661,6 +698,12 @@ if (watchMode && seeding) {
   // -- a false claim about Google Play's data when the real cause is our own clock.
   const why = timeBudgetExceeded && appsAttempted.size === 0
     ? 'the run was approaching the platform run timeout and stopped before any app could be checked'
+    // Checked before the buckets below: when the "genres" filter took every app out, no review was
+    // ever fetched, so "Google Play returned zero reviews" (the default branch) would blame the
+    // source for our own filter.
+    : genreSkippedApps.length + genreUnknownApps.length > 0
+      && genreSkippedApps.length + genreUnknownApps.length >= appsAttempted.size
+    ? `your "genres" filter (${genres.join(', ')}) excluded every app${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}`
     : invalidApps.length
     ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
     : erroredApps.length
@@ -675,6 +718,10 @@ if (watchMode && seeding) {
   statusMsg = (`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}.`);
 } else if (emptyApps.length || filteredOutApps.length) {
   statusMsg = (`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
+// A partial genre skip still delivered rows, but which apps were dropped (and that it was our
+// filter, not Google Play) is only visible in the log without this.
+} else if (genreSkippedApps.length || genreUnknownApps.length) {
+  statusMsg = (`Pushed ${pushed} items. Your "genres" filter skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s)${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}.`);
 } else if (truncationNote) {
   // A clean run that nothing else had to report, EXCEPT that it stopped early -- previously this
   // was the case that set no status message at all and read as a complete run.

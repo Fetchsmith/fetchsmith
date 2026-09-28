@@ -230,6 +230,12 @@ const badPsc = pscCodes.find((c) => !/^[A-Z0-9]{1,4}$/.test(c));
 if (badPsc) {
   throw new Error(`"pscCodes" entry ${JSON.stringify(badPsc)} is not a PSC code — must be 1 to 4 letters/digits, e.g. "R425" (leaf), "R4" or "10" (prefix group), "R" (whole category).`);
 }
+// COVID-19 Disaster Emergency Fund Codes (verified live against api.usaspending.gov/api/v2/references/def_codes/,
+// 2026-09-28): L/M/N/O/P/U/V are the only codes whose `disaster` field is "covid_19". Restricted to
+// the Apify UI's enum, so unlike every other filter above this one cannot be sent misspelled --
+// USAspending itself fails CLOSED (400, names the valid list) on any value outside this set, so no
+// canary probe is needed in guardedFilters() below.
+const defCodes = (input.defCodes ?? []).map((c) => String(c).trim().toUpperCase()).filter(Boolean);
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
 if (minAwardAmount != null && maxAwardAmount != null && minAwardAmount > maxAwardAmount) {
@@ -445,6 +451,7 @@ if (watchMode) {
       recipientTypes: [...recipientTypes].sort(),
       naicsCodes: [...naicsCodes].sort(),
       pscCodes: [...pscCodes].sort(),
+      defCodes: [...defCodes].sort(),
       minAwardAmount: minAwardAmount ?? null,
       maxAwardAmount: maxAwardAmount ?? null,
       // Raw day counts, not resolved dates -- the countdown moves every day on its own (same
@@ -582,6 +589,7 @@ function buildFilters(codes) {
     // all accepted and ORed, verified: R425 17,465 + R499 71,409 = 88,874 for the pair, exactly.
     // Only contracts/IDVs carry a PSC, so grants/loans/direct payments return nothing here.
     if (pscCodes.length) filters.psc_codes = pscCodes;
+    if (defCodes.length) filters.def_codes = defCodes;
     return filters;
 }
 
@@ -642,9 +650,12 @@ async function postPage(body) {
 // place_of_performance_locations, recipient_locations, recipient_type_names, award_amounts,
 // naics_codes, psc_codes, and award_ids all show the identical shape: a canary value that cannot
 // match any real award returns 0 results under the correct name, 1+ (the unfiltered index) under a
-// one-character-off name. Unlike SAM.gov/FEC, every filter here is safely canary-probeable -- no
-// boolean/enum field here rejects an out-of-range value with a 400/422 -- so the probe is uniform
-// across fields instead of needing a second per-field shape.
+// one-character-off name. Unlike SAM.gov/FEC, every one of those filters is safely canary-probeable
+// -- none rejects an out-of-range value with a 400/422 -- so the probe is uniform across those
+// fields instead of needing a second per-field shape. `def_codes` (added 2026-09-28) is the one
+// exception: USAspending itself fails CLOSED with a 400 naming the valid code list (verified live)
+// AND the Apify UI restricts the field to a hard enum, so a dropped/misspelled def_codes can never
+// reach the API silently in the first place -- no probe needed, see guardedFilters() below.
 const FILTER_CANARY = '__fetchsmith_canary_no_such_value__';
 
 function guardedFilters() {
@@ -815,7 +826,8 @@ if (awardIds.length) {
         + (naicsCodes.length ? ` naicsCodes=[${naicsCodes.join(', ')}]` : '')
         // Log the codes as actually sent (uppercased): an unrecognised PSC returns zero rows
         // instead of erroring, so this line is what makes an empty run diagnosable.
-        + (pscCodes.length ? ` pscCodes=[${pscCodes.join(', ')}]` : ''),
+        + (pscCodes.length ? ` pscCodes=[${pscCodes.join(', ')}]` : '')
+        + (defCodes.length ? ` defCodes=[${defCodes.join(', ')}]` : ''),
     );
 }
 

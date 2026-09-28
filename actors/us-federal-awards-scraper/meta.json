@@ -5,7 +5,8 @@
   "seoDescription": "Scrape US federal procurement contracts, grants, loans and sub-awards from USAspending.gov's spending-transparency portal. 54 fields: recipient UEI, NAICS/PSC, CFDA. Filter by agency, state, date.",
   "categories": [
     "LEAD_GENERATION",
-    "BUSINESS"
+    "BUSINESS",
+    "COVID_19"
   ],
   "events": {
     "result": {

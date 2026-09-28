@@ -58,6 +58,13 @@
       "description": "Also push one extra item per app with title, developer, rating, installs, price, description.",
       "default": true
     },
+    "genres": {
+      "title": "App genres",
+      "type": "array",
+      "description": "Only scrape apps whose Google Play genre is in this list; every other app is skipped before a single review is fetched, so you are not charged for it. Accepts the Play genre id (\"GAME_STRATEGY\", \"EDUCATION\"), the display name (\"Strategy\", \"Music & Audio\"), or the shorthand \"GAME\" for any game genre — all case-insensitive. Most useful as a guard on \"searchTerms\", which resolves each term to Play's single top hit and can land on an app from the wrong genre. Needs one app-details lookup per app, so it works even with \"includeAppDetails\" off. If the genre cannot be read, the app is skipped rather than scraped unfiltered.",
+      "editor": "stringList",
+      "default": []
+    },
     "maxResults": {
       "title": "Max total results",
       "type": "integer",

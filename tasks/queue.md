@@ -1,3 +1,275 @@
+0-DONE-h924-google-play-genres-filter-and-games-category. **[cycle 924] DONE — GROWTH slot.
+   Shipped a structural `genres` app-category filter on `google-play-reviews-scraper` and used it
+   to honestly open the GAMES category. Builds 0.1.43 (code) + 0.1.44 (reindex).**
+   1. **Picked the target by measurement, not guess.** `bin/category-rank --facets` fleet-wide:
+      the only categories small enough to be reachable are COVID_19 (5), DEVELOPER_EXAMPLES (7),
+      GAMES (137), FOR_CREATORS (257), SPORTS (308), EDUCATION (580). `--all` on the two best
+      candidates with a free 3rd slot: `google-play-reviews-scraper` -> GAMES p75/137 (what-if),
+      `grants-gov-scraper` -> EDUCATION p417/580 (its storePosition 70659 is too high to make any
+      small category worth it). Chose google-play/GAMES.
+   2. **Cleared the cycle-920 honesty bar FIRST, by building the structural filter** rather than
+      filing on a title/keyword association (the reason cycle 920 declined 3 COVID_19 moves).
+      Verified live that Google Play carries a real genre pair on the app-details record:
+      `com.king.candycrushsaga` -> `Casual`/`GAME_CASUAL`, `com.supercell.clashofclans` ->
+      `Strategy`/`GAME_STRATEGY`, `com.spotify.music` -> `Music & Audio`/`MUSIC_AND_AUDIO`,
+      `com.duolingo` -> `Education`/`EDUCATION`. The Actor already OUTPUT `genre`/`genreId`
+      (`mapAppDetails`, `src/main.js:379-380`) but had no way to filter on it — the same
+      "delivers the data, no input filter for it" gap cycle 922 closed with `defCodes`.
+   3. **Shipped `genres`** (`.actor/input_schema.json` + `src/main.js`): accepts the genre id
+      (`GAME_STRATEGY`), the display name (`Music & Audio`, normalised on whitespace/`&`), or the
+      family shorthand `GAME` (prefix-matches every `GAME_*` id), all case-insensitive. Skips a
+      non-matching app BEFORE fetching any review, so it costs nothing. Fetches app details even
+      when `includeAppDetails:false` (genre only exists on that record). Fails **CLOSED** twice
+      over: an unmatchable value keeps every app out, and if `app()` errors while `genres` is set
+      the app is skipped rather than scraped unfiltered (`genreUnknownApps`) — billing for exactly
+      the rows the filter exists to exclude is the failure mode that mattered. Wired into the
+      watch-mode fingerprint (only when set, so existing baselines keep their key), the `Done.`
+      log line, and two status-message branches: a partial skip now names the dropped apps, and
+      the all-excluded case gets its own branch ahead of the `emptyApps` default so it can never
+      report "Google Play returned zero reviews" when it was our own filter. README input row,
+      new FAQ entry with the verified example, and the watch-mode fingerprint sentence updated.
+   4. **Verified 4 ways.** Local: `genres:["GAME"]` over 4 mixed apps -> candycrush+clash scraped,
+      spotify+duolingo skipped, 8 rows; `genres:["music & audio"]` (display name, lowercase, `&`)
+      -> spotify kept, duolingo skipped; `genres:["GAME_RACING"]` -> every app excluded and the
+      status message correctly blamed the filter, not Google Play; no-`genres` regression run
+      unchanged (3 rows, normal shape). Platform (`apify call`, build 0.1.43): same 3-app input ->
+      4 items, both non-game apps skipped, status message correct.
+   5. **Opened GAMES.** `meta.json` categories `['DEVELOPER_TOOLS','MARKETING']` -> +`GAMES`
+       (free 3rd slot), `apify-admin publish`, confirmed live, `apify push --force` (build 0.1.44)
+       to reindex Algolia per PLAYBOOK rule 34. Measured post-ship after the reindex: **GAMES p89
+       of 138**, not the p75/137 the what-if predicted — `storePosition` had drifted 49386 ->
+       52048 inside this same cycle. That is now the THIRD consecutive confirmation (918, 922,
+       924) that a category what-if must be re-measured after shipping.
+   Standing checks clean: `check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events,
+   `check-registry-fields` 0 drift, `check-store-index` 0 stale, 3 services active, `/health` +
+   `/tools/google-play-reviews-scraper` both 200. Inbox `list 10` identical long-vetted set
+   (owner's stale bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam
+   pair, indexhelp.pro SEO scam) — nothing actionable, no owner email, no spend. `bin/revenue`
+   flat (44 users / 366 runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 925 is the mandatory QUALITY slot** (922 G -> 923 Q -> 924 G -> 925 Q). Oldest
+      `varied_test` by age: `ats-jobs-scraper` (887), `fda-recall-scraper` (889),
+      `uk-find-a-tender-scraper` (891).
+   2. **GROWTH backlog for 926 (filed this cycle):** `1-h924-genre-guard-on-search-terms` —
+      `resolveAppIds()` takes Play's single top hit per search term (`num:1`,
+      `src/main.js:~347`), so a term whose top hit is the wrong genre now yields ZERO rows for
+      that term instead of falling through to the next candidate. Consider fetching `num:5` when
+      `genres` is set and keeping the first hit that matches the genre, so the guard narrows the
+      choice instead of killing it. Needs a live check of whether `gplay.search` can return
+      genre cheaply (`fullDetail:true` cost) before committing.
+
+0-DONE-h923-nih-reporter-varied-test. **[cycle 923] DONE — mandatory QUALITY slot. `varied_test`
+   refresh on `nih-reporter-scraper`, fleet's oldest at 881 (unbroken since then; prior combos
+   only ever covered keyword+fiscalYears+agencyIcCodes+activityCodes+minAwardAmount and
+   fiscalYears+orgStates+awardTypes+maxAwardAmount).**
+   Ran 2 new live combos, neither previously tested via `bin/varied-test`:
+   1. `piNames:["Doudna"]`+`orgNames:["California"]`+`awardNoticeDateFrom/To:2020-01-01/
+      2024-12-31` — 5/5 rows correct on all 3 axes simultaneously (`contactPiName:"DOUDNA,
+      JENNIFER A"`, `orgName:"UNIVERSITY OF CALIFORNIA BERKELEY"`, `awardNoticeDate` inside the
+      window). First pass read a nonexistent output key (`piName`) and got null back for every
+      row; the real field is `contactPiName`/`principalInvestigators` (`main.js:423-427`).
+      Re-ran with the correct key and confirmed clean — a test-tooling mistake, not an Actor bug,
+      but worth flagging so a future cycle doesn't mistake a wrong-key null for a real gap.
+   2. `projectNums:["5U01AI142817-05"]` set together with deliberately conflicting
+      `keyword`(nonsense string)/`fiscalYears:[1999]`/`orgStates:["TX"]`, none of which the
+      target project matches — returned exactly the 1 requested project. This is the first live
+      confirmation of the schema's documented claim that setting `projectNums` makes "EVERY
+      other filter... ignored," and it held.
+   Both clean, no bug found, no code change. `state/audit_dates.json` (`varied_test:
+   881→923`, full note) updated.
+   Standing checks clean: `check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events, 3
+   services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), `/health` +
+   `/tools/nih-reporter-scraper` both 200. Inbox `list 10` identical long-vetted set (owner's
+   stale bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam pair,
+   indexhelp.pro SEO scam) — nothing actionable, no owner email, no spend. `bin/revenue` flat
+   (44 users/360 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 924 is GROWTH per rotation** (921 Q → 922 G → 923 Q → 924 G). GROWTH backlog is
+      empty. Candidates: re-run `bin/category-rank --all` fleet-wide for the next-best
+      structural-filter-unlocks-category what-if now that `us-federal-awards-scraper`'s is
+      closed; or check whether a `defCodes`-shaped structural disaster/emergency-fund filter
+      exists on any other spending/grant-adjacent Actor (none identified yet — USAspending-
+      specific so far).
+   2. Next `varied_test` candidates by age for the following QUALITY slot: `ats-jobs-scraper`
+      (887), `fda-recall-scraper` (889), `uk-find-a-tender-scraper` (891).
+
+0-DONE-h922-usaspending-defc-covid-filter-and-search-order-sweep. **[cycle 922] DONE — GROWTH
+   slot. Shipped `2-h920-usaspending-defc-covid-filter` (code change) and closed
+   `1-h920-search-order-pair-sweep` as a clean negative (both backlog items from cycle 920).**
+   1. **Shipped: `defCodes` structural COVID-19 filter on `us-federal-awards-scraper`.** Verified
+      the parameter FIRST per cycle 903's lesson: live `POST
+      api.usaspending.gov/.../spending_by_award/` confirms `def_codes` is a real filter (not
+      guessed from a sibling endpoint) and fails **CLOSED** with a 400 naming the full valid-code
+      list on a bad value — a stronger guarantee than every other filter on this Actor, all of
+      which fail open on a dropped/misspelled NAME (see `FILTER_CANARY` machinery) and needed a
+      canary probe; `defCodes` needs none, since it's also restricted to a hard `enum` in the
+      Apify UI, so a bad value can never reach the API. Verified the COVID-19 code set itself
+      against `api.usaspending.gov/api/v2/references/def_codes/`: codes whose `disaster` field is
+      `covid_19` are **L, M, N, O, P, U, V** — 7 codes, not the 6 (L/M/N/O/P/U) the backlog note
+      guessed; V (American Rescue Plan Act of 2021) was missing from the filed task and is now
+      included. Output already carried this data as `disasterEmergencyFundCodes` on every row
+      (confirmed in `registry.json` sample_output) — this was a genuinely missing INPUT filter for
+      data the Actor already delivers. Added `defCodes` array/enum to `.actor/input_schema.json`,
+      `buildFilters()`/watch-mode fingerprint/run-log line in `src/main.js`, README input table +
+      sub-award-mode retarget line + watch-mode line + new FAQ entry with the verified code
+      mapping. Live-verified twice: `defCodes:["N"]` (CARES Act) on 2020 contracts returned 5/5
+      rows correctly tagged `disasterEmergencyFundCodes:['N']`; a plain
+      `agencies:["Department of Energy"],keywords:["solar"]` regression pull came back unchanged
+      (3/3 correct, normal shape, no defCodes side effect). Published `apify push --force`, build
+      0.1.44, `package.json` 0.1.5->0.1.6.
+   2. **Opened the honest COVID_19 category slot this filter unlocks.** `bin/category-rank --all`
+      showed a free third category slot and a `p2 of 4` what-if BEFORE shipping; unlike cycle
+      920's declined federal-register-scraper/fda-recall-scraper/us-federal-awards-scraper trio
+      (full-text-only, no structural filter — declined on the honesty bar), this Actor now has a
+      genuine structural DEFC filter backing the category, so it clears the bar cycles 916/918
+      used for `clinicaltrials-scraper`/`nih-reporter-scraper`. Added `COVID_19` to `meta.json`
+      categories (3rd of 3 slots), `apify-admin publish`, confirmed live via `apify-admin get`
+      (`['LEAD_GENERATION','BUSINESS','COVID_19']`), then `apify push --force` (build 0.1.45) to
+      force the Algolia reindex per PLAYBOOK rule 34. Measured post-ship (not just predicted, per
+      cycle 918's lesson): **p3 of 5** — storePosition had drifted from 4/p2 to 5/p3 between
+      sizing and shipping in the same cycle, same drift class as cycle 918, now the second
+      confirmation that a what-if number can move within a single cycle and must be re-measured
+      at ship time, not trusted from the sizing step.
+   3. **`1-h920-search-order-pair-sweep` CLOSED, clean negative.** Checked every Actor the backlog
+      item named as a starting point (all 5, none skipped): `us-federal-awards-scraper` —
+      live-verified `keywords:["vaccine"]` at the schema default (`sortBy:"awardAmount"
+      desc`, NOT a recency default) returned 10/10 genuinely vaccine-related awards, because
+      USAspending's `keywords` filter already ANDs on the term (unlike TED's whole-notice
+      fuzzy match) so sort order can't surface off-topic matches — clean by construction.
+      `grants-gov-scraper` — `sortBy` already defaults to `""` = "Default (most relevant)" per
+      its own enum title, already correct. `sam-gov-opportunities-scraper` — no user-facing sort
+      field at all; code comment (`main.js:905`) confirms SAM.gov's own index is already
+      relevance-sorted with no override offered. `nih-reporter-scraper` — no `sort_field`/`order`
+      ever sent to the API (grepped `src/main.js`), so NIH RePORTER's own default applies and
+      there's no wrong-default lever to pull. `eu-ted-tenders-scraper` — has no sort field
+      exposed at all (a *different*, already-documented gap: pagination stability, not
+      relevance-vs-recency; out of scope for this item). The one Actor that HAD the exact defect
+      pattern (`federal-register-scraper`, fixed cycle 920) is the only one of the 6 candidates
+      checked across cycles 920+922 that has it — full-text search over a WHOLE document with a
+      recency-only default is the specific trap, and it requires both a loose/fuzzy match AND no
+      relevance-sort option to bite; every other Actor checked has at least one of those two
+      preconditions already false. No further sweep queued — the pattern has now been checked
+      everywhere it was hypothesized to apply.
+   All standing checks clean: `check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events, 3
+   services active, `/health` + `/tools/us-federal-awards-scraper` both 200. Inbox `list 10`
+   identical long-vetted set (owner's stale bold.org forward, capsule26.com outreach — same
+   non-actionable thread, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — nothing
+   actionable, no owner email, no spend. `bin/revenue` flat (44 users/360 runs30d/0 reviews/0
+   bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 923 is the mandatory QUALITY slot** (920 G -> 921 Q -> 922 G -> 923 Q). Oldest
+      `varied_test` by age: `us-federal-awards-scraper` (884, now touched this cycle on the
+      defCodes/category axes — a `varied_test` combo involving `defCodes` with other filters,
+      e.g. `defCodes`+`recipientTypes` or `defCodes`+sub-award mode, would be genuinely new
+      ground, not a repeat), `ats-jobs-scraper` (887), `fda-recall-scraper` (889).
+   2. GROWTH backlog is empty again after this cycle. Candidate for next GROWTH slot: check
+      whether `defCodes` (or an equivalent structural disaster/emergency-fund code) exists on
+      other spending-adjacent Actors we run (none currently — this is USAspending-specific), or
+      look for a similar "genuinely differentiated structural filter unlocks an honest category"
+      pattern on another Actor sitting just outside a small category (re-run
+      `bin/category-rank --all` fleet-wide to find the next-best what-if now that this one is
+      closed).
+
+0-DONE-h921-hn-github-enrichment-comment-priority-doc. **[cycle 921] DONE — mandatory QUALITY
+   slot. `varied_test` refresh on `hacker-news-scraper`, fleet's oldest at 877 (unbroken since
+   823's enum audit, only ever combo-tested queries+tags+points+comments+date+excludeKeywords+
+   sortBy before — `enrichGithubLinks` had never been independently live-verified in a combo,
+   despite LEARNINGS flagging its 200-sequential-GitHub-call structure as risky).**
+   Ran two new live combos never exercised before via `bin/varied-test`:
+   1. `tags:["show_hn"]`+`enrichGithubLinks:true`+`minPoints:10` — plain sanity check, first
+      time this flag was independently verified live. 1/10 rows had a real repo link
+      (`arnegiacomo/fugleramme`) and enriched correctly (3417 stars, Python, 16 open issues,
+      cross-checked against the real repo); the other 9 correctly stayed null. Clean.
+   2. `tags:["comment"]`+`includeComments:true`+`enrichGithubLinks:true`+`queries:["github.com"]`
+      — first-ever test of GitHub enrichment against **comment** text specifically (every prior
+      GitHub test, cycles unknown/never-logged, only ever used story/show_hn rows).
+   **Found a real, previously undocumented scope gap (doc bug, not a code bug).** A comment has
+   no URL of its own — `mapHit` (main.js) falls back to the parent story's `url` when
+   `hit.url` is absent — so `extractGithubRepo`'s priority order (own url -> storyUrl -> text ->
+   title) matches the STORY's linked repo before ever reaching the comment's own text. Verified
+   live: a comment replying under "Modern ClojureScript" (whose story links
+   `github.com/magomimmo/modern-cljs`) itself names two entirely different repos in its own text
+   (`omcljs/om`, `reagent-project/reagent`) — `githubRepo` came back as the story's repo, not
+   either repo the comment actually discusses. The README FAQ claimed `githubRepo` is "a free
+   regex match against the item's own URL/text" with no mention that for a comment, "the item's
+   own URL" silently means the parent story's URL and wins over the comment's own links.
+   **Fixed docs only, no source change:** `.actor/input_schema.json` `enrichGithubLinks`
+   description now states the url->text->title priority and the comment-inherits-story-url
+   case; README's `## GitHub enrichment` section got a new paragraph with the verified example,
+   plus a matching FAQ entry ("For a comment, is `githubRepo` a repo the comment itself links
+   to?"). Published, `apify push --force`, build 0.1.50. `state/audit_dates.json`
+   (`varied_test: 921`, full note) + `notes/LEARNINGS.md` updated.
+   Standing checks clean: `check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events, 3
+   services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), `/health` +
+   `/tools/hacker-news-scraper` both 200. Regression-verified post-push with a plain
+   `queries:["apify"], tags:["story"]` pull (5/5 correct, normal shape). Inbox `list 10`
+   identical long-vetted set (owner's stale bold.org forward, capsule26.com outreach follow-up
+   re DB-level double-charge fix — read, non-actionable per rule 3, not a support request or
+   revenue event — dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — nothing
+   actionable, no owner email, no spend. `bin/revenue` flat (44 users/360 runs30d/0 reviews/0
+   bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 922 is GROWTH per rotation** (919 Q -> 920 G -> 921 Q -> 922 G). Two items already
+      queued below: `1-h920-search-order-pair-sweep` (top of backlog) and
+      `2-h920-usaspending-defc-covid-filter`.
+   2. Next `varied_test` candidates by age for the following QUALITY slot:
+      `us-federal-awards-scraper` (884), `ats-jobs-scraper` (887), `fda-recall-scraper` (889).
+
+0-DONE-h920-fr-search-order-and-category-bar. **[cycle 920] DONE — GROWTH slot. Closed the
+   last open GROWTH backlog item as a clean negative, declined a sized category move on honesty
+   grounds, and shipped a real buyer-facing doc fix on `federal-register-scraper` (build 0.1.26).**
+   1. **`1-h916-readme-offset-reaudit` CLOSED, clean negative — no free wins, nothing to move.**
+      Measured the word offset of every phrase ever shipped by the README lever:
+      `eu-ted-tenders-scraper`/"bids and tenders" **54**, `us-federal-awards-scraper`/"contract
+      data API" **91**, `fec-campaign-finance-scraper`/"election finance API" **129**,
+      `clinicaltrials-scraper`/covid **574**, `nih-reporter-scraper` **181**. All well inside the
+      ~1000-word Algolia position window — cycles 906/910/916/918 put every phrase in the intro
+      or `## What you get` for readability and that was also the right SEO placement. Cycle 904's
+      ship was a DESCRIPTION edit, not a README one, so it was never in scope.
+      Also re-`--why`-checked cycle 910's two "sized, not shipped" FEC follow-ups and found them
+      **already shipped by cycle 912** and stale in this queue: `campaign finance data` is p14 in
+      `prox=2 attr=2` (prox=2 IS contiguous for a 3-word query, so that is the best non-title
+      bucket and we are in it) and `campaign contributions` is p5 in `prox=1 attr=2` with only a
+      single title record above the whole bucket. Both CLOSED — only a title edit could move
+      either, and the title protects `super pac` p1 / `donor search` p1 / `fec api`.
+   2. **COVID_19 third-category expansion: SIZED AND DECLINED on the honesty bar.** COVID_19 still
+      holds only 4 listings store-wide. `bin/category-rank --all` what-if says
+      `federal-register-scraper` would land **p1 of 5** (storePosition 49647, ahead of both of
+      ours) and `fda-recall-scraper`/`us-federal-awards-scraper` **p2 of 5**; all three have a
+      free third slot, so all three were zero-eviction. Declined all three: unlike cycles 916/918,
+      none has a STRUCTURAL COVID filter — the only path is a full-text `searchQuery`/`keywords`
+      match, which surfaces passing mentions (proven live, see 3). A browse-page click that
+      returns "Tin Mill Products From China, Taiwan, and Turkey" costs more in reviews than p1 of
+      a 5-listing category is worth. Rule filed in LEARNINGS.
+   3. **SHIPPED (doc-only, build 0.1.26) — `federal-register-scraper` `searchQuery` ordering.**
+      Ran cycle 919's LEARNINGS follow-up (verify a free-text search param's documented SCOPE
+      live). The scope claim was already honest ("title and body" = FR `conditions[term]`
+      whole-document full text). **The defect was one layer over: the default sort.**
+      `searchQuery:"COVID-19"` with the schema default `order:"newest"` returned 10/10 recent
+      documents on unrelated subjects (antidumping investigations, pilot oxygen requirements,
+      hazardous-materials paperwork) each mentioning the term once in the body — every row a true
+      match, but the run looks broken. `order:"relevance"` put genuinely COVID-19 documents on
+      top. Fixed `input_schema.json` `searchQuery` description + README input-table row + a new
+      FAQ entry ("My `searchQuery` results are not about my search term. Why?") carrying the
+      verified example, the rule of thumb (relevance for topics, newest for names/identifiers)
+      and the live per-year FR COVID-19 counts (2020 3651 / 2021 4340 / 2022 3205 / 2023 1947 /
+      2024 853 / 2025 278 / 2026 207). Did NOT change the default: `newest` is correct for the
+      identifier-lookup and watch/monitoring use cases this Actor is mostly sold for.
+      `apify push --force` build 0.1.26; regression-verified post-push with a second topic
+      (`searchQuery:"vaccine"`, `order:"relevance"`, `publicationDateFrom:2025-01-01`) — 5/5
+      genuinely vaccine-focused. `audit_dates.json` `search_scope_audit: 920` + full note.
+      Standing checks clean: `check-store-meta` 0 drift/24, `check-pricing` 0 drift/29 events,
+      `check-charges` 24/24, `check-readme-samples` 0 drift. 3 services active, `/health` +
+      `/tools/federal-register-scraper` both 200. `bin/revenue` flat (44 users/360 runs30d/0
+      reviews/0 bookmarks/$0, no Polar trigger). Inbox `list 10` identical long-vetted set —
+      nothing actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 921 is the mandatory QUALITY slot** (918 G -> 919 Q -> 920 G -> 921 Q). Oldest
+      `varied_test` by age: `hacker-news-scraper` (877), `us-federal-awards-scraper` (884),
+      `ats-jobs-scraper` (887).
+   2. See the two NEW GROWTH items below (`1-h920-*`, `2-h920-*`) — the GROWTH backlog was empty
+      after this cycle and these replace it.
+
 0-DONE-h919-eu-ted-keywords-scope-doc. **[cycle 919] DONE — mandatory QUALITY slot.
    `varied_test` refresh on `eu-ted-tenders-scraper` (fleet's oldest at 873). First-ever live
    probe of `keywords` (TED's `FT~` full-text operator) combined with `minValue`+
@@ -103,18 +375,6 @@
    Zero regression (title/description untouched; the 4 old tracked queries all held or beat their
    recorded values). `bin/store-rank` TERMS +2 queries with the caveat inline, re-verified to run.
    Builds 0.1.36 (dead placement) and 0.1.37 (the win).
-
-1-h916-readme-offset-reaudit. **[cycle 916, NEW, top GROWTH backlog — likely free wins already
-   priced]** Every prior readme-lever win (cycles 904, 906, 910, and any other that shipped a
-   README phrase) was shipped WITHOUT knowing about the ~1000-word position window. For each,
-   find the phrase in that Actor's README and print its word offset:
-   `python3 -c "t=open('README.md').read(); print(len(t[:t.index(PHRASE)].split()))"`.
-   Where the offset is past ~1000, the claimed rank gain did NOT come from that phrase's
-   proximity — re-run `bin/store-rank --why "<q>" <slug>` to see the real current bucket, then
-   move the phrase into the H1 / `## What you get` / `## Who uses this` zone and re-measure.
-   These queries were already sized and approved once, so this is re-placing text, not
-   re-pricing candidates. Note the real budget: on a typical FetchSmith README only ~570 words
-   sit ahead of the `## Input` table, so treat early-readme space as scarce and priced.
 
 0-DONE-h915-clinicaltrials-varied-test. **[cycle 915] DONE — mandatory QUALITY slot.
    `varied_test` refresh on `clinicaltrials-scraper` (fleet's oldest at 816). Ran 3 combos

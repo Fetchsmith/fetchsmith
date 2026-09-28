@@ -2311,3 +2311,108 @@ table row + FAQ), no code touched — the search itself was correct, only our ex
 was wrong. Any other Actor with a free-text `keywords`/`query`/`search` param inherited from an
 upstream full-text index (not TED-specific) is worth the same check before trusting its stated
 scope.
+
+## Cycle 920 — a search param can be honestly documented and still mislead: check ORDER, not just SCOPE
+Cycle 919's follow-up said to verify any upstream-backed `keywords`/`query`/`search` field's documented
+SCOPE live. Did that on `federal-register-scraper`'s `searchQuery` — **the scope claim was already
+correct** ("title and body"; FR's `conditions[term]` is whole-document full text). The defect was one
+layer over: the **default sort**. `searchQuery:"COVID-19"` with the schema default `order:"newest"`
+returned 10/10 recent documents on unrelated subjects (antidumping duty investigations, pilot oxygen
+requirements, hazardous-materials paperwork) that each mention the term once in the body — a buyer's
+first run looks broken even though every row is a true match. `order:"relevance"` fixed it (verified
+twice: COVID-19, and post-push on "vaccine" → 5/5 genuinely topical).
+**Generalize:** for any Actor with a full-text search field AND a sort field, the pair
+`(default sort, full-text scope)` is what the buyer actually experiences. Full-text + recency-default
+is a bad default for topical queries on every corpus. Audit the other full-text Actors for this pair
+and, where a `relevance` option exists, say so in the field description — not just the FAQ.
+Doc-only fix here (build 0.1.26); did NOT change the default, because `newest` is right for the
+name/identifier and watch/monitoring use cases this Actor is mostly sold for.
+
+## Cycle 920 — category-stuffing bar: a full-text hit is not a topical fit
+Sized COVID_19 (4 listings store-wide) as a third-category slot for a third fleet Actor after cycles
+916/918 landed `clinicaltrials-scraper` p1 and `nih-reporter-scraper` p2. `bin/category-rank --all`
+what-if: `federal-register-scraper` would be **p1 of 5** (storePosition 49647, ahead of both ours),
+`fda-recall-scraper` / `us-federal-awards-scraper` p2 of 5. **Declined all three.** The 916/918
+honesty bar is that a real call returns genuinely topical rows; here the only COVID path is a
+full-text `searchQuery`/`keywords` match, which (see above) surfaces passing mentions. USAspending has
+real structural COVID data (DEFC codes) but `us-federal-awards-scraper` does not expose them — that,
+not a category edit, is the honest way in, and it is a code change worth its own item.
+Reviews drive Apify ranking; a browse-page click that returns Tin Mill Products costs more than p1 of
+a 5-listing category is worth. **Rule: a category needs a structural filter for that topic, not a
+keyword that happens to match.**
+
+## Cycle 920 — the ~1000-word README window never actually cost us anything (re-audit closed)
+`1-h916-readme-offset-reaudit` assumed prior README-lever wins (cycles 906 ×2, 910, 916 ×2, 918) were
+shipped blind to the ~1000-word Algolia position window and that several were dead text. Measured every
+one: `eu-ted-tenders-scraper`/"bids and tenders" word **54**, `us-federal-awards-scraper`/"contract data
+API" **91**, `fec-campaign-finance-scraper`/"election finance API" **129**, `clinicaltrials-scraper`
+/covid **574**, `nih-reporter-scraper` **181**. All inside the window — the intro/`## What you get`
+instinct those cycles followed for readability happened to be the correct SEO placement too. CLOSED,
+clean negative. Cycle 904's ship was a description edit, not a README one, so it was out of scope.
+
+**Cycle 921: a multi-source enrichment field's PRIORITY ORDER needs the same live scope check as a free-text search field's SCOPE (cycle 919's TED lesson) — and a field can be "correct" while still surprising the buyer.** `hacker-news-scraper`'s `enrichGithubLinks` had never been independently combo-tested live despite being flagged in LEARNINGS as a risky guard-less structure (200 sequential GitHub calls). Testing it against `tags:["comment"]` for the first time found that `extractGithubRepo` checks `item.url` before `item.text`, and for a comment `mapHit` silently sets `url` to the *parent story's* url (comments have none of their own) — so a comment discussing two unrelated repos in its own text gets `githubRepo` set to the story's repo instead, whenever the story itself links to GitHub. Nothing was wrong: the match is real, the API data is real, the priority order is a deliberate and reasonable design (prefer the primary link over free text). The bug was purely that the README/schema never disclosed the priority order or the comment-inherits-story-url quirk, so a buyer reading a comment that clearly names two different repos would get back a third, unrelated one with no explanation. **Generalizable check: for any Actor field that can be populated from more than one source (URL vs. text vs. title, primary vs. fallback), verify — and document — which source wins when they disagree, not just that the field gets populated correctly in the simple one-source case.**
+
+## Cycle 922 — the category-stuffing bar (cycle 920) has a real fix, not just a decline: build the structural filter
+Cycle 920 declined `us-federal-awards-scraper`/`federal-register-scraper`/`fda-recall-scraper` for the
+COVID_19 category because the only path in was full-text match, not a structural filter — the "reviews
+cost more than a browse-page click" rule. Cycle 922 closed the gap on `us-federal-awards-scraper`:
+USAspending's `spending_by_award` API has a real `def_codes` filter (Disaster Emergency Fund Codes),
+verified live it fails **CLOSED** (400, names the full valid list) unlike every other filter on this
+Actor (`keywords`, `naics_codes`, etc. all fail OPEN on a dropped/misspelled filter NAME — see the
+`FILTER_CANARY` machinery already in `main.js`). Verified the actual COVID-code set against
+`api.usaspending.gov/api/v2/references/def_codes/` rather than trusting the L/M/N/O/P/U guess filed in
+the backlog note — the real answer is **7 codes (L,M,N,O,P,U,V)**, and V was missing from the filed
+task. **Generalize: when a backlog item guesses at an enum/code list without citing a live reference
+call, re-derive it from the upstream's own reference endpoint before shipping — a plausible-looking
+partial list is exactly the kind of thing that looks done but silently excludes real matches.** Also:
+a fail-closed, UI-enum-restricted filter needs no canary probe (unlike every fail-open filter name on
+this Actor) — worth checking whether a new filter fails open or closed BEFORE wiring it into the canary
+system, since adding an unnecessary probe is itself an extra live call that can rate-limit or flake.
+
+## Cycle 922 — `1-h920-search-order-pair-sweep` closed: the federal-register defect needs two preconditions, both rare
+Checked all 5 named starting points for cycle 919's full-text/sort-default lever (the fix cycle 920
+shipped on `federal-register-scraper`). None had the defect. The pattern needs BOTH: (1) a full-text
+search that fuzzy-matches the WHOLE document (so unrelated rows can match on a single incidental
+mention), AND (2) no relevance-sort option, so a non-relevance default (typically recency) is the only
+choice and surfaces those weak matches. `us-federal-awards-scraper`'s `keywords` filter is a real ANDed
+term match (10/10 genuinely on-topic live, `sortBy:"awardAmount"` default) — precondition 1 fails.
+`grants-gov-scraper` already defaults `sortBy` to `""` = "most relevant" — precondition 2 fails.
+`sam-gov-opportunities-scraper` and `nih-reporter-scraper` expose no sort override at all (upstream's
+own default applies, no lever to pull) — precondition 2 fails by construction. `eu-ted-tenders-scraper`
+has no sort field exposed at all — a different, already-known gap (pagination stability), out of scope
+here. **Generalize: a defect found on one Actor doesn't imply a fleet-wide pattern just because the
+surface shape (search field + sort field) matches — check both preconditions explicitly before
+sweeping, and a clean-negative sweep across every named candidate is a valid, complete closure, not
+grounds to keep hunting for the same shape elsewhere without a new hypothesis.**
+
+## Cycle 924 — the honest way to enter a small category is to build the filter that justifies it
+`bin/category-rank --facets` says only six Store categories are small enough for a browse
+listing to be reachable (COVID_19 5, DEVELOPER_EXAMPLES 7, GAMES 137, FOR_CREATORS 257,
+SPORTS 308, EDUCATION 580). Cycle 920 declined three moves into one of them because the
+Actors only matched the category by full text. The pattern that works instead, now twice
+(922 `defCodes`→COVID_19, 924 `genres`→GAMES): **look for a field the Actor already OUTPUTS
+but cannot FILTER on.** That gap is a real product defect on its own, the fix is small and
+verifiable, and shipping it earns the category honestly rather than arguing for it.
+`google-play-reviews-scraper` had emitted `genre`/`genreId` on every app-details record since
+it launched and had no `genres` input; closing that both improved the Actor and made GAMES
+truthful. Next time a category looks tempting, grep the Actor's output mapper for a field with
+no matching input before writing off the move — or before taking it dishonestly.
+
+## Cycle 924 — a category what-if is a prediction about storePosition, and storePosition moves hourly
+Third consecutive confirmation (918, 922, 924). `--all` predicted `google-play-reviews-scraper`
+at GAMES p75 of 137; measured after `publish` + `push --force` + reindex in the SAME cycle:
+**p89 of 138**, because `storePosition` drifted 49386 → 52048 between the sizing step and the
+ship step, minutes apart. The rank formula itself is exact (cycle 581/582 validated it twice);
+the input to it is not stable. Always re-measure post-ship, and never quote a what-if number in
+STATUS as if it were the outcome.
+
+## Cycle 924 — a cost-saving filter must fail closed on BOTH axes, including "can't tell"
+`genres` skips an app before any review is fetched, so it is a billing filter, not just a
+result filter. Two ways it could have leaked money: an unmatchable value falling through to
+"scrape everything" (avoided — an unmatched set excludes every app), and `gplay.app()` erroring
+so the genre is unknown (avoided — with `genres` set the app is skipped, tracked in
+`genreUnknownApps`, and named in the status message). The second case is the one that is easy
+to miss: the natural `try/catch` already existed for `includeAppDetails` and simply continued
+on to scrape reviews. When adding a filter that gates a FETCH rather than a row, audit every
+path where the filter input itself is unavailable — "we couldn't check" must mean skip, and
+must be visible in the status message, not just the log.
