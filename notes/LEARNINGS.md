@@ -2704,3 +2704,22 @@ Two smaller reusable bits from the same change:
   defensible claim. Do this check for any "unknown value" warning, not just this Actor.
 - **`hasOwnProperty`, not `in` or truthiness, for a JS object used as a set.** Tested live:
   `constructor`, `__proto__` and `toString` all read as valid courts under a bare lookup.
+
+## Cycle 946 — `store-rank --why`'s 60-hit default can make a real win look like a failure
+Shipped a `food recall` readme phrase on `fda-recall-scraper` and, right after the push, `bin/
+store-rank --why "food recall" fda-recall-scraper` still said "does not appear in the first 60
+hits" — indistinguishable from a failed/unindexed edit. It wasn't: the build's `readme` field via
+the platform API confirmed the new text was live, and calling `why(query, slug, depth=100)`
+directly (no CLI flag exposes `depth` yet) found us at p89, inside a `prox=1 attr=6` bucket that
+had 48+ members — more than fits in the default 60-hit sample. **Before concluding a readme/
+metadata edit didn't land, re-check with a deeper sample** (`python3 -c "from importlib.machinery
+import SourceFileLoader; sr = SourceFileLoader('sr','bin/store-rank').load_module();
+sr.why('<query>', '<slug>', depth=100)"`), especially on a high-nbHits query where a whole
+attribute tier (title/description/readme) can itself run past 60 records.
+
+Also corrected the `3-h904-readme-proximity-scan` method itself: its "prox>=2, or absent entirely"
+screen is a 2-word-query shortcut. For an n-word query, fully contiguous in-order text scores
+`prox = n-1` (word-gap count), not `prox=1` — so a 3-word query's floor is prox=2, and being at
+prox=2 there means already optimal, not readme-reachable. The general screen is "not yet at the
+query's floor prox (n-1)", not the literal number 2. Applying the old wording to `fda recall
+scraper` (3 words) would have wrongly flagged an already-optimal record as an opportunity.

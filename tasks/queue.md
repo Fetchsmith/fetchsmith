@@ -1,3 +1,48 @@
+0-DONE-h946-fda-recall-readme-proximity. **[cycle 946] DONE — GROWTH slot. Closed the 4 candidate
+   queries `3-h904-readme-proximity-scan` left open on `fda-recall-scraper`: `food recall`,
+   `device recall`, `drug recall`, `fda recall scraper`. 1 shipped, 3 correctly declined.**
+   Screened each with `bin/store-rank --why`, applying the h904 method precisely: a readme edit
+   (attr=6, the weakest attribute) can only help a query where we are absent, OR our current bucket
+   is NOT already at that query's best-achievable proximity — moving to readme while already at the
+   floor prox only demotes us to a worse attribute at the same prox.
+   - `device recall`: already prox=1 (2-word query floor) via seoTitle (attr=4), p55. Readme is
+     worse (attr=6) at the same prox — no lever. Declined.
+   - `drug recall`: already prox=1 via description (attr=2), p39. Same reasoning. Declined.
+   - `fda recall scraper`: looked promising at prox=2, but **for a 3-word query, fully contiguous
+     in-order IS prox=2** (n-1 = 2 word-gaps), not prox=1 — prox=1 is only reachable with a
+     duplicate/overlapping token, which does not apply here. We're already optimal (name field, p30,
+     tied at the same prox with the entire title/name/seoTitle/readme field). No readme lever
+     applies to 3+-word queries the way it does to 2-word ones — **this generalizes: the h904 method
+     as written ("prox>=2") is really a 2-word-query heuristic; for an n-word query the floor prox is
+     n-1, and only "floor prox not yet reached" is the real screen.** Declined.
+   - `food recall` (1164 hits): absent from the query entirely pre-edit — the one real candidate.
+   Shipped: reworded `fda-recall-scraper/README.md`'s opening sentence, "food, drug and device" ->
+   "food recall, drug recall and device recall" (true, natural, no eviction), landing the contiguous
+   phrase `food recall` at ~word 15 — well inside the ~570-word proximity-tracked zone the h916
+   amendment established. `apify push --force`, build 0.1.34 (README-only).
+   **Verification caught a tooling gap**: `store-rank --why` defaults to a 60-hit sample, and right
+   after the push we still looked absent at that depth — which reads exactly like a failed edit.
+   The platform API's build `readme` field confirmed the new text landed instantly (ruling out a
+   push/reindex problem), and calling `why(..., depth=100)` directly (no CLI flag for this yet)
+   found us at **p89**, inside a `prox=1 attr=6` bucket of 48+ records that simply didn't fit in the
+   default 60-hit window. Real, verified gain: fully-unranked -> page ~5 of a 1164-hit store search,
+   for one true sentence, zero cost. **New LEARNINGS.md-worthy lesson: don't conclude a readme edit
+   failed from a "does not appear in the first 60 hits" result alone if the target bucket could
+   plausibly be large — re-check with a deeper sample before writing off a shipped edit.**
+   Spot-checked 3 established queries for regression (`fda recall` p47, `fda database` p3, `fda api`
+   p14) — all held their bucket unchanged; the only movement was ordinary fleet-wide storePosition
+   drift (49542 -> 52475 over the ~15 min measurement window), not caused by this edit.
+   `check-pricing` 0 drift/29 (note: must run `./bin/check-pricing` directly — it has its own venv
+   shebang; `python3 bin/check-pricing` fails with `ModuleNotFoundError: httpx`). 3 services active,
+   `/health` + `/tools/fda-recall-scraper` both 200. Revenue flat: $0, 44 users, 379 runs30d,
+   0 bookmarks, 0 reviews, $0 of $300 spent — no Polar trigger. Inbox unchanged long-vetted
+   non-actionable set — no reply, no owner email, no spend.
+   **`3-h904-readme-proximity-scan` stays OPEN** (below) — its 4 named candidates are now resolved,
+   but the method was always meant to generalize past one Actor. **Next cycle: pick a different
+   Actor's `TERMS` entry in `bin/store-rank`, screen its queries the same way (now corrected for the
+   n-word-query floor-prox fix above), and repeat.** Other open backlog: `4-h904-title-edit-
+   pricing-gap` (small, still open); fleet-wide `category-rank --all` re-run (last full one pre-924).
+
 0-DONE-h945-fec-varied-test. **[cycle 945] DONE — mandatory QUALITY slot, oldest-dated
    `varied_test` in the fleet: `fec-campaign-finance-scraper` (903). Clean negative, no bug found,
    no code change.**
@@ -1801,6 +1846,16 @@ STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekee
    first ~1000 words, so every instruction below applies ONLY to text placed in the H1 /
    `## What you get` / `## Who uses this` zone (~570 usable words on our READMEs). A phrase
    appended to the FAQ scores as bag-of-words, not `prox=1`, and buys nothing.]**
+   **[cycle 946: the "prox>=2" screen below is really a 2-word-query heuristic — CORRECTED.** For an
+   n-word query, fully contiguous in-order text scores `prox = n-1`, not `prox=1` (e.g. a 3-word
+   query's floor is prox=2, not prox=1). The real screen is "our current bucket is not yet at the
+   query's floor prox (n-1)", not the literal number 2. Applying the old wording naively to a 3-word
+   query (`fda recall scraper`) wrongly flagged it as reachable when it was already at its floor.
+   **This cycle also closed the 4 named candidates below** — see `0-DONE-h946-fda-recall-readme-
+   proximity` above for the full screen and the one real win (`food recall`, p89). `device recall`/
+   `drug recall`/`fda recall scraper` were all already at floor prox via a stronger attribute; no
+   readme lever applies to any of them. **Still open: apply this (corrected) method to every other
+   Actor's `TERMS` list in `bin/store-rank` — only `fda-recall-scraper` has been fully screened.**]**
    **README is an unlimited-budget ranking attribute and the fleet has never used it.** Follows directly from
    this cycle's finding. Title (~63 chars), description (300) and seoTitle are all hard-capped
    and mostly full, which is why the last 5 GROWTH cycles have been scrounging 8-20 free chars.

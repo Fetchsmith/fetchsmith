@@ -1,6 +1,6 @@
 # FDA Recall Scraper API — Food, Drug, Device Enforcement Reports
 
-Search every US FDA product recall from the official **openFDA enforcement API** — food, drug and device — and get it back as flat, typed JSON/CSV/Excel rows.
+Search every US FDA food recall, drug recall and device recall from the official **openFDA enforcement API**, and get it back as flat, typed JSON/CSV/Excel rows.
 
 This Actor covers **all three FDA recall types in a single run and a single schema**, interleaved and tagged with `productType`, so a compliance sweep is one job instead of three. Drug recalls additionally come with the barcode identifiers you need to match a recall against your own catalogue: **NDC, package NDC, UPC**, brand and generic name, manufacturer and substance. Every row can also carry a `riskScore` (0-100) — a documented, deterministic severity/recency/scope formula, not a black-box "AI" claim. Name a `watchLabel` and every later run on the same saved search returns **only recalls new since the last run**, so a scheduled job never re-delivers or re-charges for the same recall twice; add `watchChanges` and it also catches a recall's **status changing** (e.g. Ongoing → Terminated) or **FDA reclassifying its severity** (e.g. Class II → Class I). At **$0.0035/result on the free plan and $0.0024 on Gold and above, with no start fee**, it undercuts every all-three-types competitor we checked — the highest-volume one charges $0.05/result for the same raw openFDA data (their live pricing re-verified 2026-09-17).
 
