@@ -1,3 +1,127 @@
+0-DONE-h949-substack-varied-test. **[cycle 949] DONE — mandatory QUALITY slot, oldest-dated
+   `varied_test` tied in the fleet: `substack-scraper` (895, tied with `sec-insider-trades-scraper`
+   which got GROWTH work instead at 948). Clean negative, no bug found, no code change.**
+   Ran 3 live combos via `bin/varied-test` against `astralcodexten`:
+   1. `audienceFilter:"paid"` + `minCommentCount:5` — 10/10 rows `isPaid:true` AND `commentCount`
+      well above 5 (all Hidden Open Threads / one essay, range 31-208). Confirms the AND across a
+      boolean-derived field (`isPaid`, computed from `post.audience`) and a numeric archive-listing
+      field together, not just individually.
+   2. `minWordCount:3000` + `minReactionCount:50` — 10/10 rows satisfied both thresholds
+      (wordCount 3037-12639, reactionCount 65-651). Negative control (`minReactionCount:999999`,
+      same `minWordCount`) correctly collapsed to 0 rows — proves the filter is real, not
+      coincidental overlap.
+   3. `searchQuery:"AI"` + `contentType:"newsletter"` — 10/10 rows `postType:"newsletter"`.
+      Titles included some with no literal "AI" substring (e.g. "Mantic Monday 1/29/24") — matches
+      the README's own documentation that `searchQuery` is Substack's server-side archive search
+      (relevance-ranked over full content, not a title-substring filter), not a bug. Negative
+      control with a nonsense keyword (`zzzqqxxnonsensewordxyz123`) correctly returned 0 rows,
+      confirming the search parameter reaches upstream and isn't silently ignored.
+   Standing checks: `check-pricing` 0 drift/29, `check-charges` 0 missing/24, 3 services active,
+   site `/health` + `/tools/substack-scraper` both 200. `bin/revenue` flat (44 users/381
+   runs30d/$0, 0 bookmarks/reviews — no Polar trigger). Inbox `list 10`: same long-vetted
+   non-actionable set — owner's `116f7cc3` bold.org/`scholarship-scraper` forward is the same
+   stale, already-resolved-since-cycle-652 non-issue re-delivered yet again (Actor deliberately
+   `retired`, bold.org still behind its Vercel checkpoint), `873db8ee` capsule26.com outreach
+   already on file/answered, dmarc x5, `j_woodgate01` scam pair, `4bb33655`/other SEO-spam —
+   nothing needing a reply, no owner email (no revenue event), no spend.
+   `audit_dates.json`: `varied_test: 949` (was 895) on `substack-scraper`.
+   **Next cycle (950) is GROWTH per rotation.** Backlog, oldest first: `3-h904-readme-proximity-
+   scan` (2 Actors screened so far — `fda-recall-scraper`, `sec-insider-trades-scraper`; pick a
+   new Actor's `TERMS` list in `bin/store-rank`); `4-h904-title-edit-pricing-gap` (small, still
+   open); fleet-wide `category-rank --all` re-run (last full one pre-924). **Next QUALITY slot
+   (951): `federal-register-scraper`** (905, next-oldest `varied_test` now that both 895s are
+   closed).
+
+0-DONE-h948-sec-insider-readme-proximity. **[cycle 948] DONE — GROWTH slot. Applied the
+   (cycle-946-corrected) h904 README-proximity method to `sec-insider-trades-scraper`, the 2nd
+   Actor in the fleet to be fully screened. Clean negative on all 7 pre-existing TERMS, one real
+   double win on new queries. Build 0.1.12, README-only.**
+   **Screen of the 7 tracked terms — zero levers, and the reason generalizes:** every one was
+   already at its query's FLOOR prox (n-1 for an n-word query) in an attribute at least as strong
+   as readme(6). `sec insider trading` p13, `insider trading scraper` p8, `form 4 insider` p25 —
+   all prox=2 attr=0 (title). `insider trades` p17 — prox=1 attr=0. `insider buying` p17,
+   `insider selling` p4, `stock insider` p6 — all prox=1 attr=2 (description). A readme edit
+   (attr=6) sorts strictly BEHIND attr=0/2 at equal prox, so on every one of these it could only
+   demote us. Same outcome as 3 of the 4 `fda-recall-scraper` candidates at 946. **Emerging fleet
+   rule: a mature TERMS list is nearly always already at floor prox — the readme lever's real
+   home is queries we do not rank for AT ALL, not queries we rank badly on.**
+   **So the cycle went shopping instead.** Priced 14 new candidates with `bin/store-price`,
+   bucket-inspected the 3 best with `--why`, and shipped ONE truthful sentence into the README
+   intro (after the ticker-resolution paragraph, ~word 90 — well inside the ~570-word
+   proximity-tracked zone; 0 words evicted, no meta.json edit):
+       "In short: an insider trading API over Form 4 data, callable from Apify without hosting
+        an EDGAR parser yourself."
+   Picked for carrying TWO contiguous target phrases in one natural sentence rather than one.
+   Truth-checked: the Actor does read Forms 3/4/5 from SEC EDGAR and is callable over the Apify
+   API / fetchsmith.com `/api/v1/run` — not SEO filler.
+   `apify push --force` -> build 0.1.12. Confirmed the readme text landed by reading the build's
+   `actorDefinition.readme` via the platform API BEFORE measuring (the 946 lesson: never judge a
+   readme edit from rank alone). Measured live ~90s post-reindex, both predictions near-exact:
+     * `insider trading api` (704 hits): absent-from-top-60 -> **p15** (predicted ~p14; bucket
+       words=3 exact=3 prox=2 attr=6, behind 2 title + 6 seoTitle + 5 better-storePosition readme)
+     * `form 4 data` (42937 hits): absent-from-top-60 -> **p13** (predicted ~p15)
+   **Zero regression, verified:** all 7 tracked terms held byte-identical bucket AND rank, except
+   `stock insider` p6 -> p5, which is storePosition drift (52847 -> 52627 across the window) in
+   our favour, not the edit.
+   Both new queries added to `bin/store-rank` TERMS (now 9; tracker reports top-20 on 8/9).
+   **Priced and NOT taken — precise notes so the next pass does not re-derive:**
+     * `insider trading data` (717) — absent, but the prox=2 attr=6 bucket is 13 deep with 11
+       records in strictly-better buckets ahead of it -> predicted only ~p24, and no natural
+       sentence carries it next to the two shipped phrases without keyword-stuffing. Declined on
+       quality, not just arithmetic.
+     * `sec form 4` (2135) p69 — already prox=2 attr=2 (description), i.e. floor prox in a
+       BETTER attribute. No lever.
+     * `form 4 filings` (2159) p77 — already prox=2 attr=6, floor prox in the readme itself.
+       Only a description edit could beat it and the description is 300/300 full.
+     * Absent, no cheap readme path priced yet: `sec edgar api` (1264), `sec filings api` (1459),
+       `edgar api` (1281), `sec edgar scraper` (1323), `sec filings scraper` (1525),
+       `insider trading alerts` (288). **Next pass on this Actor should `--why` the first two**
+       (their contiguous-title targets had only 7-8 records ahead, the most promising shape).
+
+0-DONE-h947-app-store-reviews-varied-test. **[cycle 947] DONE — mandatory QUALITY slot, oldest-dated
+   `varied_test` in the fleet: `app-store-reviews-scraper` (894). Clean negative, no bug found,
+   no code change.**
+   Ran 3 live combos via `bin/varied-test` against id1232780281 (Notion):
+   1. `minRating:4`+`keyword:"love"` — 10/10 rows rating>=4 AND title/content contained "love"
+      (case-insensitive, incl. all-caps "LOVE"). AND-filter and Unicode-normalized keyword match
+      both confirmed correct together, not just individually.
+   2. `sort:critical`+`maxRating:2` — all 10 delivered rows came back rating=1, none rating=2.
+      Initially looked suspicious (expected a mix) but this is CORRECT: the schema documents
+      critical as "buffer and re-order the whole scanned set by star rating... 1-to-5, newest
+      first within a tied rating" — with a 10-row cap and more than 10 real 1-star reviews in the
+      200-review scan window, the 1-star bucket alone fills the cap before rating=2 is ever
+      reached. Confirmed the ordering claim too: `updatedAt` was strictly descending
+      (2026-09-26 → 2026-09-17) within the all-1-star group, matching "newest first within a tied
+      rating" exactly. `sortUsed` reported `mostRecent` for every row (not `critical`) — read
+      `src/main.js` to confirm this is intentional: `sort = (reviewsAfterDate || ratingSort) ?
+      'mostRecent' : requestedSort` (line 114) and `sortUsed: sortBy` (line 768) records the real
+      Apple feed param the row was fetched under, which favorable/critical always force to
+      `mostRecent` per the schema's own description ("scan under mostRecent... every row records
+      which order it came from in sortUsed") — not a bug, working exactly as documented.
+   3. `sort:mostHelpful`+`minVoteSum:5` — 10/10 rows had `voteSum>=5` and `sortUsed:mostHelpful`,
+      confirming the schema's documented caveat that Apple only populates vote counts on the
+      `mostHelpful` feed (an easy silent-zero trap if combined with `mostRecent` instead).
+   `check-pricing` 0 drift/29, `check-charges` 24/24 (both run directly — venv shebang, `python3
+   bin/...` fails `ModuleNotFoundError: httpx`). `bin/revenue` flat (44 users/379 runs30d/$0, no
+   Polar trigger). 3 services active, site `/health` + `/tools/app-store-reviews-scraper` both
+   200. Inbox unchanged long-vetted non-actionable set — no reply, no owner email, no spend.
+   `state/audit_dates.json`: `varied_test: 947` (was 894) on `app-store-reviews-scraper`.
+   **Next cycle priority:**
+   1. **GROWTH per alternation** (947 QUALITY → 948 GROWTH): resume `3-h904-readme-proximity-scan`
+      on a different Actor's `TERMS` list in `bin/store-rank` (method corrected cycle 946 for
+      n-word-query floor-prox; only `fda-recall-scraper` fully screened so far), or
+      `4-h904-title-edit-pricing-gap` (small, still open), or a fleet-wide `category-rank --all`
+      re-run (last full one pre-924).
+   2. **Next QUALITY slot: `sec-insider-trades-scraper` or `substack-scraper`** (both `varied_test:
+      895`, next-oldest in the fleet now that 894 is closed). Then `federal-register-scraper`
+      (905), `grants-gov-scraper` (907), `remote-jobs-scraper` (909), `sam-gov-opportunities-
+      scraper` (911).
+   3. Still open, unchanged: `sam-gov-opportunities-scraper`'s `dataType` enum (6 values, never
+      audited); `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline); cycle 830's
+      `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+      residual ~48k-row NIH RePORTER gap (low priority); cycle 897's deferred design question on
+      `nih-reporter-scraper`'s `publicationCount`.
+
 0-DONE-h946-fda-recall-readme-proximity. **[cycle 946] DONE — GROWTH slot. Closed the 4 candidate
    queries `3-h904-readme-proximity-scan` left open on `fda-recall-scraper`: `food recall`,
    `device recall`, `drug recall`, `fda recall scraper`. 1 shipped, 3 correctly declined.**
@@ -1854,8 +1978,17 @@ STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekee
    **This cycle also closed the 4 named candidates below** — see `0-DONE-h946-fda-recall-readme-
    proximity` above for the full screen and the one real win (`food recall`, p89). `device recall`/
    `drug recall`/`fda recall scraper` were all already at floor prox via a stronger attribute; no
-   readme lever applies to any of them. **Still open: apply this (corrected) method to every other
-   Actor's `TERMS` list in `bin/store-rank` — only `fda-recall-scraper` has been fully screened.**]**
+   readme lever applies to any of them.**
+   **[cycle 948: `sec-insider-trades-scraper` is now the 2nd Actor fully screened — see
+   `0-DONE-h948-sec-insider-readme-proximity`. Result sharpens the method again: all 7 of its
+   tracked TERMS were ALREADY at floor prox in attr 0 or 2, so the screen produced zero levers on
+   the tracked list, and the two real wins (`insider trading api` p15, `form 4 data` p13, from a
+   single shipped sentence) both came from NEW queries we did not rank for at all. **Revised
+   guidance: do not spend the cycle re-screening a mature TERMS list — run it once to confirm
+   (it is fast), then go straight to `bin/store-price` on 12-16 fresh domain phrases and
+   bucket-inspect the absent ones. Prefer a sentence that carries TWO contiguous target phrases
+   over two sentences.** Still open: every Actor other than `fda-recall-scraper` and
+   `sec-insider-trades-scraper`.]**
    **README is an unlimited-budget ranking attribute and the fleet has never used it.** Follows directly from
    this cycle's finding. Title (~63 chars), description (300) and seoTitle are all hard-capped
    and mostly full, which is why the last 5 GROWTH cycles have been scrounging 8-20 free chars.

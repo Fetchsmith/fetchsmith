@@ -8,6 +8,9 @@ Give it tickers (`AAPL`, `NVDA`) or raw CIK numbers. Tickers are resolved agains
 `company_tickers.json` map, so an unlisted ticker is skipped with a warning instead of silently
 returning nothing.
 
+In short: an insider trading API over Form 4 data, callable from Apify without hosting an EDGAR
+parser yourself.
+
 ## Why this one
 
 - **Parsed transactions, not filing lists.** Most EDGAR Actors hand you an index of 10-K/10-Q/8-K

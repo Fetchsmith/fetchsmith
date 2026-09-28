@@ -860,7 +860,39 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data"],
+    # cycle 948 (GROWTH, README-lever, h904 method on this Actor's TERMS list — 2nd Actor fully
+    # screened after fda-recall at 946). Screen result on the 7 PRE-EXISTING terms: a clean
+    # negative, zero levers. All 7 were already at their query's FLOOR prox (n-1) in an attribute
+    # at least as strong as readme(6): `sec insider trading` p13 / `insider trading scraper` p8 /
+    # `form 4 insider` p25 all prox=2 attr=0 (title); `insider trades` p17 prox=1 attr=0;
+    # `insider buying` p17 / `insider selling` p4 / `stock insider` p6 all prox=1 attr=2
+    # (description). A readme edit (attr=6) could only DEMOTE any of them — so the lever lives
+    # entirely in queries we do not rank for at all, which is where this cycle went.
+    # Priced 14 new candidates with `bin/store-price`, then bucket-inspected the 3 best with
+    # `--why`. Shipped ONE truthful sentence into the README intro (~word 90, well inside the
+    # ~570-word proximity zone; 0 words evicted, no meta.json change):
+    #     "In short: an insider trading API over Form 4 data, callable from Apify without hosting
+    #      an EDGAR parser yourself."
+    # chosen because it carries TWO contiguous target phrases in one natural sentence.
+    # `apify push --force` (build 0.1.12, README-only); readme confirmed in the build payload
+    # via the platform API before measuring. Live ~90s post-reindex, both predictions near-exact:
+    #   `insider trading api` (704 hits) absent-from-top-60 -> **p15** (predicted ~p14)
+    #   `form 4 data`      (42937 hits) absent-from-top-60 -> **p13** (predicted ~p15)
+    # Zero regression: all 7 tracked terms held byte-identical bucket AND rank, except
+    # `stock insider` p6 -> p5 which is storePosition drift (52847 -> 52627 across the window).
+    # Priced and NOT taken (bucket arithmetic from this cycle, all still open):
+    #   `insider trading data` (717) absent, prox=2 attr=6 bucket is 13 deep with 11 records in
+    #     strictly-better buckets -> predicted only ~p24, and no natural sentence carries it
+    #     alongside the two shipped phrases without keyword-stuffing. Weakest of the three.
+    #   `sec form 4` (2135) p69 at prox=2 attr=2 — already at floor prox in a BETTER attribute
+    #     than readme; no lever (same shape as the 7 above).
+    #   `form 4 filings` (2159) p77 already prox=2 attr=6 — at floor prox in the readme itself;
+    #     only a description edit could beat it and the description is 300/300 full.
+    #   Absent with no cheap readme path: `sec edgar scraper` (1323), `sec filings scraper`
+    #     (1525), `edgar api` (1281), `sec edgar api` (1264), `sec filings api` (1459),
+    #     `insider trading alerts` (288) — none bucket-inspected yet, next pass here starts with
+    #     `sec edgar api`/`sec filings api` (both had small contiguous-title targets, 7-8 ahead).
     # cycle 914 (GROWTH, THIRD description-mine on this Actor, and the h904 char-backlog
     # sweep's final Actor -- closes the sweep fleet-wide). Shipped cycle 780's own leftover
     # "stock insider" prize (nbHits 2100, off-page since 780 flagged it needing "Stock

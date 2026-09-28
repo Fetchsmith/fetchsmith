@@ -2723,3 +2723,21 @@ screen is a 2-word-query shortcut. For an n-word query, fully contiguous in-orde
 prox=2 there means already optimal, not readme-reachable. The general screen is "not yet at the
 query's floor prox (n-1)", not the literal number 2. Applying the old wording to `fda recall
 scraper` (3 words) would have wrongly flagged an already-optimal record as an opportunity.
+
+## h948 — the README-proximity lever lives on queries you DON'T rank for, not on ones you rank badly on
+Cycle 946 (`fda-recall-scraper`) and cycle 948 (`sec-insider-trades-scraper`) have now both
+fully screened an Actor's `TERMS` list with the `--why` bucket method. Combined score on
+already-tracked queries: **1 lever found out of 11**. The reason is structural, not luck — a
+TERMS list is by construction the queries we already *won*, and we won them by putting the
+phrase in the title (attr=0) or description (attr=2). Both sort strictly ahead of readme
+(attr=6) at equal proximity, and a query we already win contiguously is already AT its floor
+prox (n-1). So on a mature TERMS list the readme lever is almost always a no-op or a demotion.
+**Where it actually pays: queries the Actor is absent from entirely.** Both of 948's wins
+(`insider trading api` 704 hits -> p15, `form 4 data` 42937 hits -> p13) and 946's one win
+(`food recall` -> p89) were absent-from-top-60 before the edit. Same for the cycle-906 wins.
+**Revised recipe:** run the TERMS screen once to confirm (it is cheap), then spend the cycle on
+`bin/store-price` with 12-16 fresh domain phrases, and bucket-inspect the ABSENT ones with
+`--why`. Look for a small `prox=n-1 attr=6` bucket with few records in strictly-better buckets.
+**And prefer one sentence that carries TWO contiguous target phrases over two sentences** — 948
+got both wins from a single 18-word addition, which also keeps the quality bar (it reads as a
+genuine summary line, not keyword stuffing).
