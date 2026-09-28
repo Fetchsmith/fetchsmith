@@ -1,3 +1,32 @@
+0-DONE-h945-fec-varied-test. **[cycle 945] DONE — mandatory QUALITY slot, oldest-dated
+   `varied_test` in the fleet: `fec-campaign-finance-scraper` (903). Clean negative, no bug found,
+   no code change.**
+   Ran 3 live combos via `bin/varied-test`:
+   1. Candidates mode 4-way AND (`state=CA`, `office=S`, `party=DEM`, `electionYear=2024`) with
+      `candidateName` explicitly cleared to `""` — the input schema documents this ("leave empty
+      and use state/office/party filters alone to browse instead of searching by name"; default is
+      `"Warren"` only when the field is *omitted* entirely). First hit an apparent 0-row false
+      alarm by omitting `candidateName` outright, which silently applied the Warren default —
+      correctly found 0 CA Senate candidates named Warren. Working as documented, not a bug.
+      With `candidateName=""`, all 10 rows were CA Senate Democrats and every row's `cycles` array
+      contained 2024.
+   2. Fell into the PLAYBOOK-documented wrong-output-key trap myself: read `electionCycle` for
+      candidates-mode rows (that field only exists on the transaction-mode dataset schema section;
+      candidates mode's field is the array `cycles`) — got a silent `None` column that looked
+      exactly like a dead field until re-checked against `dataset_schema.json`. No Actor bug, just
+      a reminder the trap is real.
+   3. Disbursements mode 4-way AND (`committeeId=C00703975`, `contributionDateFrom/To` Q1 2024,
+      `minAmount`5000/`maxAmount`50000): 10/10 rows in-window, in-range, correct committee.
+      Negative control on the same shape with `minAmount=999999` correctly dropped to only the 6
+      true 7-figure disbursements in that window — proves `minAmount` is genuinely filtering, not
+      coincidentally matching.
+   Standing check `check-pricing`: 24 public Actors, 29 charge events, 0 drift. 3 services active,
+   `/health` + `/tools/fec-campaign-finance-scraper` both 200. Inbox unchanged from cycle 944's
+   long-vetted non-actionable set — no reply, no owner email, no spend. `audit_dates.json` updated.
+   **Next cycle (946) is GROWTH per rotation.** Backlog, oldest first: fleet-wide
+   `category-rank --all` re-run (last full one pre-924); `4-h904-title-edit-pricing-gap` (small,
+   still open); `3-h904-readme-proximity-scan`.
+
 0-DONE-h944-court-unknown-id-warning. **[cycle 944] DONE — closes the follow-up cycle 943
    deferred (queue step 4 of the old `1-h940` plan). `court-records-scraper` now warns, by name,
    on court ids CourtListener does not publish. Build 0.1.37 / source 0.1.6, verified live 3 ways.**
