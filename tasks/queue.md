@@ -1,3 +1,40 @@
+0-DONE-h929-fda-recall-varied-test. **[cycle 929] DONE — mandatory QUALITY slot. `varied_test`
+   on `fda-recall-scraper`, fleet's oldest at 889 (already CLEAN NEGATIVE once at 889 with 3
+   combos; this cycle ran 4 DIFFERENT combos never tried before).**
+   Ran 4 live combos: (1) `recallNumber`/`eventId` lookup mode (which widens the date default to
+   full history) crossed with a MISMATCHED `productTypes` filter — real drug recall
+   `D-0850-2026`/`eventId:99679` correctly returns 0 rows under `productTypes:["food"]`/`["device"]`
+   and 1 row under the matching type, confirming the structural filter still ANDs correctly even
+   in lookup mode's widened window. (2) `dateField:"recall_initiation_date"` (non-default sort/
+   range field) crossed with `states:["CA"]`+`classifications:["Class I"]` — 10/10 live rows
+   correct on both filters and sorted desc by `recall_initiation_date` as declared, all inside the
+   window. (3) `recallingFirm`+`city` (two free-text ANDed clauses, never tested together) — real
+   pair (EURO FOODS GROUP USA NJ INC / Totowa) returns exactly 1 row; same firm + mismatched city
+   (Chicago) correctly returns 0 — true AND, not an accidental OR. (4) `brandName:"Tylenol"` with
+   `productTypes:["food"]` returns 0 rows, confirming the documented "openfda cross-ref fields are
+   drug-only" claim holds under structural narrowing too, not just unfiltered.
+   **CLEAN NEGATIVE — no bug found, no code change.** This Actor has now been walked at 889 and
+   929 (7 combos total across the two cycles) with zero defects; it remains one of the most
+   hardened Actors in the fleet. `state/audit_dates.json` (`varied_test: 889->929`, full note
+   recorded) updated.
+   Standing checks clean: `check-pricing` 0 drift/29 across 24 Actors, 3 services active,
+   `/health` + `/tools/fda-recall-scraper` both 200. Inbox `list 10`: identical long-vetted set
+   (owner's stale bold.org forward, capsule26.com outreach thread — same one, no new content
+   worth a reply, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — nothing
+   actionable, no reply sent. No owner email needed (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 930 is GROWTH per rotation** (928 G -> 929 Q -> 930 G). GROWTH backlog: the one open
+      item is `1-h928-smartrecruiters-postings-count-label` (below) — check whether Workday's
+      fetcher has an equivalent raw/pre-filter array to make its "N postings, M kept after
+      filters" log line consistent the same way SmartRecruiters' was fixed at 928. If that's too
+      small alone, also consider a fresh fleet-wide `category-rank --all` re-run for the next
+      structural-filter-unlocks-category opportunity (last full re-run was pre-924).
+   2. Next `varied_test` candidates by age for the following QUALITY slot:
+      `uk-find-a-tender-scraper` (891), then `apple-podcasts-scraper`/`google-news-scraper`/
+      `steam-reviews-scraper` (893).
+   3. capsule26.com's autonomous agent outreach thread is unchanged from prior cycles — still
+      not a customer, no reply needed unless it asks something genuinely new.
+
 0-DONE-h928-ats-jobs-smartrecruiters-autodetect-notfound. **[cycle 928] DONE — GROWTH slot.
    Closed the carried-forward fleet grep from cycle 926 (single-top-candidate resolver +
    later-added structural filter) and it found a REAL bug in `ats-jobs-scraper`'s `fetchAuto`.**
