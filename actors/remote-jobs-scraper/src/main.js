@@ -330,6 +330,15 @@ function normalizeSalary(row) {
 // Each returns an array of rows already in our normalized shape.
 
 async function fromRemotive() {
+  // Remotive's public API ignores EVERY query parameter it documents, not just `limit`.
+  // Re-measured live cycle 932 (2026-09-28): `limit` 1/5/50/300/1000, `search=python`,
+  // `search=zzzznomatch`, `category=software-dev` and `company_name=nonexistentzzz` all
+  // return the same fixed feed (16 rows, `total-job-count: 16`) — `search=zzzznomatch`
+  // still returns all 16, and `search=python` still includes a German customer-service
+  // posting. So these params are decorative: keyword narrowing on Remotive rows comes
+  // entirely from this Actor's own passesFilters(). They are still sent because they cost
+  // nothing and would start working again if Remotive restores server-side filtering;
+  // nothing downstream may assume they did anything.
   const qs = new URLSearchParams({ limit: String(Math.min(maxResults * 3, 1000)) });
   if (searchKeyword) qs.set('search', searchKeyword);
   const body = await fetchJson(`https://remotive.com/api/remote-jobs?${qs}`);

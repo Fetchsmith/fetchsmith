@@ -14,7 +14,7 @@
     "searchKeyword": {
       "title": "Keyword",
       "type": "string",
-      "description": "Only keep postings whose title, company, category or tags contain this text (case-insensitive), e.g. \"python\" or \"customer support\". It is also passed to Remotive's and Jobicy's own search parameters, so those two boards filter server-side as well. Leave empty for all postings.",
+      "description": "Only keep postings whose title, company, category or tags contain this text (case-insensitive), e.g. \"python\" or \"customer support\". It is also passed to Jobicy's own search parameter, so that board filters server-side as well. Remotive's API ignores every parameter it documents (re-verified 2026-09-28), so its rows are narrowed by this Actor alone. Leave empty for all postings.",
       "editor": "textfield"
     },
     "titleExcludeKeyword": {
@@ -68,7 +68,7 @@
     "maxPagesPerSource": {
       "title": "Max pages per source",
       "type": "integer",
-      "description": "Only affects the paginated sources — Arbeitnow (250 postings per page) and Himalayas (20 postings per page, cursor-based). The other four boards return their whole feed in one request.",
+      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: 326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, and only ~20 / 12 / 1 of those are flagged remote) and Himalayas (20 postings per page, cursor-based). The other four boards return their whole feed in one request.",
       "default": 2,
       "minimum": 1,
       "maximum": 20

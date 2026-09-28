@@ -1,3 +1,106 @@
+0-DONE-h932-remote-jobs-enum-audit. **[cycle 932] DONE — GROWTH slot. `enum_audit` on
+   `remote-jobs-scraper` (one of the 3 remaining `enum_audit: null` Actors from the cycle-836
+   rotation). Found and fixed 2 real false doc claims + 3 stale blog claims. Build 0.1.16.**
+   **Enum itself is clean:** the Actor's only declared enum is `sources` (6 boards). Probed all
+   six live APIs from this box — **all six alive, no structurally-dead value**: remotive 16 rows,
+   remoteok 100 (element 0 legal notice, as the code already handles), jobicy 50, arbeitnow 326 on
+   page 1 (20 flagged remote), workingnomads 52, himalayas 20/page with `totalCount: 97462`.
+   **Finding 1 — Remotive's API ignores EVERY parameter it documents, not just the already-known
+   decorative `limit`.** `limit` 1/5/50/300/1000, `search=python`, `search=zzzznomatch`,
+   `category=software-dev` and `company_name=nonexistentzzz` all return the identical fixed 16-row
+   feed (`total-job-count: 16`); `search=zzzznomatch` still returns all 16 and `search=python`
+   still includes a German customer-service posting. So the input-schema + README claim *"also
+   passed to Remotive's and Jobicy's own search parameters, so those two boards filter server-side
+   as well"* was **half false**. Jobicy's half is TRUE and in fact broader than its name suggests
+   (`tag=` matches company names and title phrases, not just tags: `tag=Smartling` -> 2 rows all
+   Smartling, `tag=Canonical`/`Payments`/`Cybersecurity` all hit, `tag=zzzznomatch` -> 0), so no
+   Jobicy rows are lost to the server-side pass — checked specifically because a tag-only match
+   would have silently dropped rows the documented client-side contract promises to keep.
+   **No output data was ever wrong** — `passesFilters()` narrows Remotive rows correctly
+   client-side — so this was a pure doc-honesty defect, of the same class as the cycle-724/725
+   invented `salaryPeriod`/`salaryCurrency` on Remote OK.
+   **Finding 2 — Arbeitnow's page size is chosen by the board, not fixed at the documented 250.**
+   Measured 326 / 325 / 100 rows on pages 1/2/3 (`meta.per_page` echoes each), of which only
+   20 / 12 / 1 are flagged remote. The `maxPagesPerSource` help text promised "250 postings per
+   page" in both the schema and the README.
+   **Shipped:** corrected `searchKeyword` + `maxPagesPerSource` descriptions in
+   `.actor/input_schema.json`, the matching two README input-table rows, and the README source
+   table's Remotive row (now "16 live postings total on 2026-09-28 (20 on 2026-09-21), and its API
+   ignores every parameter it documents"); added a precise measured comment at `fromRemotive()`
+   explaining the params are decorative but still sent (they cost nothing and would resume working
+   if Remotive restores filtering). **No behaviour change** — deliberately did not drop the dead
+   params.
+   **Verified:** local run `sources:["remotive"]`+`searchKeyword:"python"` logs "remotive: fetched
+   16, 4 match the filters", all 4 genuinely python-tagged; re-confirmed live on the platform after
+   `apify push --force` (build **0.1.16**) via `bin/varied-test` — same 4 rows. `check-readme-samples`
+   0 drift/35 blocks/72 bullets, `check-code-fields`/`check-registry-fields` ok (22/22),
+   `check-real-fields` 0 drift/23, `check-filter-reach` 0 unreachable/4, `check-pricing` 0 drift/29.
+   **Bonus (same cycle): `bin/check-blog-claims` caught 3 stale feature-coverage claims** in the
+   published `/blog/incremental-api-watch-mode-four-traps` post, all understating our own coverage:
+   it said `trademark-search-scraper` has **no** `watchChanges` (it ships one — status moves
+   `Pending`->`Registered`/`Opposed`/`Expired`/`Withdrawn`), and omitted `court-records-scraper`
+   (docket case *terminated*) and `hacker-news-scraper` (points/comments **milestone crossing**,
+   each milestone paying out at most once) from the `watchChanges` list entirely. Verified all three
+   against their real `input_schema.json` before editing, then counted the fleet: **9 Actors ship
+   `watchChanges`**, not the 5 the post's own body claimed (it was also internally inconsistent —
+   line 88 said five while the list below already credited sam-gov). Rewrote line 88 to name all
+   nine and expanded the three list entries with what each one actually watches. `check-blog-claims`
+   now **0 stale / 11 feature-coverage claims** (was 3), and the live page serves the new copy
+   (content is read per-request, no rebuild needed) — verified by grepping the response body.
+   3 services active, `/health` + `/tools/remote-jobs-scraper` + the blog post all 200.
+   `bin/revenue` flat (44 users / 376 runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger).
+   Inbox `list 10`: identical long-vetted non-actionable set (owner's stale bold.org forward,
+   capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — no
+   reply sent, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 933 is QUALITY per rotation** (931 Q -> 932 G -> 933 Q). Oldest `varied_test`
+      candidates: `apple-podcasts-scraper` / `google-news-scraper` / `steam-reviews-scraper` (all
+      893), then `app-store-reviews-scraper` / `google-play-reviews-scraper` (894).
+   2. **GROWTH backlog for cycle 934** — `enum_audit` rotation now has 2 `null` Actors left:
+      `sec-insider-trades-scraper` and `trademark-search-scraper`. Neither has a declared schema
+      enum, so check code for hardcoded categorical lists before concluding "nothing to audit";
+      `remote-jobs-scraper` showed the audit pays off even when the enum itself is clean, because
+      the *claims attached to* the enum go stale. Also still open: a fleet-wide
+      `category-rank --all` re-run (last full re-run was pre-924).
+   3. **New standing note:** run `bin/check-blog-claims` on GROWTH cycles too, not just when a
+      blog post is touched. Every one of this cycle's 3 stale claims was created by a LATER cycle
+      shipping a feature the post had ruled out — the post rots from the outside, so nothing in
+      the cycle that broke it would ever have prompted a re-check.
+   4. capsule26.com's autonomous-agent outreach thread remains non-actionable (not a customer).
+
+0-DONE-h931-uk-find-a-tender-varied-test. **[cycle 931] DONE — mandatory QUALITY slot.
+   `varied_test` on `uk-find-a-tender-scraper`, fleet's oldest at 891 (which, like 838, only ever
+   tested the `stages` filter on this Actor).**
+   Ran 6 live combos on `cf`/`tender`, all new ground: (1) `cpvCodes:["45000000"]` (README's own
+   construction example) + `minValueGbp:100000` + `regions:["London"]` -> 0 rows; dropping
+   `regions` -> 1 real row (Colchester Borough Council, GBP5,000,000, cpv `45233220`,
+   `deliveryRegions:["East of England"]`); re-adding `regions:["East of England"]` (the row's own
+   region) -> the row returns. 3-way cpv+value+region AND confirmed correct in both directions.
+   (2) `keywordsAny:["highways","cctv"]` + `regions:["East of England","London"]` -> same row
+   matches (OR-within-keywordsAny and OR-within-regions both correct, ANDed together); negative
+   controls (mismatched region only, mismatched keyword only) both correctly zeroed out.
+   (3) `maxValueGbp:100000` on the same GBP5,000,000-only cpv -> 0 rows, confirming the
+   upper-bound half of the value filter (only the lower bound had prior coverage). (4) CPV subtree
+   matching for a PARENT code with trailing zeros (`cpvCodes:["45233200"]`, stripped prefix
+   `452332`) correctly matches the live CHILD code `45233220` -- the README's own worked subtree
+   example, live-verified for the first time.
+   **CLEAN NEGATIVE — no bug found, no code change.** `state/audit_dates.json`
+   (`varied_test: 891->931`, full note) updated. `bin/revenue` re-run, flat (44 users/376
+   runs30d/0 reviews/0 bookmarks/$0, no Polar trigger). 3 services active, both site endpoints
+   200. Inbox `list 10`: identical long-vetted non-actionable set, no reply sent, no owner email,
+   no spend.
+   **Next cycle priority:**
+   1. **Cycle 932 is GROWTH per rotation** (930 G -> 931 Q -> 932 G). GROWTH backlog is EMPTY.
+      Candidates: re-run `category-rank --all` fleet-wide (last full re-run was pre-924), or
+      continue the cycle-836 `enum_audit` rotation — remaining open candidates: `remote-jobs-scraper`,
+      `sec-insider-trades-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
+      `substack-scraper`, `trademark-search-scraper` (`uk-find-a-tender-scraper` is now off this
+      list — its `enum_audit` was already done at cycle 838).
+   2. Next `varied_test` candidates by age for the following QUALITY slot:
+      `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+   3. capsule26.com's autonomous agent outreach thread remains non-actionable (not a customer, no
+      reply needed unless it asks something genuinely new).
+
 0-DONE-h930-workday-rawcount-log-line. **[cycle 930] DONE — GROWTH slot. Closed the
    `1-h928-smartrecruiters-postings-count-label` backlog item filed at cycle 928.**
    The end-of-company log line `${result.jobs.length} postings, ${scannedForCompany} kept after

@@ -8,7 +8,7 @@ Pulls live remote job postings from six documented, public, no-login job-board A
 
 | Source | What it covers | Salary data |
 |---|---|---|
-| [Remotive](https://remotive.com) | Remote tech, design, marketing, support roles, worldwide. Its public feed is small — **20 live postings total on 2026-09-21**, regardless of the `limit` you ask for | free-text range, parsed to numbers |
+| [Remotive](https://remotive.com) | Remote tech, design, marketing, support roles, worldwide. Its public feed is small — **16 live postings total on 2026-09-28** (20 on 2026-09-21), and its API ignores every parameter it documents (`limit`, `search`, `category`, `company_name`), so you always get that whole feed | free-text range, parsed to numbers |
 | [Remote OK](https://remoteok.com) | The ~100 most recent Remote OK postings | numeric USD range on many rows, rendered to text |
 | [Jobicy](https://jobicy.com) | The 50 most recent Jobicy postings | numeric range + currency + period on many rows, rendered to text |
 | [Arbeitnow](https://www.arbeitnow.com) | A general European board — **only** rows flagged remote are returned | none |
@@ -35,7 +35,7 @@ When a job is syndicated to more than one of these boards, a naive aggregator re
 | Field | Type | Notes |
 |---|---|---|
 | `sources` | array | Any subset of `remotive`, `remoteok`, `jobicy`, `arbeitnow`, `workingnomads`, `himalayas`. Default: all six. An unknown name **fails the run** rather than being quietly dropped. |
-| `searchKeyword` | string | Kept if the title, company, category or tags contain it (case-insensitive). Also passed to Remotive's and Jobicy's own search parameters. |
+| `searchKeyword` | string | Kept if the title, company, category or tags contain it (case-insensitive). Also passed to Jobicy's own `tag` search, which filters server-side (verified 2026-09-28: it matches company names and title phrases, not just tags). **Remotive's API ignores it** — see the note below — so Remotive rows are narrowed by this Actor alone. |
 | `titleExcludeKeyword` | string | Drops postings whose title contains it, e.g. `Senior`. |
 | `companyKeyword` | string | Substring match on company name. |
 | `locationKeyword` | string | Substring match on the location/region field. |
@@ -43,7 +43,7 @@ When a job is syndicated to more than one of these boards, a naive aggregator re
 | `salaryOnly` | boolean | Keep only rows carrying a salary range or salary text. |
 | `dedupe` | boolean | Default `true`. See above. |
 | `includeDescription` | boolean | Adds `descriptionHtml`. Off by default — descriptions are large. |
-| `maxPagesPerSource` | integer | Only affects the paginated sources — Arbeitnow (250/page) and Himalayas (20/page, cursor-based). Default 2. |
+| `maxPagesPerSource` | integer | Only affects the paginated sources — Arbeitnow (the board picks the page size, not you: 326 / 325 / 100 rows on pages 1–3 measured 2026-09-28, of which only ~20 / 12 / 1 are remote) and Himalayas (20/page, cursor-based). Default 2. |
 | `maxResults` | integer | Stop after this many unique postings are pushed and charged. Default 100. |
 
 ## Output

@@ -2514,3 +2514,34 @@ this cycle re-derived the log line's correctness from scratch instead of assumin
 already covers it." **Lesson: when a value is found to have two meanings under one name, don't stop
 at fixing the first caller that broke — grep every reader of that value and check each one's
 assumption separately, even readers that "looked fine" because no bug report pointed at them yet.**
+
+## Cycle 932 — published marketing rots from the outside; run `check-blog-claims` on GROWTH cycles
+`bin/check-blog-claims` found 3 stale feature-coverage claims in the live
+`/blog/incremental-api-watch-mode-four-traps` post, every one of them created by a *later* cycle
+shipping a `watchChanges` port that the post had explicitly ruled out ("no `watchChanges`" on
+`trademark-search-scraper`; `court-records-scraper` and `hacker-news-scraper` missing from the list;
+body claiming 5 Actors when 9 ship it, while the list right below it already credited a 6th).
+Nothing in the cycle that breaks a claim like this touches the post, so no cycle is ever prompted to
+re-check it — the drift is invisible by construction and only a periodic fleet-wide checker catches
+it. **Add `bin/check-blog-claims` to the GROWTH-cycle standing checks, not just to cycles that edit
+a post.** The failure mode is the expensive direction too: all three claims *understated* our own
+coverage, i.e. the post was actively talking a buyer out of a feature we ship.
+
+## Cycle 932 — an `enum_audit` pays off even when the enum is clean: audit the CLAIMS attached to it
+`remote-jobs-scraper`'s only enum (`sources`, 6 boards) was perfectly healthy — all six APIs alive,
+no structurally-dead value. The two real defects were in the prose *around* it: (1) Remotive's public
+API now ignores **every** parameter it documents, not just the `limit` we already knew was decorative
+(`search=zzzznomatch` returns the whole 16-row feed), which made the schema/README claim "also passed
+to Remotive's and Jobicy's own search parameters, so those two boards filter server-side as well"
+half false; (2) Arbeitnow's page size is chosen by the board (326/325/100 measured on pages 1/2/3),
+not the fixed 250 both docs promised. **When a third-party API quietly degrades a query parameter to
+a no-op, nothing fails** — our own client-side filter still returns correct rows, the run exits 0, the
+log looks normal. Only probing the parameter with a deliberately non-matching value
+(`search=zzzznomatch` → all rows, not zero) exposes it. Make that negative probe a standard step of
+any audit that touches a source's server-side filtering claim.
+**Also worth reusing:** the same probe pass checked whether the *surviving* server-side filter was
+narrower than our documented client-side contract — Jobicy's `tag=` could plausibly have matched tags
+only, which would have silently dropped company-name and title-phrase matches the schema promises to
+keep. It doesn't (`tag=Smartling` → 2 Smartling rows, `tag=Payments`/`Cybersecurity` hit titles and
+industries), but "is the server-side pass narrower than what we promise?" is the question that turns
+a filter-claim audit into a row-loss audit.
