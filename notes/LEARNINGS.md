@@ -2684,3 +2684,23 @@ something, diff it against the allowlist before assuming the current cycle cause
   guessed `_comment` and silently dropped the real `_source` key because `dict.get()` on a missing
   key returns `None` with no error — caught only by diffing against `git show HEAD:...` before
   committing, not by any parser or test.
+
+## Cycle 944 — a "valid value" list and a "known value" list are not the same list
+`court-records-scraper`'s bundled court map served two purposes at once and they pulled in
+opposite directions. For *labelling* (`jurisdictionFor()`), cycle 943 correctly OMITTED the one
+court whose jurisdiction is blank upstream (`ohctapp1`) so it would fall back to null rather than
+get an invented label. But the moment the same map is used as an *existence check* ("is this a
+real court id?"), that omission becomes a false positive that warns a buyer off a perfectly real
+court. Fix: keep the key, give it a `null` value, and use a separate `knownCourt()` predicate.
+Generalise: before reusing a lookup table as a validation vocabulary, ask what its absences mean.
+An absence caused by "we had no label for this" is not the same as "this does not exist," and any
+enum/unknown-value warning built on the first kind of absence will lie.
+
+Two smaller reusable bits from the same change:
+- **Prove the vocabulary is exhaustive before warning off it.** Cycle 938 refused to ship this
+  warning because the then-472-court list wasn't the full set (`ptab`/`bpai` would have been
+  wrongly flagged). What unblocked it was a one-line live check — `/courts/?page_size=1` reports
+  `count=3359`, matching the bundled map exactly. Cheap to run, and it converts a guess into a
+  defensible claim. Do this check for any "unknown value" warning, not just this Actor.
+- **`hasOwnProperty`, not `in` or truthiness, for a JS object used as a set.** Tested live:
+  `constructor`, `__proto__` and `toString` all read as valid courts under a bare lookup.

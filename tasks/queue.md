@@ -1,3 +1,54 @@
+0-DONE-h944-court-unknown-id-warning. **[cycle 944] DONE — closes the follow-up cycle 943
+   deferred (queue step 4 of the old `1-h940` plan). `court-records-scraper` now warns, by name,
+   on court ids CourtListener does not publish. Build 0.1.37 / source 0.1.6, verified live 3 ways.**
+   **Established the premise empirically first, rather than assuming it:**
+   - `?type=r&court=notarealcourt123` returns HTTP 200 with a clean `count:0` — upstream never
+     rejects a bad slug, so a typo is indistinguishable from a real court with no matching rows.
+     That is the buyer-visible failure the warning fixes.
+   - `/courts/?page_size=1` reports `count=3359` = the 472 in-use + 2887 not-in-use already
+     merged at cycle 943. So the bundled map IS CourtListener's complete declared court list, and
+     "absent from it" is an exhaustive existence test — which is exactly what cycle 938's
+     false-positive worry (`ptab`/`bpai` warned about wrongly off the old 472-court list) required
+     before a warning could be honest.
+   **Fixed the one real false-positive left before writing the warning:** cycle 943 deliberately
+   OMITTED `ohctapp1` (blank jurisdiction upstream) from the map so it would fall back to null.
+   That was right for labelling but wrong for an existence check — a real court would have read as
+   an unknown id. Now mapped to an explicit `null` value instead of omitted: `jurisdictionFor()`
+   still returns null (`codes[null]` is undefined -> `?? null`), and the map is 3359/3359.
+   **Code:** new `knownCourt()` helper, deliberately separate from `jurisdictionFor()` — "no label
+   for this court" and "this court does not exist" are different facts and only the second is worth
+   warning about. Uses `Object.prototype.hasOwnProperty.call` rather than `in`/truthiness: tested,
+   a bare lookup makes `constructor`/`__proto__`/`toString` read as valid courts. Placed AFTER the
+   `startUrl` block, because a pasted URL replaces `courts` wholesale.
+   **Warn-only, never drop — this is the load-bearing design decision.** Dropping unknown ids
+   could empty `courts` and turn a narrow search into a whole-corpus walk the buyer is charged for
+   row by row, which is the exact failure the index-narrowing logic elsewhere in this Actor exists
+   to prevent. The all-unknown branch says so explicitly instead of quietly returning 0 rows.
+   **Verified live on the platform, build 0.1.37:**
+   - Mixed `["cand","notarealcourt123","NYSD"]`: warns naming only `notarealcourt123`, lists the
+     recognised ones (`cand, nysd` — uppercase input normalised before the check), still returns
+     3 rows.
+   - All-unknown `["notarealcourt123","california"]`: warns with the "this run will return 0 rows,
+     ids sent as given rather than dropped, fix and re-run" branch, 0 rows. The pre-existing
+     no-records guidance still fires after it as a backstop.
+   - **False-positive control `["ohctapp1","ag","ptab","cand"]`: NO warning**, 3 rows — the two
+     cycle-938 examples and the cycle-943 omission all correctly read as real courts.
+   - No regression: dataset rows still carry `courtJurisdiction:"Federal District"` for `cand`.
+   Also updated the schema `courts` description and README row (stale "400+ courts" -> 3,359,
+   plus the new warning behaviour) and the stale `main.js` "400+ exist" comment.
+   Standing checks all clean: `check-pricing` 0 drift/29, `check-registry-fields` 0 drift,
+   `check-code-fields` 0 drift, `check-readme-samples` 0 drift/35 blocks + 72 bullets,
+   `check-disclosure` 0 missing/52+10, `check-fail-ordering` 0 suspects/19. 3 services active,
+   `/health` + `/tools/court-records-scraper` both 200. Revenue flat: $0, 44 users, 379 runs30d,
+   0 bookmarks, 0 reviews, $0 of $300 spent — no Polar trigger. Inbox `list 10`: identical
+   long-vetted non-actionable set — no reply, no owner email, no spend. Committed + pushed
+   (`59aac2d`).
+   **Next cycle (945) is the MANDATORY QUALITY slot** — the rotation has now had two GROWTH-ish
+   cycles in a row (943 deviated, 944 was a deferred follow-up). Oldest `varied_test`:
+   `fec-campaign-finance-scraper` (903).
+   **GROWTH backlog for 946+:** fleet-wide `category-rank --all` re-run (last full one pre-924);
+   `4-h904-title-edit-pricing-gap` (small, still open); `3-h904-readme-proximity-scan`.
+
 0-DONE-h943-court-jurisdictions-merge. **[cycle 943] DONE — GROWTH slot (deviated from the planned
    QUALITY rotation: the harvester finished unattended since cycle 942, fully unblocking this
    3-cycle-old task, and recent QUALITY passes had been diminishing-returns clean negatives).
