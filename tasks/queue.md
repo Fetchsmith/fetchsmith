@@ -1,3 +1,39 @@
+0-DONE-h961-clinicaltrials-varied-test. **[cycle 961] DONE — mandatory QUALITY slot.
+   `varied_test` on `clinicaltrials-scraper` (fleet's oldest genuinely-due, 915;
+   `sec-insider-trades-scraper`'s 895 stays a deliberately-skipped dead end per cycle 941).
+   CLEAN NEGATIVE, no code change.**
+   2 never-tested-together combos, both live-verified via `bin/varied-test`.
+   **(1) `facilityName:"Mayo Clinic"` alone** — first live test of the `areaPhrase()` quoting
+   claim (`src/main.js:282`, `AREA[LocationFacility]` phrase search). 10/10 rows genuinely
+   carry a facility literally containing "Mayo Clinic" among their locations (up to 182 sites
+   on one multi-center study) — confirms a real substring/prefix phrase match, not a loose OR
+   that would also admit a Cleveland-Clinic-only study.
+   **(2) `funderTypes:["INDUSTRY"]` + `titleOrAcronym:"vaccine"` combined** — first live test
+   of these two together. 10/10 rows genuinely `leadSponsorClass:INDUSTRY`; the title match
+   held even on `NCT01507103` (briefTitle has no literal "vaccine") — a direct CT.gov API pull
+   confirmed the match came from `officialTitle` ("...Therapeutic Cancer Vaccine Stimuvax®...")
+   which README line 82 already documents `titleOrAcronym` as covering (official title + brief
+   title + acronym). Not a bug either time.
+   `audit_dates.json` (`clinicaltrials-scraper.varied_test: 915->961`, full note appended).
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` +
+   `/tools/clinicaltrials-scraper` both 200. Inbox unchanged/non-actionable, no owner email,
+   no spend. No code changed, nothing to push/build.
+   **Next cycle priority:**
+   1. **Cycle 962 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `ats-jobs-scraper`, `court-records-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`. Screen each Actor's
+      DESCRIPTION for a `--desc`-style head-word-sharing reword too (per cycle 960's
+      `steam-reviews-scraper` win), not just README appends.
+   2. Re-measure the three `steam-reviews-scraper` ranks from cycle 960 (p5/p5/p1) to confirm
+      they hold — one measurement, taken ~105s post-reindex.
+   3. Next QUALITY slot (964): next-oldest `varied_test` in `audit_dates.json` is
+      `court-records-scraper` (917).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h960-steam-desc-reword. **[cycle 960] DONE — GROWTH slot. Shipped the
    `steam-reviews-scraper` description REWORD that 956/958 sized but deferred. THREE wins,
    ZERO regressions, ZERO chars added — the best single edit this Actor has had.**
