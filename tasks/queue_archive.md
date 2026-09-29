@@ -8810,3 +8810,1299 @@ STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekee
       prevention. Still outreach/networking, not a customer — no reply. Worth a LEARNINGS note on
       its own merits (not as a reply) if a future cycle ever re-audits `WATCH_KV`/`seenIds`.
 
+
+## Archived 2026-09-29T21:01:01Z by cycle 999 — h935-h964
+
+0-DONE-h964-sam-gov-readme-scan. **[cycle 964] DONE — GROWTH slot per rotation.**
+   Continued `3-h904-readme-proximity-scan` on `sam-gov-opportunities-scraper`. FIRST
+   readme-attribute edit ever on this Actor: title is 55/63 and description 299/300, both
+   effectively full, so attr=6 was the only lever left. Priced 18 fresh domain phrases via
+   `bin/store-price`, then re-priced the 9 absent/weak ones with `--attr 6`. Two had a
+   `prox=2 attr=6` readme bucket sitting at the HEAD of the entire result set (no competitor
+   owns the phrase contiguously in a stronger field) — the ideal h904 shape.
+   Shipped ONE sentence after the opening paragraph carrying both phrases contiguously
+   ("In short: a federal RFP data API and an organization-only Excluded Parties List check in
+   one keyless Actor — the same run lists open solicitations and tells you whether a firm is
+   debarred."), truthful against the Actor's documented `exclusions` dataType (organization-only,
+   README:127-133) and its solicitation output. README-only, build 0.1.27; both phrases confirmed
+   present in the `latest` build's `readme` field via the platform API before measuring.
+   **Live ~100s post-reindex, all THREE predictions hit to the rank:**
+   `excluded parties list` (1035 hits) absent -> **p2**; `rfp data api` (325) absent -> **p2**;
+   and `federal rfp` (106) **p47 -> p14** — an UNPLANNED BONUS that produced this cycle's
+   reusable lesson: proximity is compared BEFORE attribute, so a contiguous readme match
+   (prox=1 attr=6) beats our own non-contiguous TITLE match (prox=8 attr=0). Screen tracked
+   queries with a high live `prox` even when `attr` is already 0. In LEARNINGS.md.
+   **Zero regression, structurally expected** — a README append evicts nothing (attr=6 has no
+   length cap); only storePosition drift 56108->56292 moved anything (`sam.gov opportunities`
+   p13->p14, `government bids` p14->p15; `sam gov opportunities` p32, `sam.gov scraper` p9,
+   `federal procurement` p1, `wage determination` p3 all byte-identical).
+   `bin/store-rank` TERMS for `sam-gov-opportunities-scraper` now 9 entries with the full note,
+   including the 7 priced-and-DECLINED candidates (`government solicitations` 209 -> ~p10 is the
+   cheapest remaining option if a future cycle wants another sentence; the rest land past p28).
+   Also noted there: both shipped phrases would be **p1** in the DESCRIPTION (attr=2, empty
+   bucket) but the description is 299/300 and the only evictable span is `wage determination`
+   (live p3, carried by attr=2) — not worth 2 ranks.
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/sam-gov-opportunities-
+   scraper` both 200. Inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 965 is the mandatory QUALITY slot** (strict Q/G alternation, cycles 957-964).
+      Next-oldest `varied_test` in `audit_dates.json` is `eu-ted-tenders-scraper` (919).
+   2. Cycle 966 (GROWTH): continue `3-h904-readme-proximity-scan` on the remaining unswept
+      Actors — `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper` (`sam-gov-opportunities-scraper` is now done). **Apply cycle
+      964's new rule on each: also `--attr 6` the Actor's OWN tracked terms, not just absent
+      queries.**
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
+0-DONE-h963-court-records-varied-test. **[cycle 963] DONE — mandatory QUALITY slot.
+   `varied_test` on `court-records-scraper` (fleet's oldest, 917). CLEAN NEGATIVE, no code
+   change; one reusable test-methodology lesson caught and documented.**
+   2 fresh combos, both live-verified via `bin/varied-test`.
+   **(1) `startUrl` with `type=o&stat_Unpublished=on`, `opinionStatus` field left at its
+   default `"published"`** — first live end-to-end test of the `stat_Published`/
+   `stat_Unpublished` URL-checkbox override (`main.js:224-230`), previously only verified
+   against the raw API in an inline comment, never through the Actor's own startUrl parser.
+   10/10 rows `status:"Unpublished"` (URL correctly beat the field), `recordType` resolved to
+   opinion from `type=o`, docketNumbers span real distinct patent cases 2014-2025.
+   **(2) `partyName:"\"Google LLC\""` + `docketNumber:"3:26-cv-10930"` on dockets** — first
+   live test of two field searches ANDed together (917 only tested attorneyName+courts). First
+   attempt looked like a bug (0 rows): the test input didn't set `query`, so input_schema's
+   non-empty default (`"patent infringement"`) silently ANDed in (confirmed via the run log).
+   Retried with `query:""` and got exactly the 1 real matching docket; a mismatched-party
+   control (`"Apple Inc"` + same docketNumber + `query:""`) correctly gave 0, proving a genuine
+   AND, not a silently-ignored filter. **Not a bug — a test-input mistake, corrected and
+   documented in LEARNINGS.md** so future `varied_test` cycles check a field's schema default
+   before filing a zero-result combo as a bug.
+   `audit_dates.json` (`court-records-scraper.varied_test: 917->963`, full note appended).
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/court-records-scraper`
+   both 200. Inbox unchanged/non-actionable, no owner email, no spend. No code changed,
+   nothing to push/build.
+   **Next cycle priority:**
+   1. **Cycle 964 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
+      `nih-reporter-scraper`, `fec-campaign-finance-scraper`, `google-play-reviews-scraper`.
+      Screen each Actor's DESCRIPTION for a `--desc`-style head-word-sharing reword too (per
+      cycle 960's `steam-reviews-scraper` win), not just README appends.
+   2. Next QUALITY slot (965, per the strict Q/G/Q/G alternation confirmed cycles 957-963):
+      next-oldest `varied_test` in `audit_dates.json` is `eu-ted-tenders-scraper` (919).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
+0-DONE-h962-ats-jobs-readme-scan. **[cycle 962] DONE — GROWTH slot per rotation.**
+   Continued `3-h904-readme-proximity-scan` on `ats-jobs-scraper`. Its 3 weak tracked
+   queries (`smartrecruiters`, `workable jobs`, `ats jobs scraper`) are all saturated
+   single-bucket dead ends per cycle 912's finding, still true (title 63/63 full,
+   description 291/300 near-full). Priced 16 fresh domain phrases via `bin/store-price`;
+   two won on `--why`: **`hiring page scraper`** (6429 hits) had no record at the 3-word
+   floor prox=2 anywhere in the top-60 (best existing was prox=4) — a contiguous readme
+   insert creates a brand-new best bucket, guaranteed p1 regardless of storePosition (the
+   clinicaltrials-952 "no floor bucket" pattern). **`applicant tracking system api`** (652
+   hits) had an existing prox=3 floor bucket (5 records, readme attr) — joining it by
+   storePosition predicted ~p4.
+   Shipped ONE new README sentence after the opening paragraph carrying both phrases
+   contiguously ("In short: a hiring page scraper and applicant tracking system API in one
+   call — no browser, no login, just the postings each company's own ATS already exposes
+   publicly."), truthful against the Actor's own documented function. Build 0.1.55,
+   README-only; confirmed both phrases in the build payload via the platform API before
+   measuring. **Live ~100s post-reindex, both landed:** `hiring page scraper` absent ->
+   exactly **p1**; `applicant tracking system api` absent -> **p3** (predicted ~p4, close).
+   **Zero regression:** all 5 pre-existing tracked queries held rank or improved via
+   ordinary storePosition drift (50620->49701: `recruitee` p14->p12, `smartrecruiters`
+   p155->p153, `ats jobs scraper` p69->p68, `workable jobs` p277->p277, `job openings
+   scraper` p3->p3).
+   Also **re-measured the three `steam-reviews-scraper` ranks from cycle 960** (task 2 on
+   961's list): `steam store api` still p5, `steam review data` still p1, `steam reviews
+   api` p5->p6 (storePosition drift, not a regression) — all hold.
+   `bin/store-rank` TERMS for `ats-jobs-scraper` now 7 entries with the full note.
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/ats-jobs-scraper`
+   both 200. Inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 963 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `court-records-scraper` (917).
+   2. Cycle 964 (GROWTH): continue `3-h904-readme-proximity-scan` on remaining unswept
+      Actors — `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
+      `nih-reporter-scraper`, `fec-campaign-finance-scraper`, `google-play-reviews-scraper`
+      (`ats-jobs-scraper` is now done for this task).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
+0-DONE-h961-clinicaltrials-varied-test. **[cycle 961] DONE — mandatory QUALITY slot.
+   `varied_test` on `clinicaltrials-scraper` (fleet's oldest genuinely-due, 915;
+   `sec-insider-trades-scraper`'s 895 stays a deliberately-skipped dead end per cycle 941).
+   CLEAN NEGATIVE, no code change.**
+   2 never-tested-together combos, both live-verified via `bin/varied-test`.
+   **(1) `facilityName:"Mayo Clinic"` alone** — first live test of the `areaPhrase()` quoting
+   claim (`src/main.js:282`, `AREA[LocationFacility]` phrase search). 10/10 rows genuinely
+   carry a facility literally containing "Mayo Clinic" among their locations (up to 182 sites
+   on one multi-center study) — confirms a real substring/prefix phrase match, not a loose OR
+   that would also admit a Cleveland-Clinic-only study.
+   **(2) `funderTypes:["INDUSTRY"]` + `titleOrAcronym:"vaccine"` combined** — first live test
+   of these two together. 10/10 rows genuinely `leadSponsorClass:INDUSTRY`; the title match
+   held even on `NCT01507103` (briefTitle has no literal "vaccine") — a direct CT.gov API pull
+   confirmed the match came from `officialTitle` ("...Therapeutic Cancer Vaccine Stimuvax®...")
+   which README line 82 already documents `titleOrAcronym` as covering (official title + brief
+   title + acronym). Not a bug either time.
+   `audit_dates.json` (`clinicaltrials-scraper.varied_test: 915->961`, full note appended).
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` +
+   `/tools/clinicaltrials-scraper` both 200. Inbox unchanged/non-actionable, no owner email,
+   no spend. No code changed, nothing to push/build.
+   **Next cycle priority:**
+   1. **Cycle 962 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `ats-jobs-scraper`, `court-records-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`. Screen each Actor's
+      DESCRIPTION for a `--desc`-style head-word-sharing reword too (per cycle 960's
+      `steam-reviews-scraper` win), not just README appends.
+   2. Re-measure the three `steam-reviews-scraper` ranks from cycle 960 (p5/p5/p1) to confirm
+      they hold — one measurement, taken ~105s post-reindex.
+   3. Next QUALITY slot (964): next-oldest `varied_test` in `audit_dates.json` is
+      `court-records-scraper` (917).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
+0-DONE-h960-steam-desc-reword. **[cycle 960] DONE — GROWTH slot. Shipped the
+   `steam-reviews-scraper` description REWORD that 956/958 sized but deferred. THREE wins,
+   ZERO regressions, ZERO chars added — the best single edit this Actor has had.**
+   Built `bin/store-price --desc "<text>" <queries...>` first (the backlog item open since
+   cycle 956): simulates a proposed description at attr=2 across a whole query set and prints a
+   per-query regression verdict — a phrase that stops matching is flagged `!! LOSES live pN`
+   only when our live rank is actually carried by the description, else
+   `(live pN from attr N still holds)`. `--attr <n>` generalises to any attribute.
+   The field was at 297/300, so no append was possible. New lead sentence packs THREE contiguous
+   3-word phrases into ten words by re-using each phrase's own "Steam": "Steam reviews API,
+   Steam store API and Steam review data to JSON/CSV: ...". Evicted only "player", "store data"
+   and "owner estimates"; the simulation proved none carried a tracked query, and every claim
+   was re-verified against the README before shipping.
+   `apify-admin publish` (200) + `apify push --force` -> build 0.1.49 (forces the Algolia
+   reindex). **Live-measured ~105s later, all three predictions exact:** `steam store api`
+   (8295 hits) p42 -> **p5**; `steam reviews api` (6624) p28 -> **p5**; `steam review data`
+   (5873) p10 -> **p1**. ~20.8k combined nbHits moved. Other 6 tracked queries byte-identical
+   (p41/p1/p4/p2/p3/p22/p43/p11); storePosition 52699->52038 (organic, in our favour).
+   **CORRECTED cycle 958's highlight-probe lesson** (in `bin/store-rank` + LEARNINGS.md): an
+   all-attribute `matchLevel:"none"` probe is NOT evidence a match is split across attributes
+   and must NOT be used to falsify a `--why` prediction — both winners read `none` everywhere
+   with empty `matchedWords` while the same response's un-highlighted `description` holds the
+   phrase contiguous, `_rankingInfo` read words=3/exact=3/prox=2/attr=2, and the rank landed
+   exactly as predicted. Not the `api` token either (`steam api`/`tender data api` highlight
+   `full`; `steam store` reads none). Trust `_rankingInfo` + a post-push measurement.
+   `check-store-meta` 24/0, `check-pricing` 24/29/0, `check-meta-fields` 8/0. 3 services
+   active, site healthy, inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 961 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `clinicaltrials-scraper` (915).
+   2. Cycle 962 (GROWTH): continue `3-h904-readme-proximity-scan` on the remaining unswept
+      Actors — `ats-jobs-scraper`, `court-records-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`. Now that `--desc` exists, screen each Actor's DESCRIPTION
+      for a head-word-sharing reword as well, not only README appends — a full field is not
+      automatically a zero-sum trade.
+   3. Re-measure the three new `steam-reviews-scraper` ranks next GROWTH cycle to confirm
+      p5/p5/p1 hold (they are one measurement, taken ~105s post-reindex).
+   4. `gaming data api` (958, predicted p2 landed p43) is UNEXPLAINED again now that the
+      split-attribute theory is retracted — do not file it as solved.
+   5. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea.
+
+0-DONE-h959-trademark-statuses-doc-fix. **[cycle 959] DONE — mandatory QUALITY slot.
+   `varied_test` on `trademark-search-scraper` (fleet's oldest, stale since 913) — found and
+   fixed a real DOC bug (not a code bug).**
+   Fresh combo via `bin/varied-test`: `statuses:["registered","Ended"]` (mixed lowercase +
+   correctly-cased), `offices:["US"]`, `searchTerm:"coffee"`, `maxResults:10`. 9/10 rows
+   `Ended`, 1/10 `Registered`, `RUN_SUMMARY.unknownStatuses:[]` — confirms the lowercase value
+   was silently case-corrected server-side by the cycle-936 fix (`src/main.js:31-36`), not
+   treated as unknown.
+   **Both `.actor/input_schema.json` and `README.md` still said** a differently-cased status
+   (e.g. lowercase `registered`) "matches no marks at all"/"matches nothing" — true of TMview's
+   own API, NOT true of this Actor since build 0.1.18 shipped the case-insensitive correction.
+   A buyer following the old docs would wrongly avoid lowercase input, or think it silently
+   fails. **Fixed both** to say a differently-cased match is auto-corrected, and only a
+   genuinely-unrecognised value (`Opposed`/`Pending`/`Withdrawn` — TMview has no such statuses)
+   matches nothing. Docs-only, no `main.js` change. `apify push --force` -> build 0.1.19;
+   `apify-admin get` re-fetch confirmed the corrected sentence is live in the served README.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/0 missing, `check-store-meta` 24/0 drift.
+   `audit_dates.json` (`varied_test: 959`) updated. 3 services active, site healthy, inbox
+   unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 960 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `ats-jobs-scraper`, `court-records-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`. Cheapest first pick: the
+      still-open `steam-reviews-scraper` description-reword trade (`steam store api`/`steam
+      reviews api`, DESC->p4/p5 — needs a priced 297/300-char reword, simulate the trade
+      before shipping).
+   2. Next QUALITY slot (961): next-oldest `varied_test` in `audit_dates.json` is
+      `clinicaltrials-scraper` (915).
+   3. Worth building: `bin/store-price --attr <n>` (cycle 956 note, still unbuilt).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea.
+
+0-DONE-h958-steam-readme-closeout-gaming-data-api.  **[cycle 958] DONE — GROWTH slot.
+   Closed out cycle 956's two leftover sized-but-unshipped `3-h904-readme-proximity-scan`
+   candidates on `steam-reviews-scraper`: `gaming data api` and `steam games list`.**
+   Shipped ONE new bullet ("Build a steam games list from any batch of titles" under
+   What-you-can-do) and ONE new FAQ entry ("Is this only a review scraper, or can I use it as
+   a general gaming data API?") — both pure appends, 0 words evicted, README-only, build
+   0.1.48. Confirmed both phrases present in the build payload's `readme` field before
+   measuring (`gaming data api` / `steam games list` both `True`).
+   **Measured live ~100s post-reindex:** `steam games list` (5637 hits) absent-from-top-60 ->
+   **p11** (predicted p7 via the readme prox=2/attr=6 bucket — off by a few, plausibly a
+   second record sharing the bucket; a real win regardless). `gaming data api` (2726 hits)
+   absent -> **p43** (predicted p2 — landed far short of the bucket-arithmetic prediction).
+   **New model-limit finding, recorded in `bin/store-rank` and `LEARNINGS.md`:** a live
+   `getRankingInfo=true` probe on our OWN objectID for `gaming data api` showed
+   `_highlightResult` `matchLevel: "none"` on EVERY single attribute (title/seoTitle/
+   seoDescription/description/username/readme) despite `nbExactWords=3`/`words=3` —
+   i.e. Algolia counted all 3 query words as matched somewhere on the record for ranking
+   purposes, but no ONE attribute's highlight shows all 3, meaning the words matched
+   split across different attributes rather than contiguously in readme as the bucket
+   model assumes. `firstMatchedWord=4000` (attr=4 by the `//1000` formula) does not
+   correspond to any attribute that actually highlights the phrase. **Lesson: before
+   reporting a `--why` bucket-arithmetic prediction as confirmed, run a direct
+   `getRankingInfo=true` highlight probe on our own record** — the model can produce a
+   real rank estimate that overshoots badly when a match is scattered across attributes
+   instead of contiguous in one, and the existing tooling has no way to detect that case
+   in advance.
+   **Zero regression:** all 7 pre-existing tracked queries held rank or moved ±1 inside the
+   storePosition-drift band (50358->52699 over the window) — `steam api`/`video game data
+   api`/`steam player stats`/`steam player count` byte-identical (p1/p2/p3/p4), `steam
+   reviews` p38->p41 and `steam tags` p21->p22 both attributable to drift, `steam review
+   data` p10 unchanged. `bin/store-rank` TERMS for this Actor now 9 entries with the
+   full note. `check-pricing` 24/29/0 drift, 3 services active, site `/health` +
+   `/tools/steam-reviews-scraper` both 200.
+   **Inbox check:** `list 10` — same long-vetted non-actionable set (dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro/helpindex.org SEO scam pair, owner's stale
+   bold.org/`scholarship-scraper` forward re-confirmed already closed since cycle 652,
+   `873db8ee` capsule26 AI-agent outreach already answered per prior-cycle history) —
+   nothing new, no reply needed, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 959 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `trademark-search-scraper` (913).
+   2. **Still open on `steam-reviews-scraper`:** `steam store api` (8285 hits, live p42,
+      README->p17 but DESCRIPTION->p4) and `steam reviews api` (6617, live p28, DESC->p5) —
+      the description route is strictly better on both but needs a 297/300-char REWORD (a
+      trade with regression risk), not an append — price the full trade with a
+      `--title`-style simulation before shipping.
+   3. **Remaining unswept Actors for `3-h904-readme-proximity-scan`:** `ats-jobs-scraper`,
+      `court-records-scraper`, `trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`.
+   4. Worth building: `bin/store-price --attr <n>` (cycle 956 note, still unbuilt) — would
+      have caught the split-match model-limit above earlier if it always ran a highlight
+      probe before printing a README-target prediction.
+   5. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea.
+
+0-DONE-h957-samgov-sca-cba-varied-test. **[cycle 957] DONE — mandatory QUALITY slot.
+   `varied_test` on `sam-gov-opportunities-scraper` (fleet's oldest, stale since 911), covering
+   the 2 families cycle 911 left untested: wage-determinations-sca and wage-determinations-cba.
+   CLEAN NEGATIVE, no code change — plus a self-inflicted incident, caught and contained.**
+   **SCA combo:** `states:["CA"]` + `activeOnly:false` + `naicsCodes:["541511"]` (opportunity-only,
+   should be ignored), `maxResults:10`. All 10 rows genuinely CA (one multi-state), `naicsCodes`
+   correctly null on every row, `activeOnly:false` returned a real true/false mix.
+   **CBA combo:** 3 small runs — `states:["AL"]` all-AL, `states:["TX"]` all-TX,
+   `states:["AL","TX"]` genuinely interleaved both states — confirms the README's OR-union claim
+   live, not just trusting the prose.
+   **Incident:** tried to re-verify the README's *exact* CBA union counts (AL 3,509/TX 6,909/union
+   10,415) via `maxResults:9999` on two `varied-test` calls. `bin/varied-test`'s `limit=10` only
+   caps the read-back, not what the Actor runs/charges — the AL run pushed 2,418 result events
+   before being noticed, the TX run reached 3,607 and was still `RUNNING` on the platform (175s in)
+   when caught via the runs-list API and aborted (`POST /actor-runs/{id}/abort`; killing the local
+   client does not stop a server-side run). ~6,025 unplanned $0.0015 events (~$9.04 gross PPE,
+   credited back to us as developer minus Apify's ~20% margin — real but small net cost, drawn from
+   the pre-approved $500/mo Creator-plan usage pool, not the $300 cash budget). Confirmed it does
+   NOT pollute `bin/revenue` (gated on bookmarks/reviews/Polar, not run counts). Re-ran the same
+   check at `maxResults:10` — enough to prove the OR-shape without needing the exact population.
+   **Fixed the underlying gap so this can't recur silently**: added a 3rd rule to the
+   `bin/varied-test` `notes/PLAYBOOK.md` entry — verify COUNT claims via direct upstream curl
+   (free), never via `maxResults` set to the full expected population on our own paid Actor; use
+   `maxResults` 10-20 to verify a filter's *shape* instead. Full incident writeup in
+   `notes/LEARNINGS.md` cycle 957.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/0 missing. `audit_dates.json`
+   (`varied_test: 957`) updated. 3 services active, site healthy, inbox unchanged/vetted, no owner
+   email (self-caught/self-corrected, cost small and within the pre-approved usage plan).
+   **Next cycle priority:**
+   1. **Cycle 958 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` — cheapest
+      next pick is the sized-but-unshipped `steam-reviews-scraper` follow-ups from cycle 956
+      (`gaming data api` README->p2, `steam games list` README->p7; `steam store api`/`steam
+      reviews api` need a description reword, price the trade first) before moving to a fresh
+      Actor (`ats-jobs-scraper`, `court-records-scraper`, `trademark-search-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`).
+   2. Next QUALITY slot (959): next-oldest `varied_test` in `audit_dates.json` is
+      `trademark-search-scraper` (913).
+   3. Worth building: `bin/store-price --attr <n>` (cycle 956 note, still unbuilt).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 953's `bin/run-summary-test` helper idea.
+
+0-DONE-h956-steam-readme-proximity-two-wins. **[cycle 956] DONE — GROWTH slot.
+   `3-h904-readme-proximity-scan` on its 6th Actor, `steam-reviews-scraper`: TWO wins
+   (absent -> p2 and absent -> p3, both exactly as predicted), zero regression, and a
+   CORRECTION to cycle 954's README verdict.**
+   **Correction first (matters for every future GROWTH cycle):** cycle 954 concluded the
+   Algolia `readme` attribute is fed by a cached `readmeSummary` and not `README.md`, and
+   told future cycles to prefer `description`/`title`. That is WRONG here. The live record
+   has BOTH fields: `readme` = our real README.md flattened (26,163 chars, attr index 6) and
+   `readmeSummary` = a separate ~2.6k generated blurb that never appears in
+   `_highlightResult` (so probably not searchable). Proof probe: query `"drive-by reviews"`
+   (a phrase only in README.md) with `getRankingInfo=true` -> we hit p2 with
+   `firstMatchedWord=6000` and the `<em>` highlight inside `readme`. Run that probe per
+   Actor rather than inheriting either verdict fleet-wide.
+   **Why README was the only option here:** title 63/63 chars (full), description 297/300
+   (3 free) — neither can take an append, so both would have been trades. README has no
+   budget.
+   **Method:** screened nothing (mature TERMS list = known dead end per 946/948/950/952),
+   went straight to `bin/store-price` on 16 fresh Steam/games phrases, then priced a
+   **README** target for the best 8 with inline arithmetic off the `--why` bucket tables
+   (`store-price` only simulates a TITLE target, attr=0, which is useless when the title is
+   full): target key `(typos=0, words=n, exact=n, prox=n-1, attr=6)`, rank = earlier-bucket
+   records + same-bucket records with a better storePosition + 1.
+   **Shipped** ONE truthful paragraph after the H1 intro carrying TWO contiguous targets
+   (build 0.1.47, README-only): "It doubles as a video game data API: point it at any Steam
+   app and pull the store record — price, discount, genres, developers, Metacritic score —
+   plus Steam player stats such as live concurrent players, peak concurrency yesterday and an
+   estimated owner range." Every field grep-verified in `src/main.js` first
+   (discountPercent/developers/metacriticScore/peakConcurrentYesterday/ownersEstimate).
+   Confirmed the text in the build payload's `readme` field BEFORE measuring.
+   **Measured live ~110s post-push:** `video game data api` (9,461 hits) absent-from-top-60
+   -> **p2**; `steam player stats` (1,761 hits) absent -> **p3**. Both hit the predicted
+   integer. **Zero regression:** all 8 controls held byte-identical rank AND bucket
+   (`steam reviews` p39, `steam api` p2, `steam player count` p4, `steam tags` p21 attr=6,
+   `steam playtime` p10, `steam review data` p10 attr=2, `steam owner estimates` p9,
+   `game reviews api` p8). A README insert is regression-free by construction: a query's
+   bucket is set by its BEST match so adding text can only improve or tie, and every
+   existing match here had `firstMatchedWord % 1000 == 0` (README starts with the Actor
+   name) so no offset could shift across an attribute boundary.
+   `bin/store-rank` TERMS for this Actor now 7 entries with the full note incl. every
+   declined candidate. `check-pricing` 24/29/0 drift, `check-store-meta` 24/0 drift, site
+   `/health` + `/tools/steam-reviews-scraper` both 200. Inbox `list 6` unchanged/vetted
+   (dmarc x3, `j_woodgate01` scam pair, indexhelp.pro spam) — nothing actionable, no owner
+   email (no revenue event), no spend. `git status --short` was clean at cycle start (955
+   committed properly).
+   **Next cycle priority:**
+   1. **Cycle 957 is the mandatory QUALITY slot** (955 Q -> 956 G -> 957 Q). `varied_test`
+      on the oldest in `audit_dates.json`: `sam-gov-opportunities-scraper` (911) or
+      `trademark-search-scraper` (913). SKIP `sec-insider-trades-scraper` (895) — read
+      cycle 941's deliberate-dead-end note before re-attempting it.
+   2. **Sized but NOT shipped on `steam-reviews-scraper`** (cheap follow-up for the next
+      GROWTH slot, all numbers already measured this cycle): `gaming data api` (2,724 hits,
+      README->p2), `steam games list` (5,627, README->p7), `steam store api` (8,285, live
+      p42, README->p17 but DESCRIPTION->p4), `steam reviews api` (6,617, live p28,
+      DESC->p5). The description route wins on the last two but needs a 297/300-char REWORD
+      (a trade with regression risk on `steam review data` p10 attr=2), so price it with a
+      full simulation first. Declined as untruthful: `game sentiment analysis` (4,258,
+      would be README->p1 — we ship review text and a positive/negative filter but do NOT
+      compute sentiment). Declined as saturated: `steam scraper` (13,297, 97 ahead).
+   3. **Worth building: `bin/store-price --attr <n>`** — fold this cycle's README/description
+      target arithmetic into the tool so a non-title target stops being hand-derived inline.
+      Small, and every remaining Actor in the sweep with a full title needs it.
+   4. Remaining unswept Actors for `3-h904-readme-proximity-scan`: `ats-jobs-scraper`,
+      `court-records-scraper`, `trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`.
+   5. Cycle 953's `bin/run-summary-test` helper idea — still unbuilt.
+   6. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority).
+
+0-DONE-h955-remote-jobs-varied-test-real-bug. **[cycle 955] DONE — mandatory QUALITY
+   slot. `varied_test` on `remote-jobs-scraper` (fleet's oldest-dated, 909). REAL BUG FOUND
+   AND FIXED (not a clean negative this time).**
+   Broadened past cycle 909's approach: ran `sources` = all 6, `dedupe:true`, `maxResults:40`,
+   then inspected the FULL 40-row result (not `bin/varied-test`'s default `limit=10`) for
+   `alsoOn` cross-board folds — the code path 909 deliberately didn't exercise. Found a
+   Himalayas listing ("Spotter Labs" / "Remote Backend Django Engineer...") reposted by
+   **Himalayas itself** twice (same company+title, 2 URLs, ~2 min apart) — a same-board
+   repost, not cross-board syndication. The dedup loop correctly folded it to 1 billed row
+   (buyer not double-charged) but wrote `alsoOn:["himalayas"]` — the row's OWN source —
+   contradicting the README's explicit contract that `alsoOn` lists "the extra boards"
+   (e.g. `["remoteok","jobicy"]`). **Fix:** `src/main.js` ~line 605, require
+   `row.source !== first.source` before pushing into `alsoOn` (`duplicateUrls`/billing-once
+   unchanged). Verified with the SAME real Spotter Labs repost, both locally
+   (`alsoOn:[]`, `duplicateUrls` still holds the 2nd URL) and live post-push (build 0.1.17,
+   package.json 0.1.11): identical result. Regression: default `test_input.json` still
+   produces byte-identical 10-row/5-source output. `check-pricing` 24/29/0 drift,
+   `check-store-meta` 24/0 drift; site `/health` + `/tools/remote-jobs-scraper` both 200.
+   Recorded `varied_test: 955` in `audit_dates.json`. Full generalizable lesson (dedup/merge
+   evidence fields need a same-origin guard, not just a not-already-present guard; size
+   `varied_test` pulls to actually exercise fold logic, don't default to `limit=10`) in
+   `notes/LEARNINGS.md` cycle 955. Inbox unchanged/vetted (dmarc x5, bold.org forward,
+   capsule26.com re-read, `j_woodgate01` scam pair, indexhelp.pro spam) — nothing
+   actionable, no owner email (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 956 is GROWTH per rotation** (954 G → 955 Q → 956 G). Top backlog: continue
+      the `3-h904-readme-proximity-scan` lever on remaining unswept Actors
+      (`ats-jobs-scraper`, `court-records-scraper`, `trademark-search-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `steam-reviews-scraper`,
+      `google-play-reviews-scraper`) — check `description`/`title` FIRST (cycle 954
+      correction: the Algolia `readme` field is populated from a cached `readmeSummary`,
+      NOT a live mirror of README.md).
+   2. Next-oldest `varied_test` dates for the following QUALITY slot (957):
+      `sec-insider-trades-scraper` (895, deliberately-skipped dead end per cycle 941 — read
+      that note before re-attempting), `sam-gov-opportunities-scraper` (911),
+      `trademark-search-scraper` (913).
+   3. Cycle 953's `bin/run-summary-test` helper idea (wrap the async-run + RUN_SUMMARY KV
+      poll used for `droppedX`/watch-baseline fields) — still unbuilt, still worth it next
+      time a QUALITY cycle needs a KV-only field.
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority).
+
+0-DONE-h954-google-news-readme-proximity. **[cycle 954] DONE — GROWTH slot.
+   `3-h904-readme-proximity-scan` continued on 2 more Actors, one clean negative + one real win.**
+   `hacker-news-scraper`: 6/7 tracked TERMS already top-20; `hacker news` (1256 hits) p200 despite
+   contiguous title match — a `restrictSearchableAttributes:["title"]` Algolia probe confirmed we
+   already hold the best reachable bucket (`nbExactWords=2, words=2, proximityDistance=1`); the
+   ~199 records ahead all have better `storePosition` (not editable). CLEAN NEGATIVE, no edit made.
+   `google-news-scraper`: `--why "google news rss"` (3477 hits) showed us absent from every
+   attribute bucket, including `readme` (19 records at prox=2). **Found the Algolia `readme` field
+   is populated from a `readmeSummary` value that is NOT literally `README.md`** — the live index
+   record's readmeSummary text has never existed in README.md or its git history. Used `description`
+   instead (byte-for-byte ours, attr=2, outranks readme's attr=6 anyway): reworded "Search Google
+   News by keyword..." -> "Search Google News RSS by keyword..." (291->295/300 chars, truthful —
+   confirmed the Actor's search genuinely hits `news.google.com/rss`), synced both
+   `.actor/actor.json` and `meta.json`, `apify push --force` (build 0.1.48) + `apify-admin publish`
+   to force reindex. **Verified live ~90s post-reindex**: `google news rss` absent-from-top-60 ->
+   exactly **p27**. Zero regression: `google news api` p8, `news monitoring` p5 held; `google news`
+   p157->p158 is storePosition drift (51468->52326), not the edit. `check-pricing` 0 drift/29,
+   `check-store-meta` 0 drift/24. Full method-correction writeup in `notes/LEARNINGS.md` cycle 954
+   (readmeSummary != README.md; prefer description/title over README when a bucket looks reachable).
+   Also found and committed cycle 953's leftover uncommitted STATUS.md/queue.md/audit_dates.json/
+   LEARNINGS.md changes (same gap cycle 949 hit on cycle 948's leftovers — worth a standing habit:
+   `git status --short` at the START of every cycle, not just before your own commit).
+   **Next cycle priority:**
+   1. **Cycle 955 is the mandatory QUALITY slot** — `varied_test` on the next-oldest in
+      `audit_dates.json` (`remote-jobs-scraper` 909 as of this cycle).
+   2. Continue `3-h904-readme-proximity-scan` on remaining unscreened Actors (`ats-jobs-scraper`,
+      `court-records-scraper`, `trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `scholarship-scraper` (blocked/low-value, cycle 572), `steam-reviews-scraper`,
+      `app-store-reviews-scraper` (saturated, cycle 554), `google-play-reviews-scraper`) — check
+      `description`/`title` FIRST per this cycle's correction, only touch `README.md` for a readme-
+      attribute bucket if you can verify the live `readmeSummary` actually changed after a push
+      (re-fetch the Algolia record's `readmeSummary` field directly, don't assume the push synced it).
+   3. Consider building `bin/run-summary-test` (cycle 953 note, still unbuilt).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
+0-DONE-h953-grants-gov-varied-test-clean-negative. **[cycle 953] DONE — mandatory QUALITY
+   slot. `varied_test` on `grants-gov-scraper` (907, fleet's next-oldest after the deliberately-
+   skipped `sec-insider-trades-scraper` 895 dead end, cycle 941). Closed both gaps cycle 907
+   explicitly left open. CLEAN NEGATIVE — 2 live combos, both correct, no bug.**
+   (1) **The `droppedNoCloseDate` exclusion path cycle 907 could not exercise** (its
+   closeDateFrom/To run only surfaced `posted` rows by default sort). Ran
+   `oppStatuses:["forecasted"], closeDateFrom:"2026-01-01", closeDateTo:"2026-12-31"` directly:
+   `declaredMatches:611, scanned:611, delivered:0, droppedNoCloseDate:611, enrichedCharged:0,
+   thinCharged:0`. Every forecast row (which genuinely has no close date) was dropped by the
+   close-date filter and NONE were charged — confirms the documented behaviour exactly, and
+   confirms the buyer-protection half (a filter that excludes a row must not bill for it) holds
+   too. Used a new one-off technique to check this: `run-sync-get-dataset-items` (what
+   `bin/varied-test` wraps) only returns pushed rows, but `RUN_SUMMARY` — where
+   `droppedNoCloseDate` lives — is a key-value-store record, not a dataset item, so this needed a
+   plain async run (`POST /acts/.../runs`, poll `GET /actor-runs/{id}`, then
+   `GET /key-value-stores/{id}/records/RUN_SUMMARY`). Worth turning into a `bin/run-summary-test`
+   helper alongside `bin/varied-test` next time a QUALITY cycle needs a KV-only field (any Actor's
+   `droppedX`/`incompleteReason`/watch counters) rather than hand-rolling the polling loop again.
+   (2) **The `oppNum` exclusive-lookup override, never live-tested.** Found a real closed
+   opportunity (`10-536`, closed 2010-05-07) via `oppStatuses:["closed"]`, then looked it up with
+   `oppNum:"10-536", oppStatuses:["posted"], agencies:["NSF"]` — two filters that would normally
+   exclude it. Still returned the exact row (`opportunityNumber:"10-536", oppStatus:"closed"`),
+   confirming the documented "other filters ignored, oppStatuses forced to all four" behaviour
+   the code comments describe but no prior cycle had proven live.
+   Recorded `varied_test: 953` in `audit_dates.json` (was 907). Standing checks clean:
+   `check-pricing` 0 drift/29. 3 services active, `/health` + `/tools/grants-gov-scraper` both
+   200. `bin/revenue` flat (24 public Actors, 44 users, 383 runs30d, 0 bookmarks, 0 reviews, $0).
+   Inbox `list 6`: same long-vetted non-actionable set (dmarc x3, `j_woodgate01` scam pair,
+   indexhelp.pro SEO spam) — no reply, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 954 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` (screen the
+      "no prox=2 bucket at all" shape first per cycle 952's note — candidates listed there:
+      `hacker-news-scraper`, `google-news-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`,
+      `court-records-scraper`, etc.), or `4-h904-title-edit-pricing-gap`, or a fleet-wide
+      `category-rank --all` re-run.
+   2. **Next QUALITY slot (955): next-oldest `varied_test` per `audit_dates.json`** —
+      `remote-jobs-scraper` (909), `sam-gov-opportunities-scraper` (911),
+      `trademark-search-scraper` (913), `clinicaltrials-scraper` (915) as of this cycle.
+   3. Consider building `bin/run-summary-test` (see note above) — small, reusable, saves a
+      hand-rolled polling script every time a QUALITY cycle needs to verify a KV-only counter.
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority).
+
+0-DONE-h952-clinicaltrials-readme-proximity. **[cycle 952] DONE — GROWTH slot. `3-h904-readme-
+   proximity-scan`, 4th Actor fully screened: `clinicaltrials-scraper`. Clean negative on all 6
+   pre-existing TERMS; THREE outright p1 wins from the absent-query side plus one p25->p13.
+   Build 0.1.38, README-only, 3 edits, 4 target phrases.**
+   Screened the 6 tracked TERMS first (fast, per the cycle-948 revised guidance — confirm, don't
+   re-derive): `clinical trials` p79 (2,2,1,0), `clinicaltrials.gov` p49 (1,0,0,0), `patient
+   recruitment` p1, `nct id` p1, `covid trials` p1 / `covid data` p5 (both already prox=1 attr=6
+   from cycle 916). Every one already at its query's floor prox in an attribute at least as strong
+   as readme -> zero levers. Fourth consecutive Actor with that same result (946/948/950/952);
+   treat a mature TERMS list as a known dead end and budget the cycle for `store-price` instead.
+   **`bin/store-price` on 16 fresh domain phrases, and the finding is a new and better pattern
+   than the previous three cycles' "big prox gap" one: THREE queries had NO prox=2 bucket at all** —
+   not one record in the entire 60-hit window matched the 3-word query contiguously, so the earliest
+   bucket was prox=4 or prox=5. In that shape one contiguous readme sentence (prox=2 attr=6) does
+   not *join* a bucket, it *creates the new head bucket* and lands **p1 outright**, regardless of
+   storePosition or how big the query is: `clinical research api` (2148 hits, absent),
+   `study results api` (5158 hits, absent), `medical data api` (1888 hits, absent). Plus
+   `clinical trial registry` (340 hits) sat at p25 in a prox=5 attr=6 bucket with only 3 records in
+   strictly-earlier buckets and 9 readme prox=2 records at a better storePosition -> predicted p13.
+   **Shipped 3 README edits, no meta.json change:** (1) reworded the H1 intro — "the US NIH/NLM
+   registry of clinical trials, using its own official API v2 — no API key, no login, no proxy.
+   602,520+ studies covered." -> "the US NIH/NLM clinical trial registry, using its own official
+   API v2 — a clinical research API with no key, no login and no proxy. 602,520+ clinical trials
+   covered." ONE rewording carrying TWO targets contiguously, and it also drops the original's
+   "no API key ... official API" repetition, so it reads better, not keyword-stuffed. Deliberately
+   KEPT "clinical trials" contiguous by moving it to the studies-covered clause: that term's live
+   match is attr=0/title so the readme copy is provably redundant, but the cheap move is to keep it
+   rather than prove a removal is safe. (2) one new sentence after the field table, naming the three
+   real fields it is about: "With `hasResults`, `primaryOutcomes` and `resultsFirstPostDate` flat on
+   every row, this doubles as a study results API: set `resultsAvailability` to return only trials
+   that have actually reported, or only the ones that never did." (3) one clause appended to the
+   existing no-PII paragraph: "A medical data API can be useful without reselling named
+   individuals." — in the README's existing opinionated voice, and a true statement of our stance.
+   **Placement check done BEFORE pushing** (this is the step that made it safe): the 4 new phrases
+   land at readme words 16 / 27 / 398 / 475, all well inside the ~1000-word proximity window, and
+   the +49 inserted words shift `covid trials`/`covid data` from word 578 -> 627 — still attr=6.
+   Worth internalising: attr = firstMatchedWord//1000, so a top-of-readme insertion can silently
+   demote a LATER readme match by one attr bucket. Check the shifted offsets before shipping.
+   `apify push --force` -> build 0.1.38. Confirmed all 4 phrases present in the build's
+   `actorDefinition.readme` via the platform API BEFORE measuring (946's lesson). Live ~120s
+   post-reindex, **all four predictions exact**: `clinical research api` absent -> **p1**,
+   `study results api` absent -> **p1**, `medical data api` absent -> **p1**, `clinical trial
+   registry` p25 -> **p13** (predicted p13).
+   **Zero bucket regression**, verified by re-reading each tuple rather than assuming: all 6
+   pre-existing TERMS held byte-identical buckets. `clinical trials` p79->p88 (still (2,2,1,0)),
+   `clinicaltrials.gov` p49->p56 (still (1,0,0,0)), `covid data` p5->p6 (still (2,2,1,6)) are all
+   storePosition drift — ours moved 50989 -> 55451 fleetwide this cycle.
+   `bin/store-rank` TERMS for this Actor now 10 entries with the full note inline.
+   Standing checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/clinicaltrials-scraper` both 200. `bin/revenue` flat ($0, 24 public Actors, 44 users,
+   383 runs30d, 0 bookmarks, 0 reviews). Inbox `list 6`: same long-vetted non-actionable set (dmarc
+   xN, `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply, no owner email, no spend.
+   **`3-h904-readme-proximity-scan` stays OPEN — now 4 Actors screened** (`fda-recall-scraper`,
+   `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `clinicaltrials-scraper`).
+   **Next cycle should screen for the "no prox=2 bucket at all" shape FIRST** — it is worth far more
+   than the prox-gap shape (p1 vs p8-p17) and it is cheap to spot: in `bin/store-rank --why` output,
+   look at the FIRST bucket line; if its prox > n-1 for an n-word query, a single contiguous readme
+   sentence takes p1. Good hunting ground: 3-word "<domain> api" / "<domain> data" phrases that are
+   generic enough that nobody wrote them contiguously. Candidates not yet screened:
+   `hacker-news-scraper`, `google-news-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`,
+   `court-records-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`,
+   `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `apple-podcasts-scraper`,
+   `grants-gov-scraper`, `nih-reporter-scraper`, `substack-scraper`, `steam-reviews-scraper`,
+   `app-store-reviews-scraper`, `google-play-reviews-scraper`, `scholarship-scraper`,
+   `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`.
+   **Next cycle (953) is the mandatory QUALITY slot** — `varied_test` on the oldest-dated Actor in
+   `state/audit_dates.json` (`grants-gov-scraper` 907 / `remote-jobs-scraper` 909 as of cycle 951;
+   `sec-insider-trades-scraper`'s 895 stays a deliberately-skipped dead end per cycle 941).
+
+0-DONE-h951-federal-register-varied-test. **[cycle 951] DONE — mandatory QUALITY slot. `varied_test`
+   on `federal-register-scraper` (905, fleet's next-oldest; `sec-insider-trades-scraper`'s 895 stays
+   a deliberately-skipped dead end per cycle 941's note). Clean negative, no bug, no code change.**
+   Combo 1: Public Inspection desk with all 7 fields the code documents as ignored there
+   (`significantOnly`, `cfrTitle`/`cfrPart`, `publicationDateFrom`, `commentsOpenOnly`,
+   `order:"oldest"`, `presidentialDocumentTypes`) set alongside `documentTypes:["NOTICE"]`, compared
+   against the same query with those fields omitted — 10-row `documentNumber` lists byte-identical
+   in content AND order. Proves `piParams()` truly drops those fields server-side (not just
+   suppressing a warning while still leaking a param) and that `order:"oldest"` has zero effect on
+   the PI desk rather than silently reversing it. Combo 2: published-dataset 4-way AND never tried
+   together — `cfrTitle=40`+`cfrPart=60`+`agencies=[environmental-protection-agency]`+
+   `significantOnly=true` — 10/10 rows `significant:true`, `cfrReferences` containing `"40 CFR 60"`,
+   `agencyNames:["Environmental Protection Agency"]`. Negative control (same filters minus
+   `significantOnly`) returned a genuine true/false/null mix, proving the filter is a real AND.
+   `state/audit_dates.json` updated (`federal-register-scraper.varied_test: 905->951`). Standing
+   checks clean (`check-pricing` 0 drift/29), 3 services active, `/health` + tool page both 200,
+   revenue flat ($0, 44 users, 383 runs30d, 0 bookmarks/reviews), no owner email, no spend.
+   **Next cycle (952) is GROWTH per rotation** — continue `3-h904-readme-proximity-scan` on a 4th
+   Actor, or `4-h904-title-edit-pricing-gap`, or a fleet-wide `category-rank --all` re-run. Next
+   QUALITY slot (953): check `audit_dates.json` for the current oldest `varied_test` (was
+   `grants-gov-scraper`/`remote-jobs-scraper` at 907/909 as of this cycle).
+
+0-DONE-h950-uk-find-a-tender-readme-proximity. **[cycle 950] DONE — GROWTH slot. `3-h904-readme-
+   proximity-scan`, 3rd Actor fully screened: `uk-find-a-tender-scraper`. Clean negative on all 3
+   pre-existing TERMS, one sentence + one rewording bought a 3-way win. Build 0.1.39, README-only.**
+   Screened the 3 tracked TERMS with `--why` per the revised (cycle-948) guidance — confirm fast,
+   don't re-derive: `find a tender` prox=2 attr=0 (title) p29, `public sector tenders` prox=2
+   attr=0 (title) p3, `uk tenders` prox=1 attr=5 (seoDescription) p52 — all already at floor prox
+   (n-1) in an attribute at least as strong as readme. Zero levers, as expected.
+   **Went straight to `bin/store-price` on 16 fresh domain phrases.** 3 stood out: we already
+   matched them SOMEWHERE (title/seoTitle/seoDescription/readme) but non-contiguously, with a large
+   prox gap to the 3-word floor (prox=2) — since Algolia sorts prox before attr, closing that gap
+   via a readme edit (attr=6, the weakest attribute) still jumps straight past the current bucket:
+   `government contracts uk` (724 hits, was prox=8 attr=5, p57), `uk tenders api` (700 hits, was
+   prox=7 attr=4, p49), `open contracting data` (885 hits, was prox=9 attr=6 — already in the
+   readme but scattered, p39).
+   **Shipped 2 edits, no meta.json change:** (1) reworded "Both portals speak OCDS" -> "Both
+   portals publish open contracting data (OCDS)" — literally spells out the acronym, true and
+   natural, lands `open contracting data` contiguous. (2) added one new sentence after the
+   Post-Brexit paragraph: "In short: a government contracts UK tenders API covering Find a Tender
+   and Contracts Finder in one deduplicated feed." — deliberately overlapping at the word "uk" so
+   ONE sentence carries both `government contracts uk` and `uk tenders api` as contiguous 3-word
+   substrings (the cycle-948 double-win pattern, this time a triple).
+   `apify push --force` -> build 0.1.39. Confirmed both phrases landed in the build's
+   `actorDefinition.readme` via the platform API BEFORE measuring (946's lesson). Live ~90s
+   post-reindex, all 3 predictions near-exact: `government contracts uk` p57 -> **p8** (predicted
+   p8), `uk tenders api` p49 -> **p7** (predicted p7), `open contracting data` p39 -> **p17**
+   (predicted p17). **Zero regression**: all 3 pre-existing TERMS held byte-identical bucket AND
+   rank (p29/p52/p3); only storePosition drifted (70610 -> 72226 fleetwide), not caused by the edit.
+   `bin/store-rank` TERMS for this Actor now 6 entries, full note recorded inline.
+   Standing checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/uk-find-a-tender-scraper` both 200. `bin/revenue`/inbox not re-checked this cycle beyond
+   the cycle-949 baseline (unchanged long-vetted non-actionable set) — no reply, no owner email,
+   no spend.
+   **`3-h904-readme-proximity-scan` stays OPEN — now 3 Actors screened** (`fda-recall-scraper`,
+   `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`). Next: pick another Actor with a short
+   TERMS list from `bin/store-rank` (candidates not yet screened: `clinicaltrials-scraper`,
+   `hacker-news-scraper`, `google-news-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`,
+   `court-records-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`,
+   `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `apple-podcasts-scraper`,
+   `steam-reviews-scraper`, `app-store-reviews-scraper`, `google-play-reviews-scraper`,
+   `fec-campaign-finance-scraper`), confirm its TERMS fast, then `store-price` 12-16 fresh phrases
+   and bucket-inspect the biggest prox gaps first (the pattern that's now won 3-for-3 on shopping,
+   0-for-3 on re-screening tracked terms).
+   **Next QUALITY slot (951): `federal-register-scraper`** (905, next-oldest `varied_test`).
+
+0-DONE-h949-substack-varied-test. **[cycle 949] DONE — mandatory QUALITY slot, oldest-dated
+   `varied_test` tied in the fleet: `substack-scraper` (895, tied with `sec-insider-trades-scraper`
+   which got GROWTH work instead at 948). Clean negative, no bug found, no code change.**
+   Ran 3 live combos via `bin/varied-test` against `astralcodexten`:
+   1. `audienceFilter:"paid"` + `minCommentCount:5` — 10/10 rows `isPaid:true` AND `commentCount`
+      well above 5 (all Hidden Open Threads / one essay, range 31-208). Confirms the AND across a
+      boolean-derived field (`isPaid`, computed from `post.audience`) and a numeric archive-listing
+      field together, not just individually.
+   2. `minWordCount:3000` + `minReactionCount:50` — 10/10 rows satisfied both thresholds
+      (wordCount 3037-12639, reactionCount 65-651). Negative control (`minReactionCount:999999`,
+      same `minWordCount`) correctly collapsed to 0 rows — proves the filter is real, not
+      coincidental overlap.
+   3. `searchQuery:"AI"` + `contentType:"newsletter"` — 10/10 rows `postType:"newsletter"`.
+      Titles included some with no literal "AI" substring (e.g. "Mantic Monday 1/29/24") — matches
+      the README's own documentation that `searchQuery` is Substack's server-side archive search
+      (relevance-ranked over full content, not a title-substring filter), not a bug. Negative
+      control with a nonsense keyword (`zzzqqxxnonsensewordxyz123`) correctly returned 0 rows,
+      confirming the search parameter reaches upstream and isn't silently ignored.
+   Standing checks: `check-pricing` 0 drift/29, `check-charges` 0 missing/24, 3 services active,
+   site `/health` + `/tools/substack-scraper` both 200. `bin/revenue` flat (44 users/381
+   runs30d/$0, 0 bookmarks/reviews — no Polar trigger). Inbox `list 10`: same long-vetted
+   non-actionable set — owner's `116f7cc3` bold.org/`scholarship-scraper` forward is the same
+   stale, already-resolved-since-cycle-652 non-issue re-delivered yet again (Actor deliberately
+   `retired`, bold.org still behind its Vercel checkpoint), `873db8ee` capsule26.com outreach
+   already on file/answered, dmarc x5, `j_woodgate01` scam pair, `4bb33655`/other SEO-spam —
+   nothing needing a reply, no owner email (no revenue event), no spend.
+   `audit_dates.json`: `varied_test: 949` (was 895) on `substack-scraper`.
+   **Next cycle (950) is GROWTH per rotation.** Backlog, oldest first: `3-h904-readme-proximity-
+   scan` (2 Actors screened so far — `fda-recall-scraper`, `sec-insider-trades-scraper`; pick a
+   new Actor's `TERMS` list in `bin/store-rank`); `4-h904-title-edit-pricing-gap` (small, still
+   open); fleet-wide `category-rank --all` re-run (last full one pre-924). **Next QUALITY slot
+   (951): `federal-register-scraper`** (905, next-oldest `varied_test` now that both 895s are
+   closed).
+
+0-DONE-h948-sec-insider-readme-proximity. **[cycle 948] DONE — GROWTH slot. Applied the
+   (cycle-946-corrected) h904 README-proximity method to `sec-insider-trades-scraper`, the 2nd
+   Actor in the fleet to be fully screened. Clean negative on all 7 pre-existing TERMS, one real
+   double win on new queries. Build 0.1.12, README-only.**
+   **Screen of the 7 tracked terms — zero levers, and the reason generalizes:** every one was
+   already at its query's FLOOR prox (n-1 for an n-word query) in an attribute at least as strong
+   as readme(6). `sec insider trading` p13, `insider trading scraper` p8, `form 4 insider` p25 —
+   all prox=2 attr=0 (title). `insider trades` p17 — prox=1 attr=0. `insider buying` p17,
+   `insider selling` p4, `stock insider` p6 — all prox=1 attr=2 (description). A readme edit
+   (attr=6) sorts strictly BEHIND attr=0/2 at equal prox, so on every one of these it could only
+   demote us. Same outcome as 3 of the 4 `fda-recall-scraper` candidates at 946. **Emerging fleet
+   rule: a mature TERMS list is nearly always already at floor prox — the readme lever's real
+   home is queries we do not rank for AT ALL, not queries we rank badly on.**
+   **So the cycle went shopping instead.** Priced 14 new candidates with `bin/store-price`,
+   bucket-inspected the 3 best with `--why`, and shipped ONE truthful sentence into the README
+   intro (after the ticker-resolution paragraph, ~word 90 — well inside the ~570-word
+   proximity-tracked zone; 0 words evicted, no meta.json edit):
+       "In short: an insider trading API over Form 4 data, callable from Apify without hosting
+        an EDGAR parser yourself."
+   Picked for carrying TWO contiguous target phrases in one natural sentence rather than one.
+   Truth-checked: the Actor does read Forms 3/4/5 from SEC EDGAR and is callable over the Apify
+   API / fetchsmith.com `/api/v1/run` — not SEO filler.
+   `apify push --force` -> build 0.1.12. Confirmed the readme text landed by reading the build's
+   `actorDefinition.readme` via the platform API BEFORE measuring (the 946 lesson: never judge a
+   readme edit from rank alone). Measured live ~90s post-reindex, both predictions near-exact:
+     * `insider trading api` (704 hits): absent-from-top-60 -> **p15** (predicted ~p14; bucket
+       words=3 exact=3 prox=2 attr=6, behind 2 title + 6 seoTitle + 5 better-storePosition readme)
+     * `form 4 data` (42937 hits): absent-from-top-60 -> **p13** (predicted ~p15)
+   **Zero regression, verified:** all 7 tracked terms held byte-identical bucket AND rank, except
+   `stock insider` p6 -> p5, which is storePosition drift (52847 -> 52627 across the window) in
+   our favour, not the edit.
+   Both new queries added to `bin/store-rank` TERMS (now 9; tracker reports top-20 on 8/9).
+   **Priced and NOT taken — precise notes so the next pass does not re-derive:**
+     * `insider trading data` (717) — absent, but the prox=2 attr=6 bucket is 13 deep with 11
+       records in strictly-better buckets ahead of it -> predicted only ~p24, and no natural
+       sentence carries it next to the two shipped phrases without keyword-stuffing. Declined on
+       quality, not just arithmetic.
+     * `sec form 4` (2135) p69 — already prox=2 attr=2 (description), i.e. floor prox in a
+       BETTER attribute. No lever.
+     * `form 4 filings` (2159) p77 — already prox=2 attr=6, floor prox in the readme itself.
+       Only a description edit could beat it and the description is 300/300 full.
+     * Absent, no cheap readme path priced yet: `sec edgar api` (1264), `sec filings api` (1459),
+       `edgar api` (1281), `sec edgar scraper` (1323), `sec filings scraper` (1525),
+       `insider trading alerts` (288). **Next pass on this Actor should `--why` the first two**
+       (their contiguous-title targets had only 7-8 records ahead, the most promising shape).
+
+0-DONE-h947-app-store-reviews-varied-test. **[cycle 947] DONE — mandatory QUALITY slot, oldest-dated
+   `varied_test` in the fleet: `app-store-reviews-scraper` (894). Clean negative, no bug found,
+   no code change.**
+   Ran 3 live combos via `bin/varied-test` against id1232780281 (Notion):
+   1. `minRating:4`+`keyword:"love"` — 10/10 rows rating>=4 AND title/content contained "love"
+      (case-insensitive, incl. all-caps "LOVE"). AND-filter and Unicode-normalized keyword match
+      both confirmed correct together, not just individually.
+   2. `sort:critical`+`maxRating:2` — all 10 delivered rows came back rating=1, none rating=2.
+      Initially looked suspicious (expected a mix) but this is CORRECT: the schema documents
+      critical as "buffer and re-order the whole scanned set by star rating... 1-to-5, newest
+      first within a tied rating" — with a 10-row cap and more than 10 real 1-star reviews in the
+      200-review scan window, the 1-star bucket alone fills the cap before rating=2 is ever
+      reached. Confirmed the ordering claim too: `updatedAt` was strictly descending
+      (2026-09-26 → 2026-09-17) within the all-1-star group, matching "newest first within a tied
+      rating" exactly. `sortUsed` reported `mostRecent` for every row (not `critical`) — read
+      `src/main.js` to confirm this is intentional: `sort = (reviewsAfterDate || ratingSort) ?
+      'mostRecent' : requestedSort` (line 114) and `sortUsed: sortBy` (line 768) records the real
+      Apple feed param the row was fetched under, which favorable/critical always force to
+      `mostRecent` per the schema's own description ("scan under mostRecent... every row records
+      which order it came from in sortUsed") — not a bug, working exactly as documented.
+   3. `sort:mostHelpful`+`minVoteSum:5` — 10/10 rows had `voteSum>=5` and `sortUsed:mostHelpful`,
+      confirming the schema's documented caveat that Apple only populates vote counts on the
+      `mostHelpful` feed (an easy silent-zero trap if combined with `mostRecent` instead).
+   `check-pricing` 0 drift/29, `check-charges` 24/24 (both run directly — venv shebang, `python3
+   bin/...` fails `ModuleNotFoundError: httpx`). `bin/revenue` flat (44 users/379 runs30d/$0, no
+   Polar trigger). 3 services active, site `/health` + `/tools/app-store-reviews-scraper` both
+   200. Inbox unchanged long-vetted non-actionable set — no reply, no owner email, no spend.
+   `state/audit_dates.json`: `varied_test: 947` (was 894) on `app-store-reviews-scraper`.
+   **Next cycle priority:**
+   1. **GROWTH per alternation** (947 QUALITY → 948 GROWTH): resume `3-h904-readme-proximity-scan`
+      on a different Actor's `TERMS` list in `bin/store-rank` (method corrected cycle 946 for
+      n-word-query floor-prox; only `fda-recall-scraper` fully screened so far), or
+      `4-h904-title-edit-pricing-gap` (small, still open), or a fleet-wide `category-rank --all`
+      re-run (last full one pre-924).
+   2. **Next QUALITY slot: `sec-insider-trades-scraper` or `substack-scraper`** (both `varied_test:
+      895`, next-oldest in the fleet now that 894 is closed). Then `federal-register-scraper`
+      (905), `grants-gov-scraper` (907), `remote-jobs-scraper` (909), `sam-gov-opportunities-
+      scraper` (911).
+   3. Still open, unchanged: `sam-gov-opportunities-scraper`'s `dataType` enum (6 values, never
+      audited); `check-seed-save` SUSPECT backlog (6 Actors, cycle 688 baseline); cycle 830's
+      `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+      residual ~48k-row NIH RePORTER gap (low priority); cycle 897's deferred design question on
+      `nih-reporter-scraper`'s `publicationCount`.
+
+0-DONE-h946-fda-recall-readme-proximity. **[cycle 946] DONE — GROWTH slot. Closed the 4 candidate
+   queries `3-h904-readme-proximity-scan` left open on `fda-recall-scraper`: `food recall`,
+   `device recall`, `drug recall`, `fda recall scraper`. 1 shipped, 3 correctly declined.**
+   Screened each with `bin/store-rank --why`, applying the h904 method precisely: a readme edit
+   (attr=6, the weakest attribute) can only help a query where we are absent, OR our current bucket
+   is NOT already at that query's best-achievable proximity — moving to readme while already at the
+   floor prox only demotes us to a worse attribute at the same prox.
+   - `device recall`: already prox=1 (2-word query floor) via seoTitle (attr=4), p55. Readme is
+     worse (attr=6) at the same prox — no lever. Declined.
+   - `drug recall`: already prox=1 via description (attr=2), p39. Same reasoning. Declined.
+   - `fda recall scraper`: looked promising at prox=2, but **for a 3-word query, fully contiguous
+     in-order IS prox=2** (n-1 = 2 word-gaps), not prox=1 — prox=1 is only reachable with a
+     duplicate/overlapping token, which does not apply here. We're already optimal (name field, p30,
+     tied at the same prox with the entire title/name/seoTitle/readme field). No readme lever
+     applies to 3+-word queries the way it does to 2-word ones — **this generalizes: the h904 method
+     as written ("prox>=2") is really a 2-word-query heuristic; for an n-word query the floor prox is
+     n-1, and only "floor prox not yet reached" is the real screen.** Declined.
+   - `food recall` (1164 hits): absent from the query entirely pre-edit — the one real candidate.
+   Shipped: reworded `fda-recall-scraper/README.md`'s opening sentence, "food, drug and device" ->
+   "food recall, drug recall and device recall" (true, natural, no eviction), landing the contiguous
+   phrase `food recall` at ~word 15 — well inside the ~570-word proximity-tracked zone the h916
+   amendment established. `apify push --force`, build 0.1.34 (README-only).
+   **Verification caught a tooling gap**: `store-rank --why` defaults to a 60-hit sample, and right
+   after the push we still looked absent at that depth — which reads exactly like a failed edit.
+   The platform API's build `readme` field confirmed the new text landed instantly (ruling out a
+   push/reindex problem), and calling `why(..., depth=100)` directly (no CLI flag for this yet)
+   found us at **p89**, inside a `prox=1 attr=6` bucket of 48+ records that simply didn't fit in the
+   default 60-hit window. Real, verified gain: fully-unranked -> page ~5 of a 1164-hit store search,
+   for one true sentence, zero cost. **New LEARNINGS.md-worthy lesson: don't conclude a readme edit
+   failed from a "does not appear in the first 60 hits" result alone if the target bucket could
+   plausibly be large — re-check with a deeper sample before writing off a shipped edit.**
+   Spot-checked 3 established queries for regression (`fda recall` p47, `fda database` p3, `fda api`
+   p14) — all held their bucket unchanged; the only movement was ordinary fleet-wide storePosition
+   drift (49542 -> 52475 over the ~15 min measurement window), not caused by this edit.
+   `check-pricing` 0 drift/29 (note: must run `./bin/check-pricing` directly — it has its own venv
+   shebang; `python3 bin/check-pricing` fails with `ModuleNotFoundError: httpx`). 3 services active,
+   `/health` + `/tools/fda-recall-scraper` both 200. Revenue flat: $0, 44 users, 379 runs30d,
+   0 bookmarks, 0 reviews, $0 of $300 spent — no Polar trigger. Inbox unchanged long-vetted
+   non-actionable set — no reply, no owner email, no spend.
+   **`3-h904-readme-proximity-scan` stays OPEN** (below) — its 4 named candidates are now resolved,
+   but the method was always meant to generalize past one Actor. **Next cycle: pick a different
+   Actor's `TERMS` entry in `bin/store-rank`, screen its queries the same way (now corrected for the
+   n-word-query floor-prox fix above), and repeat.** Other open backlog: `4-h904-title-edit-
+   pricing-gap` (small, still open); fleet-wide `category-rank --all` re-run (last full one pre-924).
+
+0-DONE-h945-fec-varied-test. **[cycle 945] DONE — mandatory QUALITY slot, oldest-dated
+   `varied_test` in the fleet: `fec-campaign-finance-scraper` (903). Clean negative, no bug found,
+   no code change.**
+   Ran 3 live combos via `bin/varied-test`:
+   1. Candidates mode 4-way AND (`state=CA`, `office=S`, `party=DEM`, `electionYear=2024`) with
+      `candidateName` explicitly cleared to `""` — the input schema documents this ("leave empty
+      and use state/office/party filters alone to browse instead of searching by name"; default is
+      `"Warren"` only when the field is *omitted* entirely). First hit an apparent 0-row false
+      alarm by omitting `candidateName` outright, which silently applied the Warren default —
+      correctly found 0 CA Senate candidates named Warren. Working as documented, not a bug.
+      With `candidateName=""`, all 10 rows were CA Senate Democrats and every row's `cycles` array
+      contained 2024.
+   2. Fell into the PLAYBOOK-documented wrong-output-key trap myself: read `electionCycle` for
+      candidates-mode rows (that field only exists on the transaction-mode dataset schema section;
+      candidates mode's field is the array `cycles`) — got a silent `None` column that looked
+      exactly like a dead field until re-checked against `dataset_schema.json`. No Actor bug, just
+      a reminder the trap is real.
+   3. Disbursements mode 4-way AND (`committeeId=C00703975`, `contributionDateFrom/To` Q1 2024,
+      `minAmount`5000/`maxAmount`50000): 10/10 rows in-window, in-range, correct committee.
+      Negative control on the same shape with `minAmount=999999` correctly dropped to only the 6
+      true 7-figure disbursements in that window — proves `minAmount` is genuinely filtering, not
+      coincidentally matching.
+   Standing check `check-pricing`: 24 public Actors, 29 charge events, 0 drift. 3 services active,
+   `/health` + `/tools/fec-campaign-finance-scraper` both 200. Inbox unchanged from cycle 944's
+   long-vetted non-actionable set — no reply, no owner email, no spend. `audit_dates.json` updated.
+   **Next cycle (946) is GROWTH per rotation.** Backlog, oldest first: fleet-wide
+   `category-rank --all` re-run (last full one pre-924); `4-h904-title-edit-pricing-gap` (small,
+   still open); `3-h904-readme-proximity-scan`.
+
+0-DONE-h944-court-unknown-id-warning. **[cycle 944] DONE — closes the follow-up cycle 943
+   deferred (queue step 4 of the old `1-h940` plan). `court-records-scraper` now warns, by name,
+   on court ids CourtListener does not publish. Build 0.1.37 / source 0.1.6, verified live 3 ways.**
+   **Established the premise empirically first, rather than assuming it:**
+   - `?type=r&court=notarealcourt123` returns HTTP 200 with a clean `count:0` — upstream never
+     rejects a bad slug, so a typo is indistinguishable from a real court with no matching rows.
+     That is the buyer-visible failure the warning fixes.
+   - `/courts/?page_size=1` reports `count=3359` = the 472 in-use + 2887 not-in-use already
+     merged at cycle 943. So the bundled map IS CourtListener's complete declared court list, and
+     "absent from it" is an exhaustive existence test — which is exactly what cycle 938's
+     false-positive worry (`ptab`/`bpai` warned about wrongly off the old 472-court list) required
+     before a warning could be honest.
+   **Fixed the one real false-positive left before writing the warning:** cycle 943 deliberately
+   OMITTED `ohctapp1` (blank jurisdiction upstream) from the map so it would fall back to null.
+   That was right for labelling but wrong for an existence check — a real court would have read as
+   an unknown id. Now mapped to an explicit `null` value instead of omitted: `jurisdictionFor()`
+   still returns null (`codes[null]` is undefined -> `?? null`), and the map is 3359/3359.
+   **Code:** new `knownCourt()` helper, deliberately separate from `jurisdictionFor()` — "no label
+   for this court" and "this court does not exist" are different facts and only the second is worth
+   warning about. Uses `Object.prototype.hasOwnProperty.call` rather than `in`/truthiness: tested,
+   a bare lookup makes `constructor`/`__proto__`/`toString` read as valid courts. Placed AFTER the
+   `startUrl` block, because a pasted URL replaces `courts` wholesale.
+   **Warn-only, never drop — this is the load-bearing design decision.** Dropping unknown ids
+   could empty `courts` and turn a narrow search into a whole-corpus walk the buyer is charged for
+   row by row, which is the exact failure the index-narrowing logic elsewhere in this Actor exists
+   to prevent. The all-unknown branch says so explicitly instead of quietly returning 0 rows.
+   **Verified live on the platform, build 0.1.37:**
+   - Mixed `["cand","notarealcourt123","NYSD"]`: warns naming only `notarealcourt123`, lists the
+     recognised ones (`cand, nysd` — uppercase input normalised before the check), still returns
+     3 rows.
+   - All-unknown `["notarealcourt123","california"]`: warns with the "this run will return 0 rows,
+     ids sent as given rather than dropped, fix and re-run" branch, 0 rows. The pre-existing
+     no-records guidance still fires after it as a backstop.
+   - **False-positive control `["ohctapp1","ag","ptab","cand"]`: NO warning**, 3 rows — the two
+     cycle-938 examples and the cycle-943 omission all correctly read as real courts.
+   - No regression: dataset rows still carry `courtJurisdiction:"Federal District"` for `cand`.
+   Also updated the schema `courts` description and README row (stale "400+ courts" -> 3,359,
+   plus the new warning behaviour) and the stale `main.js` "400+ exist" comment.
+   Standing checks all clean: `check-pricing` 0 drift/29, `check-registry-fields` 0 drift,
+   `check-code-fields` 0 drift, `check-readme-samples` 0 drift/35 blocks + 72 bullets,
+   `check-disclosure` 0 missing/52+10, `check-fail-ordering` 0 suspects/19. 3 services active,
+   `/health` + `/tools/court-records-scraper` both 200. Revenue flat: $0, 44 users, 379 runs30d,
+   0 bookmarks, 0 reviews, $0 of $300 spent — no Polar trigger. Inbox `list 10`: identical
+   long-vetted non-actionable set — no reply, no owner email, no spend. Committed + pushed
+   (`59aac2d`).
+   **Next cycle (945) is the MANDATORY QUALITY slot** — the rotation has now had two GROWTH-ish
+   cycles in a row (943 deviated, 944 was a deferred follow-up). Oldest `varied_test`:
+   `fec-campaign-finance-scraper` (903).
+   **GROWTH backlog for 946+:** fleet-wide `category-rank --all` re-run (last full one pre-924);
+   `4-h904-title-edit-pricing-gap` (small, still open); `3-h904-readme-proximity-scan`.
+
+0-DONE-h943-court-jurisdictions-merge. **[cycle 943] DONE — GROWTH slot (deviated from the planned
+   QUALITY rotation: the harvester finished unattended since cycle 942, fully unblocking this
+   3-cycle-old task, and recent QUALITY passes had been diminishing-returns clean negatives).
+   Shipped `1-h940-court-jurisdictions-merge` part 2 — merged CourtListener's 2,887 `in_use=false`
+   courts into `court-records-scraper`'s jurisdiction map, following the exact steps queue.md
+   already had.**
+   Merged into `actors/court-records-scraper/src/court-jurisdictions.json`: existing 472
+   `in_use=true` entries stayed authoritative (0 id collisions, confirmed). Cross-checked every
+   harvested `jurisdiction` value against the existing 23-code table first: 2,884 matched directly,
+   1 (`njcirctsussex` -> `"St"`) was a CourtListener casing slip normalized to the real code `"ST"`
+   (State Trial), 1 (`ohctapp1`, blank jurisdiction upstream) deliberately left OUT of the map so it
+   falls back to `null` the same way any absent id already does — no invented label. Kept the file
+   as the existing flat `id -> code` map for size: **3,358 courts, 85KB** (a bit over the queue's
+   60-70KB estimate for ~3,359 — pretty-printing overhead, not extra data). Updated the `_source`
+   provenance field (a first draft nearly dropped it — caught by diffing against `git show HEAD:...`
+   before committing), the stale `main.js` comment ("all 472 in-use courts"), and the README
+   `courtJurisdiction` disclosure bullet. Bumped `package.json` 0.1.4 -> 0.1.5.
+   **Verified live, build 0.1.36**: `courts:["ag"]` (previously null) now returns real rows —
+   surfaced under child court `olc`, `courtJurisdiction:"Federal Special"`, CourtListener count
+   2,529 matching cycle 940's measurement exactly. In-use control `courts:["cand"]` unaffected
+   (`"Federal District"`, count 9,341). Confirmed `ptab`/`bpai` (the original cycle-938 false-
+   positive-warning example) now resolve to `"Federal Special"` instead of null.
+   **NOT done this cycle — filed as follow-up:** the cycle-936-style unknown-court-id warning
+   (queue step 4 of the old plan). The merged 3,358-court list is now a defensible signal for one,
+   but ran out of time budget after the merge + verification. Small, well-scoped, pick up next.
+   Standing checks clean: `check-pricing` 0 drift/29, `check-registry-fields` 0 drift,
+   `check-code-fields` 0 drift, `check-readme-samples` 0 drift/35 blocks, `check-disclosure`
+   0 missing/52+10. 3 services active, `/health` + `/tools/court-records-scraper` both 200.
+   Revenue flat: $0, 44 users, 379 runs30d, 0 bookmarks, 0 reviews, $0 of $300 spent — no Polar
+   trigger. Inbox `list 10`: identical long-vetted non-actionable set — no reply, no owner email,
+   no spend.
+   **Next cycle (944) — pick one:** (1) the deferred unknown-court-id warning on
+   `court-records-scraper`, now well-scoped against the 3,358-court list; (2) resume QUALITY
+   rotation — oldest `varied_test`: `fec-campaign-finance-scraper` (903); (3) fleet-wide
+   `category-rank --all` re-run (last full one pre-924); (4) `4-h904-title-edit-pricing-gap`
+   (small, still open).
+
+0-DONE-h942-harvester-fix-and-enum-sweep-close. **[cycle 942] DONE — GROWTH slot. Two items
+   closed: harvester robustness fix (unblocks `1-h940-court-jurisdictions-merge`) and the
+   remaining `1-h936-freetext-enum-sweep` backlog (now fleet-complete). No Actor code change.**
+   **Harvester:** `bin/harvest-courtlistener-courts` (cycle 940) had silently died between cycles
+   — `logs/harvest-courts.log` showed an unhandled `HTTPError: 502`, because the retry logic only
+   covered HTTP 429, not transient gateway errors. Added 502/503/504 to the retryable set (20s
+   backoff). Relaunched under `nohup`; reached 2580/2887 by cycle end, no further crashes. Still
+   not `complete:true` — next cycle just re-run the same command (resumes; now 502-resistant).
+   **freetext-enum-sweep remainder (fields 6-7 from cycle 938's list of 7), both CLEAN:**
+   - `fda-recall-scraper.countries`: verified live against `api.fda.gov` directly — case-insensitive
+     exact phrase match (`United States` == `united states`, 16,888/17,975), garbage returns a real
+     `404 NOT_FOUND` that the Actor's `fetchPage()` already treats as a legitimate empty result
+     (honest for an exact-match field with no closed vocabulary to validate against). Clean.
+   - `eu-ted-tenders-scraper.cpvCodes`: already has a detailed, measured-live disclosure of TED's
+     whole-subtree CPV matching in the schema. Clean, no action.
+   - `eu-ted-tenders-scraper.countries`: input uppercased before querying; TED validates
+     `buyer-country` server-side and returns `400 QUERY_UNSUPPORTED_FIELD_VALUE` naming the bad
+     value, which the Actor already surfaces verbatim with "fix your input" guidance. Clean.
+   **Housekeeping:** removed a stale duplicate open-task block (`1-h928-smartrecruiters-postings-
+   count-label`, formerly at the bottom of this file) that kept getting re-cited as "still open" in
+   cycles 939-941's next-steps bullets despite being fully shipped at cycle 930
+   (`0-DONE-h930-workday-rawcount-log-line`, build 0.1.54) — confirmed by reading the actor's own
+   `main.js` and `git log` (commit `b0c7143`) before deleting it.
+   `check-pricing` 0 drift/29, 3 services active, both endpoints 200, revenue flat ($0, 44 users,
+   379 runs30d, 0 bookmarks, 0 reviews), no Polar trigger, no spend, no owner email. Inbox
+   unchanged non-actionable set.
+   **Next cycle (943) is QUALITY per rotation.** Oldest `varied_test`: `fec-campaign-finance-scraper`
+   (903). GROWTH backlog: finish `1-h940-court-jurisdictions-merge` once the harvester completes
+   (exact steps below, unchanged), fleet-wide `category-rank --all` re-run (last full one pre-924),
+   `4-h904-title-edit-pricing-gap` (small, still open).
+
+0-DONE-h941-shopify-watch-cap-fix. **[cycle 941] DONE — mandatory QUALITY slot.
+   `varied_test` on `shopify-products-scraper` (901, next-oldest after the two 895-tied candidates
+   turned out already closed — see below). FOUND AND FIXED A REAL BUG, build 0.1.63.**
+   Both `sec-insider-trades-scraper` and `substack-scraper` (tied oldest at 895) had already gotten
+   thorough multi-combo `varied_test` passes AT cycle 895 itself (confirmed by reading their own
+   `audit_dates.json` notes before re-testing) — re-running them would have been wasted work, so
+   moved to the next-oldest untested candidate instead.
+   **The bug:** `input_schema.json` documents `maxProductsPerStore` as capping products SCANNED per
+   store in watch mode, but `main.js`'s scan loop only checked the cap at page boundaries
+   (`scanCapped()` in the outer `for` condition). Shopify always returns pages of up to 250
+   products, so ANY cap below 250 was silently ignored for the first page — live-reproduced twice:
+   `maxProductsPerStore:40` and `:10` both logged "stopped after scanning 250 products". Every
+   watch-mode buyer setting a cheap low cap (a reasonable, documented use case) was scanning 6x+
+   more of the target store than requested.
+   **Fixed carefully:** moved the cap check into the per-product loop (mirroring non-watch mode's
+   existing `got >= perStore` break). Caught a second-order bug in the first draft before shipping —
+   if the cap break coincides with a store's genuinely-short last page, the old
+   `products.length < 250` test would wrongly set `sweptToEnd = true` even though the tail past the
+   cap was never scanned, which would falsely report real still-listed products as "delisted" on the
+   next run. Added a `capBroke` flag so a cap-cut page can never satisfy `sweptToEnd`.
+   **Verified live end-to-end**, build 0.1.63: post-fix run with `maxProductsPerStore:40` now logs
+   "stopped after scanning 40 products" exactly (was 250 pre-fix). Default-input regression (bare
+   `{}`, non-watch, 10 rows) unaffected. Test watch records (`qtest941cap`, `qtest941cap2`) deleted
+   from the shared production KV store after verification.
+   Standing checks clean post-fix: `check-pricing` 0 drift/29, `check-code-fields` 0 drift,
+   `check-fail-ordering` 0 suspects/19. 3 services active, site + tool page 200. Committed and
+   pushed (`cbfbca3`). `state/audit_dates.json` updated. Inbox re-checked: both items that looked
+   new (owner's bold.org forward, capsule26.com reply) confirmed already-resolved via
+   `worker.log` grep — no reply, no owner email, no spend.
+   **Next `varied_test` candidate by age:** `fec-campaign-finance-scraper` (903).
+
+0-DONE-h940-court-notinuse-harvest. **[cycle 940] DONE (part 1 of 2) — GROWTH slot.
+   `1-h938-court-jurisdictions-coverage`: established the empirical facts the merge depends on,
+   CONFIRMED cycle 938's judgement was right, and shipped a resumable harvester because the data
+   pull does not fit one cycle. No Actor code change yet — the merge itself is part 2.**
+   **Cycle 938's call not to ship a 472-court-list-based unknown-court warning was CORRECT, but its
+   headline example was wrong.** Measured live through the Actor's OWN query path
+   (`/api/rest/v4/search/?type=o|r&court=<id>`), not the /courts/ list endpoint:
+   - `ptab` -> count=0 opinions AND count=0 dockets, both with and without a `q` filter.
+     `bpai` -> 0 opinions. So PTAB/BPAI are listed-but-un-ingested; they are NOT the
+     false-positive case 938 thought they were (a warning on them would be *accurate*).
+   - **The real false-positive cases are elsewhere and they are substantive:** `ag` -> 2,529
+     opinions, `circtdal` -> 7 opinions, and a 120-court `in_use=false` sample batched into one
+     `court=` request -> **497,510 opinions / 22,876,022 dockets**. Baseline (no `court` param) is
+     8,313,056 opinions, so that sample is ~6% of the whole opinion index.
+   **=> The coverage gap is real and worth closing:** every row from any of those 2,887 courts
+   currently ships `courtJurisdiction:null`, and a warning built on the 472-court list alone would
+   false-positive on courts holding hundreds of thousands of real opinions. Both halves of 938's
+   follow-up stand.
+   **Ruled out a scarier hypothesis first:** the 120-court batch returning 497K looked like the
+   `court=` filter silently degrading to unfiltered — which on a PPE Actor would mean billing a
+   buyer for the entire index. It is NOT: `scotus` alone=498,145, `cand` alone=9,341,
+   `scotus cand`=507,870 (~sum), `ptab bpai`=0, batch+scotus=1,007,071 (~497,510+498,145).
+   `court=` is a correct OR over the id list. No bug. (The earlier "scotus=4,792" figure in this
+   thread was `q=patent`-filtered, not the unfiltered court total.)
+   **Why part 2 is deferred, precisely:** anonymous CourtListener is throttled to **5 req/min**,
+   `/courts/` **ignores `page_size`** (hard 20/page, verified `page_size=500` -> 20 rows), and
+   there is **no bulk export** (`storage.courtlistener.com/bulk-data/` -> 404). 2887/20 = **145
+   pages ~= 31 min** of pure wall clock, more than a cycle has. Batching court ids into one
+   `court=` request (the trick above) makes *verification* cheap but does nothing for the *harvest*.
+   **Shipped instead: `/root/agent/bin/harvest-courtlistener-courts`** — resumable, 13s-spaced,
+   backs off 40s on 429, saves the cursor + accumulated courts to
+   `state/courtlistener_courts_notinuse.json` **after every page** via atomic `os.replace`, so a
+   mid-run kill costs at most one refetched page. `--status` prints progress without fetching;
+   re-running resumes; it is a no-op once `complete:true`. Launched under `nohup` this cycle
+   (log: `logs/harvest-courts.log`), reached 80/2887 before the cycle ended.
+   **NEXT CYCLE — `1-h940-court-jurisdictions-merge` (part 2), exact steps:**
+   1. `bin/harvest-courtlistener-courts --status`. If `complete:false`, just re-run it (resumes;
+      may need 2-3 cycles of background time, that is fine and costs nothing).
+   2. Once complete, merge `state/courtlistener_courts_notinuse.json` into
+      `actors/court-records-scraper/src/court-jurisdictions.json` under `courts`, keeping the
+      existing 472 `in_use=true` entries authoritative on any id collision. Check the harvested
+      `jurisdiction` values against the existing 23-code `codes` table FIRST — if in_use=false
+      courts use codes absent from it, add them from the OPTIONS endpoint rather than inventing
+      labels, and leave genuinely blank `jurisdiction` values mapping to null.
+   3. Size check before shipping: 472 courts is 9.2KB, so ~3,359 courts is ~60-70KB of shipped
+      JSON read at every Actor boot. Store as the flat `id -> code` map the existing file already
+      uses (NOT the richer harvest record) to keep it small; `jurisdictionFor()` needs nothing else.
+   4. Only THEN consider the cycle-936-style unknown-court warning, now that "absent from the
+      merged 3,359-court list" is a defensible signal. Keep the input schema's existing honest
+      disclosure either way.
+   5. Verify with a real platform run on a not-in-use court with content (`ag` or `usdistct`) and
+      confirm `courtJurisdiction` is no longer null, plus one in-use control (`cand`).
+   Standing checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/court-records-scraper` both 200. Revenue flat: $0, 44 users, 379 runs30d, 0 bookmarks,
+   0 reviews, $0 of $300 spent — no Polar trigger. Inbox `list 10`: identical long-vetted
+   non-actionable set (owner's stale bold.org forward, capsule26.com DB-ledger thread, dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply sent, no owner email, no spend.
+   **Next cycle (941) is QUALITY per rotation** (939 Q -> 940 G -> 941 Q).
+   **Next `varied_test` candidates by age:** `sec-insider-trades-scraper` / `substack-scraper` (895).
+   **Other backlog:** remaining `1-h936-freetext-enum-sweep` items
+   (`eu-ted-tenders-scraper.countries`/`cpvCodes`, `fda-recall-scraper.countries`); fleet-wide
+   `category-rank --all` re-run (last full one pre-924); `4-h904-title-edit-pricing-gap`;
+   `1-h928-smartrecruiters-postings-count-label`.
+
+0-DONE-h939-google-play-varied-test. **[cycle 939] DONE — mandatory QUALITY slot.
+   `varied_test` on `google-play-reviews-scraper` (tied fleet's oldest at 894 with
+   `app-store-reviews-scraper`). CLEAN NEGATIVE — no bug found, no code change.**
+   First read `app-store-reviews-scraper`'s code closely as a candidate (its declared conflict
+   warnings for reviewsAfter-forces-mostRecent vs minVoteSum/minVoteCount, and sort=favorable/
+   critical vs watchLabel, are both already implemented and warned on — confirmed by reading
+   main.js, not run live, since the code already proves the claim). Picked
+   `google-play-reviews-scraper` instead since cycle 894's own `varied_test` bump there was
+   actually a narrow seed-default-bug verification (see cycle 894 entry below), not a broad
+   combo sweep, leaving real headroom.
+   Ran a 5-way live combo never tried together before: `replyFilter` (hasReply/noReply) crossed
+   with `keywords` (any-of: thanks/great/love), `minThumbsUp>=1`, `minScore=3`, and
+   `ratingFilter=[3,4,5]` on `com.spotify.music` (`maxReviewsPerApp:3000`,
+   `includeAppDetails:false`). **Process trap hit and corrected**: the first attempt left
+   `includeAppDetails` at its default `true`, so the one row returned was the app-details record
+   (`score:4.347504`, a float average rating, with every review-only field `null`) — looked
+   exactly like "0 matching reviews" until re-read with `includeAppDetails:false`.
+   **Positive:** `replyFilter:"hasReply"` — 5/5 rows had non-null `replyText`, every `score` in
+   `{3,4,5}`, every `thumbsUp>=1`, every `text` contained one of the 3 keywords (case-insensitive:
+   "Love"/"love"/"thanks"/"Great"/"GREAT").
+   **Negative control:** flipped to `replyFilter:"noReply"`, same other 4 filters — 5/5
+   `replyText:None`, all other 4 filters still honoured. Confirms a true 5-way AND (not an
+   accidental OR, and `replyFilter` isn't silently ignored under the other filters).
+   `state/audit_dates.json` updated (`google-play-reviews-scraper.varied_test: 894->939`, full
+   `varied_test_note`). Standing checks clean: `check-pricing` 0 drift/29. 3 services active,
+   `/health` + `/tools/google-play-reviews-scraper` both 200. Inbox `list 10`: identical
+   long-vetted non-actionable set (owner's stale bold.org forward, capsule26.com "charged buyers
+   twice" DB-ledger reply thread — still just networking, not a support request — dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply sent, no owner email, no spend.
+   **Next cycle (940) is GROWTH per rotation** (938 G -> 939 Q -> 940 G). Backlog, pick one:
+   1. `1-h938-court-jurisdictions-coverage` (filed cycle 938; SUPERSEDED cycle 940 — part 1 done, see the `0-DONE-h940` entry at the top and its successor `1-h940-court-jurisdictions-merge`): merge CourtListener's 2,887
+      `in_use=false` courts into `court-jurisdictions.json` and spot-check a sample (ptab, bpai,
+      historical circuit courts) actually return real results through the Actor's own query path,
+      BEFORE adding any unknown-court-id warning to `court-records-scraper`.
+   2. Remaining `1-h936-freetext-enum-sweep` backlog: `eu-ted-tenders-scraper.countries`/
+      `cpvCodes`, `fda-recall-scraper.countries` (not yet empirically checked).
+   3. Fleet-wide `category-rank --all` re-run (last full one pre-924).
+   4. `4-h904-title-edit-pricing-gap` (small, still open).
+   5. `1-h928-smartrecruiters-postings-count-label` (cosmetic, still open).
+   **Next `varied_test` candidate by age:** `sec-insider-trades-scraper` / `substack-scraper` (895).
+
+0-DONE-h938-freetext-enum-sweep. **[cycle 938] DONE — GROWTH slot. `1-h936-freetext-enum-sweep`:
+   fleet sweep of free-text input fields bound to a closed upstream vocabulary. CLEAN sweep of 7
+   fields, no code change. Filed one properly-scoped follow-up instead of rushing a risky fix.**
+   Grepped all 24 Actors' input schemas for string/stringList fields with an "e.g./example" hint
+   and no declared enum — the class the `enum_audit` rotation never covered (declared schema enums
+   only), which is where the cycle-936 `trademark-search-scraper` bug lived. Most hits are genuine
+   full-text search fields (name/keyword/description), not closed vocabularies — out of scope.
+   Narrowed to 7 real closed-vocabulary candidates and verified each live:
+   - `substack-scraper.discoverCategories`: already validates against a live fetch of
+     `substack.com/api/v1/categories`, warns on unknown slugs. Clean.
+   - `fec-campaign-finance-scraper.party` (DEM/REP/IND/LIB): verified live against OpenFEC —
+     all 4 real, case-insensitive, garbage fails closed (0 rows, HTTP 200, already covered by the
+     Actor's own filter-name-canary guard for the dropped-param case). Clean.
+   - `nih-reporter-scraper.activityCodes` (R01/R21/R43/F32/K99/U54/P01/N01): verified live against
+     NIH RePORTER — all 8 real, case-insensitive, garbage returns HTTP 400 (fails closed). Clean.
+   - `sam-gov-opportunities-scraper.setAsideTypes` (SBA): verified live against the public
+     sam.gov search backend — unfiltered 5,629,781 vs `SBA` 1,204,488 vs `8A` 20,733 (real
+     narrowing) vs garbage 0 (fails closed, matches the Actor's documented FILTER_CANARY design).
+     Clean.
+   - `us-federal-awards-scraper.recipientTypes`: already live-verified 2026-09-18 (10 days ago)
+     with an honest in-schema disclosure of the "misspelled category returns 0 rows" behavior.
+     Clean, no action.
+   - `court-records-scraper.courts`: schema already honestly discloses "An unrecognised ID is not
+     rejected upstream — it silently matches nothing," and the 5 doc examples (scotus/ca9/cand/
+     cacb/nysd) all verified present in the Actor's own shipped 472-court `court-jurisdictions.json`
+     (CourtListener `in_use=true` only). **Considered adding a runtime warning for court IDs absent
+     from that list (the cycle-936 trademark pattern), then checked CourtListener's `in_use=false`
+     set live and found 2,887 MORE real, searchable court IDs absent from our shipped list** — e.g.
+     `ptab` (Patent Trial and Appeal Board), a court people genuinely search. A warning built on the
+     472-court list alone would false-positive on exactly these legitimate searches — worse than the
+     status quo's honest, already-disclosed limitation. **Did not ship a fix; filed the properly-
+     scoped follow-up below instead of rushing one.**
+   - `eu-ted-tenders-scraper.countries`/`cpvCodes` and `fda-recall-scraper.countries`: not yet
+     empirically checked this cycle (ISO 3166 / CPV are external standards we don't own, FDA's
+     country field is lower-risk free text) — left in backlog.
+   `check-pricing` 0 drift/29. No `audit_dates.json` key added (one-time fleet grep, not a
+   per-actor rotation). 3 services active, site 200s, no spend, no owner email needed.
+   **New backlog — `1-h938-court-jurisdictions-coverage`:** before adding any validation/warning on
+   `court-records-scraper`'s `courts` input, fetch and merge CourtListener's `in_use=false` courts
+   (2,887 of them, via `courtlistener.com/api/rest/v4/courts/?in_use=false`) into
+   `court-jurisdictions.json` alongside the existing 472 `in_use=true` ones, and spot-check that a
+   sample of "not in use" courts (ptab, bpai, historical circuit courts) still return real search
+   results through the Actor's actual query path — not just the courts list endpoint — before
+   treating "absent from the merged list" as a reliable unknown-code signal.
+   **Remaining freetext-enum-sweep backlog:** `eu-ted-tenders-scraper.countries`/`cpvCodes`,
+   `fda-recall-scraper.countries` (not yet empirically checked).
+   **Next cycle (939) is QUALITY per rotation.** Oldest `varied_test` candidates:
+   `app-store-reviews-scraper` / `google-play-reviews-scraper` (894).
+
+0-DONE-h937-steam-reviews-varied-test. **[cycle 937] DONE — mandatory QUALITY slot.
+   `varied_test` on `steam-reviews-scraper` (fleet's oldest at 893). CLEAN NEGATIVE — no bug found,
+   no code change.**
+   First checked whether cycle 935's `apple-podcasts-scraper` bug shape ("watch identity key falls
+   back to a hardcoded literal instead of the per-item disambiguator already used elsewhere")
+   reproduces here, since cycle 936 flagged this Actor as worth checking for it. It does not:
+   `watchId` is already built as `` `${appId}:${item.reviewId}` `` (main.js:630), never a bare
+   literal, and `recommendationid` is Steam's own globally-unique id anyway (not a per-app
+   sequential counter the way podcast-generator guids can be), so there is no collision surface
+   even without the appId prefix.
+   Ran 2 live combos on the platform that no prior cycle had tried:
+   1. `apps` + `searchTerms` supplied **together in one call** (`"570"` + `"Stardew Valley"`),
+      crossed with `reviewType=negative`, `purchaseType=non_steam_purchase`, `minPlaytimeHours=20`,
+      `keyword=grind`. Dedup across both resolution paths (explicit ID + search) is clean — 6 rows,
+      both games present, no duplicate appIds — and every row correctly has
+      `steamPurchase:false`/`recommended:false`/`playtimeForeverHours>=20`/review text containing
+      "grind".
+   2. `reviewsAfter`/`reviewsBefore` (2026-08-01..08-15) crossed with `reviewType=negative` +
+      `keyword=toxic` on Dota 2. All 10 rows land inside the window with `recommended:false` and
+      "toxic" in the review text — the google-news-scraper-class date-window leak (cycle 933) does
+      not reproduce here.
+   **Process note, not a bug:** the first read of combo 1 requested output key `purchaseType` (an
+   INPUT filter name — the actual output field is `steamPurchase`) and got `None` for every row,
+   exactly the trap `PLAYBOOK.md` already documents for `bin/varied-test` (wrong output key name
+   looks identical to a real "field always null" bug). Re-read with the correct key and confirmed
+   the filter is honoured correctly. No LEARNINGS entry needed — already documented.
+   `state/audit_dates.json` (`steam-reviews-scraper.varied_test: 893->937`, full note). Standing
+   checks clean: `check-pricing` 0 drift/29. 3 services active, `/health` +
+   `/tools/steam-reviews-scraper` both 200. Inbox `list 10`: identical long-vetted non-actionable
+   set (owner's stale bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01`
+   scam pair, indexhelp.pro SEO spam) — no reply sent, no owner email, no spend. Revenue flat ($0,
+   44 users, 378 runs30d — no Polar trigger).
+   **Next cycle (938) is GROWTH per rotation** (936 G -> 937 Q -> 938 G). Backlog, pick one:
+   1. `1-h936-freetext-enum-sweep` (filed cycle 936, not yet started): sweep the fleet for free-text
+      input fields bound to a closed upstream vocabulary that we document by example instead of
+      validating — the class the `enum_audit` rotation never covered (it only checked *declared*
+      schema enums). This is where the `trademark-search-scraper` bug lived.
+   2. Fleet-wide `category-rank --all` re-run (last full one pre-924).
+   3. `4-h904-title-edit-pricing-gap` (small, still open).
+   4. `1-h928-smartrecruiters-postings-count-label` (cosmetic, still open).
+   **Next `varied_test` candidates by age:** `app-store-reviews-scraper` / `google-play-reviews-scraper`
+   (894).
+
+0-DONE-h936-trademark-status-vocabulary. **[cycle 936] DONE — GROWTH slot.
+   `enum_audit` on `trademark-search-scraper`, the LAST remaining `enum_audit: null` from the
+   cycle-836 rotation. FOUND AND FIXED A REAL BUG, build 0.1.18. The enum_audit backlog is now
+   fleet-wide EMPTY (0 nulls across all 24 Actors).**
+   `statuses` is a free-text `stringList` with no declared schema enum, so the vocabulary had to be
+   established empirically against the live API (TMview is unreachable direct from this box — every
+   probe below was a real platform run).
+   **Measured:** a 1000-row run (searchTerm `coffee`, no office/class/status filter) spanning 59
+   offices produced exactly FOUR distinct `status` values — `Registered` (464), `Ended` (335),
+   `Expired` (120), `Filed` (81) — and each of the four returns rows when used alone as a filter.
+   Every other candidate declared **0 matches** on the broadest search possible (searchTerm `a`,
+   all 70+ offices, 55,803,629 marks): `Withdrawn`, `Opposed`, `Pending`, a garbage control
+   (`Bogusstatus`), **and lowercase `registered`**. Run logs confirm TMview itself declares
+   `0 matches ... (0 pages)`, so it is the filter value being rejected, not pagination.
+   **The bug:** TMview matches `fTMStatus` case-sensitively against a closed 4-value set, and the
+   Actor's own documentation was wrong about that set — the input schema AND the README both
+   offered **`Withdrawn`** as an example value, and the `watchChanges` copy described transitions
+   into `Opposed`/`Pending`/`Withdrawn`. A buyer following our own docs (or simply typing
+   `registered`) got an empty dataset, no warning, and no way to tell an invalid filter value from
+   a search that genuinely has no matches.
+   **Shipped (0.1.18):** canonical `TM_STATUSES` set + case-insensitive normalisation (a lowercase
+   `registered` is corrected to `Registered` and the correction is logged, instead of silently
+   voiding the filter); a `log.warning` naming each unrecognised value and listing the valid four;
+   unknown values are still forwarded to TMview (forward-compatible if it ever adds one) so a mixed
+   list keeps returning its valid branches; a `setStatusMessage` fires **only** when EVERY supplied
+   status is unknown, since that run can never return anything; `unknownStatuses` added to
+   `RUN_SUMMARY`; schema + README corrected to the verified four everywhere (`Withdrawn`/`Opposed`
+   now appear 0 times in both).
+   **Verified live on build 0.1.18, 4 runs:** (1) `["registered"]` → normalised, **3 rows of
+   55.8M declared** where the identical input returned 0 pre-fix; (2) `["Withdrawn"]` → warning +
+   the exact explanatory status message, 0 rows; (3) `["Registered","Bogus"]` → warns about `Bogus`
+   yet still returns 3 `Registered` rows and does NOT hijack the status message; (4) default-input
+   gate `{}` → SUCCEEDED, 50 non-empty rows.
+   **Also corrects a prior cycle's conclusion:** cycle 913 read an `Opposed`-only probe returning 0
+   on a nike/EM search as "no Opposed marks exist right now, not a filter bug". It was a filter bug
+   — `Opposed` is not a TMview status at all. A 0-row probe on a NARROW search cannot distinguish
+   the two; only the broadest-possible search can.
+   Standing checks: `check-pricing` 0 drift/29, `check-readme-samples` 0 drift/35 blocks/72 bullets,
+   `check-registry-fields` 0 drift. `check-fail-ordering` flagged 1 suspect — **not from this
+   change**: cycle 935's `apple-podcasts-scraper` edit shifted the known-safe h289 seed gate from
+   line 1060 to 1069, orphaning its ALLOWLIST entry. Confirmed it is the same guard and re-pointed
+   the allowlist; now 19 Actors / 0 suspects.
+   3 services active, `/health` + `/tools/trademark-search-scraper` both 200. `bin/revenue` flat
+   (44 users, 378 runs30d, 0 reviews, 0 bookmarks, $0 — no Polar trigger). Inbox `list 10`:
+   identical long-vetted non-actionable set (owner's stale bold.org forward, capsule26.com outreach,
+   dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO spam) — no reply, no owner email, $0 spend.
+   **Next cycle (937) is QUALITY per rotation** (935 Q -> 936 G -> 937 Q). Oldest `varied_test`
+   candidate: `steam-reviews-scraper` (893) — cycle 935 flagged it as worth checking for the same
+   "sibling identity key uses a hardcoded fallback instead of reusing another key's disambiguation"
+   shape; then `app-store-reviews-scraper`/`google-play-reviews-scraper` (894).
+   **GROWTH backlog for cycle 938 (the enum_audit rotation is now exhausted — pick from these):**
+   1. **NEW, filed this cycle — `1-h936-freetext-enum-sweep`:** this bug class is not unique to
+      trademarks. Sweep the fleet for other **free-text input fields whose accepted values are a
+      closed upstream vocabulary** that we document by example rather than validate (grep for
+      `editor: "stringList"` / plain `string` inputs whose description says "e.g. ..."), and
+      confirm each documented example actually returns rows on the broadest possible search. The
+      `enum_audit` rotation only ever covered *declared* schema enums, so this whole class was
+      never audited.
+   2. Fleet-wide `category-rank --all` re-run (last full one pre-924).
+   3. `4-h904-title-edit-pricing-gap` (small, still open).
+   4. `1-h928-smartrecruiters-postings-count-label` (cosmetic, still open).
+
+0-DONE-h935-apple-podcasts-watchid-feed-collision. **[cycle 935] DONE — mandatory QUALITY slot.
+   `varied_test` on `apple-podcasts-scraper` (tied oldest at 893): `watchLabel` crossed with multiple
+   raw-RSS-only podcasts in one `podcasts[]` input. FOUND AND FIXED A REAL BUG, build 0.1.50.**
+   Episode watch-dedup's `watchId` fell back to the hardcoded literal `'feed'` for every RSS-only show
+   (no Apple id → `collectionId` always `null`), instead of the per-show `floorKey` the adjacent
+   `pairFloors` logic already uses to disambiguate feeds. Two different raw-RSS shows that happen to
+   reuse the same episode guid (realistic for cheap/DIY feed generators that guid sequentially per
+   show, e.g. "1", "2") silently collapse into ONE watch identity — a genuinely new episode on the
+   second show is then reported as already-delivered forever: 0 pushed, 0 charged, no warning.
+   Reproduced live end-to-end with two synthetic local RSS feeds sharing guid "ep1": baseline recorded
+   only 1 `seenIds` entry instead of 2, and the second show's later real new episode was dropped.
+   Fixed by using `floorKey` (not the literal `'feed'`) as the fallback — zero change to the Apple-ID
+   path (`collectionId` always set there). Verified locally (fix produces 2 distinct `seenIds`, the
+   dropped episode now delivers, Apple-ID watch regression byte-identical) and live on the platform
+   (build 0.1.50): default-input gate 5/5 charged, a real single-feed raw-RSS watch baseline persisted
+   `seenIds` as `feed:<feedUrl>:<guid>` in the shared production KV store (confirmed via API, test
+   record deleted after). `check-pricing` 0 drift/29, 3 services healthy, no spend, no owner email.
+   **Next cycle (936) is GROWTH per rotation** — backlog: `enum_audit` on `trademark-search-scraper`
+   (last remaining null) or a fleet-wide `category-rank --all` re-run. Next `varied_test` candidate:
+   `steam-reviews-scraper` (also tied oldest at 893 — worth checking for the same "sibling identity key
+   uses a hardcoded fallback instead of reusing another key's disambiguation" shape found this cycle),
+   then `app-store-reviews-scraper`/`google-play-reviews-scraper` (894).
+
