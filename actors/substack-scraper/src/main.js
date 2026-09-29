@@ -154,19 +154,28 @@ function mapPublicationInfo(pub) {
 // keeps a stable shape and a partial run is still usable.
 const EMPTY_PUB_INFO = mapPublicationInfo({});
 
+// This is opt-in supplementary metadata (fields null-on-failure, never the row itself), fetched
+// once per origin and cached — but it sits ahead of the first `pushResult` for that origin's first
+// post. Routing it through `getJson`'s budget-proportional retry ladder (up to ~2 retries at up to
+// 45s each) meant one flaky publication homepage could burn well over half the run's remaining
+// budget before a single row was pushed — the same "optional call on the load-bearing ladder" shape
+// fixed in shopify-products-scraper's `currencyFor` (cycle 992). Same fix: one attempt, hard capped,
+// skipped outright when the budget is thin.
+const PUB_INFO_MAX_MS = 8000;
 async function fetchPublicationInfo(origin) {
   if (!includePublicationInfo) return null;
   if (pubInfoCache.has(origin)) return pubInfoCache.get(origin);
   let info = EMPTY_PUB_INFO;
+  if (remainingMs() <= PUB_INFO_MAX_MS + MIN_REQUEST_MS) {
+    log.warning(`${origin}: skipping the publication-info lookup — not enough run time left to spend on it. The publicationXxx fields will be null for this publication's rows; post content itself is unaffected.`);
+    pubInfoCache.set(origin, info);
+    return info;
+  }
   try {
-    const left = remainingMs();
-    if (left <= MIN_REQUEST_MS) throw new Error('run time budget exhausted before the request could be made');
-    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(45000, left));
-    const retryLimit = Math.max(0, Math.min(2, Math.floor(left / perRequest) - 1));
     const res = await gotScraping({
       url: `${origin}/`,
-      timeout: { request: perRequest },
-      retry: { limit: retryLimit, statusCodes: [408, 413, 429, 500, 502, 503, 504] },
+      timeout: { request: PUB_INFO_MAX_MS },
+      retry: { limit: 0 },
       followRedirect: true,
       headers: { accept: 'text/html' },
     });
