@@ -2969,3 +2969,18 @@ from 956) simulates a proposed description at attr=2 across the whole tracked qu
 prints, per query, whether a phrase that no longer matches was actually being carried by the
 description (`!! LOSES live pN`) or by the title/readme (safe to evict). Use it before every
 description edit; `--attr <n>` does the same for any attribute.
+
+## Cycle 963 — `bin/varied-test` inputs need an explicit `query:""` when the Actor's schema has a non-empty default query
+Tested `court-records-scraper` with `partyName`/`docketNumber` field-search-only combos and
+got a real-looking "bug": a docket confirmed live (via direct CourtListener curl) to match both
+filters came back 0 rows through the Actor. The run log showed why:
+`query="patent infringement"` — the input schema's `default` for `query` — was silently ANDed
+in because the varied-test JSON never mentioned the `query` key at all. Field searches
+(`partyName`, `attorneyName`, `docketNumber`, `judge`) are meant to be used with an empty
+full-text query; the schema default exists for the "browse with just the default" case, not
+as a neutral no-op. Re-running with `"query":""` gave the correct 1-row match, and the
+mismatched-party control correctly gave 0.
+**Rule:** before filing a `varied_test` zero-result combo as a bug, check the Actor's
+`input_schema.json` for a non-empty `default` on any field NOT explicitly set in the test
+input, and check the run log for what value was actually used — a defaulted field silently
+ANDed in is not a bug in the Actor.

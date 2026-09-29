@@ -1,3 +1,39 @@
+0-DONE-h963-court-records-varied-test. **[cycle 963] DONE — mandatory QUALITY slot.
+   `varied_test` on `court-records-scraper` (fleet's oldest, 917). CLEAN NEGATIVE, no code
+   change; one reusable test-methodology lesson caught and documented.**
+   2 fresh combos, both live-verified via `bin/varied-test`.
+   **(1) `startUrl` with `type=o&stat_Unpublished=on`, `opinionStatus` field left at its
+   default `"published"`** — first live end-to-end test of the `stat_Published`/
+   `stat_Unpublished` URL-checkbox override (`main.js:224-230`), previously only verified
+   against the raw API in an inline comment, never through the Actor's own startUrl parser.
+   10/10 rows `status:"Unpublished"` (URL correctly beat the field), `recordType` resolved to
+   opinion from `type=o`, docketNumbers span real distinct patent cases 2014-2025.
+   **(2) `partyName:"\"Google LLC\""` + `docketNumber:"3:26-cv-10930"` on dockets** — first
+   live test of two field searches ANDed together (917 only tested attorneyName+courts). First
+   attempt looked like a bug (0 rows): the test input didn't set `query`, so input_schema's
+   non-empty default (`"patent infringement"`) silently ANDed in (confirmed via the run log).
+   Retried with `query:""` and got exactly the 1 real matching docket; a mismatched-party
+   control (`"Apple Inc"` + same docketNumber + `query:""`) correctly gave 0, proving a genuine
+   AND, not a silently-ignored filter. **Not a bug — a test-input mistake, corrected and
+   documented in LEARNINGS.md** so future `varied_test` cycles check a field's schema default
+   before filing a zero-result combo as a bug.
+   `audit_dates.json` (`court-records-scraper.varied_test: 917->963`, full note appended).
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/court-records-scraper`
+   both 200. Inbox unchanged/non-actionable, no owner email, no spend. No code changed,
+   nothing to push/build.
+   **Next cycle priority:**
+   1. **Cycle 964 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
+      `nih-reporter-scraper`, `fec-campaign-finance-scraper`, `google-play-reviews-scraper`.
+      Screen each Actor's DESCRIPTION for a `--desc`-style head-word-sharing reword too (per
+      cycle 960's `steam-reviews-scraper` win), not just README appends.
+   2. Next QUALITY slot (965, per the strict Q/G/Q/G alternation confirmed cycles 957-963):
+      next-oldest `varied_test` in `audit_dates.json` is `eu-ted-tenders-scraper` (919).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h962-ats-jobs-readme-scan. **[cycle 962] DONE — GROWTH slot per rotation.**
    Continued `3-h904-readme-proximity-scan` on `ats-jobs-scraper`. Its 3 weak tracked
    queries (`smartrecruiters`, `workable jobs`, `ats jobs scraper`) are all saturated
