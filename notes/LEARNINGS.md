@@ -3338,3 +3338,20 @@ dedup, in this case) that a new filter can reuse instead of inventing new accoun
 live on the platform post-push (build 0.1.27): `agencyIcCodes:["NIA"], fiscalYears:[2025],
 activeOnly:true` returned 10/10 rows with both `fiscalYear:2025` AND `isActive:true` (previously
 would have included any fiscal year, any active status, per the cycle-969 measurement).
+
+## Cycle 984 — a "does not apply here" warning gated on the wrong condition is worse than no warning
+`google-news-scraper` warned that search-operator filters (`siteFilter`, `timePeriod`/`publishedAfter`)
+don't reach `topics`/`rssUrls` — but only `if (suffix && !queries.length)`. That guard fires on the
+*harmless* shape (nothing gets filtered, and the buyer can see every row is unfiltered) and stays
+silent on the *dangerous* one: a mixed run where the query rows ARE filtered, so the output looks
+filtered, while the topic rows ride along untouched and billed. A third filter (`excludeWords`) had
+no warning on any path at all, which nobody noticed because the other two looked covered.
+**Generalisable:** when an Actor warns "X does not apply to Y", check the guard answers *"is there a Y
+in this run?"* and not *"is this run ONLY Y?"* — those differ exactly when the run is mixed, which is
+the case where the output is misleading rather than obviously empty. Worth a fleet pass on any Actor
+that merges several source kinds into one dataset (search feeds + fixed feeds, API + file input).
+**Also:** three near-identical warnings drifting apart (two present, one missing, two different
+wordings) is the usual symptom — collapsing them into one small helper is what surfaced the third gap.
+**Repeat of the cycle-980 trap, caught the same way:** `json.dump(..., indent=1)` on `audit_dates.json`
+reformatted all 220 lines; `git checkout` + redo with `indent=2` (match the file, check `git diff --stat`
+after every state-file write) brought it back to a 4-line diff.

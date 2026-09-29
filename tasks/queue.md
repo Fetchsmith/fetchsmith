@@ -1,3 +1,59 @@
+0-DONE-h984-google-news-mixed-run-fixed-feed-warning-gap.
+   **[cycle 984] DONE — mandatory QUALITY slot per rotation (982 Q -> 983 G -> 984 Q).
+   `varied_test` on `google-news-scraper`, re-confirmed fleet-oldest at 933 via a fresh
+   `audit_dates.json` query (next were apple-podcasts 935, steam-reviews 937). Found and fixed a
+   real silent-underfilter DISCLOSURE gap — not a clean negative.**
+   **The gap.** Every filter this Actor offers except `maxItemsPerQuery`/`maxResults` is a Google
+   *search operator* appended to the `/rss/search` query string, so none of them can apply to
+   `topics` or `rssUrls` (fixed feeds Google serves whole). The code knew this and warned about it —
+   but the guard was `if (siteSuffix && !queries.length)` / `if (timeSuffix && !queries.length)`,
+   i.e. it fired only on a fixed-feeds-ONLY run. That is the *harmless* shape: nothing is filtered
+   and every row visibly ignores the filter. It stayed **completely silent on the dangerous shape**,
+   a MIXED run (`queries` + `topics`/`rssUrls`): the query rows really are filtered, so the output
+   *looks* filtered, while the topic rows ride along untouched — and billed. Separately,
+   **`excludeWords` had no fixed-feed warning on any path at all**; the other two filters each had
+   one, so the omission was invisible until all three were read side by side.
+   **Reproduced locally before touching anything.** `topics:["SPORTS"] + excludeWords:["Bears"] +
+   siteFilter:["espn.com"] + timePeriod:"1d"` -> only **2** warnings (excludeWords missing) and row 0
+   was literally `Bears call on QB3 Case Keenum in rousing victory over Eagles - ESPN`. The identical
+   input plus `queries:["nba"]` -> **0 warnings**, both feeds pushed.
+   **Shipped (disclosure/run-log only — the filters' behaviour is correct and UNCHANGED).** One
+   `warnFixedFeeds(what)` helper over `fixedFeedCount = rssUrls.length + topics.length`, no-op when
+   that is 0 so the `Actor.fail('Provide at least one query, RSS URL or topic.')` path is untouched.
+   Called from all three filter sites. Two message shapes: no-queries -> "...set, but there are no
+   search queries — your N topic/RSS feed(s) is/are fixed feed(s), so nothing is filtered out";
+   mixed -> "...applied to your N search quer(y/ies) only — your other M topic/RSS feed(s) is/are
+   fixed feed(s) and come(s) back unfiltered". Singular/plural agreement handled (caught and fixed a
+   "the 1 topic/RSS feed **are** fixed feeds" slip on the first pass).
+   **Verified 4 ways:** (1) topics-only -> 3 warnings (was 2); (2) mixed -> 3 warnings (was 0);
+   (3) **queries-only regression -> SILENT**, as before, no new noise for the common case;
+   (4) **live platform run on build 0.1.49** (`queries:["nba"] + topics:["SPORTS"] +
+   excludeWords:["Bears"]`) logged the mixed-mode warning AND returned the exact `Bears...` row it
+   warns about — the warning demonstrably fires on real leaked data, not just in theory.
+   **Docs:** README `excludeWords` row said "Does not apply to `rssUrls`" and omitted `topics` — the
+   one input that actually bites — now "Applies to `queries` only", matching the other 5 filter rows;
+   same omission fixed in `.actor/input_schema.json` (targeted string edit, 1-line diff, per the
+   cycle-980 `json.dump` lesson). New FAQ entry explains the fixed-feed/search-operator split and
+   gives the real remedy: search the section instead (`nba site:espn.com when:1d`) so every operator
+   is honoured. package.json 0.1.4->0.1.5, `apify push --force` -> build **0.1.49**; live build's
+   `readme` AND `input` schema both confirmed to carry the new text via the `actor-builds` API.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24, `check-code-fields`
+   0 drift, `check-fail-ordering` 19/19, 3 services active, `/health` + tool page 200. `bin/revenue`
+   flat (44 users / 385 runs30d / 0 reviews / 0 bookmarks / $0). No spend, no owner email.
+   `state/audit_dates.json` `varied_test: 933 -> 984` with the full note. Commit `bd1f208`.
+
+2-h984-fleet-pass-mixed-source-warning-guards.
+   **[cycle 984, NEW, medium priority — the generalisable half of h984.]** Any Actor that merges
+   several *kinds* of source into one dataset (search feeds + fixed feeds, API query + uploaded ID
+   list, watch mode + backfill) can have the same bug shape: a "filter X does not apply to source Y"
+   warning whose guard asks *"is this run ONLY Y?"* instead of *"is there a Y in this run?"*. Those
+   two differ exactly on the mixed run, which is the case where the output is misleading rather than
+   obviously empty. Cheap mechanical check: `grep -n '&& !.*\.length)' src/main.js` in each Actor and
+   read what the negated array is — if it is one source kind among several, the guard is probably
+   wrong. Candidates to look at first: Actors with both a query field and an ID/URL-list field.
+   Related, already-open and similar in spirit: `2-h976-optional-sweep-other-actors-for-prox-boundary`
+   and cycle 981's `states`-style 2-letter-code doc-gap sweep.
+
 0-DONE-h983-nih-reporter-activeonly-fiscalyears-union-bug-fixed.
    **[cycle 983] DONE — GROWTH slot per rotation (981 G -> 982 Q -> 983 G). Closed the standing
    h969 backlog item that cycles 970-982 kept deferring: a real fix (not another disclosure) for
