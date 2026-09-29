@@ -3479,3 +3479,43 @@ called before the main search loop when `agencies` input is set, sharing `apiGet
 attempts x 60s + escalating sleep, ~300s worst case) — it degrades gracefully (falls back to
 unvalidated passthrough) rather than returning null, so it is NOT a clean match, but the worst-case
 delay before that fallback fires is large enough to be worth a live timing check next cycle.
+
+## Cycle 994 — FEC future/garbage dates are real upstream data, not our bug
+While running `varied_test` on `fec-campaign-finance-scraper`'s previously-untested
+`independentExpenditures` mode, several rows (also seen in `disbursements` mode) carried wildly
+future dates — 2032, 2042, even 3024 — despite `two_year_transaction_period`/`cycle=2024` being
+set on the query. First instinct was to suspect a sort or query-construction bug in our code.
+**Verified via a direct `curl` to `api.open.fec.gov` with the identical params our code sends,
+bypassing our Actor entirely**, that these are genuine FEC data-entry errors already present in
+the raw upstream API response.
+**The generalizable point:** on FEC-sourced Actors, `two_year_transaction_period` (schedule_a/b)
+and `cycle` (schedule_e) associate a record with a *committee's filing cycle*, not a literal bound
+on any date field in that row — a committee can file a schedule_b/e transaction dated arbitrarily
+wrong (typo years) and it still lands wherever the committee's cycle association puts it. Don't
+mistake a future/garbage date on an FEC Actor for a scraper bug without checking the raw upstream
+response first; check whether our own schema promises a date bound before treating it as a
+disclosure gap (`electionYear`'s description here only promises query performance, not date
+filtering — `contributionDateFrom`/`contributionDateTo` is the actual, already-verified date bound).
+
+## Cycle 995 — federal-register `resolveAgencies` timing: theoretical worst case never observed in 68 real runs
+Follow-up to cycle 993's flagged-but-not-fixed item: `resolveAgencies()` (called before the main
+search loop whenever `agencies` input is set) shares `apiGet`'s heavy ladder — 4 attempts x 60s
+timeout + escalating 10/20/30s sleeps between attempts, ~300s theoretical worst case — before
+falling back to unvalidated passthrough (graceful, not a null/abort, so never a 0-row/TIMED-OUT
+outcome like the `currencyFor`/`fetchPublicationInfo` bugs).
+**Checked real production evidence before deciding whether to add short-leash treatment.** Pulled
+the actor's last 100 runs via the Apify API, found 68 that actually set `agencies`, and read each
+run's `durationMillis` plus a log grep for `retrying`/`Federal Register API <status>`/`Could not
+load the agency list`. Zero retry or fallback warnings across all 68. Durations cluster at 2-9s;
+the 3 outliers (18s, 19s, 33s) were read in full and traced to `commentsOpenOnly`'s per-document
+regulations.gov lookups, not `resolveAgencies` — confirmed by the absence of any Federal-Register-
+API warning line in those logs. Also live-timed `agencies.json` directly (4 separate curls):
+consistently ~0.55-0.58s.
+**Conclusion: no fix needed.** The endpoint has never been observed slow or flaky in this Actor's
+actual traffic, and the existing fallback already degrades gracefully rather than failing the run.
+Adding a short hard-cap/skip here (the `currencyFor` idiom) would be solving a risk with zero
+observed incidents at the cost of extra code — the opposite of that idiom's justification (which
+was a REAL TIMED-OUT/0-row run). **General lesson: before applying a fix idiom pattern-matched
+from a different bug, check whether the new candidate has actually manifested in production data
+(run durations + log greps via the Apify API are cheap) rather than fixing every theoretical
+worst-case that shares a superficial shape with a real bug.**

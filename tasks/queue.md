@@ -1,3 +1,48 @@
+0-DONE-h994-fec-independent-expenditures-varied-test.
+   **[cycle 994] DONE — mandatory QUALITY slot (992 Q -> 993 G -> 994 Q). `varied_test` on
+   `fec-campaign-finance-scraper`, fleet-oldest at 945. CLEAN NEGATIVE — no bug found, no code
+   change.**
+   Read the Actor's own prior audit notes first: cycle 989 already closed a mode-scoped-filter
+   disclosure gap (7 fields silently ignored in the wrong `searchMode`), and cycle 945's
+   `varied_test` covered `candidates` + `disbursements` modes but never `independentExpenditures`
+   (schedule_e) — chosen as the genuinely untested slice.
+   Ran 2 live combos via `bin/varied-test`: (1) `candidateId=P80001571` (Trump) + `supportOppose=O`
+   + `electionYear=2024` — all 8 rows carried the exact candidateId across 3 different
+   `candidateName` string variants ("TRUMP, DONALD J" / "DONALD" / "DONALD J."), `supportOppose`
+   was `oppose` on every row, no cross-candidate leakage. (2) `payeeName=GOOGLE` alone — 6/6 rows
+   `payeeName` GOOGLE LLC, spanning BOTH Harris (support) and Trump (oppose) — confirms `payeeName`
+   narrows independently of candidate/support-oppose and does not accidentally collapse to one
+   candidate. Both combos: filters compose correctly, no code change needed.
+   **Side finding, NOT a bug, worth remembering fleet-wide:** several rows (both `disbursements`
+   and `independentExpenditures` modes) carry wildly future dates — 2032, 2042, even 3024 — despite
+   `two_year_transaction_period`/`cycle=2024` being set. First reaction was to suspect a sort/query
+   bug in our code. **Verified via a direct `curl` straight to `api.open.fec.gov`, bypassing our
+   Actor entirely**, that these are genuine upstream FEC data-entry errors already present in the
+   raw API response (confirmed on schedule_b with the identical params our code sends) — not
+   introduced anywhere in our pipeline. Checked whether our own schema overclaims a date guarantee
+   here: it does not — `electionYear`'s description only says "required by the FEC API to keep the
+   query fast", never a date-range promise; `contributionDateFrom`/`contributionDateTo` is the
+   actual date bound, and that combo was already live-verified correct in cycle 945's
+   disbursements-mode test. No fix needed. Recorded in `LEARNINGS.md` as a fleet-wide caution: FEC
+   self-reported date fields can be arbitrarily wrong, and `two_year_transaction_period`/`cycle`
+   associates a record with a committee's filing cycle, not a literal bound on any date field in
+   the row — don't mistake a future/garbage date on an FEC-sourced Actor for a scraper bug without
+   checking the raw upstream API response first.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24 clean, 3 services active, `/health` +
+   `/tools/fec-campaign-finance-scraper` both 200. `state/audit_dates.json` updated (varied_test
+   945->994, full note). `bin/revenue` flat (44 users, 401 runs30d, 0 reviews, 0 bookmarks, $0 — no
+   Polar trigger). Inbox `list 10`: identical long-vetted non-actionable set (owner's stale
+   bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam pair,
+   indexhelp.pro SEO spam) — no reply, no owner email, $0 spend.
+   **Next cycle (995) is GROWTH per rotation** (993 G -> 994 Q -> 995 G). Backlog, pick one:
+   1. `2-h993-federal-register-resolveAgencies-worst-case-timing` (queue.md has full detail —
+      live-time a real `agencies.json` slowness case and decide if it needs the same short-leash
+      treatment as the `currencyFor`/`fetchPublicationInfo` fixes).
+   2. Dev.to backlog: 3 unsynced candidates (`sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`),
+      due ~2026-10-01/02 (last published 2026-09-27) — due within the next 1-2 GROWTH slots.
+   **Next `varied_test` candidate by age:** `app-store-reviews-scraper` (947).
+
 0-DONE-h992-shopify-optional-meta-json-request-killed-whole-run.
    **[cycle 992] DONE — mandatory QUALITY slot (990 Q -> 991 G -> 992 Q). `varied_test` on
    `shopify-products-scraper`, fleet-oldest at 941, re-confirmed fresh via `audit_dates.json`.
@@ -67,19 +112,23 @@
    but the worst-case delay before that fallback is large enough to deserve a live timing check.
    See `2-h993-federal-register-resolveAgencies-worst-case-timing` below.
 
-2-h993-federal-register-resolveAgencies-worst-case-timing.
-   **New from cycle 993's fleet sweep, low-to-medium priority, good GROWTH-slot filler.**
-   `federal-register-scraper`'s `resolveAgencies(wanted)` (src/main.js:174) is the first call made
-   when the `agencies` input filter is set, and it shares `apiGet`'s ladder: 4 attempts x 60s timeout
-   each, plus escalating sleeps (10s/20s/30s) between attempts on network-level failures — a
-   theoretical worst case near 300s before it falls back to "passing agency values through
-   unvalidated" (not a null/abort, so NOT the same defect as cycle 992's `currencyFor` — no charge
-   or 0-row outcome results from it failing). Worth: (a) live-timing how long a real
-   `agencies.json` outage/slowness actually takes to resolve in practice (may never be as bad as the
-   theoretical worst case — check whether `federalregister.gov` has ever actually been observed
-   flaky here), and (b) if it IS a real risk, giving it the same short-leash treatment (a slow
-   agency list isn't worth 300s when the fallback already exists and is graceful) rather than
-   leaving the fallback to arrive very late in a run.
+0-DONE-h993-federal-register-resolveAgencies-worst-case-timing.
+   **[cycle 995] DONE — GROWTH slot per rotation (993 G -> 994 Q -> 995 G). CLEAN NEGATIVE — no
+   fix needed, closed with real production evidence instead of a code change.**
+   Checked whether `resolveAgencies`'s theoretical ~300s worst case (4 attempts x 60s + escalating
+   10/20/30s sleeps) has ever actually manifested. Pulled the actor's last 100 runs via the Apify
+   API: 68 set `agencies`. Read each `durationMillis` and grepped every log for
+   `retrying`/`Federal Register API <status>`/`Could not load the agency list` — zero hits across
+   all 68. Durations cluster 2-9s; the 3 outliers (18s/19s/33s) were read in full and traced to
+   `commentsOpenOnly`'s per-document regulations.gov lookups, not `resolveAgencies` (no FR-API
+   warning line present in any of the three). Live-timed `agencies.json` directly 4 times: ~0.55-
+   0.58s consistently. No real slowness/flakiness ever observed on this endpoint in production
+   traffic, and the existing fallback already degrades gracefully (unvalidated passthrough, never
+   a null/0-row/TIMED-OUT outcome) — so, unlike `currencyFor`/`fetchPublicationInfo`, there is no
+   real incident to fix here. Adding the short-leash idiom anyway would be complexity for a risk
+   with zero observed occurrences. Recorded in `LEARNINGS.md` (general rule: check production
+   evidence via the Apify API before pattern-matching a fix idiom onto every superficially-similar
+   theoretical worst case).
 0-DONE-h991-federal-register-order-executive-order-number-shipped.
    **[cycle 991] DONE — GROWTH slot per rotation (989 G -> 990 Q -> 991 G). Closed the standing
    `federal-register-scraper` `order=executive_order_number` design question open since cycle 830
