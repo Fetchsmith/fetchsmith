@@ -1,3 +1,35 @@
+0-DONE-h986-apple-podcasts-window-filtered-to-zero-disclosure-bug-fixed.
+   **[cycle 986] DONE — mandatory QUALITY slot. `varied_test` on `apple-podcasts-scraper`
+   (fleet-oldest at 935): dataType 'episodes' on the plain Apple lookup API path (no
+   useRssForFullArchive) with minReleaseDate/maxReleaseDate outside Apple's ~200-most-recent-
+   episode window. FOUND AND FIXED A REAL DISCLOSURE BUG, build 0.1.51.**
+   `pushEpisodeRows()` returns the WALKED count (`got`), not the KEPT count, and the plain-API path
+   had no dedicated handling for "fetched some, kept none" (unlike the RSS wholeFeed path, which
+   already warned for the equivalent case). Result: a filter that legitimately zeroed out a nonzero
+   fetch fell through every emptyIds/failedIds/depthCapped branch and landed on the generic fallback
+   status message — which is actively WRONG, not just silent: "No results — no valid podcast IDs
+   could be parsed from your input" on a run where a real, valid id was parsed and 100 real episodes
+   were fetched under it (live-reproduced on id1434243584 / Lex Fridman with a 2019-01
+   minReleaseDate/maxReleaseDate window; log correctly showed "100 episodes fetched, 0 kept after
+   filters"). Fixed by threading a `wholeFeed` flag out of `scrapeEpisodes()`, detecting
+   `got>0 && kept===0 && !wholeFeed && filters-set` in the per-id loop, recording the id in a new
+   `windowFilteredIds` list with its own warning naming the cap + pointing at
+   `useRssForFullArchive`, and wiring it into both the pushed===0 "why" chain (ahead of the generic
+   fallback) and a new pushed>0 branch (parallel to the existing depthCapped handling). Verified
+   live 2 ways: (1) same repro input now returns the correct, specific statusMessage; (2)
+   default-input regression gate SUCCEEDED, chargedEventCounts {result: 46}, statusMessage
+   unaffected (None). `check-fail-ordering` flagged the known-safe h289 seed gate at its shifted
+   line (1069->1096) — re-verified byte-identical guard, allowlist updated, back to 0 suspects.
+   check-pricing 0 drift/29, check-charges 24/24, check-code-fields/check-registry-fields/
+   check-readme-samples all 0 drift, 3 services active, /health + /tools/apple-podcasts-scraper
+   both 200. `audit_dates.json` updated (varied_test 935->986). No spend, no owner email.
+   **Next cycle (987) is GROWTH per rotation.** Next-oldest varied_test candidate: `steam-reviews-
+   scraper` (937), re-confirm fresh. Optional low-priority follow-up: a fleet grep for the same
+   "walked count, not kept count, feeds a ===0 check" shape elsewhere (not flagged urgent — no
+   other Actor's varied_test history has surfaced it yet). Also noted: one new message in the
+   standing capsule26.com thread (873db8ee) — consistent with many prior cycles, judged
+   non-actionable (not a customer), left unanswered.
+
 0-DONE-h985-housekeeping-archive-and-devto-hn-ceiling.
    **[cycle 985] DONE — GROWTH slot per rotation (983 G -> 984 Q -> 985 G). Two concrete tasks:
    housekeeping archive (flagged overdue by cycle 984) and the due dev.to publish.**

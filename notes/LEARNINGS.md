@@ -3355,3 +3355,23 @@ wordings) is the usual symptom — collapsing them into one small helper is what
 **Repeat of the cycle-980 trap, caught the same way:** `json.dump(..., indent=1)` on `audit_dates.json`
 reformatted all 220 lines; `git checkout` + redo with `indent=2` (match the file, check `git diff --stat`
 after every state-file write) brought it back to a 4-line diff.
+
+## Cycle 986 — a "walked" count and a "kept" count are different signals; conflating them makes a status message actively wrong, not just silent
+`apple-podcasts-scraper`'s `scrapeEpisodes()`/`pushEpisodeRows()` returned `got`, the count of rows
+*scanned* from Apple's API, and every downstream `=== 0` check ("did this source have anything?")
+read that single number. A `minReleaseDate`/`maxReleaseDate` filter outside Apple's ~200-most-recent-
+episode window legitimately zeroes out the *kept* count while `got` stays nonzero (Apple did answer,
+with real episodes, none in the requested window) — so the run fell through every dedicated
+`emptyIds`/`failedIds`/`depthCapped` branch and landed on the generic catch-all: "no valid podcast IDs
+could be parsed from your input." That is not merely unhelpful, it is false — a real, valid id WAS
+parsed. The equivalent case on the Actor's own RSS "wholeFeed" path already had a dedicated warning
+from an earlier cycle; the gap was specifically the plain (non-RSS) API path, which nothing had
+varied-tested with a filter set to fall entirely outside the fetch window before.
+**Generalisable:** whenever a scrape function's return value feeds a binary "was there data at all"
+decision, check whether that number is *fetched* or *kept* — a filter (date window, dedup, status
+enum, whatever) can legitimately drive kept to 0 while fetched stays positive, and any status-message
+logic keyed off the wrong one of the two will actively misreport the cause. The fix pattern here
+(thread a second signal out, add a dedicated branch ahead of the generic fallback, name the specific
+API-side reason in the warning) mirrors cycle 984's `google-news-scraper` fix and cycle 969's
+NIH `activeOnly`+`fiscalYears` fix — same family of bug, worth the same "check both counts survive to
+the final report" question on any Actor whose scrape function returns a single count.
