@@ -50,8 +50,27 @@ if (input.queries === undefined && input.rssUrls === undefined && input.topics =
   queries = ['artificial intelligence'];
   log.info('No "queries", "rssUrls" or "topics" given: running the example query so this call returns real output.');
 }
+// Every filter below is a Google *search operator*, and those only exist on the /rss/search
+// endpoint. Topic sections and user-supplied RSS URLs are FIXED feeds: their rows come back
+// unfiltered no matter what these fields say. Warning only when there were no queries at all
+// (the behaviour before cycle 984) left the worse case silent -- a MIXED run (queries plus
+// topics/rssUrls) filters the query feeds, returns the fixed feeds whole, and charges for both,
+// with nothing in the log to say half the rows never saw the filter.
+const fixedFeedCount = rssUrls.length + topics.length;
+const warnFixedFeeds = (what) => {
+  if (!fixedFeedCount) return;
+  const many = fixedFeedCount > 1;
+  const fixed = `${fixedFeedCount} topic/RSS feed${many ? 's' : ''}`;
+  if (!queries.length) log.warning(`${what} set, but there are no search queries — your ${fixed} ${many ? 'are fixed feeds' : 'is a fixed feed'}, so nothing is filtered out.`);
+  else log.warning(`${what} applied to your ${queries.length} search quer${queries.length > 1 ? 'ies' : 'y'} only — your other ${fixed} ${many ? 'are fixed feeds and come' : 'is a fixed feed and comes'} back unfiltered.`);
+};
+
 const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
+// excludeWords was the one filter with no fixed-feed warning at all (siteFilter and the date
+// fields already had one): a topics-only run with excludeWords set returned the excluded word in
+// the very first row and said nothing.
+if (excludeSuffix) warnFixedFeeds('excludeWords was');
 
 // Restrict/exclude results by publisher domain via Google's own `site:` search operator — verified
 // live (2026-09-18) that a single `site:nytimes.com`, an OR-group `(site:a.com OR site:b.com)` for
@@ -67,7 +86,7 @@ let siteSuffix = '';
 if (siteFilter.length === 1) siteSuffix += ` site:${siteFilter[0]}`;
 else if (siteFilter.length > 1) siteSuffix += ` (${siteFilter.map((d) => `site:${d}`).join(' OR ')})`;
 siteSuffix += excludeSites.map((d) => ` -site:${d}`).join('');
-if (siteSuffix && !queries.length) log.warning('siteFilter/excludeSites were set but there are no search queries — they do not apply to topics or custom RSS URLs, which are fixed feeds.');
+if (siteSuffix) warnFixedFeeds('siteFilter/excludeSites were');
 
 // Date filtering is done by Google itself, via search operators appended to the query — no extra
 // requests and no client-side discarding of articles the customer already paid to fetch.
@@ -96,9 +115,7 @@ if (publishedAfter || publishedBefore) {
 } else if (timePeriod) {
   timeSuffix = ` when:${timePeriod}`;
 }
-// These operators only exist on the search endpoint. Topic sections and user-supplied RSS URLs are
-// fixed feeds, so a date filter set with only those inputs would silently do nothing — say so.
-if (timeSuffix && !queries.length) log.warning('A date filter was set but there are no search queries — it does not apply to topics or custom RSS URLs, which are fixed feeds.');
+if (timeSuffix) warnFixedFeeds('A date filter was');
 
 // Backstop for a measured Google bug (cycle 788): `after:`/`before:` are honoured on their own, with
 // `-word` exclusions and with a positive `site:` (0 far-out-of-window items in 100 on each), but

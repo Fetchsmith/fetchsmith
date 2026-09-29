@@ -27,7 +27,7 @@
     "excludeWords": {
       "title": "Exclude words",
       "type": "array",
-      "description": "Words or phrases to exclude, applied to every query (e.g. \"iphone\" drops articles mentioning it). Equivalent to typing -word yourself, just easier to manage as a list. Does not apply to rssUrls, since those are fixed feed URLs, not search terms.",
+      "description": "Words or phrases to exclude, applied to every query (e.g. \"iphone\" drops articles mentioning it). Equivalent to typing -word yourself, just easier to manage as a list. Does not apply to topics or custom RSS URLs, which are fixed feeds, not search terms.",
       "editor": "stringList"
     },
     "siteFilter": {
