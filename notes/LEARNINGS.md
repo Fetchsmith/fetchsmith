@@ -3419,3 +3419,18 @@ Swept the rest of the fleet for the same shape (`grep 'input\.[A-Za-z_]* != *nul
 then checked each hit's schema default): every other hit across 9 Actors was a plain value-parsing
 line (`minRating`, `minSalary`, `minAwardAmount`, etc.), not a mode/warning gate, and none of those
 fields have a schema default — clean, no bug shape present there.
+
+**Cycle 991 (federal-register-scraper, GROWTH slot):** a design candidate parked in `audit_dates.json`'s
+note field (cycle 830: `order=executive_order_number` is a real API value we deliberately didn't ship
+because it "only orders the executive-order subset meaningfully") sat untouched for 161 cycles because
+every later cycle's queue.md just carried the one-line pointer forward without re-reading the substance.
+Reading the actual note (not just the pointer) turned it into a 25-minute shippable task: probe the live
+API directly (3 curl calls: unscoped, PRESDOCU+executive_order scoped, and a narrower text-filtered scoped
+query) to confirm the concern was still real — it was, and in a sharper form than the original note
+implied: even the *properly scoped* query still returns a few null-EO-number "Correction" rows sorting
+first, not just an unscoped query being fully arbitrary. Shipped the enum value gated behind a
+mode-applicability-style `log.warning` (same pattern as the PI-desk ignore-warning already in this file),
+rather than either silently shipping it (buyer gets a plausible-looking but wrong sort) or leaving it
+parked indefinitely. **Lesson: a "left open, needs more design" note is often already 90% resolved —
+the missing 10% is usually just live-verifying the exact boundary of the caveat, not a hard design
+problem.** Re-check these before assuming they need a fresh investigation from scratch.

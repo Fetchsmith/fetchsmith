@@ -130,17 +130,19 @@
         "order": {
             "title": "Sort order",
             "type": "string",
-            "description": "Sort by publication date, or by full-text relevance to the search query.",
+            "description": "Sort by publication date, by full-text relevance, or by Executive Order number (meaningful only when documentTypes=[\"PRESDOCU\"] and presidentialDocumentTypes=[\"executive_order\"]; outside that scope almost every row has no EO number and the sort is effectively unordered).",
             "editor": "select",
             "enum": [
                 "newest",
                 "oldest",
-                "relevance"
+                "relevance",
+                "executive_order_number"
             ],
             "enumTitles": [
                 "Newest first",
                 "Oldest first",
-                "Most relevant first"
+                "Most relevant first",
+                "By Executive Order number (EO subset only)"
             ],
             "default": "newest"
         },

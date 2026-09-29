@@ -55,7 +55,8 @@ const presidentialDocumentTypes = (input.presidentialDocumentTypes ?? [])
 const searchQuery = String(input.searchQuery ?? '').trim();
 const significantOnly = input.significantOnly === true;
 const commentsOpenOnly = input.commentsOpenOnly === true;
-const order = ['newest', 'oldest', 'relevance'].includes(input.order) ? input.order : 'newest';
+const order = ['newest', 'oldest', 'relevance', 'executive_order_number'].includes(input.order)
+    ? input.order : 'newest';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 
@@ -576,6 +577,23 @@ async function pushResult(item) {
     }
     await Actor.pushData(item); pushed += 1;
     return pushed < maxResults;
+}
+
+// order="executive_order_number" is a real, working sort key the API accepts but only assigns to
+// Executive Orders. Verified live (cycle 830/991): every non-EO row -- and even a "Correction" row
+// filed against an EO -- comes back with a null executive_order_number, so outside the narrow scope
+// below the sort degenerates to whatever arbitrary tiebreak the API applies to a tied null key
+// (reproduced: an unscoped query returned rows from four different decades in one "sorted" page).
+if (!publicInspection && order === 'executive_order_number'
+    && !(documentTypes.length === 1 && documentTypes[0] === 'PRESDOCU'
+        && presidentialDocumentTypes.length === 1 && presidentialDocumentTypes[0] === 'executive_order')) {
+    log.warning(
+        'order="executive_order_number" only sorts meaningfully within the Executive Order subset -- '
+        + 'every other document (including non-EO presidential documents and corrections filed against '
+        + 'an EO) has no EO number and the sort is effectively arbitrary for them. Set '
+        + 'documentTypes=["PRESDOCU"] and presidentialDocumentTypes=["executive_order"] for a clean '
+        + 'ascending walk by EO number.',
+    );
 }
 
 if (publicInspection) {

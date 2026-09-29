@@ -54,7 +54,7 @@ Plus `documentNumber`, `type`, `subtype`, `title`, `abstract`, `action`, `datesT
 | `significantOnly` | EO 12866 significant rules only. |
 | `commentsOpenOnly` | Only documents whose comment period closes today or later. |
 | `cfrTitle` / `cfrPart` | Filter to documents affecting a specific Code of Federal Regulations title (1-50) and, optionally, a part within it (e.g. title `40`, part `60` = 40 CFR Part 60, New Source Performance Standards). Verified live: a single title alone narrows the 10,000-clamped baseline to a few hundred/year; adding a part narrows further into the dozens. `cfrPart` requires `cfrTitle` — the API has no title-less part lookup and 400s on one, so this Actor fails loudly client-side instead. |
-| `order` | `newest`, `oldest` or `relevance`. |
+| `order` | `newest`, `oldest`, `relevance`, or `executive_order_number`. The last one only sorts meaningfully with `documentTypes: ["PRESDOCU"]` + `presidentialDocumentTypes: ["executive_order"]` — outside that scope almost every row has no EO number assigned and the run logs a warning. Verified live 2026-09-29. |
 | `maxResults` | Up to 50,000. |
 | `watchLabel` | Optional. Name a saved query and get **only what is new since your last run** — see below. |
 | `webhookUrl` | Optional. POST a small JSON completion summary (documents pushed, rows scanned, pages walked, dataset ID, watch new-count) here when the run finishes — see FAQ. |
