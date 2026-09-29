@@ -64,6 +64,7 @@
                     "null"
                 ],
                 "title": "Currency",
+                "description": "The store's own currency, read from its /meta.json. All price fields are already in this currency (no FX conversion). Null when that one small lookup failed or was skipped for time — the run logs a warning saying so, and every price field is unaffected.",
                 "example": "USD"
             },
             "priceMin": {

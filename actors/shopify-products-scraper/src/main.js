@@ -513,11 +513,35 @@ function matchesVendorType(p) {
   }
   return true;
 }
+// `/meta.json` supplies nothing but the optional `currency` output field — every failure path here
+// already falls back to null, and prices are returned in the store's own currency either way. So it
+// must NEVER be routed through `http()`'s full retry ladder like a load-bearing product fetch:
+// that is up to 3 outer attempts x 40s, run twice over by http()'s accept-language fallback.
+// Measured live 2026-09-29 (cycle 992): one transient Apify Proxy UPSTREAM502 on
+// allbirds.com/meta.json consumed the ENTIRE 240s run before a single product was fetched — the run
+// died TIMED-OUT with 0 rows and 0 charged events, i.e. a flaky optional metadata endpoint zeroed
+// out a paid catalog scrape. The per-request clamp in `request()` does not help here because this is
+// the FIRST call of the store loop, so "the budget actually left" is the whole run.
+// Same rule the empty-page re-check already follows ("a nicety, not the result"): one attempt, hard
+// capped, skipped outright when the budget is thin. Failures now say so instead of leaving an
+// unexplained null.
+const CURRENCY_MAX_MS = 8000;
 async function currencyFor(origin) {
+  if (remainingMs() <= CURRENCY_MAX_MS + MIN_REQUEST_MS) {
+    log.warning(`${origin}: skipping the /meta.json currency lookup — not enough run time left to spend on it. The \`currency\` field will be null for this store's rows; prices themselves are unaffected (always the store's own currency).`);
+    return null;
+  }
   try {
-    const res = await http(`${origin}/meta.json`);
+    const res = await gotScraping({ url: `${origin}/meta.json`, timeout: { request: CURRENCY_MAX_MS }, retry: { limit: 0 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', 'accept-language': '' } });
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      log.warning(`${origin}/meta.json: answered HTTP ${res.statusCode}, so the \`currency\` field will be null for this store's rows. Prices themselves are unaffected (always the store's own currency).`);
+      return null;
+    }
     return JSON.parse(res.body)?.currency ?? null;
-  } catch { return null; }
+  } catch (e) {
+    log.warning(`${origin}/meta.json: currency lookup failed (${e.message}) — the \`currency\` field will be null for this store's rows. Prices themselves are unaffected (always the store's own currency), and the catalog scrape continues normally.`);
+    return null;
+  }
 }
 
 // products.json/product.json never carry SEO tags or a rating summary — Shopify only renders

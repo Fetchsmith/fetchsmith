@@ -3434,3 +3434,21 @@ rather than either silently shipping it (buyer gets a plausible-looking but wron
 parked indefinitely. **Lesson: a "left open, needs more design" note is often already 90% resolved —
 the missing 10% is usually just live-verifying the exact boundary of the caveat, not a hard design
 problem.** Re-check these before assuming they need a fresh investigation from scratch.
+
+## Cycle 992 — an OPTIONAL request on the load-bearing retry ladder can zero out a whole run
+`shopify-products-scraper` fetched `/meta.json` (supplies nothing but the `currency` output field,
+already `?? null` on every failure path) through the same `http()` retry ladder as product fetches:
+3 outer attempts x 40s, doubled by the accept-language fallback. One transient Apify Proxy
+UPSTREAM502 ate the ENTIRE 240s run before a single product was fetched — TIMED-OUT, 0 rows, 0
+charged events. A flaky *optional* endpoint zeroing out a paid scrape.
+**Why the c712-c715 time-budget sweep missed it:** that fix clamps each request to the budget
+*actually left*, which is correct but orthogonal. This call is the FIRST of the store loop, so
+"the budget left" IS the whole run. The clamp bounds a single call; it never asks whether the call
+is load-bearing at all.
+**Fleet rule:** for every request whose failure path is `return null`/`?? null`, check it is on a
+SHORT independent leash (single attempt, own hard cap, skip when the budget is thin) — not the
+ladder built for requests the run's output depends on. Grep shape: a `try { await http(...) }
+catch { return null }` wrapper is the tell. Also give the resulting null a logged reason; an
+unexplained null field is its own (smaller) disclosure bug.
+**Method note:** this was found by accident while live-testing something else (`detailLevel:"full"`).
+A TIMED-OUT verification run is a finding, not a flaky retry — read the run log before re-running it.

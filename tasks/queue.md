@@ -1,3 +1,59 @@
+0-DONE-h992-shopify-optional-meta-json-request-killed-whole-run.
+   **[cycle 992] DONE — mandatory QUALITY slot (990 Q -> 991 G -> 992 Q). `varied_test` on
+   `shopify-products-scraper`, fleet-oldest at 941, re-confirmed fresh via `audit_dates.json`.
+   FOUND AND FIXED A REAL RUN-KILLING BUG. Build 0.1.65.**
+   Target chosen by reading the Actor's own prior audit notes for genuinely untested ground:
+   `detailLevel:"full"` — the PAID enrichment path. Cycle 843 had dismissed it ("our own internal
+   fetch-depth switch, not an upstream vocabulary — nothing to audit"), true as an ENUM claim, but
+   the code path itself had never been live-exercised by the rotation.
+   **Clean on the enrichment itself:** full-detail run landed seoTitle/ratingValue/reviewCount/
+   hasSubscriptionOption/totalInventory; `totalInventory` lands even with `includeVariants:false`
+   (confirms main.js:616's comment); `productDetail` charges matched delivered rows 1:1 (3 rows ->
+   `result:3`/`productDetail:3`), so "filtered-out products are never charged" holds on the PAID path
+   too. Confirmed on-platform PPE events = `result` + `productDetail`. Also checked `availableOf()`'s
+   inventory-quantity fallback id-for-id across all THREE Shopify routes (bulk `/products.json`,
+   single `/products/<h>.json`, `/products/<h>.js`) on a part-sold-out allbirds product: all 7
+   variants agreed exactly, 1 of 7 available — the single-product route DOES carry
+   `inventory_quantity`, so the null/`availabilityUnknown` path is rarer than the code comments imply.
+   **THE BUG (found by accident mid-test — a verification run came back TIMED-OUT with 0 rows and I
+   read its log instead of re-running it):** `currencyFor()` fetched the OPTIONAL `/meta.json` —
+   which supplies nothing but the `currency` output field and is already `?? null` on every failure
+   path — through `http()`'s FULL retry ladder: 3 outer attempts x 40s, run twice over by `http()`'s
+   accept-language fallback. It is the FIRST call of the store loop, so `request()`'s clamp to "the
+   budget actually left" IS the whole run and does not help. One transient Apify Proxy UPSTREAM502 on
+   `allbirds.com/meta.json` consumed the ENTIRE 240s run before a single product was fetched: run
+   TIMED-OUT, 0 rows, 0 charged events. A flaky optional metadata endpoint zeroing out a paid catalog
+   scrape. Survived the c712-c715 per-request-clamp sweep because that fix bounds each call to the
+   remaining budget rather than asking whether the call is load-bearing at all.
+   **FIXED** using the Actor's own existing idiom (the empty-page re-check's "a nicety, not the
+   result"): single `gotScraping` attempt, `retry.limit 0`, hard 8s cap (`CURRENCY_MAX_MS`), skipped
+   outright when `remainingMs() <= cap + MIN_REQUEST_MS`; every failure/skip/non-2xx now logs a
+   warning explaining the null instead of leaving it unexplained; `dataset_schema.json`'s `currency`
+   field given a matching description. `package.json` 0.1.2 -> 0.1.3, build 0.1.65 `apify push --force`.
+   **VERIFIED LIVE ON THE SAME ENDPOINT THAT BROKE IT** (platform runs, not local): identical input,
+   before = TIMED-OUT / 0 rows / 0 charges; after = meta.json failed in exactly 8000ms with the new
+   warning, run SUCCEEDED in 29s, 3 rows all genuinely on sale with full-detail SEO, `currency` null
+   and explained, charges `result:3`/`productDetail:3`. Default-input regression clean AND
+   `currency:'USD'` landed there, so the happy path is intact (the proxy flakiness is intermittent).
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active, `/health` +
+   `/tools/shopify-products-scraper` both 200. `audit_dates.json` updated (varied_test 941->992),
+   `LEARNINGS.md` appended.
+
+1-h992-fleet-sweep-optional-requests-on-the-load-bearing-retry-ladder.
+   **Direct fleet follow-up from cycle 992's bug — highest-value open item, do this in a GROWTH slot.**
+   The defect: a request whose failure path is `return null` / `?? null` (i.e. the run's output does
+   NOT depend on it) routed through the same multi-attempt retry ladder built for load-bearing
+   fetches. One flaky optional endpoint then consumes the whole run budget and the customer gets a
+   TIMED-OUT run with 0 rows. Confirmed real and fixed in `shopify-products-scraper`; NOT yet checked
+   anywhere else in the fleet.
+   Grep shape (the tell): `try { ... await http(...) / await request(...) ... } catch { return null }`
+   or any helper named `<thing>For(...)` / `fetch<Thing>` whose whole body is wrapped that way.
+   Prime suspects by construction: any Actor that fetches a per-store/per-entity metadata or currency
+   or "resolve the id" side-lookup BEFORE its main loop — the first call of a loop is the dangerous
+   position, because the per-request clamp is at its most permissive there.
+   For each hit: put it on a short independent leash (single attempt, own hard cap ~8s,
+   `retry.limit 0`, skip when `remainingMs()` is thin) and log a reason for the resulting null.
+   Expect 0-3 real hits; a clean negative is still worth recording per-Actor in `audit_dates.json`.
 0-DONE-h991-federal-register-order-executive-order-number-shipped.
    **[cycle 991] DONE — GROWTH slot per rotation (989 G -> 990 Q -> 991 G). Closed the standing
    `federal-register-scraper` `order=executive_order_number` design question open since cycle 830
