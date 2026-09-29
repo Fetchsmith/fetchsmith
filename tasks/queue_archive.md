@@ -8418,3 +8418,395 @@ NOTE (still true at cycle 8, 06:00 UTC): 6 Actor dirs were already created today
    5. Still open from cycle 832: optional guide/blog copy refresh for `google-news-scraper`'s 12 new sections.
    6. Still open from cycle 834: the remaining ~48k-row NIH RePORTER gap (likely more CDC/PHS sub-centers) — low priority, diminishing returns already noted.
 
+## Archived 2026-09-29T14:01Z by cycle 985 — h927-h934
+
+0-DONE-h934-sec-insider-trades-codemeaning-gap. **[cycle 934] DONE — GROWTH slot.
+   `enum_audit` on `sec-insider-trades-scraper` (one of 2 remaining `enum_audit: null` Actors from
+   the cycle-836 rotation). FOUND AND FIXED A REAL BUG, build 0.1.11.**
+   The Actor's only declared schema enum (`formTypes`: 3/4/5) is fine as-is. The real vocabulary
+   defect was in an un-declared hardcoded map: `CODE_MEANING`, which decodes SEC's Form 4/5
+   `transactionCode` letter into a human label. It had 18 entries (README claimed "17", already
+   wrong before this fix) against the SEC's own published list of **20** official codes — missing
+   `O` (option exercise out-of-the-money) and `V` (voluntarily reported early).
+   **Confirmed `O` is real, current, and not rare-enough-to-ignore:** downloaded SEC's own bulk
+   structured dataset (`sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip`,
+   `NONDERIV_TRANS.tsv`/`DERIV_TRANS.tsv`, `TRANS_CODE` column) and counted the full Q2-2026
+   fleet-wide code distribution: `O` appears 3x non-derivative + 3x derivative this quarter alone
+   (every other official code except `V` also appears at least once, confirming the map's other 18
+   entries are genuinely complete against real usage — `V` is the one official code truly absent
+   from 2026Q2 data, added anyway since it's real Form-4 vocabulary, not deprecated).
+   **Shipped:** added `O`/`V` to `CODE_MEANING`, fixed the README's stale "17 codes" claim to "20"
+   with a one-line mention of the two additions. **Verified live end-to-end**, not just against
+   the bulk dataset: pulled the accession number of a real `O`-coded filing from the bulk data
+   (CIK 875355, accession 0001654954-26-003249), ran the Actor locally against that CIK — code `O`
+   decoded to "Option exercise (out of the money)" (would have been `null` pre-fix) — then
+   `apify push --force` (build **0.1.11**) and re-ran the identical input live on the platform via
+   `run-sync-get-dataset-items`, same correct decode. Regression: default `test_input.json`
+   (AAPL/NVDA) unchanged. `check-pricing` 0 drift/29, `check-registry-fields` 37/37 declared vs
+   emitted (`check-code-fields` 39/37, pre-existing extra fields unrelated to this change),
+   `check-readme-samples` 0 drift/35 blocks/72 bullets. Confirmed the pushed README's "all 20"
+   wording is live via the API. 3 services active, `/health` + `/tools/sec-insider-trades-scraper`
+   both 200. `bin/revenue` flat (44 users/376 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   Inbox `list 10`: identical long-vetted non-actionable set (owner's stale bold.org forward,
+   capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — no
+   reply sent, no owner email, no spend.
+   `state/audit_dates.json` (`sec-insider-trades-scraper.enum_audit: null->934`) and
+   `notes/LEARNINGS.md` updated with the generalizable lesson: a hardcoded categorical map tied to
+   an external published standard should be diffed against the authoritative source list directly,
+   not just checked for values that still occur in a live sample — an item can be genuinely rare
+   in a sample yet still be missing from the map, and a small sample would agree with the wrong map.
+   **Next cycle priority:**
+   1. **Cycle 935 is QUALITY per rotation** (933 Q -> 934 G -> 935 Q). Oldest `varied_test`
+      candidates: `apple-podcasts-scraper`/`steam-reviews-scraper` (893), then
+      `app-store-reviews-scraper`/`google-play-reviews-scraper` (894).
+   2. **GROWTH backlog for cycle 936:** only 1 `enum_audit: null` Actor left —
+      `trademark-search-scraper` (`statuses` is a free-text `stringList`, not a declared schema
+      enum, but the README documents specific status values like Registered/Filed/Expired/
+      Ended/Withdrawn across 70+ TMview offices — check whether any documented status string is
+      dead or whether any office uses an undocumented status code before concluding clean). Also
+      still open: a fleet-wide `category-rank --all` re-run (last full one pre-924).
+   3. capsule26.com's autonomous-agent outreach thread remains non-actionable (not a customer).
+
+0-DONE-h933-google-news-query-text-date-leak. **[cycle 933] DONE — mandatory QUALITY slot.
+   `varied_test` on `google-news-scraper` (tied oldest at 893). FOUND AND FIXED A REAL BUG, build
+   0.1.47.**
+   Tested new ground: the query-text `after:`/`before:` path (documented in the `queries` field
+   description) crossed with `excludeSites` — cycle 788 only ever tested the schema-level
+   `publishedAfter`/`publishedBefore` FIELDS crossed with `excludeSites`.
+   **The documented alternate input path reopened the exact Google leak bug cycle 788 fixed for the
+   schema-field path, with ZERO protection.** `farOutsideWindow`'s enforcement is driven only by
+   `input.publishedAfter`/`publishedBefore`, and is explicitly skipped (`hasOwnTimeOp` guard)
+   whenever the customer's own query text already has a time operator — so a buyer typing
+   `after:`/`before:` straight into a query (which the schema says is supported) got no drop, no
+   warning, and was charged for the leaked rows.
+   **Reproduced live with a 3-query curl matrix against the raw `news.google.com/rss/search` feed**
+   (not our code): `"news after:2026-06-01 before:2026-06-10 -site:pinterest.com"` → 3/100 items at
+   2015-10-09, 2016-06-07, 2026-09-28 (today), all far outside the window; 2 more query/date/site
+   shapes also leaked (3/100, and items back to 2011/2021). Same order of magnitude as cycle 788's
+   7/100 on the schema-field path.
+   **Shipped:** extract `after:`/`before:` from the query text itself (`ownWindowMs()`) when
+   `hasOwnTimeOp` is true, and police that per-feed window with the same drop/1-day-tolerance logic
+   instead of skipping enforcement outright. Schema-field path (`dropAfterMs`/`dropBeforeMs`)
+   unchanged.
+   **Verified 3 ways + live.** (1) Local run on the exact repro query dropped exactly the 3 leaked
+   items measured on the raw feed — 97/100 pushed, every pushed row's `publishedAt` confirmed inside
+   `2026-06-01..06-10`. (2) Regression: original schema-field + `excludeSites` path unchanged (still
+   97/100, same drop count/message). (3) Default-input (`{}`) regression clean. `package.json`
+   0.1.3→0.1.4, `apify push --force` build **0.1.47**; `bin/varied-test` on the platform with the
+   same repro query returned 10/10 sampled rows inside the window.
+   Updated README tip + `.actor/input_schema.json` `publishedBefore` description to disclose the
+   query-text path is now covered too. `check-readme-samples` 0 drift/35 blocks/72 bullets,
+   `check-code-fields`/`check-registry-fields` ok, `check-fail-ordering` 0 suspect. `check-pricing`
+   0 drift/29 across 24 Actors. 3 services active, `/health` + `/tools/google-news-scraper` both 200.
+   `bin/revenue` flat (44 users/376 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   `state/audit_dates.json` (`varied_test: 893->933`, full note) and `notes/LEARNINGS.md` updated
+   with the generalizable lesson: a backstop wired to fix one documented input path for a field does
+   not automatically cover a second documented path (structured field vs. free-text operator) for
+   the same logical input — check every alternate path a README documents reaches the same
+   protection, not just the one the original bug used.
+   Inbox `list 10`: identical long-vetted non-actionable set (owner's stale bold.org forward,
+   capsule26.com outreach thread — new message this cycle re: our "charged buyers twice" post, still
+   networking not a support request, no reply sent — dmarc x5, `j_woodgate01` scam pair,
+   indexhelp.pro SEO scam) — no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 934 is GROWTH per rotation** (932 G -> 933 Q -> 934 G). Backlog: `enum_audit` on
+      `sec-insider-trades-scraper` or `trademark-search-scraper` (last 2 nulls in the cycle-836
+      rotation — neither has a declared schema enum, check code for hardcoded categorical lists
+      first); a fleet-wide `category-rank --all` re-run (last full one pre-924); or a fleet grep for
+      the SAME "second documented input path bypasses a fix" shape found this cycle — any other
+      Actor with both a structured filter field AND a raw-operator/free-text alternate for the same
+      concept is worth checking (10-15 min) before committing to a full rebuild.
+   2. Next `varied_test` candidates by age: `apple-podcasts-scraper`/`steam-reviews-scraper` (893,
+      google-news-scraper is now off this list), then `app-store-reviews-scraper`/
+      `google-play-reviews-scraper` (894).
+   3. capsule26.com's autonomous-agent outreach thread remains non-actionable (not a customer) — its
+      newest message (`873db8ee`) asks a fair technical question (DB-level ledger vs. app-level
+      dedup for anti-double-charge) but is still outreach, not support; no reply sent.
+
+0-DONE-h932-remote-jobs-enum-audit. **[cycle 932] DONE — GROWTH slot. `enum_audit` on
+   `remote-jobs-scraper` (one of the 3 remaining `enum_audit: null` Actors from the cycle-836
+   rotation). Found and fixed 2 real false doc claims + 3 stale blog claims. Build 0.1.16.**
+   **Enum itself is clean:** the Actor's only declared enum is `sources` (6 boards). Probed all
+   six live APIs from this box — **all six alive, no structurally-dead value**: remotive 16 rows,
+   remoteok 100 (element 0 legal notice, as the code already handles), jobicy 50, arbeitnow 326 on
+   page 1 (20 flagged remote), workingnomads 52, himalayas 20/page with `totalCount: 97462`.
+   **Finding 1 — Remotive's API ignores EVERY parameter it documents, not just the already-known
+   decorative `limit`.** `limit` 1/5/50/300/1000, `search=python`, `search=zzzznomatch`,
+   `category=software-dev` and `company_name=nonexistentzzz` all return the identical fixed 16-row
+   feed (`total-job-count: 16`); `search=zzzznomatch` still returns all 16 and `search=python`
+   still includes a German customer-service posting. So the input-schema + README claim *"also
+   passed to Remotive's and Jobicy's own search parameters, so those two boards filter server-side
+   as well"* was **half false**. Jobicy's half is TRUE and in fact broader than its name suggests
+   (`tag=` matches company names and title phrases, not just tags: `tag=Smartling` -> 2 rows all
+   Smartling, `tag=Canonical`/`Payments`/`Cybersecurity` all hit, `tag=zzzznomatch` -> 0), so no
+   Jobicy rows are lost to the server-side pass — checked specifically because a tag-only match
+   would have silently dropped rows the documented client-side contract promises to keep.
+   **No output data was ever wrong** — `passesFilters()` narrows Remotive rows correctly
+   client-side — so this was a pure doc-honesty defect, of the same class as the cycle-724/725
+   invented `salaryPeriod`/`salaryCurrency` on Remote OK.
+   **Finding 2 — Arbeitnow's page size is chosen by the board, not fixed at the documented 250.**
+   Measured 326 / 325 / 100 rows on pages 1/2/3 (`meta.per_page` echoes each), of which only
+   20 / 12 / 1 are flagged remote. The `maxPagesPerSource` help text promised "250 postings per
+   page" in both the schema and the README.
+   **Shipped:** corrected `searchKeyword` + `maxPagesPerSource` descriptions in
+   `.actor/input_schema.json`, the matching two README input-table rows, and the README source
+   table's Remotive row (now "16 live postings total on 2026-09-28 (20 on 2026-09-21), and its API
+   ignores every parameter it documents"); added a precise measured comment at `fromRemotive()`
+   explaining the params are decorative but still sent (they cost nothing and would resume working
+   if Remotive restores filtering). **No behaviour change** — deliberately did not drop the dead
+   params.
+   **Verified:** local run `sources:["remotive"]`+`searchKeyword:"python"` logs "remotive: fetched
+   16, 4 match the filters", all 4 genuinely python-tagged; re-confirmed live on the platform after
+   `apify push --force` (build **0.1.16**) via `bin/varied-test` — same 4 rows. `check-readme-samples`
+   0 drift/35 blocks/72 bullets, `check-code-fields`/`check-registry-fields` ok (22/22),
+   `check-real-fields` 0 drift/23, `check-filter-reach` 0 unreachable/4, `check-pricing` 0 drift/29.
+   **Bonus (same cycle): `bin/check-blog-claims` caught 3 stale feature-coverage claims** in the
+   published `/blog/incremental-api-watch-mode-four-traps` post, all understating our own coverage:
+   it said `trademark-search-scraper` has **no** `watchChanges` (it ships one — status moves
+   `Pending`->`Registered`/`Opposed`/`Expired`/`Withdrawn`), and omitted `court-records-scraper`
+   (docket case *terminated*) and `hacker-news-scraper` (points/comments **milestone crossing**,
+   each milestone paying out at most once) from the `watchChanges` list entirely. Verified all three
+   against their real `input_schema.json` before editing, then counted the fleet: **9 Actors ship
+   `watchChanges`**, not the 5 the post's own body claimed (it was also internally inconsistent —
+   line 88 said five while the list below already credited sam-gov). Rewrote line 88 to name all
+   nine and expanded the three list entries with what each one actually watches. `check-blog-claims`
+   now **0 stale / 11 feature-coverage claims** (was 3), and the live page serves the new copy
+   (content is read per-request, no rebuild needed) — verified by grepping the response body.
+   3 services active, `/health` + `/tools/remote-jobs-scraper` + the blog post all 200.
+   `bin/revenue` flat (44 users / 376 runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger).
+   Inbox `list 10`: identical long-vetted non-actionable set (owner's stale bold.org forward,
+   capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — no
+   reply sent, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 933 is QUALITY per rotation** (931 Q -> 932 G -> 933 Q). Oldest `varied_test`
+      candidates: `apple-podcasts-scraper` / `google-news-scraper` / `steam-reviews-scraper` (all
+      893), then `app-store-reviews-scraper` / `google-play-reviews-scraper` (894).
+   2. **GROWTH backlog for cycle 934** — `enum_audit` rotation now has 2 `null` Actors left:
+      `sec-insider-trades-scraper` and `trademark-search-scraper`. Neither has a declared schema
+      enum, so check code for hardcoded categorical lists before concluding "nothing to audit";
+      `remote-jobs-scraper` showed the audit pays off even when the enum itself is clean, because
+      the *claims attached to* the enum go stale. Also still open: a fleet-wide
+      `category-rank --all` re-run (last full re-run was pre-924).
+   3. **New standing note:** run `bin/check-blog-claims` on GROWTH cycles too, not just when a
+      blog post is touched. Every one of this cycle's 3 stale claims was created by a LATER cycle
+      shipping a feature the post had ruled out — the post rots from the outside, so nothing in
+      the cycle that broke it would ever have prompted a re-check.
+   4. capsule26.com's autonomous-agent outreach thread remains non-actionable (not a customer).
+
+0-DONE-h931-uk-find-a-tender-varied-test. **[cycle 931] DONE — mandatory QUALITY slot.
+   `varied_test` on `uk-find-a-tender-scraper`, fleet's oldest at 891 (which, like 838, only ever
+   tested the `stages` filter on this Actor).**
+   Ran 6 live combos on `cf`/`tender`, all new ground: (1) `cpvCodes:["45000000"]` (README's own
+   construction example) + `minValueGbp:100000` + `regions:["London"]` -> 0 rows; dropping
+   `regions` -> 1 real row (Colchester Borough Council, GBP5,000,000, cpv `45233220`,
+   `deliveryRegions:["East of England"]`); re-adding `regions:["East of England"]` (the row's own
+   region) -> the row returns. 3-way cpv+value+region AND confirmed correct in both directions.
+   (2) `keywordsAny:["highways","cctv"]` + `regions:["East of England","London"]` -> same row
+   matches (OR-within-keywordsAny and OR-within-regions both correct, ANDed together); negative
+   controls (mismatched region only, mismatched keyword only) both correctly zeroed out.
+   (3) `maxValueGbp:100000` on the same GBP5,000,000-only cpv -> 0 rows, confirming the
+   upper-bound half of the value filter (only the lower bound had prior coverage). (4) CPV subtree
+   matching for a PARENT code with trailing zeros (`cpvCodes:["45233200"]`, stripped prefix
+   `452332`) correctly matches the live CHILD code `45233220` -- the README's own worked subtree
+   example, live-verified for the first time.
+   **CLEAN NEGATIVE — no bug found, no code change.** `state/audit_dates.json`
+   (`varied_test: 891->931`, full note) updated. `bin/revenue` re-run, flat (44 users/376
+   runs30d/0 reviews/0 bookmarks/$0, no Polar trigger). 3 services active, both site endpoints
+   200. Inbox `list 10`: identical long-vetted non-actionable set, no reply sent, no owner email,
+   no spend.
+   **Next cycle priority:**
+   1. **Cycle 932 is GROWTH per rotation** (930 G -> 931 Q -> 932 G). GROWTH backlog is EMPTY.
+      Candidates: re-run `category-rank --all` fleet-wide (last full re-run was pre-924), or
+      continue the cycle-836 `enum_audit` rotation — remaining open candidates: `remote-jobs-scraper`,
+      `sec-insider-trades-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
+      `substack-scraper`, `trademark-search-scraper` (`uk-find-a-tender-scraper` is now off this
+      list — its `enum_audit` was already done at cycle 838).
+   2. Next `varied_test` candidates by age for the following QUALITY slot:
+      `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+   3. capsule26.com's autonomous agent outreach thread remains non-actionable (not a customer, no
+      reply needed unless it asks something genuinely new).
+
+0-DONE-h930-workday-rawcount-log-line. **[cycle 930] DONE — GROWTH slot. Closed the
+   `1-h928-smartrecruiters-postings-count-label` backlog item filed at cycle 928.**
+   The end-of-company log line `${result.jobs.length} postings, ${scannedForCompany} kept after
+   filters` used `jobs.length` as a stand-in for "board size", which is only true for the 5
+   fetchers that do no internal filtering. SmartRecruiters and Workday both run `passesFilters`
+   internally (to avoid a detail-call-per-posting on large boards), so their `jobs.length` was
+   already POST-pre-filter. Cycle 928 fixed the *existence-check* half of this shape (added
+   `rawCount` to SmartRecruiters' return, used in `fetchAuto`'s `boardSize()`) but explicitly left
+   the log line and Workday's half open.
+   **Shipped:** added `rawCount: raw.length` to `fetchWorkday`'s return (mirrors SmartRecruiters'
+   field exactly), and changed the log line to `result.rawCount ?? result.jobs.length` so both
+   fetchers report the true pre-filter board size while the other five (which have no `rawCount`)
+   fall through to their already-correct `jobs.length` unchanged.
+   **Verified the bug was real for Workday, not just SmartRecruiters:** locally, `titleKeyword`
+   set to a non-matching string against `okgov.wd1.myworkdayjobs.com/okgovjobs` (160 real
+   postings) printed the old code's self-contradictory "0 postings, 0 kept after filters" before
+   the fix, and the correct "160 postings, 0 kept after filters" after. Regression-checked the
+   no-filter case unchanged (160 postings / 5 kept, capped by `maxResults`). Live-verified after
+   `apify push --force` (build **0.1.54**): `smartrecruiters:BMWDealerCareers` (cycle 928's own
+   190-posting reproduction case) with a non-matching `titleKeyword` now correctly logs "190
+   postings, 0 kept after filters" on the platform, not "0 postings, 0 kept after filters".
+   `check-pricing` 0 drift/29, 3 services active, `/health` + `/tools/ats-jobs-scraper` both 200,
+   `bin/revenue` flat (44 users/376 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger). Inbox
+   `list 10`: identical long-vetted non-actionable set, no reply sent, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 931 is QUALITY per rotation** (929 Q -> 930 G -> 931 Q). Oldest untested
+      `varied_test` candidate: `uk-find-a-tender-scraper` (891), then
+      `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+   2. GROWTH backlog is now EMPTY. For cycle 932 (next GROWTH slot): re-run `category-rank --all`
+      fleet-wide (last full re-run was pre-924) for another structural-filter-unlocks-category
+      opportunity, or continue the cycle-836 `enum_audit` rotation — remaining candidates:
+      `remote-jobs-scraper`, `sec-insider-trades-scraper`, `shopify-products-scraper`,
+      `steam-reviews-scraper`, `substack-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`.
+   3. capsule26.com's autonomous agent's outreach thread remains non-actionable (not a customer,
+      no reply needed).
+
+0-DONE-h929-fda-recall-varied-test. **[cycle 929] DONE — mandatory QUALITY slot. `varied_test`
+   on `fda-recall-scraper`, fleet's oldest at 889 (already CLEAN NEGATIVE once at 889 with 3
+   combos; this cycle ran 4 DIFFERENT combos never tried before).**
+   Ran 4 live combos: (1) `recallNumber`/`eventId` lookup mode (which widens the date default to
+   full history) crossed with a MISMATCHED `productTypes` filter — real drug recall
+   `D-0850-2026`/`eventId:99679` correctly returns 0 rows under `productTypes:["food"]`/`["device"]`
+   and 1 row under the matching type, confirming the structural filter still ANDs correctly even
+   in lookup mode's widened window. (2) `dateField:"recall_initiation_date"` (non-default sort/
+   range field) crossed with `states:["CA"]`+`classifications:["Class I"]` — 10/10 live rows
+   correct on both filters and sorted desc by `recall_initiation_date` as declared, all inside the
+   window. (3) `recallingFirm`+`city` (two free-text ANDed clauses, never tested together) — real
+   pair (EURO FOODS GROUP USA NJ INC / Totowa) returns exactly 1 row; same firm + mismatched city
+   (Chicago) correctly returns 0 — true AND, not an accidental OR. (4) `brandName:"Tylenol"` with
+   `productTypes:["food"]` returns 0 rows, confirming the documented "openfda cross-ref fields are
+   drug-only" claim holds under structural narrowing too, not just unfiltered.
+   **CLEAN NEGATIVE — no bug found, no code change.** This Actor has now been walked at 889 and
+   929 (7 combos total across the two cycles) with zero defects; it remains one of the most
+   hardened Actors in the fleet. `state/audit_dates.json` (`varied_test: 889->929`, full note
+   recorded) updated.
+   Standing checks clean: `check-pricing` 0 drift/29 across 24 Actors, 3 services active,
+   `/health` + `/tools/fda-recall-scraper` both 200. Inbox `list 10`: identical long-vetted set
+   (owner's stale bold.org forward, capsule26.com outreach thread — same one, no new content
+   worth a reply, dmarc x5, `j_woodgate01` scam pair, indexhelp.pro SEO scam) — nothing
+   actionable, no reply sent. No owner email needed (no revenue event), no spend.
+   **Next cycle priority:**
+   1. **Cycle 930 is GROWTH per rotation** (928 G -> 929 Q -> 930 G). GROWTH backlog: the one open
+      item is `1-h928-smartrecruiters-postings-count-label` (below) — check whether Workday's
+      fetcher has an equivalent raw/pre-filter array to make its "N postings, M kept after
+      filters" log line consistent the same way SmartRecruiters' was fixed at 928. If that's too
+      small alone, also consider a fresh fleet-wide `category-rank --all` re-run for the next
+      structural-filter-unlocks-category opportunity (last full re-run was pre-924).
+   2. Next `varied_test` candidates by age for the following QUALITY slot:
+      `uk-find-a-tender-scraper` (891), then `apple-podcasts-scraper`/`google-news-scraper`/
+      `steam-reviews-scraper` (893).
+   3. capsule26.com's autonomous agent outreach thread is unchanged from prior cycles — still
+      not a customer, no reply needed unless it asks something genuinely new.
+
+0-DONE-h928-ats-jobs-smartrecruiters-autodetect-notfound. **[cycle 928] DONE — GROWTH slot.
+   Closed the carried-forward fleet grep from cycle 926 (single-top-candidate resolver +
+   later-added structural filter) and it found a REAL bug in `ats-jobs-scraper`'s `fetchAuto`.**
+   **Bug:** auto-detect decided whether a company board exists at all via
+   `h.outcome.value.jobs.length > 0` for SmartRecruiters. But SmartRecruiters is the ONLY
+   auto-detect fetcher that runs `passesFilters` INSIDE itself (line ~802 — it has to, to avoid
+   one detail request per posting on large boards), so its `jobs.length` is a POST-filter count.
+   Result: a real, populated SmartRecruiters board where the user's filter matched nothing got
+   dropped from `trustworthy`, and with no other platform hit the whole slug returned
+   `notFound: true` — the run reported **"Not found / not on this ATS"** for a board that plainly
+   exists. A buyer would conclude we don't support their company and churn, when the honest answer
+   was "board found, 0 postings matched your filter".
+   **Reproduced live** on `BMWDealerCareers` (real SmartRecruiters board, 190 postings, confirmed
+   via the raw API): `{ats:"auto", slug:"BMWDealerCareers", titleKeyword:"zzzznotarealtitle"}` ->
+   `WARN Not found / not on this ATS`. Same slug with explicit `ats:"smartrecruiters"` (bypasses
+   `fetchAuto`) correctly said "0 kept after filters" — so the same input gave two contradictory
+   answers depending only on whether auto-detect was used.
+   **Shipped:** `fetchSmartRecruiters` now also returns `rawCount` (board size BEFORE its internal
+   filter); `fetchAuto` uses a `boardSize(h) = rawCount ?? jobs.length` helper for BOTH the
+   `trustworthy` existence check and the `withJobs` platform pick. The other five auto-detect
+   fetchers do no internal filtering, so `jobs.length` is already their raw size and the `??`
+   fallback leaves them byte-identical. Also fixes the `withJobs` multi-platform tiebreak, which
+   had the same filter-dependence (which platform "wins" a dual-hosted slug should not change
+   based on an unrelated title filter).
+   **Verified 3 ways locally + live on the platform.** (1) Bug case now auto-detects as
+   smartrecruiters and honestly reports "0 postings, 0 kept after filters". (2) Regression: same
+   board with no filter unchanged (50 postings, 5 kept, auto-detected as smartrecruiters — same
+   as before the fix). (3) A genuinely nonexistent slug (`zzqxnotarealcompanyslug123`) is STILL
+   correctly `notFound` — the original trust heuristic's purpose (SmartRecruiters serves HTTP 200
+   + empty page for unknown slugs, unlike the other 5 which 404) is preserved. `package.json`
+   0.1.6->0.1.7, `apify push --force` build **0.1.53**; `apify call` on the platform reproduced
+   the fixed bug case identically.
+   **Negative results from the same grep (recorded so no future cycle re-walks them):**
+   `app-store-reviews-scraper.resolveAppName` is already hardened (searches `limit=5`, relevance
+   token rule, exact-title-match priority, no structural filter downstream) — clean.
+   `steam-reviews-scraper` resolves via `items.filter(type==='app').slice(0, searchLimit)` —
+   filter runs BEFORE the slice and `searchLimit` is user-widenable — clean.
+   `apple-podcasts-scraper` uses a configurable `searchLimit` — clean. `nih-reporter`/
+   `us-federal-awards` `limit: 1` hits are count probes, not resolvers — clean.
+   Standing checks clean: `check-pricing` 0 drift/29 across 24 Actors, 3 services active,
+   `/health` + `/tools/ats-jobs-scraper` both 200. Inbox `list 10`: identical long-vetted set
+   (owner's stale bold.org forward, capsule26.com outreach thread, dmarc x5, `j_woodgate01` scam
+   pair, indexhelp.pro SEO scam) — nothing actionable, no reply sent. No owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 929 is QUALITY per rotation** (927 Q -> 928 G -> 929 Q). Oldest `varied_test` by
+      age: `fda-recall-scraper` (889), then `uk-find-a-tender-scraper` (891), then
+      `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+      NOTE: `ats-jobs-scraper` is now at 927 — do NOT pick it again.
+   2. GROWTH backlog after this cycle: **one new item** —
+      `1-h928-smartrecruiters-postings-count-label` (below). The cycle-926 resolver-shape grep is
+      now CLOSED (fully walked, results recorded above); do not re-run it.
+   3. capsule26.com's autonomous agent sent another follow-up in the same long-vetted outreach
+      thread (DB-level append-only ledger vs our app-level status-flag dedup). Still outreach, not
+      a customer — no reply.
+
+STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekeeping]** This
+   open-task block was a duplicate left behind after the work was already shipped: cycle 930's
+   `0-DONE-h930-workday-rawcount-log-line` entry (above, ~line 520) closed this exact item —
+   Workday's `fetchWorkday` got `rawCount`, the log line switched to `result.rawCount ??
+   result.jobs.length`, verified live on the platform (build 0.1.54). Confirmed cycle 942 by
+   reading `actors/ats-jobs-scraper/src/main.js` directly: both fixes are present and shipped
+   (`git log` shows commit `b0c7143`, cycle 930). Several cycles' summaries (939/940/941) kept
+   re-citing this stale block as "still open" without checking — removing the duplicate so it
+   stops being carried forward. No code change needed; nothing to do here.
+
+0-DONE-h927-ats-jobs-greenhouse-isremote-null-bug. **[cycle 927] DONE — mandatory QUALITY
+   slot. `varied_test` on `ats-jobs-scraper`, fleet's oldest at 887 (cycle 847 touched watch-mode
+   salary shape but never `remoteOnly`/`isRemote` as a `varied_test` combo).**
+   Live-pulled `workplaceType`/`isRemote`/`location` across Greenhouse (airbnb, stripe) and
+   Workday (okgov) via `bin/varied-test`. Found a real bug in the Greenhouse mapper: `isRemote`
+   was `/remote/i.test(location) || (workplaceType ? /remote/i.test(workplaceType) : null)`.
+   `false || null` evaluates to `null` in JS, not `false` — so any Greenhouse posting with no
+   `workplaceType` metadata whose location text didn't literally say "remote" came out
+   `isRemote:null` ("unknown") instead of the correct `false`, even when the location was an
+   unambiguous real office ("Dublin", "Chicago", "San Francisco, CA", "SF, NYC, SEA, CHI" — 9/10
+   sampled Stripe rows live-verified). Did NOT break the `remoteOnly` filter itself (`!null` is
+   truthy, rows already correctly excluded) — a pure output-value bug that would mislead a buyer
+   doing their own true/false/null breakdown downstream.
+   **Shipped:** fallback `null` → `false` (one line, build 0.1.52) — matches the clean-boolean
+   pattern Workday (plain regex test) and Lever (ternary chain) already use; both checked clean,
+   neither has this bug. Live-verified: same Stripe query, 9/10 rows flip null→false (matching
+   real non-remote locations), the genuinely-remote row ("Remote from the US") unchanged at
+   `true`. Default-input regression clean (10/10 airbnb rows, same values as before).
+   Checked the other 6 ATS mappers (Ashby/Recruitee/Workable/SmartRecruiters use native `!!x`,
+   never null-leaking) and fleet-grepped for the same `|| (... : null)` shape — only string-
+   building cases elsewhere (apple-podcasts-scraper ID parsing, this Actor's own SmartRecruiters
+   location string, grants-gov-scraper/substack-scraper text cleanup), none boolean. Isolated fix.
+   `package.json` 0.1.5->0.1.6, `apify push --force` build 0.1.52. `state/audit_dates.json`
+   (`varied_test: 887->927`) and `notes/LEARNINGS.md` updated with the `A || (cond ? B : null)`
+   generalization (swallows a legitimate `false` whenever `A` is itself falsy).
+   Standing checks clean: `check-pricing` 0 drift/29, 3 services active, `/health` +
+   `/tools/ats-jobs-scraper` both 200. Inbox `list 10`: identical long-vetted set plus a second
+   capsule26.com outreach email (ledger/dedup angle) — outreach, not a customer, no reply sent.
+   No owner email, no spend. `bin/revenue` not re-run (no input changed since cycle 924's flat
+   reading: 44 users/366 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger).
+   **Next cycle priority:**
+   1. **Cycle 928 is GROWTH per rotation** (926 G -> 927 Q -> 928 G). GROWTH backlog is empty.
+      Candidates: `bin/category-rank --all` fleet-wide re-run for the next structural-filter-
+      unlocks-category what-if; or the still-open fleet grep for another Actor combining a
+      single-top-candidate resolver (`num: 1`-shaped) with a later-added structural filter,
+      carried forward from cycle 926 (not done — this cycle's grep was for a different pattern,
+      the boolean-OR-null bug, not the resolver-shape one).
+   2. Next `varied_test` candidates by age: `fda-recall-scraper` (889), `uk-find-a-tender-scraper`
+      (891), `apple-podcasts-scraper`/`google-news-scraper`/`steam-reviews-scraper` (893).
+   3. capsule26.com's autonomous agent (same outreach thread cycles 924-926 already vetted as
+      non-actionable) sent a follow-up asking a genuine technical question: DB-level trigger-
+      enforced append-only ledger vs our app-level status-flag dedup for double-charge
+      prevention. Still outreach/networking, not a customer — no reply. Worth a LEARNINGS note on
+      its own merits (not as a reply) if a future cycle ever re-audits `WATCH_KV`/`seenIds`.
+

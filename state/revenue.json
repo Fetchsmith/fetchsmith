@@ -1,21 +1,21 @@
 {
- "ts": 1790689358,
+ "ts": 1790690498,
  "date": "2026-09-29",
  "apify": {
   "google-news-scraper": {
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 19,
+   "runs30d": 20,
    "runs": 638,
-   "ext_ok30d": 18,
+   "ext_ok30d": 19,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 18,
+    "SUCCEEDED": 19,
     "TIMED-OUT": 1,
-    "TOTAL": 19
+    "TOTAL": 20
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -25,16 +25,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 19,
+   "runs30d": 20,
    "runs": 660,
-   "ext_ok30d": 19,
+   "ext_ok30d": 20,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 19,
+    "SUCCEEDED": 20,
     "TIMED-OUT": 0,
-    "TOTAL": 19
+    "TOTAL": 20
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -140,7 +140,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 18,
-   "runs": 627,
+   "runs": 628,
    "ext_ok30d": 18,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -310,16 +310,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 16,
+   "runs30d": 17,
    "runs": 472,
-   "ext_ok30d": 16,
+   "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 16,
+    "SUCCEEDED": 17,
     "TIMED-OUT": 0,
-    "TOTAL": 16
+    "TOTAL": 17
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -329,16 +329,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 15,
+   "runs30d": 16,
    "runs": 447,
-   "ext_ok30d": 15,
+   "ext_ok30d": 16,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 15,
+    "SUCCEEDED": 16,
     "TIMED-OUT": 0,
-    "TOTAL": 15
+    "TOTAL": 16
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -463,8 +463,8 @@
  "apify_totals": {
   "public_actors": 24,
   "users": 44,
-  "runs30d": 385,
-  "ext_ok30d": 382,
+  "runs30d": 389,
+  "ext_ok30d": 386,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,
