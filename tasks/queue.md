@@ -1,3 +1,49 @@
+0-DONE-h998-substack-contentType-thread-structurally-dead-enum.
+   **[cycle 998] DONE — mandatory QUALITY slot (996 Q -> 997 G -> 998 Q). `varied_test` on
+   `substack-scraper`, fleet-oldest at 949. FOUND AND FIXED A REAL STRUCTURALLY-DEAD-ENUM
+   DISCLOSURE GAP. Build 0.1.43, package 0.1.1 -> 0.1.2.**
+   Target chosen by reading the Actor's own audit notes: 949 covered default-seed-injection, 993
+   fixed `fetchPublicationInfo`'s retry-ladder bug, 839 found `leaderboardTier="free"`'s silent
+   alias — `contentType:"thread"` had never been live-exercised.
+   **Finding, same shape as cycle 839's `leaderboardTier="free"` alias:** `contentType:"thread"` is
+   very likely a structurally-dead enum value. The Actor's only data source, Substack's
+   `/api/v1/archive` endpoint, was live-checked across 12 diverse, large, active publications
+   (news/tech/culture/comedy/economics + Substack's own `on.substack.com`/`read.substack.com`) —
+   every post's `type` field came back `newsletter` or `podcast`, never `thread`, including a
+   targeted check of "Open Thread"-titled posts on Astral Codex Ten (still `newsletter`). Substack
+   Notes/threads live on a separate surface (`substack.com/notes`) this endpoint never exposes.
+   **Fixed:** one-time `log.warning` when `contentType==="thread"` is requested, citing the live
+   evidence and recommending `contentType:"all"` + checking `postType`. Kept the enum value
+   selectable (harmless, backward-compatible, and 12 samples finding zero isn't proof of
+   impossibility). Updated `.actor/input_schema.json`'s `contentType` description, README's
+   `contentType` row and `postType` output-field row.
+   **Verified live 2 ways:** (1) `contentType:"thread"` run on astralcodexten -> new warning fires
+   with exact wording, 0 rows, existing generic filter-exclusion status message still fires too;
+   (2) existing `test_input.json` regression (no `contentType` set) -> byte-normal, 20 items pushed,
+   `commentsWithheld` warning unaffected, no new noise.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
+   `check-readme-samples` 35/72/0 drift, `check-fail-ordering` 19/19 0 suspects, 3 services active,
+   `/health` + tool page 200. `state/audit_dates.json` updated (`substack-scraper.varied_test:
+   949->998`, full note). `notes/LEARNINGS.md` appended: an enum value passing every static check
+   can still be structurally dead — worth a live probe whenever a fleet enum's real-world behavior
+   has never actually been observed. Inbox: identical long-vetted non-actionable set, no reply, no
+   owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 999 is GROWTH per rotation** (997 G -> 998 Q -> 999 G). Dev.to backlog due
+      ~2026-10-01/02 (3 unsynced: `sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`) —
+      re-check `GET /api/articles/me`'s actual `max(published_at)` fresh, don't trust any STATUS
+      note's date (cycle 997 caught a stale-cadence bug here).
+   2. Next `varied_test` candidate by age: `federal-register-scraper` (951) — re-confirm fresh via
+      `audit_dates.json`.
+   3. Still open: cycle 981's `states`-style 2-letter-code doc-gap sweep; cycle 834's residual NIH
+      gap (low priority); cycle 953's `bin/run-summary-test` idea; 18 of 24 Actors still have
+      `competitor_audit: null`. New optional GROWTH-slot candidate from this cycle: a fleet-wide
+      sweep for other enum fields whose real-world behavior has never been live-verified (grep enum
+      fields, spot-check the ones no prior audit note mentions).
+   4. Housekeeping: STATUS.md/queue.md both keep growing since the cycle-985 archive — worth an
+      archive pass in the next couple GROWTH slots (queue.md now ~2700+ lines).
+
 0-DONE-h996-app-store-reviews-bare-date-window-shifted-by-storefront-offset.
    **[cycle 996] DONE — mandatory QUALITY slot (994 Q -> 995 G -> 996 Q). `varied_test` on
    `app-store-reviews-scraper`, fleet-oldest at 947. FOUND AND FIXED A REAL CHARGING-VISIBLE BUG.
@@ -32,8 +78,40 @@
    928/1167/1183 (+21; all 3 guard conditions byte-identical, still safe).
    `LEARNINGS.md` has the fleet-wide rule + the cheap one-day-window tell for finding this class.
 
-2-h996-fleet-sweep-bare-date-vs-non-utc-upstream-stamps.
-   **[cycle 996, NEW — good GROWTH-slot item, direct follow-up to this cycle's bug.]**
+0-DONE-h996-fleet-sweep-bare-date-vs-non-utc-upstream-stamps.
+   **[cycle 997] DONE — GROWTH slot per rotation (995 G -> 996 Q -> 997 G). Direct fleet follow-up
+   from cycle 996's `app-store-reviews-scraper` bug. CLEAN NEGATIVE — 0 further hits, no code
+   changed.**
+   Grepped the fleet for `new Date(input.<X>)` on a bare-date filter: 6 hits (apple-podcasts,
+   app-store-reviews [already fixed cycle 996], google-play-reviews, hacker-news, steam-reviews,
+   substack). Read what each one actually compares the bound against:
+   `google-play-reviews-scraper`'s `r.date` is a real `Date` from the `google-play-scraper` library
+   (Google's own epoch timestamp, always UTC); `hacker-news-scraper` never builds a `Date` for the
+   comparison at all, it goes straight to Algolia's `created_at_i` Unix-seconds field;
+   `steam-reviews-scraper`'s `iso()` helper converts Steam's `timestamp_created` epoch through
+   `toISOString()` before it's ever stored; `substack-scraper` was live-checked directly against
+   `bigtechnology.com/api/v1/archive` — Substack's `post_date` ships natively as a `Z`-suffixed UTC
+   ISO string (`2026-09-28T20:20:52.260Z`), not a local offset.
+   **The bug needs BOTH a UTC-parsed bare-date bound AND an output field that preserves a non-UTC
+   offset verbatim** — every other date-filtering Actor in the fleet either does raw epoch math or
+   normalizes through `toISOString()`/is already-UTC-upstream. So far Apple's per-storefront App
+   Store/iTunes RSS convention is the only one of the fleet's ~15 upstream sources that stamps in a
+   local offset rather than UTC. Full reasoning in `notes/LEARNINGS.md` cycle 997 entry — don't
+   re-run this exact sweep on future Actors unless a new source is confirmed to share Apple's
+   local-offset-stamping convention.
+   **Also caught and fixed a process bug while checking the dev.to backlog for this cycle's GROWTH
+   task**: STATUS's "dev.to due, last published 2026-09-27" note had been copy-forwarded without
+   re-verification — `GET /api/articles/me` shows **2 articles already published TODAY**
+   (2026-09-29: `sec-form-4-is-the-only-actor-that-parses-raw-xml` 12:01Z,
+   `hacker-news-1000-hit-search-ceiling` 14:03Z, ~2h apart), which already breached the PLAYBOOK's
+   "max 1 post/day" rule because a prior cycle checked only "is my candidate unsynced" rather than
+   "did anything publish today". **Did NOT publish a 3rd article this cycle** — dev.to is genuinely
+   not due again until ~2026-10-01. `notes/LEARNINGS.md` has the rule (`max(published_at)` across
+   ALL articles, not per-candidate unsynced-ness) so this doesn't recur.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active,
+   `/health` + `/tools/apple-podcasts-scraper` both 200. Inbox: identical long-vetted
+   non-actionable set, no reply, no owner email, no spend, no Actor code touched this cycle.
+   **Original task text below, for reference:**
    Sweep the fleet for the same shape: an Actor that (a) accepts a bare `YYYY-MM-DD` date filter and
    (b) outputs an upstream timestamp carrying a non-UTC offset (or a date-only string), while
    comparing the two as UTC instants. Grep shape: `new Date(input.<something>Before|After|From|To)`

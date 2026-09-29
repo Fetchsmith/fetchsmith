@@ -43,7 +43,7 @@ It talks to Substack's own public JSON endpoints — no login, no cookies, no he
 | `maxCommentsPerPost` | integer | `50` | Cap on comments per post. |
 | `includePublicationInfo` | boolean | `false` | Add the `publication*` profile fields (subscriber count, plan prices, author, bestseller tier) to every post row. One cached request per publication, not per post — and no extra charge. |
 | `audienceFilter` | string | `all` | `all`, `free` (public posts only) or `paid` (subscriber-only posts). |
-| `contentType` | string | `all` | `all`, `newsletter` (text posts only), `podcast` (episodes only) or `thread` (Notes-style threads only). Also works on `postUrls`, not just publication archives. |
+| `contentType` | string | `all` | `all`, `newsletter` (text posts only) or `podcast` (episodes only). Also works on `postUrls`, not just publication archives. A `thread` value exists for compatibility, but live testing across many publications (2026-09-29) found no post of that type in Substack's archive API — it's very likely to return 0 rows; use `all` and check `postType` on your results instead. |
 | `publishedAfter` / `publishedBefore` | string | — | ISO dates, e.g. `2026-01-01`. |
 | `minReactionCount` / `minCommentCount` / `minRestackCount` | integer | — | Only return posts with at least this many reactions/comments/restacks. Read straight from the archive listing, so these cost nothing extra — no per-post detail fetch needed. |
 | `minWordCount` / `maxWordCount` | integer | — | Only return posts within this word-count range. Find a publication's most-discussed posts, or its short link-roundups vs. long essays, without downloading anything you don't want to pay for. |
@@ -78,7 +78,7 @@ Three record shapes, distinguished by `type`.
 | `authors` | `["Scott Alexander"]` |
 | `postDate` | `2026-09-08T12:04:21.658Z` |
 | `audience`, `isPaid` | `everyone`, `false` |
-| `postType` | `newsletter`, `podcast`, `thread`, … |
+| `postType` | `newsletter` or `podcast` in every publication we've tested; `thread` is a theoretical third value Substack's schema allows but we've never observed |
 | `wordCount` | `4695` — the full article's length, as Substack reports it |
 | `reactionCount`, `commentCount`, `restackCount` | `199`, `118`, `14` |
 | `tags`, `section`, `language` | `[]`, `null`, `en` |

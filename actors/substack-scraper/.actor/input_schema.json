@@ -117,7 +117,7 @@
     "contentType": {
       "title": "Content type",
       "type": "string",
-      "description": "Filter posts by type: regular newsletter posts, podcast episodes, or threads (Substack Notes-style discussion posts).",
+      "description": "Filter posts by type: regular newsletter posts or podcast episodes. \"Threads\" is kept for compatibility but, in live testing across many publications (2026-09-29), no post of that type has ever appeared in Substack's archive API — Notes/threads live on a separate surface this Actor does not fetch, so it is very likely to return 0 rows.",
       "editor": "select",
       "enum": [
         "all",

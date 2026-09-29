@@ -43,6 +43,15 @@ const includePublicationInfo = input.includePublicationInfo === true;
 const maxCommentsPerPost = Math.min(Number(input.maxCommentsPerPost ?? 50), 1000);
 const audienceFilter = ['all', 'free', 'paid'].includes(input.audienceFilter) ? input.audienceFilter : 'all';
 const contentType = ['all', 'newsletter', 'podcast', 'thread'].includes(input.contentType) ? input.contentType : 'all';
+// Live-checked 2026-09-29 across a dozen large, active publications spanning news, tech, culture,
+// comedy, economics and Substack's own in-house blog: every post returned by the archive API this
+// Actor reads was type "newsletter" or "podcast", including posts titled "Open Thread" — Substack
+// Notes/threads live on a separate surface (substack.com/notes) this endpoint never exposes. Kept
+// selectable (harmless, and a future publication or Substack feature could change this) but a
+// buyer who picks it deserves to know it matched nothing in every publication tested so far.
+if (contentType === 'thread') {
+  log.warning('contentType="thread" requested — as of 2026-09-29, no publication we tested (spanning several genres and sizes) had any post of type "thread" in Substack\'s archive API; every post was "newsletter" or "podcast". Substack Notes/threads are a separate product surface this Actor does not fetch, so this filter is very likely to return 0 rows here too. Use contentType="all" and check the postType field on your results if you need to confirm.');
+}
 const publishedAfter = input.publishedAfter ? new Date(input.publishedAfter) : null;
 const publishedBefore = input.publishedBefore ? new Date(input.publishedBefore) : null;
 const minReactionCount = input.minReactionCount != null ? Number(input.minReactionCount) : null;

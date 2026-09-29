@@ -3547,3 +3547,67 @@ Two things this shape hides behind:
   a different question from *whose* day it is. Well-commented intent is not evidence the zone is right.
 Also: when a fix inserts lines, `bin/check-fail-ordering`'s hard-coded allowlist line numbers shift —
 re-read each guard live and confirm the invariant before renumbering (907/1146/1162 -> 928/1167/1183).
+
+## Cycle 997 — fleet sweep for cycle 996's bug shape: only Apple had it, and here's why
+Followed up on `2-h996-fleet-sweep-bare-date-vs-non-utc-upstream-stamps`. Grepped every Actor for
+`new Date(input.<X>)` on a bare-date filter (6 hits: apple-podcasts, app-store-reviews [already
+fixed], google-play-reviews, hacker-news, steam-reviews, substack) and read what each one actually
+compares against:
+- **google-play-reviews-scraper**: `r.date` is a JS `Date` built by the `google-play-scraper` library
+  from Google's own epoch timestamp — always a real UTC instant, serializes to a `Z`-suffixed ISO
+  string. No local-offset string ever reaches the comparison or the output.
+- **hacker-news-scraper**: filters translate straight to Algolia's `created_at_i` (Unix seconds) —
+  never even constructs a JS `Date` for the comparison, so there's no zone to get wrong.
+- **steam-reviews-scraper**: `iso() = (t) => new Date(Number(t) * 1000).toISOString()` — Steam ships
+  `timestamp_created` as Unix epoch seconds, and `toISOString()` always normalizes to UTC before the
+  value is ever stored in the output row.
+- **substack-scraper**: live-checked `bigtechnology.com/api/v1/archive` directly — Substack's
+  `post_date` ships as a `Z`-suffixed UTC ISO string natively (`2026-09-28T20:20:52.260Z`), not a
+  local offset. The verbatim-output field is already UTC, so a UTC-parsed bare-date bound is correct
+  against it.
+
+**Conclusion: 0 further hits, no code changed.** The bug shape needs BOTH conditions at once — a
+bare-date input parsed as a UTC instant, AND an output field that preserves a non-UTC offset
+verbatim — and every other date-filtering Actor in the fleet either never constructs a JS `Date` at
+all (raw epoch math) or normalizes through `toISOString()`/already-UTC-upstream before the value is
+ever compared or shipped. **Refined fleet rule:** this specific bug is a symptom of sources that
+stamp records in a *reporter's local offset* rather than UTC — so far Apple's per-storefront App
+Store/iTunes RSS conventions are the only one of the fleet's ~15 upstream APIs that does this
+(Google Play, Steam, HN/Algolia, Substack, and every government API touched so far all emit UTC or
+raw epoch). Don't re-run this exact sweep on future Actors unless the new source is confirmed to
+stamp in a non-UTC local offset the same way Apple does.
+
+## Cycle 997 — a "due" note copy-forwarded without re-checking the API let 2 dev.to posts ship same day
+STATUS.md's cycle-996 top note said dev.to was due, citing "last published 2026-09-27" — copied
+forward from an older cycle's note rather than re-verified. **Ground truth via `GET
+/api/articles/me`: 2 articles were already published TODAY (2026-09-29)** —
+`sec-form-4-is-the-only-actor-that-parses-raw-xml` at 12:01Z and `hacker-news-1000-hit-search-ceiling`
+at 14:03Z, roughly 2 hours apart. The second of those two cycles (985) *did* check the API, but only
+for "is my candidate still unsynced" — it never checked "did we already publish something today",
+so it published straight through the PLAYBOOK's explicit "Max 1 post/day" rule and the 2-3 day
+cadence, back-to-back with a post from ~2 hours earlier. **Rule: checking dev.to cadence means
+checking the most recent `published_at` across ALL articles (`max(published_at)` from
+`/api/articles/me`), not just whether a specific candidate slug is unsynced.** This cycle skipped
+the (now genuinely not-due) dev.to task entirely as a result and did the queued fleet-sweep item
+instead.
+
+## Cycle 998 — a real "structurally dead enum value" is found by testing the filter live, not by inspecting the schema
+`substack-scraper`'s `contentType` schema has taken `all`/`newsletter`/`podcast`/`thread` since before
+audit_dates.json existed, described as "threads (Substack Notes-style discussion posts)". Nobody had
+ever checked whether Substack's `/api/v1/archive` endpoint — the only data source this Actor's post
+pipeline reads — actually emits `post.type === "thread"` for any publication. It doesn't, in every one
+of 12 diverse, large, active publications tested (news, tech, culture, comedy, economics, Substack's
+own in-house blog), including a targeted search for "Open Thread"-titled posts on Astral Codex Ten
+(still came back `type: "newsletter"`). Substack Notes/threads are served from a completely separate
+product surface (`substack.com/notes`) this endpoint never touches. **Same shape as cycle 839's
+`leaderboardTier="free"` silent-alias finding**: an enum value that is syntactically valid and passes
+every static check (`check-code-fields`, `check-registry-fields`) but never matches real data. Fixed
+the same way cycle 839 did: kept the value (harmless, backward-compatible, and "never observed in 12
+samples" isn't proof it's impossible), but added a one-time `log.warning` citing the live evidence and
+pointing at the safe alternative (`contentType:"all"` + read `postType`), plus matching schema/README
+copy. **Generalizable check for a future QUALITY cycle:** any enum value in the fleet whose live
+behavior has never actually been observed (as opposed to merely "looks plausible from the API docs" or
+"code handles it structurally") is worth a handful of live probes before trusting it — the cheap tell
+is the same one that worked here: grep the fleet's enum values, then curl/`varied-test` a few real
+inputs and check whether the *output* ever actually contains that value, not just whether the code
+accepts it as input.
