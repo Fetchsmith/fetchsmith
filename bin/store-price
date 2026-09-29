@@ -23,6 +23,13 @@ Usage:
       Also simulates the proposed title per query (exact/prox from the title's own word
       positions) and predicts the rank it lands, including regressions on queries the
       current title already wins. Run this before every title edit.
+  bin/store-price <slug> --desc "Proposed description" "query one" ...
+      Same simulation against the DESCRIPTION attribute (attr=2, 300-char cap) — added
+      cycle 960, the backlog item from 956. Use it before every description reword:
+      a reword evicts words, and the regression column says whether a query that no
+      longer matches was actually being carried by the description (`!! LOSES live pN`)
+      or by the title/readme (safe). `--attr <n>` targets any attribute by index
+      (0 title, 1 name, 2 description, 4 seoTitle, 5 seoDescription, 6 readme).
 
 Known model limits (both seen live, both in the SAFE direction):
   * prefix matching: only the LAST query token is prefix-matched (cycle 868), and a
@@ -92,21 +99,38 @@ def predict(hits, target, our_sp):
     return ahead + better + 1, len(same), ahead
 
 
+ATTR_NAMES = {0: "title", 1: "name", 2: "description", 4: "seoTitle",
+              5: "seoDescription", 6: "readme"}
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
         return 2
     slug, rest = argv[0], argv[1:]
-    title = None
-    if rest and rest[0] == "--title":
-        title, rest = rest[1], rest[2:]
+    title = text = None
+    attr, cap, label = 0, 63, "title"
+    while rest and rest[0] in ("--title", "--desc", "--attr"):
+        if rest[0] == "--attr":
+            attr, rest = int(rest[1]), rest[2:]
+            cap, label = (300, ATTR_NAMES.get(attr, f"attr{attr}"))
+        elif rest[0] == "--title":
+            title, rest = rest[1], rest[2:]
+            attr, cap, label = 0, 63, "title"
+        else:
+            title, rest = rest[1], rest[2:]
+            attr, cap, label = 2, 300, "description"
+    text = title
     if not rest:
         print("no queries given", file=sys.stderr)
         return 2
-    if title:
-        print(f"proposed title ({len(title)}/63 chars): {title}")
+    if text:
+        print(f"proposed {label} ({len(text)}/{cap} chars): {text}")
+        if len(text) > cap:
+            print(f"  !! OVER the {cap}-char cap by {len(text) - cap}")
     print(f"{'query':30} {'nbHits':>7} {'live':>5} {'liveBucket':>16} "
-          f"{'titleHit':>9} {'tgtN':>5} {'pred':>6}{'   newTitle -> pred' if title else ''}")
+          f"{'contig':>7} {'tgtN':>5} {'pred':>6}"
+          f"{'   new ' + label + ' -> pred' if text else ''}")
     for q in rest:
         r = sr.search(q, hits=200, ranking_info=True)
         hits = r["hits"]
@@ -116,17 +140,30 @@ def main(argv):
                 live, our_sp = (i, bucket(h)), h.get("storePosition")
         sp = our_sp or 51438
         n = len(q.split())
-        p, tn, _ = predict(hits, (n, n, max(n - 1, 0), 0), sp)
+        p, tn, _ = predict(hits, (n, n, max(n - 1, 0), attr), sp)
         row = (f"{q[:30]:30} {r['nbHits']:>7} {str(live[0]) if live else '-':>5} "
-               f"{str(live[1]) if live else '-':>16} {'contig':>9} {tn:>5} {'p'+str(p):>6}")
-        if title:
-            s = simulate(title, q)
+               f"{str(live[1]) if live else '-':>16} {'a'+str(attr):>7} {tn:>5} "
+               f"{'p'+str(p):>6}")
+        if text:
+            s = simulate(text, q)
             if s is None:
-                row += "   no match"
+                # No match in the proposed text. Only a REGRESSION if our live
+                # rank is currently carried by this very attribute.
+                if live and live[1][3] == attr:
+                    row += f"   no match  !! LOSES live p{live[0]} ({label} match)"
+                else:
+                    row += "   no match (live rank is from another attribute)"
             else:
-                np_, ntn, _ = predict(hits, (s["words"], s["exact"], s["prox"], 0), sp)
+                tgt = (s["words"], s["exact"], s["prox"], attr)
+                np_, ntn, _ = predict(hits, tgt, sp)
                 row += (f"   exact={s['exact']} prox={s['prox']} -> p{np_}"
                         f" (bucket holds {ntn})")
+                if live and order(tgt) > order(live[1]):
+                    # proposed match sorts strictly later than where we live now
+                    if live[1][3] == attr:
+                        row += f"  !! WORSE than live p{live[0]}"
+                    else:
+                        row += f"  (live p{live[0]} from attr {live[1][3]} still holds)"
         print(row)
         time.sleep(0.2)
     return 0

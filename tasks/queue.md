@@ -1,3 +1,47 @@
+0-DONE-h960-steam-desc-reword. **[cycle 960] DONE — GROWTH slot. Shipped the
+   `steam-reviews-scraper` description REWORD that 956/958 sized but deferred. THREE wins,
+   ZERO regressions, ZERO chars added — the best single edit this Actor has had.**
+   Built `bin/store-price --desc "<text>" <queries...>` first (the backlog item open since
+   cycle 956): simulates a proposed description at attr=2 across a whole query set and prints a
+   per-query regression verdict — a phrase that stops matching is flagged `!! LOSES live pN`
+   only when our live rank is actually carried by the description, else
+   `(live pN from attr N still holds)`. `--attr <n>` generalises to any attribute.
+   The field was at 297/300, so no append was possible. New lead sentence packs THREE contiguous
+   3-word phrases into ten words by re-using each phrase's own "Steam": "Steam reviews API,
+   Steam store API and Steam review data to JSON/CSV: ...". Evicted only "player", "store data"
+   and "owner estimates"; the simulation proved none carried a tracked query, and every claim
+   was re-verified against the README before shipping.
+   `apify-admin publish` (200) + `apify push --force` -> build 0.1.49 (forces the Algolia
+   reindex). **Live-measured ~105s later, all three predictions exact:** `steam store api`
+   (8295 hits) p42 -> **p5**; `steam reviews api` (6624) p28 -> **p5**; `steam review data`
+   (5873) p10 -> **p1**. ~20.8k combined nbHits moved. Other 6 tracked queries byte-identical
+   (p41/p1/p4/p2/p3/p22/p43/p11); storePosition 52699->52038 (organic, in our favour).
+   **CORRECTED cycle 958's highlight-probe lesson** (in `bin/store-rank` + LEARNINGS.md): an
+   all-attribute `matchLevel:"none"` probe is NOT evidence a match is split across attributes
+   and must NOT be used to falsify a `--why` prediction — both winners read `none` everywhere
+   with empty `matchedWords` while the same response's un-highlighted `description` holds the
+   phrase contiguous, `_rankingInfo` read words=3/exact=3/prox=2/attr=2, and the rank landed
+   exactly as predicted. Not the `api` token either (`steam api`/`tender data api` highlight
+   `full`; `steam store` reads none). Trust `_rankingInfo` + a post-push measurement.
+   `check-store-meta` 24/0, `check-pricing` 24/29/0, `check-meta-fields` 8/0. 3 services
+   active, site healthy, inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 961 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `clinicaltrials-scraper` (915).
+   2. Cycle 962 (GROWTH): continue `3-h904-readme-proximity-scan` on the remaining unswept
+      Actors — `ats-jobs-scraper`, `court-records-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`. Now that `--desc` exists, screen each Actor's DESCRIPTION
+      for a head-word-sharing reword as well, not only README appends — a full field is not
+      automatically a zero-sum trade.
+   3. Re-measure the three new `steam-reviews-scraper` ranks next GROWTH cycle to confirm
+      p5/p5/p1 hold (they are one measurement, taken ~105s post-reindex).
+   4. `gaming data api` (958, predicted p2 landed p43) is UNEXPLAINED again now that the
+      split-attribute theory is retracted — do not file it as solved.
+   5. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea.
+
 0-DONE-h959-trademark-statuses-doc-fix. **[cycle 959] DONE — mandatory QUALITY slot.
    `varied_test` on `trademark-search-scraper` (fleet's oldest, stale since 913) — found and
    fixed a real DOC bug (not a code bug).**

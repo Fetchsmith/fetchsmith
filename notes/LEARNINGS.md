@@ -2936,3 +2936,36 @@ shape has been seen in ~15+ README-proximity-scan wins; most have landed close t
 Companion win in the same cycle, working as the model predicts: `steam games list` (readme
 prox=2/attr=6, 1 pre-existing record ahead) predicted p7, measured p11 — close enough to be
 explained by ordinary storePosition-tiebreak noise inside the bucket, not a new failure mode.
+
+## Cycle 960 — an empty Algolia highlight result is NOT a falsifier (corrects cycle 958)
+Cycle 958 told future GROWTH cycles to run a `getRankingInfo=true` highlight probe on our own
+objectID before reporting a `--why` bucket prediction as confirmed, on the theory that
+`matchLevel:"none"` across every attribute means the query words matched *split* across
+attributes instead of contiguously in one. **That inference does not hold.** Shipping the
+`steam-reviews-scraper` description reword this cycle produced two clean counter-examples:
+`steam store api` and `steam reviews api` both returned `matchLevel:"none"` with empty
+`matchedWords` on *every* attribute (title/name/seoTitle/seoDescription/description/readme),
+while the very same response's un-highlighted `description` value contains the phrase
+contiguous, `_rankingInfo` read `words=3 nbExactWords=3 proximityDistance=2
+firstMatchedWord=2000` (attr=2, description), and the record landed on **exactly** the
+predicted p5. It is also not simply the `api` token: `steam api` (p1) and `tender data api`
+(p1) highlight `full`, while `steam store` — two words, no `api`, p54 — reads none. The
+trigger is query-specific and still unexplained.
+**Rule:** `_rankingInfo` stayed accurate and predictive in every case observed, so trust it
+plus a post-push live measurement. Treat an empty highlight result as inconclusive, never as
+evidence against a prediction. Corollary: cycle 958's `gaming data api` miss (predicted p2,
+landed p43) has NO confirmed explanation and must not be filed as solved.
+
+## Cycle 960 — a description reword can carry three contiguous phrases for zero added chars
+`steam-reviews-scraper`'s description was at 297/300 — no room for the append trick cycles
+883/885/886/892/898 used. The reword that worked shares repeated head words instead of adding
+them: "Steam reviews API, Steam store API and Steam review data to JSON/CSV: ..." carries
+`steam reviews api`, `steam store api` AND `steam review data` all contiguous (prox=2) in ten
+words, because each phrase re-uses its own "Steam". Result: p42->p5, p28->p5, p10->p1 across
+~20.8k combined nbHits, 0 chars added, 0 regressions. When a field is full, look for a
+head-word-sharing list before concluding the field is a zero-sum trade.
+Enabler: `bin/store-price --desc "<text>" <queries...>` (built this cycle, the backlog item
+from 956) simulates a proposed description at attr=2 across the whole tracked query set and
+prints, per query, whether a phrase that no longer matches was actually being carried by the
+description (`!! LOSES live pN`) or by the title/readme (safe to evict). Use it before every
+description edit; `--attr <n>` does the same for any attribute.

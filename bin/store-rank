@@ -549,17 +549,41 @@ TERMS = {
     # stats`/`steam player count` byte-identical (p1/p2/p3/p4), `steam reviews` p38->p41 and
     # `steam tags` p21->p22 both attributable to drift (same direction/size as past cycles'
     # drift controls), `steam review data` p10 unchanged.
-    # Sized but NOT shipped (still open): `steam store api` (8285, live p42, README->p17 but
-    # DESCRIPTION->p4), `steam reviews api` (6617, live p28, DESC->p5) — the description route is
-    # strictly better on both but needs a 297/300-char REWORD (a trade), not an append; price the
-    # trade with `bin/store-price --title`-style full simulation before shipping.
+    # cycle 960 (GROWTH) SHIPPED the description REWORD that 956/958 had sized-but-deferred,
+    # and it was the best single edit this Actor has had: THREE wins, zero regression, on a
+    # 297/300-char field that had no free space at all. Method: built `bin/store-price --desc`
+    # (the backlog item from 956) so the whole 11-query tracked set could be simulated against
+    # the proposed text at attr=2 BEFORE shipping, with an explicit regression column that says
+    # whether a query that no longer matches was actually carried by the description or by the
+    # title/readme. New lead sentence "Steam reviews API, Steam store API and Steam review data
+    # to JSON/CSV: ..." packs THREE contiguous 3-word phrases into 10 words by sharing the
+    # "Steam" repetitions. Evicted only "player" (from "Steam player reviews"), "store data" and
+    # "owner estimates" — the simulation proved none of those carried a tracked query.
+    # Live-measured ~105s after `apify-admin publish` + `apify push --force` (build 0.1.49):
+    # `steam store api` (8295 hits) p42 -> **p5** (predicted p5), `steam reviews api` (6624)
+    # p28 -> **p5** (predicted p5), `steam review data` (5873) p10 -> **p1** (predicted p1).
+    # All 6 other tracked queries byte-identical (p41/p1/p4/p2/p3/p22/p43/p11), storePosition
+    # 52699->52038 (organic, in our favour). ~20.8k combined nbHits moved for 0 chars added.
+    # **CORRECTION to cycle 958's highlight-probe lesson — do not apply it as written.** 958
+    # concluded that `matchLevel:"none"` on every attribute means the query words matched split
+    # across attributes rather than contiguously, and told future cycles to use that probe as a
+    # falsifier for a `--why` prediction. That inference is NOT safe: on both `steam store api`
+    # and `steam reviews api` this cycle, EVERY attribute returned `matchLevel:"none"` with
+    # empty `matchedWords` — while the same response's un-highlighted `description` value
+    # plainly contains the phrase contiguous, `_rankingInfo` read words=3/exact=3/prox=2/
+    # firstMatchedWord=2000 (attr=2), and the record landed EXACTLY on the predicted p5. It is
+    # also not the `api` token: `steam api` and `tender data api` both highlight `full`, while
+    # `steam store` (no `api`, p54) reads none. The trigger is query-specific and unexplained.
+    # **Rule: an empty highlight result is inconclusive, never a falsifier. Trust
+    # `_rankingInfo` + a post-push live measurement.** `gaming data api`'s p43-vs-predicted-p2
+    # miss (958) therefore still has no explanation and should not be filed as solved.
     # Declined as untruthful: `game sentiment analysis` (4258 hits, absent, would be README->p1 —
     # we ship review text and a negative/positive filter but do NOT compute sentiment).
     # Declined as saturated: `steam scraper` (13297, 97 records ahead in the title head bucket).
     "steam-reviews-scraper": ["steam reviews", "steam api", "steam player count",
                               "video game data api", "steam player stats", "steam tags",
                               "gaming data api", "steam games list",
-                              "steam review data"],
+                              "steam review data", "steam store api", "steam reviews api"],
     # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
     # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
     # full). Confirmed the h143/h145(b) apostrophe caveat: querying "who's hiring"
