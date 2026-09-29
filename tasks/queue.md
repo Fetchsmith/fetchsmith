@@ -1,3 +1,64 @@
+0-DONE-h1004-remote-jobs-salaryperiod-annual-vs-yearly-unnormalized.
+   **[cycle 1004] DONE — mandatory QUALITY slot per rotation (1002 Q -> 1003 G -> 1004 Q).
+   `varied_test` on `remote-jobs-scraper`, fleet-oldest at 955. FOUND AND FIXED A REAL
+   CROSS-SOURCE NORMALIZATION BUG. Build 0.1.18, package 0.1.11 -> 0.1.12.**
+   Targeted the salary/date paths cycles 909/932/955 never exercised. **Two clean negatives
+   first:** (a) all 6 boards stamp 100% of rows with a parseable date (remotive 16/16,
+   remoteok 99/99, jobicy 50/50, arbeitnow 326/326, workingnomads 57/57, himalayas 20/20), so
+   `keep()`'s undocumented `if (!row.publishedAt) return false` drop under a date bound is
+   unreachable in practice — not worth documenting; (b) no timezone skew of the cycle 1000/1001
+   kind — remoteok/jobicy/workingnomads send explicit offsets (workingnomads `-04:00`),
+   arbeitnow/himalayas send epochs, and only Remotive is naive, which the code's appended `Z`
+   correctly treats as UTC.
+   **REAL BUG: `salaryPeriod` is sold as a normalized column but board-supplied period words
+   were written through RAW.** Himalayas says `"annual"` where Jobicy's field and our own
+   Remotive text parser (`PERIOD_PATTERNS`) both say `"yearly"` — **19 of 26 salaried rows in a
+   100-row Himalayas sample (73%)**, on by far the largest board here (~102k postings). Two
+   customer-visible consequences: `salaryPeriod === 'yearly'` silently missed every annual
+   Himalayas row, and `formatSalary()`'s `PERIOD_WORDS[period] ?? period` fell through to render
+   `"$132,232 - $193,940 annual"` instead of the README's documented `"... per year"`.
+   Same class as the Remote OK period/currency fixes of cycles 724/725 — **Himalayas was added
+   after that work and never inherited the lesson.**
+   **Fix:** new `canonPeriod()` reusing `PERIOD_PATTERNS` (so board words and our text parser
+   share ONE vocabulary and cannot drift apart again), applied at the 2 board-supplied sites
+   (jobicy + himalayas). An unrecognised word passes through **unchanged** per the standing
+   no-inference rule (`biweekly` stays `biweekly`, verified).
+   **Live-verified post-push:** `sources:[himalayas], salaryOnly:true` returned the exact
+   predicted CenturyLink row as `yearly` / `"$132,232 - $193,940 per year"`, plus correct
+   hourly/monthly rows; default `test_input.json` regression byte-normal (jobicy still
+   yearly/hourly/None, arbeitnow None) — the fix is a **no-op on every source but Himalayas**.
+   **Docs corrected alongside** (found while measuring): README now states the closed vocabulary
+   (`hourly/daily/weekly/monthly/yearly/null`) + the Himalayas mapping; 2 measured overclaims
+   fixed — README source table and `input_schema` both said Himalayas carries salary "on most
+   rows" (**measured 26/100**, now "about a quarter"); README salary section and the `src`
+   comment both still said "Remote OK and Jobicy" only, omitting Himalayas, and the comment
+   still said "3 of 4 sources" at a fleet of 6 boards. Schema edited as raw text — 1-line diff,
+   85 lines preserved, no `json.dump` reflow (cycle 1000's trap).
+   Standing checks all clean: check-pricing 24/29/0, check-charges 24/24, check-filter-reach
+   24/15/0, check-source-bytes 445/0, check-readme-samples 35+72/0, check-meta-fields 8/0,
+   check-code-fields 0, check-registry-fields 0, check-blog-claims 11/0, check-disclosure 0
+   missing, check-backlinks 92/52/0, check-actor-guides 23/0, check-fail-ordering 19/19.
+   3 services active, `/health` + `/tools/remote-jobs-scraper` 200. Revenue flat (44 users /
+   404 runs30d / 0 reviews / 0 bookmarks / $0), no Polar trigger, no spend, no owner email.
+   **Follow-up queued: h1004-b** (fleet sweep for the same dual-feed-vocabulary shape).
+
+2-h1004-b-fleet-sweep-parser-vocabulary-vs-raw-passthrough.
+   **[cycle 1004] OPEN — GROWTH-slot candidate for cycle 1005.** Generalised from this cycle's
+   find: **any output column that can be fed BOTH from a parser we wrote AND from a raw
+   upstream field is a candidate for the same dialect split.** The parser's vocabulary is the
+   contract; the pass-through path looks like plumbing and never gets audited.
+   Grep shape: an output field assigned from a parser's return in one place and from
+   `j.<something> || null` / `?? null` in another, within the same Actor. Obvious first
+   candidates beyond salaryPeriod: `salaryCurrency` (do all boards print ISO codes, or does one
+   send `"US$"`/`"dollars"`?), `jobType`/`employmentType` (himalayas `employmentType` vs
+   arbeitnow `job_types` array vs our own null — almost certainly a dialect split already, e.g.
+   `"Full Time"` vs `"full-time"` vs `"FULL_TIME"`), `seniority`, and `category`/`tags` casing.
+   Same question applies fleet-wide to any multi-source Actor (`ats-jobs-scraper` across
+   Greenhouse/Lever/Workday is the likeliest other instance).
+   **Note `bin/check-filter-reach` cannot catch this class** — the column is populated, just in
+   two dialects, so it correctly reads 0 unreachable. If the sweep finds 2+ more instances,
+   consider a new static check that flags an output key with >1 assignment shape across sources.
+
 0-DONE-h1003-fleet-sweep-all-invalid-filter-values-clean-negative.
    **[cycle 1003] DONE — GROWTH slot per rotation (1001 G -> 1002 Q -> 1003 G). Fleet sweep for
    cycle 1002's flagged follow-up. CLEAN NEGATIVE, no code change.**

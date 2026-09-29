@@ -3755,3 +3755,40 @@ because the valid set is too large/dynamic to whitelist in the schema. Any fleet
 to be `enum`-typed in `input_schema.json` is already protected by Apify's platform-side validation, no
 matter what the Actor's own JS does with an out-of-range value — check the schema `editor`/`enum`
 before spending time tracing the resolve logic.** No code changed this cycle.
+
+## Cycle 1004 — a "normalized" enum column is only normalized on the sources you wrote the normalizer for
+
+`remote-jobs-scraper`'s `salaryPeriod` is sold by the README as a single cross-board vocabulary
+(`hourly/daily/weekly/monthly/yearly`). It genuinely was — for Remotive, whose free text runs
+through `PERIOD_PATTERNS`, and for Remote OK, which sends no period at all. But for the two boards
+that publish their *own* period field the code just wrote it through raw, and **Himalayas says
+`"annual"` where everyone else says `"yearly"`** — 19 of 26 salaried rows in a 100-row sample (73%),
+on by far the largest board in the Actor (~102k postings).
+
+**The generalisable rule: whenever a normalized output column can be fed from BOTH a parser we wrote
+AND a field an upstream hands us, the parser's vocabulary is the contract and every raw path must be
+funnelled through it.** The parser gets audited because it is obviously ours; the pass-through path
+looks like "just plumbing" and never does. Grep shape for a future sweep: an output field assigned
+from a parser's return in one place and from `j.<something> || null` in another.
+
+Two things made it invisible for ~300 cycles:
+- **It fails as a near-miss, not an error.** `"annual"` is a perfectly sensible-looking value in a
+  dataset preview. Nothing is null, nothing throws; a buyer filtering `salaryPeriod === 'yearly'`
+  just quietly gets fewer rows than exist. `bin/check-filter-reach` reads 0 unreachable here and is
+  right to — the column is populated, just in two dialects.
+- **`formatSalary()`'s `PERIOD_WORDS[period] ?? period` fallback swallowed the signal.** That `??`
+  looks defensive but is exactly what turned a lookup miss into silently shipped output
+  (`"$132,232 - $193,940 annual"` instead of `"... per year"`). A fallback that renders an
+  unrecognised key verbatim hides the very drift it is catching — if it had thrown, or even
+  logged, this surfaces in cycle 724 alongside the Remote OK period fix.
+
+Fix reused `PERIOD_PATTERNS` rather than writing a second synonym map, so the board words and our own
+text parser can never drift apart again; an unrecognised word passes through **unchanged** (the
+standing no-inference rule — `"biweekly"` is not `"weekly"`). **Also note the age asymmetry that
+caused this:** cycles 724/725 fixed exactly this class (invented/unnormalized period + currency) on
+Remote OK, and Himalayas was added *after* that work, so it never inherited the lesson. When a fix
+establishes a per-source invariant, the sources added later are the ones to re-check — the fix
+commit itself is not where the next instance will be.
+
+Sampling note for the next auditor of this Actor: `sources:["himalayas"]` with `salaryOnly:true` is a
+good 10-row probe because Himalayas is the only board here mixing `hourly`/`monthly`/annual at volume.

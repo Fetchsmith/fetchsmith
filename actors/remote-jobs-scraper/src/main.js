@@ -210,8 +210,9 @@ const normCompany = (s) => norm(s).replace(LEGAL_SUFFIXES, '').trim();
 
 // ---------------------------------------------------------------- salary normalization
 // Every board publishes salary in exactly one shape and leaves the other empty: Remotive
-// gives a free-text range only ("$90k - $105k"), Remote OK and Jobicy give numbers only.
-// Untranslated, that means `salaryText` is structurally null on 3 of 4 sources and
+// gives a free-text range only ("$90k - $105k"), Remote OK, Jobicy and Himalayas give
+// numbers only, and Arbeitnow and Working Nomads publish no salary at all. Untranslated,
+// that means `salaryText` is structurally null on 3 of the 4 sources that carry salary and
 // `salaryMin`/`salaryMax` are structurally null on Remotive, even when the board plainly
 // published the figure. Both directions are filled below; a value the board itself sent is
 // never overwritten.
@@ -280,6 +281,26 @@ function parseSalaryText(text) {
   const min = Math.min(a, b);
   const max = Math.max(a, b);
   return { min, max, currency, period };
+}
+
+// A board that publishes its own period field does not have to use our vocabulary for it.
+// Himalayas says "annual" where Remotive's parsed text and Jobicy's field both say "yearly"
+// — the same concept under a different word, on 19 of 26 salaried rows in a 100-row sample
+// (cycle 1004). Left raw it broke the column two ways: `salaryPeriod` stopped being the
+// normalized enum README sells, so `salaryPeriod === 'yearly'` silently missed every annual
+// row on the largest board here, and formatSalary()'s `PERIOD_WORDS[period] ?? period`
+// fell through to render "$132,232 - $193,940 annual" instead of "... per year".
+// Reuses PERIOD_PATTERNS so the board words and our own text parser share one vocabulary.
+// An unrecognised word is passed through UNCHANGED rather than guessed at or dropped — the
+// same no-inference rule as the Remote OK period fix in cycle 724.
+function canonPeriod(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const s = String(value).trim();
+  if (!s) return null;
+  for (const [re, name] of PERIOD_PATTERNS) {
+    if (re.test(s)) return name;
+  }
+  return s;
 }
 
 const PERIOD_WORDS = {
@@ -426,7 +447,7 @@ async function fromJobicy() {
     salaryMin: num(j.salaryMin),
     salaryMax: num(j.salaryMax),
     salaryCurrency: (num(j.salaryMin) || num(j.salaryMax)) ? (j.salaryCurrency || null) : null,
-    salaryPeriod: (num(j.salaryMin) || num(j.salaryMax)) ? (j.salaryPeriod || null) : null,
+    salaryPeriod: (num(j.salaryMin) || num(j.salaryMax)) ? canonPeriod(j.salaryPeriod) : null,
     publishedAt: toIso(j.pubDate),
     descriptionHtml: includeDescription ? (j.jobDescription ?? null) : undefined,
   }));
@@ -533,7 +554,7 @@ async function fromHimalayas() {
         salaryMin: num(j.minSalary),
         salaryMax: num(j.maxSalary),
         salaryCurrency: (num(j.minSalary) || num(j.maxSalary)) ? (j.currency || null) : null,
-        salaryPeriod: (num(j.minSalary) || num(j.maxSalary)) ? (j.salaryPeriod || null) : null,
+        salaryPeriod: (num(j.minSalary) || num(j.maxSalary)) ? canonPeriod(j.salaryPeriod) : null,
         publishedAt: toIso(j.pubDate),
         descriptionHtml: includeDescription ? (j.description ?? null) : undefined,
       });
