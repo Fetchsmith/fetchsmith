@@ -78,19 +78,40 @@ const minReviewLength = input.minReviewLength != null ? Number(input.minReviewLe
 // mostRecent feed would drop every row, so it is warned about below rather than silently applied.
 const minVoteSum = input.minVoteSum != null ? Number(input.minVoteSum) : null;
 const minVoteCount = input.minVoteCount != null ? Number(input.minVoteCount) : null;
+// Apple stamps every review in the storefront's own local offset (`2026-09-22T21:45:43-07:00`) and
+// `updatedAt` carries that string verbatim, so a bare date is compared against the review's OWN
+// calendar date rather than against a UTC instant. Comparing instants shifts every bare-date window
+// by the storefront's offset: verified live 2026-09-29 that reviewsAfter+reviewsBefore "2026-09-22"
+// DROPPED a review stamped `2026-09-22T21:45:43-07:00` (Sep 23 in UTC), while the "2026-09-23"
+// window DELIVERED that same Sep-22-stamped row and missed the real `2026-09-23T19:42:02-07:00` one
+// — rows contradicting the date field they ship with, on a per-result charge. A date that carries
+// an explicit time/zone means a real instant and keeps exact-instant comparison.
+const BARE_DATE = /^\d{4}-\d{2}-\d{2}$/;
+// Lexicographic order on `YYYY-MM-DD` is chronological order, and slicing the raw stamp keeps the
+// storefront's own day rather than re-projecting it into this box's zone.
+const localDay = (stamp) => String(stamp).slice(0, 10);
 let reviewsAfterDate = null;
+let reviewsAfterDay = null;
 if (input.reviewsAfter) {
   reviewsAfterDate = new Date(input.reviewsAfter);
   if (Number.isNaN(reviewsAfterDate.getTime())) await Actor.fail(`"reviewsAfter" is not a valid date: "${input.reviewsAfter}". Use an ISO date like 2026-01-01.`);
+  if (BARE_DATE.test(String(input.reviewsAfter).trim())) reviewsAfterDay = String(input.reviewsAfter).trim();
 }
 let reviewsBeforeDate = null;
+let reviewsBeforeDay = null;
 if (input.reviewsBefore) {
   reviewsBeforeDate = new Date(input.reviewsBefore);
   if (Number.isNaN(reviewsBeforeDate.getTime())) await Actor.fail(`"reviewsBefore" is not a valid date: "${input.reviewsBefore}". Use an ISO date like 2026-06-01.`);
-  // A bare date parses as midnight UTC, which would exclude the whole named day; make the bound
-  // inclusive of it, matching how buyers read "reviews before 2026-06-01 .. up to that date".
-  if (/^\d{4}-\d{2}-\d{2}$/.test(String(input.reviewsBefore).trim())) reviewsBeforeDate = new Date(reviewsBeforeDate.getTime() + 24 * 60 * 60 * 1000 - 1);
+  if (BARE_DATE.test(String(input.reviewsBefore).trim())) {
+    reviewsBeforeDay = String(input.reviewsBefore).trim();
+    // The bound is inclusive of the named day. `reviewsBeforeDay` is what actually filters; this
+    // end-of-day instant only keeps the swapped-bounds check below honest across mixed forms.
+    reviewsBeforeDate = new Date(reviewsBeforeDate.getTime() + 24 * 60 * 60 * 1000 - 1);
+  }
 }
+// One review is older than the window iff its own day/instant falls before the lower bound.
+const beforeWindow = (stamp) => (reviewsAfterDay ? localDay(stamp) < reviewsAfterDay : new Date(stamp) < reviewsAfterDate);
+const afterWindow = (stamp) => (reviewsBeforeDay ? localDay(stamp) > reviewsBeforeDay : new Date(stamp) > reviewsBeforeDate);
 if (reviewsAfterDate && reviewsBeforeDate && reviewsAfterDate > reviewsBeforeDate) {
   throw new Error(`"reviewsAfter" (${input.reviewsAfter}) is later than "reviewsBefore" (${input.reviewsBefore}) — no review can ever match. Swap them.`);
 }
@@ -121,8 +142,8 @@ function passesFilters(item) {
   if (minRating != null && item.rating < minRating) return false;
   if (maxRating != null && item.rating > maxRating) return false;
   if (keyword && !`${item.title || ''} ${item.content || ''}`.normalize('NFC').toLowerCase().includes(keyword)) return false;
-  if (reviewsAfterDate && item.updatedAt && new Date(item.updatedAt) < reviewsAfterDate) return false;
-  if (reviewsBeforeDate && item.updatedAt && new Date(item.updatedAt) > reviewsBeforeDate) return false;
+  if (reviewsAfterDate && item.updatedAt && beforeWindow(item.updatedAt)) return false;
+  if (reviewsBeforeDate && item.updatedAt && afterWindow(item.updatedAt)) return false;
   // Body text only: the title is a separate field and padding one short line with a long headline
   // is not the "substantial review" buyers are filtering for.
   if (minReviewLength != null && (item.content || '').trim().length < minReviewLength) return false;
@@ -768,7 +789,7 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
         voteSum: Number(lbl(e['im:voteSum'])) || 0, voteCount: Number(lbl(e['im:voteCount'])) || 0, sortUsed: sortBy,
         clientClass, ...(info || {}), ...extra, scrapedAt: new Date().toISOString(),
       };
-      if (canEarlyStop && item.updatedAt && new Date(item.updatedAt) < reviewsAfterDate) {
+      if (canEarlyStop && item.updatedAt && beforeWindow(item.updatedAt)) {
         hitCutoff = true;
         log.info(`${appId}/${country}: reached a review older than "reviewsAfter" (${item.updatedAt}) — stopping pagination early instead of scanning the rest of the (chronologically-sorted) feed.`);
         break;

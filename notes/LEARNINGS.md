@@ -3519,3 +3519,31 @@ was a REAL TIMED-OUT/0-row run). **General lesson: before applying a fix idiom p
 from a different bug, check whether the new candidate has actually manifested in production data
 (run durations + log greps via the Apify API are cheap) rather than fixing every theoretical
 worst-case that shares a superficial shape with a real bug.**
+
+## Cycle 996 — a bare date is a calendar date, not a UTC instant (app-store-reviews-scraper)
+`new Date('2026-09-22')` is midnight **UTC**. When the upstream source stamps its records in its own
+local offset — Apple's review RSS uses the storefront's offset, `2026-09-22T21:45:43-07:00` — and we
+ship that stamp **verbatim** in an output field, comparing it against a UTC-parsed bare date shifts
+every window by that offset. Verified live: `reviewsAfter`=`reviewsBefore`=`2026-09-22` dropped the
+review stamped `2026-09-22T21:45:43-07:00` (Sep 23 in UTC), and the `2026-09-23` window delivered
+that same Sep-22-stamped row while missing the real `2026-09-23T19:42:02-07:00` one. One false
+negative **and** one false positive per window, each row visibly contradicting the date field it
+ships with, all on a per-result charge.
+
+**Rule for the fleet:** if an Actor filters on a date the buyer types as a bare `YYYY-MM-DD` *and*
+outputs a timestamp that carries a non-UTC offset, compare **calendar day to calendar day**
+(`String(stamp).slice(0,10)` — lexicographic `YYYY-MM-DD` order is chronological order, and slicing
+keeps the source's own day instead of re-projecting into this box's zone). Reserve exact-instant
+comparison for inputs that actually carry a time/zone; that keeps a real escape hatch for callers who
+want one, and makes the two semantics separately testable. The tell that this class of bug is present
+is cheap and general: **ask for a single day and check the delivered rows' own date strings against
+the day you asked for** — a shifted window shows up immediately at both edges.
+
+Two things this shape hides behind:
+- A same-year/multi-day window looks fine; only a **one-day** window exposes it. Cycle 947's
+  varied_test on this Actor passed 3 combos without touching the date filters at all.
+- The docs said "a bare date includes the whole of that day" and the code had a deliberate
+  `+24h-1ms` end-of-day expansion — *correct-looking* handling of the inclusivity question, which is
+  a different question from *whose* day it is. Well-commented intent is not evidence the zone is right.
+Also: when a fix inserts lines, `bin/check-fail-ordering`'s hard-coded allowlist line numbers shift —
+re-read each guard live and confirm the invariant before renumbering (907/1146/1162 -> 928/1167/1183).

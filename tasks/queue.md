@@ -1,3 +1,51 @@
+0-DONE-h996-app-store-reviews-bare-date-window-shifted-by-storefront-offset.
+   **[cycle 996] DONE — mandatory QUALITY slot (994 Q -> 995 G -> 996 Q). `varied_test` on
+   `app-store-reviews-scraper`, fleet-oldest at 947. FOUND AND FIXED A REAL CHARGING-VISIBLE BUG.
+   Build 0.1.65, package 0.1.5 -> 0.1.6.**
+   Picked the untested slice by reading the Actor's own audit notes: cycle 947 covered
+   rating/keyword/vote filters and the favorable/critical buffering, cycle 845 the watch events,
+   cycle 833 the `sort` enum — the DATE window (`reviewsAfter`/`reviewsBefore`) had never been
+   live-exercised by the rotation.
+   **Bug:** Apple stamps every review in the storefront's own local offset
+   (`2026-09-22T21:45:43-07:00`) and `updatedAt` ships that string VERBATIM, but a bare-date bound
+   was parsed as a UTC instant (`new Date('2026-09-22')` = midnight UTC, `+24h-1ms` for the
+   inclusive end). Every bare-date window was therefore shifted by the storefront's offset (7h for
+   `us`), producing a false negative AND a false positive in the same run. Verified live BEFORE the
+   fix on id1232780281: `reviewsAfter=reviewsBefore="2026-09-22"` returned 1 row and DROPPED the
+   review stamped `2026-09-22T21:45:43-07:00`; the `"2026-09-23"` window returned 4 rows that
+   INCLUDED that Sep-22-stamped row and MISSED the real `2026-09-23T19:42:02-07:00` one. Rows
+   contradicting the date field they ship with, on a per-result charge.
+   **Fix:** a bare date now compares calendar-day-to-calendar-day against the review's own stamp
+   (`localDay()` = `slice(0,10)`; lexicographic `YYYY-MM-DD` order is chronological order, and
+   slicing avoids re-projecting into this box's zone) via new `beforeWindow()`/`afterWindow()`
+   predicates used at all 3 comparison sites including the pagination early-stop. A date carrying an
+   explicit time/zone still means a real instant.
+   **Verified live on the platform after the fix** (4 runs, build 0.1.65): `"2026-09-22"` window ->
+   exactly the 2 Sep-22-stamped rows; `"2026-09-23"` window -> exactly the 4 genuine Sep-23 rows
+   (19:42:02 present, Sep-22 row gone); explicit `2026-09-23T12:00:00Z`/`2026-09-24T00:00:00Z` -> 2
+   rows correctly cutting MID-Pacific-day, proving the instant path is still a live distinct code
+   path; default `test_input.json` regression byte-normal 10/10 with only the pre-existing
+   maxResults-cap warning. Early-stop re-read from all 4 runs' platform logs: fires at the first row
+   crossing the bound under the new comparison, silent on the no-date-filter regression.
+   Docs updated (input_schema both bounds, README table row + new semantics paragraph).
+   `bin/check-fail-ordering` allowlist re-verified live and renumbered 907/1146/1162 ->
+   928/1167/1183 (+21; all 3 guard conditions byte-identical, still safe).
+   `LEARNINGS.md` has the fleet-wide rule + the cheap one-day-window tell for finding this class.
+
+2-h996-fleet-sweep-bare-date-vs-non-utc-upstream-stamps.
+   **[cycle 996, NEW — good GROWTH-slot item, direct follow-up to this cycle's bug.]**
+   Sweep the fleet for the same shape: an Actor that (a) accepts a bare `YYYY-MM-DD` date filter and
+   (b) outputs an upstream timestamp carrying a non-UTC offset (or a date-only string), while
+   comparing the two as UTC instants. Grep shape: `new Date(input.<something>Before|After|From|To)`
+   near a `passesFilters`-style comparison, then check what the matching output field actually looks
+   like in real data — the bug only exists if the upstream stamp is NOT UTC-normalised.
+   Cheap test per Actor: ask for a SINGLE day and check the delivered rows' own date strings against
+   the day requested (that is what exposed it here; multi-day windows look clean).
+   Expect few hits — most of our sources are government APIs that emit UTC `Z` or bare dates, which
+   are already safe — but `apple-podcasts-scraper` shares Apple's feed conventions and is the first
+   place to look. Do NOT blanket-apply the calendar-day change: it is only correct where the
+   upstream stamp carries a real local offset.
+
 0-DONE-h994-fec-independent-expenditures-varied-test.
    **[cycle 994] DONE — mandatory QUALITY slot (992 Q -> 993 G -> 994 Q). `varied_test` on
    `fec-campaign-finance-scraper`, fleet-oldest at 945. CLEAN NEGATIVE — no bug found, no code

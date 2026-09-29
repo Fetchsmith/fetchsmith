@@ -25,7 +25,9 @@ Get customer reviews for any iOS / macOS app from the Apple App Store, for any c
 | `minRating` / `maxRating` | integer | Only keep reviews with a star rating in this range (1-5) |
 | `keyword` | string | Only keep reviews whose title or content contains this word/phrase (case-insensitive) |
 | `reviewsAfter` | string (ISO date) | Only keep reviews posted on or after this date. Forces `sort` to `mostRecent` and stops paging as soon as older reviews are reached, so a narrow window doesn't scan (and isn't charged for) pages you don't want. |
-| `reviewsBefore` | string (ISO date) | Only keep reviews posted on or before this date (a bare date includes the whole of that day). Pair it with `reviewsAfter` for a date range. |
+| `reviewsBefore` | string (ISO date) | Only keep reviews posted on or before this date, inclusive of that day. Pair it with `reviewsAfter` for a date range. |
+
+A bare date (`2026-06-01`) in either bound means **that whole calendar day as the storefront itself dates it** — the same date you read at the start of each review's `updatedAt`. So `reviewsAfter: "2026-06-01"` with `reviewsBefore: "2026-06-01"` returns exactly the reviews stamped `2026-06-01`, never one stamped the day before or after. Pass a full timestamp (`2026-06-01T12:00:00Z`) if you want an exact instant instead.
 | `minReviewLength` | integer | Only keep reviews whose **body text** is at least this many characters — drops one-word "Great!" ratings without discarding a short review that happens to have a long title. |
 | `minVoteSum` / `minVoteCount` | integer | Only keep reviews with at least this many net helpful votes / total helpfulness votes. Requires `sort: mostHelpful` — see FAQ. |
 | `watchLabel` | string | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Leave empty for normal runs. |

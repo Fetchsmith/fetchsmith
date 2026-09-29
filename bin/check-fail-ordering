@@ -48,25 +48,28 @@ ALLOWLIST = {
         "'Apple recent-episode-window filtered to zero' bug fix), pushing every later line down; "
         "no logic changed in the seed gate itself between the two re-verifications."
     ),
-    ("app-store-reviews-scraper", 907): (
+    ("app-store-reviews-scraper", 928): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
         "that ever calls Actor.charge( even starts -- nothing can have been charged yet. "
         "Re-verified cycle 845 (still holds): unchanged `if (!apps.length) await Actor.fail(...)` "
         "guard, no charge-capable code above it. Line shifted from 815 by cycle 845's watchEvents "
         "(scoreChanged) change, which added code before this point."
+        "Re-verified cycle 996 (still holds, same guard condition read live in source); line shifted +21 by cycle 996's bare-date calendar-day window fix, which added lines in the input-parsing block only (nothing charge-capable)."
     ),
-    ("app-store-reviews-scraper", 1146): (
+    ("app-store-reviews-scraper", 1167): (
         "guarded by pairsAttempted > 0 and storefrontErrorPairs.length === pairsAttempted "
         "-- every pair in this run errored, so nothing was ever pushed/charged to lose. "
         "Re-verified cycle 845 (still holds, same guard condition read live in source). "
         "Line shifted from 1054 by cycle 845's watchEvents (scoreChanged) change."
+        "Re-verified cycle 996 (still holds, same guard condition read live in source); line shifted +21 by cycle 996's bare-date calendar-day window fix, which added lines in the input-parsing block only (nothing charge-capable)."
     ),
-    ("app-store-reviews-scraper", 1162): (
+    ("app-store-reviews-scraper", 1183): (
         "guarded by pairsAttempted > 0 and feedServed === 0 -- nothing came out of Apple "
         "for any pair in this run, so nothing was ever pushed/charged to lose; comment in-code "
         "confirms this fires before the watch record write on purpose. Re-verified cycle 845 "
         "(still holds, same guard condition read live in source). Line shifted from 1070 by "
         "cycle 845's watchEvents (scoreChanged) change."
+        "Re-verified cycle 996 (still holds, same guard condition read live in source); line shifted +21 by cycle 996's bare-date calendar-day window fix, which added lines in the input-parsing block only (nothing charge-capable)."
     ),
 }
 

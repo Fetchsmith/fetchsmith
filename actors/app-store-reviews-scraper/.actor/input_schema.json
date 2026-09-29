@@ -109,13 +109,13 @@
     "reviewsAfter": {
       "title": "Reviews after (ISO date)",
       "type": "string",
-      "description": "Only keep reviews posted on or after this date (e.g. 2026-01-01). Forces \"sort\" to mostRecent (Apple's date-ordered feed) and stops paging as soon as older reviews are reached, so a narrow window on a high-volume app doesn't scan/charge through hundreds of pages first.",
+      "description": "Only keep reviews posted on or after this date (e.g. 2026-01-01). A bare date like 2026-01-01 means that whole calendar day as the storefront itself dates it — the same date you see at the start of each review's \"updatedAt\" — so a window never delivers or drops a review that disagrees with its own date. Pass a full timestamp (2026-01-01T12:00:00Z) instead if you need an exact instant. Forces \"sort\" to mostRecent (Apple's date-ordered feed) and stops paging as soon as older reviews are reached, so a narrow window on a high-volume app doesn't scan/charge through hundreds of pages first.",
       "editor": "textfield"
     },
     "reviewsBefore": {
       "title": "Reviews before (ISO date)",
       "type": "string",
-      "description": "Only keep reviews posted on or before this date (e.g. 2026-06-01). A bare date includes the whole of that day. Combine with \"Reviews after\" for a date range. Unlike \"Reviews after\" this cannot cut pagination short (the newest reviews sort first), so it filters rather than saves scanning.",
+      "description": "Only keep reviews posted on or before this date (e.g. 2026-06-01), inclusive of that day. A bare date like 2026-06-01 means that whole calendar day as the storefront itself dates it — the same date you see at the start of each review's \"updatedAt\" — so a window never delivers or drops a review that disagrees with its own date. Pass a full timestamp (2026-06-01T12:00:00Z) instead if you need an exact instant. Combine with \"Reviews after\" for a date range. Unlike \"Reviews after\" this cannot cut pagination short (the newest reviews sort first), so it filters rather than saves scanning.",
       "editor": "textfield"
     },
     "minVoteSum": {
@@ -142,8 +142,14 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["new", "scoreChanged"],
-        "enumTitles": ["New review", "Star rating edited (reviewer changed their own score)"]
+        "enum": [
+          "new",
+          "scoreChanged"
+        ],
+        "enumTitles": [
+          "New review",
+          "Star rating edited (reviewer changed their own score)"
+        ]
       },
       "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Star rating edited\" alone to be alerted only when an existing reviewer downgrades or upgrades their score, and never pay for anything else. Leave empty for both. Apple lets a reviewer edit a review in place (same review id, the feed's own \"updated\" date advances) — without this event an already-delivered review that later drops from 5★ to 1★ is invisible to a watch forever. There is no developer-reply field anywhere in this review feed (unlike Google Play), so that is not an event this Actor can offer. Score-change events compare against the rating recorded the last time the review was delivered, so they only start firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
       "default": []
