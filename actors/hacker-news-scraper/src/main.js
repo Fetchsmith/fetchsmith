@@ -824,7 +824,24 @@ if (pushed === 0 && watchMode && !seeding) {
 } else if (pushed === 0 && (queries.length || usernames.length)) {
   const reasons = [];
   if (erroredQueries.length) reasons.push(`the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`);
-  if (emptyQueries.length) reasons.push(`no stories/comments matched: ${emptyQueries.join(', ')} — try different tags, a wider postedAfter/postedBefore range, or a lower minPoints`);
+  if (emptyQueries.length) {
+    // job and comment hits carry points:null / num_comments:null in HN's own Algolia data (verified
+    // live, varied_test cycle 967) -- no minPoints/minComments threshold, however low, ever matches
+    // them, so the old generic "try a lower minPoints" advice was both wrong (there is no working
+    // threshold) and silent about minComments even when that was the filter actually set.
+    const numericDeadEnd = (input.minPoints || input.minComments) && tags.some((t) => t === 'job' || t === 'comment');
+    let advice;
+    if (numericDeadEnd) {
+      const culprits = [input.minPoints ? 'minPoints' : null, input.minComments ? 'minComments' : null].filter(Boolean).join('/');
+      advice = `job and comment items never have a points or comment count in HN's own data (both are always null), so ${culprits} can never match tags:["job"] or tags:["comment"] at any threshold — remove that filter or search tags:["story"] instead`;
+    } else if (input.minPoints || input.minComments) {
+      const culprits = [input.minPoints ? 'minPoints' : null, input.minComments ? 'minComments' : null].filter(Boolean).join('/');
+      advice = `try different tags, a wider postedAfter/postedBefore range, or a lower ${culprits}`;
+    } else {
+      advice = 'try different tags or a wider postedAfter/postedBefore range';
+    }
+    reasons.push(`no stories/comments matched: ${emptyQueries.join(', ')} — ${advice}`);
+  }
   if (excluded) reasons.push(`excludeKeywords (${excludeKeywords.join(', ')}) removed all ${excluded} otherwise-matching item(s)`);
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);

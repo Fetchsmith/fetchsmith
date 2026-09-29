@@ -19,8 +19,8 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `tags` | array | `story`, `comment`, `poll`, `ask_hn`, `show_hn`, `job`, `front_page` (default `["story"]`). Several tags are OR-ed: `["story","comment"]` returns both |
 | `includeComments` | boolean | Fetch comment text when `tags` includes `comment` |
 | `sortBy` | string | `relevance` or `date` (newest first) |
-| `minPoints` | integer | Only items with at least this many points |
-| `minComments` | integer | Only stories with at least this many comments (find high-engagement discussions) |
+| `minPoints` | integer | Only stories with at least this many points — jobs and comments have no points in HN's own data (always `null`), so combining this with `tags: ["job"]` or `tags: ["comment"]` matches nothing, at any threshold |
+| `minComments` | integer | Only stories with at least this many comments (find high-engagement discussions) — same caveat: jobs and comments have no comment count of their own |
 | `excludeKeywords` | array | Drop any story/comment whose title or text contains any of these words/phrases (case-insensitive) — HN's search has no negative-term syntax, so this is applied client-side after fetching, before you're charged |
 | `author` | string | Only items posted by this exact HN username |
 | `postedAfter` / `postedBefore` | string | ISO date bounds |
@@ -120,6 +120,7 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 **What happens if Algolia's API has a transient blip mid-run?** Each page request is retried up to 3 times on a connection-level failure (measured on `remote-jobs-scraper`'s upstream boards at roughly 1 fresh request in 4 for HTTP/2 faults, 2026-09-21) before that query is given up on and named in the status message — a single blip no longer silently truncates a query to whatever page it reached.
 **Can I ask for two content types at once, e.g. stories and comments?** Yes — `tags: ["story","comment"]` returns both. The tags you list are OR-ed with each other, and `author` is AND-ed on top of that group, so `author: "pg"` + `tags: ["story","comment"]` returns pg's stories and pg's comments. (Underneath, HN's Algolia index treats a bare comma as AND, so `story,comment` would match nothing at all — the Actor wraps your tags in the OR form for you. See the guide linked below.)
 **Can I combine `author` and `minComments`?** Yes, filters are ANDed together, e.g. `author: "pg"` + `minComments: 50` returns only that user's high-engagement posts.
+**I set `minPoints` or `minComments` with `tags: ["job"]` or `tags: ["comment"]` and got 0 rows — why?** Verified live: job and comment hits carry `points: null` and no comment count at all in HN's own Algolia data, so those filters can never match a job or comment item, however low the threshold. The status message says so explicitly and names which of the two filters is set. Drop the filter, or search `tags: ["story"]` instead if you want a points/comment-count floor.
 **What if `queries` has an accidental duplicate?** Deduped automatically — the same story/comment matched by two queries is only pushed (and charged) once per run.
 **Does this scrape the HN website?** No — it uses Algolia's official HN Search API, the same one that powers hn.algolia.com, so there's no scraping fragility to break.
 **Do I get charged for empty queries?** No — only items actually returned to the dataset are charged.

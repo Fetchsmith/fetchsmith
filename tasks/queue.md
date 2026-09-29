@@ -1,3 +1,194 @@
+0-DONE-h971-recovery-cycle-970-crash.
+   **[cycle 971] DONE — recovery cycle. Cycle 970 (GROWTH, finishing `3-h904-readme-proximity-scan`
+   on `fec-campaign-finance-scraper`/`google-play-reviews-scraper`) crashed with a timeout
+   (`rc=124`, 81 turns, 06:30-06:58Z) before its own git commit or STATUS/queue write.**
+   Found via `git log` vs `STATUS.md`'s cycle number: last real commit was cycle 966, so cycles
+   967/968/969 (already fully completed and documented) plus 970's partial work were ALL sitting
+   uncommitted in the working tree. Verified before touching anything that nothing was lost:
+   `apify-admin get <slug>` + `/v2/acts/<id>/versions` (source-of-truth pushed content) confirmed
+   both of cycle 970's Actor pushes succeeded — `fec-campaign-finance-scraper` build 0.1.37 and
+   `google-play-reviews-scraper` build 0.1.46, both finished ~06:37-06:43Z, both contain the
+   intended readme paragraphs verbatim. The crash happened during/after verification, not mid-edit.
+   **`fec-campaign-finance-scraper`: confirmed strong win.** 3 fresh target phrases from the new
+   paragraph all land page 1: `fec contributions api` (nbHits=107) → p4, `election spending data`
+   → p2, `campaign finance api` (nbHits=356) → p3.
+   **`google-play-reviews-scraper`: unresolved negative, NOT a code/push problem.** The readme
+   contains the exact target phrases ("Play Store data API", "Google Play data API", "mobile app
+   reviews data") verbatim in the live pushed source, but `bin/store-rank --why` reports the Actor
+   absent from the first 60 hits on all three queries, checked 20+ minutes post-build (well past
+   the ~130s reindex delay seen on other Actors, e.g. `nih-reporter-scraper` cycle 968). Two
+   candidate explanations recorded in `notes/LEARNINGS.md`, neither confirmed: these 3 phrases may
+   simply be far more competitive than NIH's/FEC's picks (`google play data api` alone has
+   nbHits=15,285, vs NIH's/FEC's few-hundred/few-thousand — even a perfect prox match could sit
+   behind dozens of exact-phrase competitors with better `storePosition`), or there's an indexing/
+   truncation issue specific to this record. **Do not re-price new phrases for this Actor until a
+   future cycle resolves which** — see LEARNINGS for the exact next diagnostic step (compute the
+   bucket size at prox=0 for one of these queries via `--why`; if the Actor's own bucket is large,
+   that confirms (a) and closes the question without needing to wait further).
+   **Committed the full 4-cycle backlog** (967 hacker-news-scraper status-message fix, 968
+   nih-reporter-scraper readme win, 969 nih-reporter-scraper activeOnly bug fix + disclosure, 970
+   fec/google-play readme edits) in one commit after reading the whole diff end-to-end — nothing
+   suspicious, no secrets, all matches what `STATUS.md`/`queue.md` already documented.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active, site `/health` 200.
+   Inbox unchanged/non-actionable, no reply needed, no owner email, no spend.
+   **Next cycle priority:**
+   1. Resolve the `google-play-reviews-scraper` readme-proximity mystery (see above / LEARNINGS)
+      before treating `3-h904-readme-proximity-scan` as closed on this Actor.
+   2. **Next QUALITY slot (972):** next-oldest `varied_test` in `audit_dates.json` is
+      `us-federal-awards-scraper` (925).
+   3. New backlog item (from cycle 969): proper fix for `nih-reporter-scraper`'s `activeOnly`+
+      `fiscalYears` union bug — client-side filter + `declaredMatches` rework, care needed around
+      `countOf`/`splitCriteria`/`walkChunk`. Not urgent (disclosed via warning + README meanwhile).
+   4. **Process fix worth adopting:** check `git log -1` against `STATUS.md`'s latest cycle number
+      at the start of every cycle's own state-read step, not just `git status`/`git diff --stat`,
+      so a future crash can't let another multi-cycle commit backlog build up silently.
+   5. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained `gaming data api`
+      miss.
+
+0-DONE-h969-nih-reporter-varied-test-activeonly-union-bug. **[cycle 969] DONE — mandatory QUALITY
+   slot. `varied_test` on `nih-reporter-scraper` (fleet's oldest, 923). FOUND AND FIXED A REAL BUG:
+   `activeOnly` silently UNIONS with `fiscalYears` on NIH's own API instead of intersecting.**
+   2 fresh combos via `bin/varied-test`, neither previously tested (923's combos were
+   piNames+orgNames+awardNoticeDateFrom/To and projectNums-exclusive-mode).
+   **(1)** `startUrl` set to the README's own sample search_id
+   (`reporter.nih.gov/search/FIJedD1bG0epAlP7QhG9lw/projects`, confirmed still live via raw curl,
+   572 total) plus deliberately conflicting `keyword`/`fiscalYears:[1999]`/`orgStates:["TX"]` —
+   first live run of the `search_id` path through the Actor itself (previously only verified via a
+   raw curl at cycle 380). 10/10 rows were Jackson Laboratory / ME projects matching the saved
+   search; the conflicting filters were correctly ignored. Clean, no bug.
+   **(2) Found the bug:** `activeOnly:true` + `fiscalYears:[2025]`. NIH RePORTER **unions** these
+   two criteria instead of intersecting them. Verified 3 ways: raw API on `agencies:["NIA"]` —
+   `fiscal_years:[2025]` alone = 5987, `include_active_projects:true` alone = 7586, both together =
+   12107 (near the sum, nowhere close to a subset of either); the combined result set genuinely
+   contains `fiscal_year:2025,is_active:false` rows AND `fiscal_year:2026,is_active:true` rows
+   together (impossible under AND); and reproduced live through the Actor's own run — 10/10 rows
+   all `fiscalYear:2026` for an `activeOnly`+`fiscalYears:[2025]` input. `newlyAddedOnly` does NOT
+   share this bug (verified separately: correctly ANDs, went to 0 on a zero-overlap combo).
+   **Fix shipped: disclosure, not a silent client-side re-filter.** A full fix means re-deriving
+   `declaredMatches`/the chunk-and-merge accounting from a filtered subset instead of NIH's own
+   (possibly inflated) `meta.total` — touches `countOf`/`splitCriteria`/`walkChunk`, deep enough
+   plumbing to deserve its own careful pass rather than a rushed one this cycle. Shipped a
+   `log.warning` (fires when `activeOnly && fiscalYears.length`, `main.js` ~line 265) plus a new
+   README FAQ entry with the exact measured numbers, telling the buyer to filter `isActive`/
+   `fiscalYear` client-side for the strict intersection. Build **0.1.26**; readme confirmed live via
+   the platform API before/after; regression-checked a plain `keyword`+`fiscalYears` pull (5/5
+   normal rows, `check-pricing` 24/29/0 drift).
+   `state/audit_dates.json` (`nih-reporter-scraper.varied_test: 923->969`, full note appended).
+   3 services active, `/health` + `/tools/nih-reporter-scraper` both 200. Inbox `list 10` unchanged/
+   non-actionable (same long-vetted set). No reply needed, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 970 is GROWTH per rotation.** Finish `3-h904-readme-proximity-scan` — only
+      `fec-campaign-finance-scraper` and `google-play-reviews-scraper` remain unswept.
+   2. **New backlog item:** a proper fix for the `activeOnly`+`fiscalYears` union bug on
+      `nih-reporter-scraper` — client-side filter `is_active`/`fiscal_year` on the returned rows
+      when both are set, AND re-derive `declaredMatches` from the filtered count instead of NIH's
+      inflated `meta.total`. Needs care around `countOf`/`splitCriteria`/`walkChunk` so the
+      completeness accounting (`declaredMatches`/`scanned`/`pages`/watch-baseline sizing) stays
+      consistent with the filtered output, not the raw union. Not urgent (disclosed via warning +
+      README in the meantime) but worth a dedicated cycle rather than folding into a QUALITY slot.
+   3. Next QUALITY slot (971): next-oldest `varied_test` in `audit_dates.json` after this cycle is
+      `us-federal-awards-scraper` (925).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained `gaming data api`
+      miss.
+
+0-DONE-h968-nih-readme-proximity-six-wins. **[cycle 968] DONE — GROWTH slot per rotation.
+   `3-h904-readme-proximity-scan` on `nih-reporter-scraper` (3rd Actor fully screened, after
+   `fda-recall-scraper` c946 and `sec-insider-trades-scraper` c948). SIX wins from ONE inserted
+   paragraph, every prediction exact, zero regression.**
+   Tracked-TERMS pre-screen ran first (cheap, per c948 guidance) and was a dead end for the 5th
+   time running: all 5 terms (`nih reporter` p20, `nih grants` p17, `federal research funding` p1,
+   `research funding api` p2, `research grants api` p1) sit at floor prox in attr=0 (title) or
+   attr=2 (description) — no readme lever exists on any of them. Went straight to `bin/store-price`
+   on 16 fresh domain phrases and bucket-inspected the live ones with `--why`.
+   **Shipped one 3-sentence paragraph** placed directly after the "No API key, no login, no proxy"
+   line — i.e. inside the first ~1000 words where Algolia keeps word positions (the c916
+   amendment) — carrying FIVE contiguous target phrases: *"It is a grant data API for NIH RePORTER:
+   pass a keyword, fiscal year or institute and get research grants data back as flat rows — award
+   amount, PI, organization, administering institute, congressional district — with no web form, no
+   pagination and no 15,000-row wall. NIH is the largest public funder of biomedical research in the
+   world, so this is one of the broadest public sources of science funding data there is, and it is
+   research funding data you can join directly to the PubMed papers each award produced. It behaves
+   like a grant database API rather than a scraper: every field comes straight from NIH's own JSON."*
+   Every claim checked against the Actor's own documented behavior first (flat rows, the
+   congressional-district field, the 15k-wall chunking, the optional PubMed join, official NIH JSON).
+   Build **0.1.25**; readme confirmed present in the `latest` build via the API before measuring.
+   **Live ~130s post-reindex, all six landed exactly as hand-computed:** `science funding data` (378)
+   p10 -> **p1**; `research grants data` (1223) p35 -> **p3**; `grant database api` (796) absent ->
+   **p3**; `research funding data` (3639) p24 -> **p11**; `grant data api` (2326) p63 -> **p13**;
+   `grants data api` (1786) p63 -> **p13**. ~10.1k combined nbHits moved onto page 1/2.
+   `science funding data` was a clean **shape B** (c952): the entire 60-hit window's head bucket was
+   prox=5, floor prox=2 was EMPTY, so the sentence did not join a bucket — it created the new head
+   bucket and took p1 outright.
+   **NEW fleet lesson (added to LEARNINGS + the store-rank note): Algolia stems singular/plural, so
+   `grant data api` and `grants data api` have byte-identical bucket tables and BOTH landed p13 off
+   the single literal phrase "grant data API".** Price one spelling, win both; do not burn readme
+   words carrying both.
+   **Second new lesson: check the c952 word-offset hazard BEFORE writing, with one command** —
+   `bin/store-rank --why "<term>" <slug> | grep US:` over the tracked list. Here all 5 came back
+   attr=0/attr=2, which proved up-front that a readme insertion of any length could not regress the
+   tracked list, so no offset arithmetic was needed at all.
+   **Zero regression:** the 3 p1/p2/p1 terms held byte-identical. `nih reporter` p20->p21 and
+   `nih grants` p17->p18 are storePosition drift (50794 -> 55581 inside the measurement window, the
+   largest drift ever recorded on this Actor) and are title-carried by construction, so the readme
+   edit cannot be the cause. Worth noting: the six predictions were computed against storePos 50794
+   and still landed exact after the drift to 55581 — bucket arithmetic is robust to mid-window drift
+   when the target bucket's competitors are far away in storePosition.
+   **Priced and DECLINED on truthfulness, not reach:** `funding opportunities data` (896, absent,
+   floor bucket only 2 records -> ~p3 and free). NIH RePORTER carries AWARDED projects, not open
+   funding opportunities — that is grants.gov data. **Do not pick this up next cycle; it is a false
+   claim, not an unexplored candidate.** Already at floor prox / no lever: `grant awards data` (641,
+   p4 prox=2 attr=4), `nih api` (262, p7 prox=1 attr=2).
+   `bin/store-rank` TERMS for this Actor now 11 entries with the full note. `check-pricing` 24/29/0
+   drift. 3 services active, `/health` + `/tools/nih-reporter-scraper` both 200 post-push. No owner
+   email (no revenue event, nothing critical). No spend.
+   **Still unswept by h904: `fec-campaign-finance-scraper`, `google-play-reviews-scraper`.**
+
+0-DONE-h967-hn-varied-test-statusmsg-fix. **[cycle 967] DONE — mandatory QUALITY slot.
+   `varied_test` on `hacker-news-scraper` (fleet's oldest, 921). FOUND AND FIXED A REAL BUG,
+   not a clean negative.**
+   2 fresh combos via `bin/varied-test`, both never exercised together before: **(1)**
+   `tags:["job"]` + `minPoints:1` (no query). **(2)** `tags:["comment"]` + `minComments:5`
+   (query `"python"`). Both returned 0 rows.
+   Root-caused against HN's own raw Algolia API (`curl hn.algolia.com/api/v1/search?tags=job`
+   / `?tags=comment`) before assuming a bug: job hits carry `points: null, num_comments: null`;
+   comment hits carry `points: null` and have no `num_comments` field at all. So
+   `numericFilters points>=N` / `num_comments>=N` structurally exclude every job/comment
+   record, at any threshold. `RUN_SUMMARY.declaredMatches: 0` on both confirmed it wasn't a
+   request failure.
+   **The bug: the empty-result status message (`src/main.js:827`) was wrong, not the
+   filtering.** It hardcoded `"...or a lower minPoints"` unconditionally regardless of which
+   numeric filter was actually set — reproduced live: the `minComments`-only combo's message
+   still said "a lower minPoints" and never mentioned `minComments` at all. Actively
+   misleading on a structural dead end where no threshold, high or low, would ever work.
+   **Fixed** (`src/main.js:825-841`): the reason string now names whichever of
+   `minPoints`/`minComments` was actually set, and when `tags` includes `job` or `comment`
+   explains the real structural cause instead of suggesting a nonexistent fix. README input
+   table (`minPoints` row made consistent with `minComments`'s existing "stories" caveat) plus
+   a new FAQ entry document the same thing. Build **0.1.51**.
+   **Live-verified all 3 message branches post-push:** job+minPoints → names `minPoints` and
+   the structural cause; comment+minComments → names `minComments` and the structural cause;
+   plain no-filter empty query → unchanged generic message. **Regression-checked** a plain
+   `queries:["apify"]` `tags:["story"]` pull: 5/5 normal rows, points populated as expected.
+   `audit_dates.json` (`hacker-news-scraper.varied_test: 921->967`, full note appended).
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/hacker-news-scraper`
+   both 200 post-push. Inbox unchanged/non-actionable (same long-vetted set), no reply
+   needed, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 968 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on the
+      remaining unswept Actors: `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`.
+   2. Next QUALITY slot (969): next-oldest `varied_test` in `audit_dates.json` is
+      `nih-reporter-scraper` (923) — `sec-insider-trades-scraper`'s 895 stays a
+      deliberately-skipped dead end per cycle 941.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h966-shopify-readme-scan. **[cycle 966] DONE — GROWTH slot per rotation.**
    Continued `3-h904-readme-proximity-scan` on `shopify-products-scraper`. Pre-screened
    the 3 existing TERMS first (per cycle 948's revised guidance): all 3 are dead ends —

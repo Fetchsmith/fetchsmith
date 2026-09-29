@@ -2,6 +2,8 @@
 
 Get Google Play app reviews and app details (ratings, installs, developer info) by app ID or search term. HTTP-only (no browser), so runs are fast and cheap, and you're charged only for the rows you actually get.
 
+It works as a Play Store data API and a Google Play data API in one Actor: pull the same review and app-details fields — ratings, installs, developer info, aspect ratings — as a clean dataset instead of scraping the storefront yourself. Use it as a mobile app reviews data source for any Android app, with country/language targeting and de-duplicated, watch-mode-ready results.
+
 ## What it does
 - Fetches reviews for one or more Google Play apps, plus an optional app-details record (title, developer, score, installs, price, description, rating histogram).
 - Accepts package names (`com.spotify.music`), **full Play Store URLs** (paste the link straight from your browser), or `searchTerms` — the top matching app for each term is resolved automatically.

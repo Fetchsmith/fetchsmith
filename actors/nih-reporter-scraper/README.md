@@ -4,6 +4,8 @@ Export **every NIH-funded research project** from the official [NIH RePORTER](ht
 
 No API key, no login, no proxy. Public data only.
 
+It is a grant data API for NIH RePORTER: pass a keyword, fiscal year or institute and get research grants data back as flat rows — award amount, PI, organization, administering institute, congressional district — with no web form, no pagination and no 15,000-row wall. NIH is the largest public funder of biomedical research in the world, so this is one of the broadest public sources of science funding data there is, and it is research funding data you can join directly to the PubMed papers each award produced. It behaves like a grant database API rather than a scraper: every field comes straight from NIH's own JSON.
+
 ## What it's for
 
 - **Biotech / pharma competitive intelligence** — who is NIH-funded in your therapeutic area, at what dollar level, and which papers came out of it.
@@ -111,6 +113,8 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 **Why does one project appear several times?** NIH RePORTER records one row per *fiscal year of funding*. `R01CA234538` returns six rows for its six funded years. De-duplicate on `coreProjectNum` if you want one row per project.
 
 **Can I filter by award size?** Yes — `minAwardAmount` and `maxAwardAmount`, either alone or as a band. One caveat we measured rather than assumed: NIH RePORTER excludes projects with **no award amount recorded** from any amount-filtered query — about 2.8% of a 500-row FY2024 sample, matching a 2.6% drop in the reported total. So an amount filter is slightly narrower than "every project in that range"; the run log warns you whenever one is active.
+
+**Does `activeOnly` narrow down a `fiscalYears` filter, or replace it?** Neither, by default — and this is worth knowing before you rely on the combination. We measured it live: NIH RePORTER **unions** `activeOnly` with `fiscalYears` instead of intersecting them, so `activeOnly: true` + `fiscalYears: [2025]` returns active projects from *any* fiscal year plus every FY2025 project whether it's active or not, not just "active projects from FY2025." On a narrow agency this took the total from ~6k (FY2025 alone) or ~7.6k (active alone) to ~12.1k combined — close to the sum, not a subset of either. `newlyAddedOnly` does not share this quirk; it correctly intersects with `fiscalYears`. If you need the strict intersection, filter the output yourself on `isActive` and `fiscalYear` — the run log warns you whenever this combination is active.
 
 **Can I filter by the actual award date instead of fiscal year?** Yes — `awardNoticeDateFrom`/`awardNoticeDateTo`, e.g. "grants awarded in June 2024". This is a different axis from `fiscalYears`: a project's NIH fiscal year rarely lines up with its calendar award date (a project awarded late in FY2024 might carry a notice date in mid-2024 but effective dates that read like FY2025). Both fields must be `YYYY-MM-DD` — NIH RePORTER's API silently ignores any other date format rather than rejecting it, so this Actor validates the format itself and fails the run loudly instead of quietly returning an unfiltered result set.
 

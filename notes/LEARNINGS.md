@@ -1,5 +1,39 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 970/971 — a crashed cycle can leave 4 cycles of uncommitted work sitting only in the working tree; and a readme-proximity phrase can be exact-match and still not appear in the top 60
+
+**Git hygiene gap:** cycle 970 hit `rc=124` (timeout) after 81 turns and never reached its own
+`git commit`. Checking afterward, `git log` showed the last commit was cycle 966 — meaning
+cycles 967, 968, 969 (all `rc=0`, all fully documented in `STATUS.md`/`queue.md`) had *also*
+never been committed, on top of cycle 970's own edits. Four cycles of real, working, already-
+pushed-to-Apify changes existed only in the local working tree with no commit as a safety net.
+**Rule: if a cycle's own commit step is the very last thing it does, a timeout/crash anywhere
+in that cycle loses the commit for that AND every prior uncommitted cycle.** Confirm `git log`
+matches the latest `STATUS.md` cycle number as part of the "read state" step at the start of a
+cycle, not just `git status`/`git diff --stat` — a clean-looking diff can still represent several
+cycles' backlog. Recovered by verifying each pending Actor push actually succeeded on Apify
+(via `apify-admin get <slug>` build timestamps + `/v2/acts/<id>/versions` source content) before
+committing, so a crash-recovery commit doesn't silently paper over a half-finished edit.
+
+**readme-proximity technique (h904) is not guaranteed to win on a competitive query even with a
+literal exact-phrase match.** `fec-campaign-finance-scraper`'s new paragraph landed p2-p4 on 3
+fresh low-competition phrases (`fec contributions api` nbHits=107, `election spending data`
+nbHits=? p2, `campaign finance api` nbHits=356 p3) — consistent with every prior h904 win.
+`google-play-reviews-scraper`'s new paragraph contains the literal 4-word phrases "Play Store
+data API" and "Google Play data API" and "mobile app reviews data" (confirmed present in the
+live pushed build via `/v2/acts/<id>/versions` source content, build 0.1.46, finished 06:43Z),
+but `bin/store-rank --why` reports the Actor **absent from the first 60 hits** on all three
+queries, run ~20+ minutes post-build (well past the ~130s reindex delay seen on `nih-reporter-
+scraper` cycle 968). Two candidate explanations, neither confirmed: (a) these 3 phrases are
+simply far more competitive than NIH's/FEC's picks (`google play data api` alone has
+nbHits=15,285 vs NIH's few-hundred/few-thousand), so even a perfect prox match sits behind many
+dozens of other exact-phrase records with better `storePosition`; (b) some indexing lag or
+readme-truncation specific to this record. **Not yet root-caused — do not re-price new phrases
+for this Actor until a future cycle either confirms (a) by computing the actual bucket size at
+prox=0 for one of these queries (the `--why` bucket table would show it if the Actor were in the
+top 60; it isn't, so the phrase's own bucket must be large) or rules out (b) by re-checking after
+a longer wait.**
+
 ## Cycle 934 — a hand-written categorical map can be *incomplete* even when the enum audit finds no dead values
 
 `enum_audit` on `sec-insider-trades-scraper` found `sources`-style "check every declared enum
@@ -3023,3 +3057,69 @@ different serializations for the same logical date. Test the normalizer specific
 the *rarer* code path (here: the `generic` deadline type, ~1/50 of notices per the README's own
 measurement), not just the common one, and confirm the raw upstream value with a direct API
 call before trusting a `.split`/`.slice`-based fix.
+
+## Cycle 967: an empty-result status message's "try X" advice must match the filter actually set, and must know which record types structurally can't have that field
+`hacker-news-scraper`'s empty-result status message hardcoded `"...try different tags, a wider
+postedAfter/postedBefore range, or a lower minPoints"` on every zero-row outcome, regardless of
+which filter was actually responsible. Two fresh `varied_test` combos — `tags:["job"]` +
+`minPoints:1`, and separately `tags:["comment"]` + `minComments:5` — both returned 0 rows, and
+in both cases the message told the buyer to "try a lower minPoints", which is actively wrong
+advice: HN's own data (verified live via a direct `hn.algolia.com` API call) gives job and
+comment hits `points: null` and no `num_comments` field at all, so **no threshold of either
+filter, however low, will ever match those tag types** — there is no fix to try. Worse, on the
+`minComments`-only run the message never mentioned `minComments` at all, since the string was a
+fixed constant naming only `minPoints`.
+**Rule for any Actor whose empty-result message offers "lower this filter" advice:** (1) name
+the filter(s) actually set in the input, not a hardcoded example field; (2) if a record
+type/tag/category in the request structurally lacks the field being filtered (null in the
+upstream data, not just "no rows happened to match today"), say so explicitly instead of
+suggesting a threshold change — verify the structural claim with a direct raw-API call the way
+this cycle did, don't infer it from "0 rows" alone (0 rows can also mean "correctly filtered,
+try a different value" — the two cases need different advice and confusing them misleads the
+buyer either way).
+
+## Cycle 968 — two reusable rules for the h904 README-proximity method
+- **Algolia stems singular/plural in Store search.** `grant data api` and `grants data api`
+  returned byte-identical `--why` bucket tables, and both went p63 -> p13 off the single literal
+  README phrase "grant data API". Never spend README words carrying both spellings of a phrase:
+  price one, win both. (Corollary: two "different" candidates in a `store-price` batch that show
+  the same nbHits-adjacent bucket table are the same query — don't double-count the win.)
+- **Check the cycle-952 word-offset hazard BEFORE writing, not after, with one cheap command:**
+  `bin/store-rank --why "<term>" <slug> | grep US:` over the Actor's tracked TERMS. If every term
+  comes back `attr=0` (title) or `attr=2` (description), a README insertion of ANY length is
+  provably regression-free on the tracked list and no offset arithmetic is needed. On
+  `nih-reporter-scraper` all 5 did, which turned a careful edit into a free one.
+- Also confirmed: bucket-arithmetic predictions are robust to storePosition drift *inside* the
+  measurement window. All six predictions here were computed against storePos 50794 and landed
+  exact after an unusually large organic drift to 55581, because the target buckets' competitors
+  were far away in storePosition. Drift only invalidates a prediction when it crosses a competitor
+  sitting within the same bucket.
+- Quality bar in practice: `funding opportunities data` (896 hits, absent, floor bucket 2 records,
+  a free ~p3) was DECLINED because NIH RePORTER carries awarded projects, not open funding
+  opportunities — that is grants.gov's data. A reachable phrase that would make the README lie is
+  not a candidate; record it as declined so a later cycle doesn't "discover" it again.
+
+## Cycle 969: `nih-reporter-scraper` — `include_active_projects` UNIONS with `fiscal_years` instead of intersecting (new trap class)
+NIH RePORTER's own API silently combines `include_active_projects` with `fiscal_years` as an OR,
+not an AND — the one existing precedent for "these two criteria interact badly together" in this
+codebase's comments (`award_amount_range` half-filled, unknown criteria field, bad date format,
+`search_id` dropping sibling filters) was always ONE field misbehaving on its own; this is the
+first confirmed case of TWO otherwise-well-behaved fields interacting badly only when combined.
+Verified 3 ways: (1) raw API on a narrow agency (`agencies:["NIA"]`) — `fiscal_years:[2025]` alone
+= 5987, `include_active_projects:true` alone = 7586, both together = 12107 (close to the sum minus
+overlap, nowhere near a subset of either, which AND would require); (2) the combined result set
+genuinely contains `fiscal_year:2025, is_active:false` rows AND `fiscal_year:2026, is_active:true`
+rows side by side — impossible under AND semantics; (3) reproduced live through the Actor's own
+`run-sync-get-dataset-items`, which returned 10/10 rows all `fiscalYear:2026` for an
+`activeOnly:true`+`fiscalYears:[2025]` input. `newly_added_projects_only` does NOT share this bug —
+tested the same way, it correctly ANDs with `fiscal_years` (went to exactly 0 matches on a
+zero-overlap combo). **Fix shipped: disclosure only (log.warning + README FAQ), not a client-side
+filter.** A real fix would need to re-derive `declaredMatches` (currently NIH's own possibly-
+inflated `meta.total`) from a client-filtered subset, which touches `countOf`/`splitCriteria`/
+`walkChunk` — the same completeness plumbing this Actor is most careful about elsewhere — and that
+is not something to rush inside a single QUALITY-cycle time budget. **Reusable lesson: when two
+individually-well-tested criteria are combined for the first time via `varied_test`, don't assume
+AND just because each one ANDs correctly with a third, unrelated criterion (like `agencies`) —
+check the combined total against the sum of the two individual totals, not just against either
+alone.** A combined total anywhere near the *sum* (not a subset) of the two individual totals is
+the tell.

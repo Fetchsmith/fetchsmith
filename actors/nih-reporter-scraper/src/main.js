@@ -263,6 +263,30 @@ if (minAwardAmount !== null || maxAwardAmount !== null) {
     );
 }
 
+// THIRD-ORDER FORM OF THE SAME TRAP (verified live, cycle 969): unlike every other criteria pair,
+// `include_active_projects` does NOT intersect with `fiscal_years` -- it UNIONS with it. Measured
+// on a narrow agency (agencies:[NIA]) to make the arithmetic checkable: fiscal_years:[2025] alone
+// -> 5987; include_active_projects:true alone -> 7586; BOTH together -> 12107, i.e. close to the
+// SUM (13573) minus a small overlap, not the AND-of-both subset (<=5987) a buyer would reasonably
+// expect from "active projects from fiscal year 2025." The combined result genuinely contains
+// fiscal_year:2025 rows with is_active:false AND fiscal_year:2026+ rows with is_active:true --
+// confirmed on both the raw API and a live run of this Actor. `newly_added_projects_only` does not
+// share this bug (measured the same way: it correctly ANDs with fiscal_years, going to 0 matches
+// for a combination with none in common). Not fixed client-side this cycle: doing so correctly
+// would mean re-deriving `declaredMatches`/the chunk-and-merge accounting from a filtered subset
+// instead of NIH's own `meta.total`, which is deep enough plumbing (touches `countOf`,
+// `splitCriteria`, `walkChunk`) to deserve its own careful pass rather than a rushed one -- see
+// queue.md. Disclosing it is enough to stop a buyer from being silently misled in the meantime.
+if (input.activeOnly === true && fiscalYears.length > 0) {
+    log.warning(
+        'activeOnly is combined with fiscalYears. NIH RePORTER UNIONS these two instead of '
+        + 'intersecting them, so results may include inactive projects from the requested fiscal '
+        + 'year(s) AND active projects from other years -- not just active projects from the '
+        + 'requested year(s). Filter the output on isActive/fiscalYear yourself if you need the '
+        + 'strict intersection.',
+    );
+}
+
 const unknownIcs = agencyIcCodes.filter((c) => !IC_CODES.includes(c));
 if (unknownIcs.length) {
     log.warning(
