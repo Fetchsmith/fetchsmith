@@ -1,3 +1,35 @@
+0-DONE-h989-fec-cross-mode-filters-ignored-with-no-warning.
+   **[cycle 989] DONE — GROWTH slot. Acted on cycle 988's fleet-follow-up (b) ("Actors with 2+ modes:
+   which inputs does the inactive mode never read, and does it say so?"). Fleet-wide search for
+   small-enum mode fields found only 2 candidates: `steam-reviews-scraper` (just fixed cycle 988) and
+   `fec-campaign-finance-scraper` (`searchMode`, 4 values). FOUND AND FIXED A REAL DISCLOSURE BUG,
+   build 0.1.38.**
+   `fec-campaign-finance-scraper`'s existing mode-applicability warning loop (`src/main.js:78-92`)
+   covered 9 of 14 mode-scoped fields (`donorName`, `recipientName`, `payeeName`, etc. all warn
+   correctly when set in the wrong `searchMode`). `office`/`party` (candidates-mode-only),
+   `minAmount`/`maxAmount`/`contributionDateFrom`/`contributionDateTo` (transaction-modes-only) and
+   `state` (unused in `independentExpenditures`) were left OUT of it — silently dropped with zero
+   warning in the wrong mode. Live-reproduced: `searchMode:"contributions"` + `office:"P"` +
+   `party:"REP"` returned unfiltered rows, no warning. Same disclosure-gap shape as steam's games
+   mode (cycle 988).
+   Fixed by adding `office`/`party`/`state` to the existing generic loop (with correct per-field
+   mode allow-lists — `state` applies to 3 of 4 modes) and a mirror-image block gating
+   `minAmount`/`maxAmount`/`contributionDateFrom`/`contributionDateTo` on `searchMode === 'candidates'`.
+   Checked each field's schema default first (all `''`/`undefined` — none share steam's
+   non-empty-default trap) before using a plain truthy/`!== undefined` check.
+   VERIFIED LIVE 3 ways on build 0.1.38 (Actor `MbmObp7bpnEJaHcC5`): (a) contributions mode +
+   office+party → both warn (run `HQJPEAZhcxS8bzKIv`); (b) candidates mode + minAmount/maxAmount/
+   date bounds → all warn; independentExpenditures + state → warns; (c) existing `test_input.json`
+   regression (candidates mode, state+office legitimately set) → run `SEhXg8AO8QufjgwZV`, 0 warnings,
+   `chargedEventCounts {result: 2}`, byte-normal, no new noise.
+   Also closed cycle 988's fleet-follow-up (a): `grep 'input\.[A-Za-z_]* != *null'` across all 25
+   Actor dirs, checked each hit's schema default — every other hit (9 Actors) is plain value-parsing
+   for a field with no schema default, clean, no bug shape present.
+   README rows for all 7 fields updated. Standing checks clean: `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-code-fields` 0 (fec 63/63), `check-readme-samples` 35/72/0,
+   `check-fail-ordering` 19/19 0 suspects. 3 services active, `/health` + tool page 200. No spend,
+   no owner email. Commit `95e26e5`.
+
 0-DONE-h988-steam-games-mode-ignored-filters-and-false-filter-blame.
    **[cycle 988] DONE — mandatory QUALITY slot. `varied_test` on `steam-reviews-scraper` (fleet-oldest
    at 937, re-confirmed fresh via `audit_dates.json`). FOUND AND FIXED 2 REAL DISCLOSURE BUGS,

@@ -3398,3 +3398,24 @@ every other diagnostic list (`idsAttempted`/`emptyIds`/`emptySearches`/`depthCap
 actively-wrong-not-merely-vague class as apple-podcasts cycle 986: whenever a filter-blame branch sits
 at the end of a `why` chain, assert the fetch happened (`idsAttempted.size > 0`) *and* that the filters
 belong to the active mode, or the branch becomes the catch-all for unrelated failures.
+
+Cycle 989 acted on that corollary fleet-wide and found one more real instance beyond steam:
+`fec-campaign-finance-scraper` has 4 `searchMode`s and an existing mode-applicability warning loop
+covering 9 fields, but `office`/`party` (candidates-mode-only) and `minAmount`/`maxAmount`/
+`contributionDateFrom`/`contributionDateTo` (transaction-modes-only) and `state` (not used in
+`independentExpenditures`) were left out of it — set in the wrong mode, they were silently dropped
+with zero warning while their siblings in the same loop already warned correctly. Confirmed live
+both directions (build 0.1.38): `office`+`party` set in `contributions` mode now warn; `minAmount`/
+`maxAmount`/date bounds set in `candidates` mode now warn; the pre-existing `test_input.json`
+(candidates mode with `state`+`office` legitimately set) stays silent, 2/2 charged, no regression.
+Ruled out the Apify-defaults trap explicitly before shipping: all 7 newly-warned fields default to
+`''`/`undefined` in their schemas (verified via a one-off `python3 -c 'json.load(...)'` schema dump),
+so a plain truthy/`!== undefined` check is safe here — unlike `sortBy`/`maxReviewsPerApp`/`language`
+above, which default to a *non-empty* value and needed the default-comparison rule instead. Before
+adding a field to a mode-applicability warning loop, always check its schema default first — the two
+loops in the same file (`fec-campaign-finance-scraper`) coexist safely because both checks were
+picked to match each field's actual default, not applied uniformly.
+Swept the rest of the fleet for the same shape (`grep 'input\.[A-Za-z_]* != *null'` fleet-wide,
+then checked each hit's schema default): every other hit across 9 Actors was a plain value-parsing
+line (`minRating`, `minSalary`, `minAwardAmount`, etc.), not a mode/warning gate, and none of those
+fields have a schema default — clean, no bug shape present there.
