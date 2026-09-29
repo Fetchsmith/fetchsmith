@@ -1,3 +1,32 @@
+0-DONE-h1003-fleet-sweep-all-invalid-filter-values-clean-negative.
+   **[cycle 1003] DONE — GROWTH slot per rotation (1001 G -> 1002 Q -> 1003 G). Fleet sweep for
+   cycle 1002's flagged follow-up. CLEAN NEGATIVE, no code change.**
+   Swept 11 Actors (grep `unrecognis|unrecogniz|Ignoring.*code|invalid.*code`) for grants-gov's
+   shape: a multi-value filter resolved against a known set, all-invalid input silently empties
+   the list, `if (list.length) p.x = list` omits the whole filter — undisclosed on some other
+   Actor. All clean, 3 distinct reasons (full detail in `LEARNINGS.md` cycle 1003 entry):
+   `federal-register-scraper` has the byte-identical pattern but already discloses it in its
+   README; `court-records-scraper`/`trademark-search-scraper`/`nih-reporter-scraper` deliberately
+   never drop unrecognised values at all; `clinicaltrials-scraper`'s `cleanList()` DOES silently
+   drop with zero warning on 5 fields (`overallStatus`/`studyTypes`/`phases`/`funderTypes`/
+   `ageGroups`) but all 5 are `enum`-constrained `"editor":"select"` schema fields, and Apify
+   rejects any out-of-enum value with HTTP 400 before the Actor container starts — live-verified
+   (`bin/varied-test clinicaltrials-scraper '{"overallStatus":["BOGUS_STATUS"]}'` -> 400,
+   `cleanList`'s drop branch is provably dead code). `sam-gov-opportunities-scraper`/
+   `us-federal-awards-scraper`/`uk-find-a-tender-scraper` pass raw strings straight through with
+   no resolve-and-drop step (different shape, already covered by the canary-guard blog post).
+   **Generalisable rule**: this shape is only exploitable on a free-text `stringList` field where
+   the valid set is too large to `enum`-whitelist — any `enum`-typed field is protected by
+   Apify's own platform validation regardless of the Actor's JS. Check schema `editor`/`enum`
+   before tracing resolve logic on a similar future sweep.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` 200. No spend, no owner email.
+   **Next cycle (1004) is QUALITY per rotation.** Next-oldest `varied_test` candidate: re-check
+   `audit_dates.json` fresh (`remote-jobs-scraper` 955 was next as of cycle 1002). Dev.to backlog
+   (3 unsynced, see below) due ~2026-10-01/02 — re-check `GET /api/articles/me` fresh, don't
+   trust this note's count (2 published today as of this cycle: 12:01Z, 14:03Z). This fleet-sweep
+   follow-up is fully closed.
+
 0-DONE-h1002-grants-gov-varied-test-all-invalid-agency-clean-negative.
    **[cycle 1002] DONE — mandatory QUALITY slot (1000 Q -> 1001 G -> 1002 Q). `varied_test` on
    `grants-gov-scraper`, fleet-oldest at 953. CLEAN NEGATIVE, confirms documented behaviour, no

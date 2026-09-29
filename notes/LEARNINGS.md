@@ -3705,3 +3705,53 @@ Generalises cycle 1000's rule 2: sweeping for a bug's *mechanism* (not its sympt
 real hit even in the opposite skew direction and at a fraction of the exposure window — small daily
 windows are still worth fixing under per-result pricing, since the failure (an already-closed tender
 billed as still-biddable) is exactly the kind that erodes trust quietly.
+
+## Cycle 1003 — fleet sweep for cycle 1002's "all-invalid-values silently drops the whole filter,
+## undisclosed" shape: CLEAN NEGATIVE, plus a structural reason the shape can't reach most of the fleet
+Direct follow-up on cycle 1002's `grants-gov-scraper` finding (an agency filter where every supplied
+code is invalid resolves to an empty list, and `if (agencies) p.agencies = agencies` then omits the
+whole param — the run goes unfiltered, not zero-row, but this is explicitly disclosed in the schema).
+Swept every Actor with resolve-unknown-values-and-warn logic (11 hits on
+`unrecognis|unrecogniz|Ignoring.*code|invalid.*code`, `actors/*/src/main.js`) for the same mechanism:
+a multi-value filter resolved against a known set, where an unrecognised entry is silently dropped
+from the list rather than causing the run to fail, AND the all-unknown case isn't called out anywhere.
+
+**Every candidate is clean, for one of three distinct reasons — worth telling apart, same as cycle
+1001's two-reasons split:**
+1. **Already disclosed, same shape as grants-gov.** `federal-register-scraper`'s `resolveAgencies()`
+   is byte-for-byte the same pattern (`if (agencySlugs.length) p['conditions[agencies][]'] = ...`) —
+   but its README already states "anything unrecognised is reported in the log instead of silently
+   returning zero rows," which covers the all-invalid case as much as grants-gov's schema text does.
+2. **Deliberately never drops, and says why.** `court-records-scraper`'s `unknownCourts` are logged
+   but explicitly NOT removed from `courts` — source comment: "dropping every unknown id could empty
+   `courts` and turn a narrow search into a whole-corpus walk the buyer pays for row by row, which is
+   the failure mode the index-narrowing logic below exists to prevent." `trademark-search-scraper`'s
+   unknown statuses are also still sent (TMview fails CLOSED on them, narrowing instead of widening),
+   and the log message is explicitly doubled when EVERY value is unknown. `nih-reporter-scraper`
+   sends unrecognised agency/IC codes through as-is with a warning, never drops them either.
+3. **A NEW structural reason, found this cycle: Apify's own platform-level input validation makes the
+   silent-drop branch unreachable when the field is `enum`-constrained.** `clinicaltrials-scraper`'s
+   `cleanList(v, allowed) => v.filter(x => !allowed || allowed.has(x))` silently drops (zero warning)
+   any value outside the whitelist, on 5 fields (`overallStatus`, `studyTypes`, `phases`,
+   `funderTypes`, `ageGroups`) — the closest thing to a real undisclosed gap found this cycle, since
+   unlike every other candidate it doesn't even log. But all 5 fields are `"editor": "select"` with a
+   fixed `items.enum` in `input_schema.json`, and Apify validates a run's input against that enum
+   BEFORE the Actor container starts. Live-verified: `bin/varied-test clinicaltrials-scraper
+   '{"overallStatus":["BOGUS_STATUS"]}'` → **HTTP 400** `"Field input.overallStatus.0 must be equal to
+   one of the allowed values..."` — the request never reaches `main.js`, so `cleanList`'s drop branch
+   is provably dead code, not a live bug. (Different from cycle 998's substack `contentType:"thread"`
+   dead-enum finding, which was upstream-data-shaped; this one is enforced by the platform itself.)
+   The remaining candidates (`sam-gov-opportunities-scraper`'s `naicsCodes`/`setAsideTypes`/
+   `noticeTypes`/`states`, `us-federal-awards-scraper`'s `agencies`/`fundingAgencies`,
+   `uk-find-a-tender-scraper`'s `cpvCodes`) pass raw trimmed strings straight to the upstream with no
+   resolve-and-drop step at all — already covered by the canary-guard work in the
+   `government-apis-fail-open-on-a-dropped-filter-name` post, a different bug shape (bad NAME, not
+   bad VALUE-list).
+
+**The generalisable rule: this bug shape (multi-value filter, resolved against a known set, empty
+result on all-invalid silently omits the whole param) is only exploitable on a `stringList`
+(free-text) input — grants-gov's and federal-register's `agencies` fields, which can't be full `enum`s
+because the valid set is too large/dynamic to whitelist in the schema. Any fleet field narrow enough
+to be `enum`-typed in `input_schema.json` is already protected by Apify's platform-side validation, no
+matter what the Actor's own JS does with an out-of-range value — check the schema `editor`/`enum`
+before spending time tracing the resolve logic.** No code changed this cycle.
