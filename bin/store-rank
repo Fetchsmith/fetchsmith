@@ -1121,7 +1121,45 @@ TERMS = {
     # matches -- a bad trade per the cycle-524 proximity rule ("one title wins ONE
     # multi-word query"). Left as-is; do not spend a slot rewriting this title
     # for "sam.gov scraper" specifically.
-    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination", "government bids"],  # p9 p25 p53 p43
+    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination", "government bids", "excluded parties list", "rfp data api"],  # cycle 964: p14 p32 p9 p14 p1 p3 p15 p2 p2
+    # cycle 964 (h904 README-proximity scan, GROWTH slot): FIRST readme-attribute edit on this
+    # Actor -- the title (55/63) and description (299/300) are both effectively full, so attr=6
+    # was the only lever left. Priced 18 fresh domain phrases with `bin/store-price`, then
+    # re-priced the 9 absent/weak ones with `--attr 6`: two queries had a prox=2 attr=6 readme
+    # bucket sitting at the HEAD of the whole result set (nobody owned the phrase contiguously in
+    # a stronger field), which is the ideal h904 shape. Shipped ONE sentence after the opening
+    # paragraph carrying both phrases contiguously ("In short: a federal RFP data API and an
+    # organization-only Excluded Parties List check in one keyless Actor -- the same run lists
+    # open solicitations and tells you whether a firm is debarred."), truthful against the
+    # Actor's own documented `exclusions` dataType (organization-only, README:127-133) and its
+    # solicitation output. README-only, build 0.1.27; both phrases confirmed in the `latest`
+    # build's `readme` field via the platform API before measuring. Live ~100s post-reindex,
+    # ALL THREE predictions hit to the rank:
+    #   `excluded parties list` (1035 hits) absent -> **p2** (predicted p2, 1 record ahead)
+    #   `rfp data api` (325) absent -> **p2** (predicted p2, 0 records ahead -- the record at p1
+    #     is a prox=2 attr=4 seoTitle match, which beats prox=2 attr=6 on attribute)
+    #   `federal rfp` (106) p47 -> **p14** (predicted p14) -- UNPLANNED BONUS, and the reusable
+    #     lesson: we were already in a title bucket (prox=8 attr=0), but proximity is compared
+    #     BEFORE attribute, so a contiguous readme match (prox=1 attr=6) beats our own
+    #     non-contiguous TITLE match. A weak attribute with tight proximity outranks a strong
+    #     attribute with loose proximity -- always screen tracked queries whose live bucket has
+    #     a high prox, even when attr is already 0.
+    # Zero regression, as structurally expected: a README APPEND evicts nothing (attr=6 has no
+    # length cap), so the only movement was storePosition drift 56108->56292 (`sam.gov
+    # opportunities` p13->p14, `government bids` p14->p15; `sam gov opportunities` p32,
+    # `sam.gov scraper` p9, `federal procurement` p1, `wage determination` p3 all byte-identical).
+    # Also priced and NOT taken this cycle (bucket predictions live, all attr=6 contiguous):
+    #   `government solicitations` (209) p66 -> ~p10 -- real but page-1-edge; cheapest remaining
+    #     option here if a future cycle wants another sentence.
+    #   `small business set aside` (1399) -> ~p28, `federal awards scraper` (756) -> ~p33,
+    #     `bid opportunities` (645) -> ~p41, `public procurement data` (1966) -> ~p53,
+    #     `procurement api` (2250) -> ~p60, `federal contract awards` (707) -> ~p89 -- all past
+    #     page 1 via readme. DECLINED (the cycle-904 rule: readme only pays when its bucket
+    #     lands on page 1).
+    #   NOTE both shipped phrases would be **p1** in the DESCRIPTION (attr=2, 0 records ahead in
+    #     that bucket) -- but the description is 299/300 and the only evictable span is
+    #     `wage determination` (live p3, carried by attr=2). Not worth 2 ranks; revisit only if
+    #     the description is ever rewritten for another reason.
     # cycle 871: shipped the "government bids" candidate cycle 864/870 queued (best of its 9 sized
     # options, nbHits 1757, predicted ~p7 from p376, 7-record title block). Title "SAM.gov Scraper --
     # Federal Procurement, Wage Determinations" (58/63) -> "SAM.gov Scraper -- Government Bids &

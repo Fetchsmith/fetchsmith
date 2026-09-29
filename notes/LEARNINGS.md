@@ -2984,3 +2984,23 @@ mismatched-party control correctly gave 0.
 `input_schema.json` for a non-empty `default` on any field NOT explicitly set in the test
 input, and check the run log for what value was actually used — a defaulted field silently
 ANDed in is not a bug in the Actor.
+
+## Cycle 964 — proximity is compared BEFORE attribute: a contiguous README match beats our own non-contiguous TITLE match
+The h904 README-proximity playbook has always been framed as a lever for queries we do NOT
+match at all (readme is the weakest searchable attribute, cycle 876). That framing left money
+on the table. Algolia's criteria order is `nbTypos -> words -> nbExactWords -> proximityDistance
+-> attribute -> storePosition`: **proximity outranks attribute.** So if a query's words are all
+present in our title but scattered (high `proximityDistance`), adding them CONTIGUOUSLY to the
+readme creates a bucket that sorts strictly ahead of our existing title bucket.
+Measured live on `sam-gov-opportunities-scraper` (build 0.1.27): `federal rfp` was p47 in a
+`prox=8 attr=0` (title) bucket — "Federal" and "Procurement"/"RFP" far apart in
+"SAM.gov Scraper – Government Bids & Federal Procurement" plus a readme hit. One README
+sentence containing "federal RFP data API" put it in `prox=1 attr=6` and it landed **exactly
+p14**, the `--attr 6` prediction to the rank. This was an unplanned side effect of a sentence
+aimed at two other queries; nobody had screened for it.
+**Rule:** when sweeping an Actor for the README lever, do not filter to absent/`prox>=2`
+queries only. Run `bin/store-price <slug> --attr 6 <tracked queries>` over the Actor's OWN
+tracked terms too, and take any whose live bucket has a high `prox` even when `attr` is already
+0 — the readme insert can outrank the title. Corollary already known but worth restating: a
+README **append** has no eviction cost (attr=6 has no length cap), so these gains are free and
+regression is structurally impossible; only storePosition drift can move the other ranks.

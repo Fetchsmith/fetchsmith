@@ -2,6 +2,8 @@
 
 Scrape live US federal contracting opportunities from SAM.gov — presolicitations, solicitations, combined synopses, sources sought, special notices and award notices — with **no API key, no login, no proxy and no browser**. Filter by keyword, NAICS code, set-aside type, notice type, place-of-performance state and issuing organization, and optionally enrich every row with the contracting officer's contact details, NAICS codes, set-aside and place of performance.
 
+In short: a federal RFP data API and an organization-only Excluded Parties List check in one keyless Actor — the same run lists open solicitations and tells you whether a firm is debarred.
+
 ## What it does
 - **Six public SAM.gov datasets, one Actor, no key.** `dataType` picks which one: `opportunities` (default — solicitations, presolicitations, sources sought, awards), one of three Department of Labor wage-determination sets SAM.gov publishes — `wage-determinations-dbra` (Davis-Bacon Act, construction), `wage-determinations-sca` (Service Contract Act, services) and `wage-determinations-cba` (collective bargaining agreements) — `assistance-listings`, the Catalog of Federal Domestic Assistance (CFDA) grant/loan/direct-payment programs, or `exclusions`, the federal debarment/suspension list (organizations only — see below). All six come off the same keyless public search backend, so none of them needs a registered API key.
 - Calls the same backend that powers sam.gov's own public opportunity search page, so results match what you see on the site. **SAM.gov's official developer API (`api.sam.gov/opportunities/v2`) requires a free registered API key — this Actor needs none.** You do not have to register with GSA, wait for key approval, or rotate a key across a team.

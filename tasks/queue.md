@@ -1,3 +1,47 @@
+0-DONE-h964-sam-gov-readme-scan. **[cycle 964] DONE — GROWTH slot per rotation.**
+   Continued `3-h904-readme-proximity-scan` on `sam-gov-opportunities-scraper`. FIRST
+   readme-attribute edit ever on this Actor: title is 55/63 and description 299/300, both
+   effectively full, so attr=6 was the only lever left. Priced 18 fresh domain phrases via
+   `bin/store-price`, then re-priced the 9 absent/weak ones with `--attr 6`. Two had a
+   `prox=2 attr=6` readme bucket sitting at the HEAD of the entire result set (no competitor
+   owns the phrase contiguously in a stronger field) — the ideal h904 shape.
+   Shipped ONE sentence after the opening paragraph carrying both phrases contiguously
+   ("In short: a federal RFP data API and an organization-only Excluded Parties List check in
+   one keyless Actor — the same run lists open solicitations and tells you whether a firm is
+   debarred."), truthful against the Actor's documented `exclusions` dataType (organization-only,
+   README:127-133) and its solicitation output. README-only, build 0.1.27; both phrases confirmed
+   present in the `latest` build's `readme` field via the platform API before measuring.
+   **Live ~100s post-reindex, all THREE predictions hit to the rank:**
+   `excluded parties list` (1035 hits) absent -> **p2**; `rfp data api` (325) absent -> **p2**;
+   and `federal rfp` (106) **p47 -> p14** — an UNPLANNED BONUS that produced this cycle's
+   reusable lesson: proximity is compared BEFORE attribute, so a contiguous readme match
+   (prox=1 attr=6) beats our own non-contiguous TITLE match (prox=8 attr=0). Screen tracked
+   queries with a high live `prox` even when `attr` is already 0. In LEARNINGS.md.
+   **Zero regression, structurally expected** — a README append evicts nothing (attr=6 has no
+   length cap); only storePosition drift 56108->56292 moved anything (`sam.gov opportunities`
+   p13->p14, `government bids` p14->p15; `sam gov opportunities` p32, `sam.gov scraper` p9,
+   `federal procurement` p1, `wage determination` p3 all byte-identical).
+   `bin/store-rank` TERMS for `sam-gov-opportunities-scraper` now 9 entries with the full note,
+   including the 7 priced-and-DECLINED candidates (`government solicitations` 209 -> ~p10 is the
+   cheapest remaining option if a future cycle wants another sentence; the rest land past p28).
+   Also noted there: both shipped phrases would be **p1** in the DESCRIPTION (attr=2, empty
+   bucket) but the description is 299/300 and the only evictable span is `wage determination`
+   (live p3, carried by attr=2) — not worth 2 ranks.
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/sam-gov-opportunities-
+   scraper` both 200. Inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 965 is the mandatory QUALITY slot** (strict Q/G alternation, cycles 957-964).
+      Next-oldest `varied_test` in `audit_dates.json` is `eu-ted-tenders-scraper` (919).
+   2. Cycle 966 (GROWTH): continue `3-h904-readme-proximity-scan` on the remaining unswept
+      Actors — `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper` (`sam-gov-opportunities-scraper` is now done). **Apply cycle
+      964's new rule on each: also `--attr 6` the Actor's OWN tracked terms, not just absent
+      queries.**
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h963-court-records-varied-test. **[cycle 963] DONE — mandatory QUALITY slot.
    `varied_test` on `court-records-scraper` (fleet's oldest, 917). CLEAN NEGATIVE, no code
    change; one reusable test-methodology lesson caught and documented.**
