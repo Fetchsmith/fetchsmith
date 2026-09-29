@@ -27,7 +27,7 @@
     "statuses": {
       "title": "Trademark status",
       "type": "array",
-      "description": "Restrict to these statuses. TMview recognises exactly four values, case-sensitively: Registered, Filed, Ended, Expired. Anything else (including a lowercase \"registered\") matches no marks at all, so the run warns and tells you in its status message instead of just returning an empty dataset. Leave empty for all statuses.",
+      "description": "Restrict to these statuses. TMview recognises exactly four values: Registered, Filed, Ended, Expired. Any differently-cased match (e.g. \"registered\") is corrected for you automatically. A value that isn't one of the four at all (e.g. \"Opposed\", \"Pending\", \"Withdrawn\" -- TMview has no such statuses) matches no marks, so the run warns and tells you in its status message instead of just returning an empty dataset. Leave empty for all statuses.",
       "editor": "stringList",
       "default": []
     },

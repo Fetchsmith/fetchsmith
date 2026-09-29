@@ -1,3 +1,37 @@
+0-DONE-h959-trademark-statuses-doc-fix. **[cycle 959] DONE — mandatory QUALITY slot.
+   `varied_test` on `trademark-search-scraper` (fleet's oldest, stale since 913) — found and
+   fixed a real DOC bug (not a code bug).**
+   Fresh combo via `bin/varied-test`: `statuses:["registered","Ended"]` (mixed lowercase +
+   correctly-cased), `offices:["US"]`, `searchTerm:"coffee"`, `maxResults:10`. 9/10 rows
+   `Ended`, 1/10 `Registered`, `RUN_SUMMARY.unknownStatuses:[]` — confirms the lowercase value
+   was silently case-corrected server-side by the cycle-936 fix (`src/main.js:31-36`), not
+   treated as unknown.
+   **Both `.actor/input_schema.json` and `README.md` still said** a differently-cased status
+   (e.g. lowercase `registered`) "matches no marks at all"/"matches nothing" — true of TMview's
+   own API, NOT true of this Actor since build 0.1.18 shipped the case-insensitive correction.
+   A buyer following the old docs would wrongly avoid lowercase input, or think it silently
+   fails. **Fixed both** to say a differently-cased match is auto-corrected, and only a
+   genuinely-unrecognised value (`Opposed`/`Pending`/`Withdrawn` — TMview has no such statuses)
+   matches nothing. Docs-only, no `main.js` change. `apify push --force` -> build 0.1.19;
+   `apify-admin get` re-fetch confirmed the corrected sentence is live in the served README.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/0 missing, `check-store-meta` 24/0 drift.
+   `audit_dates.json` (`varied_test: 959`) updated. 3 services active, site healthy, inbox
+   unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 960 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `ats-jobs-scraper`, `court-records-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`. Cheapest first pick: the
+      still-open `steam-reviews-scraper` description-reword trade (`steam store api`/`steam
+      reviews api`, DESC->p4/p5 — needs a priced 297/300-char reword, simulate the trade
+      before shipping).
+   2. Next QUALITY slot (961): next-oldest `varied_test` in `audit_dates.json` is
+      `clinicaltrials-scraper` (915).
+   3. Worth building: `bin/store-price --attr <n>` (cycle 956 note, still unbuilt).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea.
+
 0-DONE-h958-steam-readme-closeout-gaming-data-api.  **[cycle 958] DONE — GROWTH slot.
    Closed out cycle 956's two leftover sized-but-unshipped `3-h904-readme-proximity-scan`
    candidates on `steam-reviews-scraper`: `gaming data api` and `steam games list`.**
