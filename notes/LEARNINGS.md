@@ -3211,3 +3211,54 @@ though they render fine and pass every "confirm the phrase is in the indexed rea
 currently do — meaning `3-h904-readme-proximity-scan` should prefer inserting new target phrases
 near the TOP of the readme (or in the H1-adjacent intro paragraph, as cycles 956/958's winning
 inserts did) rather than in FAQ entries appended at the end, until this is confirmed or refuted.
+
+## Cycle 976 — cycle 974's readme OFFSET-CUTOFF theory is REFUTED; the real variable is `proximityDistance`, and `--why` never measured it
+GROWTH slot ran the controlled test cycle 974 asked for — but did it **without polluting a
+production README**: instead of pushing two fabricated phrases, probe phrases that ALREADY
+exist in the live indexed readme at known offsets. Same attribute, same build, same index,
+only position varies, zero build cost. Pin the query to our own record with
+`filters=objectID:<oid>` + `restrictSearchableAttributes=readme` so a miss is unambiguous
+(nbHits=0) rather than "we ranked below the page cut". 22 unique contiguous 3-word runs on
+`steam-reviews-scraper` (4067-word readme), offsets 0.0% -> 99.8%.
+
+**Refuted, decisively: there is no offset cutoff, and `matchLevel` is never "none".** All 22
+phrases returned `matchLevel:full`, `words:3`, `nbTypos:0` — including one at 99.8%. Deep
+readme text is fully indexed and fully matched. Cycles 958 and 974 both read `matchLevel:"none"`
+from an UNPINNED probe, where "none" just meant our record wasn't in the result set being
+inspected — an artifact of the probe, not a property of the record. **Pin to the objectID
+before concluding anything about matchLevel.**
+
+**What actually varies is `proximityDistance`.** A contiguous N-word run should score N-1
+(3-word probe -> 2). Measured:
+  words    1 ..  976  -> prox 2   (6/6 ideal)
+  words 1163 .. 4057  -> prox >=8 (16/16 degraded, mostly 9 or 16)
+That bucket difference is large enough to explain cycle 958's whole miss. Re-probed the three
+cycle-958 phrases directly and the split is exact:
+  `steam games list`     word  334 ( 8.2%) prox 2 (ideal) -> ranked as predicted
+  `video game data api`  word   29 ( 0.7%) prox 3 (ideal) -> ranked as predicted
+  `gaming data api`      word 2240 (55.1%) prox 9 (DEGRADED) -> predicted p2, measured p43
+`store-rank --why` **assumes** the ideal proximity for a phrase it finds in the readme; it never
+measures the live value. That assumption is the actual bug behind three cycles of wrong diagnosis.
+
+**Mechanism is still OPEN — do not file one.** It is NOT a clean positional cutoff: a markdown
+heading at word 1158 scored prox 2 while plain prose at word 1140 scored 9, and a table row at
+1083 scored 2. Ruled out this cycle: stale index (cycle 972's bug — 0 stale fields),
+attribute-splitting (cycle 958's theory — the run is contiguous), and `readmeSummary` stealing
+the match (`restrictSearchableAttributes=readmeSummary` returns HTTP 400 — it is not a
+searchable attribute at all, so every prox above came from `readme`). Untested candidates:
+Algolia truncating stored position lists for frequent words, or structural/separator effects.
+
+**Actionable now (the guidance survives even though the mechanism didn't):** cycle 974's
+practical advice — put target phrases near the TOP of the readme — is correct and now rests on
+22 data points instead of 3. `3-h904-readme-proximity-scan` should keep inserting near the H1
+intro, not in appended FAQ entries. But **stop trusting `--why`'s predicted prox** and measure
+instead: **`bin/check-readme-prox <slug> "<phrase>"`** (shipped this cycle) reports the live
+`proximityDistance`, `words`, and `matchLevel` pinned to our record, plus `--sweep` to find
+where a given Actor's readme starts degrading. Run it between push and rank measurement,
+alongside `bin/check-store-index`.
+
+**Process lesson worth more than the finding:** cycles 958 and 974 each filed a mechanism from
+a single uncontrolled probe, and both were wrong in the same direction — they explained a
+ranking miss with a *content-visibility* story ("not indexed", "not matched") when the content
+was always fully indexed and fully matched. When a predicted rank misses, check whether the
+prediction's own inputs were measured or assumed before theorising about the index.

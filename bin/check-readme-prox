@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""check-readme-prox — measure the LIVE Algolia proximityDistance of a phrase in our
+indexed readme, instead of trusting `store-rank --why`'s predicted prox bucket.
+
+Why this exists (cycle 976): cycle 958 shipped `gaming data api` into
+`steam-reviews-scraper`'s readme, `--why` predicted p2 from a prox=2/attr=6 bucket, and
+the phrase measured p43 live. Cycles 958/974 both mis-diagnosed it:
+
+  - cycle 958 blamed "words matched split across attributes"  -> falsified (cycle 974)
+  - cycle 974 blamed a readme OFFSET CUTOFF making deep text unmatched, reporting
+    `matchLevel:"none"`                                        -> falsified (cycle 976)
+
+The truth (cycle 976): the phrase IS matched (`matchLevel:full`, `words:3`, `nbTypos:0`)
+no matter how deep it sits. What actually degrades is **proximityDistance** — the ideal
+value for a contiguous 3-word run is 2, but deep phrases usually come back 8/9/16, which
+drops us into a much worse ranking bucket. `--why` assumes the ideal prox; it does not
+measure it. This tool measures it.
+
+Measured on steam-reviews-scraper (4067-word readme), 22 contiguous unique 3-word runs:
+  words    1 .. 976   -> prox 2  (6/6 ideal)
+  words 1163 .. 4057  -> prox >=8 (16/16 degraded)
+It is NOT a hard positional cutoff: a heading at word 1158 scored 2 while plain prose at
+word 1140 scored 9. The mechanism is still OPEN (see LEARNINGS cycle 976) — do not file
+one. But the aggregate correlation is strong enough to act on: put target phrases EARLY.
+
+Usage:
+  bin/check-readme-prox <slug> "<phrase>" ["<phrase>" ...]
+  bin/check-readme-prox <slug> --sweep      # 12 contiguous probes across our own readme,
+                                            # to see where this Actor's readme degrades
+
+Reads prox from the live index, pinned to our own record via `filters=objectID:...`, so
+a miss is unambiguous rather than "we ranked below the page cut".
+
+Exit 0 always (informational). Prints a summary line; prox<=2 is ideal, >=8 is degraded.
+"""
+import json
+import os
+import re
+import sys
+import time
+import urllib.parse
+import urllib.request
+
+APP = "OW0O5I3QO7"
+KEY = "0ecccd09f50396a4dbbe5dbfb17f4525"
+IDX = "prod_PUBLIC_STORE"
+USERNAME = os.environ.get("APIFY_USERNAME", "fetchsmith")
+URL = f"https://{APP}-dsn.algolia.net/1/indexes/{IDX}/query"
+
+# A contiguous N-word run scores N-1, so the ideal is per-phrase, not a constant:
+# 3-word probe -> 2, 4-word probe -> 3. Comparing everything against 2 falsely flags
+# longer phrases as degraded (caught cycle 976 on `video game data api`, prox=3 = ideal).
+def ideal_prox(phrase):
+    return max(1, len(phrase.split()) - 1)
+
+
+def _query(params):
+    body = json.dumps({"params": params}).encode()
+    req = urllib.request.Request(
+        URL,
+        data=body,
+        headers={
+            "X-Algolia-Application-Id": APP,
+            "X-Algolia-API-Key": KEY,
+            "Content-Type": "application/json",
+        },
+    )
+    return json.loads(urllib.request.urlopen(req).read())
+
+
+def find_record(slug):
+    """Return (objectID, readme) for our own Actor, or (None, None)."""
+    r = _query(f"query={urllib.parse.quote(slug)}&hitsPerPage=60")
+    for h in r["hits"]:
+        if h.get("username") == USERNAME and h.get("name") == slug:
+            return h["objectID"], h.get("readme") or ""
+    return None, None
+
+
+def probe(oid, phrase):
+    """Live ranking info for `phrase` pinned to our record, restricted to the readme."""
+    params = (
+        f"query={urllib.parse.quote(phrase)}&hitsPerPage=1"
+        f"&filters=objectID%3A{oid}&getRankingInfo=true"
+        f"&restrictSearchableAttributes=readme"
+    )
+    r = _query(params)
+    if not r["nbHits"]:
+        return None
+    h = r["hits"][0]
+    ri = h.get("_rankingInfo", {})
+    ri["matchLevel"] = (
+        h.get("_highlightResult", {}).get("readme", {}).get("matchLevel", "?")
+    )
+    return ri
+
+
+def sweep_phrases(readme, n=12):
+    """Pick `n` contiguous 3-word runs that occur exactly once, spread across the readme."""
+    low = readme.lower()
+    words = readme.split()
+    N = len(words)
+    cands = []
+    for i in range(N - 2):
+        trio = words[i : i + 3]
+        if not all(re.fullmatch(r"[A-Za-z][A-Za-z\-]{2,}", w) for w in trio):
+            continue
+        p = " ".join(trio).lower()
+        if low.count(p) != 1:
+            continue
+        cands.append((i, p))
+    if not cands:
+        return [], N
+    picks = []
+    for t in [int(N * k / (n - 1)) for k in range(n)]:
+        best = min(cands, key=lambda c: abs(c[0] - t))
+        if best not in picks:
+            picks.append(best)
+    return picks, N
+
+
+def main():
+    args = sys.argv[1:]
+    if not args:
+        print(__doc__)
+        return 0
+    slug = args[0]
+    rest = args[1:]
+
+    oid, readme = find_record(slug)
+    if not oid:
+        print(f"check-readme-prox: no indexed record for {USERNAME}/{slug}")
+        return 0
+    words = readme.split()
+    print(f"{slug}: objectID={oid} readme={len(readme)} chars / {len(words)} words\n")
+
+    if rest and rest[0] == "--sweep":
+        picks, N = sweep_phrases(readme)
+        rows = [(wi, p) for wi, p in picks]
+    else:
+        low = readme.lower()
+        rows = []
+        for p in rest:
+            i = low.find(p.lower())
+            wi = len(readme[:i].split()) if i >= 0 else -1
+            rows.append((wi, p))
+
+    print(f"{'word#':>6} {'pct':>6} {'prox':>5} {'words':>5} {'match':>6}  phrase")
+    degraded = ideal = missing = 0
+    for wi, p in rows:
+        ri = probe(oid, p)
+        time.sleep(0.12)
+        if ri is None:
+            missing += 1
+            print(f"{wi:>6} {'-':>6} {'MISS':>5} {'-':>5} {'none':>6}  {p}")
+            continue
+        pr = ri.get("proximityDistance")
+        want = ideal_prox(p)
+        pct = f"{100.0*wi/len(words):.1f}%" if wi >= 0 else "?"
+        flag = ""
+        if pr is not None and pr > want:
+            degraded += 1
+            flag = f"  <- DEGRADED (ideal {want})"
+        else:
+            ideal += 1
+        print(
+            f"{wi:>6} {pct:>6} {pr:>5} {ri.get('words'):>5} "
+            f"{ri.get('matchLevel'):>6}  {p}{flag}"
+        )
+
+    print(
+        f"\nsummary: {ideal} ideal (prox == len(phrase)-1), {degraded} degraded, "
+        f"{missing} not matched"
+    )
+    if degraded:
+        print(
+            "note: a DEGRADED phrase is still indexed and still matches — it just ranks in a "
+            "worse proximity bucket than `store-rank --why` predicts. Move it earlier in the "
+            "README and re-measure."
+        )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

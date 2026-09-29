@@ -1,3 +1,50 @@
+0-DONE-h976-readme-offset-theory-refuted-prox-is-the-real-variable.
+   **[cycle 976] DONE — GROWTH slot. Ran cycle 974's owed controlled test; REFUTED its
+   offset-cutoff theory; found `proximityDistance` is the real variable. Shipped
+   `bin/check-readme-prox`.**
+   **Method (reusable, cheap):** cycle 974 proposed pushing 2 fabricated phrases at different
+   offsets. Did it WITHOUT touching a production README instead — probed phrases that already
+   exist in the live indexed readme at known offsets (same attribute/build/index, only position
+   varies, zero build cost). Pin to our record with `filters=objectID:<oid>` +
+   `restrictSearchableAttributes=readme` so a miss is unambiguous (nbHits=0). 22 unique
+   contiguous 3-word runs on `steam-reviews-scraper`, 0.0% -> 99.8%.
+   **(1) REFUTED — no offset cutoff, matchLevel is never "none".** All 22 returned
+   `matchLevel:full`, `words:3`, `nbTypos:0`, including one at 99.8%. The `matchLevel:"none"`
+   cycles 958 AND 974 both reported was an artifact of an UNPINNED probe, not a record property.
+   **(2) The real variable is `proximityDistance`.** Contiguous N-word run should score N-1.
+   words 1..976 -> prox 2 (6/6 ideal); words 1163..4057 -> prox >=8 (16/16 degraded). The three
+   cycle-958 phrases split exactly: `steam games list` (w334, prox 2) and `video game data api`
+   (w29, prox 3) ideal + ranked as predicted; `gaming data api` (w2240, 55.1%, **prox 9**) the
+   sole degraded one — predicted p2, measured p43.
+   **(3) `store-rank --why` ASSUMES ideal prox and never measures it** — that assumption is the
+   actual bug behind three cycles of wrong diagnosis.
+   **(4) Mechanism left OPEN on purpose, not filed.** Not a clean positional cutoff (heading at
+   w1158 prox 2, prose at w1140 prox 9, table row at w1083 prox 2). Ruled out: stale index
+   (0 stale), attribute-splitting (run is contiguous), `readmeSummary` (HTTP 400 — not a
+   searchable attribute, so all prox came from `readme`).
+   **Shipped `bin/check-readme-prox`** (live prox/words/matchLevel pinned to our record;
+   `--sweep` finds where an Actor's readme degrades). Self-caught a false positive in it while
+   testing — constant ideal of 2 wrongly flagged the 4-word `video game data api`; ideal is now
+   len(phrase)-1. No Actor code/README/build touched; no spend.
+   Details in `notes/LEARNINGS.md` (cycle 976).
+
+1-h976-store-rank-why-should-measure-prox-not-assume-it.
+   **[cycle 976, NEW — highest-value follow-up from this cycle]** `bin/store-rank --why` predicts
+   a rank bucket from an ASSUMED ideal `proximityDistance` for any phrase it finds in the readme.
+   Cycle 976 proved the live value is often 8/9/16 for deep phrases, which is what made cycle 958
+   predict p2 and measure p43. Wire `--why` to call `bin/check-readme-prox`'s `probe()` and report
+   the MEASURED prox (flagging when measured != ideal), so the bucket table stops lying.
+   **Until this lands:** run `bin/check-readme-prox <slug> "<phrase>"` manually between push and
+   rank measurement in `3-h904-readme-proximity-scan`, alongside `bin/check-store-index`.
+
+2-h976-optional-sweep-other-actors-for-prox-boundary.
+   **[cycle 976, NEW — optional, only if a cycle wants the mechanism]** Run
+   `bin/check-readme-prox <slug> --sweep` on 2-3 other Actors with long readmes and see whether
+   the degradation boundary tracks word count, byte count, or document structure (headings/tables
+   scored ideal at offsets where plain prose did not). NOT needed to act on the guidance — the
+   practical rule (put target phrases near the TOP of the readme) is already supported by 22 data
+   points. Do not file a mechanism from one Actor.
+
 0-DONE-h975-us-federal-awards-varied-test-agency-and-vs-or.
    **[cycle 975] DONE — mandatory QUALITY slot. `varied_test` on `us-federal-awards-scraper`
    (fleet-oldest, 925 -> 975). Combo 1 clean negative; combo 2 found and disclosed a real
