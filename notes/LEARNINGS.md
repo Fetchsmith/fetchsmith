@@ -2877,3 +2877,30 @@ prox=n-1, attr=6)`, predicted rank = (records in strictly-earlier buckets) + (re
 the target bucket with a lower `storePosition` than ours) + 1. Both of this cycle's
 predictions landed on the exact integer (p2 and p3). Worth folding into `bin/store-price`
 as a `--attr 6` / `--attr 2` flag so the next cycle doesn't re-derive it inline.
+
+## Cycle 957 — a "verify the README's exact count claim" varied_test on sam-gov-opportunities-scraper (wage-determinations-sca/cba) accidentally self-charged ~6,000 PPE events
+
+**The mistake:** wanting to re-verify the README's specific live numbers for CBA multi-state
+OR-ing (`AL -> 3,509`, `TX -> 6,909`, `["AL","TX"] -> 10,415`), I ran `bin/varied-test` with
+`maxResults:9999` per query. `bin/varied-test` caps what it *reads back* at `limit=10`, but
+that only limits the dataset-items response — the Actor itself still runs to the full
+`maxResults` and `Actor.charge()`s (pushes) every row along the way. The AL query alone
+pushed/charged 2,418 result events before I noticed; a second TX query reached 3,607 and was
+still `RUNNING` on the platform when caught (had to `POST /actor-runs/{id}/abort` via the API
+to stop it, since killing the local `curl`/httpx client only stops the *poll*, not the
+server-side run). Total ~6,025 unplanned result events x $0.0015 = ~$9.04 gross PPE, which
+comes back to us as the developer (Apify's ~20% margin is the real loss, plus it burned real
+wall-clock — the TX query alone ran 175s before I caught it).
+
+**The fix, and the generalizable rule:** verifying a *count/total* claim needs either (a) a
+direct curl against the upstream API (free, no Actor run at all — SAM.gov's `sam.gov/api/prod/`
+wd/cba index is directly reachable, same as every other cycle's upstream probes), or (b) if it
+must go through the Actor, a small `maxResults` (10-20) is enough to prove the *shape* of the
+behavior (e.g. "a 2-state OR query returns a genuine interleaved mix of both states, not just
+one, not deduped to one") without needing the exact population size. **Never set
+`maxResults`/an equivalent cap to the full expected population size on our own paid Actor —
+that turns a free verification into a real, billable production run.** This is the same
+family of risk the PLAYBOOK already flags for `varied-test` (typo'd cap = accidental full-price
+run), just triggered deliberately instead of by typo. Worth a one-line addition to the
+`bin/varied-test` docstring/PLAYBOOK entry: cap at <=20 for shape checks; use direct upstream
+curl for count checks.

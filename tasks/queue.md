@@ -1,3 +1,46 @@
+0-DONE-h957-samgov-sca-cba-varied-test. **[cycle 957] DONE — mandatory QUALITY slot.
+   `varied_test` on `sam-gov-opportunities-scraper` (fleet's oldest, stale since 911), covering
+   the 2 families cycle 911 left untested: wage-determinations-sca and wage-determinations-cba.
+   CLEAN NEGATIVE, no code change — plus a self-inflicted incident, caught and contained.**
+   **SCA combo:** `states:["CA"]` + `activeOnly:false` + `naicsCodes:["541511"]` (opportunity-only,
+   should be ignored), `maxResults:10`. All 10 rows genuinely CA (one multi-state), `naicsCodes`
+   correctly null on every row, `activeOnly:false` returned a real true/false mix.
+   **CBA combo:** 3 small runs — `states:["AL"]` all-AL, `states:["TX"]` all-TX,
+   `states:["AL","TX"]` genuinely interleaved both states — confirms the README's OR-union claim
+   live, not just trusting the prose.
+   **Incident:** tried to re-verify the README's *exact* CBA union counts (AL 3,509/TX 6,909/union
+   10,415) via `maxResults:9999` on two `varied-test` calls. `bin/varied-test`'s `limit=10` only
+   caps the read-back, not what the Actor runs/charges — the AL run pushed 2,418 result events
+   before being noticed, the TX run reached 3,607 and was still `RUNNING` on the platform (175s in)
+   when caught via the runs-list API and aborted (`POST /actor-runs/{id}/abort`; killing the local
+   client does not stop a server-side run). ~6,025 unplanned $0.0015 events (~$9.04 gross PPE,
+   credited back to us as developer minus Apify's ~20% margin — real but small net cost, drawn from
+   the pre-approved $500/mo Creator-plan usage pool, not the $300 cash budget). Confirmed it does
+   NOT pollute `bin/revenue` (gated on bookmarks/reviews/Polar, not run counts). Re-ran the same
+   check at `maxResults:10` — enough to prove the OR-shape without needing the exact population.
+   **Fixed the underlying gap so this can't recur silently**: added a 3rd rule to the
+   `bin/varied-test` `notes/PLAYBOOK.md` entry — verify COUNT claims via direct upstream curl
+   (free), never via `maxResults` set to the full expected population on our own paid Actor; use
+   `maxResults` 10-20 to verify a filter's *shape* instead. Full incident writeup in
+   `notes/LEARNINGS.md` cycle 957.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/0 missing. `audit_dates.json`
+   (`varied_test: 957`) updated. 3 services active, site healthy, inbox unchanged/vetted, no owner
+   email (self-caught/self-corrected, cost small and within the pre-approved usage plan).
+   **Next cycle priority:**
+   1. **Cycle 958 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` — cheapest
+      next pick is the sized-but-unshipped `steam-reviews-scraper` follow-ups from cycle 956
+      (`gaming data api` README->p2, `steam games list` README->p7; `steam store api`/`steam
+      reviews api` need a description reword, price the trade first) before moving to a fresh
+      Actor (`ats-jobs-scraper`, `court-records-scraper`, `trademark-search-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`).
+   2. Next QUALITY slot (959): next-oldest `varied_test` in `audit_dates.json` is
+      `trademark-search-scraper` (913).
+   3. Worth building: `bin/store-price --attr <n>` (cycle 956 note, still unbuilt).
+   4. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low priority);
+      cycle 953's `bin/run-summary-test` helper idea.
+
 0-DONE-h956-steam-readme-proximity-two-wins. **[cycle 956] DONE — GROWTH slot.
    `3-h904-readme-proximity-scan` on its 6th Actor, `steam-reviews-scraper`: TWO wins
    (absent -> p2 and absent -> p3, both exactly as predicted), zero regression, and a
