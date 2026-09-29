@@ -272,20 +272,17 @@ if (minAwardAmount !== null || maxAwardAmount !== null) {
 // fiscal_year:2025 rows with is_active:false AND fiscal_year:2026+ rows with is_active:true --
 // confirmed on both the raw API and a live run of this Actor. `newly_added_projects_only` does not
 // share this bug (measured the same way: it correctly ANDs with fiscal_years, going to 0 matches
-// for a combination with none in common). Not fixed client-side this cycle: doing so correctly
-// would mean re-deriving `declaredMatches`/the chunk-and-merge accounting from a filtered subset
-// instead of NIH's own `meta.total`, which is deep enough plumbing (touches `countOf`,
-// `splitCriteria`, `walkChunk`) to deserve its own careful pass rather than a rushed one -- see
-// queue.md. Disclosing it is enough to stop a buyer from being silently misled in the meantime.
-if (input.activeOnly === true && fiscalYears.length > 0) {
-    log.warning(
-        'activeOnly is combined with fiscalYears. NIH RePORTER UNIONS these two instead of '
-        + 'intersecting them, so results may include inactive projects from the requested fiscal '
-        + 'year(s) AND active projects from other years -- not just active projects from the '
-        + 'requested year(s). Filter the output on isActive/fiscalYear yourself if you need the '
-        + 'strict intersection.',
-    );
-}
+// for a combination with none in common).
+// FIX (cycle 983): don't send `include_active_projects` to NIH at all when `fiscalYears` is also
+// set -- that's what triggers the union. Instead query `fiscal_years` alone (a well-defined,
+// reliably-counted superset) and filter `is_active === true` client-side in the row loop in
+// walkChunk (see `activeOnlyClientFilter`, defined below once `exclusiveProjectNums` exists). This
+// is the same shape as the award-amount filter above: `declaredMatches`/`reachableMatches` stay
+// honest because they describe what NIH declared for the query actually sent (fiscal_years alone),
+// and the client-side drop is a further, disclosed narrowing on top -- exactly like the ~3%
+// amount-filter drop, not a correctness bug in the completeness accounting. `offset`/pagination
+// math in walkChunk is untouched (it still walks on the raw, unfiltered row count) so the
+// chunk-and-merge / offset-wall logic needed no changes.
 
 const unknownIcs = agencyIcCodes.filter((c) => !IC_CODES.includes(c));
 if (unknownIcs.length) {
@@ -300,6 +297,20 @@ if (unknownIcs.length) {
 // fiscal-year default -- is dropped, so a narrowing filter can never silently hide the exact
 // project that was asked for by number.
 const exclusiveProjectNums = !searchId && projectNums.length > 0;
+
+// See the cycle-969/983 comment above `unknownIcs`: when activeOnly and fiscalYears are both set
+// (and neither searchId nor exclusiveProjectNums is overriding everything else), buildCriteria()
+// below omits `include_active_projects` from the NIH query and walkChunk() filters `is_active`
+// client-side instead, so the delivered rows are the true intersection.
+const activeOnlyClientFilter = input.activeOnly === true && fiscalYears.length > 0 && !searchId && !exclusiveProjectNums;
+if (activeOnlyClientFilter) {
+    log.info(
+        'activeOnly is combined with fiscalYears. NIH RePORTER UNIONS these two server-side instead '
+        + 'of intersecting them, so this run queries fiscalYears alone and filters isActive=true on '
+        + 'the results itself, delivering the true intersection (may deliver fewer rows than '
+        + 'declaredMatches, the same way the award-amount filter does).',
+    );
+}
 
 // Named so the warning below can tell the buyer exactly which of their inputs the saved search
 // overrode, instead of quietly returning a result set that ignores half the form.
@@ -360,7 +371,7 @@ function buildCriteria() {
             ...(awardNoticeDateTo ? { to_date: awardNoticeDateTo } : {}),
         };
     }
-    if (input.activeOnly === true) c.include_active_projects = true;
+    if (input.activeOnly === true && !activeOnlyClientFilter) c.include_active_projects = true;
     if (input.newlyAddedOnly === true) c.newly_added_projects_only = true;
     if (input.excludeSubprojects !== false) c.exclude_subprojects = true;
     return assertCriteria(c);
@@ -735,7 +746,11 @@ async function walkChunk(criteria, total) {
             return true;
         }
 
-        const fresh = rows.filter((r) => r.appl_id == null || !seen.has(r.appl_id));
+        // `rows.length` itself must stay the raw NIH page size for offset/pagination math below --
+        // only `fresh` (what continues past this point) drops the union-bug rows, the same way it
+        // already drops already-seen ones. See `activeOnlyClientFilter` above.
+        const fresh = rows.filter((r) => (r.appl_id == null || !seen.has(r.appl_id))
+            && (!activeOnlyClientFilter || r.is_active === true));
         for (const r of fresh) if (r.appl_id != null) seen.add(r.appl_id);
 
         if (seeding) {

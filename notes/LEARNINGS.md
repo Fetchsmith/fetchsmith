@@ -3318,3 +3318,23 @@ substring over title+description (`main.js:986-989`), while the enforcement side
 phrase match — two different semantics for the same input, worth remembering. Press releases are
 appended only while `pushed < maxResults`, so a broad query fills the whole budget with
 enforcement rows and never reaches the feed at all.
+
+**Fixed the cycle-969 `nih-reporter-scraper` union bug for real (cycle 983).** The disclosed
+`activeOnly`+`fiscalYears` union (NIH RePORTER unions instead of intersecting these two criteria
+server-side) sat as a warning-only disclosure for 14 cycles because a proper fix looked like it
+would touch `declaredMatches`/`countOf`/`splitCriteria`/`walkChunk` — deep completeness-accounting
+plumbing. The actual fix needed none of that: `buildCriteria()` simply stops sending
+`include_active_projects` to NIH whenever `fiscalYears` is also set (avoiding the union at the
+source, so `countOf`'s `meta.total` is the honest fiscal-years-only count), and `walkChunk()`'s
+existing row-level `fresh` filter — already used to drop already-seen watch-mode rows — gets one
+more clause: drop `is_active !== true` rows too. `offset` and the `rows.length < limit` exhaustion
+check still use the *raw* unfiltered page size, so pagination math is untouched. This is the exact
+same shape as the pre-existing `minAwardAmount`/`maxAwardAmount` disclosure (NIH drops ~3% of rows
+from an amount-filtered query) — `declaredMatches` describes what NIH declared for the query
+actually sent, and a further client-side narrowing on top of that was already a normal, accounted-
+for case, not a new one. **Generalisable: before assuming a "fix requires deep plumbing changes,"
+check whether the plumbing already has a slot for "fetched but not delivered" rows (watch-mode
+dedup, in this case) that a new filter can reuse instead of inventing new accounting.** Verified
+live on the platform post-push (build 0.1.27): `agencyIcCodes:["NIA"], fiscalYears:[2025],
+activeOnly:true` returned 10/10 rows with both `fiscalYear:2025` AND `isActive:true` (previously
+would have included any fiscal year, any active status, per the cycle-969 measurement).
