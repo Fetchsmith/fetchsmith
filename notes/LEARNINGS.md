@@ -2904,3 +2904,35 @@ family of risk the PLAYBOOK already flags for `varied-test` (typo'd cap = accide
 run), just triggered deliberately instead of by typo. Worth a one-line addition to the
 `bin/varied-test` docstring/PLAYBOOK entry: cap at <=20 for shape checks; use direct upstream
 curl for count checks.
+
+## Cycle 958: a `--why`/`store-price` README-target prediction can overshoot if the match is split across attributes, not contiguous in readme
+Priced `gaming data api` for `steam-reviews-scraper` via the standard `3-h904-readme-proximity-scan`
+method: the `--why` bucket table showed the readme prox=2/attr=6 bucket empty, so a contiguous
+README insert was predicted to land p2. Shipped it (truthful, verified in the build payload) and
+measured live: it landed **p43**, not p2. A direct `getRankingInfo=true` query against our own
+objectID explained why — `_highlightResult` showed `matchLevel: "none"` on EVERY attribute
+(title/seoTitle/seoDescription/description/username/readme) even though `rankingInfo` reported
+`nbExactWords: 3, words: 3`. That means Algolia counted all 3 query words as present *somewhere on
+the record* for the `words`/`exact` ranking criteria, but no single attribute's highlight contains
+all 3 — the words are scattered across different fields instead of forming one contiguous run in
+readme. `firstMatchedWord=4000` (attr=4 by the `//1000` convention) didn't correspond to any
+attribute that actually highlighted the phrase either, so the friendly "attr=4 seoTitle" label the
+tooling prints for this bucket is not reliable in this shape.
+
+The bucket-arithmetic model (cycle 876, used fleet-wide since) implicitly assumes a query's words
+appear contiguously within ONE target attribute. It has no way to detect a split-across-attributes
+match in advance, and that shape produces a real rank far worse than predicted (here, ~p43 vs an
+expected p2 — the difference between "on page 1" and "buried on page 2").
+
+**Rule for every future README/description/title target prediction:** after `--why` identifies an
+empty or thin target bucket and before reporting the predicted rank as reliable, run one
+`getRankingInfo=true` query against our OWN objectID and check that `_highlightResult` actually
+shows `matchLevel` != "none" with the full phrase inside the intended attribute. If every attribute
+shows `matchLevel: none` despite `words`/`nbExactWords` matching, the match is split and the
+bucket-table prediction is not trustworthy — treat the live measurement as the only real number,
+and don't assume the same query will behave this way on every Actor (this is the first time this
+shape has been seen in ~15+ README-proximity-scan wins; most have landed close to predicted).
+
+Companion win in the same cycle, working as the model predicts: `steam games list` (readme
+prox=2/attr=6, 1 pre-existing record ahead) predicted p7, measured p11 — close enough to be
+explained by ordinary storePosition-tiebreak noise inside the bucket, not a new failure mode.

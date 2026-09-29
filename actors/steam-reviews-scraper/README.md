@@ -16,6 +16,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 - **Pull reviews from an exact historical window** — `reviewsAfter`/`reviewsBefore` (e.g. a specific patch, a controversy, a launch week years ago) reach any point in a game's history, not just the last year.
 - **Study a review bomb** — `includeOffTopic: true` returns the reviews Steam itself hides when Valve flags a stretch of time as off-topic activity. On War Thunder that is 125,691 reviews you cannot see anywhere on the store page.
 - **Competitive research** — `dataType: "games"` returns price, discount, genres, developer, Metacritic score, the full review-score summary (total positive/negative, % positive) and, optionally, the **live concurrent player count**.
+- **Build a steam games list from any batch of titles** — put dozens of App IDs or search terms in one run and `dataType: "games"` returns price, discount, genres and review score for every match.
 - **Size a market, not just a game** — `includeOwnerEstimates: true` adds an estimated owner range, peak concurrent players yesterday and Steam's **crowd-voted tags with vote counts** to every game row. Those tags are what players actually call a game (Hades: `Action Roguelike`, `Rogue-lite`, `Hack and Slash`) rather than the three broad genres the store API returns (`Action`, `Indie`, `RPG`).
 - **Localised research** — `language: "schinese"`, `"russian"`, `"brazilian"` … or `"all"` for every language at once.
 - **Feed an LLM / dataset pipeline** — clean flat rows, stable `reviewId`, ISO-8601 timestamps.
@@ -205,6 +206,9 @@ Six extra fields are added to each game row. Real output for Hades (`1145360`):
 
 **Some rows came back with `ownersEstimate: null` — why?**
 SteamSpy didn't have that app. The rest of the row is unaffected — every Steam-sourced field is still complete — and the run log names the App IDs that were missing. It is most common for unreleased apps, non-game items and very new releases. Note that `"0 .. 20,000"` is a **real** bucket for a genuinely small game, not a "no data" marker; when SteamSpy has nothing the Actor returns `null` rather than passing that floor through as if it were an estimate.
+
+**Is this only a review scraper, or can I use it as a general gaming data API?**
+Both — set `dataType: "games"` and skip reviews entirely: you get price, discount, genres, developers, Metacritic score, the review-score summary and (optionally) live player count and owner estimates for a batch of Steam apps in one call, no review scraping involved.
 
 **Do I need a Steam API key or a proxy?**
 No. This Actor only reads Steam's public store endpoints over plain HTTP. No login, no key, no residential proxy, so runs are fast and cheap.

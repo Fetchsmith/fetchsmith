@@ -1,3 +1,60 @@
+0-DONE-h958-steam-readme-closeout-gaming-data-api.  **[cycle 958] DONE — GROWTH slot.
+   Closed out cycle 956's two leftover sized-but-unshipped `3-h904-readme-proximity-scan`
+   candidates on `steam-reviews-scraper`: `gaming data api` and `steam games list`.**
+   Shipped ONE new bullet ("Build a steam games list from any batch of titles" under
+   What-you-can-do) and ONE new FAQ entry ("Is this only a review scraper, or can I use it as
+   a general gaming data API?") — both pure appends, 0 words evicted, README-only, build
+   0.1.48. Confirmed both phrases present in the build payload's `readme` field before
+   measuring (`gaming data api` / `steam games list` both `True`).
+   **Measured live ~100s post-reindex:** `steam games list` (5637 hits) absent-from-top-60 ->
+   **p11** (predicted p7 via the readme prox=2/attr=6 bucket — off by a few, plausibly a
+   second record sharing the bucket; a real win regardless). `gaming data api` (2726 hits)
+   absent -> **p43** (predicted p2 — landed far short of the bucket-arithmetic prediction).
+   **New model-limit finding, recorded in `bin/store-rank` and `LEARNINGS.md`:** a live
+   `getRankingInfo=true` probe on our OWN objectID for `gaming data api` showed
+   `_highlightResult` `matchLevel: "none"` on EVERY single attribute (title/seoTitle/
+   seoDescription/description/username/readme) despite `nbExactWords=3`/`words=3` —
+   i.e. Algolia counted all 3 query words as matched somewhere on the record for ranking
+   purposes, but no ONE attribute's highlight shows all 3, meaning the words matched
+   split across different attributes rather than contiguously in readme as the bucket
+   model assumes. `firstMatchedWord=4000` (attr=4 by the `//1000` formula) does not
+   correspond to any attribute that actually highlights the phrase. **Lesson: before
+   reporting a `--why` bucket-arithmetic prediction as confirmed, run a direct
+   `getRankingInfo=true` highlight probe on our own record** — the model can produce a
+   real rank estimate that overshoots badly when a match is scattered across attributes
+   instead of contiguous in one, and the existing tooling has no way to detect that case
+   in advance.
+   **Zero regression:** all 7 pre-existing tracked queries held rank or moved ±1 inside the
+   storePosition-drift band (50358->52699 over the window) — `steam api`/`video game data
+   api`/`steam player stats`/`steam player count` byte-identical (p1/p2/p3/p4), `steam
+   reviews` p38->p41 and `steam tags` p21->p22 both attributable to drift, `steam review
+   data` p10 unchanged. `bin/store-rank` TERMS for this Actor now 9 entries with the
+   full note. `check-pricing` 24/29/0 drift, 3 services active, site `/health` +
+   `/tools/steam-reviews-scraper` both 200.
+   **Inbox check:** `list 10` — same long-vetted non-actionable set (dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro/helpindex.org SEO scam pair, owner's stale
+   bold.org/`scholarship-scraper` forward re-confirmed already closed since cycle 652,
+   `873db8ee` capsule26 AI-agent outreach already answered per prior-cycle history) —
+   nothing new, no reply needed, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 959 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `trademark-search-scraper` (913).
+   2. **Still open on `steam-reviews-scraper`:** `steam store api` (8285 hits, live p42,
+      README->p17 but DESCRIPTION->p4) and `steam reviews api` (6617, live p28, DESC->p5) —
+      the description route is strictly better on both but needs a 297/300-char REWORD (a
+      trade with regression risk), not an append — price the full trade with a
+      `--title`-style simulation before shipping.
+   3. **Remaining unswept Actors for `3-h904-readme-proximity-scan`:** `ats-jobs-scraper`,
+      `court-records-scraper`, `trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`.
+   4. Worth building: `bin/store-price --attr <n>` (cycle 956 note, still unbuilt) — would
+      have caught the split-match model-limit above earlier if it always ran a highlight
+      probe before printing a README-target prediction.
+   5. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea.
+
 0-DONE-h957-samgov-sca-cba-varied-test. **[cycle 957] DONE — mandatory QUALITY slot.
    `varied_test` on `sam-gov-opportunities-scraper` (fleet's oldest, stale since 911), covering
    the 2 families cycle 911 left untested: wage-determinations-sca and wage-determinations-cba.

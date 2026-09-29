@@ -527,15 +527,38 @@ TERMS = {
     # only improve or tie — and `firstMatchedWord` offsets here are all 0 within their attribute
     # (README starts "# Steam Reviews Scraper", so "Steam" is word 0), so an insert after line 3
     # cannot shift an existing readme match's offset either.
-    # Sized but NOT shipped (next cycle on this Actor): `gaming data api` (2724 hits, README->p2),
-    # `steam games list` (5627, README->p7), `steam store api` (8285, live p42, README->p17 but
+    # cycle 958 (GROWTH, closing out cycle 956's leftover sized candidates): shipped
+    # `gaming data api` and `steam games list` as one new bullet ("Build a steam games list
+    # from any batch of titles" under What-you-can-do) plus one new FAQ entry ("Is this only a
+    # review scraper, or can I use it as a general gaming data API?") — both truthful appends,
+    # 0 words evicted, build 0.1.48, README-only. Confirmed both phrases in the build payload's
+    # `readme` field before measuring. Live ~100s post-reindex: `steam games list` (5637 hits)
+    # absent-from-top-60 -> **p11** (predicted p7 off by a few, plausibly a 2nd record sharing
+    # the prox=2/attr=6 bucket — a real win regardless); `gaming data api` (2726 hits) absent ->
+    # **p43** (predicted p2 via the readme prox=2/attr=6 bucket, landed far short — a live
+    # `getRankingInfo` probe on our own hit showed `_highlightResult` matchLevel "none" on EVERY
+    # attribute despite `nbExactWords=3`/`firstMatchedWord=4000` (attr=4 seoTitle by the
+    # `//1000` formula), i.e. the 3 query words matched split across attributes rather than one
+    # contiguous run in readme — the bucket-arithmetic model assumes a single-attribute
+    # contiguous match and does not (yet) detect a split match; p43 is real and better than
+    # absent, but don't trust a `--why` bucket prediction as a floor when nbHits is this
+    # scattered — verify with a direct `getRankingInfo=true` highlight probe on OUR OWN
+    # objectID before reporting a predicted rank as confirmed). ZERO regression: all 7
+    # pre-existing tracked queries held rank or moved ±1 inside the storePosition-drift band
+    # (50358->52699 over the window) — `steam api`/`video game data api`/`steam player
+    # stats`/`steam player count` byte-identical (p1/p2/p3/p4), `steam reviews` p38->p41 and
+    # `steam tags` p21->p22 both attributable to drift (same direction/size as past cycles'
+    # drift controls), `steam review data` p10 unchanged.
+    # Sized but NOT shipped (still open): `steam store api` (8285, live p42, README->p17 but
     # DESCRIPTION->p4), `steam reviews api` (6617, live p28, DESC->p5) — the description route is
-    # strictly better on the last two but needs a 297/300-char REWORD (a trade), not an append.
+    # strictly better on both but needs a 297/300-char REWORD (a trade), not an append; price the
+    # trade with `bin/store-price --title`-style full simulation before shipping.
     # Declined as untruthful: `game sentiment analysis` (4258 hits, absent, would be README->p1 —
     # we ship review text and a negative/positive filter but do NOT compute sentiment).
     # Declined as saturated: `steam scraper` (13297, 97 records ahead in the title head bucket).
     "steam-reviews-scraper": ["steam reviews", "steam api", "steam player count",
                               "video game data api", "steam player stats", "steam tags",
+                              "gaming data api", "steam games list",
                               "steam review data"],
     # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
     # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
