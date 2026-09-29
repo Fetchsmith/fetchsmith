@@ -3452,3 +3452,30 @@ catch { return null }` wrapper is the tell. Also give the resulting null a logge
 unexplained null field is its own (smaller) disclosure bug.
 **Method note:** this was found by accident while live-testing something else (`detailLevel:"full"`).
 A TIMED-OUT verification run is a finding, not a flaky retry — read the run log before re-running it.
+
+## Cycle 993 — fleet sweep for cycle 992's bug shape: 1 real hit out of ~10 checked
+Followed cycle 992's grep recipe (`try { await http/request/gotScraping(...) } catch { return null }`
+on a helper named `<thing>For`/`fetch<Thing>`/`resolve<Thing>`, called before the main loop) across
+the fleet. Checked: apple-podcasts (fetchEntries), app-store-reviews (resolveAppName/searchEntity,
+getRatingBreakdown), ats-jobs (per-ATS fetchers), fda-recall (fetchPressReleases), fec
+(fetchTotals), federal-register (resolveAgencies), clinicaltrials (resolveIdsChunk),
+sec-insider-trades (resolveIssuers), google-play-reviews (resolveAppIds), substack
+(fetchPublicationInfo, fetchDetail, fetchComments).
+**1 real hit: `substack-scraper`'s `fetchPublicationInfo`** — same shape as shopify's `currencyFor`:
+optional, null-on-failure, but routed through `getJson`'s budget-proportional ladder (up to ~2
+retries x 45s) and positioned ahead of the first `pushResult` for an origin's first post. Fixed with
+the same idiom (single attempt, 8s hard cap, skip when thin). Build 0.1.42.
+**Why the rest were clean:** either already short-leashed (fda-recall `retry.limit:1`/20s,
+sec-insider-trades/clinicaltrials/federal-register's `apiGet` retries are for LOAD-BEARING calls the
+output actually depends on, not optional side-lookups that silently degrade), or already
+time-budget-gated per call site (google-play `resolveAppIds` checks `timeBudgetOk()` per iteration).
+**Refined rule:** the dangerous combination is specifically (a) optional/non-load-bearing +
+(b) budget-proportional or fixed-heavy retry ladder + (c) positioned before the first output is
+produced. Any one of the three missing makes the shape safe — e.g. `fetchTotals` (fec) is
+non-fatal-on-failure but its ladder is fixed-small (2 retries/30s, ~90s worst case) and it runs
+per-candidate deep in an already-productive loop, not as the run's first call.
+**Flagged but NOT fixed this cycle (queued):** `federal-register-scraper`'s `resolveAgencies` is
+called before the main search loop when `agencies` input is set, sharing `apiGet`'s heavy ladder (4
+attempts x 60s + escalating sleep, ~300s worst case) — it degrades gracefully (falls back to
+unvalidated passthrough) rather than returning null, so it is NOT a clean match, but the worst-case
+delay before that fallback fires is large enough to be worth a live timing check next cycle.

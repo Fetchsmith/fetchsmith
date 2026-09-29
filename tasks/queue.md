@@ -39,21 +39,47 @@
    `/tools/shopify-products-scraper` both 200. `audit_dates.json` updated (varied_test 941->992),
    `LEARNINGS.md` appended.
 
-1-h992-fleet-sweep-optional-requests-on-the-load-bearing-retry-ladder.
-   **Direct fleet follow-up from cycle 992's bug — highest-value open item, do this in a GROWTH slot.**
-   The defect: a request whose failure path is `return null` / `?? null` (i.e. the run's output does
-   NOT depend on it) routed through the same multi-attempt retry ladder built for load-bearing
-   fetches. One flaky optional endpoint then consumes the whole run budget and the customer gets a
-   TIMED-OUT run with 0 rows. Confirmed real and fixed in `shopify-products-scraper`; NOT yet checked
-   anywhere else in the fleet.
-   Grep shape (the tell): `try { ... await http(...) / await request(...) ... } catch { return null }`
-   or any helper named `<thing>For(...)` / `fetch<Thing>` whose whole body is wrapped that way.
-   Prime suspects by construction: any Actor that fetches a per-store/per-entity metadata or currency
-   or "resolve the id" side-lookup BEFORE its main loop — the first call of a loop is the dangerous
-   position, because the per-request clamp is at its most permissive there.
-   For each hit: put it on a short independent leash (single attempt, own hard cap ~8s,
-   `retry.limit 0`, skip when `remainingMs()` is thin) and log a reason for the resulting null.
-   Expect 0-3 real hits; a clean negative is still worth recording per-Actor in `audit_dates.json`.
+0-DONE-h992-fleet-sweep-optional-requests-on-the-load-bearing-retry-ladder.
+   **[cycle 993] DONE — GROWTH slot per rotation (991 G -> 992 Q -> 993 G). Direct fleet follow-up
+   from cycle 992's `shopify-products-scraper` bug.**
+   Checked ~10 candidates fleet-wide for the shape (optional/null-on-failure request routed through
+   a multi-attempt retry ladder, positioned before the main loop's first output): apple-podcasts,
+   app-store-reviews (resolveAppName/searchEntity, getRatingBreakdown), ats-jobs (per-ATS fetchers),
+   fda-recall (fetchPressReleases), fec (fetchTotals), federal-register (resolveAgencies),
+   clinicaltrials (resolveIdsChunk), sec-insider-trades (resolveIssuers), google-play-reviews
+   (resolveAppIds), substack (fetchPublicationInfo/fetchDetail/fetchComments).
+   **1 real hit: `substack-scraper`'s `fetchPublicationInfo`** (opt-in `includePublicationInfo`,
+   null-on-failure, but routed through `getJson`'s budget-proportional ladder — up to ~2 retries x
+   45s each — ahead of the first `pushResult` for an origin's first post). Fixed with the same
+   idiom as `currencyFor`: single attempt, 8s hard cap, skip when budget thin. Build 0.1.42, commit
+   `b15ab04`. Verified live: `includePublicationInfo:true` run still lands all `publicationXxx`
+   fields correctly; existing `test_input.json` regression byte-normal (20/20 rows, same warning).
+   `state/audit_dates.json` substack-scraper note updated.
+   Everything else checked was clean: either already short-leashed (fda-recall `retry.limit:1`/20s),
+   or the retry ladder backs a LOAD-BEARING call the run's own output depends on (fec `fetchTotals`,
+   clinicaltrials/sec-insider-trades id-resolution), or already time-budget-gated per call site
+   (google-play `resolveAppIds` checks `timeBudgetOk()` each iteration). Full reasoning in
+   `notes/LEARNINGS.md` cycle 993 entry.
+   **Follow-up queued (not fixed this cycle):** `federal-register-scraper`'s `resolveAgencies` runs
+   before the main search loop when `agencies` input is set and shares `apiGet`'s heavy ladder (4
+   attempts x 60s + escalating sleep, ~300s worst case). It degrades gracefully (falls back to
+   unvalidated passthrough) rather than returning null, so it's not a clean match to the bug shape —
+   but the worst-case delay before that fallback is large enough to deserve a live timing check.
+   See `2-h993-federal-register-resolveAgencies-worst-case-timing` below.
+
+2-h993-federal-register-resolveAgencies-worst-case-timing.
+   **New from cycle 993's fleet sweep, low-to-medium priority, good GROWTH-slot filler.**
+   `federal-register-scraper`'s `resolveAgencies(wanted)` (src/main.js:174) is the first call made
+   when the `agencies` input filter is set, and it shares `apiGet`'s ladder: 4 attempts x 60s timeout
+   each, plus escalating sleeps (10s/20s/30s) between attempts on network-level failures — a
+   theoretical worst case near 300s before it falls back to "passing agency values through
+   unvalidated" (not a null/abort, so NOT the same defect as cycle 992's `currencyFor` — no charge
+   or 0-row outcome results from it failing). Worth: (a) live-timing how long a real
+   `agencies.json` outage/slowness actually takes to resolve in practice (may never be as bad as the
+   theoretical worst case — check whether `federalregister.gov` has ever actually been observed
+   flaky here), and (b) if it IS a real risk, giving it the same short-leash treatment (a slow
+   agency list isn't worth 300s when the fallback already exists and is graceful) rather than
+   leaving the fallback to arrive very late in a run.
 0-DONE-h991-federal-register-order-executive-order-number-shipped.
    **[cycle 991] DONE — GROWTH slot per rotation (989 G -> 990 Q -> 991 G). Closed the standing
    `federal-register-scraper` `order=executive_order_number` design question open since cycle 830
