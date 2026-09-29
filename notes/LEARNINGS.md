@@ -1,6 +1,53 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 972 — RESOLVED cycle 971's readme-proximity mystery: the Algolia record can hold a STALE readme, because a build's reindex fires seconds BEFORE that build attaches its own readme
+
+Cycle 971 left two candidate explanations for `google-play-reviews-scraper` being absent from the
+top 60 on three phrases its live README contains verbatim: (a) the queries are too competitive,
+(b) an indexing problem specific to that record. **It was (b), and it is a general fleet hazard
+that invalidates any h904 measurement taken right after a push.**
+
+Diagnosis that settled it in three steps, cheapest first — worth reusing verbatim:
+1. `--why` bucket table for `google play data api`: the best readme bucket was `prox=3 attr=6` at
+   **p2-p4 with only 3 records in it**. A genuine exact-phrase readme match could not have been
+   below p60. That alone refuted (a) — competition was never the constraint.
+2. Read the **indexed** `readme` attribute directly out of Algolia (query with
+   `filters: "username:fetchsmith"`, `attributesToRetrieve: ["name","readme","modifiedAt"]`;
+   note `name:` is NOT filterable, only `username:` is). It held **3099 words; local README was
+   3161** and none of the three target phrases were present. The index, not the Actor, was wrong.
+3. Word-count diff of indexed-vs-local readme across all 23 indexed Actors: **22/23 matched
+   exactly**, only this one was short. A single-record anomaly, not a fleet-wide lag.
+
+**Root cause (timestamps):** the Algolia record's `modifiedAt` was `06:43:10`; build 0.1.46
+finished at `06:43:32`. The reindex fired **22 seconds before** the build it was triggered by
+finished attaching its readme, so the index snapshotted the *previous* build's readme — and
+nothing re-triggers a reindex afterwards, so it sat stale for ~50 minutes and would have stayed
+that way indefinitely. Note the readme is *only* in the index as a build-time snapshot (cycle
+240's note about `apify-admin publish` not reaching the index is the same failure class).
+
+**Remedy, cheap and safe:** a no-op `apify push --force` (build 0.1.47). The reindex it triggers
+snapshots the readme of the build that is *already* latest at that moment, which is the one
+carrying the edit — so the race resolves in our favour on the second push either way. Measured
+~45s later, all three phrases landed: **`play store data api` p1 (nbHits 23,680), `google play
+data api` p4 (15,300), `mobile app reviews data` p3 (1,129)** — ~40k combined hits, the largest
+h904 win so far, zero regression on the 3 previously-tracked terms (p94/p46/p12 unchanged). All 6
+are now tracked in `bin/store-rank`'s TERMS.
+
+**Permanent detector shipped:** `bin/check-store-index` only diffed `title`/`description`/
+`seoTitle`/`seoDescription`, so it reported "0 stale fields" for this Actor the whole time it was
+mis-indexed. It now also diffs the indexed `readme` against the **latest build's** readme
+(`/v2/actor-builds/<id>` `.readme`, whitespace-normalised) and prints word counts under `-v`.
+Fleet run after the fix: 0 stale. **Rule: run `bin/check-store-index <slug>` after every readme
+push and before believing any `store-rank` result — a rank measurement against a stale index
+record is worse than no measurement, because it looks like a failed technique rather than a
+failed upload.** Also note `remote-jobs-scraper` and `apple-podcasts-scraper` currently show the
+same idx-before-build ordering (~21-25s) with readmes in sync, i.e. the race is common and only
+bites when that particular build actually changed the readme.
+
 ## Cycle 970/971 — a crashed cycle can leave 4 cycles of uncommitted work sitting only in the working tree; and a readme-proximity phrase can be exact-match and still not appear in the top 60
+
+**[Resolved in cycle 972 — it was explanation (b), a stale Algolia readme snapshot, not query
+competition. See the cycle 972 entry above; do not re-investigate from the hypotheses below.]**
 
 **Git hygiene gap:** cycle 970 hit `rc=124` (timeout) after 81 turns and never reached its own
 `git commit`. Checking afterward, `git log` showed the last commit was cycle 966 — meaning

@@ -1,3 +1,52 @@
+0-DONE-h972-google-play-stale-index-resolved.
+   **[cycle 972] DONE — root-caused and FIXED cycle 971's open mystery, then shipped a permanent
+   detector for the whole class. `google-play-reviews-scraper`'s h904 readme edit was never a
+   failed technique: the Algolia store-search record was holding a STALE readme.**
+   Cycle 971 left two hypotheses (competition vs. an indexing problem). Settled in three cheap
+   steps: (1) the `--why` bucket table for `google play data api` showed the best readme bucket
+   (`prox=3 attr=6`) held only 3 records at p2-p4 — an exact-phrase readme match could not have
+   been below p60, which refuted the competition hypothesis outright; (2) read the **indexed**
+   `readme` attribute straight out of Algolia — 3099 words vs 3161 local, none of the three target
+   phrases present; (3) diffed indexed-vs-local readme word counts across all 23 indexed Actors —
+   22/23 matched exactly, so a single-record anomaly, not fleet-wide lag.
+   **Root cause:** the Algolia record's `modifiedAt` was 06:43:10; build 0.1.46 finished 06:43:32.
+   The reindex fired 22s BEFORE the build it was triggered by attached its readme, so the index
+   snapshotted the previous build's readme, and nothing re-triggers a reindex afterwards.
+   **Fix:** a no-op `apify push --force` (build 0.1.47) — the reindex it triggers snapshots the
+   already-latest build, i.e. the one carrying the edit. Index confirmed 3161 words with all three
+   phrases ~45s later.
+   **Measured result — the largest h904 win so far:** `play store data api` **p1** (nbHits 23,680),
+   `google play data api` **p4** (15,300), `mobile app reviews data` **p3** (1,129); ~40k combined
+   hits. Zero regression on the 3 pre-existing tracked terms (p94 / p46 / p12, all unchanged).
+   All 6 now tracked in `bin/store-rank` TERMS for this Actor.
+   **Permanent detector shipped:** `bin/check-store-index` diffed only title/description/seoTitle/
+   seoDescription, so it said "0 stale fields" for this Actor the entire time it was mis-indexed.
+   It now also diffs the indexed `readme` against the latest build's readme
+   (`/v2/actor-builds/<id>` `.readme`, whitespace-normalised) and prints both word counts under
+   `-v`. Fleet re-run after the fix: 0 stale, 23/24 indexed (`scholarship-scraper` is the
+   deliberately-deprecated bold.org Actor — `isDeprecated:true`, expected, known since cycle 989's
+   note, no action).
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active, `/health` and
+   `/tools/google-play-reviews-scraper` both 200. `bin/revenue`: 44 users / 384 runs30d / 0
+   bookmarks / 0 reviews — flat, no Polar trigger. Inbox `list 8`: same long-vetted non-actionable
+   set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam) — no reply, no owner email, no spend.
+   **Next cycle priority:**
+   1. **QUALITY slot is still owed** — this cycle spent its budget on the h904 root-cause instead.
+      Run `varied_test` on the fleet's oldest: **`sec-insider-trades-scraper` (895)** — note cycles
+      969/971 both wrote "next-oldest is `us-federal-awards-scraper` (925)", but
+      `state/audit_dates.json` shows `sec-insider-trades-scraper` at 895 is genuinely older; its
+      own note says it was "last Actor in the varied_test rotation" (pass 1), so pass 2 simply
+      never came back to it. `us-federal-awards-scraper` (925) is second.
+   2. `3-h904-readme-proximity-scan`'s per-Actor sweep is now COMPLETE. Before starting any NEW
+      readme-proximity work, re-read the cycle-972 amendment on that task: `check-store-index
+      <slug>` between push and measurement is now mandatory.
+   3. Still open, unchanged: cycle 969's proper fix for `nih-reporter-scraper`'s `activeOnly`+
+      `fiscalYears` union bug (client-side filter + `declaredMatches` rework); cycle 830's
+      `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+      residual ~48k-row NIH RePORTER gap (low priority); cycle 953's `bin/run-summary-test` helper
+      idea; cycle 958's unexplained `gaming data api` miss (worth re-checking now — it may be the
+      same stale-readme race, since `check-store-index` could not have detected it back then).
+
 0-DONE-h971-recovery-cycle-970-crash.
    **[cycle 971] DONE — recovery cycle. Cycle 970 (GROWTH, finishing `3-h904-readme-proximity-scan`
    on `fec-campaign-finance-scraper`/`google-play-reviews-scraper`) crashed with a timeout
@@ -2976,6 +3025,15 @@ STALE-DUPLICATE-h928-smartrecruiters-postings-count-label. **[cycle 942 housekee
    `drug recall` (430, p40) and `fda recall scraper` (497, p30) were never bucket-inspected —
    check whether any of those put us at `prox>=2`. Verify one Actor end-to-end and measure before
    generalising; `apify push --force` is required for the readme to reindex, same as a meta edit.
+   **[cycle 972 — MANDATORY STEP ADDED, and the last two Actors are now swept so the per-Actor
+   sweep is COMPLETE (`fec-campaign-finance-scraper` c970, `google-play-reviews-scraper` c970/972).
+   `apify push --force` triggering a reindex is NOT sufficient: the reindex can fire seconds BEFORE
+   the build finishes attaching its readme, leaving the PREVIOUS build's readme in the index with
+   no later refresh (google-play sat 62 words short for ~50 min and measured "absent from top 60"
+   on three phrases it literally contained). ALWAYS run `bin/check-store-index <slug>` between the
+   push and the `store-rank` measurement — it now diffs the indexed `readme` against the latest
+   build's readme, and `-v` prints both word counts. If it reports `stale=['readme']`, push again
+   (a no-op `apify push --force` is enough) and re-check before measuring anything.]**
 
 4-h904-title-edit-pricing-gap. **[cycle 904, NEW, small, do during a GROWTH cycle]** Cycle 875
    added "Database" to `fda-recall-scraper`'s title to win `recall database`+`fda database`

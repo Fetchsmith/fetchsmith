@@ -18,6 +18,12 @@ env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env")
 H = {"Authorization": f"Bearer {env['APIFY_TOKEN']}"}
 API = "https://api.apify.com/v2"
 
+def norm(s):
+    """Whitespace-insensitive compare: the index stores the raw markdown, but don't let a
+    trailing-newline / CRLF difference masquerade as a stale readme."""
+    return " ".join((s or "").split())
+
+
 verbose = "-v" in sys.argv
 only = [a for a in sys.argv[1:] if not a.startswith("-")]
 
@@ -40,6 +46,21 @@ for a in sorted(httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["d
     idx_mod = datetime.datetime.fromtimestamp(hit["modifiedAt"], datetime.UTC).strftime("%m-%d %H:%M:%S")
     build = (live.get("taggedBuilds", {}).get("latest") or {}).get("finishedAt", "")[5:19].replace("T", " ")
     stale = [f for f in FIELDS if (hit.get(f) or "") != (live.get(f) or "")]
+    # Cycle 972: the README is indexed too, and it goes stale on its OWN schedule --
+    # a build's reindex can fire a few seconds BEFORE that build finishes attaching its
+    # readme, so the index keeps the PREVIOUS build's readme with no later refresh
+    # (google-play-reviews-scraper: index 06:43:10 vs build 06:43:32, readme 62 words
+    # short for 50 minutes). Every readme-proximity (h904) measurement is meaningless
+    # until this says readme is in sync. Compare against the latest BUILD's readme,
+    # which is exactly what the index snapshots.
+    bid = (live.get("taggedBuilds", {}).get("latest") or {}).get("buildId")
+    if bid:
+        bmd = httpx.get(f"{API}/actor-builds/{bid}", headers=H).json()["data"].get("readme") or ""
+        if norm(hit.get("readme")) != norm(bmd):
+            stale.append("readme")
+            if verbose:
+                print(f"    readme  indexed {len((hit.get('readme') or '').split())} words"
+                      f"  vs build {len(bmd.split())} words")
     stale_total += len(stale)
     print(f"{n:28s} idx={idx_mod}  build={build}  stale={stale or '-'}")
     if verbose and stale:
