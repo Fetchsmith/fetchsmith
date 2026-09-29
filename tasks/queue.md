@@ -113,17 +113,33 @@
    flat (44 users / 385 runs30d / 0 reviews / 0 bookmarks / $0). No spend, no owner email.
    `state/audit_dates.json` `varied_test: 933 -> 984` with the full note. Commit `bd1f208`.
 
-2-h984-fleet-pass-mixed-source-warning-guards.
-   **[cycle 984, NEW, medium priority — the generalisable half of h984.]** Any Actor that merges
-   several *kinds* of source into one dataset (search feeds + fixed feeds, API query + uploaded ID
-   list, watch mode + backfill) can have the same bug shape: a "filter X does not apply to source Y"
-   warning whose guard asks *"is this run ONLY Y?"* instead of *"is there a Y in this run?"*. Those
-   two differ exactly on the mixed run, which is the case where the output is misleading rather than
-   obviously empty. Cheap mechanical check: `grep -n '&& !.*\.length)' src/main.js` in each Actor and
-   read what the negated array is — if it is one source kind among several, the guard is probably
-   wrong. Candidates to look at first: Actors with both a query field and an ID/URL-list field.
-   Related, already-open and similar in spirit: `2-h976-optional-sweep-other-actors-for-prox-boundary`
-   and cycle 981's `states`-style 2-letter-code doc-gap sweep.
+0-DONE-h984-fleet-pass-mixed-source-warning-guards.
+   **[cycle 987] DONE — GROWTH slot per rotation (985 G -> 986 Q -> 987 G). Closed the h984
+   mechanical fleet sweep for the "is this run ONLY Y?" vs "is there a Y?" warning-guard bug
+   shape found in google-news-scraper (cycle 984) and apple-podcasts-scraper (cycle 986).**
+   Ran `grep -n '&& !.*\.length)' src/main.js` across all 25 actor dirs (24 live + `_template`;
+   confirmed every dir has a `src/main.js`, no path misses). Read every hit in context (11 lines
+   across apple-podcasts, app-store-reviews, clinicaltrials, google-news, hacker-news x2,
+   steam-reviews x3, substack x2). Result: **clean sweep, no new instances.** Most hits are
+   `Actor.fail()` input-validation guards ("provide at least one of X/Y"), a structurally different
+   and correct pattern. The remaining non-fail candidates were checked individually and are all
+   sound: `clinicaltrials-scraper:1172` gates which of three mutually-exclusive status-message
+   branches to show (watchMode/nctIds modes have their own messaging), not a filter-applicability
+   warning; `hacker-news-scraper:134` correctly requires BOTH milestone ladders empty (not "only one
+   source"); `hacker-news-scraper:520` and `substack-scraper:543` already handle their mixed/partial
+   cases explicitly (the substack one downgrades to `log.info` instead of going silent when only
+   some rows are affected, which is the correct behavior this bug shape was checking for).
+   No code changes needed. Standing checks re-run and clean: `check-pricing` 24/29/0 drift,
+   `check-charges` 24/24, 3 services active, `/health` 200. Inbox reviewed: owner's `116f7cc3`
+   bold.org/`scholarship-scraper` forward (dated 2026-09-22) is the same stale, already-resolved
+   non-issue re-delivered again — Actor deliberately `status:"retired"` in registry.json since
+   bold.org's Vercel bot-checkpoint blocks all automated access; matches every prior cycle's
+   conclusion back to cycle 652, nothing new, no owner reply needed (rule 3 bar not met). No spend.
+   Next GROWTH-slot candidates still open: `2-h976-optional-sweep-other-actors-for-prox-boundary`,
+   the dev.to backlog (3 unsynced posts, next due ~2026-10-01/02), and cycle 981's `states`-style
+   2-letter-code doc-gap sweep. Next cycle (988) is QUALITY per rotation: `varied_test` on
+   `steam-reviews-scraper` (937, fleet-oldest, re-confirmed fresh via `audit_dates.json` this
+   cycle — do not trust this note's ranking by then).
 
 0-DONE-h983-nih-reporter-activeonly-fiscalyears-union-bug-fixed.
    **[cycle 983] DONE — GROWTH slot per rotation (981 G -> 982 Q -> 983 G). Closed the standing
