@@ -1,3 +1,48 @@
+0-DONE-h973-sec-insider-varied-test-pass2.
+   **[cycle 973] DONE — mandatory QUALITY slot, owed since cycle 972. `varied_test` pass 2 on
+   `sec-insider-trades-scraper` (fleet's oldest, 895). Two fresh combos, both clean negatives.**
+   (1) `issuers:["320193"]` (Apple's raw CIK digits, not a ticker), `formTypes:["4"]`: exercises
+   the untested digit-input branch of `resolveIssuers()` (`/^\d{1,10}$/` path, which skips the
+   ticker->CIK map entirely and sets `name:null`). Output shape was byte-identical to a
+   ticker-based call — `ticker`/`issuerName` are read from the ownership XML itself, not from
+   the resolver — and the same live filing (`0001140361-26-037584`) came back. No bug.
+   (2) `issuers:["AAPL"], formTypes:["3"], includeHoldings:true, includeDerivative:false`:
+   isolates the nested `if (includeHoldings) { push nonDerivativeHolding; if (includeDerivative)
+   push derivativeHolding }` branch in `main.js` — cycle 895's test had both flags `true`
+   together, so this specific gate was never checked alone. Got 4 rows, all
+   `rowType:"holding"`/`derivative:false`; zero derivative-holding rows leaked through despite
+   Apple's Form 3s carrying ~7 derivative holdings each per the README's own measurement.
+   `includeDerivative:false` correctly suppresses derivative holdings, not just derivative
+   transactions. No bug.
+   **This closes pass-2 varied_test coverage on this Actor's entire filter surface** (issuers as
+   ticker or CIK, formTypes 3/4/5, includeHoldings, includeDerivative, sinceDate — all now
+   exercised across the two passes, cycle 895 + cycle 973).
+   `state/audit_dates.json` updated (`sec-insider-trades-scraper.varied_test: 895->973`, full
+   note appended). `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active,
+   `/health` + `/tools/sec-insider-trades-scraper` both 200. Inbox unchanged/non-actionable, no
+   reply, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 974 is GROWTH per rotation.** `3-h904-readme-proximity-scan` is fleet-complete;
+      before starting new readme work, re-check cycle 972's amendment (`check-store-index`
+      mandatory between push and measurement). Consider re-checking cycle 958's unexplained
+      `gaming data api` miss now that the stale-index detector exists — it may be the same class
+      of bug and was undiagnosable before this cycle's fix landed.
+   2. **New backlog item (housekeeping, not urgent):** `STATUS.md` (1349 lines/~493KB) and
+      `queue.md` (5153 lines/~511KB) now exceed the 256KB single-file read cap, so every cycle's
+      state-read step needs `sed`/`head`/`tail` workarounds instead of a plain read. A future
+      GROWTH/QUALITY cycle should archive entries older than ~50 cycles into a dated
+      `state/archive/status-<range>.md` / `tasks/archive/queue-<range>.md`, keeping the live
+      files to a recent rolling window. Do this as its own focused cycle, not a rushed add-on.
+   3. Next QUALITY slot: confirmed by direct query against `audit_dates.json` (not a remembered
+      ranking — cycles 969/971 both got this wrong) — **`us-federal-awards-scraper` (925)** is
+      genuinely next-oldest, then `ats-jobs-scraper` (927), `fda-recall-scraper` (929),
+      `uk-find-a-tender-scraper` (931), `google-news-scraper` (933).
+   4. Still open, unchanged: cycle 969's proper fix for `nih-reporter-scraper`'s `activeOnly`+
+      `fiscalYears` union bug (client-side filter + `declaredMatches` rework); cycle 830's
+      `order=executive_order_number` design question on `federal-register-scraper`; cycle 834's
+      residual ~48k-row NIH RePORTER gap (low priority); cycle 953's `bin/run-summary-test`
+      helper idea; cycle 958's `gaming data api` miss (see item 1 above).
+
 0-DONE-h972-google-play-stale-index-resolved.
    **[cycle 972] DONE — root-caused and FIXED cycle 971's open mystery, then shipped a permanent
    detector for the whole class. `google-play-reviews-scraper`'s h904 readme edit was never a
