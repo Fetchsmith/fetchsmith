@@ -85,9 +85,30 @@ for (const [field, value, modes] of [
   ['donorOccupation', donorOccupation, ['contributions']],
   ['donorCity', donorCity, ['contributions']],
   ['donorZip', donorZip, ['contributions']],
+  ['office', office, ['candidates']],
+  ['party', party, ['candidates']],
+  ['state', state, ['candidates', 'contributions', 'disbursements']],
 ]) {
   if (value && !modes.includes(searchMode)) {
     log.warning(`Ignoring ${field} "${value}": it only applies in searchMode ${modes.map((m) => `"${m}"`).join('/')}, and this run is in "${searchMode}" mode.`);
+  }
+}
+if (searchMode === 'candidates') {
+  // Mirror image of the loop above: these four apply only to the transaction modes (their
+  // schema descriptions say so), so a caller setting them in candidates mode gets a silently
+  // unfiltered candidate list unless this warns -- same defect shape as the loop above and as
+  // steam-reviews-scraper's games-mode filters (cycle 988).
+  if (minAmount !== undefined) {
+    log.warning(`Ignoring minAmount ${minAmount}: it only applies in searchMode "contributions"/"disbursements"/"independentExpenditures", and this run is in "candidates" mode.`);
+  }
+  if (maxAmount !== undefined) {
+    log.warning(`Ignoring maxAmount ${maxAmount}: it only applies in searchMode "contributions"/"disbursements"/"independentExpenditures", and this run is in "candidates" mode.`);
+  }
+  if (contributionDateFrom) {
+    log.warning(`Ignoring contributionDateFrom "${contributionDateFrom}": it only applies in searchMode "contributions"/"disbursements"/"independentExpenditures", and this run is in "candidates" mode.`);
+  }
+  if (contributionDateTo) {
+    log.warning(`Ignoring contributionDateTo "${contributionDateTo}": it only applies in searchMode "contributions"/"disbursements"/"independentExpenditures", and this run is in "candidates" mode.`);
   }
 }
 // The FEC's Schedule A endpoint (contributions mode) does a near-full-table scan when none of its

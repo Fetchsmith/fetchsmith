@@ -31,12 +31,12 @@ It works as a campaign finance API and FEC data API in one Actor: candidate fina
 | `candidateId` | string | Independent expenditures mode: only spending naming this FEC candidate ID, e.g. `"P80001571"`. |
 | `supportOppose` | string | Independent expenditures mode: `S` (spent supporting the candidate), `O` (spent opposing), empty for both. |
 | `committeeId` | string | Disbursements / independent expenditures modes: only rows filed by this committee, e.g. `"C00744946"`. Ignored with a warning in contributions mode — the FEC's Schedule A endpoint times out on it. |
-| `minAmount` | integer | Any transaction mode: only return rows at or above this dollar amount (contribution, disbursement or expenditure amount). |
-| `maxAmount` | integer | Any transaction mode: only return rows at or below this dollar amount. Combine with `minAmount` for a range. |
-| `contributionDateFrom` / `contributionDateTo` | string | Any transaction mode: `YYYY-MM-DD` window on the transaction date — contribution receipt date, disbursement date or expenditure date depending on the mode. Either or both may be set. A value that is not a real `YYYY-MM-DD` calendar date **stops the run** with an error naming it, rather than being ignored — ignoring a date bound would widen the search to every matching row and charge you for the difference. |
-| `state` | string | 2-letter state code, e.g. `"CA"`. Candidates or donor address, depending on mode. Optional. |
-| `office` | string | `H` (House), `S` (Senate), `P` (President). Candidates mode only. |
-| `party` | string | Party code, e.g. `DEM`, `REP`, `IND`, `LIB`. Candidates mode only. |
+| `minAmount` | integer | Any transaction mode: only return rows at or above this dollar amount (contribution, disbursement or expenditure amount). Ignored with a warning in candidates mode. |
+| `maxAmount` | integer | Any transaction mode: only return rows at or below this dollar amount. Combine with `minAmount` for a range. Ignored with a warning in candidates mode. |
+| `contributionDateFrom` / `contributionDateTo` | string | Any transaction mode: `YYYY-MM-DD` window on the transaction date — contribution receipt date, disbursement date or expenditure date depending on the mode. Either or both may be set. A value that is not a real `YYYY-MM-DD` calendar date **stops the run** with an error naming it, rather than being ignored — ignoring a date bound would widen the search to every matching row and charge you for the difference. Ignored with a warning in candidates mode. |
+| `state` | string | 2-letter state code, e.g. `"CA"`. Candidates, contributions or disbursements mode (candidate's state, donor's address, or vendor/recipient's address, depending on mode). Ignored with a warning in independent expenditures mode — not tracked there. |
+| `office` | string | `H` (House), `S` (Senate), `P` (President). Candidates mode only. Ignored with a warning in any transaction mode. |
+| `party` | string | Party code, e.g. `DEM`, `REP`, `IND`, `LIB`. Candidates mode only. Ignored with a warning in any transaction mode. |
 | `electionYear` | integer | Even-numbered election cycle, e.g. `2024`. Candidates mode: optional, leave empty for all cycles. Contributions mode: required by the FEC API to keep the query fast — defaults to the current even year if left empty. |
 | `includeTotals` | boolean | Candidates mode: fetch financial totals per candidate (default `true`). Costs one extra request per candidate. |
 | `maxResults` | integer | Stop after this many rows (default `20`, max `500`). |
