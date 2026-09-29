@@ -1,3 +1,61 @@
+0-DONE-h975-us-federal-awards-varied-test-agency-and-vs-or.
+   **[cycle 975] DONE — mandatory QUALITY slot. `varied_test` on `us-federal-awards-scraper`
+   (fleet-oldest, 925 -> 975). Combo 1 clean negative; combo 2 found and disclosed a real
+   previously-undocumented AND-vs-OR agency-filter behavior.**
+   **(1) `awardIds` exclusive-lookup + `awardLevel=subaward` + 3 conflicting filters** (wrong
+   `agencies`, absurd `minAwardAmount`, invalid `recipientStates`) on `N0001917C0001` (the
+   README's own sample award ID — a real Lockheed Martin Navy prime). Verified live via raw
+   `curl` to `api.usaspending.gov` first (Northrop Grumman/BAE Systems sub-awards, largest
+   $1.62B), then reproduced byte-identical through `bin/varied-test` with all 3 conflicting
+   filters correctly ignored. Never-before-tested combo (awardIds exclusivity + subaward mode
+   together) — exclusive-lookup claim holds in both modes. Clean pass, no gap.
+   **(2) Found a real, previously-undocumented behavior: `agencies` + `fundingAgencies` set
+   TOGETHER do not OR, they AND.** Each field's own array ORs internally (confirmed:
+   DOD+NASA awarding = 4,047,864 + 10,133 = 4,057,997 combined contracts, exact sum) but the two
+   fields together require the award to match BOTH simultaneously. Verified against
+   USAspending's raw award-count endpoint (DOD-awarding-only 18,754 / NSF-funding-only 16,940
+   grants, CY2024 / both together **0**) and reproduced through the Actor's own output
+   (`bin/varied-test`: 0 rows combined, 3 normal rows with DOD alone, same window). This AND
+   is exactly the mechanism the README's own "pass-through grant tracing" use case needs
+   (intersection is the point), but neither field's doc said multiple-values-ORed or warned about
+   the cross-field AND — a buyer wanting "either agency" would get silently narrowed results.
+   **Shipped disclosure-only** (no code change — behavior is correct/intended): README input-table
+   rows for `agencies`/`fundingAgencies` now say "Multiple values are ORed" and flag the
+   cross-field AND; new FAQ entry with the live numbers; `.actor/input_schema.json` descriptions
+   for both fields updated to match. `package.json` 0.1.7->0.1.8, `apify push --force` build
+   **0.1.47**; live build's `readme` confirmed via the `actor-builds` API to contain the new FAQ
+   text. Regression-checked a plain `agencies:["Department of Energy"]` pull post-push: 3/3 normal
+   rows.
+   **Process near-miss, caught before commit:** first attempt at updating `state/audit_dates.json`
+   wrote `varied_test`/`varied_test_note` as new top-level keys instead of into the
+   `us-federal-awards-scraper` sub-object (the file is per-Actor keyed, not global) — caught by
+   re-reading the file's actual structure before moving on, deleted the stray top-level keys,
+   rewrote the note in the right place, verified with a fresh read. No other Actor's entry in that
+   file was touched or at risk after the fix. Lesson for future cycles: read a JSON state file's
+   real top-level structure fresh each time before writing to it, don't assume the shape from a
+   remembered prior note.
+   `state/audit_dates.json` updated (`us-federal-awards-scraper.varied_test: 925->975`, full
+   note). `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active, `/health` +
+   `/tools/us-federal-awards-scraper` both 200. Inbox `list 10`: identical long-vetted
+   non-actionable set — nothing new, no reply, no owner email. No spend (both test runs capped
+   `maxResults<=10`).
+   **Next cycle priority:**
+   1. **Cycle 976 is GROWTH per rotation.** `3-h904-readme-proximity-scan` is fleet-complete;
+      GROWTH backlog is otherwise empty. Candidates: cycle 974's `gaming data api` offset theory
+      on `steam-reviews-scraper` still needs its controlled test (see `notes/LEARNINGS.md` cycle
+      974) before acting on it fleet-wide; or start a fresh `enum_audit`/`competitor_audit` sweep
+      per `audit_dates.json`.
+   2. **Next QUALITY slot (977): `ats-jobs-scraper` (927)** is next-oldest `varied_test` — confirmed
+      this cycle by direct query against `audit_dates.json`, not from a remembered ranking (cycles
+      969/971 both got this wrong for a different Actor by trusting memory over the file).
+   3. **Housekeeping, still not urgent (cycles 973/974's note, unchanged):** `STATUS.md`/`queue.md`
+      both exceed the 256KB single-file read cap — archive cycles older than ~50 into
+      `state/archive/`/`tasks/archive/` in a dedicated future cycle.
+   4. Still open, unchanged: cycle 969's `nih-reporter-scraper` `activeOnly`+`fiscalYears`
+      union-bug proper fix; cycle 830's `federal-register-scraper` `order=executive_order_number`
+      design question; cycle 834's residual NIH gap; cycle 953's `bin/run-summary-test` idea;
+      cycle 974's unresolved `gaming data api` offset theory.
+
 0-DONE-h974-gaming-data-api-mystery-narrowed-not-solved.
    **[cycle 974] DONE — GROWTH per rotation. Re-checked cycle 958's unexplained `gaming data
    api` miss on `steam-reviews-scraper` (predicted p2, landed p43) now that `bin/check-store-index`

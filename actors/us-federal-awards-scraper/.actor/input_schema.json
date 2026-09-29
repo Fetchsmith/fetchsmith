@@ -78,7 +78,7 @@
     "agencies": {
       "title": "Awarding agencies",
       "type": "array",
-      "description": "Exact top-tier awarding agency names as USAspending spells them, e.g. \"Department of Energy\", \"Department of Defense\", \"National Aeronautics and Space Administration\". Abbreviations do not match.",
+      "description": "Exact top-tier awarding agency names as USAspending spells them, e.g. \"Department of Energy\", \"Department of Defense\", \"National Aeronautics and Space Administration\". Abbreviations do not match. Multiple values are ORed.",
       "editor": "stringList",
       "example": [
         "Department of Energy"
@@ -87,7 +87,7 @@
     "fundingAgencies": {
       "title": "Funding agencies",
       "type": "array",
-      "description": "Exact top-tier funding agency names (the agency whose budget actually pays, which can differ from the awarding agency on pass-through grants). Same exact-name rule as Awarding agencies.",
+      "description": "Exact top-tier funding agency names (the agency whose budget actually pays, which can differ from the awarding agency on pass-through grants). Same exact-name rule as Awarding agencies, and multiple values are ORed the same way. Setting this alongside Awarding agencies does NOT OR across the two -- the award must match both at once (see the README FAQ).",
       "editor": "stringList",
       "example": [
         "Department of Transportation"
