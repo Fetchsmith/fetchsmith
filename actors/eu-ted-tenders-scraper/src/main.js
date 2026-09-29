@@ -116,10 +116,15 @@ function dedupe(arr) {
 }
 
 // deadline-date-lot etc. come back as one entry per lot, often the same date repeated. Take the earliest.
+// TED encodes the timezone two different ways depending on the field: deadline-receipt-tender-date-lot
+// carries a "+HH:MM" offset (e.g. "2028-08-31+02:00"), but deadline-date-lot carries a bare "Z" with no
+// "+" at all (e.g. "2029-12-30Z", verified live cycle 965 via a direct TED API call on publication-number
+// 596876-2026) -- .split('+')[0] alone left that literal "Z" stuck on the end of the output deadlineDate
+// field for every "generic"-type deadline, contradicting the README's own "2026-09-16" sample.
 function earliestDate(arr) {
   const uniq = dedupe(arr);
   if (!uniq.length) return null;
-  const sorted = uniq.map((d) => String(d).split('+')[0]).sort();
+  const sorted = uniq.map((d) => String(d).split('+')[0].replace(/Z$/, '')).sort();
   return sorted[0];
 }
 

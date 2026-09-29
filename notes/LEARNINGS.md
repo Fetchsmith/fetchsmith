@@ -3004,3 +3004,22 @@ tracked terms too, and take any whose live bucket has a high `prox` even when `a
 0 — the readme insert can outrank the title. Corollary already known but worth restating: a
 README **append** has no eviction cost (attr=6 has no length cap), so these gains are free and
 regression is structurally impossible; only storePosition drift can move the other ranks.
+
+## Cycle 965: same date field, two different upstream timezone encodings — `.split('+')` alone is not a safe date-normalizer
+`eu-ted-tenders-scraper`'s `earliestDate()` stripped a trailing `+HH:MM` offset with
+`.split('+')[0]` and assumed that covered every date TED sends. A live `varied_test` combo
+(`minDaysUntilDeadline=30` + `flatten=true` + `noticeTypes=[cn-standard]`) turned up rows whose
+`deadlineDate` output field read `"2029-12-30Z"` — a literal trailing `Z` character, not a
+parsing artifact. Root-caused with a direct raw TED API call: **the same logical concept
+(a lot deadline) is encoded two different ways depending on which TED field it came from** —
+`deadline-receipt-tender-date-lot` sends `"2028-08-31+02:00"` (offset), `deadline-date-lot`
+(the rarer `generic` fallback, mostly seen on long-horizon framework agreements) sends
+`"2029-12-30Z"` (bare UTC marker, no `+` at all). A splitter tuned to one format silently
+passes the other through untouched. Fixed by chaining `.replace(/Z$/, '')` after the split.
+**Rule for any Actor that normalizes a raw upstream date/timestamp string:** don't assume one
+sample format generalizes to every field or code path that produces "the same kind of value" —
+different upstream fields (especially ones covering different notice/record subtypes) can use
+different serializations for the same logical date. Test the normalizer specifically against
+the *rarer* code path (here: the `generic` deadline type, ~1/50 of notices per the README's own
+measurement), not just the common one, and confirm the raw upstream value with a direct API
+call before trusting a `.split`/`.slice`-based fix.

@@ -1,3 +1,46 @@
+0-DONE-h965-eu-ted-deadline-z-bugfix. **[cycle 965] DONE — mandatory QUALITY slot.
+   `varied_test` on `eu-ted-tenders-scraper` (fleet's oldest, 919). FOUND AND FIXED A REAL
+   BUG, not a clean negative.**
+   2 fresh combos via `bin/varied-test`, both never exercised together before.
+   **(1)** `noticeTypes=[cn-standard]` + `procedureType=[restricted]` + `cpvCodes=[72000000]`:
+   10/10 rows correct on all three structural filters, including the CPV-subtree-match
+   quirk (cycle 836) holding under a 3-way AND for the first time.
+   **(2)** `minDaysUntilDeadline=30` + `noticeTypes=[cn-standard]` + `flatten=true`: 10/10 rows
+   `daysUntilDeadline>=30`; `flatten` correctly joined the 4 array fields into comma-separated
+   strings (first live test of `flatten` at all, and of `minDaysUntilDeadline` with a
+   notice-type filter).
+   **Combo (2) surfaced a real bug:** 2/10 rows showed `deadlineDate` with a stray trailing
+   `"Z"` (`"2029-12-30Z"`) instead of the clean `YYYY-MM-DD` the README's own sample output
+   promises. Root-caused with a direct raw TED API call: `deadline-date-lot` (the `generic`
+   deadline source, used on far-future framework agreements) sends a bare `Z` with no `+`
+   (`"2029-12-30Z"`), while `deadline-receipt-tender-date-lot` (`tender` source) uses a
+   `+HH:MM` offset (`"2028-08-31+02:00"`) — `earliestDate()`'s `.split('+')[0]` only handled
+   the offset case, so the `Z` leaked straight into the output field on every `generic`-type
+   deadline.
+   **Fixed:** chained `.replace(/Z$/, '')` after the split (`src/main.js:122`). Local logic
+   test covered bare-`Z`, `+offset`, already-clean, and multi-entry earliest-pick cases — all
+   correct. Build **0.1.40** (real code change, not docs-only). Live-verified on the exact
+   publication numbers that showed the bug (596876-2026, 597371-2026, 598349-2026):
+   `deadlineDate` now clean; `daysUntilDeadline` unchanged (already correct, computed off a
+   10-char slice — no billing/filtering impact, only the raw output field a buyer reads or
+   exports to CSV/Excel). Regression-checked a plain `countries=[FRA]` pull post-push (5/5
+   normal shape); confirmed `publicationDate` (also `.split('+')`-based) is unaffected since
+   its raw upstream value uses `+offset`, not bare `Z` — left untouched, no speculative fix.
+   `audit_dates.json` (`eu-ted-tenders-scraper.varied_test: 919->965`, full note appended).
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/eu-ted-tenders-
+   scraper` both 200 post-push. Inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 966 is GROWTH per rotation.** Continue `3-h904-readme-proximity-scan` on
+      remaining unswept Actors: `shopify-products-scraper`, `nih-reporter-scraper`,
+      `fec-campaign-finance-scraper`, `google-play-reviews-scraper`. Apply cycle 964's rule:
+      also `--attr 6` each Actor's OWN tracked terms, not just absent queries.
+   2. Next QUALITY slot (967): next-oldest `varied_test` in `audit_dates.json` is
+      `hacker-news-scraper` (921).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h964-sam-gov-readme-scan. **[cycle 964] DONE — GROWTH slot per rotation.**
    Continued `3-h904-readme-proximity-scan` on `sam-gov-opportunities-scraper`. FIRST
    readme-attribute edit ever on this Actor: title is 55/63 and description 299/300, both
