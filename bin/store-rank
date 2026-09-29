@@ -44,6 +44,11 @@ Usage:
                                                  # criteria per hit (getRankingInfo) +
                                                  # the bucket table. Prefer this over
                                                  # --attr for sizing an edit; see why().
+                                                 # cycle 979: with <slug> given, also
+                                                 # prints the MEASURED readme prox for
+                                                 # this query (via check-readme-prox),
+                                                 # flagging when it differs from the
+                                                 # ideal the bucket table assumes.
 Exit 0 always (informational); prints a summary line.
 """
 import json
@@ -1302,6 +1307,64 @@ def leaderboard(query):
     print(f"\nnbHits={r['nbHits']} for {query!r}")
 
 
+def _load_check_readme_prox():
+    """Load bin/check-readme-prox as a module (no .py extension, so import needs a spec)."""
+    import importlib.util
+    from importlib.machinery import SourceFileLoader
+
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "check-readme-prox")
+    loader = SourceFileLoader("check_readme_prox", path)
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    mod = importlib.util.module_from_spec(spec)
+    loader.exec_module(mod)
+    return mod
+
+
+def _readme_prox_check(query, slug):
+    """cycle 979 (GROWTH, h976 follow-up): `why()`'s bucket table used to let a cycle
+    ASSUME a reachable attr=6 (readme) bucket's prox is the ideal len(query)-1 for any
+    phrase it plans to insert. Cycle 976 measured this is often false — a phrase's real
+    proximityDistance depends on where in the readme it lands (word <~1000: prox 2;
+    word >~1160: prox >=8), which is exactly why `steam games list` predicted p2 and
+    measured p43 (cycle 958/974/976). Report the MEASURED prox via
+    `check-readme-prox`'s own probe() instead of leaving the assumption silent.
+    """
+    try:
+        mod = _load_check_readme_prox()
+        oid, readme = mod.find_record(slug)
+    except Exception as e:
+        print(f"\nreadme-measured: check-readme-prox lookup failed ({e}) — skipping.")
+        return
+    if not oid:
+        print(f"\nreadme-measured: no indexed record for fetchsmith/{slug} — skipping.")
+        return
+    ideal = mod.ideal_prox(query)
+    low = readme.lower()
+    i = low.find(query.lower())
+    if i < 0:
+        print(
+            f"\nreadme-measured: {query!r} is NOT YET in {slug}'s indexed readme — any "
+            f"prox={ideal} (ideal) bucket above is UNVERIFIED. Per cycle 976: insertions "
+            f"before ~word 1000 typically measure prox {ideal} (ideal), but past ~word "
+            f"1160 commonly measure prox 8-16 instead. Insert, then rerun `--why` (or "
+            f"`bin/check-readme-prox {slug} {query!r}` directly) before trusting a "
+            f"predicted rank."
+        )
+        return
+    wi = len(readme[:i].split())
+    pct = f"{100.0 * wi / max(len(readme.split()), 1):.1f}%"
+    ri = mod.probe(oid, query)
+    if ri is None:
+        print(f"\nreadme-measured: {query!r} present at word {wi} ({pct}) but probe returned no hit.")
+        return
+    measured = ri.get("proximityDistance")
+    flag = "" if measured == ideal else f"  <- MEASURED != ideal ({ideal})"
+    print(
+        f"\nreadme-measured: {query!r} at word {wi} ({pct} into readme): "
+        f"prox={measured} matchLevel={ri.get('matchLevel')}{flag}"
+    )
+
+
 def why(query, slug=None, depth=25):
     """Print Apify's ACTUAL Algolia ranking criteria for a query, in tie-break order.
 
@@ -1375,6 +1438,8 @@ def why(query, slug=None, depth=25):
               f" storePosition={h.get('storePosition')}")
     elif slug:
         print(f"\nUS: {slug} does not appear in the first {len(hits)} hits for this query.")
+    if slug:
+        _readme_prox_check(query, slug)
     return 0
 
 

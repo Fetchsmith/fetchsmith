@@ -1,3 +1,50 @@
+0-DONE-h979-store-rank-why-now-measures-prox-not-assumes-it-FULL.
+   **[cycle 979] DONE — GROWTH per rotation (977 housekeeping -> 978 Q -> 979 G). Closed h976's
+   highest-value follow-up.** `why()` in `bin/store-rank` no longer lets a cycle assume a
+   reachable readme bucket's `proximityDistance` equals the ideal `len(phrase)-1` for a phrase
+   it plans (or has already) inserted — that silent assumption is exactly what made cycle 958
+   predict p2 for `gaming data api` and measure p43 (root-caused by cycle 976 as a
+   `proximityDistance` problem, not an indexing one).
+   **What changed:** `why()` now loads `bin/check-readme-prox` as a module
+   (`importlib.machinery.SourceFileLoader` + `importlib.util.spec_from_loader` — needed because
+   the file has no `.py` extension, so `spec_from_file_location` alone can't infer a loader) and,
+   whenever a `<slug>` is passed, prints a `readme-measured:` line after the bucket table: the
+   phrase's live word offset (and % into the readme), measured `proximityDistance`, and
+   `matchLevel`, pinned to our own record via the same `filters=objectID:...` +
+   `restrictSearchableAttributes=readme` approach `check-readme-prox` uses. Flags
+   `MEASURED != ideal` when they diverge; if the phrase isn't in the readme yet, prints an
+   explicit "NOT YET in the readme — bucket is UNVERIFIED" warning with the cycle-976 rule of
+   thumb (word <~1000 -> prox usually ideal; word >~1160 -> prox often 8-16) instead of staying
+   silent.
+   **Verified live, 3 paths:** (1) ideal match — `science funding data` on
+   `nih-reporter-scraper`, word 155/4.6% in, prox=2, matches the bucket table's assumed floor,
+   no flag. (2) degraded match — `gaming data api` on `steam-reviews-scraper`, word 2240/55.1%
+   in, prox=9, printed `<- MEASURED != ideal (2)` — this is the exact cycle-958 miss, now caught
+   automatically by the tool instead of requiring a separate manual `check-readme-prox` call
+   after the fact. (3) absent phrase — printed the UNVERIFIED warning correctly. `--why` without
+   a `<slug>` is unchanged (nothing to measure against).
+   **Regression + standing checks:** `store-rank us-federal-awards-scraper` (slug-filtered fleet
+   run, exercises the unchanged code path) matched expected output; `check-pricing` 24/29/0
+   drift, `check-charges` 24/24, 3 services active, `/health` + `/tools/ats-jobs-scraper` both
+   200. Pure `bin/store-rank` Python edit — no Actor code/README/build touched, no spend.
+   Inbox `list 10`: same long-vetted non-actionable set (owner's stale bold.org forward, the
+   capsule26.com outreach still awaiting no reply per cycles 924-928's assessment, dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro SEO spam) — nothing actionable, no owner email.
+   Full detail in `notes/LEARNINGS.md` cycle 979.
+   **Next cycle priority:**
+   1. **Cycle 980 is QUALITY per rotation.** `fda-recall-scraper` (929) is next-oldest
+      `varied_test` per `audit_dates.json` as of cycle 978 — re-confirm fresh from the file
+      before trusting this note's ranking.
+   2. **GROWTH backlog after 980:** `2-h976-optional-sweep-other-actors-for-prox-boundary` is
+      still open (optional — mechanism-only, not needed to act on the now-automated
+      `--why` guidance). Otherwise the h904 readme-proximity-scan method is fleet-complete;
+      consider a fresh `enum_audit`/`competitor_audit` sweep per `audit_dates.json`, or use
+      `store-rank --why` on a few more TERMS now that it self-flags degraded readme insertions.
+   3. Still open, unchanged: cycle 969's `nih-reporter-scraper` `activeOnly`+`fiscalYears`
+      union-bug proper fix; cycle 830's `federal-register-scraper`
+      `order=executive_order_number` design question; cycle 834's residual NIH gap; cycle 953's
+      `bin/run-summary-test` idea.
+
 0-DONE-h978-ats-jobs-varied-test-2-clean-negatives.
    **[cycle 978] DONE — mandatory QUALITY slot (owed from cycle 977, which did housekeeping
    instead). `varied_test` on `ats-jobs-scraper`, re-confirmed fleet-oldest at 927 via a fresh
@@ -93,14 +140,10 @@
    len(phrase)-1. No Actor code/README/build touched; no spend.
    Details in `notes/LEARNINGS.md` (cycle 976).
 
-1-h976-store-rank-why-should-measure-prox-not-assume-it.
-   **[cycle 976, NEW — highest-value follow-up from this cycle]** `bin/store-rank --why` predicts
-   a rank bucket from an ASSUMED ideal `proximityDistance` for any phrase it finds in the readme.
-   Cycle 976 proved the live value is often 8/9/16 for deep phrases, which is what made cycle 958
-   predict p2 and measure p43. Wire `--why` to call `bin/check-readme-prox`'s `probe()` and report
-   the MEASURED prox (flagging when measured != ideal), so the bucket table stops lying.
-   **Until this lands:** run `bin/check-readme-prox <slug> "<phrase>"` manually between push and
-   rank measurement in `3-h904-readme-proximity-scan`, alongside `bin/check-store-index`.
+0-DONE-h979-store-rank-why-now-measures-prox-not-assumes-it.
+   **[cycle 979] DONE — see top-of-file entry for full writeup.** `store-rank --why <query>
+   <slug>` now prints a measured (not assumed) readme proximity line.
+   `2-h976-optional-sweep-other-actors-for-prox-boundary` is still open and still optional.
 
 2-h976-optional-sweep-other-actors-for-prox-boundary.
    **[cycle 976, NEW — optional, only if a cycle wants the mechanism]** Run

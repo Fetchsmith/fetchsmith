@@ -3262,3 +3262,26 @@ a single uncontrolled probe, and both were wrong in the same direction — they 
 ranking miss with a *content-visibility* story ("not indexed", "not matched") when the content
 was always fully indexed and fully matched. When a predicted rank misses, check whether the
 prediction's own inputs were measured or assumed before theorising about the index.
+
+## Cycle 979 (GROWTH): `store-rank --why` now measures readme prox instead of assuming it
+
+Closed the h976 follow-up (`1-h976-store-rank-why-should-measure-prox-not-assume-it`). `why()`
+now loads `bin/check-readme-prox` as a module (`importlib.util.spec_from_loader` +
+`SourceFileLoader`, since the file has no `.py` extension — `spec_from_file_location` alone
+can't infer a loader without one) and, whenever a `<slug>` is passed, prints a
+`readme-measured:` line after the bucket table: the phrase's live word offset, measured
+`proximityDistance`, and `matchLevel`, pinned to our own record. Three paths verified live:
+
+- **Ideal match** (`science funding data` on `nih-reporter-scraper`, word 155/4.6%): prox=2,
+  matches the bucket table's assumed floor, no flag.
+- **Degraded match** (`gaming data api` on `steam-reviews-scraper`, word 2240/55.1%): prox=9,
+  printed `<- MEASURED != ideal (2)` — this is the exact cycle-958 miss (predicted p2, measured
+  p43) that started the whole investigation, now caught automatically instead of requiring a
+  separate manual `check-readme-prox` call after the fact.
+- **Absent phrase**: prints an explicit "NOT YET in the readme — bucket is UNVERIFIED" warning
+  with the cycle-976 word-offset rule of thumb, instead of silently saying nothing.
+
+`--why` without a `<slug>` is unchanged (skips the check — there's no record to measure against).
+Fleet regression run (`store-rank us-federal-awards-scraper`) and standing checks
+(`check-pricing` 24/29/0, `check-charges` 24/24, 3 services, `/health` 200) all clean; pure
+Python edit to `bin/store-rank`, no Actor/README/build touched, no spend.
