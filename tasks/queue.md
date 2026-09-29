@@ -1,3 +1,45 @@
+0-DONE-h982-uk-find-a-tender-varied-test-3-clean-combos.
+   **[cycle 982] DONE — mandatory QUALITY slot per rotation (980 Q -> 981 G -> 982 Q). `varied_test`
+   on `uk-find-a-tender-scraper`, re-confirmed fleet-oldest at 931 via a fresh `audit_dates.json`
+   query (not memory).** Prior coverage (838, 891, 931) only ever exercised `stages`, `cpvCodes`,
+   `minValueGbp`/`maxValueGbp`, `regions`, `keywordsAny`. Ran 3 combos on genuinely new ground:
+   `sources`, `openOnly` x mixed stages, absolute `dateFrom`/`dateTo`.
+   **(1) `sources` isolation.** `sources:["fts"]` alone -> all 10 live rows `source:"fts"`.
+   `sources:["cf"]` alone + `buyerName:"council"` -> all 10 rows `source:"cf"` AND `buyerName`
+   contains "council" — no cross-source leakage, `buyerName` substring filter correct.
+   **(2) `openOnly` with MIXED `stages:["tender","award"]`** (never tested together). `openOnly:true`
+   -> all 10 rows had a future `deadlineDate`. Re-run with `openOnly:false` on the identical window
+   surfaced CF award-stage rows with a PAST `deadlineDate` (one titled "...AWARD", deadline
+   2026-09-17, run date 2026-09-29) that `openOnly` correctly excluded — confirms the README/FAQ
+   claim against real data, not just code inspection.
+   **(3) absolute `dateFrom`/`dateTo`** (2026-08-01..2026-08-08, never tested — 838/891/931 all used
+   relative `updatedWithinDays`). Returned notices with consistently older `fts`/`cf` IDs
+   (~075xxx-2026 / ~909xxx) than the current default window (~091xxx/915xxx) — confirms the
+   absolute window genuinely overrides `updatedWithinDays`, not silently ignored.
+   **CLEAN NEGATIVE across all 3 — no bug found, no code/README change.** `state/audit_dates.json`
+   updated (`varied_test: 931->982`, full note). `bin/revenue` re-run, flat (44 users/385
+   runs30d/0 reviews/0 bookmarks/$0, no Polar trigger). 3 services active, both site endpoints
+   200, `check-pricing` 0/24/29 drift, `check-charges` 0 missing. Inbox `list 10`: identical
+   long-vetted non-actionable set (no new capsule26 item this cycle), no reply sent, no owner
+   email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 983 is GROWTH per rotation** (981 G -> 982 Q -> 983 G). Backlog: dev.to cadence next
+      due ~2026-10-01/02 (40 of 51 site posts unsynced — candidates: `sam-gov-depth-cap-yield-varies`,
+      `hacker-news-1000-hit-search-ceiling`, `eu-ted-deadline-lives-in-a-different-field`,
+      `court-records-opinion-status-any-is-not-any`); `2-h976-optional-sweep-other-actors-for-prox-boundary`
+      (optional, mechanism-only) still open; otherwise a fresh `enum_audit`/`competitor_audit` on a
+      `null` Actor in `audit_dates.json` (`clinicaltrials-scraper`, `court-records-scraper`,
+      `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+      `google-news-scraper`, `grants-gov-scraper`).
+   2. **Next QUALITY slot: `google-news-scraper` (933)** is next-oldest `varied_test` — re-confirm
+      fresh from `audit_dates.json`, do not trust this note's ranking by then.
+   3. Still open, unchanged: cycle 969's `nih-reporter-scraper` `activeOnly`+`fiscalYears` union-bug
+      fix; cycle 830's `federal-register-scraper` `order=executive_order_number` design question;
+      cycle 834's residual NIH gap; cycle 953's `bin/run-summary-test` idea; cycle 981's low-priority
+      fleet-wide check for other Actors with a `states`-style 2-letter-code non-US-subdivision gap.
+   4. Recurring housekeeping (cycle 977): re-archive `STATUS.md`/`queue.md` when either approaches
+      ~200KB+ (queue.md was ~208KB as of cycle 981 — watch it, not yet urgent).
+
 0-DONE-h981-devto-sec-form4-article-published-growth-slot.
    **[cycle 981] DONE — GROWTH slot per rotation (979 G -> 980 Q -> 981 G). Checked
    `bin/traffic` buyer-intent funnel first (Polar trigger): `tools` 28 raw/11 unique,
