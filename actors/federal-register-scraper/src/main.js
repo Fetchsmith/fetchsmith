@@ -89,7 +89,16 @@ if (cfrPart && cfrTitle == null) {
 }
 
 const today = new Date();
-const isoDay = (d) => d.toISOString().slice(0, 10);
+// Every date the Federal Register publishes is an EASTERN calendar date: issues go live at
+// 8:45 a.m. ET and a comment period closes at 11:59 p.m. ET on its `comments_close_on` day.
+// Actor runs execute in UTC, which is 4-5 hours AHEAD of ET, so between 00:00 and 04:00 UTC
+// (05:00 in EST) `new Date().toISOString()` already reads as the NEXT Eastern day. Deriving
+// "today" that way silently shifts every date bound by one day for those hours -- verified
+// live 2026-09-29: `conditions[comment_date][gte]=2026-09-30` drops document 2026-18943,
+// whose comment period was still open for another 6 hours in ET. Anchor to ET instead.
+// (`en-CA` formats as YYYY-MM-DD; the Actor base image ships full ICU.)
+const ET_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' });
+const etDay = (d) => ET_DAY.format(d);
 const normDate = (v, fallback) => {
     const digits = String(v ?? '').replace(/[^0-9]/g, '');
     if (digits.length !== 8) return fallback;
@@ -98,8 +107,8 @@ const normDate = (v, fallback) => {
 // Unlike the TED/USAspending archives, this feed is read as "what has just been published",
 // so the default window is the last 90 days rather than all history. The archive reaches back
 // to 1994-01-03 (verified with order=oldest) if the user widens it.
-const dateFrom = normDate(input.publicationDateFrom, isoDay(new Date(today.getTime() - 90 * 86400_000)));
-const dateTo = normDate(input.publicationDateTo, isoDay(today));
+const dateFrom = normDate(input.publicationDateFrom, etDay(new Date(today.getTime() - 90 * 86400_000)));
+const dateTo = normDate(input.publicationDateTo, etDay(today));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -242,8 +251,11 @@ function baseParams() {
     if (presidentialDocumentTypes.length) p['conditions[presidential_document_type][]'] = presidentialDocumentTypes;
     if (searchQuery) p['conditions[term]'] = searchQuery;
     if (significantOnly) p['conditions[significant]'] = 1;
-    // "Comment period still open" = a closing date on or after today.
-    if (commentsOpenOnly) p['conditions[comment_date][gte]'] = isoDay(today);
+    // "Comment period still open" = a closing date on or after today IN EASTERN TIME, because
+    // that is the clock the deadline itself runs on (11:59 p.m. ET). See the etDay() note above:
+    // using the UTC day here dropped every document closing on the current ET day for any run
+    // between 00:00 and 04:00 UTC -- 15-35 real documents a day, and the most urgent ones.
+    if (commentsOpenOnly) p['conditions[comment_date][gte]'] = etDay(today);
     if (cfrTitle != null) p['conditions[cfr][title]'] = cfrTitle;
     if (cfrPart) p['conditions[cfr][part]'] = cfrPart;
     return p;

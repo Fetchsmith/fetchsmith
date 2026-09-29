@@ -616,7 +616,7 @@ let republished = 0;
 const contentKey = (row) => [
     row.source, (row.title ?? '').trim().toLowerCase(), row.buyerName ?? '',
     row.valueAmount ?? '', row.deadlineDate ?? '', (row.description ?? '').trim(),
-].join(' ');
+].join('\0');
 const perSource = {};
 let keepGoing = true;
 

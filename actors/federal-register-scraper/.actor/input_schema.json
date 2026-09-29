@@ -76,13 +76,13 @@
         "publicationDateFrom": {
             "title": "Published from",
             "type": "string",
-            "description": "Earliest publication date, YYYY-MM-DD. Defaults to 90 days ago. The archive reaches back to 1994-01-03 if you widen it.",
+            "description": "Earliest publication date, YYYY-MM-DD. Defaults to 90 days ago (Eastern calendar days \u2014 the Federal Register publishes on an ET schedule). The archive reaches back to 1994-01-03 if you widen it.",
             "editor": "textfield"
         },
         "publicationDateTo": {
             "title": "Published to",
             "type": "string",
-            "description": "Latest publication date, YYYY-MM-DD. Defaults to today.",
+            "description": "Latest publication date, YYYY-MM-DD. Defaults to today, Eastern calendar day (the Federal Register publishes its issue at 8:45 a.m. ET).",
             "editor": "textfield"
         },
         "agencies": {
@@ -110,7 +110,7 @@
         "commentsOpenOnly": {
             "title": "Comment period still open",
             "type": "boolean",
-            "description": "Only documents whose public comment period closes today or later \u2014 the deadline set a buyer still has time to act on. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices.",
+            "description": "Only documents whose public comment period closes today or later \u2014 the deadline set a buyer still has time to act on. \"Today\" is the Eastern calendar day, the clock the deadline itself runs on (comments close at 11:59 p.m. ET), so a run scheduled in the small hours UTC still returns the documents closing that same ET day. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices.",
             "default": false
         },
         "cfrTitle": {

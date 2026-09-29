@@ -3611,3 +3611,38 @@ behavior has never actually been observed (as opposed to merely "looks plausible
 is the same one that worked here: grep the fleet's enum values, then curl/`varied-test` a few real
 inputs and check whether the *output* ever actually contains that value, not just whether the code
 accepts it as input.
+
+## Cycle 1000 — "today" is not a timezone-free concept; ask what calendar the SOURCE publishes on
+`federal-register-scraper` built its `commentsOpenOnly` filter bound (and its default publication-date
+window) from `new Date().toISOString().slice(0,10)` — the UTC day. Every Federal Register date is an
+EASTERN date: the issue goes live 8:45 a.m. ET and a comment period closes 11:59 p.m. ET on its
+`comments_close_on` day. Actor runs execute in UTC, 4-5h AHEAD of ET, so between 00:00-04:00 UTC
+(05:00 in EST) the bound was already the next Eastern day and dropped every document closing that ET
+day: 15-35 real documents daily, measured live.
+
+Three things generalise:
+1. **A deadline filter fails in the worst possible direction.** "Still open" / "closes on or after
+   today" drops the rows nearest their deadline — simultaneously the least visible failure (the result
+   set still looks full and plausible) and the most valuable data. Audit these before cosmetic filters.
+2. **This is a distinct shape from cycle 996's.** There, the row's own timestamp carried a non-UTC
+   offset we parsed as UTC. Here the row's date is a bare, unambiguous local date and *our clock* was in
+   the wrong zone. Cycle 997's sweep for shape 1 was correct and still would not have caught this. When
+   you sweep for a bug, sweep for the mechanism, not the symptom.
+3. **The fix is cheap and DST-safe:** `new Intl.DateTimeFormat('en-CA', {timeZone: '<zone>'}).format(d)`
+   yields `YYYY-MM-DD` in that zone and handles the DST cutover for free (verified: 04:00 UTC under EDT,
+   05:00 UTC under EST). Build the formatter once at module scope, not per call.
+   Deployment risk is self-clearing: a stub-ICU Node throws `RangeError: Invalid time zone specified`
+   rather than silently falling back to UTC, so **one green platform run is positive proof of full ICU**.
+
+Verification note worth reusing: when a timezone fix is a no-op at the hour you happen to be testing
+(ET and UTC days coincided at 21:32Z), a platform run cannot discriminate. Prove the logic by
+regex-extracting the LITERAL shipped source lines out of `src/main.js` and `eval`ing them against faked
+instants — that tests the real file, not a retyped copy — and use the platform run as the *regression*
+check (byte-identical output is the correct result, and is itself the evidence).
+
+Also: `].join('<raw NUL byte>')` in `uk-find-a-tender-scraper` made grep treat that whole file as
+binary and skip it silently (rc=1, no output) — the cycle-336 class on a second Actor, unrecorded for
+an unknown number of cycles. Writing the separator as the escape `'\0'` is the identical runtime string
+with no behaviour change. Standing habit, restated because it paid off twice now: run
+`bin/check-source-bytes` BEFORE trusting any fleet-wide grep count, and compare the hit count against
+`ls actors/*/src/main.js | wc -l` — a skipped file is invisible, but a wrong total is not.

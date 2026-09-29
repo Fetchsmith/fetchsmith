@@ -1,3 +1,70 @@
+0-DONE-h1000-federal-register-commentsopenonly-utc-vs-eastern-day.
+   **[cycle 1000] DONE — mandatory QUALITY slot (998 Q -> 999 G -> 1000 Q). `varied_test` on
+   `federal-register-scraper`, fleet-oldest at 951. FOUND AND FIXED A REAL TIMEZONE BUG.
+   Build 0.1.28, package 0.1.3 -> 0.1.4.**
+   Targeted `commentsOpenOnly` — the one real filter prior audits (830/837/920/951/991) never
+   exercised on its own. Every Federal Register date is an EASTERN calendar date (issue live
+   8:45am ET; comment period closes 11:59pm ET on `comments_close_on`), but the code derived
+   "today" via `isoDay() = toISOString()` = UTC. Runs execute in UTC, 4-5h AHEAD of ET, so any
+   run between 00:00-04:00 UTC (05:00 in EST) set `conditions[comment_date][gte]` to the NEXT
+   Eastern day and dropped every document closing on the current ET day — exactly the rows the
+   schema sells as "the deadline set a buyer still has time to act on". Same shape as cycle 996's
+   Apple finding, different mechanism (there: the row's own stamp carried an offset; here: our
+   clock was in the wrong zone).
+   Impact measured live via direct curl, not estimated: single-day close counts 09-29=15,
+   09-30=25, 10-01=35; `gte=09-29` total 1004 vs `gte=09-30` total 989 — delta exactly the 15.
+   Proved on doc 2026-18943 (PRORULE, pub 09-15, closes 09-29): platform run at 21:32Z delivered
+   it at row 1; the same query with `gte=2026-09-30` (what the old code would send at 01:00 UTC,
+   with ~6h of ET comment time still left) drops it.
+   Fix: new `ET_DAY`/`etDay()` (`Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York'})`)
+   replacing `isoDay()` at ALL THREE sites — the `commentsOpenOnly` bound plus the default
+   `publicationDateFrom`/`To` window (FR publication dates are ET business days too). `isoDay` is
+   gone from the file, not left dangling. DST-correct (04:00 UTC cutover in EDT, 05:00 in EST).
+   Verified 3 ways: faked-clock eval of the LITERAL shipped source lines (regex-extracted, not
+   retyped) at 01:00Z/03:59:59Z/12:00Z/2026-01-15T04:30Z; platform regression on the
+   commentsOpenOnly combo byte-identical 10/10 with 2026-18943 still row 1 (no change IS the
+   correct result at 21:32Z, when ET and UTC days coincide); `test_input.json` byte-normal 10/10.
+   The green platform run also proves the base image has FULL ICU — stub-ICU Node RangeErrors on
+   `America/New_York` rather than silently falling back to UTC, so this is positive proof.
+   Docs: `input_schema` commentsOpenOnly/publicationDateFrom/publicationDateTo, both README
+   input-table rows, new FAQ "What timezone are the dates on?" with the measured 15-doc example.
+   TRAP for next time: editing `.actor/input_schema.json` via `json.load`/`json.dump` reflowed all
+   172 lines (4-space indent, `\u2014` escapes) — had to `git checkout` and patch it as raw text.
+
+0-DONE-h1000-uk-find-a-tender-nul-byte-grep-blind-spot.
+   **[cycle 1000] DONE — second, unrelated finding, caught by a standing QUALITY check.
+   Build 0.1.40, package 0.1.0 -> 0.1.1.**
+   `bin/check-source-bytes` flagged `U+0000 (Cc)` at `uk-find-a-tender-scraper/src/main.js:619`.
+   Confirmed the real consequence live: `grep -c "function" src/main.js` returned NOTHING, rc=1 —
+   grep classifies the file as binary and silently skips it. This is the cycle-336 blind-spot
+   class recurring on a SECOND Actor, and it was recorded nowhere in the live STATUS.md/queue.md,
+   so every fleet-wide grep audit since that line landed had a silent hole.
+   The NUL is intentional (a dedupe-key separator written as a literal byte in `].join('<NUL>')`).
+   Fix: write it as the escape `].join('\0')` — the IDENTICAL runtime string (`['a','b'].join('\0')`
+   -> `"a\u0000b"`, verified in node), so zero behaviour change and no watch-baseline fingerprint
+   invalidation, but the source is text again. Verified: `node --check` OK, `grep -c "function"`
+   now 19, platform regression 10/10 rows, `check-source-bytes` 445 files / 0 flagged (was 1).
+
+1-h1000-b-fleet-sweep-utc-day-vs-source-local-day.
+   **[queued by cycle 1000 — GROWTH-sized, do NOT skip as "probably fine".]**
+   Cycle 996 found a non-UTC date convention on Apple; cycle 997 swept for *that* shape (a row's
+   own timestamp carrying an offset) and correctly cleared the fleet. Cycle 1000's bug is a
+   DIFFERENT shape that sweep would not have caught: **our own clock** used to build a filter
+   bound, via `new Date().toISOString().slice(0,10)`, against a source whose dates are in a
+   specific non-UTC local calendar. Sweep: `grep -n "toISOString().slice(0, 10)\|isoDay\|todayIso"
+   actors/*/src/main.js` and for each hit ask the two questions that matter — (a) is the value used
+   as a *filter bound or default window* sent upstream, or merely as run bookkeeping/metadata
+   (bookkeeping is fine, leave it), and (b) what calendar is the upstream source's date field
+   actually on? Highest-prior suspects are the other US-government Actors whose deadlines are
+   stated in ET (grants-gov, sam-gov-opportunities, us-federal-awards, fda-recall, sec-insider-
+   trades) and the non-US ones where the skew is LARGER than 4-5h and therefore worse
+   (eu-ted-tenders CET, uk-find-a-tender London). NOTE the asymmetry that makes this worth doing:
+   a deadline/"still open" filter fails in the direction that drops the MOST URGENT rows, which is
+   both the least visible failure and the most valuable data.
+   Re-run `bin/check-source-bytes` first — cycle 1000 showed a fresh NUL can make an Actor
+   invisible to exactly this kind of grep, and a wrong TOTAL is visible where a skipped file is not
+   (compare the hit count against `ls actors/*/src/main.js | wc -l` = 24).
+
 0-DONE-h999-housekeeping-archive-pass.
    **[cycle 999] DONE — GROWTH slot per rotation (997 G -> 998 Q -> 999 G). Housekeeping archive
    pass, overdue across ~15 prior cycle notes.**
