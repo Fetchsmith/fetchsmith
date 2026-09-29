@@ -740,7 +740,22 @@ TERMS = {
     # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
-    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper"],
+    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper", "hiring page scraper", "applicant tracking system api"],
+    # cycle 962: h904 readme-proximity-scan continued (title 63/63 full, description
+    # 291/300 near-full -> readme was the only lever). Priced 16 fresh phrases via
+    # `bin/store-price`; two stood out on `--why`. "hiring page scraper" (6429 hits) had
+    # NO record anywhere in the top-60 at the 3-word floor prox=2 (best existing was
+    # prox=4) -- a contiguous readme insert creates a brand-new best bucket, guaranteed
+    # p1 regardless of storePosition (the clinicaltrials-952 pattern). "applicant tracking
+    # system api" (652 hits) had an existing prox=3 floor bucket (readme, 5 records) --
+    # joining it by storePosition order predicted ~p4. Shipped ONE new sentence after the
+    # opening paragraph carrying both contiguous, truthful against the Actor's own
+    # description (it scrapes each company's own ATS/hiring page via that ATS's public
+    # API). Build 0.1.55, README-only; both phrases confirmed in the build payload via
+    # the platform API before measuring. Live ~100s post-reindex: `hiring page scraper`
+    # absent -> exactly **p1** as predicted; `applicant tracking system api` absent ->
+    # **p3** (predicted ~p4, close). Zero regression: all 5 pre-existing tracked queries
+    # held rank or improved via ordinary storePosition drift (50620->49701).
     # cycle 912: started the h904 char-backlog sweep on this Actor's two worst-ranked
     # tracked queries and CLOSED both — the proximity lever does not apply when the head
     # bucket is SATURATED. `--why "ats jobs scraper"` (2656 hits, us p71): the entire first

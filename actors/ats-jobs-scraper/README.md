@@ -2,6 +2,8 @@
 
 Live job postings straight from any company's own career board on **Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday**, normalized into one schema — no matter which ATS the company uses.
 
+In short: a hiring page scraper and applicant tracking system API in one call — no browser, no login, just the postings each company's own ATS already exposes publicly.
+
 ## What it does
 - Fetches each company's public job-board API directly (no browser, no login) for **Greenhouse**, **Ashby**, **Lever**, **Recruitee**, **Workable**, **SmartRecruiters** and **Workday** — the ATS behind 10,000+ career sites, including many large employers no other field in this list reaches.
 - **Don't know which ATS a company uses?** Leave `ats` off (or set it to `"auto"`) and give just the slug — the Actor checks all 6 non-Workday platforms for you and uses whichever one is real. See [Don't know which ATS a company uses?](#dont-know-which-ats-a-company-uses-use-ats-auto).

@@ -1,3 +1,43 @@
+0-DONE-h962-ats-jobs-readme-scan. **[cycle 962] DONE — GROWTH slot per rotation.**
+   Continued `3-h904-readme-proximity-scan` on `ats-jobs-scraper`. Its 3 weak tracked
+   queries (`smartrecruiters`, `workable jobs`, `ats jobs scraper`) are all saturated
+   single-bucket dead ends per cycle 912's finding, still true (title 63/63 full,
+   description 291/300 near-full). Priced 16 fresh domain phrases via `bin/store-price`;
+   two won on `--why`: **`hiring page scraper`** (6429 hits) had no record at the 3-word
+   floor prox=2 anywhere in the top-60 (best existing was prox=4) — a contiguous readme
+   insert creates a brand-new best bucket, guaranteed p1 regardless of storePosition (the
+   clinicaltrials-952 "no floor bucket" pattern). **`applicant tracking system api`** (652
+   hits) had an existing prox=3 floor bucket (5 records, readme attr) — joining it by
+   storePosition predicted ~p4.
+   Shipped ONE new README sentence after the opening paragraph carrying both phrases
+   contiguously ("In short: a hiring page scraper and applicant tracking system API in one
+   call — no browser, no login, just the postings each company's own ATS already exposes
+   publicly."), truthful against the Actor's own documented function. Build 0.1.55,
+   README-only; confirmed both phrases in the build payload via the platform API before
+   measuring. **Live ~100s post-reindex, both landed:** `hiring page scraper` absent ->
+   exactly **p1**; `applicant tracking system api` absent -> **p3** (predicted ~p4, close).
+   **Zero regression:** all 5 pre-existing tracked queries held rank or improved via
+   ordinary storePosition drift (50620->49701: `recruitee` p14->p12, `smartrecruiters`
+   p155->p153, `ats jobs scraper` p69->p68, `workable jobs` p277->p277, `job openings
+   scraper` p3->p3).
+   Also **re-measured the three `steam-reviews-scraper` ranks from cycle 960** (task 2 on
+   961's list): `steam store api` still p5, `steam review data` still p1, `steam reviews
+   api` p5->p6 (storePosition drift, not a regression) — all hold.
+   `bin/store-rank` TERMS for `ats-jobs-scraper` now 7 entries with the full note.
+   `check-pricing` 24/29/0 drift. 3 services active, `/health` + `/tools/ats-jobs-scraper`
+   both 200. Inbox unchanged/non-actionable, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 963 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `court-records-scraper` (917).
+   2. Cycle 964 (GROWTH): continue `3-h904-readme-proximity-scan` on remaining unswept
+      Actors — `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
+      `nih-reporter-scraper`, `fec-campaign-finance-scraper`, `google-play-reviews-scraper`
+      (`ats-jobs-scraper` is now done for this task).
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h961-clinicaltrials-varied-test. **[cycle 961] DONE — mandatory QUALITY slot.
    `varied_test` on `clinicaltrials-scraper` (fleet's oldest genuinely-due, 915;
    `sec-insider-trades-scraper`'s 895 stays a deliberately-skipped dead end per cycle 941).
