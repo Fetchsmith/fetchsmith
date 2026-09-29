@@ -710,7 +710,24 @@ TERMS = {
     # (p130 -> p119, storePosition drift only). Cost: "shopify scraper" span 1->2
     # and "shopify catalog" span 3->4 (neither was a targeted query, both already
     # deep in the ranks either way).
-    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv"],
+    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data"],
+    # cycle 966: h904 readme-proximity-scan continued. Pre-screen confirmed the 3 original
+    # TERMS are dead ends unreachable via readme: "shopify products" (p112, already prox=1
+    # attr=0 title -- readme can't beat title) and "shopify csv" (p7, same) both already
+    # at floor prox in the strongest attribute; "shopify product data" already p1. Priced
+    # 16 fresh domain phrases via `bin/store-price`; 4 stood out on `--why`, all absent from
+    # the top-60 window and truthful against the Actor's own documented fields (inventory/
+    # barcode output with detailLevel:"full", the existing "competitor monitoring" use-case
+    # bullet, and the hosted /tools API). Shipped TWO new readme sentences after the opening
+    # paragraph, each carrying two contiguous phrases (sharing "api"/"shopify"): "Shopify
+    # catalog API" + "product feed API" in one, "Shopify inventory data" + "Shopify
+    # competitor monitoring" in the other. Build 0.1.64, README-only; confirmed in the
+    # build payload before measuring. Live ~100s post-reindex, all four predicted exactly:
+    # "product feed api" (20079 hits) absent -> p8; "shopify competitor monitoring" (1192)
+    # absent -> p7; "shopify catalog api" (843) absent -> p5; "shopify inventory data"
+    # (681) absent -> p1. Zero regression: the 3 original TERMS held (storePosition drift
+    # 51052->52770 the only mover, e.g. "shopify csv" p7->p10 -- organic, not readme-caused
+    # since both are title-attr matches, independent of the readme edit).
     # cycle 558: first --attr batch probe on this Actor since cycle 537 (13 new
     # candidates). Title "Shopify Products Data Scraper – Full Catalog, Any Store"
     # (55/63 chars) -> "...Full Catalog, Shopify CSV" (57/63), swapping "Any Store"

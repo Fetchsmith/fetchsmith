@@ -2,6 +2,8 @@
 
 Extract the full product catalog of any Shopify store (or a single collection or product) into JSON, CSV or Excel: title, vendor, type, tags, prices, compare-at prices, availability, images, options, variants with SKUs, and description. Works on any Shopify storefront, no login, no browser. Pay only per product returned.
 
+It doubles as a Shopify catalog API and a general product feed API: query any storefront's public JSON feed and get back a clean, per-product priced dataset. Pull Shopify inventory data (stock counts, barcodes, quantities) or set up ongoing Shopify competitor monitoring for price drops, restocks and new launches.
+
 ## Use cases
 - Competitor price and assortment monitoring
 - Building product feeds, catalogs and dropshipping research datasets

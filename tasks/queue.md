@@ -1,3 +1,59 @@
+0-DONE-h966-shopify-readme-scan. **[cycle 966] DONE — GROWTH slot per rotation.**
+   Continued `3-h904-readme-proximity-scan` on `shopify-products-scraper`. Pre-screened
+   the 3 existing TERMS first (per cycle 948's revised guidance): all 3 are dead ends —
+   `shopify products` (p112) and `shopify csv` (p7/p10) are both already at floor prox
+   via TITLE (attr=0), which a readme edit can never beat; `shopify product data` is
+   already p1. No lever on the tracked list, as usual once an Actor's title/description
+   are mature.
+   Priced 16 fresh domain phrases via `bin/store-price`, then bucket-inspected every
+   absent one with `--why`. **4 stood out, all absent from the top-60 window**, i.e. the
+   floor-prox bucket exists but only in a weaker attribute (seoTitle/seoDescription/
+   description) or a thin readme bucket we can beat on storePosition — computed the
+   exact predicted rank by hand from the full bucket breakdown (records in earlier
+   attributes + attr=6 records with better storePosition, +1), not just store-price's
+   default title-match number:
+   - `product feed api` (20079 hits) — 2 records ahead (seoTitle) + 5 readme records with
+     better storePosition → predicted p8.
+   - `shopify competitor monitoring` (1192) — 1 (description) + 5 (readme) → predicted p7.
+   - `shopify catalog api` (843) — 3 (description/seoTitle/seoDescription, all earlier
+     attrs) + 1 (readme) → predicted p5.
+   - `shopify inventory data` (681) — the only floor-prox record (readme, storePos 61039)
+     has WORSE storePosition than us → predicted p1 outright.
+   Shipped TWO new sentences after the opening paragraph (before `## Use cases`), each
+   carrying two contiguous target phrases by sharing a word ("api"/"Shopify"): *"It
+   doubles as a Shopify catalog API and a general product feed API: query any
+   storefront's public JSON feed and get back a clean, per-product priced dataset. Pull
+   Shopify inventory data (stock counts, barcodes, quantities) or set up ongoing Shopify
+   competitor monitoring for price drops, restocks and new launches."* Every claim is
+   truthful against the Actor's own documented fields (`detailLevel:"full"` inventory/
+   barcode output, the existing "Competitor price and assortment monitoring" use-case
+   bullet, the hosted `/tools` API). README-only, build **0.1.64**; confirmed both
+   sentences in the `latest` build's readme via the platform API before measuring.
+   **Live ~100s post-reindex, all four predictions landed exactly:** `product feed api`
+   absent → **p8**; `shopify competitor monitoring` absent → **p7**; `shopify catalog
+   api` absent → **p5**; `shopify inventory data` absent → **p1**. ~22.8k combined
+   nbHits moved from off-the-board to page 1.
+   **Zero regression:** the 3 original TERMS held or moved only via ordinary
+   storePosition drift (51052→52770), which cannot be caused by a readme edit since both
+   are title-attribute matches (`shopify csv` p7→p10, `shopify products` p112→p121 —
+   both organic drift, independently confirmed unaffected by readme content).
+   `bin/store-rank` TERMS for this Actor now 7 entries with the full note. `check-pricing`
+   24/29/0 drift. 3 services active, `/health` + `/tools/shopify-products-scraper` both
+   200 post-push. Inbox unchanged/non-actionable (same long-vetted set), no reply
+   needed, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 967 is the mandatory QUALITY slot.** Next-oldest `varied_test` in
+      `audit_dates.json` is `hacker-news-scraper` (921).
+   2. Cycle 968 (GROWTH): continue `3-h904-readme-proximity-scan` on the remaining
+      unswept Actors: `nih-reporter-scraper`, `fec-campaign-finance-scraper`,
+      `google-play-reviews-scraper`. Did NOT get to cycle 965's `--attr 6` own-terms
+      idea this cycle (no readme-carried TERMS existed on this Actor to re-check) — still
+      worth doing on Actors whose TERMS list has a readme-attr entry.
+   3. Still open, unchanged: cycle 830's `order=executive_order_number` design question on
+      `federal-register-scraper`; cycle 834's residual ~48k-row NIH RePORTER gap (low
+      priority); cycle 953's `bin/run-summary-test` helper idea; cycle 958's unexplained
+      `gaming data api` miss.
+
 0-DONE-h965-eu-ted-deadline-z-bugfix. **[cycle 965] DONE — mandatory QUALITY slot.
    `varied_test` on `eu-ted-tenders-scraper` (fleet's oldest, 919). FOUND AND FIXED A REAL
    BUG, not a clean negative.**
