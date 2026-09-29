@@ -714,7 +714,7 @@ async function scrapeEpisodes(id) {
     catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return { got: 0, failed: true }; }
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
-  return { got: await pushEpisodeRows(rows, String(id), fromWholeFeed), failed: false };
+  return { got: await pushEpisodeRows(rows, String(id), fromWholeFeed), failed: false, wholeFeed: fromWholeFeed };
 }
 
 // Podcast shows without an Apple presence (or with one the caller didn't bother looking up) can
@@ -851,6 +851,15 @@ const emptyIds = [];
 const failedIds = []; // sources that returned nothing because the request broke, not because they are empty
 const depthCapped = [];
 const feedCeilingIds = []; // Apple's review feed quit mid-walk after a FULL page (see scrapeReviews)
+const windowFilteredIds = []; // episodes: Apple's own lookup API window (not RSS) fetched rows but the filters removed all of them
+// Declared before the loop (not just for the final status message) because the loop itself needs
+// it to tell "every episode filtered out" apart from "nothing to filter" while scraping each id.
+const episodeFiltersSet = [
+  explicitFilter !== 'all' ? `explicitFilter ("${explicitFilter}")` : null,
+  minDurationSeconds != null ? `minDurationSeconds (${minDurationSeconds})` : null,
+  input.minReleaseDate ? `minReleaseDate (${input.minReleaseDate})` : null,
+  input.maxReleaseDate ? `maxReleaseDate (${input.maxReleaseDate})` : null,
+].filter(Boolean);
 if (dataType === 'charts') {
   // Rank comes from array order in all cases.
   const url = chartGenre
@@ -988,6 +997,7 @@ if (dataType === 'charts') {
     const before = pushed;
     let got;
     let failed;
+    let wholeFeed = false;
     if (dataType === 'reviews') {
       const r = await scrapeReviews(id);
       got = r.got;
@@ -1010,7 +1020,7 @@ if (dataType === 'charts') {
         );
       }
     } else {
-      ({ got, failed } = await scrapeEpisodes(id));
+      ({ got, failed, wholeFeed } = await scrapeEpisodes(id));
     }
     log.info(`${id}: ${got} ${dataType} fetched, ${pushed - before} kept after filters.`);
     // Zero rows because the request itself failed is a DIFFERENT answer from zero rows because
@@ -1024,6 +1034,23 @@ if (dataType === 'charts') {
       log.warning(dataType === 'reviews'
         ? `Apple's review feed for podcast ${id} in storefront "${country}" came back empty on ${EMPTY_RECONFIRM_DELAYS_MS.length + 1} separate attempts across ${RSS_VARIANTS.length} request fingerprints, so this is Apple's data rather than a scrape failure — try another "country", or check the ID is an Apple Podcasts ID.`
         : `Apple returned no episodes for podcast ${id} in storefront "${country}" — check the ID is an Apple Podcasts ID and that the show is available in that storefront.`);
+    } else if (dataType === 'episodes' && !wholeFeed && pushed === before && episodeFiltersSet.length) {
+      // Apple's plain lookup API (not RSS) only ever hands back the show's most recent
+      // `perPodcastEpisodes` (hard cap 200) episodes — a date/duration/explicit filter outside
+      // that recent window finds nothing to keep, yet `got` is nonzero (Apple did answer), so this
+      // must not fall into the `emptyIds`/`failedIds` reporting below or it reads as "no such
+      // podcast"/"request failed" when the real answer is "your filter excluded every episode this
+      // endpoint could reach". Live-confirmed 2026-09-29: id1434243584 (Lex Fridman, 500+ episodes)
+      // with minReleaseDate/maxReleaseDate=2019-01 fetched 100 episodes, kept 0, and the status
+      // message read "no valid podcast IDs could be parsed from your input" — flatly wrong, since a
+      // valid id was parsed and 100 real episodes were fetched under it.
+      windowFilteredIds.push(id);
+      log.warning(
+        `Podcast ${id}: Apple's lookup API returned ${got} episode(s) (its own most-recent-episode `
+        + `window, capped at ${Math.min(perPodcastEpisodes, 200)}) and your ${episodeFiltersSet.join(' / ')} filter(s) `
+        + `removed all of them. This endpoint cannot reach further back than that window — turn on `
+        + `"useRssForFullArchive" to search the show's full archive instead.`,
+      );
     }
   }
   if (dataType === 'episodes') {
@@ -1078,12 +1105,6 @@ if (watchMode && seedErrors.length) {
 const timeBudgetNote = timeBudgetExceeded
   ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'
   : '';
-const episodeFiltersSet = [
-  explicitFilter !== 'all' ? `explicitFilter ("${explicitFilter}")` : null,
-  minDurationSeconds != null ? `minDurationSeconds (${minDurationSeconds})` : null,
-  input.minReleaseDate ? `minReleaseDate (${input.minReleaseDate})` : null,
-  input.maxReleaseDate ? `maxReleaseDate (${input.maxReleaseDate})` : null,
-].filter(Boolean);
 const emptySourceLabel = (list) => (list.some((x) => /^https?:\/\//i.test(x))
   ? `no episodes found for: ${list.join(', ')}`
   : `Apple returned nothing for: ${list.join(', ')} in storefront "${country}"`);
@@ -1134,14 +1155,18 @@ if (watchMode && seeding) {
       ? `your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`
       : depthCapped.length
         ? `maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`
-        : dataType === 'reviews' && (keyword || minRating != null || maxRating != null)
-          ? 'every review Apple returned was removed by your minRating/maxRating/keyword filters'
-          : dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length
-            ? `every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`
-            : 'no valid podcast IDs could be parsed from your input';
+        : windowFilteredIds.length
+          ? `Apple's lookup API only returned each show's recent episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed all of them — turn on "useRssForFullArchive" to search the full archive instead`
+          : dataType === 'reviews' && (keyword || minRating != null || maxRating != null)
+            ? 'every review Apple returned was removed by your minRating/maxRating/keyword filters'
+            : dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length
+              ? `every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`
+              : 'no valid podcast IDs could be parsed from your input';
   statusMsg = `No results — ${why}. See the log for details.`;
 } else if (depthCapped.length) {
   statusMsg = `Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`;
+} else if (windowFilteredIds.length) {
+  statusMsg = `Pushed ${pushed} results. Apple's lookup API returned only its recent-episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed everything in it for those show(s) — turn on "useRssForFullArchive" to search their full archive.${timeBudgetNote}`;
 } else if (emptyIds.length || failedIds.length || timeBudgetExceeded) {
   const failedNote = failedIds.length ? ` The request to Apple failed for: ${failedIds.join(', ')} — re-run to get those.` : '';
   statusMsg = `Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${failedNote}${timeBudgetNote}`;
