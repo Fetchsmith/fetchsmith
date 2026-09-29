@@ -1,3 +1,40 @@
+0-DONE-h988-steam-games-mode-ignored-filters-and-false-filter-blame.
+   **[cycle 988] DONE — mandatory QUALITY slot. `varied_test` on `steam-reviews-scraper` (fleet-oldest
+   at 937, re-confirmed fresh via `audit_dates.json`). FOUND AND FIXED 2 REAL DISCLOSURE BUGS,
+   builds 0.1.50 → 0.1.51 (logic) → 0.1.52 (README).**
+   Chose `dataType:"games"` as the target surface because every prior audit of this Actor
+   (801 unreachable_remedy, 820 competitor, 840 enum, 846 watch-subset, 937 varied_test) exercised
+   **reviews mode only** — games mode had never been run under varied input.
+   BUG 1 — games mode silently ignored 8 review-selection inputs. Live-reproduced on appId 413150 with
+   `keyword`+`minPlaytimeHours`+`reviewType`+`purchaseType`+`reviewsAfter/Before`+`language`+
+   `maxReviewsPerApp` all set: one unfiltered game row, `statusMessage` None, **zero warnings**. The
+   Actor already warned in exactly this situation for `includeOwnerEstimates` (the mirror-image case)
+   and `watchLabel`, so the silence was an inconsistency a buyer pays for. Shipped two warnings: one
+   naming the fully-ignored filters, one for `language`/`purchaseType`, which are not merely unused —
+   the summary call deliberately overrides both to `all` so `reviewScore`/`totalReviews` are the game's
+   own totals, the opposite of what a buyer who set them expects. `includeOffTopic` IS honoured in games
+   mode and is deliberately not warned.
+   BUG 2 — false "your filters removed everything" claim. An `apps` list where nothing parses as an App
+   ID drops every entry with a per-entry warning and never reaches either fetch loop, leaving
+   `idsAttempted`/`emptyIds`/`emptySearches`/`depthCapped` all empty; the `pushed===0` `why` chain then
+   hit its unguarded `keyword || minPlaytimeHours != null || hasDateWindow` branch and blamed the filter
+   for a run in which Steam was never asked for anything. Gated on
+   `idsAttempted.size > 0 && dataType === 'reviews'`.
+   MID-CYCLE CATCH (0.1.50 → 0.1.51): the first implementation tested "did the buyer set X?" with
+   `input.X != null` — **wrong on Apify**, which materializes `input_schema` defaults into the input
+   object before the Actor reads it, so a bare games run warned about `sortBy ("recent")`,
+   `maxReviewsPerApp (200)`, `language ("english")` (live-reproduced). Re-shipped comparing against the
+   schema DEFAULT VALUE. Appended to LEARNINGS as a fleet-wide rule.
+   VERIFIED LIVE 4 ways on 0.1.51: (a) bare games run → 0 warnings; (b) games + real filters → both
+   warnings with the exact field list and no default noise; (c) unparseable-apps repro → correct
+   `statusMessage` ("no valid Steam App IDs could be parsed from your input"); (d) default-input
+   regression gate SUCCEEDED, `chargedEventCounts {result: 10}`, 0 warnings, statusMessage byte-normal.
+   README "Game row" section now documents the ignored inputs (0.1.52, `check-readme-samples` 0 drift).
+   Standing checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-code-fields` 0,
+   `check-registry-fields` 0, `check-readme-samples` 0, `check-fail-ordering` 19/19 0 suspects,
+   `check-disclosure` 0, `check-backlinks` 92/52 0 missing. 3 services active, `/health` +
+   `/tools/steam-reviews-scraper` both 200. No spend, no owner email.
+
 0-DONE-h986-apple-podcasts-window-filtered-to-zero-disclosure-bug-fixed.
    **[cycle 986] DONE — mandatory QUALITY slot. `varied_test` on `apple-podcasts-scraper`
    (fleet-oldest at 935): dataType 'episodes' on the plain Apple lookup API path (no

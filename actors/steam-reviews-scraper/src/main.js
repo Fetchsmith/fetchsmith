@@ -121,6 +121,50 @@ if (watchMode && dataType === 'games') {
   log.warning(`watchLabel "${watchLabel}" is ignored in dataType:"games" — watch mode only applies to dataType:"reviews" (a game row is a snapshot of the same game on every run, not a stream of new events).`);
   watchMode = false;
 }
+// dataType:"games" returns one store snapshot per game; none of the review-selection inputs reach
+// that path. The Actor already warns in exactly this situation for includeOwnerEstimates (the
+// mirror-image case) and watchLabel, so staying silent about the rest is an inconsistency a buyer
+// pays for: "games matching negative reviews that mention grind" is a plausible reading of
+// dataType:"games" + reviewType + keyword, and the run answers it with an unfiltered game row and
+// no signal at all. language/purchaseType are called out separately because they are not merely
+// unused here -- the summary call deliberately overrides both to "all" so reviewScore/totalReviews
+// are the game's own totals, which is the opposite of what a buyer who set them expects.
+if (dataType === 'games') {
+  const ignoredInGames = [];
+  if (keyword) ignoredInGames.push(`keyword ("${keyword}")`);
+  if (minPlaytimeHours != null) ignoredInGames.push(`minPlaytimeHours (${minPlaytimeHours})`);
+  if (reviewType !== 'all') ignoredInGames.push(`reviewType ("${reviewType}")`);
+  if (hasDateWindow) ignoredInGames.push('reviewsAfter/reviewsBefore');
+  // Compared against the INPUT SCHEMA DEFAULT, not tested for presence: Apify materializes every
+  // schema default into the input object before the Actor reads it, so `input.sortBy != null` is
+  // true on every run and a presence check would warn about untouched fields forever (verified
+  // live this cycle -- a bare games run warned about sortBy "recent" and maxReviewsPerApp 200).
+  if (sortBy !== 'recent') ignoredInGames.push(`sortBy ("${sortBy}")`);
+  if (dayRange) ignoredInGames.push(`dayRange (${dayRange})`);
+  if (perAppReviews !== 200) ignoredInGames.push(`maxReviewsPerApp (${perAppReviews})`);
+  if (ignoredInGames.length) {
+    log.warning(
+      `These review filters are ignored in dataType:"games" — ${ignoredInGames.join(', ')}. A game row is a `
+      + 'store snapshot, not a set of reviews, so there is nothing for them to select. Set dataType:"reviews" '
+      + 'to filter individual reviews.',
+    );
+  }
+  // Same schema-default rule as above: "english" is the default, so warning whenever language is
+  // merely present would fire on every games run. Only a moved-off-default value is news.
+  const languageSet = language !== 'english' && language !== 'all';
+  if (purchaseType !== 'all' || languageSet) {
+    const overridden = [];
+    if (purchaseType !== 'all') overridden.push(`purchaseType ("${purchaseType}")`);
+    if (languageSet) overridden.push(`language ("${language}")`);
+    log.warning(
+      `In dataType:"games", ${overridden.join(' and ')} ${overridden.length > 1 ? 'do' : 'does'} not narrow `
+      + 'reviewScore/reviewScoreDesc/totalReviews: those are deliberately the game\'s own all-language, '
+      + 'all-purchase-type totals so the row describes the game rather than a slice of it. Use '
+      + 'dataType:"reviews" if you need a filtered review set.',
+    );
+  }
+}
+
 const WATCH_STORE = 'fetchsmith-steam-reviews-watch';
 const SEED_CAP = 20000;   // bound the cost/time of a baseline run across all apps
 const WATCH_KEEP = 40000; // bound the record size; oldest ids fall off first
@@ -922,7 +966,15 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
       ? `your search terms matched no Steam games: ${emptySearches.join(', ')}`
       : depthCapped.length
         ? `maxReviewsPerApp (${perAppReviews}) was hit before any review passed your keyword/minPlaytimeHours filter for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`
-        : keyword || minPlaytimeHours != null || hasDateWindow
+        // idsAttempted gate (h988): an `apps` list where nothing parses as an App ID drops every
+        // entry with a per-entry warning and never reaches either fetch loop, so idsAttempted /
+        // emptyIds / emptySearches / depthCapped are ALL empty. Without this gate a run that also
+        // set a filter blamed the filter -- "every review Steam returned was removed by your
+        // keyword ... filters" -- for a run in which Steam was never asked for anything. Actively
+        // wrong, not just vague; same class as apple-podcasts-scraper's cycle-986 window bug. Also
+        // requires reviews mode: the filters do not run at all in dataType:"games".
+        : idsAttempted.size > 0 && dataType === 'reviews'
+          && (keyword || minPlaytimeHours != null || hasDateWindow)
           ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
           : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}`);

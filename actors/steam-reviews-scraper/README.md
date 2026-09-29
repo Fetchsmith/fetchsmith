@@ -154,6 +154,14 @@ Details worth knowing:
 
 ### Game row (`dataType: "games"`)
 
+A game row is a **store snapshot**, not a set of reviews, so the review-selection inputs have nothing
+to select and are ignored here: `keyword`, `minPlaytimeHours`, `reviewType`, `reviewsAfter`/
+`reviewsBefore`, `sortBy`, `dayRange` and `maxReviewsPerApp`. Set any of them alongside
+`dataType: "games"` and the run names them in a warning rather than quietly dropping them. Separately,
+`reviewScore` / `reviewScoreDesc` / `totalReviews` are deliberately the game's **own** all-language,
+all-purchase-type totals — `language` and `purchaseType` do not narrow them (also warned when you set
+them). If you want a filtered set of individual reviews, use `dataType: "reviews"`.
+
 ```json
 {
   "type": "game",

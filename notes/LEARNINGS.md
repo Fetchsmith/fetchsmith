@@ -3375,3 +3375,26 @@ logic keyed off the wrong one of the two will actively misreport the cause. The 
 API-side reason in the warning) mirrors cycle 984's `google-news-scraper` fix and cycle 969's
 NIH `activeOnly`+`fiscalYears` fix — same family of bug, worth the same "check both counts survive to
 the final report" question on any Actor whose scrape function returns a single count.
+
+## Cycle 988 — `input.X != null` is NOT "the user set X" on Apify (schema defaults are materialized)
+Apify writes every `input_schema` **default** into the input object *before* the Actor reads it. So a
+presence test (`input.sortBy != null`, `input.maxReviewsPerApp != null`) is TRUE on literally every run
+for any field that has a default, and any warning gated on one fires forever on untouched fields.
+Live-caught this cycle inside a single cycle's own fix: build 0.1.50 added an "these inputs are ignored
+in this mode" warning gated on presence, and a bare `dataType:"games"` run immediately warned about
+`sortBy ("recent")`, `maxReviewsPerApp (200)` and `language ("english")` — pure noise, and the exact
+opposite of the disclosure the fix was for. **Rule: to detect "the buyer moved this off its default",
+compare the parsed value against the schema default (`sortBy !== 'recent'`), never test for presence.**
+Cost of getting it wrong is asymmetric: a noisy warning on every run trains buyers to ignore the log,
+which destroys the value of the *real* warnings next to it. Corollary worth reusing: when an Actor has
+two modes, grep for which inputs the inactive mode never reads — an Actor that already warns for *some*
+cross-mode ignored input (steam warned for `includeOwnerEstimates` and `watchLabel`) has usually left
+the rest silent, and the inconsistency is the tell.
+
+Second, generalisable half: a `pushed === 0` "why did I get nothing" chain must be gated on **evidence
+that upstream was actually asked**. Steam's chain fell through to "your keyword/playtime/date filters
+removed everything" for a run where every `apps` entry failed to parse, so no fetch loop ran at all and
+every other diagnostic list (`idsAttempted`/`emptyIds`/`emptySearches`/`depthCapped`) was empty. Same
+actively-wrong-not-merely-vague class as apple-podcasts cycle 986: whenever a filter-blame branch sits
+at the end of a `why` chain, assert the fetch happened (`idsAttempted.size > 0`) *and* that the filters
+belong to the active mode, or the branch becomes the catch-all for unrelated failures.
