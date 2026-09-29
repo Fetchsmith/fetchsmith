@@ -24,7 +24,7 @@ Search **TED (Tenders Electronic Daily)**, the EU's official public-procurement 
 | `maxResults` | integer | Stop after this many notices. Default 100. |
 | `minValue` / `maxValue` | integer | Only keep notices whose `totalValue` falls in this range. Compares the raw number regardless of currency (TED reports EUR, CZK, RON, SEK, etc. per notice — check `totalValueCurrency`). Roughly half of all notices carry no value at all; those are dropped whenever either is set. |
 | `onlyOpenDeadlines` | boolean | Keep only notices whose submission deadline is today or later — the tenders you can still bid on. Notices with no published deadline (award/result notices, most prior-information notices) are dropped while this is on, since an absent deadline can't be shown to be open. |
-| `minDaysUntilDeadline` | integer | Keep only notices with at least this many whole days left before the deadline (`daysUntilDeadline` in the output), counted in UTC. Implies `onlyOpenDeadlines`. |
+| `minDaysUntilDeadline` | integer | Keep only notices with at least this many whole days left before the deadline (`daysUntilDeadline` in the output), counted in Brussels local time (the zone every TED deadline is stamped in). Implies `onlyOpenDeadlines`. |
 | `outputLanguage` | string | Preferred language for `title`/`description`/`buyerName`/`buyerCity`/`noticeUrl` (24 EU languages, e.g. `deu`, `fra`, `spa`). Default `eng`. Falls back to English, then to whatever TED provided, if a notice has no translation into your chosen language. |
 | `flatten` | boolean | Default `false` (JSON arrays). Set `true` to join `cpvCodes`, `contractNature`, `placeOfPerformanceCountry` and `placeOfPerformanceCity` into a single comma-separated string per field, instead of a JSON array — cleaner for CSV/Excel export (Apify's default array export otherwise splits each into numbered `field/0`, `field/1` columns that shift between rows with different array lengths). |
 | `watchLabel` | string | Optional. Name a saved query and get **only what is new since your last run** — see below. |
@@ -125,7 +125,7 @@ One row per notice:
 }
 ```
 
-`totalValue` is `null` here because this particular notice type doesn't carry one — see the FAQ. `daysUntilDeadline` is computed at run time (whole days, UTC), so the same notice returns a smaller number each day and goes negative once it closes. `changeReasonDescription` is `null` because this is an original notice, not a corrigendum; on a corrigendum it reads like *"Deadline for receipt of tenders: INSTEAD OF 24/08/2026 16:00 +02:00 PLEASE READ 10/09/2026 16:00 +02:00"*.
+`totalValue` is `null` here because this particular notice type doesn't carry one — see the FAQ. `daysUntilDeadline` is computed at run time (whole days, counted in Brussels local time — the zone TED itself stamps every deadline in), so the same notice returns a smaller number each day and goes negative once it closes. `changeReasonDescription` is `null` because this is an original notice, not a corrigendum; on a corrigendum it reads like *"Deadline for receipt of tenders: INSTEAD OF 24/08/2026 16:00 +02:00 PLEASE READ 10/09/2026 16:00 +02:00"*.
 
 ## Pricing
 `result` — $0.003 per returned notice. The run start is free, no minimum spend.

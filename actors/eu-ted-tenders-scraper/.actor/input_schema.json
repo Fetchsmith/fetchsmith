@@ -241,7 +241,7 @@
     "minDaysUntilDeadline": {
       "title": "Minimum days until deadline",
       "type": "integer",
-      "description": "Keep only notices with at least this many whole days left before the submission deadline, counted in UTC ('daysUntilDeadline' in the output). Use it to skip tenders you cannot realistically prepare a bid for: 14 drops anything closing inside two weeks. Implies the open-deadline filter (a passed deadline is negative), and drops notices with no published deadline. Leave empty for no deadline floor.",
+      "description": "Keep only notices with at least this many whole days left before the submission deadline, counted in Brussels local time — the zone every TED deadline is stamped in ('daysUntilDeadline' in the output). Use it to skip tenders you cannot realistically prepare a bid for: 14 drops anything closing inside two weeks. Implies the open-deadline filter (a passed deadline is negative), and drops notices with no published deadline. Leave empty for no deadline floor.",
       "minimum": 0
     },
     "flatten": {

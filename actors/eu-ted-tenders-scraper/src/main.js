@@ -128,20 +128,28 @@ function earliestDate(arr) {
   return sorted[0];
 }
 
-// Whole days from today (UTC) to the submission deadline: 0 = closes today,
-// negative = already closed, null = TED published no deadline on this notice
-// (common on award/result notices, which have nothing left to bid on).
-// deadlineDate is already "+offset"-stripped by earliestDate, but can still
-// carry a time component ("2026-08-24T16:00:00"), so only the date part is used
-// — a deadline at 16:00 local is still "today", not "-1 day".
+// Whole days from today (Brussels-local, the zone every TED deadline is stamped in —
+// verified live 2026-09-29: `deadline-receipt-tender-date-lot` carries a real "+02:00"/"+01:00"
+// CEST/CET offset, e.g. "2026-09-29+02:00") to the submission deadline: 0 = closes today,
+// negative = already closed, null = TED published no deadline on this notice (common on
+// award/result notices, which have nothing left to bid on).
+// deadlineDate is already "+offset"-stripped by earliestDate, but can still carry a time
+// component ("2026-08-24T16:00:00"), so only the date part is used — a deadline at 16:00
+// local is still "today", not "-1 day".
+// Comparing against UTC "today" instead of Brussels "today" is the same bug shape as the
+// federal-register-scraper's ET fix (cycle 1000): during the ~1-2h/day (CEST/CET) window where
+// the UTC calendar day still lags the Brussels one, a notice whose Brussels deadline day has
+// already rolled over reads as daysUntil===0 ("closes today") instead of the correct -1 (already
+// closed) — live-reproduced 2026-09-29T22:01Z (=2026-09-30T00:01 Brussels) on real notice
+// 565654-2025, deadline-receipt-tender-date-lot "2026-09-29+02:00".
+const BRUSSELS_DAY_FMT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' });
 function daysUntil(dateStr) {
   if (!dateStr) return null;
   const day = String(dateStr).slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
   const then = Date.parse(`${day}T00:00:00Z`);
   if (!Number.isFinite(then)) return null;
-  const now = new Date();
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const today = Date.parse(`${BRUSSELS_DAY_FMT.format(new Date())}T00:00:00Z`);
   return Math.round((then - today) / 86400000);
 }
 
