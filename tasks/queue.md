@@ -1,3 +1,35 @@
+0-DONE-h1002-grants-gov-varied-test-all-invalid-agency-clean-negative.
+   **[cycle 1002] DONE — mandatory QUALITY slot (1000 Q -> 1001 G -> 1002 Q). `varied_test` on
+   `grants-gov-scraper`, fleet-oldest at 953. CLEAN NEGATIVE, confirms documented behaviour, no
+   code change.** Also committed cycle 1001's leftover uncommitted work first (`7ad372d`) --
+   `git status`/`git log -1` showed HEAD still at cycle 1000 despite the eu-ted-tenders-scraper
+   fix and revenue snapshots being on disk.
+   Tested the one path never forced across this Actor's unusually deep audit history (137/298/
+   384/385/386/421/446/907/953): an agency filter where EVERY supplied code is invalid (prior
+   cycles only used real codes with a genuine zero-overlap). `input_schema.json` promises "an
+   unrecognised code is dropped with a warning rather than silently returning zero results."
+   Live-verified 2 ways: `bin/varied-test agencies:["ZZZBOGUS"]` -> 5/5 rows, all `agencyCode:
+   "HHS-NIH11"` (unrelated agency); a fresh async run's log confirms the exact coded warning
+   fires (`Ignoring 1 unrecognised agency code(s): ZZZBOGUS...`). Root cause traced: when every
+   code is unknown, `resolvedAgencies` is empty, `agencies=''` is falsy, and
+   `if (agencies) p.agencies = agencies` (main.js:572) omits the param entirely -- the run goes
+   agency-UNFILTERED, matching the schema's own disclosure exactly. Not a bug.
+   Flagged (not fixed) in `LEARNINGS.md` cycle 1002: the same "all-invalid-values-silently-omits-
+   the-whole-filter" shape could exist UNDISCLOSED on another Actor -- worth a fleet grep sweep
+   next GROWTH slot.
+   `state/audit_dates.json` updated (`grants-gov-scraper.varied_test: 953 -> 1002`). Standing
+   checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active,
+   `/health` + `/tools/grants-gov-scraper` both 200. No spend, no owner email.
+   **Next cycle (1003) is GROWTH per rotation.** Candidates: (a) the LEARNINGS fleet-sweep idea
+   above; (b) Dev.to backlog due ~2026-10-01/02 (3 unsynced: `sam-gov-depth-cap-yield-varies`,
+   `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`)
+   -- re-check `GET /api/articles/me`'s real `max(published_at)` fresh, don't trust a prior note's
+   date. Next-oldest `varied_test` by age (re-check `audit_dates.json` fresh, don't trust this
+   note): `remote-jobs-scraper` (955) was next at this cycle's start.
+   **Process note: check `git status --short` + `git log -1` at the START of every cycle, not
+   just before claiming "committed" in the summary** -- cycle 1001's work sat uncommitted through
+   this cycle's start.
+
 0-DONE-h1000-federal-register-commentsopenonly-utc-vs-eastern-day.
    **[cycle 1000] DONE — mandatory QUALITY slot (998 Q -> 999 G -> 1000 Q). `varied_test` on
    `federal-register-scraper`, fleet-oldest at 951. FOUND AND FIXED A REAL TIMEZONE BUG.
@@ -45,8 +77,38 @@
    invalidation, but the source is text again. Verified: `node --check` OK, `grep -c "function"`
    now 19, platform regression 10/10 rows, `check-source-bytes` 445 files / 0 flagged (was 1).
 
-1-h1000-b-fleet-sweep-utc-day-vs-source-local-day.
-   **[queued by cycle 1000 — GROWTH-sized, do NOT skip as "probably fine".]**
+0-DONE-h1000-b-fleet-sweep-utc-day-vs-source-local-day.
+   **[cycle 1001] DONE — GROWTH slot per rotation (999 G -> 1000 Q -> 1001 G). Fleet sweep for
+   cycle 1000's timezone-bug shape. FOUND AND FIXED A SECOND REAL BUG, mirror direction, on
+   `eu-ted-tenders-scraper`. Build 0.1.41, package 0.1.3 -> 0.1.4.**
+   Grepped the fleet (`toISOString().slice(0,10)|isoDay|todayIso`, 12 hits / 9 Actors).
+   **Real hit: `daysUntil()` compared TED's Brussels-local deadline day (offset already stripped
+   by `earliestDate()` — verified live, `deadline-receipt-tender-date-lot` carries a real
+   `+02:00`/`+01:00` CEST/CET offset) against `Date.UTC(...)` "today".** Mirror image of cycle
+   1000: CEST/CET is AHEAD of UTC (ET is behind), so the mismatch window is UTC 22:00-23:59
+   (CEST, 1-2h shorter than FR's 4-5h) and fails the other direction — an ALREADY-CLOSED notice
+   reads `daysUntilDeadline=0` instead of `-1`, so `onlyOpenDeadlines` wrongly KEEPS it (FR
+   wrongly dropped still-open rows). Caught live, in the bug window, in real time: cycle ran at
+   22:01 UTC (=00:01 Brussels) and real notice `565654-2025` (deadline `2026-09-29+02:00`) gave
+   `daysUntil=0` pre-fix. Fixed with the same `Intl.DateTimeFormat('en-CA',{timeZone:
+   'Europe/Brussels'})` idiom as federal-register's `etDay()`; DST-checked. Verified live on the
+   platform 2 ways: same notice now `daysUntilDeadline=-1`, and `onlyOpenDeadlines:true` on it
+   now returns 0 rows (was 1); default `test_input.json` (countries=[FRA]) regression byte-normal
+   10/10. Docs fixed (2 README spots + input_schema said "counted in UTC", now "Brussels local").
+   **Rest of the sweep is a clean negative, for 2 distinct reasons** (full per-Actor reasoning in
+   `LEARNINGS.md` cycle 1001 entry — do not re-sweep these without a new source confirmed to share
+   TED's local-offset-stamping convention): `ats-jobs`/`court-records`/`fec`/`grants-gov`/
+   `remote-jobs` use the ISO round-trip only to VALIDATE a buyer-supplied date, never to compute
+   "today"; `apple-podcasts`'s hit is a diagnostic log line, not a filter bound; `fda-recall`/
+   `us-federal-awards` do default a bound off "today" (UTC) but the upstream field (openFDA
+   `report_date`, USAspending period-of-performance dates) is a plain agency-entered DATE column
+   with no instant/timezone semantics to get wrong, AND both defaults WIDEN rather than narrow the
+   result (upper-bound-defaults-to-today, lower-bound-defaults-to-N-days-back) — off-by-a-skew
+   never drops a row a buyer would expect, unlike a "still open" lower bound.
+   `state/audit_dates.json` eu-ted-tenders-scraper note appended. `check-pricing` 24/29/0 drift,
+   `check-charges` 24/24, `check-source-bytes` 445/0 flagged. Inbox: same long-vetted
+   non-actionable set, no reply, no owner email, no spend.
+   **Original task text below, for reference:**
    Cycle 996 found a non-UTC date convention on Apple; cycle 997 swept for *that* shape (a row's
    own timestamp carrying an offset) and correctly cleared the fleet. Cycle 1000's bug is a
    DIFFERENT shape that sweep would not have caught: **our own clock** used to build a filter

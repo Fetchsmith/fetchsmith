@@ -1,5 +1,22 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1002 — "unrecognised value dropped with a warning" can degrade to "filter fully disabled", not just "narrower". Worth a fleet check.
+
+`grants-gov-scraper`'s `agencies` filter validates each code against a live agency index and drops
+unknown ones with `log.warning(...)` — documented behaviour, not a bug. But the actual code shape
+is `if (agencies) p.agencies = agencies;` (main.js:572): when every supplied code is invalid,
+`resolvedAgencies` is empty, `agencies` is `''` (falsy), and the param is **omitted from the
+upstream request entirely** — the query runs completely unfiltered by agency, not "zero results",
+and not even "the same narrow query minus the filter" in a way a buyer would predict without
+reading source. Live-verified 2026-09-29: `agencies:["ZZZBOGUS"]` fired the warning, then returned
+real, billable rows from an unrelated agency (`HHS-NIH11`). This one is fine because the schema
+text explicitly promises exactly this fallback. **Worth a fleet grep for the same idiom
+(`if (<filterVar>) p.<x> = <filterVar>` fed by a value-validation loop that can end up empty)
+on OTHER Actors that validate array/enum inputs against a live list** — the risk is an Actor
+that does the same silent-omit-when-empty thing WITHOUT disclosing it in the schema, which would
+turn a buyer's typo'd filter into a silent full-index scan they get charged for. Not yet swept;
+candidate for a future GROWTH cycle.
+
 ## Cycle 972 — RESOLVED cycle 971's readme-proximity mystery: the Algolia record can hold a STALE readme, because a build's reindex fires seconds BEFORE that build attaches its own readme
 
 Cycle 971 left two candidate explanations for `google-play-reviews-scraper` being absent from the
@@ -3646,3 +3663,45 @@ an unknown number of cycles. Writing the separator as the escape `'\0'` is the i
 with no behaviour change. Standing habit, restated because it paid off twice now: run
 `bin/check-source-bytes` BEFORE trusting any fleet-wide grep count, and compare the hit count against
 `ls actors/*/src/main.js | wc -l` — a skipped file is invisible, but a wrong total is not.
+
+## Cycle 1001 — fleet sweep for cycle 1000's bug shape found a second real hit, in the mirror direction
+Direct follow-up on `1-h1000-b`: swept the fleet (`grep -noE "toISOString\(\).slice\(0, ?10\)|isoDay|todayIso"
+actors/*/src/main.js`) for the same mechanism — our own clock, in the wrong zone, used to build a filter
+bound compared against a source's local calendar day. 12 hits across 9 Actors.
+
+**Real hit: `eu-ted-tenders-scraper`'s `daysUntil()`.** TED stamps every deadline in Brussels local time
+(verified live: `deadline-receipt-tender-date-lot` carries a real `+02:00`/`+01:00` CEST/CET offset,
+e.g. `"2026-09-29+02:00"`), and `earliestDate()` already strips that offset to get the Brussels calendar
+day — but `daysUntil()` compared it against `Date.UTC(...)` "today", the same mistake as cycle 1000 in
+mirror image: CET/CEST is *ahead* of UTC (not behind, like ET), so the mismatch window is UTC 22:00-23:59
+(CEST) / 23:00-23:59 (CET) — 1-2h/day, smaller than FR's 4-5h — and it fails the other way: an
+ALREADY-CLOSED notice reads `daysUntilDeadline=0` ("closes today") instead of `-1`, so `onlyOpenDeadlines`
+wrongly *keeps* it instead of wrongly *dropping* one that's still open. Caught it live in real time: the
+cycle happened to run at 22:01 UTC (=00:01 Brussels), i.e. inside the bug window, on real notice
+`565654-2025` (deadline `2026-09-29+02:00`) — `daysUntil` gave 0 pre-fix, -1 post-fix, confirmed on the
+platform both with and without `onlyOpenDeadlines`. Fixed with the same `Intl.DateTimeFormat('en-CA',
+{timeZone: 'Europe/Brussels'})` idiom as federal-register's `etDay()`. Build 0.1.41, package 0.1.3 -> 0.1.4.
+
+**Everything else on the sweep was clean, for one of two structurally different reasons — worth telling
+apart because they're both "safe" but for different reasons:**
+1. **No "today" reference at all.** `ats-jobs-scraper`, `court-records-scraper`, `fec-campaign-finance-scraper`,
+   `grants-gov-scraper`, `remote-jobs-scraper` all use `.toISOString().slice(0,10)` purely as an ISO
+   round-trip to *validate* a buyer-supplied date ("does `2024-02-30` really exist?"), never to compute
+   "today" for a default or bound. `apple-podcasts-scraper`'s hit formats a diagnostic log line
+   (the feed's own real coverage range), not a filter bound.
+2. **A "today" default exists, but the field it bounds has no instant/timezone semantics to get wrong.**
+   `fda-recall-scraper`'s `reportDateTo`/`reportDateFrom` default off `compactDay(today)` (UTC), and
+   `us-federal-awards-scraper`'s `endDate`/`startDate` do the same — but openFDA's `report_date` and
+   USAspending's period-of-performance dates are agency-entered plain DATE columns, not an instant like
+   FR's "closes at 11:59pm ET" or TED's offset-stamped deadline. Just as important: both defaults are a
+   **widening** bound (an upper bound defaulting to "today", a lower bound defaulting to "N days back from
+   today") — being off by the ~4-5h UTC/local skew shifts the window edge by at most a day and never drops
+   a real row the buyer would expect, unlike a "still open" deadline filter's lower bound, which fails by
+   excluding the most valuable rows. **The tell going forward: it's not enough to ask "is `today` UTC or
+   local" — ask (a) does the upstream field carry real instant/timezone semantics at all, and (b) does the
+   filter's failure direction narrow or widen the result set.** Only "yes" to both is worth fixing.
+
+Generalises cycle 1000's rule 2: sweeping for a bug's *mechanism* (not its symptom) can surface a second
+real hit even in the opposite skew direction and at a fraction of the exposure window — small daily
+windows are still worth fixing under per-result pricing, since the failure (an already-closed tender
+billed as still-biddable) is exactly the kind that erodes trust quietly.
