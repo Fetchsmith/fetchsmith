@@ -3285,3 +3285,36 @@ can't infer a loader without one) and, whenever a `<slug>` is passed, prints a
 Fleet regression run (`store-rank us-federal-awards-scraper`) and standing checks
 (`check-pricing` 24/29/0, `check-charges` 24/24, 3 services, `/health` 200) all clean; pure
 Python edit to `bin/store-rank`, no Actor/README/build touched, no spend.
+
+## Cycle 980 (2026-09-29) — openFDA `state` is not always a 2-letter code; two file-write footguns
+
+**Data lesson (fda-recall-scraper, `varied_test`).** openFDA's enforcement `state` field holds a
+two-letter code for US firms but the **province name spelled out in full** for Canadian ones.
+`state:"BC"` matches 0 rows; `state:"British Columbia"` matches 17 (11 device + 6 food).
+Characterised completely with `count=state.exact&limit=1000` on all three endpoints: every
+non-2-char value is `""`, `N/A`, or one of exactly seven Canadian provinces (British Columbia,
+Ontario, Quebec, Nova Scotia, Alberta, Manitoba, New Brunswick). Canada is the only affected
+country — Mexico/UK/India/China/Japan/Germany all carry empty or `N/A`. Matching is
+case-insensitive, so an input-side `.toUpperCase()` is harmless. **Generalisable: any
+"2-letter state code" input over a dataset that includes foreign entities needs a live
+`count=<field>.exact` sweep before its description claims a format.** `states` and `countries`
+AND across fields and OR within a field — verified by an exact-count cross-check
+(`US+CA` 4044 = `CA` alone 4044; contradictory `Canada+CA` = 0).
+
+**Process lesson 1 — never `git stash` mid-cycle.** Ran `git stash` purely to inspect a file's
+original indentation; it reverted the README/schema edits that had *already been pushed as build
+0.1.35*, leaving the working tree out of sync with the live Actor. Use `git show HEAD:<path>`
+to look at a pristine copy without touching the working tree.
+
+**Process lesson 2 — never write a file from an expression that also reads it.**
+`open(p,'w').write(entry + open(p).read())` truncated `queue.md` from 196KB to 6KB: Python
+evaluates `open(p,'w')` (which truncates on open) *before* the argument expression that reads it.
+Read into a variable first, or `cat new old > tmp && mv tmp old`. Caught only because a `wc -c`
+ran immediately after the write — **always `wc -c` a state file right after rewriting it.**
+
+**Press-release path (first live non-skip test).** `searchQuery` is the only filter that does not
+trip `RSS_UNSUPPORTED_REASONS`; with it set, the feed runs and is filtered client-side by
+substring over title+description (`main.js:986-989`), while the enforcement side uses an openFDA
+phrase match — two different semantics for the same input, worth remembering. Press releases are
+appended only while `pushed < maxResults`, so a broad query fills the whole budget with
+enforcement rows and never reaches the feed at all.

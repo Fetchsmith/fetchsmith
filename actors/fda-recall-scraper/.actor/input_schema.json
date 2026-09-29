@@ -87,14 +87,14 @@
     "states": {
       "title": "Recalling firm states",
       "type": "array",
-      "description": "Two-letter US state codes of the RECALLING FIRM (not where the product was distributed — see distributionPattern in the output for that). Leave empty for all.",
+      "description": "Two-letter US state codes of the RECALLING FIRM (not where the product was distributed — see distributionPattern in the output for that). Multiple values are ORed. For CANADIAN firms FDA spells the province out in full, so use \"British Columbia\", not \"BC\" (also Ontario, Quebec, Nova Scotia, Alberta, Manitoba, New Brunswick); matching is case-insensitive. Set together with countries the two fields are ANDed, not ORed — a recall must match both. Leave empty for all.",
       "editor": "stringList",
       "uniqueItems": true
     },
     "countries": {
       "title": "Recalling firm countries",
       "type": "array",
-      "description": "Country names of the RECALLING FIRM, exactly as FDA writes them (for example \"United States\", \"Canada\", \"Israel\"). Most recalls are United States firms, but FDA also lists foreign firms whose products entered the US market. Leave empty for all.",
+      "description": "Country names of the RECALLING FIRM, exactly as FDA writes them (for example \"United States\", \"Canada\", \"Israel\"). Most recalls are United States firms, but FDA also lists foreign firms whose products entered the US market. Multiple values are ORed; set together with states the two fields are ANDed, not ORed — a recall must match both. Leave empty for all.",
       "editor": "stringList",
       "uniqueItems": true
     },

@@ -28,7 +28,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `reportDateFrom` | string | Earliest date for the field above, `YYYY-MM-DD` or `YYYYMMDD`. Default: one year ago. |
 | `reportDateTo` | string | Latest date for the field above. Default: today. |
 | `classifications` | array | `Class I` (reasonable probability of serious harm or death), `Class II` (temporary/reversible), `Class III` (unlikely to cause harm). Empty = all. |
-| `states` | array | Two-letter state codes of the **recalling firm**. Empty = all. |
+| `states` | array | Two-letter state codes of the **recalling firm**. For Canadian firms FDA stores the province spelled out in full, so use `British Columbia`, not `BC` (see FAQ). Multiple values are ORed; combined with `countries` the two ANDed. Empty = all. |
 | `countries` | array | Country names of the **recalling firm**, exactly as FDA writes them (`United States`, `Canada`, `Israel`, ...). Most recalls are US firms; foreign firms whose products entered the US market show up too. Empty = all. |
 | `recallNumber` | string | Look up one recall by its exact FDA recall number, e.g. `F-1233-2022`. Overrides every filter above except `productTypes`, and automatically searches full history regardless of `reportDateFrom`/`reportDateTo`. |
 | `eventId` | string | Look up every product recalled under one FDA event ID, e.g. `90105` (one event can cover several products, each its own row). Same override/full-history behaviour as `recallNumber`. |
@@ -162,6 +162,12 @@ Yes. openFDA refuses to page past row 25,000 (`skip` is hard-capped), so when a 
 
 **Does `states` mean where the product was sold?**
 No — it is the recalling firm's own state. For distribution, read the `distributionPattern` field (e.g. "Nationwide within the United States", or a list of states).
+
+**Why does `states: ["BC"]` return nothing for a Canadian recall?**
+Because FDA does not use two-letter codes outside the US. Two-letter codes are correct for US firms, but for Canadian firms the `state` field holds the **province name spelled out in full** — `British Columbia`, `Ontario`, `Quebec`, `Nova Scotia`, `Alberta`, `Manitoba`, `New Brunswick`. `states: ["BC"]` matches zero rows; `states: ["British Columbia"]` matches them (11 device + 6 food recalls as of 2026-09-29). Matching is case-insensitive, so `british columbia` works too. Canada is the only country this affects: a sweep of all three enforcement endpoints on 2026-09-29 found that every `state` value that is not a two-letter US code is either empty, `N/A`, or one of those seven Canadian provinces.
+
+**Can I combine `states` and `countries`?**
+Yes, and they are ANDed, not ORed — a recall must match both. Values *within* each field are ORed, so `states: ["CA","NY"]` means "California or New York". Setting `countries: ["Canada"]` together with `states: ["CA"]` therefore returns zero rows (no Canadian firm is in California), which is the correct intersection, not a bug. Both fields describe the recalling firm's location, so the useful combination is a country plus one of *that country's* own subdivisions — e.g. `countries: ["Canada"] + states: ["British Columbia"]`.
 
 **I have a recall number or event ID from another source — can I just look it up directly?**
 Yes. Set `recallNumber` (e.g. `F-1233-2022`) or `eventId` (e.g. `90105`) and every other filter is ignored except `productTypes` — set that too if you know which endpoint the recall lives on, since recall numbers aren't unique across food/drug/device. The date window is also automatically widened to full history so an old recall isn't silently missed by the default one-year lookback; this costs one extra lookup request internally, not a full history scan, since the exact-match query itself stays cheap however wide the window is.

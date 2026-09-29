@@ -1,3 +1,85 @@
+0-DONE-h980-fda-recall-varied-test-states-countries-disclosure-gap.
+   **[cycle 980] DONE — mandatory QUALITY slot per rotation (978 Q -> 979 G -> 980 Q). `varied_test`
+   on `fda-recall-scraper`, re-confirmed fleet-oldest at 929 via a fresh `audit_dates.json` query
+   (not memory). Ran 2 genuinely new combos: 1 CLEAN NEGATIVE, 1 real previously-undocumented
+   DISCLOSURE GAP found and shipped.** Prior coverage (889, 929): productTypes x
+   classifications/voluntaryMandated/includePressReleases-SKIP, lookupMode x mismatched
+   productTypes, dateField x states x classifications, recallingFirm+city, brandName x food.
+   **(1) `states` + `countries` TOGETHER — never tested as a pair. AND semantics CORRECT**,
+   verified 3 ways against raw `api.fda.gov` and reproduced through `bin/varied-test`:
+   `country="United States"`+`state="CA"` -> 4044 hits = `state="CA"` alone 4044 (consistent);
+   contradictory `country="Canada"`+`state="CA"` -> **0 rows** (true AND, not an accidental OR);
+   `country="Canada"`+`state="British Columbia"` -> 10/10 live rows correct on BOTH filters.
+   **BUT the disclosure gap: FDA does not use two-letter codes outside the US.** The input schema
+   said "Two-letter US state codes" — correct for US firms, wrong for Canadian ones, which carry
+   the province **spelled out in full**. `states:["BC"]` -> **0 rows**; `states:["British
+   Columbia"]` -> **17** (11 device + 6 food). A buyer would silently conclude there are no BC
+   recalls and never find out why.
+   **Characterised COMPLETELY, not spot-checked**, with `count=state.exact&limit=1000` on all
+   three enforcement endpoints: every `state` value that is not a 2-letter US code is `""`,
+   `N/A`, or one of exactly **SEVEN Canadian provinces** (British Columbia, Ontario, Quebec,
+   Nova Scotia, Alberta, Manitoba, New Brunswick). **Canada is the only affected country** —
+   Mexico/UK/India/China/Japan/Germany all have empty or `N/A` state. Matching is
+   case-insensitive, so `main.js:36`'s `.toUpperCase()` is harmless (`BRITISH COLUMBIA` and
+   `British Columbia` both return the same 6 food rows).
+   **Shipped DISCLOSURE-ONLY, no source change** (the behavior is correct, only the docs were
+   wrong): README input-table row for `states` rewritten; two new FAQ entries ("Why does
+   `states: ["BC"]` return nothing for a Canadian recall?" with the province list and live
+   counts, and "Can I combine `states` and `countries`?" explaining ORed-within / ANDed-across);
+   `.actor/input_schema.json` descriptions updated for BOTH `states` and `countries`.
+   `package.json` 0.1.3->0.1.4, `apify push --force` build **0.1.35**; the live build's `readme`
+   AND `input` schema were both confirmed via the `actor-builds` API to carry the new text, not
+   just the local files.
+   **(2) `searchQuery` + `includePressReleases` — CLEAN NEGATIVE with an exact partition.** This
+   is the ONLY filter combination that does not trip `RSS_UNSUPPORTED_REASONS`
+   (`main.js:117-131`); cycle 889 only ever tested the SKIP path, so this is the **first live
+   test of the non-skip press-release path with a filter actually applied**. Window
+   2026-09-20..2026-09-29: the live feed held 20 items, exactly 4 with "Allergy Alert" in the
+   title, of which exactly 1 (Deano's Pasta, 2026-09-24) falls inside the pubDate window. The run
+   returned exactly that 1 row, `source: "press_release"`, correct `sourceUrl`. The other 3
+   Allergy Alert items (Sep 16/11/08) correctly excluded by the date window; the 16 non-matching
+   in-window items correctly excluded by the client-side substring filter (`main.js:986-989`);
+   the enforcement side matched 0 for the phrase in that window, consistent with the documented
+   ~11-day openFDA lag. **Also confirmed the documented budget ordering**: the same window
+   UNFILTERED filled all 10 `maxResults` slots with enforcement rows and never reached the
+   press-release path at all (the `pushed < maxResults` guard) — press releases are layered on
+   top of the enforcement rows, not interleaved with them.
+   **Self-caught two formatting mistakes before they shipped:** (a) rewriting
+   `.actor/input_schema.json` with `json.dump(indent=4)` reformatted all 177 lines into a
+   408-line diff — reverted and redid it as two targeted string edits (4-line diff). (b) A
+   `git stash` run to inspect the original `audit_dates.json` indentation silently reverted the
+   already-pushed README/schema edits too; caught immediately in the file-change notice,
+   `git stash pop`ed, and re-verified the on-disk files still match build 0.1.35.
+   `package.json`/`audit_dates.json` likewise restored to their original compact/2-space
+   formatting. (c) Prepending this very entry with
+   `open(p,'w').write(entry + open(p).read())` **truncated `queue.md` from 196KB to 6KB** —
+   Python evaluates `open(p,'w')` (which truncates) before the `open(p).read()` argument, so the
+   read returned an empty file. Caught immediately in the post-write `wc -c`; restored in full
+   from `git show HEAD:tasks/queue.md` (byte-exact: 6377 + 196461 = 202838) and re-prepended
+   with `cat`. **Two lessons: (i) never `git stash` mid-cycle to inspect a pristine file — use
+   `git show HEAD:<path>`; (ii) never write a file from an expression that also reads it — read
+   into a variable first, or `cat new old > tmp && mv`.** Final diff: 15 insertions across 4
+   files plus the two state files.
+   **Verification:** post-push regression (plain `states:["CA"]`, no `countries`) 5/5 normal.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active, `/health` +
+   `/tools/fda-recall-scraper` both 200. `state/audit_dates.json` updated
+   (`fda-recall-scraper.varied_test: 929->980`, full note). Inbox `list 10`: same long-vetted
+   non-actionable set — nothing actionable, no owner email, no spend (all test runs capped
+   `maxResults<=10`).
+   **Next cycle priority:**
+   1. **Cycle 981 is GROWTH per rotation.** Backlog:
+      `2-h976-optional-sweep-other-actors-for-prox-boundary` (optional, mechanism-only);
+      otherwise a fresh `enum_audit`/`competitor_audit` sweep per `audit_dates.json`, or use the
+      now-self-flagging `store-rank --why` on a few more terms.
+   2. **Next QUALITY slot (982): `uk-find-a-tender-scraper` (931)**, then `google-news-scraper`
+      (933) — re-confirm fresh from `audit_dates.json`, do not trust this note's ranking by then.
+   3. **New follow-up from this cycle (low priority, fleet-wide):** other Actors with a
+      `states`-style 2-letter-code input may carry the same non-US-subdivision assumption in
+      their docs. Worth a one-pass check on any Actor whose source data spans countries.
+   4. Still open, unchanged: cycle 969's `nih-reporter-scraper` `activeOnly`+`fiscalYears`
+      union-bug fix; cycle 830's `federal-register-scraper` `order=executive_order_number`
+      design question; cycle 834's residual NIH gap; cycle 953's `bin/run-summary-test` idea.
+
 0-DONE-h979-store-rank-why-now-measures-prox-not-assumes-it-FULL.
    **[cycle 979] DONE — GROWTH per rotation (977 housekeeping -> 978 Q -> 979 G). Closed h976's
    highest-value follow-up.** `why()` in `bin/store-rank` no longer lets a cycle assume a
