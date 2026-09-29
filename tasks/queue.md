@@ -1,3 +1,42 @@
+0-DONE-h990-google-play-varied-test-genres-watch-clean-negative.
+   **[cycle 990] DONE — mandatory QUALITY slot. `varied_test` on `google-play-reviews-scraper`,
+   fleet-oldest at 939, re-confirmed fresh via `audit_dates.json`. CLEAN NEGATIVE, no code change.**
+   Read `src/main.js` in full against prior coverage (cycle 939: 5-way `replyFilter`×`keywords`×
+   `minThumbsUp`×`minScore`×`ratingFilter`; cycle 844: `sort`/`replyFilter` enums; cycle 820:
+   competitor pricing) to find genuinely untested ground: `genres` (a structural app-category
+   filter with a top-5-fullDetail search-resolution fallback) had never been exercised through the
+   QUALITY rotation, nor had its interaction with `watchLabel`.
+   **Combo 1 — `genres:["GAME"]` + `searchTerms` (solitaire/weather/calculator/messenger), live.**
+   Exercises `resolveAppIds()`'s fullDetail top-5 genre-match fallback for the first time under
+   audit. `solitaire` resolved to a real `GAME_CARD` app
+   (`solitaire.patience.card.games.klondike.free`) and its reviews were delivered with the
+   app-details row confirming the genre; the other 3 non-game terms were correctly skipped before
+   any review fetch (0 rows from them, not charged).
+   **Combo 2 — `watchLabel` + `genres` together (never tested — both features shipped
+   independently in different cycles).** Baseline run with `searchTerms:[solitaire,weather]` +
+   `genres:[GAME]`: read the live watch KV-store record after the run (not just the dataset) and
+   confirmed `seededApps` held exactly 1 entry (the solitaire app) — the weather app never entered
+   the baseline at all, matching the non-watch-mode skip-before-fetch behavior rather than silently
+   seeding a genre-excluded app. Test watch record deleted from the shared production KV store
+   after verification (`DELETE` -> 204).
+   **No bug found, no code/README change.** `state/audit_dates.json` updated
+   (`google-play-reviews-scraper.varied_test: 939->990`, full note). Standing checks clean:
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active, `/health` +
+   `/tools/google-play-reviews-scraper` both 200. `bin/revenue` flat (44 users/401 runs30d/0
+   reviews/0 bookmarks/$0, no Polar trigger). Inbox `list 10`: same long-vetted non-actionable set,
+   no reply, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 991 is GROWTH per rotation** (989 G -> 990 Q -> 991 G). Dev.to backlog: 3 unsynced
+      candidates remain (`sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-
+      field`, `court-records-opinion-status-any-is-not-any`), next due ~2026-10-01/02 (last
+      published 2026-09-27). Otherwise: federal-register `order=executive_order_number` design
+      question, residual NIH gap, `bin/run-summary-test` idea, or a fresh `enum_audit`/
+      `competitor_audit` on a `null` Actor per `audit_dates.json`.
+   2. **Next QUALITY slot (992): `shopify-products-scraper` (941)** is next-oldest `varied_test` —
+      re-confirm fresh from `audit_dates.json`, do not trust this note's ranking by then.
+   3. Housekeeping: `queue.md` ~201KB, `STATUS.md` climbing — both well under the 256KB cap, no
+      action needed yet.
+
 0-DONE-h989-fec-cross-mode-filters-ignored-with-no-warning.
    **[cycle 989] DONE — GROWTH slot. Acted on cycle 988's fleet-follow-up (b) ("Actors with 2+ modes:
    which inputs does the inactive mode never read, and does it say so?"). Fleet-wide search for
