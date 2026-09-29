@@ -1,3 +1,52 @@
+0-DONE-h974-gaming-data-api-mystery-narrowed-not-solved.
+   **[cycle 974] DONE — GROWTH per rotation. Re-checked cycle 958's unexplained `gaming data
+   api` miss on `steam-reviews-scraper` (predicted p2, landed p43) now that `bin/check-store-index`
+   covers the `readme` attribute (shipped cycle 972). Ruled out staleness, falsified cycle 958's
+   own theory, found a new but unproven lead.**
+   `check-store-index steam-reviews-scraper -v` → 0 stale fields, `idx`==`build` timestamp →
+   **not** the google-play-style stale-reindex-race bug. Pulled the live INDEXED `readme` value
+   straight from Algolia and grepped it: the target FAQ sentence ("...as a general **gaming data
+   API**?") is present, verbatim, CONTIGUOUS — so cycle 958's own explanation ("words matched split
+   across attributes, not one contiguous run in readme") is also wrong: it's one contiguous run,
+   and a fresh `getRankingInfo=true` probe still returns `matchLevel:"none"` on every attribute
+   including readme (`proximityDistance:9`, `firstMatchedWord:4000`). Still live at p43 today.
+   **New lead (1 data point, NOT proven — do not ship or file as solved):** compared byte-offset
+   of 3 phrases from the same cycle-958 readme/build/push (controls for staleness and attribute
+   choice): the 2 that landed near predicted rank (`video game data api`, `steam games list`) sit
+   at 0.6%/7.6% into the 26,971-char readme; the failing one (`gaming data api`) sits at 55.5% in,
+   in a FAQ entry appended near the end. Directional evidence Algolia's ranking engine may not
+   fully evaluate matches deep into a long attribute. Full writeup + the exact controlled test to
+   run before trusting this (insert 2 identical test phrases at ~5% and ~60% offset in the same
+   push, same Actor, see if only the early one gets `matchLevel != "none"`): `notes/LEARNINGS.md`
+   cycle 974.
+   **Inbox, read in full (not just listed):** owner's forwarded Apify "Scholarship Scraper flagged
+   as under maintenance" email — re-verified live, `isDeprecated:true` still set, README banner
+   still in place, `bold.org` still returns HTTP 429 Vercel Security Checkpoint today (re-curled).
+   Nothing changed since disclosure, no headless browser available (rule 7), doesn't meet the
+   rule-3 bar for an owner reply (not new info, not owner-fixable, no revenue event). capsule26.com
+   AI-agent outreach (`873db8ee`) — confirmed already answered per cycle 958's note, nothing new.
+   No code shipped (diagnostic cycle only — didn't want to spend README budget on a top-of-file
+   insert without knowing whether the offset theory is even right). `check-pricing` 24/29/0 drift,
+   `check-charges` 24/24, 3 services active, `/health` 200. No spend.
+   **Next cycle priority:**
+   1. **If continuing on `steam-reviews-scraper`:** run the controlled offset test from
+      `LEARNINGS.md` cycle 974 (2 identical phrases at different readme offsets, same push) before
+      trusting the offset theory enough to act on it fleet-wide. Do NOT move `gaming data api`'s
+      FAQ entry to the top speculatively — that would be a real content/readability tradeoff for
+      an unconfirmed ranking theory.
+   2. Otherwise: `3-h904-readme-proximity-scan` is fleet-complete; no fresh Actor queued for it.
+      Next GROWTH-cycle default: pick from the still-open items below, or start a new
+      `enum_audit`/`competitor_audit` per `audit_dates.json`.
+   3. Next QUALITY slot (cycle 975 mandatory per rotation): `us-federal-awards-scraper` (925) is
+      next-oldest `varied_test` per cycle 973's direct `audit_dates.json` query.
+   4. **Housekeeping, not urgent (cycle 973's note, unchanged):** `STATUS.md`/`queue.md` both now
+      exceed the 256KB single-file read cap — archive cycles older than ~50 into
+      `state/archive/`/`tasks/archive/` in a dedicated future cycle.
+   5. Still open, unchanged: cycle 969's `nih-reporter-scraper` `activeOnly`+`fiscalYears`
+      union-bug proper fix; cycle 830's `federal-register-scraper`
+      `order=executive_order_number` design question; cycle 834's residual ~48k-row NIH gap
+      (low priority); cycle 953's `bin/run-summary-test` helper idea.
+
 0-DONE-h973-sec-insider-varied-test-pass2.
    **[cycle 973] DONE — mandatory QUALITY slot, owed since cycle 972. `varied_test` pass 2 on
    `sec-insider-trades-scraper` (fleet's oldest, 895). Two fresh combos, both clean negatives.**

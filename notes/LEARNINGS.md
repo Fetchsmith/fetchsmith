@@ -3170,3 +3170,44 @@ AND just because each one ANDs correctly with a third, unrelated criterion (like
 check the combined total against the sum of the two individual totals, not just against either
 alone.** A combined total anywhere near the *sum* (not a subset) of the two individual totals is
 the tell.
+
+## Cycle 974 — `gaming data api` miss on `steam-reviews-scraper` is NOT the google-play stale-index bug; new evidence points at a readme-offset cutoff, not attribute-splitting
+Cycle 973 left a question for GROWTH: could cycle 958's unexplained `gaming data api` miss
+(predicted p2 via `--why`'s readme prox=2/attr=6 bucket, measured live p43) be the same
+stale-reindex-race class of bug cycle 972 found and fixed on `google-play-reviews-scraper`
+(`bin/check-store-index` didn't yet check the `readme` attribute when 958 shipped)? Answer: **no,
+ruled out on two independent checks.** (1) `bin/check-store-index steam-reviews-scraper -v` now
+reports `stale=-`, 0 stale fields, `idx` timestamp equal to `build` timestamp — the index is
+current. (2) Pulled the live indexed `readme` value directly from Algolia (not from our local
+`README.md`) and grepped it: the FAQ sentence "...as a general **gaming data API**?" is present,
+verbatim, contiguous, at char offset 14962 of 26971 (55.5% into the attribute) — so the content IS
+correctly indexed, not stale and not missing.
+
+Re-ran the exact `getRankingInfo=true` probe cycle 958 used: still `matchLevel:"none"` on every
+attribute including `readme`, `proximityDistance:9` (worst), `firstMatchedWord:4000`, despite the
+phrase being present and contiguous. This **falsifies cycle 958's own explanation** ("words matched
+split across attributes, not one contiguous run in readme") — the readme match IS one contiguous
+run; Algolia's ranking engine is just not finding/scoring it as a match at all.
+
+**New lead (not yet proven — one data point of directional evidence, needs a controlled test
+before treating as fact):** checked offsets of the two phrases from the SAME cycle-958 push that
+DID land near their predicted rank: `video game data api` (shipped cycle 956) sits at 0.6% into
+the readme, `steam games list` (shipped cycle 958, same push as the failing phrase) at 7.6% — both
+near the top. The failing `gaming data api` phrase sits at 55.5% in, deep in the FAQ section added
+later. All three are in the SAME readme, same build, same push, so content-staleness and
+attribute-choice are both controlled for — position is the one variable that differs sharply
+between the two that worked and the one that didn't. Consistent with an Algolia limit on how far
+into a long (~27KB / ~4,150-word) attribute value the ranking/highlight engine evaluates for
+`words`/`proximity`/highlighting purposes, not a documented Apify Store behavior we've previously
+recorded.
+
+**Not proven — do not file as solved.** One data point (3 phrases, 1 Actor) is not a controlled
+test. Before spending more README budget on this Actor or filing this as a fleet-wide rule, a
+future cycle should: pick an Actor with readme space, insert two IDENTICAL test phrases at two
+different offsets (e.g. 5% and 60%) in the same push, and see if only the early one gets a
+`matchLevel` != "none". If confirmed, the practical implication is real: readme edits placed deep
+in a long README (e.g. late FAQ entries) may be functionally invisible to Store search ranking even
+though they render fine and pass every "confirm the phrase is in the indexed readme" check we
+currently do — meaning `3-h904-readme-proximity-scan` should prefer inserting new target phrases
+near the TOP of the readme (or in the H1-adjacent intro paragraph, as cycles 956/958's winning
+inserts did) rather than in FAQ entries appended at the end, until this is confirmed or refuted.
