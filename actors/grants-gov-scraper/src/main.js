@@ -1131,6 +1131,64 @@ if (watchMode && seedFailure) {
     }
 }
 
+// `cfda` is the one filter on this Actor that the header comment's own rule does not cover: it is
+// neither constrained by an input-schema enum nor resolved against a live value list, it is free
+// text passed straight through. So an unusable number is invisible -- measured live (cycle 1016),
+// a well-formed-but-unused "99.999" and a malformed "banana" both come back exactly like a
+// genuinely empty query: errorcode 0, msg "Webservice Succeeds", hitCount 0. There is no
+// vocabulary to validate against either: /search2 returns facet lists for eligibilities,
+// fundingCategories, fundingInstruments and agencies, but none for cfda. So rather than ship a
+// guessed allowlist of Assistance Listing numbers, ONE extra call re-asks the same cfda with all
+// four statuses and no other filter, making Grants.gov's own data the authority on whether the
+// number matches anything at all. It fires only when the API itself declared zero matches -- the
+// sole ambiguous case -- so a normal run never pays for it, and a zero-row run is uncharged
+// anyway under per-result pricing. exclusiveOppNum is excluded because that path never sends cfda
+// (it uses walkOppNums; the startup log already says "other filters ignored").
+let cfdaMatchesAnyStatus = null;
+if (cfda && !exclusiveOppNum && declaredMatches === 0) {
+    const probe = await apiPost('/search2', {
+        resultType: 'json',
+        rows: 1,
+        oppStatuses: 'forecasted|posted|closed|archived',
+        keyword: '',
+        keywordEncoded: false,
+        cfda,
+    });
+    const probeHits = probe?.data?.hitCount;
+    if (!Number.isFinite(probeHits)) {
+        // Deliberately NOT markIncomplete: the result set itself is complete and correct (zero
+        // rows), we merely failed to diagnose WHY. Saying nothing would let a null in RUN_SUMMARY
+        // read as "the cfda checked out", which is the one thing a failed probe does not show.
+        log.warning(
+            `Could not check whether cfda="${cfda}" matches anything on Grants.gov (${lastApiFailure}). `
+            + 'The zero-row result above stands, but the cause is undiagnosed -- the number is NOT known '
+            + 'to be good. Re-run to get the check.',
+        );
+    } else {
+        cfdaMatchesAnyStatus = probeHits;
+        if (probeHits === 0) {
+            log.warning(
+                `cfda="${cfda}" matches ZERO opportunities on Grants.gov across ALL four statuses `
+                + '(forecasted, posted, closed, archived) -- so the cfda filter, not your other filters, is '
+                + 'what emptied this result set. Grants.gov does not reject an unusable Assistance Listing '
+                + 'number, it just returns nothing, which is why this took a second query to tell apart from '
+                + 'a genuinely empty search. Check the number at https://sam.gov/content/assistance-listings '
+                + '(format ##.###, e.g. "93.859"; the dot is optional -- "93859" filters identically). NOTE: a '
+                + 'real Assistance Listing that has simply never been attached to a Grants.gov opportunity '
+                + 'lands here too (measured: "10.001"), so this means "matches nothing on Grants.gov", NOT '
+                + '"is not a real CFDA number". The value was sent to Grants.gov exactly as given -- nothing '
+                + 'was dropped, normalised or guessed.',
+            );
+        } else {
+            log.info(
+                `cfda="${cfda}" is usable -- it matches ${probeHits} opportunity(ies) on Grants.gov across all `
+                + 'four statuses. This search came back empty because the OTHER filters (oppStatuses, keyword, '
+                + 'agency, dates, eligibility, award amounts) ANDed it down to zero, not because the number is bad.',
+            );
+        }
+    }
+}
+
 if (pushed === 0 && watchMode && !seeding) {
     log.warning(
         `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching opportunity(ies) `
@@ -1147,7 +1205,8 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'above, not guessed at; (4) postedWithinDays/postedFrom/postedTo are hard AND filters -- a '
         + 'small window plus a narrow keyword can easily have zero real matches; (5) '
         + 'minAwardAmount/maxAwardAmount excludes any row with no detail record at all, not just '
-        + 'rows outside the range.',
+        + 'rows outside the range; (6) an unusable cfda number returns nothing rather than an error -- '
+        + 'if cfda was set, the warning/info line above says outright whether it matches anything.',
     );
 } else if (exclusiveOppNum && notFoundOppNums.length > 0) {
     // Some numbers matched (pushed > 0) but not all -- a partial batch miss is easy to overlook
@@ -1200,6 +1259,10 @@ const runSummary = {
     // would otherwise read as "Grants.gov has no such opportunity", which is the one thing a
     // failed lookup does not prove.
     notFoundOppNums: exclusiveOppNum ? notFoundOppNums : [],
+    // Only ever a number on a cfda-filtered search that declared zero matches; null means "not
+    // checked" (no cfda set, rows were returned, or the check itself failed) and must NOT be read
+    // as "the cfda is fine". 0 here is the machine-readable form of "the cfda emptied this run".
+    cfdaMatchesAnyStatus,
     failedOppNums,
     baselineSize: watchMode ? watchSeen.size : null,
     baselineTruncated: watchMode ? baselineTruncated : null,

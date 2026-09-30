@@ -3921,3 +3921,42 @@ dropping can empty the list and fail *open* to the unfiltered index — cycle 10
 **The class generalises fleet-wide to closed numeric/coded filters where an out-of-range value is
 plausible buyer input** (wrong year parity on FEC 2-year cycles, CPV codes, activity codes, CFDA
 numbers) — queued as `h1012-a`.
+
+## Cycle 1016 — a facet/enum audit's blind spot is the free-text field, and "probe on zero" beats an allowlist
+
+**1. An enum audit that validates against the API's own facet lists silently skips any filter the
+API has no facet for.** Cycle 828 audited `grants-gov-scraper`'s "all 5 enum fields" against
+`/search2`'s self-describing facet lists and found 2 real gaps — a genuinely good audit. But the
+method's reach was exactly the set of fields that *have* facets. `cfda` has none (facets cover
+oppStatusOptions/eligibilities/fundingCategories/fundingInstruments/agencies only) and is free text
+in the input schema, so it was the one filter on the Actor that was neither schema-constrained nor
+live-resolved — the two-way guarantee that file's own header comment claims for every enum-shaped
+input. It sat unvalidated for 188 cycles *because* the audit that would have caught it defined its
+scope by what the tool could enumerate. **Standing rule: after any facet-driven or schema-driven
+enum audit, list the filter fields the method could NOT cover and audit those separately.** The
+fields a check can't see are the ones worth looking at by hand.
+
+**2. When there's no authoritative vocabulary, don't guess one — probe on zero.** The reflex fix for
+this bug class (cycles 936/1012/1015) is an allowlist. Here that would have meant shipping a guessed
+list of ~2,400 CFDA numbers, and cycle 1013 already established that a partial allowlist is itself a
+quality regression. Better shape, and it generalises: **fire one extra upstream query, only when the
+API itself declared zero matches, re-asking the suspect filter alone with every other constraint
+widened.** Upstream's live data becomes the authority, so there is no vocabulary to maintain or let
+rot. Cost is zero on the happy path (a result-bearing run never probes), and under per-result
+pricing a zero-row run is uncharged anyway, so the buyer pays nothing for the diagnosis either.
+It also yields strictly more information than an allowlist can: it distinguishes "this value matches
+nothing" from "this value is fine, your *other* filters emptied the set" — and an allowlist can
+never tell you the second thing. **Try this before an allowlist on any single-value filter whose
+upstream fails silently** (next candidates: `eu-ted-tenders-scraper`/`uk-find-a-tender-scraper`
+`cpvCodes`, where the ~9,454-code EU vocabulary made an allowlist look infeasible — probe-on-zero
+sidesteps the size problem entirely, though it needs a per-code loop since cpvCodes is a list).
+
+**3. Name the limit of the evidence in the user-facing warning, not just in the commit.** The probe
+proves "matches nothing *on Grants.gov*", which is NOT "not a real CFDA number": a real Assistance
+Listing that has simply never been attached to an opportunity reads identically (measured: `10.001`,
+0 hits across all 4 statuses, yet a live program). The warning and README say that outright. Same
+discipline as `notFoundOppNums`' comment in the same file — the absence of a match is not proof of
+non-existence, and a guard that overclaims teaches buyers to distrust it. Corollary for the
+machine-readable field: `cfdaMatchesAnyStatus: null` means "not checked", and the comment says it
+must never be read as "the value is fine" — a tri-state needs its unknown documented, or callers
+will treat falsy as good.

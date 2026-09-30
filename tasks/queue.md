@@ -1,3 +1,55 @@
+0-DONE-h1016-grants-gov-cfda-probe-on-zero.
+   **[cycle 1016] DONE — mandatory QUALITY slot per rotation (1014 Q -> 1015 G -> 1016 Q).
+   Closed the last open `h1012-a` candidate: `grants-gov-scraper` `cfda`. Build 0.1.39,
+   package 0.1.6 -> 0.1.7.**
+   Picked the `cfda` item over a fleet-oldest `varied_test` because it was a *named, unverified
+   bug candidate* from the h1012-a sweep and the queue itself flagged it as a quick live probe;
+   the oldest `varied_test` (`clinicaltrials-scraper`, 961) has 6 prior passes and cycle 1014
+   already judged it well-covered.
+   **Confirmed the bug by direct curl (no Actor run needed):** `cfda:"99.999"` (well-formed,
+   unused) and `cfda:"banana"` (malformed) BOTH return `errorcode 0` / `"Webservice Succeeds"` /
+   `hitCount 0` — byte-identical to a genuinely empty search. `cfda` was the ONE filter on this
+   Actor that was neither input-schema-constrained nor resolved against a live value list, i.e.
+   the exact guarantee `src/main.js`'s own header comment (lines 23-28) claims for every
+   enum-shaped input. Cycle 828's enum_audit could not have caught it: that audit validated
+   against `/search2`'s facet lists, and `cfda` has no facet (see LEARNINGS 1016).
+   **Fix deliberately NOT an allowlist** (would have meant guessing ~2,400 CFDA numbers; cycle
+   1013 established a partial allowlist is itself a regression). Instead **probe-on-zero**: one
+   extra `/search2` call, fired only when the API itself declared 0 matches on a cfda-filtered
+   search, re-asking that cfda across all 4 statuses with no other filter — Grants.gov's own data
+   as the authority, nothing to maintain. Zero cost on the happy path; a 0-row run is uncharged
+   anyway under PPE. Reports 3-way (matches nothing / is fine + names the count, so the empty
+   result is correctly blamed on the other filters / probe failed -> says the cause is
+   UNDIAGNOSED and explicitly not a clean bill of health), plus
+   `RUN_SUMMARY.cfdaMatchesAnyStatus` (0 / n / null, with null documented as "not checked") and
+   cause (6) on the generic no-match warning. `markIncomplete` deliberately NOT called — the
+   zero-row result set is complete and correct, only the diagnosis failed.
+   **Verified live on pushed build 0.1.39, 3 ways:** `99.999` -> warning fires, 0 rows,
+   summary `0`; `93.859` + nonsense keyword -> info "matches 844", summary `844`; `93.859` alone
+   -> 3 real rows with `93.859` present in every row's `cfdaList`, no probe, summary `null`
+   (proven no-op). README FAQ + input-schema description confirmed on the live `latest` build's
+   `readme`/`inputSchema` fields via the API. Self-charge ~$0.002 (3 thin rows).
+   Also measured and documented: the dot in a CFDA number is optional (`93859` == `93.859`,
+   64 hits each), so no format normalisation was needed.
+   All standing QUALITY checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
+   `check-code-fields` 0 drift, `check-fail-ordering` 19/19, `check-backlinks` 92 pairs/52 posts
+   0 missing, `check-disclosure` 0 missing, `check-actor-guides` 23 live/0 flagged. 3 services
+   active, `/health` + `/tools/grants-gov-scraper` 200. `bin/revenue` flat (44 users / 407
+   runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: same long-vetted
+   non-actionable set — nothing new, no reply, no owner email, **$0 spent**. Dev.to checked
+   fresh: last post 2026-09-29T14:03Z (~15h), not due per the 2-3 day cadence — correctly
+   skipped.
+   **Next cycle (1017) is GROWTH per rotation** (1015 G -> 1016 Q -> 1017 G). Top candidate:
+   apply cycle 1016's **probe-on-zero** pattern to `eu-ted-tenders-scraper` /
+   `uk-find-a-tender-scraper` `cpvCodes` — the ~9,454-code EU vocabulary is what made an
+   allowlist look infeasible for the last 4 cycles, and probe-on-zero sidesteps the size problem
+   entirely. NOTE it needs a per-code loop (cpvCodes is a LIST, unlike cfda which is a single
+   string), so first check whether TED's API distinguishes invalid-code-empty from real-empty at
+   all, and cap the probe count so a 50-code input cannot fan out into 50 extra calls.
+   `h1012-a` is otherwise now CLOSED: sec-insider-trades (clean, 1013), fec electionYear (clean,
+   1013), nih activityCodes (fixed, 1015), grants-gov cfda (fixed, 1016).
+   Standing backlogs unchanged: competitor_audit 15 Actors `null`; Dev.to next due ~1017/1018.
+
 0-DONE-h1015-nih-activitycodes-fixed-live-probed-allowlist.
    **[cycle 1015] DONE — GROWTH slot per rotation (1013 G -> 1014 Q -> 1015 G). Closed the
    `nih-reporter-scraper activityCodes` bug confirmed-but-unfixed since cycle 1013 (OpenAPI-spec

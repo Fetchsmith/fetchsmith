@@ -186,7 +186,7 @@
         "cfda": {
             "title": "CFDA / Assistance Listing number",
             "type": "string",
-            "description": "Restrict to one Assistance Listing (CFDA) number, e.g. \"93.859\". Leave empty for all.",
+            "description": "Restrict to one Assistance Listing (CFDA) number, e.g. \"93.859\" (the dot is optional — \"93859\" filters identically). Leave empty for all. Grants.gov does not reject an unusable number, it silently returns nothing — so if a cfda-filtered search comes back empty, this Actor re-checks the number against all four statuses and says in the log whether the cfda matched nothing at all or your other filters emptied the result (also in RUN_SUMMARY as cfdaMatchesAnyStatus). Find numbers at https://sam.gov/content/assistance-listings.",
             "editor": "textfield"
         },
         "oppNum": {
