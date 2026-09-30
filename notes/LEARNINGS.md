@@ -4178,3 +4178,32 @@ a human but was correctly reported `UNDATED` by the checker. Shortened the sente
 widening the window; flagging it because the failure mode is a *false* UNDATED, which is the safe
 direction (loud, not silent) but will keep costing a few seconds each time a competitor paragraph is
 written long. Cycle 1031 fixed the opposite, dangerous direction on the same script (a false "clean").
+
+Cycle 1033: `shopify-products-scraper`'s watch-mode `delisted` event was architecturally incapable of
+ever firing for a single-product watch URL (`/products/<handle>`), for any number of runs — not a
+transient coverage gap like the documented ones (`maxProductsPerStore` cap, `maxResults`/PPE budget,
+timeout, store error), which a later un-capped run can still resolve. `sweptToEnd`, the coverage flag
+`delisted` requires, is a `let` initialized `false` per store-URL and is ONLY ever set `true` inside
+the paged/collection branch of the fetch loop; the single-product branch never touches it, so
+`watchStoreSweeps` — keyed off `sweptToEnd` — never gets an entry for a single-product URL, permanently.
+The general lesson: when a feature has a documented "coverage precondition" gating it, check EVERY code
+path that can reach that feature's gate, not just the one the precondition's comment was written for —
+a precondition written for the multi-page case can silently become a permanent, undocumented exclusion
+for a different, single-shot case that has no "next page" to make the precondition eventually true.
+The fix ended up simpler than the general case: a single product URL has no ambiguous partial coverage
+state — it either 200s (still there) or errors — so a clean `404` (the storefront's own explicit "not
+found" status, already distinguished from 401/402/403/429 elsewhere in this file) on a URL previously
+successfully baselined under this label IS, by itself, complete proof the product is gone; no sweep
+needed. Verified live by hand-editing the shared watch KV store between two real runs (same technique
+as cycle 843's onSale flip-flop) to synthesize "this exact garbage-handle URL was already seeded" state,
+then letting a real Shopify 404 on that handle exercise the new code path for real — `chargedEventCounts
+{result:1}` confirmed the row billed correctly, and a fresh never-seeded URL's first-run 404 correctly
+produced 0 rows (no false positive). `competitor_audit` on the same Actor was also closed this cycle —
+it turned out to already be substantively done (competitor registered, Pricing section written) just
+never stamped in `audit_dates.json`, the same "real work happened, bookkeeping lagged" pattern cycle
+1025 found on `sec-insider-trades-scraper`. Re-pulling the competitor's live pricing this time around
+surfaced a genuine change worth recording on its own: a promotional free tier on one of their charge
+events (`inventory-enrichment`) had quietly ended 7 days before this cycle, turning what used to be a
+"$0.001/product, matches ours" comparison into "$0.002/product + a start fee vs our $0.002 with none" —
+a reminder that even an audit that finds "nothing changed" needs the date bumped, because the *next*
+check might land right after something did.

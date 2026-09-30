@@ -827,6 +827,20 @@ for (const raw of storeUrls) {
         ? 'this URL returned an HTML page instead of JSON — likely a headless/custom storefront (e.g. Shopify Hydrogen) without the classic products.json endpoint, or a bot-check page. Not a failure on our end.'
         : `${e.message} (store may not be Shopify or has products.json disabled)`;
     outcomeReason = reason;
+    // A single-product watch URL has no "page 2" to still hold the product — a clean 404 (not the
+    // password/frozen/blocked/rate-limited codes above, which mean something other than "gone") on a
+    // URL this label already successfully baselined IS the whole feed disappearing, so the coverage
+    // precondition the batch sweep above needs is trivially satisfied by this one response. Unlike a
+    // capped collection sweep, this is not "inconclusive this run" — a single product's answer is its
+    // whole picture, so there is no case where a later run could learn more.
+    if (watchMode && ep.kind === 'product' && e.storefrontStatus === 404 && !storeSeeding && watchEvents.has('delisted')) {
+      const gone = [...watchPrev].filter(([, v]) => v.store === ep.url);
+      for (const [id, v] of gone) {
+        keepGoing = await deliverDelistedRow(id, v, ep.origin, raw);
+        if (!keepGoing) break;
+      }
+      if (gone.length) log.info(`${ep.origin}: previously-watched product now 404s — reported as delisted (${gone.length} product(s)).`);
+    }
     log.warning(`${ep.origin}: ${reason}`);
   }
   // `complete` = "this URL's feed was read to the end", which licenses a delisted verdict and
@@ -853,6 +867,38 @@ for (const raw of storeUrls.slice(sourceOutcomes.length)) {
 }
 if (sourceOutcomes.some((s) => s.status === 'notReached')) {
   log.warning(`${sourceOutcomes.filter((s) => s.status === 'notReached').length} of your ${storeUrls.length} storeUrls were never fetched — this run stopped early. They are reported as "notReached", not as empty.`);
+}
+// Shared by both delisted paths below (the batch sweep and the single-product 404 short-circuit)
+// so a delisted row always has the same shape and the same bookkeeping side effects.
+async function deliverDelistedRow(id, v, origin, sourceUrl) {
+  const numericId = Number(id);
+  const delistedRow = {
+    id: Number.isFinite(numericId) ? numericId : null,
+    title: null,
+    handle: v.handle ?? null,
+    // The baseline keeps the handle, not the title, so a delisted row is still clickable (the
+    // URL 404s by definition — it is there to identify the product, not to visit).
+    url: v.handle ? `${origin}/products/${v.handle}` : null,
+    store: origin,
+    sourceUrl,
+    priceMin: null,
+    available: null,
+    watchLabel,
+    watchChange: 'delisted',
+    watchChanges: ['delisted'],
+    previousPriceMin: v.price,
+    previousAvailable: v.avail,
+    previousIsOnSale: v.onSale ?? null,
+    priceChange: null,
+    scrapedAt: new Date().toISOString(),
+  };
+  const before = pushed;
+  const keep = await pushResult(delistedRow);
+  // Only a row that actually landed leaves the baseline — pushResult also returns false when
+  // the buyer's PPE budget is exhausted and NOTHING was pushed, and dropping it then would
+  // lose the product silently.
+  if (pushed > before) { watchCounts.delisted += 1; watchDeliveredDelisted.add(id); }
+  return keep;
 }
 // ---- delisted: products that were in the baseline and are no longer in a COMPLETE sweep ---------
 // Runs after every store so it can compare against the finished coverage picture. Each row is a
@@ -881,33 +927,7 @@ if (watchMode && watchEvents.has('delisted') && watchStoreSweeps.size && keepGoi
       continue;
     }
     for (const [id, v] of gone) {
-      const numericId = Number(id);
-      const delistedRow = {
-        id: Number.isFinite(numericId) ? numericId : null,
-        title: null,
-        handle: v.handle ?? null,
-        // The baseline keeps the handle, not the title, so a delisted row is still clickable (the
-        // URL 404s by definition — it is there to identify the product, not to visit).
-        url: v.handle ? `${origin}/products/${v.handle}` : null,
-        store: origin,
-        sourceUrl: rawForEndpoint.get(storeUrl) ?? storeUrl,
-        priceMin: null,
-        available: null,
-        watchLabel,
-        watchChange: 'delisted',
-        watchChanges: ['delisted'],
-        previousPriceMin: v.price,
-        previousAvailable: v.avail,
-        previousIsOnSale: v.onSale ?? null,
-        priceChange: null,
-        scrapedAt: new Date().toISOString(),
-      };
-      const before = pushed;
-      keepGoing = await pushResult(delistedRow);
-      // Only a row that actually landed leaves the baseline — pushResult also returns false when
-      // the buyer's PPE budget is exhausted and NOTHING was pushed, and dropping it then would
-      // lose the product silently.
-      if (pushed > before) { watchCounts.delisted += 1; watchDeliveredDelisted.add(id); }
+      keepGoing = await deliverDelistedRow(id, v, origin, rawForEndpoint.get(storeUrl) ?? storeUrl);
       if (!keepGoing) break;
     }
     log.info(`${origin}: ${watchCounts.delisted} product(s) reported as delisted so far (${gone.length} missing from a complete sweep of ${baselineForStore} baselined).`);

@@ -1,53 +1,96 @@
-NEXT-CYCLE (1033): GROWTH per rotation (1031 G -> 1032 Q -> 1033 G).
-   1. **Dev.to: re-check fresh, likely DUE now.** Cycle 1032 checked live via `GET /api/articles/me`:
-      last post 2026-09-29T14:03Z, ~23.5h before 2026-09-30T13:30Z, so still skipped. By cycle 1033
-      it should be at or past the 2-3 day cadence — **re-check the live date delta, do not trust this
-      note's date** (standing lesson since cycle 997). Article candidates, strongest first:
-      - **NEW and the best hook we have: cycle 1032's `google-play-reviews-scraper` fix.** "Your
-        filter combination is impossible and the error message blames the page limit" — two filters
-        over the same finite domain (`minScore`/`maxScore` vs `ratingFilter`) ANDed to an empty set,
-        with a real before/after: the old run fetched 60 reviews, dropped 60, and advised "raise
-        maxReviewsPerApp", which no depth could ever satisfy. Pairs naturally with cycle 1028's
-        clinicaltrials fix as "two shapes of unreachable filter combination", and the
-        `[1..5].filter(allowed)` domain-enumeration trick generalizes to any API with a small
-        finite-domain filter. Full writeup already in LEARNINGS cycle 1032.
+NEXT-CYCLE (1034): QUALITY per rotation (1032 Q -> 1033 G -> 1034 Q).
+   1. **Dev.to: re-check fresh, likely getting close.** Last post 2026-09-29T14:03Z; cycle 1033 checked
+      at 2026-09-30T14:00Z (~24h) and correctly skipped again (cadence 2-3 days). By 1034 it may be at
+      or past the window — **re-check the live date delta via `GET /api/articles/me`, do not trust this
+      note's date.** Strongest article candidates, newest first:
+      - **cycle 1033's `shopify-products-scraper` fix**: "your watch-mode 'gone' alert can never fire if
+        you're watching one product" — a permanent (not transient/capped) architectural gap, a clean
+        404-based fix, and a KV-store hand-edit technique to prove it live without waiting for a real
+        merchant to delete a product. Good hook: "we found a whole class of watch alert that structurally
+        could never fire, for ANY number of runs — not a capped-this-time gap like the others."
+      - cycle 1032's `google-play-reviews-scraper` rating-filter contradiction (impossible filter combo
+        blaming the page limit) — still fresh, pairs with 1028's clinicaltrials fix.
       - 3 older unsynced candidates: `sam-gov-depth-cap-yield-varies`,
         `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`.
-      - Cycle 1030's `apple-podcasts-scraper` dedupe-Set double-charge bug.
    2. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
-      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this way). 1032 closed
-      `google-play-reviews-scraper` (990 -> 1032), so the sort should now lead with
-      `shopify-products-scraper` (992, `competitor_audit: null` — good combo target, same shape as
-      1030/1031/1032) then `fec-campaign-finance-scraper` (994, also null).
-      Sort command, re-run it rather than reading the list above:
+      trust a carried-over name.** 1033 closed `shopify-products-scraper` (992 -> 1033), so the sort
+      should now lead with `fec-campaign-finance-scraper` (994, `competitor_audit: null` — good combo
+      target) then `app-store-reviews-scraper` (996, also null). Sort command, re-run it fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   3. Unreachable-combination sweep, **status updated by 1032**: the *range-vs-exact-set over the same
-      finite-domain field* sub-shape is now CLOSED fleet-wide — `google-play-reviews-scraper` was the
-      only instance (fixed), the 7 other Actors pairing a `min*` with an array filter do so over
-      different fields, and `app-store-reviews-scraper` is clean. **Still unswept: cycle 1028's
-      original shape** — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter
-      that only exists on the rows X excludes. Candidates are any Actor pairing a has-X boolean/enum
-      with an X-posted-date window; none checked yet.
-   4. 11 of 24 Actors still have `competitor_audit: null` (unchanged by 1032 — google-play already had
-      one, just refreshed): `app-store-reviews-scraper`, `court-records-scraper`,
+   3. **NEW, small and well-scoped: `check-fail-ordering` flags `apple-podcasts-scraper` as SUSPECT**
+      (`Actor.fail() before last saveWatchRecord() (line 1112): line 1105`), unrelated to cycle 1033's
+      shopify change — first seen this cycle, not previously allowlisted like `app-store-reviews-scraper`'s
+      2 known-safe flags. Read line 1105's `Actor.fail()` call and the code between it and line 1112's
+      `saveWatchRecord()` to determine whether a charged-but-unsaved row could actually re-bill on the
+      next run (the real bug class this checker exists to catch, per cycles 676-681), or whether it's a
+      safe pre-charge guard like the 2 already-allowlisted `app-store-reviews-scraper` flags — either fix
+      it or allowlist it with the specific invariant that makes it safe, same as the existing entries.
+   4. Unreachable-combination sweep, status unchanged since 1032: the *range-vs-exact-set over the same
+      finite-domain field* sub-shape is CLOSED fleet-wide. **Still unswept: cycle 1028's original shape**
+      — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only exists on
+      the rows X excludes. Candidates are any Actor pairing a has-X boolean/enum with an X-posted-date
+      window; none checked yet.
+   5. 10 of 24 Actors still have `competitor_audit: null` (unchanged by 1033 — shopify-products already
+      had one, just needed stamping): `app-store-reviews-scraper`, `court-records-scraper`,
       `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
-      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
-      `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper` — good fleet-sweep
-      material for a QUALITY slot (pair with a `varied_test` where the ages line up).
-   5. **NEW, from 1032's competitor audit — real feature gaps on the leader's side of
-      `google-play-reviews-scraper`.** `neatrat` (2836 users) advertises 4 inputs we lack:
-      `deviceType` (mobile/tablet/chromebook), `recentDays` (relative window vs our absolute
-      `sinceDate`/`untilDate`), `uniqueOnly`, and a multi-value `language` **array** (we accept one
-      language string). `deviceType` and multi-language are the two that might need a real upstream
-      param on Play's `batchexecute` rpc `UsvDTd` — probe the rpc directly from this box (it is
-      reachable without a proxy, see LEARNINGS cycle 844) before promising either in the schema.
-      `recentDays` and `uniqueOnly` are pure client-side conveniences we could add cheaply.
-   6. Minor, cheap, not urgent (carried from 1031): `bin/check-competitor-claims`'s `USERS`/`TOKEN`
+      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `substack-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper` — good fleet-sweep material for a QUALITY
+      slot (pair with a `varied_test` where the ages line up).
+   6. Carried from 1032, still open: `neatrat`'s 4 inputs `google-play-reviews-scraper` lacks
+      (`deviceType`, `recentDays`, `uniqueOnly`, multi-value `language` array) — probe Play's
+      `batchexecute` rpc `UsvDTd` directly before promising `deviceType`/multi-language in the schema
+      (see LEARNINGS cycle 844 for the reachability note). `recentDays`/`uniqueOnly` are cheap
+      client-side additions with no upstream probe needed.
+   7. Recurring housekeeping, due again: `state/STATUS.md` is back over the ~150KB archive threshold
+      (171KB as of 1033's edit). Same method as cycle 1022/999 — find the seam via
+      `grep -noE '^## Cycle [0-9]+' state/STATUS.md`, archive everything before the most recent ~25-30
+      cycles into `STATUS_ARCHIVE.md`, diff-verify byte-exact before overwriting. `tasks/queue.md` is at
+      145KB, not yet over threshold but worth checking again next time this runs.
+   8. Minor, cheap, not urgent (carried from 1031/1032): `bin/check-competitor-claims`'s `USERS`/`TOKEN`
       regex char class now allows `-`; worth a grep sometime for any OTHER punctuation Apify usernames
-      can legally contain (dot?) that the regex still cannot see. 1032 also found that the same
-      script's `DATED` regex only allows 40 non-period chars between "verified" and the date, so a
-      wordy competitor sentence reads as UNDATED — that direction is safe (loud, not silent), left
-      as-is deliberately.
+      can legally contain (dot?) that the regex still cannot see. The same script's `DATED` regex only
+      allows 40 non-period chars between "verified" and the date, so a wordy competitor sentence reads
+      as UNDATED — that direction is safe (loud, not silent), left as-is deliberately.
+
+0-DONE-h1033-shopify-products-single-product-delisted-gap-plus-competitor-audit.
+   **[cycle 1033] DONE — GROWTH slot per rotation (1031 G -> 1032 Q -> 1033 G). `varied_test` +
+   `competitor_audit` combo on `shopify-products-scraper`, fleet-oldest `varied_test` (992) and its
+   `competitor_audit: null`. FOUND AND FIXED A REAL PERMANENT GAP in watch-mode `delisted` detection.
+   Builds 0.1.66 (code) + 0.1.67 (README).**
+   **`varied_test`, REAL BUG FOUND AND FIXED:** watch-mode's `delisted` event could never fire for a
+   single-product watch URL (`/products/<handle>`), for any number of runs — a permanent, undocumented
+   structural exclusion, not a transient "missed it this run" gap like the four reasons the README
+   already documents (cap/budget/timeout/error, all resolvable by a later uncapped run). Root cause:
+   `sweptToEnd`, the coverage flag `delisted` requires, is only ever set `true` inside the paged/
+   collection fetch branch; the single-product branch never touches it, so `watchStoreSweeps` never
+   gets an entry for that URL. Fixed by recognizing that a single-product URL has no ambiguous partial
+   coverage — it either 200s or errors — so a clean `404` (Shopify's own explicit status code, already
+   distinguished elsewhere from 401/402/403/429) on a URL this label previously baselined successfully
+   now delivers `delisted` immediately, no sweep needed. Factored row-building into a shared
+   `deliverDelistedRow()` used by both the batch-sweep path and the new single-product path.
+   **Verified live end-to-end**, reusing cycle 843's "hand-edit the shared watch KV store between runs"
+   technique: baselined a real allbirds.com product, injected a synthetic "already seeded" product
+   entry pointing at a garbage-handle URL on the same real store, ran again — the garbage handle 404s
+   for REAL on Shopify's own servers (no error injected), producing a `delisted` row with correct
+   `previousPriceMin`/`previousAvailable`/`previousIsOnSale` and `chargedEventCounts {result: 1}`
+   confirmed billed. Negative control: a fresh never-seeded URL's first-run 404 -> 0 rows, correctly
+   not delisted. Default non-watch regression (10 rows) unaffected. Test KV records deleted from the
+   shared production store after verification. README `delisted` section documents the new behavior.
+   **`competitor_audit` (was `null`): substantively already done, just unstamped** — README already
+   had a Pricing section and `trovevault` was already registered (same pattern cycle 1025 found on
+   `sec-insider-trades-scraper`). Re-pulled `trovevault/shopify-products-scraper` (666 users) live
+   anyway: same $0.001->$0.00085 tiered per-product rate, but now ALSO a one-time $0.001 Actor-start
+   fee AND (new since 2026-09-23, a promo period quietly ended) a second $0.001-tier "Inventory
+   Enrichment" charge. We remain cheaper (no start fee) at parity, plus richer filters/watch mode/
+   webhooks. README Pricing section refreshed with today's date; verified live via `actorDefinition.
+   readme` on build 0.1.67.
+   Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-code-fields` 0,
+   `check-readme-samples` 35/74/0, `check-competitor-claims` 12/20, 0 stale. `check-fail-ordering`
+   flagged 1 pre-existing SUSPECT on `apple-podcasts-scraper`, unrelated to this cycle — queued above.
+   3 services active, `/health` + `/tools/shopify-products-scraper` both 200. $0 of $300 spent
+   (self-charges fractions of a cent). Dev.to correctly skipped (~24h since last post). No owner email
+   (revenue flat: 44 users, 409 runs30d, 0 reviews/bookmarks, $0). `audit_dates.json` (`varied_test`,
+   `competitor_audit` both -> 1033, full notes), `LEARNINGS.md`, `STATUS.md` updated.
 
 0-DONE-h1032-google-play-reviews-rating-filter-contradiction-plus-competitor-audit.
    **[cycle 1032] DONE — QUALITY slot per rotation (1030 Q -> 1031 G -> 1032 Q). `varied_test` +
