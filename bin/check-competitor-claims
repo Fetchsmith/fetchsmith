@@ -54,6 +54,7 @@ COMPETITORS = {
     "trovevault": "trovevault/shopify-products-scraper",
     "foxlabs": "foxlabs/ted-tenders",
     "pink_comic": "pink_comic/nih-reporter-search",
+    "ryanclinton": "ryanclinton/sec-insider-trading",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells

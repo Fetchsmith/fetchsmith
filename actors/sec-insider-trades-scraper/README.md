@@ -91,6 +91,12 @@ therefore their bill — does not change.
 }
 ```
 
+## Pricing
+
+`result` — **$0.0018 per returned transaction row, no Actor-start fee.**
+
+The niche's Store leader by users is `ryanclinton` (52 users, `ryanclinton/sec-insider-trading`), who charges $0.002 per trade plus a small Actor-start fee — we're ~10% cheaper per row with no start fee at all. Their listing markets "behavioural insider-trading signal classification" (cluster-buy/regime-shift detection) over a 140+ field output schema; the extra fields we sampled at launch (cycle 810) read as speculative/AI-generated Store-listing padding (`signalGenome`, `manipulationResistance`, `institutionalNarrative`) rather than values a buyer could actually trust, so we did not copy them. This Actor instead differentiates on data fidelity: all 20 SEC transaction codes decoded (not just the common ones), a signed pre-computed USD value, the 10b5-1 plan flag normalized across its four real on-the-wire spellings (measured across 210 filings — see Related guides), and `sinceDate` that follows EDGAR's older paginated filing index instead of stopping at the ~12-month inlined window every other Actor in this niche appears to read from. Re-verified against their live pricing and stats 2026-09-30 — unchanged since cycle 810's original audit.
+
 ## Notes on the source
 
 - Form 3 is an **initial** statement of holdings and Form 5 an annual catch-up. A Form 3 never
