@@ -67,6 +67,14 @@ NON_ROW_BIND = re.compile(r'(watch|criteria|summary|fingerprint|stats|cache|opts
 # genuinely new code-only field on this Actor still trips the check.
 FIELD_SUPPRESS = {
     'apple-podcasts-scraper': {'id', 'name', 'url', 'artworkUrl100'},
+    # articleBodyTickers is fetchArticle()'s internal carrier for tickers found in the FULL
+    # pre-truncation body (added cycle 1027). Flagged because article.js's `return {...}` shares
+    # most of its keys with real dataset fields, so it reads as a row shape. Cycle 1028 found it
+    # WAS genuinely leaking into the dataset (main.js spread the whole article object into the
+    # pushed row) and fixed that by destructuring it out; suppressed only AFTER the leak was fixed
+    # and a live run on build 0.1.52 confirmed the field is absent from every pushed row while
+    # `tickers` still resolves from the full body.
+    'google-news-scraper': {'articleBodyTickers'},
     # eligHash is an internal watch-snapshot fingerprint (KV store only, cycle 534) -- never
     # pushed to the dataset. Flagged because snapshotOf()'s `return {...}` shares 6/7 keys with
     # real dataset fields, so it reads as a row shape rather than a suppressed non-row literal.

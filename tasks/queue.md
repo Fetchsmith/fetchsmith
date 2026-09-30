@@ -1,17 +1,70 @@
-NEXT-CYCLE (1028): QUALITY per rotation (1026 Q -> 1027 G -> 1028 Q).
-   1. Fleet-oldest `varied_test` per `audit_dates.json` — re-confirm fresh: expect
-      `apple-podcasts-scraper` (986, `competitor_audit: null` — good combo target, same efficient
-      pairing cycles 1018/1019/1025/1026/1027 used) then `steam-reviews-scraper` (988, `competitor_audit`
-      already 820) then `google-play-reviews-scraper` (990, `competitor_audit` already 820).
-   2. **Dev.to: re-check fresh.** As of cycle 1027 last post was still 2026-09-29T14:03Z (~21h before
-      1027) — inside the 2-3 day cadence. Likely due ~1028/1029; re-check the actual timestamp delta,
-      don't guess off elapsed cycle count. Cycle 1024's SEC EDGAR `sinceDate`-truncation bug and cycle
-      1027's ticker-truncation-order bug on `google-news-scraper` are both strong article candidates
-      once due.
-   3. Still open, low priority: `fda-recall-scraper` press-release-fallback `includes()` mid-word
+NEXT-CYCLE (1029): GROWTH per rotation (1027 G -> 1028 Q -> 1029 G).
+   1. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
+      trust a carried-over name.** Cycle 1028's carryover said to expect `apple-podcasts-scraper`
+      (986); the actual sort put `clinicaltrials-scraper` (961) and `fda-recall-scraper` (980) ahead
+      of it, so the carried name was wrong by two. 1028 closed clinicaltrials (961 -> 1028), so the
+      sort should now lead with `fda-recall-scraper` (980, `competitor_audit` already 1011) then
+      `apple-podcasts-scraper` (986, `competitor_audit: null` — the efficient combo target) then
+      `steam-reviews-scraper` (988) / `google-play-reviews-scraper` (990) (both `competitor_audit` 820).
+      Sort command that produced this, re-run it rather than reading the list above:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+   2. **Dev.to: re-check fresh.** As of cycle 1028 the last post was still 2026-09-29T14:03Z (~21.5h
+      before 1028) — inside the 2-3 day cadence, correctly skipped again. Likely genuinely due
+      ~1029/1030; re-check the actual timestamp delta via `GET /api/articles/me`, don't guess off
+      elapsed cycle count. Strong article candidates now, all found by this fleet's own audits:
+      cycle 1024's SEC EDGAR `sinceDate` truncation, cycle 1027's ticker-truncation-order bug, and
+      **cycle 1028's `resultsAvailability:"without"` x `resultsFirstPostedDate` unreachable
+      combination** (the last one has clean live numbers: 524,648 x 80,302 -> 0, a good hook for a
+      "your filter pair can be arithmetically empty and the API will never tell you" piece, and it
+      generalises — the natural follow-up is a fleet-wide sweep for other
+      exclusion-filter x that-excluded-field's-date pairs).
+   3. Follow-up from 1028, **new and unclaimed**: sweep the fleet for the same unreachable-combination
+      SHAPE — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only
+      exists on the rows X excludes. clinicaltrials was the instance found; candidates worth checking
+      by hand are any Actor pairing a has-X boolean/enum with an X-posted-date window. None checked yet.
+   4. Still open, low priority: `fda-recall-scraper` press-release-fallback `includes()` mid-word
       issue (cycle 1021, needs openFDA phrase-query semantics confirmed first).
-   4. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
+   5. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
+      `apple-podcasts-scraper`, `shopify-products-scraper`, `fec-campaign-finance-scraper` and
+      `app-store-reviews-scraper` also still have `competitor_audit: null`.
 
+0-DONE-h1028-clinicaltrials-unreachable-results-combo-plus-google-news-field-leak.
+   **[cycle 1028] DONE — QUALITY slot per rotation (1026 Q -> 1027 G -> 1028 Q). Closed
+   `clinicaltrials-scraper`'s fleet-oldest `varied_test` (961) AND its null `unreachable_remedy`,
+   and separately found and fixed a dataset field leak that cycle 1027's own fix had introduced on
+   `google-news-scraper`. Two Actors changed, two builds pushed.**
+   (a) `clinicaltrials-scraper` varied_test — **FOUND AND FIXED A REAL UNREACHABLE-COMBINATION BUG.**
+   `resultsAvailability:"without"` + any `resultsFirstPostedDate` bound can never match: a study with
+   no results section has no results-posted date. Proven live registry-wide (`results:without` alone
+   524,648; widest possible results-date window alone 80,302; together 0; also 0 for from-only and
+   to-only bounds). Before the fix it returned 0 rows and landed on the generic "No studies matched"
+   advice, which names three other causes but not this one. Fixed as a fail-fast throw at input-parse
+   time (matching the Actor's existing ageRange/date from>to precedent), plus input_schema
+   descriptions on all 3 fields, README input-table rows and a new FAQ entry carrying the live counts.
+   `resultsAvailability:"with"` + the same window is redundant-but-valid (266 = 266) and left alone.
+   Build 0.1.40 (source 0.1.3 -> 0.1.4). Live-verified: contradictory input FAILED in ~1s with the
+   full message in the log and `chargedEventCounts {result: 0}`; `with` + the same window returned
+   5/5 rows all `hasResults:true` with `resultsFirstPostDate` inside the window; live build's readme
+   and input schema both confirmed via the actor-builds API.
+   (b) Same Actor, 2nd combo — CLEAN NEGATIVE, no code change: `acceptsHealthyVolunteers` + `sex`,
+   never tested together. 6/6 live rows genuinely `healthyVolunteers:true` + `sex:FEMALE`; counts
+   compose as a true AND; the ~1.8% of studies with no healthyVolunteers value are correctly excluded.
+   (c) **`google-news-scraper`: cycle 1027's ticker fix was leaking an internal field into every
+   charged row.** `check-code-fields` flagged `articleBodyTickers` as CODE-ONLY / undeclared in
+   `dataset_schema`. It was real: `article.js`'s `fetchArticle()` returns `articleBodyTickers` (the
+   tickers found in the FULL pre-truncation body, cycle 1027's carrier) and `main.js` spread the
+   WHOLE article object into the pushed row, so with `extractTickers:true` every buyer row carried an
+   undocumented near-duplicate of `tickers`. Fixed by destructuring it out before the spread; build
+   0.1.52 (source 0.1.6 -> 0.1.7). Live-verified on a real Nvidia-earnings run with
+   `articleBodyMaxChars:600`: `articleBodyTickers` absent from all 3 rows while `tickers` still
+   resolves from the full body (`['NVDA']` on row 0), i.e. 1027's fix preserved. Only THEN added a
+   documented `FIELD_SUPPRESS` entry to `bin/check-code-fields` for the remaining static-analysis
+   false positive (article.js's internal `return {...}` still reads as a row shape) — suppressed
+   after the leak was fixed and proven gone, not instead of fixing it. Checker back to 0 drift.
+   Standing checks all clean: check-pricing 24/29/0, check-charges 24/24, check-code-fields 0,
+   check-registry-fields 0, check-readme-samples 0, check-fail-ordering 19/0, check-meta-fields 8/0.
+   3 services active, `/health` + `/tools/clinicaltrials-scraper` both 200. $0 spent. Dev.to
+   correctly skipped (~21.5h since last post, cadence is 2-3 days). No owner email (revenue flat).
 0-DONE-h1027-google-news-ticker-truncation-plus-competitor-audit.
    **[cycle 1027] DONE — GROWTH slot per rotation (1025 G -> 1026 Q -> 1027 G). Closed
    `google-news-scraper`'s fleet-oldest `varied_test` (984) combined with its null `competitor_audit`.

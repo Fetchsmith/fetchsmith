@@ -117,7 +117,7 @@
         "resultsAvailability": {
             "title": "Posted results",
             "type": "string",
-            "description": "Filter on whether the study has posted a results section on ClinicalTrials.gov. \"With results\" is the endpoint set for outcome/efficacy analysis; \"without results\" finds completed trials that never reported (an FDAAA-compliance use case).",
+            "description": "Filter on whether the study has posted a results section on ClinicalTrials.gov. \"With results\" is the endpoint set for outcome/efficacy analysis; \"without results\" finds completed trials that never reported (an FDAAA-compliance use case). Cannot be set to \"without\" together with a resultsFirstPostedDate window — a study with no results has no results-posted date, so that pair matches nothing and the run stops with an explanation.",
             "editor": "select",
             "enum": [
                 "",
@@ -365,13 +365,13 @@
         "resultsFirstPostedDateFrom": {
             "title": "Results first posted from",
             "type": "string",
-            "description": "Only studies whose results were first posted on or after this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
+            "description": "Only studies whose results were first posted on or after this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate]. Only meaningful on studies that HAVE results: pair it with resultsAvailability \"with\" or leave that field blank. Combining it with \"without\" is rejected as a contradiction.",
             "editor": "textfield"
         },
         "resultsFirstPostedDateTo": {
             "title": "Results first posted to",
             "type": "string",
-            "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate].",
+            "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate]. Only meaningful on studies that HAVE results: pair it with resultsAvailability \"with\" or leave that field blank. Combining it with \"without\" is rejected as a contradiction.",
             "editor": "textfield"
         },
         "facilityName": {

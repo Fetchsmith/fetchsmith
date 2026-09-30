@@ -416,10 +416,15 @@ for (const feed of feeds) {
     // Enrichment (decode/body) ran out of runway rather than finishing: don't charge the buyer for a
     // row whose url/articleBody is blank only because the clock stopped us mid-item. Drop it and stop.
     if (timeBudgetExceeded) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
+    // `articleBodyTickers` is fetchArticle()'s internal carrier for tickers found in the FULL
+    // pre-truncation body (cycle 1027's fix); it must be merged into `tickers` and then dropped,
+    // never spread into the row — it is not in dataset_schema and a buyer would see an
+    // undocumented near-duplicate of `tickers` (caught by check-code-fields, cycle 1028).
+    const { articleBodyTickers, ...articleRow } = article;
     const tickers = extractTickers
-      ? { tickers: [...new Set([...extractTickersFrom(it.title), ...(article.articleBodyTickers ?? [])])] }
+      ? { tickers: [...new Set([...extractTickersFrom(it.title), ...(articleBodyTickers ?? [])])] }
       : {};
-    keepGoing = await pushResult({ ...it, url, ...article, ...tickers, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
+    keepGoing = await pushResult({ ...it, url, ...articleRow, ...tickers, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }
   if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.topic || feed.url);

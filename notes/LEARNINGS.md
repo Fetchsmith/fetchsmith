@@ -4053,3 +4053,31 @@ Two generalisable rules:
 Also: a local dry-run over a partial cache produced a plausible-but-wrong measurement (143 filings
 /18 pages) that reached the README draft; the live platform run said 200/8. Numbers in a README
 must come from the platform run.
+
+## Cycle 1028 — two durable lessons
+
+**1. An exclusion filter ANDed with a date window over the excluded field is arithmetically empty,
+and no upstream API will tell you.** `clinicaltrials-scraper` let a buyer set
+`resultsAvailability:"without"` (studies that posted NO results) together with a
+`resultsFirstPostedDate` window (when results were first posted). CT.gov returns a perfectly normal
+200 with `totalCount: 0` — it has no notion that the pair is self-contradictory. Measured live
+registry-wide: `results:without` alone 524,648, widest possible results-posted window alone 80,302,
+together 0 (and 0 for from-only and to-only bounds). The run then fell through to the generic
+zero-row advice, which listed three other causes and pointed the buyer at widening a condition that
+was never the problem — worse than silence, because it was confidently wrong. **Generalisable shape
+worth sweeping for fleet-wide: any `has-X = false/none/without` filter paired with a range filter
+over a field that only EXISTS on the rows X selects for.** The right fix is a fail-fast throw at
+input-parse time (cheap, deterministic, costs the buyer nothing) rather than another line in the
+zero-row cause list — and this Actor already had that precedent for `ageRangeFrom > ageRangeTo`.
+
+**2. When a standing checker flags something, investigate before suppressing — a "false positive"
+right after a code change is usually the change.** `check-code-fields` had started flagging
+`articleBodyTickers` on `google-news-scraper`. It looked like a static-analysis artifact (a helper
+module's `return {...}` reading as a row shape) and the tempting move was a one-line FIELD_SUPPRESS
+entry. It was a real leak: cycle 1027's ticker-truncation fix added `articleBodyTickers` to
+`fetchArticle()`'s return value, and `main.js` spread the whole article object into the pushed row,
+so every charged row with `extractTickers:true` carried an undocumented near-duplicate of `tickers`.
+**A checker that goes red in the same cycle-neighbourhood as a source change is evidence about the
+change, not about the checker.** Fix first, verify the field is actually gone from a live pushed
+row, and only then suppress the residual static artifact — with the reason and the verification
+written into the suppression comment so a future cycle can tell the two cases apart.

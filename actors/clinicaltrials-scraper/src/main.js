@@ -217,6 +217,28 @@ for (const { from, to, area } of DATE_FILTERS) {
     dateCriteria[from] = f || null;
     dateCriteria[to] = t || null;
 }
+// `resultsAvailability="without"` asks for studies that have posted NO results section; every
+// `resultsFirstPostedDate*` bound asks for a study whose results were first posted inside a window.
+// A study with no results section has no ResultsFirstPostDate at all, so the two can never both
+// hold — same shape as the ageRange from>to contradiction below, and verified live registry-wide
+// (not just reasoned): `aggFilters=results:without` alone = 524,648 studies, the widest possible
+// `AREA[ResultsFirstPostDate]RANGE[1900-01-01,2100-01-01]` alone = 80,302, the two together = 0,
+// as is an open-ended `RANGE[1900-01-01,MAX]` and a `RANGE[MIN,<to>]`. Before this check the run
+// just returned 0 rows and fell through to the generic "no studies matched" advice, which names
+// three other causes but not this one — so the buyer was told to widen a condition that was never
+// the problem. `resultsAvailability="with"` + the same window is NOT a contradiction (it is merely
+// redundant: 266 = 266 on query.cond=asthma), so only "without" is rejected.
+if (resultsAvailability === 'without' && (dateCriteria.resultsFirstPostedDateFrom || dateCriteria.resultsFirstPostedDateTo)) {
+    const bound = dateCriteria.resultsFirstPostedDateFrom
+        ? `resultsFirstPostedDateFrom (${dateCriteria.resultsFirstPostedDateFrom})`
+        : `resultsFirstPostedDateTo (${dateCriteria.resultsFirstPostedDateTo})`;
+    throw new Error(
+        `"resultsAvailability" is "without" (studies that have posted NO results) but "${bound}" filters on the date `
+        + 'those results were first posted — a study with no results has no results-posted date, so no study can ever '
+        + 'satisfy both and the run would return 0 rows. Either set resultsAvailability to "with" (or leave it blank) '
+        + 'to use the date window, or clear the resultsFirstPostedDate filters to list studies without results.',
+    );
+}
 // Kept as named bindings because the run-summary log line below reports them explicitly.
 const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
 const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
