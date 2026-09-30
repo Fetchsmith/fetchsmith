@@ -80,6 +80,30 @@
       "default": 100,
       "minimum": 1,
       "maximum": 5000
+    },
+    "watchLabel": {
+      "title": "Watch label (only new postings since last run)",
+      "type": "string",
+      "description": "Optional. Name a saved job alert (e.g. \"backend-remote-eu\") and this run returns ONLY postings that were not delivered under that same label and filter set before, instead of the whole open-roles list every time. The first run for a label is a free baseline: it records which postings are already open (up to 5000) and returns zero rows, charging nothing. Run it again later — on a schedule, typically — to get only the roles that opened since then. The baseline lives in your own Apify account (a named key-value store, \"fetchsmith-remote-jobs-watch\"), keyed by the label plus a fingerprint of the sources and every match filter, so changing any of those starts a fresh baseline instead of dumping previously-excluded postings as \"new\".",
+      "editor": "textfield"
+    },
+    "watchEvents": {
+      "title": "Watch events to report",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["new", "salaryAdded"],
+        "enumTitles": ["New posting", "Salary appeared (posting already delivered, now shows a salary)"]
+      },
+      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Salary appeared\" alone to be alerted only when an already-delivered posting later gains a salary, and never pay for anything else. Leave empty for both. The change event compares against the salary state recorded the last time the posting was delivered, so it only starts firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
+      "default": []
+    },
+    "webhookUrl": {
+      "title": "Webhook URL (notify on completion)",
+      "type": "string",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — postings pushed, and watch-label new/skipped counts if Watch label is set. A convenience for callers who want a completion ping without setting up an Apify platform webhook. Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging. Leave empty to skip.",
+      "editor": "textfield"
     }
   }
 }

@@ -8,6 +8,7 @@
 //  - de-duplication happens BEFORE charging, so a buyer never pays twice for one job;
 //  - every row carries the board it came from and that board's own URL (all four APIs
 //    require attribution; see README "Sources and attribution").
+import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
@@ -115,12 +116,126 @@ const {
   postedAfter, postedBefore,
 } = cfg;
 
+// ---------------------------------------------------------------- watch mode
+// A stateful "only postings that are new since my last run" filter — the job-alert shape a
+// plain run cannot offer (the same open roles come back every time). The baseline (identities
+// already delivered) lives in a NAMED key-value store on the buyer's own account so it survives
+// across runs. Same pattern as ats-jobs-scraper (h1042+), nih-reporter/federal-register/
+// grants-gov/fda-recall/clinicaltrials/hacker-news.
+const watchLabel = String(input.watchLabel ?? '').trim();
+
+const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
+let webhookUrl = null;
+if (webhookUrlRaw) {
+  try {
+    const parsed = new URL(webhookUrlRaw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') webhookUrl = parsed.toString();
+    else log.warning(`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`);
+  } catch {
+    log.warning(`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`);
+  }
+}
+
+const WATCH_STORE = 'fetchsmith-remote-jobs-watch';
+const SEED_CAP = 5000;
+const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
+let baselineTruncated = 0;
+let baselineTruncatedTotal = 0;
+
+function watchKeyFor(label, criteria) {
+  const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
+  const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+  return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+}
+
+const WATCH_EVENTS = ['new', 'salaryAdded'];
+const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
+if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
+const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
+if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
+let watchEventsFiltered = 0;
+let watchChanged = 0;
+const watchMeta = new Map(); // watchId -> hasSalary the row carried when last delivered
+const META_UNKNOWN = 0;
+const encodeMeta = (hasSalary) => (hasSalary === true ? 1 : hasSalary === false ? 2 : META_UNKNOWN);
+const decodeMeta = (code) => (code === 1 ? true : code === 2 ? false : null);
+
+const watchMode = watchLabel.length > 0;
+let watchStore = null;
+let watchKey = null;
+let watchRecord = null;
+let seeding = false;
+let watchSkipped = 0;
+const watchSeen = new Set();
+
+if (watchMode) {
+  // Fingerprint only the buyer's own match criteria, never a cost/shape cap (maxResults,
+  // maxPagesPerSource, includeDescription) — those don't change WHICH postings match.
+  const criteria = {
+    sources: [...sources].sort(), searchKeyword, titleExcludeKeyword, companyKeyword,
+    locationKeyword, salaryOnly,
+    postedAfter: input.postedAfter ?? null, postedBefore: input.postedBefore ?? null,
+  };
+  watchStore = await Actor.openKeyValueStore(WATCH_STORE);
+  const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
+  watchKey = key;
+  const existing = await watchStore.getValue(key);
+  if (existing && Array.isArray(existing.seenIds)) {
+    watchRecord = existing;
+    const meta = Array.isArray(existing.seenMeta) ? existing.seenMeta : [];
+    existing.seenIds.forEach((id, i) => {
+      watchSeen.add(String(id));
+      watchMeta.set(String(id), decodeMeta(meta[i] ?? META_UNKNOWN));
+    });
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): baseline from ${existing.lastRunAt ?? 'an earlier run'} holds `
+      + `${watchSeen.size} already-delivered posting(s). Only postings NOT in that baseline, or already-delivered `
+      + `ones that gained a salary (events: ${[...watchEvents].join(', ')}), will be returned and charged.`,
+    );
+  } else {
+    watchRecord = { fingerprint, firstSeededAt: new Date().toISOString(), runCount: 0 };
+    seeding = true;
+    log.info(
+      `Watch mode "${watchLabel}" (${key}): FIRST run for this label and filter set, so this is a baseline `
+      + 'run. It records which postings are already open and returns ZERO results (you are charged nothing). '
+      + 'Run it again on the same label and filters — on a schedule, typically — to get only the new postings since now.',
+    );
+  }
+}
+
+async function saveWatchRecord(status) {
+  const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
+  baselineTruncated = watchSeen.size - ids.length;
+  baselineTruncatedTotal = (watchRecord.truncatedTotal ?? 0) + baselineTruncated;
+  if (baselineTruncated > 0) {
+    log.warning(
+      `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `
+      + `${baselineTruncated} oldest posting id(s) were dropped (${baselineTruncatedTotal} dropped over the `
+      + 'life of this label) and will be re-delivered and re-charged as "new" on a future run. Narrow the '
+      + 'filters to keep the baseline under the cap.',
+    );
+  }
+  await watchStore.setValue(watchKey, {
+    ...watchRecord,
+    label: watchLabel,
+    lastRunAt: new Date().toISOString(),
+    lastRunStatus: status,
+    runCount: (watchRecord.runCount ?? 0) + 1,
+    seenCount: ids.length,
+    seenIds: ids,
+    seenMeta: ids.map((id) => encodeMeta(watchMeta.get(id))),
+    truncatedLastRun: baselineTruncated,
+    truncatedTotal: baselineTruncatedTotal,
+  });
+}
+
 // ---------------------------------------------------------------- charging
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
 
-async function pushResult(item) {
+async function chargeAndPush(item) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'job', count: 1 });
     if (r.chargedCount === 0) return false; // budget exhausted: never push an unpaid row
@@ -129,6 +244,47 @@ async function pushResult(item) {
   }
   await Actor.pushData(item); pushed += 1;
   return pushed < maxResults;
+}
+
+async function pushResult(item, watchId) {
+  if (!watchMode || watchId == null) return chargeAndPush(item);
+  const idStr = String(watchId);
+  const hasSalary = item.salaryMin != null || item.salaryMax != null;
+  if (seeding) {
+    watchSeen.add(idStr);
+    watchMeta.set(idStr, hasSalary);
+    return watchSeen.size < SEED_CAP;
+  }
+  if (watchSeen.has(idStr)) {
+    // A posting commonly gains a salary after first publish (a board back-fills it, or the
+    // employer edits the listing) with no id change, so a returning id is diffed against its
+    // recorded salary state rather than skipped unconditionally.
+    const previous = watchMeta.get(idStr) ?? null;
+    const salaryAdded = previous === false && hasSalary === true;
+    watchMeta.set(idStr, hasSalary);
+    if (salaryAdded && watchEvents.has('salaryAdded')) {
+      item.watchEvent = 'salaryAdded';
+      item.previousHasSalary = false;
+      watchChanged += 1;
+      return chargeAndPush(item);
+    }
+    if (salaryAdded) watchEventsFiltered += 1;
+    watchSkipped += 1;
+    return true;
+  }
+  if (!watchEvents.has('new')) {
+    watchSeen.add(idStr);
+    watchMeta.set(idStr, hasSalary);
+    watchEventsFiltered += 1;
+    watchSkipped += 1;
+    return true;
+  }
+  item.watchEvent = 'new';
+  item.previousHasSalary = null;
+  const before = pushed;
+  const keepGoing = await chargeAndPush(item);
+  if (pushed > before) { watchSeen.add(idStr); watchMeta.set(idStr, hasSalary); }
+  return keepGoing;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -597,6 +753,7 @@ function keep(row) {
 // ---------------------------------------------------------------- main
 
 const sourcesNotReached = [];
+let runError = null;
 try {
   const collected = [];
   for (const src of sources) {
@@ -633,7 +790,16 @@ try {
       first.duplicateUrls.push(row.url);
       continue;
     }
-    const enriched = { ...row, alsoOn: [], duplicateUrls: [] };
+    // Watch-mode identity: the same cross-board key used for de-duplication above (so a job
+    // posted to two boards is ONE watched identity, matching what a de-duplicated row already
+    // looks like), falling back to a per-source id when company or title is missing (too weak
+    // to identify a posting on its own — see normCompany/norm guard on the fold check above).
+    // Used regardless of the "De-duplicate across boards" input: watch mode always tracks one
+    // identity per real-world posting.
+    const watchId = (normCompany(row.company) && norm(row.title))
+      ? `job:${key}`
+      : (row.sourceJobId ? `src:${row.source}:${row.sourceJobId}` : null);
+    const enriched = { ...row, alsoOn: [], duplicateUrls: [], watchId };
     byKey.set(key, enriched);
     ordered.push(enriched);
   }
@@ -665,11 +831,90 @@ try {
       scrapedAt: new Date().toISOString(),
     };
     if (includeDescription) item.descriptionHtml = row.descriptionHtml ?? null;
-    if (!(await pushResult(item))) break;
+    if (!(await pushResult(item, watchMode ? row.watchId : null))) break;
   }
 } catch (err) {
   log.exception(err, 'Run failed');
+  runError = err;
   await Actor.fail(`Run failed: ${err.message}`);
+}
+
+// A failed SEEDING run must not leave a partial baseline: a board the run never reached (or
+// died mid-collection) would look already-baselined next run and have its whole current board
+// delivered and charged as "new". No record at all is the cheap outcome — the next run re-seeds
+// for free.
+const skipBaselineSave = watchMode && seeding && runError !== null;
+if (skipBaselineSave) {
+  log.warning(
+    `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+    + 'Re-run on the same label and filters to seed again (a baseline run charges nothing).',
+  );
+}
+
+let evictionSuffix = '';
+if (watchMode && !skipBaselineSave) {
+  await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
+  evictionSuffix = baselineTruncated > 0
+    ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest posting `
+      + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
+      + 're-delivered and re-charged as "new" on a future run. Narrow the filters to keep the baseline under the cap.'
+    : '';
+  if (seeding) {
+    log.info(
+      `Baseline saved for watch label "${watchLabel}": ${watchSeen.size} posting(s) recorded as already-seen, `
+      + '0 results returned, 0 charged. The next run on this label and these filters returns only postings '
+      + `that appeared after now.${evictionSuffix}`,
+    );
+  } else {
+    log.info(`Watch label "${watchLabel}": ${pushed} posting(s) since the last run (${watchSkipped} already-delivered posting(s) skipped, not charged`
+      + `${watchChanged ? `; ${watchChanged} of the pushed item(s) were a salary appearing on an already-delivered posting, not a brand-new one` : ''}`
+      + `${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new posting(s) excluded by your watchEvents list` : ''}); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
+  }
+}
+
+if (watchMode && seeding) {
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
+} else if (watchMode && pushed === 0) {
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — that is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
+} else if (watchMode) {
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}`);
+}
+
+// Fires after every row is already pushed and charged, so a slow or failing webhook can never
+// affect the result set or the bill.
+if (webhookUrl) {
+  const env = Actor.getEnv();
+  const payload = {
+    actorRunId: env.actorRunId ?? null,
+    defaultDatasetId: env.defaultDatasetId ?? null,
+    finishedAt: new Date().toISOString(),
+    pushed,
+    watchLabel: watchMode ? watchLabel : null,
+    watchSeeding: watchMode ? seeding : null,
+    watchNewCount: watchMode && !seeding ? pushed : null,
+    watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    watchEvents: watchMode ? [...watchEvents] : null,
+    watchChangedCount: watchMode && !seeding ? watchChanged : null,
+    watchEventsFilteredCount: watchMode && !seeding ? watchEventsFiltered : null,
+    baselineTruncated: watchMode ? baselineTruncated : null,
+    baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+  };
+  try {
+    const resp = await gotScraping({
+      url: webhookUrl,
+      method: 'POST',
+      responseType: 'text',
+      throwHttpErrors: false,
+      retry: { limit: 0 },
+      timeout: { request: 10000 },
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (resp.statusCode >= 400) log.warning(`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`);
+    else log.info(`Posted completion summary to webhookUrl (${resp.statusCode}).`);
+  } catch (err) {
+    log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
+  }
 }
 
 // A timeout-triggered stop must not read like a clean, complete run — the boards named here

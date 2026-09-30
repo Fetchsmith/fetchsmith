@@ -29,6 +29,7 @@ When a job is syndicated to more than one of these boards, a naive aggregator re
 - **Recruiters and sourcers** — watch which companies are hiring remotely for a given stack (`searchKeyword: "rust"`, `salaryOnly: true`).
 - **Market/comp research** — collect salary ranges across boards over time; `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryPeriod` are normalized where the board publishes them.
 - **Job-seeker automations** — a daily run with `postedAfter` set to yesterday gives exactly the new postings, nothing else.
+- **Job alerts on a schedule** — set `watchLabel` and run it hourly/daily; each run's dataset is only what's new since the last one (see "Watch mode" below), so you never pay to re-fetch roles you already have.
 
 ## Input
 
@@ -45,6 +46,20 @@ When a job is syndicated to more than one of these boards, a naive aggregator re
 | `includeDescription` | boolean | Adds `descriptionHtml`. Off by default — descriptions are large. |
 | `maxPagesPerSource` | integer | Only affects the paginated sources — Arbeitnow (the board picks the page size, not you: 326 / 325 / 100 rows on pages 1–3 measured 2026-09-28, of which only ~20 / 12 / 1 are remote) and Himalayas (20/page, cursor-based). Default 2. |
 | `maxResults` | integer | Stop after this many unique postings are pushed and charged. Default 100. |
+| `watchLabel` | string | Optional. Turns on watch mode (see below) — only postings not delivered before under this label return. |
+| `watchEvents` | array | Optional. Which watch-mode change(s) to report: `new`, `salaryAdded`, or both (default, empty = both). |
+| `webhookUrl` | string | Optional. `http(s)` URL POSTed a small JSON completion summary. Best-effort; never affects the run or the bill. |
+
+## Watch mode (only new postings since last run)
+Set `watchLabel` to any name you like (`"backend-remote-eu"`) and the run stops returning the whole matching list every time and starts returning **only the postings that appeared since the previous run under that label**. This is the job-alert shape: schedule it hourly or daily and each run's dataset is your diff.
+
+- **The first run for a label is a free baseline.** It records which postings are currently open (up to 5,000), returns **zero rows** and charges **nothing**. Run it again later to get what's new.
+- **Already-delivered postings are dropped before any charge**, so a run with nothing new costs you nothing.
+- **The baseline lives in your own Apify account** — a named key-value store `fetchsmith-remote-jobs-watch`, key `watch-<label>-<fingerprint>`. Nothing is kept on our side.
+- **The fingerprint covers `sources` and every match filter** (`searchKeyword`, `titleExcludeKeyword`, `companyKeyword`, `locationKeyword`, `salaryOnly`, `postedAfter`, `postedBefore`). Change any of them and you get a fresh baseline instead of a dump of postings the old filters had excluded. `maxResults`/`maxPagesPerSource`/`includeDescription` are *not* in the fingerprint — they are cost/shape caps, not match criteria.
+- **Identity is the same cross-board key used for de-duplication** (normalized company + title), so a job syndicated to two boards is ONE watched posting regardless of the `dedupe` input — you are never alerted twice for the same real-world opening.
+- **`watchEvents` picks which kinds of change get delivered.** By default (empty) a watch reports both a brand-new posting and an already-delivered posting that gained a salary since you last saw it (`watchEvent: "new"`/`"salaryAdded"`, with `previousHasSalary` on the changed row). Remote OK, Jobicy and Himalayas commonly publish a posting without a salary and add one later under the same id; Arbeitnow and Working Nomads never carry a salary at all, so `salaryAdded` never fires for those. Pick just `["salaryAdded"]` to be alerted only on that and never pay for a brand-new posting. `salaryAdded` only starts firing on the run *after* a baseline recorded before this feature existed.
+- **Baseline size cap:** the recorded baseline holds at most 20,000 posting ids per label; once a label crosses that, the oldest ids are dropped to make room and re-delivered (and re-charged) as "new" on a future run. A run that actually drops ids logs a warning and says so in its status message.
 
 ## Output
 
