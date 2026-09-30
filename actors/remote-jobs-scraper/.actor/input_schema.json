@@ -68,7 +68,7 @@
     "maxPagesPerSource": {
       "title": "Max pages per source",
       "type": "integer",
-      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: 326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, and only ~20 / 12 / 1 of those are flagged remote) and Himalayas (20 postings per page, cursor-based). The other four boards return their whole feed in one request.",
+      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: 326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, and only ~20 / 12 / 1 of those are flagged remote) and Himalayas (20 postings per page, cursor-based). The other four boards return their whole feed in one request. In watch mode this value is part of the label fingerprint: it decides how deep a baseline reaches, so changing it starts a fresh (free) baseline rather than reporting older postings from the newly-reached pages as new.",
       "default": 2,
       "minimum": 1,
       "maximum": 20
@@ -84,7 +84,7 @@
     "watchLabel": {
       "title": "Watch label (only new postings since last run)",
       "type": "string",
-      "description": "Optional. Name a saved job alert (e.g. \"backend-remote-eu\") and this run returns ONLY postings that were not delivered under that same label and filter set before, instead of the whole open-roles list every time. The first run for a label is a free baseline: it records which postings are already open (up to 5000) and returns zero rows, charging nothing. Run it again later — on a schedule, typically — to get only the roles that opened since then. The baseline lives in your own Apify account (a named key-value store, \"fetchsmith-remote-jobs-watch\"), keyed by the label plus a fingerprint of the sources and every match filter, so changing any of those starts a fresh baseline instead of dumping previously-excluded postings as \"new\".",
+      "description": "Optional. Name a saved job alert (e.g. \"backend-remote-eu\") and this run returns ONLY postings that were not delivered under that same label and filter set before, instead of the whole open-roles list every time. The first run for a label is a free baseline: it records which postings are already open (up to 5000) and returns zero rows, charging nothing. Run it again later — on a schedule, typically — to get only the roles that opened since then. The baseline lives in your own Apify account (a named key-value store, \"fetchsmith-remote-jobs-watch\"), keyed by the label plus a fingerprint of the sources, every match filter and \"maxPagesPerSource\", so changing any of those starts a fresh baseline instead of dumping previously-excluded postings as \"new\".",
       "editor": "textfield"
     },
     "watchEvents": {

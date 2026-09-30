@@ -4407,3 +4407,32 @@ pre-check: this cycle established the whole three-filter AND/OR semantics upstre
 - Substack's `/api/v1/archive?sort=new&limit=N&offset=0`: `N=12` → 12 posts, `N=23` → 23, **`N=25`/`40`/`50` → 23** (silently truncated), **`N=100` → 1 post**. Reproducible across `astralcodexten` and `platformer`, two repeats each. Yet `offset=23&limit=50` returns a full 50 — so it is not a global page cap, it is specifically page 1 that comes back short.
 - Consequence for us: `substack-scraper`'s `pageSize = 50` really fetches 23 on the first request, ~2.2x more round trips than the code reads like it makes. **Not a bug** — `offset += posts.length` advances by the *actual* returned count, which is exactly what makes a loosely-honoured `limit` harmless. The latent hazard is the obvious future "optimization": raising `pageSize` to 100 would paginate **one post per request**, turning a cheap run into a timeout. `src/main.js` now carries a comment with the measured numbers so that change doesn't get made.
 - **Generalization: never infer an upstream page size from the `limit` you sent.** Measure `len(response)` at two or three limits before tuning any page-size constant, and always advance the offset by what came back, never by what was requested.
+
+## cycle 1052 — a watch-mode fingerprint must cover REACH, not just "match criteria"
+Every watch/monitor Actor in the fleet fingerprints the buyer's filters so that changing a filter
+starts a fresh free baseline instead of dumping previously-excluded rows as "new". The rule those
+fingerprints were written against is **"does this input change WHICH rows match?"** — and that rule
+is subtly wrong. `remote-jobs-scraper` excluded `maxPagesPerSource` under it, with an explicit code
+comment calling it a pure cost cap. It does not change which postings *match*; it changes which
+postings are **reached**. A baseline seeded at depth 1 never recorded pages 2+, so raising the depth
+on the same label delivered all of those OLDER postings as `watchEvent:"new"` and **charged** for
+them — measured live: seed 23 rows at depth 1, re-run at depth 3 one minute later, 24 rows charged
+whose `publishedAt` all predated the baseline (oldest by 3 days).
+**The right test is "could this input cause the baseline to be INCOMPLETE relative to a later run?"**
+Pagination depth, per-source row caps, source lists, time windows and any early-stop all qualify.
+A pure *delivery* cap does not, but only if undelivered rows are genuinely deferred — here
+`pushResult` adds an id to the baseline only `if (pushed > before)`, which is what makes `maxResults`
+safe to leave out. Verify that guard exists before excluding any cap.
+**Fleet swept this cycle — `remote-jobs-scraper` was the ONLY one affected, so do not re-audit this.**
+Of the 8 watch Actors, only 3 have a reach cap at all, and the other 2 already solve it by a
+*different and arguably better* route than fingerprinting: they pin reach during seeding so the
+baseline always looks at least as deep as any later run can
+(`ats-jobs-scraper:272` `scanCapPerCompany = watchMode ? SEED_CAP : maxJobsPerCompany`;
+`app-store-reviews-scraper:739` `scanCap = pairSeeding ? WATCH_SCAN_CAP : perApp`, whose comment
+spells out this exact failure mode). `remote-jobs-scraper` was ported from `ats-jobs-scraper` but did
+not carry that line across. Two valid fixes, then: **pin reach in watch mode** (costs the buyer a
+deeper crawl, keeps one baseline) or **fingerprint the cap** (keeps buyer control of cost, spends a
+free re-seed on each change) — we chose the latter here because depth is the buyer's cost dial on
+this Actor. Also: a fix here must be regression-proved not to have merely disabled watching —
+re-run at UNCHANGED settings (expect 0 new / all skipped), then delete one id from the saved
+baseline (expect exactly that one back).

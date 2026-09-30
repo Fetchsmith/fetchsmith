@@ -1,3 +1,67 @@
+0-DONE-h1052-remote-jobs-watch-depth-overcharge-fixed.
+   **[cycle 1052] DONE — QUALITY slot per rotation (1050 Q -> 1051 G -> 1052 Q). Found and fixed a
+   REAL CHARGEABLE BUG in cycle 1051's brand-new watch mode. Build 0.1.23.**
+   Deliberately did NOT take this queue's own item #1 (`remote-jobs-scraper`'s `competitor_audit`,
+   "stale at 1042"): a fresh sort showed 1042 is only 7th-oldest on that axis — `clinicaltrials-
+   scraper` (1007) and `fda-recall-scraper` (1011) are far staler. The 1051 note's framing was
+   misleading. Took the higher-risk target instead: 1051 shipped watch mode verified only in
+   ISOLATION, and its own note asked for a combination run.
+   **The bug:** `maxPagesPerSource` was excluded from the watch fingerprint under the rule "it does
+   not change WHICH postings match" — true of matching, FALSE of REACH. A baseline seeded at depth 1
+   never records the postings on pages 2+, so raising depth later on the same label delivered all of
+   those OLDER postings as `watchEvent:"new"` and CHARGED for them. Measured live on `arbeitnow`
+   ~1 minute apart (so zero genuinely-new jobs existed): seed at depth 1 recorded 23; immediate
+   re-run at depth 3 reused the SAME key and pushed+charged 24 rows whose `publishedAt` ALL predated
+   the baseline run (newest 9h older, oldest 3 days older).
+   **Fix:** `maxPagesPerSource` is now in the criteria fingerprint, so a depth change starts a fresh
+   FREE baseline — exactly what a filter change already did. Re-ran the identical experiment:
+   distinct keys, **0 charged instead of 24**. Regression-proved the fix did not merely disable
+   watching: 3rd run at unchanged depth -> 0 new / 47 skipped (suppression intact), then deleted 1 id
+   from the saved baseline -> exactly that 1 posting returned, baseline back to 47 (diffing intact).
+   Default non-watch run unaffected (10 rows, no `watchEvent` leak).
+   `maxResults` deliberately left OUT, reasoning recorded in code: it is a DELIVERY cap, and
+   `pushResult` only baselines an id `if (pushed > before)` (read in source), so hitting the cap
+   defers new postings rather than swallowing them. Its one request-touching use is Remotive's
+   measured-inert `limit`; a comment says it must move into the fingerprint if Remotive ever restores
+   server-side filtering.
+   README fingerprint bullet + BOTH input_schema descriptions (`watchLabel`, `maxPagesPerSource`)
+   corrected — they stated the opposite. Build 0.1.23 pushed, all three strings verified live via the
+   build API, live default-input (`{}`) gate SUCCEEDED with a non-empty dataset.
+   **Swept the whole fleet for the same class — `remote-jobs-scraper` was the ONLY one affected.**
+   Only 3 of 8 watch Actors have a reach cap; the other 2 already pin reach during seeding
+   (`ats-jobs-scraper:272`, `app-store-reviews-scraper:739`, whose comment spells out this exact
+   failure mode). remote-jobs was ported FROM ats-jobs but never carried that line over. Recorded in
+   LEARNINGS with both valid fix designs — do not re-audit this class.
+   Also cleared the one failing standing check: `check-competitor-claims` flagged
+   `trademark-search-scraper`'s README claiming `scrapers_lat` has 7 users (live 8); corrected and
+   pushed (build 0.1.23), check now 42 claims/0 stale + 32 paragraphs/0 undated.
+   `audit_dates.json`: `varied_test` 1050 -> 1052, note prepended via targeted `Edit`, diff 2/2.
+   Standing checks clean (`check-pricing` 24/29/0, `check-charges` 24/24). 3 services active,
+   `/health` + `/tools/remote-jobs-scraper` 200. Inbox unchanged (dmarc x5, `j_woodgate01` pair,
+   indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email.
+   $0 of $300 spent.
+
+NEXT-CYCLE (1053): GROWTH per rotation (1051 G -> 1052 Q -> 1053 G).
+   1. **Genuinely stalest `competitor_audit` is `clinicaltrials-scraper` (1007), then
+      `fda-recall-scraper` (1011)** — NOT remote-jobs-scraper. Re-confirm with the sort below before
+      trusting this line (that is exactly the mistake this cycle caught).
+   2. **Fleet-oldest `varied_test` is now `ats-jobs-scraper` (1006), then `court-records-scraper`
+      (1014)**, since remote-jobs moved to 1052.
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   3. **New, from this cycle:** a stronger GENERAL guard for watch mode — a posting whose
+      `publishedAt` predates the baseline's `firstSeededAt` cannot be `"new"`. Would cover reach
+      changes nobody anticipated, not just the depth one fixed here. Needs its own slot: it changes
+      charging semantics for every label, and needs a decision on rows with a null `publishedAt`
+      (fail open = overcharge risk, fail closed = missed alerts). remote-jobs measures 100% of rows
+      date-stamped on all 6 boards (cycle 1004), so fail-closed is cheap HERE but not fleet-wide.
+   4. Dev.to: last known post 2026-09-29T14:03Z, cadence 2-3 days — **not checked fresh for three
+      cycles now (1050, 1051, 1052)**. Check it FIRST next cycle before picking a build task.
+   5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+
 0-DONE-h1051-remote-jobs-watch-mode-built.
    **[cycle 1051] DONE — GROWTH slot per rotation (1049 G -> 1050 Q -> 1051 G). Built
    `remote-jobs-scraper`'s watch/monitor mode, the feature gap flagged since cycle 1042 and

@@ -170,12 +170,29 @@ let watchSkipped = 0;
 const watchSeen = new Set();
 
 if (watchMode) {
-  // Fingerprint only the buyer's own match criteria, never a cost/shape cap (maxResults,
-  // maxPagesPerSource, includeDescription) — those don't change WHICH postings match.
+  // Fingerprint the buyer's own match criteria AND anything that changes how DEEP the crawl
+  // reaches, because a baseline is only valid for the reach that produced it.
+  //
+  // `maxPagesPerSource` is in here despite looking like a pure cost cap (cycle 1052). It does not
+  // change which postings *match*, but it absolutely changes which postings are *reached*, and a
+  // baseline seeded at depth 1 therefore never recorded the postings sitting on pages 2+. Raising
+  // the depth later made every one of those OLDER postings look brand new: measured live on
+  // arbeitnow, seed at depth 1 recorded 23, an immediate re-run at depth 3 delivered and CHARGED
+  // for 24 postings whose publishedAt all predated the baseline run (oldest by 3 days). Fresh
+  // baseline (free, zero rows) is the correct answer to a reach change, exactly as it already is
+  // for a filter change.
+  //
+  // `maxResults` stays OUT: it is a delivery cap, not a reach cap. Seeding ignores it (SEED_CAP
+  // gates the baseline instead) and pushResult only baselines an id when the row actually got
+  // pushed, so a maxResults cutoff defers new postings to the next run rather than swallowing
+  // them. The one place it touches a request is Remotive's `limit`, whose query params are
+  // measured-inert. If Remotive ever restores server-side filtering, maxResults starts affecting
+  // reach and must move into this fingerprint.
   const criteria = {
     sources: [...sources].sort(), searchKeyword, titleExcludeKeyword, companyKeyword,
     locationKeyword, salaryOnly,
     postedAfter: input.postedAfter ?? null, postedBefore: input.postedBefore ?? null,
+    maxPagesPerSource,
   };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
