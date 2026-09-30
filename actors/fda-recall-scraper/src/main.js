@@ -297,6 +297,29 @@ const SORT = `${dateField}:${order}`;
 const quote = (v) => `"${String(v).replace(/"/g, '')}"`;
 const orClause = (field, values) => `${field}:(${values.map(quote).join('+OR+')})`;
 
+// The press-release fallback below (see runPressReleases) re-implements searchQuery client-side
+// because the RSS feed has no server-side search of its own. openFDA's quoted phrase search
+// (buildSearch above) tokenizes and matches whole words only -- verified live 2026-09-30:
+// product_description:"simvastatin" (whole word) -> 41 hits, product_description:"vastat" and
+// "simvastat" (mid-word/prefix fragments of that same indexed word) -> 0 hits, not even a
+// prefix match. A plain hay.includes(searchQuery) fallback would therefore behave differently
+// from the primary path for the exact same input -- e.g. matching "Peperoncini" on the fragment
+// "eperoncini", which openFDA's own search would never return. This matches on consecutive
+// whole words instead, so the two paths agree.
+const WORD_RE = /[\p{L}\p{N}]+/gu;
+function wordsOf(s) {
+    return String(s).toLowerCase().match(WORD_RE) ?? [];
+}
+function matchesPhrase(hay, phrase) {
+    const hayWords = wordsOf(hay);
+    const qWords = wordsOf(phrase);
+    if (!qWords.length) return false;
+    for (let i = 0; i + qWords.length <= hayWords.length; i += 1) {
+        if (qWords.every((w, j) => hayWords[i + j] === w)) return true;
+    }
+    return false;
+}
+
 function buildSearch(from, to) {
     const clauses = [`${dateField}:[${from}+TO+${to}]`];
     if (classifications.length) clauses.push(orClause('classification', classifications));
@@ -984,8 +1007,8 @@ if (watchMode && seeding) {
         for (const item of items) {
             if (pushed >= maxResults) break;
             if (searchQuery) {
-                const hay = `${item.title} ${item.description ?? ''}`.toLowerCase();
-                if (!hay.includes(searchQuery.toLowerCase())) continue;
+                const hay = `${item.title} ${item.description ?? ''}`;
+                if (!matchesPhrase(hay, searchQuery)) continue;
             }
             const day = item.pubDateIso ? item.pubDateIso.slice(0, 10).replace(/-/g, '') : null;
             if (day && (day < reportDateFrom || day > reportDateTo)) continue;

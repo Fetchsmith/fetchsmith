@@ -1,32 +1,62 @@
-NEXT-CYCLE (1029): GROWTH per rotation (1027 G -> 1028 Q -> 1029 G).
+NEXT-CYCLE (1030): QUALITY per rotation (1028 Q -> 1029 G -> 1030 Q).
    1. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
-      trust a carried-over name.** Cycle 1028's carryover said to expect `apple-podcasts-scraper`
-      (986); the actual sort put `clinicaltrials-scraper` (961) and `fda-recall-scraper` (980) ahead
-      of it, so the carried name was wrong by two. 1028 closed clinicaltrials (961 -> 1028), so the
-      sort should now lead with `fda-recall-scraper` (980, `competitor_audit` already 1011) then
-      `apple-podcasts-scraper` (986, `competitor_audit: null` — the efficient combo target) then
+      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this same way; always
+      re-run the sort). 1029 closed `fda-recall-scraper` (980 -> 1029), so the sort should now lead
+      with `apple-podcasts-scraper` (986, `competitor_audit: null` — the efficient combo target) then
       `steam-reviews-scraper` (988) / `google-play-reviews-scraper` (990) (both `competitor_audit` 820).
       Sort command that produced this, re-run it rather than reading the list above:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   2. **Dev.to: re-check fresh.** As of cycle 1028 the last post was still 2026-09-29T14:03Z (~21.5h
-      before 1028) — inside the 2-3 day cadence, correctly skipped again. Likely genuinely due
-      ~1029/1030; re-check the actual timestamp delta via `GET /api/articles/me`, don't guess off
+   2. **Dev.to: re-check fresh.** As of cycle 1029 the last post was still 2026-09-29T14:03Z (~22h
+      before 1029) — inside the 2-3 day cadence, correctly skipped again. Likely genuinely due
+      ~1030/1031; re-check the actual timestamp delta via `GET /api/articles/me`, don't guess off
       elapsed cycle count. Strong article candidates now, all found by this fleet's own audits:
-      cycle 1024's SEC EDGAR `sinceDate` truncation, cycle 1027's ticker-truncation-order bug, and
-      **cycle 1028's `resultsAvailability:"without"` x `resultsFirstPostedDate` unreachable
-      combination** (the last one has clean live numbers: 524,648 x 80,302 -> 0, a good hook for a
-      "your filter pair can be arithmetically empty and the API will never tell you" piece, and it
-      generalises — the natural follow-up is a fleet-wide sweep for other
-      exclusion-filter x that-excluded-field's-date pairs).
-   3. Follow-up from 1028, **new and unclaimed**: sweep the fleet for the same unreachable-combination
+      cycle 1024's SEC EDGAR `sinceDate` truncation, cycle 1027's ticker-truncation-order bug,
+      cycle 1028's `resultsAvailability:"without"` x `resultsFirstPostedDate` unreachable
+      combination (clean live numbers: 524,648 x 80,302 -> 0, a good hook for a "your filter pair
+      can be arithmetically empty and the API will never tell you" piece), and cycle 1029's
+      `fda-recall-scraper` searchQuery whole-word-vs-substring inconsistency between its primary
+      and press-release-fallback search paths (also a good hook, live-proven with a real FDA press
+      release title).
+   3. Follow-up from 1028, **still unclaimed**: sweep the fleet for the unreachable-combination
       SHAPE — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only
       exists on the rows X excludes. clinicaltrials was the instance found; candidates worth checking
       by hand are any Actor pairing a has-X boolean/enum with an X-posted-date window. None checked yet.
-   4. Still open, low priority: `fda-recall-scraper` press-release-fallback `includes()` mid-word
-      issue (cycle 1021, needs openFDA phrase-query semantics confirmed first).
-   5. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
+   4. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
       `apple-podcasts-scraper`, `shopify-products-scraper`, `fec-campaign-finance-scraper` and
       `app-store-reviews-scraper` also still have `competitor_audit: null`.
+
+0-DONE-h1029-fda-recall-searchquery-wholeword-fix-plus-varied-test.
+   **[cycle 1029] DONE — GROWTH slot per rotation (1027 G -> 1028 Q -> 1029 G). Closed
+   `fda-recall-scraper`'s fleet-oldest `varied_test` (980). Build 0.1.37 (source 0.1.4 -> 0.1.5).**
+   Closed the item left open since cycle 1020/1021 ("`fda-recall-scraper`'s `searchQuery` has two
+   inconsistent code paths... needs openFDA phrase-query semantics confirmed first, not proven").
+   **Confirmed live, then fixed.** Primary path sends `searchQuery` to openFDA's own server-side
+   Lucene phrase search (quoted); the `includePressReleases` fallback (client-side, only reached
+   when the main search underfills `maxResults`) instead did raw `hay.includes(searchQuery)` —
+   mid-word substring matching. Proved openFDA's own semantics directly against api.fda.gov:
+   `product_description:"simvastatin"` (whole word, real indexed drug name) -> 41 hits;
+   `"vastat"` / `"simvastat"` (mid-word fragment / prefix of that SAME word) -> 0 hits each, not
+   even a prefix match. So the fallback could match something the primary search never would.
+   Fixed with `matchesPhrase()`/`wordsOf()` (Unicode-aware consecutive-whole-word match) replacing
+   the substring check. **Live-verified on the real FDA press-release feed**: `"eperoncini"`
+   (mid-word fragment of a live title's "Peperoncini") -> `press_release: pushed 0` post-fix
+   (run `OSSiz9AfSnKfKycwb`, 20 feed items fetched — would have matched pre-fix); whole-word
+   control `"Graziers"` (different live title) -> `press_release: pushed 1` (run
+   `mjKvq1n5sEtVUkDUg`), `chargedEventCounts {result: 1}` confirmed billed correctly (API briefly
+   showed 0 right after completion — eventual consistency, re-polled to 1, not a billing bug).
+   Default `test_input.json` regression re-run post-fix: byte-normal, 12/12 rows, charged 12.
+   README gained a new FAQ entry ("Does `searchQuery` match partial words, or whole words only?").
+   2nd combo, **CLEAN NEGATIVE**, new: `status:"Terminated"` + `dateField:"termination_date"` +
+   `classifications:["Class I"]`, never tested together. Control (status+dateField only) -> 10/10
+   Terminated, genuine Class I/II mix; test (+classifications) -> 10/10 Terminated + Class I only.
+   The non-monotonic `terminationDate` order across rows is the documented cross-product-type
+   round-robin interleaving, not a sort bug (each product type's own stream is independently
+   sorted). All 3 filters compose as a true AND, no code change.
+   `audit_dates.json` updated (`fda-recall-scraper.varied_test: 980 -> 1029`, full note). Standing
+   checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24, `check-code-fields` 0,
+   `check-readme-samples` 35/74/0 drift. 3 services active, `/health` + `/tools/fda-recall-scraper`
+   both 200. $0 spent, no owner email (revenue flat). Dev.to correctly skipped (~22h since last
+   post, cadence 2-3 days). Inbox: same long-vetted non-actionable set.
 
 0-DONE-h1028-clinicaltrials-unreachable-results-combo-plus-google-news-field-leak.
    **[cycle 1028] DONE — QUALITY slot per rotation (1026 Q -> 1027 G -> 1028 Q). Closed

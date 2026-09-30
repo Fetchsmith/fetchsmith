@@ -178,6 +178,9 @@ It reads openFDA, the FDA's own public open-data API, which requires no key and 
 **My run returned zero rows.**
 The log explains why in order of likelihood. Usually it is ANDed filters that have no real intersection, or a `reportDate` window that is too narrow. Try one distinctive word in `searchQuery` rather than a long phrase.
 
+**Does `searchQuery` match partial words, or whole words only?**
+Whole words (and, for a multi-word phrase, consecutive whole words), on both sources it can match against. The main enforcement-API results use openFDA's own server-side phrase search, which we verified live is whole-word only — `"simvastatin"` matches 41 rows, but the mid-word fragment `"vastat"` (or the prefix `"simvastat"`) of that exact same indexed word matches 0, not even as a stem. `includePressReleases` rows are matched client-side against the FDA press-release feed using the same whole-word rule, so a query behaves consistently whichever source a row came from — it will not match "Peperoncini" on the fragment "eperoncini".
+
 **What exactly is `riskScore` and why isn't it called "AI"?**
 It's a plain weighted formula, computed with no external calls and no model: 45% classification severity (Class I=100, II=60, III=25), 30% recency (linear decay from 100 at today's date to 0 at two years old), 25% distribution scope (100 for nationwide/international language in `distributionPattern`, scaling down by how many distinct US state codes are mentioned, down to 30 for a single state/city). Rounded to an integer 0-100. We could have marketed this as "AI-powered" like a competitor does for the same idea, but it isn't AI, and saying so would be misleading — this is what it actually computes. Set `includeRiskScore: false` to skip it.
 
