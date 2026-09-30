@@ -4207,3 +4207,35 @@ events (`inventory-enrichment`) had quietly ended 7 days before this cycle, turn
 "$0.001/product, matches ours" comparison into "$0.002/product + a start fee vs our $0.002 with none" —
 a reminder that even an audit that finds "nothing changed" needs the date bumped, because the *next*
 check might land right after something did.
+
+## Cycle 1035 — a query breadth timeout, not a filter-name problem: when a single free-text filter matches "too many" rows, the upstream API itself 504s
+`varied_test` on `fec-campaign-finance-scraper`'s fleet-oldest slot picked `donorOccupation` alone
+(contributions mode, `PHYSICIAN`) — an untested single-field combo — and it hung for ~94s then crashed
+with a bare `Timeout awaiting 'request' for 30000ms`. **Verified upstream first, not our code**: a
+direct `curl` to `api.open.fec.gov` with the identical params, no Actor involved, reproduced a 504
+`"Query timed out"` at ~30.7s for `contributor_occupation=PHYSICIAN`/`ATTORNEY`/`RETIRED`/`TEACHER` and
+`contributor_employer=SELF-EMPLOYED`/`RETIRED`/`NONE`, all set ALONE. The decisive control:
+`contributor_employer=GOOGLE` alone — 129,917 matches, MORE rows than several of the ones that
+504'd — returned in ~4s. **It's match-set breadth the FEC's own DB times out on, not which field or
+how "common-sounding" the value looks** — no shortcut (word-frequency heuristic, canary-style COUNT
+probe) can predict it in advance, because running a COUNT for the real value hits the identical 504.
+This is a different shape from cycle 856/857's "fully unfiltered scan" bug on the same Actor: there,
+*zero* filters were set; here, exactly *one* narrowing filter is set and still isn't enough — the
+existing "all fields empty" guard cannot catch it since it only fires when literally nothing is set.
+**Second finding, compounding the first**: our own `fecGet()` sets `timeout:{request:30000}`, the SAME
+30s ballpark as the FEC's own server-side cap, so got's client-side `TimeoutError` usually fires before
+the 504 response body is ever readable — and `retry:{limit:2}` then replayed the identical, deterministically-
+doomed request two more times (~90-120s burned per failed run for nothing, since the cause isn't transient).
+**Fix**: don't try to predict it — catch the timeout/`ETIMEDOUT` error class in `fecGet()`'s try/catch
+and rethrow a clear, actionable message naming the likely cause and the remedy (add `donorCity`/
+`donorZip`/`state`/`minAmount`/`maxAmount`/a date window), instead of a raw stack trace. Verified live:
+the failing combo now fails fast with the new message (`chargedEventCounts {result:0}`, 0 rows —
+the fail happens before any push, so nothing is billed); adding `donorCity` alongside the same
+`donorOccupation` value then succeeds, 8/8 rows correctly satisfying both filters — proof the
+suggested remedy is not just plausible-sounding but actually works.
+**Rule for the fleet**: when auditing an Actor that passes a free-text filter straight to an upstream
+API, don't assume "a filter is set, so the query is bounded" — test at least one single-field
+free-text combo with a deliberately generic/high-cardinality value (occupation, employer, a common
+surname) even if the field has passed other combos before; breadth-driven upstream timeouts hide
+specifically in the *one-filter-alone* shape, between "zero filters" (already guarded on this Actor)
+and "two or more filters" (narrow enough in every case tried so far).

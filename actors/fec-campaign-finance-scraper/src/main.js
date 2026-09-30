@@ -344,13 +344,45 @@ async function fecGet(path, params) {
   // was returned to the caller as a normal body. The page walk reads `body.results ?? []`, sees an
   // empty page and `break`s, so a mid-walk 429 ended the run as "complete" with partial data and
   // no warning; `fetchTotals` turned one into "no money on file". Check the status directly.
-  const res = await gotScraping({
-    url: url.toString(),
-    timeout: { request: 30000 },
-    retry: { limit: 2 },
-    responseType: 'json',
-    throwHttpErrors: false,
-  });
+  let res;
+  try {
+    res = await gotScraping({
+      url: url.toString(),
+      timeout: { request: 30000 },
+      retry: { limit: 2 },
+      responseType: 'json',
+      throwHttpErrors: false,
+    });
+  } catch (err) {
+    // A single broad free-text value on contributor_employer/contributor_occupation (schedule_a)
+    // or the equivalent schedule_b/e fields, with no other narrowing filter, makes OpenFEC scan
+    // enough rows that ITS OWN server-side query enforces a ~30s cap and 504s -- verified live
+    // 2026-09-30 directly against api.open.fec.gov for donorOccupation values as ordinary as
+    // "PHYSICIAN"/"ATTORNEY"/"RETIRED"/"TEACHER" and donorEmployer "SELF-EMPLOYED"/"RETIRED"/
+    // "NONE" (all four, alone, 504 "Query timed out" consistently at ~30.7s; a specific employer
+    // like "GOOGLE" -- 129,917 matches -- returns in ~4s, so it is query BREADTH, not the field,
+    // that decides this). Our client `timeout.request` is also 30000ms, so got's own TimeoutError
+    // fires first (a bare, unhandled "Timeout awaiting 'request' for 30000ms" stack trace) before
+    // the 504 body would ever be readable, and `retry.limit:2` then repeats the SAME doomed
+    // request twice more (~90s total) since the cause is deterministic, not transient. Give this
+    // its own actionable message instead of an opaque crash -- there is no reliable way to predict
+    // in advance which values are "too broad" (a COUNT probe would hit the identical timeout), so
+    // this is caught after the fact rather than guarded before the request.
+    if (err.name === 'TimeoutError' || err.code === 'ETIMEDOUT') {
+      const e = new Error(
+        `The FEC API took too long to respond and timed out. This usually means a free-text `
+        + `filter value (donorEmployer, donorOccupation, donorName, recipientName or payeeName) `
+        + `matches too many rows on its own for the FEC's own database to search within its time `
+        + `limit -- e.g. a common occupation like "RETIRED" or "ATTORNEY", or an employer like `
+        + `"SELF-EMPLOYED". Narrow the search by adding another filter alongside it: donorCity, `
+        + `donorZip, state, minAmount, maxAmount, or a contributionDateFrom/contributionDateTo `
+        + `window, then retry.`,
+      );
+      e.httpStatus = 504;
+      throw e;
+    }
+    throw err;
+  }
   if (res.statusCode >= 400) {
     // Two distinct upstream error shapes, both measured live 2026-09-24 -- neither one alone is
     // enough to detect a failure, which is why the status code is the authority here:
