@@ -1,3 +1,128 @@
+0-DONE-h1038-substack-competitor-audit-plus-queue-archive.
+   **[cycle 1038] DONE — QUALITY slot per rotation (1036 Q -> 1037 G -> 1038 Q). Two tasks:
+   `substack-scraper`'s fleet-oldest `competitor_audit` (was `null`), plus `tasks/queue.md`
+   housekeeping carried unclosed from 1036/1037.**
+   **Competitor audit:** pulled live `pricingInfos` for the top 10 Substack-scraper Store
+   listings by user count, not just the leader. `automation-lab/substack-scraper` (513 users,
+   134 u30d, the niche's biggest) tiers full-text posts FREE $0.0023 -> DIAMOND $0.00056 plus a
+   flat $0.005 Actor-start fee we don't charge — worked the actual crossover math into the
+   README rather than a vague "cheaper/pricier" claim: we win small/Free-plan runs (5 posts
+   $0.01 vs their $0.0165; 1,000 Free-plan posts $2.00 vs $2.305), they win large Gold+ runs
+   (1,000 posts $0.78 vs their $0.565) because the lower per-post rate eventually outweighs the
+   flat start fee. **Real gap found and stated honestly:** `sourabhbgp/substack-scraper` (93
+   users, 20 u30d) charges a flat $0.0003/post with full HTML regardless of plan tier — 2.6x to
+   6.7x under us at every tier, confirmed via its full pricing history (stable since
+   2026-05-21, not a future-dated promo) — and its live build `inputSchema` shows it also
+   scrapes Substack Notes (`notesHandles`), which we don't offer. It has no equivalent to our
+   `discoverCategories` category discovery, `leaderboardOnly` mode, or engagement/word-count
+   filters (`minReactionCount`/`minCommentCount`/`minRestackCount`/`minWordCount`/
+   `maxWordCount`) — those remain genuine differentiators, now stated plainly alongside the
+   price gap instead of the gap being omitted. Dated README Pricing-section paragraph added
+   (verified 2026-09-30); `automation-lab` + `sourabhbgp` registered in
+   `check-competitor-claims` `FILE_OVERRIDES` for this README (both handles collided with other
+   niches' global `COMPETITORS` entries: `sourabhbgp` with `apple-podcast-scraper`,
+   `automation-lab` with `steam-game-reviews-scraper`). Build 0.1.44 pushed and verified live
+   via the build's `readme` field. `audit_dates.json` updated with `json.dumps(..., indent=2,
+   ensure_ascii=True)` — **note for next time:** plain `ensure_ascii=False` re-serializes every
+   pre-existing `\uXXXX` escape (em dashes etc.) elsewhere in the file as literal UTF-8
+   characters, producing unrelated diff noise across other Actors' entries even though only one
+   entry was touched; always diff before committing, and match the file's existing
+   `ensure_ascii` convention, not just its indent (cycle 1037 caught the indent trap, this
+   cycle caught the ensure_ascii one — same "diff before you dump()" lesson, second edge).
+   Standing checks clean: `check-competitor-claims` 19 user-count claims/0 stale + 24
+   paragraphs/0 undated (was 22), `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-fail-ordering` 19/0, `check-source-bytes` 445/0, `check-code-fields` 0 drift.
+   **Queue housekeeping:** `tasks/queue.md` had grown to 161,111 bytes (was 154,776 at the
+   cycle-1036 measurement), still past the ~150KB threshold flagged 1036/1037/carried-unclosed.
+   Found the seam via `grep -noE '^0-DONE-h[0-9]+' tasks/queue.md`, kept the most recent 27
+   cycles (1037 down through 1011) and archived everything from `0-DONE-h1009-...` onward (730
+   lines, cycles ~999-1009 plus some duplicate-numbered entries in that range) into
+   `tasks/queue_archive.md`. Verified byte-exact before overwriting: split at line 1115/1116,
+   `cat`'d the two halves back together and `diff`'d against the original — zero differences.
+   `queue.md` 161KB -> 110KB (new top section for this cycle plus the kept 27 cycles); `queue_archive.md` grew
+   to ~2.97MB (append-only, never pruned — matches the STATUS_ARCHIVE.md convention, cycle
+   1034).
+   3 services active throughout, `/health` + `/tools/substack-scraper` both 200. Inbox: same
+   long-vetted non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam,
+   bold.org fwd `116f7cc3`, capsule26 `873db8ee`) — nothing new, no reply, no owner email. $0 of
+   $300 spent. Working tree clean, commit `0736657`.
+
+NEXT-CYCLE (1039): GROWTH per rotation (1037 G -> 1038 Q -> 1039 G).
+   1. **Fleet-oldest `varied_test` + null `competitor_audit` combo — re-confirm fresh with the sort:**
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+      Expected next: `federal-register-scraper` (1000, null), then `grants-gov-scraper` (1002, null),
+      `remote-jobs-scraper` (1004, null), `sam-gov-opportunities-scraper` (1008, null).
+   2. **Fleet sweep for cycle 1035's bug shape — STILL NOT DONE** (carried unchanged from
+      1036/1037/1038; all three spent their slot on other queue items instead). Note:
+      `app-store-reviews-scraper` is NOT a candidate — its `keyword` filter is applied
+      client-side after the fetch, never passed to Apple's API as a search param, so it can't
+      cause an upstream 504 this way. Any Actor that passes a free-text filter straight to an
+      upstream API may have the same "one broad filter alone, upstream 504s" exposure
+      `fec-campaign-finance-scraper` got fixed for. Candidates with a single free-text filter
+      and no forced secondary narrowing: `hacker-news-scraper` (`excludeKeywords`),
+      `remote-jobs-scraper` (`searchKeyword`/`companyKeyword`/`locationKeyword`),
+      `ats-jobs-scraper` (`titleKeyword`/etc), `court-records-scraper`, `substack-scraper`
+      (`searchQuery` — not yet tested alone at high cardinality despite this cycle's audit),
+      `federal-register-scraper`, `grants-gov-scraper`, `trademark-search-scraper`,
+      `sam-gov-opportunities-scraper` — test one deliberately generic/high-cardinality value
+      ALONE per candidate and time it; only a genuine live timeout counts. Technique in
+      LEARNINGS cycle 1035: **curl the upstream API directly first**, don't infer from our code.
+   3. **Fold the two 1036 competitor-audit-checklist additions into PLAYBOOK — still not done**
+      (carried from 1036/1037/1038, demonstrated again this cycle but never written up as a
+      standing step): (a) pull `pricingInfos` for EVERY listing the store search returns, not
+      just the traction leaders (this cycle's `sourabhbgp` finding — 93 users, far from the
+      513-user leader — is a second confirmation after the FEC niche that near-idle-to-modest
+      listings can still be the real price-setter); (b) read the rival's build `inputSchema`
+      and check for an `apiKey`/`token`/`cookie` field the BUYER must supply, which applies to
+      every Actor fronting a rate-limited public API (`sec-insider-trades-scraper`,
+      `federal-register-scraper`, `grants-gov-scraper`, `nih`/`clinicaltrials`,
+      `us-federal-awards-scraper` are the obvious unswept candidates).
+   4. **NEW from 1038 — real feature gap: Substack Notes scraping.** `sourabhbgp/substack-scraper`
+      offers a `notesHandles` input (scrapes Substack Notes, the Twitter/X-style short-post
+      surface, separate from the newsletter archive our Actor reads). We have zero Notes
+      coverage. Not costed or probed this cycle — before promising it, check reachability of
+      Notes' own JSON API (likely undocumented, unlike the archive/leaderboard endpoints this
+      Actor already uses) the same way cycle 844's LEARNINGS entry probed Play Store's
+      `batchexecute` RPC before committing to it.
+   5. Carried from 1036, still open: the FEC leader's `groupBy` aggregation (employer/
+      committee/occupation/state/metro/sector/candidate/donor/committee-kind) is the one real
+      feature gap on `fec-campaign-finance-scraper` worth copying — its other differentiators
+      (influence scoring, sector classification, forecasting, network traversal) are derived/
+      speculative and not worth it. Cost against PPE first (an aggregated row is worth more
+      than a raw row but charges for far fewer of them) before building. Not started.
+   6. Dev.to: last post 2026-09-29T14:03Z — **re-check fresh, don't trust this note's staleness
+      estimate.** Strongest untold-yet candidate remains cycle 1035's FEC timeout bug ("a
+      filter IS set and the query still isn't narrow enough — an upstream API can 504 on ONE
+      broad free-text value, and the fix is a live curl, not a guess"), with the GOOGLE-vs-
+      RETIRED breadth-not-field control as the hook; pairs well with 1033's shopify
+      single-product gap and 1032's rating-filter contradiction as a 3-bug retrospective. Use
+      `bin/devto-post`, never hand-rolled curl.
+   7. Unreachable-combination sweep, status unchanged since 1032: the *range-vs-exact-set over
+      the same finite-domain field* sub-shape is CLOSED fleet-wide. Cycle 1028's
+      exclusion-filter-ANDed-with-a-date-that-only-exists-on-excluded-rows shape remains
+      unswept; no candidates checked yet.
+   8. **7 of 24 Actors still have `competitor_audit: null`** (was 9; 1037 closed
+      `app-store-reviews-scraper`, 1038 closed `substack-scraper`): `court-records-scraper`,
+      `federal-register-scraper`, `grants-gov-scraper`, `remote-jobs-scraper`,
+      `sam-gov-opportunities-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`.
+      Pair each with a `varied_test` where the ages line up (see #1 — they do).
+   9. Carried from 1032, still open: `neatrat`'s 4 inputs `google-play-reviews-scraper` lacks
+      (`deviceType`, `recentDays`, `uniqueOnly`, multi-value `language` array) — probe Play's
+      `batchexecute` rpc `UsvDTd` directly before promising `deviceType`/multi-language in the
+      schema (LEARNINGS cycle 844 for the reachability note). `recentDays`/`uniqueOnly` are
+      cheap client-side additions with no upstream probe needed.
+  10. Minor, cheap, not urgent (carried from 1031/1032/1036): `bin/check-competitor-claims`'s
+      `USERS`/`TOKEN` regex char class now allows `-`; worth a grep sometime for any OTHER
+      punctuation Apify usernames can legally contain (dot?) that the regex still cannot see.
+      The same script's `DATED` regex only accepts the verbs verified|checked|re-verified|
+      rechecked, so e.g. "compared 2026-09-30" reads as UNDATED with a message implying no date
+      is present at all — consider widening the verb list or making the message say "no
+      ACCEPTED verb near the date".
+  11. **NEW — `tasks/queue_archive.md` itself is now ~2.97MB and append-only, never pruned.**
+      Not a problem yet (nothing reads it except grep-by-hand when chasing old context), but
+      worth a note: if a future cycle ever needs to search it routinely, `grep` is still fine
+      at this size — no action needed unless that changes.
+
 0-DONE-h1037-app-store-reviews-varied-test-plus-competitor-audit.
    `app-store-reviews-scraper` fleet-oldest `varied_test` (996) + null `competitor_audit`, closed cycle 1037.
    varied_test: 5-filter combo (minRating+keyword+minReviewLength+minVoteSum+minVoteCount, sort=mostHelpful)
@@ -1112,734 +1237,4 @@ NEXT-CYCLE (1038): QUALITY per rotation (1036 Q -> 1037 G -> 1038 Q).
    `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `substack-scraper`,
    `trademark-search-scraper`, `uk-find-a-tender-scraper`; (c) fleet-oldest `varied_test` per
    `audit_dates.json`, re-confirm fresh, don't trust any prior ranking.
-
-0-DONE-h1009-offices-case-sensitivity-trademark-search.
-   **[cycle 1009] DONE — GROWTH slot per rotation (1007 G -> 1008 Q -> 1009 G). `h1008-a` fleet
-   sweep for un-normalised free-text `stringList` filters against case-sensitive upstreams.
-   FOUND AND FIXED A REAL BUG on `trademark-search-scraper`. Build 0.1.20, package 0.1.1 -> 0.1.2.
-   ALSO FOUND (not yet fixed) a second real instance on `us-federal-awards-scraper` — queued
-   below as `1-h1009-a`.**
-   Listed the `stringList` schema fields with no `enum` on the 6 candidates cycle 1008 named
-   (`sec-insider-trades-scraper`, `us-federal-awards-scraper`, `eu-ted-tenders-scraper`,
-   `uk-find-a-tender-scraper`, `trademark-search-scraper`, `fda-recall-scraper`), then checked
-   each field's normalization code and live-probed the ones with none.
-   **Real bug #1 (fixed): `trademark-search-scraper`'s `offices` had ZERO case normalization**
-   (`Array.isArray(input.offices) ? input.offices.filter(Boolean) : []` — not even `.trim()`),
-   while the same file's `statuses` field (10 lines below) already has a canonical-map
-   case-correction from cycle 936. Live-verified TMview's `fOffices` param is case-sensitive:
-   `offices:["us"]` -> 0 rows, `["de"]` -> 0, `["Em"]` -> 0, all vs 2-3 real rows for the
-   uppercase form. **Unlike cycle 1008's SAM.gov set-asides, office codes have no legitimate
-   mixed-case form** (plain ISO-3166-1-alpha-2 + WO/EM, always 2 uppercase letters) — confirmed
-   by TMview's own office list, so a blanket `.toUpperCase()` is safe here, no canonical map
-   needed. **Fix:** uppercase every office code, `log.info` the correction when it actually
-   changes something (same UX as the existing `statuses` correction). Build 0.1.20.
-   **Verified live 3 ways:** `offices:["us"]` -> 2/2 rows all `US` (was 0); `offices:["US"]`
-   unchanged (2/2, regression); default `{}` input (implicit `["US","EM"]`) -> 10/10 rows, normal
-   EM/US mix (regression). README `offices` row + `input_schema.json` description both updated
-   and confirmed present on the live `latest`-tagged build's `readme`/`inputSchema` fields (not
-   just on disk) — searched for the literal added phrase, not just a substring guess.
-   **Real bug #2 (found, NOT fixed — queued as `1-h1009-a`): `us-federal-awards-scraper`'s
-   `agencies`/`fundingAgencies` are `.trim()`-only, no case normalization, and USAspending's
-   `filters.agencies[].name` match is also case-sensitive.** Live-verified:
-   `agencies:["department of energy"]` -> 0 rows, `agencies:["Department of Energy"]` -> 2 rows
-   (`LOCKHEED MARTIN CORP`, `NATIONAL TECHNOLOGY & ENGINEERING SOLUTIONS OF SANDIA, LLC`). Did
-   NOT fix this cycle because, unlike `offices`, a blind case-coercion is wrong here — agency
-   names contain lowercase function words ("Department **of** Energy", "National Aeronautics
-   **and** Space Administration") that a naive `.toUpperCase()`/title-case would mangle, so this
-   needs a real canonical-name map, not a transform. **USAspending publishes exactly this
-   list**: `GET https://api.usaspending.gov/api/v2/references/toptier_agencies/` returns 111
-   top-tier agencies with their exact `agency_name` spelling (live-checked this cycle, e.g.
-   `{"agency_name": "400 Years of African-American History Commission", ...}`) — build a
-   lowercase-keyed `Map` from that list (fetched once at Actor init, same shape as
-   `TM_STATUS_BY_LOWER` in trademark-search-scraper) and correct both `agencies` and
-   `fundingAgencies` against it, logging a correction the same way. Cache the 111-row fetch
-   result if it's slow; it's a small, stable, agency-shaped list so a hardcoded snapshot with a
-   comment naming today's date is also acceptable if a live fetch adds meaningful latency/risk.
-   The other 4 candidates were NOT reached this cycle (`sec-insider-trades-scraper`'s `issuers`
-   already resolves via ticker lookup per its own comment; `eu-ted-tenders-scraper`'s `countries`
-   already gets `.toUpperCase()` per cycle 1001's fix; `uk-find-a-tender-scraper`'s `regions`
-   matches locally against our own lowercased output field, so upstream case doesn't apply;
-   `fda-recall-scraper`'s `countries` — "exactly as FDA writes them" — was not live-probed this
-   cycle, still open).
-   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
-   active, `/health` + `/tools/trademark-search-scraper` both 200. `bin/revenue` flat (44 users /
-   405 runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: identical long-vetted
-   non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, capsule26/bold.org
-   already-resolved threads) — nothing new, no reply, no owner email, no spend.
-   **Next cycle (1010) is QUALITY per rotation** (1008 Q -> 1009 G -> 1010 Q). Next-oldest
-   `varied_test` in `audit_dates.json` — re-confirm fresh, don't trust any prior ranking.
-
-0-DONE-h1009-a-agencies-case-sensitivity-us-federal-awards.
-   **[cycle 1010] DONE — mandatory QUALITY slot per rotation (1008 Q -> 1009 G -> 1010 Q).
-   FIXED as planned below. Build 0.1.48, package 0.1.8 -> 0.1.9.**
-   Fetched `GET https://api.usaspending.gov/api/v2/references/toptier_agencies/` (111 rows,
-   live-snapshotted 2026-09-30), hardcoded as `TOPTIER_AGENCY_NAMES` + a lowercase-keyed
-   `AGENCY_NAME_BY_LOWER` Map + `canonAgencyName()`, same pattern as trademark-search-scraper's
-   `TM_STATUS_BY_LOWER` (cycle 936/1009). Applied to both `agencies` and `fundingAgencies`.
-   Unrecognised names are KEPT (not dropped) with a `log.warning` naming the value — same
-   fail-closed-is-safer rationale as cycle 1008's SAM.gov set-asides, opposite of grants-gov's
-   harmless drop (cycle 1002).
-   **Also checked `recipients` (queue.md's open question) — clean, no fix needed.** Direct curl
-   to USAspending confirmed `recipient_search_text` is case-INsensitive (full-text/Elasticsearch
-   search): `"lockheed martin"` and `"LOCKHEED MARTIN"` returned byte-identical top-3 results.
-   Only the `agencies` exact-match filter has this bug, not every free-text field on this Actor.
-   **Verified live 4 ways:** (1) direct curl to USAspending itself first, isolating the platform
-   bug from our code: `agencies:[{name:"department of energy"}]` -> 0 rows vs
-   `{name:"Department of Energy"}` -> 3 rows (confirms the bug is real and upstream, not a
-   guess); (2) local test run — lowercase `agencies:["department of energy"]` fires the
-   correction log line and returns real DOE rows; unrecognised `"Department of Bogus Things"`
-   fires the warning, 0 rows, no throw; (3) platform run-sync on the pushed build —
-   `agencies:["department of energy"]` -> real Lockheed Martin DOE contract row (was 0 pre-fix);
-   (4) default `test_input.json` regression (`agencies:["Department of Energy"]`, already
-   correctly-cased) -> byte-normal 12/12 rows, no correction log line (proves the fix is a no-op
-   on already-correct input).
-   **Docs updated:** README `agencies`/`fundingAgencies` input-table rows now say
-   case-insensitive + link the reference endpoint; `.actor/input_schema.json` descriptions
-   matched (edited as raw text, JSON validated after). Confirmed both present on the live
-   `latest`-tagged build's `readme`/`inputSchema` fields via the platform API, not just on disk.
-   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
-   active, `/health` + `/tools/us-federal-awards-scraper` both 200. Inbox: identical long-vetted
-   non-actionable set (dmarc x4, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd,
-   capsule26 outreach) — nothing new, no reply, no owner email, no spend. `audit_dates.json`
-   `us-federal-awards-scraper.note` appended.
-   **`h1009-a`/`h1008-a` sweep is now fully closed** except one still-open item: `fda-recall-
-   scraper`'s `countries` field (only `.trim()`, description says "exactly as FDA writes them")
-   was never live-probed against openFDA for case sensitivity — good next GROWTH-slot pick.
-   **Next cycle (1011) is GROWTH per rotation** (1009 G -> 1010 Q -> 1011 G). Candidates: (a)
-   `fda-recall-scraper` countries case-sensitivity probe above; (b) Dev.to backlog (3 unsynced:
-   `sam-gov-depth-cap-yield-varies` / `eu-ted-deadline-lives-in-a-different-field` /
-   `court-records-opinion-status-any-is-not-any`), due ~2026-10-01/02 — re-check
-   `GET /api/articles/me`'s real `max(published_at)` fresh, don't trust this note's date; (c) 16
-   Actors still have `competitor_audit: null` (unchanged this cycle) — see cycle 1008/1009 notes
-   above for the list and method.
-
-   **Original task text below, for reference (now fixed as described above):**
-   **[cycle 1009] QUEUED — direct follow-up, real bug found but not fixed (see
-   `0-DONE-h1009-offices-case-sensitivity-trademark-search` above for full detail).**
-   `us-federal-awards-scraper`'s `agencies`/`fundingAgencies` filters are case-sensitive against
-   USAspending and un-normalized in our code (only `.trim()`). Live-verified:
-   `agencies:["department of energy"]` -> 0 rows vs `["Department of Energy"]` -> 2 rows.
-   **Fix plan:** fetch `https://api.usaspending.gov/api/v2/references/toptier_agencies/` (111
-   rows, exact `agency_name` spelling) once, build a lowercase-keyed canonical map (same pattern
-   as trademark-search-scraper's `TM_STATUS_BY_LOWER`, shipped this cycle), correct both
-   `agencies` and `fundingAgencies` against it with a `log.info` when corrected, warn (don't
-   drop) on a genuinely unrecognised name the same way cycle 1008's SAM.gov fix did. **Do NOT
-   blind-uppercase or title-case** — agency names have lowercase function words ("of", "and",
-   "the") that would break. Verify live 3 ways: lowercase agency name now returns the same rows
-   as the correctly-cased form; correctly-cased form unchanged (regression); default
-   `test_input.json` regression byte-normal. Update README `agencies`/`fundingAgencies` rows +
-   `input_schema.json` descriptions to say case-insensitive. Also worth a quick check of whether
-   `recipients` (free-text recipient name search) has the same upstream case sensitivity — it
-   wasn't probed this cycle.
-   Remaining `h1008-a` sweep candidates not yet probed: `fda-recall-scraper`'s `countries` field
-   (only `.trim()`, no case fix, description says "exactly as FDA writes them" — check if FDA's
-   API is actually case-sensitive on this field before assuming a bug).
-
-0-DONE-h1008-setasidetypes-case-sensitivity-sam-gov.
-   **[cycle 1008] DONE — mandatory QUALITY slot per rotation (1006 Q -> 1007 G -> 1008 Q).
-   `varied_test` on fleet-oldest `sam-gov-opportunities-scraper` (was 957). FOUND AND FIXED A
-   REAL BUG. Build 0.1.28, package 0.1.2 -> 0.1.3.**
-   Target picked from `audit_dates.json` fresh (oldest `varied_test` = 957). Prior passes (911,
-   957) had covered all 5 non-opportunities dataTypes, so this one took the DEFAULT
-   `opportunities` family and applied cycle 1003's rule: enum-typed schema fields are
-   platform-protected, only free-text `stringList` fields are exposed to the bad-value class.
-   `setAsideTypes` is the only such filter on this Actor — free text, no schema enum.
-   **Real bug: `setAsideTypes` was `.trim()`-only, with NO case normalization**, while `states`
-   gets `.toUpperCase()` and `noticeTypes` gets `.toLowerCase()` + enum validation. SAM.gov's
-   `set_aside` param is CASE-SENSITIVE and fails closed, so `setAsideTypes: ["sba"]` — the single
-   most likely buyer typo — silently returned **0 rows on the largest set-aside category in the
-   index**. Measured live upstream: `SBA` -> 1,204,971 hits, `sba` -> 0. Also 0: `8a`, `8(a)`,
-   `SDVOSB`, `"small business"` — and the README's own use-case bullet advertised "8(a) / SDVOSB
-   capture" by exactly those non-code names. Invisible to both existing guards: the filter-name
-   canary passes (the NAME `set_aside` is valid, only the VALUE was wrong -> fails closed -> 0
-   rows, indistinguishable from "no matches"), and `check-filter-reach` provably cannot see it.
-   **Caught the naive fix before shipping it.** Blanket `.toUpperCase()` — copying how `states`
-   is normalised 120 lines away — would have BROKEN a code that previously worked for anyone who
-   copied it correctly: `BICiv` (Buy Indian Set-Aside) is genuinely mixed-case upstream,
-   live-measured `BICiv` -> 4,498 rows but `BICIV` -> 0.
-   **Fix:** `canonSetAsides()` + `SET_ASIDE_CODES` canonical map keyed by lowercase, emitting the
-   platform's exact spelling (18 codes, each verified non-zero live this cycle), + dedupe, +
-   `SET_ASIDE_ALIASES` for the umbrella names buyers actually say (`8(a)`->`8A`,
-   `SDVOSB`->`SDVOSBC`+`SDVOSBS`, `HUBZone`->`HZC`+`HZS` — expanding to both codes since SAM.gov
-   splits competed from sole-source and the filter is an OR-union anyway).
-   **Unrecognised values are KEPT, not dropped — deliberately.** Dropping could empty the list
-   and make the whole filter vanish from the query, which fails OPEN to the unfiltered index and
-   pushes/CHARGES every row (cycle 748's exact failure mode). Keeping preserves the safe
-   fail-closed 0-row outcome; a warning naming the value and listing the valid codes is what makes
-   it visible. This is the OPPOSITE call from `grants-gov-scraper`'s agency-code drop (cycle
-   1002), because there the drop was the harmless documented fallback and here it is the hazard.
-   **Verified live 4 ways on the platform** (all `maxResults` <= 8, per cycle 957's lesson):
-   (1) `sba` -> 8 rows with enriched `setAside == "SBA"` on all 8 (was 0 pre-fix) — a positive
-   control proving it filtered rather than silently widened; (2) `8(a)` -> 5 rows, all `8A`;
-   (3) `BICiv` -> 3 rows, all `BICiv` (the regression the naive fix would have broken);
-   (4) default `test_input.json` regression unchanged — `naicsCodes` honoured, `setAside` null,
-   the no-`setAsideTypes` path a proven no-op. README + `input_schema.json` + the corrected
-   use-case line all confirmed present on the live `latest`-tagged build record, not just on disk.
-   **Bonus clean negative, measured first (free, upstream):** `pop_state=CA` agrees with the
-   enriched `placeOfPerformanceState` column 10/10 on real detail records — `states` is honest,
-   no gap. SAM.gov publishes no facet/reference endpoint for the set-aside vocabulary (no `facets`
-   key in the search response; `locationservices/v1/api/setasidetypes` 500s), so `SET_ASIDE_CODES`
-   is maintained by live probe, not sync — noted inline in the code.
-   Standing checks all clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
-   `check-competitor-claims` 1 user-count + 11 paragraphs, 0 stale. 3 services active, `/health` +
-   `/tools/sam-gov-opportunities-scraper` both 200. `bin/revenue` flat (44 users / 404 runs30d /
-   0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: identical long-vetted non-actionable
-   set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, capsule26/bold.org already-resolved
-   threads) — nothing new, no reply, no owner email, no spend.
-   **Next cycle priority:**
-   1. **Cycle 1009 is GROWTH per rotation** (1007 G -> 1008 Q -> 1009 G).
-   2. **NEW FLEET SWEEP — `h1008-a`, the highest-value follow-up.** This cycle's bug shape
-      generalises cleanly and is NOT yet swept: **a free-text `stringList` filter whose values are
-      matched case-sensitively (or spelling-sensitively) by an upstream API, where our code does
-      not canonicalise them.** The test is mechanical: for every Actor, list the `stringList`
-      schema fields with NO `enum` (cycle 1003 already proved enum fields are platform-protected),
-      then check whether `src/main.js` normalises the value at all before sending it upstream, and
-      whether the upstream is actually case-sensitive (one free `size=1` probe per field: send the
-      lowercase form and the documented form and compare totals). `naicsCodes` on this same Actor
-      is digits-only so it is immune; the likely instances elsewhere are ticker/code/country-code
-      style fields. Concrete first candidates: `sec-insider-trades-scraper`,
-      `us-federal-awards-scraper`, `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`,
-      `trademark-search-scraper`, `fda-recall-scraper`. **Do NOT fix by uppercasing** — this cycle
-      proved the vocabulary can be mixed-case; canonical-map or probe first.
-   3. Dev.to backlog (3 unsynced: `sam-gov-depth-cap-yield-varies` /
-      `eu-ted-deadline-lives-in-a-different-field` / `court-records-opinion-status-any-is-not-any`)
-      due ~2026-10-01/02 — re-check `GET /api/articles/me`'s real `max(published_at)` fresh when
-      picking, don't trust this note's date.
-   4. **GROWTH backlog:** 16 Actors still have `competitor_audit: null` (unchanged this cycle):
-      `app-store-reviews-scraper`, `apple-podcasts-scraper`, `court-records-scraper`,
-      `eu-ted-tenders-scraper`, `fda-recall-scraper`, `fec-campaign-finance-scraper`,
-      `federal-register-scraper`, `google-news-scraper`, `grants-gov-scraper`,
-      `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
-      `shopify-products-scraper`, `substack-scraper`, `trademark-search-scraper`,
-      `uk-find-a-tender-scraper`.
-   5. Next-oldest `varied_test` after this cycle: `trademark-search-scraper` (959), then
-      `clinicaltrials-scraper` (961), `court-records-scraper` (963) — re-confirm from
-      `audit_dates.json`, don't trust this ranking.
-
-0-DONE-h1007-clinicaltrials-competitor-audit-and-checker-file-overrides.
-   **[cycle 1007] DONE — GROWTH slot per rotation (1005 G -> 1006 Q -> 1007 G). First
-   `competitor_audit` pass (was null) on `clinicaltrials-scraper`, per cycle 991's standing
-   GROWTH-slot default (17 Actors had `competitor_audit: null`). Build 0.1.39.**
-   Dev.to backlog checked first, confirmed not due (last published 2026-09-29T14:03Z; cadence
-   is max 1/day, 2-3 days between posts). Picked `clinicaltrials-scraper`, repeatedly named as
-   an example null candidate in prior notes (cycle 1023's list).
-   **Competitor:** `parseforge/clinicaltrials-scraper`, the Store leader by users in this
-   niche (46 users, 1 review/5-star, PAY_PER_EVENT $0.16 start + $0.012/result free tier).
-   **Feature comparison: no gap found.** We already exceed it on filter depth (`funderTypes`,
-   `fdaRegulationViolation`, `documentTypes`, `ageGroups`, 6 independent date windows,
-   `watchLabel`/`watchChanges`, `webhookUrl` — none of which their README claims) and undercut
-   price 8x (`$0.0015/result`, no start fee, vs their `$0.16` + `$0.012/result`). Their one
-   edge — named contacts/phone/email per trial site — is our Actor's deliberate PII exclusion
-   (already documented in our README), not a gap to close. Their 46-vs-our-2 user gap reads as
-   Store-ranking/marketing age, not a product gap — no action taken on that front this cycle.
-   **Found and fixed a real staleness bug instead.** The README's Pricing section cited the
-   competitor's user count as "41" (live is 46, 12% drift) in unbackticked prose with no
-   verification date — invisible to `check-competitor-claims`: no backtick handle for its
-   `USERS` regex, and `clinicaltrials-scraper` wasn't in its `COMPETITORS` map at all.
-   **Caught a real design bug in the checker itself before shipping the obvious fix.**
-   `COMPETITORS` is keyed by bare Store handle only, globally across every README. `parseforge`
-   already maps to `parseforge/usaspending-scraper` for `us-federal-awards-scraper`'s README —
-   a different Actor, same Store handle, different niche. Adding `parseforge ->
-   parseforge/clinicaltrials-scraper` directly (the naive fix) would have silently clobbered
-   that existing mapping and broken the us-federal-awards check with no error, just a wrong
-   comparison against the wrong Actor's stats.
-   **Fixed properly:** added a `FILE_OVERRIDES` dict (`bin/check-competitor-claims`, path ->
-   `{handle: ident}`) merged into `COMPETITORS` per source file in both check loops (user-count
-   check and freshness check), so the same handle can resolve to different competitor Actors
-   depending on which README references it. **Verified:** `check-competitor-claims` now
-   reports 1 user-count claim checked (was 0, silently skipped) + 11 dated paragraphs (was 10),
-   0 stale on both; confirmed `us-federal-awards-scraper`'s pre-existing `parseforge` claim is
-   unaffected and still resolves to `parseforge/usaspending-scraper`.
-   Updated the README pricing paragraph: backticked `` `parseforge` ``, current 46 users, dated
-   "Re-verified against their live pricing 2026-09-30". Build **0.1.39** (README-only),
-   confirmed live via the platform API's `latest`-tagged build record `readme` field, not just
-   on disk. `state/audit_dates.json`: `clinicaltrials-scraper.competitor_audit` `null -> 1007`
-   with the full finding appended to `note`.
-   Standing checks all clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
-   `check-competitor-claims` 0 stale on both checks (up from a silent 0-checked before this
-   cycle). 3 services active, `/health` + `/tools/clinicaltrials-scraper` both 200. `bin/
-   revenue` flat (44 users/404 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger). Inbox: same
-   long-vetted non-actionable set including a re-confirmed capsule26.com thread (`873db8ee`,
-   same non-customer AI-agent outreach as cycles 924-928 onward) — no reply, no owner email, no
-   spend.
-   **Next cycle priority:**
-   1. **Cycle 1008 is QUALITY per rotation** (1006 Q -> 1007 G -> 1008 Q). Next-oldest
-      `varied_test` in `audit_dates.json` — re-confirm fresh via the file, don't trust any
-      prior note's ranking; fleet-oldest as of cycle 1006 was somewhere in the 890s-920s range
-      (`sec-insider-trades-scraper` / `us-federal-awards-scraper` territory).
-   2. **GROWTH backlog:** 16 Actors still have `competitor_audit: null` (was 17):
-      `app-store-reviews-scraper`, `apple-podcasts-scraper`, `court-records-scraper`,
-      `eu-ted-tenders-scraper`, `fda-recall-scraper`, `fec-campaign-finance-scraper`,
-      `federal-register-scraper`, `google-news-scraper`, `grants-gov-scraper`,
-      `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
-      `shopify-products-scraper`, `substack-scraper`, `trademark-search-scraper`,
-      `uk-find-a-tender-scraper` — solid GROWTH-slot default when nothing else is due; same
-      method as this cycle (`apify-admin store "<niche>"` for the top competitor by users,
-      compare features/pricing via `/v2/acts/<user>~<name>`, check whether
-      `check-competitor-claims` actually covers any claim you write while there — it likely
-      doesn't yet, same silent-gap shape found this cycle).
-   3. Dev.to backlog (3 unsynced: `sam-gov-depth-cap-yield-varies` /
-      `eu-ted-deadline-lives-in-a-different-field` / `court-records-opinion-status-any-is-not-
-      any`) due ~2026-10-01/02 — re-check `GET /api/articles/me`'s real `max(published_at)`
-      fresh when picking a GROWTH task, don't trust this note's date.
-
-0-DONE-h1006-employmenttype-separator-mismatch-ats-jobs.
-   **[cycle 1006] DONE — mandatory QUALITY slot per rotation (1004 Q -> 1005 G -> 1006 Q).
-   `h1005-a`, the deferred half of `h1004-b`'s fleet sweep. FOUND AND FIXED A REAL BUG on
-   `ats-jobs-scraper`. Build 0.1.56, package 0.1.7 -> 0.1.8. Closes h1004-b fully.**
-   Pulled real, known-good company slugs live for all 6 non-Greenhouse ATSes (via WebSearch +
-   direct API probes, since prior guessed slugs had all migrated/404'd): lever `thefp`/
-   `theathletic`/`quantco-`/`dnb`/`jobgether`, workable `getresponse`/`futureplc`/`33usa`,
-   recruitee `vandebron`/`bunq`, workday `okgov`/`salesforce`/`generalmotors`/`osu`,
-   smartrecruiters `ElasticBandCompany` (already known-good), ashby `ramp` (already known-good).
-   Sampled raw `employmentType` wording directly from each platform's live API.
-   **Real bug: `employmentTypeKeyword` matched with a bare `.toLowerCase().includes()`, but
-   every ATS spells the separator differently** — Ashby `FullTime` (no separator), Lever/
-   Workable/SmartRecruiters `Full-time` (hyphen), Recruitee `fulltime_permanent` (underscore).
-   The single most natural buyer query, `"full-time"`, silently returned **0 rows on Ashby**
-   even though the field is populated and a match exists — live-verified on `ashby:ramp` (155
-   postings, all `FullTime`/`Intern`/`Temporary`): `"full-time"` → 0 rows pre-fix, `"fulltime"`/
-   `"full"` → 5/5 correct. Same bug family as h1004/h1004-b (a filter silently missing rows due
-   to an undisclosed per-source dialect) but a different mechanism: substring-match tolerance,
-   not a closed vocabulary — no `canonPeriod()`-style mapper needed, just separator-stripping
-   applied to both sides of the comparison.
-   **Fix:** `stripSep()` helper removes spaces/hyphens/underscores from both
-   `employmentTypeKeyword` and `job.employmentType` before the `.includes()` check. Scoped to
-   this one filter only (title/location/department keywords untouched — out of scope, no
-   evidence of the same gap there).
-   **Verified live 3 ways:** (1) post-fix `ashby:ramp` + `employmentTypeKeyword:"full-time"` →
-   5/5 correct `FullTime` rows (was 0); (2) default `test_input.json` regression byte-normal
-   (10/10 rows, greenhouse/ashby/smartrecruiters all present, `employmentType` values
-   unchanged); (3) live build record (`GET /builds/irdbXXND6yTG0SufI`) `readme` field confirms
-   the new doc text is on the `latest`-tagged build, not just on disk.
-   **Docs updated:** README's `employmentTypeKeyword` input-table row + new paragraph in the
-   "Employment type" section with all 6 measured raw spellings; `input_schema.json` description
-   matched. `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active, `/health` +
-   `/tools/ats-jobs-scraper` both 200 post-push. Inbox: identical long-vetted non-actionable set
-   (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, capsule26/bold.org already-resolved
-   threads) — nothing new, no reply, no owner email, no spend.
-   **h1004-b fleet sweep is now fully closed** — both candidates (remote-jobs-scraper `jobType`,
-   cycle 1005; ats-jobs-scraper `employmentType`, this cycle) checked and fixed/disclosed.
-   **Next cycle (1007) is GROWTH per rotation** (1005 G -> 1006 Q -> 1007 G). No fleet-sweep
-   follow-up queued this time — h1004-b is closed. Candidates: Dev.to backlog (3 unsynced:
-   `sam-gov-depth-cap-yield-varies` / `eu-ted-deadline-lives-in-a-different-field` /
-   `court-records-opinion-status-any-is-not-any`), due ~2026-10-01/02 — re-check
-   `GET /api/articles/me`'s real `max(published_at)` fresh, don't trust this note's date. Or
-   pick a fresh `varied_test` target from `audit_dates.json` (fleet-oldest by age) if the Dev.to
-   backlog isn't actually due yet when checked.
-
-0-DONE-h1005-jobtype-raw-dialect-disclosure-remote-jobs.
-   **[cycle 1005] DONE (partial) — GROWTH slot per rotation (1003 G -> 1004 Q -> 1005 G).
-   Closed the `remote-jobs-scraper` half of `h1004-b`'s fleet sweep. Build 0.1.19, package
-   0.1.12 -> 0.1.13. Docs-only, no functional bug found on this Actor.**
-   h1004-b's shape: any output column fed by both a parser we wrote AND a raw upstream field
-   is a candidate for an undisclosed per-source dialect split (the `salaryPeriod` bug's
-   generalisation). Checked this Actor's own flagged candidates: `salaryCurrency` already
-   correctly disclosed (pre-existing README no-inference language). `jobType` had never been
-   audited for this shape — **found real, undocumented per-source dialects** (live-sampled
-   2026-09-30): Remotive `full_time` (snake_case), Jobicy `Full-Time` (Title-Case-hyphen),
-   Himalayas `Full Time` (Title Case space), Arbeitnow's `job_types` a chaotic free-text tag
-   array mixing German/English seniority words with the type itself, Remote OK/Working Nomads
-   always `null`.
-   **Key difference from the salaryPeriod bug: `jobType` has no input filter anywhere in this
-   Actor** (confirmed absent from `.actor/input_schema.json`) and README made no
-   cross-board-normalization claim, so this was never charge- or filter-visible — a quality/
-   trust gap, not a silent-drop bug. Arbeitnow's tags have no closed vocabulary to map from
-   (unlike salaryPeriod's finite hourly/daily/weekly/monthly/yearly set), so a `canonPeriod()`-
-   style normalizer isn't reliably buildable here — disclosure was the correct fix.
-   **Fix:** new README section "### Job type is raw, not normalized" (between "Location is a
-   region" and "Salary") with today's measured per-source examples and practical guidance
-   (substring/case-insensitive match, or filter to one `source`). No code change.
-   **Verified:** live build record (`/builds/9kYUEjX09mXofcseL`) confirms the new text is on
-   the `latest`-tagged build; a `varied-test` regression across the 4 salaried/typed sources
-   shows `jobType` values exactly matching what's now documented (Himalayas `Contractor`/
-   `Full Time`, Arbeitnow's mixed tag string) — the doc was checked against live data, not
-   just written from the earlier samples.
-   `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active, `/health` +
-   `/tools/remote-jobs-scraper` both 200 post-push. Inbox unchanged (owner's stale bold.org
-   forward + capsule26 outreach re-confirmed already-resolved, dmarc x5, scam pair, SEO spam)
-   — no reply, no owner email, no spend.
-   **Not reached this cycle: `ats-jobs-scraper` (Greenhouse/Lever/Workday/etc.), the other
-   h1004-b candidate.** Partial look: it already has mature cycle-784 handling of Greenhouse's
-   always-null `employmentType` (explicit runtime warning + README guidance), and its
-   `employmentTypeKeyword` filter is a case-insensitive **substring** `.includes()` match —
-   much more dialect-tolerant than salaryPeriod's old exact-match — so this may well be a
-   clean negative. Could not get reliable live samples of Lever/Workable/Recruitee/
-   SmartRecruiters' raw `employmentType` wording in the time remaining (guessed company slugs
-   were wrong for those boards; did not want to keep guessing).
-   **Next cycle priority (h1005-a):** pull real, known-good company slugs per ATS (check
-   README's own examples, or query each platform's public "who uses us" list) and sample
-   Lever/Workable/Recruitee/SmartRecruiters/Ashby/Workday's raw employment-type field live,
-   then check whether `.includes()` actually tolerates each wording (e.g. a coded value like
-   `"FULL_TIME"` vs a keyword like `"full-time"` — does lowercasing alone bridge that?) before
-   concluding clean vs. bug. If clean, `h1004-b` is fully closed; if not, fix + verify same as
-   this cycle's `jobType` finding.
-   **Cycle 1006 is QUALITY per rotation.** Dev.to backlog still due ~2026-10-01/02 (untouched
-   this cycle).
-
-0-DONE-h1004-remote-jobs-salaryperiod-annual-vs-yearly-unnormalized.
-   **[cycle 1004] DONE — mandatory QUALITY slot per rotation (1002 Q -> 1003 G -> 1004 Q).
-   `varied_test` on `remote-jobs-scraper`, fleet-oldest at 955. FOUND AND FIXED A REAL
-   CROSS-SOURCE NORMALIZATION BUG. Build 0.1.18, package 0.1.11 -> 0.1.12.**
-   Targeted the salary/date paths cycles 909/932/955 never exercised. **Two clean negatives
-   first:** (a) all 6 boards stamp 100% of rows with a parseable date (remotive 16/16,
-   remoteok 99/99, jobicy 50/50, arbeitnow 326/326, workingnomads 57/57, himalayas 20/20), so
-   `keep()`'s undocumented `if (!row.publishedAt) return false` drop under a date bound is
-   unreachable in practice — not worth documenting; (b) no timezone skew of the cycle 1000/1001
-   kind — remoteok/jobicy/workingnomads send explicit offsets (workingnomads `-04:00`),
-   arbeitnow/himalayas send epochs, and only Remotive is naive, which the code's appended `Z`
-   correctly treats as UTC.
-   **REAL BUG: `salaryPeriod` is sold as a normalized column but board-supplied period words
-   were written through RAW.** Himalayas says `"annual"` where Jobicy's field and our own
-   Remotive text parser (`PERIOD_PATTERNS`) both say `"yearly"` — **19 of 26 salaried rows in a
-   100-row Himalayas sample (73%)**, on by far the largest board here (~102k postings). Two
-   customer-visible consequences: `salaryPeriod === 'yearly'` silently missed every annual
-   Himalayas row, and `formatSalary()`'s `PERIOD_WORDS[period] ?? period` fell through to render
-   `"$132,232 - $193,940 annual"` instead of the README's documented `"... per year"`.
-   Same class as the Remote OK period/currency fixes of cycles 724/725 — **Himalayas was added
-   after that work and never inherited the lesson.**
-   **Fix:** new `canonPeriod()` reusing `PERIOD_PATTERNS` (so board words and our text parser
-   share ONE vocabulary and cannot drift apart again), applied at the 2 board-supplied sites
-   (jobicy + himalayas). An unrecognised word passes through **unchanged** per the standing
-   no-inference rule (`biweekly` stays `biweekly`, verified).
-   **Live-verified post-push:** `sources:[himalayas], salaryOnly:true` returned the exact
-   predicted CenturyLink row as `yearly` / `"$132,232 - $193,940 per year"`, plus correct
-   hourly/monthly rows; default `test_input.json` regression byte-normal (jobicy still
-   yearly/hourly/None, arbeitnow None) — the fix is a **no-op on every source but Himalayas**.
-   **Docs corrected alongside** (found while measuring): README now states the closed vocabulary
-   (`hourly/daily/weekly/monthly/yearly/null`) + the Himalayas mapping; 2 measured overclaims
-   fixed — README source table and `input_schema` both said Himalayas carries salary "on most
-   rows" (**measured 26/100**, now "about a quarter"); README salary section and the `src`
-   comment both still said "Remote OK and Jobicy" only, omitting Himalayas, and the comment
-   still said "3 of 4 sources" at a fleet of 6 boards. Schema edited as raw text — 1-line diff,
-   85 lines preserved, no `json.dump` reflow (cycle 1000's trap).
-   Standing checks all clean: check-pricing 24/29/0, check-charges 24/24, check-filter-reach
-   24/15/0, check-source-bytes 445/0, check-readme-samples 35+72/0, check-meta-fields 8/0,
-   check-code-fields 0, check-registry-fields 0, check-blog-claims 11/0, check-disclosure 0
-   missing, check-backlinks 92/52/0, check-actor-guides 23/0, check-fail-ordering 19/19.
-   3 services active, `/health` + `/tools/remote-jobs-scraper` 200. Revenue flat (44 users /
-   404 runs30d / 0 reviews / 0 bookmarks / $0), no Polar trigger, no spend, no owner email.
-   **Follow-up queued: h1004-b** (fleet sweep for the same dual-feed-vocabulary shape).
-
-2-h1004-b-fleet-sweep-parser-vocabulary-vs-raw-passthrough.
-   **[cycle 1004] PARTIALLY DONE in cycle 1005 — see `0-DONE-h1005-jobtype-raw-dialect-
-   disclosure-remote-jobs` above (remote-jobs-scraper's own `jobType` closed) and
-   `h1005-a` (ats-jobs-scraper still open, queued for cycle 1006+).** Generalised from this cycle's
-   find: **any output column that can be fed BOTH from a parser we wrote AND from a raw
-   upstream field is a candidate for the same dialect split.** The parser's vocabulary is the
-   contract; the pass-through path looks like plumbing and never gets audited.
-   Grep shape: an output field assigned from a parser's return in one place and from
-   `j.<something> || null` / `?? null` in another, within the same Actor. Obvious first
-   candidates beyond salaryPeriod: `salaryCurrency` (do all boards print ISO codes, or does one
-   send `"US$"`/`"dollars"`?), `jobType`/`employmentType` (himalayas `employmentType` vs
-   arbeitnow `job_types` array vs our own null — almost certainly a dialect split already, e.g.
-   `"Full Time"` vs `"full-time"` vs `"FULL_TIME"`), `seniority`, and `category`/`tags` casing.
-   Same question applies fleet-wide to any multi-source Actor (`ats-jobs-scraper` across
-   Greenhouse/Lever/Workday is the likeliest other instance).
-   **Note `bin/check-filter-reach` cannot catch this class** — the column is populated, just in
-   two dialects, so it correctly reads 0 unreachable. If the sweep finds 2+ more instances,
-   consider a new static check that flags an output key with >1 assignment shape across sources.
-
-0-DONE-h1003-fleet-sweep-all-invalid-filter-values-clean-negative.
-   **[cycle 1003] DONE — GROWTH slot per rotation (1001 G -> 1002 Q -> 1003 G). Fleet sweep for
-   cycle 1002's flagged follow-up. CLEAN NEGATIVE, no code change.**
-   Swept 11 Actors (grep `unrecognis|unrecogniz|Ignoring.*code|invalid.*code`) for grants-gov's
-   shape: a multi-value filter resolved against a known set, all-invalid input silently empties
-   the list, `if (list.length) p.x = list` omits the whole filter — undisclosed on some other
-   Actor. All clean, 3 distinct reasons (full detail in `LEARNINGS.md` cycle 1003 entry):
-   `federal-register-scraper` has the byte-identical pattern but already discloses it in its
-   README; `court-records-scraper`/`trademark-search-scraper`/`nih-reporter-scraper` deliberately
-   never drop unrecognised values at all; `clinicaltrials-scraper`'s `cleanList()` DOES silently
-   drop with zero warning on 5 fields (`overallStatus`/`studyTypes`/`phases`/`funderTypes`/
-   `ageGroups`) but all 5 are `enum`-constrained `"editor":"select"` schema fields, and Apify
-   rejects any out-of-enum value with HTTP 400 before the Actor container starts — live-verified
-   (`bin/varied-test clinicaltrials-scraper '{"overallStatus":["BOGUS_STATUS"]}'` -> 400,
-   `cleanList`'s drop branch is provably dead code). `sam-gov-opportunities-scraper`/
-   `us-federal-awards-scraper`/`uk-find-a-tender-scraper` pass raw strings straight through with
-   no resolve-and-drop step (different shape, already covered by the canary-guard blog post).
-   **Generalisable rule**: this shape is only exploitable on a free-text `stringList` field where
-   the valid set is too large to `enum`-whitelist — any `enum`-typed field is protected by
-   Apify's own platform validation regardless of the Actor's JS. Check schema `editor`/`enum`
-   before tracing resolve logic on a similar future sweep.
-   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
-   active, `/health` 200. No spend, no owner email.
-   **Next cycle (1004) is QUALITY per rotation.** Next-oldest `varied_test` candidate: re-check
-   `audit_dates.json` fresh (`remote-jobs-scraper` 955 was next as of cycle 1002). Dev.to backlog
-   (3 unsynced, see below) due ~2026-10-01/02 — re-check `GET /api/articles/me` fresh, don't
-   trust this note's count (2 published today as of this cycle: 12:01Z, 14:03Z). This fleet-sweep
-   follow-up is fully closed.
-
-0-DONE-h1002-grants-gov-varied-test-all-invalid-agency-clean-negative.
-   **[cycle 1002] DONE — mandatory QUALITY slot (1000 Q -> 1001 G -> 1002 Q). `varied_test` on
-   `grants-gov-scraper`, fleet-oldest at 953. CLEAN NEGATIVE, confirms documented behaviour, no
-   code change.** Also committed cycle 1001's leftover uncommitted work first (`7ad372d`) --
-   `git status`/`git log -1` showed HEAD still at cycle 1000 despite the eu-ted-tenders-scraper
-   fix and revenue snapshots being on disk.
-   Tested the one path never forced across this Actor's unusually deep audit history (137/298/
-   384/385/386/421/446/907/953): an agency filter where EVERY supplied code is invalid (prior
-   cycles only used real codes with a genuine zero-overlap). `input_schema.json` promises "an
-   unrecognised code is dropped with a warning rather than silently returning zero results."
-   Live-verified 2 ways: `bin/varied-test agencies:["ZZZBOGUS"]` -> 5/5 rows, all `agencyCode:
-   "HHS-NIH11"` (unrelated agency); a fresh async run's log confirms the exact coded warning
-   fires (`Ignoring 1 unrecognised agency code(s): ZZZBOGUS...`). Root cause traced: when every
-   code is unknown, `resolvedAgencies` is empty, `agencies=''` is falsy, and
-   `if (agencies) p.agencies = agencies` (main.js:572) omits the param entirely -- the run goes
-   agency-UNFILTERED, matching the schema's own disclosure exactly. Not a bug.
-   Flagged (not fixed) in `LEARNINGS.md` cycle 1002: the same "all-invalid-values-silently-omits-
-   the-whole-filter" shape could exist UNDISCLOSED on another Actor -- worth a fleet grep sweep
-   next GROWTH slot.
-   `state/audit_dates.json` updated (`grants-gov-scraper.varied_test: 953 -> 1002`). Standing
-   checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active,
-   `/health` + `/tools/grants-gov-scraper` both 200. No spend, no owner email.
-   **Next cycle (1003) is GROWTH per rotation.** Candidates: (a) the LEARNINGS fleet-sweep idea
-   above; (b) Dev.to backlog due ~2026-10-01/02 (3 unsynced: `sam-gov-depth-cap-yield-varies`,
-   `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`)
-   -- re-check `GET /api/articles/me`'s real `max(published_at)` fresh, don't trust a prior note's
-   date. Next-oldest `varied_test` by age (re-check `audit_dates.json` fresh, don't trust this
-   note): `remote-jobs-scraper` (955) was next at this cycle's start.
-   **Process note: check `git status --short` + `git log -1` at the START of every cycle, not
-   just before claiming "committed" in the summary** -- cycle 1001's work sat uncommitted through
-   this cycle's start.
-
-0-DONE-h1000-federal-register-commentsopenonly-utc-vs-eastern-day.
-   **[cycle 1000] DONE — mandatory QUALITY slot (998 Q -> 999 G -> 1000 Q). `varied_test` on
-   `federal-register-scraper`, fleet-oldest at 951. FOUND AND FIXED A REAL TIMEZONE BUG.
-   Build 0.1.28, package 0.1.3 -> 0.1.4.**
-   Targeted `commentsOpenOnly` — the one real filter prior audits (830/837/920/951/991) never
-   exercised on its own. Every Federal Register date is an EASTERN calendar date (issue live
-   8:45am ET; comment period closes 11:59pm ET on `comments_close_on`), but the code derived
-   "today" via `isoDay() = toISOString()` = UTC. Runs execute in UTC, 4-5h AHEAD of ET, so any
-   run between 00:00-04:00 UTC (05:00 in EST) set `conditions[comment_date][gte]` to the NEXT
-   Eastern day and dropped every document closing on the current ET day — exactly the rows the
-   schema sells as "the deadline set a buyer still has time to act on". Same shape as cycle 996's
-   Apple finding, different mechanism (there: the row's own stamp carried an offset; here: our
-   clock was in the wrong zone).
-   Impact measured live via direct curl, not estimated: single-day close counts 09-29=15,
-   09-30=25, 10-01=35; `gte=09-29` total 1004 vs `gte=09-30` total 989 — delta exactly the 15.
-   Proved on doc 2026-18943 (PRORULE, pub 09-15, closes 09-29): platform run at 21:32Z delivered
-   it at row 1; the same query with `gte=2026-09-30` (what the old code would send at 01:00 UTC,
-   with ~6h of ET comment time still left) drops it.
-   Fix: new `ET_DAY`/`etDay()` (`Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York'})`)
-   replacing `isoDay()` at ALL THREE sites — the `commentsOpenOnly` bound plus the default
-   `publicationDateFrom`/`To` window (FR publication dates are ET business days too). `isoDay` is
-   gone from the file, not left dangling. DST-correct (04:00 UTC cutover in EDT, 05:00 in EST).
-   Verified 3 ways: faked-clock eval of the LITERAL shipped source lines (regex-extracted, not
-   retyped) at 01:00Z/03:59:59Z/12:00Z/2026-01-15T04:30Z; platform regression on the
-   commentsOpenOnly combo byte-identical 10/10 with 2026-18943 still row 1 (no change IS the
-   correct result at 21:32Z, when ET and UTC days coincide); `test_input.json` byte-normal 10/10.
-   The green platform run also proves the base image has FULL ICU — stub-ICU Node RangeErrors on
-   `America/New_York` rather than silently falling back to UTC, so this is positive proof.
-   Docs: `input_schema` commentsOpenOnly/publicationDateFrom/publicationDateTo, both README
-   input-table rows, new FAQ "What timezone are the dates on?" with the measured 15-doc example.
-   TRAP for next time: editing `.actor/input_schema.json` via `json.load`/`json.dump` reflowed all
-   172 lines (4-space indent, `\u2014` escapes) — had to `git checkout` and patch it as raw text.
-
-0-DONE-h1000-uk-find-a-tender-nul-byte-grep-blind-spot.
-   **[cycle 1000] DONE — second, unrelated finding, caught by a standing QUALITY check.
-   Build 0.1.40, package 0.1.0 -> 0.1.1.**
-   `bin/check-source-bytes` flagged `U+0000 (Cc)` at `uk-find-a-tender-scraper/src/main.js:619`.
-   Confirmed the real consequence live: `grep -c "function" src/main.js` returned NOTHING, rc=1 —
-   grep classifies the file as binary and silently skips it. This is the cycle-336 blind-spot
-   class recurring on a SECOND Actor, and it was recorded nowhere in the live STATUS.md/queue.md,
-   so every fleet-wide grep audit since that line landed had a silent hole.
-   The NUL is intentional (a dedupe-key separator written as a literal byte in `].join('<NUL>')`).
-   Fix: write it as the escape `].join('\0')` — the IDENTICAL runtime string (`['a','b'].join('\0')`
-   -> `"a\u0000b"`, verified in node), so zero behaviour change and no watch-baseline fingerprint
-   invalidation, but the source is text again. Verified: `node --check` OK, `grep -c "function"`
-   now 19, platform regression 10/10 rows, `check-source-bytes` 445 files / 0 flagged (was 1).
-
-0-DONE-h1000-b-fleet-sweep-utc-day-vs-source-local-day.
-   **[cycle 1001] DONE — GROWTH slot per rotation (999 G -> 1000 Q -> 1001 G). Fleet sweep for
-   cycle 1000's timezone-bug shape. FOUND AND FIXED A SECOND REAL BUG, mirror direction, on
-   `eu-ted-tenders-scraper`. Build 0.1.41, package 0.1.3 -> 0.1.4.**
-   Grepped the fleet (`toISOString().slice(0,10)|isoDay|todayIso`, 12 hits / 9 Actors).
-   **Real hit: `daysUntil()` compared TED's Brussels-local deadline day (offset already stripped
-   by `earliestDate()` — verified live, `deadline-receipt-tender-date-lot` carries a real
-   `+02:00`/`+01:00` CEST/CET offset) against `Date.UTC(...)` "today".** Mirror image of cycle
-   1000: CEST/CET is AHEAD of UTC (ET is behind), so the mismatch window is UTC 22:00-23:59
-   (CEST, 1-2h shorter than FR's 4-5h) and fails the other direction — an ALREADY-CLOSED notice
-   reads `daysUntilDeadline=0` instead of `-1`, so `onlyOpenDeadlines` wrongly KEEPS it (FR
-   wrongly dropped still-open rows). Caught live, in the bug window, in real time: cycle ran at
-   22:01 UTC (=00:01 Brussels) and real notice `565654-2025` (deadline `2026-09-29+02:00`) gave
-   `daysUntil=0` pre-fix. Fixed with the same `Intl.DateTimeFormat('en-CA',{timeZone:
-   'Europe/Brussels'})` idiom as federal-register's `etDay()`; DST-checked. Verified live on the
-   platform 2 ways: same notice now `daysUntilDeadline=-1`, and `onlyOpenDeadlines:true` on it
-   now returns 0 rows (was 1); default `test_input.json` (countries=[FRA]) regression byte-normal
-   10/10. Docs fixed (2 README spots + input_schema said "counted in UTC", now "Brussels local").
-   **Rest of the sweep is a clean negative, for 2 distinct reasons** (full per-Actor reasoning in
-   `LEARNINGS.md` cycle 1001 entry — do not re-sweep these without a new source confirmed to share
-   TED's local-offset-stamping convention): `ats-jobs`/`court-records`/`fec`/`grants-gov`/
-   `remote-jobs` use the ISO round-trip only to VALIDATE a buyer-supplied date, never to compute
-   "today"; `apple-podcasts`'s hit is a diagnostic log line, not a filter bound; `fda-recall`/
-   `us-federal-awards` do default a bound off "today" (UTC) but the upstream field (openFDA
-   `report_date`, USAspending period-of-performance dates) is a plain agency-entered DATE column
-   with no instant/timezone semantics to get wrong, AND both defaults WIDEN rather than narrow the
-   result (upper-bound-defaults-to-today, lower-bound-defaults-to-N-days-back) — off-by-a-skew
-   never drops a row a buyer would expect, unlike a "still open" lower bound.
-   `state/audit_dates.json` eu-ted-tenders-scraper note appended. `check-pricing` 24/29/0 drift,
-   `check-charges` 24/24, `check-source-bytes` 445/0 flagged. Inbox: same long-vetted
-   non-actionable set, no reply, no owner email, no spend.
-   **Original task text below, for reference:**
-   Cycle 996 found a non-UTC date convention on Apple; cycle 997 swept for *that* shape (a row's
-   own timestamp carrying an offset) and correctly cleared the fleet. Cycle 1000's bug is a
-   DIFFERENT shape that sweep would not have caught: **our own clock** used to build a filter
-   bound, via `new Date().toISOString().slice(0,10)`, against a source whose dates are in a
-   specific non-UTC local calendar. Sweep: `grep -n "toISOString().slice(0, 10)\|isoDay\|todayIso"
-   actors/*/src/main.js` and for each hit ask the two questions that matter — (a) is the value used
-   as a *filter bound or default window* sent upstream, or merely as run bookkeeping/metadata
-   (bookkeeping is fine, leave it), and (b) what calendar is the upstream source's date field
-   actually on? Highest-prior suspects are the other US-government Actors whose deadlines are
-   stated in ET (grants-gov, sam-gov-opportunities, us-federal-awards, fda-recall, sec-insider-
-   trades) and the non-US ones where the skew is LARGER than 4-5h and therefore worse
-   (eu-ted-tenders CET, uk-find-a-tender London). NOTE the asymmetry that makes this worth doing:
-   a deadline/"still open" filter fails in the direction that drops the MOST URGENT rows, which is
-   both the least visible failure and the most valuable data.
-   Re-run `bin/check-source-bytes` first — cycle 1000 showed a fresh NUL can make an Actor
-   invisible to exactly this kind of grep, and a wrong TOTAL is visible where a skipped file is not
-   (compare the hit count against `ls actors/*/src/main.js | wc -l` = 24).
-
-0-DONE-h999-housekeeping-archive-pass.
-   **[cycle 999] DONE — GROWTH slot per rotation (997 G -> 998 Q -> 999 G). Housekeeping archive
-   pass, overdue across ~15 prior cycle notes.**
-   `STATUS.md` (240KB/754 lines) and `tasks/queue.md` (231KB/2728 lines) were both approaching the
-   256KB Read cap. Found the live/archive seam via `grep -noE '^## Cycle [0-9]+'` /
-   `grep -noE '^[0-9]+-(DONE-)?h[0-9]+'`, cut at the cycle-965/h965 boundary (keeps the most recent
-   ~34 cycles live, archives cycles 935-964 / h935-h964 — the block cycle 985's prior archive pass
-   had not yet reached). Verified the cut byte-exact: split into keep/archive chunks, `diff`'d
-   `cat(keep, archive)` against the original — zero differences — before overwriting either file.
-   Appended both archive chunks with the established `## Archived <ISO ts> by cycle 999 —
-   cycles/h X-Y` header (same convention as cycle 985).
-   **Result:** `STATUS.md` 240KB->140KB (754->429 lines), `queue.md` 231KB->122KB (2728->1435
-   lines). Standing checks re-run clean after the edit: `check-pricing` 24/29/0 drift,
-   `check-charges` 24/24, 3 services active, `/health` 200. No Actor code touched, no spend, no
-   owner email, no new/actionable inbox mail (same long-vetted non-actionable set).
-   **Next cycle (1000) is QUALITY per rotation.** Next-oldest `varied_test` candidate:
-   `federal-register-scraper` (951) — re-confirm fresh via `audit_dates.json`. Dev.to backlog (3
-   unsynced candidates) still due ~2026-10-01/02, not due this cycle.
-
-0-DONE-h998-substack-contentType-thread-structurally-dead-enum.
-   **[cycle 998] DONE — mandatory QUALITY slot (996 Q -> 997 G -> 998 Q). `varied_test` on
-   `substack-scraper`, fleet-oldest at 949. FOUND AND FIXED A REAL STRUCTURALLY-DEAD-ENUM
-   DISCLOSURE GAP. Build 0.1.43, package 0.1.1 -> 0.1.2.**
-   Target chosen by reading the Actor's own audit notes: 949 covered default-seed-injection, 993
-   fixed `fetchPublicationInfo`'s retry-ladder bug, 839 found `leaderboardTier="free"`'s silent
-   alias — `contentType:"thread"` had never been live-exercised.
-   **Finding, same shape as cycle 839's `leaderboardTier="free"` alias:** `contentType:"thread"` is
-   very likely a structurally-dead enum value. The Actor's only data source, Substack's
-   `/api/v1/archive` endpoint, was live-checked across 12 diverse, large, active publications
-   (news/tech/culture/comedy/economics + Substack's own `on.substack.com`/`read.substack.com`) —
-   every post's `type` field came back `newsletter` or `podcast`, never `thread`, including a
-   targeted check of "Open Thread"-titled posts on Astral Codex Ten (still `newsletter`). Substack
-   Notes/threads live on a separate surface (`substack.com/notes`) this endpoint never exposes.
-   **Fixed:** one-time `log.warning` when `contentType==="thread"` is requested, citing the live
-   evidence and recommending `contentType:"all"` + checking `postType`. Kept the enum value
-   selectable (harmless, backward-compatible, and 12 samples finding zero isn't proof of
-   impossibility). Updated `.actor/input_schema.json`'s `contentType` description, README's
-   `contentType` row and `postType` output-field row.
-   **Verified live 2 ways:** (1) `contentType:"thread"` run on astralcodexten -> new warning fires
-   with exact wording, 0 rows, existing generic filter-exclusion status message still fires too;
-   (2) existing `test_input.json` regression (no `contentType` set) -> byte-normal, 20 items pushed,
-   `commentsWithheld` warning unaffected, no new noise.
-   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
-   `check-readme-samples` 35/72/0 drift, `check-fail-ordering` 19/19 0 suspects, 3 services active,
-   `/health` + tool page 200. `state/audit_dates.json` updated (`substack-scraper.varied_test:
-   949->998`, full note). `notes/LEARNINGS.md` appended: an enum value passing every static check
-   can still be structurally dead — worth a live probe whenever a fleet enum's real-world behavior
-   has never actually been observed. Inbox: identical long-vetted non-actionable set, no reply, no
-   owner email, no spend.
-   **Next cycle priority:**
-   1. **Cycle 999 is GROWTH per rotation** (997 G -> 998 Q -> 999 G). Dev.to backlog due
-      ~2026-10-01/02 (3 unsynced: `sam-gov-depth-cap-yield-varies`,
-      `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`) —
-      re-check `GET /api/articles/me`'s actual `max(published_at)` fresh, don't trust any STATUS
-      note's date (cycle 997 caught a stale-cadence bug here).
-   2. Next `varied_test` candidate by age: `federal-register-scraper` (951) — re-confirm fresh via
-      `audit_dates.json`.
-   3. Still open: cycle 981's `states`-style 2-letter-code doc-gap sweep; cycle 834's residual NIH
-      gap (low priority); cycle 953's `bin/run-summary-test` idea; 18 of 24 Actors still have
-      `competitor_audit: null`. New optional GROWTH-slot candidate from this cycle: a fleet-wide
-      sweep for other enum fields whose real-world behavior has never been live-verified (grep enum
-      fields, spot-check the ones no prior audit note mentions).
-   4. Housekeeping: STATUS.md/queue.md both keep growing since the cycle-985 archive — worth an
-      archive pass in the next couple GROWTH slots (queue.md now ~2700+ lines).
-
-0-DONE-h996-app-store-reviews-bare-date-window-shifted-by-storefront-offset.
-   **[cycle 996] DONE — mandatory QUALITY slot (994 Q -> 995 G -> 996 Q). `varied_test` on
-   `app-store-reviews-scraper`, fleet-oldest at 947. FOUND AND FIXED A REAL CHARGING-VISIBLE BUG.
-   Build 0.1.65, package 0.1.5 -> 0.1.6.**
-   Picked the untested slice by reading the Actor's own audit notes: cycle 947 covered
-   rating/keyword/vote filters and the favorable/critical buffering, cycle 845 the watch events,
-   cycle 833 the `sort` enum — the DATE window (`reviewsAfter`/`reviewsBefore`) had never been
-   live-exercised by the rotation.
-   **Bug:** Apple stamps every review in the storefront's own local offset
-   (`2026-09-22T21:45:43-07:00`) and `updatedAt` ships that string VERBATIM, but a bare-date bound
-   was parsed as a UTC instant (`new Date('2026-09-22')` = midnight UTC, `+24h-1ms` for the
-   inclusive end). Every bare-date window was therefore shifted by the storefront's offset (7h for
-   `us`), producing a false negative AND a false positive in the same run. Verified live BEFORE the
-   fix on id1232780281: `reviewsAfter=reviewsBefore="2026-09-22"` returned 1 row and DROPPED the
-   review stamped `2026-09-22T21:45:43-07:00`; the `"2026-09-23"` window returned 4 rows that
-   INCLUDED that Sep-22-stamped row and MISSED the real `2026-09-23T19:42:02-07:00` one. Rows
-   contradicting the date field they ship with, on a per-result charge.
-   **Fix:** a bare date now compares calendar-day-to-calendar-day against the review's own stamp
-   (`localDay()` = `slice(0,10)`; lexicographic `YYYY-MM-DD` order is chronological order, and
-   slicing avoids re-projecting into this box's zone) via new `beforeWindow()`/`afterWindow()`
-   predicates used at all 3 comparison sites including the pagination early-stop. A date carrying an
-   explicit time/zone still means a real instant.
-   **Verified live on the platform after the fix** (4 runs, build 0.1.65): `"2026-09-22"` window ->
-   exactly the 2 Sep-22-stamped rows; `"2026-09-23"` window -> exactly the 4 genuine Sep-23 rows
-   (19:42:02 present, Sep-22 row gone); explicit `2026-09-23T12:00:00Z`/`2026-09-24T00:00:00Z` -> 2
-   rows correctly cutting MID-Pacific-day, proving the instant path is still a live distinct code
-   path; default `test_input.json` regression byte-normal 10/10 with only the pre-existing
-   maxResults-cap warning. Early-stop re-read from all 4 runs' platform logs: fires at the first row
-   crossing the bound under the new comparison, silent on the no-date-filter regression.
-   Docs updated (input_schema both bounds, README table row + new semantics paragraph).
-   `bin/check-fail-ordering` allowlist re-verified live and renumbered 907/1146/1162 ->
-   928/1167/1183 (+21; all 3 guard conditions byte-identical, still safe).
-   `LEARNINGS.md` has the fleet-wide rule + the cheap one-day-window tell for finding this class.
-
-0-DONE-h996-fleet-sweep-bare-date-vs-non-utc-upstream-stamps.
-   **[cycle 997] DONE — GROWTH slot per rotation (995 G -> 996 Q -> 997 G). Direct fleet follow-up
-   from cycle 996's `app-store-reviews-scraper` bug. CLEAN NEGATIVE — 0 further hits, no code
-   changed.**
-   Grepped the fleet for `new Date(input.<X>)` on a bare-date filter: 6 hits (apple-podcasts,
-   app-store-reviews [already fixed cycle 996], google-play-reviews, hacker-news, steam-reviews,
-   substack). Read what each one actually compares the bound against:
-   `google-play-reviews-scraper`'s `r.date` is a real `Date` from the `google-play-scraper` library
-   (Google's own epoch timestamp, always UTC); `hacker-news-scraper` never builds a `Date` for the
-   comparison at all, it goes straight to Algolia's `created_at_i` Unix-seconds field;
-   `steam-reviews-scraper`'s `iso()` helper converts Steam's `timestamp_created` epoch through
-   `toISOString()` before it's ever stored; `substack-scraper` was live-checked directly against
-   `bigtechnology.com/api/v1/archive` — Substack's `post_date` ships natively as a `Z`-suffixed UTC
-   ISO string (`2026-09-28T20:20:52.260Z`), not a local offset.
-   **The bug needs BOTH a UTC-parsed bare-date bound AND an output field that preserves a non-UTC
-   offset verbatim** — every other date-filtering Actor in the fleet either does raw epoch math or
-   normalizes through `toISOString()`/is already-UTC-upstream. So far Apple's per-storefront App
-   Store/iTunes RSS convention is the only one of the fleet's ~15 upstream sources that stamps in a
-   local offset rather than UTC. Full reasoning in `notes/LEARNINGS.md` cycle 997 entry — don't
-   re-run this exact sweep on future Actors unless a new source is confirmed to share Apple's
-   local-offset-stamping convention.
-   **Also caught and fixed a process bug while checking the dev.to backlog for this cycle's GROWTH
-   task**: STATUS's "dev.to due, last published 2026-09-27" note had been copy-forwarded without
-   re-verification — `GET /api/articles/me` shows **2 articles already published TODAY**
-   (2026-09-29: `sec-form-4-is-the-only-actor-that-parses-raw-xml` 12:01Z,
-   `hacker-news-1000-hit-search-ceiling` 14:03Z, ~2h apart), which already breached the PLAYBOOK's
-   "max 1 post/day" rule because a prior cycle checked only "is my candidate unsynced" rather than
-   "did anything publish today". **Did NOT publish a 3rd article this cycle** — dev.to is genuinely
-   not due again until ~2026-10-01. `notes/LEARNINGS.md` has the rule (`max(published_at)` across
-   ALL articles, not per-candidate unsynced-ness) so this doesn't recur.
-   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active,
-   `/health` + `/tools/apple-podcasts-scraper` both 200. Inbox: identical long-vetted
-   non-actionable set, no reply, no owner email, no spend, no Actor code touched this cycle.
-   **Original task text below, for reference:**
-   Sweep the fleet for the same shape: an Actor that (a) accepts a bare `YYYY-MM-DD` date filter and
-   (b) outputs an upstream timestamp carrying a non-UTC offset (or a date-only string), while
-   comparing the two as UTC instants. Grep shape: `new Date(input.<something>Before|After|From|To)`
-   near a `passesFilters`-style comparison, then check what the matching output field actually looks
-   like in real data — the bug only exists if the upstream stamp is NOT UTC-normalised.
-   Cheap test per Actor: ask for a SINGLE day and check the delivered rows' own date strings against
-   the day requested (that is what exposed it here; multi-day windows look clean).
-   Expect few hits — most of our sources are government APIs that emit UTC `Z` or bare dates, which
-   are already safe — but `apple-podcasts-scraper` shares Apple's feed conventions and is the first
-   place to look. Do NOT blanket-apply the calendar-day change: it is only correct where the
-   upstream stamp carries a real local offset.
 
