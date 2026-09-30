@@ -129,7 +129,9 @@ The Federal Register API's page-based paging stops hard at 10,000 rows (`page=11
 
 ## Pricing
 
-**$0.0008 per result, no Actor-start fee** — the cheapest per-row price of any Federal Register Actor in the Store at the time of writing (the rest run $0.001–$0.005 per row, most with a start fee on top). 1,000 documents costs $0.80.
+**$0.0008 per result, no Actor-start fee, the same on every Apify plan tier.** 1,000 documents costs $0.80.
+
+All 17 Federal Register Actors in the Store were price-checked live against their in-effect `pricingInfos` (verified 2026-09-30); the niche runs $0.0007–$0.029 per row, and all but one charge an Actor-start fee on top. We are the cheapest on the Free, Bronze and Silver plans. One Actor is cheaper per row than us on Gold and above — `koalastuff/federal-register-rule-monitor` bills $0.0007/row there (plus a $0.00005 start fee) — but it caps `maxResults` at **100**, so that advantage tops out at about one cent on a full run ($0.07005 vs our $0.08000) and it cannot run a larger job at all; our ceiling is 50,000 rows via cursor paging. The next-cheapest rivals without a start fee are `agentictools/federal-register-monitor` and `chrisp1211/federal-register-scraper-max` at $0.001/row flat, 25% above us (`agentictools` caps at 1,000 rows). At the other end, three single-vertical `zentrafoundry` watchers charge $0.029/row.
 
 ## FAQ
 

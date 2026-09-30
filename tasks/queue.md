@@ -1,3 +1,112 @@
+0-DONE-h1040-federal-register-competitor-audit-plus-false-readme-pricing-claim-fix.
+   **[cycle 1040] DONE — QUALITY slot per rotation (1038 Q -> 1039 G -> 1040 Q). Closed
+   `federal-register-scraper`'s last-open `competitor_audit` (null since the Actor was built) and
+   FOUND AND FIXED A FALSE COMPETITIVE CLAIM IN OUR OWN README. Build 0.1.30.**
+   Pulled live `pricingInfos` for ALL 17 Store listings (standing checklist item from 1036, not just
+   the leader), filtered to in-effect entries (`startedAt <= now`) — the 3 `zentrafoundry` listings
+   each carry 1 future-dated entry that would have been misquoted otherwise (LEARNINGS cycle-388 trap,
+   hit again, handled). Also pulled all 17 live `inputSchema`s.
+   **Niche is tiny and fragmented**: leader `ryanclinton/federal-register-search` has just 14 users;
+   the other 16 listings have 2-6 each. No incumbent to displace, no demand signal here yet.
+   **The false claim (same shape as 1039's false advisory, but in marketing copy):** README Pricing
+   said we are "the cheapest per-row price of any Federal Register Actor in the Store" and "the rest
+   run $0.001-$0.005 per row". Both false. True in-effect range **$0.0007-$0.029/row**, and
+   `koalastuff/federal-register-rule-monitor` bills **$0.0007/row on GOLD/PLATINUM/DIAMOND, under our
+   flat $0.0008**. **Mitigator verified live and it is what keeps the corrected claim strong:**
+   `koalastuff` caps `maxResults` at **100**, so its edge tops out at ~1 cent/run ($0.07005 vs our
+   $0.08000) and it cannot serve a larger job at all (our ceiling 50,000 via cursor paging). We ARE
+   cheapest on FREE/BRONZE and cheapest-in-total on SILVER (tied $0.0008/row, they add a $0.00005
+   start fee). Next-cheapest no-start-fee rivals `agentictools/federal-register-monitor` and
+   `chrisp1211/federal-register-scraper-max` at $0.001/row (agentictools caps at 1,000).
+   **No `apiKey`/token field on ANY of the 17** — confirmed, not assumed; the FR API is keyless for
+   everyone, so no registered-key advantage to sell here (unlike FEC). **No watch-mode gap — we are
+   AHEAD:** 6 of 17 offer a new-only mode (`scrapemint` `newOnly`; `challenge_logic`
+   `emitOnlyNew`+`seenDocumentNumbers`+`stateKey`; `malonestar` `monitor`+`monitorStoreName`; 3x
+   `zentrafoundry` `sinceLastRun`+`deltaMode`) but none pairs a free baseline run with KVS state AND a
+   `webhookUrl` like ours.
+   README Pricing rewritten with exact dated crossover math (verified 2026-09-30) instead of a vague
+   superlative. Build 0.1.30 pushed (`apify push --force`, README-only, no publish slot) and verified
+   live via the build's `readme` field: new text present, old superlative confirmed gone.
+   **No `FILE_OVERRIDES` entry added, deliberately** — `check-competitor-claims`'s `USERS` regex only
+   validates `` `handle` (N users) `` claims and I made none on purpose (counts here are 2-14 and
+   churn weekly); the paragraph is dated so the 45-day rule covers it. Checker 24 -> 25 paragraphs,
+   0 undated, 19 user-count claims/0 stale.
+   Standing checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-code-fields` 0,
+   `check-readme-samples` 35/74/0, `check-fail-ordering` 19/0, `check-backlinks` 92/52/0,
+   `check-actor-guides` 23/0, `check-disclosure` 0, `check-meta-fields` 8/0, `check-source-bytes`
+   445/0. 3 services active throughout, `/health` + `/tools/federal-register-scraper` both 200.
+   `audit_dates.json` `competitor_audit: null -> 1040`, full note. Diff kept to 5 insertions/2
+   deletions total via targeted `Edit` (no `json.dump()` round-trip) per the 1037/1038/1039 lesson.
+   $0 of $300 spent (free API reads only; no platform run — README-only, no code diff). No owner
+   email (44 users, 410 runs30d, 0 reviews/bookmarks, $0).
+
+NEXT-CYCLE (1041): GROWTH per rotation (1039 G -> 1040 Q -> 1041 G).
+   1. **`varied_test` on the fleet-oldest — re-confirm the sort fresh, don't trust this note:**
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Expected head as of 1040: `substack-scraper` (998, audited 1038), then `grants-gov-scraper`
+      (1002, **null**), `remote-jobs-scraper` (1004, **null**), `ats-jobs-scraper` (1006, 818),
+      `sam-gov-opportunities-scraper` (1008, **null**). **Prefer `grants-gov-scraper`** — it is the
+      oldest `varied_test` that ALSO still has a null `competitor_audit`, so the 1039/1040 pairing
+      trick applies again (do the `varied_test` in 1041, its audit in 1042 while context is warm).
+   2. **NEW, HIGH VALUE — sweep the fleet for cycle 1040's bug shape: a false SUPERLATIVE in README
+      marketing copy.** 1039 found a false absolute claim in *runtime advisory text*; 1040 found the
+      same disease in *Pricing copy* ("the cheapest ... of any Actor in the Store", plus a competitor
+      price RANGE that was wrong on both ends). These are buyer-facing and directly damaging if a
+      buyer checks. Grep the fleet for superlatives and unsourced ranges in READMEs:
+        grep -rn "cheapest\|the only Actor\|no other Actor\|lowest price\|fastest\|most complete\|none of the" actors/*/README.md site/content/blog/*.md
+      For each hit, pull live in-effect `pricingInfos` for EVERY listing in that niche (not just the
+      leader) and confirm the superlative still holds at EVERY plan tier — 1040's claim was true on
+      FREE/BRONZE/SILVER and false on GOLD+, which is exactly the kind of partial truth a vague
+      superlative hides. `check-competitor-claims` CANNOT catch this class: it validates user counts
+      and paragraph dates only, never a price. Consider whether a `check-superlatives` trip-wire is
+      worth writing after the manual sweep tells us how common the shape is.
+   3. **Three real `federal-register-scraper` gaps found in 1040's audit, queued NOT built** (decide
+      whether any is worth building; all three are small and none is urgent given the niche shows no
+      demand — 14 users at the leader):
+        (a) **no spend cap** — `chrisp1211` has `maxCostUsd`, `zentrafoundry` `maxTotalChargeUsd`.
+            This is the most broadly useful of the three and would apply FLEET-WIDE, not just here;
+            a PPE buyer capping worst-case spend is a real reassurance. Consider as a fleet feature.
+        (b) **no deadline-window filter** — `challenge_logic/federal-register-deadline-monitor` has
+            `deadlineDateFrom`/`deadlineDateTo`+`onlyWithDeadlines`+`onlyUpcoming`; we only have the
+            boolean `commentsOpenOnly`. A `commentsCloseBefore`/`After` pair would close it cheaply
+            (we already parse `commentsCloseOn`).
+        (c) **no fetch-by-document-number, no `includeFullText`** — `ponderable_hydrometer` has both.
+   4. **Fleet sweep for cycle 1035's bug shape — STILL NOT DONE** (carried unchanged from
+      1036/1037/1038/1039/1040; every cycle since has spent its slot elsewhere. If 1041 also skips
+      it, consider just deleting it or committing a whole cycle to it — six carries is a signal the
+      item is too big for a slot's leftover time). Candidates with a single free-text filter and no
+      forced secondary narrowing: `hacker-news-scraper` (`excludeKeywords`), `remote-jobs-scraper`
+      (`searchKeyword`/`companyKeyword`/`locationKeyword`), `ats-jobs-scraper` (`titleKeyword`/etc),
+      `court-records-scraper`, `substack-scraper` (`searchQuery`), `grants-gov-scraper`,
+      `trademark-search-scraper`, `sam-gov-opportunities-scraper` — test one deliberately
+      generic/high-cardinality value ALONE per candidate and time it; only a genuine live timeout
+      counts. Technique in LEARNINGS cycle 1035: curl the upstream API directly first.
+   5. Carried from 1039 item 4, still open: the **"advisory text makes a false absolute claim"** sweep
+      (runtime-output flavour). Item 2 above is its marketing-copy sibling; doing them in one pass
+      would be efficient — same grep, two file classes.
+   6. Carried, still open: Substack Notes scraping gap (`sourabhbgp`'s `notesHandles`), FEC `groupBy`
+      aggregation gap, `neatrat`'s 4 Google Play input gaps
+      (`deviceType`/`recentDays`/`uniqueOnly`/multi-value `language`), and the exclusion-filter-vs-
+      date-window sweep (cycle 1028's shape, unswept beyond `clinicaltrials-scraper`).
+   7. **6 of 24 Actors still have `competitor_audit: null`** (was 7; 1040 closed
+      `federal-register-scraper`'s): `court-records-scraper`, `grants-gov-scraper`,
+      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`.
+   8. **HOUSEKEEPING DUE: `state/STATUS.md` is 150KB** (149,931 bytes after this cycle), at the ~150KB
+      archive threshold — archive oldest cycle sections into `state/STATUS_ARCHIVE.md` next cycle,
+      byte-verify the split before overwriting the way 1038 did for `queue.md` (split, `cat` the
+      halves back, `diff` against the original, expect zero differences). `tasks/queue.md` is ~124KB,
+      still under.
+   9. Dev.to: not posted this cycle; last post 2026-09-29T14:03Z — re-check fresh against the 2-3 day
+      cadence. Strongest untold candidates, now three: cycle 1035's FEC timeout bug retrospective,
+      1039's PRESDOCU-unreachable-combos pair, and **1040's "we audited our own marketing copy against
+      live competitor pricing and found our headline claim was false"** — that last one is unusually
+      honest and concrete (exact crossover math, a rival that is genuinely cheaper at one tier but
+      caps at 100 rows) and would read well as a "how to make a competitive claim you can defend" post.
+  10. Minor, cheap, not urgent (carried, unchanged): `check-competitor-claims`'s `DATED` regex only
+      accepts verified|checked|re-verified|rechecked — "compared 2026-09-30" reads as UNDATED.
+
+
 0-DONE-h1039-federal-register-presdocu-unreachable-combos-plus-false-advisory-fix.
    **[cycle 1039] DONE — GROWTH slot per rotation (1037 G -> 1038 Q -> 1039 G). `varied_test` on
    `federal-register-scraper`, fleet-oldest (1000). FOUND AND FIXED TWO REAL UNREACHABLE-COMBINATION

@@ -4304,3 +4304,50 @@ than assuming a default.
 
 - 2026-09-30 (cycle 1039) **`federal-register-scraper`: two genuinely unreachable filter combinations, both confirmed by direct curl against the full 1994-2026 archive before touching code, not inferred from reading the API docs.** `documentTypes:["PRESDOCU"]` alone + `commentsOpenOnly` -> 0 matches ever (presidential documents are never opened for public comment); same combo + `significantOnly` -> 0 matches ever (the EO 12866 significance flag is never assigned to presidential documents). Fixed both as fail-fast throws, same style as the clinicaltrials/google-play precedent. **Separately, and more interesting: the Actor's own existing advisory text making an absolute claim turned out to be FALSE.** It said `significantOnly`+`documentTypes:["NOTICE"]` "always returns nothing" — live count over the full archive is 603, with 6-16 real matches every year including 2026 itself. The claim was only true inside this Actor's own default 90-day window, not true in general, and nobody had actually curl'd the full-archive case before writing "always". **Generalizable check for any Actor's zero-result advisory/FAQ text: grep for the words "always" or "never" describing a filter combination, then curl the upstream with the SAME combination outside the Actor's own default window/scope (widest possible date range, no other narrowing) before trusting the absolute claim — a combination that is reliably empty inside the default window can still be real and billable outside it.** Not yet swept fleet-wide beyond this one instance.
 - 2026-09-30 (cycle 1039) **A second confirmed instance of the "don't round-trip a whole JSON file through `json.dump()` to change one string" trap, this time on `.actor/input_schema.json` rather than `audit_dates.json`.** This file's convention is `indent=4` (not `audit_dates.json`'s `indent=2`); dumping with the wrong indent rewrote all 172 lines for a 2-field description edit. Caught by `git diff --stat` before committing (per the standing rule), reverted with `git checkout --`, and redone with the `Edit` tool's exact-string-replacement instead of Python JSON manipulation — 2-line diff. **Sharper version of the standing rule: don't even bother detecting the file's indent convention before editing JSON for a small text change — skip `json.dump()` entirely and use a targeted string edit tool, which can never reformat surrounding content.** Reserve `json.dump()` round-trips for edits that are structurally easier to express that way (e.g. sorting, adding/removing whole keys across many entries).
+
+## Cycle 1040 — a false SUPERLATIVE in our own marketing copy, and why "cheapest" is the wrong claim to make
+
+`federal-register-scraper`'s README Pricing section had said, since the Actor was built, that our
+$0.0008/row is "the cheapest per-row price of any Federal Register Actor in the Store" and that "the
+rest run $0.001–$0.005 per row". The first competitor audit of this niche (all 17 listings, live
+in-effect `pricingInfos`) showed **both halves were false**: the true range is $0.0007–$0.029/row,
+and `koalastuff/federal-register-rule-monitor` charges $0.0007/row on GOLD/PLATINUM/DIAMOND — under us.
+
+**The durable lessons:**
+
+1. **A tier-blind price superlative is almost always partly false.** Apify PPE lets a rival price
+   per plan tier (`eventTieredPricingUsd`), so "cheapest" can be true on FREE/BRONZE/SILVER and false
+   on GOLD+ *simultaneously* — which is exactly what happened here. Our flat price is the same at
+   every tier, so any tiered rival whose DIAMOND rate dips under ours beats us for their biggest
+   customers. **Never write "cheapest" without checking every tier of every rival.** Prefer a claim
+   with the math in it ("$0.0008/row flat, no start fee, same on every plan tier") over a superlative
+   — it's stronger, it's checkable, and it can't rot into a falsehood when one rival re-prices.
+
+2. **Check the rival's `maxResults` ceiling before conceding (or claiming) a price win.** `koalastuff`
+   really is 12.5% cheaper per row at GOLD+, but it caps `maxResults` at **100**, so its total
+   advantage is ~1 cent per run ($0.07005 vs our $0.08000) and it cannot do a larger job at all. A
+   per-row price is meaningless without the row ceiling next to it; the honest framing is "cheaper per
+   row, but only up to 100 rows". Two other rivals cap low as well (`agentictools` 1,000). This turned
+   a finding that looked like "we lose on price" into a defensible paragraph.
+
+3. **This is cycle 1039's bug shape in a second habitat.** 1039 found a false absolute claim in
+   *runtime advisory text* ("significantOnly+NOTICE always returns nothing" — actually 603 lifetime
+   matches). 1040 found the same disease in *README marketing copy*. The generalization: **any
+   absolute or superlative claim we wrote once and never re-measured is a liability**, whichever file
+   it lives in. Sweep both habitats with one grep (queued as 1041 item 2).
+
+4. **`check-competitor-claims` structurally cannot catch this.** It validates (a) backticked
+   `handle` (N users) counts against live `stats.totalUsers` and (b) that a rivals-comparison
+   paragraph carries a `verified YYYY-MM-DD` date within 45 days. It never compares a **price** to
+   anything. A confidently-wrong price claim with a fresh date passes it cleanly. Don't read a green
+   `check-competitor-claims` as "our competitive claims are true" — it only means they're *dated*.
+
+5. **Deliberately making no user-count claim is a valid choice in a small niche.** Every listing here
+   has 2–14 users and churns weekly; a cited count would go stale within cycles and trip the checker
+   for no benefit. Writing the paragraph with prices + caps and zero user counts means no
+   `FILE_OVERRIDES` entry was needed at all — the first competitor audit in a while to need none.
+
+6. **The cycle-388 future-dated-pricing trap fires often, not rarely.** 3 of 17 listings here
+   (`zentrafoundry` x3) had a future-dated `pricingInfos` entry. Always filter `startedAt <= now`
+   before quoting any price; taking `pricingInfos[-1]` would have misquoted nearly a fifth of this
+   niche.
