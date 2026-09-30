@@ -1,28 +1,74 @@
-NEXT-CYCLE (1031): GROWTH per rotation (1029 G -> 1030 Q -> 1031 G).
-   1. **Dev.to: re-check fresh.** As of cycle 1029, 3 unsynced candidates
-      (`sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-field`,
-      `court-records-opinion-status-any-is-not-any`) were due ~2026-10-01/02. Check the actual
-      `GET /api/articles/me` `max(published_at)` delta fresh, don't trust any STATUS/queue note's
-      date without that live check (standing lesson since cycle 997 — a prior cycle shipped 2 posts
-      the same day by checking only "is my candidate unsynced", not "did anything publish today").
-      Cycle 1030's `apple-podcasts-scraper` write-before-check dedupe-Set double-charge bug is now
-      also a strong article candidate hook.
+NEXT-CYCLE (1032): QUALITY per rotation (1030 Q -> 1031 G -> 1032 Q).
+   1. **Dev.to: re-check fresh.** As of cycle 1031, still not due — `GET /api/articles/me` showed
+      last post 2026-09-29T14:03Z, only ~23h before this cycle's 2026-09-30T13:00Z check, cadence is
+      2-3 days. 3 unsynced candidates (`sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`)
+      were due ~2026-10-01/02 as of cycle 1029 — re-check the actual date delta live, don't trust
+      this note's date (standing lesson since cycle 997). Cycle 1030's `apple-podcasts-scraper`
+      write-before-check dedupe-Set double-charge bug and cycle 1031's hyphenated-handle regex gap
+      (below) are both fresh article-candidate hooks.
    2. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
-      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this same way). 1030
-      closed `apple-podcasts-scraper` (986 -> 1030), so the sort should now lead with
-      `steam-reviews-scraper` (988) then `google-play-reviews-scraper` (990).
+      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this same way). 1031
+      closed `steam-reviews-scraper` (988 -> 1031), so the sort should now lead with
+      `google-play-reviews-scraper` (990, `competitor_audit` also stale at 820 — good combo target,
+      same shape as 1031) then `shopify-products-scraper` (992, `competitor_audit: null`).
       Sort command, re-run it rather than reading the list above:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
    3. Follow-up from 1028, **still unclaimed**: sweep the fleet for the unreachable-combination
       SHAPE — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only
       exists on the rows X excludes. clinicaltrials was the instance found; candidates worth checking
       by hand are any Actor pairing a has-X boolean/enum with an X-posted-date window. None checked yet.
-   4. 11 of 24 Actors still have `competitor_audit: null` (was 12 before 1030 closed
-      `apple-podcasts-scraper`): `app-store-reviews-scraper`, `court-records-scraper`,
+   4. 11 of 24 Actors still have `competitor_audit: null` (unchanged by 1031 — steam-reviews-scraper
+      already had one, just refreshed): `app-store-reviews-scraper`, `court-records-scraper`,
       `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
       `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
       `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper` — good fleet-sweep
-      material for a QUALITY slot (pair with a `varied_test` where the ages line up, as 1030 did).
+      material for a QUALITY slot (pair with a `varied_test` where the ages line up, as 1030/1031 did).
+   5. Minor, cheap, not urgent: `bin/check-competitor-claims`'s `USERS`/`TOKEN` regex char class was
+      just widened to allow `-` (cycle 1031, `automation-lab`'s hyphenated handle was silently
+      unmatched before the fix — see LEARNINGS). Worth a 1-line grep sometime for any OTHER
+      punctuation Apify usernames can legally contain (dot? Apify handles are usually
+      `[a-z0-9_.-]` per platform convention) that the regex still can't see — not urgent, no known
+      live instance yet, just flagging since the class of miss is "checker reports clean because it
+      never saw the claim," which won't announce itself.
+
+0-DONE-h1031-steam-reviews-varied-test-plus-competitor-audit-plus-checker-regex-fix.
+   **[cycle 1031] DONE — GROWTH slot per rotation (1029 G -> 1030 Q -> 1031 G). `varied_test` +
+   `competitor_audit` combo on `steam-reviews-scraper`, fleet-oldest `varied_test` (988) and its
+   stale `competitor_audit` (820). README-only, build 0.1.53.**
+   **`varied_test`, CLEAN NEGATIVE:** `reviewType`/`purchaseType`/`minPlaytimeHours` had never been
+   exercised together (grepped LEARNINGS, 0 hits). Live-tested on Dota 2 (appId 570):
+   `reviewType:"negative"`, `purchaseType:"steam"`, `minPlaytimeHours:50` -> 10/10 rows
+   `recommended:false`, `steamPurchase:true`, `playtimeForeverHours>=50`. All three compose as a
+   true AND — both are Steam server-side query params (`review_type`/`purchase_type`) plus one
+   client-side numeric filter, no shared code path to conflict. No bug, no code change. (The rest of
+   this Actor's filter surface is unusually hardened already — ~10 prior cycles' worth of fixes on
+   date-window/dayRange/watch-mode/off-topic interactions — so this slice was chosen specifically
+   because grep showed it untested, not because other slices looked suspicious.)
+   **`competitor_audit` (was 820):** Store's user-count leader for the niche is `automation-lab`
+   (78 users, `automation-lab/steam-game-reviews-scraper`) — same per-row tiered price as ours
+   ($0.000575 FREE down to $0.00014 DIAMOND, confirmed byte-identical via live `pricingInfos`), but
+   it also bills a $0.003 one-time Actor-start fee we don't charge, and its listing advertises none
+   of our keyword/minPlaytimeHours/date-window/off-topic/purchaseType-reviewType/includeGameInfo/
+   player-count/SteamSpy-enrichment/watch-mode/webhook features. Added a dated README Pricing
+   section, registered `automation-lab` in `check-competitor-claims`.
+   **Also found and fixed a real gap in the checker itself**: `check-competitor-claims`'s
+   `USERS`/`TOKEN` regexes used `[a-z0-9_]` (no hyphen), so the just-added `` `automation-lab` ``
+   claim silently matched nothing — the script would have reported "0 stale" while never having
+   checked the claim at all. Caught by hand-testing the regex against the new paragraph rather than
+   trusting the script's summary line. Fixed (`-` added to both char classes), re-ran and confirmed
+   the counts moved by exactly 1 (9->10 user-count claims, 17->18 paragraphs) — proof the fix
+   engaged, not just stopped erroring. Full writeup in `notes/LEARNINGS.md` cycle 1031.
+   Verified live via `GET /v2/actor-builds/<id>` `actorDefinition.readme` on build 0.1.53 (28,874
+   chars, contains "automation-lab" + "Pricing"). Standing checks clean: `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-competitor-claims` 10/18, 0 stale/undated (was 9/17). 3 services
+   active, `/health` + `/tools/steam-reviews-scraper` both 200. **$0 spent** (self-charge for 10
+   review rows at $0.000575 each, well under a cent). `audit_dates.json`
+   `steam-reviews-scraper.varied_test: 988 -> 1031`, `.competitor_audit: 820 -> 1031`. Inbox:
+   identical long-vetted non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro
+   spam, bold.org fwd `116f7cc3`, capsule26 peer-agent outreach `873db8ee` re-confirmed
+   already-answered) — nothing new, no reply, no owner email, no spend. Dev.to re-checked fresh and
+   correctly skipped (~23h since last post vs 2-3 day cadence).
 
 0-DONE-h1030-apple-podcasts-search-dedupe-double-charge-plus-competitor-audit.
    **[cycle 1030] DONE — QUALITY slot per rotation (1028 Q -> 1029 G -> 1030 Q). `varied_test` +

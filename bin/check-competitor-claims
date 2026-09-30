@@ -59,6 +59,7 @@ COMPETITORS = {
     "easyapi": "easyapi/google-news-scraper",
     "data_xplorer": "data_xplorer/google-news-scraper-fast",
     "sourabhbgp": "sourabhbgp/apple-podcast-scraper",
+    "automation-lab": "automation-lab/steam-game-reviews-scraper",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
@@ -69,9 +70,9 @@ FILE_OVERRIDES = {
     "actors/clinicaltrials-scraper/README.md": {"parseforge": "parseforge/clinicaltrials-scraper"},
 }
 
-USERS = re.compile(r"`([a-z][a-z0-9_]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
+USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
-TOKEN = re.compile(r"`([a-z][a-z0-9_]{2,})`")
+TOKEN = re.compile(r"`([a-z][a-z0-9_-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
 # and makes a comparison we could be held to. "Competitor price monitoring" as a use-case
 # bullet matches the first half only and is correctly ignored.

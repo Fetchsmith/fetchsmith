@@ -207,6 +207,11 @@ Six extra fields are added to each game row. Real output for Hades (`1145360`):
 
 `steamSpyTags` is ordered by vote count, highest first, and `steamSpyTagVotes` gives the raw votes behind it. These come from the free public [SteamSpy](https://steamspy.com) API — Steam's own store API exposes none of them. One extra request per game, paced to SteamSpy's 1 request/second limit, and **no extra charge**: the fields ride along on the game row you are already paying for.
 
+## Pricing
+Pay per result: **$0.000575 per row** (review or game record) at the FREE tier, down to $0.00014/row at DIAMOND. **No Actor-start fee** — an empty or filtered-out run costs you nothing. Set `maxResults`/`maxReviewsPerApp` to cap any run.
+
+The closest Store competitor by users is `automation-lab` (78 users, `automation-lab/steam-game-reviews-scraper`) — it charges the *same* per-row price we do, but also bills a **$0.003 one-time Actor-start fee** on every run, so an equal-sized pull costs strictly more there. Its listing covers text, rating, playtime, language, votes and reviewer info with pagination; it does not advertise a keyword or minimum-playtime filter, an exact date window (`reviewsAfter`/`reviewsBefore`), the off-topic review-bomb toggle, `purchaseType`/`reviewType` server-side filters, game-level store metadata (`includeGameInfo`), live player counts, SteamSpy owner-estimate enrichment, watch mode, or webhooks, all of which this Actor ships at no extra charge. Verified live 2026-09-30.
+
 ## FAQ
 
 **How accurate are the owner estimates, and why is there no playtime estimate?**

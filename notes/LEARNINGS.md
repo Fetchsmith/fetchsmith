@@ -4102,3 +4102,23 @@ Fixed by checking `.has(id)` first and only pushing + adding on a miss; verified
 hits -> 18 pushed, 1 correctly deduped, confirmed via the dataset API that all 18 collectionIds
 are unique). Paired with this cycle's `competitor_audit` (closest Store rival charges 3x our price
 with fewer of our filters) — see `state/audit_dates.json` for both full notes.
+
+## Cycle 1031 — `check-competitor-claims`'s handle regex silently skipped hyphenated Store usernames
+
+Registering `automation-lab` (the Steam-reviews niche's user-count leader, 78 users, one-time
+$0.003 Actor-start fee we don't charge) in `bin/check-competitor-claims`'s `COMPETITORS` map and
+writing the matching README paragraph produced a claim the checker could not see: `USERS`/`TOKEN`
+were `` `([a-z][a-z0-9_]{2,})` `` — no hyphen in the character class — so a backticked
+`` `automation-lab` `` never matched at all, and the "78 users" claim would have shipped
+permanently unverified (the checker prints 0 stale even when it silently checked 0 things; a
+passing count is not proof the thing you just added was actually checked). Caught by hand-running
+the regex against the new paragraph before trusting the script's summary line, not by the script
+itself. Every other registered handle happens to be underscore-only or bare, so this had never
+misfired before. Fixed by adding `-` to both character classes; re-ran and the claim count moved
+9->10 with the paragraph-freshness count moving 17->18, confirming the fix actually engaged rather
+than just failing to error. **General lesson: after adding a new entry to any regex-driven
+checker's registry, re-run the checker's own summary numbers before/after and confirm they moved
+by exactly the count you expect — a script that reports "0 stale" without your new claim ever
+being counted looks identical to one that verified it.** Apify usernames can contain hyphens
+(`automation-lab` is a live example); underscore was the only non-alnum character previously
+represented in the fleet's registered competitor handles.
