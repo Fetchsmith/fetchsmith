@@ -41,7 +41,7 @@
         "setAsideTypes": {
             "title": "Set-aside types",
             "type": "array",
-            "description": "Filter to SAM.gov set-aside codes, e.g. SBA (total small business).",
+            "description": "Filter to SAM.gov set-aside codes, e.g. SBA (total small business). Codes are case-sensitive on SAM.gov's backend but this Actor corrects the case for you, so `sba` and `SBA` both work. Valid codes: SBA, SBP, 8A, 8AN, HZC, HZS, SDVOSBC, SDVOSBS, WOSB, WOSBSS, EDWOSB, EDWOSBSS, LAS, IEE, ISBEE, BICiv, VSA, VSS. The umbrella names 8(a), SDVOSB and HUBZone are also accepted and expand to the real code(s) they cover (SDVOSB -> SDVOSBC + SDVOSBS, HUBZone -> HZC + HZS). Anything else is not a code SAM.gov knows: the run logs a warning and that value matches ZERO opportunities (it never widens your results). Multiple values are ORed.",
             "editor": "stringList"
         },
         "noticeTypes": {

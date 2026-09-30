@@ -3820,3 +3820,40 @@ either regex's keyword list). A prose claim that *looks* like the kind of thing 
 for can still sail through 0-checked if it doesn't literally contain a recognised trigger phrase —
 worth an occasional manual grep for dollar signs / "cheaper" / "leader" near a competitor mention, not
 just trusting the checker's own zero count.
+
+## Cycle 1008 — a filter's value vocabulary can be case-sensitive upstream, and it is NOT uniformly uppercase
+`sam-gov-opportunities-scraper`'s `setAsideTypes` (free-text `stringList`, no schema enum) was sent
+`.trim()`-only. SAM.gov's `set_aside` matches **case-sensitively** and fails closed, so
+`setAsideTypes: ["sba"]` returned **0 rows on a 1,204,971-row category** (`SBA` -> 1,204,971,
+`sba` -> 0). Same for `8a`/`8(a)`/`SDVOSB`/`"small business"` — and our own README use-case bullet
+advertised "8(a) / SDVOSB capture" using exactly those non-code names.
+
+**Three reusable lessons:**
+
+1. **This whole bug class is invisible to every guard we have.** A wrong filter *value* fails closed
+   (0 rows, HTTP 200, no error) and is indistinguishable from "there are genuinely no matches". The
+   filter-name canary passes, because the NAME was valid. `check-filter-reach` cannot see it. The
+   only way to find it is to send the buyer-natural spelling at the upstream API and compare totals
+   against the documented spelling — one free `size=1` request per value.
+
+2. **Do NOT fix a case bug by uppercasing.** The obvious fix here was `.toUpperCase()`, copying how
+   `states` is normalised 120 lines away in the same file. It would have *broken a code that
+   previously worked*: `BICiv` (Buy Indian Set-Aside) is genuinely mixed-case upstream — `BICiv` ->
+   4,498 rows, `BICIV` -> 0. A vocabulary being mostly-uppercase does not make it all-uppercase.
+   Use a canonical map keyed by lowercase that emits the platform's exact spelling, and verify every
+   entry live before trusting it. Same trap shape as cycle 1006's `stripSep()`: normalise by mapping
+   to a measured vocabulary, never by guessing a transformation rule.
+
+3. **Whether to DROP or KEEP an unrecognised filter value depends on which way the filter fails.**
+   Cycle 1002 (`grants-gov-scraper`) drops unrecognised agency codes because there the documented
+   fallback — run agency-unfiltered — is harmless. Here dropping is the *hazard*: if dropping empties
+   the list, the filter disappears from the query entirely, which fails **OPEN** to the unfiltered
+   index and pushes/charges every row (cycle 748's measured 86x widening). So unrecognised set-aside
+   values are **kept** — preserving the safe fail-closed 0-row outcome — and a warning naming the
+   value plus the valid codes is what makes it visible. Ask "if this filter vanished, would we
+   over-bill?" before choosing drop-vs-keep, every time.
+
+**Generalised sweep queued as `h1008-a`:** free-text `stringList` filters (no `enum` — cycle 1003
+proved enum fields are platform-protected) whose values go upstream un-normalised, where the upstream
+is case/spelling-sensitive. Digit-only fields like `naicsCodes` are immune; ticker/code/country-code
+fields are the likely instances.

@@ -69,6 +69,80 @@ const NOTICE_TYPE_CODES = {
     l: 'Fair Opportunity/Limited Sources Justification (legacy, retired ~2019)',
 };
 
+// SAM.gov's `set_aside` values are CASE-SENSITIVE, and `setAsideTypes` is a free-text stringList
+// with no schema enum -- so unlike `noticeTypes` (enum, platform-validated before the run starts)
+// nothing stops a buyer from sending a spelling this backend does not recognise. A bad VALUE fails
+// CLOSED here (0 rows, HTTP 200, no error -- cycle 708/748), which is billing-safe but
+// indistinguishable from "there genuinely are no matching opportunities". Measured live cycle 1008:
+//   SBA 1,204,971 | 8A 20,742 | SDVOSBC 156,143 | BICiv 4,498      (real codes)
+//   sba 0 | 8a 0 | 8(a) 0 | SDVOSB 0 | "small business" 0          (buyer-natural spellings)
+// So `setAsideTypes: ["sba"]` -- lowercase, the single most likely typo -- silently returned zero
+// rows on the largest set-aside category in the index.
+//
+// The naive fix (`.toUpperCase()`, copying how `states` is normalised 120 lines below) is WRONG and
+// would have introduced a worse bug than it fixed: `BICiv` (Buy Indian Set-Aside) is genuinely
+// mixed-case upstream -- measured live cycle 1008, `BICiv` -> 4,498 rows but `BICIV` -> 0. Blanket
+// uppercasing would have broken the one code that was previously working for anyone who copied it
+// correctly. Hence a canonical map keyed by lowercase, emitting the platform's exact spelling.
+//
+// Every code below was verified non-zero live against index=opp in cycle 1008. SAM.gov publishes no
+// facet/reference endpoint for this vocabulary (checked: no `facets` in the search response,
+// `locationservices/v1/api/setasidetypes` 500s), so this list is maintained by live probe, not sync.
+const SET_ASIDE_CODES = [
+    'SBA', 'SBP', '8A', '8AN', 'HZC', 'HZS', 'SDVOSBC', 'SDVOSBS',
+    'WOSB', 'WOSBSS', 'EDWOSB', 'EDWOSBSS', 'LAS', 'IEE', 'ISBEE', 'BICiv', 'VSA', 'VSS',
+];
+const SET_ASIDE_BY_LOWER = new Map(SET_ASIDE_CODES.map((c) => [c.toLowerCase(), c]));
+// Aliases for the umbrella names the README's own use-cases advertise ("8(a) / SDVOSB capture"),
+// which are NOT codes this backend accepts. Each expands to the real code(s) it covers -- SAM.gov
+// splits SDVOSB and HUBZone into separate competitive/sole-source codes, and a buyer asking for
+// "SDVOSB" means either, so the alias expands to both rather than silently picking one. The filter
+// is an OR-union already (comma-joined), so expanding is exactly the intended semantics.
+const SET_ASIDE_ALIASES = {
+    '8(a)': ['8A'],
+    'sdvosb': ['SDVOSBC', 'SDVOSBS'],
+    'hubzone': ['HZC', 'HZS'],
+};
+
+// Maps a buyer's `setAsideTypes` to the spellings SAM.gov accepts. Unrecognised values are KEPT, not
+// dropped: dropping them could empty the list and make the whole filter vanish from the query, which
+// fails OPEN (the unfiltered index, every row pushed and CHARGED -- the cycle 748 failure mode).
+// Keeping an unknown value preserves the safe fail-closed 0-row outcome; the warning is what makes
+// it visible. This is the opposite call from grants-gov-scraper's agency-code drop (cycle 1002),
+// because there dropping the filter was the documented, harmless fallback and here it is the hazard.
+function canonSetAsides(values) {
+    const out = [];
+    const unknown = [];
+    const expanded = [];
+    for (const v of values) {
+        const lower = v.toLowerCase();
+        if (Object.hasOwn(SET_ASIDE_ALIASES, lower)) {
+            const codes = SET_ASIDE_ALIASES[lower];
+            expanded.push(`${v} -> ${codes.join(',')}`);
+            out.push(...codes);
+        } else if (SET_ASIDE_BY_LOWER.has(lower)) {
+            const canon = SET_ASIDE_BY_LOWER.get(lower);
+            if (canon !== v) expanded.push(`${v} -> ${canon}`);
+            out.push(canon);
+        } else {
+            unknown.push(v);
+            out.push(v);
+        }
+    }
+    if (expanded.length) {
+        log.info(`setAsideTypes normalised to SAM.gov's case-sensitive codes: ${expanded.join('; ')}.`);
+    }
+    if (unknown.length) {
+        log.warning(
+            `setAsideTypes value(s) ${unknown.map((v) => `"${v}"`).join(', ')} are not SAM.gov set-aside codes. `
+            + 'They are still sent, and SAM.gov fails closed on an unrecognised value, so they will match ZERO '
+            + 'opportunities rather than widening your results. If you expected matches, use one of: '
+            + `${SET_ASIDE_CODES.join(', ')} (or the aliases 8(a), SDVOSB, HUBZone).`,
+        );
+    }
+    return [...new Set(out)];
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------------------------------------------------------------------------
@@ -178,7 +252,9 @@ const isExclusions = recordFamily === 'ei';
 // defaulting to it would bias a first run toward an unrepresentative slice, same reasoning as cfda.
 const keyword = String(input.keyword ?? (isWd || isCfda || isExclusions ? '' : 'contract')).trim();
 const naicsCodes = (Array.isArray(input.naicsCodes) ? input.naicsCodes : []).map((v) => String(v).trim()).filter(Boolean);
-const setAsideTypes = (Array.isArray(input.setAsideTypes) ? input.setAsideTypes : []).map((v) => String(v).trim()).filter(Boolean);
+const setAsideTypes = canonSetAsides(
+    (Array.isArray(input.setAsideTypes) ? input.setAsideTypes : []).map((v) => String(v).trim()).filter(Boolean),
+);
 const noticeTypes = (Array.isArray(input.noticeTypes) ? input.noticeTypes : [])
     .map((v) => String(v).toLowerCase().trim())
     .filter((v) => Object.hasOwn(NOTICE_TYPE_CODES, v));

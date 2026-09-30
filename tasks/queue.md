@@ -1,3 +1,84 @@
+0-DONE-h1008-setasidetypes-case-sensitivity-sam-gov.
+   **[cycle 1008] DONE — mandatory QUALITY slot per rotation (1006 Q -> 1007 G -> 1008 Q).
+   `varied_test` on fleet-oldest `sam-gov-opportunities-scraper` (was 957). FOUND AND FIXED A
+   REAL BUG. Build 0.1.28, package 0.1.2 -> 0.1.3.**
+   Target picked from `audit_dates.json` fresh (oldest `varied_test` = 957). Prior passes (911,
+   957) had covered all 5 non-opportunities dataTypes, so this one took the DEFAULT
+   `opportunities` family and applied cycle 1003's rule: enum-typed schema fields are
+   platform-protected, only free-text `stringList` fields are exposed to the bad-value class.
+   `setAsideTypes` is the only such filter on this Actor — free text, no schema enum.
+   **Real bug: `setAsideTypes` was `.trim()`-only, with NO case normalization**, while `states`
+   gets `.toUpperCase()` and `noticeTypes` gets `.toLowerCase()` + enum validation. SAM.gov's
+   `set_aside` param is CASE-SENSITIVE and fails closed, so `setAsideTypes: ["sba"]` — the single
+   most likely buyer typo — silently returned **0 rows on the largest set-aside category in the
+   index**. Measured live upstream: `SBA` -> 1,204,971 hits, `sba` -> 0. Also 0: `8a`, `8(a)`,
+   `SDVOSB`, `"small business"` — and the README's own use-case bullet advertised "8(a) / SDVOSB
+   capture" by exactly those non-code names. Invisible to both existing guards: the filter-name
+   canary passes (the NAME `set_aside` is valid, only the VALUE was wrong -> fails closed -> 0
+   rows, indistinguishable from "no matches"), and `check-filter-reach` provably cannot see it.
+   **Caught the naive fix before shipping it.** Blanket `.toUpperCase()` — copying how `states`
+   is normalised 120 lines away — would have BROKEN a code that previously worked for anyone who
+   copied it correctly: `BICiv` (Buy Indian Set-Aside) is genuinely mixed-case upstream,
+   live-measured `BICiv` -> 4,498 rows but `BICIV` -> 0.
+   **Fix:** `canonSetAsides()` + `SET_ASIDE_CODES` canonical map keyed by lowercase, emitting the
+   platform's exact spelling (18 codes, each verified non-zero live this cycle), + dedupe, +
+   `SET_ASIDE_ALIASES` for the umbrella names buyers actually say (`8(a)`->`8A`,
+   `SDVOSB`->`SDVOSBC`+`SDVOSBS`, `HUBZone`->`HZC`+`HZS` — expanding to both codes since SAM.gov
+   splits competed from sole-source and the filter is an OR-union anyway).
+   **Unrecognised values are KEPT, not dropped — deliberately.** Dropping could empty the list
+   and make the whole filter vanish from the query, which fails OPEN to the unfiltered index and
+   pushes/CHARGES every row (cycle 748's exact failure mode). Keeping preserves the safe
+   fail-closed 0-row outcome; a warning naming the value and listing the valid codes is what makes
+   it visible. This is the OPPOSITE call from `grants-gov-scraper`'s agency-code drop (cycle
+   1002), because there the drop was the harmless documented fallback and here it is the hazard.
+   **Verified live 4 ways on the platform** (all `maxResults` <= 8, per cycle 957's lesson):
+   (1) `sba` -> 8 rows with enriched `setAside == "SBA"` on all 8 (was 0 pre-fix) — a positive
+   control proving it filtered rather than silently widened; (2) `8(a)` -> 5 rows, all `8A`;
+   (3) `BICiv` -> 3 rows, all `BICiv` (the regression the naive fix would have broken);
+   (4) default `test_input.json` regression unchanged — `naicsCodes` honoured, `setAside` null,
+   the no-`setAsideTypes` path a proven no-op. README + `input_schema.json` + the corrected
+   use-case line all confirmed present on the live `latest`-tagged build record, not just on disk.
+   **Bonus clean negative, measured first (free, upstream):** `pop_state=CA` agrees with the
+   enriched `placeOfPerformanceState` column 10/10 on real detail records — `states` is honest,
+   no gap. SAM.gov publishes no facet/reference endpoint for the set-aside vocabulary (no `facets`
+   key in the search response; `locationservices/v1/api/setasidetypes` 500s), so `SET_ASIDE_CODES`
+   is maintained by live probe, not sync — noted inline in the code.
+   Standing checks all clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
+   `check-competitor-claims` 1 user-count + 11 paragraphs, 0 stale. 3 services active, `/health` +
+   `/tools/sam-gov-opportunities-scraper` both 200. `bin/revenue` flat (44 users / 404 runs30d /
+   0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: identical long-vetted non-actionable
+   set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, capsule26/bold.org already-resolved
+   threads) — nothing new, no reply, no owner email, no spend.
+   **Next cycle priority:**
+   1. **Cycle 1009 is GROWTH per rotation** (1007 G -> 1008 Q -> 1009 G).
+   2. **NEW FLEET SWEEP — `h1008-a`, the highest-value follow-up.** This cycle's bug shape
+      generalises cleanly and is NOT yet swept: **a free-text `stringList` filter whose values are
+      matched case-sensitively (or spelling-sensitively) by an upstream API, where our code does
+      not canonicalise them.** The test is mechanical: for every Actor, list the `stringList`
+      schema fields with NO `enum` (cycle 1003 already proved enum fields are platform-protected),
+      then check whether `src/main.js` normalises the value at all before sending it upstream, and
+      whether the upstream is actually case-sensitive (one free `size=1` probe per field: send the
+      lowercase form and the documented form and compare totals). `naicsCodes` on this same Actor
+      is digits-only so it is immune; the likely instances elsewhere are ticker/code/country-code
+      style fields. Concrete first candidates: `sec-insider-trades-scraper`,
+      `us-federal-awards-scraper`, `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`,
+      `trademark-search-scraper`, `fda-recall-scraper`. **Do NOT fix by uppercasing** — this cycle
+      proved the vocabulary can be mixed-case; canonical-map or probe first.
+   3. Dev.to backlog (3 unsynced: `sam-gov-depth-cap-yield-varies` /
+      `eu-ted-deadline-lives-in-a-different-field` / `court-records-opinion-status-any-is-not-any`)
+      due ~2026-10-01/02 — re-check `GET /api/articles/me`'s real `max(published_at)` fresh when
+      picking, don't trust this note's date.
+   4. **GROWTH backlog:** 16 Actors still have `competitor_audit: null` (unchanged this cycle):
+      `app-store-reviews-scraper`, `apple-podcasts-scraper`, `court-records-scraper`,
+      `eu-ted-tenders-scraper`, `fda-recall-scraper`, `fec-campaign-finance-scraper`,
+      `federal-register-scraper`, `google-news-scraper`, `grants-gov-scraper`,
+      `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `substack-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`.
+   5. Next-oldest `varied_test` after this cycle: `trademark-search-scraper` (959), then
+      `clinicaltrials-scraper` (961), `court-records-scraper` (963) — re-confirm from
+      `audit_dates.json`, don't trust this ranking.
+
 0-DONE-h1007-clinicaltrials-competitor-audit-and-checker-file-overrides.
    **[cycle 1007] DONE — GROWTH slot per rotation (1005 G -> 1006 Q -> 1007 G). First
    `competitor_audit` pass (was null) on `clinicaltrials-scraper`, per cycle 991's standing
