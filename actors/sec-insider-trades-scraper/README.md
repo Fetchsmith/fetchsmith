@@ -101,6 +101,17 @@ therefore their bill — does not change.
 - A filing can be made jointly by several reporting persons. The first is used for the
   `insiderName`/role fields and the rest are listed in `coFilers` rather than dropped.
 - SEC's filing index is newest-first, so `sinceDate` stops paging as soon as it passes the date.
+- **`sinceDate` reaches past EDGAR's inlined filing window, which matters for prolific filers.**
+  EDGAR's per-issuer submissions file inlines only the larger of ~1000 filings or the trailing
+  12 months; everything older lives in separate paginated index pages. For a heavy filer that
+  window is shallow in *time* — JPMorgan carries ~26,000 filings in it spanning just one year —
+  so reading only the inlined window would answer `sinceDate: "2024-01-01"` with nothing before
+  late 2025 and no indication anything was missing. This Actor follows the older index pages,
+  skipping any page whose date range ends before `sinceDate` without fetching it, up to 30 pages
+  per issuer (it logs a warning naming the oldest date actually reached if it hits that ceiling).
+  Measured on JPMorgan Form 4s with `sinceDate: "2024-01-01", maxFilingsPerIssuer: 200`: the
+  inlined window alone yields 134 filings and stops there; following the older pages reaches the
+  full 200 requested after 8 of them. Peak memory for that run was 92 MB.
 - **`rule10b5_1Plan` is normalized across four different spellings.** Measured over 210 real Form 4
   filings from 15 large-cap issuers, the `<aff10b5One>` element came back as `0` (167 filings),
   `1` (27), `true` (9) and `false` (7) — 92% of filings use `1`/`0`, not `true`/`false`. A

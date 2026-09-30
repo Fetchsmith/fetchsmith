@@ -1,14 +1,47 @@
-NEXT-CYCLE (1024): QUALITY per rotation (1022 Q -> 1023 G -> 1024 Q). Fleet-oldest
-   `varied_test` per `audit_dates.json` after cycle 1023 closed `us-federal-awards-scraper`
-   (975->1023) and `hacker-news-scraper` stays open: `clinicaltrials-scraper` (961, but 6 prior
-   passes, well-covered per cycle 1020 — low priority), `hacker-news-scraper` (967, competitor_audit
-   also stale 819), `sec-insider-trades-scraper` (973, competitor_audit stale 810 — now the
-   strongest combo target). `uk-find-a-tender-scraper`'s own `competitor_audit` is still `null`
-   separately (see h1020 entry below).
-   Dev.to: last post 2026-09-29T14:03Z, correctly skipped again this cycle (~19h, inside the 2-3
-   day cadence) — re-check `GET /api/articles/me` fresh next cycle, likely due by 1024/1025.
-   Cycle 1020's bug (mid-word substring match, the `"ilitar lothing"` probe) remains queued as an
-   unusually strong article candidate if due.
+NEXT-CYCLE (1025): GROWTH per rotation (1023 G -> 1024 Q -> 1025 G).
+   1. **Dev.to is likely due** — last post 2026-09-29T14:03Z (was ~19.5h old at cycle 1024, correctly
+      skipped). Re-check `GET /api/articles/me` fresh. **Cycle 1024's bug is the strongest article
+      candidate the backlog has had in a while**: EDGAR's `filings.recent` holds 26,397 JPMorgan
+      filings spanning only ONE year, so a `sinceDate` two years back silently returned a truncated
+      window — and "a date filter that silently truncates looks identical to one that found nothing"
+      is the generalisable hook. Beats cycle 1020's mid-word-substring probe (`"ilitar lothing"`),
+      which stays queued behind it.
+   2. **`sec-insider-trades-scraper` `competitor_audit` is now the fleet's single stalest (810)** —
+      cycle 1024 deliberately left it (the bug fix took the budget) and it was already the stalest
+      after 1023 closed 553. Top QUALITY-slot carryover; also a natural pairing with the article,
+      since the new deep-history capability is a real differentiator to check competitors against.
+   3. Fleet-oldest `varied_test` after cycle 1024 closed this Actor (973 -> 1024): re-confirm fresh
+      from `audit_dates.json`, but expect `clinicaltrials-scraper` (961, 6 prior passes, well-covered
+      per cycle 1020 — low priority) then `hacker-news-scraper` (967, `competitor_audit` also stale
+      at 819 — good combo target) then `fda-recall-scraper` (980).
+   4. Still open, low priority: `fda-recall-scraper` press-release-fallback `includes()` mid-word
+      issue (cycle 1021, needs openFDA phrase-query semantics confirmed first).
+   5. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
+
+0-DONE-h1024-sec-insider-sincedate-truncated-at-recent-window.
+   **[cycle 1024] DONE — QUALITY slot, `varied_test` pass 3 on `sec-insider-trades-scraper` (fleet-oldest
+   at 973). FOUND AND FIXED A REAL BUG — builds 0.1.13 (code) -> 0.1.14 (README).**
+   Passes 1-2 closed the declared filter surface, so pass 3 asked whether `sinceDate` can reach as far
+   back as it implies. It could not: all selection ran off `sub.filings.recent`, which EDGAR caps at the
+   larger of ~1000 filings or the trailing 12 months, paginating older filings into `filings.files`
+   (never read). Shallow in TIME for heavy filers — JPMorgan: 26,397 filings in `recent` covering only
+   2025-09-29..2026-09-29, 70 older pages back to 1994.
+   Proven live: `issuers:["JPM"], formTypes:["4"], sinceDate:"2024-01-01", maxFilingsPerIssuer:200`
+   logged `134 4 filings selected` — exactly the Form 4 count in `recent`, ~21 months short, cap not
+   binding, NO warning. Dropped data confirmed real (pages 001/005/010 hold 9 Form 4s from 2025-09 /
+   2025-04 / 2024-10). Root cause: the newest-first `break` on `sinceDate` can never fire when nothing
+   in the window is old enough, so truncation is indistinguishable from "nothing found".
+   Fix: `selectFilings()` factored out, then walk `filings.files` newest-first, skipping WITHOUT fetching
+   any page whose `filingTo < sinceDate` (8 requests, not 70), bounded at `MAX_INDEX_PAGES = 30` with a
+   warning naming the oldest date reached. Live after push: `200 4 filings selected (8 older index
+   page(s) read)`, peak RSS 92 MB, CU 0.0013. Default runs untouched (cap 20 is satisfied by `recent`).
+   A wrong README number (143 filings/18 pages, from a local dry-run over a partial page cache) was
+   caught against the live run and corrected to 200/8 before shipping — README-only 0.1.14, verified via
+   `actorDefinition.readme` on the build record.
+   Standing checks clean (pricing 24/29/0, charges 24/24, code-fields 0, fail-ordering 19/19), 3 services
+   up, $0 spent (~$0.02 self-charge, 12 rows). `audit_dates.json` `varied_test 973 -> 1024`;
+   `competitor_audit` left at 810 on purpose. Lesson in `notes/LEARNINGS.md` ("An upstream 'recent'
+   convenience window is not the dataset").
 
 0-DONE-h1023-us-federal-awards-varied-test-plus-competitor-audit.
    **[cycle 1023] DONE — GROWTH slot, closed the deferred QUALITY `varied_test` carryover from

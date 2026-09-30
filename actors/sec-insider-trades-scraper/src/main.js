@@ -27,6 +27,12 @@ function haveTime() {
 
 const maxResults = Math.min(Number(input.maxResults ?? 100), 5000);
 const maxFilingsPerIssuer = Math.min(Number(input.maxFilingsPerIssuer ?? 20), 200);
+// EDGAR inlines only a WINDOW of filings under `filings.recent` -- the larger of ~1000 entries
+// or the trailing 12 months -- and pushes everything older into paginated `filings.files` pages.
+// For a prolific filer that window can be very shallow in time: JPMorgan has 26k filings in
+// `recent` spanning only one year, so reading `recent` alone silently truncates any sinceDate
+// reaching further back. Bounded so one issuer cannot spend the whole run on index pages.
+const MAX_INDEX_PAGES = 30;
 const includeDerivative = input.includeDerivative !== false;
 // Opt-in (default off) so an existing Form 4 caller's row count -- and therefore their
 // bill -- does not change: Form 4s often carry holdings rows alongside the transactions.
@@ -49,6 +55,23 @@ async function pushResult(item) {
   }
   await Actor.pushData(item); pushed += 1;
   return pushed < maxResults;
+}
+
+// Scan one index page's parallel arrays (newest-first) into `picked`.
+// Returns true when selection is finished -- either the cap is full or we have passed sinceDate,
+// in which case no older page can contribute and the caller stops paging.
+function selectFilings(idx, picked, cap) {
+  const forms = idx.form ?? [];
+  for (let i = 0; i < forms.length && picked.length < cap; i += 1) {
+    if (sinceDate && idx.filingDate[i] < sinceDate) return true;
+    if (!formTypes.includes(forms[i])) continue;
+    picked.push({
+      accessionNumber: idx.accessionNumber[i],
+      filingDate: idx.filingDate[i],
+      primaryDocument: idx.primaryDocument[i],
+    });
+  }
+  return picked.length >= cap;
 }
 
 // SEC asks for <=10 req/s with a declared UA; we stay well under.
@@ -230,19 +253,32 @@ try {
     const sub = await secGet(`https://data.sec.gov/submissions/CIK${padded}.json`, { json: true });
     if (!sub) { log.warning(`No submissions index for CIK ${padded} (${iss.input}).`); continue; }
     const recent = sub.filings?.recent ?? {};
-    const forms = recent.form ?? [];
 
     const picked = [];
-    for (let i = 0; i < forms.length && picked.length < maxFilingsPerIssuer; i += 1) {
-      if (!formTypes.includes(forms[i])) continue;
-      if (sinceDate && recent.filingDate[i] < sinceDate) break; // index is newest-first
-      picked.push({
-        accessionNumber: recent.accessionNumber[i],
-        filingDate: recent.filingDate[i],
-        primaryDocument: recent.primaryDocument[i],
-      });
+    let done = selectFilings(recent, picked, maxFilingsPerIssuer);
+
+    // Follow the older index pages when the `recent` window did not satisfy the request.
+    // Pages are newest-first and carry their own date range, so a page entirely older than
+    // sinceDate ends the walk without being fetched.
+    let pagesRead = 0;
+    if (!done) {
+      for (const pg of sub.filings?.files ?? []) {
+        if (!haveTime()) break;
+        if (sinceDate && pg.filingTo < sinceDate) break;
+        if (pagesRead >= MAX_INDEX_PAGES) {
+          log.warning(`${iss.input}: stopped after ${MAX_INDEX_PAGES} older index pages (reached `
+            + `${picked[picked.length - 1]?.filingDate ?? 'n/a'}). Narrow sinceDate for full coverage.`);
+          break;
+        }
+        const older = await secGet(`https://data.sec.gov/submissions/${pg.name}`, { json: true });
+        pagesRead += 1;
+        if (!older) continue;
+        done = selectFilings(older, picked, maxFilingsPerIssuer);
+        if (done) break;
+      }
     }
-    log.info(`${iss.input} (CIK ${iss.cik}): ${picked.length} ${formTypes.join('/')} filings selected.`);
+    log.info(`${iss.input} (CIK ${iss.cik}): ${picked.length} ${formTypes.join('/')} filings selected`
+      + `${pagesRead ? ` (${pagesRead} older index page(s) read)` : ''}.`);
 
     for (const f of picked) {
       if (!keepGoing || !haveTime()) break;

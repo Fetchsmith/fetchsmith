@@ -4032,3 +4032,24 @@ regardless of plan), and this Actor's start fee uses the flat form. **Lesson: wh
 competitor's live `pricingInfos`, check for both `eventPriceUsd` and `eventTieredPricingUsd` on
 every charge event — an empty/missing tiered dict is not proof a fee is zero, it may just be
 priced the other way.**
+
+## An upstream "recent" convenience window is not the dataset (cycle 1024)
+`sec-insider-trades-scraper` read EDGAR's `filings.recent` and treated it as the issuer's filing
+history. It is not: EDGAR inlines only **the larger of ~1000 filings or the trailing 12 months**
+there and paginates the rest into `filings.files`. The trap is that the window is generous by
+*count* and stingy by *time* for exactly the issuers buyers care about — JPMorgan carries 26,397
+filings in `recent` covering just one year, with 70 older pages going back to 1994. So a
+`sinceDate` two years back returned only the last year's filings, with no warning and no error:
+the newest-first `break` that is supposed to stop at the date never fires, because nothing in the
+window is old enough to trigger it. **A date filter that silently returns a truncated window looks
+identical to a date filter that found nothing** — the failure is invisible in the output shape.
+Two generalisable rules:
+- When an API offers a "recent"/"latest" convenience blob plus a paginated archive, check what
+  *bounds* the blob before trusting it for any range query, and check it on a heavy producer —
+  a light filer's window covers a decade and hides the bug completely (Apple's spans 2015-2026).
+- Index pages that carry their own date range (`filingFrom`/`filingTo`) let you skip whole pages
+  without fetching them, so following the archive costs 8 requests here, not 70. Page-range
+  metadata turns "follow all pagination" into a bounded, targeted walk.
+Also: a local dry-run over a partial cache produced a plausible-but-wrong measurement (143 filings
+/18 pages) that reached the README draft; the live platform run said 200/8. Numbers in a README
+must come from the platform run.
