@@ -91,6 +91,8 @@ When a story or comment's URL or text links to a GitHub repo, set `enrichGithubL
 ## Pricing
 `result` — charged per item returned. Empty queries and failed pages are free. A `watchLabel` baseline run always returns 0 rows and is charged nothing. GitHub enrichment adds no separate charge.
 
+The niche's Store leader by users is `gentle_cloud` (155 users, `gentle_cloud/hacker-news-scraper`), charging the same $0.0002 per result at the FREE tier as we do. Their listing covers top/new/best/ask/show/job feeds and full-text keyword search with titles/URLs/scores/authors/comment counts/timestamps — no `minPoints`/`minComments` thresholds, no `excludeKeywords`, no `postedAfter`/`postedBefore` date windows, no GitHub-link enrichment, no user-profile lookups, no watch mode with milestone re-alerts, and no completion webhook, all of which this Actor includes at the same base price. Verified live 2026-09-30.
+
 ## Tips
 - Want the current front page? Set `queries` to `[]` and `tags` to `["front_page"]` — no keyword needed, returns the stories on HN's front page right now (verified against `hacker-news.firebaseio.com/v0/topstories.json`, refreshes on the same cadence as the live site).
 - For the current "Who is hiring?" thread: set `queries` to `["Ask HN: Who is hiring"]`, `tags: ["story"]`, `sortBy: "date"`, `maxItemsPerQuery: 1` to find the thread, or use `tags: ["comment"]` with `postedAfter` set to the 1st of the month to pull all replies.

@@ -55,6 +55,7 @@ COMPETITORS = {
     "foxlabs": "foxlabs/ted-tenders",
     "pink_comic": "pink_comic/nih-reporter-search",
     "ryanclinton": "ryanclinton/sec-insider-trading",
+    "gentle_cloud": "gentle_cloud/hacker-news-scraper",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
