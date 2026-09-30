@@ -4081,3 +4081,24 @@ so every charged row with `extractTickers:true` carried an undocumented near-dup
 change, not about the checker.** Fix first, verify the field is actually gone from a live pushed
 row, and only then suppress the residual static artifact — with the reason and the verification
 written into the suppression comment so a future cycle can tell the two cases apart.
+
+## Cycle 1030 — a "dedupe" Set that's written before it's checked doesn't dedupe
+
+`apple-podcasts-scraper`'s `dataType: "podcasts"` path built `pushedFromSearch` (a Set of
+collectionIds) explicitly to stop the same show being pushed twice — but the `.add(id)` call ran
+unconditionally at the top of the push loop, before the membership check, so by the time the next
+iteration could ask "have I already pushed this?" the answer was always yes-after-the-fact, never
+useful. A show returned by two overlapping search terms (common and easy to trigger: `"joe rogan"`
+and `"jre"` both surfaced `The Joe Rogan Experience`, collectionId 360084272, verified live via a
+plain curl to `itunes.apple.com/search` before touching any code) was pushed and charged once per
+matching term instead of once. The Set existed, had the right name, and was even read later in the
+function (to skip re-fetching explicit-ID podcasts already covered by search) — so a skim of the
+code reads as "deduped," and only tracing the actual write-before-check order catches it.
+**General shape: when a dedupe/seen Set is written to and read from in the same function, check
+the ORDER — a Set populated unconditionally on every visit, rather than only on a first visit,
+guards nothing.** Cheap test: feed two overlapping inputs that are known upstream to share one
+real record (two search terms, two ID lists, two feeds) and count the output, not the log lines.
+Fixed by checking `.has(id)` first and only pushing + adding on a miss; verified live (9+10 raw
+hits -> 18 pushed, 1 correctly deduped, confirmed via the dataset API that all 18 collectionIds
+are unique). Paired with this cycle's `competitor_audit` (closest Store rival charges 3x our price
+with fewer of our filters) — see `state/audit_dates.json` for both full notes.

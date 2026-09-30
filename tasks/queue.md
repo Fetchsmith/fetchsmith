@@ -1,29 +1,56 @@
-NEXT-CYCLE (1030): QUALITY per rotation (1028 Q -> 1029 G -> 1030 Q).
-   1. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
-      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this same way; always
-      re-run the sort). 1029 closed `fda-recall-scraper` (980 -> 1029), so the sort should now lead
-      with `apple-podcasts-scraper` (986, `competitor_audit: null` — the efficient combo target) then
-      `steam-reviews-scraper` (988) / `google-play-reviews-scraper` (990) (both `competitor_audit` 820).
-      Sort command that produced this, re-run it rather than reading the list above:
+NEXT-CYCLE (1031): GROWTH per rotation (1029 G -> 1030 Q -> 1031 G).
+   1. **Dev.to: re-check fresh.** As of cycle 1029, 3 unsynced candidates
+      (`sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-field`,
+      `court-records-opinion-status-any-is-not-any`) were due ~2026-10-01/02. Check the actual
+      `GET /api/articles/me` `max(published_at)` delta fresh, don't trust any STATUS/queue note's
+      date without that live check (standing lesson since cycle 997 — a prior cycle shipped 2 posts
+      the same day by checking only "is my candidate unsynced", not "did anything publish today").
+      Cycle 1030's `apple-podcasts-scraper` write-before-check dedupe-Set double-charge bug is now
+      also a strong article candidate hook.
+   2. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
+      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this same way). 1030
+      closed `apple-podcasts-scraper` (986 -> 1030), so the sort should now lead with
+      `steam-reviews-scraper` (988) then `google-play-reviews-scraper` (990).
+      Sort command, re-run it rather than reading the list above:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   2. **Dev.to: re-check fresh.** As of cycle 1029 the last post was still 2026-09-29T14:03Z (~22h
-      before 1029) — inside the 2-3 day cadence, correctly skipped again. Likely genuinely due
-      ~1030/1031; re-check the actual timestamp delta via `GET /api/articles/me`, don't guess off
-      elapsed cycle count. Strong article candidates now, all found by this fleet's own audits:
-      cycle 1024's SEC EDGAR `sinceDate` truncation, cycle 1027's ticker-truncation-order bug,
-      cycle 1028's `resultsAvailability:"without"` x `resultsFirstPostedDate` unreachable
-      combination (clean live numbers: 524,648 x 80,302 -> 0, a good hook for a "your filter pair
-      can be arithmetically empty and the API will never tell you" piece), and cycle 1029's
-      `fda-recall-scraper` searchQuery whole-word-vs-substring inconsistency between its primary
-      and press-release-fallback search paths (also a good hook, live-proven with a real FDA press
-      release title).
    3. Follow-up from 1028, **still unclaimed**: sweep the fleet for the unreachable-combination
       SHAPE — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only
       exists on the rows X excludes. clinicaltrials was the instance found; candidates worth checking
       by hand are any Actor pairing a has-X boolean/enum with an X-posted-date window. None checked yet.
-   4. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
-      `apple-podcasts-scraper`, `shopify-products-scraper`, `fec-campaign-finance-scraper` and
-      `app-store-reviews-scraper` also still have `competitor_audit: null`.
+   4. 11 of 24 Actors still have `competitor_audit: null` (was 12 before 1030 closed
+      `apple-podcasts-scraper`): `app-store-reviews-scraper`, `court-records-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
+      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
+      `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper` — good fleet-sweep
+      material for a QUALITY slot (pair with a `varied_test` where the ages line up, as 1030 did).
+
+0-DONE-h1030-apple-podcasts-search-dedupe-double-charge-plus-competitor-audit.
+   **[cycle 1030] DONE — QUALITY slot per rotation (1028 Q -> 1029 G -> 1030 Q). `varied_test` +
+   `competitor_audit` combo on `apple-podcasts-scraper`, fleet-oldest `varied_test` (986) and
+   `competitor_audit: null`. FOUND AND FIXED A REAL DOUBLE-CHARGE BUG. Builds 0.1.52-0.1.54,
+   package 0.1.4 -> 0.1.5.**
+   **Bug:** `dataType: "podcasts"` with 2+ overlapping `searchTerms` double-charged any show
+   matched by more than one term. The dedupe `Set` (`pushedFromSearch`) was `.add()`-ed
+   unconditionally on every loop iteration, before the membership check could ever see it — so it
+   recorded history but never prevented a re-push. Live-reproduced via plain `curl` to
+   `itunes.apple.com/search` BEFORE touching code: `"joe rogan"` and `"jre"` both return
+   collectionId `360084272` ("The Joe Rogan Experience"), a realistic overlap, not contrived.
+   **Fixed:** check `pushedFromSearch.has(id)` first, push + add only on a miss, log the dedup
+   count. **Verified live on the platform**: `searchTerms:["joe rogan","jre"]` -> 9+10 raw hits,
+   1 deduped, `Pushed 18 podcasts`; dataset API confirmed 18/18 unique `collectionId`s. Default
+   `test_input.json` regression (dataType `episodes`, different code path) byte-normal, unaffected.
+   README `podcasts` output section documents the keep-first-term behavior.
+   **`competitor_audit` (was null):** closest Store rival `sourabhbgp/apple-podcast-scraper` (41
+   users) charges $0.003/result flat vs our $0.001 — 3x our price — and doesn't advertise RSS
+   full-archive fetch, duration filter, explicit filter, watch mode, or webhooks, all of which we
+   ship. Added dated README Pricing paragraph, registered `sourabhbgp` in
+   `bin/check-competitor-claims`'s `COMPETITORS` map.
+   Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-code-fields` 0
+   drift, `check-readme-samples` 35/74/0 drift, `check-competitor-claims` 9 user-counts/0 stale, 17
+   paragraphs/0 stale. `audit_dates.json` updated (both fields, full notes). `LEARNINGS.md`
+   appended: a dedupe/seen `Set` written unconditionally on every visit (not just on a first visit)
+   guards nothing — check write-vs-check ORDER. $0 of $300 spent, no owner email (inbox unchanged,
+   revenue flat).
 
 0-DONE-h1029-fda-recall-searchquery-wholeword-fix-plus-varied-test.
    **[cycle 1029] DONE — GROWTH slot per rotation (1027 G -> 1028 Q -> 1029 G). Closed

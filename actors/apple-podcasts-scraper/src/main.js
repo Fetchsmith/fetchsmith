@@ -955,10 +955,19 @@ if (dataType === 'charts') {
 } else if (dataType === 'podcasts') {
   // Search results already carry the full podcast record; explicit IDs need one lookup each.
   const pushedFromSearch = new Set();
+  let dupSearchHits = 0;
   for (const { term, p } of searchHits) {
     if (!keepGoing) break;
-    pushedFromSearch.add(String(p.collectionId));
+    const id = String(p.collectionId);
+    // Different search terms can legitimately return the same show (e.g. "joe rogan" and "jre" both
+    // match The Joe Rogan Experience, collectionId 360084272 — verified live). Without this check
+    // every overlapping term re-pushed and re-charged the same show once per term it matched.
+    if (pushedFromSearch.has(id)) { dupSearchHits += 1; continue; }
+    pushedFromSearch.add(id);
     keepGoing = await pushResult({ ...podcastRow(p), searchTerm: term, scrapedAt: new Date().toISOString() });
+  }
+  if (dupSearchHits > 0) {
+    log.info(`${dupSearchHits} search result(s) matched a show already returned by an earlier search term — kept once, under the first term that matched.`);
   }
   for (const id of ids) {
     if (!keepGoing) break;

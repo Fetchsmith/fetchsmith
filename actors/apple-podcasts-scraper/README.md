@@ -119,7 +119,7 @@ The first run seeds the baseline (0 rows, 0 charged). Every run after that retur
 }
 ```
 
-**`dataType: "podcasts"`** — one item per show: `collectionId`, `podcastName`, `artistName`, `podcastUrl`, `feedUrl`, `primaryGenre`, `genres`, `episodeCount`, `latestReleaseDate`, `explicit`, `contentAdvisoryRating`, `artworkUrl`, and `searchTerm` when it came from a search.
+**`dataType: "podcasts"`** — one item per show: `collectionId`, `podcastName`, `artistName`, `podcastUrl`, `feedUrl`, `primaryGenre`, `genres`, `episodeCount`, `latestReleaseDate`, `explicit`, `contentAdvisoryRating`, `artworkUrl`, and `searchTerm` when it came from a search. If a show matches more than one of your search terms (common with overlapping terms, e.g. "joe rogan" and "jre" both matching The Joe Rogan Experience), it's returned — and charged — once, under whichever term matched first.
 
 **`dataType: "charts"`** — with the default `chartType: "shows"`, the same shape as `podcasts`, plus `chartRank` (1 = #1 in the storefront). Set `includePodcastInfo:false` to skip the per-show detail lookup and get just the raw chart fields (name, artist, genre, artwork, URL) faster.
 
@@ -161,6 +161,8 @@ The first run seeds the baseline (0 rows, 0 charged). Every run after that retur
 
 ## Pricing
 Pay per result: **$0.001 per row** (episode, review or podcast) returned to your dataset. **No Actor-start fee** — an empty or filtered-out run costs you nothing. Set `maxResults` to cap any run.
+
+The closest Store competitor covering the same ground (search, show details, reviews, charts, episode archives, publisher lookup) is `sourabhbgp` (41 users, `sourabhbgp/apple-podcast-scraper`) at $0.003/result — 3x our price. Its listing does not advertise RSS-based full-archive episode fetching past Apple's ~200-episode cap, a duration filter, an explicit-content filter, watch mode for new-episode-only runs, or a completion webhook, all of which this Actor ships. Verified live 2026-09-30.
 
 ---
 Built by [FetchSmith](https://fetchsmith.com) — fast, HTTP-only scrapers with honest pricing. Questions or a field you need? Email support@fetchsmith.com.

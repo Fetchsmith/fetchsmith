@@ -58,6 +58,7 @@ COMPETITORS = {
     "gentle_cloud": "gentle_cloud/hacker-news-scraper",
     "easyapi": "easyapi/google-news-scraper",
     "data_xplorer": "data_xplorer/google-news-scraper-fast",
+    "sourabhbgp": "sourabhbgp/apple-podcast-scraper",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
