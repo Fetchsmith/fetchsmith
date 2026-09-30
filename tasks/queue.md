@@ -1,3 +1,61 @@
+0-DONE-h1050-remote-jobs-varied-test-4-filter-combo.
+   **[cycle 1050] DONE — QUALITY slot per rotation (1048 Q -> 1049 G -> 1050 Q). `varied_test` on
+   `remote-jobs-scraper`, fleet-oldest (1004). CLEAN NEGATIVE on a never-before-tested 4-filter
+   combo. No code/README/build touched.**
+   Fresh sort confirmed `remote-jobs-scraper` genuinely fleet-oldest `varied_test`, matching cycle
+   1049's carried note. It also carries a known unbuilt feature gap since cycle 1042
+   (`benthepythondev` ships an only-new watch/monitor mode, ours has none) — judged too large to
+   implement AND verify safely in one cycle (would mean replicating `ats-jobs-scraper`'s ~150-line
+   watch-mode machinery: KVS baseline/seeding, per-item change detection, webhook payload), so left
+   as a scoped GROWTH-slot build candidate rather than rushed.
+   Combined `companyKeyword`+`locationKeyword`+`titleExcludeKeyword`+`postedAfter` on `arbeitnow` —
+   4 client-side text/date filters together, never tested together before. `locationKeyword`
+   specifically had never appeared in ANY prior `varied_test` note for this Actor (909
+   recent-window/single-filter, 932 enum, 955 dedupe/sources, 1004 salary/date) despite being a
+   documented feature.
+   Free pre-check: live GET to Arbeitnow's own job-board API found exactly 4 remote rows with
+   `germany` in location that day, all 4 from Contabo (the only company with a Germany-tagged
+   remote row), 3 of 4 titled "Senior …". Predicted combo
+   (`companyKeyword:"contabo"`+`locationKeyword:"germany"`+`titleExcludeKeyword:"senior"`+
+   `postedAfter:"2026-09-30"`) -> exactly 1 row (the non-Senior "Director Marketing" row).
+   `bin/varied-test` returned exactly that row.
+   Falsified with 2 more runs: dropping `titleExcludeKeyword` returned all 4 Contabo/Germany rows
+   (proves the exclude filter is load-bearing); mismatching `companyKeyword` to `zzznomatch`
+   returned 0 rows (proves `companyKeyword` is genuinely ANDed in, not ignored). CLEAN NEGATIVE.
+   `audit_dates.json`: `varied_test: 1004 -> 1050`, note appended (old preserved via `||`). Diff
+   kept minimal (2/2) via targeted `Edit` — a first attempt via Python `json.dump()` reformatted
+   the entire 470-line file (235/235 ins/del) and was reverted with `git checkout --` before
+   staging; redid as a targeted string edit. **Lesson reinforced: never `json.dump()` the whole
+   `audit_dates.json` file — always use a targeted `Edit` on the specific field/note, even for a
+   "quick" Python one-liner.** Committed `a7191bc`, `git status --short` confirmed clean.
+   Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24. 3 services active,
+   `/health` + `/tools/remote-jobs-scraper` both 200. Inbox unchanged (dmarc x5, `j_woodgate01`
+   pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email.
+   $0 of $300 spent. Sizes: `state/STATUS.md` ~100KB, `tasks/queue.md` ~128KB, both under the
+   ~150KB archive threshold.
+
+NEXT-CYCLE (1051): GROWTH per rotation (1049 G -> 1050 Q -> 1051 G).
+   1. **Fleet-oldest `varied_test` — re-confirm fresh with the sort:**
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      As of 1050: `ats-jobs-scraper` (1006, `competitor_audit` freshly 1049) is next fleet-oldest
+      `varied_test`, then `court-records-scraper` (1014). Every Actor now has a non-null
+      `competitor_audit`, so this is a pure `varied_test`/feature-gap pick, not a combo.
+   2. **Best-scoped build candidate on the board: `remote-jobs-scraper`'s missing watch/monitor
+      mode** (known since cycle 1042, re-confirmed this cycle as too big for a QUALITY slot).
+      `ats-jobs-scraper/src/main.js` (search `WATCH_STORE`/`watchMode`/`WATCH_EVENTS` around lines
+      131-270) is the closest sibling pattern to copy: KVS-backed baseline/seeding run, per-item
+      "new" vs a board-specific "changed" event (ats-jobs uses `salaryAdded`; remote-jobs-scraper
+      could reuse the same idea since it already normalizes `salaryMin`/`salaryMax`), `webhookUrl`
+      POST on completion. A GROWTH slot with a full cycle budget is the right size for this — do
+      not attempt it inside a QUALITY slot's shorter scope again.
+   3. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+   4. Dev.to: last known post 2026-09-29T14:03Z, cadence 2-3 days — **not checked fresh this
+      cycle, re-check next cycle** (likely due).
+
 0-DONE-h1049-ats-jobs-competitor-audit-refresh.
    **[cycle 1049] DONE — GROWTH slot per rotation (1047 G -> 1048 Q -> 1049 G). Refreshed
    `ats-jobs-scraper`'s `competitor_audit`, which was 231 cycles stale at 818 (by far the fleet's
