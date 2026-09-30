@@ -49,7 +49,16 @@ const titleKeyword = (input.titleKeyword ?? '').toLowerCase().trim();
 const titleExcludeKeyword = (input.titleExcludeKeyword ?? '').toLowerCase().trim();
 const locationKeyword = (input.locationKeyword ?? '').toLowerCase().trim();
 const locationExcludeKeyword = (input.locationExcludeKeyword ?? '').toLowerCase().trim();
-const employmentTypeKeyword = (input.employmentTypeKeyword ?? '').toLowerCase().trim();
+// employmentType's own spelling varies by separator style, not just casing -- Ashby sends
+// camelCase with none at all ("FullTime"), Lever/Workable/SmartRecruiters use a hyphen
+// ("Full-time"), Recruitee uses an underscore ("fulltime_permanent"). A `.toLowerCase()`-only
+// match left the single most natural query, "full-time", silently 0-matching every Ashby
+// row that a bare "fulltime" or "full" query found -- verified live on `ashby:ramp` (155 jobs,
+// all FullTime/Intern/Temporary): "full-time" -> 0 rows, "fulltime" -> 5/5, "full" -> 5/5.
+// Stripping spaces/hyphens/underscores from both sides before matching makes the filter
+// separator-style-agnostic without touching the raw `employmentType` value shown on the row.
+const stripSep = (s) => s.replace(/[\s\-_]/g, '');
+const employmentTypeKeyword = stripSep((input.employmentTypeKeyword ?? '').toLowerCase().trim());
 const departmentKeyword = (input.departmentKeyword ?? '').toLowerCase().trim();
 const descriptionKeyword = (input.descriptionKeyword ?? '').toLowerCase().trim();
 const descriptionExcludeKeyword = (input.descriptionExcludeKeyword ?? '').toLowerCase().trim();
@@ -1044,7 +1053,7 @@ function passesFilters(job, deferred = []) {
     if (locationExcludeKeyword && haystack.includes(locationExcludeKeyword)) return false;
   }
   if (ready('employmentType') && employmentTypeKeyword
-    && !(job.employmentType ?? '').toLowerCase().includes(employmentTypeKeyword)) return false;
+    && !stripSep((job.employmentType ?? '').toLowerCase()).includes(employmentTypeKeyword)) return false;
   // Haystack, not just `department`: since 0.1.36 Greenhouse reports the TOP-LEVEL department in
   // `department` and the leaf in `team`/`departmentPath`, so matching `department` alone would
   // have silently dropped every pre-0.1.36 filter written against a leaf name ("Security

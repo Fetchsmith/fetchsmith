@@ -66,7 +66,7 @@
     "employmentTypeKeyword": {
       "title": "Employment type filter",
       "type": "string",
-      "description": "Only keep postings whose normalized employmentType field contains this text (case-insensitive), e.g. \"full\" for full-time or \"contract\". Leave empty for all employment types. Not every ATS publishes this field; postings where the ATS never exposes it are dropped when this filter is set.",
+      "description": "Only keep postings whose employmentType field contains this text, matched case- and separator-insensitively (spaces/hyphens/underscores ignored on both sides, so \"full-time\" matches Ashby's \"FullTime\"), e.g. \"full-time\" or \"contract\". Leave empty for all employment types. Not every ATS publishes this field; postings where the ATS never exposes it are dropped when this filter is set.",
       "editor": "textfield"
     },
     "departmentKeyword": {
