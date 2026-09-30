@@ -169,7 +169,9 @@ All 41 fields are listed with types and examples in the **Output schema** tab.
 
 `$0.002` per result, **no run-start fee**. 1,000 records costs $2.00.
 
-For comparison, as of **2026-09-17**: `nexgendata/court-records-search` charges a flat **$0.10 per result** (raised from $0.002 on 2026-07-17) — 50× this Actor. `automation-lab/court-records-scraper` charges a **$0.005 run-start fee plus $0.0023/record** on the free tier, tapering to $0.00056 on Diamond; cheaper per record at very high volume on a paid Apify plan, more expensive for the small and mid-size runs most buyers actually make, and it bills you before it returns a single row. *(Competitor pricing verified 2026-09-17.)*
+For comparison, re-verified **2026-09-30** against live in-effect pricing (not just the leader): `nexgendata` (60 users, `nexgendata/court-records-search`) still charges a flat **$0.10 per result** plus a $0.00005 start fee, unchanged since 2026-07-17 — 50× this Actor. `automation-lab` (71 users, `automation-lab/court-records-scraper`) still charges a **$0.005 run-start fee plus $0.0023/record** on the Free plan, tapering to $0.00056 on Diamond; cheaper per record at very high volume on a paid Apify plan, more expensive for the small and mid-size runs most buyers actually make, and it bills you before it returns a single row.
+
+Three more real listings turned up in this niche, all narrower in scope than a nationwide dockets+opinions search: `parseforge` (28 users, `parseforge/harris-county-court-records-scraper`) is Harris County, TX only, at $0.005 start + $0.01199–0.01599/record — 6–8× this Actor's rate for one county. `fortuitous_pirate` (14 users, `fortuitous_pirate/florida-court-records-scraper`) is Florida only, at $0.05 start + $0.0035/record. `andrew_avina` (13 users, `andrew_avina/pacer-intelligence-mcp`) is a PACER-only MCP server at a flat $0.003/record, no start fee — closer to our rate but MCP-only, no plain Actor run, and RECAP/opinions coverage this Actor also has is out of scope for it. None of the three beats this Actor's $0.002 flat rate at any volume. *(Competitor pricing verified 2026-09-30.)*
 
 ## Data source, legality and privacy
 
