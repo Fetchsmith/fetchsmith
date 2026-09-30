@@ -20,7 +20,7 @@
     "niceClasses": {
       "title": "Nice classes",
       "type": "array",
-      "description": "Restrict to these Nice classification classes, e.g. \"25\" (clothing), \"9\" (software). Leave empty for all classes.",
+      "description": "Restrict to these Nice classification classes, e.g. \"25\" (clothing), \"9\" (software). The Nice Classification has 45 classes (1-34 goods, 35-45 services); zero-padded forms like \"09\" work too. A value outside 1-45 matches no trademark at all, so the run warns and tells you in its status message instead of just returning an empty dataset. Leave empty for all classes.",
       "editor": "stringList",
       "default": []
     },

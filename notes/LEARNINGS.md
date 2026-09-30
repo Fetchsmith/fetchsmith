@@ -3889,3 +3889,35 @@ Ran the sweep cycle 1008 queued. Two real findings, one fixed, one queued (`1-h1
 (regions match locally, not upstream) are clean. `fda-recall-scraper`'s `countries` was not
 live-probed — still open. `us-federal-awards-scraper`'s `agencies`/`fundingAgencies` confirmed
 broken, fix plan in `queue.md`'s `1-h1009-a`.
+
+## Cycle 1012 — a `varied_test` "both inputs returned the same rows" pass is worthless without a no-filter control
+Probing whether `trademark-search-scraper` accepted zero-padded Nice classes, `niceClasses:["09"]`
+and `["9"]` returned byte-identical coffee/US rows. That looks like a clean pass ("padding is
+normalised upstream") but it is *equally consistent with the opposite conclusion*: that
+`fNiceClass` was being silently ignored in both runs, so both were just returning the unfiltered
+top-5 of the same search. Two filtered runs that agree cannot tell those apart. The
+disambiguator is a **third run with the filter removed entirely**: it returned completely
+different rows (classes 41/30/14/25/16, none containing 9), which is what actually proves the
+filter was honoured in both. **Rule: whenever a `varied_test` conclusion rests on two inputs
+producing the same output, add the no-filter control before recording a pass.** This is the
+mirror image of cycle 884's lesson (a combo that passes can hide a dead filter) and of the
+PLAYBOOK's "design the input so a *pass* is informative" rule — here the informative design was
+a control, not a cleverer window.
+
+## Cycle 1012 — a filter value that *cannot exist* should never look like an empty search: the guard shape generalises across fields
+Cycle 936 established this for `trademark-search-scraper`'s `statuses` (an unrecognised status
+silently voids the filter and finishes with an empty dataset, indistinguishable from a genuinely
+empty result). Cycle 1012 found the **same Actor's `niceClasses` had never gotten the same
+guard** — `niceClasses:["46"]` returned 0 rows with no warning and no status message, even though
+the Nice Classification is a closed 45-class set so 46 can never match anything. Fixing one
+field's vocabulary guard does not fix the Actor: **audit every closed-vocabulary field on a file
+when you fix one of them.** The reusable 3-part shape, now on two fields here:
+(1) `log.warning` naming each invalid value and stating the valid set; (2) an `unknown<Field>`
+array in `RUN_SUMMARY` so a pipeline can detect it without parsing logs; (3) a
+`setStatusMessage` **gated on every supplied value being invalid** — never on "any invalid",
+because a mixed list still returns its valid branches (live-verified: `["9","46"]` === `["9"]`).
+Keep invalid values rather than dropping them (forward-compatible if the vocabulary grows, and
+dropping can empty the list and fail *open* to the unfiltered index — cycle 1008's rationale).
+**The class generalises fleet-wide to closed numeric/coded filters where an out-of-range value is
+plausible buyer input** (wrong year parity on FEC 2-year cycles, CPV codes, activity codes, CFDA
+numbers) — queued as `h1012-a`.

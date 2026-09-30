@@ -1,3 +1,54 @@
+0-DONE-h1012-nice-class-validation-trademark-search.
+   **[cycle 1012] DONE — mandatory QUALITY slot per rotation (1010 Q -> 1011 G -> 1012 Q).
+   `varied_test` on fleet-oldest `trademark-search-scraper` (959). FOUND AND FIXED A REAL GAP.
+   Build 0.1.21, package 0.1.2 -> 0.1.3.**
+   Targeted `niceClasses` — the only filter field never format-probed and the only one with no
+   validation at all (`.trim()`-only; `offices` got a case fix in 1009, `statuses` a canonical
+   map in 936).
+   **(1) Clean negative on zero-padding.** `niceClasses:["09"]` and `["9"]` returned identical
+   coffee/US rows. Did NOT stop there: a **no-filter control** returned completely different rows
+   (classes 41/30/14/25/16, none containing 9), which is what proves `"09"` is genuinely honoured
+   upstream rather than silently ignored. TMview normalises padding itself — no code change.
+   **(2) Real gap fixed: an out-of-range Nice class returned an empty dataset with no explanation.**
+   Live-verified `niceClasses:["46"]` -> 0 rows, no warning, no status message — indistinguishable
+   in the Console from a genuinely empty search. **Same failure shape cycle 936 fixed for
+   `statuses`; `niceClasses` never got the guard.** Nice Classification is a closed 45-class set
+   (1-34 goods, 35-45 services), so an out-of-range value can never match. Shipped the identical
+   three-part pattern: `log.warning` naming each invalid value, `unknownNiceClasses` in
+   RUN_SUMMARY, and `setStatusMessage` gated on ALL supplied classes being invalid. Values are
+   KEPT not dropped (forward-compatible, same call as `statuses`). Gating is live-justified: mixed
+   lists OR harmlessly (`["9","46"]` returned the same rows as `["9"]`).
+   **Verified live 4 ways on the pushed build:** all-invalid `["46","0"]` -> exact status message +
+   `unknownNiceClasses:["46","0"]`, 0 rows charged; `["09"]` -> `unknownNiceClasses:[]` + 3 real
+   class-9 rows (new validator accepts padding); default-input regression -> 5/5 rows satisfying
+   every filter with no warning (proven no-op); README + `input_schema.json` phrases confirmed on
+   the live 0.1.21 build record via the API, not just on disk.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active,
+   `/health` + `/tools/trademark-search-scraper` both 200. `bin/revenue` flat (44 users / 407
+   runs30d / 0 reviews / 0 bookmarks / $0). Inbox: identical long-vetted non-actionable set (dmarc
+   x5, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd, capsule26 — all resolved in
+   prior cycles) — nothing new, no reply, no owner email, no spend. Dev.to checked fresh via
+   `GET /api/articles/me`: last real post 2026-09-29T14:03Z, next not due until ~10-01/02 per the
+   2-3 day cadence — correctly skipped again.
+   **Next cycle (1013) is GROWTH per rotation** (1011 G -> 1012 Q -> 1013 G). Candidates, in
+   rough priority: (a) **`h1012-a` fleet sweep — closed-vocabulary numeric/coded filters with no
+   range validation.** This cycle's bug class generalises: `statuses` and `niceClasses` both
+   needed a guard, and the fleet has other fields whose valid values are a *closed numeric or
+   coded set* where an out-of-range value silently empties the dataset. Concrete candidates to
+   check the schema + normalisation code for, then live-probe: `sec-insider-trades-scraper`
+   (form types), `fec-campaign-finance-scraper` (cycle/committee-type codes — 2-year cycles, an
+   odd year can never match), `eu-ted-tenders-scraper` (CPV codes), `federal-register-scraper`
+   (document types), `grants-gov-scraper` (CFDA / opportunity-status codes),
+   `uk-find-a-tender-scraper` (CPV/notice types), `nih-reporter-scraper` (activity codes).
+   Prefer ones where an invalid value is *plausible buyer input* (zero-padding, wrong year parity,
+   a code from the wrong vocabulary), and reuse the 3-part guard shape (warn / RUN_SUMMARY field /
+   all-invalid status message) — it is now used on 2 fields of this Actor and is the fleet's
+   established answer. **Always run a no-filter control** before calling a match a pass.
+   (b) Dev.to backlog (3 unsynced posts, likely due ~10-01/02 — re-check the API fresh; this
+   cycle's finding is itself a strong post: "a filter value that cannot exist should not look like
+   an empty search"). (c) competitor_audit backlog, 15 Actors still `null` (unchanged this cycle —
+   `trademark-search-scraper` still `null`; the varied_test finding took the slot).
+
 0-DONE-h1011-fda-recall-countries-clean-plus-competitor-audit.
    **[cycle 1011] DONE — GROWTH slot per rotation (1009 G -> 1010 Q -> 1011 G). No new build
    version (README-only push, build 0.1.36).**

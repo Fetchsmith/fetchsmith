@@ -22,8 +22,31 @@ const offices = (Array.isArray(input.offices) ? input.offices : [])
     if (upper !== o) log.info(`Trademark office "${o}" matched TMview's "${upper}" — TMview's office codes are case-sensitive, so it was corrected for you.`);
     return upper;
   });
+// The Nice Classification is a closed set of 45 classes (1-34 goods, 35-45 services), so a value
+// outside it can never match a mark. Same failure shape as `statuses` below, verified live this
+// cycle: `niceClasses:["46"]` returns 0 rows with no explanation, indistinguishable in the Console
+// from a genuinely empty search. Zero-padding needs no correction -- TMview normalises it itself
+// ("09" and "9" returned byte-identical rows, and a no-filter control returned different rows, so
+// the padded form is honoured rather than silently ignored). A mix of valid and invalid values
+// still returns the valid branches (`["9","46"]` === `["9"]`), so only an all-invalid list is fatal.
+const NICE_CLASS_COUNT = 45;
+const unknownNiceClasses = [];
 const niceClasses = (Array.isArray(input.niceClasses) ? input.niceClasses : [])
-  .map((c) => String(c).trim()).filter(Boolean);
+  .map((c) => String(c).trim()).filter(Boolean)
+  .map((c) => {
+    // Accept anything TMview accepts (plain or zero-padded integer 1-45); flag the rest.
+    const n = /^\d+$/.test(c) ? Number(c) : NaN;
+    if (!Number.isInteger(n) || n < 1 || n > NICE_CLASS_COUNT) unknownNiceClasses.push(c);
+    return c;
+  });
+// Forward-compatible: an unknown value is still sent (same call as `statuses` below), but say so.
+if (unknownNiceClasses.length) {
+  log.warning(
+    `Nice class ${unknownNiceClasses.map((c) => `"${c}"`).join(', ')} is not a valid Nice Classification class `
+    + `(1-${NICE_CLASS_COUNT}: 1-34 goods, 35-45 services) — no trademark carries it, so this narrows your results `
+    + 'rather than widening them. Fix it or drop it.',
+  );
+}
 // TMview's `fTMStatus` vocabulary is exactly these four, and it matches them case-sensitively
 // (verified cycle 936 against the live API: a 1000-row sample spanning 59 offices produced only
 // these four values, and each one on its own returns rows; every other plausible value --
@@ -456,6 +479,7 @@ await Actor.setValue('RUN_SUMMARY', {
   stoppedByCap,
   error: runError,
   unknownStatuses,
+  unknownNiceClasses,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
   watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
@@ -468,6 +492,12 @@ if (pushed === 0 && statuses.length > 0 && unknownStatuses.length === statuses.l
   await Actor.setStatusMessage(
     `0 results because the status filter ${unknownStatuses.map((s) => `"${s}"`).join(', ')} matches nothing in TMview — `
     + `it only recognises ${TM_STATUSES.join(', ')} (case-sensitive). This is a filter-value problem, not an empty search.`,
+  );
+} else if (pushed === 0 && niceClasses.length > 0 && unknownNiceClasses.length === niceClasses.length) {
+  await Actor.setStatusMessage(
+    `0 results because the Nice class filter ${unknownNiceClasses.map((c) => `"${c}"`).join(', ')} matches nothing — `
+    + `the Nice Classification only has classes 1-${NICE_CLASS_COUNT} (1-34 goods, 35-45 services). `
+    + 'This is a filter-value problem, not an empty search.',
   );
 } else if (stoppedByCap) {
   await Actor.setStatusMessage(
