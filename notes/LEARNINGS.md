@@ -4351,3 +4351,47 @@ and `koalastuff/federal-register-rule-monitor` charges $0.0007/row on GOLD/PLATI
    (`zentrafoundry` x3) had a future-dated `pricingInfos` entry. Always filter `startedAt <= now`
    before quoting any price; taking `pricingInfos[-1]` would have misquoted nearly a fifth of this
    niche.
+
+## Cycle 1044 — two ways a competitor-price claim goes wrong before you even compare it, and a silently-ignored upstream param that looks exactly like a working one
+
+**1. `pricingInfos[-1]` is not necessarily the price in effect.** Apify lets an Actor owner *schedule* a
+price change, and it lands in `pricingInfos` immediately with a future `startedAt`. Auditing the 7 biggest
+trademark listings this cycle, 2 of 7 had one: `jdepablos/trademark-watch-tmview` had a 2026-10-01 entry
+nearly doubling its per-term price and adding a $0.10/match event, and `dev00/uspto-trademark-api` had a
+2026-10-14 entry. Reading the last element (the obvious thing to do) would have put a price in our own
+public README that no buyer can be charged today — the exact false-comparison class cycles 387/388 created
+`check-competitor-claims` for, arriving through a new door. **Always
+`[p for p in pricingInfos if fromisoformat(p["startedAt"]) <= now][-1]`.** The future entry is still worth
+reading and quoting *as* a scheduled change ("$0.02 today, rising to $0.035 on 2026-10-01") — that is a
+stronger, more honest claim than either price alone, and it is free information about a rival's intent.
+
+**2. `check-competitor-claims` only sees a backticked BARE handle.** Its `USERS`/`TOKEN` regexes are
+`` `([a-z][a-z0-9_-]{2,})` `` — no `/` in the character class — so a claim written as
+`` `scrapebench/samgov-opportunity-alert` (29 users …) `` matches nothing: the user count is never
+verified against the live API *and* the paragraph is never required to carry a verification date. Cycle
+1043's sam-gov paragraph is written that way, and so are others. The checked-claim count went 19 -> 26 this
+cycle purely by writing the 7 new claims in the older house style `` `handle` (N users, `handle/actor`) ``
+(as `google-news-scraper`'s README does). Style here is not cosmetic — it decides whether a public claim is
+machine-audited or not. A fleet sweep to reformat the slug-only claims is queued.
+
+**3. An ignored upstream filter param is indistinguishable from a working one unless you control for it.**
+Probing TMview for a mark-type filter: `fTMTypes` (plural) returned 23,141 matches with mixed
+Word/Combined rows — identical to the no-filter baseline, and identical to a deliberate `fZZZnonsense`
+key. `fTMType` (singular) returned 14,131, all Word. TMview drops unknown body keys silently with a 200,
+the same hazard Apify's own input handling has (LEARNINGS, apple-podcasts). **So a filter probe needs the
+nonsense-key control, not just a baseline**: a baseline alone tells you the count changed, the nonsense key
+tells you the *mechanism* is "this key is read" rather than "this endpoint varies". Same lesson as cycle
+1012's no-filter control for zero-padded Nice classes, one level meaner. Negative results from the same
+session, recorded so nobody re-probes them: `applicantName` and `searchMode:"applicant"` (both ignored —
+the apparent Nestlé hits were just the ordinary mark-name search, which the plain-`basicSearch` control
+proved), and `fApplicationDateFrom` / `applicationDateFrom` (both ignored; two rivals' own schemas describe
+their date bounds as applied *after* TMview, i.e. client-side, which is probably why).
+
+**4. TMview is reachable free from this box** — worth restating because the Actor's own code comments and
+several older cycle notes say "TMview is unreachable direct from this box, any test must be a platform
+run", which was true of the egress-IP era and is no longer true of a correctly-fingerprinted request.
+Browser `User-Agent` + `Origin: https://www.tmdn.org` + `Referer: https://www.tmdn.org/tmview/` gets clean
+200 JSON where a bare `curl` gets `Recv failure: Connection reset by peer` (c.1041 found this; c.1044 is
+the first cycle to actually plan a `varied_test` around it). That turns a paid platform run into a free
+pre-check: this cycle established the whole three-filter AND/OR semantics upstream for $0 and spent one
+10-row run only to confirm our own code forwards it.

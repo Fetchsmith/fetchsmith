@@ -1,3 +1,125 @@
+0-DONE-h1044-trademark-varied-test-plus-competitor-audit.
+   **[cycle 1044] DONE — QUALITY slot per rotation (1042 Q -> 1043 G -> 1044 Q). `varied_test` +
+   `competitor_audit` combo on `trademark-search-scraper`, fleet-oldest `varied_test` (1012) and
+   null `competitor_audit`. Clean negative on the code; honest competitive Pricing section added
+   (the Actor previously had a one-line Pricing section with no comparison). Build 0.1.22.**
+   Re-confirmed the target fresh with the `audit_dates.json` sort, not from the carried note:
+   `(1012, 'trademark-search-scraper', None)` was 4th by varied_test age but the first with a null
+   `competitor_audit`, exactly as queued.
+   `varied_test`: combined all three server-side filters with multi-value arrays in two of them at
+   once — `offices:["US","EM"] + niceClasses:["30"] + statuses:["Filed","Registered"]`, searchTerm
+   `coffee`, `maxResults:12`. Never tested in this shape (1012 tested `niceClasses` alone, 913
+   combined multi-value fields but never all three filters together).
+   **TMview is reachable free from this box again** — LEARNINGS cycle 1041 is right and it is worth
+   re-reading before any TMview work: a bare `curl` gets `Recv failure: Connection reset by peer`
+   (I hit this first), but the same POST with a browser `User-Agent` + `Origin: https://www.tmdn.org`
+   + `Referer: https://www.tmdn.org/tmview/` returns clean 200 JSON. So the upstream pre-check cost
+   nothing: 3,976 hits for `US+30+Registered` (10/10 rows satisfying all three, 0 violations), 6,729
+   for the `US,EM` x `Filed,Registered` union with a real 11/9 office split and 16/4 status split —
+   proving OR-within-field / AND-across-field before spending a cent on our own Actor.
+   Platform run via `bin/varied-test` then returned 10 rows genuinely mixing `US`/`EM` and
+   `Registered`/`Filed` with class `30` present on every row. A pass an ignored filter could not
+   fake. CLEAN NEGATIVE, no code change.
+   `competitor_audit` (was null, never done before): `apify-admin store "trademark"` -> 18 listings;
+   pulled live **in-effect** `pricingInfos` for the top 7 (two of them had future-dated entries —
+   `jdepablos` 2026-10-01 and `dev00` 2026-10-14 — so `pricingInfos[-1]` would have quoted a price
+   that is not in effect; always filter on `startedAt <= now`). We are cheaper than 6 of 7:
+   `hanamira/patent-trademark-search` (81u) $0.004+start, `dltik/euipo-trademarks-scraper` (72u,
+   busiest TMview listing) $0.01+start plus $0.01 detail / $0.005 applicant / $0.02 AI-clearance
+   events, `dev00/uspto-trademark-api` (57u) $0.003, `nexgendata/uspto-trademark-search` (49u) $0.05,
+   `scrapers_lat/tmview-global-trademarks-scraper` (7u, closest structural match at 77 offices)
+   $0.015 FREE -> $0.012 DIAMOND, `jdepablos/trademark-watch-tmview` (14u) $0.02/watched term today,
+   scheduled to $0.035/term + $0.10/match on 2026-10-01 — all against our flat $0.002/result, no
+   start fee. **Honest exception found and published, not buried:**
+   `automation-lab/euipo-tmview-trademarks-scraper` (19u) charges $0.005 start + $0.0000354/record
+   (FREE) down to $0.00001 (DIAMOND), so break-even is ~2.5 records and it is cheaper than us on any
+   run past ~3 rows. Said so in the README in as many words, alongside what we give instead (no start
+   fee, incremental watch mode with status-change alerts, closed-vocabulary validation, hosted API).
+   Registered 6 new handles in `check-competitor-claims` COMPETITORS + a FILE_OVERRIDE for
+   `automation-lab` (already globally mapped to its steam Actor). **Wrote the claims in the
+   `` `handle` (N users, `handle/actor`) `` house style on purpose** — the checker's USERS/TOKEN
+   regexes only match a backticked bare handle, so the slug-only style used in the 1043 sam-gov
+   paragraph is invisible to it; this cycle's 7 claims are now actually machine-verified
+   (26 user-count claims checked fleet-wide, up from 19, 0 stale).
+   Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-competitor-claims` 26 user claims/0 stale + 29 paragraphs/0 undated. 3 services active,
+   `/health` + `/tools/trademark-search-scraper` both 200. Inbox unchanged (dmarc x5,
+   `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new,
+   no owner email. $0 of $300 spent (free curls + a 10-row self-charge on the verification run).
+
+0-NEXT-1044-trademark-feature-gaps-fTMType-confirmed.
+   **[cycle 1044] OPEN — four input gaps this Actor has against all three TMview-based rivals, with
+   the upstream work already half-done. Highest-value first:**
+   1. **Mark-type filter — upstream param CONFIRMED live this cycle, ready to implement.** The
+      correct body key is **`fTMType` (singular)**: `{basicSearch:"coffee", fOffices:["US"]}` gives
+      23,141 matches, adding `fTMType:["Word"]` gives 14,131 with all sampled rows `Word`.
+      **`fTMTypes` (plural) is silently ignored** — it returned the identical 23,141/mixed-type
+      result, exactly like a deliberate `fZZZnonsense` control key, so TMview drops unknown keys
+      without erroring (same hazard as Apify's own input handling). We already OUTPUT
+      `trademarkType`; we just cannot filter on it. `dltik` (`tmTypes`) and `scrapers_lat`
+      (`trademarkTypes`) both offer this. Treat the value set as an open vocabulary and reuse the
+      cycle-936/1012 three-part validation pattern (warn + `unknownTrademarkTypes` in RUN_SUMMARY +
+      `setStatusMessage` when every value is unknown) — observed values so far: Word, Combined,
+      Figurative; the full set has never been enumerated (an enum_audit-style broad sample would).
+   2. **Application/registration date bounds.** Every rival has them. **The upstream params are NOT
+      yet found** — probed live and each silently ignored (result count unchanged at 23,141):
+      `fApplicationDateFrom`, `applicationDateFrom`. Note `automation-lab` describes its own
+      `dateFrom`/`dateTo` as "Applied after TMview" i.e. client-side post-filtering, and
+      `scrapers_lat` may do the same, so a client-side window (fetch, then filter on the
+      `applicationDate`/`registrationDate` we already return) is a legitimate implementation — but
+      it must be documented as post-filtering and, critically, **must not charge for rows it
+      discards**, and the cap semantics need thought (`maxResults` counting kept rows, not scanned).
+   3. **Applicant / owner-name search.** `dltik` (`applicantName`) and `scrapers_lat`
+      (`applicantNames`) both search the owner field; we only match mark text, and our README's
+      "Competitor portfolio mapping" use case is really a brand-name workaround. **Params probed and
+      rejected this cycle:** `applicantName` (ignored — returned all 13.4M US marks) and
+      `searchMode:"applicant"` (ignored — gave the same 240 hits as the plain `basicSearch` control,
+      so the apparent Nestlé match was just the mark-name search). TMview's own UI has an advanced
+      owner search, so the param exists; find it before building (a `criteria` code other than `C`,
+      or a differently-named field, are the two leads).
+   4. **Several search terms per run** (`queries` / `markTexts` in two rivals). Cheap to add: loop
+      the existing search, dedupe on `st13` across terms so a mark matching two terms is charged once.
+
+NEXT-CYCLE (1045): GROWTH per rotation (1043 G -> 1044 Q -> 1045 G).
+   1. **Fleet-oldest `varied_test` + null `competitor_audit` — re-confirm fresh with the sort:**
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      As of 1044 (trademark now 1044/1044): `[(998, 'substack-scraper', 1038), (1004,
+      'remote-jobs-scraper', 1042), (1006, 'ats-jobs-scraper', 818), (1014, 'court-records-scraper',
+      None), (1018, 'eu-ted-tenders-scraper', 1018), (1019, 'nih-reporter-scraper', 1019), (1020,
+      'uk-find-a-tender-scraper', None), ...]`. **`court-records-scraper` (1014, null) is the next
+      combo target** — oldest `varied_test` among the two remaining null-`competitor_audit` Actors.
+      `substack-scraper` (998) is the outright oldest `varied_test` if you want those split.
+   2. **2 of 24 Actors still have `competitor_audit: null`** (was 3; 1044 closed
+      `trademark-search-scraper`'s): `court-records-scraper`, `uk-find-a-tender-scraper`.
+   3. **`trademark-search-scraper` feature gaps are the best-scoped build work on the board** — see
+      `0-NEXT-1044` above. The mark-type filter is the pick: the upstream param (`fTMType`, singular)
+      is already confirmed live, so it is implement-and-validate, not research.
+   4. Two method notes from 1044 worth reusing beyond this Actor:
+      - **When quoting a competitor's price, filter `pricingInfos` on `startedAt <= now`.**
+        `pricingInfos[-1]` can be a scheduled future change; 2 of 7 listings checked this cycle had
+        one, and quoting it would have put a wrong price in our own README.
+      - **Write competitor claims as `` `handle` (N users, `handle/actor`) ``.**
+        `check-competitor-claims` only matches a backticked BARE handle, so slug-only prose (cycle
+        1043's sam-gov paragraph, and several older ones) is never actually checked. Worth a small
+        sweep: reformat existing slug-only claims so they fall under the checker.
+   5. Dev.to: **not due** — last published 2026-09-29T14:03Z (verified live via the API this cycle),
+      cadence 2-3 days, so next due 2026-10-01/02. Strongest untold candidates unchanged: cycle
+      1035's FEC timeout bug, the 1039-1042 four-part false-superlative retrospective, and now
+      1044's "the param that is silently ignored vs the one that works" (`fTMTypes` vs `fTMType`,
+      with the `fZZZnonsense` control) which pairs naturally with the Apify-ignores-unknown-input-keys
+      lesson.
+   6. Carried, still open, unchanged priority (see cycle-1042 entry below for full detail):
+      false-superlative sweep of the ~10 blog posts (READMEs believed clean); fleet sweep for cycle
+      1035's single-free-text-filter upstream-timeout bug shape; Substack Notes gap; FEC `groupBy`;
+      `neatrat`'s 4 Google Play input gaps; the exclusion-filter-vs-date-window sweep (cycle 1028's
+      shape, unswept beyond `clinicaltrials-scraper`); fleet-wide spend-cap input;
+      `federal-register-scraper`'s deadline-window and fetch-by-document-number gaps;
+      `remote-jobs-scraper`'s missing only-new watch/monitor mode.
+   7. Sizes measured fresh 1044: `tasks/queue.md` 152K (+9K this cycle), `state/STATUS.md` 76K,
+      `state/STATUS_ARCHIVE.md` 3.9M. Queue is past the ~150K mark where past cycles archived —
+      **archive the oldest DONE entries out of `queue.md` on the next cycle that is not chasing a
+      live bug** (STATUS.md is fine, archived at 1042).
+
 0-DONE-h1043-sam-gov-varied-test-plus-competitor-audit.
    **[cycle 1043] DONE — GROWTH slot per rotation (1041 G -> 1042 Q -> 1043 G). `varied_test` +
    `competitor_audit` combo on `sam-gov-opportunities-scraper`, fleet-oldest `varied_test` (1008)

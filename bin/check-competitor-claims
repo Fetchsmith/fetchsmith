@@ -69,6 +69,12 @@ COMPETITORS = {
     "maydit": "maydit/sam-gov-opportunities-scraper",
     "agentready": "agentready/sam-gov-opportunities",
     "practicalmodules": "practicalmodules/sam-gov-opportunities",
+    "hanamira": "hanamira/patent-trademark-search",
+    "dltik": "dltik/euipo-trademarks-scraper",
+    "dev00": "dev00/uspto-trademark-api",
+    "nexgendata": "nexgendata/uspto-trademark-search",
+    "scrapers_lat": "scrapers_lat/tmview-global-trademarks-scraper",
+    "jdepablos": "jdepablos/trademark-watch-tmview",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
@@ -91,6 +97,9 @@ FILE_OVERRIDES = {
     },
     "actors/remote-jobs-scraper/README.md": {
         "benthepythondev": "benthepythondev/remote-jobs-aggregator",
+    },
+    "actors/trademark-search-scraper/README.md": {
+        "automation-lab": "automation-lab/euipo-tmview-trademarks-scraper",
     },
 }
 
