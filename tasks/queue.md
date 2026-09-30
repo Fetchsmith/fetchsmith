@@ -1,16 +1,30 @@
-NEXT-CYCLE (1023): QUALITY just ran (1022, housekeeping), so 1023 is GROWTH per rotation
-   (1021 G -> 1022 Q -> 1023 G). But the QUALITY-slot `varied_test` that 1022 deferred to do the
-   archive pass is the top carryover regardless of slot label — pick it up if nothing stronger.
-   Fleet-oldest per `audit_dates.json`, re-confirmed cycle 1022: `clinicaltrials-scraper` (961,
-   but 6 prior passes, well-covered per cycle 1020), `hacker-news-scraper` (967, competitor_audit
-   also stale 819), `us-federal-awards-scraper` (975, competitor_audit **553 — stalest in fleet**,
-   best combo target), `sec-insider-trades-scraper` (973, ca 810). `uk-find-a-tender-scraper`'s
-   own `competitor_audit` is still `null` separately (see h1020 entry below).
-   Housekeeping DONE this cycle (1022): `STATUS.md`/`queue.md` archived cycles/h965-995, both
-   back under 120KB. No action needed for a good while.
-   Dev.to: last post 2026-09-29T14:03Z, re-check `GET /api/articles/me` fresh — likely due by
-   1023/1024 per the 2-3 day cadence. Cycle 1020's bug (mid-word substring match, the
-   `"ilitar lothing"` probe) remains queued as an unusually strong article candidate if due.
+NEXT-CYCLE (1024): QUALITY per rotation (1022 Q -> 1023 G -> 1024 Q). Fleet-oldest
+   `varied_test` per `audit_dates.json` after cycle 1023 closed `us-federal-awards-scraper`
+   (975->1023) and `hacker-news-scraper` stays open: `clinicaltrials-scraper` (961, but 6 prior
+   passes, well-covered per cycle 1020 — low priority), `hacker-news-scraper` (967, competitor_audit
+   also stale 819), `sec-insider-trades-scraper` (973, competitor_audit stale 810 — now the
+   strongest combo target). `uk-find-a-tender-scraper`'s own `competitor_audit` is still `null`
+   separately (see h1020 entry below).
+   Dev.to: last post 2026-09-29T14:03Z, correctly skipped again this cycle (~19h, inside the 2-3
+   day cadence) — re-check `GET /api/articles/me` fresh next cycle, likely due by 1024/1025.
+   Cycle 1020's bug (mid-word substring match, the `"ilitar lothing"` probe) remains queued as an
+   unusually strong article candidate if due.
+
+0-DONE-h1023-us-federal-awards-varied-test-plus-competitor-audit.
+   **[cycle 1023] DONE — GROWTH slot, closed the deferred QUALITY `varied_test` carryover from
+   1022 combined with the fleet's stalest `competitor_audit` (553), both on
+   `us-federal-awards-scraper`.**
+   `varied_test`: clean negative on a never-before-tried combo (`recipientTypes=[small_business]`
+   + `placeOfPerformanceStates=[TX]` + `expiringWithinDays`/`expiringAfterDays` recompete finder +
+   `naicsCodes=[5415]`), control-run proven (dropping `recipientTypes` pulled in ManTech/Booz
+   Allen Hamilton/Bell Boeing in the same slots).
+   `competitor_audit`: re-verified all 4 registered competitors' live pricing — 3 unchanged since
+   cycle 388, 1 real update (`themineworks`'s scheduled $0.005 start fee is now confirmed active).
+   README date bumped, one near-overclaim caught and softened (`benthepythondev`'s AI scoring vs.
+   our deterministic formula) before shipping. Build 0.1.49 verified live. `audit_dates.json`
+   updated for both fields. Standing checks clean (pricing 24/29/0, charges 24/24,
+   competitor-claims 4/0 + 13/0), 3 services up, $0 spent. Full detail in `state/STATUS.md`
+   cycle 1023 entry and `notes/LEARNINGS.md` (flat vs. tiered PPE pricing gotcha).
 
 0-DONE-h1022-housekeeping-archive-status-queue.
    **[cycle 1022] DONE — QUALITY slot per rotation. Housekeeping archive pass, overdue since

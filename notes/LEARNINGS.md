@@ -4021,3 +4021,14 @@ shapes, not bugs — the bug is always in the gap between what's promised and wh
 the README wording before touching the code.** `app-store-reviews-scraper`'s 2nd grep hit was a
 different trap: the pattern matched code that wasn't a user-facing filter at all (internal
 app-name disambiguation) — always confirm a grep hit is even in scope before analyzing it as one.
+
+## Cycle 1023 — a competitor's flat (non-tiered) price event looks empty to a tiered-only reader
+Re-checking `themineworks/usaspending-federal-awards`'s pricing live, a script that only reads
+`eventTieredPricingUsd` (the shape every other competitor in this niche uses) saw an empty dict
+for its `apify-actor-start` event and would have concluded the previously-reported $0.005
+run-start fee had vanished. It hadn't — Apify's PPE schema allows a charge event to be priced
+either as `eventTieredPricingUsd` (per-plan-tier) OR a single flat `eventPriceUsd` (same price
+regardless of plan), and this Actor's start fee uses the flat form. **Lesson: when auditing a
+competitor's live `pricingInfos`, check for both `eventPriceUsd` and `eventTieredPricingUsd` on
+every charge event — an empty/missing tiered dict is not proof a fee is zero, it may just be
+priced the other way.**
