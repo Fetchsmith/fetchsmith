@@ -1,5 +1,5 @@
 {
- "ts": 1790777355,
+ "ts": 1790782523,
  "date": "2026-09-30",
  "apify": {
   "google-news-scraper": {
@@ -349,7 +349,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 15,
-   "runs": 300,
+   "runs": 305,
    "ext_ok30d": 15,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -405,16 +405,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 9,
+   "runs30d": 10,
    "runs": 81,
-   "ext_ok30d": 9,
+   "ext_ok30d": 10,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 9,
+    "SUCCEEDED": 10,
     "TIMED-OUT": 0,
-    "TOTAL": 9
+    "TOTAL": 10
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -425,7 +425,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 9,
-   "runs": 62,
+   "runs": 63,
    "ext_ok30d": 9,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -463,8 +463,8 @@
  "apify_totals": {
   "public_actors": 24,
   "users": 44,
-  "runs30d": 409,
-  "ext_ok30d": 406,
+  "runs30d": 410,
+  "ext_ok30d": 407,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,

@@ -4239,3 +4239,31 @@ free-text combo with a deliberately generic/high-cardinality value (occupation, 
 surname) even if the field has passed other combos before; breadth-driven upstream timeouts hide
 specifically in the *one-filter-alone* shape, between "zero filters" (already guarded on this Actor)
 and "two or more filters" (narrow enough in every case tried so far).
+
+## cycle 1036 — competitor audits: price the WHOLE niche, and check what key the rival makes the buyer bring
+- **Pull `pricingInfos` for every listing the store search returns, not just the top 3.** The FEC audit's three
+  traction leaders all price above us, which is the comfortable answer — but sweeping all 16 listings found three
+  near-idle Actors priced *under* us (`maximedupre` $0.0009 flat, `scrapesage` tapering to $0.00025 on DIAMOND,
+  `jungle_synthesizer` $0.0005/record behind a $0.10 start fee). If we had only checked the leaders we'd have
+  published "cheapest in the niche" as an unqualified claim that a buyer could disprove in one Store search.
+  Publishing the exceptions *with the reason they don't matter for most runs* (traction, or the start-fee crossover
+  — we win under ~200 rows against a $0.10 start fee) is both honest and more persuasive than the flat claim.
+- **A start fee changes the ranking at small row counts; compute the crossover, don't compare per-row prices alone.**
+  $0.0005/row + $0.10 start beats $0.001/row + $0 only past 200 rows. Our default `maxResults` is 20.
+- **Check whether the competitor makes the buyer supply an API key.** `ryanclinton` (the busiest FEC listing, 807
+  runs30d) defaults to the FEC's public `DEMO_KEY` — 1,000 req/hr **per egress IP, shared across every Apify user
+  hitting it at once** — unless the buyer registers their own key and pastes it in. We ship a registered
+  `FEC_API_KEY` as a secret env var (`GET /v2/acts/<id>/versions` → `envVars`), so buyers need no key and share no
+  throttle. That's a concrete, verifiable, buyer-visible advantage that no pricing or field comparison surfaces.
+  **Add "does the rival's input schema contain an `apiKey`/`token`/`cookie` field?" to the competitor-audit
+  checklist** — it's a one-line read off the rival's build `inputSchema` and it applies to any Actor fronting a
+  rate-limited public API.
+- **Read the rival's input schema off its latest build, not its Store page.** `GET /v2/acts/<u>~<n>/builds?desc=1&limit=1`
+  → `GET /v2/actor-builds/<id>` → `data.inputSchema` (it may be a JSON *string*, parse it). `data.versions[].sourceFiles`
+  is empty for other people's Actors, so don't try that route.
+- **`bin/check-competitor-claims` gotchas, both hit this cycle.** (1) `COMPETITORS` is keyed by *handle*, and a handle
+  can sell in two niches — `ryanclinton` was already mapped to `ryanclinton/sec-insider-trading`, so the FEC README
+  needed a `FILE_OVERRIDES` entry rather than a clobbering remap (second use of that mechanism; `parseforge`/
+  clinicaltrials was the first). (2) The `DATED` regex only accepts **verified | checked | re-verified | rechecked**.
+  "input surfaces **compared** 2026-09-30" reads as UNDATED and the checker will keep flagging it with a message that
+  looks like the date is missing entirely. Use one of the four accepted verbs.
