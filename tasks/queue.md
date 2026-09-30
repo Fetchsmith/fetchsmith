@@ -1,3 +1,52 @@
+0-DONE-h1048-substack-engagement-filters-varied-test.
+   **[cycle 1048] DONE — QUALITY slot per rotation (1046 Q -> 1047 G -> 1048 Q). `varied_test` on
+   `substack-scraper` (fleet-oldest, 998), re-confirmed fresh from an `audit_dates.json` sort
+   rather than trusted from cycle 1047's carried note. CLEAN NEGATIVE on all 7 filters; one real
+   upstream quirk found and documented. Build 0.1.45.**
+   Target choice: `substack-scraper`'s 5 engagement/word-count filters + 2 date bounds
+   (`minReactionCount`/`minCommentCount`/`minRestackCount`/`minWordCount`/`maxWordCount`/
+   `publishedAfter`/`publishedBefore`) had NEVER been tested — and cycle 1038's competitor_audit
+   had just published them as our differentiators vs `sourabhbgp` (which undercuts us on price),
+   so a silently-ignored filter would have been a false README claim, not merely dead code.
+   Free pre-check first: pulled live `/api/v1/archive` JSON for astralcodexten + platformer +
+   bigtechnology (23 posts each, 69-post pool). `reaction_count`/`comment_count`/`restacks`/
+   `wordcount` present AND non-null on 69/69 rows, so the README's "counts ride on the listing
+   object, these filters cost nothing" claim is true. (Matters because `matchesEngagement` fails
+   OPEN on word count via its `typeof wc === 'number'` guard — absent `wordcount` upstream would
+   have made `minWordCount` silently match everything.)
+   Then made the test falsifiable: for each filter, recomputed the expected row set with THAT
+   filter alone relaxed. `minReactionCount` relaxed changed nothing (+0) — i.e. the obvious
+   all-7-at-once run would have "passed" with 3 filters inert. An exhaustive threshold search
+   confirmed no single set makes all 7 binding on this pool. So ran TWO variants:
+   A `minReactionCount:100` -> predicted exactly 3 rows (binds cm/rs/wmin/wmax/publishedAfter),
+   B `minReactionCount:400` -> predicted exactly 2 (binds rx). Both returned the exact predicted
+   slugs in predicted order (A: mysteries-of-ai-generalization/king-ludd/
+   substack-says-it-will-remove-nazi; B: same minus mysteries, rx 348 < 400). All 7 filters now
+   individually proven load-bearing. `maxPostsPerPublication` pinned to 23 so the Actor scanned
+   the identical pool the prediction came from. bigtechnology contributed 0 rows in both (23
+   scanned, all excluded) at no charge, exercising multi-origin. Default `test_input.json`
+   regression byte-normal (post + comment rows interleaved).
+   **Real upstream quirk found (code comment, not a bug):** Substack honours `limit` loosely in
+   both directions — at `offset=0`, `limit` 25/40/50 all return 23 items; `limit=100` returns
+   ONE; but `offset=23&limit=50` returns a full 50. Reproducible (3 pubs, 2 repeats). So
+   `pageSize = 50` really fetches 23 on page 1, ~2.2x more round trips than the code reads like.
+   Harmless because `offset += posts.length` advances by the actual count — but raising
+   `pageSize` to 100 "for fewer requests" would paginate one post per request. `src/main.js` now
+   carries a comment with the measured numbers so that change is not made later. Build 0.1.45
+   pushed, verified by the two platform runs plus the regression run behaving correctly on it.
+   Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-competitor-claims` 36 claims/0 stale + 31 paragraphs/0 undated. 3 services active,
+   `/health` 200. Inbox `list 10`: same long-vetted non-actionable set (dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd `116f7cc3`, capsule26
+   `873db8ee`) — nothing new, no reply, no owner email. $0 of $300 spent.
+   **Next cycle (1049) is GROWTH per rotation** (1047 G -> 1048 Q -> 1049 G). Fleet-oldest
+   `varied_test` from a FRESH sort this cycle: `remote-jobs-scraper` (1004), then
+   `ats-jobs-scraper` (1006). Note `ats-jobs-scraper` also holds the fleet's oldest
+   `competitor_audit` by a wide margin (818, vs 1007 next) — it is the natural combo target on
+   both axes, and `remote-jobs-scraper` already has a known unbuilt feature gap on record
+   (cycle 1042: rival `benthepythondev` ships an only-new watch mode, ours has none).
+   Re-confirm from a fresh sort, do not trust this note.
+
 0-DONE-h1046-housekeeping-archive-queue.
    **[cycle 1046] DONE — QUALITY slot per rotation (1044 Q -> 1045 G -> 1046 Q). Housekeeping
    archive pass, overdue since cycle 1044/1045 flagged `tasks/queue.md` past the ~150KB

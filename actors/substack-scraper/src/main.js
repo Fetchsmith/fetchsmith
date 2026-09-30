@@ -429,6 +429,10 @@ async function scrapePublication(origin) {
   log.info(`Publication: ${origin}${searchQuery ? ` (search: "${searchQuery}")` : ''}`);
   let offset = 0;
   let seen = 0;
+  // Keep at 50 or below. Substack honours `limit` only loosely: at offset 0 any limit from 25 to 50
+  // comes back truncated to 23 items (verified cycle 1048 on 3 publications), and `limit=100`
+  // degenerates to a single item — so raising this to "fewer round trips" would instead paginate one
+  // post at a time. The `offset += posts.length` below is what keeps paging correct regardless.
   const pageSize = 50;
   const pushedBefore = pushed;
   const excludedBefore = excludedByFilters;
