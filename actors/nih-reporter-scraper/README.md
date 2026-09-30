@@ -174,6 +174,8 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 
 `result` — **$0.0015 per returned item, no Actor-start fee.** Below the per-result price of the largest NIH RePORTER listing on Apify, and with no start fee to pay before the first row.
 
+The niche's Store leader by users, `pink_comic` (8 users, `pink_comic/nih-reporter-search`), charges $0.002 per result plus a $0.0001 Actor-start fee — we're 25% cheaper per row with no start fee at all, and this Actor adds award-amount/award-date range filters, an org-state filter, activity-code validation (with an unrecognised-code warning against a live-sampled 201-code list), an optional PubMed publication join, auto-chunking past the API's 15,000-row offset wall, and watch-mode change detection (new projects plus no-cost extensions/budget/status changes on ones you've already seen) that their listing's description doesn't mention. Re-verified against their live pricing 2026-09-30.
+
 ## Notes
 
 Only public data from NIH RePORTER's official API is collected. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
