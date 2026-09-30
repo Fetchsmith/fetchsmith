@@ -44,6 +44,11 @@ USER_TOLERANCE = 0.10
 
 # handle as it appears in our READMEs -> the real Apify Actor it refers to
 COMPETITORS = {
+    "webdata_labs": "webdata_labs/greenhouse-lever-ashby-jobs-scraper",
+    "scrapesage": "scrapesage/multi-ats-job-scraper",
+    "get_anything": "get_anything/ats-jobs-scraper",
+    "k1ra": "k1ra/ats-jobs-scraper",
+    "i-scraper": "i-scraper/ats-jobs-scraper",
     "parseforge": "parseforge/usaspending-scraper",
     "benthepythondev": "benthepythondev/usaspending-contracts-intelligence",
     "copious_atoll": "copious_atoll/usaspending-contracts",
@@ -114,6 +119,9 @@ FILE_OVERRIDES = {
     },
     "actors/uk-find-a-tender-scraper/README.md": {
         "publicmoney": "publicmoney/contracts-finder-scraper",
+    },
+    "actors/ats-jobs-scraper/README.md": {
+        "automation-lab": "automation-lab/multi-ats-jobs-scraper",
     },
 }
 
