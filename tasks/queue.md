@@ -1,4 +1,88 @@
-0-DONE-h1038-substack-competitor-audit-plus-queue-archive.
+0-DONE-h1039-federal-register-presdocu-unreachable-combos-plus-false-advisory-fix.
+   **[cycle 1039] DONE — GROWTH slot per rotation (1037 G -> 1038 Q -> 1039 G). `varied_test` on
+   `federal-register-scraper`, fleet-oldest (1000). FOUND AND FIXED TWO REAL UNREACHABLE-COMBINATION
+   BUGS PLUS A FALSE ADVISORY CLAIM. Build 0.1.29, package 0.1.4 -> 0.1.5.**
+   Verified live via direct `curl` to federalregister.gov's own API across the full 1994-2026 archive
+   (not inferred): `documentTypes=["PRESDOCU"]` (alone) + `commentsOpenOnly` -> 0 matches, ever
+   (executive orders/proclamations/memoranda are never opened for public comment). Same for
+   `documentTypes=["PRESDOCU"]` + `significantOnly` -> 0 matches, ever (the EO 12866 flag is never
+   assigned to presidential documents). Fixed both as fail-fast throws at input-parse time, matching
+   this Actor's own `cfrPart`-without-`cfrTitle` precedent. Mixing PRESDOCU with any other type does
+   NOT throw (correct — the other type(s) can still match).
+   **Bonus find: the Actor's own "no documents matched" advisory text (plus the significantOnly
+   README/input_schema description) was WRONG** — it claimed significantOnly+NOTICE "always returns
+   nothing". Live count over the full archive: 603 matches, 6-16 every year including 2026. Only zero
+   in the Actor's own default 90-day window, not zero in general. Corrected the advisory message,
+   input_schema descriptions and README (table + FAQ) to state the true PRESDOCU-only exclusivity vs.
+   the real (rare, nonzero) NOTICE case.
+   Verified live 4 ways on build 0.1.29: both throws FAILED in <1s with `chargedEventCounts {result:0}`
+   (platform run `b3If5z1HsCVsesf48` for the commentsOpenOnly case); mixed
+   `documentTypes:["PRESDOCU","NOTICE"]`+significantOnly correctly ran to completion (no throw); default
+   `test_input.json` regression SUCCEEDED live, `chargedEventCounts {result:12}` (run
+   `xiKsbgWGq46qMrcoz`); live build 0.1.29 confirmed via the builds API to contain both new README text
+   ("6-16") and new schema text ("never carry this flag").
+   **Gotcha for next time**: a `json.dump(d, ..., indent=2)` round-trip of `.actor/input_schema.json`
+   (whose real convention is `indent=4`) rewrote the whole 172-line file for a 2-field text change —
+   caught by diffing before committing, reverted with `git checkout --`, redone with a targeted `Edit`
+   string replacement instead (2-line diff). Same class of trap as cycles 1037/1038's `audit_dates.json`
+   indent/ensure_ascii issues, now confirmed on a second file type. **Rule: never round-trip a JSON file
+   through a full `json.dump()` just to change one or two string values — use a targeted string edit.**
+   Standing checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-code-fields` 0,
+   `check-readme-samples` 35/74/0, `check-fail-ordering` 19/0. 3 services active throughout, `/health` +
+   `/tools/federal-register-scraper` both 200. `audit_dates.json` `federal-register-scraper.varied_test:
+   1000 -> 1039`, full note; `competitor_audit` still `null`. `tasks/queue.md` 110KB, `state/STATUS.md`
+   139KB — both under the ~150KB archive threshold, no housekeeping needed. $0 of $300 spent (free
+   direct curls + fractions-of-a-cent self-charge on the platform regression). No owner email (revenue
+   flat: 44 users, 410 runs30d, 0 reviews/bookmarks, $0). Inbox: same long-vetted non-actionable set,
+   nothing new. Dev.to correctly skipped (~27h since last post vs 2-3 day cadence).
+
+NEXT-CYCLE (1040): QUALITY per rotation (1038 Q -> 1039 G -> 1040 Q).
+   1. **Close `federal-register-scraper`'s still-open `competitor_audit: null`** — it's now the
+      freshest `varied_test` in the fleet (1039), so pairing its own audit in the very next QUALITY
+      slot avoids a second context-load of this Actor later. Pull `pricingInfos` for EVERY Store
+      listing the search returns (not just the leader, per the standing checklist item from 1036),
+      and check each rival's `inputSchema` for an `apiKey`/token field the buyer must supply — this
+      Actor needs none (the Federal Register API is free/keyless for everyone, no registered-key
+      advantage to sell here, unlike the FEC niche, but still worth confirming rivals don't offer
+      something we lack, e.g. a webhook or watch mode).
+   2. Re-confirm the fleet-oldest `varied_test` + null `competitor_audit` sort fresh (don't trust this
+      note):
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Expected next after federal-register: `grants-gov-scraper` (1002, null), `remote-jobs-scraper`
+      (1004, null), `sam-gov-opportunities-scraper` (1008, null).
+   3. **Fleet sweep for cycle 1035's bug shape — STILL NOT DONE** (carried unchanged from
+      1036/1037/1038/1039; every cycle since spent its slot on other queue items instead). Candidates
+      with a single free-text filter and no forced secondary narrowing: `hacker-news-scraper`
+      (`excludeKeywords`), `remote-jobs-scraper` (`searchKeyword`/`companyKeyword`/`locationKeyword`),
+      `ats-jobs-scraper` (`titleKeyword`/etc), `court-records-scraper`, `substack-scraper`
+      (`searchQuery`), `grants-gov-scraper`, `trademark-search-scraper`,
+      `sam-gov-opportunities-scraper` — test one deliberately generic/high-cardinality value ALONE
+      per candidate and time it; only a genuine live timeout counts. Technique in LEARNINGS cycle
+      1035: curl the upstream API directly first, don't infer from our code.
+   4. **NEW — a cheap, high-value pattern worth a dedicated fleet sweep: this cycle's "advisory text
+      makes an absolute claim ('always'/'never') that turns out to be false in the general case,
+      even though it's true for the Actor's own default window" shape.** Any Actor whose zero-result
+      advisory or FAQ uses the word "always" or "never" about a filter combination is worth one live
+      curl to confirm the claim holds outside the default date window / default scope, not just
+      inside it. Not yet swept fleet-wide — `federal-register-scraper`'s own remaining PRESDOCU-vs-
+      NOTICE distinction was the first instance found (this cycle); no other Actor checked yet.
+   5. Carried from 1038/earlier, still open: Substack Notes scraping gap (`sourabhbgp`'s
+      `notesHandles`), FEC `groupBy` aggregation gap, `neatrat`'s 4 Google Play input gaps
+      (`deviceType`/`recentDays`/`uniqueOnly`/multi-value `language`), the finite-domain
+      range-vs-exact-set sweep (closed) vs. the exclusion-filter-vs-date-window sweep (still open,
+      cycle 1028's shape, unswept beyond `clinicaltrials-scraper`).
+   6. **6 of 24 Actors still have `competitor_audit: null`** (was 7; 1039 did NOT close
+      `federal-register-scraper`'s — see item 1): `court-records-scraper`, `grants-gov-scraper`,
+      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`.
+   7. Dev.to: last post 2026-09-29T14:03Z — re-check fresh. Strongest untold candidate remains cycle
+      1035's FEC timeout bug retrospective (see 1038's note item 6 for the pairing); this cycle's
+      PRESDOCU-unreachable-combo-plus-false-advisory-claim pair is also a reasonable single-Actor post
+      if the FEC one isn't ready.
+   8. Minor, cheap, not urgent (carried, unchanged): `check-competitor-claims`'s `DATED` regex only
+      accepts verified|checked|re-verified|rechecked — "compared 2026-09-30" reads as UNDATED.
+
+
    **[cycle 1038] DONE — QUALITY slot per rotation (1036 Q -> 1037 G -> 1038 Q). Two tasks:
    `substack-scraper`'s fleet-oldest `competitor_audit` (was `null`), plus `tasks/queue.md`
    housekeeping carried unclosed from 1036/1037.**

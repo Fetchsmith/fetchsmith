@@ -88,6 +88,29 @@ if (cfrPart && cfrTitle == null) {
     throw new Error('cfrPart requires cfrTitle to also be set — the CFR API has no title-less part lookup.');
 }
 
+// Verified live against the full 1994-2026 archive (both conditions alone, and together): a
+// Presidential Document never carries a comments-close date or an EO-12866 significance flag at
+// all (0 matches in FR's entire history for either pairing), unlike RULE/PRORULE/NOTICE which all
+// have real — if sometimes rare — matches. Only PRESDOCU-only selections are unreachable; mixing
+// PRESDOCU with any other type still returns whatever the other type(s) match.
+const presdocuOnly = documentTypes.length > 0 && documentTypes.every((t) => t === 'PRESDOCU');
+if (!publicInspection && presdocuOnly && commentsOpenOnly) {
+    throw new Error(
+        'commentsOpenOnly can never match when documentTypes is limited to PRESDOCU (Presidential Documents) — '
+        + 'executive orders, proclamations and memoranda are never opened for public comment (verified live: 0 '
+        + "matches across the Federal Register's entire 1994-2026 history). Drop commentsOpenOnly, or include "
+        + 'RULE, PRORULE or NOTICE in documentTypes.',
+    );
+}
+if (!publicInspection && presdocuOnly && significantOnly) {
+    throw new Error(
+        'significantOnly can never match when documentTypes is limited to PRESDOCU (Presidential Documents) — '
+        + 'the EO 12866 significance flag is never assigned to presidential documents (verified live: 0 matches '
+        + "across the Federal Register's entire 1994-2026 history). Drop significantOnly, or include RULE, "
+        + 'PRORULE or NOTICE in documentTypes.',
+    );
+}
+
 const today = new Date();
 // Every date the Federal Register publishes is an EASTERN calendar date: issues go live at
 // 8:45 a.m. ET and a comment period closes at 11:59 p.m. ET on its `comments_close_on` day.
@@ -769,8 +792,9 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'publication-date window often has zero real matches; drop one filter and retry. '
         + '(2) publicationDateFrom/publicationDateTo default to the last 90 days; widen them (the '
         + 'archive goes back to 1994-01-03). '
-        + '(3) significantOnly only ever matches rules and proposed rules — combining it with '
-        + 'documentTypes=["NOTICE"] or ["PRESDOCU"] always returns nothing. '
+        + '(3) significantOnly is overwhelmingly rules and proposed rules — Notices are a rare but real match '
+        + '(about 6-16 a year, verified live), so a zero result there over a short date window is most likely '
+        + 'cause (2), not this. documentTypes limited to PRESDOCU alone throws before reaching this message. '
         + '(4) an agency value that was not recognised is dropped with a warning above, not guessed at. '
         + '(5) cfrTitle/cfrPart is an AND with every other filter — a narrow CFR part combined with '
         + 'a short date window or a significantOnly flag often has zero real matches.',

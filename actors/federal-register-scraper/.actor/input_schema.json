@@ -104,13 +104,13 @@
         "significantOnly": {
             "title": "Significant rules only",
             "type": "boolean",
-            "description": "Only documents flagged significant under Executive Order 12866 (economically or policy significant). This flag only exists on final and proposed rules, so combining it with notices or presidential documents returns nothing.",
+            "description": "Only documents flagged significant under Executive Order 12866 (economically or policy significant). Overwhelmingly rules and proposed rules, but verified live NOT always zero on notices (about 6-16 a year carry the flag). Throws if Document types is limited to Presidential document alone -- presidential documents never carry this flag (0 matches across the Federal Register's entire 1994-2026 history).",
             "default": false
         },
         "commentsOpenOnly": {
             "title": "Comment period still open",
             "type": "boolean",
-            "description": "Only documents whose public comment period closes today or later \u2014 the deadline set a buyer still has time to act on. \"Today\" is the Eastern calendar day, the clock the deadline itself runs on (comments close at 11:59 p.m. ET), so a run scheduled in the small hours UTC still returns the documents closing that same ET day. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices.",
+            "description": "Only documents whose public comment period closes today or later \u2014 the deadline set a buyer still has time to act on. \"Today\" is the Eastern calendar day, the clock the deadline itself runs on (comments close at 11:59 p.m. ET), so a run scheduled in the small hours UTC still returns the documents closing that same ET day. Mostly proposed rules (92% carry a comment-close date) plus about a third of notices. Throws if Document types is limited to Presidential document alone -- presidential documents are never opened for public comment (0 matches across the Federal Register's entire 1994-2026 history).",
             "default": false
         },
         "cfrTitle": {
