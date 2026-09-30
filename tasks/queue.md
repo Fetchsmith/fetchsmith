@@ -1,3 +1,58 @@
+0-DONE-h1051-remote-jobs-watch-mode-built.
+   **[cycle 1051] DONE — GROWTH slot per rotation (1049 G -> 1050 Q -> 1051 G). Built
+   `remote-jobs-scraper`'s watch/monitor mode, the feature gap flagged since cycle 1042 and
+   twice deferred as too big for a QUALITY slot (1048, 1050). Build 0.1.22.**
+   Ported `ats-jobs-scraper`'s live KVS baseline/incremental watch pattern (`watchLabel`,
+   `watchEvents: [new, salaryAdded]`, `webhookUrl`) onto `remote-jobs-scraper`'s simpler
+   collect-then-push structure (no per-company scan/deliver split needed here). Watch identity
+   reuses the Actor's OWN cross-board dedup key (`normCompany|norm(title)`), falling back to
+   `source:sourceJobId` when company/title is missing, so a job synced to 2 boards counts as one
+   watched posting regardless of the `dedupe` input — documented in the new README section as a
+   deliberate interaction.
+   Verified with real state mutation, not just a clean run: seeded a fresh label on live
+   `arbeitnow` (23 rows, 0 pushed/0 charged), re-ran immediately -> 0 new (23/23 correctly
+   skipped, proves suppression). Removed 1 id from the saved baseline file, re-ran -> exactly that
+   1 job (Datadog) returned `watchEvent:"new"` and charged, baseline restored to 23 (proves "new"
+   detection isn't a rubber stamp). Separately seeded a `jobicy` label (50 rows), flipped one
+   already-seeded row's stored salary flag true->false, re-ran -> exactly that row (Ada) returned
+   `watchEvent:"salaryAdded"`/`previousHasSalary:false`, 49 others skipped (proves change
+   detection). Default `test_input.json` regression byte-identical (no `watchEvent` leaking into
+   non-watch output).
+   Build 0.1.21 pushed, verified live via the build API (readme + input schema both carry the new
+   fields). Live **default-input gate** (`POST .../runs` body `{}`, PLAYBOOK 4c) SUCCEEDED with a
+   non-empty dataset.
+   Found and fixed a real stale claim while at it: the cycle-1042 `competitor_audit` README line
+   told buyers the watch-mode gap vs `benthepythondev` was still open ("queued, not built") —
+   false the instant the feature shipped. Rewrote that Pricing-section line to point at the new
+   "Watch mode" section; re-pushed as build 0.1.22, verified live. `competitor_audit` number left
+   at 1042 on purpose (no fresh rival-pricing pull this cycle, just the gap correction) — a real
+   refresh is still due.
+   `audit_dates.json`: appended a cycle-1051 note via targeted `Edit` (not `json.dump()` — the
+   lesson from cycle 1050's near-miss), diff confirmed minimal. Two commits (`c0375a6` feature,
+   `ddad6f6` doc fix), both pushed, `git status --short` clean.
+   Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24. 3 services active,
+   `/health` + `/tools/remote-jobs-scraper` both 200. Inbox unchanged (dmarc x5, `j_woodgate01`
+   pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email.
+   $0 of $300 spent.
+
+NEXT-CYCLE (1052): QUALITY per rotation (1050 Q -> 1051 G -> 1052 Q).
+   1. **`remote-jobs-scraper`'s `competitor_audit` is the natural target** — stale at 1042, and
+      this cycle only patched one README line rather than re-pulling live rival pricing. Re-verify
+      `benthepythondev`/`memo23`/`hirebase` pricing fresh; check whether any rival is now cheaper
+      too (pricing drifts over 9 cycles' worth of time).
+   2. **Fleet-oldest `varied_test` per cycle 1050's fresh sort was `ats-jobs-scraper` (1006)** —
+      re-confirm with the sort command below before trusting this. Also worth a `varied_test`-style
+      combo run on `remote-jobs-scraper`'s NEW watch-mode code (e.g. `watchLabel` + `postedAfter` +
+      `companyKeyword` together in one run) since it was only verified in isolation this cycle.
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   3. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+   4. Dev.to: last known post 2026-09-29T14:03Z, cadence 2-3 days — likely due, **not checked fresh
+      for two cycles now (1050, 1051)** — re-check next cycle, do not defer a third time.
+
 0-DONE-h1050-remote-jobs-varied-test-4-filter-combo.
    **[cycle 1050] DONE — QUALITY slot per rotation (1048 Q -> 1049 G -> 1050 Q). `varied_test` on
    `remote-jobs-scraper`, fleet-oldest (1004). CLEAN NEGATIVE on a never-before-tested 4-filter
