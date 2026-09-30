@@ -282,8 +282,6 @@ function parseRss(xml) {
   }).get();
 }
 
-const fetchArticle = makeArticleFetcher({ http, bodyMaxChars, log });
-
 // Cheap, rule-based ticker extraction (no extra HTTP request) — deliberately narrow: only
 // explicit financial notation, never a bare capitalized word. Blind "any 2-5 uppercase letters"
 // matching floods results with false positives (WSJ, IPO, FSD, EV, AI, ...). Three signals, all
@@ -315,6 +313,11 @@ function extractTickersFrom(text) {
   while ((m = TICKER_PAREN_RE.exec(text))) { if (!NON_TICKER_ACRONYMS.has(m[1])) out.add(m[1]); }
   return [...out];
 }
+
+// extractTickersFrom runs on the FULL fetched body inside fetchArticle, before bodyMaxChars
+// truncates it for output — a ticker mentioned only past the truncation point (e.g. a $500-char
+// cap on a 4000-char article) must not silently disappear just because the buyer capped output size.
+const fetchArticle = makeArticleFetcher({ http, bodyMaxChars, log, extractTickers: extractTickers ? extractTickersFrom : null });
 
 // Decode Google News redirect URL -> publisher URL (batchexecute method).
 // Google rate-limits this endpoint per source IP (429) once you decode a lot in a short window;
@@ -413,7 +416,9 @@ for (const feed of feeds) {
     // Enrichment (decode/body) ran out of runway rather than finishing: don't charge the buyer for a
     // row whose url/articleBody is blank only because the clock stopped us mid-item. Drop it and stop.
     if (timeBudgetExceeded) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
-    const tickers = extractTickers ? { tickers: extractTickersFrom(`${it.title} ${article.articleBody ?? ''}`) } : {};
+    const tickers = extractTickers
+      ? { tickers: [...new Set([...extractTickersFrom(it.title), ...(article.articleBodyTickers ?? [])])] }
+      : {};
     keepGoing = await pushResult({ ...it, url, ...article, ...tickers, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
   }

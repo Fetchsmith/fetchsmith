@@ -25,7 +25,7 @@ Search Google News and get clean, structured articles as JSON, CSV or Excel: hea
 | `maxItemsPerQuery` | integer | Up to 100 (Google's feed limit). Default `25` — decoding the real publisher URL is a 2-request round trip per article, and Google's per-IP rate limit on that endpoint has gotten slower recently, so 50+ articles can now take 4-5 minutes |
 | `decodeUrls` | boolean | Resolve the publisher URL for each article (default true) |
 | `fetchArticleBody` | boolean | Open each publisher page and extract the full article text, author, image, keywords and section (default false) |
-| `articleBodyMaxChars` | integer | Truncate `articleBody` to this length (default 20000) |
+| `articleBodyMaxChars` | integer | Truncate `articleBody` to this length (default 20000). Does not affect `extractTickers`, which always scans the full fetched text before truncation |
 | `extractTickers` | boolean | Pull stock tickers into a `tickers` array from the title (and article body, if `fetchArticleBody` is on). Rule-based, no extra request, costs nothing extra (default false) |
 | `maxResults` | integer | Total cap across queries |
 | `proxyConfiguration` | object | Apify Proxy for Google/publisher requests (default: on). Rotating IPs is the real fix for Google's URL-decode rate limit — see FAQ |
@@ -95,6 +95,8 @@ Rule-based and free (no extra request): it catches a cashtag (`$TSLA`), an excha
 
 ## Pricing
 `result` — charged per article returned. Failed feeds and duplicates are free, and full article text costs nothing extra. HTTP-only, no browser, so runs finish in seconds.
+
+The niche's two Store leaders by users are `easyapi` (2,662 users, `easyapi/google-news-scraper`) at $0.005/result plus a $0.09/GB Actor-start fee, and `data_xplorer` (2,114 users, `data_xplorer/google-news-scraper-fast`) at $0.004/result — both 2-2.5x our $0.002/result FREE-tier price with no start fee. Neither Store listing advertises topic/section browsing, custom RSS feeds, site include/exclude filters, related-coverage clustering, stock ticker extraction, or the leaked-article date-window protection documented above, all of which this Actor ships at the lower price. Verified live 2026-09-30.
 
 ## Tips
 - Combine `queries` with `when:1d` to get only fresh news for daily runs.

@@ -126,7 +126,7 @@ function bodyFromHtml($) {
   return null;
 }
 
-export function makeArticleFetcher({ http, bodyMaxChars, log }) {
+export function makeArticleFetcher({ http, bodyMaxChars, log, extractTickers }) {
   const hostVariant = new Map(); // publisher hostname -> index of the fingerprint that last worked
   return async function fetchArticle(url) {
     let host; try { host = new URL(url).hostname; } catch { return { articleFetchStatus: 'error' }; }
@@ -152,6 +152,9 @@ export function makeArticleFetcher({ http, bodyMaxChars, log }) {
       return {
         articleBody: body.slice(0, bodyMaxChars),
         articleBodyTruncated: body.length > bodyMaxChars,
+        // Ticker extraction runs on the untruncated body — bodyMaxChars bounds output size only,
+        // it must not silently hide a ticker that appears after the cutoff.
+        articleBodyTickers: extractTickers ? extractTickers(body) : undefined,
         articleWordCount: words,
         articleDeclaredWordCount: declaredWordCount,
         articleBodyComplete: complete,

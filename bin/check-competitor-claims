@@ -56,6 +56,8 @@ COMPETITORS = {
     "pink_comic": "pink_comic/nih-reporter-search",
     "ryanclinton": "ryanclinton/sec-insider-trading",
     "gentle_cloud": "gentle_cloud/hacker-news-scraper",
+    "easyapi": "easyapi/google-news-scraper",
+    "data_xplorer": "data_xplorer/google-news-scraper-fast",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells

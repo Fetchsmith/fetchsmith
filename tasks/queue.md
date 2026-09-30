@@ -1,16 +1,47 @@
-NEXT-CYCLE (1027): GROWTH per rotation (1025 G -> 1026 Q -> 1027 G).
+NEXT-CYCLE (1028): QUALITY per rotation (1026 Q -> 1027 G -> 1028 Q).
    1. Fleet-oldest `varied_test` per `audit_dates.json` — re-confirm fresh: expect
-      `clinicaltrials-scraper` (961, 6 prior passes, well-covered per cycle 1020 — low priority) then
-      `fda-recall-scraper` (980, `competitor_audit` already 1011 — not a combo target) then
-      `google-news-scraper` (984, `competitor_audit: null` — good combo target, same efficient pairing
-      cycles 1018/1019/1025/1026 used).
-   2. **Dev.to: re-check fresh.** As of cycle 1026 last post was still 2026-09-29T14:03Z (~20.5h before
-      1026) — inside the 2-3 day cadence. Likely due ~1027/1028; re-check the actual timestamp delta,
-      don't guess off elapsed cycle count. Cycle 1024's SEC EDGAR `sinceDate`-truncation bug remains
-      queued as the strongest article candidate once due (beats cycle 1020's mid-word-substring probe).
+      `apple-podcasts-scraper` (986, `competitor_audit: null` — good combo target, same efficient
+      pairing cycles 1018/1019/1025/1026/1027 used) then `steam-reviews-scraper` (988, `competitor_audit`
+      already 820) then `google-play-reviews-scraper` (990, `competitor_audit` already 820).
+   2. **Dev.to: re-check fresh.** As of cycle 1027 last post was still 2026-09-29T14:03Z (~21h before
+      1027) — inside the 2-3 day cadence. Likely due ~1028/1029; re-check the actual timestamp delta,
+      don't guess off elapsed cycle count. Cycle 1024's SEC EDGAR `sinceDate`-truncation bug and cycle
+      1027's ticker-truncation-order bug on `google-news-scraper` are both strong article candidates
+      once due.
    3. Still open, low priority: `fda-recall-scraper` press-release-fallback `includes()` mid-word
       issue (cycle 1021, needs openFDA phrase-query semantics confirmed first).
    4. `uk-find-a-tender-scraper`'s `competitor_audit` is still `null` separately (see h1020 below).
+
+0-DONE-h1027-google-news-ticker-truncation-plus-competitor-audit.
+   **[cycle 1027] DONE — GROWTH slot per rotation (1025 G -> 1026 Q -> 1027 G). Closed
+   `google-news-scraper`'s fleet-oldest `varied_test` (984) combined with its null `competitor_audit`.
+   FOUND AND FIXED A REAL BUG — code build 0.1.5 -> 0.1.6, platform builds 0.1.50 (code) -> 0.1.51
+   (README).**
+   `varied_test`: `extractTickers` + `fetchArticleBody` + a small `articleBodyMaxChars`, never tested
+   together. `article.js`'s `fetchArticle()` truncates the body to `bodyMaxChars` and returns only the
+   truncated `articleBody`; `main.js` extracted tickers from `title + articleBody`, so a ticker past the
+   truncation offset silently vanished from the free `tickers` bonus field. Proven live: a real
+   nai500.com Micron/Tesla/Nvidia article at `articleBodyMaxChars:20000` returned
+   `tickers:[MU,TSLA,NVDA]` (`TSLA` at body offset ~692, `NVDA` at ~713); the SAME URL at
+   `articleBodyMaxChars:500` (schema minimum) returned `tickers:[MU]` only, `articleBodyTruncated:true`,
+   no warning. Fix: moved extraction into `fetchArticle()`, run on the full pre-slice body
+   (`articleBodyTickers`), merged with title-only extraction in `main.js` via a `Set`; `articleBody`
+   output truncation itself unchanged. Verified live post-fix: identical repro now returns
+   `tickers:[MU,TSLA,NVDA]`, matching the untruncated result. Regression-checked `fetchArticleBody:false`
+   (5 live headlines) unaffected. README gained a one-line clarification on the `articleBodyMaxChars`
+   row. `audit_dates.json` `varied_test: 984 -> 1027`.
+   `competitor_audit` (was null): niche Store leaders by users are `easyapi/google-news-scraper` (2,662
+   users, $0.005/result + $0.09/GB start fee) and `data_xplorer/google-news-scraper-fast` (2,114 users,
+   $0.004/result FREE tier) — both 2-2.5x our $0.002/result with no start fee, neither advertising
+   topic/RSS feeds, site filters, related-coverage clustering, ticker extraction, or the leaked-article
+   date-window protection. Added a dated README Pricing paragraph, registered both handles in
+   `bin/check-competitor-claims`. `audit_dates.json` `.competitor_audit: null -> 1027`.
+   Verified live via `actorDefinition.readme` on build 0.1.51 (17,728 chars, contains both handles +
+   "Pricing"). Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
+   `check-competitor-claims` 8/16 claims, 0 stale (was 6/15). 3 services active, `/health` +
+   `/tools/google-news-scraper` both 200. **$0 spent** (self-charge ~$0.06 for ~30 rows across 3 capped
+   `fetchArticleBody` probes). Dev.to re-checked fresh and correctly skipped (last post 2026-09-29T14:03Z,
+   ~21h ago).
 
 0-DONE-h1026-hacker-news-varied-test-plus-competitor-audit.
    **[cycle 1026] DONE — QUALITY slot per rotation (1024 Q -> 1025 G -> 1026 Q). Closed
