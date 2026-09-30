@@ -122,8 +122,9 @@ const buyerNameFilter = input.buyerName ? String(input.buyerName).normalize('NFC
 // OR-of-phrases variant of searchQuery: searchQuery is AND-of-words within one phrase
 // (competitor gap check, cycle 415 — ciel_labs/neverempty both expose a comma/array "any of
 // these phrases" mode, which our single AND-only searchQuery can't express: e.g. "software OR
-// cyber OR cleaning" needs 3 separate runs today). Each phrase can itself be multi-word (still
-// substring-matched as a whole phrase, not split into words) so "IT support" stays one unit.
+// cyber OR cleaning" needs 3 separate runs today). Each phrase can itself be multi-word and is
+// matched as a whole unit, not split into words, so "IT support" stays one phrase — but it is
+// anchored to a word start like searchQuery's words are (cycle 1020, see atWordStart).
 const keywordsAny = (input.keywordsAny ?? [])
     .map((k) => String(k).normalize('NFC').toLowerCase().trim())
     .filter(Boolean);
@@ -232,6 +233,29 @@ const SOURCES = {
 };
 
 const searchWords = searchQuery ? searchQuery.split(/\s+/).filter(Boolean) : [];
+
+// Word-START anchored matching for searchQuery/keywordsAny (cycle 1020). Both used a bare
+// hay.includes(), so every term also matched MID-word: the README's own worked example
+// searchQuery="IT support" returned "Supply of Specialist Military Clothing" (mil-IT-ary,
+// UXO S-IT-e Surveys, Arch-IT-ectural Services...), and the pure fragments "ilitar lothing"
+// matched that same notice — live-proven on the platform, not theoretical. Users were being
+// charged per result for rows that contain the word nowhere. Anchoring each term to a word
+// start removes the collisions while KEEPING stem/prefix search, which is the useful half of
+// substring matching: "consult" still matches "consultancy", "support" still "supporting".
+// indexOf loop rather than a lookbehind regex: no escaping, no engine-version risk.
+const WORD_CHAR = /[\p{L}\p{N}]/u;
+function atWordStart(hay, needle) {
+    if (!needle) return false;
+    // A term that opens with a non-word char (e.g. "-19", "&co") has no word start to anchor
+    // to; fall back to plain substring so it stays findable rather than silently never matching.
+    if (!WORD_CHAR.test(needle[0])) return hay.includes(needle);
+    for (let from = 0; ; ) {
+        const i = hay.indexOf(needle, from);
+        if (i === -1) return false;
+        if (i === 0 || !WORD_CHAR.test(hay[i - 1])) return true;
+        from = i + 1;
+    }
+}
 
 function isoSeconds(ms) {
     // Both APIs want YYYY-MM-DDTHH:MM:SS with no timezone suffix.
@@ -394,8 +418,8 @@ function matches(row) {
     }
     if (searchWords.length || keywordsAny.length) {
         const hay = [row.title, row.description, row.buyerName, row.cpvDescription, ...row.lotTitles].join(' ').normalize('NFC').toLowerCase();
-        if (searchWords.length && !searchWords.every((w) => hay.includes(w))) return false;
-        if (keywordsAny.length && !keywordsAny.some((k) => hay.includes(k))) return false;
+        if (searchWords.length && !searchWords.every((w) => atWordStart(hay, w))) return false;
+        if (keywordsAny.length && !keywordsAny.some((k) => atWordStart(hay, k))) return false;
     }
     if (buyerNameFilter && !String(row.buyerName ?? '').normalize('NFC').toLowerCase().includes(buyerNameFilter)) return false;
     if (regionFilter.length) {
@@ -895,7 +919,8 @@ if (pushed === 0 && !seeding) {
         log.warning(
             `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
             + `${filtered}. Most common causes, in order: (1) "searchQuery" is too specific — every word must appear `
-            + 'in the title, description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — both '
+            + 'in the title, description, buyer name or lot titles, each matched from a word start (so "ware" will '
+            + 'not find "software"); try one word, or a shorter stem. (2) "cpvCodes" does not match — both '
             + 'portals use 8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
             + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
             + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '

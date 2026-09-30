@@ -3981,3 +3981,29 @@ verify it live with the actual bad input before writing it into a log message, R
 or schema description, the same as any other bug claim.** The final fix excludes malformed values
 from the match entirely (neither narrows nor widens) rather than merely documenting a wrong
 prediction about their behavior.
+
+## Cycle 1020 — text filters: `includes()` is not "the word appears"
+`uk-find-a-tender-scraper`'s `searchQuery`/`keywordsAny` used a bare `hay.includes(word)`, so
+every term matched **mid-word**. The README's own worked example, `searchQuery: "IT support"`,
+returned "Supply of Specialist Mil**it**ary Clothing", "UXO S**it**e Surveys" and
+"Arch**it**ectural Services". Charged PPE rows, containing the search word nowhere.
+
+**The reusable probe:** to test whether a text filter is substring or word-matched, search for a
+pure mid-word *fragment* that is not a word — `searchQuery: "ilitar lothing"`. If rows come back,
+it is substring matching, proven in one run. Far more decisive than eyeballing whether results
+"look relevant", which is how this survived four prior `varied_test` passes (838/891/931/982) —
+all four tested other filters and never questioned this one.
+
+**The fix that is usually right: anchor to a word START, not a full word boundary.** Prefix
+matching is the *useful* half of substring search (`consult` → "consultancy", `support` →
+"supporting") and users rely on it; mid-word matching is the indefensible half. `atWordStart()`
+is an `indexOf` loop checking the preceding char is not `[\p{L}\p{N}]` — no lookbehind regex, no
+escaping. Fall back to plain `includes()` when the needle itself starts with a non-word char
+(`-19`, `&co`), or it can never match.
+
+**Don't let the fix overclaim in the README.** After shipping, `"IT support"` was *still* noisy:
+word-start is a prefix match, so `it` legitimately hits `its`/`item`/`iterative`. Verified by
+pulling a live `description` rather than assuming ("supporting the University in meeting **its**
+current... objectives"). That is the ceiling of a 2-letter filter, not a bug — so the FAQ says so
+and steers IT searches to `cpvCodes: ["72000000"]` instead. **Fleet follow-up:** any Actor whose
+filters are client-side `includes()` on free text has this bug class — swept in `2-h1020-fleet-sweep-substring-text-filters`.
