@@ -215,8 +215,73 @@ const startDate = input.startDate
 const effectiveStart = startDate < EARLIEST ? EARLIEST : startDate;
 
 const keywords = (startUrlKeywords.length ? startUrlKeywords : (input.keywords ?? [])).map((k) => String(k).trim()).filter(Boolean);
-const agencies = (input.agencies ?? []).map((a) => String(a).trim()).filter(Boolean);
-const fundingAgencies = (input.fundingAgencies ?? []).map((a) => String(a).trim()).filter(Boolean);
+// Top-tier agency names exactly as USAspending spells them (GET /api/v2/references/toptier_agencies/,
+// 111 agencies, live-snapshotted 2026-09-30). The "agencies" filter below matches this field
+// case-sensitively -- live-verified cycle 1009/1010: "department of energy" -> 0 rows,
+// "Department of Energy" -> 3 -- but names like "Department of Energy" and "National Aeronautics
+// and Space Administration" carry lowercase function words ("of", "and", "the") that a blind
+// .toUpperCase()/title-case would mangle, so this is a real lookup table, not a transform.
+const TOPTIER_AGENCY_NAMES = [
+  '400 Years of African-American History Commission', 'Access Board', 'Administrative Conference of the U.S.',
+  'Advisory Council on Historic Preservation', 'African Development Foundation', 'Agency for International Development',
+  'American Battle Monuments Commission', 'Appalachian Regional Commission', 'Armed Forces Retirement Home',
+  'Barry Goldwater Scholarship and Excellence In Education Foundation', "Commission for the Preservation of America's Heritage Abroad",
+  'Commission of Fine Arts', 'Commission on Civil Rights', 'Committee for Purchase from People Who Are Blind or Severely Disabled',
+  'Commodity Futures Trading Commission', 'Consumer Financial Protection Bureau', 'Consumer Product Safety Commission',
+  'Corporation for National and Community Service', 'Corps of Engineers - Civil Works',
+  'Council of the Inspectors General on Integrity and Efficiency', 'Court Services and Offender Supervision Agency',
+  'Defense Nuclear Facilities Safety Board', 'Delta Regional Authority', 'Denali Commission', 'Department of Agriculture',
+  'Department of Commerce', 'Department of Defense', 'Department of Education', 'Department of Energy',
+  'Department of Health and Human Services', 'Department of Homeland Security', 'Department of Housing and Urban Development',
+  'Department of Justice', 'Department of Labor', 'Department of State', 'Department of Transportation',
+  'Department of Veterans Affairs', 'Department of the Interior', 'Department of the Treasury', 'District of Columbia Courts',
+  'Election Assistance Commission', 'Environmental Protection Agency', 'Equal Employment Opportunity Commission',
+  'Executive Office of the President', 'Export-Import Bank of the United States', 'Farm Credit System Insurance Corporation',
+  'Federal Communications Commission', 'Federal Deposit Insurance Corporation', 'Federal Election Commission',
+  'Federal Financial Institutions Examination Council', 'Federal Labor Relations Authority', 'Federal Maritime Commission',
+  'Federal Mediation and Conciliation Service', 'Federal Mine Safety and Health Review Commission',
+  'Federal Permitting Improvement Steering Council', 'Federal Trade Commission', 'General Services Administration',
+  'Government Accountability Office', 'Gulf Coast Ecosystem Restoration Council', 'Harry S Truman Scholarship Foundation',
+  'Institute of Museum and Library Services', 'Inter-American Foundation', 'International Trade Commission',
+  'James Madison Memorial Fellowship Foundation', 'Japan-United States Friendship Commission',
+  'John F. Kennedy Center for the Performing Arts', 'Marine Mammal Commission', 'Merit Systems Protection Board',
+  'Millennium Challenge Corporation', 'Morris K. Udall and Stewart L. Udall Foundation',
+  'National Aeronautics and Space Administration', 'National Archives and Records Administration',
+  'National Capital Planning Commission', 'National Council on Disability', 'National Credit Union Administration',
+  'National Endowment for the Arts', 'National Endowment for the Humanities', 'National Labor Relations Board',
+  'National Mediation Board', 'National Science Foundation', 'National Transportation Safety Board',
+  'Northern Border Regional Commission', 'Nuclear Regulatory Commission', 'Nuclear Waste Technical Review Board',
+  'Occupational Safety and Health Review Commission', 'Office of Government Ethics', 'Office of Navajo and Hopi Indian Relocation',
+  'Office of Personnel Management', 'Office of Special Counsel', 'Overseas Private Investment Corporation',
+  'Patient-Centered Outcomes Research Trust Fund', 'Peace Corps', 'Pension Benefit Guaranty Corporation', 'Presidio Trust',
+  'Privacy and Civil Liberties Oversight Board', 'Public Buildings Reform Board', 'Railroad Retirement Board',
+  'Securities and Exchange Commission', 'Selective Service System', 'Small Business Administration',
+  'Social Security Administration', 'Southeast Crescent Regional Commission', 'Southwest Border Regional Commission',
+  'Surface Transportation Board', 'U.S. Agency for Global Media', 'U.S. Interagency Council on Homelessness',
+  'U.S. International Development Finance Corporation', 'United States Chemical Safety Board',
+  'United States Court of Appeals for Veterans Claims', 'United States Trade and Development Agency', 'Vietnam Education Foundation',
+];
+const AGENCY_NAME_BY_LOWER = new Map(TOPTIER_AGENCY_NAMES.map((n) => [n.toLowerCase(), n]));
+const unknownAgencyNames = [];
+const canonAgencyName = (name) => {
+  const canonical = AGENCY_NAME_BY_LOWER.get(name.toLowerCase());
+  if (!canonical) { unknownAgencyNames.push(name); return name; }
+  if (canonical !== name) log.info(`Agency name "${name}" matched USAspending's "${canonical}" — the "agencies"/"fundingAgencies" filters compare these case-sensitively, so it was corrected for you.`);
+  return canonical;
+};
+const agencies = (input.agencies ?? []).map((a) => String(a).trim()).filter(Boolean).map(canonAgencyName);
+const fundingAgencies = (input.fundingAgencies ?? []).map((a) => String(a).trim()).filter(Boolean).map(canonAgencyName);
+// Forward-compatible: an unrecognised name is still sent (USAspending may add/rename agencies), but
+// say so loudly -- unlike a dropped value, a name USAspending doesn't match narrows results to
+// nothing rather than widening them (same rationale as sam-gov-opportunities-scraper's setAsideTypes,
+// cycle 1008).
+if (unknownAgencyNames.length) {
+  log.warning(
+    `Agency name ${unknownAgencyNames.map((n) => `"${n}"`).join(', ')} is not one of USAspending's ${TOPTIER_AGENCY_NAMES.length} top-tier agency names `
+    + '(see https://api.usaspending.gov/api/v2/references/toptier_agencies/) — sent through as-is, but USAspending matches agency names exactly, '
+    + 'so an unrecognised spelling narrows your results to nothing rather than widening them. Fix the spelling or drop it.',
+  );
+}
 const recipients = (input.recipients ?? []).map((r) => String(r).trim()).filter(Boolean);
 const awardIds = (input.awardIds ?? []).map((a) => String(a).trim()).filter(Boolean);
 const states = (input.placeOfPerformanceStates ?? []).map((s) => String(s).trim().toUpperCase()).filter(Boolean);

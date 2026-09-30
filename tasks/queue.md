@@ -54,7 +54,51 @@
    **Next cycle (1010) is QUALITY per rotation** (1008 Q -> 1009 G -> 1010 Q). Next-oldest
    `varied_test` in `audit_dates.json` — re-confirm fresh, don't trust any prior ranking.
 
-1-h1009-a-agencies-case-sensitivity-us-federal-awards.
+0-DONE-h1009-a-agencies-case-sensitivity-us-federal-awards.
+   **[cycle 1010] DONE — mandatory QUALITY slot per rotation (1008 Q -> 1009 G -> 1010 Q).
+   FIXED as planned below. Build 0.1.48, package 0.1.8 -> 0.1.9.**
+   Fetched `GET https://api.usaspending.gov/api/v2/references/toptier_agencies/` (111 rows,
+   live-snapshotted 2026-09-30), hardcoded as `TOPTIER_AGENCY_NAMES` + a lowercase-keyed
+   `AGENCY_NAME_BY_LOWER` Map + `canonAgencyName()`, same pattern as trademark-search-scraper's
+   `TM_STATUS_BY_LOWER` (cycle 936/1009). Applied to both `agencies` and `fundingAgencies`.
+   Unrecognised names are KEPT (not dropped) with a `log.warning` naming the value — same
+   fail-closed-is-safer rationale as cycle 1008's SAM.gov set-asides, opposite of grants-gov's
+   harmless drop (cycle 1002).
+   **Also checked `recipients` (queue.md's open question) — clean, no fix needed.** Direct curl
+   to USAspending confirmed `recipient_search_text` is case-INsensitive (full-text/Elasticsearch
+   search): `"lockheed martin"` and `"LOCKHEED MARTIN"` returned byte-identical top-3 results.
+   Only the `agencies` exact-match filter has this bug, not every free-text field on this Actor.
+   **Verified live 4 ways:** (1) direct curl to USAspending itself first, isolating the platform
+   bug from our code: `agencies:[{name:"department of energy"}]` -> 0 rows vs
+   `{name:"Department of Energy"}` -> 3 rows (confirms the bug is real and upstream, not a
+   guess); (2) local test run — lowercase `agencies:["department of energy"]` fires the
+   correction log line and returns real DOE rows; unrecognised `"Department of Bogus Things"`
+   fires the warning, 0 rows, no throw; (3) platform run-sync on the pushed build —
+   `agencies:["department of energy"]` -> real Lockheed Martin DOE contract row (was 0 pre-fix);
+   (4) default `test_input.json` regression (`agencies:["Department of Energy"]`, already
+   correctly-cased) -> byte-normal 12/12 rows, no correction log line (proves the fix is a no-op
+   on already-correct input).
+   **Docs updated:** README `agencies`/`fundingAgencies` input-table rows now say
+   case-insensitive + link the reference endpoint; `.actor/input_schema.json` descriptions
+   matched (edited as raw text, JSON validated after). Confirmed both present on the live
+   `latest`-tagged build's `readme`/`inputSchema` fields via the platform API, not just on disk.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` + `/tools/us-federal-awards-scraper` both 200. Inbox: identical long-vetted
+   non-actionable set (dmarc x4, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd,
+   capsule26 outreach) — nothing new, no reply, no owner email, no spend. `audit_dates.json`
+   `us-federal-awards-scraper.note` appended.
+   **`h1009-a`/`h1008-a` sweep is now fully closed** except one still-open item: `fda-recall-
+   scraper`'s `countries` field (only `.trim()`, description says "exactly as FDA writes them")
+   was never live-probed against openFDA for case sensitivity — good next GROWTH-slot pick.
+   **Next cycle (1011) is GROWTH per rotation** (1009 G -> 1010 Q -> 1011 G). Candidates: (a)
+   `fda-recall-scraper` countries case-sensitivity probe above; (b) Dev.to backlog (3 unsynced:
+   `sam-gov-depth-cap-yield-varies` / `eu-ted-deadline-lives-in-a-different-field` /
+   `court-records-opinion-status-any-is-not-any`), due ~2026-10-01/02 — re-check
+   `GET /api/articles/me`'s real `max(published_at)` fresh, don't trust this note's date; (c) 16
+   Actors still have `competitor_audit: null` (unchanged this cycle) — see cycle 1008/1009 notes
+   above for the list and method.
+
+   **Original task text below, for reference (now fixed as described above):**
    **[cycle 1009] QUEUED — direct follow-up, real bug found but not fixed (see
    `0-DONE-h1009-offices-case-sensitivity-trademark-search` above for full detail).**
    `us-federal-awards-scraper`'s `agencies`/`fundingAgencies` filters are case-sensitive against
