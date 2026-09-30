@@ -119,7 +119,7 @@ Ask the API for `pageSize=1001` and it doesn't 400 — it silently returns **200
 
 ## Pricing
 
-**$0.0015 per result, no Actor-start fee.** The 41-user Store leader in this niche charges **$0.16 to start plus $0.012/result** — about 8x more per row, with a start fee we don't charge at all. 1,000 studies costs $1.50 here vs. $12.16 there.
+**$0.0015 per result, no Actor-start fee.** The niche's Store leader by users, `parseforge` (46 users), charges $0.16 to start plus $0.012/result on its free tier — about 8x more per row, with a start fee we don't charge at all. 1,000 studies costs $1.50 here vs. $12.16 there. Re-verified against their live pricing 2026-09-30.
 
 ## FAQ
 

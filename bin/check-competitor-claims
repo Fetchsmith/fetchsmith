@@ -54,6 +54,14 @@ COMPETITORS = {
     "trovevault": "trovevault/shopify-products-scraper",
 }
 
+# Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
+# both a usaspending scraper and a clinicaltrials one) -- COMPETITORS above is keyed by
+# handle only, so a second niche using the same handle needs a per-file override rather
+# than clobbering the first mapping.
+FILE_OVERRIDES = {
+    "actors/clinicaltrials-scraper/README.md": {"parseforge": "parseforge/clinicaltrials-scraper"},
+}
+
 USERS = re.compile(r"`([a-z][a-z0-9_]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_]{2,})`")
@@ -96,16 +104,17 @@ checked = flagged = 0
 
 for path in sources():
     name = os.path.relpath(path, ROOT)
+    competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
     for lineno, line in enumerate(open(path), 1):
         for handle, claimed in USERS.findall(line):
-            if handle not in COMPETITORS:
+            if handle not in competitors:
                 continue
             checked += 1
             claimed = int(claimed.replace(",", ""))
-            actual = live_users(COMPETITORS[handle], headers)
+            actual = live_users(competitors[handle], headers)
             if actual is None:
                 flagged += 1
-                print(f"STALE {name}:{lineno}  `{handle}` -> {COMPETITORS[handle]} is gone from the Store")
+                print(f"STALE {name}:{lineno}  `{handle}` -> {competitors[handle]} is gone from the Store")
             elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
                 flagged += 1
                 print(f"STALE {name}:{lineno}  claims {handle} has {claimed} users, live is {actual}")
@@ -116,12 +125,13 @@ print(f"check-competitor-claims: {checked} competitor user-count claim(s) checke
 checked = stale = 0
 for path in sources():
     name = os.path.relpath(path, ROOT)
+    competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
     text = open(path).read()
     offset = 1
     for para in text.split("\n\n"):
         lineno = offset
         offset += para.count("\n") + 2
-        named = sorted({h for h in TOKEN.findall(para) if h in COMPETITORS})
+        named = sorted({h for h in TOKEN.findall(para) if h in competitors})
         if not named and not (RIVALS.search(para) and COMPARISON.search(para)):
             continue
         what = ", ".join(named) if named else "an unnamed competitor"

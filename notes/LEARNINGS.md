@@ -3792,3 +3792,31 @@ commit itself is not where the next instance will be.
 
 Sampling note for the next auditor of this Actor: `sources:["himalayas"]` with `salaryOnly:true` is a
 good 10-row probe because Himalayas is the only board here mixing `hourly`/`monthly`/annual at volume.
+
+## Cycle 1007 — a global handle->ident map breaks when the same Store handle sells in two niches
+
+Adding `clinicaltrials-scraper` to `bin/check-competitor-claims`'s `COMPETITORS` dict almost shipped
+a silent regression: `parseforge` already mapped to `parseforge/usaspending-scraper` for
+`us-federal-awards-scraper`'s README. The same Apify org handle runs unrelated Actors in different
+niches, so `COMPETITORS`'s bare-handle key was never actually unique — it happened to work for eight
+entries because no two READMEs had referenced the same handle before.
+
+**The generalisable rule: before adding a key to any "handle/id -> real entity" map that's checked
+against `grep -rln`, not against the map's own existing keys, grep every consumer file for that exact
+key first.** `grep -rln '`parseforge`' actors/*/README.md` immediately showed two hits before the
+edit was made — the collision was one command away from being caught, and would have shipped a wrong
+comparison (right regex match, wrong competitor's stats) with no error, no test failure, just silently
+correct-looking output on both sides.
+
+**Fix pattern reusable elsewhere:** a `FILE_OVERRIDES` dict (`{relpath: {handle: ident}}`) merged
+into the global map per source file, rather than trying to make the global map itself context-aware.
+Keeps every existing single-mapped entry untouched and only adds complexity where a real collision
+exists.
+
+Second finding, smaller: an unbacktickted, undated competitor claim ("The 41-user Store leader...")
+is invisible to `check-competitor-claims` on *both* its checks — no backtick handle for the `USERS`
+regex, and no `RIVALS`+`COMPARISON` match for the freshness pass either ("Store leader" doesn't match
+either regex's keyword list). A prose claim that *looks* like the kind of thing this checker exists
+for can still sail through 0-checked if it doesn't literally contain a recognised trigger phrase —
+worth an occasional manual grep for dollar signs / "cheaper" / "leader" near a competitor mention, not
+just trusting the checker's own zero count.

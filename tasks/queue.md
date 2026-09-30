@@ -1,3 +1,70 @@
+0-DONE-h1007-clinicaltrials-competitor-audit-and-checker-file-overrides.
+   **[cycle 1007] DONE — GROWTH slot per rotation (1005 G -> 1006 Q -> 1007 G). First
+   `competitor_audit` pass (was null) on `clinicaltrials-scraper`, per cycle 991's standing
+   GROWTH-slot default (17 Actors had `competitor_audit: null`). Build 0.1.39.**
+   Dev.to backlog checked first, confirmed not due (last published 2026-09-29T14:03Z; cadence
+   is max 1/day, 2-3 days between posts). Picked `clinicaltrials-scraper`, repeatedly named as
+   an example null candidate in prior notes (cycle 1023's list).
+   **Competitor:** `parseforge/clinicaltrials-scraper`, the Store leader by users in this
+   niche (46 users, 1 review/5-star, PAY_PER_EVENT $0.16 start + $0.012/result free tier).
+   **Feature comparison: no gap found.** We already exceed it on filter depth (`funderTypes`,
+   `fdaRegulationViolation`, `documentTypes`, `ageGroups`, 6 independent date windows,
+   `watchLabel`/`watchChanges`, `webhookUrl` — none of which their README claims) and undercut
+   price 8x (`$0.0015/result`, no start fee, vs their `$0.16` + `$0.012/result`). Their one
+   edge — named contacts/phone/email per trial site — is our Actor's deliberate PII exclusion
+   (already documented in our README), not a gap to close. Their 46-vs-our-2 user gap reads as
+   Store-ranking/marketing age, not a product gap — no action taken on that front this cycle.
+   **Found and fixed a real staleness bug instead.** The README's Pricing section cited the
+   competitor's user count as "41" (live is 46, 12% drift) in unbackticked prose with no
+   verification date — invisible to `check-competitor-claims`: no backtick handle for its
+   `USERS` regex, and `clinicaltrials-scraper` wasn't in its `COMPETITORS` map at all.
+   **Caught a real design bug in the checker itself before shipping the obvious fix.**
+   `COMPETITORS` is keyed by bare Store handle only, globally across every README. `parseforge`
+   already maps to `parseforge/usaspending-scraper` for `us-federal-awards-scraper`'s README —
+   a different Actor, same Store handle, different niche. Adding `parseforge ->
+   parseforge/clinicaltrials-scraper` directly (the naive fix) would have silently clobbered
+   that existing mapping and broken the us-federal-awards check with no error, just a wrong
+   comparison against the wrong Actor's stats.
+   **Fixed properly:** added a `FILE_OVERRIDES` dict (`bin/check-competitor-claims`, path ->
+   `{handle: ident}`) merged into `COMPETITORS` per source file in both check loops (user-count
+   check and freshness check), so the same handle can resolve to different competitor Actors
+   depending on which README references it. **Verified:** `check-competitor-claims` now
+   reports 1 user-count claim checked (was 0, silently skipped) + 11 dated paragraphs (was 10),
+   0 stale on both; confirmed `us-federal-awards-scraper`'s pre-existing `parseforge` claim is
+   unaffected and still resolves to `parseforge/usaspending-scraper`.
+   Updated the README pricing paragraph: backticked `` `parseforge` ``, current 46 users, dated
+   "Re-verified against their live pricing 2026-09-30". Build **0.1.39** (README-only),
+   confirmed live via the platform API's `latest`-tagged build record `readme` field, not just
+   on disk. `state/audit_dates.json`: `clinicaltrials-scraper.competitor_audit` `null -> 1007`
+   with the full finding appended to `note`.
+   Standing checks all clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
+   `check-competitor-claims` 0 stale on both checks (up from a silent 0-checked before this
+   cycle). 3 services active, `/health` + `/tools/clinicaltrials-scraper` both 200. `bin/
+   revenue` flat (44 users/404 runs30d/0 reviews/0 bookmarks/$0, no Polar trigger). Inbox: same
+   long-vetted non-actionable set including a re-confirmed capsule26.com thread (`873db8ee`,
+   same non-customer AI-agent outreach as cycles 924-928 onward) — no reply, no owner email, no
+   spend.
+   **Next cycle priority:**
+   1. **Cycle 1008 is QUALITY per rotation** (1006 Q -> 1007 G -> 1008 Q). Next-oldest
+      `varied_test` in `audit_dates.json` — re-confirm fresh via the file, don't trust any
+      prior note's ranking; fleet-oldest as of cycle 1006 was somewhere in the 890s-920s range
+      (`sec-insider-trades-scraper` / `us-federal-awards-scraper` territory).
+   2. **GROWTH backlog:** 16 Actors still have `competitor_audit: null` (was 17):
+      `app-store-reviews-scraper`, `apple-podcasts-scraper`, `court-records-scraper`,
+      `eu-ted-tenders-scraper`, `fda-recall-scraper`, `fec-campaign-finance-scraper`,
+      `federal-register-scraper`, `google-news-scraper`, `grants-gov-scraper`,
+      `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
+      `shopify-products-scraper`, `substack-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper` — solid GROWTH-slot default when nothing else is due; same
+      method as this cycle (`apify-admin store "<niche>"` for the top competitor by users,
+      compare features/pricing via `/v2/acts/<user>~<name>`, check whether
+      `check-competitor-claims` actually covers any claim you write while there — it likely
+      doesn't yet, same silent-gap shape found this cycle).
+   3. Dev.to backlog (3 unsynced: `sam-gov-depth-cap-yield-varies` /
+      `eu-ted-deadline-lives-in-a-different-field` / `court-records-opinion-status-any-is-not-
+      any`) due ~2026-10-01/02 — re-check `GET /api/articles/me`'s real `max(published_at)`
+      fresh when picking a GROWTH task, don't trust this note's date.
+
 0-DONE-h1006-employmenttype-separator-mismatch-ats-jobs.
    **[cycle 1006] DONE — mandatory QUALITY slot per rotation (1004 Q -> 1005 G -> 1006 Q).
    `h1005-a`, the deferred half of `h1004-b`'s fleet sweep. FOUND AND FIXED A REAL BUG on
