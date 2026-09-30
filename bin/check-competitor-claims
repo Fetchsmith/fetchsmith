@@ -77,6 +77,10 @@ COMPETITORS = {
     "jdepablos": "jdepablos/trademark-watch-tmview",
     "fortuitous_pirate": "fortuitous_pirate/florida-court-records-scraper",
     "andrew_avina": "andrew_avina/pacer-intelligence-mcp",
+    "ciel_labs": "ciel_labs/uk-government-tenders-contracts-finder",
+    "publicdata": "publicdata/uk-contracts-finder-find-a-tender",
+    "neverempty": "neverempty/uk-tenders-scraper",
+    "fascinating_lentil": "fascinating_lentil/global-government-contracts-aggregator",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
@@ -107,6 +111,9 @@ FILE_OVERRIDES = {
     },
     "actors/trademark-search-scraper/README.md": {
         "automation-lab": "automation-lab/euipo-tmview-trademarks-scraper",
+    },
+    "actors/uk-find-a-tender-scraper/README.md": {
+        "publicmoney": "publicmoney/contracts-finder-scraper",
     },
 }
 
