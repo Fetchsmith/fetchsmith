@@ -80,6 +80,10 @@ One object per unique posting:
 
 Remote boards publish the region a candidate must be in (`"Worldwide"`, `"USA, Canada"`, `"UK"`), not an office address, and some rows carry no location at all. `locationKeyword` therefore drops rows with an empty location — that is a filter on what the board actually published, not a geocoder.
 
+### Job type is raw, not normalized
+
+Unlike `salaryPeriod`, **`jobType` is passed through in each board's own words** — there is no shared vocabulary here. Measured live 2026-09-30: Remotive sends snake_case (`full_time`, `part_time`, `contract`, `freelance`), Jobicy sends Title-Case-with-hyphen (`Full-Time`, `Contract`), Himalayas sends Title Case with a space (`Full Time`, `Contractor`, `Temporary`), and Arbeitnow's `job_types` is a free-text tag array that often mixes seniority and language with the job type itself (`"Freelancer / independent contractor (freiberufler / selbstständiger)"`, `"Werkstudent"`) — joined into one comma-separated string, or empty when the posting has none. Remote OK and Working Nomads send no job-type field at all, so `jobType` is always `null` on those rows. If you need one consistent value (e.g. "is this full-time?"), match case-insensitively on a substring (`full`, `contract`, `freelance`, `part`) rather than an exact string, or filter to a single `source`.
+
 ### Salary
 
 Every board publishes salary in exactly one shape and leaves the other empty: Remotive sends a free-text range only (`"$90k - $105k"`), Remote OK, Jobicy and Himalayas send numbers only, and Arbeitnow and Working Nomads publish none at all. **You get both columns filled from whichever one the board sent**, so you can sort and filter numerically across all sources and still show a human-readable range:

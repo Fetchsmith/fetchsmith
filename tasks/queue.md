@@ -1,3 +1,52 @@
+0-DONE-h1005-jobtype-raw-dialect-disclosure-remote-jobs.
+   **[cycle 1005] DONE (partial) — GROWTH slot per rotation (1003 G -> 1004 Q -> 1005 G).
+   Closed the `remote-jobs-scraper` half of `h1004-b`'s fleet sweep. Build 0.1.19, package
+   0.1.12 -> 0.1.13. Docs-only, no functional bug found on this Actor.**
+   h1004-b's shape: any output column fed by both a parser we wrote AND a raw upstream field
+   is a candidate for an undisclosed per-source dialect split (the `salaryPeriod` bug's
+   generalisation). Checked this Actor's own flagged candidates: `salaryCurrency` already
+   correctly disclosed (pre-existing README no-inference language). `jobType` had never been
+   audited for this shape — **found real, undocumented per-source dialects** (live-sampled
+   2026-09-30): Remotive `full_time` (snake_case), Jobicy `Full-Time` (Title-Case-hyphen),
+   Himalayas `Full Time` (Title Case space), Arbeitnow's `job_types` a chaotic free-text tag
+   array mixing German/English seniority words with the type itself, Remote OK/Working Nomads
+   always `null`.
+   **Key difference from the salaryPeriod bug: `jobType` has no input filter anywhere in this
+   Actor** (confirmed absent from `.actor/input_schema.json`) and README made no
+   cross-board-normalization claim, so this was never charge- or filter-visible — a quality/
+   trust gap, not a silent-drop bug. Arbeitnow's tags have no closed vocabulary to map from
+   (unlike salaryPeriod's finite hourly/daily/weekly/monthly/yearly set), so a `canonPeriod()`-
+   style normalizer isn't reliably buildable here — disclosure was the correct fix.
+   **Fix:** new README section "### Job type is raw, not normalized" (between "Location is a
+   region" and "Salary") with today's measured per-source examples and practical guidance
+   (substring/case-insensitive match, or filter to one `source`). No code change.
+   **Verified:** live build record (`/builds/9kYUEjX09mXofcseL`) confirms the new text is on
+   the `latest`-tagged build; a `varied-test` regression across the 4 salaried/typed sources
+   shows `jobType` values exactly matching what's now documented (Himalayas `Contractor`/
+   `Full Time`, Arbeitnow's mixed tag string) — the doc was checked against live data, not
+   just written from the earlier samples.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active, `/health` +
+   `/tools/remote-jobs-scraper` both 200 post-push. Inbox unchanged (owner's stale bold.org
+   forward + capsule26 outreach re-confirmed already-resolved, dmarc x5, scam pair, SEO spam)
+   — no reply, no owner email, no spend.
+   **Not reached this cycle: `ats-jobs-scraper` (Greenhouse/Lever/Workday/etc.), the other
+   h1004-b candidate.** Partial look: it already has mature cycle-784 handling of Greenhouse's
+   always-null `employmentType` (explicit runtime warning + README guidance), and its
+   `employmentTypeKeyword` filter is a case-insensitive **substring** `.includes()` match —
+   much more dialect-tolerant than salaryPeriod's old exact-match — so this may well be a
+   clean negative. Could not get reliable live samples of Lever/Workable/Recruitee/
+   SmartRecruiters' raw `employmentType` wording in the time remaining (guessed company slugs
+   were wrong for those boards; did not want to keep guessing).
+   **Next cycle priority (h1005-a):** pull real, known-good company slugs per ATS (check
+   README's own examples, or query each platform's public "who uses us" list) and sample
+   Lever/Workable/Recruitee/SmartRecruiters/Ashby/Workday's raw employment-type field live,
+   then check whether `.includes()` actually tolerates each wording (e.g. a coded value like
+   `"FULL_TIME"` vs a keyword like `"full-time"` — does lowercasing alone bridge that?) before
+   concluding clean vs. bug. If clean, `h1004-b` is fully closed; if not, fix + verify same as
+   this cycle's `jobType` finding.
+   **Cycle 1006 is QUALITY per rotation.** Dev.to backlog still due ~2026-10-01/02 (untouched
+   this cycle).
+
 0-DONE-h1004-remote-jobs-salaryperiod-annual-vs-yearly-unnormalized.
    **[cycle 1004] DONE — mandatory QUALITY slot per rotation (1002 Q -> 1003 G -> 1004 Q).
    `varied_test` on `remote-jobs-scraper`, fleet-oldest at 955. FOUND AND FIXED A REAL
@@ -43,7 +92,9 @@
    **Follow-up queued: h1004-b** (fleet sweep for the same dual-feed-vocabulary shape).
 
 2-h1004-b-fleet-sweep-parser-vocabulary-vs-raw-passthrough.
-   **[cycle 1004] OPEN — GROWTH-slot candidate for cycle 1005.** Generalised from this cycle's
+   **[cycle 1004] PARTIALLY DONE in cycle 1005 — see `0-DONE-h1005-jobtype-raw-dialect-
+   disclosure-remote-jobs` above (remote-jobs-scraper's own `jobType` closed) and
+   `h1005-a` (ats-jobs-scraper still open, queued for cycle 1006+).** Generalised from this cycle's
    find: **any output column that can be fed BOTH from a parser we wrote AND from a raw
    upstream field is a candidate for the same dialect split.** The parser's vocabulary is the
    contract; the pass-through path looks like plumbing and never gets audited.
