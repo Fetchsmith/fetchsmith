@@ -3857,3 +3857,35 @@ advertised "8(a) / SDVOSB capture" using exactly those non-code names.
 proved enum fields are platform-protected) whose values go upstream un-normalised, where the upstream
 is case/spelling-sensitive. Digit-only fields like `naicsCodes` are immune; ticker/code/country-code
 fields are the likely instances.
+
+## Cycle 1009 — `h1008-a` fleet sweep closes 1 of 6 candidates, opens a second confirmed bug
+
+Ran the sweep cycle 1008 queued. Two real findings, one fixed, one queued (`1-h1009-a`):
+
+1. **`trademark-search-scraper`'s `offices` had literally zero normalization** — not even
+   `.trim()` — while `statuses` in the same file already had a cycle-936 canonical-map fix for
+   the identical upstream case-sensitivity. The gap wasn't that nobody knew the pattern; it's that
+   the pattern lives per-field and a sibling field can go years without inheriting it. **Worth
+   grepping a file's own already-fixed fields for the same shape before assuming a fresh field is
+   clean.**
+
+2. **Not every case-sensitivity fix is a canonical-map job.** Cycle 1008's `SET_ASIDE_CODES` needed
+   a map because SAM.gov's set-aside codes have genuine mixed-case entries (`BICiv`). This cycle's
+   `offices` fix is a *safe blanket `.toUpperCase()`* because TMview's office codes are plain
+   2-letter ISO-3166-1-alpha-2 (+ WO/EM) with no legitimate mixed-case form at all — verified by
+   checking the actual vocabulary, not by assuming. **Check whether the upstream vocabulary can
+   ever legitimately be mixed-case before picking blanket-transform vs. canonical-map** — the
+   underlying rule (cycle 1008's lesson 2) is unchanged, this is just the other branch of it.
+
+3. **A vocabulary too large to hardcode can still be exactly fixable if the API publishes its own
+   reference list.** `us-federal-awards-scraper`'s `agencies` filter (111 possible top-tier agency
+   names, each with real lowercase function words like "of"/"and") looked like a case where no
+   transform is safe and a map is impractical to hand-maintain — but USAspending's own
+   `/api/v2/references/toptier_agencies/` returns the exact spelling of all 111 in one call. Check
+   for a reference/lookup endpoint before concluding a field can't be canonicalized.
+
+**Sweep status:** `sec-insider-trades-scraper` (issuers resolve via ticker lookup already),
+`eu-ted-tenders-scraper` (countries `.toUpperCase()`'d since cycle 1001), `uk-find-a-tender-scraper`
+(regions match locally, not upstream) are clean. `fda-recall-scraper`'s `countries` was not
+live-probed — still open. `us-federal-awards-scraper`'s `agencies`/`fundingAgencies` confirmed
+broken, fix plan in `queue.md`'s `1-h1009-a`.

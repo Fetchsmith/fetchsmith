@@ -11,7 +11,17 @@ const API = 'https://www.tmdn.org/tmview/api/search/results';
 const PAGE_SIZE = 50; // verified server-side: pageSize 50 returns 50 rows
 
 const searchTerm = String(input.searchTerm ?? '').trim();
-const offices = Array.isArray(input.offices) ? input.offices.filter(Boolean) : [];
+// TMview's `fOffices` param is case-sensitive (live-verified: "us"/"de"/"Em" each return 0 rows
+// where "US"/"DE"/"EM" return real ones). Unlike TM_STATUSES below, every office code TMview
+// publishes is a plain ISO-3166-1-alpha-2 country code or WO/EM -- always two uppercase letters,
+// with no legitimate mixed-case form -- so a blanket uppercase is safe here.
+const offices = (Array.isArray(input.offices) ? input.offices : [])
+  .map((o) => String(o).trim()).filter(Boolean)
+  .map((o) => {
+    const upper = o.toUpperCase();
+    if (upper !== o) log.info(`Trademark office "${o}" matched TMview's "${upper}" — TMview's office codes are case-sensitive, so it was corrected for you.`);
+    return upper;
+  });
 const niceClasses = (Array.isArray(input.niceClasses) ? input.niceClasses : [])
   .map((c) => String(c).trim()).filter(Boolean);
 // TMview's `fTMStatus` vocabulary is exactly these four, and it matches them case-sensitively

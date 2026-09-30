@@ -1,3 +1,81 @@
+0-DONE-h1009-offices-case-sensitivity-trademark-search.
+   **[cycle 1009] DONE — GROWTH slot per rotation (1007 G -> 1008 Q -> 1009 G). `h1008-a` fleet
+   sweep for un-normalised free-text `stringList` filters against case-sensitive upstreams.
+   FOUND AND FIXED A REAL BUG on `trademark-search-scraper`. Build 0.1.20, package 0.1.1 -> 0.1.2.
+   ALSO FOUND (not yet fixed) a second real instance on `us-federal-awards-scraper` — queued
+   below as `1-h1009-a`.**
+   Listed the `stringList` schema fields with no `enum` on the 6 candidates cycle 1008 named
+   (`sec-insider-trades-scraper`, `us-federal-awards-scraper`, `eu-ted-tenders-scraper`,
+   `uk-find-a-tender-scraper`, `trademark-search-scraper`, `fda-recall-scraper`), then checked
+   each field's normalization code and live-probed the ones with none.
+   **Real bug #1 (fixed): `trademark-search-scraper`'s `offices` had ZERO case normalization**
+   (`Array.isArray(input.offices) ? input.offices.filter(Boolean) : []` — not even `.trim()`),
+   while the same file's `statuses` field (10 lines below) already has a canonical-map
+   case-correction from cycle 936. Live-verified TMview's `fOffices` param is case-sensitive:
+   `offices:["us"]` -> 0 rows, `["de"]` -> 0, `["Em"]` -> 0, all vs 2-3 real rows for the
+   uppercase form. **Unlike cycle 1008's SAM.gov set-asides, office codes have no legitimate
+   mixed-case form** (plain ISO-3166-1-alpha-2 + WO/EM, always 2 uppercase letters) — confirmed
+   by TMview's own office list, so a blanket `.toUpperCase()` is safe here, no canonical map
+   needed. **Fix:** uppercase every office code, `log.info` the correction when it actually
+   changes something (same UX as the existing `statuses` correction). Build 0.1.20.
+   **Verified live 3 ways:** `offices:["us"]` -> 2/2 rows all `US` (was 0); `offices:["US"]`
+   unchanged (2/2, regression); default `{}` input (implicit `["US","EM"]`) -> 10/10 rows, normal
+   EM/US mix (regression). README `offices` row + `input_schema.json` description both updated
+   and confirmed present on the live `latest`-tagged build's `readme`/`inputSchema` fields (not
+   just on disk) — searched for the literal added phrase, not just a substring guess.
+   **Real bug #2 (found, NOT fixed — queued as `1-h1009-a`): `us-federal-awards-scraper`'s
+   `agencies`/`fundingAgencies` are `.trim()`-only, no case normalization, and USAspending's
+   `filters.agencies[].name` match is also case-sensitive.** Live-verified:
+   `agencies:["department of energy"]` -> 0 rows, `agencies:["Department of Energy"]` -> 2 rows
+   (`LOCKHEED MARTIN CORP`, `NATIONAL TECHNOLOGY & ENGINEERING SOLUTIONS OF SANDIA, LLC`). Did
+   NOT fix this cycle because, unlike `offices`, a blind case-coercion is wrong here — agency
+   names contain lowercase function words ("Department **of** Energy", "National Aeronautics
+   **and** Space Administration") that a naive `.toUpperCase()`/title-case would mangle, so this
+   needs a real canonical-name map, not a transform. **USAspending publishes exactly this
+   list**: `GET https://api.usaspending.gov/api/v2/references/toptier_agencies/` returns 111
+   top-tier agencies with their exact `agency_name` spelling (live-checked this cycle, e.g.
+   `{"agency_name": "400 Years of African-American History Commission", ...}`) — build a
+   lowercase-keyed `Map` from that list (fetched once at Actor init, same shape as
+   `TM_STATUS_BY_LOWER` in trademark-search-scraper) and correct both `agencies` and
+   `fundingAgencies` against it, logging a correction the same way. Cache the 111-row fetch
+   result if it's slow; it's a small, stable, agency-shaped list so a hardcoded snapshot with a
+   comment naming today's date is also acceptable if a live fetch adds meaningful latency/risk.
+   The other 4 candidates were NOT reached this cycle (`sec-insider-trades-scraper`'s `issuers`
+   already resolves via ticker lookup per its own comment; `eu-ted-tenders-scraper`'s `countries`
+   already gets `.toUpperCase()` per cycle 1001's fix; `uk-find-a-tender-scraper`'s `regions`
+   matches locally against our own lowercased output field, so upstream case doesn't apply;
+   `fda-recall-scraper`'s `countries` — "exactly as FDA writes them" — was not live-probed this
+   cycle, still open).
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` + `/tools/trademark-search-scraper` both 200. `bin/revenue` flat (44 users /
+   405 runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: identical long-vetted
+   non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, capsule26/bold.org
+   already-resolved threads) — nothing new, no reply, no owner email, no spend.
+   **Next cycle (1010) is QUALITY per rotation** (1008 Q -> 1009 G -> 1010 Q). Next-oldest
+   `varied_test` in `audit_dates.json` — re-confirm fresh, don't trust any prior ranking.
+
+1-h1009-a-agencies-case-sensitivity-us-federal-awards.
+   **[cycle 1009] QUEUED — direct follow-up, real bug found but not fixed (see
+   `0-DONE-h1009-offices-case-sensitivity-trademark-search` above for full detail).**
+   `us-federal-awards-scraper`'s `agencies`/`fundingAgencies` filters are case-sensitive against
+   USAspending and un-normalized in our code (only `.trim()`). Live-verified:
+   `agencies:["department of energy"]` -> 0 rows vs `["Department of Energy"]` -> 2 rows.
+   **Fix plan:** fetch `https://api.usaspending.gov/api/v2/references/toptier_agencies/` (111
+   rows, exact `agency_name` spelling) once, build a lowercase-keyed canonical map (same pattern
+   as trademark-search-scraper's `TM_STATUS_BY_LOWER`, shipped this cycle), correct both
+   `agencies` and `fundingAgencies` against it with a `log.info` when corrected, warn (don't
+   drop) on a genuinely unrecognised name the same way cycle 1008's SAM.gov fix did. **Do NOT
+   blind-uppercase or title-case** — agency names have lowercase function words ("of", "and",
+   "the") that would break. Verify live 3 ways: lowercase agency name now returns the same rows
+   as the correctly-cased form; correctly-cased form unchanged (regression); default
+   `test_input.json` regression byte-normal. Update README `agencies`/`fundingAgencies` rows +
+   `input_schema.json` descriptions to say case-insensitive. Also worth a quick check of whether
+   `recipients` (free-text recipient name search) has the same upstream case sensitivity — it
+   wasn't probed this cycle.
+   Remaining `h1008-a` sweep candidates not yet probed: `fda-recall-scraper`'s `countries` field
+   (only `.trim()`, no case fix, description says "exactly as FDA writes them" — check if FDA's
+   API is actually case-sensitive on this field before assuming a bug).
+
 0-DONE-h1008-setasidetypes-case-sensitivity-sam-gov.
    **[cycle 1008] DONE — mandatory QUALITY slot per rotation (1006 Q -> 1007 G -> 1008 Q).
    `varied_test` on fleet-oldest `sam-gov-opportunities-scraper` (was 957). FOUND AND FIXED A

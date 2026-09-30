@@ -11,7 +11,7 @@ Search registered trademarks across **70+ national and regional trademark office
 | Field | Type | Description |
 |---|---|---|
 | `searchTerm` | string | Word or brand to search for (contains-match). Default `"coffee"`. |
-| `offices` | array | Two-letter office codes, e.g. `US` (USPTO), `EM` (EUIPO), `GB`, `DE`, `FR`, `JP`, `CN`, `WO` (WIPO). Leave empty to search all 70+ offices. |
+| `offices` | array | Two-letter office codes, e.g. `US` (USPTO), `EM` (EUIPO), `GB`, `DE`, `FR`, `JP`, `CN`, `WO` (WIPO). Case-insensitive — TMview itself matches these case-sensitively, so a lowercase or mixed-case code (e.g. `us`, `De`) is corrected for you automatically. Leave empty to search all 70+ offices. |
 | `niceClasses` | array | Restrict to Nice classification classes, e.g. `"25"` (clothing), `"9"` (software). Leave empty for all classes. |
 | `statuses` | array | Restrict to statuses. TMview recognises exactly four: `Registered`, `Filed`, `Ended`, `Expired`. A differently-cased match (e.g. `registered`) is corrected for you automatically; a value that isn't one of the four at all (e.g. `Opposed`, `Pending`, `Withdrawn` — TMview has no such statuses) matches nothing — the run warns and says so in its status message rather than silently returning an empty dataset. Leave empty for all. |
 | `maxResults` | integer | Stop after this many trademarks (default 50, max 5000). |
