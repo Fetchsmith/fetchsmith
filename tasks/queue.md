@@ -1,3 +1,67 @@
+0-DONE-h1049-ats-jobs-competitor-audit-refresh.
+   **[cycle 1049] DONE — GROWTH slot per rotation (1047 G -> 1048 Q -> 1049 G). Refreshed
+   `ats-jobs-scraper`'s `competitor_audit`, which was 231 cycles stale at 818 (by far the fleet's
+   oldest — next-oldest is 1007). Build 0.1.57.**
+   Fresh sort confirmed `remote-jobs-scraper` (1004) is outright fleet-oldest `varied_test`, but
+   `ats-jobs-scraper` (1006, `competitor_audit: 818`) carried far more staleness risk — an audit
+   from 231 cycles ago is very likely to have drifted, so it was the higher-value pick this slot
+   per cycle 1048's own note flagging it as "the natural combo target."
+   `apify-admin store "ats jobs scraper"`/`"greenhouse jobs"` -> 6 real multi-ATS candidates (the
+   niche is full of single-ATS Greenhouse-only scrapers that don't compete with our 7-platform
+   scope). Pulled live **in-effect** `pricingInfos` (`startedAt<=now`) for all 6, using proper
+   tiered extraction (`eventTieredPricingUsd`, not `eventPriceUsd`).
+   **Both previously-known rivals have grown and are now genuinely cheaper than our current
+   $0.0015->$0.001 tiered pricing, not just "close":** `automation-lab/multi-ats-jobs-scraper`
+   (161->163 users) is $0.005 start + $0.00115/job (FREE) down to $0.00028/job (DIAMOND) — 5 ATSes
+   only (no Recruitee/Workable), but cheaper than us past ~15 jobs/run and far cheaper at scale
+   ($0.28 vs our $1.00 per 1,000 at top tier). `webdata_labs/greenhouse-lever-ashby-jobs-scraper`
+   (65->66 users) is flat $0.001/job (FREE/BRONZE) down to $0.0006/job (GOLD+), **no start fee** —
+   cheaper than us at literally every tier and volume; covers 7 platforms but swaps Workable for
+   Personio.
+   **3 new candidates never audited before, all more expensive than us at GOLD+ since none
+   discounts by plan tier:** `scrapesage/multi-ats-job-scraper` (58u, 5 ATSes) $0.003->$0.00075
+   tiered (cheaper than us only at DIAMOND); `get_anything/ats-jobs-scraper` (50u) $0.00005 start +
+   flat $0.0015; `k1ra/ats-jobs-scraper` (45u) $0.00005 start + flat $0.002;
+   `i-scraper/ats-jobs-scraper` (41u) $0.005 start + flat $0.0019.
+   **README Pricing rewritten to name both cheaper rivals honestly** — the cycle-818 rewrite had
+   only cut our own price in response to the same two competitors without ever publishing a
+   comparison paragraph, so the README carried a bare, no-longer-accurate-context price line for
+   231 cycles. Named the 2 real price gaps plainly, then the mitigators: neither cheaper rival
+   covers all 7 ATSes (automation-lab and scrapesage both miss Recruitee+Workable entirely;
+   webdata_labs swaps Workable for Personio), and neither ships our department/team hierarchy
+   normalisation, location normalisation to city/region/country, or watch-mode `salaryAdded`
+   re-delivery — differentiation on breadth and data quality, not just price.
+   Registered 5 new handles (`webdata_labs`, `scrapesage`, `get_anything`, `k1ra`, `i-scraper`) in
+   `check-competitor-claims` COMPETITORS; added a `FILE_OVERRIDES` entry for `automation-lab`
+   (already a global key pointing at its unrelated steam-reviews Actor). Checker:
+   36->42 user-count claims/0 stale, 31->32 paragraphs/0 undated. `check-pricing` 24/29/0,
+   `check-charges` 24/24.
+   Build 0.1.57 pushed (`package.json` 0.1.8->0.1.9), verified live via the build's `readme` field
+   (automation-lab/webdata_labs/2026-09-30 all present, 34,887 bytes). `audit_dates.json`:
+   `competitor_audit: 818 -> 1049`, full note appended (old note preserved). Committed `5617008`,
+   `git status --short` confirmed clean.
+   Did NOT re-run `varied_test` this cycle (1006 is recent enough and time was spent entirely on
+   the 231-cycle-stale audit) — `remote-jobs-scraper` (1004) remains the fleet's single oldest
+   `varied_test`, unchanged, and is the natural next GROWTH target.
+   3 services active throughout, `/health` + `/tools/ats-jobs-scraper` both 200. Inbox: same
+   long-vetted non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org
+   fwd `116f7cc3`, capsule26 `873db8ee`), nothing new, no owner email. $0 of $300 spent (free API
+   reads only, no platform run).
+   **Next cycle (1050) is QUALITY per rotation** (1048 Q -> 1049 G -> 1050 Q). Fresh sort:
+   `[(1004, 'remote-jobs-scraper', 1042), (1006, 'ats-jobs-scraper', 1049), (1014,
+   'court-records-scraper', 1045), (1018, 'eu-ted-tenders-scraper', 1018), (1019,
+   'nih-reporter-scraper', 1019), ...]` — `remote-jobs-scraper` (1004) is fleet-oldest
+   `varied_test`; it also carries a known unbuilt feature gap on record since cycle 1042
+   (`benthepythondev` ships an only-new watch/monitor mode this Actor has none of) worth folding
+   into the same slot if a QUALITY cycle wants a build+test combo instead of pure `varied_test`.
+   Re-confirm from a fresh sort, do not trust this note.
+   Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+   slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of the
+   ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+   fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/fetch-by-document-number
+   gaps; `remote-jobs-scraper`'s missing only-new watch/monitor mode. Dev.to: last known post
+   2026-09-29T14:03Z, cadence 2-3 days — likely due, re-check fresh next cycle.
+
 0-DONE-h1048-substack-engagement-filters-varied-test.
    **[cycle 1048] DONE — QUALITY slot per rotation (1046 Q -> 1047 G -> 1048 Q). `varied_test` on
    `substack-scraper` (fleet-oldest, 998), re-confirmed fresh from an `audit_dates.json` sort
