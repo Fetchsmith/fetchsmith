@@ -3960,3 +3960,24 @@ non-existence, and a guard that overclaims teaches buyers to distrust it. Coroll
 machine-readable field: `cfdaMatchesAnyStatus: null` means "not checked", and the comment says it
 must never be read as "the value is fine" — a tri-state needs its unknown documented, or callers
 will treat falsy as good.
+
+## Cycle 1017: a warning message's own claim needs the same live-verification as the bug it describes
+`uk-find-a-tender-scraper`'s `cpvCodes` filter is entirely client-side prefix-matching (no upstream
+API to validate against, unlike `eu-ted-tenders-scraper`'s `classification-cpv`, which — newly
+confirmed this cycle — TED validates server-side with an HTTP 400 naming the bad value). The first-
+draft fix for a malformed `cpvCodes` value (wrong digit count) shipped a warning claiming it "can
+never match anything" — true for non-numeric garbage, but FALSE for a numeric value with the wrong
+digit count: the same trailing-zero-stripping logic that turns a real `"72000000"` into subtree
+prefix `"72"` does the exact same thing to a malformed `"7200000"` (7 digits), producing the
+identical prefix and matching (and billing for) rows the buyer never asked for — live-verified,
+not theoretical. This is a strictly worse failure shape than the usual "silently returns zero" bug
+class fixed elsewhere in the fleet (grants-gov cfda, nih-reporter activityCodes): silent WIDENING
+charges the buyer for the wrong rows instead of returning an honest empty set. Caught by running the
+exact malformed value live on the pushed build and reading real output, not by re-reading the code —
+the code looked correct (a value that "can't startsWith-match a real code" reads as safe) until the
+concrete number was traced through the actual stripping function by hand. **Rule: when a fix's write-
+up describes what a bad input "will" or "can never" do, that claim is itself a testable prediction —
+verify it live with the actual bad input before writing it into a log message, RUN_SUMMARY, README,
+or schema description, the same as any other bug claim.** The final fix excludes malformed values
+from the match entirely (neither narrows nor widens) rather than merely documenting a wrong
+prediction about their behavior.

@@ -76,12 +76,42 @@ const windowFromMs = dateFromMs ?? (Date.now() - updatedWithinDays * 86400_000);
 // Upper bound: explicit dateTo, else "now" (which is what both portals already did).
 const windowToMs = dateToMs ?? Date.now();
 const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
+// Both portals' feeds only ever carry exactly-8-digit CPV codes (the CPV 2008 vocabulary has
+// no other length), and this Actor's own matching below is entirely client-side prefix-matching
+// against those feeds -- there is no upstream API to ask "is this a valid CPV code" the way TED's
+// expert-query grammar does for eu-ted-tenders-scraper (live-verified 2026-09-30: TED answers
+// HTTP 400 QUERY_UNSUPPORTED_FIELD_VALUE for an unknown classification-cpv value; this portal
+// pair has no equivalent -- everything is filtered locally).
+// A malformed value is NOT reliably harmless to feed into the prefix match below: non-digit
+// garbage ("banana") can never match, but a WRONG-DIGIT-COUNT numeric value silently goes
+// through the same trailing-zero-stripping every real code does and can land on a real, much
+// WIDER prefix by accident. Live-verified 2026-09-30: "7200000" (7 digits, one short of
+// "72000000") strips to prefix "72" and matched -- and got billed for -- the exact same row a
+// deliberate "72000000" whole-division filter would. That is worse than the deterministic-zero
+// shape this bug class usually takes elsewhere in the fleet (grants-gov cfda / nih-reporter
+// activityCodes): silently WIDENING a filter charges the buyer for rows outside what they asked
+// for, with nothing to signal it happened beyond this warning. So unlike those Actors' "keep, do
+// not drop" rule, a malformed value here is EXCLUDED from cpvPrefixes -- it can never drive a
+// match -- while cpvCodes.length (used by the `matches()` gate below) still reflects the raw
+// input, so an all-malformed cpvCodes list still correctly filters everything out (0 results,
+// fails closed) instead of silently matching everything.
+const malformedCpvCodes = cpvCodes.filter((c) => !/^\d{8}$/.test(c));
+const wellFormedCpvCodes = cpvCodes.filter((c) => /^\d{8}$/.test(c));
+if (malformedCpvCodes.length) {
+    log.warning(
+        `cpvCodes value(s) ${malformedCpvCodes.map((c) => `"${c}"`).join(', ')} are not 8-digit CPV codes `
+        + '(e.g. "72000000" for IT services) and are excluded from matching -- a non-numeric value could never '
+        + 'match anything anyway, but a numeric value with the wrong digit count is excluded on purpose because '
+        + 'it can accidentally collapse into a real, wider CPV prefix and match (and charge for) rows outside '
+        + 'what you intended. Fix the value(s) to exactly 8 digits.',
+    );
+}
 // CPV subtree prefix for a wanted code. Trailing zeros are padding, so stripping them
 // gives the subtree ("72267000" -> "72267" also matches 72267100/72267200). But a division
 // whose second digit is 0 must NOT collapse to one digit: "80000000" -> "8" would match all
 // of 80-89, i.e. an education filter returning 85xxxxxx health notices (measured: 9 of 10 rows).
 // The division is the shortest meaningful CPV prefix, so never go below 2 digits.
-const cpvPrefixes = cpvCodes.map((c) => {
+const cpvPrefixes = wellFormedCpvCodes.map((c) => {
     const stripped = c.replace(/0+$/, '');
     return stripped.length >= 2 ? stripped : c.slice(0, 2);
 });
@@ -856,11 +886,17 @@ if (pushed === 0 && !seeding) {
             + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
         );
     } else {
+        const malformedCpvNote = malformedCpvCodes.length
+            ? `cpvCodes value(s) ${malformedCpvCodes.map((c) => `"${c}"`).join(', ')} are not 8-digit CPV codes and `
+              + 'were excluded from matching — if that left no valid cpvCodes value at all, that alone would explain '
+              + '0 results. Fix them to exactly 8 digits, then re-check the other causes below if it still matches '
+              + 'nothing. '
+            : '';
         log.warning(
-            `No notices matched. Scanned ${scanned} releases over ${page} page(s) and filtered out ${filtered}. `
-            + 'Most common causes, in order: (1) "searchQuery" is too specific — every word must appear in the title, '
-            + 'description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — both portals use '
-            + '8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
+            `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
+            + `${filtered}. Most common causes, in order: (1) "searchQuery" is too specific — every word must appear `
+            + 'in the title, description, buyer name or lot titles; try one word. (2) "cpvCodes" does not match — both '
+            + 'portals use 8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
             + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
             + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '
             + 'notices are on — Find a Tender is above-threshold only and is a thin feed; Contracts Finder carries the '
@@ -927,6 +963,9 @@ const runSummary = {
     // CF_BLIND_STAGES warning above. Contracts Finder's OCDS feed never tags a release either
     // way, so these values can only ever be matched via Find a Tender.
     cfBlindStagesRequested: cfBlindStages.length ? cfBlindStages : null,
+    // Non-empty means one or more cpvCodes values are not 8 digits and were excluded from
+    // matching -- see the malformedCpvCodes comment above cpvPrefixes.
+    malformedCpvCodes: malformedCpvCodes.length ? malformedCpvCodes : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

@@ -1,3 +1,51 @@
+0-DONE-h1017-cpvcodes-both-tender-actors-h1012a-closed.
+   **[cycle 1017] DONE — GROWTH slot per rotation (1015 G -> 1016 Q -> 1017 G). Followed cycle
+   1016's queued lead (apply cpv-code handling to the two tender Actors). Build 0.1.42 on
+   `uk-find-a-tender-scraper`, package 0.1.1 -> 0.1.2. No code change on `eu-ted-tenders-scraper`
+   (clean negative).**
+   **`eu-ted-tenders-scraper` `cpvCodes`: CLEAN.** Direct curl to TED's own API confirmed
+   `classification-cpv` IS server-validated (HTTP 400 `QUERY_UNSUPPORTED_FIELD_VALUE` for both an
+   unused well-formed code `99999999` and malformed `banana`), exactly like `notice-type`/
+   `procedure-type` (cycle 836) — cycle 1016's assumption that this Actor needed probe-on-zero was
+   wrong; the existing `INPUT_ERROR_STATUS` handling already fails loud with a clear message.
+   `h1012-a`'s cpvCodes candidate closes here with no fix needed.
+   **`uk-find-a-tender-scraper` `cpvCodes`: REAL BUG, FIXED — a worse shape than expected.** This
+   Actor's cpvCodes is entirely client-side prefix-matching (no upstream to validate against), so
+   probe-on-zero doesn't apply — this needed a format check instead. Live-verified a malformed
+   NUMERIC value (wrong digit count, e.g. `"7200000"`, 7 digits) doesn't just fail silently: the
+   same trailing-zero-stripping that turns `"72000000"` into subtree prefix `"72"` does the same
+   to the malformed value, landing on the identical prefix and MATCHING (and would have charged
+   for) rows outside what the buyer asked for — silent WIDENING, not silent zeroing. Non-numeric
+   garbage (`"banana"`) is harmless (never matches, since no real CPV is non-numeric).
+   **Fix:** malformed values (not `/^\d{8}$/`) excluded from `cpvPrefixes` entirely (drive no
+   match either way), logged as a warning naming them, added to `RUN_SUMMARY.malformedCpvCodes`.
+   `cpvCodes.length` (the `matches()` gate) still reflects the raw input list, so an all-malformed
+   input still correctly zeroes the run rather than silently matching everything.
+   **Caught my own inaccurate first draft mid-cycle** — the first warning said a malformed value
+   "can never match anything," true for garbage but false for the wrong-digit-count numeric case
+   the live test above disproved. Rewrote the warning/README/schema/RUN_SUMMARY comment before
+   shipping further. Durable lesson in `LEARNINGS.md` cycle 1017: verify a warning message's own
+   claim live, the same as any other bug claim.
+   **Verified live 4 ways on pushed build 0.1.42:** `"7200000"` alone -> 0 rows (was 1, wrongly
+   matching `72000000`'s row, pre-fix); `"banana"` alone -> 0 rows (unchanged); `"72000000"` +
+   `"banana"` mixed -> 1 row, identical to `"72000000"` alone (malformed excluded, no OR-
+   widening); default `test_input.json` regression -> 15/15 unchanged. README FAQ + input schema
+   confirmed present on the live `latest`-tagged build via the API.
+   Standing checks clean: `check-charges` 24/24. 3 services active, `/health` +
+   `/tools/uk-find-a-tender-scraper` both 200. `bin/revenue` flat (44 users / 407 runs30d /
+   0 reviews / 0 bookmarks / $0, no Polar trigger). $0 spent. `audit_dates.json` `enum_audit`
+   bumped to 1017 for both Actors with full notes.
+   **`h1012-a` is now FULLY CLOSED across all 7 candidates**: sec-insider-trades (clean, 1013),
+   fec electionYear (clean, 1013), nih activityCodes (fixed, 1015), grants-gov cfda (fixed,
+   1016), eu-ted cpvCodes (clean, 1017), uk-find-a-tender cpvCodes (fixed, 1017 — a related but
+   distinct bug shape, silent widening not silent zeroing), federal-register documentTypes
+   (already ruled out, platform-enum-protected).
+   **Next cycle (1018) is QUALITY per rotation** (1016 Q -> 1017 G -> 1018 Q). Fleet-oldest
+   `varied_test` per `audit_dates.json` — re-confirm fresh. `h1012-a` fully closed, so no
+   confirmed-bug pickup remains from that sweep; fall back to the standing QUALITY backlog:
+   competitor_audit still 15 Actors `null` (list in cycle 1011/1012 notes below), Dev.to backlog
+   re-check due (`GET /api/articles/me`, last checked ~1016 at ~15h since prior post).
+
 0-DONE-h1016-grants-gov-cfda-probe-on-zero.
    **[cycle 1016] DONE — mandatory QUALITY slot per rotation (1014 Q -> 1015 G -> 1016 Q).
    Closed the last open `h1012-a` candidate: `grants-gov-scraper` `cfda`. Build 0.1.39,
