@@ -247,6 +247,11 @@ Set `dataType` to `exclusions` to pull SAM.gov's federal debarment/suspension li
 }
 ```
 
+## Pricing
+One event, no Actor-start fee, same flat $0.0015 per row across all four `dataType`s (opportunities, wage determinations, assistance listings/CFDA, exclusions).
+
+**Verified live 2026-09-30** against every SAM.gov-opportunities listing on the Store with real traction (not just the leader). The two with actual usage are both opportunities-only, unlike this Actor's 4-dataset scope: `scrapebench/samgov-opportunity-alert` (29 users, the Store's user-count leader here) charges a flat $0.0025/opportunity, no start fee — 67% more than our $0.0015. `bovi/sam-gov-opportunities-scraper` (6 users, but the niche's busiest by volume at 107 runs/30d) tiers $0.0025 (FREE) down to $0.002375 (DIAMOND) plus a $0.00005 Actor-start fee, and — unlike this Actor — requires the buyer to supply their own SAM.gov API key; we are cheaper than its cheapest tier and need no key. We are **not** the cheapest at every tier, though, and say so rather than hide it: two near-idle listings undercut us once a buyer is on a high usage tier — `publicmoney/sam-gov-opportunity-scraper` (3 users) tapers to $0.0007/tender on DIAMOND (less than half our flat rate there, though it also bills a bizarre $0.5–$1 "schema.org block" event we don't charge at all), and `maydit/sam-gov-opportunities-scraper` (2 users, 1 run in the last 30 days) tapers to $0.0012 on GOLD and above. Every other listing we checked (`agentready` $0.0019+start, `practicalmodules` $0.0025 flat) prices above us.
+
 ## FAQ
 **Do I need a SAM.gov API key?** No. The official `api.sam.gov` developer API does require a free registered key, but this Actor uses the unauthenticated backend behind sam.gov's own public search page instead. Nothing to register, nothing to rotate.
 

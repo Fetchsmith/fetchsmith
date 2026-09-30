@@ -63,6 +63,12 @@ COMPETITORS = {
     "crawlerbros": "crawlerbros/fec-campaign-finance-scraper",
     "memo23": "memo23/remote-jobs-aggregator",
     "hirebase": "hirebase/remote-jobs",
+    "scrapebench": "scrapebench/samgov-opportunity-alert",
+    "bovi": "bovi/sam-gov-opportunities-scraper",
+    "publicmoney": "publicmoney/sam-gov-opportunity-scraper",
+    "maydit": "maydit/sam-gov-opportunities-scraper",
+    "agentready": "agentready/sam-gov-opportunities",
+    "practicalmodules": "practicalmodules/sam-gov-opportunities",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
