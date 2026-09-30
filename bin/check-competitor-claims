@@ -70,6 +70,13 @@ COMPETITORS = {
 FILE_OVERRIDES = {
     "actors/clinicaltrials-scraper/README.md": {"parseforge": "parseforge/clinicaltrials-scraper"},
     "actors/fec-campaign-finance-scraper/README.md": {"ryanclinton": "ryanclinton/fec-campaign-finance"},
+    "actors/app-store-reviews-scraper/README.md": {
+        "thewolves": "thewolves/appstore-reviews-scraper",
+        "theagents": "theagents/appstore-reviews",
+        "sourabhbgp": "sourabhbgp/apple-app-store-scraper",
+        "johnvc": "johnvc/apple-app-store-reviews-api",
+        "easyapi": "easyapi/app-store-reviews-scraper",
+    },
 }
 
 USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")

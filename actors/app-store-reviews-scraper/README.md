@@ -102,6 +102,19 @@ Useful for a 1★-share trend line over releases, for weighting sentiment agains
 ## Pricing
 `result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
 
+**Where this sits in the market (verified live 2026-09-30).** The two busiest App Store review
+scrapers on the Store, `thewolves` (2,336 users) and `theagents` (817 users), both charge a flat
+**$0.0001/review with no start fee** — the exact same price and shape we use, so we're at parity
+with the traction leaders rather than undercutting or overcharging. Everyone else with a listed
+per-event price charges meaningfully more once every fee is counted: `johnvc` (472 users) is
+$0.00125–$0.00144/review tiered **plus** a $0.0175 one-time setup fee and a $0.00005 Actor-start
+fee; `easyapi` (544 users) is $0.00299/review plus a **$0.09** Actor-start fee (900x our whole
+per-review price, charged before a single review is scraped); `sourabhbgp` (134 users) is a flat
+$0.002/review with no start fee but a broader scope (apps/charts/in-app-purchases in addition to
+reviews) — a real feature gap, not costed yet, tracked in `queue.md`. None of the five list the
+per-star ratings breakdown, watch-mode rating-edit detection, or storefront-fallback/hole-skipping
+behaviour documented below.
+
 ## Never silently returns an empty result
 Apple's public review feed is full of holes. For one app in one storefront, page 1 can be empty while pages 2 and 7 return a full 50 reviews each; an app can be completely empty under `mostRecent` and have hundreds under `mostHelpful`; and coverage differs per storefront. Most scrapers stop at the first empty page and hand you an empty dataset with a green "succeeded" run. This one:
 

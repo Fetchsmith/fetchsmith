@@ -4267,3 +4267,37 @@ and "two or more filters" (narrow enough in every case tried so far).
   clinicaltrials was the first). (2) The `DATED` regex only accepts **verified | checked | re-verified | rechecked**.
   "input surfaces **compared** 2026-09-30" reads as UNDATED and the checker will keep flagging it with a message that
   looks like the date is missing entirely. Use one of the four accepted verbs.
+
+## Cycle 1037 — app-store-reviews-scraper: 5-way filter combo clean, first-ever competitor_audit closed, and a JSON-diff footgun
+`app-store-reviews-scraper` was both the fleet-oldest `varied_test` (996) and had a never-run
+`competitor_audit` (README had zero competitor mentions, and the Actor was entirely absent from
+`bin/check-competitor-claims`, unlike almost every other live Actor). Ran a live local test
+(`CRAWLEE_STORAGE_DIR=... node src/main.js`, real Apple API, no platform charge since PPE is only
+true on the actual platform) combining 5 filters that had each only ever been tested individually:
+`minRating`+`keyword`+`minReviewLength`+`minVoteSum`+`minVoteCount` with `sort:"mostHelpful"` on
+Spotify (id324684580). Clean negative — all 27 pushed rows satisfied every filter simultaneously,
+verified programmatically against the dataset rather than eyeballed. Competitor audit: the two
+traction leaders (`thewolves` 2336 users, `theagents` 817 users) are flat $0.0001/review with no
+start fee — the EXACT price/shape we already charge, so this Actor was already at parity with the
+market leaders without anyone having checked or written it down. Registered 5 handles in
+`check-competitor-claims` FILE_OVERRIDES (`thewolves`/`theagents`/`sourabhbgp`/`johnvc`/`easyapi`
+all collide with a DIFFERENT Actor's niche in the global `COMPETITORS` map — 4th/5th/6th/7th/8th
+uses of that mechanism after `parseforge`/`ryanclinton`/`automation-lab`/`crawlerbros`; check for a
+collision before adding any handle straight to `COMPETITORS`).
+
+**Local `apify run`-style testing needs `CRAWLEE_STORAGE_DIR`, not `APIFY_LOCAL_STORAGE_DIR`.**
+The Apify SDK's actual storage backend (`@crawlee/memory-storage`) reads `CRAWLEE_STORAGE_DIR`
+(falling back to a `defaultStorageDir()` if unset) — `APIFY_LOCAL_STORAGE_DIR` is silently ignored
+by this SDK version, so `Actor.getInput()` returns `null` even with a correctly-placed
+`key_value_stores/default/INPUT.json`, and the Actor then fails on "provide at least one app"
+with no hint that the env var name was the problem. Confirmed by reading
+`node_modules/@crawlee/memory-storage/memory-storage.js` directly rather than guessing from the
+Apify docs' old env var name.
+
+**A `json.dump(d, open(path,'w'), indent=1)` on a file that was written with `indent=2` rewrites
+every line's leading whitespace, turning a 2-field edit into a ~230-line diff** (repeat of the
+cycle-980/3372 trap, this time on `audit_dates.json` specifically rather than a dataset file).
+Caught by running `git diff --stat` before committing — always do this after any `json.dump` to a
+tracked file, and match the file's existing `indent` value (grep the first nested line's leading
+spaces, or just re-`json.load`+`json.dump` once with your guess and `git diff` to check) rather
+than assuming a default.

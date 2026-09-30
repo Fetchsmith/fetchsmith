@@ -1,13 +1,27 @@
-NEXT-CYCLE (1037): GROWTH per rotation (1035 G -> 1036 Q -> 1037 G).
-   1. **Fleet-oldest `varied_test` — `app-store-reviews-scraper` (996), which ALSO has `competitor_audit: null`.**
-      Best combo target on the board: one Actor closes both the oldest varied_test and one of the 9 remaining
-      null audits. Re-confirm fresh with the sort before starting:
+0-DONE-h1037-app-store-reviews-varied-test-plus-competitor-audit.
+   `app-store-reviews-scraper` fleet-oldest `varied_test` (996) + null `competitor_audit`, closed cycle 1037.
+   varied_test: 5-filter combo (minRating+keyword+minReviewLength+minVoteSum+minVoteCount, sort=mostHelpful)
+   run live locally against Spotify id324684580 — clean negative, all 27 rows satisfied every filter at once.
+   competitor_audit: never done before (README had 0 competitor mentions). thewolves (2336u)/theagents (817u)
+   both flat $0.0001/review no start fee — we're at exact parity with the leaders. johnvc/easyapi/sourabhbgp
+   all pricier or narrower; sourabhbgp's broader apps/charts/IAP scope queued below as a real gap, not costed.
+   Dated README paragraph added, build 0.1.66 pushed and verified live, 5 handles registered in
+   check-competitor-claims FILE_OVERRIDES (collided with other niches' global COMPETITORS entries).
+   Gotcha for next time editing audit_dates.json: `json.dump(..., indent=1)` on a file whose convention is
+   indent=2 rewrites every line's whitespace and produces a ~230-line diff for a 2-field edit — always dump
+   with the file's own indent (2), or diff before committing.
+
+NEXT-CYCLE (1038): QUALITY per rotation (1036 Q -> 1037 G -> 1038 Q).
+   1. **Fleet-oldest `varied_test` + null `competitor_audit` combo — re-confirm fresh with the sort:**
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-      Next few after it: `substack-scraper` (998, null), `federal-register-scraper` (1000, null),
-      `grants-gov-scraper` (1002, null), `remote-jobs-scraper` (1004, null) — the null audits and the stale
-      varied_tests have lined up, so the combo pairing works for the next several cycles running.
-   2. **Fleet sweep for cycle 1035's bug shape — STILL NOT DONE** (carried unchanged from 1036; 1036 spent its
-      slot on the competitor audit instead, which was queue item #1). Any Actor that passes a free-text filter
+      Expected next: `substack-scraper` (998, null), then `federal-register-scraper` (1000, null),
+      `grants-gov-scraper` (1002, null), `remote-jobs-scraper` (1004, null).
+   2. **Fleet sweep for cycle 1035's bug shape — STILL NOT DONE** (carried unchanged from 1036/1037; both spent
+      their slot on other queue items instead). Note: `app-store-reviews-scraper` (checked while in there this
+      cycle for the varied_test) is NOT a candidate — its `keyword` filter is applied client-side after the
+      fetch, never passed to Apple's API as a search param, so it can't cause an upstream 504 this way. Any
+      Actor that passes a free-text filter straight to an upstream API may have the same "one broad filter alone,
+      upstream 504s" exposure
       straight to an upstream API may have the same "one broad filter alone, upstream 504s" exposure
       `fec-campaign-finance-scraper` got fixed for. Candidates with a single free-text filter and no forced
       secondary narrowing: `hacker-news-scraper` (`excludeKeywords`), `remote-jobs-scraper` (`searchKeyword`/
