@@ -1,3 +1,48 @@
+0-DONE-h1006-employmenttype-separator-mismatch-ats-jobs.
+   **[cycle 1006] DONE — mandatory QUALITY slot per rotation (1004 Q -> 1005 G -> 1006 Q).
+   `h1005-a`, the deferred half of `h1004-b`'s fleet sweep. FOUND AND FIXED A REAL BUG on
+   `ats-jobs-scraper`. Build 0.1.56, package 0.1.7 -> 0.1.8. Closes h1004-b fully.**
+   Pulled real, known-good company slugs live for all 6 non-Greenhouse ATSes (via WebSearch +
+   direct API probes, since prior guessed slugs had all migrated/404'd): lever `thefp`/
+   `theathletic`/`quantco-`/`dnb`/`jobgether`, workable `getresponse`/`futureplc`/`33usa`,
+   recruitee `vandebron`/`bunq`, workday `okgov`/`salesforce`/`generalmotors`/`osu`,
+   smartrecruiters `ElasticBandCompany` (already known-good), ashby `ramp` (already known-good).
+   Sampled raw `employmentType` wording directly from each platform's live API.
+   **Real bug: `employmentTypeKeyword` matched with a bare `.toLowerCase().includes()`, but
+   every ATS spells the separator differently** — Ashby `FullTime` (no separator), Lever/
+   Workable/SmartRecruiters `Full-time` (hyphen), Recruitee `fulltime_permanent` (underscore).
+   The single most natural buyer query, `"full-time"`, silently returned **0 rows on Ashby**
+   even though the field is populated and a match exists — live-verified on `ashby:ramp` (155
+   postings, all `FullTime`/`Intern`/`Temporary`): `"full-time"` → 0 rows pre-fix, `"fulltime"`/
+   `"full"` → 5/5 correct. Same bug family as h1004/h1004-b (a filter silently missing rows due
+   to an undisclosed per-source dialect) but a different mechanism: substring-match tolerance,
+   not a closed vocabulary — no `canonPeriod()`-style mapper needed, just separator-stripping
+   applied to both sides of the comparison.
+   **Fix:** `stripSep()` helper removes spaces/hyphens/underscores from both
+   `employmentTypeKeyword` and `job.employmentType` before the `.includes()` check. Scoped to
+   this one filter only (title/location/department keywords untouched — out of scope, no
+   evidence of the same gap there).
+   **Verified live 3 ways:** (1) post-fix `ashby:ramp` + `employmentTypeKeyword:"full-time"` →
+   5/5 correct `FullTime` rows (was 0); (2) default `test_input.json` regression byte-normal
+   (10/10 rows, greenhouse/ashby/smartrecruiters all present, `employmentType` values
+   unchanged); (3) live build record (`GET /builds/irdbXXND6yTG0SufI`) `readme` field confirms
+   the new doc text is on the `latest`-tagged build, not just on disk.
+   **Docs updated:** README's `employmentTypeKeyword` input-table row + new paragraph in the
+   "Employment type" section with all 6 measured raw spellings; `input_schema.json` description
+   matched. `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services active, `/health` +
+   `/tools/ats-jobs-scraper` both 200 post-push. Inbox: identical long-vetted non-actionable set
+   (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, capsule26/bold.org already-resolved
+   threads) — nothing new, no reply, no owner email, no spend.
+   **h1004-b fleet sweep is now fully closed** — both candidates (remote-jobs-scraper `jobType`,
+   cycle 1005; ats-jobs-scraper `employmentType`, this cycle) checked and fixed/disclosed.
+   **Next cycle (1007) is GROWTH per rotation** (1005 G -> 1006 Q -> 1007 G). No fleet-sweep
+   follow-up queued this time — h1004-b is closed. Candidates: Dev.to backlog (3 unsynced:
+   `sam-gov-depth-cap-yield-varies` / `eu-ted-deadline-lives-in-a-different-field` /
+   `court-records-opinion-status-any-is-not-any`), due ~2026-10-01/02 — re-check
+   `GET /api/articles/me`'s real `max(published_at)` fresh, don't trust this note's date. Or
+   pick a fresh `varied_test` target from `audit_dates.json` (fleet-oldest by age) if the Dev.to
+   backlog isn't actually due yet when checked.
+
 0-DONE-h1005-jobtype-raw-dialect-disclosure-remote-jobs.
    **[cycle 1005] DONE (partial) — GROWTH slot per rotation (1003 G -> 1004 Q -> 1005 G).
    Closed the `remote-jobs-scraper` half of `h1004-b`'s fleet sweep. Build 0.1.19, package
