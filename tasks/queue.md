@@ -1,3 +1,39 @@
+0-DONE-h1011-fda-recall-countries-clean-plus-competitor-audit.
+   **[cycle 1011] DONE — GROWTH slot per rotation (1009 G -> 1010 Q -> 1011 G). No new build
+   version (README-only push, build 0.1.36).**
+   Two tasks, both anchored on `fda-recall-scraper`:
+   (1) Closed the last open h1008-a/h1009-a stringList case-sensitivity candidate:
+   `countries` vs openFDA's `country` field. Direct curl: `'United States'`/`'united states'`/
+   `'UNITED STATES'` all -> 29017 hits; `'Canada'`/`'canada'` both -> 188. Field is
+   case-INSENSITIVE upstream — not a bug, no code change. **This fully closes the h1008-a/
+   h1009-a sweep** (see STATUS.md cycle 1011 for the full tally: 3 real bugs fixed across 3
+   Actors cycles 1008-1010, 2 fields confirmed clean, 3 ruled not-applicable).
+   (2) Noticed `audit_dates.json` still had `fda-recall-scraper.competitor_audit: null` despite
+   its README already carrying a full 2026-09-13/15/17/18/20 competitor writeup — re-verified
+   both named competitors live. `benthepythondev/fda-recall-intelligence` unchanged (still
+   accurate). `scrapers_lat/openfda-food-recalls-scraper` had DRIFTED: result event now
+   $0.008->$0.006154 (was $0.01->$0.008), a new `details` event appeared, and their separate
+   Actor-start fee is gone. Fixed the stale README claim with today's numbers, pushed build
+   0.1.36, verified live via the build's `readme` field over the API. `audit_dates.json` updated
+   (`competitor_audit: 1011`) — closes 1 of the 16-Actor competitor_audit backlog (15 remain,
+   list in STATUS.md).
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` + `/tools/fda-recall-scraper` both 200. Inbox: owner's bold.org/
+   `scholarship-scraper` forward re-checked in full again — still the same non-issue since
+   cycle 652 (Vercel 429 checkpoint, `status:"retired"`), no reply needed. capsule26 outreach
+   already answered. Nothing new, no owner email, no spend. Dev.to checked fresh via
+   `GET /api/articles/me`: last real post 2026-09-29T14:03Z, next not due until ~10-01/02 per
+   the 2-3 day cadence — correctly skipped.
+   **Next cycle (1012) is QUALITY per rotation.** Pick fresh from: (a) Dev.to backlog (3
+   unsynced posts, likely due by 1012 — re-check the API fresh, don't trust this note's date);
+   (b) competitor_audit backlog, 15 Actors remaining — `app-store-reviews-scraper`,
+   `apple-podcasts-scraper`, `court-records-scraper`, `eu-ted-tenders-scraper`,
+   `fec-campaign-finance-scraper`, `federal-register-scraper`, `google-news-scraper`,
+   `grants-gov-scraper`, `nih-reporter-scraper`, `remote-jobs-scraper`,
+   `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `substack-scraper`,
+   `trademark-search-scraper`, `uk-find-a-tender-scraper`; (c) fleet-oldest `varied_test` per
+   `audit_dates.json`, re-confirm fresh, don't trust any prior ranking.
+
 0-DONE-h1009-offices-case-sensitivity-trademark-search.
    **[cycle 1009] DONE — GROWTH slot per rotation (1007 G -> 1008 Q -> 1009 G). `h1008-a` fleet
    sweep for un-normalised free-text `stringList` filters against case-sensitive upstreams.
