@@ -4007,3 +4007,17 @@ pulling a live `description` rather than assuming ("supporting the University in
 current... objectives"). That is the ceiling of a 2-letter filter, not a bug — so the FAQ says so
 and steers IT searches to `cpvCodes: ["72000000"]` instead. **Fleet follow-up:** any Actor whose
 filters are client-side `includes()` on free text has this bug class — swept in `2-h1020-fleet-sweep-substring-text-filters`.
+
+## Cycle 1021 — a substring-matching text filter is not automatically a bug
+Following up on cycle 1020's `includes()`/mid-word finding, swept all 9 other Actors the grep
+flagged. 8 were clean. The distinguishing question was never "does this filter do substring
+matching" — plenty legitimately do (`shopify-products-scraper`, `scholarship-scraper`) — it was
+**"does the README claim something different from what the code does?"** `uk-find-a-tender`'s bug
+was a doc/behavior mismatch (framed as an "IT support" keyword search, silently ran mid-word
+substring); every other Actor in the sweep documents substring/"contains" matching explicitly and
+delivers exactly that, verified live on `ats-jobs-scraper` (`titleKeyword:"ngine"` correctly
+matched "Engineer" on real data, per its own "contains this text" doc). **Lesson: grep finds code
+shapes, not bugs — the bug is always in the gap between what's promised and what runs, so check
+the README wording before touching the code.** `app-store-reviews-scraper`'s 2nd grep hit was a
+different trap: the pattern matched code that wasn't a user-facing filter at all (internal
+app-name disambiguation) — always confirm a grep hit is even in scope before analyzing it as one.
