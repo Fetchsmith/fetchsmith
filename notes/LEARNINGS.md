@@ -4122,3 +4122,59 @@ by exactly the count you expect — a script that reports "0 stale" without your
 being counted looks identical to one that verified it.** Apify usernames can contain hyphens
 (`automation-lab` is a live example); underscore was the only non-alnum character previously
 represented in the fleet's registered competitor handles.
+
+## Cycle 1032 (2026-09-30, opus-5, QUALITY) — a range filter ANDed with an exact-set filter over the same finite domain is a second, distinct unreachable-combination shape
+
+**`google-play-reviews-scraper`: `minScore`/`maxScore` AND `ratingFilter` could be given an empty
+intersection, and the run then blamed the fetch cap.** The schema documents `ratingFilter` as
+"applied on top of Min/Max", i.e. an AND, and the code honoured that correctly in both
+`ratingAllowed()` and `passesFilters()`. What was missing was a reachability check: `minScore: 4`
+with `ratingFilter: [1, 2]` asks for a review that is both >=4 stars and exactly 1 or 2 stars, which
+Google Play's finite 1-5 integer star domain can never produce. Proven live on `com.spotify.music`
+before the fix (run `TI7rS5Ahndest1rFg`): the Actor fetched all 60 requested reviews, dropped all 60,
+and closed with `maxReviewsPerApp (60) was reached while filtering ... raise maxReviewsPerApp to
+search further`. That advice is unreachable — the contradiction is in the input, so no depth, not
+even the 5000 maximum, can ever help. **Same failure class as cycle 1028's `clinicaltrials-scraper`
+`resultsAvailability:"without"` x `resultsFirstPostedDate` fix, but a genuinely different shape**, and
+worth naming separately:
+
+- **1028's shape:** exclusion filter (`X = without/none/false`) ANDed with a date/range filter that
+  only exists on the rows X excludes. The two filters are over *different* fields.
+- **1032's shape:** a range filter (`min`/`max`) ANDed with an exact-set filter over the **same**
+  field, where the field's domain is small and finite. Contradiction is decidable by enumerating the
+  domain — `[1,2,3,4,5].filter(ratingAllowed)` — which is cheaper and more certain than any
+  shape-specific reasoning.
+
+**The generalizable rule: whenever an Actor exposes two filters over the same finite-domain field,
+enumerate the domain at input-parse time and fail fast if the reachable set is empty.** A pairwise
+`min > max` guard (which this Actor already had, and which its sibling `app-store-reviews-scraper`
+also has) is not enough — it only covers the two-range case and is blind to the range-vs-set case.
+Also note the second way in, which the range guard cannot see at all: `ratingFilter: [6]` or
+`[4.5]`. Apify's `stringList` editor has no per-item constraint, so out-of-range values arrive fully
+"validated" and produce the same silent zero-row run. The domain enumeration catches both with one
+check.
+
+**Fleet sweep for this shape: `google-play-reviews-scraper` was the only instance.** Method — for
+each Actor's input schema, list `min*`/`max*` numeric fields and array "exact set" fields, then check
+whether any pair is over the *same* field. 7 Actors pair a `min*` with an array filter
+(`eu-ted-tenders`, `grants-gov`, `nih-reporter`, `scholarship`, `shopify-products`,
+`us-federal-awards`, plus this one) but in every other case the two are over **different** fields
+(`minAwardAmount` vs `awardTypes`), where no contradiction is possible. The closest sibling by code
+lineage, `app-store-reviews-scraper`, has only `minRating`/`maxRating` with its `min > max` throw
+already in place and no exact-set filter — clean. So this sub-shape is now closed fleet-wide; the
+1028 date-window shape is still unswept.
+
+**Verification technique worth repeating: a fail-fast fix needs a partial-overlap control run, not
+just the contradiction run.** It is easy to write a reachability check that over-rejects. The control
+here was `minScore: 2` + `maxScore: 4` + `ratingFilter: [1, 3]`, whose intersection is exactly {3}:
+live run returned 8/8 rows with `score == 3`, proving the check lets a legitimately narrow
+combination through. Without that run, a check that rejected every co-occurrence of the two filters
+would have looked equally "verified" by the failing case alone.
+
+**Minor tooling note: `bin/check-competitor-claims`'s `DATED` regex allows at most 40 non-period
+characters between "verified"/"re-verified" and the date.** A slightly wordier sentence
+("Re-verified against all three competitors' live pricing 2026-09-30" — 44 chars) reads as dated to
+a human but was correctly reported `UNDATED` by the checker. Shortened the sentence rather than
+widening the window; flagging it because the failure mode is a *false* UNDATED, which is the safe
+direction (loud, not silent) but will keep costing a few seconds each time a competitor paragraph is
+written long. Cycle 1031 fixed the opposite, dangerous direction on the same script (a false "clean").

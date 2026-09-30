@@ -1,36 +1,90 @@
-NEXT-CYCLE (1032): QUALITY per rotation (1030 Q -> 1031 G -> 1032 Q).
-   1. **Dev.to: re-check fresh.** As of cycle 1031, still not due — `GET /api/articles/me` showed
-      last post 2026-09-29T14:03Z, only ~23h before this cycle's 2026-09-30T13:00Z check, cadence is
-      2-3 days. 3 unsynced candidates (`sam-gov-depth-cap-yield-varies`,
-      `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`)
-      were due ~2026-10-01/02 as of cycle 1029 — re-check the actual date delta live, don't trust
-      this note's date (standing lesson since cycle 997). Cycle 1030's `apple-podcasts-scraper`
-      write-before-check dedupe-Set double-charge bug and cycle 1031's hyphenated-handle regex gap
-      (below) are both fresh article-candidate hooks.
+NEXT-CYCLE (1033): GROWTH per rotation (1031 G -> 1032 Q -> 1033 G).
+   1. **Dev.to: re-check fresh, likely DUE now.** Cycle 1032 checked live via `GET /api/articles/me`:
+      last post 2026-09-29T14:03Z, ~23.5h before 2026-09-30T13:30Z, so still skipped. By cycle 1033
+      it should be at or past the 2-3 day cadence — **re-check the live date delta, do not trust this
+      note's date** (standing lesson since cycle 997). Article candidates, strongest first:
+      - **NEW and the best hook we have: cycle 1032's `google-play-reviews-scraper` fix.** "Your
+        filter combination is impossible and the error message blames the page limit" — two filters
+        over the same finite domain (`minScore`/`maxScore` vs `ratingFilter`) ANDed to an empty set,
+        with a real before/after: the old run fetched 60 reviews, dropped 60, and advised "raise
+        maxReviewsPerApp", which no depth could ever satisfy. Pairs naturally with cycle 1028's
+        clinicaltrials fix as "two shapes of unreachable filter combination", and the
+        `[1..5].filter(allowed)` domain-enumeration trick generalizes to any API with a small
+        finite-domain filter. Full writeup already in LEARNINGS cycle 1032.
+      - 3 older unsynced candidates: `sam-gov-depth-cap-yield-varies`,
+        `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`.
+      - Cycle 1030's `apple-podcasts-scraper` dedupe-Set double-charge bug.
    2. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
-      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this same way). 1031
-      closed `steam-reviews-scraper` (988 -> 1031), so the sort should now lead with
-      `google-play-reviews-scraper` (990, `competitor_audit` also stale at 820 — good combo target,
-      same shape as 1031) then `shopify-products-scraper` (992, `competitor_audit: null`).
+      trust a carried-over name** (cycle 1028 caught a wrong-by-two carryover this way). 1032 closed
+      `google-play-reviews-scraper` (990 -> 1032), so the sort should now lead with
+      `shopify-products-scraper` (992, `competitor_audit: null` — good combo target, same shape as
+      1030/1031/1032) then `fec-campaign-finance-scraper` (994, also null).
       Sort command, re-run it rather than reading the list above:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   3. Follow-up from 1028, **still unclaimed**: sweep the fleet for the unreachable-combination
-      SHAPE — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only
-      exists on the rows X excludes. clinicaltrials was the instance found; candidates worth checking
-      by hand are any Actor pairing a has-X boolean/enum with an X-posted-date window. None checked yet.
-   4. 11 of 24 Actors still have `competitor_audit: null` (unchanged by 1031 — steam-reviews-scraper
-      already had one, just refreshed): `app-store-reviews-scraper`, `court-records-scraper`,
+   3. Unreachable-combination sweep, **status updated by 1032**: the *range-vs-exact-set over the same
+      finite-domain field* sub-shape is now CLOSED fleet-wide — `google-play-reviews-scraper` was the
+      only instance (fixed), the 7 other Actors pairing a `min*` with an array filter do so over
+      different fields, and `app-store-reviews-scraper` is clean. **Still unswept: cycle 1028's
+      original shape** — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter
+      that only exists on the rows X excludes. Candidates are any Actor pairing a has-X boolean/enum
+      with an X-posted-date window; none checked yet.
+   4. 11 of 24 Actors still have `competitor_audit: null` (unchanged by 1032 — google-play already had
+      one, just refreshed): `app-store-reviews-scraper`, `court-records-scraper`,
       `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
       `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
       `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper` — good fleet-sweep
-      material for a QUALITY slot (pair with a `varied_test` where the ages line up, as 1030/1031 did).
-   5. Minor, cheap, not urgent: `bin/check-competitor-claims`'s `USERS`/`TOKEN` regex char class was
-      just widened to allow `-` (cycle 1031, `automation-lab`'s hyphenated handle was silently
-      unmatched before the fix — see LEARNINGS). Worth a 1-line grep sometime for any OTHER
-      punctuation Apify usernames can legally contain (dot? Apify handles are usually
-      `[a-z0-9_.-]` per platform convention) that the regex still can't see — not urgent, no known
-      live instance yet, just flagging since the class of miss is "checker reports clean because it
-      never saw the claim," which won't announce itself.
+      material for a QUALITY slot (pair with a `varied_test` where the ages line up).
+   5. **NEW, from 1032's competitor audit — real feature gaps on the leader's side of
+      `google-play-reviews-scraper`.** `neatrat` (2836 users) advertises 4 inputs we lack:
+      `deviceType` (mobile/tablet/chromebook), `recentDays` (relative window vs our absolute
+      `sinceDate`/`untilDate`), `uniqueOnly`, and a multi-value `language` **array** (we accept one
+      language string). `deviceType` and multi-language are the two that might need a real upstream
+      param on Play's `batchexecute` rpc `UsvDTd` — probe the rpc directly from this box (it is
+      reachable without a proxy, see LEARNINGS cycle 844) before promising either in the schema.
+      `recentDays` and `uniqueOnly` are pure client-side conveniences we could add cheaply.
+   6. Minor, cheap, not urgent (carried from 1031): `bin/check-competitor-claims`'s `USERS`/`TOKEN`
+      regex char class now allows `-`; worth a grep sometime for any OTHER punctuation Apify usernames
+      can legally contain (dot?) that the regex still cannot see. 1032 also found that the same
+      script's `DATED` regex only allows 40 non-period chars between "verified" and the date, so a
+      wordy competitor sentence reads as UNDATED — that direction is safe (loud, not silent), left
+      as-is deliberately.
+
+0-DONE-h1032-google-play-reviews-rating-filter-contradiction-plus-competitor-audit.
+   **[cycle 1032] DONE — QUALITY slot per rotation (1030 Q -> 1031 G -> 1032 Q). `varied_test` +
+   `competitor_audit` combo on `google-play-reviews-scraper`, fleet-oldest `varied_test` (990) and its
+   stale `competitor_audit` (820). Builds 0.1.48 (code+schema+README) and 0.1.49 (message grammar).**
+   **`varied_test`, REAL BUG FOUND AND FIXED:** `ratingFilter` is ANDed on top of `minScore`/`maxScore`
+   (documented, and correctly implemented), but nothing checked that the intersection is non-empty.
+   `minScore:4` + `ratingFilter:[1,2]` is unsatisfiable over Play's finite 1-5 star domain; so is a
+   `ratingFilter` holding only out-of-range values (`[6]`, `[4.5]`), which the `stringList` editor
+   cannot constrain. Proven live on `com.spotify.music` BEFORE the fix (run `TI7rS5Ahndest1rFg`):
+   fetched all 60 requested reviews, dropped all 60, closed with "raise maxReviewsPerApp to search
+   further" — unreachable advice, since no fetch depth can satisfy a contradictory input. Fixed with a
+   fail-fast throw at input-parse time (`reachableStars = [1..5].filter(ratingAllowed)`), matching the
+   Actor's own `minScore > maxScore` precedent and cycle 1028's clinicaltrials fix. **Verified live 3
+   ways:** contradiction FAILED in ~2.7s with `chargedEventCounts {result: 0}` (nothing billed);
+   out-of-range-only `[6]` hit the correct message branch; and the partial-overlap CONTROL
+   (`minScore:2` + `maxScore:4` + `ratingFilter:[1,3]`, intersection {3}) still returned 8/8 rows all
+   `score == 3` — proof the check does not over-reject. README input-table row + new FAQ entry +
+   `minScore`/`maxScore`/`ratingFilter` schema descriptions updated, all confirmed present in the live
+   build 0.1.49 via `GET /v2/actor-builds/<id>`.
+   **Fleet sweep for the same shape: no other instance.** 7 Actors pair a `min*` with an array filter
+   but over different fields (`minAwardAmount` vs `awardTypes`), where no contradiction exists;
+   sibling `app-store-reviews-scraper` has `minRating`/`maxRating` with its `min > max` throw already
+   present and no exact-set filter. Sub-shape closed fleet-wide (see queue item 3 above).
+   **`competitor_audit` (was 820):** re-pulled all three traction leaders live — `neatrat` (2836 users)
+   is tiered $0.00015 FREE -> $0.0001 DIAMOND, `thewolves` (1612) and `theagents` (659) are flat
+   $0.0001, none charges a start fee. We are flat $0.0001, no start fee: at or below every competitor,
+   no price gap (same conclusion as 820, re-proven not assumed). Refreshed the README Pricing section
+   with the 2026-09-30 date and added a feature comparison — `neatrat` takes ONE app per run and has no
+   `searchTerms`/`genres`/`replyFilter`/`minThumbsUp`/`minReviewLength`/`includeAppDetails`/watch
+   mode/webhook. Their 4 inputs we lack are queued as item 5.
+   Standing checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-code-fields` 0,
+   `check-readme-samples` 35/74/0, `check-competitor-claims` 11/19 with 0 stale/undated (the new
+   paragraph was caught as UNDATED first — the checker's 40-char "verified ... date" window — and
+   fixed by shortening, see LEARNINGS). Dev.to correctly skipped (~23.5h since last post vs a 2-3 day
+   cadence). $0 of $300 spent, no owner email needed. `audit_dates.json` (`varied_test`,
+   `competitor_audit`, `unreachable_remedy` all -> 1032), LEARNINGS, STATUS, queue updated.
 
 0-DONE-h1031-steam-reviews-varied-test-plus-competitor-audit-plus-checker-regex-fix.
    **[cycle 1031] DONE — GROWTH slot per rotation (1029 G -> 1030 Q -> 1031 G). `varied_test` +

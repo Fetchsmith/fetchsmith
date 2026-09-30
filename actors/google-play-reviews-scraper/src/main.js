@@ -128,6 +128,34 @@ function ratingAllowed(score) {
   if (ratingFilter.length && !ratingFilter.includes(score)) return false;
   return true;
 }
+// Google Play only ever emits integer star ratings 1-5, so the reachable set is finite and the
+// rating filters can be proven contradictory BEFORE a single review is fetched. Without this the
+// run fetches its whole maxReviewsPerApp budget, keeps 0 rows, and then advises "raise
+// maxReviewsPerApp to search deeper" -- unreachable advice, because no review at any depth can
+// match (same class as clinicaltrials-scraper's resultsAvailability x resultsFirstPostedDate
+// contradiction, LEARNINGS cycle 1028). Two ways in: an empty intersection between
+// minScore/maxScore and ratingFilter (e.g. minScore 4 + ratingFilter [1,2]), or a ratingFilter
+// holding only out-of-range values (the schema's stringList editor cannot constrain its items,
+// so ratingFilter [0] / [6] arrives validated).
+const STAR_RATINGS = [1, 2, 3, 4, 5];
+const reachableStars = STAR_RATINGS.filter(ratingAllowed);
+if (!reachableStars.length) {
+  const parts = [];
+  if (minScore != null) parts.push(`"minScore" (${minScore})`);
+  if (maxScore != null) parts.push(`"maxScore" (${maxScore})`);
+  if (ratingFilter.length) parts.push(`"ratingFilter" ([${ratingFilter.join(', ')}])`);
+  const offRange = ratingFilter.filter((n) => !STAR_RATINGS.includes(n));
+  throw new Error(
+    `${parts.join(' + ')} ${parts.length > 1 ? 'leave' : 'leaves'} no reachable star rating — Google Play reviews only carry 1-5 stars, `
+    + 'so no review can ever match this combination and every run would fetch its whole '
+    + `maxReviewsPerApp budget and return 0 reviews.${
+      offRange.length === ratingFilter.length && ratingFilter.length
+        ? ` "ratingFilter" contains only values outside 1-5 (${offRange.join(', ')}); use whole star ratings.`
+        : ' "ratingFilter" is applied ON TOP OF minScore/maxScore (an AND, not an override), so the two must overlap — drop one of them, or widen the range to include a value in the list.'
+    }`,
+  );
+}
+
 const topStarExcluded = !ratingAllowed(5);
 const ratingSortUnreachable = sortName === 'RATING' && topStarExcluded;
 const RATING_SORT_HINT = ' — with sort="RATING" the feed is walked highest-star-first, so the fetch '

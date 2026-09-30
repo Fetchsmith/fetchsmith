@@ -76,21 +76,21 @@
     "minScore": {
       "title": "Minimum star rating",
       "type": "integer",
-      "description": "Only keep reviews with a star rating >= this (1-5).",
+      "description": "Only keep reviews with a star rating >= this (1-5). Combined with \"Exact star ratings\" it is an AND, so the two must overlap.",
       "minimum": 1,
       "maximum": 5
     },
     "maxScore": {
       "title": "Maximum star rating",
       "type": "integer",
-      "description": "Only keep reviews with a star rating <= this (1-5).",
+      "description": "Only keep reviews with a star rating <= this (1-5). Combined with \"Exact star ratings\" it is an AND, so the two must overlap.",
       "minimum": 1,
       "maximum": 5
     },
     "ratingFilter": {
       "title": "Exact star ratings",
       "type": "array",
-      "description": "Only keep reviews whose star rating is one of these values, e.g. [1, 2, 5]. Use this instead of Minimum/Maximum when you want a non-contiguous set (Min/Max can only express a range). Applied on top of Min/Max if both are set.",
+      "description": "Only keep reviews whose star rating is one of these values, e.g. [1, 2, 5]. Use this instead of Minimum/Maximum when you want a non-contiguous set (Min/Max can only express a range). Applied on top of Min/Max if both are set — an AND, not an override, so the two must overlap: minScore 4 with [1, 2] can never match a review and the run fails immediately rather than returning 0 rows. Values outside 1-5 are rejected the same way.",
       "editor": "stringList",
       "default": []
     },
