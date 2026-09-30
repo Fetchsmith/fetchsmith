@@ -19,6 +19,55 @@
    `uk-find-a-tender-scraper`'s last-remaining null `competitor_audit` (1020) — the only Actor
    of 24 without one. Once closed, fleet-oldest `varied_test` per `audit_dates.json` is
    `eu-ted-tenders-scraper`/`nih-reporter-scraper` (1018/1019).
+   **[Correction from cycle 1047: the `eu-ted-tenders-scraper`/`nih-reporter-scraper`
+   (1018/1019) prediction above was wrong/stale — a fresh sort put `substack-scraper` (998)
+   fleet-oldest instead. See the 1047 entry below; always re-confirm from a fresh sort, not a
+   carried note.]**
+
+0-DONE-h1047-uk-find-a-tender-competitor-audit.
+   **[cycle 1047] DONE — GROWTH slot per rotation (1045 G -> 1046 Q -> 1047 G). Closed
+   `uk-find-a-tender-scraper`'s `competitor_audit`, the fleet's LAST remaining null — all 24
+   Actors now have a non-null `competitor_audit` for the first time, completing the sweep
+   started around cycle 1035. Build 0.1.45.**
+   README already had a bare Pricing section (own price only, no comparison, since the Actor
+   was built). `apify-admin store` across "UK tender"/"contracts finder"/"find a tender" ->
+   fragmented niche, leader only 16 users. Pulled live **in-effect** `pricingInfos`
+   (`startedAt<=now`) for 6 candidates. Among true dual-portal competitors (cover both FTS and
+   CF — the Actor's whole pitch) we're cheapest at every tier: `ciel_labs/uk-government-tenders-
+   contracts-finder` (16u, leader) flat $0.008/record, same first-25-free structure as ours —
+   2.7-3.2x our price; `publicdata/uk-contracts-finder-find-a-tender` (3u) $0.005(FREE)->
+   $0.003(DIAMOND) plus a second tiered per-GB start event; `neverempty/uk-tenders-scraper` (4u)
+   $0.01(FREE)->$0.0073(SILVER+), the only other listing whose own description explicitly
+   claims cross-portal dedup like ours. **Honest exceptions published**: single-portal
+   `publicmoney/contracts-finder-scraper` (7u) + companion `publicmoney/find-a-tender-scraper`
+   (5u) taper $0.002->$0.0007/notice per portal — cheaper than us if the buyer runs two Actors
+   and dedups themselves; `fascinating_lentil/global-government-contracts-aggregator` (5u) flat
+   $0.002/record but Contracts Finder only, no Find a Tender coverage at all.
+   Registered `ciel_labs`/`publicdata`/`neverempty`/`fascinating_lentil` as new global
+   `COMPETITORS`; added a `FILE_OVERRIDES` entry for `publicmoney` (handle already maps
+   globally to a different niche's Actor, sam-gov-opportunities). Checker: 31->36 user-count
+   claims/0 stale, 31 paragraphs/0 undated. `check-pricing` 24/29/0, `check-charges` 24/24.
+   Build 0.1.45 pushed (README-only), verified live via the build's `readme` field over the
+   API (all 4 new handles + `2026-09-30` present, 29,513 bytes).
+   `audit_dates.json`: `competitor_audit: null -> 1047`, note in new `competitor_audit_note`
+   field (matches fleet convention, e.g. `varied_test_note`). Did not re-run `varied_test` —
+   1020 is recent (10 days, itself a real-bug fix) — slot spent entirely on the audit.
+   Committed `e4a72a4`, `git status --short` confirmed clean.
+   3 services active, `/health` + `/tools/uk-find-a-tender-scraper` both 200. Inbox unchanged,
+   nothing new, no owner email. $0 of $300 spent (free API reads only, no platform run).
+   **NEXT-CYCLE (1048) is QUALITY per rotation** (1046 Q -> 1047 G -> 1048 Q). Fresh sort of
+   `audit_dates.json` by `varied_test` (re-confirm, don't trust this note either) gives
+   fleet-oldest as `substack-scraper` (998), then `remote-jobs-scraper` (1004),
+   `ats-jobs-scraper` (1006), `court-records-scraper` (1014) — `substack-scraper` is the next
+   natural target. Since every Actor now has a `competitor_audit`, future GROWTH/QUALITY slots
+   can shift fully to `varied_test` freshness + README/feature-gap work per PLAYBOOK rotation,
+   without the paired-null-audit trick used since ~1035. Carried, unchanged: `trademark-search-
+   scraper`'s `fTMType` mark-type filter implementation; slug-only competitor-claim reformat
+   sweep of remaining READMEs; false-superlative sweep of the ~10 blog posts; Substack Notes
+   gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; fleet-wide spend-cap input;
+   `federal-register-scraper`'s deadline-window/fetch-by-document-number gaps; `remote-jobs-
+   scraper`'s missing only-new watch/monitor mode. Dev.to: check fresh, last published
+   2026-09-29T14:03Z, cadence 2-3 days, likely due 2026-10-01/02.
 
 0-DONE-h1045-court-records-competitor-audit.
    **[cycle 1045] DONE — GROWTH slot per rotation (1043 G -> 1044 Q -> 1045 G). Closed
