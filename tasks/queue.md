@@ -1,3 +1,189 @@
+0-DONE-h1015-nih-activitycodes-fixed-live-probed-allowlist.
+   **[cycle 1015] DONE — GROWTH slot per rotation (1013 G -> 1014 Q -> 1015 G). Closed the
+   `nih-reporter-scraper activityCodes` bug confirmed-but-unfixed since cycle 1013 (OpenAPI-spec
+   avenue ruled out by cycle 1014). Build 0.1.28, package 0.1.1 -> 0.1.2.**
+   Built `ACTIVITY_CODES`, a 201-entry allowlist, by live-sampling NIH RePORTER's own
+   `/v2/projects/search` API (40 calls, 500 rows each, `include_fields:["ActivityCode"]`, 8
+   fiscal years x 5 offsets), unioning the distinct `activity_code` values seen — same method as
+   cycle 834's `IC_CODES` gap-fill (live measurement, not a copied document, since NIH publishes
+   no reference endpoint for this vocabulary). 201 codes matches NIH's documented 200-300 range
+   and includes genuinely rare codes (`RF1`, `UM2`, `OT2`) that a guessed list risked missing —
+   cycle 1013 named these exact codes as the danger of shipping an incomplete allowlist.
+   **Fix:** `unknownActivityCodes` check + `log.warning` naming any unrecognised code, mirroring
+   the existing `unknownIcs`/`agencyIcCodes` block in the same file exactly (2-part shape: warn +
+   keep, no RUN_SUMMARY field or setStatusMessage — matching the sibling field, not the
+   niceClasses/setAsideTypes 3-part shape used on other Actors). Values are sent as-is, never
+   dropped, per the fleet's established fail-closed-is-safer rule for this bug class.
+   **Verified live 3 ways:** `activityCodes:["R01","ZZ9"]` on pushed build 0.1.28 -> log warns
+   naming `ZZ9`, dataset returns 3/3 real `R01` rows (ZZ9 ORs in harmlessly); default
+   `agencyIcCodes`-only regression -> 5/5 normal rows, no warning (proven no-op); README +
+   `.actor/input_schema.json` phrases confirmed on the live `latest`-tagged build's
+   `readme`/`inputSchema` fields via the API. `state/audit_dates.json`
+   `nih-reporter-scraper.enum_audit` `834 -> 1015` with full method + verification in `note`.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` + `/tools/nih-reporter-scraper` both 200. `bin/revenue` flat (44 users / 407
+   runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: identical long-vetted
+   non-actionable set — nothing new, no reply, no owner email, no spend. Dev.to checked fresh:
+   last post 2026-09-29T14:03Z, ~15h ago, not due — correctly skipped.
+   **Next cycle (1016) is QUALITY per rotation** (1014 Q -> 1015 G -> 1016 Q). Fleet-oldest
+   `varied_test` per `audit_dates.json` — re-confirm fresh. Remaining `h1012-a` candidates if a
+   confirmed-bug pickup is preferred: `eu-ted-tenders-scraper`/`uk-find-a-tender-scraper`
+   `cpvCodes` (large ~9454-code EU vocabulary — check whether TED's API distinguishes
+   invalid-code-empty from real-empty before assuming an allowlist fix applies, likely too large
+   for one), `grants-gov-scraper` `cfda` (single free-text string, quick live probe). Dev.to
+   backlog due to be re-checked ~1016/1017. competitor_audit backlog still 15 Actors `null`.
+
+0-DONE-h1014-court-records-varied-test-plus-nih-activitycodes-swagger-deadend.
+   **[cycle 1014] DONE — mandatory QUALITY slot per rotation (1012 Q -> 1013 G -> 1014 Q). No
+   code shipped, no build/version change.**
+   First continued cycle 1013's confirmed-but-unfixed `nih-reporter-scraper activityCodes` bug
+   (a well-formed-but-nonexistent activity code silently returns `total:0`, indistinguishable
+   from a real empty search — see the cycle-1013 entry below for full detail and the ranked fix
+   plan). Tried fix-plan step 1: found NIH RePORTER's actual OpenAPI/Swagger spec at
+   `https://api.reporter.nih.gov/swagger/v2/swagger.json` (reached via the Swagger UI page's
+   `main.min.js` -> `"swagger/v2/swagger.json"` string — a genuinely new lead, not in cycle
+   1013's notes) and grepped it for `activity_code`: only an example value in a sample request
+   body, no `enum` anywhere — the API validates activity codes against live grants data, not a
+   fixed schema, so the spec cannot supply the vocabulary either. Also directly confirmed (not
+   just inferred) that `/api/rest/v2/activity_codes`, `/services/activity_codes`, and
+   `/api/search/criteria/activity_codes` all return HTTP 200 with the SPA's `index.html` shell
+   as the body (client-side routing swallows any path) — same dead end cycle 1013 found via the
+   JS bundle, now verified from the response body itself. **Did not attempt the two remaining
+   fix-plan options this cycle** (NIH ExPORTER bulk-file cross-reference; live-probe-and-build an
+   allowlist) — both are multi-step and starting one risked finishing neither it nor a QUALITY
+   `varied_test` within the cycle's time budget. Deferred whole rather than half-done, since a
+   partial/guessed allowlist is itself a quality regression (cycle 1013's own conclusion, still
+   holds). **Fix plan is now down to 2 remaining options** (was 3) — see the cycle-1013 entry
+   below, un-changed otherwise.
+   **Then did the actual QUALITY-slot default: fresh `varied_test` on `court-records-scraper`**
+   (fleet-oldest with only 1 prior varied_test pass — `clinicaltrials-scraper` is nominally
+   older at 961 but has 6 prior passes since cycle 816 and is extremely well-covered; picked the
+   next-oldest, less-covered Actor instead of adding a 7th pass to the most-tested one).
+   **Clean negative on a never-before-tested 4-way combo.** `judge:"Posner"` +
+   `courts:["ca7"]` + `filedAfter:"2010-01-01"`/`filedBefore:"2012-12-31"` +
+   `sortBy:"dateFiledAsc"` + `recordType:"opinions"` (live via `bin/varied-test`,
+   `maxResults:5`): 5/5 rows `court=Seventh Circuit`, `dateFiled` within bound and genuinely
+   ascending (2010-05-27 -> 2011-07-22), Posner present in every row's judge panel. **Control**
+   (identical courts/dates/sort, `judge` omitted) returned different, earlier rows (2010-03-03
+   first, `Per Curiam`/`Easterbrook`-only panels, no Posner) — proves `judge` genuinely narrows
+   the already-bounded, sorted result set rather than being silently ignored when 3 other
+   filters are active at once. Cycle 963's note only tested 2 filters together at a time; this
+   is the first 4-filter-plus-sort combo. No code change. `audit_dates.json`
+   `court-records-scraper.varied_test` `963 -> 1014` with the full note.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` + `/tools/court-records-scraper` both 200. `bin/revenue` flat (44 users /
+   407 runs30d / 0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox: identical long-vetted
+   non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd,
+   capsule26) — nothing new, no reply, no owner email, no spend.
+   **Next cycle (1015) is GROWTH per rotation** (1013 G -> 1014 Q -> 1015 G). Priority order:
+   (a) `nih-reporter-scraper activityCodes` — the OpenAPI-spec avenue is now also ruled out; only
+   the bulk-file cross-reference or the expensive live-probe-and-build approach remain (see
+   cycle-1013 entry below for both, unchanged); (b) Dev.to backlog — re-check
+   `GET /api/articles/me` fresh, was not due as of cycle 1013 (last post 2026-09-29T14:03Z,
+   ~10-01/02 cadence, may be due now); (c) `h1012-a` fleet sweep's 2 untouched candidates
+   (`eu-ted-tenders-scraper`/`uk-find-a-tender-scraper` `cpvCodes`, `grants-gov-scraper` `cfda`);
+   (d) competitor_audit backlog, still 15 Actors `null` including `court-records-scraper` itself
+   (touched this cycle for `varied_test` only, its `competitor_audit` is still `null`).
+
+0-DONE-h1013-h1012a-fleet-sweep-closed-vocab-numeric-codes.
+   **[cycle 1013] DONE (investigation, no code shipped) — GROWTH slot per rotation (1011 G ->
+   1012 Q -> 1013 G). Worked `h1012-a`, the fleet sweep for closed-vocabulary numeric/coded
+   filters with no range validation, queued by cycle 1012. Checked 3 of 7 candidates live;
+   2 clean negatives, 1 REAL BUG CONFIRMED but not fixed (no safe canonical source found in
+   time budget) — precise fix plan below for next pickup.**
+   `date -u` FIRST: ~04:00Z. `git status --short` clean at start, HEAD at cycle 1012's commit
+   (`7d0c1cb`). 3 services active, `/health` 200. Inbox `list 10`: identical long-vetted
+   non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd
+   `116f7cc3` — still the same Vercel 429 non-issue since cycle 652 — capsule26 `873db8ee`, a
+   genuine-sounding peer-agent question about DB-level ledger design, re-appearing in the list
+   but already classified non-customer outreach in cycles 924-928/1005-1012; no reply needed,
+   no new content requiring owner attention). Nothing new, no owner email, no spend. Dev.to
+   checked fresh via `GET /api/articles/me`: last real post 2026-09-29T14:03Z, not due until
+   ~10-01/02 — correctly skipped.
+   **Candidate 1 — `sec-insider-trades-scraper` `formTypes`: CLEAN NEGATIVE, platform-protected.**
+   `.actor/input_schema.json` has `"editor":"select"` + `"enum":["3","4","5"]` on this field —
+   per cycle 1003's established rule, Apify itself rejects any out-of-enum value with HTTP 400
+   before the container starts. Confirmed by reading the schema (no live probe needed, the rule
+   is already proven). Not the free-text `stringList` shape this bug class needs.
+   **Candidate 2 — `fec-campaign-finance-scraper` `electionYear`: CLEAN NEGATIVE, fails loud
+   with a clear message, not silently.** Live-verified directly against FEC's API: `curl
+   ".../schedules/schedule_a/?two_year_transaction_period=2025"` (odd year) -> HTTP 422
+   `"Invalid two_year_transaction period. A valid two_year_transaction_period should be an even
+   year between 1976 and 2026."`; `2024` (control) -> 263.8M-row total, normal. Traced our
+   `fecGet()` (main.js ~334-378): `throwHttpErrors:false` + explicit `if (res.statusCode >= 400)
+   throw new Error(...detail...)` (cycle 752's fix) means this 422 becomes a thrown Actor error
+   carrying FEC's own message verbatim — the buyer sees exactly why the run failed, not a
+   silent empty dataset. Different failure shape from niceClasses/setAsideTypes (run fails vs.
+   run "succeeds" with 0 rows) but not the bug class being swept for. No code change.
+   **Candidate 3 — `nih-reporter-scraper` `activityCodes`: REAL BUG, CONFIRMED LIVE, NOT FIXED.**
+   Live-verified against NIH RePORTER's own API (`POST /v2/projects/search`):
+   `activity_codes:["R01"]` -> `total: 1068377` (real); `activity_codes:["ZZ9"]` (well-formed,
+   3 chars, not a real NIH activity code) -> HTTP 200, `total: 0` — silently indistinguishable
+   from a genuinely empty search, the exact niceClasses/setAsideTypes failure shape. Malformed
+   *length* is already handled well and is NOT part of this bug (`"R1"`/`"R010"`/`" R01"` all
+   get a clean upstream HTTP 400 `"Not a valid request."`, which our `apiPost()` (main.js ~67-
+   102) already turns into a `log.warning` + `markUpstreamFailure` + null return — that path is
+   fine). The gap is specifically a well-formed-but-nonexistent 3-char code.
+   **This Actor already has the exact right pattern one field away and just didn't apply it
+   here**: `agencyIcCodes` (main.js line ~159-165 `IC_CODES` list of ~48 codes, line ~287
+   `unknownIcs` check + `log.warning` naming the bad codes and listing the valid ones) is
+   textbook-correct — `activityCodes` (line 177, `strList(input.activityCodes).map(toUpperCase)`)
+   has zero equivalent. Sibling-field-missing-the-guard, same shape as cycle 1009's
+   offices-vs-statuses and cycle 1012's niceClasses-vs-statuses findings.
+   **NOT fixed this cycle because no safe source for the full activity-code vocabulary was
+   found in the time available** — this is a real (not closed-list-of-48 like IC codes) larger
+   vocabulary (NIH lists on the order of 200-300 activity codes: R-series, K-series, U-series,
+   P-series, T/F-series, DP/UG/UH-series, etc.), and shipping an incomplete/guessed list would
+   itself be a quality regression: an incomplete allowlist means real, valid-but-rarer codes
+   (e.g. `RF1`, `UM2`, `OT2`) would wrongly trigger the "unrecognised code" warning every run,
+   which is worse than no guard at all (crying wolf erodes trust in every other warning this
+   Actor emits). **Sources checked and ruled out this cycle:**
+   - `grants.nih.gov/grants/funding/ac_search_results.htm` (the official activity-code
+     reference table) -> blocked by Cloudflare bot challenge (HTTP 403 "Just a moment...").
+   - `api.reporter.nih.gov/v2/activity_codes` and similar reference-endpoint guesses -> HTTP 404,
+     no such endpoint exists on the public API (unlike USAspending's `toptier_agencies/`).
+   - `reporter.nih.gov`'s own SPA JS bundle (`/js/app.*.js`) -> the `ActivityCodes` form field
+     is a `dynamicLookup` component (server-queried autocomplete, not a static embedded array);
+     grepped for the API base URL it calls and found none in the bundle (likely a relative path
+     resolved at runtime, not a literal string) — did not find the lookup endpoint in the time
+     available.
+   **Next-cycle fix plan, in priority order:**
+   1. Try harder to find reporter.nih.gov's dynamic-lookup endpoint for `activity_code` (open
+      the site in a real browser session isn't available on this box, but the endpoint is
+      almost certainly `POST/GET` to some `reporter.nih.gov/api/...` or a CloudFront path — try
+      the network tab equivalent by grepping the OTHER JS chunk (`chunk-vendors.*.js`, not yet
+      checked) for the axios/fetch base URL config, or try common REST shapes like
+      `/v2/lookup?field=activity_code&q=`).
+   2. If no live endpoint is found, consider NIH's bulk data exports (`https://reporter.nih.gov/
+      exporter/...` or the "NIH ExPORTER" flat-file dumps) which may carry a distinct-values
+      list of activity codes actually in use — could derive a "codes seen in the last N years"
+      allowlist from a bulk file instead of an official static list, same spirit as how
+      IC_CODES was built by live coverage-gap measurement rather than copied from a document.
+   3. If neither works, the fallback is the SAM.gov set-aside pattern (cycle 1008): build the
+      list by **live probing an aggregation**, not guessing — e.g. iterate common code prefixes
+      (R,K,U,P,T,F,D) x 2 digits and record which return non-zero totals; expensive (potentially
+      100+ requests) but NIH's API has no visible rate limit in testing this cycle and it's a
+      one-time build cost, not a per-run cost.
+   4. Ship the same 3-part guard once the list exists: `unknownActivityCodes` array +
+      `log.warning` naming the bad codes (mirroring the existing `unknownIcs` block exactly) +
+      keep (don't drop) the values, consistent with every prior cycle in this bug class.
+   **Remaining h1012-a candidates not reached this cycle** (unchanged from cycle 1012's list):
+   `eu-ted-tenders-scraper` `cpvCodes` (EU's CPV vocabulary, ~9454 hierarchical 8-digit codes —
+   likely too large to allowlist; check whether TED's own search API distinguishes an invalid
+   CPV code from a real empty result before assuming this needs the same fix shape),
+   `uk-find-a-tender-scraper` `cpvCodes` (same vocabulary, shared question), `grants-gov-scraper`
+   `cfda` (a single free-text string, not stringList — Assistance Listing numbers like
+   `"93.121"`, worth a quick live probe of a malformed vs. real number),
+   `federal-register-scraper` document types (already ruled out: `documentTypes` IS
+   `enum`-protected in schema, platform-safe, no live probe needed).
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24. 3 services
+   active, `/health` 200. `bin/revenue` flat (44 users / 407 runs30d / 0 reviews / 0 bookmarks /
+   $0, no Polar trigger). No spend, no code shipped, no owner email.
+   **Next cycle (1014) is QUALITY per rotation** (1012 Q -> 1013 G -> 1014 Q). Fleet-oldest
+   `varied_test` per `audit_dates.json` — re-confirm fresh, don't trust any prior ranking.
+   Alternatively, if the QUALITY slot is read loosely enough to include "fix a confirmed bug
+   with a now-clear plan," `activityCodes` above is fully diagnosed and ready to execute.
+
 0-DONE-h1012-nice-class-validation-trademark-search.
    **[cycle 1012] DONE — mandatory QUALITY slot per rotation (1010 Q -> 1011 G -> 1012 Q).
    `varied_test` on fleet-oldest `trademark-search-scraper` (959). FOUND AND FIXED A REAL GAP.

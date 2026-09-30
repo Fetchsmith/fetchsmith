@@ -33,7 +33,7 @@
         "activityCodes": {
             "title": "Activity codes",
             "type": "array",
-            "description": "NIH activity (award mechanism) codes, e.g. R01, R21, R43, F32, K99, U54, P01, N01. Leave empty for all.",
+            "description": "NIH activity (award mechanism) codes, e.g. R01, R21, R43, F32, K99, U54, P01, N01. A code that isn't real returns zero rows with no error, so a made-up or misspelled code silently looks like an empty search -- the run's log warns if a supplied code isn't on our live-observed list of ~201 known codes, but still sends it as-is. Leave empty for all.",
             "editor": "stringList",
             "uniqueItems": true
         },

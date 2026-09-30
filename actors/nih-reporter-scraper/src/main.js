@@ -164,6 +164,37 @@ const IC_CODES = [
     'NCRR', 'ADAMHA', 'ATSDR', 'NCCDPHP', 'NCHHSTP', 'NCIPC', 'NCBDDD', 'NCEZID', 'NCHS',
 ];
 
+// NIH activity codes (grant mechanism, e.g. R01/K99/U54), used only as a user filter value --
+// unlike IC_CODES above, this is NOT used for chunking/fan-out. NIH publishes no reference API
+// for this vocabulary (cycle 1013 confirmed: no `/activity_codes` endpoint, the OpenAPI spec has
+// no enum, and the official HTML reference page is Cloudflare-blocked), so this list is built the
+// same way IC_CODES' cycle-834 gap-fill was: by live measurement, not by copying a document.
+// Method (cycle 1015): sampled `activity_code` from 40 live `/v2/projects/search` calls (500 rows
+// each) spanning fiscal years 2005/2008/2011/2014/2017/2020/2023/2025 at 5 offsets per year
+// (0/1000/3000/6000/10000), then took the union of distinct codes seen -- 201 codes, matching
+// NIH's documented ballpark of 200-300 codes in use. This is a "codes observed in a broad live
+// sample," not a claimed-exhaustive official list: a real, very-rarely-used code could still be
+// missing. That is why, exactly like IC_CODES/agencyIcCodes below, an unrecognised value is
+// WARNED ABOUT and KEPT, never dropped -- a false "unrecognised" warning on a genuine rare code is
+// an annoyance, but silently dropping a real filter value from the query is worse.
+const ACTIVITY_CODES = [
+    'B01', 'B08', 'B09', 'C06', 'D43', 'DP1', 'DP2', 'DP5', 'DP7', 'E11', 'F30', 'F31', 'F32', 'F99',
+    'FI2', 'G08', 'G11', 'G12', 'G13', 'G20', 'H23', 'H25', 'H28', 'H64', 'H75', 'H79', 'HR1', 'HS5',
+    'I01', 'I21', 'I50', 'IK1', 'IK2', 'IK6', 'IS1', 'K00', 'K01', 'K02', 'K05', 'K07', 'K08', 'K12',
+    'K18', 'K22', 'K23', 'K24', 'K25', 'K26', 'K30', 'K38', 'K43', 'K76', 'K99', 'KL2', 'M01', 'N01',
+    'N02', 'N03', 'N43', 'N44', 'OT2', 'OT3', 'P01', 'P20', 'P2C', 'P30', 'P40', 'P41', 'P42', 'P50',
+    'P51', 'P60', 'PL1', 'PN2', 'R00', 'R01', 'R03', 'R13', 'R15', 'R16', 'R18', 'R21', 'R24', 'R25',
+    'R33', 'R34', 'R35', 'R36', 'R37', 'R38', 'R41', 'R42', 'R43', 'R44', 'R49', 'R50', 'R56', 'R61',
+    'R90', 'RC2', 'RF1', 'RL1', 'RM1', 'S06', 'S10', 'S21', 'S22', 'SB1', 'SC1', 'SC2', 'SC3', 'T01',
+    'T02', 'T03', 'T15', 'T32', 'T34', 'T35', 'T36', 'T37', 'T42', 'T90', 'TL1', 'U01', 'U09', 'U10',
+    'U13', 'U14', 'U17', 'U18', 'U19', 'U1A', 'U1B', 'U22', 'U24', 'U2C', 'U2F', 'U2G', 'U2R', 'U32',
+    'U34', 'U38', 'U41', 'U42', 'U43', 'U44', 'U45', 'U48', 'U50', 'U51', 'U52', 'U54', 'U55', 'U56',
+    'U57', 'U58', 'U59', 'U60', 'U61', 'U62', 'U65', 'U79', 'U87', 'U88', 'U90', 'UC1', 'UC2', 'UC7',
+    'UD1', 'UE1', 'UE2', 'UE5', 'UF1', 'UF2', 'UG1', 'UG3', 'UG4', 'UH2', 'UH3', 'UH4', 'UL1', 'UM1',
+    'UM2', 'UR1', 'UR3', 'UR6', 'UT1', 'VF1', 'X06', 'X98', 'Z01', 'ZIA', 'ZIB', 'ZIC', 'ZID', 'ZIE',
+    'ZIF', 'ZIG', 'ZIH', 'ZII', 'ZIJ',
+];
+
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x !== null && x !== undefined && x !== '') : []);
 const strList = (v) => listOf(v).map((x) => String(x).trim()).filter(Boolean);
 
@@ -289,6 +320,16 @@ if (unknownIcs.length) {
     log.warning(
         `Unrecognised agency/IC code(s): ${unknownIcs.join(', ')}. They are still sent as-is, but NIH RePORTER `
         + `will simply match nothing for them. Valid codes: ${IC_CODES.join(', ')}.`,
+    );
+}
+
+const unknownActivityCodes = activityCodes.filter((c) => !ACTIVITY_CODES.includes(c));
+if (unknownActivityCodes.length) {
+    log.warning(
+        `Unrecognised activity code(s): ${unknownActivityCodes.join(', ')}. A well-formed-but-nonexistent activity `
+        + 'code is NOT rejected by NIH RePORTER -- it just returns zero rows, indistinguishable from a genuinely '
+        + 'empty search. They are still sent as-is (in case this is a real, rare code missed by our live sample), '
+        + `but double-check the spelling. Recognised codes: ${ACTIVITY_CODES.join(', ')}.`,
     );
 }
 
