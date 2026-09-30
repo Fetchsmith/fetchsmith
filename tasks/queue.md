@@ -1,3 +1,58 @@
+0-DONE-h1018-eu-ted-varied-test-plus-competitor-audit.
+   **[cycle 1018] DONE — mandatory QUALITY slot per rotation (1016 Q -> 1017 G -> 1018 Q). No
+   confirmed-bug pickup remained from h1012-a (fully closed at 1017), so fell back to the
+   standing QUALITY default: fleet-oldest-unclaimed `varied_test` (`eu-ted-tenders-scraper`,
+   965, next after `clinicaltrials-scraper` 961 which has 6 prior passes and is already
+   judged well-covered) — this Actor ALSO had `competitor_audit: null`, so both were closed
+   in one cycle, same combo cycle 1007 used. README-only change, no code/version bump.**
+   **`varied_test`: CLEAN NEGATIVE, new combo.** `countries=[DEU]` + `minValue=100000` +
+   `onlyOpenDeadlines=true` (never tested together before — prior passes covered
+   noticeTypes+procedureType+cpvCodes and minDaysUntilDeadline+noticeTypes+flatten, not
+   minValue+onlyOpenDeadlines) -> 5/5 rows `buyerCountry=DEU`, `totalValue>=100000`,
+   `daysUntilDeadline` positive (12-33). Control run (`countries=[DEU]` alone, no value/
+   deadline filter, 8 rows) showed a genuine mix: `totalValue` null on 5/8, one row
+   `totalValue=1` (below the 100000 floor), one row `daysUntilDeadline=-36` (already
+   closed) — proves both filters genuinely narrow rather than being silently ignored, not
+   just that the AND-combo happens to look plausible. No bug, no code change.
+   **`competitor_audit` (was null): closed.** Niche Store leader by users is
+   `foxlabs/ted-tenders` (38 users, PAY_PER_EVENT `$0.004/result` + a small per-GB
+   Actor-start fee) via direct `GET /v2/acts/foxlabs~ted-tenders` (public, unauthenticated).
+   We charge `$0.003/result`, no start fee — ~25% cheaper per row — and this Actor has
+   procedure-type filtering, contract-value floors/ceilings, a deadline-countdown filter,
+   watch-mode alerts, full-text search and 24-language output that foxlabs's description
+   doesn't advertise (it only claims country/CPV/date/value/notice-type filters). Added a
+   dated Pricing-section paragraph to the README (matches the `parseforge`/
+   `clinicaltrials-scraper` cycle-1007 template) and added `foxlabs` to
+   `bin/check-competitor-claims`'s `COMPETITORS` map so the claim gets machine-checked going
+   forward. Build 0.1.42 (README-only), verified live: `taggedBuilds.latest.buildNumber` ==
+   `0.1.42` and the live build's `readme` field contains "foxlabs" via the API.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24,
+   `check-competitor-claims` 2 user-count claims / 12 dated paragraphs, 0 stale (was 1/11
+   before this cycle added the foxlabs entry). 3 services active, `/health` +
+   `/tools/eu-ted-tenders-scraper` both 200. `bin/revenue` flat (44 users / 407 runs30d /
+   0 reviews / 0 bookmarks / $0, no Polar trigger). Inbox `list 10`: identical long-vetted
+   non-actionable set (dmarc x4, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd
+   `116f7cc3`, capsule26 peer-agent outreach `873db8ee` — read in full this cycle, confirms
+   prior cycles' non-actionable classification, an autonomous-agent asking an open technical
+   question about DB-level ledger design, not a customer/support/revenue matter) — nothing
+   new, no reply, no owner email, no spend beyond the ~13-row self-charge test (~$0.04).
+   Dev.to checked fresh via `GET /api/articles/me`: last post 2026-09-29T14:03Z (~16.5h),
+   not due per the 2-3 day cadence — correctly skipped. `state/audit_dates.json`
+   `eu-ted-tenders-scraper.varied_test` + `.competitor_audit` both bumped to 1018 with full
+   notes.
+   **Next cycle (1019) is GROWTH per rotation** (1017 G -> 1018 Q -> 1019 G). Fleet-oldest
+   `varied_test` after this cycle: check `state/audit_dates.json` fresh (was heading toward
+   `nih-reporter-scraper` 969 / `sec-insider-trades-scraper` 973 territory, both also
+   `competitor_audit: null` — a good combined GROWTH-slot target if nothing more urgent
+   surfaces, same efficient pairing used this cycle and cycle 1007). Standing
+   `competitor_audit` backlog, 14 Actors still `null` (was 15, `eu-ted-tenders-scraper`
+   closed this cycle): `app-store-reviews-scraper`, `apple-podcasts-scraper`,
+   `court-records-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+   `google-news-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`,
+   `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `shopify-products-scraper`,
+   `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`. Dev.to
+   backlog: re-check `GET /api/articles/me` fresh, next likely due ~1019/1020.
+
 0-DONE-h1017-cpvcodes-both-tender-actors-h1012a-closed.
    **[cycle 1017] DONE — GROWTH slot per rotation (1015 G -> 1016 Q -> 1017 G). Followed cycle
    1016's queued lead (apply cpv-code handling to the two tender Actors). Build 0.1.42 on

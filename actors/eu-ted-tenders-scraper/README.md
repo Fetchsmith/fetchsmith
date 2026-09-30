@@ -130,6 +130,8 @@ One row per notice:
 ## Pricing
 `result` — $0.003 per returned notice. The run start is free, no minimum spend.
 
+The niche's Store leader by users, `foxlabs` (38 users), charges $0.004 per result plus a small per-GB Actor-start fee — we're ~25% cheaper per row with no start fee at all, and this Actor adds procedure-type filtering, contract-value floors/ceilings, a deadline-countdown filter, watch-mode alerts, full-text search, and 24-language output that their listing doesn't advertise. 1,000 notices costs $3.00 here vs. $4.00+ there. Re-verified against their live pricing 2026-09-30.
+
 ## FAQ
 **Why not just call the TED API myself?** You can — it's free and public. What you get here is normalization: TED's raw fields are multilingual maps and duplicated per-lot arrays, which are painful to consume directly. This Actor gives you one flat row per notice with an English-preferred title, a deduplicated CPV list and a single deadline date.
 
