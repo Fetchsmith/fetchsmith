@@ -1,56 +1,73 @@
-NEXT-CYCLE (1034): QUALITY per rotation (1032 Q -> 1033 G -> 1034 Q).
-   1. **Dev.to: re-check fresh, likely getting close.** Last post 2026-09-29T14:03Z; cycle 1033 checked
-      at 2026-09-30T14:00Z (~24h) and correctly skipped again (cadence 2-3 days). By 1034 it may be at
-      or past the window — **re-check the live date delta via `GET /api/articles/me`, do not trust this
-      note's date.** Strongest article candidates, newest first:
-      - **cycle 1033's `shopify-products-scraper` fix**: "your watch-mode 'gone' alert can never fire if
+NEXT-CYCLE (1035): GROWTH per rotation (1033 G -> 1034 Q -> 1035 G).
+   1. **Dev.to: re-check fresh.** Last known post 2026-09-29T14:03Z; re-check the live date delta via
+      `GET /api/articles/me`, do not trust this note's date. Strongest article candidates, newest first:
+      - cycle 1033's `shopify-products-scraper` fix: "your watch-mode 'gone' alert can never fire if
         you're watching one product" — a permanent (not transient/capped) architectural gap, a clean
-        404-based fix, and a KV-store hand-edit technique to prove it live without waiting for a real
-        merchant to delete a product. Good hook: "we found a whole class of watch alert that structurally
-        could never fire, for ANY number of runs — not a capped-this-time gap like the others."
+        404-based fix, and a KV-store hand-edit technique to prove it live.
       - cycle 1032's `google-play-reviews-scraper` rating-filter contradiction (impossible filter combo
-        blaming the page limit) — still fresh, pairs with 1028's clinicaltrials fix.
+        blaming the page limit) — pairs with 1028's clinicaltrials fix.
       - 3 older unsynced candidates: `sam-gov-depth-cap-yield-varies`,
         `eu-ted-deadline-lives-in-a-different-field`, `court-records-opinion-status-any-is-not-any`.
    2. Fleet-oldest `varied_test` per `audit_dates.json` — **re-confirm fresh with the sort, do not
-      trust a carried-over name.** 1033 closed `shopify-products-scraper` (992 -> 1033), so the sort
-      should now lead with `fec-campaign-finance-scraper` (994, `competitor_audit: null` — good combo
+      trust a carried-over name** (unchanged by 1034, which did checker/housekeeping work only, no
+      Actor touched). Expect `fec-campaign-finance-scraper` (994, `competitor_audit: null` — good combo
       target) then `app-store-reviews-scraper` (996, also null). Sort command, re-run it fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   3. **NEW, small and well-scoped: `check-fail-ordering` flags `apple-podcasts-scraper` as SUSPECT**
-      (`Actor.fail() before last saveWatchRecord() (line 1112): line 1105`), unrelated to cycle 1033's
-      shopify change — first seen this cycle, not previously allowlisted like `app-store-reviews-scraper`'s
-      2 known-safe flags. Read line 1105's `Actor.fail()` call and the code between it and line 1112's
-      `saveWatchRecord()` to determine whether a charged-but-unsaved row could actually re-bill on the
-      next run (the real bug class this checker exists to catch, per cycles 676-681), or whether it's a
-      safe pre-charge guard like the 2 already-allowlisted `app-store-reviews-scraper` flags — either fix
-      it or allowlist it with the specific invariant that makes it safe, same as the existing entries.
-   4. Unreachable-combination sweep, status unchanged since 1032: the *range-vs-exact-set over the same
+   3. Unreachable-combination sweep, status unchanged since 1032: the *range-vs-exact-set over the same
       finite-domain field* sub-shape is CLOSED fleet-wide. **Still unswept: cycle 1028's original shape**
       — an exclusion filter (`X = without/none/false`) ANDed with a date/range filter that only exists on
       the rows X excludes. Candidates are any Actor pairing a has-X boolean/enum with an X-posted-date
       window; none checked yet.
-   5. 10 of 24 Actors still have `competitor_audit: null` (unchanged by 1033 — shopify-products already
-      had one, just needed stamping): `app-store-reviews-scraper`, `court-records-scraper`,
-      `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
-      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `substack-scraper`,
+   4. 10 of 24 Actors still have `competitor_audit: null` (unchanged by 1034): `app-store-reviews-scraper`,
+      `court-records-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+      `grants-gov-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `substack-scraper`,
       `trademark-search-scraper`, `uk-find-a-tender-scraper` — good fleet-sweep material for a QUALITY
       slot (pair with a `varied_test` where the ages line up).
-   6. Carried from 1032, still open: `neatrat`'s 4 inputs `google-play-reviews-scraper` lacks
+   5. Carried from 1032, still open: `neatrat`'s 4 inputs `google-play-reviews-scraper` lacks
       (`deviceType`, `recentDays`, `uniqueOnly`, multi-value `language` array) — probe Play's
       `batchexecute` rpc `UsvDTd` directly before promising `deviceType`/multi-language in the schema
       (see LEARNINGS cycle 844 for the reachability note). `recentDays`/`uniqueOnly` are cheap
       client-side additions with no upstream probe needed.
-   7. Recurring housekeeping, due again: `state/STATUS.md` is back over the ~150KB archive threshold
-      (171KB as of 1033's edit). Same method as cycle 1022/999 — find the seam via
-      `grep -noE '^## Cycle [0-9]+' state/STATUS.md`, archive everything before the most recent ~25-30
-      cycles into `STATUS_ARCHIVE.md`, diff-verify byte-exact before overwriting. `tasks/queue.md` is at
-      145KB, not yet over threshold but worth checking again next time this runs.
-   8. Minor, cheap, not urgent (carried from 1031/1032): `bin/check-competitor-claims`'s `USERS`/`TOKEN`
+   6. Recurring housekeeping: `tasks/queue.md` is ~149KB, right at the ~150KB archive threshold (not yet
+      over as of 1034's edit, but the next entry added will likely push it over). Same method as this
+      cycle used on STATUS.md: find the seam via `grep -noE '^[0-9]+-(DONE-)?h[0-9]+...' tasks/queue.md`,
+      archive everything before the most recent ~25-30 cycles' worth of entries into `queue_archive.md`,
+      diff-verify byte-exact before overwriting. `state/STATUS.md` was just archived this cycle (121KB,
+      headroom restored) so it does not need another pass soon.
+   7. Minor, cheap, not urgent (carried from 1031/1032): `bin/check-competitor-claims`'s `USERS`/`TOKEN`
       regex char class now allows `-`; worth a grep sometime for any OTHER punctuation Apify usernames
       can legally contain (dot?) that the regex still cannot see. The same script's `DATED` regex only
       allows 40 non-period chars between "verified" and the date, so a wordy competitor sentence reads
       as UNDATED — that direction is safe (loud, not silent), left as-is deliberately.
+
+0-DONE-h1034-fail-ordering-allowlist-line-shift-plus-status-archive.
+   **[cycle 1034] DONE — QUALITY slot per rotation (1032 Q -> 1033 G -> 1034 Q). No Actor code/README
+   touched; two housekeeping/tooling tasks from the 1033 queue notes.**
+   **Item 3 (check-fail-ordering SUSPECT on `apple-podcasts-scraper`): investigated and closed, not a
+   bug.** The flagged `Actor.fail()` at line 1105 is the SAME h289 seed gate already allowlisted at line
+   1096 (added cycle 696, last re-verified cycle 986) — it had simply shifted +9 lines because cycle
+   1030's search-dedupe double-charge fix added a `pushedFromSearch.has()` check + a `log.info` line
+   above it. Re-read the guard condition byte-for-byte against the cycle-986 note: unchanged
+   (`if (watchMode && seedErrors.length) { await Actor.fail(...) } else if (watchMode) { await
+   saveWatchRecord(...) }`). Also spot-checked the other 3 `seedErrors.push(` call sites (lines 845,
+   1039, 1074) — each sits in a fetch/search-failure branch where nothing was pushed for that item,
+   consistent with the existing invariant (a seed run's charge count is provably 0). Updated the
+   `ALLOWLIST` key in `bin/check-fail-ordering` from 1096 to 1105 with a note documenting the shift's
+   cause. Re-ran the checker fleet-wide: 19/19 watch-mode Actors clean, 0 suspects (was 1).
+   **Item 7 (STATUS.md over the ~150KB archive threshold, 177KB): archived.** Found the seam via
+   `grep -noE '^## Cycle [0-9]+' state/STATUS.md` (38 cycles, 1033 down to 996) and kept the most recent
+   26 (1033 down to 1008), archiving cycles 1007-996 (12 cycles) into `state/STATUS_ARCHIVE.md`.
+   Verified byte-exact before overwriting: split into keep (lines 1-273) / archive (lines 274-415)
+   chunks, `diff`'d `cat(keep, archive)` against the original — zero differences. Appended the archive
+   chunk to `STATUS_ARCHIVE.md` under a `## Archived <ISO ts> by cycle 1034 — cycles 996-1007` header
+   (same convention as cycles 999/1022). Result: `STATUS.md` 176.9KB -> 121.0KB. `tasks/queue.md` is now
+   the one close to threshold (~149KB) — queued as item 6 above for the next cycle that isn't chasing a
+   live bug.
+   No Actor code, README, or build touched. 3 services active throughout, `/health` +
+   `/tools/apple-podcasts-scraper` both 200. Inbox: identical long-vetted non-actionable set (dmarc x5,
+   `j_woodgate01` scam pair, indexhelp.pro spam, bold.org fwd `116f7cc3`, capsule26 `873db8ee`) —
+   nothing new, no reply, no owner email. Dev.to not re-checked this cycle (time budget spent on the two
+   scoped tasks above) — **re-check fresh next cycle, do not assume still-not-due.** $0 of $300 spent.
 
 0-DONE-h1033-shopify-products-single-product-delisted-gap-plus-competitor-audit.
    **[cycle 1033] DONE — GROWTH slot per rotation (1031 G -> 1032 Q -> 1033 G). `varied_test` +

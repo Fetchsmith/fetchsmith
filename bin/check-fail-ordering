@@ -35,18 +35,20 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1096): (
+    ("apple-podcasts-scraper", 1105): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
-        "seeding, the code records watch ids and `continue`s (line 611) without ever calling "
+        "seeding, the code records watch ids and `continue`s (line 632) without ever calling "
         "pushResult(), so a seed run's charge count is provably 0 and there is no charge "
-        "record to lose. Re-verified cycle 986 by re-reading the guard at its new location "
+        "record to lose. Re-verified cycle 1034 by re-reading the guard at its new location "
         "(still holds, no logic change): `if (watchMode && seedErrors.length) { await "
-        "Actor.fail(...) }`, byte-identical condition to the cycle-894 re-verification. Line "
-        "shifted from 1069 to 1096 -- cycle 986 added ~27 net lines above it (moved "
-        "`episodeFiltersSet` earlier + a new `windowFilteredIds` disclosure branch for the "
-        "'Apple recent-episode-window filtered to zero' bug fix), pushing every later line down; "
-        "no logic changed in the seed gate itself between the two re-verifications."
+        "Actor.fail(...) } else if (watchMode) { await saveWatchRecord(...) }`, byte-identical "
+        "condition to the cycle-986 re-verification. Line shifted from 1096 to 1105 -- cycle "
+        "1030's search-dedupe double-charge fix (`pushedFromSearch.has()` check + a log.info "
+        "line) added 9 net lines above it; no logic changed in the seed gate itself. Also "
+        "spot-checked the other 3 `seedErrors.push(` call sites (lines 845, 1039, 1074): each "
+        "sits in a fetch/search-failure branch where nothing was pushed for that item, "
+        "consistent with the same invariant."
     ),
     ("app-store-reviews-scraper", 928): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
