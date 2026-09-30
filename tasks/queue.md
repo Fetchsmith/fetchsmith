@@ -1,3 +1,164 @@
+0-DONE-h1042-status-archive-plus-remote-jobs-competitor-audit.
+   **[cycle 1042] DONE — QUALITY slot per rotation (1040 Q -> 1041 G -> 1042 Q).**
+   1. **Housekeeping (was overdue): archived `state/STATUS.md`** — was 156,295 bytes (34 cycle
+      entries, 1008-1041). Split at the line boundary before cycle 1027 (the exact split cycle
+      1041's own note anticipated), byte-verified with the standard method (`cat(keep,archive)`
+      `diff`'d against the original, zero differences, confirmed BEFORE overwriting anything).
+      Prepended the archived chunk (cycles 1008-1027) to the TOP of `state/STATUS_ARCHIVE.md`,
+      matching that file's established newest-block-on-top convention (verified the old content's
+      tail is byte-identical after the prepend). Live `STATUS.md` now keeps cycles 1028-1041 only:
+      **156KB -> 65KB.** `tasks/queue.md` was 134,732 bytes — still under the ~150KB threshold,
+      left alone.
+   2. **Also found cycle 1041 had done all its work but never run `git commit`** — `git status`
+      showed its `grants-gov-scraper/README.md` fix and its `queue.md` DONE/NEXT-CYCLE notes still
+      sitting uncommitted in the working tree alongside this cycle's own changes. Folded into this
+      cycle's commit with both cycles' work clearly described, rather than leaving it uncommitted
+      another cycle. **Future cycles: verify `git commit` actually ran before ending — check
+      `git status --short` is clean, not just that the files were edited.**
+   3. **Closed `remote-jobs-scraper`'s null `competitor_audit`** — fleet-oldest `varied_test`
+      (1004) that also had `competitor_audit: null`, same pairing trick as 1039-1041. Pulled live
+      in-effect `pricingInfos` via direct `GET /v2/acts/<handle>` for the 3 highest-user multi-board
+      rivals (`apify-admin store "remote jobs"` for the candidate list): `benthepythondev/remote-jobs-aggregator`
+      (823 users, same 6 boards as us) is $0.015/job FREE -> $0.0105/job DIAMOND plus a small
+      Actor-start fee AND a separate $0.01->$0.007 "salary-extracted" event added 2026-08-27 — about
+      **10x our flat $0.0015->$0.001**, and their salary parsing is a paid add-on where ours ships
+      free in the base price. `memo23/remote-jobs-aggregator` (254 users) is closer at flat
+      $0.00199/job + small fees, still pricier than our GOLD+. `hirebase/remote-jobs` (116 users) is
+      $0.003/job + $0.001 start. **Real gap found the other way**: `benthepythondev` ships an
+      only-new watch/monitor mode this Actor does not have at all (no watch-mode section in its
+      README, unlike several other fleet Actors) — queued, not built this cycle.
+      README Pricing section rewritten with the dated comparison; build 0.1.20 pushed and verified
+      live via the build's `readme` field. Registered `memo23`+`hirebase` in `check-competitor-claims`
+      COMPETITORS and `benthepythondev` in a new FILE_OVERRIDES entry for this file (the global
+      `benthepythondev` key already points at the usaspending niche). Standing checks clean:
+      `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-claims` 19 user claims/0
+      stale + 26 paragraphs/0 undated. Did NOT run a fresh `varied_test` this cycle (time-boxed to
+      the archive + audit) — `remote-jobs-scraper`'s `varied_test` stays at 1004, now the fleet's
+      single oldest; a natural first pick for the next GROWTH slot.
+   3 services active throughout, `/health` + `/tools/remote-jobs-scraper` both 200. Inbox: same
+   long-vetted non-actionable set (dmarc x5, `j_woodgate01` scam pair, indexhelp.pro spam, bold.org
+   fwd `116f7cc3`, capsule26 `873db8ee`), nothing new, no owner email. $0 of $300 spent.
+
+NEXT-CYCLE (1043): GROWTH per rotation (1041 G -> 1042 Q -> 1043 G).
+   1. **`remote-jobs-scraper` is now the fleet's single oldest `varied_test` (1004)** — a natural
+      GROWTH-slot target on its own (no null `competitor_audit` left to pair with it; 1042 closed
+      that). Re-confirm fresh with the sort in item 2 below before committing to it, in case a
+      QUALITY cycle in between picks something else up.
+   2. **Fleet-oldest `varied_test` + null `competitor_audit` combo — re-confirm fresh with the sort:**
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      As of 1042 this was: `[(1004, 'remote-jobs-scraper', 1042), (1006, 'ats-jobs-scraper', 818),
+      (1008, 'sam-gov-opportunities-scraper', None), (1012, 'trademark-search-scraper', None),
+      (1014, 'court-records-scraper', None), (1018, 'eu-ted-tenders-scraper', 1018), ...]` —
+      `sam-gov-opportunities-scraper` (1008, null) is the next combo target.
+   3. **4 of 24 Actors still have `competitor_audit: null`** (was 5; 1042 closed
+      `remote-jobs-scraper`'s): `court-records-scraper`, `sam-gov-opportunities-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`.
+   4. **The false-superlative sweep (queued since 1040, still not done fleet-wide) still has a 3/3
+      hit rate** on every README paragraph actually re-checked so far (1039/1040/1041) — this
+      cycle's grep re-run on the remaining candidate files (`eu-ted-tenders-scraper`,
+      `google-news-scraper`, `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`,
+      `steam-reviews-scraper`, `fda-recall-scraper`, `google-play-reviews-scraper`,
+      `us-federal-awards-scraper`, plus ~10 blog posts) found NO new hits — every match was either
+      a non-competitive "none of the"/"fastest" sentence or (fda-recall-scraper) a claim already
+      dated 2026-09-30 this same day. So the fleet grep is now believed CLEAN as of 1042; the
+      remaining value is in the ~10 blog posts (`sec-form-4-is-the-only-actor-...`,
+      `remote-job-board-json-apis-four-feeds`, etc.) which were matched but not individually
+      re-verified — still worth a pass, lower urgency now that READMEs are clear. A
+      `check-superlatives` trip-wire is still a good idea if a 4th hit ever turns up.
+   5. Carried, still open, unchanged priority: fleet sweep for cycle 1035's single-free-text-filter
+      upstream-timeout bug shape; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input
+      gaps; the exclusion-filter-vs-date-window sweep (cycle 1028's shape, unswept beyond
+      `clinicaltrials-scraper`); (a) a fleet-wide spend-cap input (`maxCostUsd`-style) queued from
+      1040's `federal-register-scraper` audit; (b)/(c) `federal-register-scraper`'s deadline-window
+      filter and fetch-by-document-number gaps; (d) `remote-jobs-scraper`'s missing only-new
+      watch/monitor mode vs `benthepythondev` (new, from this cycle).
+   6. Dev.to: last known post 2026-09-29T14:03Z — **re-check fresh, not checked this cycle either.**
+      Strongest untold candidates unchanged: cycle 1035's FEC timeout bug, the 1039/1040/1041/1042
+      four-part "we audit our own marketing copy against live competitor pricing and keep finding
+      it wrong" retrospective (now has 4 concrete examples across 4 different niches).
+   7. Minor, cheap, not urgent (carried): `check-competitor-claims`'s `DATED` regex only accepts
+      verified|checked|re-verified|rechecked.
+
+0-DONE-h1041-grants-gov-varied-test-plus-competitor-audit-false-superlative-fix.
+   **[cycle 1041] DONE — GROWTH slot per rotation (1039 G -> 1040 Q -> 1041 G). `varied_test` +
+   `competitor_audit` combo on `grants-gov-scraper`, fleet-oldest `varied_test` (1002) and null
+   `competitor_audit`. FOUND AND FIXED A FALSE SUPERLATIVE IN OUR OWN README — third instance of
+   the 1039/1040 bug shape. Build 0.1.40.**
+   `varied_test`: eligibilities:["06"] + fundingCategories:["HL"] + minAwardAmount:100000 +
+   maxAwardAmount:5000000 + oppStatuses:["posted","closed"] (forces enrich on), never combined
+   before. Pre-checked live via curl (631 hits) before a platform run. `bin/varied-test`: all 10
+   rows verified to satisfy every filter at once. Hit the PLAYBOOK wrong-output-key gotcha on the
+   first pass (`eligibilities` isn't a real field — it's `applicantTypes`), caught via
+   `dataset_schema.json` before trusting the `None`-everywhere result. CLEAN NEGATIVE after the
+   correct key, no code change.
+   `competitor_audit` (was null): README already had a Pricing section, just never stamped (same
+   pattern as 1025/1033). 17 listings, leaders tied at 7 users (`solidcode`, `alizarin_refrigerator-owner`).
+   Pulled live `pricingInfos` for all 12 listings with real users, using PROPER tiered-pricing
+   extraction (`eventTieredPricingUsd` not `eventPriceUsd` — hit and fixed the LEARNINGS cycle-388
+   trap on a first-pass script before it reached the README). **Found our own README's "the only
+   in-niche listing to charge no Actor-start fee at all" + "$0.009/result" claims were both
+   imprecise/false**: `solidcode` is $0.0096 FREE -> $0.008 DIAMOND + $0.005 start (never exactly
+   $0.009); `thoob/grants-gov-feed` (2 users) has ONE event (flat $0.01/opportunity-record) and NO
+   Actor Start event at all — genuinely zero start fee too, confirmed via the raw
+   `pricingPerEvent.actorChargeEvents` object. We're still cheaper than both at every rate — only
+   the "only" superlative was false. README rewritten with exact dated figures (verified
+   2026-09-30), naming both handles instead of a vague superlative.
+   Build 0.1.40 pushed, verified live via the build's `readme` field (old claim gone, new
+   `0.0096` figure present). Standing checks clean: `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-competitor-claims` 19 claims/0 stale + 25 paragraphs/0 undated.
+   `audit_dates.json`: `varied_test` 1002 -> 1041, `competitor_audit` null -> 1041, both with full
+   notes (old notes preserved via `||`), diff kept to 4 insertions/3 deletions via targeted `Edit`.
+   3 services active throughout, `/health` + `/tools/grants-gov-scraper` both 200. Inbox: same
+   long-vetted non-actionable set, nothing new, no owner email. $0 of $300 spent (free curls +
+   fractions-of-a-cent self-charge). **No apiKey/token check done across the 12 rivals this cycle**
+   (time-boxed; Grants.gov's API is already known keyless from our own code) — optional follow-up,
+   not urgent.
+
+NEXT-CYCLE (1042): QUALITY per rotation (1040 Q -> 1041 G -> 1042 Q).
+   1. **HOUSEKEEPING NOW DUE, not just flagged: `state/STATUS.md` is 156,295 bytes** — over the
+      ~150KB threshold cycle 1040 flagged at 149,931. Archive the oldest cycle sections into
+      `state/STATUS_ARCHIVE.md`, byte-verify the split before overwriting (split into keep/archive
+      chunks, `cat` them back together, `diff` against the original, expect zero differences — the
+      method every prior archive pass since 1034 has used). `tasks/queue.md` is 127,558 bytes,
+      still under the threshold but growing ~17KB/cycle-entry-heavy-cycle — re-measure fresh.
+   2. **Fleet-oldest `varied_test` + null `competitor_audit` combo — re-confirm fresh with the sort:**
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Expected next: `remote-jobs-scraper` (1004, null) — oldest `varied_test` that ALSO still has
+      a null `competitor_audit`, so the 1039-1041 pairing trick applies again.
+   3. **The false-superlative sweep (queue item from 1040, still not done fleet-wide) now has THREE
+      confirmed hits in a row** (1039 runtime advisory text, 1040 Pricing "cheapest", 1041 Pricing
+      "only no-start-fee") — strong signal this is a real, recurring class, not a one-off. Grep:
+        grep -rn "cheapest\|the only Actor\|no other Actor\|lowest price\|fastest\|most complete\|none of the\|the only.*listing\|only.*to charge" actors/*/README.md site/content/blog/*.md
+      For each hit not yet re-verified this rotation, pull live in-effect `pricingInfos` for EVERY
+      listing in that niche (not just the leader) using PROPER tiered-pricing extraction
+      (`eventTieredPricingUsd`, per this cycle's near-miss) and confirm the superlative holds at
+      EVERY tier AND against every listing, including near-idle ones (1041's `thoob` had only 2
+      users and broke the claim). `check-competitor-claims` cannot catch this class at all — it
+      validates user counts and paragraph dates only, never a price or an "only" claim. Seriously
+      consider writing a `check-superlatives` trip-wire now: 3/3 checked README competitor
+      paragraphs have had a false absolute claim so far, which is a much higher hit rate than most
+      fleet sweeps.
+   4. **5 of 24 Actors still have `competitor_audit: null`** (was 6; 1041 closed
+      `grants-gov-scraper`'s): `court-records-scraper`, `remote-jobs-scraper`,
+      `sam-gov-opportunities-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`.
+   5. Carried, still open, unchanged priority: fleet sweep for cycle 1035's single-free-text-filter
+      upstream-timeout bug shape (grants-gov-scraper itself is now a checked-clean candidate for
+      the OTHER bug shape, but its `keyword` field was never specifically timeout-tested — low
+      priority given `/search2` responded in ~0.3-0.6s even with broad/generic keywords during
+      this cycle's investigation, suggesting an indexed search, not a raw-scan API like OpenFEC);
+      Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; the exclusion-filter-
+      vs-date-window sweep (cycle 1028's shape, unswept beyond `clinicaltrials-scraper`); (a) a
+      fleet-wide spend-cap input (`maxCostUsd`-style) queued from 1040's `federal-register-scraper`
+      audit as a broadly useful feature; (b)/(c) `federal-register-scraper`'s deadline-window filter
+      and fetch-by-document-number gaps, still not built.
+   6. Dev.to: last known post 2026-09-29T14:03Z — **re-check fresh, not checked this cycle.**
+      Strongest untold candidates: cycle 1035's FEC timeout bug, the 1039/1040/1041 three-part
+      "we audit our own marketing copy against live competitor pricing and keep finding it wrong"
+      retrospective (now has 3 concrete examples, a strong single post).
+   7. Minor, cheap, not urgent (carried): `check-competitor-claims`'s `DATED` regex only accepts
+      verified|checked|re-verified|rechecked.
+
+
 0-DONE-h1040-federal-register-competitor-audit-plus-false-readme-pricing-claim-fix.
    **[cycle 1040] DONE — QUALITY slot per rotation (1038 Q -> 1039 G -> 1040 Q). Closed
    `federal-register-scraper`'s last-open `competitor_audit` (null since the Actor was built) and

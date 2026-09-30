@@ -193,7 +193,7 @@ Two events, no start fee. **The price follows the data, per row** — you are ne
 | `result` (enriched) | $0.0015 per item | The row carries its full detail record: award ceiling/floor, eligibility text, funding instrument/category, synopsis |
 | `opportunity-thin` | $0.0007 per item | `enrich: false`, **or** Grants.gov has no detail record for that opportunity (some archived ones don't) |
 
-Cheaper than the largest pure-Grants.gov listing on Apify ($0.009/result) at either rate, and the only in-niche listing to charge no Actor-start fee at all. The run log prints the split (`Charged N as enriched "result" and M at the cheaper "opportunity-thin" rate`) so the invoice is checkable against the dataset.
+**Verified live 2026-09-30** against all 12 Grants.gov-niche listings on the Store with real users (not just the leader): the largest, `solidcode/grants-gov-scraper` (7 users), prices $0.0096/result on FREE down to $0.008 on DIAMOND plus a $0.005 Actor-start fee — we undercut even its cheapest (DIAMOND) tier at our more expensive enriched rate, and charge no start fee at all. We are **not** the only no-start-fee listing, though: `thoob/grants-gov-feed` (2 users) also charges none — but it has no enrich/thin split and bills every row at a flat $0.01, 6.7x our enriched rate and 14x our thin rate. Every other listing with real usage prices $0.003-$0.01/result, most behind an additional $0.00005-$0.10 Actor-start fee. The run log prints the split (`Charged N as enriched "result" and M at the cheaper "opportunity-thin" rate`) so the invoice is checkable against the dataset.
 
 ## FAQ
 

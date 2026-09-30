@@ -61,6 +61,8 @@ COMPETITORS = {
     "sourabhbgp": "sourabhbgp/apple-podcast-scraper",
     "automation-lab": "automation-lab/steam-game-reviews-scraper",
     "crawlerbros": "crawlerbros/fec-campaign-finance-scraper",
+    "memo23": "memo23/remote-jobs-aggregator",
+    "hirebase": "hirebase/remote-jobs",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
@@ -80,6 +82,9 @@ FILE_OVERRIDES = {
     "actors/substack-scraper/README.md": {
         "sourabhbgp": "sourabhbgp/substack-scraper",
         "automation-lab": "automation-lab/substack-scraper",
+    },
+    "actors/remote-jobs-scraper/README.md": {
+        "benthepythondev": "benthepythondev/remote-jobs-aggregator",
     },
 }
 

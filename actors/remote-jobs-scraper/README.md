@@ -102,6 +102,8 @@ Remote OK's zeros mean "not disclosed" and are normalized to `null`, not `0`. **
 
 Pay per result: you are charged once per **unique** posting pushed to the dataset. No start fee, no per-run fee, nothing charged for duplicates, filtered-out rows or empty runs.
 
+**Cheapest full-coverage aggregator in the niche (verified live 2026-09-30).** The category leader by users, `benthepythondev/remote-jobs-aggregator` (823 users, the same 6 boards we cover), charges $0.015/job on Free tapering to $0.0105/job on Diamond — roughly **10x our $0.0015→$0.001** — plus a small Actor-start fee and a separate $0.01→$0.007 "salary-extracted" charge on top for parsed salary fields, which this Actor includes in the base per-job price at no extra cost. `memo23/remote-jobs-aggregator` (254 users) is closer at a flat $0.00199/job plus a small additional-data fee and start fee, still pricier than our top tier. `hirebase/remote-jobs` (116 users) is $0.003/job plus a $0.001 start fee. One real gap in the other direction: `benthepythondev` ships an only-new watch/monitor mode this Actor does not have yet (queued).
+
 ## FAQ
 
 **What happens if I typo a date?** The run fails immediately with an error naming the field and the bad value. It is deliberate: if a bad `postedAfter` were ignored, the run would return (and bill for) every posting on all six boards instead of your window, and a warning line in a successful run is not something anyone reads. `2026-6-5`, `06/15/2026` and `2026-02-30` are all rejected — the last one because it is not a real date, even though JavaScript would silently roll it over to March 1.
