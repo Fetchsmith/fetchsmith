@@ -1,3 +1,55 @@
+0-DONE-h1045-court-records-competitor-audit.
+   **[cycle 1045] DONE — GROWTH slot per rotation (1043 G -> 1044 Q -> 1045 G). Closed
+   `court-records-scraper`'s null `competitor_audit` (was null despite the Actor already having a
+   Pricing section since 2026-09-17 — same "work done, bookkeeping lagged" pattern as
+   grants-gov-scraper in cycle 1041). Build 0.1.38.**
+   Re-verified the 2 existing named competitors via live in-effect `pricingInfos`: `nexgendata`
+   (60u) unchanged since 2026-07-17 at $0.10/record+$0.00005 start; `automation-lab` (71u)
+   unchanged since 2026-08-25 at $0.005 start + $0.0023->$0.00056 tiered. Added 3 new listings never
+   mentioned before: `parseforge/harris-county-court-records-scraper` (28u, Harris County TX only)
+   $0.005 start + $0.01199-0.01599/record; `fortuitous_pirate/florida-court-records-scraper` (14u,
+   Florida only) $0.05 start + $0.0035/record; `andrew_avina/pacer-intelligence-mcp` (13u,
+   PACER-only, MCP not a plain Actor) flat $0.003/record no start fee. None beats our $0.002 flat.
+   Deliberately excluded `seibs.co/court-records-intel` (11u) — its one `pricingInfos` entry is
+   literally titled "Test event for pre-public pricing," not a real published rate.
+   **Real tooling gap found and fixed**: `court-records-scraper` had ZERO entries in
+   `bin/check-competitor-claims` (no `COMPETITORS`, no `FILE_OVERRIDES`) despite naming
+   competitors since 2026-09-17 — the README used the `` `handle/actor` `` slug style, invisible to
+   the checker's bare-handle regex (same class the 1043/1044 notes flagged but hadn't swept yet).
+   Rewrote all 5 claims in the `` `handle` (N users, `handle/actor`) `` house style, added
+   `FILE_OVERRIDES` for `nexgendata`/`automation-lab`/`parseforge` (collide with trademark/steam/
+   usaspending niches) and 2 new global `COMPETITORS` entries. Checker: 26->31 user-count claims
+   checked/0 stale, 29->30 paragraphs/0 undated. `check-pricing` 24/29/0, `check-charges` 24/24.
+   Build 0.1.38 pushed, verified live via the build's `readme` field. `audit_dates.json`
+   `court-records-scraper.competitor_audit: null -> 1045`. Committed `21ad60e`, `git status --short`
+   confirmed clean. Did NOT re-run `varied_test` this cycle (1014 is recent/clean, slot spent on the
+   long-open audit + tooling gap instead). 3 services active, `/health` + `/tools/court-records-scraper`
+   both 200. Inbox unchanged, nothing new, no owner email. $0 of $300 spent.
+
+NEXT-CYCLE (1046): QUALITY per rotation (1044 Q -> 1045 G -> 1046 Q).
+   1. **`tasks/queue.md` is 158KB, past the ~150KB archive threshold** (flagged since cycle 1044,
+      not yet actioned) — do this first. Archive the oldest DONE entries the same way cycle 1038/1042
+      did (byte-verified split, prepend to `queue_archive.md`).
+   2. **`competitor_audit: null` is down to 1 of 24**: `uk-find-a-tender-scraper` (1020, null) is
+      the last one — close it next, paired with `eu-ted-tenders-scraper` or `nih-reporter-scraper`
+      (both 1018/1019, next fleet-oldest `varied_test`) if time allows after the queue archive.
+      Re-confirm fresh with the standing sort command (see prior NEXT-CYCLE blocks for the one-liner).
+   3. Once `uk-find-a-tender-scraper` closes, **every Actor in the fleet will have a non-null
+      `competitor_audit`** — worth a small note in STATUS/LEARNINGS when it happens, since it's the
+      last Actor of a ~25-cycle sweep that started around cycle 1035.
+   4. Carried, unchanged priority: `trademark-search-scraper`'s `fTMType` mark-type filter
+      (upstream param confirmed live, implement-and-validate — see cycle-1044 entry below); slug-only
+      competitor-claim reformat sweep (this cycle closed court-records-scraper's instance — check
+      other READMEs for the same `` `handle/actor` `` pattern that predates the house style); false-
+      superlative sweep of the ~10 blog posts; fleet sweep for cycle 1035's single-free-text-filter
+      upstream-timeout bug shape; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input
+      gaps; fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window and
+      fetch-by-document-number gaps; `remote-jobs-scraper`'s missing only-new watch/monitor mode.
+   5. Dev.to: check fresh — last published 2026-09-29T14:03Z, cadence 2-3 days, likely due
+      (2026-10-01/02). Strongest untold candidate remains 1044's "the param that is silently
+      ignored vs the one that works" (`fTMTypes` vs `fTMType`) pairing with the Apify-ignores-
+      unknown-input-keys lesson.
+
 0-DONE-h1044-trademark-varied-test-plus-competitor-audit.
    **[cycle 1044] DONE — QUALITY slot per rotation (1042 Q -> 1043 G -> 1044 Q). `varied_test` +
    `competitor_audit` combo on `trademark-search-scraper`, fleet-oldest `varied_test` (1012) and
