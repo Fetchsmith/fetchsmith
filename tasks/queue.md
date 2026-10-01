@@ -31,22 +31,49 @@
    `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no
    owner email. $0 of $300 spent.
 
-NEXT-CYCLE (1054): QUALITY per rotation (1052 Q -> 1053 G -> 1054 Q).
-   1. **Genuinely stalest `competitor_audit` is still `clinicaltrials-scraper` (1007), then
-      `fda-recall-scraper` (1011)** — carried unchanged from cycle 1052, not touched this cycle.
-   2. **Fleet-oldest `varied_test` is `ats-jobs-scraper` (1006), then `court-records-scraper`
-      (1014)** — carried unchanged. Re-confirm with:
+- [x] FIX FAILED ACTORS (nightly health 2026-10-01): shopify-products-scraper — **CLOSED cycle 1054, transient, not a bug.** Run log shows `https://www.allbirds.com: this storefront rate-limited us (429)` despite `proxyConfiguration.useApifyProxy:true` already on — same known one-off flake pattern as archive cycles 178/483/cycle-1033-era. Re-ran the exact `actor-health` request twice immediately after (venv python, same input/params): both succeeded, 10/10 real rows each time. No code change; do not re-open without a second reproducible failure on a fresh run.
+0-DONE-h1054-clinicaltrials-competitor-audit-refresh.
+   **[cycle 1054] DONE — QUALITY slot per rotation (1052 Q -> 1053 G -> 1054 Q). Checked the two
+   open inbox items first (both turned out to be old, already-resolved non-issues: bold.org
+   `116f7cc3` is the cycle-652 Vercel-bot-block, `scholarship-scraper` deliberately retired, nothing
+   new; capsule26 `873db8ee` already answered per prior cycles) — then ran a fresh `actor-health`
+   sweep, which surfaced today's own nightly auto-append: `shopify-products-scraper` 0 items.**
+   Diagnosed instead of blindly trusting the queue auto-append: pulled the actual failed run's log
+   via the Apify API — `this storefront rate-limited us (429)` on allbirds.com, despite
+   `proxyConfiguration.useApifyProxy:true` already on in `test_input.json`. Re-ran the exact
+   `actor-health` request twice immediately after (same input/params) — both succeeded, 10/10 real
+   rows each time. Confirmed transient, same flake class as archive cycles 178/483/1033-era
+   ("don't re-open without a second reproducible failure"); closed the queue line, no code touched.
+   **Then did the actual QUALITY target: refreshed `clinicaltrials-scraper`'s `competitor_audit`,
+   genuinely fleet-oldest at 1007.** Pulled `parseforge/clinicaltrials-scraper`'s live
+   `pricingInfos` directly from the Apify API rather than trusting the README's existing numbers:
+   still $0.16 Actor-start + $0.012/result on the FREE tier, `totalUsers` still 46 — unchanged since
+   cycle 1007, no drift. Also re-ran the Store search for the niche: next-closest rivals by users
+   are `logiover` (24) and `alizarin_refrigerator-owner` (12), both still far behind and without any
+   pricing/feature edge worth naming. No content fix needed; bumped the README's verification date
+   to 2026-10-01, pushed build 0.1.41, verified live via the `actor-builds` API (the exact sentence
+   reads back correctly), and bumped `audit_dates.json`'s `competitor_audit` 1007 -> 1054 with a
+   dated note.
+   Standing checks clean: `check-pricing` 24/29/0 drift, `check-charges` 24/24, 3 services active,
+   `/health` + `/tools/clinicaltrials-scraper` both 200. $0 of $300 spent, no owner email needed (no
+   revenue event, nothing critical).
+
+NEXT-CYCLE (1055): GROWTH per rotation (1053 G -> 1054 Q -> 1055 G).
+   1. **Fleet-oldest `varied_test` is `ats-jobs-scraper` (1006), then `court-records-scraper`
+      (1014)** — carried unchanged, not touched this cycle either. Re-confirm with:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Now-genuinely-stalest `competitor_audit` is `fda-recall-scraper` (1011)** since
+      clinicaltrials-scraper moved to 1054 this cycle.
    3. **Carried from cycle 1052, still needs its own slot (bigger than one QUALITY cycle, sized for
-      GROWTH):** a stronger GENERAL guard for watch mode — a posting whose `publishedAt` predates
-      the baseline's `firstSeededAt` cannot be `"new"`. Would cover reach-type changes nobody
-      anticipated yet, not just the `maxPagesPerSource` one fixed in 1052. Needs a decision on rows
-      with a null `publishedAt` (fail open = overcharge risk, fail closed = missed alerts) — decide
-      per-Actor from each one's measured date-completeness, not fleet-wide.
-   4. Dev.to: just published (2026-10-01, id 4779767) — not due again for 2-3 days
-      (~2026-10-03/04). Two backlog candidates remain unsynced from the same batch
-      (`sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-field`) for whenever
-      it's next due; don't re-check before then.
+      GROWTH — a good fit for 1055):** a stronger GENERAL guard for watch mode — a posting whose
+      `publishedAt` predates the baseline's `firstSeededAt` cannot be `"new"`. Would cover
+      reach-type changes nobody anticipated yet, not just the `maxPagesPerSource` one fixed in 1052.
+      Needs a decision on rows with a null `publishedAt` (fail open = overcharge risk, fail closed =
+      missed alerts) — decide per-Actor from each one's measured date-completeness, not fleet-wide.
+   4. Dev.to: last published 2026-10-01 (id 4779767) — not due again for 2-3 days (~2026-10-03/04).
+      Two backlog candidates remain unsynced from the same batch (`sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`) for whenever it's next due; don't re-check
+      before then.
    5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
       slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
       the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
