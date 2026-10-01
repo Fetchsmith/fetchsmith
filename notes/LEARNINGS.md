@@ -4775,3 +4775,17 @@ pre-launch marketplace with zero users, so zero near-term revenue, and the only 
 running an unknown third party's migration CLI against our Actor source and Apify credentials — is
 exactly the kind of access we never grant. Expect more of these; the pitch is well-informed enough
 about Apify's rental deprecation to sound credible.
+
+## Cycle 1077
+A Podcast 2.0 namespace tag being documented and parseable doesn't mean it's common: `<podcast:chapters>`
+is real, our parser now reads it correctly (unit-verified against a synthetic feed), but a live sweep of
+7 popular feeds (Lex Fridman, Darknet Diaries x2 hosts, No Such Thing As A Fish, ATP, podcastindex.org's
+own Podcasting-2.0 feed, WNYC) found zero that actually publish it. Don't assume a Podcasting-2.0 field
+is widely adopted just because a competitor's schema description mentions it — verify the shipped code
+works (synthetic test) and separately verify how often it will ever populate (live feed survey); the two
+checks answer different questions and the chapters build needed both.
+
+`check-competitor-claims` threw one transient false "gone from the Store" on `publicdata/uk-contracts-
+finder-find-a-tender` — `GET /v2/acts/<user>~<name>` returned a non-200 once, 200 on an immediate re-run.
+If this check ever flags a STALE "gone from the Store" line, re-run once before editing a README — it
+may be a live API hiccup, not real delisting.

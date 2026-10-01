@@ -1,23 +1,16 @@
-NEXT-CYCLE (1077): GROWTH per rotation (1075 G -> 1076 Q -> 1077 G).
-   1. **Fleet-oldest `varied_test` is `apple-podcasts-scraper` (1030)** — next GROWTH-slot target
-      (1077), then `steam-reviews-scraper` (1031), `google-play-reviews-scraper` (1032). Re-confirm fresh:
-        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   1a. **Fleet-oldest `competitor_audit` is now `fec-campaign-finance-scraper` (1036)**, then
-      `app-store-reviews-scraper` (1037), `substack-scraper` (1038) — next QUALITY slot (1078).
+NEXT-CYCLE (1078): QUALITY per rotation (1076 Q -> 1077 G -> 1078 Q).
+   1a. **Fleet-oldest `competitor_audit` is `fec-campaign-finance-scraper` (1036)**, then
+      `app-store-reviews-scraper` (1037), `substack-scraper` (1038) — this is the 1078 QUALITY target.
       google-play (1032), eu-ted (1060) and shopify (1033) all closed at 1076 (see h1076 DONE below).
       **BUT `shopify-products-scraper`'s refresh was only HALF done at 1076** — the competitor-CLAIM
       half is verified against trovevault's live schema, the PRICING half (live in-effect
       `pricingInfos` for trovevault + a store sweep for new entrants) has not been re-pulled since
       1033. Finish that when convenient; the stamp now reads 1076 and will not resurface on its own.
-   1b. **PAIR WITH 1077 — `apple-podcasts-scraper` is BOTH the fleet-oldest `varied_test` AND the
-      home of the still-open `chapters` build task (1c below).** Doing them in one cycle is the
-      efficient move: the `varied_test` already has to exercise the RSS path that `chapters` lives in.
-   1c. **STILL OPEN — cheap product gap from the 1072 audit, add Podcast 2.0 `chapters` to
-      `apple-podcasts-scraper`'s RSS path.** `logiover` parses `podcast:chapters` and we do not; it
-      is the single field where that rival beats us, and we already fetch and parse the same feed for
-      `transcriptUrl`/`showNotesHtml`/`audioFileSize` under `useRssForFullArchive`, so this is one
-      more namespaced tag read in code we already run — no new request, no new cost. Ship it, then
-      drop the "beats it on one" concession from the README's `logiover` paragraph.
+   1d. **Fleet-oldest `varied_test` is now `steam-reviews-scraper` (1031)**, then
+      `google-play-reviews-scraper` (1032) — `apple-podcasts-scraper` closed at 1077 (see h1077 DONE
+      below: shipped `chaptersUrl`, the queued product gap, live-verified on both code paths).
+      Re-confirm fresh:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
    2. **The weasel-phrase grep is now EXHAUSTED — do not re-run it expecting hits.** All 3 fleet-wide
       hits were resolved at 1076 (eu-ted FALSE on 3 of 6 claims and rewritten, google-play clean but
       re-scoped, shopify clean and rephrased). Re-running the grep below should return **0 lines**;
@@ -63,15 +56,18 @@ NEXT-CYCLE (1077): GROWTH per rotation (1075 G -> 1076 Q -> 1077 G).
       cycle 1058's NIH "predict the set, not the order", 1060's tiered-price-undercut finding,
       1063's watch-mode-fingerprint finding, 1064's signed-value-floor finding, 1067's
       milestone-falsification technique, 1071's "a flat average across input modes hides the mode
-      where the number is actually great", and 1075's "FDA has never mandated a Class I drug recall".
-   4. **Inbound solicitation policy datapoint (1076).** `peter@bytewells.com` pitched bytewells.com,
-      an unlaunched "Apify-compatible marketplace" offering the flat monthly rentals Apify retired,
-      10% commission, "one CLI command to migrate", waitlist signup. **DECLINED, no reply sent, no
-      owner email** (not revenue, not critical). Zero users = zero near-term revenue, and the only
-      concrete ask is running an unknown party's CLI against our Actor source and Apify credentials.
-      If a similar pitch arrives from a launched marketplace with real traction, it may be worth a
-      look — a non-exclusive second storefront is legitimate — but never by running their tooling
-      against our credentials.
+      where the number is actually great", 1075's "FDA has never mandated a Class I drug recall", and
+      now 1077's "a documented Podcast 2.0 tag that's real, parseable, and still absent from 7 popular
+      feeds checked live" (a quick, concrete "don't overrate a namespace tag's adoption" angle).
+   4. **Inbound solicitation policy datapoint, now 2-for-2 (1076, 1077).** `peter@bytewells.com` has
+      cold-pitched twice from `requests@`, each time naming a different one of our Actors, for the
+      same unlaunched "Apify-compatible marketplace" (bytewells.com): flat monthly rentals Apify
+      retired, 10% commission, "one CLI command to migrate", waitlist signup. **DECLINED both times,
+      no reply sent, no owner email** (not revenue, not critical). Zero users = zero near-term
+      revenue, and the only concrete ask is running an unknown party's CLI against our Actor source
+      and Apify credentials. If a similar pitch arrives from a launched marketplace with real
+      traction, it may be worth a look — a non-exclusive second storefront is legitimate — but never
+      by running their tooling against our credentials. Expect a 3rd; do not re-litigate, just log it.
    5. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
    6. Carried, unchanged from 1068/1070/1071: the "N codes/categories" registry-prose claim class;
       `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only competitor-claim reformat
@@ -87,6 +83,39 @@ NEXT-CYCLE (1077): GROWTH per rotation (1075 G -> 1076 Q -> 1077 G).
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1077-apple-podcasts-chapters-shipped-and-live-verified.
+   **[cycle 1077] DONE — GROWTH slot per rotation (1076 Q -> 1077 G). `varied_test` on
+   `apple-podcasts-scraper`, fleet-oldest on that axis (1030), paired per 1b/1c with shipping the
+   1072-queued `chapters` product gap. Build 0.1.56 (code+README) pushed and verified live on both
+   the itunes and RSS code paths. No pricing drift, no code bugs found — a pure product-gap close.**
+   Tree clean at `121af00` at start. 3 services active, `/health` + `/tools/apple-podcasts-scraper`
+   both 200. **Inbox: a SECOND `peter@bytewells.com` pitch** (see item 4 above) — declined, no reply,
+   no owner email, same policy as 1076. Rest of `list 10` unchanged.
+   **Added `chaptersUrl`**, reading Podcast 2.0 `<podcast:chapters url="...">` the same way
+   `transcriptUrl` already reads `<podcast:transcript>` — one new line in `rssEpisodeRow()` plus the
+   itunes-path base object (`src/main.js`). Unit-verified the cheerio selector first against a
+   synthetic Podcast 2.0 XML snippet in isolation (`node -e`, both `transcriptUrl` and `chaptersUrl`
+   extracted correctly) before trusting any live feed.
+   **Then searched 7 real feeds for one that actually publishes `podcast:chapters` — found none**
+   (Lex Fridman, Darknet Diaries via 2 hosts, No Such Thing As A Fish, ATP, podcastindex.org's own
+   Podcasting-2.0 feed, WNYC). The tag is real, documented, and now correctly parsed when present —
+   but genuinely rare in the wild today. Worth remembering before assuming any Podcasting-2.0 field
+   shows up often in practice; queued as a quick Dev.to angle (item 3).
+   **Build 0.1.56 verified live 2 ways.** (1) Default regression input (itunes path): 5/5 charged,
+   `chaptersUrl` present and `null` as expected. (2) Live `useRssForFullArchive:true` run (first-ever
+   live exercise of this exact combo): 3/3 rows, `source:"rss"`, `chaptersUrl` present (null on this
+   feed, consistent with the survey above) — own-account run, `chargedEventCounts {result:0}` as
+   expected. README's `logiover` paragraph rewritten to drop the "beats it on one" concession;
+   `registry.json output_fields` and `.actor/dataset_schema.json` both updated to list `chaptersUrl`.
+   Standing checks clean post-push: `check-pricing` 24/29/0, `check-charges` 24/24, `check-meta-fields`
+   11/0, `check-registry-fields` 0 drift, `check-readme-samples` 35/79/0, `check-competitor-claims`
+   46/0 + 38/0 (a first run flagged `uk-find-a-tender-scraper`'s `publicdata` claim as "gone from the
+   Store" — immediate re-run was clean and a direct `GET /v2/acts/publicdata~...` confirmed 200 live;
+   a transient API hiccup, not real drift).
+   `audit_dates.json`: `apple-podcasts-scraper.varied_test` `1030 -> 1077`, full note, prior note
+   preserved inline, clean 2-line `Edit`. $0 self-charge (both platform runs were own-account) — still
+   ~$1.1 of $300. Revenue flat (44 users / 0 reviews / 0 bookmarks / $0), no owner email needed.
 
 0-DONE-h1076-weasel-phrase-grep-swept-fleetwide-eu-ted-false-on-3-of-6-claims.
    **[cycle 1076] DONE — QUALITY slot per rotation (1075 G -> 1076 Q). Ran the queue's own

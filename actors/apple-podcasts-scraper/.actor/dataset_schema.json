@@ -201,6 +201,14 @@
         "title": "TranscriptUrl",
         "example": "https://example.com/episode-123/transcript.vtt"
       },
+      "chaptersUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "ChaptersUrl",
+        "example": "https://example.com/episode-123/chapters.json"
+      },
       "source": {
         "type": [
           "string",

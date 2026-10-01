@@ -452,6 +452,7 @@ function episodeRow(e, info) {
     audioFileSize: null,
     keywords: null,
     transcriptUrl: null,
+    chaptersUrl: null,
     source: 'itunes',
     ...(info || {}),
   };
@@ -515,6 +516,7 @@ function rssEpisodeRow($, el, collectionId, info, channelExplicit = null) {
     audioFileSize: Number(enclosure.attr('length')) || null,
     keywords: $el.find('itunes\\:keywords').text().trim() || null,
     transcriptUrl: $el.find('podcast\\:transcript').attr('url') || null,
+    chaptersUrl: $el.find('podcast\\:chapters').attr('url') || null,
     source: 'rss',
   };
 }

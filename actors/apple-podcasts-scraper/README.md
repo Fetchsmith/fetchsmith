@@ -26,7 +26,7 @@ Episodes, reviews and search live in **one Actor**, so you can go from "podcasts
 | `maxPodcastsPerPublisher` | integer | Publisher only: how many shows to return per publisher (default 200, max 200) |
 | `country` | string | Storefront code — `us` (default), `gb`, `de`, `jp`, ... Reviews, availability and charts differ per storefront |
 | `maxEpisodesPerPodcast` | integer | Up to 200 most recent episodes per show (Apple's limit) — up to 20,000 with `useRssForFullArchive` (default 100). On Apple's API it counts episodes **fetched** (it is the API's own limit, so the other filters narrow within them); on RSS the whole feed arrives in one request, so it counts episodes **kept** after filtering and a date window can match anywhere in the archive |
-| `useRssForFullArchive` | boolean | Episodes only: fetch the show's own RSS feed instead of Apple's lookup API to get the **complete episode archive**, not just the most recent ~200 (default `false`; verified live: a real feed returned 502 episodes vs. Apple's 200-episode ceiling for the same show). Also unlocks `episodeType`, `showNotesHtml`, `audioFileSize` and `transcriptUrl` — fields Apple's own API never exposes. Falls back to Apple's lookup API for any show without a usable feed |
+| `useRssForFullArchive` | boolean | Episodes only: fetch the show's own RSS feed instead of Apple's lookup API to get the **complete episode archive**, not just the most recent ~200 (default `false`; verified live: a real feed returned 502 episodes vs. Apple's 200-episode ceiling for the same show). Also unlocks `episodeType`, `showNotesHtml`, `audioFileSize`, `transcriptUrl` and `chaptersUrl` — fields Apple's own API never exposes. Falls back to Apple's lookup API for any show without a usable feed |
 | `maxReviewsPerPodcast` | integer | Up to 500 reviews per show per storefront (Apple's limit), though **in practice Apple's feed usually serves fewer** — see FAQ. Counts reviews **scanned**, before `minRating`/`maxRating`/`keyword` filtering |
 | `sort` | string | Reviews only: `mostRecent` (default) or `mostHelpful` |
 | `includePodcastInfo` | boolean | Attach show name, host, genre, RSS feed and episode count to every row (default `true`) |
@@ -91,13 +91,14 @@ The first run seeds the baseline (0 rows, 0 charged). Every run after that retur
   "audioFileSize": null,
   "keywords": null,
   "transcriptUrl": null,
+  "chaptersUrl": null,
   "source": "itunes",
   "artistName": "Lex Fridman",
   "primaryGenre": "Technology",
   "episodeCount": 502
 }
 ```
-`episodeType`, `showNotesHtml`, `audioFileSize` and `transcriptUrl` are only populated when `useRssForFullArchive` is on and the show's feed provides them (`source` reads `"rss"` instead of `"itunes"` for those rows) — Apple's own lookup API has no equivalent fields.
+`episodeType`, `showNotesHtml`, `audioFileSize`, `transcriptUrl` and `chaptersUrl` are only populated when `useRssForFullArchive` is on and the show's feed provides them (`source` reads `"rss"` instead of `"itunes"` for those rows) — Apple's own lookup API has no equivalent fields. `chaptersUrl` reads the Podcast 2.0 `<podcast:chapters>` tag, a pointer to the episode's JSON chapter-marker file (timestamps + titles for each segment), when the feed publishes one.
 
 **`dataType: "reviews"`** — one item per review:
 ```json
@@ -164,7 +165,7 @@ Pay per result: **$0.001 per row** (episode, review or podcast) returned to your
 
 The closest Store competitor covering the same ground (search, show details, reviews, charts, episode archives, publisher lookup) is `sourabhbgp` (41 users, `sourabhbgp/apple-podcast-scraper`) at $0.003/result — 3x our price. Checked against its live input schema rather than its listing copy: it **does** ship a webhook (`webhookUrl` POSTs every record as it is collected — a different design from our end-of-run summary ping, not a worse one) and it **does** read episodes straight from a show's RSS feed, so neither of those is a gap. What its schema has no input for is a duration filter, an explicit-content filter, or a new-episode-only watch mode — its `trackDeltas` persists snapshots for chart *rank* changes only, not episodes. Verified live 2026-10-01.
 
-The fastest-growing rival in the niche is `logiover` (53 users, 15 of them in the last 30 days, `logiover/apple-podcasts-episode-scraper`), and it is episodes-only — no reviews, no charts, no publisher lookup. On episodes it matches this Actor almost field for field (`useRssForFullArchive`, `minDurationSeconds`, an explicit filter, a release-date window) and beats it on one: it parses Podcast 2.0 `chapters`, which this Actor does not. It charges an Actor-start fee plus $0.0025/result on the free plan — 2.5x our flat $0.001 with no start fee — and has no watch mode and no completion webhook. Verified live 2026-10-01.
+The fastest-growing rival in the niche is `logiover` (53 users, 15 of them in the last 30 days, `logiover/apple-podcasts-episode-scraper`), and it is episodes-only — no reviews, no charts, no publisher lookup. On episodes it matches this Actor almost field for field (`useRssForFullArchive`, `minDurationSeconds`, an explicit filter, a release-date window), including Podcast 2.0 `chapters` — this Actor now parses `<podcast:chapters>` too (`chaptersUrl`, RSS path only). It charges an Actor-start fee plus $0.0025/result on the free plan — 2.5x our flat $0.001 with no start fee — and has no watch mode and no completion webhook. Verified live 2026-10-01.
 
 ---
 Built by [FetchSmith](https://fetchsmith.com) — fast, HTTP-only scrapers with honest pricing. Questions or a field you need? Email support@fetchsmith.com.

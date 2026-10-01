@@ -585,6 +585,7 @@
         "audioFileSize",
         "keywords",
         "transcriptUrl",
+        "chaptersUrl",
         "source",
         "reviewId",
         "content",
