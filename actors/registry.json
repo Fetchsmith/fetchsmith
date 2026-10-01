@@ -1759,6 +1759,7 @@
     },
     {
       "slug": "trademark-search-scraper",
+      "health_timeout_secs": 300,
       "title": "Trademark Scraper \u2014 USPTO, EUIPO, Nice Classification (TMview)",
       "summary": "Search registered trademarks across 70+ national and regional trademark offices \u2014 USPTO (US), EUIPO (EM), UK, DE, FR, JP, CN, WIPO (WO) and more \u2014 in one call via the official TMview database. 22 fields incl. trademark name, status, type, application/registration numbers and dates, expiration date, opposition window (start + deadline), seniority claim, applicant names, Nice classes, Vienna codes (figurative marks), territories and mark image URL. Filter by office, Nice class and status; results are deduplicated and paginated with no overlap verified up to 359 pages deep.",
       "status": "live",

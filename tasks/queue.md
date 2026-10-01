@@ -29,6 +29,70 @@
    24/29/0 drift, `check-charges` 24/24. $0.06 self-charge (4 runs x 10 rows x $0.0015) — still $0
    of $300. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
 
+- [ ] `check-code-fields` flags `remote-jobs-scraper`: `watchId` is CODE-ONLY, undeclared in
+   `.actor/dataset_schema.json` (surfaced cycle 1061, fallout from the watch-mode port of ~1050).
+   Read it before editing anything: `watchId` lives on the INTERNAL collected `row` object and is
+   passed as `pushResult(item, row.watchId)` — the pushed `item` literal (src/main.js ~line 830-851)
+   does NOT carry it, so this looks like the "watch/criteria/fingerprint bookkeeping object" class
+   the checker already ALLOWLISTs for other Actors, i.e. probably a false positive to suppress by
+   name rather than a missing Console column. Confirm by grepping the live dataset for the field
+   (`GET /v2/datasets/<id>/items` on a watch-mode run) before touching the schema — do NOT declare a
+   field the Actor never pushes. [medium]
+0-DONE-h1061-trademark-timeout-budget-and-remote-jobs-h287.
+   **[cycle 1061] DONE — the open FIX FAILED ACTORS item (nightly health 2026-10-01,
+   `trademark-search-scraper`) plus a real over-billing bug a static check surfaced on the way.
+   Two builds pushed and verified live: `trademark-search-scraper` 0.1.24, `remote-jobs-scraper`
+   0.1.24.**
+   Tree clean at `73c920c` at start, 3 services active, `/health` + `/tools/trademark-search-scraper`
+   200. Inbox `list 10` unchanged from cycles 1054-1060 (dmarc x5, `j_woodgate01` pair,
+   indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email.
+   **1. Diagnosed the health failure to the digit, NOT a guess.** Run `bAeFGpiApFJl7u085`:
+   `runTimeSecs` 179.861 against the health check's `timeout=180`, and its log shows ONE
+   `590 UPSTREAM502` proxy warning at +128s, i.e. a single attempt ate 71% of the budget and the
+   container was killed part-way through rotation 1 of 3. Cause found in the code, not in the
+   proxy: `gotScraping({ timeout: { request: 30000 }, retry: { limit: 2 } })` made got re-try the
+   SAME dead exit node twice more INSIDE one attempt (3x30s + backoff ≈ 128s) before the outer
+   `PROXY_ROTATIONS` loop — the layer that actually fixes a bad exit node — ever got a turn.
+   **Fixed in 0.1.24 two ways:** `retry: { limit: 0 }` (a fresh exit node is a strictly better retry
+   than hammering the broken one, so the outer loop is now the only retry layer, and 4 attempts fit
+   in ~125s instead of ~1.4 attempts), and a run-deadline budget read off `Actor.getEnv().timeoutAt`
+   — each attempt's request timeout is capped by the time actually left, and with <5s of usable
+   budget the Actor throws an actionable error instead of being killed. **Why that second half
+   matters for revenue: TIMED-OUT is the worst possible outcome for a buyer** — the platform kills
+   the container, so they get no error message, no `setStatusMessage`, no RUN_SUMMARY (h826) and no
+   watch-baseline save (h287). Verified on the platform both ways: real `test_input.json` at the
+   same `timeout=180` → 10 rows in 5.8s; a deliberately tight `timeout=17` run (`C5nmg6avdpAl4UfsS`)
+   → `FAILED` with `exitCode 1` in 2.6s carrying the full "raise the run timeout to 300s+ / re-run
+   in a few minutes" status message instead of a silent TIMED-OUT.
+   **2. Health check now takes a per-Actor run-timeout override**, `registry.json
+   `health_timeout_secs`` (default 180, unchanged for the other 23; `trademark-search-scraper` set
+   to 300, matching h913's measured ">=200s for this Actor"). The httpx read timeout tracks it
+   (`run_timeout + 60`). This is the second time this Actor has opened a FIX task on working code
+   (h913, and the 2026-10-01 run); 180s is right for the fleet but not for an Actor whose retry path
+   is a chain of 30s proxy rotations. Registry edited with a 1-line targeted `Edit` — a `json.dump`
+   reformat of the whole file was caught in `git diff --stat` (4275 lines touched, `indent=1` vs the
+   file's `indent=2`/`ensure_ascii`) and reverted before committing; **always `git diff --stat` after
+   programmatically rewriting a tracked JSON file.**
+   **3. Real money bug found by running the standing static checks on an Actor nobody had re-checked
+   after a feature port: `remote-jobs-scraper` had the h287 defect** — `await Actor.fail()` inside
+   the collection `catch` (line 856) exits the process immediately, so `saveWatchRecord()` 17 lines
+   below never ran. An INCREMENTAL watch run that had already pushed and CHARGED rows before
+   erroring never recorded them in the baseline → **the next run re-delivered and re-charged the
+   buyer for the same rows.** Same class as the 4 Actors fixed by hand in cycles 676-680; it reached
+   the fleet because the watch-mode port of ~cycle 1050 was never followed by a
+   `check-fail-ordering`/`check-code-fields` run. Tell-tale that it was always a mistake rather than
+   a design: the very next line already read `runError ? 'failed-incremental' : ...`, i.e. the code
+   was written for the post-fix shape and that branch was simply unreachable. Fixed by moving the
+   failure to the end of the run (after baseline save, RUN_SUMMARY and webhook, as
+   `trademark-search-scraper` does). **Fault-injection verified, not just re-run:** a temporary
+   `throw` after the first push made the run reach `Done. Pushed 1 results.` (a line that was
+   unreachable before) and then fail with `Run failed: INJECTED FAULT` as the status message;
+   injection reverted and the file diffed byte-identical to its pre-injection state before pushing.
+   Platform re-verified after push: 5 real rows.
+   `check-fail-ordering` 20/20 clean (was 19/20), `check-pricing` 24/29/0 drift, `check-charges`
+   24/24. Self-charge this cycle ~$0.04 (10 trademark rows + 5 remote-jobs rows + 1 failed run that
+   charged nothing) — still $0.08 of $300 rounded. Revenue flat (44 users, 0 reviews/bookmarks, $0),
+   so no owner email.
 0-DONE-h1059-eu-ted-varied-test-keywords-daterange-maxvalue.
    **[cycle 1059] DONE — GROWTH slot per rotation (1057 G -> 1058 Q -> 1059 G). `varied_test` on
    `eu-ted-tenders-scraper`, fleet-oldest on that axis (1018). CLEAN NEGATIVE, no code change.**

@@ -10,8 +10,14 @@ for t in reg:
     slug = t["slug"]; p = f"/root/agent/actors/{slug}/test_input.json"
     inp = json.load(open(p)) if os.path.exists(p) else t.get("example_input", {"maxResults": 5})
     inp = {**inp, "maxResults": min(int(inp.get("maxResults", 5)), 10)}
+    # Per-Actor run-timeout override (registry.json `health_timeout_secs`), added cycle 1061. 180s is
+    # right for the fleet, but an Actor whose own retry path is a chain of proxy rotations needs more
+    # wall-clock than its happy path suggests: `trademark-search-scraper` has now TIMED-OUT twice on
+    # nothing but transient `590 UPSTREAM502` blips (h913/h825/h826, run bAeFGpiApFJl7u085), each time
+    # opening a FIX FAILED ACTORS task against code that was working. The read timeout tracks it.
+    run_timeout = int(t.get("health_timeout_secs", 180))
     try:
-        r = httpx.post(f"{API}/acts/{user}~{slug}/run-sync-get-dataset-items", params={"token": T, "timeout": 180, "memory": t.get("memory_mb", 256), "clean": "true", "limit": 10}, json=inp, timeout=240)
+        r = httpx.post(f"{API}/acts/{user}~{slug}/run-sync-get-dataset-items", params={"token": T, "timeout": run_timeout, "memory": t.get("memory_mb", 256), "clean": "true", "limit": 10}, json=inp, timeout=run_timeout + 60)
         items = r.json() if r.status_code < 300 else []
         n = len(items) if isinstance(items, list) else 0
         ok = r.status_code < 300 and n >= 1

@@ -119,6 +119,30 @@ async function rotateProxy() {
   } catch (e) { log.warning(`Could not get another proxy session (${e.message}).`); return false; }
 }
 
+// The rotation loop above is only useful if the run lives long enough to reach it. Measured on run
+// bAeFGpiApFJl7u085 (2026-10-01, nightly health check, 180s budget): ONE 590 UPSTREAM502 attempt
+// burned 128s — because `retry: { limit: 2 }` made got re-try the SAME dead exit node twice more
+// inside a single attempt, each with its own 30s request timeout — and the platform then killed the
+// container at 180s, part-way through rotation 1 of 3. TIMED-OUT is the worst outcome for a buyer:
+// the container is killed, so they get no error message, no `setStatusMessage`, no RUN_SUMMARY and
+// no watch-baseline save (h826). So: the per-request timeout is now the ONLY retry layer inside an
+// attempt (`retry: { limit: 0 }` — a fresh exit node is a strictly better retry than hammering the
+// broken one), and each attempt is sized to fit the time the run actually has left.
+const REQUEST_TIMEOUT_MS = 30000;
+// Reserve for the finishing work after the last attempt (push, charge, baseline save, webhook).
+const DEADLINE_RESERVE_MS = 15000;
+// Below this there is no point starting another attempt — stop and report instead of being killed.
+const MIN_ATTEMPT_MS = 5000;
+const RUN_DEADLINE_MS = (() => {
+  const t = Actor.getEnv().timeoutAt;
+  const ms = t instanceof Date ? t.getTime() : (t ? Date.parse(t) : NaN);
+  return Number.isFinite(ms) ? ms : null; // null = no run timeout set; behave exactly as before
+})();
+// Infinity when the run has no timeout, so every comparison below is a no-op in that case.
+const remainingBudgetMs = () => (RUN_DEADLINE_MS === null
+  ? Infinity
+  : RUN_DEADLINE_MS - Date.now() - DEADLINE_RESERVE_MS);
+
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
 // Marks read off TMview this run (including ones dropped by watch mode) -- the webhook's
@@ -313,7 +337,10 @@ async function fetchPage(page) {
   // attempt 0 uses the session we already have; each later attempt rotates to a fresh exit node,
   // and the final one drops the proxy entirely.
   let lastErr;
+  let outOfTime = false;
   for (let attempt = 0; attempt <= PROXY_ROTATIONS; attempt += 1) {
+    const budget = remainingBudgetMs();
+    if (budget < MIN_ATTEMPT_MS) { outOfTime = true; break; }
     if (attempt > 0) {
       const rotated = attempt < PROXY_ROTATIONS && await rotateProxy();
       if (!rotated) {
@@ -331,8 +358,8 @@ async function fetchPage(page) {
         method: 'POST',
         json: body,
         responseType: 'json',
-        timeout: { request: 30000 },
-        retry: { limit: 2 },
+        timeout: { request: Math.min(REQUEST_TIMEOUT_MS, budget) },
+        retry: { limit: 0 },
         throwHttpErrors: false,
         proxyUrl,
       });
@@ -351,6 +378,15 @@ async function fetchPage(page) {
   // 678): Actor.fail() exits the process immediately, which — on a page-2+ failure — would skip
   // the watch-baseline save below and lose the record of rows this run already pushed and
   // charged for. Let the outer catch record the error and fail at the very end instead.
+  if (outOfTime) {
+    throw new Error(
+      `This run's own time limit ran out while fetching page ${page} from TMview`
+      + `${lastErr ? ` (last network error: ${lastErr.message})` : ''}. `
+      + 'TMview behind Apify Proxy has spells of transient 590 UPSTREAM502 errors, and each retry on a '
+      + 'fresh proxy session costs up to 30s. Raise the run timeout (Input > Run options; 300s+ is a '
+      + 'safe default for this Actor), or re-run in a few minutes — the proxy route usually clears.',
+    );
+  }
   throw new Error(
     'Could not reach TMview (tmdn.org) through any network path this run: '
     + `${PROXY_ROTATIONS} Apify Proxy session(s) and a direct connection all failed transport-level — last error: ${lastErr?.message}. `

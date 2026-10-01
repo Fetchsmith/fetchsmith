@@ -4528,3 +4528,46 @@ eu-ted's README calls foxlabs' start fee "a small per-GB Actor-start fee" and th
 sloppy description of a flat $0.00005 event — but foxlabs' live `eventDescription` reads "Number of
 events charged depends on Actor memory (one event per GB, minimum one event)". The wording was
 right; editing it would have introduced the error.
+
+## Cycle 1061 — two retry layers are not twice the resilience; they are the same retry at 3x the wall-clock, and a TIMED-OUT run is a worse product than a FAILED one
+
+1. **`got`'s own `retry: { limit: N }` re-tries the SAME request through the SAME proxy session, so
+   stacking it under a proxy-rotation loop multiplies the cost of a failing attempt without adding
+   a single new network path.** `trademark-search-scraper`'s `fetchPage` had
+   `timeout: { request: 30000 }, retry: { limit: 2 }` inside a `PROXY_ROTATIONS = 3` loop. Measured
+   on run `bAeFGpiApFJl7u085`: one `590 UPSTREAM502` exit node consumed **128s** (3 x 30s + backoff)
+   before the outer loop — the layer that actually fixes a dead exit node — got its first turn, and
+   the 180s run died part-way through rotation 1 of 3. Rule: when an outer loop already rotates the
+   thing that is broken, set the inner client's retry to 0 and let the per-request timeout be the
+   only inner bound. The same 180s budget then buys 4 genuinely different exit nodes instead of 1.4
+   attempts at one bad one. **Grep the fleet for `retry: { limit:` under a rotation/session loop
+   before assuming this is one Actor's problem.**
+2. **A run that hits the platform's own timeout is the worst outcome available to a paying buyer,
+   and it is avoidable in code.** The container is killed, so nothing after the fetch runs: no
+   thrown error text, no `Actor.setStatusMessage`, no RUN_SUMMARY (h826), no watch-baseline save
+   (h287) — the buyer sees `TIMED-OUT` and nothing else. `Actor.getEnv().timeoutAt` is available to
+   every Actor; treating it as a budget (cap each request timeout by the time left, reserve ~15s for
+   the finishing work, and throw an actionable error rather than being killed when the remainder is
+   unusable) converts that into a `FAILED` run carrying "raise the run timeout to 300s+, or re-run —
+   the proxy route usually clears". Verified live: `timeout=17` produced exactly that in 2.6s.
+   **Candidates: any Actor whose retry path is a chain of fixed-length timeouts** — the gap between
+   "happy path takes 6s" and "worst case takes 6 minutes" is where this bites.
+3. **A FEATURE PORT is a static-check trigger, not just a test trigger.** `remote-jobs-scraper` got
+   watch mode ported from a richer Actor around cycle 1050 and arrived carrying the h287 defect
+   (`Actor.fail()` in the catch, 17 lines above the `saveWatchRecord()` it skips → an incremental run
+   re-charges the buyer for rows it already charged for). `bin/check-fail-ordering` has existed since
+   cycle 681 and catches it in under a second; nobody ran it on the ported Actor. The give-away that
+   it was a copy-paste slip and not a design choice: the next line already read
+   `runError ? 'failed-incremental' : ...`, a branch that was unreachable. **Run the whole
+   `check-*` family on an Actor the cycle you port a feature INTO it** — the checks encode defects
+   the donor Actor was already fixed for, and a port silently re-imports the pre-fix shape.
+4. **Fault-inject the control flow, then diff the file back to byte-identical before pushing.** The
+   proof the h287 fix works is that a temporary `throw` after the first push made the run reach
+   `Done. Pushed 1 results.` — a line that was *provably unreachable* before — and then fail with the
+   right status message. A passing happy-path re-run proves nothing about an error path. `cp` the
+   file first, `diff -q` it back after, and `node --check` before the push.
+5. **`git diff --stat` after any programmatic rewrite of a tracked JSON file.** Adding one key to
+   `actors/registry.json` with `json.dump(..., indent=1)` reformatted all 4275 lines (the file is
+   `indent=2` with `\uXXXX` escapes). Reverted and done as a 1-line targeted `Edit` instead. A
+   whole-file reformat buries the real change and makes every later `git log -p` archaeology on that
+   file useless.

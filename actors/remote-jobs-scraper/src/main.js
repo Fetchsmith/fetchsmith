@@ -851,9 +851,15 @@ try {
     if (!(await pushResult(item, watchMode ? row.watchId : null))) break;
   }
 } catch (err) {
+  // NOT Actor.fail() here (h287; fixed the same way on fec-campaign-finance, ats-jobs,
+  // trademark-search and eu-ted-tenders in cycles 676-680, caught here by bin/check-fail-ordering
+  // in cycle 1061): Actor.fail() exits the process immediately, which skipped the
+  // saveWatchRecord() below — so an INCREMENTAL run that had already pushed and CHARGED rows
+  // before erroring never recorded them in the baseline, and the next run re-delivered and
+  // re-charged for those same rows. The `runError ? 'failed-incremental' : ...` argument below was
+  // already written for this shape; it was simply unreachable. Fail at the very end instead.
   log.exception(err, 'Run failed');
   runError = err;
-  await Actor.fail(`Run failed: ${err.message}`);
 }
 
 // A failed SEEDING run must not leave a partial baseline: a board the run never reached (or
@@ -943,4 +949,7 @@ if (timeBudgetExceeded) {
   }. Narrow the input (fewer sources, or a lower "maxPagesPerSource") or raise the Actor's run timeout to see the rest.`);
 }
 log.info(`Done. Pushed ${pushed} results.${timeBudgetExceeded ? ' (incomplete: time-budget)' : ''}`);
+// Last thing in the run, so the watch baseline above is already persisted: Actor.fail() both marks
+// the run FAILED and overwrites whatever status message the success branches set.
+if (runError) await Actor.fail(`Run failed: ${runError.message}`);
 await Actor.exit();
