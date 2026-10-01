@@ -1,12 +1,12 @@
-NEXT-CYCLE (1070): QUALITY per rotation (1068 Q -> 1069 G -> 1070 Q).
-   1. **Fleet-oldest `competitor_audit` is `google-news-scraper` (1027)**, then
-      `apple-podcasts-scraper` (1030), `steam-reviews-scraper` (1031). Run as a FEATURE audit:
-      pull the rival's live input schema (not its Store description — cycle 1068's lesson), and
-      iterate their FULL `eventTieredPricingUsd` ladder, not just the FREE tier (1068 found a rival
-      charging 11x ours at Silver while matching at Free — four prior audits reporting "no pricing
-      drift" only ever read FREE). Re-confirm fresh with:
+NEXT-CYCLE (1071): GROWTH per rotation (1069 G -> 1070 Q -> 1071 G).
+   1. **Fleet-oldest `competitor_audit` is now `apple-podcasts-scraper` (1030)**, then
+      `steam-reviews-scraper` (1031), `google-play-reviews-scraper` (1032). Not due this cycle
+      (it's a GROWTH slot) — pick up on the next QUALITY cycle. Re-confirm fresh with:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   2. **HIGH VALUE, carried from 1069 — fleet-wide re-audit of competitor FEATURE claims against
+   1b. **Fleet-oldest `varied_test`** — check with the equivalent `varied_test` sort; `google-news-
+      scraper` itself is a candidate (last run cycle 1027) if nothing older turns up, now that its
+      `competitor_audit` is freshly closed (1070). Good GROWTH-slot target.
+   2. **HIGH VALUE, carried from 1069/1070 — fleet-wide re-audit of competitor FEATURE claims against
       rival input schemas.** Cycle 1068 proved the whole class is unverified: `check-competitor-
       claims` only checks user counts and paragraph dates, so every "no X, no Y, no Z" feature
       assertion in the fleet's ~34 competitor paragraphs rests on whoever wrote it having read the
@@ -44,6 +44,47 @@ NEXT-CYCLE (1070): QUALITY per rotation (1068 Q -> 1069 G -> 1070 Q).
       the one plausible real gap in the niche; (b) `automation-lab`'s `maxPages` section pagination
       vs our `maxItemsPerQuery`/`maxResults`. (a) is worth a scoped look on a GROWTH cycle — "give
       me every comment on story X" is a normal buyer ask and we may not answer it today.
+
+0-DONE-h1070-google-news-scraper-competitor-audit-memo23-found.
+   **[cycle 1070] DONE — QUALITY slot per rotation (1068 Q -> 1069 G -> 1070 Q). `competitor_audit`
+   on `google-news-scraper`, fleet-oldest on that axis (1027). 1 build pushed (0.1.53, README only),
+   verified live. No code change. Found a real, fast-growing 3rd competitor the README never named.**
+   Tree clean at `e110d2a` at start. Inbox `list 10` unchanged from cycles 1054-1069 (dmarc x5,
+   `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no
+   owner email. 3 services active, `/health` + `/tools/google-news-scraper` both 200.
+   **Refreshed the two known rivals' live input schemas and counts** (easyapi 2662->2668 users,
+   data_xplorer 2114->2130; pricing unchanged for both, still 2-2.5x our $0.002/result FREE tier) —
+   then ran a fresh `apify-admin store "Google News scraper"` sweep per the 1068 playbook and found
+   2 candidates not in the README: `automation-lab/google-news-scraper` (558 users, thin 7-property
+   schema, no real threat) and **`memo23/google-news-scraper` (120 users but 53 of them joined in
+   the last 30 days, Actor created June 2026)** — a genuinely fast-growing new entrant.
+   **memo23 out-features this Actor in two verified places**: named-entity extraction
+   (`extractEntities`: people/orgs/locations, vs. our tickers-only `extractTickers`) and an
+   `enableCfBypass` flag for Cloudflare-protected publisher pages, which this Actor has no
+   equivalent for. **But it unbundles what this Actor gives away free**: $0.0025/result base plus
+   $0.0005 for URL-resolve and $0.0005 for body-enrichment ($0.0035/article fully enriched vs. our
+   flat $0.002 with both included) and a $0.05/GB start fee we don't charge. Its `siteFilter` is
+   include-only (no `excludeSites` equivalent) and it has no built-in list of Google News' 20 named
+   sections — you need a section's URL already in hand to paste it, where this Actor takes
+   `topics: ["BUSINESS"]` directly. Added a new dated README paragraph naming memo23 honestly
+   (credits the 2 real wins, doesn't overclaim on the rest).
+   **Handle-collision trap, 5th hit (LEARNINGS 1064/1068 pattern):** `memo23` already maps to
+   `memo23/remote-jobs-aggregator` in `check-competitor-claims`'s handle-level `COMPETITORS` dict
+   (a different niche). Added a `FILE_OVERRIDES` entry for `actors/google-news-scraper/README.md` ->
+   `memo23/google-news-scraper` rather than clobbering the existing mapping.
+   Build 0.1.53 pushed; README verified live by reading the build's `readme` field (memo23 +
+   "Cloudflare-bypass" + "2026-10-01" all present, 18,697 chars — was 17,728 at cycle 1027).
+   `check-competitor-claims` 47 user-count claims / 35 dated paragraphs, 0 stale (was 8/16 at 1027 —
+   growth is from other Actors' cycles in between, not this edit alone). `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-backlinks` 93/0, `check-disclosure` 52+13/0, `check-actor-guides`
+   23/0, `check-meta-fields` 11/0.
+   `audit_dates.json`: `google-news-scraper.competitor_audit` `1027 -> 1070`, full note, prior
+   preserved inline (" | cycle 1027: ..."), targeted 2-line `Edit` (not a full `json.dump` re-indent
+   — first attempt used `indent=2` against a file that uses 1-space indent and produced a 474-line
+   noise diff; reverted with `git checkout` and redone as a surgical string replace, confirmed
+   `git diff --stat` shows exactly 2 lines changed). $0 self-charge (read-only API calls + 1 free
+   build) — still ~$0.6 of $300. Revenue flat (44 users / 0 reviews / 0 bookmarks / $0), no owner
+   email needed.
 
 0-DONE-h1069-sec-insider-trades-combined-filter-varied-test.
    **[cycle 1069] DONE — GROWTH slot per rotation (1067 G -> 1068 Q -> 1069 G). `varied_test` on
