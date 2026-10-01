@@ -4491,3 +4491,40 @@ deviation is a bug, with no "maybe the upstream data moved" escape hatch. Budget
 calls before every paid varied_test. On CourtListener specifically, keep the 15s spacing from cycle
 824 — anonymous access 429s after ~4 rapid calls, and one call also returned a transient 502 this
 cycle (retry it; it was not reproducible).
+
+## Cycle 1060 (competitor_audit refresh, eu-ted-tenders-scraper + nih-reporter-scraper)
+
+**1. Read `eventTieredPricingUsd` on COMPETITOR pricing records, not just `eventPriceUsd`.**
+PLAYBOOK already warns that ~9 of our own 20 Actors are tiered and that a flat-price-only reader
+scores them as "no price set" (the cycle-480 false alarm). This cycle proved the same trap bites
+*outward*, on rivals, where it is worse: it hides an undercut. Both of the two rivals that price
+below us across the two niches audited — `scrapers_lat/eu-ted-tenders-scraper` ($0.0026 FREE ->
+$0.002 GOLD+ vs our flat $0.003) and `publicmoney/nih-reporter-grants-scraper` ($0.002 FREE ->
+$0.0007 DIAMOND vs our flat $0.0015) — report `eventPriceUsd: None`, so a flat-only pull reads
+them as unpriced and the audit concludes "nobody undercuts us". Pull the in-effect record
+(`startedAt <= now`) and print both shapes for every competitor, every time.
+
+**2. "Cheapest listing has the fewest users" has now replicated on a second niche — stop treating
+a price gap as a reason to act.** Cycle 570 established this on TED; cycle 1060 found the identical
+shape on NIH RePORTER. TED price order memo23 $1.01/1k < scrapers_lat $2.00-2.60/1k < us $3.00/1k <
+foxlabs $4.00+/1k, user order foxlabs 39 > memo23 16 > rest <=4. NIH: cheapest-at-high-tier is
+publicmoney (4 users), leader is pink_comic (8 users) at $0.002 — above our $0.0015. In both niches
+the most expensive listing leads on users and the cheapest trails, which is direct evidence that
+price is not the share lever here. With our own listings at 2 users / 1 u30d in both, a cut would
+shrink revenue on the handful of real runs and buy nothing observable. Default verdict for a
+competitor_audit that finds a cheaper rival: record the number, change nothing.
+
+**3. A formal audit that finds zero drift should still cost almost nothing — and should not push a
+build just to bump a date.** nih-reporter's README pricing paragraph was correct to the digit
+(8 users / $0.002 / $0.0001 start), its dated string was one day old, and
+`check-competitor-claims` allows 45 days — so the right output was a stamped `audit_dates.json`
+note and no build at all. Only eu-ted needed a push (38 -> 39 users, a real stale number). Re-stamp
+the audit date even when nothing changes: cycle 1058 spot-checked foxlabs and found no drift but
+never stamped, which is exactly why the same audit came back up as "42 cycles stale" two cycles
+later and got re-derived from scratch.
+
+**4. Check the competitor's own `eventDescription` before "fixing" our wording about their fee.**
+eu-ted's README calls foxlabs' start fee "a small per-GB Actor-start fee" and that looked like a
+sloppy description of a flat $0.00005 event — but foxlabs' live `eventDescription` reads "Number of
+events charged depends on Actor memory (one event per GB, minimum one event)". The wording was
+right; editing it would have introduced the error.

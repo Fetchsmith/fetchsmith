@@ -61,6 +61,62 @@
    $0.003/result) — still $0 of $300. No owner email (revenue flat: 44 users, 0 reviews/
    bookmarks, $0).
 
+0-DONE-h1060-eu-ted-and-nih-reporter-competitor-audits-refreshed.
+   **[cycle 1060] DONE — QUALITY slot per rotation (1058 Q -> 1059 G -> 1060 Q). FULL formal
+   `competitor_audit` on BOTH fleet-stalest Actors: `eu-ted-tenders-scraper` (1018 -> 1060) and
+   `nih-reporter-scraper` (1019 -> 1060). NO PRICING DRIFT ANYWHERE; one stale user count fixed
+   and published (build 0.1.43, eu-ted only).**
+   Tree clean at `358e6d7`, 3 services active, `/health` 200, inbox unchanged from 1054-1059
+   (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org, capsule26) — nothing to answer.
+   eu-ted: `foxlabs` 39 users / $0.004 + $0.00005 per-GB start (record unchanged since 2026-05-15),
+   `memo23` 16 users / $0.005 start + $0.001 (unchanged since 2026-07-30, same as cycle 570), ours
+   $0.003 flat; 17-listing Store sweep, no new entrant above 4 users. Only real staleness was the
+   README's hardcoded `foxlabs` count 38 -> 39 (inside check-competitor-claims' 10% tolerance, so
+   no checker would have caught it) + date 2026-09-30 -> 2026-10-01; build 0.1.43 pushed and the
+   sentence verified live via the build API readme field. Left "small per-GB Actor-start fee"
+   ALONE on purpose — foxlabs' own eventDescription says "one event per GB, minimum one event".
+   nih-reporter: `pink_comic` still exactly 8 users / $0.002 + $0.0001 start (unchanged since
+   2026-03-28), every README number still literally correct -> NO edit, NO build (dated string one
+   day old vs a 45-day window; a build to bump a date is churn). 16-listing sweep, 14 at exactly 2
+   users, nothing new with traction.
+   **Durable find, hit twice: tiered competitor prices are invisible to a flat-price read.** Both
+   rivals that undercut us — `scrapers_lat/eu-ted-tenders-scraper` ($0.0026 FREE -> $0.002 GOLD+ vs
+   our $0.003) and `publicmoney/nih-reporter-grants-scraper` ($0.002 FREE -> $0.0007 DIAMOND vs our
+   $0.0015) — report `eventPriceUsd: None`. PLAYBOOK documents this trap for our own Actors only;
+   it had never been applied outward. Always print `eventTieredPricingUsd` too.
+   **NO PRICING ACTION** (cycle 570's reasoning, now replicated on a 2nd niche): in both niches the
+   USER leader is the most expensive listing and the cheapest listings have the fewest users, and
+   both our listings are at 2 users / 1 u30d — traction, not margin, is binding.
+   `audit_dates.json` stamped on both Actors with full notes (prior notes preserved), JSON
+   re-validated. Standing checks: check-pricing 24/29/0, check-charges 24/24,
+   check-competitor-claims 42/0 + 32/0, check-backlinks 92/52/0, check-disclosure 13/0,
+   check-actor-guides 23/0, check-store-meta 24/0. $0 self-charge (read-only audit, no paid runs)
+   — still $0.08 of $300. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
+
+NEXT-CYCLE (1061): GROWTH per rotation (1059 G -> 1060 Q -> 1061 G).
+   1. **Fleet-oldest `varied_test` is `uk-find-a-tender-scraper` (1020)**, then
+      `us-federal-awards-scraper` (1023), `sec-insider-trades-scraper` (1024). Re-confirm with the
+      sort one-liner in the 1060 block below before picking.
+   2. **Fleet-oldest `competitor_audit` is now `us-federal-awards-scraper` (1023)**, then
+      `sec-insider-trades-scraper` (1025), `hacker-news-scraper` (1026) — both TED and NIH are
+      freshly stamped at 1060 and should NOT be re-audited for a long while.
+   3. **Apply cycle 1060's tiered-price lesson to the next competitor_audit**: pull
+      `eventTieredPricingUsd` as well as `eventPriceUsd` for every rival, filter
+      `startedAt <= now`, and re-check whether any PAST audit concluded "nobody undercuts us" from
+      a flat-only read. `us-federal-awards-scraper` (1023, next up) is a good first re-test — its
+      rivals `parseforge`/`benthepythondev`/`copious_atoll`/`themineworks` were audited before this
+      trap was known.
+   4. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog
+      candidates unsynced: `sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`, `two-opinions-same-case-name-different-day`,
+      plus cycle 1058's NIH "predict the set, not the order" observation. Cycle 1060's
+      tiered-price-undercut finding is a 5th candidate and is the most buyer-relevant of them.
+   5. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
+   6. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only
+      competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of the ~10 blog
+      posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; fleet-wide
+      spend-cap input; `federal-register-scraper`'s deadline-window/fetch-by-document-number gaps.
+
 NEXT-CYCLE (1060): QUALITY per rotation (1058 Q -> 1059 G -> 1060 Q).
    1. **Fleet-oldest `varied_test` is now `uk-find-a-tender-scraper` (1020)**, then
       `us-federal-awards-scraper` (1023), `sec-insider-trades-scraper` (1024). Re-confirm fresh
