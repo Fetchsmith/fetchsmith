@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Flag actors/<slug>/meta.json field-count claims that disagree with registry.json.
+"""Flag field-count claims in meta.json / registry.json that disagree with registry.json.
 
 Closes h37 (cycle 412): meta.json's own `description`/`seoDescription` text is the
 Apify Store listing copy, and it makes a "<N> flat/typed/normalized fields" claim
@@ -12,14 +12,43 @@ against registry.json's actual output_fields length. That's exactly how
 federal-register-scraper's meta.json sat at "30 flat fields" while registry.json
 said 31 and the code emitted 31: nothing rechecks the number after the sentence
 around it gets rewritten for an unrelated feature.
+
+Extended cycle 1066 to also scan registry.json's OWN `summary`/`title` prose (the
+`/tools` and Store-listing copy), closing the gap flagged at cycle 1064: that
+cycle found `sec-insider-trades-scraper`'s summary selling "17 transaction codes"
+for a 20-code Actor, live since cycle 934, with nothing checking registry.json's
+own prose against its own data. (That specific claim is a codes-enum count, not a
+field count, so it still isn't mechanically checkable here -- see LEARNINGS 1066 --
+but this closes the field-count half of the same hole, which is live right now:
+`fda-recall-scraper`'s own summary says "37 typed fields" while the dataset
+schema has 39.)
+
+Watch-bookkeeping fields (`_watchChangeType`/`_watchPrevious`) make a single
+"correct" number ambiguous: `fda-recall-scraper`'s README/meta/registry all
+deliberately quote 37 (fields present on every row) and document the 2
+watch-only fields separately, while `court-records-scraper` and
+`us-federal-awards-scraper` quote 41/54 (the full total, watch fields included)
+with no separate carve-out -- both are legitimate, differently-scoped
+conventions already in use, not drift. So a claim is accepted if it matches
+EITHER the raw `output_fields` count OR that count minus any `_`-prefixed
+fields; only a number matching neither is flagged.
 """
 import glob
 import json
 import os
 import re
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-reg = {t["slug"]: len(t.get("output_fields", [])) for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]}
+TOOLS = json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]
+reg = {t["slug"]: len(t.get("output_fields", [])) for t in TOOLS}
+
+
+def valid_counts(slug):
+    fields = next(t.get("output_fields", []) for t in TOOLS if t["slug"] == slug)
+    watch = sum(1 for f in fields if f.startswith("_"))
+    return {len(fields), len(fields) - watch}
+
 
 COUNT = re.compile(r"(\d+)\s+(?:other\s+)?(?:flat|typed|normali[sz]ed)(?:\s+output)?\s+fields?")
 
@@ -43,8 +72,22 @@ for pattern, fields in FILES:
                 continue
             checked += 1
             for claimed in counts:
-                if int(claimed) != reg[slug]:
+                if int(claimed) not in valid_counts(slug):
                     flagged += 1
                     print(f"STALE {rel}:{field}  claims {claimed} fields, registry.json has {reg[slug]}")
 
-print(f"check-meta-fields: {checked} meta.json field-count claim(s) checked, {flagged} stale")
+for tool in TOOLS:
+    slug = tool["slug"]
+    for field in ("summary", "title"):
+        text = tool.get(field, "")
+        counts = COUNT.findall(text)
+        if not counts:
+            continue
+        checked += 1
+        for claimed in counts:
+            if int(claimed) not in valid_counts(slug):
+                flagged += 1
+                print(f"STALE actors/registry.json:{slug}.{field}  claims {claimed} fields, registry.json has {reg[slug]}")
+
+print(f"check-meta-fields: {checked} field-count claim(s) checked, {flagged} stale")
+sys.exit(1 if flagged else 0)

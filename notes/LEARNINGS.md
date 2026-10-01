@@ -1,5 +1,38 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1066 — "N fields" and "N codes" are two different claim classes; a field-count checker can't absorb the other one, and watch-bookkeeping fields make even "N fields" ambiguous
+
+Extending `check-meta-fields` to scan `registry.json`'s own `summary`/`title` (closing half of
+cycle 1064's "nothing reads registry prose" gap) surfaced two durable lessons:
+
+1. **A single Actor's own public copy can legitimately quote two different field counts for the
+   same schema**, depending on whether conditional watch-mode bookkeeping fields
+   (`_watchChangeType`/`_watchPrevious`) are counted in or out. `fda-recall-scraper` quotes 37
+   (base row fields only, with the 2 watch fields documented separately in its README) while
+   `court-records-scraper`/`us-federal-awards-scraper` quote the full 41/54 (watch fields
+   included). Neither is wrong; they're different, already-live conventions on different Actors.
+   Any mechanical field-count checker touching registry/meta prose must accept BOTH
+   `len(output_fields)` and `len(output_fields) - count(fields starting with "_")`, not just one,
+   or it will false-positive on whichever convention it didn't anticipate — this is the same
+   "allowlisted watch bookkeeping" trap cycle 1061 hit on `check-code-fields`'s `watchId` field,
+   now confirmed to recur on a completely different checker (field-count prose, not schema field
+   declarations). **Any future checker that compares a number in hand-written copy against
+   `output_fields` length should check this convention split first**, rather than assuming one
+   canonical count.
+2. **"N <noun> fields" and "N <noun> codes/categories" are NOT the same claim class**, even though
+   they look similar and cycle 1064's queue note described them as one. A field-count claim has one
+   universal source of truth (`registry.json`'s own `output_fields` list) so a single regex +
+   length-compare covers every Actor. A "codes" claim (e.g. "20 transaction codes", "6 award
+   categories") has no universal source: sometimes it's an exact `input_schema` enum length
+   (`sec-insider-trades-scraper`'s `transactionCodes`, 20 items — mechanically checkable), and
+   sometimes it's pure prose-counting with no backing enum at all (`us-federal-awards-scraper`'s
+   "6 award categories" = 5 award types + subaward, counted across unrelated schema fields — NOT
+   mechanically checkable without a human-written per-slug mapping). A generic "find a number
+   before the word 'codes' and compare to some enum" heuristic would need a mapping table (claim
+   phrase -> which `input_schema` property, if any) built one Actor at a time, not a drop-in regex
+   like the field-count one. Left open in queue.md with this design rather than building a
+   heuristic that would mis-fire on the prose-counted cases.
+
 ## Cycle 1002 — "unrecognised value dropped with a warning" can degrade to "filter fully disabled", not just "narrower". Worth a fleet check.
 
 `grants-gov-scraper`'s `agencies` filter validates each code against a live agency index and drops
