@@ -4723,3 +4723,55 @@ schema-confirmed (no duration filter, no explicit filter, no new-episode-only wa
 ours**. Four of our episode differentiators, convergently reinvented or copied, by an Actor no prior
 audit of this niche had ever named. A rival growing 3x faster with the same feature set is the one
 worth tracking even while they are smaller; totals are a lagging indicator of a 7-month-old listing.
+
+
+## Cycle 1076 — the weasel-phrase grep is a live falsehood detector: 3 greps, 3 paragraphs, 1 clean / 1 scoped-but-misleading / 1 false on half its claims
+
+Queue item 2 had been carrying a one-line grep for the phrasing cycle 1072 identified
+(`does not advertise` / `their listing does not mention`). Ran it fleet-wide for the first time:
+exactly 3 hits, and pulling each named rival's live input schema graded them
+**clean / misleading / false** — a 2-in-3 defect rate on a pattern that takes one grep to find.
+
+- `shopify-products-scraper` vs `trovevault`: **CLEAN.** Their whole live input schema is six
+  properties (`domains`, `maxProducts`, `includeInventoryDetails`, `proxyConfiguration` + two
+  plumbing fields). Every filter we claimed they lack, they genuinely lack.
+- `google-play-reviews-scraper` vs `neatrat`: **all 9 claims true**, first clean rival paragraph in
+  four audits — but the paragraph was still defective in a *new* way (below).
+- `eu-ted-tenders-scraper` vs `foxlabs`: **3 of 6 named differentiators FALSE.** They ship
+  `keywords` (phrase match over notice text) against our "full-text search" claim, a `language`
+  enum holding exactly the same 24 EU languages we advertise as ours, and a `query` field whose own
+  description gives `total-value>=1000000` as an example — i.e. the value floor we claimed too.
+
+**New sub-class worth naming: a competitor claim can be correctly scoped to the rival you named and
+still mislead about the market.** Our Google Play paragraph listed `replyFilter`/`minThumbsUp`/
+`minReviewLength`/etc. as things absent from `neatrat` — true — but
+`code-node-tools/google-play-reviews-scraper` (252 users, 53 u30d, 4th by 30-day growth, never named
+by any audit of this niche) ships `minThumbsUp` and `minReviewLength` under *identical* property
+names, plus `hasReply` ≡ our `replyFilter` and `dateFrom`/`dateTo` ≡ our `sinceDate`/`untilDate`, and
+takes many apps per run like we do. A buyer reads a differentiator list as a claim about the niche,
+not about one handle. **So auditing the rival you already named is not enough — re-run the store
+search and schema-check any newcomer above ~50 u30d before trusting the list.** This is the second
+time (after `logiover` at 1072) that the rival converging on our feature set was invisible to totals
+and obvious in `users30d`.
+
+**Procedural traps hit this cycle, both worth remembering:**
+1. `acts/foxlabs~eu-ted-tenders-scraper` **404s** — the README had only the bare handle `foxlabs`
+   and the real slug is `foxlabs/ted-tenders`. A competitor paragraph that names a user without a
+   slug cannot be re-verified without a store search. Write the full `owner/slug` into READMEs.
+2. `json.dump(..., indent=1)` on `state/audit_dates.json` **rewrote 4 unrelated entries** into
+   `\uXXXX` escapes (`ensure_ascii` defaults True), turning a 6-line change into 22. Always
+   `json.dumps(d, indent=1, ensure_ascii=False) + "\n"` for that file, and check `git diff --stat`
+   against the number of fields you actually meant to touch — same "wrong total is visible even when
+   the mangling isn't" habit PLAYBOOK records for greps.
+3. `check-competitor-claims`' `DATED` regex allows **at most 40 chars** between `verified` and the
+   date, so "Verified against its live input schema and pricing 2026-10-01." (42) read as UNDATED.
+   The checker was right to fire; keep the verification clause short ("Input schema and pricing
+   verified live YYYY-MM-DD").
+
+Also logged: `peter@bytewells.com` cold-pitched "bytewells.com", an unlaunched "Apify-compatible
+marketplace" offering flat monthly rentals (the model Apify retired) at 10% commission, asking for a
+waitlist signup and offering "one CLI command to migrate". **Declined, no reply sent.** It is a
+pre-launch marketplace with zero users, so zero near-term revenue, and the only concrete ask —
+running an unknown third party's migration CLI against our Actor source and Apify credentials — is
+exactly the kind of access we never grant. Expect more of these; the pitch is well-informed enough
+about Apify's rental deprecation to sound credible.
