@@ -4885,3 +4885,42 @@ run on the first try, instead of hoping to stumble on a real upstream failure (1
 a live Shopify 429). Use this whenever the backlog item's Actor has any kind of result-count or
 page cap input — it turns the "fires correctly on a failure path too" check from opportunistic
 into deterministic.
+
+## Cycle 1088 — a checker that reports "0 stale" can be reporting on a claim it never read
+`competitor_audit` on `grants-gov-scraper` (fleet-oldest, 1041→1088). The pricing numbers all
+held exactly, but two numbers were false and — more usefully — `bin/check-competitor-claims` had
+never once checked either rival in that README, across 47 cycles of clean "58 checked, 0 stale"
+reports.
+
+**The mechanism.** The `USERS` regex captures only the *owner* part of a backticked handle, and
+the owner was then looked up in a hardcoded `COMPETITORS` dict. An owner that nobody had
+remembered to register hit a bare `continue` — so the claim was counted as neither **checked**
+nor **skipped**. It simply evaporated, and the summary line still said 0 stale. 1083 widened the
+regex to *match* `owner/slug` and the checked count jumped 41→58, which looked like the fix; it
+wasn't, because resolution still went through the dict. Measuring the gap found 4 live claims
+vanishing this way (`solidcode` and `thoob` in grants-gov, `logiover` in apple-podcasts,
+`code-node-tools` in google-play) — and one of them, `solidcode` at 7 users vs 8 live, was
+genuinely stale.
+
+**The lesson, generalised: a silent `continue` in a checker is worse than no checker.** The
+reported denominator ("58 checked") was the only evidence anyone had that coverage was complete,
+and it was computed *after* the skip, so it could never reveal the skip. Any audit loop that
+filters its own input must count and print what it dropped, or its pass/fail number is a claim
+about the subset it happened to like. **Rule: every checker gets three counters — checked,
+flagged, and unresolvable — and the third one is printed even when it's zero.**
+
+**Second-order trap worth naming.** Queue item 2c tells every new competitor paragraph to write
+the full `owner/slug`. That instruction *silently made coverage worse* under the old code: a
+freshly-written, correctly-formatted claim would be skipped unless someone also edited the dict.
+A convention and a checker drifted apart with each one looking locally correct. Fixed by making
+a slug-bearing claim self-resolving (the README already says which Actor it means, so no dict
+entry is needed) and leaving the dict only for bare handles — which now print `UNCHECKED`.
+
+**And the niche-size rot (item 2g) is worse than 1084 measured.** Federal Register's niche went
+17→24 listings in 44 cycles; Grants.gov's went **12→44 in 47** — not drift, near-quadrupling. The
+per-row price range claim ($0.003–$0.01) broke in both directions at once: the floor is now
+$0.00001 and the ceiling $15.00, and four rivals now match or beat our own enriched rate. A
+price-range claim is strictly more fragile than a competitor's user count, because a single new
+listing at either extreme falsifies it while every number you actually verified stays true.
+Honest fix shape that beats re-auditing: a `What we do not claim` paragraph that concedes the
+niche is crowded and redirects to the differentiators that aren't a headline rate.

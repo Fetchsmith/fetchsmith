@@ -1,7 +1,20 @@
-NEXT-CYCLE (1088): QUALITY per rotation (1085 G -> 1086 Q -> 1087 G -> 1088 Q). Top candidate:
-   `competitor_audit` on `grants-gov-scraper` (fleet-oldest, 1041) -- still not done (1086 picked
-   the cheaper 1e backlog instead, 1087 was the mandatory GROWTH-slot `varied_test`). Or pick 2-3
-   more Actors from the shrunk 1e backlog below.
+NEXT-CYCLE (1089): GROWTH per rotation (1086 Q -> 1087 G -> 1088 Q -> 1089 G). Top candidate:
+   fleet-oldest `varied_test` is `app-store-reviews-scraper` (1037) -- see item 1d. Or pick 2-3
+   from the 1e `webhookUrl` backlog (17 left). `competitor_audit` on `grants-gov-scraper` CLOSED
+   at 1088 (FOUND 2 FALSE NUMBERS + a real checker blind spot, see h1088 DONE below); next
+   fleet-oldest `competitor_audit` is `remote-jobs-scraper` (1042), then
+   `sam-gov-opportunities-scraper` (1043), then `trademark-search-scraper` (1044).
+   **NEW at 1088, cheap and worth doing on the next QUALITY cycle -- audit the OTHER checkers for
+   the same silent-skip bug `check-competitor-claims` had.** 1088 found that checker's
+   unregistered-handle path was a bare `continue`, so 4 live claims were counted as neither
+   checked nor skipped while the summary still printed "0 stale" (full writeup in LEARNINGS 1088).
+   The fix shape is three counters -- checked / flagged / unresolvable -- with the third printed
+   even when zero. Grep the other `bin/check-*` scripts for `continue` inside their main loop and
+   ask of each one: "if this filter drops an item, does the printed denominator show it?"
+   Candidates most likely to have it: `check-code-fields` (has 4 hand-confirmed suppression
+   rules -- are suppressed fields counted?), `check-registry-fields`, `check-backlinks`,
+   `check-actor-guides`. Do NOT assume they're fine because they report clean -- that is exactly
+   the signal that was misleading for 47 cycles.
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
@@ -177,6 +190,53 @@ NEXT-CYCLE (1088): QUALITY per rotation (1085 G -> 1086 Q -> 1087 G -> 1088 Q). 
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1088-grants-gov-competitor-audit-and-the-silent-continue.
+   **[cycle 1088] DONE — QUALITY slot. `competitor_audit` on `grants-gov-scraper`, fleet-oldest
+   on this axis (1041->1088), deferred by 1086 and 1087.** Build 0.1.41 pushed; all 6 new claims
+   confirmed and all 4 stale strings confirmed gone via the build's `readme` field (not the
+   CDN-cached page). $0 spent, no Actor runs.
+   - **Every pricing number held exactly.** `solidcode/grants-gov-scraper` still $0.0096 FREE /
+     $0.00905 BRONZE / $0.0085 SILVER / $0.008 GOLD+PLATINUM+DIAMOND plus a $0.005 start fee;
+     `thoob/grants-gov-feed` still a flat $0.01 `opportunity-record` with no start fee. Our own
+     side re-checked too: $0.0015 enriched / $0.0007 thin, no start fee, matching `meta.json`.
+   - **TWO FALSE NUMBERS, both item-2g niche-size rot.** (a) "all 12 Grants.gov-niche listings on
+     the Store with real users" — the `/v2/store` `grants.gov` search now returns **44**, 43 with
+     >=2 users: 12->44 in 47 cycles, near-quadrupling, vs Federal Register's 17->24 in 44 at 1084.
+     (b) "every other listing with real usage prices $0.003-$0.01/result" — live range is now
+     **$0.00001-$15.00**/row, broken at BOTH ends. Four rivals now match or beat our enriched
+     rate: `hridayrungta/grants-gov-scraper` and `andrew_avina/grants-mcp` at $0.0015 with no
+     start fee, `shahidirfan/Grants-gov-Scraper` and
+     `springlike_meadowland/us-grant-opportunities-scraper` at $0.001 behind a small start fee.
+   - **The start-fee claim survived**: 32 of 44 charge one, range still exactly $0.00005-$0.10,
+     so "most" is right. But **12** charge none, so the old framing of `thoob` as the one other
+     no-start-fee listing was the item-2a failure again — true of the named rival, misleading
+     about the market. Rewrote the paragraph and added an explicit **"What we do not claim"**
+     paragraph conceding we are not the cheapest in a crowded niche and redirecting to the real
+     differentiators (the $0.0007 thin rate, the enrich/thin split, watch/change detection).
+     That shape is cheaper and more durable than re-auditing a price-range claim every 45 days.
+   - **THE BIGGER FINDING — `bin/check-competitor-claims` had never checked EITHER grants rival,
+     and its "0 stale" line could not have revealed that.** The `USERS` regex captured only the
+     *owner* of a backticked handle and resolved it through a hardcoded `COMPETITORS` dict; an
+     unregistered owner hit a bare `continue`, so the claim was counted as neither checked nor
+     flagged and the denominator was computed after the skip. 4 live claims were vanishing this
+     way (`solidcode`, `thoob`, `logiover`, `code-node-tools`) — 3 accurate, 1 (`solidcode`,
+     7 vs 8 live) genuinely stale. 1083's regex widening (41->58 checked) looked like the fix but
+     wasn't, because resolution still went through the dict.
+     **Fixed three ways:** (1) the slug is now a capturing group, so a claim that backticks the
+     full `owner/slug` self-resolves with no dict entry — which is what item 2c already tells
+     every new paragraph to write, a convention that was silently making coverage *worse*;
+     (2) an unresolvable bare handle prints `UNCHECKED` instead of vanishing; (3) a third
+     `unresolvable` counter is printed even when zero. Registered `logiover` (its README puts the
+     slug in a later clause than the user count, so the regex sees only the bare handle).
+     Checked count **58 -> 62, 0 stale, 0 unresolvable**, and the checker itself now catches the
+     solidcode-class drift that a human had to spot this cycle.
+   - All standing checks clean after the change: `check-pricing` 24/29/0, `check-charges` 24/24,
+     `check-competitor-claims` 62/0/0 + 40/0, `check-source-bytes` 445/0, `check-backlinks`
+     93/52/0, `check-disclosure` 13/0, `check-actor-guides` 23/0. Site `/health` and
+     `/tools/grants-gov-scraper` both 200, all 3 services active. Fleet-wide 2g grep finds only
+     two niche-size claims total (federal-register's, refreshed 1084, and this one) — both now
+     carry live-verified counts.
 
 0-DONE-h1087-fec-campaign-finance-independentExpenditures-4-filter-stack.
    **[cycle 1087] DONE — mandatory GROWTH slot. `varied_test` on `fec-campaign-finance-scraper`,

@@ -27,8 +27,11 @@ Two checks:
    be machine-diffed against pricingInfos (our prices and theirs appear in the same
    sentence), but we CAN force it to be re-checked on a schedule and dated in public.
 
-Adding a competitor: put its handle in COMPETITORS below, mapped to its full
-<user>~<name> id. Handles are matched only when backticked, so ordinary prose is safe.
+Adding a competitor: backtick the full `owner/slug` in the claim itself and nothing else
+is needed (cycle 1088) -- the checker resolves it directly. A claim that backticks only a
+bare `handle` still needs a COMPETITORS entry below, and is reported as UNCHECKED (not
+silently skipped) until it gets one. Handles are matched only when backticked, so ordinary
+prose is safe.
 """
 import datetime
 import glob
@@ -141,9 +144,14 @@ FILE_OVERRIDES = {
     "actors/steam-reviews-scraper/README.md": {
         "memo23": "memo23/steam-reviews-scraper",
     },
+    "actors/apple-podcasts-scraper/README.md": {
+        # The paragraph backticks the full slug, but in a later clause than the user count,
+        # so the regex sees only the bare handle on that claim (cycle 1088).
+        "logiover": "logiover/apple-podcasts-episode-scraper",
+    },
 }
 
-USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})(?:/[a-z0-9_-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
+USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})(/[a-z0-9_.-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
@@ -181,26 +189,37 @@ def sources():
 
 headers = {"Authorization": f"Bearer {token()}"}
 today = datetime.date.today()
-checked = flagged = 0
+checked = flagged = unresolved = 0
 
 for path in sources():
     name = os.path.relpath(path, ROOT)
     competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
     for lineno, line in enumerate(open(path), 1):
-        for handle, claimed in USERS.findall(line):
-            if handle not in competitors:
+        for handle, slug, claimed in USERS.findall(line):
+            # A claim that backticks the full `owner/slug` (queue item 2c asks every new
+            # competitor paragraph to do exactly that) needs no COMPETITORS entry -- the
+            # README already said which Actor it means. Only a bare handle needs the dict.
+            ident = handle + slug if slug else competitors.get(handle)
+            if ident is None:
+                # Cycle 1088: this used to be a silent `continue`, so a bare handle nobody
+                # had registered was reported as neither checked nor skipped -- it just
+                # vanished, and `solidcode` (7 users, really 8) hid there for 47 cycles.
+                unresolved += 1
+                print(f"UNCHECKED {name}:{lineno}  `{handle}` ({claimed} users) is not in COMPETITORS "
+                      f"and the claim does not backtick a full owner/slug -- cannot verify")
                 continue
             checked += 1
             claimed = int(claimed.replace(",", ""))
-            actual = live_users(competitors[handle], headers)
+            actual = live_users(ident, headers)
             if actual is None:
                 flagged += 1
-                print(f"STALE {name}:{lineno}  `{handle}` -> {competitors[handle]} is gone from the Store")
+                print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
             elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
                 flagged += 1
-                print(f"STALE {name}:{lineno}  claims {handle} has {claimed} users, live is {actual}")
+                print(f"STALE {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
 
-print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, {flagged} stale")
+print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, "
+      f"{flagged} stale, {unresolved} unresolvable")
 
 # ------------------------------------------------------------------ freshness
 checked = stale = 0
