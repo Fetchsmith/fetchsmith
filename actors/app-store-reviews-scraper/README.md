@@ -102,18 +102,47 @@ Useful for a 1★-share trend line over releases, for weighting sentiment agains
 ## Pricing
 `result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
 
-**Where this sits in the market (verified live 2026-09-30).** The two busiest App Store review
-scrapers on the Store, `thewolves` (2,336 users) and `theagents` (817 users), both charge a flat
-**$0.0001/review with no start fee** — the exact same price and shape we use, so we're at parity
-with the traction leaders rather than undercutting or overcharging. Everyone else with a listed
-per-event price charges meaningfully more once every fee is counted: `johnvc` (472 users) is
-$0.00125–$0.00144/review tiered **plus** a $0.0175 one-time setup fee and a $0.00005 Actor-start
-fee; `easyapi` (544 users) is $0.00299/review plus a **$0.09** Actor-start fee (900x our whole
-per-review price, charged before a single review is scraped); `sourabhbgp` (134 users) is a flat
-$0.002/review with no start fee but a broader scope (apps/charts/in-app-purchases in addition to
-reviews) — a real feature gap, not costed yet, tracked in `queue.md`. None of the five list the
-per-star ratings breakdown, watch-mode rating-edit detection, or storefront-fallback/hole-skipping
-behaviour documented below.
+**Where this sits in the market. Input schema and pricing verified live 2026-10-01** against each
+Actor's latest build, not against its Store description. The two busiest App Store review scrapers
+on the Store, `thewolves/appstore-reviews-scraper` (2,349 users) and `theagents/appstore-reviews`
+(818 users), both charge a flat **$0.0001/review with no start fee** — the exact same price and
+shape we use, so we're at parity with the traction leaders rather than undercutting or
+overcharging. Everyone else charges meaningfully more once every fee is counted:
+`johnvc/apple-app-store-reviews-api` (479 users) is $0.00125–$0.00144/review tiered **plus** a
+$0.0175 one-time setup fee, a $0.00005 Actor-start fee and $0.00001 per dataset row;
+`easyapi/app-store-reviews-scraper` (544 users) is $0.00299/review plus a **$0.09** Actor-start fee
+(900x our whole per-review price, charged before a single review is scraped);
+`sourabhbgp/apple-app-store-scraper` (140 users) is a flat $0.002/review, 20x ours.
+
+Two honest qualifications, both read off live input schemas rather than listings:
+
+- **`sourabhbgp` does expose a per-star ratings histogram** — `includeRatingsHistogram`, on by
+  default, in its `app-details` mode. What it does not do is attach it to *reviews*: modes are
+  mutually exclusive, so a buyer who wants reviews and the distribution together pays for two runs
+  and joins them. Here the breakdown rides along with the reviews in the same run, per storefront,
+  for no extra charge, and is dropped if it fails to reconstruct Apple's published average.
+- **`sourabhbgp` also claims review depth past Apple's RSS 500-cap** (schema verified 2026-10-01; it allows
+  `maxReviewsPerApp` up to 100,000 and says it reads Apple's catalog endpoint, which we have not
+  independently verified). If that holds it is a genuine depth advantage over this Actor, which is
+  bounded by the RSS feed's hard 500/app/storefront ceiling and says so plainly throughout. Its own
+  schema notes the trade: that endpoint "ignores both" sort orders and returns relevance order, so
+  a date-ordered or `mostHelpful` pull is not what you get.
+
+On the rest, all five schemas are clean (verified 2026-10-01): **none has any watch/incremental input at all**
+(no `watchLabel`-equivalent, no state key, no rating-edit diffing — `theagents`' `until` and
+`sourabhbgp`'s `sinceDate` are one-shot date cutoffs, not baselines), and **none exposes
+storefront-fallback or empty-page recovery** (`sourabhbgp`'s `availability-matrix` probes whether an
+app *exists* in a storefront, 200 vs 404 — not whether that storefront has reviews, and it does not
+re-route a reviews run).
+
+One input the others have that this Actor does not (schema verified live 2026-10-01):
+`johnvc`'s `start_page` offset. Its `sort` enum
+also offers `mostfavorable`/`mostcritical`, which this Actor matches as `favorable`/`critical` — but
+note those are **not real Apple feed orders**: probed live 2026-09-26 against
+`itunes.apple.com/<cc>/rss/customerreviews/.../sortBy=<X>/`, only `mostRecent` and `mostHelpful`
+return entries at all, and `mostFavorable`/`mostCritical` come back as an empty feed. This Actor
+therefore scans under `mostRecent` and re-orders by star rating itself; a scraper that passes those
+values straight through to the RSS feed gets nothing back.
 
 ## Never silently returns an empty result
 Apple's public review feed is full of holes. For one app in one storefront, page 1 can be empty while pages 2 and 7 return a full 50 reviews each; an app can be completely empty under `mostRecent` and have hundreds under `mostHelpful`; and coverage differs per storefront. Most scrapers stop at the first empty page and hand you an empty dataset with a green "succeeded" run. This one:

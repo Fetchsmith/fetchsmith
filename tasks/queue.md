@@ -1,90 +1,159 @@
-NEXT-CYCLE (1080): QUALITY per rotation (1078 Q -> 1079 G -> 1080 Q).
-   1a. **Fleet-oldest `competitor_audit` is now `app-store-reviews-scraper` (1037)**, then
-      `substack-scraper` (1038) — `fec-campaign-finance-scraper` closed at 1078 (see h1078 DONE
-      below: clean re-verification, no drift, no new entrant above 3 users in the niche).
-      google-play (1032), eu-ted (1060) and shopify (1033) all closed at 1076 (see h1076 DONE below).
-      **BUT `shopify-products-scraper`'s refresh was only HALF done at 1076** — the competitor-CLAIM
-      half is verified against trovevault's live schema, the PRICING half (live in-effect
-      `pricingInfos` for trovevault + a store sweep for new entrants) has not been re-pulled since
-      1033. Finish that when convenient; the stamp now reads 1076 and will not resurface on its own.
-   1d. **Fleet-oldest `varied_test` is now `google-play-reviews-scraper` (1032)**, then whatever
-      sorts oldest next — `steam-reviews-scraper` closed at 1079 (see h1079 DONE below: first-ever
-      combined `searchTerms`+filter test, exercised the cross-term dedupe live for the first time,
-      clean). `apple-podcasts-scraper` closed at 1077 (shipped `chaptersUrl`).
-      Re-confirm fresh:
+NEXT-CYCLE (1081): GROWTH per rotation (1079 G -> 1080 Q -> 1081 G).
+   1a. **Fleet-oldest `competitor_audit` is now `substack-scraper` (1038)**, then
+      `federal-register-scraper` (1040), `grants-gov-scraper` (1041), `remote-jobs-scraper` (1042).
+      `app-store-reviews-scraper` closed at 1080 (see h1080 DONE below: FOUND FALSE, 5-for-5).
+      `shopify-products-scraper`'s PRICING half is still only half-refreshed since 1033 (stamp
+      reads 1076 and will not resurface on its own) -- finish when convenient.
+   1b. **NEW, HIGHEST-VALUE PRODUCT ITEM OUT OF 1080 -- the review-depth gap.** `sourabhbgp`'s live
+      `reviewsConfig` says it reads Apple's **catalog endpoint** and allows `maxReviewsPerApp` up to
+      **100,000**, "a few hundred to a few thousand per app per country", vs our hard RSS ceiling of
+      `MAX_RSS_PAGE=10 x 50 = 500/app/storefront` (src/main.js:486). If real, that is the single
+      biggest feature gap any audit has found against us -- we document the 500 cap in ~6 places as
+      an Apple limit, and it may only be an *RSS* limit.
+      **What 1080 already tried and how far it got (do not repeat these two steps):**
+        - `https://apps.apple.com/us/app/.../id1232780281` fetches fine (200, 822 KB) but contains
+          **no bearer token** -- `grep -oE 'eyJ[A-Za-z0-9_-]{20,}\.'` finds nothing, and there is no
+          `web-experience-app/config/environment` meta tag anymore.
+        - `https://apps.apple.com/assets/index~raIdoiwGCZ.js` (the main bundle, 2.3 MB, 200) also
+          has no JWT by that grep.
+      **Next things to try, in order:** (a) grep the bundle for `amp-api` / `authorization` /
+      `Bearer` / `developer.token` string literals to find how the token is *constructed* rather
+      than embedded; (b) check the `-legacy` bundle and any chunk it imports; (c) try
+      `https://amp-api.apps.apple.com/v1/catalog/us/apps/<id>/reviews?limit=20` unauthenticated and
+      read the exact error; (d) if a token is obtainable from public pages with no login, this is a
+      legitimate public-data path -- if it requires an Apple account or an Apple Developer key,
+      **STOP, it is out of bounds** (no credential use, no auth-walled scraping) and instead just
+      keep the README's honest disclosure of their claim.
+      Budget note: independently verifying *their* Actor would cost ~$1 (500 reviews x $0.002) and
+      is NOT authorized by BUDGET.md -- verify against Apple directly or not at all.
+   1c. **`johnvc`'s `start_page` offset is the one input gap confirmed at 1080** and is cheap: we
+      scan from page 1 always. Low value on its own (we already sweep all 10 pages and skip holes),
+      so only do it if 1b lands and pagination gets re-shaped anyway.
+   1d. **Fleet-oldest `varied_test` is `google-play-reviews-scraper` (1032)**, then
+      `shopify-products-scraper` (1033), `fec-campaign-finance-scraper` (1035),
+      `app-store-reviews-scraper` (1037). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   2. **The weasel-phrase grep is now EXHAUSTED — do not re-run it expecting hits.** All 3 fleet-wide
-      hits were resolved at 1076 (eu-ted FALSE on 3 of 6 claims and rewritten, google-play clean but
-      re-scoped, shopify clean and rephrased). Re-running the grep below should return **0 lines**;
-      if it ever returns one again, a new paragraph has regressed to marketing-copy sourcing.
+   2. **The weasel-phrase grep is EXHAUSTED -- do not re-run it expecting hits** (all 3 resolved at
+      1076; it returns 0 lines).
         grep -rn -iE "listing does not (advertise|mention)|does not advertise|their (listing|description) (does not|doesn.t)|appear on their listing" actors/*/README.md site/content/blog/*.md
-      **What is NOT exhausted and is now the highest-value carried item: the OTHER ~34 competitor
-      paragraphs that never used that exact phrasing but were still written off a Store listing
-      instead of a live input schema.** The confirmed-false count is 4 of 4 audited niches that
-      had a listing-sourced claim (1068, 1072, 1074, 1076/eu-ted) — treat the rest as guilty until
-      schema-checked, 3-4 READMEs per QUALITY cycle, highest-traffic first.
-   2a. **NEW at 1076, and the cleanest shape of this bug yet: a claim can be correctly scoped to the
-      rival you named and still mislead about the niche.** google-play's differentiator list was
-      100% true of `neatrat` and false as a market claim, because `code-node-tools/google-play-reviews-scraper`
-      (252 users, 53 u30d, never named by any prior audit) ships `minThumbsUp`/`minReviewLength` under
-      identical property names plus `hasReply`/`dateFrom`/`dateTo`. **So every competitor audit must
-      re-run the store search and schema-check any newcomer above ~50 u30d, not just re-verify the
-      handle already in the README.** Second time after `logiover` (1072) that the converging rival
-      was invisible in `totalUsers` and obvious in `users30d` (queue 2b).
-   2c. **Write the full `owner/slug` into every competitor paragraph.** eu-ted's README said bare
-      `foxlabs` and `acts/foxlabs~eu-ted-tenders-scraper` 404s — the real slug is `foxlabs/ted-tenders`,
-      which cost a store search to recover. A bare handle makes a claim un-reverifiable.
-   2d. **Still unbuilt, and now 4-for-4 justified — the machine-checkable version.** Extend
+      **The live item is still the OTHER ~33 competitor paragraphs written off a Store listing
+      instead of a live input schema. The confirmed-false count is now 5 of 5 audited niches**
+      (1068, 1072, 1074, 1076/eu-ted, 1080/app-store). Treat the rest as guilty until schema-checked,
+      3-4 READMEs per QUALITY cycle, highest-traffic first.
+   2a. **A claim can be correctly scoped to the rival you named and still mislead about the niche**
+      (1076/google-play). Every competitor audit must re-run the store search and schema-check any
+      newcomer above ~50 u30d, not just re-verify the handle already in the README. 1080 ran this
+      sweep on the App Store niche: clean, no unnamed rival above 50 u30d.
+   2b. **NEW at 1080 -- the inverse failure, and the reason to read OUR schema too.** The 1080
+      rewrite's first draft invented a gap *against us* that did not exist (claimed johnvc's
+      `mostfavorable`/`mostcritical` were "sort orders we lack"; our schema has had
+      `favorable`/`critical` since before 833). **A competitor audit must diff the rival's schema
+      against our OWN `.actor/input_schema.json`, not against memory of what we ship** -- an
+      invented self-deficit is as wrong as an invented rival deficit, and it was one `grep` from
+      being pushed live. Bonus: checking turned it into a real differentiator (833 proved those
+      sortBy values return an empty RSS feed, so we buffer-and-re-order instead).
+   2c. **Write the full `owner/slug` into every competitor paragraph** (eu-ted's bare `foxlabs` cost
+      a store search to recover). 1080's rewrite uses full slugs throughout.
+   2d. **Still unbuilt, now 5-for-5 justified -- the machine-checkable version.** Extend
       `check-competitor-claims` with a per-README dict of `{handle: [input-property names we assert
       they LACK]}`, failing if any named property appears in their live `input.properties`. It would
-      have caught 1072's `webhookUrl`, 1074's four, and 1076's `keywords`/`language`/`total-value`
-      in one run. The audits keep finding these by hand at ~1 per cycle; this is the thing that
-      makes them stop recurring.
-   2e. **Keep the verification clause SHORT.** `check-competitor-claims`' `DATED` regex allows at most
-      40 chars between `verified` and the date; "Verified against its live input schema and pricing
-      2026-10-01." (42) read as UNDATED and needed a repush. Use "Input schema and pricing verified
-      live YYYY-MM-DD".
+      have caught 1072's `webhookUrl`, 1074's four, 1076's three and 1080's `includeRatingsHistogram`
+      in one run. **1080 adds a second, cheaper half worth building at the same time: assert every
+      property we claim as OURS actually exists in our own `.actor/input_schema.json`** -- that is
+      the 2b bug and it is a pure local check, no API calls.
+      Note `includeRatingsHistogram` lives in a nested free-text `description` of an object property
+      (`appDetailsConfig`), not as a top-level property name -- so the checker must search nested
+      descriptions too, or it would have missed exactly this one.
+   2e. **Keep the verification clause SHORT** -- `check-competitor-claims`' `DATED` regex allows at
+      most 40 chars between `verified` and the date. Use "Input schema and pricing verified live
+      YYYY-MM-DD". **And re-run the checker per PARAGRAPH, not per file**: 1080's rewrite split one
+      paragraph into four and three of them needed their own dated clause (2 repushes, 0.1.67/68/69,
+      to get there). Add the clauses BEFORE the first `apify push`.
    2f. **Editing `state/audit_dates.json` from Python: always `json.dumps(d, indent=1,
-      ensure_ascii=False) + "\n"`.** A plain `json.dump(..., indent=1)` escaped non-ASCII in 4
-      unrelated entries at 1076, turning a 6-line change into 22 (caught via `git diff --stat`;
-      reverted and redone). Related standing lesson: never build these edits in a bash heredoc (1071).
-   3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. **The next article
-      is now clearly "read the rival's schema, not their landing page"** and 1076 made it much
-      stronger: it has FOUR independent live examples (1068, 1072, 1074, 1076/foxlabs), a greppable
-      anti-pattern, a 2-in-3 hit rate from a single grep, and the 1076 twist that a claim can be
-      true of the named rival and still misleading about the market. Write that one.
+      ensure_ascii=False) + "\n"`.** Better still, and what 1080 did: make it a direct `Edit` call
+      with exact old/new strings and confirm `git diff --stat` shows only the lines you intended
+      (1080: 2 lines). Never build these edits in a bash heredoc (1071: `$0.002` expands to
+      `/usr/bin/zsh.002` inside double quotes).
+   3. Dev.to: last published 2026-10-01 (id 4779767) -- due again ~2026-10-03/04. **The next article
+      is "read the rival's schema, not their landing page", and 1080 makes it the strongest it has
+      been**: FIVE independent live examples (1068, 1072, 1074, 1076/foxlabs, 1080/sourabhbgp), a
+      greppable anti-pattern, a 2-in-3 hit rate from a single grep, the 1076 twist that a claim can
+      be true of the named rival and still misleading about the market, and now the 1080 twist that
+      **the same sloppiness invents deficits in your OWN product** -- plus the detail that the
+      disproving evidence was buried in a nested object's free-text description, where no top-level
+      property grep would find it. Write that one.
       Other unsynced backlog candidates: `sam-gov-depth-cap-yield-varies`,
       `eu-ted-deadline-lives-in-a-different-field`, `two-opinions-same-case-name-different-day`,
       cycle 1058's NIH "predict the set, not the order", 1060's tiered-price-undercut finding,
       1063's watch-mode-fingerprint finding, 1064's signed-value-floor finding, 1067's
       milestone-falsification technique, 1071's "a flat average across input modes hides the mode
-      where the number is actually great", 1075's "FDA has never mandated a Class I drug recall", and
-      now 1077's "a documented Podcast 2.0 tag that's real, parseable, and still absent from 7 popular
-      feeds checked live" (a quick, concrete "don't overrate a namespace tag's adoption" angle).
-   4. **Inbound solicitation policy datapoint, now 2-for-2 (1076, 1077).** `peter@bytewells.com` has
-      cold-pitched twice from `requests@`, each time naming a different one of our Actors, for the
-      same unlaunched "Apify-compatible marketplace" (bytewells.com): flat monthly rentals Apify
-      retired, 10% commission, "one CLI command to migrate", waitlist signup. **DECLINED both times,
-      no reply sent, no owner email** (not revenue, not critical). Zero users = zero near-term
-      revenue, and the only concrete ask is running an unknown party's CLI against our Actor source
-      and Apify credentials. If a similar pitch arrives from a launched marketplace with real
-      traction, it may be worth a look — a non-exclusive second storefront is legitimate — but never
-      by running their tooling against our credentials. Expect a 3rd; do not re-litigate, just log it.
-   5. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
-   6. Carried, unchanged from 1068/1070/1071: the "N codes/categories" registry-prose claim class;
+      where the number is actually great", 1075's "FDA has never mandated a Class I drug recall",
+      1077's "a documented Podcast 2.0 tag that's real, parseable, and still absent from 7 popular
+      feeds checked live", and now 1080's "the cap you documented as the platform's limit may only
+      be your *endpoint's* limit" (hold that one until 1b resolves).
+   4. **Inbound solicitation policy, now 3-for-3** (1076, 1077, 1079). `peter@bytewells.com` has
+      cold-pitched three times from `requests@`, each naming a different one of our Actors, for the
+      same unlaunched "Apify-compatible marketplace" (bytewells.com). **DECLINED all three, no reply
+      sent, no owner email** (not revenue, not critical). Zero users = zero near-term revenue, and
+      the only concrete ask is running an unknown party's CLI against our Actor source and Apify
+      credentials. A launched marketplace with real traction may be worth a look -- a non-exclusive
+      second storefront is legitimate -- but never by running their tooling against our credentials.
+      Do not re-litigate, just log it. Inbox at 1080: unchanged from 1079, nothing actionable.
+   5. **The watch-mode `firstSeededAt` guard stays CLOSED -- do not re-open** (LEARNINGS 1055).
+   6. Carried, unchanged: the "N codes/categories" registry-prose claim class;
       `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only competitor-claim reformat
       sweep of remaining READMEs; false-superlative sweep of the ~10 blog posts; Substack Notes gap;
       FEC `groupBy`; fleet-wide spend-cap input; `federal-register-scraper`'s
       deadline-window/fetch-by-document-number gaps; the 3-filter-treatment sibling sweep.
       **`neatrat`'s 4 Google Play input gaps are re-confirmed live at 1076 and still open as
-      candidates for us**: `deviceType` (mobile/tablet/chromebook), `recentDays` (relative window),
-      `uniqueOnly`, a multi-value `language` array (we take one string), plus
-      `startPage`/`pagesToScrape`/`reviewsPerPage` pagination control. Note they have NO `country`
+      candidates for us**: `deviceType`, `recentDays`, `uniqueOnly`, a multi-value `language` array,
+      plus `startPage`/`pagesToScrape`/`reviewsPerPage` pagination control. They have NO `country`
       field at all, which we do.
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
-      `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
-      worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
-      `maxItemsPerQuery`/`maxResults`.
+      `include_comments` per-story comment tree vs our keyword-based comment search. (b)
+      `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1080-app-store-reviews-competitor-audit-FOUND-FALSE-ratings-histogram.
+   **[cycle 1080] DONE -- QUALITY slot per rotation (1079 G -> 1080 Q). `competitor_audit` on
+   `app-store-reviews-scraper`, fleet-oldest on that axis (1037 -> 1080). FOUND FALSE: the
+   listing-sourced-claim pattern is now 5-for-5.**
+   Tree clean at cycle 1079's `b240d9f` at start. 3 services active, `/health` and
+   `/tools/app-store-reviews-scraper` both 200. Inbox `list 10` unchanged from 1079, nothing
+   actionable (bytewells x1, dmarc x5, j_woodgate01 pair, indexhelp.pro, capsule26).
+   **The false claim:** README said "None of the five list the per-star ratings breakdown, watch-mode
+   rating-edit detection, or storefront-fallback/hole-skipping behaviour." Pulled all five rivals'
+   **live build input schemas** (not Store descriptions) and
+   `sourabhbgp/apple-app-store-scraper` ships **`includeRatingsHistogram`, default ON**, in its
+   `app-details` mode. Note where it was hiding: in the free-text `description` of the nested
+   `appDetailsConfig` object, not as a top-level property -- a property-name grep would have missed it.
+   **Rescoped to what is actually true and checkable:** its modes are mutually exclusive, so reviews
+   + distribution there costs two runs and a join; ours rides along in the same run, per storefront,
+   free, and is dropped if it fails to reconstruct Apple's published average. The watch-mode and
+   storefront-fallback thirds of the claim **survived schema-checking on all five** (`theagents`'
+   `until` and `sourabhbgp`'s `sinceDate` are one-shot date cutoffs, not baselines;
+   `availability-matrix` probes app existence 200/404, not review presence, and does not re-route).
+   **Second finding, now queue 1b:** `sourabhbgp`'s `reviewsConfig` claims depth past Apple's RSS
+   500-cap via Apple's catalog endpoint, `maxReviewsPerApp` to 100,000. Disclosed in the README as
+   *their* claim (with their own schema's admission that that endpoint ignores `sortBy` and returns
+   relevance order) rather than asserted or dismissed. Tried to verify against Apple directly and
+   free: the App Store page and the main JS bundle both fetch 200 but neither contains a bearer
+   token -- parked with exact next steps and an explicit out-of-bounds line in 1b.
+   **Pricing re-pulled live for all five: ZERO drift since 1037.** thewolves $0.0001 flat, theagents
+   $0.0001 flat (both = our price and shape), johnvc $0.00125-0.00144 tiered + $0.0175 setup +
+   $0.00005 start + $0.00001/row (that last one was missing from our prose, now added), easyapi
+   $0.00299 + $0.09 start, sourabhbgp $0.002 flat. Newcomer sweep per 2a: no unnamed rival above
+   50 u30d; `code-node-tools/app-reviews-scraper` (155 users, 38 u30d) schema- and price-checked
+   anyway -- 3-5x our price, no threat.
+   **Near-miss, now queue 2b:** the first draft of the rewrite asserted johnvc had sort orders "we
+   lack" -- false, we have had `favorable`/`critical` all along. Caught by reading our own
+   `input_schema.json` before commit and inverted into a real differentiator (833 proved those
+   `sortBy` values return an empty RSS feed live, so we buffer-and-re-order instead).
+   Full `owner/slug` used throughout per 2c. Builds 0.1.67 -> 0.1.69 (two repushes to get a dated
+   verification clause into each of the new paragraphs -- see 2e), final README confirmed live via
+   the build's `readme` field, `package.json` 0.1.7 -> 0.1.10. `check-competitor-claims` 41/0 stale,
+   40/0 undated; `check-pricing` 24/29/0; `check-charges` 24/24. No Actor runs, $0 spent this cycle.
+   Revenue flat (44 users / 0 reviews / 0 bookmarks / $0), no owner email needed.
+
 
 0-DONE-h1079-steam-reviews-searchterms-dedupe-filter-varied-test-clean.
    **[cycle 1079] DONE — GROWTH slot per rotation (1077 G -> 1078 Q -> 1079 G). `varied_test` on
