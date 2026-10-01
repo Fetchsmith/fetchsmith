@@ -1,34 +1,90 @@
-NEXT-CYCLE (1072): QUALITY per rotation (1070 Q -> 1071 G -> 1072 Q).
-   1. **Fleet-oldest `competitor_audit` is `apple-podcasts-scraper` (1030)**, then
-      `steam-reviews-scraper` (1031), `google-play-reviews-scraper` (1032) — due this cycle (QUALITY
-      slot). Re-confirm fresh with the same sort as below but on `competitor_audit`.
-   1b. **Fleet-oldest `varied_test` is now `clinicaltrials-scraper` (1028)**, then
-      `fda-recall-scraper` (1029), `apple-podcasts-scraper` (1030) — good GROWTH-slot targets for
-      1073. `google-news-scraper` closed at 1071 (see h1071 DONE note below — relatedArticles fill
-      rate verified 97-100% on topic feeds vs ~1% on keyword search, README split into the two true
-      numbers, no code change, build 0.1.54).
-   2. **HIGH VALUE, carried from 1069/1070/1071 — fleet-wide re-audit of competitor FEATURE claims
-      against rival input schemas.** Still unstarted as a batch; see the longer note preserved below
-      from 1070. Do it in batches of 3-4 READMEs per QUALITY cycle, highest-traffic Actors first.
+NEXT-CYCLE (1073): GROWTH per rotation (1071 G -> 1072 Q -> 1073 G).
+   1. **Fleet-oldest `varied_test` is `clinicaltrials-scraper` (1028)**, then `fda-recall-scraper`
+      (1029), `apple-podcasts-scraper` (1030) — GROWTH-slot target this cycle. Re-confirm fresh:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   1b. **Fleet-oldest `competitor_audit` is now `steam-reviews-scraper` (1031)**, then
+      `google-play-reviews-scraper` (1032), `shopify-products-scraper` (1033) — next QUALITY slot
+      (1074). `apple-podcasts-scraper` closed at 1072 (see h1072 DONE note below: 2 of the 5 feature
+      gaps cycle 1030 claimed against `sourabhbgp` were FALSE against their live schema, and the
+      niche's fastest-growing rival `logiover` had never been named; build 0.1.55).
+   1c. **NEW PRODUCT GAP, cheap, from the 1072 audit — add Podcast 2.0 `chapters` to
+      `apple-podcasts-scraper`'s RSS path.** `logiover` parses `podcast:chapters` and we do not; it
+      is the single field where that rival beats us, and we already fetch and parse the same feed for
+      `transcriptUrl`/`showNotesHtml`/`audioFileSize` under `useRssForFullArchive`, so this is one
+      more namespaced tag read in code we already run — no new request, no new cost. Ship it, then
+      drop the "beats it on one" concession from the README's `logiover` paragraph. Good small build
+      task to pair with a GROWTH cycle.
+   2. **HIGH VALUE, carried from 1069/1070/1071/1072 — fleet-wide re-audit of competitor FEATURE
+      claims against rival input schemas.** 1072 was the second confirmed false-claim hit in this
+      class (after 1068), so the base rate is now ~1 bad paragraph per audited niche — do not treat
+      the remaining ~34 paragraphs as probably-fine. Longer note preserved below from 1070; batches
+      of 3-4 READMEs per QUALITY cycle, highest-traffic first.
+      **Also sweep for the specific weasel phrasing 1072 found**, which is mechanically greppable
+      and is the form these bad claims hide in:
+        grep -rn -iE "listing does not (advertise|mention)|does not advertise|their (listing|description) (does not|doesn.t)" actors/*/README.md site/content/blog/*.md
+      Each hit is a claim that was verified against marketing copy, not a schema. Re-verify or delete.
+      **And prefer the machine-checkable fix** (still unbuilt, best long-term answer): extend
+      `check-competitor-claims` with a per-README dict of `{handle: [input-property names we assert
+      they LACK]}`, failing if any named property appears in their live `input.properties`. 1072's
+      `webhookUrl` miss would have been caught by that in one run.
+   2b. **When auditing any niche, sort rivals by `users30d`, not `totalUsers`** (LEARNINGS 1072) —
+      `logiover` was mid-table on totals and 3x everyone on 30-day growth.
    3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog candidates
       unsynced: `sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-field`,
       `two-opinions-same-case-name-different-day`, cycle 1058's NIH "predict the set, not the
       order", cycle 1060's tiered-price-undercut finding, cycle 1063's watch-mode-fingerprint
       finding, cycle 1064's signed-value-floor finding, cycle 1067's milestone-falsification
-      technique, cycle 1068's "audit the schema, not the description" finding, and now **cycle
-      1071's "a flat average across input modes hides the mode where the number is actually great"
-      finding** (undersold-feature angle — pairs with 1068's audit-the-schema post as a "verify your
-      own claims, not just rivals'" theme).
+      technique, cycle 1068's "audit the schema, not the description" finding, cycle 1071's "a flat
+      average across input modes hides the mode where the number is actually great" finding, and now
+      **cycle 1072's "the feature is missing from their README and present in their schema — and
+      'their listing does not advertise X' is a weasel claim"**. 1068 + 1072 are now clearly ONE
+      strong post ("read the rival's schema, not their landing page"), with two independent live
+      examples and a greppable anti-pattern — that is the next article to write.
    5. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
-   6. Carried, unchanged from 1068/1070: the "N codes/categories" registry-prose claim class; `trademark-search-scraper`'s
-      `fTMType` mark-type filter; slug-only competitor-claim reformat sweep of remaining READMEs;
-      false-superlative sweep of the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s
-      4 Google Play input gaps; fleet-wide spend-cap input; `federal-register-scraper`'s
-      deadline-window/fetch-by-document-number gaps; the 3-filter-treatment sibling sweep.
+   6. Carried, unchanged from 1068/1070/1071: the "N codes/categories" registry-prose claim class;
+      `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only competitor-claim reformat
+      sweep of remaining READMEs; false-superlative sweep of the ~10 blog posts; Substack Notes gap;
+      FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; fleet-wide spend-cap input;
+      `federal-register-scraper`'s deadline-window/fetch-by-document-number gaps; the
+      3-filter-treatment sibling sweep.
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1072-apple-podcasts-scraper-competitor-audit-two-false-claims-and-logiover-found.
+   **[cycle 1072] DONE — QUALITY slot per rotation (1070 Q -> 1071 G -> 1072 Q). `competitor_audit`
+   on `apple-podcasts-scraper`, fleet-oldest on that axis (1030). Found and fixed 2 FALSE competitor
+   feature claims live on our Store page since cycle 1030, plus the niche's fastest-growing rival
+   never named. 1 build pushed (0.1.55, README only), verified live. No code change.**
+   Tree clean at `df8d3fe` at start. 3 services active, `/health` 200. Inbox `list 10` unchanged
+   from cycles 1054-1071 (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`,
+   capsule26 `873db8ee`) — nothing new, no owner email.
+   **Pulled live `input.properties` off the latest build for 3 rivals** (`sourabhbgp`, `logiover`,
+   `coder_zoro`) rather than reading their Store descriptions — the method from 1068.
+   **Finding 1, 2 of 5 claimed gaps against `sourabhbgp` are false.** Their schema carries
+   `webhookUrl` ("POST each emitted record as it is collected") and `rssFeedUrl`/`rssFeedUrls` + an
+   `episodes` mode that reads the feed directly, with their README discussing full feed archives
+   outright. The word "webhook" appears nowhere in their README prose, which is how 1030 missed it.
+   Surviving and schema-confirmed: no duration filter, no explicit filter, no new-episode-only watch
+   mode (`trackDeltas` is chart-RANK snapshots only). Our hedge "its listing does not advertise ..."
+   was literally true and read as "they lack these" — rewrote it to say what they actually lack.
+   **Finding 2, `logiover/apple-podcasts-episode-scraper` (53 users, 15 u30d, modified 2026-09-23)**
+   — highest 30-day growth in the niche by 3x, never named by any prior audit, and ships
+   `useRssForFullArchive`, `minDurationSeconds`, `explicit` and a release-date window, some under
+   property names identical to ours. Episodes-only (no reviews/charts/publisher), no watch mode, no
+   webhook, and start fee + $0.0025/result FREE vs our flat $0.001 no-start-fee (2.5x) — but it
+   parses Podcast 2.0 `chapters` and we do not (queued as 1c above). Added as a second dated
+   paragraph naming the price and breadth advantages honestly.
+   Build 0.1.55 pushed, verified live via the build's `readme` field (5 string assertions, incl. the
+   old "Its listing does not advertise" phrase now absent). `check-competitor-claims` flagged one
+   unrelated stale count on the way through (`scrapers_lat` 8 -> 9 in `trademark-search-scraper`) —
+   fixed. Final: `check-competitor-claims` 47/36/0, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-readme-samples` 35/79/0, `check-backlinks` 93/0, `check-meta-fields` 11/0,
+   `check-disclosure` 13/0. `audit_dates.json` `apple-podcasts-scraper.competitor_audit`
+   `1030 -> 1072`, prior note preserved inline, 2-line `Edit` (no shell, per 1071's lesson).
+   $0 self-charge — no platform runs needed, still ~$1.1 of $300. Revenue flat (44 users / 0 reviews
+   / 0 bookmarks / $0), no owner email needed.
 
 0-DONE-h1071-google-news-scraper-relatedArticles-varied-test-readme-split.
    **[cycle 1071] DONE — GROWTH slot per rotation (1069 G -> 1070 Q -> 1071 G). `varied_test` on

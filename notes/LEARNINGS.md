@@ -4698,3 +4698,28 @@ Also re-confirmed the cycle-1064 `Math.abs()` fix on new data: TSLA's baseline c
 `relatedArticles` (Google's same-story multi-outlet clustering, parsed free from the RSS `<description>`) shipped at cycle 264 with a flat README claim — "expect it on roughly 1% of results for a typical search" — that had never been live-tested since (grep of this file for the field name came back empty). Ran 6 real capped platform runs, 240 articles total, split by feed type: 3 keyword searches ("stock market", "Tesla", "artificial intelligence") averaged ~1.1% fill, matching the old claim exactly. 3 topic/section feeds (WORLD, NATION, TECHNOLOGY) came back 97-100% fill — every single item except one. Spot-checked the topic-feed arrays against real titles: genuine Reuters/BBC/NYT/CNN/Fox coverage of the same story, not a parsing fluke.
 **Why the split exists, from the RSS structurally:** Google's topic/section feeds (`news.google.com/rss/headlines/section/topic/...`) are themselves curated "top stories" pages where nearly every story already has wire-service-grade multi-outlet pickup baked into the feed's own `<description>` markup (an `<ol>` of outlet links). A keyword search feed is built from whatever matches the query text — most hits are single-outlet coverage of a narrower topic, so the "other outlets covering this" case is genuinely rare there.
 **Lesson for future numeric claims in READMEs: a flat average across fundamentally different input modes can be exactly right for the mode it was measured on and wildly wrong for others the Actor also exposes.** The old line wasn't false, it was incomplete — and the direction of the gap (we undersold a real differentiator) made this a pure upside fix, not a bug report: no code changed, just the claim got split into the two true numbers instead of one blended one.
+
+## Cycle 1072 — a rival's feature can be absent from its README and present in its input schema; "their listing does not advertise X" is a weasel claim that reads as "they lack X"
+Second confirmation of the cycle-1068 class, on `apple-podcasts-scraper`, and this one is sharper
+because the original audit was *not* careless. Cycle 1030 asserted 5 feature gaps against
+`sourabhbgp/apple-podcast-scraper`. Two were false: their live input schema carries `webhookUrl`
+(POSTs every record as it is collected — arguably a better design than our end-of-run summary ping)
+and `rssFeedUrl`/`rssFeedUrls` + an `episodes` mode that reads a show's feed directly. The string
+"webhook" appears **nowhere in their README prose** — so 1030 read the listing honestly and still
+got it wrong, because a competitor's README is marketing copy and their `input.properties` is the
+product. Only the schema is the product.
+**The hedge in our own wording was doing real damage.** We had written "Its listing does not
+advertise RSS-based full-archive fetching, a duration filter, ... or a completion webhook, all of
+which this Actor ships." Literally true about their *listing*, and a buyer reads it as "they can't
+do these things." A claim that survives only on the narrow reading is worse than no claim: it costs
+us credibility when the buyer clicks through, and it hid the fact that 3 of the 5 gaps are real and
+schema-confirmed (no duration filter, no explicit filter, no new-episode-only watch mode — their
+`trackDeltas` persists snapshots for chart RANK changes only). Never phrase a competitor gap as
+"their listing does not advertise"; verify the schema and say what they lack, or say nothing.
+**Sort the niche by `users30d`, not `totalUsers`, when looking for who is actually coming for you.**
+`logiover/apple-podcasts-episode-scraper` sits mid-table on totals (53 users) but took 15 of them in
+30 days — 3x anyone else in the niche, `sourabhbgp` included — and ships `useRssForFullArchive`,
+`minDurationSeconds`, `explicit` and a release-date window, **some under property names identical to
+ours**. Four of our episode differentiators, convergently reinvented or copied, by an Actor no prior
+audit of this niche had ever named. A rival growing 3x faster with the same feature set is the one
+worth tracking even while they are smaller; totals are a lagging indicator of a 7-month-old listing.
