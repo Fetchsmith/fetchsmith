@@ -308,6 +308,11 @@ def main(argv):
                     emitted.append(k)
         suppress_fields = FIELD_SUPPRESS.get(slug, set()) if not show_all else set()
         code_only = [k for k in emitted if k not in dset and k not in suppress_fields]
+        # Cycle 1090: FIELD_SUPPRESS used to remove fields from code_only with nothing in the
+        # output to show it happened -- a clean "ok" line looked identical whether 0 or 5 fields
+        # were suppressed. Same silent-skip shape as the check-competitor-claims bug fixed at
+        # cycle 1088 (LEARNINGS 1088), just on a hand-maintained dict instead of a lookup miss.
+        field_suppressed = sorted(suppress_fields & set(emitted))
         schema_only = [k for k in declared if k not in emitted]
         unadvertised = [k for k in emitted if k in dset and k not in advertised]
 
@@ -325,6 +330,8 @@ def main(argv):
                 note = ' [soft: not in any literal: %s]' % ', '.join(schema_only)
             if suppressed:
                 note += ' [non-row literals skipped: %s]' % ', '.join(sorted(set(suppressed)))
+            if field_suppressed:
+                note += ' [FIELD_SUPPRESS applied: %s]' % ', '.join(field_suppressed)
             print('%-32s ok (%d emitted / %d declared)%s' % (slug, len(emitted), len(declared), note))
     print('\n%d Actor(s) with code-only field drift.' % drift)
     return 1 if drift else 0

@@ -1,23 +1,20 @@
-NEXT-CYCLE (1090): QUALITY per rotation (1087 G -> 1088 Q -> 1089 G -> 1090 Q). Top candidate:
-   the item below (checker silent-skip audit), OR `competitor_audit` on `remote-jobs-scraper`
-   (fleet-oldest, 1042), then `sam-gov-opportunities-scraper` (1043), then
-   `trademark-search-scraper` (1044). `varied_test` on `app-store-reviews-scraper` CLOSED at 1089
-   (FOUND AND FIXED A REAL BILLABLE DOUBLE-CHARGE BUG, see h1089 DONE below); next fleet-oldest
-   `varied_test` is `federal-register-scraper` (1039), then `grants-gov-scraper` (1041), then
-   `sam-gov-opportunities-scraper` (1043). Re-confirm fresh:
+NEXT-CYCLE (1091): GROWTH per rotation (1088 Q -> 1089 G -> 1090 Q -> 1091 G). Top candidate:
+   `competitor_audit` on `remote-jobs-scraper` (fleet-oldest, 1042), then
+   `sam-gov-opportunities-scraper` (1043), then `trademark-search-scraper` (1044).
+   `varied_test` fleet-oldest is `federal-register-scraper` (1039), then `grants-gov-scraper`
+   (1041), then `sam-gov-opportunities-scraper` (1043). Re-confirm fresh:
      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
    Or pick 2-3 from the 1e `webhookUrl` backlog (17 left).
-   **NEW at 1088, cheap and worth doing on the next QUALITY cycle -- audit the OTHER checkers for
-   the same silent-skip bug `check-competitor-claims` had.** 1088 found that checker's
-   unregistered-handle path was a bare `continue`, so 4 live claims were counted as neither
-   checked nor skipped while the summary still printed "0 stale" (full writeup in LEARNINGS 1088).
-   The fix shape is three counters -- checked / flagged / unresolvable -- with the third printed
-   even when zero. Grep the other `bin/check-*` scripts for `continue` inside their main loop and
-   ask of each one: "if this filter drops an item, does the printed denominator show it?"
-   Candidates most likely to have it: `check-code-fields` (has 4 hand-confirmed suppression
-   rules -- are suppressed fields counted?), `check-registry-fields`, `check-backlinks`,
-   `check-actor-guides`. Do NOT assume they're fine because they report clean -- that is exactly
-   the signal that was misleading for 47 cycles.
+   **Checker silent-skip audit (new at 1088) mostly CLOSED at 1090 -- see h1090 DONE below.** The
+   4 named candidates are done: `check-code-fields`/`check-registry-fields` were already clean,
+   `check-actor-guides` had no bug (its one apparent miss is correct retired-Actor exclusion),
+   `check-backlinks` and `check-code-fields`'s `FIELD_SUPPRESS` both had the same silent-drop
+   shape and are now fixed (both print an explicit count/list even at zero). **Not done:** the
+   other ~21 `bin/check-*` scripts were never swept -- 1090 only covered the 4 queue named as
+   "most likely". If picked up again, same method: grep for `continue` inside the main loop, ask
+   "if this drops an item, does the printed denominator/list show it?" Lower priority now that the
+   two live instances found are fixed and the obvious candidates are cleared -- optional, not
+   urgent.
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
@@ -225,6 +222,36 @@ NEXT-CYCLE (1090): QUALITY per rotation (1087 G -> 1088 Q -> 1089 G -> 1090 Q). 
    - **Reusable technique:** to force a genuinely-empty-storefront/segment edge path cheaply,
      probe small/obscure country codes via a free direct upstream call BEFORE spending anything
      on the Actor itself — don't guess which country is empty.
+
+0-DONE-h1090-checker-silent-skip-audit.
+   **[cycle 1090] DONE — QUALITY slot. Audited the 4 checkers queue flagged as most-likely for
+   the cycle-1088 silent-skip bug shape. Found and fixed 2 real latent instances, no live drift.**
+   - **`check-registry-fields` and `check-code-fields`'s per-Actor loop: clean.** Every iterated
+     Actor always prints something (an "ok" line or a SKIP/problems line) — no item silently
+     vanishes from a denominator.
+   - **`check-actor-guides`: no bug.** Its one apparent miss (`bold-org-nextjs-rsc-scholarship-
+     data.md` frontmatter names `scholarship-scraper`, status `retired`, excluded from
+     `live_slugs`) is correct by design — a retired Actor's guide coverage shouldn't be checked.
+   - **`check-backlinks`: FOUND the same shape.** A frontmatter `tool:` or body `/tools/<slug>`
+     link naming a slug with no matching `actors/` dir (typo/rename/retirement) silently vanished
+     from `named`, zero counter, zero print. No live instance today (0 of 52 posts), but same
+     latent risk as the fixed bug. Fixed: `unresolved` counter + `UNRESOLVED` print on both paths,
+     printed even at 0. Verified the branch logic on synthetic `/tmp` fixtures before trusting it;
+     live output unchanged except the new suffix (93 pairs, 0 missing, 0 unresolved).
+   - **`check-code-fields`: FOUND a second instance.** `FIELD_SUPPRESS` (5 hand-maintained,
+     individually-commented entries) removed fields from `CODE-ONLY` with nothing in the output
+     showing it — a clean "ok" line looked the same whether 0 or 5 fields were suppressed. Fixed:
+     `field_suppressed` note on the "ok" line. Live run confirms all 5 entries print exactly as
+     documented (google-news-scraper/articleBodyTickers, apple-podcasts-scraper/4 fields,
+     grants-gov-scraper/eligHash, sam-gov-opportunities-scraper/descHash,
+     sec-insider-trades-scraper/2 fields) — dict is currently accurate, 0 drift either way, exit
+     code unchanged.
+   - No Actor code/README/build touched. All standing checks re-run clean: `check-pricing`
+     24/29/0, `check-charges` 24/24, `check-code-fields` 0 drift, `check-registry-fields` 0 drift,
+     `check-backlinks` 93/0/0, `check-actor-guides` 23/0 flagged, `check-competitor-claims`
+     62/0 + 40/0. $0 spent, no owner email (revenue flat: 44 users, $0).
+   - **Not done:** the other ~21 `bin/check-*` scripts were never swept, only the 4 queue named.
+     Left as optional/low-priority backlog, not urgent — see NEXT-CYCLE.
 
 0-DONE-h1088-grants-gov-competitor-audit-and-the-silent-continue.
    **[cycle 1088] DONE — QUALITY slot. `competitor_audit` on `grants-gov-scraper`, fleet-oldest

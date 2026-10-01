@@ -51,6 +51,7 @@ def readme_text(slug):
 
 missing = []
 checked_links = 0
+unresolved = 0
 
 posts = sorted(f for f in os.listdir(BLOG) if f.endswith(".md"))
 for f in posts:
@@ -59,9 +60,23 @@ for f in posts:
     m = TOOL_RE.search(text)
 
     if m:
-        named = {m.group(1)} if m.group(1) in actor_slugs else set()
+        if m.group(1) in actor_slugs:
+            named = {m.group(1)}
+        else:
+            # Cycle 1090: this used to be a silent empty-set fallback, so a frontmatter
+            # `tool:` typo or a slug renamed/removed after the post was written would
+            # vanish from `named` with no counter and no print -- the exact shape of the
+            # check-competitor-claims bug fixed at cycle 1088 (LEARNINGS 1088).
+            named = set()
+            unresolved += 1
+            print("UNRESOLVED  %s frontmatter names tool `%s`, no matching actors/ dir" %
+                  (f, m.group(1)))
     else:
-        named = {s for s in TOOLS_LINK_RE.findall(text) if s in actor_slugs}
+        link_slugs = set(TOOLS_LINK_RE.findall(text))
+        named = link_slugs & actor_slugs
+        for bad in sorted(link_slugs - actor_slugs):
+            unresolved += 1
+            print("UNRESOLVED  %s links /tools/%s, no matching actors/ dir" % (f, bad))
 
     for actor_slug in sorted(named):
         checked_links += 1
@@ -69,6 +84,6 @@ for f in posts:
             missing.append((actor_slug, slug))
             print("MISSING  actors/%s/README.md does not link /blog/%s" % (actor_slug, slug))
 
-print("check-backlinks: %d post(guide)-Actor pair(s) checked across %d posts, %d missing" %
-      (checked_links, len(posts), len(missing)))
+print("check-backlinks: %d post(guide)-Actor pair(s) checked across %d posts, %d missing, %d unresolved" %
+      (checked_links, len(posts), len(missing), unresolved))
 sys.exit(1 if missing else 0)

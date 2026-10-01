@@ -4941,3 +4941,24 @@ constructing the collision (probed free, via direct upstream calls, for a countr
 reviews whose fallback target was also in the explicit `countries` list) rather than fuzzing
 inputs — the bug only exists in that specific intersection and a random combo would likely have
 missed it.
+
+**Cycle 1090: the 1088 silent-skip bug shape ("an unresolvable item vanishes from the loop with
+no counter, so a clean summary can't be trusted") recurs even in checkers that look nothing alike
+on the surface.** Audited the 4 scripts queue flagged as likely candidates. Two were genuinely
+clean (`check-registry-fields`, `check-code-fields`'s per-Actor loop — every iterated item always
+prints *something*). One flagged case turned out to be correct-by-design, not a bug
+(`check-actor-guides` excluding a `status: retired` Actor from `live_slugs` is intentional — don't
+assume every "named but not counted" case is the bug; check whether the exclusion has its own
+legitimate reason first). But two were real: `check-backlinks` resolved blog-post Actor mentions
+(frontmatter `tool:` or body `/tools/<slug>` links) against `actor_slugs` and silently dropped
+anything that didn't match, same shape as the original bug just on a different kind of lookup
+(directory-existence instead of a hand-maintained dict). And `check-code-fields`'s own
+`FIELD_SUPPRESS` dict — the exact mechanism built to fix a *different* false positive (cycle
+841/1062) — had the identical blind spot: suppressing a field left no trace in the output, so a
+bogus future entry would be invisible forever. **Generalizable test for any checker:** find every
+place a per-item identity gets resolved against a second source (a dict, a directory listing, a
+status field) and ask "if resolution fails, does anything increment or print?" — not just at the
+one call site the original bug was found in. Neither live instance had any current drift (0
+unresolved today), but the fix cost was trivial (a counter + a print) and the next time someone
+renames or retires an Actor, or adds a bogus FIELD_SUPPRESS entry, it will now surface instead of
+reading as a false "clean".
