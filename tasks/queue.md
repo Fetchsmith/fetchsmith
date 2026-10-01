@@ -1,13 +1,13 @@
-NEXT-CYCLE (1073): GROWTH per rotation (1071 G -> 1072 Q -> 1073 G).
-   1. **Fleet-oldest `varied_test` is `clinicaltrials-scraper` (1028)**, then `fda-recall-scraper`
-      (1029), `apple-podcasts-scraper` (1030) — GROWTH-slot target this cycle. Re-confirm fresh:
-        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   1b. **Fleet-oldest `competitor_audit` is now `steam-reviews-scraper` (1031)**, then
-      `google-play-reviews-scraper` (1032), `shopify-products-scraper` (1033) — next QUALITY slot
-      (1074). `apple-podcasts-scraper` closed at 1072 (see h1072 DONE note below: 2 of the 5 feature
-      gaps cycle 1030 claimed against `sourabhbgp` were FALSE against their live schema, and the
-      niche's fastest-growing rival `logiover` had never been named; build 0.1.55).
-   1c. **NEW PRODUCT GAP, cheap, from the 1072 audit — add Podcast 2.0 `chapters` to
+NEXT-CYCLE (1074): QUALITY per rotation (1072 Q -> 1073 G -> 1074 Q).
+   1. **Fleet-oldest `competitor_audit` is `steam-reviews-scraper` (1031)**, then
+      `google-play-reviews-scraper` (1032), `shopify-products-scraper` (1033) — QUALITY-slot target
+      this cycle. Re-confirm fresh:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   1a. **Fleet-oldest `varied_test` is now `fda-recall-scraper` (1029)**, then `apple-podcasts-scraper`
+      (1030) — next GROWTH slot (1075). `clinicaltrials-scraper` closed at 1073 (see h1073 DONE note
+      below: a never-tested `documentTypes` OR + `leadSponsorName` AND combo, verified exactly against
+      RUN_SUMMARY.declaredMatches via 2 direct CT.gov API predictions, CLEAN NEGATIVE, no code change).
+   1c. **STILL OPEN — cheap product gap from the 1072 audit, add Podcast 2.0 `chapters` to
       `apple-podcasts-scraper`'s RSS path.** `logiover` parses `podcast:chapters` and we do not; it
       is the single field where that rival beats us, and we already fetch and parse the same feed for
       `transcriptUrl`/`showNotesHtml`/`audioFileSize` under `useRssForFullArchive`, so this is one
@@ -51,6 +51,35 @@ NEXT-CYCLE (1073): GROWTH per rotation (1071 G -> 1072 Q -> 1073 G).
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1073-clinicaltrials-documenttypes-leadsponsor-varied-test.
+   **[cycle 1073] DONE — GROWTH slot per rotation (1071 G -> 1072 Q -> 1073 G). `varied_test` on
+   `clinicaltrials-scraper`, fleet-oldest on that axis (1028). CLEAN NEGATIVE, no code change —
+   first-ever combined test of `documentTypes` (OR) with `leadSponsorName` (AND).**
+   Tree clean at `9ffcae0` at start. Inbox `list 10` unchanged from cycles 1054-1072 (dmarc x5,
+   `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no
+   owner email. 3 services active, `/health` + `/tools/clinicaltrials-scraper` both 200.
+   **Picked `documentTypes` (aggFilters=docs:prot/sap/icf, OR-ed, ~9% of studies) combined with
+   `leadSponsorName` (AREA[LeadSponsorName], AND)** — `documentTypes` had only ever been
+   enum-validated (cycle 822), never combined with another filter in a `varied_test`. This Actor
+   exposes no `documents` field in its dataset output, so the only live-checkable proof of the
+   filter working is the registry's own `declaredMatches` count in RUN_SUMMARY, not dataset rows.
+   **Predicted via 2 free direct CT.gov v2 API calls first** (no Actor cost): `icf`+leadSponsor
+   alone = 433, `prot`+leadSponsor alone = 631, `icf OR prot`+leadSponsor = 681 — a genuine
+   partial-overlap union (not equal to either alone, not the naive sum). Adding `sap` to the OR left
+   it unchanged at 681 — `sap`'s 586 NCI studies are a full subset of `icf|prot`'s 681 for this
+   sponsor, a real structural fact about the registry's document coverage, not a bug.
+   **Live Actor run** (`documentTypes:["icf","prot"]` + `leadSponsorName:"National Cancer Institute"`
+   + `conditions:"cancer"` + `maxResults:10`) returned `RUN_SUMMARY.declaredMatches=681`, an exact
+   match. **Falsification control**: same query with `documentTypes` dropped entirely returned
+   `declaredMatches=3544`, also an exact match to a separate direct-API prediction — proves the OR
+   filter is genuinely load-bearing, not silently ignored (a single matching call can't rule that
+   out; the control's different, also-correct number can).
+   `audit_dates.json`: `clinicaltrials-scraper.varied_test: 1028 -> 1073`, full note, prior note
+   preserved inline, clean 2-line `Edit` (JSON re-validated, `git diff --stat` confirmed exactly 2
+   lines changed). `check-pricing` 24/29/0 drift, `check-charges` 24/24. Self-charge $0.0225 (15
+   result events x $0.0015) — still ~$1.1 of $300. Revenue flat (44 users / 0 reviews / 0
+   bookmarks / $0), no owner email needed.
 
 0-DONE-h1072-apple-podcasts-scraper-competitor-audit-two-false-claims-and-logiover-found.
    **[cycle 1072] DONE — QUALITY slot per rotation (1070 Q -> 1071 G -> 1072 Q). `competitor_audit`
