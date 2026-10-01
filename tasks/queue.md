@@ -1,19 +1,18 @@
-NEXT-CYCLE (1069): GROWTH per rotation (1067 G -> 1068 Q -> 1069 G).
-   1. **Fleet-oldest `varied_test` is `sec-insider-trades-scraper` (1024)** — the 1067/1068 defer
-      reasoning (its filter surface shipped at 1064) is now 5 cycles stale, so **stop deferring it
-      and take it**: the 3 filters shipped at 1064 (`transactionCodes`, `minTransactionValue`,
-      `reporterRoles`) were each verified individually by set-identity, but never in COMBINATION,
-      and `minTransactionValue`'s `Math.abs()` signed-value fix (LEARNINGS 1064 item 3) has never
-      been re-run against a different issuer. Next-best if it is somehow blocked:
-      `google-news-scraper` (1027), `clinicaltrials-scraper` (1028). Re-confirm fresh with:
-        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   2. **NEW, HIGH VALUE — fleet-wide re-audit of competitor FEATURE claims against rival input
-      schemas.** Cycle 1068 proved the whole class is unverified: `check-competitor-claims` only
-      checks user counts and paragraph dates, so every "no X, no Y, no Z" feature assertion in the
-      fleet's ~34 competitor paragraphs rests on whoever wrote it having read the rival's
-      *description* rather than its schema — the exact error that put a false claim on our Store
-      page for 42 cycles. Not a one-cycle job for all 34; do it in batches of 3-4 READMEs per
-      QUALITY cycle, highest-traffic Actors first, using the snippet that worked at 1068:
+NEXT-CYCLE (1070): QUALITY per rotation (1068 Q -> 1069 G -> 1070 Q).
+   1. **Fleet-oldest `competitor_audit` is `google-news-scraper` (1027)**, then
+      `apple-podcasts-scraper` (1030), `steam-reviews-scraper` (1031). Run as a FEATURE audit:
+      pull the rival's live input schema (not its Store description — cycle 1068's lesson), and
+      iterate their FULL `eventTieredPricingUsd` ladder, not just the FREE tier (1068 found a rival
+      charging 11x ours at Silver while matching at Free — four prior audits reporting "no pricing
+      drift" only ever read FREE). Re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **HIGH VALUE, carried from 1069 — fleet-wide re-audit of competitor FEATURE claims against
+      rival input schemas.** Cycle 1068 proved the whole class is unverified: `check-competitor-
+      claims` only checks user counts and paragraph dates, so every "no X, no Y, no Z" feature
+      assertion in the fleet's ~34 competitor paragraphs rests on whoever wrote it having read the
+      rival's *description* rather than its schema — the exact error that put a false claim on our
+      Store page for 42 cycles. Do it in batches of 3-4 READMEs per QUALITY cycle, highest-traffic
+      Actors first, using the snippet that worked at 1068:
         GET /v2/acts/<user>~<name> -> taggedBuilds.latest.buildId
         GET /v2/actor-builds/<buildId> -> data.actorDefinition.input.properties  (+ .readme for sample output)
       Start with the two other paragraphs that make the most sweeping "no watch mode / no user
@@ -22,12 +21,7 @@ NEXT-CYCLE (1069): GROWTH per rotation (1067 G -> 1068 Q -> 1069 G).
       LACK]}`, failed if any named property shows up in their live schema. That converts the whole
       class from prose-trust to a check, and is the better long-term fix — scope it before batching
       the manual sweep.
-   3. **Fleet-oldest `competitor_audit` is now `google-news-scraper` (1027)**, then
-      `apple-podcasts-scraper` (1030), `steam-reviews-scraper` (1031). Run as FEATURE audits, and
-      per item 2 **read the rival's input schema, and iterate their FULL `eventTieredPricingUsd`
-      ladder, not just the FREE tier** (1068 found a rival charging 11x ours at Silver while
-      matching at Free — four prior audits reporting "no pricing drift" only ever read FREE).
-   4. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog candidates
+   3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog candidates
       unsynced: `sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-field`,
       `two-opinions-same-case-name-different-day`, cycle 1058's NIH "predict the set, not the
       order", cycle 1060's tiered-price-undercut finding, cycle 1063's watch-mode-fingerprint
@@ -50,6 +44,36 @@ NEXT-CYCLE (1069): GROWTH per rotation (1067 G -> 1068 Q -> 1069 G).
       the one plausible real gap in the niche; (b) `automation-lab`'s `maxPages` section pagination
       vs our `maxItemsPerQuery`/`maxResults`. (a) is worth a scoped look on a GROWTH cycle — "give
       me every comment on story X" is a normal buyer ask and we may not answer it today.
+
+0-DONE-h1069-sec-insider-trades-combined-filter-varied-test.
+   **[cycle 1069] DONE — GROWTH slot per rotation (1067 G -> 1068 Q -> 1069 G). `varied_test` on
+   `sec-insider-trades-scraper`, fleet-oldest on that axis (1024). CLEAN, no code change — first-
+   ever COMBINED run of the 3 cycle-1064 filters, against a new issuer.**
+   Tree clean at `c164429` (cycle 1068's commit) at start. Inbox `list 10` unchanged from cycles
+   1054-1068 (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26
+   `873db8ee`) — nothing new, no owner email. 3 services active, `/health` +
+   `/tools/sec-insider-trades-scraper` both 200.
+   **Combined `transactionCodes`+`minTransactionValue`+`insiderRoles` for the first time, against
+   TSLA (not AAPL, which 1064's individual-filter checks used).** Pulled a full unfiltered baseline
+   (93 rows across 15 filings, `maxResults` cap not hit) and hand-computed the predicted surviving
+   set for `transactionCodes:["S"], minTransactionValue:1000000, insiderRoles:["officer"]`: exactly
+   3 rows (Vaibhav Taneja's sales). The live filtered call matched by accession-number+value exactly.
+   **Then ran a control that actually distinguishes AND from a dead filter**: swapped only
+   `insiderRoles` to `["director"]` (same code/value thresholds) and predicted a disjoint 23-row set
+   (Kathleen Wilson-Thompson's sales) — the live call matched that set exactly too. A single
+   matching filtered call can't rule out a filter being silently ignored; getting the FLIP when one
+   filter changes is what proves genuine combination. Also re-confirmed the cycle-1064 `Math.abs()`
+   signed-value fix on new data: TSLA's baseline has a same-day Elon Musk M/F pair at
+   +$7,094,441,104.20 / -$7,094,441,253.62 — both handled correctly regardless of issuer or
+   magnitude.
+   `audit_dates.json`: `sec-insider-trades-scraper.varied_test` `1024 -> 1069`, full note, clean
+   4-line diff (re-dumped with `ensure_ascii=False` to avoid re-escaping unrelated unicode in other
+   entries — first attempt produced a 474-line noise diff, reverted and redone). `check-pricing`
+   24/29/0, `check-charges` 24/24. Self-charge: 297 events across 6 live calls = **$0.53** — two
+   calls (93+93) were an avoidable duplicate baseline pull (computed the officer and director
+   predictions from two separate live fetches instead of one cached pull), noted in LEARNINGS so
+   the next `varied_test` fetches the baseline once. Cumulative still ~$0.6 of $300. Revenue flat
+   (44 users / 0 reviews / 0 bookmarks / $0), no owner email needed.
 
 0-DONE-h1068-hacker-news-competitor-feature-audit-false-claim-fixed.
    **[cycle 1068] DONE — QUALITY slot per rotation (1066 Q -> 1067 G -> 1068 Q). `competitor_audit`
