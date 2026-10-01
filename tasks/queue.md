@@ -29,21 +29,56 @@
    24/29/0 drift, `check-charges` 24/24. $0.06 self-charge (4 runs x 10 rows x $0.0015) — still $0
    of $300. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
 
-NEXT-CYCLE (1059): GROWTH per rotation (1057 G -> 1058 Q -> 1059 G).
-   1. **Fleet-oldest on BOTH axes is now `eu-ted-tenders-scraper` (1018)** — but note its
-      `competitor_audit` was just re-confirmed fresh-by-date this cycle (foxlabs unchanged,
-      2026-09-30), so a GROWTH slot is better spent on its `varied_test` (also 1018, genuinely
-      untouched since then) or a real feature/build item below, rather than re-auditing pricing
-      that was just checked. Re-confirm fresh with:
+0-DONE-h1059-eu-ted-varied-test-keywords-daterange-maxvalue.
+   **[cycle 1059] DONE — GROWTH slot per rotation (1057 G -> 1058 Q -> 1059 G). `varied_test` on
+   `eu-ted-tenders-scraper`, fleet-oldest on that axis (1018). CLEAN NEGATIVE, no code change.**
+   Fresh sort confirmed `eu-ted-tenders-scraper` (1018) still fleet-oldest `varied_test` (per
+   cycle 1058's note); redirected the GROWTH slot there as planned rather than re-touching
+   `competitor_audit`, which cycle 1058 had already spot-checked live with no drift. Inbox
+   unchanged from cycles 1054-1058 (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org
+   `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email. 3 services active, `/health`
+   + `/tools/eu-ted-tenders-scraper` both 200. Tree clean at `8b7faaa` at start.
+   **Combo (never tested together): `keywords="solar panel"` (FT~ full-text) +
+   `publicationDateFrom`/`publicationDateTo` (absolute window, 2025-01-01..2025-06-30) +
+   `maxValue=500000`.** First live test of `maxValue` — a CLIENT-SIDE post-filter
+   (`passesValueFilter`, never sent to TED's query) — combined with both the full-text operator
+   and an absolute date window (prior notes: 965 did structural filters + flatten/minDaysUntil;
+   1018 did countries+minValue+onlyOpenDeadlines). **Predicted the exact 10-row set for FREE**
+   via 2 direct unauthenticated TED v3 calls (40 raw rows) filtered client-side the same way the
+   Actor does; `bin/varied-test` returned the identical 10 publicationNumbers, same order, same
+   totalValue/buyerCountry/publicationDate on every row.
+   **Falsified 2 ways.** (a) Dropping only `maxValue` reintroduced null-value rows and >500000
+   rows (up to 9,267,000) exactly matching the unfiltered raw-TED prediction — `maxValue` is
+   load-bearing, not silently ignored. (b) Dropping only the date window fell back to the
+   documented `publishedWithinDays=7` default and returned 5 completely disjoint 2026-09-24..28
+   notices, confirming the absolute window genuinely overrides the relative default. Noted in
+   passing: one unfiltered row had `totalValue=0` and correctly PASSED the `<=500000` filter
+   (0 is a real reported value, not absent) — confirms the null-vs-zero distinction in
+   `passesValueFilter` is handled right, not a bug.
+   `audit_dates.json`: `eu-ted-tenders-scraper.varied_test: 1018 -> 1059`, full note, prior notes
+   preserved inline. Targeted string-replace `Edit`, JSON re-validated. `check-pricing` 24/29/0
+   drift, `check-charges` 24/24. $0.075 self-charge (25 rows across 3 capped runs at
+   $0.003/result) — still $0 of $300. No owner email (revenue flat: 44 users, 0 reviews/
+   bookmarks, $0).
+
+NEXT-CYCLE (1060): QUALITY per rotation (1058 Q -> 1059 G -> 1060 Q).
+   1. **Fleet-oldest `varied_test` is now `uk-find-a-tender-scraper` (1020)**, then
+      `us-federal-awards-scraper` (1023), `sec-insider-trades-scraper` (1024). Re-confirm fresh
+      with:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   2. **Next-stalest `competitor_audit` after eu-ted: `nih-reporter-scraper` (1019)** — also just
-      exercised for `varied_test` this cycle, pricing not re-pulled; a future QUALITY slot should
-      re-verify `pink_comic/nih-reporter-search` pricing fresh (last checked cycle 1019).
+   2. **Fleet-oldest `competitor_audit` is `eu-ted-tenders-scraper` itself (1018, 41 cycles
+      stale)** — but cycle 1058 already live-spot-checked `foxlabs/ted-tenders` and found no
+      drift (users 38->39, pricing unchanged) without formally re-stamping `audit_dates.json`.
+      A QUALITY slot should do the FULL formal refresh (re-pull live `pricingInfos` for foxlabs,
+      sweep the Store for new entrants, update the README dated paragraph if needed, then stamp
+      `competitor_audit: 1018 -> <cycle>`) rather than re-deriving the same spot-check — or, if
+      genuinely unchanged again, redirect to `nih-reporter-scraper`'s `competitor_audit` (1019,
+      next-stalest, `pink_comic/nih-reporter-search` not re-pulled since 1019).
    3. **Reusable technique, reconfirmed again this cycle: predict the match SET for free from the
-      upstream API before paying for `bin/varied-test`, and pair it with COUNT-ARITHMETIC
-      falsification whenever a plausible-looking result could also be explained by the filter
-      being silently ignored** (this cycle's agencyIcCodes drop is the clearest example yet: same
-      top-10 rows either way, only the total-count jump proved the filter was real).
+      upstream API before paying for `bin/varied-test`, and pair it with falsification ablations
+      (drop-one-filter) whenever a plausible-looking result could also be explained by a filter
+      being silently ignored** — this cycle's `maxValue` client-side-post-filter case is a good
+      template for any other Actor with a post-fetch (not server-side-query) filter.
    4. **The watch-mode `firstSeededAt` guard idea stays CLOSED — do not re-open** (LEARNINGS cycle
       1055).
    5. Dev.to: last published 2026-10-01 (id 4779767) — not due again until ~2026-10-03/04. Backlog
