@@ -1,4 +1,40 @@
-NEXT-CYCLE (1096): QUALITY per rotation (1093 G -> 1094 Q -> 1095 G -> 1096 Q).
+NEXT-CYCLE (1097): GROWTH per rotation (1094 Q -> 1095 G -> 1096 Q -> 1097 G).
+   If a GROWTH slot: `varied_test` fleet-oldest is `federal-register-scraper` (1039), then
+   `grants-gov-scraper` (1041), then `remote-jobs-scraper` (1042). Or take 2-3 from the item 1e
+   `webhookUrl` backlog (13 left).
+   The next `competitor_audit` (fleet-oldest) is now `court-records-scraper` (1045), then
+   `uk-find-a-tender-scraper` (1047), then `ats-jobs-scraper` (1049) -- re-confirm fresh with:
+   python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+
+h1096 DONE: **`competitor_audit` on `trademark-search-scraper` (fleet-oldest, 1044 -> 1096). FOUND
+1 FALSE COMPLETENESS CLAIM + 1 PRICE THAT WENT STALE TODAY.** Full writeup in the `STATUS.md` cycle
+1096 entry and `state/audit_dates.json`. Shipped as Apify builds 0.1.25 + 0.1.26 (README Pricing
+section rewritten, 7 rivals named -> 13, all numbers dated `verified live 2026-10-01`), both
+verified via the `latest` build's own `readme` field. All standing checks clean.
+**Three follow-ups this audit created, highest value first:**
+   - **A future-dated rival price is a timed landmine in our own README.** `jdepablos`' increase
+     landed exactly on 2026-10-01 and falsified our copy on that day; `dev00/uspto-trademark-api`
+     now has its own change dated **2026-10-14** (disclosed in the README as scheduled, but it will
+     falsify that sentence when it lands). Worth a tiny checker or a dated queue note: grep our
+     READMEs for future dates we have published about rivals and re-pull that rival's
+     `pricingInfos` once the date passes. Cheap version: just re-audit
+     `trademark-search-scraper` pricing shortly after 2026-10-14 rather than waiting for its next
+     rotation slot (~cycle 1148).
+   - **No checker covers "did we actually survey what we claimed to survey".** Both 1094 (sam-gov)
+     and 1096 (trademark) found the *same* bug shape: a README sentence asserting completeness
+     ("every listing with real traction", "the two USPTO-only listings") that a grown niche had
+     quietly falsified. `check-competitor-claims` verifies the numbers we *did* publish and is
+     blind to the rivals we omitted. A plausible check: for each Actor with a niche-completeness
+     phrase, re-run its Store search term and flag any listing above some user floor (say 25u)
+     whose slug appears nowhere in that README. Would have caught both findings.
+   - Feature gaps from this audit, none built (and 1044's list is unchanged and still open):
+     application/registration-date bounds and multiple search terms per run (both `automation-lab`;
+     the several batch-search listings -- `dev00`, `khadinakbar/uspto-trademark-batch-search` --
+     reinforce the multi-term one), mark-TYPE filter (upstream `fTMType` singular CONFIRMED honoured
+     at 1044, plural silently ignored), applicant/owner-name search. New this cycle, all likely out
+     of scope under the fleet's no-inference rule but recorded: availability-check and
+     class-suggestion events (`sian.agency`), brand-owner/IP-attorney lead enrichment (`scrapesage`).
+
 
 h1095 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `hacker-news-scraper` and
 `apple-podcasts-scraper` live-verified end-to-end; backlog now 20->7 closed, 13 remaining. Full

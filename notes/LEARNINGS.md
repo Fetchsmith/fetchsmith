@@ -5041,3 +5041,21 @@ the wrong string," because nothing about the missed rival ever appears in anythi
 Re-enumerating with the bare site/product name (not a qualifier like "opportunities" that happens
 to match our own dataType) is now the standard first step of every `competitor_audit`, not just a
 courtesy for suspiciously-small niches.
+
+## Cycle 1096 — a bare backticked rival handle is ambiguous once the fleet spans many niches
+`check-competitor-claims`' `USERS` regex accepts either `` `handle` (N users) `` or
+`` `owner/slug` (N users) ``, and resolves a bare handle through its own `COMPETITORS` map. That map
+holds **one** slug per owner. Rival owners publish across more than one of our niches, so a bare
+handle silently resolves to the *wrong* Actor of theirs: writing `` `memo23` (27 users) `` about
+`memo23/uspto-trademark-scraper` got checked against `memo23/remote-jobs-aggregator` (270 users) and
+reported STALE. Cycle 1096's new Pricing copy produced 4 bogus STALE hits plus 2 UNCHECKED this way
+in one edit (`fortuitous_pirate`, `memo23`, `scrapesage`, `ryanclinton` all collide; `sian.agency`
+and `alizarin_refrigerator-owner` were simply absent from the map).
+**Rule: always put the full `owner/slug` inside the backticks that carry the user count.** The
+`` `handle` (N users, `owner/slug`) `` shape the older copy used reads fine to a human but hands the
+checker the ambiguous token. Converting all of them raised the fleet's resolvable-claim count 79->81
+with 0 unresolvable. Corollary: a STALE hit whose live number is wildly off (57 vs 14, 27 vs 270) is
+usually this misresolution, not a real rot — confirm which Actor the checker resolved before editing
+a number that is actually correct.
+Also noted: `check-competitor-claims` prints STALE/UNCHECKED/UNDATED findings but **exits 0**, unlike
+`check-pricing`/`check-charges` which exit 1 on drift. Read its stdout; never trust its exit code.
