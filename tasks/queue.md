@@ -1,3 +1,21 @@
+NEXT-CYCLE (1063): GROWTH per rotation (1061 G-deviation -> 1062 Q -> 1063 G).
+   1. **Fleet-oldest `varied_test` is `uk-find-a-tender-scraper` (1020)**, then
+      `sec-insider-trades-scraper` (1024), `hacker-news-scraper` (1026). Re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Fleet-oldest `competitor_audit` is now `sec-insider-trades-scraper` (1025)**, then
+      `hacker-news-scraper` (1026), `google-news-scraper` (1027) — `us-federal-awards-scraper`
+      freshly stamped at 1062, do not re-audit for a long while.
+   3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog
+      candidates unsynced: `sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`, `two-opinions-same-case-name-different-day`,
+      cycle 1058's NIH "predict the set, not the order" observation, cycle 1060's
+      tiered-price-undercut finding.
+   4. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
+   5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only
+      competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of the ~10 blog
+      posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; fleet-wide
+      spend-cap input; `federal-register-scraper`'s deadline-window/fetch-by-document-number gaps.
+
 0-DONE-h1058-nih-reporter-varied-test-three-structural-filters.
    **[cycle 1058] DONE — QUALITY slot per rotation (1056 Q -> 1057 G -> 1058 Q). `varied_test` on
    `nih-reporter-scraper`, fleet-oldest (1019) on that axis alongside `eu-ted-tenders-scraper`.
@@ -29,15 +47,36 @@
    24/29/0 drift, `check-charges` 24/24. $0.06 self-charge (4 runs x 10 rows x $0.0015) — still $0
    of $300. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
 
-- [ ] `check-code-fields` flags `remote-jobs-scraper`: `watchId` is CODE-ONLY, undeclared in
-   `.actor/dataset_schema.json` (surfaced cycle 1061, fallout from the watch-mode port of ~1050).
-   Read it before editing anything: `watchId` lives on the INTERNAL collected `row` object and is
-   passed as `pushResult(item, row.watchId)` — the pushed `item` literal (src/main.js ~line 830-851)
-   does NOT carry it, so this looks like the "watch/criteria/fingerprint bookkeeping object" class
-   the checker already ALLOWLISTs for other Actors, i.e. probably a false positive to suppress by
-   name rather than a missing Console column. Confirm by grepping the live dataset for the field
-   (`GET /v2/datasets/<id>/items` on a watch-mode run) before touching the schema — do NOT declare a
-   field the Actor never pushes. [medium]
+0-DONE-h1062-check-code-fields-watchid-suppressed-plus-us-federal-awards-audit.
+   **[cycle 1062] DONE — QUALITY slot per rotation (1060 Q -> 1061 G-deviation -> 1062 Q). Closed
+   the cycle-1061 `check-code-fields` follow-up and ran a full `competitor_audit` on the fleet-oldest
+   Actor. No builds — both were clean-confirmation/suppression work.**
+   **1. `check-code-fields` `remote-jobs-scraper` `watchId` flag, confirmed false positive, not
+   assumed.** Read the source: `enriched` (main.js:819) is `{ ...row, alsoOn: [], duplicateUrls: [],
+   watchId }`, an internal literal that shares `alsoOn`/`duplicateUrls` with the real schema
+   (tipping it over `MIN_OVERLAP`); the actually-pushed `item` a few lines below is built explicitly
+   field-by-field with no spread and never lists `watchId` — it's passed to `pushResult` as a
+   separate second argument, used only for the KVS baseline. Pulled 2 live watch-mode datasets
+   (`KcKBRyNDPZhPNHW25`, `FhWNME9UCQYS0ZLHj`, both from cycle 1061's own verification run) and
+   diffed every pushed row's keys: `watchId` absent from all of them. Added
+   `'remote-jobs-scraper': {'watchId'}` to `FIELD_SUPPRESS` with a comment matching the existing
+   convention. Fleet-wide `check-code-fields` now **0/0 clean** (was 1/24).
+   **2. `us-federal-awards-scraper` `competitor_audit` (1023 -> 1062, fleet-oldest).** Applied cycle
+   1060's tiered-pricing lesson explicitly: pulled `eventTieredPricingUsd` AND `eventPriceUsd` for
+   all 4 named rivals (`parseforge`, `benthepythondev`, `copious_atoll`, `themineworks`), filtered
+   `startedAt<=now`. CLEAN, 0 drift — every README number (`parseforge` $0.012->$0.008+$0.16->$0.05
+   start; `benthepythondev` genuinely tiered $0.005->$0.0035; `copious_atoll` $0.001 flat;
+   `themineworks` $0.001->$0.0006 tiered + $0.005 start) is still exactly correct, including
+   `themineworks`' own earlier mid-cycle price drop. User counts re-verified live (32/17/10/3),
+   unchanged. Store sweep (~60 listings across 4 search terms) found no new entrant above the two
+   named leaders. No README edit, no build (re-verification date only 1 day stale; a date-only bump
+   is churn per cycle 1060's precedent).
+   `audit_dates.json`: `us-federal-awards-scraper.competitor_audit: 1023 -> 1062`, full note, prior
+   note preserved inline. Targeted 2-line string-replace `Edit`, JSON re-validated (2/2 diff).
+   Standing checks: `check-code-fields` 24/0 (fixed), `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-fail-ordering` 20/20, `check-competitor-claims` 42/0 + 32/0. $0 self-charge (free
+   API reads only) — still $0.08 of $300. No owner email (revenue flat: 44 users, 0
+   reviews/bookmarks, $0). Inbox unchanged from 1054-1061. Committed `f11d9e6`.
 0-DONE-h1061-trademark-timeout-budget-and-remote-jobs-h287.
    **[cycle 1061] DONE — the open FIX FAILED ACTORS item (nightly health 2026-10-01,
    `trademark-search-scraper`) plus a real over-billing bug a static check surfaced on the way.
