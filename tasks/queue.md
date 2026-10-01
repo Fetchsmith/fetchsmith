@@ -1,6 +1,7 @@
-NEXT-CYCLE (1087): QUALITY per rotation (1084 Q -> 1085 G -> 1086 Q -> 1087 G). Top candidate:
+NEXT-CYCLE (1088): QUALITY per rotation (1085 G -> 1086 Q -> 1087 G -> 1088 Q). Top candidate:
    `competitor_audit` on `grants-gov-scraper` (fleet-oldest, 1041) -- still not done (1086 picked
-   the cheaper 1e backlog instead). Or pick 2-3 more Actors from the shrunk 1e backlog below.
+   the cheaper 1e backlog instead, 1087 was the mandatory GROWTH-slot `varied_test`). Or pick 2-3
+   more Actors from the shrunk 1e backlog below.
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
@@ -48,11 +49,13 @@ NEXT-CYCLE (1087): QUALITY per rotation (1084 Q -> 1085 G -> 1086 Q -> 1087 G). 
    1c. **`johnvc`'s `start_page` offset is the one input gap confirmed at 1080** and is cheap: we
       scan from page 1 always. Low value on its own (we already sweep all 10 pages and skip holes),
       so only do it if 1b lands and pagination gets re-shaped anyway.
-   1d. **Fleet-oldest `varied_test` is now `fec-campaign-finance-scraper` (1035)**, then
-      `app-store-reviews-scraper` (1037), `federal-register-scraper` (1039).
-      `shopify-products-scraper` closed at 1085 (CLEAN, see h1085 DONE below — first-ever live
-      verification of `webhookUrl`). `google-play-reviews-scraper` closed at 1081 (CLEAN, see
-      h1081 DONE below). Re-confirm fresh:
+   1d. **Fleet-oldest `varied_test` is now `app-store-reviews-scraper` (1037)**, then
+      `federal-register-scraper` (1039), `grants-gov-scraper` (1041).
+      `fec-campaign-finance-scraper` closed at 1087 (CLEAN, see h1087 DONE below — first-ever
+      4-filter-stacked combo on independentExpenditures mode, 607-match count and 10/10 row order
+      matched a free direct-FEC-API prediction exactly). `shopify-products-scraper` closed at 1085
+      (CLEAN, see h1085 DONE below — first-ever live verification of `webhookUrl`).
+      `google-play-reviews-scraper` closed at 1081 (CLEAN, see h1081 DONE below). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
    1e. **Sweep `webhookUrl` live on the remaining Actors that ship it — 2 more closed at 1086,
       17 left.** 1085 found this fleet-wide feature (`grep -l webhookUrl actors/*/src/main.js` →
@@ -174,6 +177,24 @@ NEXT-CYCLE (1087): QUALITY per rotation (1084 Q -> 1085 G -> 1086 Q -> 1087 G). 
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1087-fec-campaign-finance-independentExpenditures-4-filter-stack.
+   **[cycle 1087] DONE — mandatory GROWTH slot. `varied_test` on `fec-campaign-finance-scraper`,
+   fleet-oldest on this axis (1035->1087). First-ever combined live test of `independentExpenditures`
+   mode with FOUR filters stacked at once** (`candidateId` + `supportOppose` + `minAmount`/
+   `maxAmount` + a `contributionDateFrom`/`contributionDateTo` window) — prior audits only ever
+   exercised these individually or in pairs. Predicted for free via a direct curl to
+   `api.open.fec.gov/v1/schedules/schedule_e/` with identical params (candidate_id=P80001571,
+   support_oppose_indicator=O, min_amount=50000, max_amount=1000000, min_date=2024-09-01,
+   max_date=2024-11-05, cycle=2024): 607 total matches. Ran the Actor live with the same five
+   filters and `maxResults:10`: delivered 10/10 rows, every date/amount/payee matching the
+   direct-API prediction exactly in the same order, and `RUN_SUMMARY.declaredMatches=607` matched
+   the direct count exactly (`declaredMatchesExact:true`). Confirms the guard's rejectProbe checks
+   (candidateId/supportOppose/minAmount/maxAmount) and the schedule_e query compose correctly under
+   a 4-filter stack, not just singly. CLEAN, no bug, no code change. Cost: 10 rows x $0.001 = $0.01.
+   Inbox: a 4th recurring `peter@bytewells.com` cold-pitch (same unlaunched marketplace, now
+   targeting `ats-jobs-scraper` monthly-rental billing) — declined per standing policy (queue item
+   4), no reply, no owner email. Nothing else new/actionable.
 
 0-DONE-h1085-shopify-products-webhookUrl-first-ever-live-verification.
    **[cycle 1085] DONE — GROWTH slot per rotation (1083 G -> 1084 Q -> 1085 G). `varied_test` on

@@ -1,5 +1,17 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1087 — a free direct-API call is often the cheapest way to verify a multi-filter stack
+
+`fec-campaign-finance-scraper`'s `varied_test` stacked four `independentExpenditures` filters at
+once (`candidateId`+`supportOppose`+`minAmount`/`maxAmount`+date window) for the first time. Rather
+than guessing whether the combo was novel or budgeting for a large verification run, the cheapest
+check was a free direct curl to `api.open.fec.gov` with the identical params, which gives both an
+exact row-order prediction (for a tiny `maxResults` live run) and an exact total-match count (to
+check against `RUN_SUMMARY.declaredMatches`) for $0 before spending anything on the Actor itself.
+This pattern — predict via the underlying public API directly, then live-verify with the smallest
+possible paid run — generalizes to any Actor wrapping a free public API with its own filters; it
+was already used in 1081 (google-play) and 1079 (steam) and is now 3-for-3 clean.
+
 ## Cycle 1066 — "N fields" and "N codes" are two different claim classes; a field-count checker can't absorb the other one, and watch-bookkeeping fields make even "N fields" ambiguous
 
 Extending `check-meta-fields` to scan `registry.json`'s own `summary`/`title` (closing half of
