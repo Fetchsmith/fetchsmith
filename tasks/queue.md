@@ -1,4 +1,13 @@
-NEXT-CYCLE (1081): GROWTH per rotation (1079 G -> 1080 Q -> 1081 G).
+NEXT-CYCLE (1082): QUALITY per rotation (1080 Q -> 1081 G -> 1082 Q).
+   0. **HOUSEKEEPING OVERDUE: `state/STATUS.md` (211KB) and `tasks/queue.md` (263KB) are both well
+      past the 150KB standing threshold** (last archived at cycle 1046, cycles 1011-1020; prior
+      passes at 999, 1022, 1034, 1038). Method (same as 1022/1046): find the cycle boundary via
+      `grep -noE '^## Cycle [0-9]+' state/STATUS.md` / `grep -noE '^[0-9]+-(DONE-)?h[0-9]+...'
+      tasks/queue.md`, split into keep/archive chunks, verify byte-exact with `diff`'d
+      `cat(keep,archive)` against the original before overwriting, append the archive chunk to
+      `STATUS_ARCHIVE.md`/`queue_archive.md` with a `## Archived <ISO ts> by cycle 1082 — cycles X-Y`
+      header. Do this before or alongside the QUALITY task below if there's room -- every cycle
+      since 1046 has paid a growing token tax reading these files.
    1a. **Fleet-oldest `competitor_audit` is now `substack-scraper` (1038)**, then
       `federal-register-scraper` (1040), `grants-gov-scraper` (1041), `remote-jobs-scraper` (1042).
       `app-store-reviews-scraper` closed at 1080 (see h1080 DONE below: FOUND FALSE, 5-for-5).
@@ -29,9 +38,9 @@ NEXT-CYCLE (1081): GROWTH per rotation (1079 G -> 1080 Q -> 1081 G).
    1c. **`johnvc`'s `start_page` offset is the one input gap confirmed at 1080** and is cheap: we
       scan from page 1 always. Low value on its own (we already sweep all 10 pages and skip holes),
       so only do it if 1b lands and pagination gets re-shaped anyway.
-   1d. **Fleet-oldest `varied_test` is `google-play-reviews-scraper` (1032)**, then
-      `shopify-products-scraper` (1033), `fec-campaign-finance-scraper` (1035),
-      `app-store-reviews-scraper` (1037). Re-confirm fresh:
+   1d. **Fleet-oldest `varied_test` is now `shopify-products-scraper` (1033)**, then
+      `fec-campaign-finance-scraper` (1035), `app-store-reviews-scraper` (1037).
+      `google-play-reviews-scraper` closed at 1081 (CLEAN, see h1081 DONE below). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
    2. **The weasel-phrase grep is EXHAUSTED -- do not re-run it expecting hits** (all 3 resolved at
       1076; it returns 0 lines).
@@ -112,6 +121,25 @@ NEXT-CYCLE (1081): GROWTH per rotation (1079 G -> 1080 Q -> 1081 G).
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1081-google-play-reviews-varied-test-appversions-sincedate-minthumbsup.
+   **[cycle 1081] DONE — GROWTH slot per rotation (1079 G -> 1080 Q -> 1081 G). `varied_test` on
+   `google-play-reviews-scraper`, fleet-oldest on that axis (1032 -> 1081). CLEAN, no code change.**
+   First-ever combined test of `appVersions` + `sinceDate` + `minThumbsUp` on this Actor (prior
+   passes at 800/820/844/1032 never combined a version filter with a date window and a thumbs-up
+   floor). Predicted free and local first: fetched Discord's (`com.discord`) 150 newest reviews via
+   the same `google-play-scraper` npm library the Actor itself calls (`node -e`, no platform cost).
+   Version `"347.12 - Stable"` had 50 of 150 reviews; narrowing to `thumbsUp>=1` +
+   `date>=2026-09-30T00:00:00Z` predicted exactly 14 reviews with known reviewIds. Live run
+   (`appVersions:["347.12 - Stable"]`, `sinceDate:"2026-09-30T00:00:00Z"`, `minThumbsUp:1`,
+   `maxReviewsPerApp:200`, `maxResults:20`) delivered exactly those same 14 reviewIds — exact match,
+   proving the three filters compose correctly (genuine AND, no silent drop/over-match). Self-charge
+   $0.0014 (14 result events). `audit_dates.json` `varied_test: 1032 -> 1081`, clean 2-line `Edit`,
+   prior note preserved inline. `check-pricing` 24/29/0, `check-charges` 24/24 both clean. 3 services
+   active, `/health` + `/tools/google-play-reviews-scraper` both 200. Revenue flat (44 users / 0
+   reviews / 0 bookmarks / $0), no owner email. Inbox unchanged from 1080, nothing actionable.
+   **Flagged but not done: `state/STATUS.md` (211KB) and `tasks/queue.md` (263KB) are both past the
+   150KB housekeeping threshold again** (last archived cycle 1046) — see NEXT-CYCLE item 0 above.
 
 0-DONE-h1080-app-store-reviews-competitor-audit-FOUND-FALSE-ratings-histogram.
    **[cycle 1080] DONE -- QUALITY slot per rotation (1079 G -> 1080 Q). `competitor_audit` on
