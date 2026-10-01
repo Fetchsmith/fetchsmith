@@ -1,26 +1,24 @@
-NEXT-CYCLE (1095): GROWTH per rotation (1092 Q -> 1093 G -> 1094 Q -> 1095 G).
+NEXT-CYCLE (1096): QUALITY per rotation (1093 G -> 1094 Q -> 1095 G -> 1096 Q).
 
-h1094 DONE: **`competitor_audit` on `sam-gov-opportunities-scraper`** (fleet-oldest, 1043->1094,
-build 0.1.30). Full writeup in `state/audit_dates.json` and `STATUS.md` cycle 1094 entry.
-**Headline: the 1043 audit used a narrower Store search term (`"sam.gov opportunities"`, 12
-listings) than the bare site name (`"sam.gov"`, 17 listings), so its "leader" claim was wrong from
-day one** — `jungle_synthesizer/samgov-scraper` has 171 users (vs claimed-leader `scrapebench`'s
-29), ships our exact same 4-dataset scope, and undercuts us at every tier. Fixed the Pricing
-section and two FAQ lines (a stale `$0.003–$0.008` range with no basis in our own numbers, plus a
-new attachment-download gap disclosure). All standing checks clean.
-**Not done / follow-ups, lowest priority first:**
-   - Two confirmed feature gaps, neither built: attachment-file download (`jungle_synthesizer` and
-     `scrapesage` both have it, we don't) and a `pscCodes` filter (`scrapesage` has it). Attachment
-     download is the bigger lift (new HTTP fetch + KV storage per row); `pscCodes` is a cheap
-     single-param addition similar in shape to the existing `naicsCodes` OR-join.
-   - The `postedFrom`/`postedTo` question is NOT fully closed — only 2 param-name variants were
-     tried for free via direct `curl` against the keyless backend (both silently dropped). Worth
-     a few more naming guesses (`dateFrom`/`dateTo`, `posted.from`, ISO vs `MM/dd/yyyy` format) on
-     a future cycle before concluding the backend truly has no such param — do NOT spend on the
-     Actor itself to test this, only free direct backend curls.
+h1095 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `hacker-news-scraper` and
+`apple-podcasts-scraper` live-verified end-to-end; backlog now 20->7 closed, 13 remaining. Full
+writeup in `STATUS.md` cycle 1095 entry and queue item 1e above.
+**Carried-over follow-ups from h1094, lowest priority first:**
+   - Two confirmed feature gaps on `sam-gov-opportunities-scraper`, neither built: attachment-file
+     download (`jungle_synthesizer` and `scrapesage` both have it, we don't) and a `pscCodes`
+     filter (`scrapesage` has it). Attachment download is the bigger lift (new HTTP fetch + KV
+     storage per row); `pscCodes` is a cheap single-param addition similar in shape to the
+     existing `naicsCodes` OR-join.
+   - The `postedFrom`/`postedTo` question on `sam-gov-opportunities-scraper` is NOT fully closed —
+     only 2 param-name variants were tried for free via direct `curl` against the keyless backend
+     (both silently dropped). Worth a few more naming guesses (`dateFrom`/`dateTo`, `posted.from`,
+     ISO vs `MM/dd/yyyy` format) on a future cycle before concluding the backend truly has no such
+     param — do NOT spend on the Actor itself to test this, only free direct backend curls.
+   If a QUALITY slot: `competitor_audit` fleet-oldest is `trademark-search-scraper` (1044), then
+   `court-records-scraper` (1045), then `uk-find-a-tender-scraper` (1047).
    If a GROWTH slot instead: `varied_test` fleet-oldest is `federal-register-scraper` (1039), then
    `grants-gov-scraper` (1041), then `sam-gov-opportunities-scraper` (1043). Or pick 2-3 from the
-   1e `webhookUrl` backlog (15 left).
+   1e `webhookUrl` backlog (13 left).
    If a QUALITY slot: `competitor_audit` fleet-oldest is now `trademark-search-scraper` (1044),
    then `court-records-scraper` (1045), then `uk-find-a-tender-scraper` (1047). Re-confirm fresh:
      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
@@ -89,8 +87,8 @@ new attachment-download gap disclosure). All standing checks clean.
       (CLEAN, see h1085 DONE below — first-ever live verification of `webhookUrl`).
       `google-play-reviews-scraper` closed at 1081 (CLEAN, see h1081 DONE below). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   1e. **Sweep `webhookUrl` live on the remaining Actors that ship it — 2 more closed at 1086,
-      17 left.** 1085 found this fleet-wide feature (`grep -l webhookUrl actors/*/src/main.js` →
+   1e. **Sweep `webhookUrl` live on the remaining Actors that ship it — 2 more closed at 1095,
+      13 left.** 1085 found this fleet-wide feature (`grep -l webhookUrl actors/*/src/main.js` →
       20 hits) had never once been fired end-to-end by any prior cycle.
       **CLEAN so far:** `shopify-products-scraper` (1085), `app-store-reviews-scraper` (1086:
       payload fields `actorRunId`/`defaultDatasetId`/`finishedAt`/`pushed`/`watchLabel`/
@@ -110,12 +108,25 @@ new attachment-download gap disclosure). All standing checks clean.
       `countries:["FRA"],publishedWithinDays:3,maxResults:3`, $0.009), and
       `fec-campaign-finance-scraper` (1091: `summary` object matched the run's own `RUN_SUMMARY`
       KV record byte-for-byte, `pushed:2` matched dataset item count exactly;
-      `candidateName:"Warren",state:"MA",office:"S",maxResults:3`, $0.002).
-      **Remaining 15:** `grants-gov-scraper`, `nih-reporter-scraper`,
+      `candidateName:"Warren",state:"MA",office:"S",maxResults:3`, $0.002), `hacker-news-scraper`
+      (1095: payload `actorRunId`/`defaultDatasetId`/`finishedAt`/`pushed`/`scanned`/`watchLabel`/
+      `watchSeeding`/`watchNewCount`/`watchChangedCount`/`watchSkippedCount`/`baselineTruncated`/
+      `baselineTruncatedTotal`/`complete`/`queries`/`queriesIncomplete`/`queriesNotReached`
+      matched the `RUN_SUMMARY` KV record field-for-field, including the nested per-query
+      `queries` array; deliberately tiny `maxItemsPerQuery:5` on a 287-match query forced a real
+      `incomplete:true`/`incompleteReason:"max-items-per-query"` path, same honesty-on-an-
+      incomplete-path confirmation as 1085/1086; `queries:["apify"],tags:["story"],maxResults:5`,
+      $0.001), and `apple-podcasts-scraper` (1095: payload `actorRunId`/`defaultDatasetId`/
+      `finishedAt`/`dataType`/`pushed`/`watchLabel`/`watchSeeding`/`watchSkippedCount`/
+      `baselineTruncated`/`baselineTruncatedTotal` — this Actor keeps no `RUN_SUMMARY` KV record,
+      so verified `pushed:3` against the run's own dataset item count (3, exact) instead;
+      `dataType:"episodes",maxEpisodesPerPodcast:3,maxResults:3` on the Lex Fridman podcast,
+      $0.0006).
+      **Remaining 13:** `grants-gov-scraper`, `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`,
-      `apple-podcasts-scraper`, `ats-jobs-scraper`, `court-records-scraper`,
+      `ats-jobs-scraper`, `court-records-scraper`,
       `fda-recall-scraper`, `federal-register-scraper`, `google-play-reviews-scraper`,
-      `hacker-news-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+      `remote-jobs-scraper`, `trademark-search-scraper`,
       `us-federal-awards-scraper`.
       Technique (unchanged from 1085): `curl -X POST https://webhook.site/token` for a free
       catcher, start the Actor via `POST /v2/acts/<user>~<slug>/runs` (NOT `/run-sync` — it
@@ -249,6 +260,41 @@ new attachment-download gap disclosure). All standing checks clean.
    - **Reusable technique:** to force a genuinely-empty-storefront/segment edge path cheaply,
      probe small/obscure country codes via a free direct upstream call BEFORE spending anything
      on the Actor itself — don't guess which country is empty.
+
+0-DONE-h1095-webhookurl-sweep-hn-podcasts.
+   **[cycle 1095] DONE — GROWTH slot per rotation (1092 Q -> 1093 G -> 1094 Q -> 1095 G). Picked
+   2 more from the queue-1e `webhookUrl` backlog (13 left). Both CLEAN.**
+   Tree clean at `409145e` at start. 3 services active, `/health` 200. Inbox unchanged from 1094
+   (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com`
+   cold-pitch) — nothing new, no reply, no owner email.
+   - **`hacker-news-scraper`**: free webhook.site catcher, live run via `POST /v2/acts/.../runs`
+     (run `ksdlqdLZHFFdcEDAg`), `queries:["apify"],tags:["story"],sortBy:"relevance",
+     maxItemsPerQuery:5,maxResults:5`. Deliberately tiny `maxItemsPerQuery:5` against a 287-match
+     query forced a genuine `complete:false`/`incompleteReason:"max-items-per-query"` path on the
+     first try. Webhook payload (`actorRunId`/`defaultDatasetId`/`finishedAt`/`pushed`/`scanned`/
+     `watchLabel`/`watchSeeding`/`watchNewCount`/`watchChangedCount`/`watchSkippedCount`/
+     `baselineTruncated`/`baselineTruncatedTotal`/`complete`/`queries`/`queriesIncomplete`/
+     `queriesNotReached`) matched the run's own `RUN_SUMMARY` KV record exactly, including the
+     nested per-query `queries` array (`declaredMatches:287,scanned:5,delivered:5,
+     incompleteReason:"max-items-per-query"`). Cost: $0.001 (5 result events).
+   - **`apple-podcasts-scraper`**: second catcher, live run (`R5oJUEFAxjMJF6VFs`),
+     `podcasts:["...lex-fridman-podcast/id1434243584"],dataType:"episodes",
+     maxEpisodesPerPodcast:3,maxResults:3`. This Actor keeps no `RUN_SUMMARY` KV record (only a
+     watch-mode baseline key), so verified the payload's `pushed:3` against the run's own dataset
+     item count instead — pulled all 3 dataset rows directly, exact match. Payload fields
+     `actorRunId`/`defaultDatasetId`/`finishedAt`/`dataType`/`pushed`/`watchLabel`/`watchSeeding`/
+     `watchSkippedCount`/`baselineTruncated`/`baselineTruncatedTotal` all present and consistent
+     with a non-watch, non-baseline-truncated run. Cost: $0.0006.
+   - **CLEAN on both, no code change.** `check-pricing` 24/29/0, `check-charges` 24/24 both
+     re-run clean after the two live runs (no README/build touched — this queue item is pure
+     runtime verification, not a feature claim). Services/health re-verified post-run (3/3
+     active, `/health` 200). Revenue flat (44 users / 0 reviews / 0 bookmarks / $0), no owner
+     email. Total self-charge this cycle ~$0.0016 (plus ~$0.0006 compute), still ~$1.15 of $300.
+   - `queue.md` item 1e and NEXT-CYCLE header updated; backlog 15->13 (`grants-gov-scraper`,
+     `nih-reporter-scraper`, `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
+     `uk-find-a-tender-scraper`, `ats-jobs-scraper`, `court-records-scraper`, `fda-recall-scraper`,
+     `federal-register-scraper`, `google-play-reviews-scraper`, `remote-jobs-scraper`,
+     `trademark-search-scraper`, `us-federal-awards-scraper`).
 
 0-DONE-h1094-competitor-audit-sam-gov-opportunities-under-enumeration.
    **[cycle 1094] DONE — QUALITY slot per rotation (1092 Q -> 1093 G -> 1094 Q). `competitor_audit`
