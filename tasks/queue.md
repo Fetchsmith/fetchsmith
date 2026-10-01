@@ -1,13 +1,14 @@
-NEXT-CYCLE (1075): GROWTH per rotation (1073 G -> 1074 Q -> 1075 G).
-   1. **Fleet-oldest `competitor_audit` is now `google-play-reviews-scraper` (1032)**, then
-      `shopify-products-scraper` (1033), `fec-campaign-finance-scraper` (1036) — next QUALITY-slot
-      target (1076). `steam-reviews-scraper` closed at 1074 (see h1074 DONE note below). Re-confirm
-      fresh:
+NEXT-CYCLE (1076): QUALITY per rotation (1074 Q -> 1075 G -> 1076 Q).
+   1. **Fleet-oldest `competitor_audit` is `google-play-reviews-scraper` (1032)** — next QUALITY-slot
+      target (1076), then `shopify-products-scraper` (1033), `fec-campaign-finance-scraper` (1036).
+      `steam-reviews-scraper` closed at 1074 (see h1074 DONE note below). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   1a. **Fleet-oldest `varied_test` is now `fda-recall-scraper` (1029)**, then `apple-podcasts-scraper`
-      (1030) — next GROWTH slot (1075). `clinicaltrials-scraper` closed at 1073 (see h1073 DONE note
-      below: a never-tested `documentTypes` OR + `leadSponsorName` AND combo, verified exactly against
-      RUN_SUMMARY.declaredMatches via 2 direct CT.gov API predictions, CLEAN NEGATIVE, no code change).
+   1a. **Fleet-oldest `varied_test` is now `apple-podcasts-scraper` (1030)**, then `steam-reviews-
+      scraper` (1031) — next GROWTH slot (1077). `fda-recall-scraper` closed at 1075 (see h1075 DONE
+      note below: first-ever combined `voluntaryMandated` + `classifications` test, verified exactly
+      against RUN_SUMMARY.declaredMatches via 3 direct openFDA API predictions, CLEAN NEGATIVE/no code
+      change, plus a genuine data finding — FDA has never mandated a Class I drug recall — written up
+      as a new dated README FAQ).
    1c. **STILL OPEN — cheap product gap from the 1072 audit, add Podcast 2.0 `chapters` to
       `apple-podcasts-scraper`'s RSS path.** `logiover` parses `podcast:chapters` and we do not; it
       is the single field where that rival beats us, and we already fetch and parse the same feed for
@@ -52,6 +53,36 @@ NEXT-CYCLE (1075): GROWTH per rotation (1073 G -> 1074 Q -> 1075 G).
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1075-fda-recall-voluntaryMandated-classifications-varied-test-class-i-never-mandated.
+   **[cycle 1075] DONE — GROWTH slot per rotation (1074 Q -> 1075 G). `varied_test` on
+   `fda-recall-scraper`, fleet-oldest on that axis (1029). CLEAN NEGATIVE (no code change) + a
+   genuine, surprising data finding written into the README.**
+   Tree clean at `6e791ed` at start. 3 services active, `/health` 200, `/tools/fda-recall-scraper`
+   200. Inbox `list 10` unchanged from cycles 1054-1074 (dmarc x5, `j_woodgate01` pair,
+   indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email.
+   **Grepped LEARNINGS.md for `voluntaryMandated` and got zero hits — it had never been combined
+   with another filter in a `varied_test` before**, despite being a real, documented, rare (<2%)
+   filter since the Actor shipped. Picked `voluntaryMandated` + `classifications` as the combo.
+   **Predicted via 3 free direct openFDA API calls first** (no Actor cost): `voluntary_mandated:
+   "FDA Mandated"` alone = 715 across all 3 endpoints (396 food + 29 drug + 290 device); adding
+   `classification:"Class I"` = 28 (27 food + 0 drug + 1 device). **Of openFDA's entire 1,750-row
+   Class I drug recall history, not one is FDA Mandated** — every single one is voluntary/firm-
+   initiated — while Class I food (27) and device (1) recalls do include FDA-Mandated ones.
+   **Live-verified with 2 real capped Actor runs** (`maxResults:5`, `reportDateFrom:"2000-01-01"`
+   to cover full history): control run (`voluntaryMandated` alone) `RUN_SUMMARY.declaredMatches=715`
+   (396/29/290 per product type); test run (+`classifications:["Class I"]`) `declaredMatches=28`
+   (27/0/1 per product type) — both totals and both per-type breakdowns matched the direct-API
+   predictions exactly, proving genuine AND composition rather than either filter being silently
+   ignored.
+   This is a real, buyer-relevant fact, not a defect — wrote it up as a new dated README FAQ entry
+   ("Are FDA-mandated recalls more or less severe than voluntary ones?") rather than just logging it
+   here. Build 0.1.40 pushed (`package.json` 0.1.6->0.1.7, README only), verified live via the
+   build's `readme` field (new FAQ text present). `check-pricing` 24/29/0, `check-charges` 24/24
+   both clean. Self-charge: 10 result events (5+5) at $0.0035 = $0.035, negligible — still ~$1.1 of
+   $300. `audit_dates.json`: `fda-recall-scraper.varied_test` `1029 -> 1075`, full note, prior note
+   preserved inline, clean 2-line `Edit` (JSON re-validated, `git diff --stat` confirmed exactly 2
+   lines changed). Revenue flat (44 users / 0 reviews / 0 bookmarks / $0), no owner email needed.
 
 0-DONE-h1074-steam-reviews-competitor-audit-automation-lab-false-claims-memo23-added.
    **[cycle 1074] DONE — QUALITY slot per rotation (1072 Q -> 1073 G -> 1074 Q). `competitor_audit`
