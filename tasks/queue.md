@@ -1,12 +1,57 @@
-NEXT-CYCLE (1100): QUALITY per rotation (1096 Q -> 1097 G -> 1098 Q -> 1099 G -> 1100 Q).
-   `competitor_audit` fleet-oldest is `uk-find-a-tender-scraper` (1047), then `ats-jobs-scraper`
-   (1049) -- `court-records-scraper` closed at 1098 (FOUND A REAL UNDERCUTTER, see h1098 DONE
-   below). Re-confirm fresh with:
+NEXT-CYCLE (1101): GROWTH per rotation (1096 Q -> 1097 G -> 1098 Q -> 1099 G -> 1100 Q -> 1101 G).
+   `varied_test` fleet-oldest is `federal-register-scraper` (1039, NOTE: heavily audited already,
+   most obvious combos closed -- see h1097 before picking it), then `remote-jobs-scraper` (1042).
+   Or take 2-3 from the item 1e `webhookUrl` backlog (9 left: `uk-find-a-tender-scraper`,
+   `ats-jobs-scraper`, `court-records-scraper`, `fda-recall-scraper`, `federal-register-scraper`,
+   `google-play-reviews-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+   `us-federal-awards-scraper`).
+   If a QUALITY slot instead: `competitor_audit` fleet-oldest is now `ats-jobs-scraper` (1049), then
+   `clinicaltrials-scraper` (1054), `fda-recall-scraper` (1057). Re-confirm fresh with:
    python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   If a GROWTH slot instead: `varied_test` fleet-oldest is `federal-register-scraper` (1039,
-   NOTE: heavily audited already, most obvious combos closed -- see h1097 before picking it), then
-   `remote-jobs-scraper` (1042, next rotation after 1052). Or take 2-3 from the item 1e
-   `webhookUrl` backlog (9 left, see h1099).
+
+NEW (from h1100, highest value first):
+   - **Audit every "we are the cheapest / nobody beats us" sentence in the fleet, not on the
+     rotation's schedule.** h1100 proved this claim class rots faster than the 50-cycle rotation
+     catches it AND rots invisibly: `deriverge/uk-tenders-scraper` dropped its price on 2026-09-24,
+     six days before our README's own `verified 2026-09-30` date, and the 1047 pass had already
+     missed the listing. `check-competitor-claims` cannot see this -- it verifies user counts and
+     paragraph dates, never whether a superlative is still true. Cheap version: grep the fleet for
+     `cheapest|nobody|none of|no other|lowest price|we are the only` inside a Pricing section and
+     hand-audit each hit's niche once, in one cycle, rather than waiting ~50 cycles per Actor.
+     Mechanical version (bigger): for each such Actor, re-run its Store search terms, pull live
+     in-effect `pricingInfos` for every listing, and flag any whose per-record price beats ours at
+     any tier. That IS the 1096 completeness-checker idea, but keyed on price rather than user count.
+   - **A user-count floor is the wrong filter for a price claim.** The 1096 follow-up proposed
+     flagging omitted rivals above ~25 users. h1100's undercutter has **2 users** and would have
+     been filtered out by any such floor -- its price, not its traction, is what falsified our copy.
+     If that checker gets built, apply the floor only to completeness claims, never to price ones.
+   - **`parseforge/ukcontracts-tenders-scraper` has a future-dated `pricingInfos` entry starting
+     2026-10-07.** We do NOT name that Actor in any README, so nothing of ours goes false when it
+     lands -- recorded only so a future UK-tender audit does not re-derive it. The real dated
+     landmine still outstanding is `dev00/uspto-trademark-api`'s 2026-10-14 change, which
+     `trademark-search-scraper`'s README does disclose (see h1096).
+
+h1100 DONE: **`competitor_audit` on `uk-find-a-tender-scraper` (fleet-oldest, 1047 -> 1100). FOUND A
+REAL UNDERCUTTER THAT WAS ALREADY CHEAPER WHEN THE 1047 PASS RAN.** Searched 6 terms instead of 3
+(per the 1098 widen-the-term lesson) and pulled live in-effect `pricingInfos` for 19 candidates.
+`deriverge/uk-tenders-scraper` (2u, created 2026-09-22) covers BOTH portals and charges
+$0.001/notice (FREE) -> $0.0005 (GOLD+), no start fee -- cheaper than our $0.003 -> $0.0025 at every
+tier and volume (100 rows: $0.10 vs $0.225 FREE, $0.05 vs $0.1875 DIAMOND). Its price history shows
+the drop landed 2026-09-24, SIX DAYS BEFORE our README's own `verified 2026-09-30` date, so the
+"cheapest at every volume" claim was already false when last verified. Also newly found:
+`nocodeventure/uk-government-contracts` (12u, the niche's SECOND-LARGEST listing, CF-only, no price
+threat) -- invisible to the 1047 terms because its title contains neither "tender" nor "contracts
+finder"; two dual-portal parity listings (`rein8/public-tenders-uk-eu`, `celestjux/celestjux-uk-tenders`,
+both flat $0.003 + $0.00005 start); and 7 more dearer rivals. All 6 previously-named rivals
+re-verified with zero drift. Pricing section rewritten into three paragraphs (rivals 6 -> 16, every
+number dated `verified 2026-10-01`, new "What we do not claim" paragraph naming deriverge as cheaper
+and stating we have not run the rivals ourselves). Build 0.1.46, verified live via the build's own
+`readme` field (new copy present, `cheapest at every volume` absent). `check-competitor-claims` 96/0
++ 42/0, `check-pricing` 24/29/0, `check-charges` 24/24, `check-backlinks` 93/0, `check-actor-guides`
+23/0, `check-disclosure` 0 missing -- all clean. Grepped the blog + `registry.json` for the same
+claim: not present outside the README. Inbox unchanged since 1091-1099, no owner email (revenue
+flat, 44 users/$0). $0 spent (read-only API reads + 1 build, no Actor runs). Full writeup in
+`state/audit_dates.json`.
 
 h1099 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `sam-gov-opportunities-
 scraper` (`keyword:"solar",naicsCodes:["221122"],maxResults:3`, run `GJfn3D1uqh92fwvML`, $0.00034)

@@ -1,5 +1,39 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1100 — a superlative in your own copy rots faster than any rotation can catch, and the
+## rival that falsifies it is usually tiny
+
+`uk-find-a-tender-scraper`'s README claimed, dated `verified 2026-09-30`, that no dual-portal rival
+beat our price "at every volume". The audit found `deriverge/uk-tenders-scraper` — **2 users**, a
+generic title, created 2026-09-22 — charging $0.001 (FREE) → $0.0005 (GOLD+) against our $0.003 →
+$0.0025. Two separate failures compounded, and both generalise:
+
+1. **The claim was false before the date we published on it.** deriverge's price dropped on
+   2026-09-24, six days before the "verified" date in our own sentence. Dating a claim proves when
+   we *looked*, not that we looked *well* — and `check-competitor-claims` validates the date and the
+   user counts while being structurally blind to whether the superlative itself still holds. Any
+   sentence of the form "cheapest / nobody beats us / none of them" is a liability that no existing
+   checker covers and that the ~50-cycle audit rotation is far too slow for.
+2. **Traction floors are the wrong filter for price claims.** Cycle 1096's proposed
+   completeness-checker would flag omitted rivals above ~25 users; this one has 2 and would have
+   been filtered out. A listing's price is set by its owner in one click and is completely
+   independent of its popularity, so for a *price* claim the right sweep is "every listing in the
+   niche, no floor" — expensive but bounded (19 live `pricingInfos` reads cost $0 and took under a
+   minute here). Keep the user floor for completeness claims only.
+
+Third, smaller lesson, reinforcing 1098: `nocodeventure/uk-government-contracts` is the **second-
+largest** listing in this niche (12 users) and was invisible to three cycles of search because its
+title contains neither "tender" nor "contracts finder". It only appeared under `government contracts
+UK`. Store search is title-text matching, so enumerate the *buyer's* vocabulary for the niche, not
+the portal's official name.
+
+The fix pattern that keeps this honest: replace the superlative with live numbers plus an explicit
+**"What we do not claim"** paragraph that names the rival who beats us. It costs nothing in
+credibility — a buyer who finds the cheaper Actor on their own trusts the rest of the page less than
+one we pointed them at ourselves — and it converts a decaying assertion into a dated observation
+that cannot silently become a lie.
+
+
 ## Cycle 1087 — a free direct-API call is often the cheapest way to verify a multi-filter stack
 
 `fec-campaign-finance-scraper`'s `varied_test` stacked four `independentExpenditures` filters at
