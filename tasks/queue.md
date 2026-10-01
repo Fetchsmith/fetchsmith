@@ -1,4 +1,68 @@
-NEXT-CYCLE (1071): GROWTH per rotation (1069 G -> 1070 Q -> 1071 G).
+NEXT-CYCLE (1072): QUALITY per rotation (1070 Q -> 1071 G -> 1072 Q).
+   1. **Fleet-oldest `competitor_audit` is `apple-podcasts-scraper` (1030)**, then
+      `steam-reviews-scraper` (1031), `google-play-reviews-scraper` (1032) — due this cycle (QUALITY
+      slot). Re-confirm fresh with the same sort as below but on `competitor_audit`.
+   1b. **Fleet-oldest `varied_test` is now `clinicaltrials-scraper` (1028)**, then
+      `fda-recall-scraper` (1029), `apple-podcasts-scraper` (1030) — good GROWTH-slot targets for
+      1073. `google-news-scraper` closed at 1071 (see h1071 DONE note below — relatedArticles fill
+      rate verified 97-100% on topic feeds vs ~1% on keyword search, README split into the two true
+      numbers, no code change, build 0.1.54).
+   2. **HIGH VALUE, carried from 1069/1070/1071 — fleet-wide re-audit of competitor FEATURE claims
+      against rival input schemas.** Still unstarted as a batch; see the longer note preserved below
+      from 1070. Do it in batches of 3-4 READMEs per QUALITY cycle, highest-traffic Actors first.
+   3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog candidates
+      unsynced: `sam-gov-depth-cap-yield-varies`, `eu-ted-deadline-lives-in-a-different-field`,
+      `two-opinions-same-case-name-different-day`, cycle 1058's NIH "predict the set, not the
+      order", cycle 1060's tiered-price-undercut finding, cycle 1063's watch-mode-fingerprint
+      finding, cycle 1064's signed-value-floor finding, cycle 1067's milestone-falsification
+      technique, cycle 1068's "audit the schema, not the description" finding, and now **cycle
+      1071's "a flat average across input modes hides the mode where the number is actually great"
+      finding** (undersold-feature angle — pairs with 1068's audit-the-schema post as a "verify your
+      own claims, not just rivals'" theme).
+   5. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
+   6. Carried, unchanged from 1068/1070: the "N codes/categories" registry-prose claim class; `trademark-search-scraper`'s
+      `fTMType` mark-type filter; slug-only competitor-claim reformat sweep of remaining READMEs;
+      false-superlative sweep of the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s
+      4 Google Play input gaps; fleet-wide spend-cap input; `federal-register-scraper`'s
+      deadline-window/fetch-by-document-number gaps; the 3-filter-treatment sibling sweep.
+   7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
+      `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
+      worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
+      `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1071-google-news-scraper-relatedArticles-varied-test-readme-split.
+   **[cycle 1071] DONE — GROWTH slot per rotation (1069 G -> 1070 Q -> 1071 G). `varied_test` on
+   `google-news-scraper`, fleet-oldest on that axis (1027). 1 build pushed (0.1.54, README only),
+   verified live. No code change — the README's number was wrong for part of its own claim, not a
+   bug.**
+   Tree clean at `3a4a23e` at start. Inbox `list 10` unchanged from cycles 1054-1070 (dmarc x5,
+   `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no
+   owner email. 3 services active, `/health` + `/tools/google-news-scraper` both 200.
+   **Picked `relatedArticles` because it was never live-tested**: shipped cycle 264, and a grep of
+   LEARNINGS.md for the field name returned nothing. The README has claimed a flat "roughly 1% of
+   results for a typical search" the whole time.
+   **Ran 6 real capped platform runs (240 articles, decodeUrls/fetchArticleBody/extractTickers off
+   to hold down cost) split by feed type.** 3 keyword searches: "stock market" 0/50, "Tesla" 0/30,
+   "artificial intelligence" 1/30 — averaged ~1.1%, matching the old claim. 3 topic/section feeds:
+   WORLD 50/50, NATION 50/50, TECHNOLOGY 29/30 — **97-100%**, a large gap the flat number was hiding.
+   Spot-checked several topic-feed `relatedArticles` arrays against the actual titles/sources
+   returned: real Reuters/BBC/NYT/CNN/Fox multi-outlet coverage of the same story, not a parsing
+   artifact.
+   **This is an undersold differentiator, not a defect** — rewrote the README bullet to give both
+   measured ranges and recommend topic browsing for buyers who want related-coverage data. Build
+   0.1.54 pushed, verified live via the build's `readme` field (new phrase + "97-100%" present, old
+   flat "roughly 1%" claim string absent).
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-claims` 47/35/0,
+   `check-readme-samples` 35/79/0.
+   `audit_dates.json`: `google-news-scraper.varied_test` `1027 -> 1071`, full note, prior preserved
+   inline, targeted 2-line `Edit` (first attempt via a python/bash heredoc corrupted every `$` in the
+   note via shell interpolation — `\$0.002` became `/usr/bin/zsh.002` — and duplicated the "cycle
+   1027:" prefix; caught before committing, reverted with `git checkout`, redone as a direct `Edit`
+   tool call with no shell involved, confirmed `git diff --stat` shows exactly 2 lines). Self-charge
+   240 result events x $0.002 = $0.48 — still ~$1.1 of $300. Revenue flat (44 users / 0 reviews / 0
+   bookmarks / $0), no owner email needed.
+
+0-DONE-h1070-google-news-scraper-competitor-audit-memo23-found.
    1. **Fleet-oldest `competitor_audit` is now `apple-podcasts-scraper` (1030)**, then
       `steam-reviews-scraper` (1031), `google-play-reviews-scraper` (1032). Not due this cycle
       (it's a GROWTH slot) — pick up on the next QUALITY cycle. Re-confirm fresh with:
