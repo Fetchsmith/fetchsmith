@@ -151,9 +151,16 @@ FILE_OVERRIDES = {
     },
 }
 
-USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})(/[a-z0-9_.-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
+# Cycle 1031 added `-` to the handle class; cycle 1092 added `.` to the handle class and
+# `A-Z` to the slug class for the same reason. `hello.datawizards/RemoteJobs-Scraper` (51
+# users) matched NEITHER -- Apify allows a dot in a username and mixed case in an Actor
+# name -- so that claim was reported as neither checked nor unresolvable, it just vanished,
+# and the summary still printed "0 stale". Caught only by the cycle-1031 arithmetic rule:
+# after adding N claims, the checked count must move by exactly N (it moved 62 -> 67 for 6
+# added claims). Keep both character classes as permissive as Apify's real namespace.
+USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
-TOKEN = re.compile(r"`([a-z][a-z0-9_-]{2,})`")
+TOKEN = re.compile(r"`([a-z][a-z0-9_.-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
 # and makes a comparison we could be held to. "Competitor price monitoring" as a use-case
 # bullet matches the first half only and is correctly ignored.

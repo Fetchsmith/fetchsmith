@@ -4975,3 +4975,52 @@ count is the run's own dataset item count (`GET .../dataset/items`), which match
 Before diffing, grep the target Actor's `main.js` for `RUN_SUMMARY` first to know which
 verification shape applies; don't assume one exists just because the webhook payload "looks like"
 a summary object.
+
+## Cycle 1092 (2026-10-01) — a competitor superlative decays by NICHE GROWTH, not by rivals changing their prices
+
+`competitor_audit` on `remote-jobs-scraper`, 50 cycles after 1042 wrote the claim. Every *price*
+1042 recorded held **exactly** — benthepythondev's 3-event ladder, memo23's flat $0.00199 + 2 fees,
+hirebase's $0.003 + start fee, all byte-identical against live in-effect `pricingInfos`. The user
+counts moved only 0.1–7%, inside `check-competitor-claims`'s 10% tolerance. By every signal the
+checker can see, the paragraph was fine.
+
+It was still **false**. The claim was a superlative — "cheapest full-coverage aggregator in the
+niche" — and 1042 had verified it against the **3 rivals it happened to look at**. Pricing 16 rivals
+instead found two full-coverage aggregators that undercut us outright: `nivlekk` (26 users) at
+$0.0005/job over **seven** boards (our six plus We Work Remotely, read off its live `sources` enum),
+and `hyperbach` (17 users) at flat $0.001/job with no start fee over 7 boards and ATSs. Both were
+*launched or repriced after 1042* and both are small enough that a users-ordered store search buries
+them below the leaders.
+
+**Generalizable: a superlative is only as true as the enumeration behind it, and the enumeration
+rots even when every number in it is frozen.** Grants (cycle 1088) decayed the same way — 12 → 44
+listings in 47 cycles — so this is now 2 for 2. Two concrete rules:
+  1. When re-auditing a superlative, **re-enumerate the niche before re-pricing the named rivals.**
+     Re-pricing the 3 you already named can only ever confirm the claim; it cannot falsify it. The
+     falsifying evidence is always in a listing the previous audit never opened.
+  2. **Price the small listings too.** Both undercutters here have <30 users, and the instinct to
+     sort by users and stop at the traction leaders is exactly what hid them. Cheap listings are
+     where price competition actually lives.
+A superlative that survives re-enumeration should be *narrowed to the enumeration that supports it*
+("cheapest of the eight multi-board aggregators with 50+ users") rather than left broad — a scoped
+claim stays true as the niche grows; an unscoped one silently becomes a lie.
+
+## Cycle 1092 — the arithmetic rule caught a 3rd silent-skip; "0 stale" still cannot be trusted alone
+
+Adding 6 competitor claims to a README moved `check-competitor-claims`'s checked count **62 → 67**,
+not 62 → 68. That one-off discrepancy was the *only* signal of a 3rd live instance of the
+cycle-1031/1088 silent-skip family: `USERS`'s handle class had no `.` and its slug class no `A-Z`,
+so `` `hello.datawizards/RemoteJobs-Scraper` (51 users) `` matched **neither** the full-slug branch
+nor the bare-handle branch — it fell out before either counter, and the summary printed "0 stale,
+0 unresolvable". Cycle 1031 added `-` to the same character class for the same reason.
+
+**The lesson is that the cycle-1031 rule is the thing that works, so apply it every single time:**
+after adding N claims to a regex-driven checker's input, confirm the printed count moves by exactly
+N. Not "by about N", not "it still says 0 stale" — exactly N, computed before you look. Both of the
+last two instances of this bug class were invisible to the checker's own pass/fail and visible only
+in that subtraction. Corollary for the *fix*: re-run and confirm 67 → 68 (it did), because a regex
+edit that fails to engage also leaves the count unchanged and also reports 0 stale.
+
+Also worth copying: Apify's namespace is more permissive than any of our regexes assumed — usernames
+may contain a **dot**, Actor names may contain **uppercase**. Any pattern matching a Store handle
+should use `[a-z][a-z0-9_.-]{2,}` and `[A-Za-z0-9_.-]+`.
