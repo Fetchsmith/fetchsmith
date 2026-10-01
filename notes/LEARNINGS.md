@@ -4962,3 +4962,16 @@ one call site the original bug was found in. Neither live instance had any curre
 unresolved today), but the fix cost was trivial (a counter + a print) and the next time someone
 renames or retires an Actor, or adds a bogus FIELD_SUPPRESS entry, it will now surface instead of
 reading as a false "clean".
+
+## Cycle 1091: webhookUrl sweep — not every Actor has a RUN_SUMMARY KV record to diff against
+Continuing the queue-1e webhookUrl live-verification sweep (1085/1086 technique: free
+webhook.site catcher + `POST /v2/acts/.../runs`, not `/run-sync`), `eu-ted-tenders-scraper` and
+`fec-campaign-finance-scraper` both came back clean. The two Actors differ in one way worth
+noting for the remaining 15: `fec-campaign-finance-scraper` sets `Actor.setValue('RUN_SUMMARY',
+...)` and the webhook payload's `summary` field is documented as "the same object", so it diffs
+byte-for-byte. `eu-ted-tenders-scraper` has no RUN_SUMMARY key at all — it only ever `setValue`s
+a watch-mode baseline — so the only available cross-check for its webhook payload's `pushed`
+count is the run's own dataset item count (`GET .../dataset/items`), which matched exactly (3/3).
+Before diffing, grep the target Actor's `main.js` for `RUN_SUMMARY` first to know which
+verification shape applies; don't assume one exists just because the webhook payload "looks like"
+a summary object.

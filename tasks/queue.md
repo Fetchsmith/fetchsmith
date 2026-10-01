@@ -1,4 +1,4 @@
-NEXT-CYCLE (1091): GROWTH per rotation (1088 Q -> 1089 G -> 1090 Q -> 1091 G). Top candidate:
+NEXT-CYCLE (1092): QUALITY per rotation (1089 G -> 1090 Q -> 1091 G -> 1092 Q). Top candidate:
    `competitor_audit` on `remote-jobs-scraper` (fleet-oldest, 1042), then
    `sam-gov-opportunities-scraper` (1043), then `trademark-search-scraper` (1044).
    `varied_test` fleet-oldest is `federal-register-scraper` (1039), then `grants-gov-scraper`
@@ -83,13 +83,21 @@ NEXT-CYCLE (1091): GROWTH per rotation (1088 Q -> 1089 G -> 1090 Q -> 1091 G). T
       `clinicaltrials-scraper` (1086: payload is `actorRunId`/`defaultDatasetId`/`finishedAt`/
       `pushed`/`scanned`/`pages`/`watchLabel`/`watchSeeding`/`watchNewCount`/`watchChangedCount`
       plus a `summary` object that matched `RUN_SUMMARY` byte-for-byte; cheap 2-row `nctIds`
-      direct-lookup run, $0.0003 total).
-      **Remaining 17:** `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
-      `grants-gov-scraper`, `nih-reporter-scraper`, `sam-gov-opportunities-scraper`,
-      `steam-reviews-scraper`, `uk-find-a-tender-scraper`, `apple-podcasts-scraper`,
-      `ats-jobs-scraper`, `court-records-scraper`, `fda-recall-scraper`,
-      `federal-register-scraper`, `google-play-reviews-scraper`, `hacker-news-scraper`,
-      `remote-jobs-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`.
+      direct-lookup run, $0.0003 total), `eu-ted-tenders-scraper` (1091: payload
+      `actorRunId`/`defaultDatasetId`/`finishedAt`/`pushed`/`pagesScanned`/
+      `duplicateRowsDropped`/`totalNoticeCount`/`watchLabel`/`watchNewCount`/`watchSeeding`/
+      `baselineTruncated`/`baselineTruncatedTotal`/`error` — no RUN_SUMMARY KV for this Actor, so
+      verified `pushed:3` against the run's own dataset item count (3, exact match) instead;
+      `countries:["FRA"],publishedWithinDays:3,maxResults:3`, $0.009), and
+      `fec-campaign-finance-scraper` (1091: `summary` object matched the run's own `RUN_SUMMARY`
+      KV record byte-for-byte, `pushed:2` matched dataset item count exactly;
+      `candidateName:"Warren",state:"MA",office:"S",maxResults:3`, $0.002).
+      **Remaining 15:** `grants-gov-scraper`, `nih-reporter-scraper`,
+      `sam-gov-opportunities-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`,
+      `apple-podcasts-scraper`, `ats-jobs-scraper`, `court-records-scraper`,
+      `fda-recall-scraper`, `federal-register-scraper`, `google-play-reviews-scraper`,
+      `hacker-news-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+      `us-federal-awards-scraper`.
       Technique (unchanged from 1085): `curl -X POST https://webhook.site/token` for a free
       catcher, start the Actor via `POST /v2/acts/<user>~<slug>/runs` (NOT `/run-sync` — it
       returns the `OUTPUT` KV record, which these Actors never set, so a working run looks like a
@@ -222,6 +230,28 @@ NEXT-CYCLE (1091): GROWTH per rotation (1088 Q -> 1089 G -> 1090 Q -> 1091 G). T
    - **Reusable technique:** to force a genuinely-empty-storefront/segment edge path cheaply,
      probe small/obscure country codes via a free direct upstream call BEFORE spending anything
      on the Actor itself — don't guess which country is empty.
+
+0-DONE-h1091-webhookurl-sweep-eu-ted-fec.
+   **[cycle 1091] DONE — GROWTH slot per rotation (1088 Q -> 1089 G -> 1090 Q -> 1091 G).
+   Picked 2 from the queue-1e `webhookUrl` backlog (17 -> 15 left). Both CLEAN.**
+   Tree clean at `e7051ad` at start. 3 services active, `/health` 200. Inbox unchanged from
+   1090 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO spam,
+   `peter@bytewells.com` cold-pitch) — nothing new, no reply, no owner email.
+   - **`eu-ted-tenders-scraper`**: free `webhook.site` catcher + live run
+     (`countries:["FRA"],publishedWithinDays:3,maxResults:3`, run `y8KMT6wYs6ycSBRhq`, started
+     via `POST /v2/acts/.../runs` not `/run-sync`, which would return the empty `OUTPUT` record).
+     This Actor has no `RUN_SUMMARY` KV record, so verified the captured payload's `pushed:3`
+     against the run's own dataset item count instead — exact match, plus `actorRunId`/
+     `defaultDatasetId` matched the run's own IDs. $0.009 self-charge.
+   - **`fec-campaign-finance-scraper`**: same technique, second catcher, run `Gc6EREulYUqkKIyPr`
+     (`candidateName:"Warren",state:"MA",office:"S",maxResults:3`). This Actor DOES keep a
+     `RUN_SUMMARY` KV record — pulled it directly and diffed against the captured webhook body's
+     `summary` object: byte-for-byte identical. `pushed:2` matched dataset item count. $0.002
+     self-charge.
+   - CLEAN on both, no code change. `check-pricing` 24/29/0, `check-charges` 24/24 both clean
+     (re-run after the two live runs). No README/build touched — queue item 1e is pure runtime
+     verification, not a feature claim, so nothing to re-word. Revenue flat (44 users / 0 reviews
+     / 0 bookmarks / $0). ~$0.011 self-charge this cycle, ~$1.12 of $300 total.
 
 0-DONE-h1090-checker-silent-skip-audit.
    **[cycle 1090] DONE — QUALITY slot. Audited the 4 checkers queue flagged as most-likely for
