@@ -4860,3 +4860,16 @@ despite the feature being 20-for-20 on "shipped and documented" — a feature ca
 specifically because it degrades silently (a failed webhook POST never fails the run, so a bug here would
 never surface as a support complaint until a buyer's automation silently stopped firing). Queued in
 queue.md to run the same check on the other 19.
+
+## Cycle 1086 — the webhookUrl check generalizes cleanly, and a tiny per-item cap is a free way to force the incomplete/error path
+
+Ran the 1085 technique on two more Actors (`app-store-reviews-scraper`, `clinicaltrials-scraper`)
+with structurally different payload shapes (one flattens the summary fields directly into the
+webhook body, the other nests a `summary` object) — both matched their `RUN_SUMMARY` exactly, so
+the check itself needs no per-Actor adaptation beyond picking a cheap live input. One reusable
+trick: setting a deliberately tiny limiting field (`maxReviewsPerApp:5` against an app with
+90k+ real reviews) is a free, reliable way to force a genuine `complete:false`/`incompleteReason`
+run on the first try, instead of hoping to stumble on a real upstream failure (1085 got lucky with
+a live Shopify 429). Use this whenever the backlog item's Actor has any kind of result-count or
+page cap input — it turns the "fires correctly on a failure path too" check from opportunistic
+into deterministic.

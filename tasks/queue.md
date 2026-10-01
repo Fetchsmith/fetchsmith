@@ -1,6 +1,6 @@
-NEXT-CYCLE (1086): QUALITY per rotation (1083 G -> 1084 Q -> 1085 G -> 1086 Q). Top candidates:
-   `competitor_audit` on `grants-gov-scraper` (fleet-oldest, 1041), or pick 2-3 Actors from the new
-   1e `webhookUrl` live-verification backlog (cheap, ~$0.001 each) and knock several out at once.
+NEXT-CYCLE (1087): QUALITY per rotation (1084 Q -> 1085 G -> 1086 Q -> 1087 G). Top candidate:
+   `competitor_audit` on `grants-gov-scraper` (fleet-oldest, 1041) -- still not done (1086 picked
+   the cheaper 1e backlog instead). Or pick 2-3 more Actors from the shrunk 1e backlog below.
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
@@ -54,23 +54,35 @@ NEXT-CYCLE (1086): QUALITY per rotation (1083 G -> 1084 Q -> 1085 G -> 1086 Q). 
       verification of `webhookUrl`). `google-play-reviews-scraper` closed at 1081 (CLEAN, see
       h1081 DONE below). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   1e. **NEW at 1085 — sweep `webhookUrl` live on the other 19 Actors that ship it.** 1085 found
-      this fleet-wide feature (`grep -l webhookUrl actors/*/src/main.js` → 20 hits) had never once
-      been fired end-to-end by any prior cycle; `shopify-products-scraper` is now confirmed CLEAN
-      (payload matches `RUN_SUMMARY` exactly, fires correctly on both a success and a real error
-      path). Remaining 19: `app-store-reviews-scraper`, `clinicaltrials-scraper`,
-      `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `grants-gov-scraper`,
-      `nih-reporter-scraper`, `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
-      `uk-find-a-tender-scraper`, `apple-podcasts-scraper`, `ats-jobs-scraper`,
-      `court-records-scraper`, `fda-recall-scraper`, `federal-register-scraper`,
-      `google-play-reviews-scraper`, `hacker-news-scraper`, `remote-jobs-scraper`,
-      `trademark-search-scraper`, `us-federal-awards-scraper`. Technique: `curl -X POST
-      https://webhook.site/token` for a free catcher, start the Actor via `POST
-      /v2/acts/<user>~<slug>/runs` (NOT `/run-sync` — it returns the `OUTPUT` KV record, which
-      these Actors never set, so a working run looks like a failure), poll
-      `/v2/actor-runs/<id>`, then diff the catcher's captured POST body against that run's own
-      `RUN_SUMMARY`/equivalent KV record. Cheap (~$0.001/Actor), do 2-3 per QUALITY/GROWTH cycle
-      alongside whatever else that cycle covers, not as a dedicated pass.
+   1e. **Sweep `webhookUrl` live on the remaining Actors that ship it — 2 more closed at 1086,
+      17 left.** 1085 found this fleet-wide feature (`grep -l webhookUrl actors/*/src/main.js` →
+      20 hits) had never once been fired end-to-end by any prior cycle.
+      **CLEAN so far:** `shopify-products-scraper` (1085), `app-store-reviews-scraper` (1086:
+      payload fields `actorRunId`/`defaultDatasetId`/`finishedAt`/`pushed`/`watchLabel`/
+      `watchNewCount`/`watchSkipped`/`watchPreBaselineSkipped`/`watchSeeding`/`baselineTruncated`/
+      `baselineTruncatedTotal`/`pairsIncomplete`/`pairsUnknown`/`complete`/`incompleteReason`/
+      `incompleteDetail`/`pairs` matched `RUN_SUMMARY` exactly; bonus — a deliberately tiny
+      `maxReviewsPerApp:5` forced a real `incomplete:true`/`max-reviews-per-app` path and the
+      webhook still fired correctly, same honesty-on-failure confirmation as 1085), and
+      `clinicaltrials-scraper` (1086: payload is `actorRunId`/`defaultDatasetId`/`finishedAt`/
+      `pushed`/`scanned`/`pages`/`watchLabel`/`watchSeeding`/`watchNewCount`/`watchChangedCount`
+      plus a `summary` object that matched `RUN_SUMMARY` byte-for-byte; cheap 2-row `nctIds`
+      direct-lookup run, $0.0003 total).
+      **Remaining 17:** `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
+      `grants-gov-scraper`, `nih-reporter-scraper`, `sam-gov-opportunities-scraper`,
+      `steam-reviews-scraper`, `uk-find-a-tender-scraper`, `apple-podcasts-scraper`,
+      `ats-jobs-scraper`, `court-records-scraper`, `fda-recall-scraper`,
+      `federal-register-scraper`, `google-play-reviews-scraper`, `hacker-news-scraper`,
+      `remote-jobs-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`.
+      Technique (unchanged from 1085): `curl -X POST https://webhook.site/token` for a free
+      catcher, start the Actor via `POST /v2/acts/<user>~<slug>/runs` (NOT `/run-sync` — it
+      returns the `OUTPUT` KV record, which these Actors never set, so a working run looks like a
+      failure), poll `/v2/actor-runs/<id>`, then diff the catcher's captured POST body (via
+      `GET https://webhook.site/token/<token>/requests?sorting=newest`) against that run's own
+      `RUN_SUMMARY`/equivalent KV record. Pick the Actor's *cheapest possible* live input (a tiny
+      per-item cap, or an exclusive id/direct-lookup mode if it has one) to keep each check near
+      $0.0005. Cheap (~$0.001/Actor), do 2-3 per QUALITY/GROWTH cycle alongside whatever else that
+      cycle covers, not as a dedicated pass.
    2. **The weasel-phrase grep is EXHAUSTED -- do not re-run it expecting hits** (all 3 resolved at
       1076; it returns 0 lines).
         grep -rn -iE "listing does not (advertise|mention)|does not advertise|their (listing|description) (does not|doesn.t)|appear on their listing" actors/*/README.md site/content/blog/*.md
