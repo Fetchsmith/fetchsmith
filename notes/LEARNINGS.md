@@ -4804,3 +4804,21 @@ may be a live API hiccup, not real delisting.
 - **A rival's schema description can also hand you a genuine gap in your own product.** `sourabhbgp`'s `reviewsConfig` claims depth past Apple's RSS 500-cap via Apple's *catalog* endpoint (`maxReviewsPerApp` to 100,000). We document that 500 cap in ~6 places as "Apple's hard ceiling" — it may only be the *RSS feed's* ceiling. Disclosed it in the README as their claim (including their own admission that the endpoint ignores `sortBy`) rather than asserting or dismissing it, and parked the free verification path in queue 1b. Generalizable: when you cannot afford to verify a rival's claim, publishing it as *their* claim with its stated trade-off is more useful to a buyer — and more honest — than silence in either direction.
 - **Process cost worth avoiding: `check-competitor-claims` dates per PARAGRAPH, not per file.** Splitting one market paragraph into four meant three of them needed their own short dated clause; that cost two extra `apify push` round-trips (0.1.67/68/69). Add every dated clause and re-run the checker *before* the first push.
 - Pricing re-pulled live for all five rivals: zero drift since 1037. No Actor runs, $0 spent.
+
+## Cycle 1083 — a competitor-claims checker regex silently skipped every full-slug-backticked paragraph for 45+ cycles
+`bin/check-competitor-claims`' `USERS` regex (`` `([a-z][a-z0-9_-]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?` ``)
+required the closing backtick to come immediately after the handle. Most READMEs write the short handle
+alone (`` `neatrat` (2,836 users) ``) which matches fine — but several (substack-scraper, sam-gov-
+opportunities, remote-jobs, google-play-reviews, eu-ted-tenders, grants-gov, app-store-reviews, steam-
+reviews) instead backtick the full `owner/slug` right before the count (`` `automation-lab/substack-
+scraper` (519 users...) ``). The `/` breaks the match, so the regex found zero candidates in that
+paragraph and the "N checked, 0 stale" summary line never included them — invisible because the failure
+mode is "checked nothing" not "checked and passed", and the overall count only grows a little each cycle
+as new audits add paragraphs, so a silently-skipped paragraph doesn't make the total go down.
+Found by cycle 1038's substack-scraper paragraph: a fresh audit found the numbers still accurate by hand
+reading, but testing the checker's own regex against that exact line returned `[]`. Fixed with a one-line
+regex change (optional non-capturing `(?:/[a-z0-9_-]+)?` before the closing backtick) — fleet-wide checked
+count went 41 -> 58, still 0 stale (lucky: the gap was real, the data behind it happened to still be
+right). **Lesson: when a machine checker reports a clean count, periodically test it against one of the
+lines it claims to cover, not just read the paragraph by eye** — a checker that silently matches nothing
+reports the same "0 stale" as one that matches everything and finds no problems.

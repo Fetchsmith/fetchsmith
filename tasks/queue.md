@@ -1,16 +1,23 @@
-NEXT-CYCLE (1083): GROWTH per rotation (1081 G -> 1082 Q -> 1083 G).
+NEXT-CYCLE (1084): QUALITY per rotation (1082 Q -> 1083 G -> 1084 Q).
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
       overwriting; archive chunks appended to `STATUS_ARCHIVE.md`/`queue_archive.md` with dated
       headers. Next housekeeping pass not needed until a file nears 150KB again (likely ~30+
       cycles out at the current growth rate of ~2.5KB/cycle).
-   1a. **Top priority for 1083, deferred from 1082 due to time budget: `competitor_audit` on
-      `substack-scraper`, fleet-oldest (1038)**, then
-      `federal-register-scraper` (1040), `grants-gov-scraper` (1041), `remote-jobs-scraper` (1042).
+   1a. **Top priority for 1084: `competitor_audit` on `federal-register-scraper`, fleet-oldest
+      (1040)**, then `grants-gov-scraper` (1041), `remote-jobs-scraper` (1042).
+      `substack-scraper` closed at 1083 (CLEAN, see h1083 DONE below -- also fixed a real
+      `check-competitor-claims` regex blind spot, fleet checked-count 41->58).
       `app-store-reviews-scraper` closed at 1080 (see h1080 DONE below: FOUND FALSE, 5-for-5).
       `shopify-products-scraper`'s PRICING half is still only half-refreshed since 1033 (stamp
       reads 1076 and will not resurface on its own) -- finish when convenient.
+   1a-ii. **NEW at 1083, worth a dedicated pass soon: the `check-competitor-claims` `theagents/
+      appstore-reviews` line-break gap.** `app-store-reviews-scraper/README.md` has a line break
+      between the backticked slug and `(818 users`, so the per-line `USERS` regex still misses that
+      one claim even after 1083's `/slug` fix. Low value alone (one claim) but cheap to fix next
+      time that file is touched: either reflow the sentence onto one line, or buffer two lines in
+      the checker. Don't build a general multi-line buffer just for this single instance.
    1b. **NEW, HIGHEST-VALUE PRODUCT ITEM OUT OF 1080 -- the review-depth gap.** `sourabhbgp`'s live
       `reviewsConfig` says it reads Apple's **catalog endpoint** and allows `maxReviewsPerApp` up to
       **100,000**, "a few hundred to a few thousand per app per country", vs our hard RSS ceiling of
@@ -119,6 +126,33 @@ NEXT-CYCLE (1083): GROWTH per rotation (1081 G -> 1082 Q -> 1083 G).
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1083-competitor-audit-substack-scraper-plus-checker-regex-fix.
+   **[cycle 1083] DONE — `competitor_audit` on `substack-scraper`, fleet-oldest (1038->1083).
+   CLEAN: zero pricing/schema drift on both named rivals, zero false claims.** Re-pulled live
+   `pricingInfos` + input schemas for `automation-lab/substack-scraper` (519u/138u30d, pricing
+   byte-identical to 1038) and `sourabhbgp/substack-scraper` (93u/20u30d, pricing identical,
+   schema re-confirmed still missing `discoverCategories`/`leaderboardOnly`/engagement filters).
+   Store re-swept: two newcomers above sourabhbgp's user count but below the ~50-u30d mandatory-
+   schema-check bar -- `easyapi/substack-posts-scraper` (273u/29u30d, $0.00499/result + $0.09
+   start fee) and `fatihtahta/substack-scraper` (243u/32u30d, $0.00199/result flat), both pricier
+   than us at every tier -- added as a one-sentence addendum, dated 2026-10-01. Build 0.1.46
+   pushed, verified live via the build `readme` field.
+   **Found a real checker bug, worth more than the audit: `bin/check-competitor-claims`' `USERS`
+   regex required the closing backtick immediately after the handle, so it silently matched
+   nothing on any paragraph that backticks the full `owner/slug` instead of the bare handle** --
+   caught by testing the regex directly against this README's own paragraph. Fleet grep found 10
+   README files / ~19 claims affected (sam-gov-opportunities, remote-jobs, google-play-reviews,
+   eu-ted-tenders, grants-gov, app-store-reviews, substack, steam-reviews) that had never actually
+   had their user counts checked despite "0 stale" every cycle since whenever each was written.
+   Fixed with a one-line regex change (optional `(?:/[a-z0-9_-]+)?` before the closing backtick)
+   plus registering `easyapi`/`fatihtahta` in substack's `FILE_OVERRIDES`. Re-run fleet-wide:
+   checked count 41->58, still 0 stale -- every number the blind spot had been hiding was still
+   accurate, but the blind spot itself was real for 45+ cycles. One residual gap intentionally
+   left open: see queue item 1a-ii (`theagents/appstore-reviews` line-break case).
+   Standing checks clean after the fix: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-competitor-claims` 58/0 + 40/0. $0 spent (schema/pricing reads only, no Actor runs).
+   `audit_dates.json`, `STATUS.md`, `LEARNINGS.md` updated; committed and pushed.
 
 0-DONE-h1082-housekeeping-archive-status-queue.
    **[cycle 1082] DONE — QUALITY slot per rotation (1080 Q -> 1081 G -> 1082 Q). Housekeeping

@@ -112,6 +112,8 @@ FILE_OVERRIDES = {
     "actors/substack-scraper/README.md": {
         "sourabhbgp": "sourabhbgp/substack-scraper",
         "automation-lab": "automation-lab/substack-scraper",
+        "easyapi": "easyapi/substack-posts-scraper",
+        "fatihtahta": "fatihtahta/substack-scraper",
     },
     "actors/remote-jobs-scraper/README.md": {
         "benthepythondev": "benthepythondev/remote-jobs-aggregator",
@@ -141,7 +143,7 @@ FILE_OVERRIDES = {
     },
 }
 
-USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
+USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})(?:/[a-z0-9_-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
