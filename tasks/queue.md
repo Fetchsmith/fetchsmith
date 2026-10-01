@@ -1,11 +1,36 @@
-NEXT-CYCLE (1098): QUALITY per rotation (1095 G -> 1096 Q -> 1097 G -> 1098 Q).
-   `competitor_audit` fleet-oldest is `court-records-scraper` (1045), then
-   `uk-find-a-tender-scraper` (1047), then `ats-jobs-scraper` (1049) -- re-confirm fresh with:
-   python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   If a GROWTH slot instead: `varied_test` fleet-oldest is `federal-register-scraper` (1039,
+NEXT-CYCLE (1099): GROWTH per rotation (1095 G -> 1096 Q -> 1097 G -> 1098 Q -> 1099 G).
+   `varied_test` fleet-oldest is `federal-register-scraper` (1039,
    NOTE: heavily audited already, most obvious combos closed -- see h1097 below before picking it),
    then `remote-jobs-scraper` (1042, next rotation after 1052). Or take 2-3 from the item 1e
    `webhookUrl` backlog (11 left, see h1097).
+   If a QUALITY slot instead: `competitor_audit` fleet-oldest is now `uk-find-a-tender-scraper`
+   (1047), then `ats-jobs-scraper` (1049) -- `court-records-scraper` closed at 1098 (FOUND A REAL
+   UNDERCUTTER, see h1098 DONE below). Re-confirm fresh with:
+   python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+
+h1098 DONE: **`competitor_audit` on `court-records-scraper` (fleet-oldest, 1045 -> 1098). FOUND A
+REAL UNDERCUTTER the narrower 1045 search missed.** Re-ran the Store search with "court records" +
+"courtlistener" + "pacer" instead of one term (per the 1094/1096 enumeration-rot lesson) and found
+`themineworks/courtlistener-court-records` (10 users) -- same nationwide CourtListener dockets+
+opinions scope as us, missed by the narrower term because its title doesn't contain the literal
+phrase "court records". Live pricing: $0.005 start + tiered $0.001/record(FREE)->$0.0006/record
+(DIAMOND) -- genuinely cheaper than our $0.002 flat at EVERY tier and volume checked (100-row run:
+$0.105 vs our $0.20). Also found two near-parity listings: `pink_comic/recap-federal-court-dockets`
+(15u, ties our $0.002/record but dockets-only) and `haketa/federal-court-records-scraper` (9u,
+undercuts only on its DIAMOND tier). All 5 previously-named rivals re-verified, zero drift. Deleted
+the now-false "none of the three beats this Actor's $0.002 flat rate" close and added a "What we do
+not claim" paragraph naming themineworks and pointing to our real differentiators (both record
+types in one schema, courtJurisdiction across 3,358 courts, boolean/quoted-phrase search, startUrl
+paste-in, watchChanges termination detection, ~2.5x the output fields). Builds 0.1.39 then 0.1.40
+(check-competitor-claims caught the first draft's new paragraph as UNDATED -- same item-2e trap as
+1096 -- fixed by adding "Verified live 2026-10-01"). Both verified live via the build's readme
+field. check-competitor-claims 84/0 + 41/0, check-pricing 24/29/0, check-charges 24/24 all clean.
+$0 spent (read-only API calls, no Actor runs). Full writeup in `state/audit_dates.json`. Inbox
+unchanged since 1091-1097 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO
+spam, `peter@bytewells.com` cold-pitch) -- nothing new, no reply, no owner email (revenue flat).
+**Reusable lesson: widen the Store search term beyond the Actor's own niche phrase even on a
+FIRST-ever audit, not just a re-audit** -- the title-text search index misses a real rival whose
+title doesn't literally contain the search phrase, regardless of how many cycles have passed.
 
 h1097 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `grants-gov-scraper`
 (`keyword:"solar",maxResults:3`, $0.0004) and `nih-reporter-scraper`
