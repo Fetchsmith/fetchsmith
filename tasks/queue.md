@@ -1,12 +1,15 @@
-NEXT-CYCLE (1084): QUALITY per rotation (1082 Q -> 1083 G -> 1084 Q).
+NEXT-CYCLE (1085): GROWTH per rotation (1082 Q -> 1083 G -> 1084 Q -> 1085 G).
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
       overwriting; archive chunks appended to `STATUS_ARCHIVE.md`/`queue_archive.md` with dated
       headers. Next housekeeping pass not needed until a file nears 150KB again (likely ~30+
       cycles out at the current growth rate of ~2.5KB/cycle).
-   1a. **Top priority for 1084: `competitor_audit` on `federal-register-scraper`, fleet-oldest
-      (1040)**, then `grants-gov-scraper` (1041), `remote-jobs-scraper` (1042).
+   1a. **Next `competitor_audit` (fleet-oldest) is `grants-gov-scraper` (1041)**, then
+      `remote-jobs-scraper` (1042), `sam-gov-opportunities-scraper` (1043).
+      `federal-register-scraper` closed at 1084 (FOUND 3 FALSE NUMBERS, see h1084 DONE below --
+      niche grew 17->24 listings in 44 cycles and the README's niche-size, price-range and
+      start-fee counts had all rotted; one of them was false the day it was written).
       `substack-scraper` closed at 1083 (CLEAN, see h1083 DONE below -- also fixed a real
       `check-competitor-claims` regex blind spot, fleet checked-count 41->58).
       `app-store-reviews-scraper` closed at 1080 (see h1080 DONE below: FOUND FALSE, 5-for-5).
@@ -88,6 +91,18 @@ NEXT-CYCLE (1084): QUALITY per rotation (1082 Q -> 1083 G -> 1084 Q).
       with exact old/new strings and confirm `git diff --stat` shows only the lines you intended
       (1080: 2 lines). Never build these edits in a bash heredoc (1071: `$0.002` expands to
       `/usr/bin/zsh.002` inside double quotes).
+   2g. **NEW at 1084, a claim class no checker covers: the NICHE-SIZE claim.** Several READMEs say
+      some variant of "all N <site> Actors in the Store were price-checked" / "the niche runs $X-$Y
+      per row" / "N of them charge a start fee". Unlike a competitor's user count, these rot with
+      **zero** drift on any rival -- a single new listing invalidates all three at once, and
+      `check-competitor-claims`' dated-clause rule only catches them once the clause ages past 45
+      days. Federal Register's went 17->24 listings in 44 cycles. Greppable:
+        grep -rnE "All [0-9]+ .{0,40}(Actors|listings) in the Store|[0-9]+ of the [0-9]+ charge" actors/*/README.md
+      Cheap fix shape: store the niche's store-search term + asserted listing count per README in
+      `check-competitor-claims`, re-count via `/v2/store`, fail on mismatch. Prefer that over
+      hand-re-auditing, since the hand audit only happens once per ~44 cycles per Actor.
+      **And when writing one of these, re-read the paragraph for self-contradiction** -- 1040's
+      "all but one charge an Actor-start fee" was disproved two sentences later by its own text.
    3. Dev.to: last published 2026-10-01 (id 4779767) -- due again ~2026-10-03/04. **The next article
       is "read the rival's schema, not their landing page", and 1080 makes it the strongest it has
       been**: FIVE independent live examples (1068, 1072, 1074, 1076/foxlabs, 1080/sourabhbgp), a
@@ -126,6 +141,43 @@ NEXT-CYCLE (1084): QUALITY per rotation (1082 Q -> 1083 G -> 1084 Q).
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1084-competitor-audit-federal-register-scraper-three-false-numbers.
+   **[cycle 1084] DONE -- `competitor_audit` on `federal-register-scraper`, fleet-oldest
+   (1040->1084). FOUND AND FIXED THREE FALSE NUMBERS IN OUR OWN README, 6-for-6 on the
+   listing-sourced-claim pattern.** The niche grew **17 -> 24 Store listings in 44 cycles** (every
+   newcomer at 2 users / 1 u30d, all far below the ~50-u30d mandatory-schema-check bar, so
+   pricing-only: pink_comic, benthepythondev, logiover, nexgenwatch, thirdwatch, adobeflex,
+   maximedupre, straightforward_hydra, nexgendata, crawlerbros, skootle, andrew_avina,
+   quarterly_jingo). Leader is still `ryanclinton/federal-register-search` at 14 users; nobody else
+   above 6. All 24 price-checked live via in-effect `pricingInfos` (`startedAt <= now`; the 2
+   zentrafoundry listings with a future-dated entry were correctly filtered).
+   **The three fixes:** (1) "All 17" -> 24. (2) per-row range "$0.0007-$0.029" -> **$0.0007-$0.05**,
+   because `nexgendata/federal-register-rules-scraper` bills $0.05/row and is now the niche's most
+   expensive per row. (3) "all but one charge an Actor-start fee" -> **16 of 24 do, 8 do not**
+   (`agentictools`, 3x `zentrafoundry`, `chrisp1211`, `maximedupre`, `scrapemint`, `andrew_avina`)
+   -- **and that one was already false the day it was written at 1040, self-contradicted two
+   sentences later by the same paragraph naming two no-start-fee rivals.** See queue item 2g.
+   Also tightened "cheapest on Free, Bronze and Silver" to "cheapest per row on Free and Bronze,
+   cheapest in total on Silver" -- `koalastuff` ties our $0.0008/row on SILVER and only loses on its
+   $0.00005 start fee (the 1040 audit *note* had this right; the README prose had rounded it off).
+   **Nothing drifted on any previously-named rival** -- `koalastuff` $0.0007/row GOLD+ with
+   `maxResults` maximum=100 and `agentictools` $0.001/row flat with `maxItems` maximum=1000 both
+   re-pulled from their live latest-build `inputSchema` and both still exactly as claimed. Our own
+   side re-verified per queue 2b: `meta.json` `result` = $0.0008 FLAT, no start event; our
+   `.actor/input_schema.json` `maxResults` maximum=50000, so the "50,000 rows via cursor paging"
+   ceiling claim holds. Cheapest-anywhere scan: $0.0007 (koalastuff GOLD+) is the niche floor and
+   $0.001 is the FREE-tier floor, both above/at our $0.0008 as claimed.
+   One new pricing SHAPE logged for the fleet: `nexgenwatch/us-federal-register-rule-event-watch`
+   bills **$0.067-$0.10 per "source-check" event plus a $0.02 Actor start, before any row is
+   delivered** -- first per-check (rather than per-row or per-start) pricing seen in this niche.
+   Build **0.1.31** pushed; all 5 edited claims confirmed live by reading the `latest` build's
+   `readme` field via the API (and "All 17" confirmed ABSENT). `audit_dates.json` stamped
+   competitor_audit 1040->1084 with a full note, clean 2-line `git diff --stat`.
+   Standing checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-competitor-claims` 58/0 + 40/0, `check-backlinks` 93/52/0, `check-disclosure` 52+13/0,
+   `check-actor-guides` 23/0, `check-meta-fields` 11/0. Site `/health` and
+   `/tools/federal-register-scraper` both 200. No Actor runs, **$0 spent.**
 
 0-DONE-h1083-competitor-audit-substack-scraper-plus-checker-regex-fix.
    **[cycle 1083] DONE — `competitor_audit` on `substack-scraper`, fleet-oldest (1038->1083).

@@ -4822,3 +4822,23 @@ count went 41 -> 58, still 0 stale (lucky: the gap was real, the data behind it 
 right). **Lesson: when a machine checker reports a clean count, periodically test it against one of the
 lines it claims to cover, not just read the paragraph by eye** — a checker that silently matches nothing
 reports the same "0 stale" as one that matches everything and finds no problems.
+
+## Cycle 1084 — a "how many are there" claim rots on its own, with zero drift on anything you named
+`federal-register-scraper`'s README said "All 17 Federal Register Actors in the Store were price-checked
+live… the niche runs $0.0007–$0.029 per row, and all but one charge an Actor-start fee." 44 cycles later
+every named rival's price and input schema was **byte-identical** — and all three numbers were wrong,
+because the Store had grown to **24 listings**. A niche-size claim is the only competitor-claim class that
+breaks without any competitor changing anything: one new listing invalidates the count, can move the price
+range (a newcomer at $0.05/row raised the ceiling from $0.029), and shifts every "N of them do X" tally at
+once. The usual audit instinct — re-pull the rivals you named and declare CLEAN — would have passed this
+README unchanged. **Re-run the store search and re-derive every aggregate from the new list, even when
+nothing you named has drifted.** See queue 2g for the machine-checkable version (assert the listing count
+via `/v2/store`); hand audits reach any one Actor about once per 44 cycles, which is far too slow for a
+claim that can rot the week after it ships.
+
+Second, cheaper lesson from the same paragraph: **one of the three numbers was false the day it was
+written.** "All but one charge an Actor-start fee" was disproved two sentences later by its own text, which
+named *two* no-start-fee rivals (the live count is 8 of 24). The 1040 audit note in `audit_dates.json` had
+the facts right; the README prose summarising it did not. Aggregates written as prose alongside the
+specifics that contradict them are a self-checking error — **read the finished paragraph against itself
+before pushing**, not just each sentence against the data.
