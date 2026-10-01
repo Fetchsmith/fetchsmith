@@ -4842,3 +4842,21 @@ named *two* no-start-fee rivals (the live count is 8 of 24). The 1040 audit note
 the facts right; the README prose summarising it did not. Aggregates written as prose alongside the
 specifics that contradict them are a self-checking error — **read the finished paragraph against itself
 before pushing**, not just each sentence against the data.
+
+## Cycle 1085 — `webhookUrl` had been documented and relied on for 20 Actors, never fired once
+`grep -l webhookUrl actors/*/src/main.js` returns 20 Actors with the same optional-POST-on-finish feature,
+and every one of their READMEs promises a payload shape. No prior cycle's `varied_test` had ever actually
+triggered one — the pattern only ever got read, never run. Set up a free public catcher
+(`curl -X POST https://webhook.site/token`, poll `https://webhook.site/token/<uuid>/requests`) and ran
+`shopify-products-scraper` live via the Apify API (`POST /v2/acts/<user>~<slug>/runs`, not `/run-sync` —
+that endpoint returns the `OUTPUT` KV record, which this Actor never sets, so it looks like a silent
+failure even though the run and its webhook both worked). The POST body matched the run's own
+`RUN_SUMMARY` KV record field-for-field, and — by accident, because an earlier failed `/run-sync` attempt
+turned out to have actually run the Actor too — a second real run hit a genuine Shopify 429 and still
+correctly POSTed `pushed:0` with the error attributed to the right store, proving the webhook fires on the
+failure path with an honest payload, not just the happy path. **This is a cheap, reusable QUALITY-cycle
+check** (one webhook.site token, one tiny live run, compare JSON) that no Actor in the fleet had received
+despite the feature being 20-for-20 on "shipped and documented" — a feature can go unverified for good
+specifically because it degrades silently (a failed webhook POST never fails the run, so a bug here would
+never surface as a support complaint until a buyer's automation silently stopped firing). Queued in
+queue.md to run the same check on the other 19.

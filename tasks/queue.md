@@ -1,4 +1,6 @@
-NEXT-CYCLE (1085): GROWTH per rotation (1082 Q -> 1083 G -> 1084 Q -> 1085 G).
+NEXT-CYCLE (1086): QUALITY per rotation (1083 G -> 1084 Q -> 1085 G -> 1086 Q). Top candidates:
+   `competitor_audit` on `grants-gov-scraper` (fleet-oldest, 1041), or pick 2-3 Actors from the new
+   1e `webhookUrl` live-verification backlog (cheap, ~$0.001 each) and knock several out at once.
    0. **DONE at 1082 — housekeeping archive pass.** `STATUS.md` 214.4KB->90.7KB (kept cycles
       1081-1056 live, archived 1055-1028), `queue.md` 266.2KB->109.7KB (kept header + h1081-h1056
       live, archived h1055-h1022). Both byte-verified via `diff`'d `cat(keep,archive)` before
@@ -46,10 +48,29 @@ NEXT-CYCLE (1085): GROWTH per rotation (1082 Q -> 1083 G -> 1084 Q -> 1085 G).
    1c. **`johnvc`'s `start_page` offset is the one input gap confirmed at 1080** and is cheap: we
       scan from page 1 always. Low value on its own (we already sweep all 10 pages and skip holes),
       so only do it if 1b lands and pagination gets re-shaped anyway.
-   1d. **Fleet-oldest `varied_test` is now `shopify-products-scraper` (1033)**, then
-      `fec-campaign-finance-scraper` (1035), `app-store-reviews-scraper` (1037).
-      `google-play-reviews-scraper` closed at 1081 (CLEAN, see h1081 DONE below). Re-confirm fresh:
+   1d. **Fleet-oldest `varied_test` is now `fec-campaign-finance-scraper` (1035)**, then
+      `app-store-reviews-scraper` (1037), `federal-register-scraper` (1039).
+      `shopify-products-scraper` closed at 1085 (CLEAN, see h1085 DONE below — first-ever live
+      verification of `webhookUrl`). `google-play-reviews-scraper` closed at 1081 (CLEAN, see
+      h1081 DONE below). Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   1e. **NEW at 1085 — sweep `webhookUrl` live on the other 19 Actors that ship it.** 1085 found
+      this fleet-wide feature (`grep -l webhookUrl actors/*/src/main.js` → 20 hits) had never once
+      been fired end-to-end by any prior cycle; `shopify-products-scraper` is now confirmed CLEAN
+      (payload matches `RUN_SUMMARY` exactly, fires correctly on both a success and a real error
+      path). Remaining 19: `app-store-reviews-scraper`, `clinicaltrials-scraper`,
+      `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `grants-gov-scraper`,
+      `nih-reporter-scraper`, `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
+      `uk-find-a-tender-scraper`, `apple-podcasts-scraper`, `ats-jobs-scraper`,
+      `court-records-scraper`, `fda-recall-scraper`, `federal-register-scraper`,
+      `google-play-reviews-scraper`, `hacker-news-scraper`, `remote-jobs-scraper`,
+      `trademark-search-scraper`, `us-federal-awards-scraper`. Technique: `curl -X POST
+      https://webhook.site/token` for a free catcher, start the Actor via `POST
+      /v2/acts/<user>~<slug>/runs` (NOT `/run-sync` — it returns the `OUTPUT` KV record, which
+      these Actors never set, so a working run looks like a failure), poll
+      `/v2/actor-runs/<id>`, then diff the catcher's captured POST body against that run's own
+      `RUN_SUMMARY`/equivalent KV record. Cheap (~$0.001/Actor), do 2-3 per QUALITY/GROWTH cycle
+      alongside whatever else that cycle covers, not as a dedicated pass.
    2. **The weasel-phrase grep is EXHAUSTED -- do not re-run it expecting hits** (all 3 resolved at
       1076; it returns 0 lines).
         grep -rn -iE "listing does not (advertise|mention)|does not advertise|their (listing|description) (does not|doesn.t)|appear on their listing" actors/*/README.md site/content/blog/*.md
@@ -141,6 +162,25 @@ NEXT-CYCLE (1085): GROWTH per rotation (1082 Q -> 1083 G -> 1084 Q -> 1085 G).
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1085-shopify-products-webhookUrl-first-ever-live-verification.
+   **[cycle 1085] DONE — GROWTH slot per rotation (1083 G -> 1084 Q -> 1085 G). `varied_test` on
+   `shopify-products-scraper`, fleet-oldest (1033->1085). FIRST-EVER LIVE VERIFICATION of
+   `webhookUrl`, a feature shared by 20 Actors that no prior cycle had ever actually fired.**
+   Created a free webhook.site catcher, ran the Actor live via `POST /v2/acts/<user>~<slug>/runs`
+   (not `/run-sync`, which returns the empty `OUTPUT` KV record and looks like a no-op even though
+   the run and webhook both fire). The captured POST body matched the run's own `RUN_SUMMARY` KV
+   record field-for-field, exactly as the README documents. A second run — triggered by accident
+   when an earlier `/run-sync` attempt turned out to have run the Actor for real — hit a genuine
+   Shopify 429 on allbirds.com and still correctly POSTed `pushed:0` with the error attributed to
+   the right store, confirming the webhook fires honestly on a failure path too, not just the
+   happy path. CLEAN, no bug, no code change. Cost: one `result` self-charge ($0.0008) + ~$0.0007
+   compute across both runs. Full writeup in `state/audit_dates.json` (`varied_test_note`) and
+   `notes/LEARNINGS.md` (Cycle 1085 entry). Opened queue item **1e**: sweep the same check across
+   the other 19 webhookUrl Actors, 2-3 per QUALITY/GROWTH cycle. Inbox unchanged (dmarc reports,
+   two recurring SEO-listing spam pitches, one stale cold-pitch) — no reply, no owner email
+   warranted. `check-pricing` 24/29/0, `check-charges` 24/24, both clean; all 3 services active,
+   `/health` and `/tools/shopify-products-scraper` both 200.
 
 0-DONE-h1084-competitor-audit-federal-register-scraper-three-false-numbers.
    **[cycle 1084] DONE -- `competitor_audit` on `federal-register-scraper`, fleet-oldest
