@@ -86,6 +86,7 @@ COMPETITORS = {
     "publicdata": "publicdata/uk-contracts-finder-find-a-tender",
     "neverempty": "neverempty/uk-tenders-scraper",
     "fascinating_lentil": "fascinating_lentil/global-government-contracts-aggregator",
+    "scrapemint": "scrapemint/sec-form4-insider-tracker",
 }
 
 # Same Store handle can run unrelated Actors in different niches (e.g. `parseforge` sells
@@ -94,6 +95,12 @@ COMPETITORS = {
 # than clobbering the first mapping.
 FILE_OVERRIDES = {
     "actors/clinicaltrials-scraper/README.md": {"parseforge": "parseforge/clinicaltrials-scraper"},
+    # Both handles also sell a Form 4 Actor; the handle-level mapping above points at their
+    # trademark/usaspending listings, which is how cycle 1064's new counts first read as stale.
+    "actors/sec-insider-trades-scraper/README.md": {
+        "scrapers_lat": "scrapers_lat/sec-form4-insider-trades-scraper",
+        "parseforge": "parseforge/sec-form4-scraper",
+    },
     "actors/fec-campaign-finance-scraper/README.md": {"ryanclinton": "ryanclinton/fec-campaign-finance"},
     "actors/app-store-reviews-scraper/README.md": {
         "thewolves": "thewolves/appstore-reviews-scraper",

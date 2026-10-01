@@ -69,6 +69,90 @@
       "default": false,
       "editor": "checkbox"
     },
+    "transactionCodes": {
+      "title": "Transaction codes",
+      "type": "array",
+      "description": "Keep only rows whose SEC transaction code is in this list; leave empty for all. Most of a Form 4 feed is compensation plumbing -- select P and S for open-market buys and sells only. Filtered rows are never returned and never charged. All 20 official codes are supported. Holding rows have no code, so this filter excludes them.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "P",
+          "S",
+          "A",
+          "D",
+          "F",
+          "M",
+          "C",
+          "G",
+          "X",
+          "O",
+          "J",
+          "K",
+          "I",
+          "H",
+          "E",
+          "U",
+          "L",
+          "W",
+          "Z",
+          "V"
+        ],
+        "enumTitles": [
+          "P - open-market purchase",
+          "S - open-market sale",
+          "A - grant/award",
+          "D - disposition to issuer",
+          "F - shares withheld for taxes",
+          "M - option exercise/conversion",
+          "C - conversion of derivative",
+          "G - gift",
+          "X - option exercise (in the money)",
+          "O - option exercise (out of the money)",
+          "J - other (see footnotes)",
+          "K - equity swap",
+          "I - discretionary transaction",
+          "H - expiration (long derivative)",
+          "E - expiration (short derivative)",
+          "U - tender of shares",
+          "L - small acquisition",
+          "W - will or laws of descent",
+          "Z - voting trust",
+          "V - voluntarily reported early"
+        ]
+      },
+      "default": []
+    },
+    "minTransactionValue": {
+      "title": "Minimum transaction value (USD)",
+      "type": "integer",
+      "description": "Keep only rows whose transaction value is at least this large in absolute terms, so a $2M sale passes a $100000 threshold just like a $2M purchase. Rows with no reportable value (holdings, and grants filed with no price) cannot be shown to meet the threshold and are excluded. Filtered rows are never returned and never charged. 0 disables.",
+      "default": 0,
+      "minimum": 0,
+      "unit": "USD"
+    },
+    "insiderRoles": {
+      "title": "Insider roles",
+      "type": "array",
+      "description": "Keep only rows filed by an insider holding at least one of these roles; leave empty for all. Officer trades are the usual signal; 10% owners are typically funds. Matched against the filing's first reporting owner (co-filers on a joint filing appear in coFilers as names only). Filtered rows are never returned and never charged.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "officer",
+          "director",
+          "tenPercentOwner",
+          "other"
+        ],
+        "enumTitles": [
+          "Officer",
+          "Director",
+          "10% owner",
+          "Other"
+        ]
+      },
+      "default": []
+    },
     "maxResults": {
       "title": "Max results",
       "type": "integer",

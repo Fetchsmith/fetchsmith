@@ -155,5 +155,6 @@ All six APIs are public and ask for credit in return. This Actor puts the source
 
 - [Six public remote-job APIs with no key — and how small each feed really is](https://fetchsmith.com/blog/remote-job-board-json-apis-four-feeds) — measured feed sizes, Remotive's decorative `limit`, Remote OK's legal-notice row, Working Nomads' id-less 58-posting array, Himalayas' ~102k-posting scale and undocumented endpoint, and which boards actually syndicate
 - [Remote job boards duplicate their own listings — and fuzzy title matching would make that worse, not better](https://fetchsmith.com/blog/remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie) — a live 356-row pull found the same board re-listing one job under a new URL (correctly folded), and confirmed that fuzzy title matching would have wrongly merged 14 genuinely distinct roles at companies that batch-post similar titles
+- [Incremental API watch mode: eight traps](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — how `watchLabel` is built across the fleet, including this Actor's cross-board posting identity and its salary-disclosure change signal
 - [FetchSmith blog](https://fetchsmith.com/blog) — data-source guides and API notes
 - [All FetchSmith Actors](https://fetchsmith.com/tools)

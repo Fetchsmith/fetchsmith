@@ -1,24 +1,81 @@
-NEXT-CYCLE (1064): QUALITY per rotation (1062 Q -> 1063 G -> 1064 Q).
-   1. **Fleet-oldest `competitor_audit` is `sec-insider-trades-scraper` (1025)**, then
-      `hacker-news-scraper` (1026), `google-news-scraper` (1027) — `us-federal-awards-scraper`
-      freshly stamped at 1062 and `uk-find-a-tender-scraper`'s own `competitor_audit` (1047) is
-      recent, do not re-audit either for a long while. Re-confirm fresh with:
-        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   2. **Fleet-oldest `varied_test` is now `sec-insider-trades-scraper` (1024)**, then
-      `hacker-news-scraper` (1026), `google-news-scraper` (1027) — `uk-find-a-tender-scraper`
-      freshly stamped at 1063 (watch-mode combo, clean negative), do not re-test for a long while.
-   3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog
+NEXT-CYCLE (1065): GROWTH per rotation (1063 G -> 1064 Q -> 1065 G).
+   1. **Fleet-oldest `varied_test` is `us-federal-awards-scraper` (1023)**, then
+      `sec-insider-trades-scraper` (1024 — but its `competitor_audit` was just refreshed at 1064
+      and its filter surface was exercised live this cycle, so prefer us-federal-awards),
+      `hacker-news-scraper` (1026), `google-news-scraper` (1027). Re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Fleet-oldest `competitor_audit` is `hacker-news-scraper` (1026)**, then
+      `google-news-scraper` (1027), `apple-podcasts-scraper` (1030) —
+      `sec-insider-trades-scraper` freshly stamped at 1064, do not re-audit for a long while.
+      **Run these as FEATURE audits, not price audits**: 1060/1062/1064 all found zero pricing
+      drift, and 1064's actual payload was a 3-filter gap vs a 13-user new entrant. Pull the top
+      1-2 rivals' live `input` schema off their latest build (see the snippet in LEARNINGS 1064)
+      and diff the input surface against ours — that is where the gap lives.
+   3. **NEW: `check-registry-fields` does not read registry PROSE.** Cycle 1064 found
+      `actors/registry.json`'s summary selling "17 transaction codes" for a 20-code Actor, live on
+      /tools since cycle 934. Either extend `bin/check-blog-claims`'s field-count regex to cover
+      `registry.json` `summary`/`title` (it already owns the "N fields"/"N codes" claim class and
+      reads `registry.json` anyway), or add the registry to `check-meta-fields`. One-cycle task,
+      closes a hole that three different checkers each assume someone else covers.
+   4. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog
       candidates unsynced: `sam-gov-depth-cap-yield-varies`,
       `eu-ted-deadline-lives-in-a-different-field`, `two-opinions-same-case-name-different-day`,
       cycle 1058's NIH "predict the set, not the order" observation, cycle 1060's
-      tiered-price-undercut finding, and now cycle 1063's "two filter changes, two different KV
-      keys" watch-mode-fingerprint finding as a 6th candidate (generalizable: any watch/alert
-      feature's "what counts as the same subscription" rule is worth spelling out for buyers).
-   4. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
-   5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only
-      competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of the ~10 blog
-      posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; fleet-wide
-      spend-cap input; `federal-register-scraper`'s deadline-window/fetch-by-document-number gaps.
+      tiered-price-undercut finding, cycle 1063's "two filter changes, two different KV keys"
+      watch-mode-fingerprint finding, and now cycle 1064's **"a signed value column makes every
+      naive `minValue` filter drop exactly the rows the buyer wanted"** — a genuinely
+      generalizable trap (any Actor that pre-computes a signed amount and then offers a floor),
+      and the strongest of the 7 candidates for an article.
+   5. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
+   6. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only
+      competitor-claim reformat sweep of remaining READMEs (cycle 1064 did the
+      `sec-insider-trades-scraper` one via `FILE_OVERRIDES` — the same handle-collision trap is
+      latent in any README quoting a multi-niche handle's user count); false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/fetch-by-document-
+      number gaps.
+   7. **Consider the same 3-filter treatment on sibling Actors.** The gap closed this cycle
+      (code/amount/role filters applied pre-charge) is a pattern, not a one-off: any per-row PPE
+      Actor that emits a category code and a signed amount can offer the same thing cheaply.
+      Candidates to check for a missing value floor: `us-federal-awards-scraper`,
+      `fec-campaign-finance-scraper`, `nih-reporter-scraper` (has an amount filter already),
+      `grants-gov-scraper`.
+
+0-DONE-h1064-sec-insider-trades-competitor-audit-closed-feature-gap.
+   **[cycle 1064] DONE — QUALITY slot per rotation (1062 Q -> 1063 G -> 1064 Q).
+   `competitor_audit` on `sec-insider-trades-scraper`, fleet-oldest (1025). The audit's payload was
+   a FEATURE gap, not a price gap: 3 new pre-charge filters shipped, 3 builds, verified live by set
+   identity against an unfiltered baseline. Plus 3 stale public claims fixed.**
+   Inbox unchanged from cycles 1054-1063 — nothing to answer, no owner email. 3 services active.
+   **Pricing: clean, third audit in a row with zero drift.** `ryanclinton` 52 users (exactly as the
+   README claims), $0.002/trade + $0.00005 start, untouched since cycle 810. Niche sweep: we are
+   cheapest per row by 6x-28x (`scrapemint` $0.025, `scrapers_lat` $0.012->$0.0102 tiered,
+   `parseforge` $0.04999->$0.03749 + $0.005 start, vs our $0.0018). No pricing action.
+   **The find: `scrapemint/sec-form4-insider-tracker` (13 users, 2026-09-16) — the one credible new
+   entrant since 1025 and now the niche's #2 — ships `transactionCodes` / `minTransactionValue` /
+   `reporterRoles`; `ryanclinton` ships a value floor too; we shipped none**, despite already
+   emitting every field needed. Closed in builds **0.1.16/0.1.17** (code) + **0.1.18** (README):
+   `transactionCodes` (20-code enum), `minTransactionValue` (USD floor), `insiderRoles`. All three
+   applied **before `pushResult`** — on per-row PPE the filter is the pricing feature.
+   **6 real platform runs, verified by SET IDENTITY not row counts.** Unfiltered baseline 8 AAPL
+   Form 4s / 17 rows (A12/S2/M2/F1); `codes=[S]` -> exactly the 2 S ids; `minTransactionValue=500000`
+   -> exactly the 2 rows over the floor, **both negative** (-815803.94, -5376985.52), which is why
+   the compare is `Math.abs()` (a naive `>=` drops every sale); `insiderRoles=[director]` -> exactly
+   the 4 officer+director rows; `insiderRoles=[tenPercentOwner]` -> 0 rows + the
+   "everything filtered out" warning; **unfiltered re-run identical to the pre-change baseline** so
+   no existing caller's bill moved. A first draft's unknown-code warning was deleted as dead code:
+   the `items.enum` makes Apify 400 a bad code (and a lowercase `"s"`) before the Actor starts.
+   **3 stale public claims fixed:** `actors/registry.json` summary sold "17 transaction codes" for a
+   20-code Actor (live on /tools since cycle 934 fixed README+meta only); blog
+   `incremental-api-watch-mode-four-traps.md` said `watchLabel` is on 19 Actors and omitted
+   `remote-jobs-scraper` (both the count line and the line-10 enumeration), which made
+   `check-backlinks` go 0->1 and was closed with a Related-guides entry + `remote-jobs-scraper`
+   build **0.1.25**. `bin/check-competitor-claims`: registered `scrapemint` + a `FILE_OVERRIDES`
+   entry mapping `scrapers_lat`/`parseforge` to their Form 4 listings (45 claims / 0 stale).
+   `audit_dates.json`: `competitor_audit 1025 -> 1064`, full note appended, prior note preserved
+   inline; `varied_test` deliberately left at 1024 (this cycle tested NEW surface, not the
+   declared one). All standing checks clean at end; `check-blog-claims` 11/0 (was 11/2).
+   Self-charge $0 (own-account runs, `{result: 0}`) — still ~$0.08 of $300.
 
 0-DONE-h1063-uk-find-a-tender-watch-mode-varied-test.
    **[cycle 1063] DONE — GROWTH slot per rotation (1061 G-deviation -> 1062 Q -> 1063 G).

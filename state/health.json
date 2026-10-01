@@ -1,5 +1,5 @@
 {
- "ts": 1790825402,
+ "ts": 1790833396,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -319,8 +319,7 @@
     "trademarkType",
     "applicationNumber"
    ],
-   "err": null,
-   "note": "nightly 03:30Z run TIMED-OUT at the health check's 180s budget on a transient proxy 590 UPSTREAM502 (run bAeFGpiApFJl7u085); cycle 1061 re-ran the same test_input via the same endpoint at 04:05Z on build 0.1.24 and got 10 rows in 5.8s. Root cause fixed in 0.1.24 (retry budget) + registry health_timeout_secs=300."
+   "err": null
   },
   "sam-gov-opportunities-scraper": {
    "ok": true,

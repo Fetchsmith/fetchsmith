@@ -44,6 +44,7 @@ const formTypes = Array.isArray(input.formTypes) && input.formTypes.length
 const issuers = (Array.isArray(input.issuers) && input.issuers.length ? input.issuers : ['AAPL', 'NVDA', 'JPM'])
   .map((s) => String(s).trim()).filter(Boolean);
 
+
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
 async function pushResult(item) {
@@ -123,6 +124,44 @@ const CODE_MEANING = {
   U: 'Tender of shares', L: 'Small acquisition', W: 'Will or laws of descent', Z: 'Voting trust',
   O: 'Option exercise (out of the money)', V: 'Voluntarily reported early',
 };
+
+// --- Row filters (cycle 1064) -------------------------------------------------------------
+// Applied BEFORE pushResult, so a filtered-out row is never pushed and never charged: on a
+// per-row PPE price the whole point of "only open-market buys over $100k" is not paying for
+// the grants and tax withholdings that make up most of a Form 4 feed.
+const ROLE_FLAGS = { officer: 'isOfficer', director: 'isDirector', tenPercentOwner: 'isTenPercentOwner', other: 'isOther' };
+// No "unknown code" validation here on purpose: transactionCodes declares an `items.enum` of the
+// 20 real codes, and the platform rejects anything else (including a lowercase "s") with a 400
+// before the Actor process starts -- verified live, cycle 1064. Any in-Actor check would be
+// unreachable. Dedupe only, so a doubled selection cannot skew the dropped-row count.
+const transactionCodes = Array.isArray(input.transactionCodes)
+  ? [...new Set(input.transactionCodes.map((c) => String(c).trim()).filter(Boolean))] : [];
+const minTransactionValue = Number.isFinite(Number(input.minTransactionValue))
+  ? Math.abs(Number(input.minTransactionValue)) : 0;
+const insiderRoles = Array.isArray(input.insiderRoles)
+  ? [...new Set(input.insiderRoles.map((r) => String(r).trim()).filter((r) => r in ROLE_FLAGS))] : [];
+const filtersActive = transactionCodes.length > 0 || minTransactionValue > 0 || insiderRoles.length > 0;
+let dropped = 0;
+
+// A holding row has no transactionCode and no value at all, so a code or value filter can only
+// ever exclude it -- say that once instead of returning a silently empty dataset.
+if (includeHoldings && (transactionCodes.length || minTransactionValue > 0)) {
+  log.warning('includeHoldings is on together with transactionCodes/minTransactionValue: holding '
+    + 'rows carry neither a transaction code nor a value, so those filters exclude all of them.');
+}
+
+function keepRow(row) {
+  if (transactionCodes.length && !transactionCodes.includes(row.transactionCode)) return false;
+  // Compare on the ABSOLUTE value: transactionValueUsd is signed (negative on a disposition),
+  // so a raw >= test would drop every sale. A null value cannot be shown to meet the
+  // threshold (holdings, or a grant with no price on the wire) and is excluded fail-closed.
+  if (minTransactionValue > 0
+    && !(row.transactionValueUsd != null && Math.abs(row.transactionValueUsd) >= minTransactionValue)) return false;
+  // Roles come from the FIRST reporting owner (the one whose flags this row carries); a
+  // joint filing's co-filers are names only (see coFilers) and are not role-matched.
+  if (insiderRoles.length && !insiderRoles.some((r) => row[ROLE_FLAGS[r]] === true)) return false;
+  return true;
+}
 
 async function resolveIssuers(list) {
   const map = await secGet('https://www.sec.gov/files/company_tickers.json', { json: true });
@@ -298,6 +337,7 @@ try {
       });
       if (!rows.length) log.warning(`${f.accessionNumber}: no transaction rows (holdings-only filing?).`);
       for (const row of rows) {
+        if (!keepRow(row)) { dropped += 1; continue; }
         keepGoing = await pushResult(row);
         if (!keepGoing) break;
       }
@@ -307,6 +347,18 @@ try {
 } catch (err) {
   log.exception(err, 'Run failed');
   await Actor.fail(`Run failed: ${err.message}`);
+}
+if (filtersActive) {
+  // maxFilingsPerIssuer caps FILINGS fetched, not rows surviving the filters, so a narrow
+  // filter can exhaust the filing budget long before maxResults -- make that visible rather
+  // than letting a small row count read as "this insider barely trades".
+  log.info(`Filters dropped ${dropped} row(s) before charging `
+    + `(codes=${transactionCodes.join('/') || 'any'}, minValue=${minTransactionValue || 'none'}, `
+    + `roles=${insiderRoles.join('/') || 'any'}).`);
+  if (!pushed && dropped) {
+    log.warning('Every parsed row was filtered out. The filters apply to the filings that '
+      + 'maxFilingsPerIssuer already selected -- raise it (or widen sinceDate) to look further back.');
+  }
 }
 log.info(`Done. Pushed ${pushed} results.`);
 await Actor.exit();

@@ -30,6 +30,9 @@ parser yourself.
 - **No personal addresses.** The ownership XML contains the reporting person's street address.
   This Actor deliberately never emits it. Names, CIKs, roles and officer titles are the public
   corporate disclosure; the address block is personal data and is not part of this product.
+- **The filters run before billing.** `transactionCodes`, `minTransactionValue` and `insiderRoles`
+  are applied to each parsed row *before* it is pushed or charged, so "only open-market buys over
+  $250k by an officer" costs you those rows and nothing else.
 - **No API key, no start fee, HTTP only** (no headless browser), pay only per transaction row.
 
 ## Output fields
@@ -61,6 +64,28 @@ or in `underlyingShares` for a derivative holding such as an RSU award (measured
 September 2026 Form 3s: 1 non-derivative + 7 derivative holding rows per filing, each with the full
 vesting schedule in `footnotes`). It is opt-in so that an existing Form 4 caller's row count — and
 therefore their bill — does not change.
+
+### Narrowing the feed (`transactionCodes`, `minTransactionValue`, `insiderRoles`)
+
+Most of a Form 4 feed is compensation plumbing rather than trading: across 8 consecutive Apple
+Form 4s (17 rows, measured 2026-10-01) the mix was 12 `A` grants, 2 `S` open-market sales, 2 `M`
+option exercises and 1 `F` tax withholding. If you only want the sales, three optional filters cut
+the feed down **before anything is pushed or charged**:
+
+- **`transactionCodes`** — e.g. `["P", "S"]` for open-market buys and sells only. All 20 SEC codes
+  are selectable from the dropdown; the platform rejects anything else before the run starts.
+- **`minTransactionValue`** — a USD floor compared on the **absolute** value, so a $2M sale
+  (`transactionValueUsd: -2000000`) passes a `500000` floor exactly like a $2M purchase. Rows with
+  no reportable value — holdings, and grants filed with no price — cannot be shown to clear the
+  floor and are excluded.
+- **`insiderRoles`** — any of `officer`, `director`, `tenPercentOwner`, `other`. Matched against the
+  filing's first reporting owner; on a joint filing the other reporting persons appear in
+  `coFilers` as names only and are not role-matched.
+
+The filters are combined with AND, and they narrow **rows**, not filings: `maxFilingsPerIssuer`
+still decides how far back the run looks, so a strict filter can return few rows from a filer who
+simply made no matching trades recently. The run log prints how many rows each run dropped, and
+says so explicitly when the filters removed everything.
 
 ### Sample row
 
@@ -95,7 +120,9 @@ therefore their bill — does not change.
 
 `result` — **$0.0018 per returned transaction row, no Actor-start fee.**
 
-The niche's Store leader by users is `ryanclinton` (52 users, `ryanclinton/sec-insider-trading`), who charges $0.002 per trade plus a small Actor-start fee — we're ~10% cheaper per row with no start fee at all. Their listing markets "behavioural insider-trading signal classification" (cluster-buy/regime-shift detection) over a 140+ field output schema; the extra fields we sampled at launch (cycle 810) read as speculative/AI-generated Store-listing padding (`signalGenome`, `manipulationResistance`, `institutionalNarrative`) rather than values a buyer could actually trust, so we did not copy them. This Actor instead differentiates on data fidelity: all 20 SEC transaction codes decoded (not just the common ones), a signed pre-computed USD value, the 10b5-1 plan flag normalized across its four real on-the-wire spellings (measured across 210 filings — see Related guides), and `sinceDate` that follows EDGAR's older paginated filing index instead of stopping at the ~12-month inlined window every other Actor in this niche appears to read from. Re-verified against their live pricing and stats 2026-09-30 — unchanged since cycle 810's original audit.
+The niche's Store leader by users is `ryanclinton` (52 users, `ryanclinton/sec-insider-trading`), who charges $0.002 per trade plus a small Actor-start fee — we're ~10% cheaper per row with no start fee at all. Their listing markets "behavioural insider-trading signal classification" (cluster-buy/regime-shift detection) over a 140+ field output schema; the extra fields we sampled at launch (cycle 810) read as speculative/AI-generated Store-listing padding (`signalGenome`, `manipulationResistance`, `institutionalNarrative`) rather than values a buyer could actually trust, so we did not copy them. This Actor instead differentiates on data fidelity: all 20 SEC transaction codes decoded (not just the common ones), a signed pre-computed USD value, the 10b5-1 plan flag normalized across its four real on-the-wire spellings (measured across 210 filings — see Related guides), and `sinceDate` that follows EDGAR's older paginated filing index instead of stopping at the ~12-month inlined window every other Actor in this niche appears to read from. Re-verified against their live pricing and stats 2026-10-01 — unchanged since cycle 810's original audit.
+
+Across the whole Form 4 niche this remains the cheapest per-row listing by a wide margin, re-checked live 2026-10-01: `scrapemint` (13 users) charges $0.025 per filing row, `scrapers_lat` (2 users) $0.012 down to $0.0102 on the higher plans, and `parseforge` (2 users) $0.04999 down to $0.03749 plus a $0.005 start fee — 6x to 28x this Actor's $0.0018. The honest comparison is on filters rather than price: `scrapemint` is the one rival with a comparable, non-speculative feature list, and the code / minimum-value / role filters above exist because it had them and this Actor did not.
 
 ## Notes on the source
 

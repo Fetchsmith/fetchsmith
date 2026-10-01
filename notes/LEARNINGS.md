@@ -4571,3 +4571,50 @@ right; editing it would have introduced the error.
    `indent=2` with `\uXXXX` escapes). Reverted and done as a 1-line targeted `Edit` instead. A
    whole-file reformat buries the real change and makes every later `git log -p` archaeology on that
    file useless.
+
+## Cycle 1064 — a competitor audit's real output is a feature gap, not a price check; and an `items.enum` makes in-Actor validation unreachable
+
+1. **Four consecutive `competitor_audit`s (1060, 1062, 1064) found zero pricing drift. That is the
+   signal: stop treating these audits as price checks.** `ryanclinton` has not touched its listing
+   since cycle 810, and in this niche we are 6x–28x cheaper than every rival. What the sweep
+   actually surfaced was the *feature* gap: the one credible new entrant
+   (`scrapemint/sec-form4-insider-tracker`, 13 users) shipped `transactionCodes`,
+   `minTransactionValue` and `reporterRoles` filters, and `ryanclinton` ships a value floor too —
+   `sec-insider-trades-scraper` shipped none of the three despite already carrying every field
+   needed to compute them. The audit protocol's "compare features against the top competitor and
+   close gaps" line is the part that pays; the price re-read is a 60-second formality.
+2. **On a per-row PPE Actor, a filter is a pricing feature.** The filters had to run before
+   `pushResult`, not in a post-processing pass, so "only open-market officer buys over $250k" bills
+   those rows and nothing else. A filter applied after the charge would be worse than not shipping
+   one.
+3. **Verify a new filter by SET IDENTITY against an unfiltered baseline run, not by eyeballing the
+   filtered rows.** Pull the unfiltered 17 rows first, compute the expected id set locally, then
+   assert each filtered run returns exactly that set. This caught the thing a row-count check never
+   would have: `minTransactionValue=500000` correctly returned two rows whose
+   `transactionValueUsd` were **-815803.94 and -5376985.52** — the Actor pre-computes a *signed*
+   value, so a naive `>= min` compare silently drops every sale, i.e. exactly the rows a buyer
+   setting a value floor is looking for. Compare on `Math.abs()` and say so in the schema.
+   Also re-run the Actor with NO filters afterwards and assert the row set is identical to the
+   pre-change baseline — that is the regression guard that proves no existing caller's bill moved.
+4. **An `items.enum` in the input schema makes any in-Actor validation of those values dead code.**
+   A first draft warned about unrecognised transaction codes. Apify rejects a non-enum value — and
+   a *lowercase* `"s"` — with `HTTP 400 invalid-input` before the Actor process starts (verified
+   live both ways). The warning and the `.toUpperCase()` normalisation were both unreachable, so
+   they came out and a comment explaining why went in. Enum + platform 400 is strictly better UX
+   than free text + an in-run warning: the buyer gets a labelled dropdown and a precise error.
+5. **Nothing checks prose numbers in `actors/registry.json`.** Its summary was still selling "17
+   transaction codes" for a 20-code Actor — live on `/tools/sec-insider-trades-scraper` since
+   cycle 934 fixed the README and `meta.json` and stopped there. `check-meta-fields` covers
+   `meta.json`/`actor.json`, `check-blog-claims` covers blog prose, `check-registry-fields` covers
+   registry *field lists* — the registry's `summary`/`title` prose is a hole. **When you fix a
+   count claim, grep the number across `actors/<slug>/`, `actors/registry.json` and
+   `site/content/blog/` in one pass**, because the file nobody checks is the one that stays wrong.
+6. **Editing a blog post's Actor enumeration creates a backlink obligation.** Adding the missing
+   `remote-jobs-scraper` bullet to the watch-mode post made `check-backlinks` go 0 -> 1 missing: the
+   new post-Actor pair needs a `## Related guides` entry in that Actor's README plus an
+   `apify push --force`. Run `check-backlinks` *after* a blog edit, not just after a new post.
+7. **`check-competitor-claims` is keyed by Store handle, so a rival with Actors in two niches needs
+   a `FILE_OVERRIDES` entry.** Quoting `scrapers_lat` and `parseforge` user counts from the Form 4
+   niche read as stale (2 vs 8, 2 vs 32) because the handle-level map points at their
+   trademark/usaspending listings. The mechanism already existed for exactly this; the fix is one
+   dict entry per README, not deleting the numbers.
