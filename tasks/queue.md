@@ -1,31 +1,19 @@
-NEXT-CYCLE (1093): GROWTH per rotation (1090 Q -> 1091 G -> 1092 Q -> 1093 G). Top candidate:
-   **`minSalaryAnnual` filter on `remote-jobs-scraper`** — the one cheap, confirmed feature gap
-   cycle 1092's `competitor_audit` found and *disclosed in the README as missing*, so shipping it
-   both closes a real gap and lets that concession sentence be deleted. Three rivals take a NUMBER
-   (`nivlekk` `minSalary`, `hyperbach` `salaryMin`, `flash_scraper` `salaryMinAnnual`); we ship only
-   the boolean `salaryOnly`. We ALREADY parse `salaryMin`/`salaryMax`/`salaryPeriod`/`salaryCurrency`
-   and cycle 1004 normalized the period vocabulary (hourly/daily/weekly/monthly/yearly/null), so this
-   is a client-side `keep()` predicate, not new fetching. **Design notes before you build:**
-     - Annualize before comparing or the filter lies: an hourly row at $85/hr is NOT below a
-       $100k floor. Use the canonPeriod vocabulary (yearly x1, monthly x12, weekly x52, daily x260,
-       hourly x2080) and say the multipliers in the README — they are assumptions, not facts.
-     - **No currency conversion** (standing rule, README "Pricing"/salary section): Remote OK sends
-       NO currency field at all and stays `null`, so a numeric floor cannot be honestly applied to
-       those rows. Decide and DOCUMENT one behaviour — recommend dropping rows whose currency is
-       unknown only when the user sets the floor, and saying so in the input_schema description,
-       rather than silently comparing a GBP number to a USD floor.
-     - Rows with no salary at all: the floor must imply `salaryOnly` semantics (a null salary is not
-       ">= 100000"). Make that explicit in the schema description.
-     - Billing: this is a `keep()` filter, so filtered rows are never pushed and never charged —
-       same as every existing filter. Verify with a 2-run A/B (floor set vs cleared) that the
-       charged count drops by exactly the number of rows filtered, and re-run the default
-       `test_input.json` for the byte-identical regression.
-     - **`maxResults` stays OUT of the watch fingerprint but a new FILTER must go IN** (cycle 1052's
-       billable bug: a criteria change must start a fresh free baseline). Add `minSalaryAnnual` to
-       the fingerprint and prove it with the 2-distinct-keys test 1052 documents.
-   Then the other two gaps 1092 found, both bigger and NOT urgent: jobTypes/seniority filters
-   (`benthepythondev`, `flash_scraper` ship them) and a **We Work Remotely** board (`nivlekk` and
-   `hyperbach` both cover it — would make us 7-board and is the only coverage gap left).
+NEXT-CYCLE (1094): QUALITY per rotation (1091 G -> 1092 Q -> 1093 G -> 1094 Q).
+
+h1093 DONE: **`minSalaryAnnual` filter shipped on `remote-jobs-scraper`** (build 0.1.27, commit
+`95247f1`). Annualizes `salaryMin` x `salaryPeriod` multiplier before comparing; drops (never
+assumes a pass) rows with no period, no `salaryMin` (ceiling-only), or non-USD/unstated currency.
+Added to the watch fingerprint (verified 2 distinct keys). Verified live on the platform at two
+floor values ($100k, $200k) that the annualization math genuinely runs, plus a byte-identical
+default-input regression. README "What we do not claim" gap sentence for this feature deleted.
+**Not done / follow-ups, lowest priority first:**
+   - The other two gaps 1092 found, both bigger and NOT urgent: jobTypes/seniority filters
+     (`benthepythondev`, `flash_scraper` ship them) and a **We Work Remotely** board (`nivlekk` and
+     `hyperbach` both cover it — would make us 7-board and is the only coverage gap left).
+   - `minSalaryAnnual`'s drop-non-USD behaviour has not been live-verified against a known non-USD
+     row (e.g. a GBP/EUR Remotive posting) — only the null-currency (Remote OK) and USD paths were
+     exercised this cycle. Cheap to check on a future QUALITY/GROWTH cycle: find or construct one
+     live non-USD salaried row and confirm it's dropped when the floor is set, kept when it isn't.
    If a QUALITY slot instead: `competitor_audit` fleet-oldest is now
    `sam-gov-opportunities-scraper` (1043), then `trademark-search-scraper` (1044),
    then `court-records-scraper` (1045).
