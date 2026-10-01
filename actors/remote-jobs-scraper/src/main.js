@@ -67,6 +67,17 @@ function parseDateBound(raw, label, endOfDay) {
   return d;
 }
 
+// A floor the buyer typed wrong must fail loudly, not silently become "no filter" (which
+// would widen, not narrow, the billable set — same reasoning as parseDateBound above).
+function parseMinSalaryAnnual(raw) {
+  if (raw === undefined || raw === null || String(raw).trim() === '') return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) {
+    throw new Error(`minSalaryAnnual: "${raw}" must be a positive number (an annualized salary floor, e.g. 100000).`);
+  }
+  return n;
+}
+
 // Input parsing can throw (bad source name, bad date bound). Route those through
 // Actor.fail() so the platform shows the explanatory message instead of a stack trace.
 async function failInput(err) {
@@ -97,6 +108,7 @@ function parseInput() {
     companyKeyword: (input.companyKeyword ?? '').trim().toLowerCase(),
     locationKeyword: (input.locationKeyword ?? '').trim().toLowerCase(),
     salaryOnly: input.salaryOnly === true,
+    minSalaryAnnual: parseMinSalaryAnnual(input.minSalaryAnnual),
     includeDescription: input.includeDescription === true,
     dedupe: input.dedupe !== false,
     postedAfter: after,
@@ -112,7 +124,7 @@ try {
 }
 const {
   sources, maxResults, maxPagesPerSource, searchKeyword, titleExcludeKeyword,
-  companyKeyword, locationKeyword, salaryOnly, includeDescription, dedupe,
+  companyKeyword, locationKeyword, salaryOnly, minSalaryAnnual, includeDescription, dedupe,
   postedAfter, postedBefore,
 } = cfg;
 
@@ -190,7 +202,7 @@ if (watchMode) {
   // reach and must move into this fingerprint.
   const criteria = {
     sources: [...sources].sort(), searchKeyword, titleExcludeKeyword, companyKeyword,
-    locationKeyword, salaryOnly,
+    locationKeyword, salaryOnly, minSalaryAnnual,
     postedAfter: input.postedAfter ?? null, postedBefore: input.postedBefore ?? null,
     maxPagesPerSource,
   };
@@ -481,6 +493,19 @@ const PERIOD_WORDS = {
   monthly: 'per month', yearly: 'per year',
 };
 
+// For `minSalaryAnnual`: an hourly row at $85/hr is not below a $100k floor, so the floor must be
+// compared against an annualized figure, not the raw number. Full-time-equivalent assumptions
+// (2080 paid hours/year, 260 paid days/year), stated in the README and schema as assumptions, not
+// facts — a part-time hourly/daily rate would overstate its annual equivalent under this math.
+// `canonPeriod` only ever returns one of these five words or an unrecognised raw string (an
+// unrecognised period, like a missing one, cannot be honestly annualized).
+const PERIOD_ANNUAL_MULTIPLIER = { yearly: 1, monthly: 12, weekly: 52, daily: 260, hourly: 2080 };
+function annualizeSalary(amount, period) {
+  if (amount == null) return null;
+  const mult = PERIOD_ANNUAL_MULTIPLIER[period];
+  return mult ? amount * mult : null;
+}
+
 function formatSalary({ min, max, currency, period }) {
   if (!min && !max) return null;
   const sym = currency ? (SYMBOL_FOR[currency] ?? null) : null;
@@ -758,6 +783,17 @@ function keep(row) {
   if (companyKeyword && !String(row.company ?? '').toLowerCase().includes(companyKeyword)) return false;
   if (locationKeyword && !String(row.location ?? '').toLowerCase().includes(locationKeyword)) return false;
   if (salaryOnly && !(row.salaryText || row.salaryMin || row.salaryMax)) return false;
+  if (minSalaryAnnual != null) {
+    // No currency conversion is performed anywhere in this Actor (see README "Salary fields"), so
+    // a floor can only be honestly applied to a row stated in USD. A null currency (most Remote OK
+    // rows) is "unknown", not "assume USD" — comparing an unconverted GBP/EUR number against a USD
+    // floor would silently misapply it either way, so both unknown and non-USD rows are dropped.
+    if (row.salaryCurrency !== 'USD') return false;
+    // salaryMin is the stated floor; a ceiling-only row ("Up to $90k") has no known floor to
+    // compare, so it is dropped rather than assumed to clear the bar.
+    const annual = annualizeSalary(row.salaryMin, row.salaryPeriod);
+    if (annual == null || annual < minSalaryAnnual) return false;
+  }
   if (postedAfter || postedBefore) {
     if (!row.publishedAt) return false; // no date means we cannot honour the window
     const t = new Date(row.publishedAt);

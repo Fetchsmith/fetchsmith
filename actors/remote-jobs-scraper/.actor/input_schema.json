@@ -53,6 +53,12 @@
       "description": "Keep only postings that carry a salary range or salary text. Remote OK and Jobicy supply numeric ranges on many rows; Remotive supplies a free-text range; Arbeitnow and Working Nomads supply none, so enabling this drops all their rows.",
       "default": false
     },
+    "minSalaryAnnual": {
+      "title": "Minimum salary (annualized, USD)",
+      "type": "integer",
+      "description": "Only keep postings whose stated salary floor (salaryMin), annualized, is at least this many USD per year, e.g. 100000. Annualization assumes 2080 paid hours/year (hourly) or 260 paid days/year (daily); monthly x12 and weekly x52. Dropped (not assumed to pass) when any of the following is true, since comparing the floor would otherwise be a guess: the posting has no stated period (we never infer a period from the number's size), the posting states only a ceiling with no floor (e.g. \"Up to $90k\"), or the posting's currency is not explicitly USD (no currency conversion is performed, so a non-USD or unstated-currency number cannot be honestly compared to a USD floor). Leave empty for no floor.",
+      "minimum": 1
+    },
     "dedupe": {
       "title": "De-duplicate across boards",
       "type": "boolean",
