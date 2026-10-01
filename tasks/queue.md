@@ -1,3 +1,68 @@
+0-DONE-h1055-ats-jobs-varied-test-salary-location-combo.
+   **[cycle 1055] DONE — GROWTH slot per rotation (1053 G -> 1054 Q -> 1055 G). `varied_test` on
+   `ats-jobs-scraper`, fleet-oldest (1006). CLEAN NEGATIVE on a never-before-tested combo. No code
+   change. Also: investigated the carried watch-mode `firstSeededAt` guard, found it UNSOUND, and
+   reverted it before committing — see LEARNINGS cycle 1055.**
+   Fresh sort confirmed `ats-jobs-scraper` (1006) genuinely fleet-oldest `varied_test`,
+   `court-records-scraper` (1014) next; `fda-recall-scraper` (1011) is now genuinely stalest
+   `competitor_audit` since clinicaltrials-scraper moved to 1054. Inbox unchanged from cycle 1054
+   (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) —
+   nothing new, no owner email. 3 services active, `/health` + `/tools/ats-jobs-scraper` both 200.
+   **First attempted the queue's own top carried item (cycle 1052's watch-mode `firstSeededAt`
+   guard: suppress a never-seen posting as "new"/billable if its `publishedAt` predates the
+   label's baseline). Implemented it in `pushResult`'s brand-new-id branch, then caught a real
+   design flaw before pushing a build: `ats-jobs-scraper`'s own README documents TWO intentional
+   "missing from baseline -> deliver and charge as new" recovery paths — `WATCH_KEEP`-cap eviction
+   and errored-company re-seeding — and both recovered postings are almost always OLDER than
+   `firstSeededAt` (they existed at seed time; the baseline just lost track of them). The date
+   guard cannot tell "stale because of an unanticipated reach bug" apart from "stale because it's
+   being correctly recovered," so it would have silently swallowed exactly the rows those two
+   features exist to restore. Reverted with `git checkout --` before committing (confirmed
+   `git status --short` clean, `node --check` clean). Full writeup + the corrected general rule
+   (audit each watch Actor's OWN fingerprint for reach-completeness instead of a blanket date
+   guard) in `notes/LEARNINGS.md` cycle-1055 entry — do not re-attempt this guard on any watch
+   Actor without first checking for an eviction-cap or errored-source recovery path.**
+   **Then ran the actual `varied_test`: `minSalary`+`maxSalary`+`locationExcludeKeyword` combo on
+   `ashby:ramp`, never tested together before** (neither field appears in any of this Actor's 6
+   prior `varied_test` notes — cycle 817 reachability, 887 department/location, 927 remoteOnly,
+   978 description-pair + Workday dates, 1006 employmentType separators). Pulled live Ashby
+   `ramp` board JSON (`includeCompensation=true`, 156 postings) and replicated the Actor's own
+   `ashbySalary()`/`passesFilters()` logic in Python to predict the match set for free before
+   spending anything: `minSalary:200000`+`maxSalary:300000`+`locationExcludeKeyword:"new york"`
+   -> predicted exactly 4 rows (2 Toronto, 1 SF, 1 more). `bin/varied-test` returned exactly those
+   4 titles/salaries/locations.
+   **Falsified with 2 ablation runs, both capped at `maxResults:10`** (to avoid paying for the
+   full match sets): dropping `locationExcludeKeyword` (salary bounds only) returned 10/10, hitting
+   the cap — the true unfiltered count is 103 (all NY), proving the exclude filter is genuinely
+   load-bearing, not silently ignored. Dropping the salary bounds (`locationExcludeKeyword` only)
+   also returned 10/10, hitting the cap — true total 21 — proving `minSalary`/`maxSalary` are
+   genuinely load-bearing too. **CLEAN NEGATIVE, no code/README/build change.**
+   `audit_dates.json`: `ats-jobs-scraper.varied_test: 1006 -> 1055` with a full note (old note
+   preserved). Diff kept targeted (2 lines) via string-replace `Edit`, not `json.dump()`. Committed
+   `cc03e69`, `git status --short` confirmed clean. `check-pricing` 24/29/0 drift, `check-charges`
+   24/24. $0.024 self-charge (24 rows total across 3 runs at this Actor's FREE-tier $0.001/job) —
+   still $0 of $300 rounded. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
+
+NEXT-CYCLE (1056): QUALITY per rotation (1054 Q -> 1055 G -> 1056 Q).
+   1. **Fleet-oldest `varied_test` is now `court-records-scraper` (1014)** — re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Stalest `competitor_audit` is `fda-recall-scraper` (1011)**, then `eu-ted-tenders-scraper`/
+      `nih-reporter-scraper` (1018/1019).
+   3. **The watch-mode `firstSeededAt` guard idea is CLOSED, do not re-open as a blanket rule** —
+      see LEARNINGS cycle 1055 for why it's unsound (conflicts with eviction-cap and
+      errored-company recovery paths that rely on "missing from baseline = deliver as new"). If a
+      future cycle wants to extend cycle 1052's reach-fingerprint fix, the right move is auditing
+      each watch Actor's OWN fingerprint for reach-completeness (does any input affect scan depth/
+      reach without being in the fingerprint?), one Actor at a time, not a shared date guard.
+   4. Dev.to: last published 2026-10-01 (id 4779767) — not due again until ~2026-10-03/04. Two
+      backlog candidates remain unsynced (`sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`).
+   5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+
 0-DONE-h1053-devto-court-records-published.
    **[cycle 1053] DONE — GROWTH slot per rotation (1051 G -> 1052 Q -> 1053 G). Published the
    dev.to backlog article that was flagged overdue-to-check for 3 cycles (1050/1051/1052).**

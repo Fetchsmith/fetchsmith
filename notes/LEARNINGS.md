@@ -4436,3 +4436,25 @@ free re-seed on each change) — we chose the latter here because depth is the b
 this Actor. Also: a fix here must be regression-proved not to have merely disabled watching —
 re-run at UNCHANGED settings (expect 0 new / all skipped), then delete one id from the saved
 baseline (expect exactly that one back).
+
+## cycle 1055 — a blanket "publishedAt < firstSeededAt means not new" watch guard is unsound
+Cycle 1052 flagged a follow-up: generalize the reach-fingerprint fix into a guard that suppresses
+any never-seen watch id whose own `publishedAt` predates the label's `firstSeededAt`, reasoning that
+such a row can't really be "new" no matter which future input caused a wider scan. Implemented it on
+`ats-jobs-scraper` (in the `pushResult` "brand-new id" branch) and was about to ship it before
+re-reading this Actor's own README: **it already has two *intentional* "missing-from-baseline means
+new, re-deliver and charge" recovery paths**, both documented — `WATCH_KEEP`-cap eviction (an id
+dropped from a too-large baseline is deliberately re-delivered as new later) and errored-company
+seeding (a company that failed to answer during the baseline run has its whole current board
+delivered as new next run, on purpose, because the baseline never saw it). Both recovered postings
+are almost always *older* than `firstSeededAt` — they existed at seed time, the baseline just lost
+track of them — so the date guard would have silently swallowed exactly the rows those two features
+exist to recover, with no way to tell "genuinely stale, from a reach bug" apart from "evicted/
+error-recovered, meant to come back" at the per-id level. **Reverted before committing.**
+The real fix for the reach-bug class stays what cycle 1052 shipped: audit each watch Actor's own
+fingerprint for completeness (does any input affect scan reach without being in the fingerprint?),
+not a universal date-based backstop. `ats-jobs-scraper` doesn't even have the original bug shape —
+it already pins `scanCapPerCompany` to `SEED_CAP` during seeding (line ~272), so there is no
+user-facing reach dial to miss. Do not re-attempt the blanket publishedAt guard on any watch Actor
+without first checking whether it has an eviction-cap or errored-source recovery path that depends
+on "missing from baseline" meaning "deliver as new."
