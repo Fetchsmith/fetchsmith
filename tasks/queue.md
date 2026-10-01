@@ -1,7 +1,8 @@
-NEXT-CYCLE (1074): QUALITY per rotation (1072 Q -> 1073 G -> 1074 Q).
-   1. **Fleet-oldest `competitor_audit` is `steam-reviews-scraper` (1031)**, then
-      `google-play-reviews-scraper` (1032), `shopify-products-scraper` (1033) — QUALITY-slot target
-      this cycle. Re-confirm fresh:
+NEXT-CYCLE (1075): GROWTH per rotation (1073 G -> 1074 Q -> 1075 G).
+   1. **Fleet-oldest `competitor_audit` is now `google-play-reviews-scraper` (1032)**, then
+      `shopify-products-scraper` (1033), `fec-campaign-finance-scraper` (1036) — next QUALITY-slot
+      target (1076). `steam-reviews-scraper` closed at 1074 (see h1074 DONE note below). Re-confirm
+      fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
    1a. **Fleet-oldest `varied_test` is now `fda-recall-scraper` (1029)**, then `apple-podcasts-scraper`
       (1030) — next GROWTH slot (1075). `clinicaltrials-scraper` closed at 1073 (see h1073 DONE note
@@ -51,6 +52,40 @@ NEXT-CYCLE (1074): QUALITY per rotation (1072 Q -> 1073 G -> 1074 Q).
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1074-steam-reviews-competitor-audit-automation-lab-false-claims-memo23-added.
+   **[cycle 1074] DONE — QUALITY slot per rotation (1072 Q -> 1073 G -> 1074 Q). `competitor_audit`
+   on `steam-reviews-scraper`, fleet-oldest on that axis (1031). 3rd confirmed false competitor-
+   feature claim of this class (after 1068 gentle_cloud, 1072 sourabhbgp), plus a 254-cycle-old
+   known-but-unshipped finding finally added. 1 build pushed (0.1.54, README only), verified live.
+   No code change.**
+   Tree clean at `b4ac3d6` at start. Inbox `list 10` unchanged from cycles 1054-1073 — nothing new,
+   no owner email. 3 services active, `/health` + `/tools/steam-reviews-scraper` both 200.
+   **Pulled `automation-lab/steam-game-reviews-scraper`'s live input schema off its latest build**
+   (modified 2026-09-02) instead of its Store description. Our README's only competitor paragraph
+   claimed it "does not advertise" `purchaseType`/`reviewType` filters, an exact date window, or
+   game-metadata attachment — **all 4 were false**: the schema carries `purchaseType`, `reviewType`,
+   `startDate`/`endDate`, and `includeGameInfo` (identical property name to ours). Genuine surviving
+   gaps re-confirmed: no keyword/`minPlaytimeHours` filter, no off-topic toggle, no `games` mode (so
+   no player-count/owner-estimate data), no watch mode, no webhook. Pricing claim re-verified correct
+   (their current in-effect pricingInfo: $0.003 flat start + review tiered FREE $0.000575 -> DIAMOND
+   $0.00014 — identical per-review numbers to ours, minus their start fee we don't charge).
+   **Second finding: `memo23/steam-reviews-scraper` (17 users, created 2026-09-07, 17/17 users30d)
+   was already named "fastest-growing" in this Actor's own cycle-820 audit note but never added to
+   the README** — a known-but-unshipped gap, not a fresh discovery. Added now: thin 8-property
+   schema, no search-by-name/keyword/playtime/games-mode/watch/webhook, pricier ($0.005 start +
+   flat $0.001/review vs our tiered $0.000575->$0.00014, no start fee).
+   Build 0.1.54 pushed, README verified live via the build's `readme` field (new text present, old
+   "does not advertise" phrase absent). `check-competitor-claims` needed a `FILE_OVERRIDES` entry for
+   `memo23` on this README (handle-level map points at `memo23/remote-jobs-aggregator`) — **6th hit**
+   of the LEARNINGS-1064 handle-collision trap.
+   `audit_dates.json`: `steam-reviews-scraper.competitor_audit` `1031 -> 1074`, full note, prior
+   note preserved inline, clean 2-line `Edit` (JSON re-validated, `git diff --stat` confirmed exactly
+   2 lines changed). Final: `check-competitor-claims` 47/0 stale, 37 dated paragraphs/0 stale (was
+   36), `check-pricing` 24/29/0, `check-charges` 24/24, `check-readme-samples` 35/79/0,
+   `check-backlinks` 93/0, `check-disclosure` 52+13/0, `check-meta-fields` 11/0. $0 self-charge
+   (read-only API reads + 1 free build) — still ~$1.1 of $300. Revenue flat (44 users / 0 reviews /
+   0 bookmarks / $0), no owner email needed.
 
 0-DONE-h1073-clinicaltrials-documenttypes-leadsponsor-varied-test.
    **[cycle 1073] DONE — GROWTH slot per rotation (1071 G -> 1072 Q -> 1073 G). `varied_test` on

@@ -136,6 +136,9 @@ FILE_OVERRIDES = {
     "actors/google-news-scraper/README.md": {
         "memo23": "memo23/google-news-scraper",
     },
+    "actors/steam-reviews-scraper/README.md": {
+        "memo23": "memo23/steam-reviews-scraper",
+    },
 }
 
 USERS = re.compile(r"`([a-z][a-z0-9_-]{2,})`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
