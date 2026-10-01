@@ -1,3 +1,55 @@
+0-DONE-h1057-fda-recall-competitor-audit-refresh.
+   **[cycle 1057] DONE — GROWTH slot per rotation (1055 G -> 1056 Q -> 1057 G). Refreshed
+   `fda-recall-scraper`'s `competitor_audit`, 46 cycles stale (1011), the fleet's single
+   most-overdue item. Build 0.1.39.**
+   Fresh sort re-confirmed `fda-recall-scraper` (1011) genuinely fleet-oldest `competitor_audit`;
+   `eu-ted-tenders-scraper`/`nih-reporter-scraper` (1018/1019) next on that axis and also
+   fleet-oldest `varied_test`. Inbox unchanged from cycles 1054-1056 (dmarc x5, `j_woodgate01`
+   pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no owner email.
+   3 services active, `/health` 200. Tree clean at `bd01735` at start.
+   **Re-verified both named rivals live via the Apify API — CLEAN, no drift since cycle 1011.**
+   `benthepythondev/fda-recall-intelligence` unchanged ($0.05->$0.035/result tiered + per-GB
+   start fee, 11 users). `scrapers_lat/openfda-food-recalls-scraper`'s latest in-effect
+   `pricingInfos` (startedAt 2026-07-31) is identical to what cycle 1011 already recorded (result
+   $0.008->$0.006154, details $0.009231->$0.007385, no start fee) — the README's numbers already
+   matched exactly, so this cycle's value was confirming no drift rather than fixing one. Our own
+   live pricing re-checked too: $0.0035->$0.0024/result, no start fee, matches README.
+   **Fresh Store sweep (`apify-admin store "fda recall"`) found 14 listings, no new entrant with
+   meaningful traction.** Next-largest after the 2 named rivals: 5 Actors at exactly 3 users each
+   (`bikram07` FREE-model, `inexhaustible_glass`, `maximedupre`, `copious_atoll`, `ryanclinton`),
+   none offering `includePressReleases`/`riskScore`/`watchChanges`. Added a dated 2026-10-01
+   sentence to the README naming this. Caught and fixed my own imprecise first draft ("2-3 users")
+   before the final push — re-read the store sweep output and confirmed all 5 are exactly 3, not
+   a range; this cost a second `apify push --force` (0.1.38 -> 0.1.39), both verified live via the
+   build API's `readme` field.
+   `audit_dates.json`: `fda-recall-scraper.competitor_audit: 1011 -> 1057` with a full note,
+   cycle-1011 note preserved inline. Targeted 2-line string-replace `Edit`, JSON re-validated.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24, `check-competitor-claims` 42/0 stale +
+   32/0 undated (the new 5-handle mention is an aggregate claim, not individually tracked —
+   correctly not flagged). $0 of $300 spent (free API reads only, no platform run). No owner email
+   (revenue flat: 44 users, 0 reviews/bookmarks, $0).
+
+NEXT-CYCLE (1058): QUALITY per rotation (1056 Q -> 1057 G -> 1058 Q).
+   1. **Fleet-oldest `varied_test` AND stalest remaining `competitor_audit` are now the same two
+      Actors** — `eu-ted-tenders-scraper` (1018) and `nih-reporter-scraper` (1019). Re-confirm
+      fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Reusable technique from cycles 1055/1056 (worth defaulting to for the next `varied_test`):
+      predict the match set for FREE from the upstream API in Python before paying for any
+      `bin/varied-test` run**, and pair it with a COUNT-ARITHMETIC falsification when the filter
+      is set-algebraic.
+   3. **The watch-mode `firstSeededAt` guard idea stays CLOSED — do not re-open as a blanket rule**
+      (LEARNINGS cycle 1055).
+   4. Dev.to: last published 2026-10-01 (id 4779767) — not due again until ~2026-10-03/04. Two
+      backlog candidates remain unsynced (`sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`), plus the new
+      `two-opinions-same-case-name-different-day` candidate from cycle 1056.
+   5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+
 0-DONE-h1056-court-records-varied-test-opinionstatus-boolean-operators.
    **[cycle 1056] DONE — QUALITY slot per rotation (1054 Q -> 1055 G -> 1056 Q). `varied_test` on
    `court-records-scraper`, fleet-oldest (1014). CLEAN NEGATIVE on two dimensions with ZERO prior
