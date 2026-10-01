@@ -93,6 +93,18 @@ FIELD_SUPPRESS = {
     # is a bare call argument, the other a push() argument), so they read as row shapes purely
     # because they share >= MIN_OVERLAP field names with the real schema.
     'sec-insider-trades-scraper': {'primaryDocument', 'indexUrl'},
+    # watchId is the watch-mode cross-board identity key, computed once per de-duplicated row
+    # and carried on the internal `enriched` literal (main.js ~line 819) alongside the real
+    # alsoOn/duplicateUrls fields -- which is what tips `enriched` over MIN_OVERLAP and makes it
+    # read as a row shape. It is NOT the pushed row: `item` (built explicitly field-by-field a
+    # few lines below, no spread) never lists it, and `pushResult(item, watchMode ? row.watchId
+    # : null)` passes it as a SEPARATE second argument used only for the KVS baseline, never
+    # folded into `item`. Confirmed cycle 1062 by pulling 2 live watch-mode run datasets
+    # (KcKBRyNDPZhPNHW25, FhWNME9UCQYS0ZLHj, both from cycle 1061's h287 fix verification) and
+    # diffing every pushed item's keys -- watchId absent from all of them, flagged only cycle
+    # 1061 by check-code-fields as fallout from the watch-mode port (~cycle 1050) never
+    # declaring a binding name NON_ROW_BIND would catch.
+    'remote-jobs-scraper': {'watchId'},
 }
 
 
