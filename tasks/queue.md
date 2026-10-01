@@ -1,3 +1,71 @@
+NEXT-CYCLE (1068): QUALITY per rotation (1066 Q -> 1067 G -> 1068 Q).
+   1. **Fleet-oldest `competitor_audit` is `hacker-news-scraper` (1026)** (its `varied_test` was just
+      refreshed at 1067, leave that alone), then `google-news-scraper` (1027),
+      `apple-podcasts-scraper` (1030). Run as a FEATURE audit (per 1060/1062/1064 precedent: 3
+      straight audits found zero pricing drift, the payload is in the input-surface diff against
+      the top rival) — pull `gentle_cloud/hacker-news-scraper`'s (155 users) current input schema
+      off its latest build and diff against ours; cycle 1026's note already lists what they lacked
+      then (no minPoints/minComments/excludeKeywords/date-window/GitHub-enrichment/watch mode) —
+      confirm still true before concluding no gap.
+   2. **Fleet-oldest `varied_test` is now `sec-insider-trades-scraper` (1024)** — still the same
+      defer reasoning as 1067 (filters just shipped at 1064); next-best is `google-news-scraper`
+      (1027), `clinicaltrials-scraper` (1028). Re-confirm fresh with the sort one-liner below.
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog candidates
+      unsynced (unchanged from 1067): `sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`, `two-opinions-same-case-name-different-day`,
+      cycle 1058's NIH "predict the set, not the order" observation, cycle 1060's
+      tiered-price-undercut finding, cycle 1063's watch-mode-fingerprint finding, cycle 1064's
+      signed-value-floor finding, and now cycle 1067's **"a milestone-gated counter diff can be
+      live-falsified the same way a new-id diff can — fabricate the snapshot, not just the ids"**
+      (a reusable verification technique more than a buyer-facing trap, weaker pitch than the
+      others — keep ranked last unless nothing else lands).
+   4. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
+   5. Carried, unchanged from 1067: the "N codes/categories" registry-prose claim class (queue item
+      0 below, still open — per-slug mapping table design already written out); `trademark-search-
+      scraper`'s `fTMType` mark-type filter; slug-only competitor-claim reformat sweep of remaining
+      READMEs; false-superlative sweep of the ~10 blog posts; Substack Notes gap; FEC `groupBy`;
+      `neatrat`'s 4 Google Play input gaps; fleet-wide spend-cap input; `federal-register-scraper`'s
+      deadline-window/fetch-by-document-number gaps; the 3-filter-treatment sibling sweep (item 7
+      below).
+
+0-DONE-h1067-hacker-news-watchchanges-milestone-live-falsification.
+   **[cycle 1067] DONE — GROWTH slot per rotation (1065 G -> 1066 Q -> 1067 G). `varied_test` on
+   `hacker-news-scraper`, fleet-oldest on that axis (1026). CLEAN, no code change — first-ever LIVE
+   test of the `watchChanges` points/comment-milestone re-delivery path.**
+   Tree clean at `aeb62d1` at start. Inbox `list 10` unchanged from cycles 1054-1066 (dmarc x5,
+   `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new, no
+   owner email. 3 services active, `/health` 200.
+   **Picked `watchChanges` because LEARNINGS cycle 851/852 left a real gap**: HN points/comments are
+   a continuously-climbing counter (unlike the rest of the fleet's watch Actors, which diff a rare
+   one-time state flip), so the code uses a milestone-ladder gate instead of a bare diff — a
+   deliberate design decision that was unit-tested locally and seed/incremental-round-tripped live
+   with 0 charges both times (cycle 852), but the actual "crosses a milestone -> redelivered and
+   CHARGED" path had never been exercised on the platform.
+   **3 real platform runs against one exact, settled story** (query=`"Stephen Hawking has died"` +
+   `tags:["story"]` + `minPoints:1000` isolates to exactly 1 Algolia hit, objectID `16582136`, a
+   2018 story whose points/comments are no longer moving — same "pick a target stable enough that
+   only MY edit changes it" reasoning as cycle 1065's single-awardId pick). (1) Seed
+   `watchLabel=vtest1067a` — baseline recorded 1 item, `{result:0}`, free; read the KV record
+   directly (`fetchsmith-hn-watch`, key `watch-vtest1067a-9821bf2cf3`) and confirmed it captured the
+   REAL live snapshot `{i:16582136,p:6015,c:436}`, matching Algolia exactly — not a placeholder.
+   (2) **Falsified the diff** (1065's eviction technique, applied to the milestone path instead of
+   the new-id path): PUT the record back with `p` fabricated from 6015 down to 4000 (`c` left at
+   the real 436), re-ran identical criteria + `watchChanges:true` — item came back **re-delivered
+   and charged** (`{result:1}`), tagged `_watchChangeType:["pointsMilestone"]`,
+   `_watchPrevious:{points:4000}` (exactly the fabricated value, not a stale read),
+   `_watchMilestone:{points:5000}` — correctly the HIGHEST rung between the fabricated base and the
+   real 6015 (not 1000 or 2500), live-confirming cycle 852's "highest-rung-only" unit test actually
+   holds end-to-end. (3) **Control** — re-ran again with the baseline now holding the real synced
+   snapshot: 0 rows, `{result:0}`, proving no double-charge for the same crossing once the snapshot
+   catches up. All 3 `chargedEventCounts` read via the Apify API (not dataset row counts), matching
+   detection exactly across all 3 runs.
+   `audit_dates.json`: `hacker-news-scraper.varied_test: 1026 -> 1067`, full note, prior note
+   preserved inline. Targeted string-replace `Edit`, JSON re-validated, `git diff --stat` confirmed
+   only the 2 touched lines changed. `check-pricing` 24/29/0 drift, `check-charges` 24/24. Self-charge
+   ~$0.0002 (1 `result` event at this Actor's FREE-tier price) — still ~$0.08 of $300. No owner email
+   (revenue flat: 44 users, 0 reviews/bookmarks, $0).
+
 NEXT-CYCLE (1067): GROWTH per rotation (1065 G -> 1066 Q -> 1067 G).
    0. **DONE at 1066 (field-count half only) — see h1066 note below.** `bin/check-meta-fields` now
       also scans `registry.json`'s own `summary`/`title` for the "N flat/typed/normalized fields"
