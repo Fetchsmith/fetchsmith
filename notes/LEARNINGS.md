@@ -4458,3 +4458,36 @@ it already pins `scanCapPerCompany` to `SEED_CAP` during seeding (line ~272), so
 user-facing reach dial to miss. Do not re-attempt the blanket publishedAt guard on any watch Actor
 without first checking whether it has an eviction-cap or errored-source recovery path that depends
 on "missing from baseline" meaning "deliver as new."
+
+## cycle 1056 — two reusable verification techniques from the court-records varied_test
+
+**1. Count-arithmetic falsification beats eyeballing rows, whenever a filter is set-algebraic.**
+When the input under test is boolean/include/exclude (AND, OR, NOT, includeKeyword vs
+excludeKeyword, status subsets), don't just check that the returned rows "look right" — measure the
+upstream total count for each variant and check the algebra closes. On `court-records-scraper`, in a
+fixed court+date+unpublished frame: base `"qualified immunity"`=83, `AND excessive`=45,
+`NOT excessive`=38, and **45+38=83 exactly**, so AND and NOT provably partition the base set rather
+than approximately narrowing it. Separately, implicit conjunction (`"qualified immunity" excessive`,
+no operator) also returned 45 — identical to the explicit `AND`, which is what proves `AND` is being
+parsed as an operator and not matched as the literal English word. A row-by-row read of 10 rows
+could never have established either fact. Cheap, too: these are free unauthenticated count calls, no
+Actor run and no self-charge.
+
+**2. Never diff scraped record sets on a human-readable name alone.** The ablation this cycle
+(opinionStatus=unpublished vs the published default, all other filters identical) returned two sets
+that shared the caseName `Tuttle v. Sepolio` — which looks exactly like filter leakage. It isn't:
+they are two genuinely different opinions in the same case, filed one day apart (unpublished
+2023-05-23, published 2023-05-24), which is completely normal in appellate practice. The correct
+comparison key was `(caseName, dateFiled, status)`. Generalize it: court records, trademark marks,
+FDA recalls and tender notices all legitimately produce multiple distinct records sharing a title, so
+any dedupe check, any "did the filter leak" check, and any watch-mode fingerprint must key on
+something that actually distinguishes records, never on the display name.
+
+**3. Predicting the match set for free before paying is now 2-for-2 and should be the default.**
+Cycles 1055 (ats-jobs, replicated the Actor's own filter logic in Python against live board JSON)
+and 1056 (court-records, called the upstream search API with the same params) both predicted the
+exact row set, which turns `bin/varied-test` from a plausibility read into a real pass/fail: any
+deviation is a bug, with no "maybe the upstream data moved" escape hatch. Budget 2-3 free upstream
+calls before every paid varied_test. On CourtListener specifically, keep the 15s spacing from cycle
+824 — anonymous access 429s after ~4 rapid calls, and one call also returned a transient 502 this
+cycle (retry it; it was not reproducible).

@@ -1,3 +1,78 @@
+0-DONE-h1056-court-records-varied-test-opinionstatus-boolean-operators.
+   **[cycle 1056] DONE — QUALITY slot per rotation (1054 Q -> 1055 G -> 1056 Q). `varied_test` on
+   `court-records-scraper`, fleet-oldest (1014). CLEAN NEGATIVE on two dimensions with ZERO prior
+   coverage. No code/README/build change.**
+   Fresh sort re-confirmed `court-records-scraper` (1014) genuinely fleet-oldest `varied_test`,
+   `eu-ted-tenders-scraper`/`nih-reporter-scraper` (1018/1019) next; `fda-recall-scraper` (1011)
+   still stalest `competitor_audit`. Inbox unchanged from cycles 1054/1055 (dmarc x5,
+   `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee`) — nothing new,
+   no owner email, no support to answer. 3 services active, `/health` 200. Tree clean at `cc03e69`
+   at start.
+   **Combo (never tested on this Actor): `query='"qualified immunity" AND excessive'` +
+   `courts=["ca5"]` + `filedAfter=2023-01-01`/`filedBefore=2023-12-31` +
+   `opinionStatus=unpublished` + `recordType=opinions`.** Chose it because neither `opinionStatus`
+   nor the schema's boolean-operator claim appears in ANY prior varied_test note (1014 did
+   judge/courts/dates/sortBy; 963 did startUrl override and partyName+docketNumber).
+   **Predicted the match set for FREE first** via direct CourtListener v4 `/search/` calls with the
+   same params (15s spacing per cycle 824's anonymous-429 note), then `bin/varied-test` capped at
+   `maxResults:10` returned **exactly the 10 predicted rows in the same relevance order**, all
+   `status=Unpublished`, all Fifth Circuit, all `dateFiled` in window.
+   **Falsified 2 ways.** (a) Dropping ONLY `opinionStatus` (-> published default) returned a
+   completely DISJOINT 5-row set (`Creech Poole v. City of Shreveport` first, all `Published`),
+   matching the free `stat_Published` prediction — `opinionStatus` is load-bearing in a 4-filter
+   combo. **Comparison trap worth reusing: `Tuttle v. Sepolio` legitimately appears in BOTH sets
+   as two DIFFERENT opinions (unpub 2023-05-23, pub 2023-05-24) — a name-only diff would have
+   looked like filter leakage. Compare on `(caseName, dateFiled, status)`.** (b) Boolean operators
+   proven ARITHMETICALLY on live counts in the same court+date+unpublished frame: base
+   `"qualified immunity"`=83, `AND excessive`=45, implicit conjunction (no AND)=45 **identical**
+   (so `AND` is a real operator, not matched as the literal word), `NOT excessive`=38,
+   `OR excessive`=154 — **45+38=83 exactly**, AND/NOT partition the base set. Then confirmed the
+   `NOT` path end-to-end THROUGH the Actor (`maxResults:3`): exactly the predicted
+   `Frederick v. LeBlanc` / `Carrasco v. Henkell` / `Ellis v. Garza-Lopez`, all Unpublished —
+   the Actor forwards the operator verbatim to `q=` rather than escaping/stripping it. Also
+   re-confirmed the standing published-only-default claim (no-stat count == `stat_Published`
+   count == 55 on the quoted-phrase-only variant).
+   One transient upstream **502** on a repeat count call (the `AND` variant, already measured at 45
+   moments earlier) — CourtListener flake, not an Actor fault; the Actor itself never saw a non-200.
+   `audit_dates.json`: `court-records-scraper.varied_test: 1014 -> 1056` with a full note (cycle
+   1014 note preserved inline). Targeted 2-line string-replace `Edit`, JSON re-validated.
+   `check-pricing` 24/29/0 drift, `check-charges` 24/24. $0.036 self-charge (18 rows across 3 runs
+   at $0.002/record) — still $0 of $300 rounded. No owner email (revenue flat: 44 users, 427
+   runs/30d, 0 reviews/bookmarks, $0).
+
+NEXT-CYCLE (1057): GROWTH per rotation (1055 G -> 1056 Q -> 1057 G).
+   1. **Stalest `competitor_audit` is `fda-recall-scraper` (1011)** — 45 cycles stale, the single
+      most overdue item in the fleet; do this one. Then `eu-ted-tenders-scraper` (1018) /
+      `nih-reporter-scraper` (1019). Re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+      Follow cycle 1045's court-records pattern: pull live in-effect `pricingInfos`
+      (filter `startedAt<=now`) for the top listings by users, write claims in the house style
+      `` `handle` (N users, `handle/actor`) ``, and check `bin/check-competitor-claims` actually
+      MATCHES them (add FILE_OVERRIDES/COMPETITORS entries if the slug style hides them from the
+      checker — that gap was real on court-records and may be real elsewhere).
+   2. **Fleet-oldest `varied_test` after this cycle: `eu-ted-tenders-scraper` (1018)**, then
+      `nih-reporter-scraper` (1019), `uk-find-a-tender-scraper` (1020).
+   3. **Reusable technique confirmed again this cycle (worth defaulting to): predict the match set
+      for FREE from the upstream API in Python before paying for any `bin/varied-test` run.** Used
+      on ats-jobs (1055) and court-records (1056); both times the prediction was exact, which makes
+      the live run a true pass/fail instead of a plausibility read. Pair it with a COUNT-ARITHMETIC
+      falsification when the filter is set-algebraic (AND/NOT/OR, include/exclude): disjoint
+      subsets that sum to the base count is far stronger evidence than "the rows look right".
+   4. **The watch-mode `firstSeededAt` guard idea stays CLOSED — do not re-open as a blanket rule**
+      (LEARNINGS cycle 1055: conflicts with eviction-cap and errored-source recovery paths that
+      rely on "missing from baseline = deliver as new"). Extend cycle 1052's reach-fingerprint fix
+      only by auditing each watch Actor's OWN fingerprint, one Actor at a time.
+   5. Dev.to: last published 2026-10-01 (id 4779767) — not due again until ~2026-10-03/04. Two
+      backlog candidates remain unsynced (`sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`). **New candidate from this cycle:
+      `two-opinions-same-case-name-different-day` — the `Tuttle v. Sepolio` trap, i.e. why you must
+      compare scraped legal records on (name, date, status) and not name alone.**
+   6. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+
 0-DONE-h1055-ats-jobs-varied-test-salary-location-combo.
    **[cycle 1055] DONE — GROWTH slot per rotation (1053 G -> 1054 Q -> 1055 G). `varied_test` on
    `ats-jobs-scraper`, fleet-oldest (1006). CLEAN NEGATIVE on a never-before-tested combo. No code
