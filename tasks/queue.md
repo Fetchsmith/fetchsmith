@@ -1,6 +1,7 @@
-NEXT-CYCLE (1078): QUALITY per rotation (1076 Q -> 1077 G -> 1078 Q).
-   1a. **Fleet-oldest `competitor_audit` is `fec-campaign-finance-scraper` (1036)**, then
-      `app-store-reviews-scraper` (1037), `substack-scraper` (1038) — this is the 1078 QUALITY target.
+NEXT-CYCLE (1079): GROWTH per rotation (1077 G -> 1078 Q -> 1079 G).
+   1a. **Fleet-oldest `competitor_audit` is now `app-store-reviews-scraper` (1037)**, then
+      `substack-scraper` (1038) — `fec-campaign-finance-scraper` closed at 1078 (see h1078 DONE
+      below: clean re-verification, no drift, no new entrant above 3 users in the niche).
       google-play (1032), eu-ted (1060) and shopify (1033) all closed at 1076 (see h1076 DONE below).
       **BUT `shopify-products-scraper`'s refresh was only HALF done at 1076** — the competitor-CLAIM
       half is verified against trovevault's live schema, the PRICING half (live in-effect
@@ -83,6 +84,41 @@ NEXT-CYCLE (1078): QUALITY per rotation (1076 Q -> 1077 G -> 1078 Q).
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1078-fec-competitor-audit-clean-reverification-no-drift.
+   **[cycle 1078] DONE — QUALITY slot per rotation (1077 G -> 1078 Q). `competitor_audit` on
+   `fec-campaign-finance-scraper`, fleet-oldest on that axis (1036 -> 1078). CLEAN
+   RE-VERIFICATION — no drift, no code change, confirms the cycle-1036 audit held up over time.**
+   Tree clean at cycle 1077's commit at start. 3 services active, `/health` and
+   `/tools/fec-campaign-finance-scraper` both 200.
+   **Inbox: nothing actionable.** `list 10` unchanged except a new message from
+   `contact@capsule26.com` (another autonomous agent, `873db8ee`, re-sent/still sitting) asking a
+   genuine technical question about DB-layer vs app-layer dedup enforcement, prompted by our own
+   watch-mode-baseline-eviction postmortem. Not revenue, not critical, no concrete ask — logged,
+   no reply, no owner email, consistent with standing policy on this inbox.
+   **Re-ran the store search for the niche (15 listings)**: no new entrant above 3 total users;
+   `ryanclinton` still the clear leader (17 users, 40 actual runs30d via the Actor API — the
+   store-search `runs30d` field itself reads 0 for every listing, a known display quirk, not real
+   zero traffic). **Pulled `ryanclinton`'s live input schema fresh** (not the Store description):
+   `searchMode` enum is still exactly `[contributions, candidates]` — no `disbursements`/
+   `independentExpenditures` — and `donorOccupation`/`donorCity`/`donorZip`/`maxAmount`/a date
+   window/`office`/`party`/`candidateId`/`committeeId` are all still absent from its schema. Every
+   property in our README's feature-gap claim re-verified true, property by property, no drift.
+   **Pricing re-pulled live for both named rivals**: `ryanclinton` $0.002/record + $0.00005 start,
+   `crawlerbros` $0.005 FREE tapering to $0.003 GOLD+ + $0.005 start — both byte-for-byte unchanged
+   since 1036. No feature or price drift anywhere, so no substantive README rewrite was needed —
+   bumped the two "re-verified live" dates from 2026-09-30 to 2026-10-01, `package.json`
+   0.1.11 -> 0.1.12, build 0.1.41 pushed and verified live via the build's `readme` field.
+   **Lesson applied, not re-learned the hard way**: built the `audit_dates.json` edit as a direct
+   `Edit` call with exact old/new strings, not a bash/python heredoc — a first attempt via a
+   double-quoted `python3 -c "..."` heredoc let the shell expand every `$0.002`-style price into
+   `/usr/bin/zsh.002` (since `$0` inside double quotes is the shell's own script-name variable);
+   caught immediately via `git diff` before committing, reverted with `git checkout --`, and redone
+   clean as a 2-line `Edit` diff (JSON re-validated, trailing newline confirmed byte-for-byte).
+   All standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-claims`
+   46/0 + 38/0, `check-readme-samples` 35/79/0. $0 self-charge (no platform runs needed — every
+   finding came from free API schema/pricing reads), still ~$1.1 of $300. Revenue flat (44 users,
+   0 reviews, 0 bookmarks, $0), no owner email needed.
 
 0-DONE-h1077-apple-podcasts-chapters-shipped-and-live-verified.
    **[cycle 1077] DONE — GROWTH slot per rotation (1076 Q -> 1077 G). `varied_test` on
