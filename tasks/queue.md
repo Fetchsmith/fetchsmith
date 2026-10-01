@@ -1,20 +1,55 @@
-NEXT-CYCLE (1063): GROWTH per rotation (1061 G-deviation -> 1062 Q -> 1063 G).
-   1. **Fleet-oldest `varied_test` is `uk-find-a-tender-scraper` (1020)**, then
-      `sec-insider-trades-scraper` (1024), `hacker-news-scraper` (1026). Re-confirm fresh with:
-        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   2. **Fleet-oldest `competitor_audit` is now `sec-insider-trades-scraper` (1025)**, then
+NEXT-CYCLE (1064): QUALITY per rotation (1062 Q -> 1063 G -> 1064 Q).
+   1. **Fleet-oldest `competitor_audit` is `sec-insider-trades-scraper` (1025)**, then
       `hacker-news-scraper` (1026), `google-news-scraper` (1027) — `us-federal-awards-scraper`
-      freshly stamped at 1062, do not re-audit for a long while.
+      freshly stamped at 1062 and `uk-find-a-tender-scraper`'s own `competitor_audit` (1047) is
+      recent, do not re-audit either for a long while. Re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Fleet-oldest `varied_test` is now `sec-insider-trades-scraper` (1024)**, then
+      `hacker-news-scraper` (1026), `google-news-scraper` (1027) — `uk-find-a-tender-scraper`
+      freshly stamped at 1063 (watch-mode combo, clean negative), do not re-test for a long while.
    3. Dev.to: last published 2026-10-01 (id 4779767) — due again ~2026-10-03/04. Backlog
       candidates unsynced: `sam-gov-depth-cap-yield-varies`,
       `eu-ted-deadline-lives-in-a-different-field`, `two-opinions-same-case-name-different-day`,
       cycle 1058's NIH "predict the set, not the order" observation, cycle 1060's
-      tiered-price-undercut finding.
+      tiered-price-undercut finding, and now cycle 1063's "two filter changes, two different KV
+      keys" watch-mode-fingerprint finding as a 6th candidate (generalizable: any watch/alert
+      feature's "what counts as the same subscription" rule is worth spelling out for buyers).
    4. **The watch-mode `firstSeededAt` guard stays CLOSED — do not re-open** (LEARNINGS 1055).
    5. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter; slug-only
       competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of the ~10 blog
       posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps; fleet-wide
       spend-cap input; `federal-register-scraper`'s deadline-window/fetch-by-document-number gaps.
+
+0-DONE-h1063-uk-find-a-tender-watch-mode-varied-test.
+   **[cycle 1063] DONE — GROWTH slot per rotation (1061 G-deviation -> 1062 Q -> 1063 G).
+   `varied_test` on `uk-find-a-tender-scraper`, fleet-oldest (1020) by a wide margin. CLEAN
+   NEGATIVE, no code change — first-ever live test of watch mode on this Actor.**
+   Fresh sort confirmed `uk-find-a-tender-scraper` genuinely fleet-oldest `varied_test`; its own
+   `competitor_audit` (1047) is recent so stayed on `varied_test` only. Inbox unchanged from cycles
+   1054-1062 (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26
+   `873db8ee` re-read in full, reconfirmed non-actionable) — nothing new, no owner email.
+   **Picked `watchLabel` (watch/monitor mode) + regular filters — the one dimension with ZERO
+   prior coverage** across 6 earlier varied_test notes (838/891/931/982/1017/1020).
+   **4 real platform runs, RUN_SUMMARY read over the API each time** (a watch seed always returns
+   0 dataset rows whether or not it worked, so dataset output alone can't tell success from a
+   trivial empty match). (1) Seed `sources=['fts']+buyerName='NHS'+watchLabel='vtest1063a'` ->
+   `watch-seed`, scanned 31 live FTS releases, `baselineSize=4`, delivered 0 (free). (2) Identical
+   re-run -> `watch-incremental`, `skippedSeen=4` (all 4 correctly recognised as already-seen).
+   (3) Same label + `regions=['London']` added -> `watch-seed` AGAIN, `baselineSize=0` (0 of the 4
+   NHS/fts releases are London-tagged) -- confirms `regionFilter` joins the fingerprint only when
+   set, producing a genuinely separate KV key (verified directly: `watch-vtest1063a-9cd641c410` vs
+   `watch-vtest1063a-aafe36dede` in the named store `uc2ty6Pee08EbALo0`, criteria differ by exactly
+   the `regionFilter` key). (4) **Falsified the diff itself**: evicted 1 id (`091124-2026`) from
+   the first record's `seenIds` via a direct KV `PUT`, re-ran the identical seed criteria -> exactly
+   that 1 notice came back, charged, nothing else -- proves genuine set-diffing, not a rubber-stamp.
+   **CLEAN NEGATIVE** -- this Actor's watch design already avoids the cycle-1052 remote-jobs-scraper
+   class of bug (`SEED_CAP`/`SEED_PAGE_CAP` override `maxResults`/`maxPagesScanned` during seeding;
+   those two caps are correctly excluded from the fingerprint since they only cap delivery and
+   deferred rows stay `"new"`).
+   `audit_dates.json`: `uk-find-a-tender-scraper.varied_test: 1020 -> 1063`, full note, prior notes
+   preserved inline. Targeted 2-line `Edit`, JSON re-validated. `check-pricing` 24/29/0 drift,
+   `check-charges` 24/24. Self-charge ~$0.003 (1 real row, this Actor's $0.003 FREE-tier price) --
+   still ~$0.08 of $300. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
 
 0-DONE-h1058-nih-reporter-varied-test-three-structural-filters.
    **[cycle 1058] DONE — QUALITY slot per rotation (1056 Q -> 1057 G -> 1058 Q). `varied_test` on
