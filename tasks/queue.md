@@ -1,4 +1,4 @@
-NEXT-CYCLE (1079): GROWTH per rotation (1077 G -> 1078 Q -> 1079 G).
+NEXT-CYCLE (1080): QUALITY per rotation (1078 Q -> 1079 G -> 1080 Q).
    1a. **Fleet-oldest `competitor_audit` is now `app-store-reviews-scraper` (1037)**, then
       `substack-scraper` (1038) — `fec-campaign-finance-scraper` closed at 1078 (see h1078 DONE
       below: clean re-verification, no drift, no new entrant above 3 users in the niche).
@@ -7,9 +7,10 @@ NEXT-CYCLE (1079): GROWTH per rotation (1077 G -> 1078 Q -> 1079 G).
       half is verified against trovevault's live schema, the PRICING half (live in-effect
       `pricingInfos` for trovevault + a store sweep for new entrants) has not been re-pulled since
       1033. Finish that when convenient; the stamp now reads 1076 and will not resurface on its own.
-   1d. **Fleet-oldest `varied_test` is now `steam-reviews-scraper` (1031)**, then
-      `google-play-reviews-scraper` (1032) — `apple-podcasts-scraper` closed at 1077 (see h1077 DONE
-      below: shipped `chaptersUrl`, the queued product gap, live-verified on both code paths).
+   1d. **Fleet-oldest `varied_test` is now `google-play-reviews-scraper` (1032)**, then whatever
+      sorts oldest next — `steam-reviews-scraper` closed at 1079 (see h1079 DONE below: first-ever
+      combined `searchTerms`+filter test, exercised the cross-term dedupe live for the first time,
+      clean). `apple-podcasts-scraper` closed at 1077 (shipped `chaptersUrl`).
       Re-confirm fresh:
         python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
    2. **The weasel-phrase grep is now EXHAUSTED — do not re-run it expecting hits.** All 3 fleet-wide
@@ -84,6 +85,41 @@ NEXT-CYCLE (1079): GROWTH per rotation (1077 G -> 1078 Q -> 1079 G).
       `include_comments` per-story comment tree vs our keyword-based comment search — scoped look
       worth a GROWTH cycle. (b) `automation-lab`'s `maxPages` section pagination vs our
       `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1079-steam-reviews-searchterms-dedupe-filter-varied-test-clean.
+   **[cycle 1079] DONE — GROWTH slot per rotation (1077 G -> 1078 Q -> 1079 G). `varied_test` on
+   `steam-reviews-scraper`, fleet-oldest on that axis (1031 -> 1079). First-ever combined test of
+   the `searchTerms` resolution path with a review filter, exercising `addId`'s cross-term dedupe
+   live for the first time. CLEAN, no code change.**
+   Tree clean at cycle 1078's `c7d944f` at start. 3 services active, `/health` and
+   `/tools/steam-reviews-scraper` both 200.
+   **Inbox: a THIRD `peter@bytewells.com` cold pitch** (`14fb0a04`, same unlaunched Bytewells
+   marketplace, now targeting `ats-jobs-scraper`) — declined, no reply, no owner email, same policy
+   as cycles 1076/1077. Now 3-for-3. Rest of `list 10` unchanged.
+   **Every prior varied_test/enum_audit on this Actor (801/820/840/846/937/988/1031) drove
+   `apps:[...]` directly** — `searchTerms` (resolve a query via Steam's `storesearch` API, then scrape
+   each resolved app through the identical filter pipeline) had never been combined with a review
+   filter, and `addId`'s dedupe across two search terms resolving to an overlapping game had never
+   been exercised live at all.
+   **Picked `searchTerms:["Half-Life","Half-Life 2"]`, `searchLimit:2`** after a free `storesearch`
+   probe confirmed overlap: term 1 resolves to [220,70], term 2 to [220,290930] — app 220 (Half-Life
+   2) appears in both, which is exactly what tests the dedupe (disjoint terms wouldn't). Added
+   `reviewType:"negative"` + `purchaseType:"steam"` to test filter composition across the resolved
+   set simultaneously.
+   **Predicted per-app counts via 3 free direct Steam `appreviews` calls first** (review_type=negative,
+   purchase_type=steam, num_per_page=15): 220->15, 70->15, 290930->2 (that app genuinely has only 2
+   such reviews, ever).
+   **Live run** (`maxReviewsPerApp:15`, `maxResults:50`): `RUN_SUMMARY.appsRequested=3` (not 4 —
+   confirms app 220 was scraped once despite matching both search terms), delivered 32 rows with
+   per-app counts 220:15/70:15/290930:2 — an EXACT match to the prediction — and all 32 rows had
+   `recommended:false` + `steamPurchase:true` (0 filter violations across any resolved app).
+   `chargedEventCounts {result:32}` matched delivered rows exactly, no double-charge from the dedupe.
+   **CLEAN, no code change.** `audit_dates.json`: `steam-reviews-scraper.varied_test` `1031 -> 1079`,
+   full note, prior 1031/988 notes preserved inline (1031's note had never actually been written at
+   the time it bumped the number — backfilled now from its commit message), clean 2-line `Edit` (JSON
+   re-validated, `git diff --stat` confirmed exactly 2 lines). `check-pricing` 24/29/0,
+   `check-charges` 24/24 both clean. Self-charge ~$0.0008 (32 result events), still ~$1.1 of $300.
+   Revenue flat (44 users / 0 reviews / 0 bookmarks / $0), no owner email needed.
 
 0-DONE-h1078-fec-competitor-audit-clean-reverification-no-drift.
    **[cycle 1078] DONE — QUALITY slot per rotation (1077 G -> 1078 Q). `competitor_audit` on
