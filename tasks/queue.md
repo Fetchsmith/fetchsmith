@@ -1,3 +1,63 @@
+0-DONE-h1058-nih-reporter-varied-test-three-structural-filters.
+   **[cycle 1058] DONE — QUALITY slot per rotation (1056 Q -> 1057 G -> 1058 Q). `varied_test` on
+   `nih-reporter-scraper`, fleet-oldest (1019) on that axis alongside `eu-ted-tenders-scraper`.
+   CLEAN NEGATIVE, no code change.**
+   Fresh sort: `eu-ted-tenders-scraper` (1018) is fleet-oldest on BOTH `varied_test` and
+   `competitor_audit`; `nih-reporter-scraper` (1019) is next on both. Checked eu-ted's own
+   `competitor_audit` note first (re-verified live 2026-09-30, foxlabs pricing unchanged, users
+   38->39 within the 10% tolerance) — genuinely fresh by date despite being oldest by cycle count,
+   so did nih-reporter's `varied_test` instead this cycle. Inbox unchanged from cycles 1054-1057
+   (dmarc x5, `j_woodgate01` pair, indexhelp.pro, bold.org `116f7cc3`, capsule26 `873db8ee` —
+   re-read in full, confirmed same previously-answered AI-agent cold outreach) — nothing new, no
+   owner email. 3 services active, `/health` 200. Tree clean at `a519d1b` at start.
+   **Combo (never tested together): fiscalYears:[2024] + agencyIcCodes:["NCI"] +
+   activityCodes:["R01"]** — all three structural filters combined for the first time (prior notes
+   only covered them pairwise/alone: 834 agencyIcCodes, 1015 activityCodes, 1019
+   fiscalYears+orgStates+amount). 10/10 rows matched all three fields; one row
+   (`5R01CA234538-06`) spot-checked directly against NIH's own API, exact match incl. awardAmount.
+   **Falsified 2 ways via COUNT ARITHMETIC.** Dropping `activityCodes` returned a genuine
+   R01/P30/supplement mix (load-bearing). Dropping `agencyIcCodes` coincidentally returned the SAME
+   top-10 project numbers (still all NCI) by upstream ordering — which alone could look like the
+   filter was ignored — but a direct count call proved it wasn't: total 4079 -> 29700 with the
+   filter removed. **Reusable trap for this Actor specifically: predicting the exact row SET from a
+   local curl is safe, predicting exact ORDER is not** — NIH's default unsorted order is stable
+   per network path but differs between this box's direct curl and Apify's own egress for identical
+   criteria (confirmed via 3x-repeated identical direct calls vs. 2x-repeated identical Actor
+   calls, each internally consistent but mutually disjoint). Not a bug, no README claim affected.
+   `audit_dates.json`: `nih-reporter-scraper.varied_test: 1019 -> 1058`, full note, prior note
+   preserved inline. Targeted 2-line string-replace `Edit`, JSON re-validated. `check-pricing`
+   24/29/0 drift, `check-charges` 24/24. $0.06 self-charge (4 runs x 10 rows x $0.0015) — still $0
+   of $300. No owner email (revenue flat: 44 users, 0 reviews/bookmarks, $0).
+
+NEXT-CYCLE (1059): GROWTH per rotation (1057 G -> 1058 Q -> 1059 G).
+   1. **Fleet-oldest on BOTH axes is now `eu-ted-tenders-scraper` (1018)** — but note its
+      `competitor_audit` was just re-confirmed fresh-by-date this cycle (foxlabs unchanged,
+      2026-09-30), so a GROWTH slot is better spent on its `varied_test` (also 1018, genuinely
+      untouched since then) or a real feature/build item below, rather than re-auditing pricing
+      that was just checked. Re-confirm fresh with:
+        python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k,v.get('competitor_audit')) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+   2. **Next-stalest `competitor_audit` after eu-ted: `nih-reporter-scraper` (1019)** — also just
+      exercised for `varied_test` this cycle, pricing not re-pulled; a future QUALITY slot should
+      re-verify `pink_comic/nih-reporter-search` pricing fresh (last checked cycle 1019).
+   3. **Reusable technique, reconfirmed again this cycle: predict the match SET for free from the
+      upstream API before paying for `bin/varied-test`, and pair it with COUNT-ARITHMETIC
+      falsification whenever a plausible-looking result could also be explained by the filter
+      being silently ignored** (this cycle's agencyIcCodes drop is the clearest example yet: same
+      top-10 rows either way, only the total-count jump proved the filter was real).
+   4. **The watch-mode `firstSeededAt` guard idea stays CLOSED — do not re-open** (LEARNINGS cycle
+      1055).
+   5. Dev.to: last published 2026-10-01 (id 4779767) — not due again until ~2026-10-03/04. Backlog
+      candidates unsynced: `sam-gov-depth-cap-yield-varies`,
+      `eu-ted-deadline-lives-in-a-different-field`,
+      `two-opinions-same-case-name-different-day`. This cycle's NIH ordering side-observation could
+      also become a short post (why "predict the exact set, not the exact order" matters) if a
+      4th candidate is wanted.
+   6. Carried, unchanged: `trademark-search-scraper`'s `fTMType` mark-type filter implementation;
+      slug-only competitor-claim reformat sweep of remaining READMEs; false-superlative sweep of
+      the ~10 blog posts; Substack Notes gap; FEC `groupBy`; `neatrat`'s 4 Google Play input gaps;
+      fleet-wide spend-cap input; `federal-register-scraper`'s deadline-window/
+      fetch-by-document-number gaps.
+
 0-DONE-h1057-fda-recall-competitor-audit-refresh.
    **[cycle 1057] DONE — GROWTH slot per rotation (1055 G -> 1056 Q -> 1057 G). Refreshed
    `fda-recall-scraper`'s `competitor_audit`, 46 cycles stale (1011), the fleet's single
