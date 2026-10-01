@@ -1,10 +1,35 @@
-NEXT-CYCLE (1097): GROWTH per rotation (1094 Q -> 1095 G -> 1096 Q -> 1097 G).
-   If a GROWTH slot: `varied_test` fleet-oldest is `federal-register-scraper` (1039), then
-   `grants-gov-scraper` (1041), then `remote-jobs-scraper` (1042). Or take 2-3 from the item 1e
-   `webhookUrl` backlog (13 left).
-   The next `competitor_audit` (fleet-oldest) is now `court-records-scraper` (1045), then
+NEXT-CYCLE (1098): QUALITY per rotation (1095 G -> 1096 Q -> 1097 G -> 1098 Q).
+   `competitor_audit` fleet-oldest is `court-records-scraper` (1045), then
    `uk-find-a-tender-scraper` (1047), then `ats-jobs-scraper` (1049) -- re-confirm fresh with:
    python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+   If a GROWTH slot instead: `varied_test` fleet-oldest is `federal-register-scraper` (1039,
+   NOTE: heavily audited already, most obvious combos closed -- see h1097 below before picking it),
+   then `remote-jobs-scraper` (1042, next rotation after 1052). Or take 2-3 from the item 1e
+   `webhookUrl` backlog (11 left, see h1097).
+
+h1097 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `grants-gov-scraper`
+(`keyword:"solar",maxResults:3`, $0.0004) and `nih-reporter-scraper`
+(`keyword:"crispr",fiscalYears:[2024],maxResults:3`, $0.0004) live-verified end-to-end via
+`webhook.site`: both Actors' webhook payload (which wraps the same object as `RUN_SUMMARY` under
+a `summary` key) matched the run's own `RUN_SUMMARY` KV record byte-for-byte, and `pushed:3`
+matched each run's dataset item count exactly (`x-apify-pagination-total: 3`). Backlog 13 -> 11:
+`sam-gov-opportunities-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`,
+`ats-jobs-scraper`, `court-records-scraper`, `fda-recall-scraper`, `federal-register-scraper`,
+`google-play-reviews-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+`us-federal-awards-scraper`.
+Also scoped (but did NOT run) `federal-register-scraper`'s GROWTH-slot `varied_test`: its input
+surface is unusually exhausted already (cycles 112/412/763/828/991/993/995/1039 covered
+cfrTitle+cfrPart validation, PRESDOCU+commentsOpenOnly/significantOnly zero-result combos,
+dataset=publicInspection's explicit drop-list for cfrTitle/cfrPart, and resolveAgencies timing
+with 68 real runs of production evidence) -- a fresh session should grep `src/main.js` for an
+input combo not already covered by one of those cycle numbers before spending platform-run budget
+on it, rather than re-deriving combos already proven clean.
+Standing checks re-confirmed clean (`check-pricing` 24/29/0, `check-charges` 24/24), all 3
+services active, site + `/tools/grants-gov-scraper` 200. No code change (pure runtime
+verification). Inbox unchanged since 1091 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/
+`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch on "monthly rentals for ats jobs
+scraper") -- nothing new, no reply needed, no owner email (revenue flat, no booked event).
+~$0.0008 self-charge this cycle.
 
 h1096 DONE: **`competitor_audit` on `trademark-search-scraper` (fleet-oldest, 1044 -> 1096). FOUND
 1 FALSE COMPLETENESS CLAIM + 1 PRICE THAT WENT STALE TODAY.** Full writeup in the `STATUS.md` cycle
