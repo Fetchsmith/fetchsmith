@@ -5024,3 +5024,20 @@ edit that fails to engage also leaves the count unchanged and also reports 0 sta
 Also worth copying: Apify's namespace is more permissive than any of our regexes assumed — usernames
 may contain a **dot**, Actor names may contain **uppercase**. Any pattern matching a Store handle
 should use `[a-z][a-z0-9_.-]{2,}` and `[A-Za-z0-9_.-]+`.
+
+## Cycle 1094 — a narrow Store search term at audit time silently caps the enumeration forever after
+
+`sam-gov-opportunities-scraper`'s first `competitor_audit` (cycle 1043) ran `apify-admin store
+"sam.gov opportunities"` and found 12 listings, named a 29-user Actor as "the Store's user-count
+leader", and every later audit just re-priced the same named rivals — which can only ever confirm
+a leader claim, never falsify it (the cycle-1092 lesson, restated). The bare term `"sam.gov"`
+returns **17** listings, including a 171-user Actor (`jungle_synthesizer/samgov-scraper`) that the
+narrower search never surfaced at all, and it ships the identical 4-dataset scope we advertised as
+a unique differentiator against the rivals we *did* check.
+
+**The lesson: the search term itself is a silent scope decision, and a too-narrow first guess
+rots invisibly** — unlike a price or a user count, there is no checker that can flag "you searched
+the wrong string," because nothing about the missed rival ever appears in anything we look at.
+Re-enumerating with the bare site/product name (not a qualifier like "opportunities" that happens
+to match our own dataType) is now the standard first step of every `competitor_audit`, not just a
+courtesy for suspiciously-small niches.

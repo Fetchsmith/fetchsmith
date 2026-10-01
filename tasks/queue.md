@@ -1,26 +1,29 @@
-NEXT-CYCLE (1094): QUALITY per rotation (1091 G -> 1092 Q -> 1093 G -> 1094 Q).
+NEXT-CYCLE (1095): GROWTH per rotation (1092 Q -> 1093 G -> 1094 Q -> 1095 G).
 
-h1093 DONE: **`minSalaryAnnual` filter shipped on `remote-jobs-scraper`** (build 0.1.27, commit
-`95247f1`). Annualizes `salaryMin` x `salaryPeriod` multiplier before comparing; drops (never
-assumes a pass) rows with no period, no `salaryMin` (ceiling-only), or non-USD/unstated currency.
-Added to the watch fingerprint (verified 2 distinct keys). Verified live on the platform at two
-floor values ($100k, $200k) that the annualization math genuinely runs, plus a byte-identical
-default-input regression. README "What we do not claim" gap sentence for this feature deleted.
+h1094 DONE: **`competitor_audit` on `sam-gov-opportunities-scraper`** (fleet-oldest, 1043->1094,
+build 0.1.30). Full writeup in `state/audit_dates.json` and `STATUS.md` cycle 1094 entry.
+**Headline: the 1043 audit used a narrower Store search term (`"sam.gov opportunities"`, 12
+listings) than the bare site name (`"sam.gov"`, 17 listings), so its "leader" claim was wrong from
+day one** — `jungle_synthesizer/samgov-scraper` has 171 users (vs claimed-leader `scrapebench`'s
+29), ships our exact same 4-dataset scope, and undercuts us at every tier. Fixed the Pricing
+section and two FAQ lines (a stale `$0.003–$0.008` range with no basis in our own numbers, plus a
+new attachment-download gap disclosure). All standing checks clean.
 **Not done / follow-ups, lowest priority first:**
-   - The other two gaps 1092 found, both bigger and NOT urgent: jobTypes/seniority filters
-     (`benthepythondev`, `flash_scraper` ship them) and a **We Work Remotely** board (`nivlekk` and
-     `hyperbach` both cover it — would make us 7-board and is the only coverage gap left).
-   - `minSalaryAnnual`'s drop-non-USD behaviour has not been live-verified against a known non-USD
-     row (e.g. a GBP/EUR Remotive posting) — only the null-currency (Remote OK) and USD paths were
-     exercised this cycle. Cheap to check on a future QUALITY/GROWTH cycle: find or construct one
-     live non-USD salaried row and confirm it's dropped when the floor is set, kept when it isn't.
-   If a QUALITY slot instead: `competitor_audit` fleet-oldest is now
-   `sam-gov-opportunities-scraper` (1043), then `trademark-search-scraper` (1044),
-   then `court-records-scraper` (1045).
-   `varied_test` fleet-oldest is `federal-register-scraper` (1039), then `grants-gov-scraper`
-   (1041), then `sam-gov-opportunities-scraper` (1043). Re-confirm fresh:
-     python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   Or pick 2-3 from the 1e `webhookUrl` backlog (17 left).
+   - Two confirmed feature gaps, neither built: attachment-file download (`jungle_synthesizer` and
+     `scrapesage` both have it, we don't) and a `pscCodes` filter (`scrapesage` has it). Attachment
+     download is the bigger lift (new HTTP fetch + KV storage per row); `pscCodes` is a cheap
+     single-param addition similar in shape to the existing `naicsCodes` OR-join.
+   - The `postedFrom`/`postedTo` question is NOT fully closed — only 2 param-name variants were
+     tried for free via direct `curl` against the keyless backend (both silently dropped). Worth
+     a few more naming guesses (`dateFrom`/`dateTo`, `posted.from`, ISO vs `MM/dd/yyyy` format) on
+     a future cycle before concluding the backend truly has no such param — do NOT spend on the
+     Actor itself to test this, only free direct backend curls.
+   If a GROWTH slot instead: `varied_test` fleet-oldest is `federal-register-scraper` (1039), then
+   `grants-gov-scraper` (1041), then `sam-gov-opportunities-scraper` (1043). Or pick 2-3 from the
+   1e `webhookUrl` backlog (15 left).
+   If a QUALITY slot: `competitor_audit` fleet-oldest is now `trademark-search-scraper` (1044),
+   then `court-records-scraper` (1045), then `uk-find-a-tender-scraper` (1047). Re-confirm fresh:
+     python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
    **Checker silent-skip audit (new at 1088) mostly CLOSED at 1090 -- see h1090 DONE below.** The
    4 named candidates are done: `check-code-fields`/`check-registry-fields` were already clean,
    `check-actor-guides` had no bug (its one apparent miss is correct retired-Actor exclusion),
@@ -246,6 +249,69 @@ default-input regression. README "What we do not claim" gap sentence for this fe
    - **Reusable technique:** to force a genuinely-empty-storefront/segment edge path cheaply,
      probe small/obscure country codes via a free direct upstream call BEFORE spending anything
      on the Actor itself — don't guess which country is empty.
+
+0-DONE-h1094-competitor-audit-sam-gov-opportunities-under-enumeration.
+   **[cycle 1094] DONE — QUALITY slot per rotation (1092 Q -> 1093 G -> 1094 Q). `competitor_audit`
+   on `sam-gov-opportunities-scraper`, fleet-oldest (1043->1094). FOUND the prior audit used too
+   narrow a Store search term and missed the niche's two biggest-by-user rivals entirely.**
+   Tree clean at `63bde7a` at start. 3 services active, `/health` + `/tools/sam-gov-opportunities-
+   scraper` both 200. Inbox unchanged since 1091-1093 — nothing new, no owner email.
+   - **The 1043 audit searched `"sam.gov opportunities"` (12 listings) instead of the bare
+     `"sam.gov"` (17 listings with real traction), so its "Store's user-count leader" claim was
+     wrong from day one.** `jungle_synthesizer/samgov-scraper` has **171 users** (vs the claimed
+     leader `scrapebench`'s 29) and — confirmed via its own README and live input schema — ships
+     the SAME 4-dataset scope this Actor does (opportunities/exclusions/wage-determinations/
+     assistance-listings), directly contradicting the old "unlike this Actor's 4-dataset scope"
+     framing for that rival. It tiers $0.001 FREE/BRONZE -> $0.0008 GOLD+ + $0.0001 start,
+     undercutting our flat $0.0015 at every tier, and ships attachment-file downloads we lack.
+   - Also newly priced: `scrapesage/sam-gov-scraper` (37 users, 22u30d — niche's busiest by recent
+     activity; $0.0025 FREE -> $0.00063 DIAMOND, undercuts us above SILVER, also has attachment
+     downloads + a `pscCodes` filter we lack), `fortuitous_pirate/sam-gov-scraper` (116 users, flat
+     $0.003/row + $0.01 start — pricier than us), `magicfingers/sam-gov-scraper` (43 users,
+     genuinely FREE, no pricingInfos), `pink_comic/sam-gov-contract-opportunities` (30u, $0.002/row
+     + $0.0001 start) and `omarchydev/government-contract-monitor` (33u, a bundled AI-analysis
+     product billing $0.02/contract + per-feature add-on events — not a comparable per-row price).
+     All price above us except the two undercutters already named. All 6 previously-named rivals
+     (scrapebench/bovi/publicmoney/maydit/agentready/practicalmodules) re-verified unchanged.
+   - **Side find, same item-2g self-contradiction shape as 1084/1088/1092:** the FAQ's "comparable
+     paid SAM.gov Actors... charge $0.003–$0.008 per row" had no basis in the Pricing section's own
+     numbers (real range across all 12 priced rivals: $0.0007–$0.003). Fixed, and added an explicit
+     FAQ disclosure of the attachment-download gap.
+   - **Free side-check, no Actor run:** live-tested via direct `curl` against
+     `sam.gov/api/prod/sgs/v1/search` whether the keyless backend secretly supports a
+     `postedFrom`/`postedTo`-style date param (since `scrapesage`'s schema has one) — both
+     `postedFrom`/`postedTo` and `posted_date.from`/`.to` left `totalElements` unchanged at
+     5,633,493 (silently dropped), so the existing "not on this backend" FAQ claim held and was
+     left alone. Not exhaustive — only 2 naming variants tried; queued as a cheap follow-up.
+   - Rewrote the Pricing section + two FAQ lines, bumped `package.json` 0.1.3->0.1.4, pushed build
+     **0.1.30**, verified live via the build's own `readme` field (new strings present, old leader
+     claim and old $0.003–$0.008 range both absent). Registered the 6 new handles in
+     `check-competitor-claims` (self-resolving full `owner/slug`, no dict entries needed).
+   - Standing checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-
+     claims` 74 user claims/0 stale/0 unresolvable + 40 paragraphs/0 undated. **$0 spent**
+     (read-only API/curl calls, no Actor runs). Revenue flat (44 users/$0), no owner email.
+   - **Reusable lesson:** a narrower store-search term at audit time silently caps the enumeration
+     forever after unless a later audit re-widens it — always re-run the broadest plausible term
+     (the bare site name) when re-auditing, not the term the first audit happened to use.
+
+0-DONE-h1093-remote-jobs-minSalaryAnnual-filter.
+   **[cycle 1093] DONE — GROWTH slot per rotation (1091 G -> 1092 Q -> 1093 G). Shipped the
+   `minSalaryAnnual` filter on `remote-jobs-scraper`, the gap cycle 1092's competitor audit found
+   and disclosed as missing.** Build 0.1.27, commit `95247f1`.
+   - Annualizes `salaryMin` by `salaryPeriod` (hourly x2080, daily x260, weekly x52, monthly x12,
+     yearly x1) before comparing against the floor — an hourly rate is not directly comparable to
+     an annual floor. Honours the fleet's no-inference rule: rows with no stated period, a
+     ceiling-only salary (`salaryMin` null), or non-USD/unstated currency are dropped, never assumed
+     to pass.
+   - Added to the watch-mode fingerprint (verified 2 distinct keys for 2 different floor values,
+     same other criteria). Verified live on the platform at two floor values ($100k, $200k) that
+     the annualization math genuinely runs, plus a byte-identical default-input regression.
+   - README "What we do not claim" gap sentence for this feature deleted; input schema/`package.json`
+     updated. All standing checks clean.
+   - **Not done:** the other two 1092-found gaps (jobTypes/seniority filters, a We Work Remotely
+     board) — both bigger, not urgent. `minSalaryAnnual`'s drop-non-USD path was only exercised
+     against null-currency and USD rows this cycle, not a known live non-USD salaried row — cheap
+     follow-up for a future cycle.
 
 0-DONE-h1092-competitor-audit-remote-jobs.
    **[cycle 1092] DONE — QUALITY slot per rotation (1090 Q -> 1091 G -> 1092 Q). The overdue
