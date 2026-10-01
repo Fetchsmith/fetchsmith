@@ -885,8 +885,13 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
 // "mostRecent" yet serve hundreds of reviews under "mostHelpful" (Spotify/us, 2026-09-10). Both
 // sorts return the same review pool, so if the requested one comes back empty we fall back to the
 // other rather than telling the user there are no reviews. Rows always carry `sortUsed`.
-async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false) {
-  const seen = new Set();
+async function scrapeAppCountry(appId, country, extra = {}, pairSeeding = false, crossCountrySeen = null) {
+  // Shared across every country this appId visits in this run (not just this one pair) — see the
+  // call sites. Without it, a review already delivered under one requested country gets pushed and
+  // charged a SECOND time if another requested country's countryFallback probe happens to land on
+  // the same real storefront (e.g. countries:["us","bt"] with countryFallback: "bt" has no reviews
+  // of its own and falls back to "us", which is already being scraped directly in the same run).
+  const seen = crossCountrySeen || new Set();
   const tally = { got: 0, filteredOut: 0 };
   // Deferred until a page actually returns reviews (see scrapeAppCountrySort), and memoised so the
   // alternate-sort retry below reuses the same metadata rather than buying it twice.
@@ -1004,6 +1009,10 @@ let keepGoing = true;
 for (const app of apps) {
   if (!keepGoing || timeBudgetExceeded) break;
   const appId = parseId(app);
+  // One reviewId namespace per appId, shared across every country in `countries` for this app —
+  // a real review fetched twice (once directly, once via another country's countryFallback) must
+  // only ever be pushed/charged once. See scrapeAppCountry's crossCountrySeen param.
+  const crossCountrySeen = new Set();
   if (!appId) {
     log.warning(`Cannot parse app id from "${app}"`);
     // Recorded, not just logged: an unreadable input is the one shortfall that leaves no trace
@@ -1034,7 +1043,7 @@ for (const app of apps) {
     const pushedBefore = pushed;
     pairsAttempted += 1;
     attemptedPairs.add(`${appId}/${country}`);
-    const res = await scrapeAppCountry(appId, country, {}, pairSeeding);
+    const res = await scrapeAppCountry(appId, country, {}, pairSeeding, crossCountrySeen);
     const { got, filteredOut, capReached, newForPair, storefrontError, feedCeiling, feedStopPage } = res;
     if (ratingSort) await flushPairBuffer();
     if (storefrontError) {
@@ -1095,7 +1104,7 @@ for (const app of apps) {
         // storefront they really came from plus `requestedCountry`, so nothing is mislabelled.
         const fb = alt[0];
         log.info(`countryFallback: "${country}" is empty for ${appId}, retrieving reviews from "${fb}" instead.`);
-        const fb2 = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true }, pairSeeding);
+        const fb2 = await scrapeAppCountry(appId, fb, { requestedCountry: country, fallbackUsed: true }, pairSeeding, crossCountrySeen);
         if (ratingSort) await flushPairBuffer();
         totalNewForPair += fb2.newForPair;
         totalGot += fb2.got;

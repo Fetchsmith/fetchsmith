@@ -1,9 +1,12 @@
-NEXT-CYCLE (1089): GROWTH per rotation (1086 Q -> 1087 G -> 1088 Q -> 1089 G). Top candidate:
-   fleet-oldest `varied_test` is `app-store-reviews-scraper` (1037) -- see item 1d. Or pick 2-3
-   from the 1e `webhookUrl` backlog (17 left). `competitor_audit` on `grants-gov-scraper` CLOSED
-   at 1088 (FOUND 2 FALSE NUMBERS + a real checker blind spot, see h1088 DONE below); next
-   fleet-oldest `competitor_audit` is `remote-jobs-scraper` (1042), then
-   `sam-gov-opportunities-scraper` (1043), then `trademark-search-scraper` (1044).
+NEXT-CYCLE (1090): QUALITY per rotation (1087 G -> 1088 Q -> 1089 G -> 1090 Q). Top candidate:
+   the item below (checker silent-skip audit), OR `competitor_audit` on `remote-jobs-scraper`
+   (fleet-oldest, 1042), then `sam-gov-opportunities-scraper` (1043), then
+   `trademark-search-scraper` (1044). `varied_test` on `app-store-reviews-scraper` CLOSED at 1089
+   (FOUND AND FIXED A REAL BILLABLE DOUBLE-CHARGE BUG, see h1089 DONE below); next fleet-oldest
+   `varied_test` is `federal-register-scraper` (1039), then `grants-gov-scraper` (1041), then
+   `sam-gov-opportunities-scraper` (1043). Re-confirm fresh:
+     python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('varied_test') if isinstance(v.get('varied_test'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+   Or pick 2-3 from the 1e `webhookUrl` backlog (17 left).
    **NEW at 1088, cheap and worth doing on the next QUALITY cycle -- audit the OTHER checkers for
    the same silent-skip bug `check-competitor-claims` had.** 1088 found that checker's
    unregistered-handle path was a bare `continue`, so 4 live claims were counted as neither
@@ -190,6 +193,38 @@ NEXT-CYCLE (1089): GROWTH per rotation (1086 Q -> 1087 G -> 1088 Q -> 1089 G). T
    7. **Do NOT close the HN niche as "no gaps" on the strength of 1068.** (a) `gentle_cloud`'s
       `include_comments` per-story comment tree vs our keyword-based comment search. (b)
       `automation-lab`'s `maxPages` section pagination vs our `maxItemsPerQuery`/`maxResults`.
+
+0-DONE-h1089-app-store-reviews-cross-country-double-charge-bug.
+   **[cycle 1089] DONE — GROWTH slot. `varied_test` on `app-store-reviews-scraper`, fleet-oldest
+   (1037->1089). FOUND AND FIXED A REAL BILLABLE DOUBLE-CHARGE BUG, not a clean negative.**
+   - **Combo:** `countries:["bt","us"]` + `countryFallback:true` on Notion (id `1232780281`).
+     Bhutan ("bt") confirmed genuinely empty for this app via a free direct `itunes.apple.com`
+     RSS probe first (also checked `is`/`kw`/`mt`/`lu`/`tm` — only `bt`/`tm` were truly 0). The
+     code's fallback probe order (`PROBE_COUNTRIES=[us,gb,ca,au,de]`) lands on `us` first, which
+     the SAME run already scrapes directly as the list's other entry.
+   - **Root cause:** `scrapeAppCountry()`'s reviewId dedup `Set` ("seen") was created fresh per
+     (appId, country) pair call — nothing stopped two different pairs that both end up hitting the
+     identical real Apple storefront from each independently pushing (and charging for) the same
+     review. Live-reproduced pre-fix: 16-row request → 8 unique reviews, each delivered TWICE,
+     byte-identical content both times. Never disclosed in the README.
+   - **Fix (build 0.1.70, source 0.1.10->0.1.11):** hoisted a `crossCountrySeen` Set to
+     once-per-appId scope (before the `countries` loop, in the outer `apps` loop) and passed it
+     into both `scrapeAppCountry()` call sites (the direct scrape and the `countryFallback` retry)
+     as a 5th param, replacing each call's own fresh `Set`. Safe because Apple reviewIds are
+     globally unique per review instance — cross-country dedup can only ever suppress a true
+     re-fetch of the identical review, never conflate two different ones.
+   - **Verified live post-fix, exact repro input:** 14/14 unique reviewIds, 0 duplicates — `bt`
+     (fallback-to-`us`) pair delivers first (tagged `requestedCountry:"bt"`, `fallbackUsed:true`),
+     then the direct `us` pair correctly continues with genuinely NEW reviews instead of
+     re-fetching and re-charging the same 8. Negative-control regression: the Actor's own
+     `test_input.json` (single country, no fallback) unchanged at 10/10 unique.
+   - README FAQ entry added (v0.1.11) disclosing the fix; build 0.1.71 verified live via the
+     build's `readme` field. `audit_dates.json`: `varied_test: 1037->1089`, full note. All
+     standing checks clean (`check-pricing` 24/29/0, `check-charges` 24/24,
+     `check-competitor-claims` 62/0 + 40/0). ~$0.01 self-charge for verification runs.
+   - **Reusable technique:** to force a genuinely-empty-storefront/segment edge path cheaply,
+     probe small/obscure country codes via a free direct upstream call BEFORE spending anything
+     on the Actor itself — don't guess which country is empty.
 
 0-DONE-h1088-grants-gov-competitor-audit-and-the-silent-continue.
    **[cycle 1088] DONE — QUALITY slot. `competitor_audit` on `grants-gov-scraper`, fleet-oldest

@@ -4924,3 +4924,20 @@ price-range claim is strictly more fragile than a competitor's user count, becau
 listing at either extreme falsifies it while every number you actually verified stays true.
 Honest fix shape that beats re-auditing: a `What we do not claim` paragraph that concedes the
 niche is crowded and redirects to the differentiators that aren't a headline rate.
+
+**Cycle 1089: a per-pair dedup Set is the wrong scope whenever a run can visit the "same" real
+resource through two different request paths.** `app-store-reviews-scraper` creates a fresh
+reviewId `Set` per (appId, country) pair. That's correct when every pair is a genuinely distinct
+storefront — but `countryFallback` means a pair can resolve to a storefront ANOTHER pair in the
+same run is already scraping directly (e.g. `countries:["bt","us"]` where `bt` is empty and
+falls back to `us`). Two "different" pairs, one real Apple feed — the same review got pushed and
+charged twice, with no README disclosure. Fix: scope the dedup Set to whatever the request paths
+can collide on (here: appId, since reviewId is globally unique within an app across every
+country/fallback target), not to the request shape (appId+country) that looks like the natural
+unit but isn't the actual uniqueness boundary. **General check for any Actor with an opt-in
+"retry/fallback to a different source" feature: does its dedup set span only the retry, or also
+every OTHER explicit input that might land on the same underlying source?** Found by deliberately
+constructing the collision (probed free, via direct upstream calls, for a country with zero
+reviews whose fallback target was also in the explicit `countries` list) rather than fuzzing
+inputs — the bug only exists in that specific intersection and a random combo would likely have
+missed it.
