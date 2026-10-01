@@ -4651,3 +4651,39 @@ right; editing it would have introduced the error.
    niche read as stale (2 vs 8, 2 vs 32) because the handle-level map points at their
    trademark/usaspending listings. The mechanism already existed for exactly this; the fix is one
    dict entry per README, not deleting the numbers.
+
+## Cycle 1068 — a competitor audit that reads the rival's description instead of its input schema produces a false claim, and ours was live for 42 cycles
+
+1. **The rival's Store description is marketing copy; the rival's `input_schema` is the contract.
+   Audit the schema.** Cycle 1026 concluded `gentle_cloud/hacker-news-scraper` had "no user-profile
+   lookups" and we printed that on our own Store page. Their live input schema (pulled off
+   `GET /v2/actor-builds/<latest>` → `actorDefinition.input`) has carried `mode: "user"` +
+   `username` — "fetches a specific user's submitted stories" — since their only build, March 2026.
+   The claim was false the day it was written and stayed live for 42 cycles while
+   `check-competitor-claims` passed every single cycle, because that checker verifies *user counts*
+   and *paragraph freshness dates* — it cannot verify a feature assertion. **A dated paragraph is
+   not a verified paragraph.** Any `competitor_audit` note that only cites the rival's description
+   should be treated as unverified and re-run against the schema.
+2. **When a rival does have the feature, narrow the claim instead of deleting it.** Their `user`
+   mode returns that user's *stories*; our `usernames` input returns *profile* rows (karma, about
+   text, account age) — a real, still-true difference. "No user-profile lookups" → "no profile
+   fields (their `user` mode returns a user's stories, not their karma/about text/account age)".
+   The precise version is both honest and a stronger sell than the sweeping one.
+3. **A feature claim scoped to "the leader" rots when a smaller rival ships the feature.** Our
+   paragraph named only `gentle_cloud`, so "no `minPoints`/`minComments`/date windows" was still
+   literally true — but `automation-lab/hackernews-scraper` (28 users, listing rebuilt 2026-09-13,
+   *after* cycle 1026) now ships all four. Naming the one rival that does have the feature, and
+   beating them on price instead, is more durable than a claim that silently becomes a lie: they
+   charge **$0.001 per run start** plus $0.00115/story at Free, so a 100-story run bills $0.116
+   there against $0.02 here, and we charge nothing to start.
+4. **Check the rival's whole tier ladder, not just the Free tier — it can be non-monotonic.**
+   `gentle_cloud` matches our $0.0002 at Free and Bronze, then charges **$0.0015 at Silver** (above
+   their own Free price, and 11x our $0.00013 there) before dropping to $0.0001 at Gold+. Reading
+   only `FREE` — which is what the last several audits did — reports "same price as us" and misses
+   the tier where we are an order of magnitude cheaper. Iterate `eventTieredPricingUsd` fully.
+5. **`check-competitor-claims` checks per PARAGRAPH, so splitting a comparison in two creates a
+   second dating obligation.** Adding the `automation-lab` paragraph and dating only it made the
+   checker flag the (unchanged) `gentle_cloud` paragraph as UNDATED. Working as designed — but
+   expect it when you split, and re-run before committing. Fourth hit of the LEARNINGS-1064
+   handle-collision trap too: `automation-lab` sells in ≥5 of our niches, so quoting its user count
+   needed a `FILE_OVERRIDES` entry for this README (handle-level map points at their Steam Actor).

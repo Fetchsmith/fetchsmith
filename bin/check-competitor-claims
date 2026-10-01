@@ -124,6 +124,9 @@ FILE_OVERRIDES = {
     "actors/trademark-search-scraper/README.md": {
         "automation-lab": "automation-lab/euipo-tmview-trademarks-scraper",
     },
+    "actors/hacker-news-scraper/README.md": {
+        "automation-lab": "automation-lab/hackernews-scraper",
+    },
     "actors/uk-find-a-tender-scraper/README.md": {
         "publicmoney": "publicmoney/contracts-finder-scraper",
     },
