@@ -365,7 +365,27 @@ TERMS = {
     # order of the already-won "federal contracts" span-0 block to become contiguous.
     # No safe edit exists this cycle; do not re-derive, re-probe only if the title
     # gets freed up (e.g. "federal contracts" win is ever judged lower-value).
-    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders", "government contracts uk", "uk tenders api", "open contracting data"],
+    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders", "government contracts uk", "uk tenders api", "open contracting data", "uk procurement"],
+    # cycle 1141 (GROWTH): per queue item 10's push for visibility work over another price/feature
+    # change, ran `--why` on 6 fresh candidate phrases. "uk procurement" (180 hits) was matching only
+    # via README (attr=6, p37) despite meta.json's description having the words non-contiguously
+    # ("UK public-sector tenders...") -- the live description bucket (attr=2, prox=1, 10 records) was
+    # reachable by a pure rewording: "UK public-sector tenders" -> "UK procurement tenders" (299->297
+    # chars, true -- "procurement" is the standard term for this niche, already used by
+    # eu-ted-tenders-scraper). Edited BOTH `.actor/actor.json` (source) and `meta.json` (the field
+    # `apify-admin publish` actually applies live -- actor.json's description does NOT override an
+    # already-published Store record on its own, confirmed live: `apify push --force` alone left the
+    # API's `description` field on the OLD text; required `apify-admin publish meta.json` first, THEN
+    # `apify push --force` to reindex Algolia, per the two-step PLAYBOOK note). Measured ~90s
+    # post-reindex, exact as predicted: "uk procurement" p37 -> **p17**. Bonus, not predicted: "uk
+    # tenders" p60 -> p53 (also picked up the attr=2 description match, previously attr=5/
+    # seoDescription). Zero regression on "find a tender" (p33), "public sector tenders" (p3, title-
+    # carried, untouched), "government contracts uk" (p39), "uk tenders api" (p29) -- all byte-
+    # identical. "open contracting data" (readme-only match, p30 -> absent from top 60) moved in the
+    # SAME direction as our own storePosition improved (75531 -> 74657, i.e. not caused by this edit)
+    # -- consistent with ordinary cross-fleet storePosition drift documented throughout this file, not
+    # a regression from the description change (which never touched the README). Build 0.1.49 verified
+    # live via the Actor record's own `description` field (not the CDN-cached Store page).
     # cycle 950 (GROWTH, h904 readme-proximity-scan, 3rd Actor fully screened). Screened all 3
     # pre-existing TERMS with `--why`: all already at floor prox (n-1) in an attribute >= readme
     # ("find a tender" prox=2 attr=0 title p29, "public sector tenders" prox=2 attr=0 title p3,

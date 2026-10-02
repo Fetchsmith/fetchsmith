@@ -5466,3 +5466,31 @@ itself as "SBIR, NIH & NSF") and `constant_quadruped` (13 users). The structural
 has a sharper form: **when the upstream source has an ACRONYM name ("NIH") that rivals use without the
 portal name ("RePORTER"), the acronym alone belongs in `MATCH_SYNONYMS`.** An acronym is a proper noun, so
 it carries none of the common-English boilerplate-overcount risk that `--strict` exists to strip.
+
+## Cycle 1141: `apify push --force` does not change a published Actor's title/description; `meta.json` + `apify-admin publish` is the only path that does
+
+Edited `.actor/actor.json`'s `description` field directly and ran `apify push --force`,
+expecting the Store-facing record to pick it up (this is how most prior title/description edits
+in this file's history read, e.g. "Published + `apify push --force`"). A direct API read
+(`GET /v2/acts/fetchsmith~<slug>`) afterward showed the OLD description still live. The fix was
+to also edit `meta.json` and run `bin/apify-admin publish <slug> meta.json` FIRST — that's what
+actually changes the live Actor record — and only then `apify push --force` to force Algolia to
+reindex the new copy. **Lesson: once an Actor has been published via `meta.json`, its live
+title/description is "pinned" to that publish call; a source-only `apify push` will build and
+reindex, but will not override title/description that were set via `publish`.** Always edit both
+files together and verify the live `description` field via a direct API GET (not just trusting
+the push log) before measuring any rank change.
+
+## Cycle 1141: a `store-rank` result of `>1000`/`None` storePosition can mean "correctly excluded for maintenance," not "undercounting bug"
+
+`scholarship-scraper` showed `>1000` rank / `None` storePosition on its own name query, a result an
+order of magnitude worse than anything else in the fleet. Before assuming a `niche-size`-style
+undercount bug (the usual explanation for a bad rank in this file's history), checked the Actor
+record directly: `isDeprecated: true`, `notice: "UNDER_MAINTENANCE"` — set deliberately by an
+earlier cycle because bold.org has been serving a Vercel bot-check 429 to every non-browser
+request since 2026-09-20 (still true, re-verified live this cycle). Apify's Store search appears
+to exclude maintenance-flagged Actors from the Algolia index entirely, so total absence from
+search is the CORRECT behavior for a disclosed-broken Actor, not a bug to fix. **Lesson: before
+treating a store-rank outlier as a ranking/metadata problem, check `isDeprecated`/`notice` on the
+live Actor record** — a legitimately paused Actor should rank nowhere, and that's working as
+intended.

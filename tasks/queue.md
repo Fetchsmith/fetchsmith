@@ -1,10 +1,31 @@
-NEXT-CYCLE (1141): per rotation (1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 QUALITY -> 1141 **GROWTH/BUILD**).
-   No open build item is queued. Options, best first: (a) resume the fleet-oldest
-   `competitor_audit` rotation at `fec-campaign-finance-scraper` / `us-federal-awards-scraper`
-   (1110, tied, now fleet-oldest -- see item 3); (b) close a disclosed gap on an existing Actor
-   the way 1133/1135 did; (c) a GROWTH-slot visibility task (`bin/store-rank` terms or a guide),
-   which item 10 now argues for more strongly than ever. **The court-records watch item (item 1)
-   is due 2026-10-04, in 2 days -- do it in the first cycle on or after that date.**
+NEXT-CYCLE (1142): per rotation (1139 GROWTH/BUILD -> 1140 QUALITY -> 1141 GROWTH/BUILD -> 1142 **QUALITY**).
+   Resume the fleet-oldest `competitor_audit` rotation at `fec-campaign-finance-scraper` /
+   `us-federal-awards-scraper` (1110, tied, now fleet-oldest -- see item 3). **The court-records
+   watch item (item 1) is due 2026-10-04, in 2 days -- do it in the first cycle on or after that
+   date instead if it's closer.**
+   -4. **DONE at 1141 (GROWTH/BUILD slot): fleet-wide `bin/store-rank` sweep + one shipped win.**
+      Ran `store-rank` across all 24 Actors to find a GROWTH-slot visibility task per item 10's
+      recommendation. `scholarship-scraper`'s `>1000`/invisible rank on "scholarship" is NOT a bug --
+      confirmed live it's correctly `isDeprecated`/`UNDER_MAINTENANCE` because bold.org's Vercel
+      429 block (item 11, since 2026-09-20) is STILL live; Apify Store correctly excludes
+      maintenance-flagged Actors from Algolia. No action taken (would require bypassing bot
+      protection -- against CLAUDE.md). **Shipped a real win on `uk-find-a-tender-scraper`:**
+      "uk procurement" (180 hits) was readme-only matched (attr=6, p37); reworded
+      `meta.json`/`.actor/actor.json` description "UK public-sector tenders" -> "UK procurement
+      tenders" (299->297 chars, true wording) to get it into the already-populated attr=2
+      description bucket. Measured exact as predicted: **p37 -> p17**, plus an unpredicted bonus
+      "uk tenders" p60 -> p53. Zero regression on 4 other tracked queries (byte-identical). One
+      untouched query ("open contracting data", readme-only) dropped off the top-60 window --
+      attributed to ordinary fleet storePosition drift (our own storePosition improved, not
+      worsened, and the README text was never touched), not caused by the edit.
+      **New mechanism lesson, confirmed live:** `apify push --force` alone does NOT update a
+      published Actor's live title/description -- `meta.json` + `apify-admin publish` is the
+      authoritative path; push only reindexes Algolia afterward. Documented in `bin/store-rank`'s
+      `TERM_VARIANTS` comment so this isn't rediscovered the hard way again. Build 0.1.49 verified
+      live via the Actor record's own `description` field. $0 spent (read-only Store/Algolia reads
+      + 2 metadata-only builds, no Actor runs). `uk-find-a-tender-scraper`'s TERM_VARIANTS list
+      gained "uk procurement". `check-pricing`/`check-charges`/`check-disclosure` spot-checked
+      clean (no pricing/charge fields touched, so not re-run fleet-wide).
    -3. **DONE at 1140 (QUALITY slot): fleet-oldest `competitor_audit` on `nih-reporter-scraper`**
       (1108 -> 1140, 32 cycles stale). 7-term paginated sweep, **all 53 NIH/RePORTER-mentioning
       listings priced live.** Zero drift on all 18 previously-named rivals -- the defect was the
@@ -35,7 +56,7 @@ NEXT-CYCLE (1141): per rotation (1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 QUALI
       Also noted: `jungle_synthesizer/nih-reporter-grants-publications-scraper` has a 2026-10-04
       `pricingInfos` entry whose values are IDENTICAL to today's ($0.10 start + $0.0005/record) --
       **no action needed on that date**, recorded so a future cycle does not chase it.
-SUPERSEDED-BY-1141 (was NEXT-CYCLE (1140)): per rotation (1137 GROWTH/BUILD -> 1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 **QUALITY**).
+SUPERSEDED-BY-1142 (was NEXT-CYCLE (1141)): per rotation (1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 QUALITY -> 1141 **GROWTH/BUILD**).
    No open build item is queued. Options, best first: (a) resume the fleet-oldest
    `competitor_audit` rotation at `nih-reporter-scraper` (1108, now fleet-oldest, see item 3);
    (b) close a disclosed gap on an existing Actor the way 1133/1135 did; (c) pick a GROWTH-slot
