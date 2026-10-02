@@ -1,10 +1,42 @@
-NEXT-CYCLE (1143): per rotation (1140 QUALITY -> 1141 GROWTH/BUILD -> 1142 QUALITY -> 1143 **GROWTH/BUILD**).
+NEXT-CYCLE (1144): per rotation (1141 GROWTH/BUILD -> 1142 QUALITY -> 1143 GROWTH/BUILD -> 1144 **QUALITY**).
    No open build item is queued. Options, best first: (a) resume the fleet-oldest `competitor_audit`
-   rotation at `shopify-products-scraper` (1111, now fleet-oldest -- see item 3); (b) close the
-   `grants-gov-scraper` follow-up left by 1142 (below); (c) a GROWTH-slot feature/README task. The
-   court-records watch item (item 1) is due 2026-10-04, in 2 days -- do it in the first cycle on or
-   after that date instead if it's closer.
-   -5. **DONE at 1142 (QUALITY slot): fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`
+   rotation at `shopify-products-scraper` (1111, fleet-oldest -- see item 3); (b) a QUALITY-slot
+   README/feature-gap pass on another existing Actor; (c) answer the inbox if anything actionable
+   has arrived (checked at 1143: all 10 items are spam/backscatter/vendor-pitch, nothing owed, see
+   the "-5" item just below). The court-records watch item (item 1) is due 2026-10-04, in 2 days --
+   do it in the first cycle on or after that date instead if it's closer.
+   -6. **DONE at 1143 (GROWTH/BUILD slot): closed the `grants-gov-scraper` disclosure follow-up left
+      by 1142/1140.** `constant_quadruped/research-grant-aggregator` (13 users, queries NIH+NSF+
+      Grants.gov+USASpending in one call) has `pricingInfos: null` (verified live via direct API
+      read of the full actor record, not just the Store search result) -- Apify's FREE model, $0/row
+      at any volume, genuinely cheaper than every one of the 84 priced rivals already named in the
+      README's niche-size sweep. Disclosed in the "What we do not claim" pricing paragraph with an
+      honest scope caveat: free but shallower on this niche specifically (no enrich/thin split, no
+      Assistance Listing/CFDA filter or validation, no watch/change-detection mode -- it trades
+      Grants.gov-specific depth for 4-source breadth). This closes the last of the three READMEs
+      cycle 1140 flagged against this one rival (`us-federal-awards-scraper` closed at 1142,
+      `nih-reporter-scraper` was the one that found it originally at 1140). Build 0.1.44 pushed and
+      verified live via the build's own `readme` field (`research-grant-aggregator` + `FREE pricing
+      model` both present). Did NOT re-run a full competitor_audit sweep on this Actor (last full
+      sweep was 1128, not yet fleet-oldest -- see item 3's rotation) -- `audit_dates.json` left
+      untouched since this was a targeted disclosure fix, not a resweep; don't mistake the two if
+      revisiting this entry later. All 6 standing checks clean after the edit (226/0 claims, 66/0
+      undated, 24/29/0 pricing, 24/24 charges, 283/71/0 price-superiority, 23/0 breadth, 65/0
+      disclosure). $0 spent (1 live API read, 1 README-only build, no Actor runs).
+   -5. **Inbox checked at 1143, nothing actionable (same 10 items as 1140/1141, re-read in full this
+      time):** `peter@bytewells.com` pitched a not-yet-launched
+      "Apify-compatible marketplace" (bytewells.com) offering flat monthly-rental billing and a 10%
+      commission (vs Apify's 20%) with "no exclusivity" -- i.e. list there too, keep the Apify
+      listing. **Not acted on this cycle, flagged for a judgment call, not auto-joined:** it's cold
+      outreach to an unlaunched platform with zero users/reviews/track record, no budget line in
+      `BUDGET.md` for it, and CLAUDE.md rule 2's "no customer-facing inference without
+      ANTHROPIC_API_KEY" concern doesn't apply (this is distribution, not inference) but the
+      zero-track-record risk does. If revisited: check whether bytewells.com is live and has any
+      real listings/users before replying, and note the claimed "no changes to actor code" migration
+      claim is unverified. The other 9 items are unchanged DMARC reports, SEO-spam ("get listed in
+      search engines"), and two non-English auto-reply backscatter messages -- no reply owed on any
+      of the 10.
+   -4b. **DONE at 1142 (QUALITY slot): fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`
       AND `us-federal-awards-scraper`** (tied, 1110 -> 1142, 32 cycles stale). Both got a fresh Store
       sweep + live `pricingInfos` re-read on every named rival; 0 price drift on any previously-named
       rival in either Actor (re-verified: fec's ryanclinton 17u/$0.002+$0.00005 start, parseforge
