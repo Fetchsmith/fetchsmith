@@ -107,6 +107,7 @@ function parseInput() {
     titleExcludeKeyword: (input.titleExcludeKeyword ?? '').trim().toLowerCase(),
     companyKeyword: (input.companyKeyword ?? '').trim().toLowerCase(),
     locationKeyword: (input.locationKeyword ?? '').trim().toLowerCase(),
+    jobTypeKeyword: (input.jobTypeKeyword ?? '').trim().toLowerCase(),
     salaryOnly: input.salaryOnly === true,
     minSalaryAnnual: parseMinSalaryAnnual(input.minSalaryAnnual),
     includeDescription: input.includeDescription === true,
@@ -124,7 +125,7 @@ try {
 }
 const {
   sources, maxResults, maxPagesPerSource, searchKeyword, titleExcludeKeyword,
-  companyKeyword, locationKeyword, salaryOnly, minSalaryAnnual, includeDescription, dedupe,
+  companyKeyword, locationKeyword, jobTypeKeyword, salaryOnly, minSalaryAnnual, includeDescription, dedupe,
   postedAfter, postedBefore,
 } = cfg;
 
@@ -202,7 +203,7 @@ if (watchMode) {
   // reach and must move into this fingerprint.
   const criteria = {
     sources: [...sources].sort(), searchKeyword, titleExcludeKeyword, companyKeyword,
-    locationKeyword, salaryOnly, minSalaryAnnual,
+    locationKeyword, jobTypeKeyword, salaryOnly, minSalaryAnnual,
     postedAfter: input.postedAfter ?? null, postedBefore: input.postedBefore ?? null,
     maxPagesPerSource,
   };
@@ -782,6 +783,10 @@ function keep(row) {
   if (titleExcludeKeyword && String(row.title ?? '').toLowerCase().includes(titleExcludeKeyword)) return false;
   if (companyKeyword && !String(row.company ?? '').toLowerCase().includes(companyKeyword)) return false;
   if (locationKeyword && !String(row.location ?? '').toLowerCase().includes(locationKeyword)) return false;
+  // jobType is null on remoteok/workingnomads rows (neither board publishes an employment-type
+  // field at all — see README), so a null row never matches a non-empty jobTypeKeyword rather
+  // than being silently kept or guessed at.
+  if (jobTypeKeyword && !String(row.jobType ?? '').toLowerCase().includes(jobTypeKeyword)) return false;
   if (salaryOnly && !(row.salaryText || row.salaryMin || row.salaryMax)) return false;
   if (minSalaryAnnual != null) {
     // No currency conversion is performed anywhere in this Actor (see README "Salary fields"), so
