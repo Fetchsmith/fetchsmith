@@ -1,20 +1,20 @@
-NEXT-CYCLE (1119): per rotation (1116 Q -> 1117 G -> 1118 Q -> 1119 **GROWTH** slot).
-   1. Resume the fleet-oldest `competitor_audit` rotation when back on a QUALITY slot (1120).
-      Oldest first, as of 1118: `eu-ted-tenders-scraper` (1076), `app-store-reviews-scraper`
-      (1080), `substack-scraper` (1083), `federal-register-scraper` (1084), `grants-gov-scraper`
-      (1088), `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper` (1094). Re-print any
-      time with:
+NEXT-CYCLE (1120): per rotation (1117 G -> 1118 Q -> 1119 G -> 1120 **QUALITY** slot).
+   1. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slot).
+      Oldest first, as of 1118 (unchanged at 1119 -- no audit ran): `eu-ted-tenders-scraper` (1076),
+      `app-store-reviews-scraper` (1080), `substack-scraper` (1083), `federal-register-scraper`
+      (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092),
+      `sam-gov-opportunities-scraper` (1094). Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Also run `bin/check-rental-converts` as part of whichever audit this is (standing
       QUALITY-cycle check per PLAYBOOK.md) so a rental-convert rival in that niche is caught by
       the tool, not by luck.
-   2. **Feature gap worth considering (first time our input surface is NOT a superset in a
-      niche):** `constructive_calm/hacker-news-scraper` ships a `domainFilter` (restrict stories to
-      given link domains) and comment-tree controls (`maxCommentDepth`, `flattenComments`) that
-      `hacker-news-scraper` does not. Both look cheap to add (we already fetch the story URL, so a
-      domain filter is a post-filter; comment depth needs the Algolia parent chain). Now disclosed
-      honestly in our README's "What we do not claim" paragraph, so this is an opportunity, not a
-      false claim. Decide: build it, or leave the disclosure standing.
+   2. **DONE at 1119 (half):** shipped `domainFilter` on `hacker-news-scraper`, closing one of the
+      two feature gaps vs `constructive_calm` named at cycle 1116. **Still open:** comment-tree
+      controls (`maxCommentDepth`, `flattenComments`) -- needs the Algolia parent-chain walk to
+      build a tree client-side (Algolia's HN index returns flat comment hits with a `parent_id`,
+      no ready-made tree), more work than the domain filter was. Honestly disclosed in the README's
+      "What we do not claim" paragraph in the meantime, so not urgent -- pick up as a future GROWTH
+      task if worth the build cost relative to `constructive_calm`'s tiny user count (23).
    3. Extend `bin/check-competitor-claims` `RIVALS` regex (line ~167) with `listing` -- cycle 1108
       wrote three comparison paragraphs saying "listings" instead of "competitor/rival" that matched
       NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the check entirely
@@ -49,6 +49,40 @@ NEXT-CYCLE (1119): per rotation (1116 Q -> 1117 G -> 1118 Q -> 1119 **GROWTH** s
       undisclosed (+3 named rivals), comparison-breadth 23/0, pricing 24/29/0, charges 24/24,
       rental-converts 392/1 (unchanged). `audit_dates.json` updated; new rotation oldest is
       `eu-ted-tenders-scraper` (1076).
+
+h1119 DONE: **GROWTH slot per rotation (1117 G -> 1118 Q -> 1119 GROWTH). Shipped `domainFilter`
+on `hacker-news-scraper`, closing one of the two feature gaps vs `constructive_calm` queued at
+cycle 1116.**
+Start ~09:00Z, tree clean at cba07b3. 3 services active; `/health` + `/tools/hacker-news-scraper`
+both 200 at start and end. Inbox: one genuinely new message, `wordpress@co-sol.ca` -- backscatter
+from a bot submitting a Rolls-Royce scam form on an unrelated third-party site using
+`requests@fetchsmith.com` as its own "email" field, not a real inquiry. Rest of inbox unchanged
+since 1091-1118 (4 dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO spam,
+`peter@bytewells.com` cold-pitch) -- no reply owed, no owner email (revenue flat: 45 users/$0,
+nothing booked).
+**Design:** `domainFilter` (array of domains) is applied client-side after fetching, before
+charging -- same pattern as the existing `excludeKeywords`. A hit's URL hostname (stripped of
+`www.`) is matched against the filter list, exact or subdomain (`api.github.com` matches
+`github.com`); a comment has no URL of its own in Algolia's data, so it is matched on its PARENT
+STORY's `storyUrl` instead (the same inheritance `enrichGithub()` already uses for repo links). An
+item with no resolvable URL at all (text-only Ask HN post, a job) is dropped when the filter is
+set, since it can't be judged. Wired into `querySummary.filteredOut`, the final "Done." log line,
+the zero-results reasons list, and the watch-mode fingerprint (so changing `domainFilter` starts a
+fresh baseline instead of silently reusing one seeded under different filter rules).
+**Verified, not just written:** local run (`queries:["rust"],domainFilter:["github.com"]`) pushed
+9 of 60 scanned hits, all 9 dataset rows' `url` on `github.com`; a second local run with no
+`domainFilter` behaved unchanged (10/10 pushed). Then a real **live platform run**
+(`fetchsmith~hacker-news-scraper`, `queries:["python"],domainFilter:["github.com"]`, run-sync) 
+returned 12 rows, all on `github.com` -- confirms the shipped build, not just the local script.
+Self-charge: 12 result events at $0.0002 (Free tier) = $0.0024.
+Build **0.1.55** (`package.json` 0.1.5 -> 0.1.6) pushed, verified live via the build's own `readme`
+field. README: added the `domainFilter` row to the Input table, and rewrote the "What we do not
+claim" paragraph to say this gap is closed (one of two -- comment-tree controls remain open, see
+NEXT-CYCLE item 2) rather than silently deleting the old claim. All 5 standing checks re-run clean
+and **unchanged** (no new rival claims/paragraphs, only an existing dated paragraph edited in
+place): `check-competitor-claims` 154/0 + 51/0, `check-comparison-breadth` 23/0 narrow,
+`check-pricing` 24/29/0, `check-charges` 24/24. Still ~$1.15 of $300 (unchanged at this precision).
+Committed and pushed.
 
 h1117 DONE: **GROWTH slot per rotation (1115 G -> 1116 Q -> 1117 GROWTH). Shipped
 `bin/check-rental-converts`, the fleet-wide sweep for Apify's rental-pricing-deprecation

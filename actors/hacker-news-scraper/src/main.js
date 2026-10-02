@@ -56,6 +56,7 @@ const pointMilestones = parseMilestones(input.watchPointMilestones, '25,50,100,2
 const commentMilestones = parseMilestones(input.watchCommentMilestones, '25,50,100,250,500,1000');
 const enrichGithubLinks = input.enrichGithubLinks === true;
 const excludeKeywords = [...new Set((input.excludeKeywords ?? []).map((k) => String(k).trim().toLowerCase()).filter((k) => k.length))];
+const domainFilter = [...new Set((input.domainFilter ?? []).map((d) => String(d).trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '')).filter((d) => d.length))];
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -183,6 +184,7 @@ function changesBetween(prev, next) {
 if (watchMode) {
   const criteria = { queries, tags, sortBy, author, includeComments, numericFilters };
   if (excludeKeywords.length) criteria.excludeKeywords = excludeKeywords;
+  if (domainFilter.length) criteria.domainFilter = domainFilter;
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -464,11 +466,26 @@ function excludedByKeyword(mapped) {
   return excludeKeywords.some((k) => haystack.includes(k));
 }
 
+// A comment has no URL of its own in Algolia's data (mapHit leaves `url` null for comments), so
+// it is matched on its PARENT STORY's `storyUrl` instead -- the same "comment inherits the
+// story's shape" choice enrichGithub() already makes for repo links.
+function hostnameOf(urlStr) {
+  if (!urlStr) return null;
+  try { return new URL(urlStr).hostname.toLowerCase().replace(/^www\./, ''); } catch { return null; }
+}
+function matchesDomainFilter(mapped) {
+  if (!domainFilter.length) return true;
+  const host = hostnameOf(mapped.url) || hostnameOf(mapped.storyUrl);
+  if (!host) return false; // no resolvable URL (text-only Ask HN post, job) -- can't match a domain, so drop it
+  return domainFilter.some((d) => host === d || host.endsWith(`.${d}`));
+}
+
 const emptyQueries = []; // Algolia matched nothing for this query/tags/filters combo
 const erroredQueries = []; // the HTTP request itself failed
 const seenIds = new Set(); // dedup across queries — overlapping/duplicate queries return the same objectID from Algolia
 let duplicates = 0;
 let excluded = 0;
+let domainFiltered = 0;
 let keepGoing = true;
 // One record per query, written to the RUN_SUMMARY key-value record and posted on the webhook.
 // The DATASET is the only surface a pipeline reads, and there a full 100 rows for a query
@@ -498,7 +515,7 @@ for (const query of queries) {
   let fetched = 0;
   let requestFailed = false;
   const deliveredBefore = pushed;
-  const filteredBefore = excluded + duplicates;
+  const filteredBefore = excluded + duplicates + domainFiltered;
   // Algolia's tag syntax: a COMMA between tags means AND, parentheses mean OR. `tags` is a
   // multi-select of content types, and the combinations a buyer actually picks are mutually
   // exclusive — comma-joining them matched NOTHING, forever, with a 200 and no warning
@@ -606,6 +623,7 @@ for (const query of queries) {
       hit._query = query || null;
       const mapped = mapHit(hit);
       if (excludedByKeyword(mapped)) { excluded += 1; continue; }
+      if (!matchesDomainFilter(mapped)) { domainFiltered += 1; continue; }
       // Skip the GitHub lookup for rows that pushResult will drop uncharged anyway
       // (seeding baseline, or already delivered under this watch label) -- those never
       // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
@@ -629,7 +647,7 @@ for (const query of queries) {
   }
   querySummary.scanned = fetched;
   querySummary.delivered = pushed - deliveredBefore;
-  querySummary.filteredOut = (excluded + duplicates) - filteredBefore;
+  querySummary.filteredOut = (excluded + duplicates + domainFiltered) - filteredBefore;
   if (requestFailed) {
     erroredQueries.push(query || '<empty>');
     querySummary.status = 'error';
@@ -727,7 +745,7 @@ if (watchMode && seedFailure) {
   }
 }
 
-log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}`);
+log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}${domainFiltered ? ` Dropped ${domainFiltered} hit(s) outside domainFilter (not charged).` : ''}`);
 
 for (const s of truncatedSummaries) {
   log.warning(
@@ -843,6 +861,7 @@ if (pushed === 0 && watchMode && !seeding) {
     reasons.push(`no stories/comments matched: ${emptyQueries.join(', ')} — ${advice}`);
   }
   if (excluded) reasons.push(`excludeKeywords (${excludeKeywords.join(', ')}) removed all ${excluded} otherwise-matching item(s)`);
+  if (domainFiltered) reasons.push(`domainFilter (${domainFilter.join(', ')}) removed all ${domainFiltered} otherwise-matching item(s)`);
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   if (timeBudgetExceeded) reasons.push('the run stopped early, approaching the platform run timeout, before any result could be delivered — narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) and try again');
