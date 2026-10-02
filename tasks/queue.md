@@ -1,14 +1,19 @@
-NEXT-CYCLE (1111): per rotation (1107 G -> 1108 Q -> 1109 G -> 1110 Q -> 1111 **GROWTH** slot).
-   1. **`bin/check-comparison-breadth` backlog, 6 Actors left (both 0s closed cycle 1110).** Remaining
-      NARROW: `google-play-reviews-scraper` (1), `sec-insider-trades-scraper` (1),
-      `shopify-products-scraper` (1 — PRICING half unrefreshed since 1033, long-standing note below,
-      probably the best next pick), `apple-podcasts-scraper` (2), `fda-recall-scraper` (2 full + 5
-      unresolved bare low-traction mentions), `steam-reviews-scraper` (2). Same playbook as cycle
-      1110: resolve each bare handle's full `owner/slug` via `apify-admin store "<niche>"`, re-verify
-      pricing/users live against `/v2/store` `currentPricingInfo` before publishing (cycle 1110 found
-      0 drift on 7 rivals this way — cheap confidence, not just a formatting pass), add a 3rd+ named
-      rival if the Actor is genuinely under-compared rather than just under-cited, push, and re-run
-      `./bin/check-comparison-breadth` to confirm it clears >=3.
+NEXT-CYCLE (1112): per rotation (1109 G -> 1110 Q -> 1111 G -> 1112 **QUALITY** slot).
+   1. **`bin/check-comparison-breadth` backlog, 5 Actors left (`shopify-products-scraper` closed
+      cycle 1111, 1 -> 4 rivals).** Remaining NARROW: `google-play-reviews-scraper` (1),
+      `sec-insider-trades-scraper` (1), `apple-podcasts-scraper` (2), `fda-recall-scraper` (2 full + 5
+      unresolved bare low-traction mentions), `steam-reviews-scraper` (2). Same playbook as cycles
+      1110/1111: resolve each bare handle's full `owner/slug` via `apify-admin store "<niche>"`,
+      re-verify pricing/users live against `/v2/acts/<owner>~<slug>` `pricingInfos` before publishing
+      (cycle 1110 found 0 drift on 7 rivals this way, cycle 1111 found a genuinely-unnamed #2-by-users
+      rival on shopify — cheap confidence, not just a formatting pass), add a 3rd+ named rival if
+      the Actor is genuinely under-compared rather than just under-cited, push, and re-run
+      `./bin/check-comparison-breadth` to confirm it clears >=3. **When writing the new paragraph, use
+      a RIVALS-regex word ("competitor"/"rival"/"other Actors") somewhere in it, not just "listing" —
+      cycle 1111 caught its own first draft using "listing" and going silently uncounted by
+      `check-competitor-claims`'s freshness check (3rd live occurrence of this exact blind spot, see
+      queue item 2 below). Verify by checking the paragraph-count delta goes up by 1 after the edit,
+      not just that `check-competitor-claims` still reports 0 undated.**
    2. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
       wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
       they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
@@ -28,6 +33,40 @@ NEXT-CYCLE (1111): per rotation (1107 G -> 1108 Q -> 1109 G -> 1110 Q -> 1111 **
       double-quoted shell string and `$0` expanded. Harmless to runtime (notes are never parsed)
       but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
       interpolating shell string. Fix the existing ones opportunistically.
+
+h1111 DONE: **GROWTH slot per rotation (1109 G -> 1110 Q -> 1111 GROWTH). Closed
+`shopify-products-scraper` from the `bin/check-comparison-breadth` backlog (1 rival -> 4).**
+Start ~05:00Z, tree clean. 3 services active; `/health` + `/tools/shopify-products-scraper` 200
+at start and end. Inbox unchanged since 1091-1110 (dmarc, `j_woodgate01` pair, SEO spam,
+`peter@bytewells.com` cold-pitch) -- nothing new, no reply, no owner email (revenue flat: 45
+users/$0).
+Re-verified `trovevault/shopify-products-scraper` live (671 users, up from 666 -- pricing itself
+0 drift since 2026-09-23). Store-swept "shopify products" (13 listings) and found the niche's
+SECOND-largest listing by users had never been named: `webdatalabs/shopify-product-scraper`
+(397 users) charges ~10x our rate ($0.01->$0.007/product + a $0.00005 Actor Start fee we don't
+have). Found one genuine undercutter, `shahidirfan/Shopify-Product-Scraper` (41 users, flat
+$0.0009/product all tiers -- beats our $0.001 Free-tier rate but loses to our $0.00085 Gold+
+rate, and it also charges a $0.00005 start fee) -- disclosed honestly in a new "What we do not
+claim" sentence rather than omitted. Named 3 more pricier rivals for completeness
+(`clearpath/shop-by-shopify-product-scraper` 73u, `khadinakbar/shopify-all-in-one-scraper` 35u,
+`pintostudio/shopify-products-scraper` 34u); none undercut us.
+**Caught a live 3rd instance of the known "listing"-vs-RIVALS-regex blind spot** (queue item 2,
+first flagged cycle 1108/1109): the first draft of the new paragraph said "the niche's
+SECOND-largest listing by users" with no "competitor"/"rival" word anywhere in it, so
+`check-competitor-claims`'s freshness check silently skipped it entirely -- caught only because
+the fleet-wide dated-paragraph count stayed at 42 instead of rising to 43 after the edit.
+Reworded ("rival by users" / "genuine undercutting competitor" / "three more rival Actors") and
+the count correctly rose 42 -> 43. This is now a 3-for-3 live confirmation that the blind spot is
+real and recurring, not a one-off -- queue item 2 (extend `RIVALS` to match "listing", gated by
+`COMPARISON`) should move up in priority.
+Build 0.1.69 pushed (package.json 0.1.4 -> 0.1.5, README-only), verified live via the build's own
+`readme` field (new paragraphs present, old "666 users" gone). `check-comparison-breadth` 6 -> 5
+narrow fleet-wide. `audit_dates.json` `shopify-products-scraper.competitor_audit` bumped
+1076 -> 1111 via a Python heredoc (never an interpolating shell string, per the standing
+`$0.002` -> `/usr/bin/zsh.002` data-hygiene warning), full note appended with prior history
+preserved. All standing checks re-run clean: `check-competitor-claims` 128/0 + 43/0,
+`check-pricing` 24/29/0, `check-charges` 24/24. $0 spent (read-only `/v2/acts/<owner>~<slug>`
+reads + 1 build, no Actor runs -- ~$1.15 of $300 total, unchanged). No owner email (revenue flat).
 
 h1110 DONE: **QUALITY slot per rotation (1108 Q -> 1109 G -> 1110 QUALITY). Closed both 0-rival
 Actors from `bin/check-comparison-breadth`'s cycle-1109 backlog — `fec-campaign-finance-scraper`
