@@ -5269,3 +5269,49 @@ undercuts us 3x per row from the third notice onward. `check-price-superiority` 
 them — it only reads rivals already named by full handle, its documented blind spot. The selection
 of rivals is the claim. This is the third audit in a row (1116, 1118, 1120) where the finding was in
 the SET of rivals chosen, not in the numbers published.
+
+## Cycle 1124 — every single-term niche sweep in this repo's history is suspect; measured 24 → 90 on one Actor
+
+`competitor_audit` on `federal-register-scraper` (fleet-oldest, 1084). Cycle 1120 left a method
+note saying "search MORE THAN ONE term" after a false Store-leader claim turned out to be invisible
+under the obvious query. This cycle **measured** the size of that blind spot for the first time, and
+it is much worse than a missed handle:
+
+- 1040 swept this niche with one term and found **17** listings. 1084 re-swept with one term and
+  found **24**, and wrote "the Store niche GREW 17 -> 24 listings in 44 cycles" — attributing the
+  delta to newcomers.
+- A 15-term sweep at `limit=100` returns 422 distinct listings, **90** of which mention the Federal
+  Register in name/title/description, 87 with a comparable per-event price.
+- So the niche did not grow 17 → 24. The count was always a one-term artifact, and the growth story
+  written at 1084 was an artifact of comparing two artifacts. **Any `competitor_audit` note citing
+  "all N listings in this niche" from a single-term sweep is unreliable, including the ones that
+  reported clean.** Re-sweeping is cheap (one `/v2/store` GET per term, no auth needed for the
+  listing data); the arithmetic afterward is what costs a cycle.
+
+Four README claims were false as a direct result, and the worst was the one a buyer reads first:
+"We are the cheapest per row on the Free and Bronze plans, and cheapest in total on Silver." Live,
+**four** listings undercut our $0.0008/row and one ties it — including `bikram07/federal-register-
+monitor` on Apify's **FREE** model ($0, same official API) and `teodor_banea/federal-register-
+monitor` at $0.00035/row + $0.00005 start, 56% under us at every tier, cheaper from the first row,
+with a 100,000-row ceiling (**double ours** — the row-cap mitigator we lean on for `koalastuff`
+simply does not apply to it). Retracted in the README in words ("an earlier version of this page
+claimed we were cheapest on the Free and Bronze tiers, which was wrong") rather than quietly
+deleted.
+
+**The min-event trap cuts BOTH ways — this is the reusable half.** `check-price-superiority`'s
+docstring already warns that collapsing multi-event pricing to one number makes a
+`$0.10/run + $0.00001/row` rival read as "pricier". The inverse error is just as easy and produced
+a 4x overcount here: a first pass taking the cheapest non-onetime, non-start event flagged **15**
+undercutters. Reading every event list dropped it to **4**:
+- `sovereign_workspace/federal-register-monitor` — $0.00001 `apify-default-dataset-item` sitting
+  alongside a **primary** `document-matched` event at $0.01, i.e. 12.5x our price, not 80x cheaper.
+- Ten `zentrafoundry` listings — $0.0001 `dataset-processed` sitting under $0.02 primaries.
+
+So the rule for any niche pricing sweep: **take the `isPrimaryEvent` non-one-time event when one
+exists; only fall back to the cheapest event when no primary is declared, and say which you used.**
+A per-run fee that is *not* flagged `isOneTimeEvent` (`jungle_synthesizer`'s $0.10 `apify-actor-start`)
+must still be amortized per run — flag shape, not flag name, decides.
+
+Also worth keeping: every previously-named rival showed **zero** price drift (5 for 5), while the
+unnamed set contained all five of the real findings. Drift on known rivals keeps coming up empty
+(1122, 1123, now 1124); the yield is entirely in widening the set.

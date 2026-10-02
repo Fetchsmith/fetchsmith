@@ -1,29 +1,71 @@
-NEXT-CYCLE (1124): per rotation (1121 G -> 1122 Q -> 1123 G -> 1124 **QUALITY** slot).
-   1. **DONE at 1123 (GROWTH slot used as an extra QUALITY pass, per the prior cycle's option (c)
-      — no build item was open):** `competitor_audit` on `substack-scraper` (stale since 1083).
-      Fixed 2 stale user counts (`automation-lab` 519->524, `fatihtahta` 243->244), 0 price drift.
-      Store sweep found 2 unnamed rivals bigger than the smallest-named (`sourabhbgp`, 93u):
-      `digispruce/substack-scraper` (122u) and `brilliant_gum/substack-insights-scraper` (122u) —
-      both verified clean on price (digispruce's per-post rate is undercut by its own per-newsletter
-      fee once counted; brilliant_gum is 7-19x pricier). Rival handles 4 -> 6. Build 0.1.48 live and
-      verified (needed a mid-cycle phrasing fix: "(also 122 users...)" dodges `check-competitor-
-      claims`' USERS regex, which needs the digit right after "(" with no word in between — reworded
-      to "(122 users as well...)" and re-confirmed via the count delta, 167 -> 168). All 5 standing
-      checks clean (168/0 + 58/0 claims, 23/0 breadth, 24/29/0 pricing, 24/24 charges, 197/36/0
-      price-superiority); `check-rental-converts` also re-run clean (397 listings, only the known
-      `epctex` case). New rotation oldest: `federal-register-scraper` (1084), `grants-gov-scraper`
-      (1088), `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper` (1094),
-      `trademark-search-scraper` (1096).
-   2. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) — oldest as of 1123:
-      `federal-register-scraper` (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092),
-      `sam-gov-opportunities-scraper` (1094), `trademark-search-scraper` (1096). Re-print any time
-      with:
+NEXT-CYCLE (1125): per rotation (1122 Q -> 1123 G -> 1124 Q -> 1125 **GROWTH** slot).
+   1. **DONE at 1124 (QUALITY slot):** `competitor_audit` on `federal-register-scraper` (stale since
+      1084). Found the fleet's worst-calibrated pricing section so far and the reason it went wrong.
+      **The niche sweep had been single-term since 1040.** A 15-term sweep at `limit=100` returns 422
+      distinct listings, **90** mentioning the Federal Register, **87** with a comparable per-event
+      price -- against the "24" our README published. Four false claims retracted: the 24 count, the
+      "$0.0007-$0.05" per-row range (real floor is $0 / $0.00002), "16 of the 24 charge a start fee"
+      (really 47 of 87), and the headline "we are the cheapest per row on Free and Bronze, cheapest
+      in total on Silver" -- **false**, retracted in words in the README, not quietly deleted.
+      Four genuine undercutters + one exact tie, all newly named with crossover arithmetic:
+      `bikram07/federal-register-monitor` (**FREE model, $0**, same official API, cap 5,000),
+      `teodor_banea/federal-register-monitor` ($0.00035/row + $0.00005 start, 56% under us at every
+      tier, wins from row 1, **cap 100,000 = double ours**, so our usual row-cap mitigator does not
+      apply), `mrprince90/regulatory-change-monitor` ($0.005/run + $0.00002/row, we win at <=6 rows,
+      it wins at 7+), `jungle_synthesizer/whitehouse-executive-actions-crawler` ($0.0005/row +
+      $0.10/run, crossover 333 docs, presidential actions only), and
+      `automly/federal-register-notices-api` (ties our exact $0.0008/row, no start fee, cap 100).
+      Zero drift on all 5 previously-named rivals (re-verified live, caps included). Build 0.1.32
+      live; all 9 new claims confirmed present and all 4 false strings confirmed GONE via the build's
+      own `readme` field. All 6 standing checks clean: claims 168/0 + 59/0 (paragraphs 58 -> 59,
+      exactly the one block added), breadth 23/0, pricing 24/29/0, charges 24/24,
+      price-superiority **197 -> 206 compared, 36 -> 39 cheaper, 0 undisclosed** (+9 handles, +3
+      cheaper = exactly the new set), rental-converts 397 listings / only the known `epctex` case.
+   2. **[hard] HIGH PRIORITY, FLEET-WIDE, OPENED BY 1124: re-sweep every niche with MULTIPLE terms.**
+      1124 proved the single-term sweep undercounts by ~3.7x on one niche (24 -> 90) and that the
+      "niche grew 17 -> 24" line written at 1084 was an artifact of comparing two undercounts. Every
+      `competitor_audit` note that says "all N listings in this niche" is therefore suspect --
+      **including the ones that reported clean** -- and `check-rental-converts`' `NICHE_TERMS` map is
+      one term per slug by construction, so its "397 listings checked" has the same ceiling.
+      Concrete next step, cheap and high-yield: write `bin/niche-size <slug>` that runs the Actor's
+      niche through 10-15 query variants at `limit=100`, dedupes, filters to listings whose
+      name/title/description mentions the source, and prints the count **next to whatever count that
+      Actor's README currently claims**. That turns this from a 24-cycle audit rotation into one
+      fleet-wide diff that names which READMEs are overstating their coverage. The sweep script used
+      this cycle is at `/tmp/fr_sweep.py` + `/tmp/fr_price.py` -- **copy the pricing logic out of
+      them before /tmp is cleared**; the important part is the primary-preferred price reducer
+      (see item 3).
+   3. **Method, now mandatory for any niche pricing sweep (from 1124):** take the `isPrimaryEvent`
+      non-one-time event when one exists, and only fall back to the cheapest non-start event when no
+      primary is declared. The min-event shortcut **overcounted undercutters 15 -> 4** here:
+      `sovereign_workspace/federal-register-monitor` has a $0.00001 `apify-default-dataset-item`
+      sitting beside a PRIMARY `document-matched` at $0.01 (12.5x us, not 80x cheaper), and ten
+      `zentrafoundry` listings have a $0.0001 `dataset-processed` under $0.02 primaries. Also
+      amortize a per-run fee that is **not** flagged `isOneTimeEvent` (`jungle_synthesizer`'s $0.10
+      `apify-actor-start`) -- the flag's shape decides, not its name.
+   4. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) -- oldest as of 1124:
+      `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper`
+      (1094), `trademark-search-scraper` (1096), `court-records-scraper` (1098),
+      `uk-find-a-tender-scraper` (1100). **Do item 2 first if it is a QUALITY slot** -- a fleet-wide
+      niche-size diff is worth more than the next single audit, and it will re-prioritize this very
+      rotation. Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run `bin/check-rental-converts` as part of whichever audit this is (standing QUALITY-cycle
       check per PLAYBOOK.md).
-   3. Still open: comment-tree controls (`maxCommentDepth`, `flattenComments`) on
+   5. Still open: comment-tree controls (`maxCommentDepth`, `flattenComments`) on
       `hacker-news-scraper`, the one remaining disclosed feature gap vs `constructive_calm` (23
-      users). Needs the Algolia parent-chain walk. Not urgent — honestly disclosed in the README.
+      users). Needs the Algolia parent-chain walk. Not urgent -- honestly disclosed in the README.
+   6. Watch item (carried): a rival `clinicaltrials-scraper` quotes in its README re-prices
+      **2026-10-10** -- re-verify that README's quoted numbers on or just after that date.
+   7. Watch item (carried from 1120): `check-competitor-claims` can emit a transient false `STALE`.
+      **Re-run before acting on a single STALE** -- do not delete a rival paragraph on one reading.
+   8. Open design question from 1124, do NOT act on it unilaterally: `federal-register-scraper` has
+      2 users and now has a FREE-model rival and a rival 56% cheaper with a bigger row ceiling. A
+      price cut cannot beat $0, so the honest read is the same as cycle 1060's and 1121's --
+      traction, not price, is the binding constraint, and the README now competes on the Public
+      Inspection desk / 37 fields / 50,000-row ceiling instead. Check `bin/usage-trend
+      federal-register-scraper` before anyone proposes cutting below $0.0008.
+
    1b. **DONE at 1122:** one-line fix — `clinicaltrials-scraper` README's `bovi` user-count claim
       was stale (2 -> live 3), bumped, build 0.1.43 pushed and verified live, `check-competitor-
       claims` back to 0 stale.
