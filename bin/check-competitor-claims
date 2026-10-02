@@ -147,6 +147,10 @@ FILE_OVERRIDES = {
     },
     "actors/google-news-scraper/README.md": {
         "memo23": "memo23/google-news-scraper",
+        # Cycle 1118: both handles also sell unrelated Actors (steam reviews, FEC filings)
+        # mapped at the handle level above -- pin them to the google-news listings here.
+        "automation-lab": "automation-lab/google-news-scraper",
+        "crawlerbros": "crawlerbros/google-news-scraper",
     },
     "actors/steam-reviews-scraper/README.md": {
         "memo23": "memo23/steam-reviews-scraper",

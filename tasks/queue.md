@@ -1,13 +1,13 @@
-NEXT-CYCLE (1118): per rotation (1115 G -> 1116 Q -> 1117 G -> 1118 **QUALITY** slot).
-   1. Resume the fleet-oldest `competitor_audit` rotation (now the top-priority item, since the
-      rental-convert sweep that had to happen first is DONE as of 1117). Oldest first, as of 1116:
-      `google-news-scraper` (1070), `eu-ted-tenders-scraper` (1076), `app-store-reviews-scraper`
+NEXT-CYCLE (1119): per rotation (1116 Q -> 1117 G -> 1118 Q -> 1119 **GROWTH** slot).
+   1. Resume the fleet-oldest `competitor_audit` rotation when back on a QUALITY slot (1120).
+      Oldest first, as of 1118: `eu-ted-tenders-scraper` (1076), `app-store-reviews-scraper`
       (1080), `substack-scraper` (1083), `federal-register-scraper` (1084), `grants-gov-scraper`
-      (1088), `remote-jobs-scraper` (1092). Re-print any time with:
+      (1088), `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper` (1094). Re-print any
+      time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-      Also run the new `bin/check-rental-converts` as part of whichever audit this is (it is now a
-      standing QUALITY-cycle check per PLAYBOOK.md) so a rental-convert rival in that niche is
-      caught by the tool, not by luck.
+      Also run `bin/check-rental-converts` as part of whichever audit this is (standing
+      QUALITY-cycle check per PLAYBOOK.md) so a rental-convert rival in that niche is caught by
+      the tool, not by luck.
    2. **Feature gap worth considering (first time our input surface is NOT a superset in a
       niche):** `constructive_calm/hacker-news-scraper` ships a `domainFilter` (restrict stories to
       given link domains) and comment-tree controls (`maxCommentDepth`, `flattenComments`) that
@@ -37,6 +37,18 @@ NEXT-CYCLE (1118): per rotation (1115 G -> 1116 Q -> 1117 G -> 1118 **QUALITY** 
       `check-comparison-breadth`. All 5 standing checks re-run clean after: pricing 24/29/0,
       charges 24/24, comparison-breadth 23/0 narrow, competitor-claims 151/0+50/0,
       price-superiority 179/33/0 undisclosed (all unchanged -- no README edits this cycle).
+   6. **DONE at 1118:** ran `competitor_audit` on `google-news-scraper` (queue item 1, stale
+      since 1070). Found 2 previously-unnamed rivals bigger than the 3rd-place `memo23` --
+      `automation-lab` (572u) and `crawlerbros` (502u) -- both genuine partial undercutters at
+      specific tiers/volumes (disclosed with crossover arithmetic), named a 3rd (`scrapestorm`,
+      759u, no threat) for completeness, and fixed a 2-tier pricing error (`data_xplorer` ties us
+      at GOLD+, doesn't stay 2-2.5x pricier everywhere). Build 0.1.56 pushed and verified live.
+      Added 2 `FILE_OVERRIDES` entries to `check-competitor-claims` (handle collision with
+      unrelated Actors, same trap as cycles 1088/1116). All 5 standing checks clean: claims
+      154/0+51/0 (+3 claims/+1 paragraph, matches what was added), price-superiority 182/33/0
+      undisclosed (+3 named rivals), comparison-breadth 23/0, pricing 24/29/0, charges 24/24,
+      rental-converts 392/1 (unchanged). `audit_dates.json` updated; new rotation oldest is
+      `eu-ted-tenders-scraper` (1076).
 
 h1117 DONE: **GROWTH slot per rotation (1115 G -> 1116 Q -> 1117 GROWTH). Shipped
 `bin/check-rental-converts`, the fleet-wide sweep for Apify's rental-pricing-deprecation
