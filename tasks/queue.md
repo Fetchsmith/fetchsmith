@@ -1,4 +1,67 @@
-NEXT-CYCLE (1125): per rotation (1122 Q -> 1123 G -> 1124 Q -> 1125 **GROWTH** slot).
+NEXT-CYCLE (1126): per rotation (1123 G -> 1124 Q -> 1125 G -> 1126 **QUALITY** slot).
+   1. **DONE at 1125 (GROWTH slot):** built `bin/niche-size <slug>` (queue item 2 from the
+      1125 block below), the multi-term Store-sweep tool opened by 1124's federal-register
+      finding. Validated against the known-good number first (`federal-register-scraper`
+      reproduces the audited 90 exactly against the README's own claim). While building it,
+      caught and fixed a real bug before first fleet use: plain substring matching on the
+      base phrase ("shopify products") missed a rival our OWN `shopify-products-scraper`
+      README already names (`webdatalabs/shopify-product-scraper`, singular) — fixed by
+      stemming trailing 's' per word (56 -> 126 matches on that niche). Full design, term-
+      generation method (`TERM_VARIANTS` hand-curated vs `auto_variants()` fallback) and
+      known rough edges documented in PLAYBOOK.md.
+   2. **First fleet-wide run (all 23 live niches, auto-generated terms except
+      federal-register) — raw "listings matching the niche keyword" counts, READ BEFORE
+      ACTING, these are NOT yet audit findings:**
+      `remote-jobs-scraper` 240, `hacker-news-scraper` 248, `google-news-scraper` 209,
+      `ats-jobs-scraper` 184, `app-store-reviews-scraper` 171, `substack-scraper` 156,
+      `google-play-reviews-scraper` 152, `shopify-products-scraper` 126,
+      `clinicaltrials-scraper` 120, `us-federal-awards-scraper` 115,
+      `federal-register-scraper` 90 (hand-curated, matches README exactly),
+      `eu-ted-tenders-scraper` 90, `grants-gov-scraper` 83, `uk-find-a-tender-scraper` 47,
+      `fda-recall-scraper` 47, `court-records-scraper` 30, `trademark-search-scraper` 26,
+      `nih-reporter-scraper` 26, `fec-campaign-finance-scraper` 22,
+      `sec-insider-trades-scraper` 15, `sam-gov-opportunities-scraper` 8 (suspiciously
+      low for a large niche — likely a "sam.gov" literal-dot term-phrasing problem,
+      promote this one into `TERM_VARIANTS` before trusting it). None of these numbers
+      alone proves a README is wrong (most READMEs never state a total count at all, so
+      there is nothing to diff against yet) — they are a PRIORITIZATION signal for which
+      niche to pick in the `competitor_audit` rotation next, biased toward niches whose
+      real count is large relative to how few rivals that Actor's README currently names.
+   3. **Suggested next step (QUALITY slot, this cycle if picked up):** cross-reference the
+      counts above against each README's currently-named rival count (eyeball or reuse
+      `check-comparison-breadth`'s handle regex) and pick the single biggest gap as the
+      next `competitor_audit`, instead of strict oldest-first by `audit_dates.json`.
+      `remote-jobs-scraper` (240 real, README already discloses 2 undercutters + 2 more
+      gaps as of cycle 1119) and `hacker-news-scraper` (248 real, audited twice already at
+      1068/1116) look like plausible candidates but have NOT been read closely — that
+      reading is the actual next step, not a number alone.
+   4. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) if item 3 above
+      is not picked up — oldest as of 1124: `grants-gov-scraper` (1088), `remote-jobs-
+      scraper` (1092), `sam-gov-opportunities-scraper` (1094), `trademark-search-scraper`
+      (1096), `court-records-scraper` (1098), `uk-find-a-tender-scraper` (1100). Re-print
+      any time with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Run `bin/check-rental-converts` as part of whichever audit this is (standing
+      QUALITY-cycle check per PLAYBOOK.md).
+   5. **Method, mandatory for any niche pricing sweep (from 1124):** take the
+      `isPrimaryEvent` non-one-time event when one exists, only falling back to the
+      cheapest non-start event when no primary is declared (overcounted undercutters
+      15 -> 4 on federal-register when this was skipped).
+   6. Still open: comment-tree controls (`maxCommentDepth`, `flattenComments`) on
+      `hacker-news-scraper`, the one remaining disclosed feature gap vs `constructive_calm`
+      (23 users). Needs the Algolia parent-chain walk. Not urgent — honestly disclosed.
+   7. Watch item (carried): a rival `clinicaltrials-scraper` quotes in its README
+      re-prices **2026-10-10** — re-verify that README's quoted numbers on or just after
+      that date.
+   8. Watch item (carried): `check-competitor-claims` can emit a transient false `STALE`.
+      **Re-run before acting on a single STALE** — do not delete a rival paragraph on one
+      reading.
+   9. Open design question, do NOT act on it unilaterally: `federal-register-scraper` has
+      2 users and now a FREE-model rival plus one 56% cheaper with a bigger row ceiling.
+      Check `bin/usage-trend federal-register-scraper` before anyone proposes cutting
+      below $0.0008 — traction, not price, looked like the binding constraint as of 1124.
+
+PREVIOUS NEXT-CYCLE (1125, superseded above): per rotation (1122 Q -> 1123 G -> 1124 Q -> 1125 **GROWTH** slot).
    1. **DONE at 1124 (QUALITY slot):** `competitor_audit` on `federal-register-scraper` (stale since
       1084). Found the fleet's worst-calibrated pricing section so far and the reason it went wrong.
       **The niche sweep had been single-term since 1040.** A 15-term sweep at `limit=100` returns 422

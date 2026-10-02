@@ -1,0 +1,202 @@
+#!/root/agent/venv/bin/python
+"""niche-size <slug> -- multi-term Store sweep that prints a real niche listing
+count next to whatever count (if any) that Actor's own README currently claims.
+
+Opened by cycle 1124's `federal-register-scraper` audit: every `competitor_audit`
+sweep since cycle 1040 used ONE Store search term per niche, and a 15-term sweep on
+that one niche found 90 Federal-Register-matching listings against the "24" the
+README published -- the "niche grew 17 -> 24" note from cycle 1084 was two
+undercounts being compared, not real growth. Every README that states (or implies)
+a total niche size is therefore suspect, including the ones that previously read
+clean, and `check-rental-converts`'s one-term-per-slug `NICHE_TERMS` map shares the
+same ceiling on its "N listings checked" figure.
+
+This is a COUNTING tool, not a pricing one: it answers "how many listings in this
+niche does a wider search actually turn up", not "who is cheaper". Pulling live
+pricing for every match (the `fr_price.py` half of the cycle-1124 sweep) needs one
+extra GET per listing and is deliberately left to whoever runs a full
+`competitor_audit` on the flagged niche next -- this script stays a single `/v2/store`
+search per term so it is cheap enough to run on all 23 niches in one sitting.
+
+Term generation: a few niches have a hand-curated, previously-validated multi-term
+list (`TERM_VARIANTS`, seeded from the cycle-1124 federal-register sweep, the only
+one proven against a real audit so far). Every other niche falls back to
+`auto_variants()`: the single base phrase from `check-rental-converts`'s NICHE_TERMS
+map (itself hand-picked by a human reading the niche, just one term), combined with
+a fixed list of generic modifier words (scraper/monitor/api/tracker/crawler/data/
+feed/export/alerts/tool). This is weaker than a human-curated list -- it will not
+invent a niche's own jargon the way "cfr"/"rulemaking"/"executive order" were added
+for federal-register -- so treat an auto-generated count as a lower bound, and
+promote a niche into TERM_VARIANTS by hand once someone reads its results closely
+(the same promotion `federal-register-scraper` just got).
+
+Matching: a Store search result counts as "in the niche" only if the base keyword
+phrase (lowercased, substring match) appears in its name, title, or description --
+the same rule `fr_sweep.py` used, extended with any per-niche `MATCH_SYNONYMS` (e.g.
+"federalregister"/"fedreg" alongside "federal register") for the handful of niches
+whose common name has an obvious no-space/abbreviated form.
+
+Claimed-count extraction is best-effort regex over the README (patterns like "about
+90 Store listings mention", "N listings in this niche", "all N listings") -- most
+READMEs name individual rivals without ever stating a total, so "no claimed count
+found" is the normal, expected result, not a tool failure.
+
+Read-only: one `GET /v2/store` per search term, nothing else. No Actor runs, no file
+writes.
+"""
+import datetime
+import json
+import os
+import re
+import sys
+import time
+
+import httpx
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API = "https://api.apify.com/v2"
+
+# One authoritative base phrase per niche -- copied from check-rental-converts'
+# NICHE_TERMS (kept in sync by hand; both are short and rarely change).
+NICHE_TERMS = {
+    "ats-jobs-scraper": "ats jobs",
+    "google-news-scraper": "google news",
+    "app-store-reviews-scraper": "app store reviews",
+    "shopify-products-scraper": "shopify products",
+    "hacker-news-scraper": "hacker news",
+    "google-play-reviews-scraper": "google play reviews",
+    "substack-scraper": "substack",
+    "apple-podcasts-scraper": "apple podcasts",
+    "steam-reviews-scraper": "steam reviews",
+    "eu-ted-tenders-scraper": "eu ted tenders",
+    "uk-find-a-tender-scraper": "uk find a tender",
+    "us-federal-awards-scraper": "usaspending federal awards",
+    "fda-recall-scraper": "fda recall",
+    "federal-register-scraper": "federal register",
+    "clinicaltrials-scraper": "clinicaltrials",
+    "grants-gov-scraper": "grants.gov",
+    "nih-reporter-scraper": "nih reporter",
+    "fec-campaign-finance-scraper": "fec campaign finance",
+    "court-records-scraper": "court records",
+    "trademark-search-scraper": "trademark search",
+    "sam-gov-opportunities-scraper": "sam.gov opportunities",
+    "remote-jobs-scraper": "remote jobs",
+    "sec-insider-trades-scraper": "sec insider trading",
+    "scholarship-scraper": "scholarship",
+}
+
+# Hand-curated, previously-validated multi-term lists. Promote a niche here once
+# its auto-generated sweep has been read closely and better terms identified --
+# this is how cycle 1124's federal-register list earned its place.
+TERM_VARIANTS = {
+    "federal-register-scraper": [
+        "federal register", "federal register rules", "federal register scraper",
+        "fedreg", "rulemaking", "proposed rule", "regulations monitor",
+        "federal rules monitor", "comment deadline", "executive order", "cfr",
+        "federal register monitor", "federal register api", "us rules notices",
+        "regulatory change",
+    ],
+}
+
+MATCH_SYNONYMS = {
+    "federal-register-scraper": ["federalregister", "fedreg"],
+    "uk-find-a-tender-scraper": ["find a tender"],
+    "eu-ted-tenders-scraper": ["ted europa", "public procurement"],
+    "us-federal-awards-scraper": ["usaspending"],
+    "sam-gov-opportunities-scraper": ["sam gov"],
+}
+
+MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",
+             " data", " feed", " export", " alerts", " tool"]
+
+CLAIM_PATTERNS = [
+    re.compile(r"(?:about |roughly )?(\d+)\s+(?:Store\s+)?listings? (?:mention|in this niche)", re.I),
+    re.compile(r"all (\d+) listings", re.I),
+    re.compile(r"the niche(?:'s)? (\d+) listings", re.I),
+    re.compile(r"niche grew \d+\s*(?:->|→)\s*(\d+)", re.I),
+]
+
+
+def auto_variants(base):
+    variants = [base]
+    for m in MODIFIERS:
+        if m:
+            variants.append(base + m)
+    seen, out = set(), []
+    for v in variants:
+        if v not in seen:
+            seen.add(v)
+            out.append(v)
+    return out[:12]
+
+
+def claimed_count(slug):
+    path = os.path.join(ROOT, "actors", slug, "README.md")
+    if not os.path.exists(path):
+        return None
+    text = open(path).read()
+    for pat in CLAIM_PATTERNS:
+        m = pat.search(text)
+        if m:
+            return int(m.group(1)), m.group(0)
+    return None
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit("usage: niche-size <slug>")
+    slug = sys.argv[1]
+    base = NICHE_TERMS.get(slug)
+    if not base:
+        sys.exit(f"niche-size: no base term for {slug!r} in NICHE_TERMS -- add one")
+    terms = TERM_VARIANTS.get(slug) or auto_variants(base)
+    source = "hand-curated" if slug in TERM_VARIANTS else "auto-generated (lower bound)"
+
+    seen = {}
+    for term in terms:
+        try:
+            r = httpx.get(f"{API}/store", params={"search": term, "limit": 100}, timeout=40)
+            items = r.json()["data"]["items"]
+        except Exception as e:
+            print(f"  ERR searching {term!r}: {e}", file=sys.stderr)
+            continue
+        for it in items:
+            seen[f"{it['username']}/{it['name']}"] = it
+        time.sleep(0.2)
+
+    # Each word gets an optional trailing 's' so "shopify products" also matches
+    # a listing whose own copy says "shopify product" -- plain substring missed
+    # exactly this case on a live test (webdatalabs/shopify-product-scraper, a
+    # rival this fleet's own README already names, dropped out silently).
+    def stem(w):
+        return w[:-1] if len(w) > 3 and w.endswith("s") else w
+
+    match_words = [base] + MATCH_SYNONYMS.get(slug, [])
+    match_res = [re.compile(r"\b" + r"\s+".join(re.escape(stem(w)) + "s?" for w in phrase.split()) + r"\b")
+                 for phrase in match_words]
+    matched = []
+    for ident, it in seen.items():
+        blob = f"{it.get('name', '')} {it.get('title', '')} {it.get('description') or ''}".lower()
+        if any(p.search(blob) for p in match_res):
+            matched.append((ident, it))
+    matched.sort(key=lambda kv: -(kv[1].get("stats", {}).get("totalUsers", 0)))
+
+    claim = claimed_count(slug)
+    print(f"niche-size: {slug}  (base term {base!r}, {len(terms)} queries, {source})")
+    print(f"  distinct listings seen across all queries: {len(seen)}")
+    print(f"  matching {match_words}: {len(matched)}")
+    if claim:
+        count, snippet = claim
+        delta = "MATCHES" if count == len(matched) else f"DIFFERS by {len(matched) - count:+d}"
+        print(f"  README claims: {count}  ({delta})  -- {snippet!r}")
+    else:
+        print("  README claims: no parseable total-count claim found")
+    print("  top 10 by users:")
+    for ident, it in matched[:10]:
+        st = it.get("stats", {})
+        print(f"    {st.get('totalUsers', 0):5} u30d={st.get('totalUsers30Days', 0):4} {ident}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
