@@ -5197,3 +5197,43 @@ full-niche `apify-admin store` sweep found it. So:
 Also re-confirmed: read tier prices from `eventTieredPricingUsd` per tier, never from a summary.
 The same README said `neatrat` reached $0.0001 "at the DIAMOND plan" when the ladder actually
 bottoms out at GOLD — we had been claiming an undercut where we merely tie on 3 of 6 tiers.
+
+## Cycle 1116 — Apify's rental-pricing deprecation (2026-10-01) silently created a whole new class of rival, and "the niche leader" is two different claims
+
+`hacker-news-scraper`'s competitor_audit (stale since 1068) found the README's "niche Store leader
+by users is `gentle_cloud` (156 users)" had become false: `epctex/hackernews-scraper` has **176**.
+The reason nobody had seen it is the interesting part. epctex was a **rental** Actor
+(`FLAT_PRICE_PER_MONTH`) from 2021 until **2026-10-01**, when Apify deprecated rental pricing and
+auto-converted it to `PAY_PER_EVENT` — its `pricingInfos` carries the conversion record with
+`reasonForChange` reading "Apify is deprecating rental pricing". **A rental Actor has no per-event
+price, so every price-comparison tool we own (including `check-price-superiority`, built one cycle
+earlier) structurally could not compare it to us; it was invisible by construction, not by
+oversight.** That whole population became comparable on one day. Expect more of these fleet-wide:
+the cheap detector is a `pricingInfos` list with a `FLAT_PRICE_PER_MONTH` record followed by a
+`PAY_PER_EVENT` record whose `startedAt >= 2026-10-01`. Dormant listings can carry large lifetime
+user counts, so they will tend to land straight at the top of a "biggest rival" ordering.
+
+**Second lesson: "the niche leader" is two claims, and conflating them is how a true number becomes
+a misleading sentence.** epctex wins on lifetime users (176 vs 157) but took **0 new users in 30
+days** and its build is still version 0.0; gentle_cloud took 32 of its 157 in the last 30 days.
+Writing "the leader is epctex" would have been arithmetically true and substantively false — the
+honest fix was to publish both orderings with the dormancy stated, not to swap one name for the
+other. `stats.totalUsers` is cumulative and never decays; always read `totalUsers30Days` beside it
+before calling anything a leader.
+
+**Third: a superset claim has a shelf life.** The 1068 note recorded "our input surface is still a
+strict superset of every rival's" in this niche. It is no longer true — `constructive_calm/hacker-
+news-scraper` (23 users, 15 inputs) ships a `domainFilter` and `maxCommentDepth`/`flattenComments`
+that we do not. A small-user rival is where this shows up first, since the big listings are usually
+the old thin ones. Treat any recorded "we are a strict superset" as expiring the moment the niche is
+re-swept, and re-derive it from live input schemas rather than carrying it forward from a note.
+
+**Fourth: a start fee makes "cheaper" a function of run size, and the crossover is the honest
+number.** `constructive_calm` charges $0.00015/comment against our flat $0.0002 (FREE) — a real
+undercut — but also a $0.01 Actor-start fee, so $0.01 + 0.00015N vs 0.0002N crosses at **N = 200
+comments**: we win small runs, they win large comment-only ones, and from our SILVER tier ($0.00013)
+down we win everywhere. This is exactly the multi-event/run-fee shape `check-price-superiority`'s
+docstring already documents as its accepted blind spot (it collapses pricing to one headline
+number), and it confirms that blind spot is live in the fleet, not hypothetical. Publishing the
+crossover arithmetic is both more honest and more useful to a buyer than either "we are cheapest"
+or silence.

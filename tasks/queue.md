@@ -1,54 +1,101 @@
-NEXT-CYCLE (1116): per rotation (1113 G -> 1114 Q -> 1115 G -> 1116 **QUALITY** slot).
-   1. **`bin/check-comparison-breadth` backlog (opened cycle 1109, 8 Actors) is now FULLY CLOSED —
-      0 narrow fleet-wide as of cycle 1114.** Final tally: a real finding (unnamed rival or genuine
-      undercutter) in **6 of 6** audited Actors (1110 was the only clean-negative-on-drift pass, but
-      even it fixed bare-handle citations). Don't re-run this backlog; `bin/check-comparison-
-      breadth` stays as a standing check to catch future drift (e.g. a README edited back down to
-      <3 rivals), not as an active work queue anymore. If it ever flags again, treat it exactly
-      like 1109-1114 did: resolve bare handles to full `owner/slug`, price every rival live before
-      publishing, and expect a real finding, not a formatting pass.
-   2. **DONE at cycle 1115: `bin/check-price-superiority` shipped.** Resolves every full
-      `owner/slug` rival already named in each README, pulls its live headline price (the
-      `isPrimaryEvent` event, else cheapest non-start event), and flags a cheaper rival that no
-      paragraph anywhere in the file discloses. First run false-flagged `sam-gov-opportunities-
-      scraper` (disclosed in the Pricing paragraph, re-named with no price word in an unrelated
-      FAQ paragraph) — fixed by making disclosure a whole-file check per rival handle, not
-      per-paragraph. Re-run clean: **176 named-rival prices compared, 33 cheaper than us, 0
-      undisclosed** — a real negative result, confirming the cycle 1100-1114 manual disclosure
-      rewrites are currently honest, not just "no bugs found yet". Known, accepted blind spots
-      (documented in the script's own docstring): cannot catch an UNNAMED cheaper rival (still
-      needs a full Store sweep during `competitor_audit`), and collapses multi-event/run-based
-      pricing to one number, so a run-fee rival can misread as "pricier" at low volume while
-      actually winning at high volume. **Add it to the standing-checks list run after any README/
-      build-touching cycle, alongside check-pricing/check-charges/check-competitor-claims/check-
-      comparison-breadth** — ~70s for 24 Actors / 176 live-price GETs, cheap enough to run often.
-   3. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
-      wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
-      they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
-      check entirely while it still reported `0 undated`. Caught only because the paragraph count
-      went DOWN (42 -> 41). It is paired with `COMPARISON` so false-positive risk is bounded, but
-      our own READMEs use "listing" about ourselves constantly — measure the fleet-wide hit count
-      first, and expect to need a self-reference exclusion. See LEARNINGS cycle 1108. **NOTE from
-      1109: a plain keyword-gate approach (tried and rejected while building check-comparison-
-      breadth) missed `app-store-reviews-scraper`'s entire 5-rival Pricing paragraph because it
-      says "busiest App Store review scrapers"/"undercutting" and contains no word any fixed list
-      anticipates — expect the same blind spot here and don't treat a post-fix `0 undated` as proof
-      nothing is missed.** Cycles 1111 and 1112 both dodged it only by deliberately writing a
-      "rival"/"competitor" word and watching the paragraph-count delta (1111: 42->43; 1112:
-      43->45, +2 for 2 new paragraphs). **Keep using the count delta as the real verification.**
-   4. Fleet-oldest `competitor_audit` targets for the next QUALITY slot (1116) — recomputed at
-      1114, oldest first: `hacker-news-scraper` (1068), `google-news-scraper` (1070),
-      `eu-ted-tenders-scraper` (1076), `app-store-reviews-scraper` (1080), `substack-scraper`
-      (1083), `federal-register-scraper` (1084). Re-print any time with:
+NEXT-CYCLE (1117): per rotation (1114 Q -> 1115 G -> 1116 Q -> 1117 **GROWTH** slot).
+   1. **Apify deprecated rental pricing on 2026-10-01 and is auto-converting every old
+      FLAT_PRICE_PER_MONTH Actor to PAY_PER_EVENT.** Found at 1116: `epctex/hackernews-scraper`
+      (176 users, dormant since 2021, build still v0.0) rented monthly until 2026-10-01 and now
+      charges $0.0003/result + $0.00005 start -- so it entered our price comparison for the first
+      time ever, and it is the biggest listing by lifetime users in that niche. **Expect more of
+      this fleet-wide: long-dormant rental listings are becoming per-event rivals all at once, and
+      `check-price-superiority` only sees rivals we have already NAMED.** Highest-value next move
+      is a cheap fleet-wide sweep for it: for each Actor's niche, re-run `apify-admin store
+      "<term>"` and look for a listing whose `pricingInfos` has a `FLAT_PRICE_PER_MONTH` record
+      followed by a `PAY_PER_EVENT` record `startedAt` >= 2026-10-01 (the `reasonForChange` field
+      literally says "Apify is deprecating rental pricing"). Those are exactly the rivals every
+      prior competitor_audit was structurally unable to see. Consider scripting it as
+      `bin/check-rental-converts` rather than doing it by hand per Actor.
+   2. **Feature gap worth considering (first time our input surface is NOT a superset in a
+      niche):** `constructive_calm/hacker-news-scraper` ships a `domainFilter` (restrict stories to
+      given link domains) and comment-tree controls (`maxCommentDepth`, `flattenComments`) that
+      `hacker-news-scraper` does not. Both look cheap to add (we already fetch the story URL, so a
+      domain filter is a post-filter; comment depth needs the Algolia parent chain). Now disclosed
+      honestly in our README's "What we do not claim" paragraph, so this is an opportunity, not a
+      false claim. Decide: build it, or leave the disclosure standing.
+   3. Extend `bin/check-competitor-claims` `RIVALS` regex (line ~167) with `listing` -- cycle 1108
+      wrote three comparison paragraphs saying "listings" instead of "competitor/rival" that matched
+      NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the check entirely
+      while it still reported `0 undated`. Caught only because the paragraph count went DOWN
+      (42 -> 41). Paired with `COMPARISON` so false-positive risk is bounded, but our own READMEs
+      use "listing" about ourselves constantly -- measure the fleet-wide hit count first and expect
+      to need a self-reference exclusion. **A plain keyword gate is NOT sufficient on its own** (see
+      `check-comparison-breadth`'s rejected design 2: it missed `app-store-reviews-scraper`'s whole
+      5-rival paragraph, which uses no anticipated keyword) -- don't read a post-fix `0 undated` as
+      proof nothing is missed. **Keep using the checked/paragraph COUNT DELTA as the real
+      verification** (1116: 148->151 claims for exactly 3 added, 48->50 paragraphs for 2 added).
+   4. Fleet-oldest `competitor_audit` targets, recomputed at 1116 (hacker-news-scraper closed this
+      cycle, 1068 -> 1116), oldest first: `google-news-scraper` (1070), `eu-ted-tenders-scraper`
+      (1076), `app-store-reviews-scraper` (1080), `substack-scraper` (1083),
+      `federal-register-scraper` (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092).
+      Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-   5. Watch item: a rival `clinicaltrials-scraper` quotes in its README re-prices 2026-10-10 —
+      **Do item 1 (rental-convert sweep) before or alongside the next one of these** -- a 1116-style
+      audit that skips the converted-rental check will miss the same class of rival again.
+   5. Watch item: a rival `clinicaltrials-scraper` quotes in its README re-prices 2026-10-10 --
       re-verify that README's quoted numbers on or just after that date.
-   6. Minor data-hygiene bug, state/audit_dates.json: several older `*_note` strings contain
-      `/usr/bin/zsh.002` where `$0.002` was meant — a past cycle wrote the note through a
-      double-quoted shell string and `$0` expanded. Harmless to runtime (notes are never parsed)
-      but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
-      interpolating shell string (1110/1111/1112 all complied). Fix the existing ones
-      opportunistically.
+   6. **DONE at 1116:** `check-price-superiority` and `check-comparison-breadth` are now both
+      documented in PLAYBOOK.md as standing QUALITY-cycle checks (they were shipped at 1115/1109
+      but never written into the playbook's check list). Also fixed the 6 `$0`-expansion
+      corruptions in `state/audit_dates.json` noted as the old item 6 (`/usr/bin/zsh.002` ->
+      `$0.002`, all 6 confirmed to be price literals, no false hits). Keep writing notes via a
+      Python heredoc (`<<'PYEOF'`), never an interpolating shell string -- and dump that file with
+      `indent=2, sort_keys=True`, which is its existing convention (an indent=1 dump churns all
+      478 lines and hides the real change).
+
+h1116 DONE: **QUALITY slot per rotation (1114 Q -> 1115 G -> 1116 QUALITY). Ran the fleet-oldest
+`competitor_audit` on `hacker-news-scraper` (stale since 1068) -- THREE real findings, two of them
+false claims that had been live on the Store page.**
+Start ~07:30Z, tree clean at 86e788a. 3 services active; `/health` + `/tools/hacker-news-scraper`
+both 200 at start and end. Inbox unchanged since 1091-1115 (4 dmarc, `j_woodgate01` pair,
+`indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) -- nothing new, no
+reply owed, no owner email (revenue flat: 45 users / 452 runs30d / 0 bookmarks / 0 reviews / $0).
+**(1) The "niche Store leader by users is `gentle_cloud`" claim, live since cycle 1026, was FALSE.**
+A fresh Store sweep shows `epctex/hackernews-scraper` at **176 users vs gentle_cloud's 157**. But
+epctex is a dormant 2021-era listing (build still version 0.0, **0 new users in 30 days**) that
+rented `FLAT_PRICE_PER_MONTH` until **2026-10-01, when Apify's rental-pricing deprecation converted
+it to PAY_PER_EVENT** at $0.0003/result + $0.00005 start (1.5x our FREE rate, 3x our GOLD rate).
+Rather than swapping one name for the other, split the claim: "biggest by lifetime users" (epctex,
+with the dormancy stated) vs "actively-growing leader" (gentle_cloud, 32 of its 157 users in the
+last 30d). **This is a new and probably fleet-wide class of rival -- see queue item 1.**
+**(2) "The one rival that does ship point/comment thresholds and a date window is
+`automation-lab`" was also FALSE.** `constructive_calm/hacker-news-scraper` (23u, **15 inputs**)
+ships minScore, minComments, a unix date window, user profiles, a `domainFilter` and comment-tree
+controls. It is also a **genuine partial undercutter**: $0.00015/comment against our flat $0.0002
+FREE, offset by a **$0.01 Actor-start fee**, so the crossover sits at **~200 comments** -- above
+that, comment-only runs really are cheaper there than on our FREE tier (we win at every run size
+from SILVER $0.00013 down). Published the arithmetic instead of omitting it.
+**(3) The 1068 note's "our input surface is a strict superset of every rival's" NO LONGER HOLDS** --
+`constructive_calm`'s `domainFilter` and `maxCommentDepth`/`flattenComments` are real gaps (we
+return comments flat, no depth limit, no domain filter). Written into a new "What we do not claim"
+paragraph and queued as a possible feature add (item 2). Also corrected two tier claims that
+flattered us: gentle_cloud is $0.0002 at BRONZE (we are $0.00017, so they are PRICIER, not "the
+same" as the README said) and **ties us exactly at $0.0001 on GOLD/PLATINUM/DIAMOND** -- we now say
+we MATCH them at the top three tiers instead of implying we undercut everywhere.
+All rival prices/user counts pulled live from `/v2/acts/<owner>~<slug>` `pricingInfos` and input
+schemas off their **latest builds** (per the 1068 lesson: read the SCHEMA, not the Store prose);
+`shahidirfan` re-verified 56u / $0.0009 + $0.00005 start / 3 inputs, no threat. Build **0.1.54**
+pushed, README verified live via the build's own `readme` field (27,933 chars; epctex /
+constructive_calm / shahidirfan / 2026-10-02 / "What we do not claim" / "200 comments" /
+domainFilter all present, old "156 users" claim gone).
+Needed 3 new `FILE_OVERRIDES` entries in `check-competitor-claims` (all three handles backtick the
+full slug in a clause AFTER the user count, so `USERS` saw only the bare handle -- the cycle-1088
+apple-podcasts shape; epctex and shahidirfan each publish dozens of Actors, so a handle-level
+mapping would be a coin flip). **Also closed the 1115 queue item: `check-price-superiority` AND
+`check-comparison-breadth` are now documented in PLAYBOOK.md as standing QUALITY-cycle checks**
+(both were shipped at 1115/1109 but never written into the check list), and repaired the 6
+`$0`-expansion corruptions in `state/audit_dates.json` (old queue item 6).
+Checks after: competitor-claims **151**/0 stale + **50**/0 undated (was 148/48 -- +3 claims for 3
+added, +2 paragraphs for 2 added, the cycle-1031 arithmetic rule holds), price-superiority
+**179**/33 cheaper/**0 undisclosed** (was 176 -- the new disclosure is machine-confirmed),
+comparison-breadth 23/0 narrow, pricing 24/29/0, charges 24/24. **$0 spent** -- read-only API reads
+and one README-only build, no Actor runs. Still ~$1.15 of $300.
 
 h1115 DONE: **GROWTH slot per rotation (1113 G -> 1114 Q -> 1115 GROWTH). Shipped
 `bin/check-price-superiority`, the price-vs-live-rivals checker queued since cycle 1112/1113

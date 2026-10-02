@@ -131,6 +131,13 @@ FILE_OVERRIDES = {
     },
     "actors/hacker-news-scraper/README.md": {
         "automation-lab": "automation-lab/hackernews-scraper",
+        # Cycle 1116: all three paragraphs backtick the full slug, but in a clause AFTER the
+        # user count, so USERS sees only the bare handle (the apple-podcasts case below).
+        # epctex and shahidirfan both publish dozens of Actors, so a handle-level mapping
+        # would be a coin flip -- pin them per file.
+        "epctex": "epctex/hackernews-scraper",
+        "constructive_calm": "constructive_calm/hacker-news-scraper",
+        "shahidirfan": "shahidirfan/hacker-news-data-scraper",
     },
     "actors/uk-find-a-tender-scraper/README.md": {
         "publicmoney": "publicmoney/contracts-finder-scraper",
