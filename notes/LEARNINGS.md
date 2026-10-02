@@ -5390,3 +5390,35 @@ listing as a deep undercutter when it is 5x dearer — it put dltik and
 `dltik/uspto-trademarks-scraper` on my undercut list until I excluded start events by
 key AND by event title. 1130's "primary-preferred" rule needs that exclusion stated
 explicitly, which the queue note did not.
+
+## Cycle 1136 — a `niche-size` base term cannot see a second, differently-named source
+`uk-find-a-tender-scraper` covers two UK portals with different names: **Find a Tender** (above
+threshold) and **Contracts Finder** (below). Its `NICHE_TERMS` base phrase was `"uk find a tender"`,
+so every Store listing that covers only the Contracts Finder feed — which is most of the niche, the
+sub-threshold flow being much larger — matched **nothing** in the sweep. Published count was "30+";
+the real count is **86**. Generalisation: whenever an Actor reads N differently-branded upstreams,
+its sweep term must name all N, or the audit measures a fraction of the niche and every superlative
+built on it is unsafe. Candidates to re-check before their next audit: `remote-jobs-scraper` (6
+boards), `ats-jobs-scraper` (4 ATSes), `court-records-scraper` (CourtListener/PACER/docket — 1134
+stumbled into exactly this by adding a 4th term by hand).
+
+**Safe-synonym test (resolves the tension with cycle 1132's overcount problem).** `niche-size`
+matches name + title + **description**, so widening a base phrase to a common English word trades
+an undercount for an overcount (1132: `trademark` hit boilerplate in ~24 unrelated listings). The
+test is whether the added phrase is a **proper source name** or a common word. "Contracts Finder"
+is the literal name of a government portal — it cannot appear as boilerplate — so adding it is
+free. "Trademark" is a common noun and is not. A `--strict` (name/title only) flag is still the
+real fix for the common-word case and is still open.
+
+## Cycle 1136 — the cheapest false superlative to find needs no network calls
+Cycles 1128–1132 established that the highest-yield false claim in a pricing paragraph is a
+negative superlative, found by widening the rival set. 1136 found a strictly cheaper variant:
+**a quantifier refuted by our own pricing, published two sentences earlier in the same paragraph.**
+The claim was "one Actor undercuts us at every plan tier and every volume"; the same paragraph also
+says "the first 25 matching records of every run are free". On a 25-row run we charge $0 and the
+rival charges $0.025, so it is *dearer*, and the real crossover is ~38 rows (free plan) / ~32
+(Gold+). No rival fact changed and no API call was needed — the sentence contradicted itself on the
+page. **Method: before widening the rival set, grep the pricing section for "every", "always",
+"never", "any volume", "at every tier" and reconcile each one against the Actor's own allowances,
+free tiers and plan tapers.** Publish a crossover row count instead of a quantifier; a quantifier
+about a competitor is only as true as your own free allowance lets it be.

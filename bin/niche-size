@@ -119,11 +119,26 @@ TERM_VARIANTS = {
         "brand name availability", "tm register", "trademark data",
         "trademark alerts", "trademark classes",
     ],
+    # Promoted by cycle 1136's competitor_audit. The auto-generated sweep off the base
+    # phrase "uk find a tender" is a severe undercount in this niche, because the two UK
+    # portals have different names and a listing covering only Contracts Finder never
+    # says "find a tender" at all. Every listing these terms return was price-checked
+    # live this cycle, which is the bar for a place here.
+    "uk-find-a-tender-scraper": [
+        "uk find a tender", "find a tender", "contracts finder", "uk tenders",
+        "uk public tenders", "uk government tenders", "uk government contracts",
+        "uk procurement", "uk tender notices", "uk contract awards",
+        "fts ocds", "uk tender monitor", "uk tenders api", "uk tender alerts",
+        "public procurement uk",
+    ],
 }
 
 MATCH_SYNONYMS = {
     "federal-register-scraper": ["federalregister", "fedreg"],
-    "uk-find-a-tender-scraper": ["find a tender"],
+    # "contracts finder" is the name of the second UK portal, so a UK-tender listing that
+    # covers only the sub-threshold feed matches on it alone and on nothing else (cycle 1136).
+    "uk-find-a-tender-scraper": ["find a tender", "contracts finder", "uk tender",
+                                 "uk public tender", "uk government tender"],
     "eu-ted-tenders-scraper": ["ted europa", "public procurement"],
     "us-federal-awards-scraper": ["usaspending"],
     "sam-gov-opportunities-scraper": ["sam gov"],
