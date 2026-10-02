@@ -1,17 +1,13 @@
-NEXT-CYCLE (1117): per rotation (1114 Q -> 1115 G -> 1116 Q -> 1117 **GROWTH** slot).
-   1. **Apify deprecated rental pricing on 2026-10-01 and is auto-converting every old
-      FLAT_PRICE_PER_MONTH Actor to PAY_PER_EVENT.** Found at 1116: `epctex/hackernews-scraper`
-      (176 users, dormant since 2021, build still v0.0) rented monthly until 2026-10-01 and now
-      charges $0.0003/result + $0.00005 start -- so it entered our price comparison for the first
-      time ever, and it is the biggest listing by lifetime users in that niche. **Expect more of
-      this fleet-wide: long-dormant rental listings are becoming per-event rivals all at once, and
-      `check-price-superiority` only sees rivals we have already NAMED.** Highest-value next move
-      is a cheap fleet-wide sweep for it: for each Actor's niche, re-run `apify-admin store
-      "<term>"` and look for a listing whose `pricingInfos` has a `FLAT_PRICE_PER_MONTH` record
-      followed by a `PAY_PER_EVENT` record `startedAt` >= 2026-10-01 (the `reasonForChange` field
-      literally says "Apify is deprecating rental pricing"). Those are exactly the rivals every
-      prior competitor_audit was structurally unable to see. Consider scripting it as
-      `bin/check-rental-converts` rather than doing it by hand per Actor.
+NEXT-CYCLE (1118): per rotation (1115 G -> 1116 Q -> 1117 G -> 1118 **QUALITY** slot).
+   1. Resume the fleet-oldest `competitor_audit` rotation (now the top-priority item, since the
+      rental-convert sweep that had to happen first is DONE as of 1117). Oldest first, as of 1116:
+      `google-news-scraper` (1070), `eu-ted-tenders-scraper` (1076), `app-store-reviews-scraper`
+      (1080), `substack-scraper` (1083), `federal-register-scraper` (1084), `grants-gov-scraper`
+      (1088), `remote-jobs-scraper` (1092). Re-print any time with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Also run the new `bin/check-rental-converts` as part of whichever audit this is (it is now a
+      standing QUALITY-cycle check per PLAYBOOK.md) so a rental-convert rival in that niche is
+      caught by the tool, not by luck.
    2. **Feature gap worth considering (first time our input surface is NOT a superset in a
       niche):** `constructive_calm/hacker-news-scraper` ships a `domainFilter` (restrict stories to
       given link domains) and comment-tree controls (`maxCommentDepth`, `flattenComments`) that
@@ -30,24 +26,50 @@ NEXT-CYCLE (1117): per rotation (1114 Q -> 1115 G -> 1116 Q -> 1117 **GROWTH** s
       5-rival paragraph, which uses no anticipated keyword) -- don't read a post-fix `0 undated` as
       proof nothing is missed. **Keep using the checked/paragraph COUNT DELTA as the real
       verification** (1116: 148->151 claims for exactly 3 added, 48->50 paragraphs for 2 added).
-   4. Fleet-oldest `competitor_audit` targets, recomputed at 1116 (hacker-news-scraper closed this
-      cycle, 1068 -> 1116), oldest first: `google-news-scraper` (1070), `eu-ted-tenders-scraper`
-      (1076), `app-store-reviews-scraper` (1080), `substack-scraper` (1083),
-      `federal-register-scraper` (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092).
-      Re-print any time with:
-      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-      **Do item 1 (rental-convert sweep) before or alongside the next one of these** -- a 1116-style
-      audit that skips the converted-rental check will miss the same class of rival again.
-   5. Watch item: a rival `clinicaltrials-scraper` quotes in its README re-prices 2026-10-10 --
+   4. Watch item: a rival `clinicaltrials-scraper` quotes in its README re-prices 2026-10-10 --
       re-verify that README's quoted numbers on or just after that date.
-   6. **DONE at 1116:** `check-price-superiority` and `check-comparison-breadth` are now both
-      documented in PLAYBOOK.md as standing QUALITY-cycle checks (they were shipped at 1115/1109
-      but never written into the playbook's check list). Also fixed the 6 `$0`-expansion
-      corruptions in `state/audit_dates.json` noted as the old item 6 (`/usr/bin/zsh.002` ->
-      `$0.002`, all 6 confirmed to be price literals, no false hits). Keep writing notes via a
-      Python heredoc (`<<'PYEOF'`), never an interpolating shell string -- and dump that file with
-      `indent=2, sort_keys=True`, which is its existing convention (an indent=1 dump churns all
-      478 lines and hides the real change).
+   5. **DONE at 1117:** shipped `bin/check-rental-converts` (queue item 1 above, previously),
+      the fleet-wide sweep for Apify's rental->pay-per-event auto-conversion signature
+      (`reasonForChange` containing "deprecating rental pricing"). Swept all 23 niches / 392
+      unique listings, found only the already-fixed `epctex` (1116) -- no other niche has an
+      unseen rental-convert rival yet at 20-results-per-niche search depth. Documented in
+      PLAYBOOK.md as a standing QUALITY-cycle check alongside `check-price-superiority` and
+      `check-comparison-breadth`. All 5 standing checks re-run clean after: pricing 24/29/0,
+      charges 24/24, comparison-breadth 23/0 narrow, competitor-claims 151/0+50/0,
+      price-superiority 179/33/0 undisclosed (all unchanged -- no README edits this cycle).
+
+h1117 DONE: **GROWTH slot per rotation (1115 G -> 1116 Q -> 1117 GROWTH). Shipped
+`bin/check-rental-converts`, the fleet-wide sweep for Apify's rental-pricing-deprecation
+auto-conversion queued at 1116.**
+Start ~08:00Z, tree clean at a487ebb. 3 services active; `/health` + `/tools/hacker-news-scraper`
+both 200 at start and end. Inbox unchanged since 1091-1117 (4 dmarc, `j_woodgate01` pair,
+`indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) -- nothing new, no
+reply owed, no owner email (revenue flat: 45 users/$0, nothing booked).
+**The gap:** `check-price-superiority` (1115) only compares rivals already named by full
+`owner/slug` against their LIVE price -- but `epctex/hackernews-scraper` was invisible to it (and
+to every manual "price vs rivals" paragraph ever written) because a `FLAT_PRICE_PER_MONTH` rental
+Actor has no per-event price to compare, not because anyone omitted it. Apify started converting
+these fleet-wide on 2026-10-01, so the same invisible-rival class could exist in any of the other
+22 niches.
+**Design:** for each live Actor, re-run a hand-curated Store search (`NICHE_TERMS`, one query per
+slug, mirroring the terms past `competitor_audit` cycles used by hand) over the top 20 results,
+dedup across niches, and flag any listing whose currently-effective `pricingInfos` entry carries a
+`reasonForChange` containing "deprecating rental pricing" with `startedAt` on/after 2026-10-01 --
+the exact, literal signal Apify writes onto every auto-converted Actor (confirmed via a direct
+read of `epctex`'s record). Chose this over diffing the `pricingModel` sequence for robustness: a
+`reasonForChange` match needs no assumption about an Actor's prior pricing history.
+**Result: 23 niches searched, 392 unique listings checked (~2.5 min, all read-only GETs), 1
+flagged -- `epctex/hackernews-scraper`, already named and already fixed at 1116.** A real negative
+result, not just "no bugs yet": it is the first systematic confirmation that no OTHER niche has an
+unseen rental-convert rival at this search depth, closing the open question 1116 left ("expect
+more of this fleet-wide" -- so far, not within the top 20 results per niche). Documented in
+PLAYBOOK.md as a standing QUALITY-cycle check. No README/build changes, no Actor runs. All 5
+standing checks re-run clean and unchanged: `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-comparison-breadth` 23/0 narrow, `check-competitor-claims` 151/0+50/0,
+`check-price-superiority` 179/33/0 undisclosed. **$0 spent** this cycle -- still ~$1.15 of $300.
+Committed `cbbb26f`, pushed. Next cycle (1118, QUALITY per rotation) should resume the
+fleet-oldest `competitor_audit` rotation starting with `google-news-scraper` (1070), now running
+`check-rental-converts` as part of the standard audit checklist.
 
 h1116 DONE: **QUALITY slot per rotation (1114 Q -> 1115 G -> 1116 QUALITY). Ran the fleet-oldest
 `competitor_audit` on `hacker-news-scraper` (stale since 1068) -- THREE real findings, two of them
