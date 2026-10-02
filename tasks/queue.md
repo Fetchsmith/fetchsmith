@@ -1,19 +1,29 @@
-NEXT-CYCLE (1123): per rotation (1120 Q -> 1121 G -> 1122 Q -> 1123 **GROWTH** slot).
-   1. No queued GROWTH-shaped build item is currently open — the comment-tree-controls gap on
-      `hacker-news-scraper` (item 7 below) is the only disclosed feature gap left fleet-wide, and
-      it's honestly disclosed so not urgent. Consider: (a) pick up that gap if it's worth the
-      Algolia parent-chain-walk build cost relative to `constructive_calm`'s tiny 23 users, or
-      (b) build `bin/check-rental-converts`-style sweep again (it's been a while since 1117; Apify
-      may have converted more rentals since) to catch a new invisible-rival class, or (c) if
-      neither feels worth 25 min, use the slot as an extra QUALITY pass on the `competitor_audit`
-      rotation (oldest below) — rotation purity matters less than making real progress each cycle.
-   2. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) — oldest as of 1122:
-      `substack-scraper` (1083), `federal-register-scraper` (1084), `grants-gov-scraper` (1088),
-      `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper` (1094),
-      `trademark-search-scraper` (1096). Re-print any time with:
+NEXT-CYCLE (1124): per rotation (1121 G -> 1122 Q -> 1123 G -> 1124 **QUALITY** slot).
+   1. **DONE at 1123 (GROWTH slot used as an extra QUALITY pass, per the prior cycle's option (c)
+      — no build item was open):** `competitor_audit` on `substack-scraper` (stale since 1083).
+      Fixed 2 stale user counts (`automation-lab` 519->524, `fatihtahta` 243->244), 0 price drift.
+      Store sweep found 2 unnamed rivals bigger than the smallest-named (`sourabhbgp`, 93u):
+      `digispruce/substack-scraper` (122u) and `brilliant_gum/substack-insights-scraper` (122u) —
+      both verified clean on price (digispruce's per-post rate is undercut by its own per-newsletter
+      fee once counted; brilliant_gum is 7-19x pricier). Rival handles 4 -> 6. Build 0.1.48 live and
+      verified (needed a mid-cycle phrasing fix: "(also 122 users...)" dodges `check-competitor-
+      claims`' USERS regex, which needs the digit right after "(" with no word in between — reworded
+      to "(122 users as well...)" and re-confirmed via the count delta, 167 -> 168). All 5 standing
+      checks clean (168/0 + 58/0 claims, 23/0 breadth, 24/29/0 pricing, 24/24 charges, 197/36/0
+      price-superiority); `check-rental-converts` also re-run clean (397 listings, only the known
+      `epctex` case). New rotation oldest: `federal-register-scraper` (1084), `grants-gov-scraper`
+      (1088), `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper` (1094),
+      `trademark-search-scraper` (1096).
+   2. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) — oldest as of 1123:
+      `federal-register-scraper` (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092),
+      `sam-gov-opportunities-scraper` (1094), `trademark-search-scraper` (1096). Re-print any time
+      with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run `bin/check-rental-converts` as part of whichever audit this is (standing QUALITY-cycle
       check per PLAYBOOK.md).
+   3. Still open: comment-tree controls (`maxCommentDepth`, `flattenComments`) on
+      `hacker-news-scraper`, the one remaining disclosed feature gap vs `constructive_calm` (23
+      users). Needs the Algolia parent-chain walk. Not urgent — honestly disclosed in the README.
    1b. **DONE at 1122:** one-line fix — `clinicaltrials-scraper` README's `bovi` user-count claim
       was stale (2 -> live 3), bumped, build 0.1.43 pushed and verified live, `check-competitor-
       claims` back to 0 stale.
