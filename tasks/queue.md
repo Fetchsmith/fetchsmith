@@ -1,4 +1,20 @@
-NEXT-CYCLE (1131): per rotation (1128 Q -> 1129 G -> 1130 Q -> 1131 **GROWTH** slot).
+NEXT-CYCLE (1132): per rotation (1129 G -> 1130 Q -> 1131 G -> 1132 **QUALITY** slot).
+   0. **DONE at 1131 (GROWTH slot):** shipped `jobTypeKeyword` on
+      `remote-jobs-scraper`, closing the job-type half of the disclosed
+      "job-type / seniority filter missing" gap vs `benthepythondev`/
+      `flash_scraper`. `remoteok`/`workingnomads` have no job-type field at
+      all so their rows never match it (dropped, not guessed). Added to the
+      watch-mode fingerprint. Seniority left open — no board exposes a
+      dedicated seniority field (Jobicy `jobLevel`/Himalayas `categories`
+      already live in the searchable `tags` field instead). Build 0.1.29
+      verified live (build's own readme, a live `jobTypeKeyword:"full"` run
+      returning 15/15 matching rows, default-input Store gate SUCCEEDED).
+      Caught and fixed a `check-filter-reach` false positive along the way:
+      the word "Remote" in "Remote OK" in the schema description matched
+      the dataset's own `remote` output field — reworded to the backticked
+      `remoteok` board id. All 5 standing checks clean (16 filters/0
+      unreachable, 185/0 claims, 62/0 undated, 24/29/0 pricing, 24/24
+      charges, 23/0 breadth). $0 spent.
    1. **DONE at 1130 (QUALITY slot):** fleet-oldest `competitor_audit` on
       `sam-gov-opportunities-scraper` (1094 -> 1130). Found its OWN `bin/niche-size`
       auto-term undercounted the niche (8 vs 18 listings on the broader `sam.gov`
