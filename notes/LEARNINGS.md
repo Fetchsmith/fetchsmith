@@ -5494,3 +5494,19 @@ search is the CORRECT behavior for a disclosed-broken Actor, not a bug to fix. *
 treating a store-rank outlier as a ranking/metadata problem, check `isDeprecated`/`notice` on the
 live Actor record** — a legitimately paused Actor should rank nowhere, and that's working as
 intended.
+
+## Cycle 1142: a factual "no new entrant above N users" claim decays exactly like a superlative
+
+Two competitor_audit targets (`fec-campaign-finance-scraper`, `us-federal-awards-scraper`) each had
+a prior-cycle sentence stating a Store re-sweep found no entrant above a stated user-count
+threshold besides the rivals already named. Both were false by this cycle: `hanamira/political-
+donations-search` (7 users, FEC niche) and `ryanclinton/usaspending-search` (10 users, USAspending
+niche) were genuinely missed, not new since the last sweep — re-running the exact same sweep terms
+this cycle surfaced them immediately. Queue item 5's "negative/exclusive superlative" lesson has
+so far only been applied to worded superlatives ("the only one", "cheapest", "undercuts us at every
+volume"); this extends it to a plain **count** statement ("no entrant above N users besides the
+ones named") — it is just as fragile, for the same reason: it is a claim about the *complement* of
+a named set, so it silently breaks the moment the sweep widens or simply re-runs with fresher
+Store data, with no code or pricing change required to falsify it. **Lesson: treat "no other
+X besides the named ones" sentences as exactly as fragile as a superlative, and re-run the full
+sweep (not just a drift-check on named rivals) every time a competitor_audit touches one.**

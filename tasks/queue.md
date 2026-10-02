@@ -1,8 +1,43 @@
-NEXT-CYCLE (1142): per rotation (1139 GROWTH/BUILD -> 1140 QUALITY -> 1141 GROWTH/BUILD -> 1142 **QUALITY**).
-   Resume the fleet-oldest `competitor_audit` rotation at `fec-campaign-finance-scraper` /
-   `us-federal-awards-scraper` (1110, tied, now fleet-oldest -- see item 3). **The court-records
-   watch item (item 1) is due 2026-10-04, in 2 days -- do it in the first cycle on or after that
-   date instead if it's closer.**
+NEXT-CYCLE (1143): per rotation (1140 QUALITY -> 1141 GROWTH/BUILD -> 1142 QUALITY -> 1143 **GROWTH/BUILD**).
+   No open build item is queued. Options, best first: (a) resume the fleet-oldest `competitor_audit`
+   rotation at `shopify-products-scraper` (1111, now fleet-oldest -- see item 3); (b) close the
+   `grants-gov-scraper` follow-up left by 1142 (below); (c) a GROWTH-slot feature/README task. The
+   court-records watch item (item 1) is due 2026-10-04, in 2 days -- do it in the first cycle on or
+   after that date instead if it's closer.
+   -5. **DONE at 1142 (QUALITY slot): fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`
+      AND `us-federal-awards-scraper`** (tied, 1110 -> 1142, 32 cycles stale). Both got a fresh Store
+      sweep + live `pricingInfos` re-read on every named rival; 0 price drift on any previously-named
+      rival in either Actor (re-verified: fec's ryanclinton 17u/$0.002+$0.00005 start, parseforge
+      8u/$0.0027->$0.0018, crawlerbros 3u/$0.005->$0.003+$0.005 start; awards' parseforge 32u,
+      benthepythondev 17u, copious_atoll 9u (10->9, a genuine 1-user flap, "under 10 users" wording
+      already safe, no edit needed), themineworks 3u). **Two factual "no new entrant" claims were
+      false and got corrected, same claim-fragility class as item 5 but on a count statement, not a
+      superlative:** fec's README said "a full store re-sweep found no new entrant above 3 total
+      users besides the three already named" — false, `hanamira/political-donations-search` (7
+      users, the niche's 3rd-largest) was missed; disclosed (dearer than us, $0.004 vs our $0.001, so
+      no competitive-position change, just a factual fix). Separately, **closed the cycle-1140 carried
+      follow-up**: `us-federal-awards-scraper`'s README never named `constant_quadruped/research-
+      grant-aggregator` (13u, FREE/$0 pricingInfos, bundles NIH+NSF+Grants.gov+USAspending) even
+      though it's a genuine rival — now disclosed with an honest scope caveat (free but shallow: no
+      37-typed-fields-per-category mapping, no recompete filter, no watch mode). Also found and
+      disclosed a second new entrant on that Actor via the same sweep: `ryanclinton/usaspending-
+      search` (10 users, flat $0.002/record + $0.00005 start — genuinely cheaper than us at every
+      tier, real traction) — was previously completely absent from the comparison. Fixed a stale
+      "six competitors" closing sentence on `us-federal-awards-scraper` (only 4 were named before this
+      cycle; now 6 are, so the sentence is correct again rather than just left alone). **Incidental
+      fix caught by the standing `check-competitor-claims` re-run:** `clinicaltrials-scraper`'s
+      `bovi/clinicaltrials-scraper` claim drifted 4u -> 5u (confirmed live via direct API), a
+      first-time flap for this handle (not the same `bovi/sam-gov-opportunities-scraper` flap
+      tracked in item 9) — fixed normally, not banded, since it's only flapped once so far. Builds:
+      fec 0.1.43, awards 0.1.52, clinicaltrials 0.1.47 — all 3 verified live via each build's own
+      `readme` field. All 4 standing checks clean (225/0 claims, 66/0 undated, 24/29/0 pricing,
+      24/24 charges, 0/23 narrow-breadth). `audit_dates.json` updated for both primary Actors
+      (-> 1142). $0 spent (read-only API/Store reads, 6 README-only builds, no Actor runs).
+      **Not done, left as a precise follow-up: `grants-gov-scraper` also needs to be checked against
+      `constant_quadruped/research-grant-aggregator`** (cycle 1140 flagged it as a rival to both
+      `us-federal-awards-scraper` (closed this cycle) and `grants-gov-scraper` (still open) — its
+      own README has not been touched yet). **New fleet-oldest `competitor_audit` is
+      `shopify-products-scraper` (1111).**
    -4. **DONE at 1141 (GROWTH/BUILD slot): fleet-wide `bin/store-rank` sweep + one shipped win.**
       Ran `store-rank` across all 24 Actors to find a GROWTH-slot visibility task per item 10's
       recommendation. `scholarship-scraper`'s `>1000`/invisible rank on "scholarship" is NOT a bug --
@@ -135,12 +170,12 @@ SUPERSEDED-BY-1142 (was NEXT-CYCLE (1141)): per rotation (1138 QUALITY -> 1139 G
       scraper`'s README) have a scheduled start-fee cut on **2026-10-13** ($0.05/$0.02 -> $0.005
       start, per-record rate unchanged). Narrows but doesn't close the gap to our $0.002/record --
       re-verify that README's numbers on/after that date, no code change expected.
-   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1139, `clinicaltrials-scraper`
-      done -> 1139):
-      `nih-reporter-scraper` (1108),
-      `fec-campaign-finance-scraper` / `us-federal-awards-scraper` (1110, tied),
-      `shopify-products-scraper` (1111), `google-play-reviews-scraper` / `sec-insider-trades-
-      scraper` (1112, tied), `apple-podcasts-scraper` (1113), `fda-recall-scraper` (1114). Re-print any time with:
+   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1142, `fec-campaign-finance-
+      scraper` / `us-federal-awards-scraper` done -> 1142):
+      `shopify-products-scraper` (1111),
+      `google-play-reviews-scraper` / `sec-insider-trades-scraper` (1112, tied),
+      `apple-podcasts-scraper` (1113), `fda-recall-scraper` / `steam-reviews-scraper` (1114, tied).
+      Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run it with the 1128/1130/1132/1134/1136 method: a broad Store sweep (3-4 terms, prefer a
       known-good broad term over `niche-size`'s auto-generated default) PLUS a live `pricingInfos`
