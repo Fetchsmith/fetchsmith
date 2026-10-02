@@ -96,6 +96,16 @@ TERM_VARIANTS = {
         "federal register monitor", "federal register api", "us rules notices",
         "regulatory change",
     ],
+    # Promoted by cycle 1128's competitor_audit: these 15 terms were read listing-by-listing
+    # (84 matches, every one price-checked live), which is what earns a place here. The
+    # auto_variants() fallback found 83 of the 84 on its own, so the term list was not the
+    # weak link in this niche -- the MATCH_SYNONYMS entry below was.
+    "grants-gov-scraper": [
+        "grants.gov", "grants gov", "grants.gov scraper", "federal grants",
+        "grant opportunities", "grant funding", "funding opportunity", "nofo",
+        "assistance listing", "cfda", "grant alerts", "federal funding",
+        "grants api", "grant monitor", "grants scraper",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -104,6 +114,9 @@ MATCH_SYNONYMS = {
     "eu-ted-tenders-scraper": ["ted europa", "public procurement"],
     "us-federal-awards-scraper": ["usaspending"],
     "sam-gov-opportunities-scraper": ["sam gov"],
+    # The base phrase's dot is regex-escaped, so a listing whose own copy writes "Grants gov"
+    # (or "grants-gov", which lowercases into the same word pair) never matched (cycle 1128).
+    "grants-gov-scraper": ["grants gov"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",

@@ -5315,3 +5315,45 @@ must still be amortized per run — flag shape, not flag name, decides.
 Also worth keeping: every previously-named rival showed **zero** price drift (5 for 5), while the
 unnamed set contained all five of the real findings. Drift on known rivals keeps coming up empty
 (1122, 1123, now 1124); the yield is entirely in widening the set.
+
+## Cycle 1128 — the 1124 niche-undercount artifact is fleet-wide, and a "nobody beats our X rate" claim is the one to re-check first
+
+`grants-gov-scraper`'s `competitor_audit` (fleet-oldest, stale since 1088) reproduced cycle 1124's
+federal-register finding exactly, in a different niche: the README published **44** listings in the
+niche; a 15-term sweep finds **84**. Cycle 1088's headline "the niche grew 12 -> 44 in 47 cycles"
+was, like federal-register's "17 -> 24", two single-term undercounts being compared — not growth.
+**Every derived fraction inherits the bad denominator**: "32 of the 44 charge a start fee" was really
+60 of 82, and "several listings match or beat our $0.0015 enriched rate" (4 named) was 13 of 82.
+
+**The reusable rule: a negative superlative about OUR cheapest rate is the highest-yield claim in any
+pricing paragraph, because it is the one a bigger denominator can falsify outright.** The false claim
+here was "What they do not match is the per-row *thin* rate of $0.0007" — two listings price per-row at
+$0.00001. One of them, `fiery_dream/scholarship-intel`, is the niche's **biggest listing by lifetime
+users (39)** and had never been named by us in 1088 or 1041; its input schema carries
+`search_type: "grants"` ("Federal Grants Only"), so the Grants.gov coverage is real, not incidental.
+Cheaper than our thin rate from row 1 (~$0.0011 vs $0.07 on 100 rows). A claim of the form "no one
+beats our $X" survives any number of clean drift checks on rivals we already named, and dies the first
+time the set is widened.
+
+**Primary-event reduction in reverse (the 1124 rule's other face).**
+`alizarin_refrigerator-owner/grants-gov-api---federal-grant-opportunities` declares
+`apify-default-dataset-item` at $0.00001 as its `isPrimaryEvent` — so the mandated primary-preferred
+reduction reports it as 70x cheaper than our thin rate. It is not, at the volumes our buyers run: it
+also bills a **$0.10 Actor-start plus $0.01 per operation**, so a 100-row search costs ~$0.111 there
+against our $0.07 thin / $0.15 enriched. It beats our enriched rate only above ~74 rows/run and our
+thin rate only above ~160. **Primary-preferred fixes the wrong-event error, not the one-number error:
+once the primary event is identified, still add every per-run and per-operation fee and state the
+crossover row count.** Publishing the crossover (not a verdict) is what keeps the paragraph honest in
+both directions.
+
+**Make the count machine-checkable while you are editing the sentence.** `bin/niche-size` reads a
+README's claimed total with a regex, and the first wording ("every one of the **84** Store listings
+that mention Grants.gov") did not parse — markdown bold breaks `(\d+)\s+listings`, and so does an
+intervening "that". Reworded to "a 15-term Store sweep finds 84 listings mention Grants.gov", which the
+tool now reports as `84 (MATCHES)`. A published number that its own checker cannot read is a number
+that will rot silently; cost of making it parseable was one phrase.
+
+Also: `MATCH_SYNONYMS` needed a `grants gov` entry — the base phrase's dot is regex-escaped, so any
+listing writing "Grants gov"/"grants-gov" was invisible to the matcher. And drift on previously-named
+rivals came up empty again, **6 for 6** (1122, 1123, 1124, now 1128 — four audits running). The yield
+is entirely in widening the set, never in re-reading the rivals we already named.
