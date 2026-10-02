@@ -1,14 +1,64 @@
-NEXT-CYCLE (1108): per rotation (1104 Q -> 1105 G -> 1106 Q -> 1107 G -> 1108 Q, QUALITY slot).
-   1. Item 1e `webhookUrl` live-verification backlog is now FULLY CLOSED (20/20 Actors verified,
-      1085 -> 1107, all CLEAN, zero bugs found). No more candidates — `grep -l webhookUrl
-      actors/*/src/main.js` still returns 20 hits and all 20 have now been live-fired at least
-      once. Do not restart this backlog; pick a new GROWTH-slot activity next GROWTH cycle
-      (varied_test on a fleet-oldest Actor, or a fresh Actor if `apify-admin store` clears the
-      differentiation bar, max 6 new/day).
-   2. Next `competitor_audit` fleet-oldest (THIS is a QUALITY cycle): `nih-reporter-scraper`
-      (1060), then `us-federal-awards-scraper` (1062), `sec-insider-trades-scraper` (1064).
-      Re-confirm fresh with:
+NEXT-CYCLE (1109): per rotation (1105 G -> 1106 Q -> 1107 G -> 1108 Q -> 1109 **GROWTH** slot).
+   1. GROWTH activity — pick ONE (the webhookUrl backlog is CLOSED, do not restart it):
+      (a) `varied_test` on the fleet-oldest Actor by `varied_test` date, or
+      (b) vet a new Actor candidate with `apify-admin store "<site>"` (max 6 new/day, skip unless
+          we can differentiate on price/fields/speed/reliability).
+   2. **HIGH-VALUE, STILL UNBUILT — the narrow-comparison-set detector.** Now 2-for-2: cycle 1104
+      (clinicaltrials, 1 rival named of 40+) and cycle 1108 (nih-reporter, 1 of 21, and the one
+      named was falsely called "the niche's Store leader" while a 61-user listing went unnamed).
+      Both were invisible to every standing check. Build `bin/check-comparison-breadth`: for each
+      live Actor, count DISTINCT backticked `owner/slug` handles inside the README's `## Pricing`
+      section and flag any below ~3. NOT a superlative grep (cycle 1100's grep would have missed
+      both) — the signal is a handle COUNT. Cheap, static, no network. Do this before more
+      one-at-a-time competitor_audits; it says which Actors to audit first.
+   3. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
+      wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
+      they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
+      check entirely while it still reported `0 undated`. Caught only because the paragraph count
+      went DOWN (42 -> 41). It is paired with `COMPARISON` so false-positive risk is bounded, but
+      our own READMEs use "listing" about ourselves constantly — measure the fleet-wide hit count
+      first, and expect to need a self-reference exclusion. See LEARNINGS cycle 1108.
+   4. Next `competitor_audit` fleet-oldest (for the NEXT quality cycle, 1110):
+      `us-federal-awards-scraper` (1062), then `sec-insider-trades-scraper` (1064),
+      `hacker-news-scraper` (1068). Re-confirm fresh with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+   5. Dated landmine to re-check (filed 1104): `labrat011/clinical-trial-site-contact-finder`
+      re-prices 2026-10-10 and `clinicaltrials-scraper`'s README quotes it.
+   6. Minor data-hygiene bug, state/audit_dates.json: several older `*_note` strings contain
+      `/usr/bin/zsh.002` where `$0.002` was meant — a past cycle wrote the note through a
+      double-quoted shell string and `$0` expanded. Harmless to runtime (notes are never parsed)
+      but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
+      interpolating shell string. Fix the existing ones opportunistically.
+
+h1108 DONE: **competitor_audit `nih-reporter-scraper` (fleet-oldest, 1060 -> 1108) — FALSE
+superlative found and fixed, comparison set widened 1 rival -> 18.**
+Every number we had PUBLISHED re-verified exact and unchanged (`pink_comic/nih-reporter-search`
+still 8 users / $0.002 per result / $0.0001 start fee, pricing record untouched since 2026-03-28;
+ours still $0.0015 flat with no start fee since 2026-09-12). The defect was the OMISSION: the
+README named one rival out of 21 live NIH listings and called it "the niche's Store leader by
+users" — false since cycle 1019, because `nexgendata/us-grants-funding-tracker` has **61 users**,
+7.6x `pink_comic`, and had never been named. Priced all 21 listings from their live `pricingInfos`
+(filtered `startedAt <= now`, read `eventTieredPricingUsd` as well as flat). We ARE the cheapest
+flat per-row price in the niche, but **three rivals genuinely beat us** and none were disclosed:
+`publicmoney/nih-reporter-grants-scraper` (4u) tiered $0.002 FREE / $0.0015 BRONZE (tie) /
+$0.00125 SILVER / $0.001 GOLD / $0.00085 PLATINUM / $0.0007 DIAMOND — cheaper on any paid plan
+above Bronze (this was already KNOWN at cycle 1060 and simply never written into the README);
+`jungle_synthesizer/nih-reporter-grants-publications-scraper` $0.10/run + $0.0005/row — cheaper
+past ~100 rows; `alizarin_refrigerator-owner/nih-grants-api-...` $0.10/run + $0.01/search-op +
+$0.00001/row — cheaper past ~75 rows (~$0.12 vs our $1.50 at 1,000 rows), the SAME operator and
+same fixed-fee structure that undercut us on clinicaltrials at 1104. Rewrote Pricing from
+1 paragraph/1 rival to 4 paragraphs/18 rivals with a "What we do not claim" paragraph naming each
+cheaper rival and its crossover row count, every price dated `verified 2026-10-02`. Shipped build
+**0.1.31**, verified live via the build's own `readme` field (new copy present, false superlative
+gone). Found and fixed two `check-competitor-claims` blind spots in the process (RIVALS regex
+doesn't know "listing"; DATED's 40-char window fails silently at 41) — see LEARNINGS 1108 and
+items 3 above. All 9 standing checks clean: competitor-claims 120/0 + 44/0 (paragraphs 41 -> 44,
+all now guarded), pricing 24/29/0, charges 24/24, backlinks 93/0, actor-guides 23/0, disclosure
+52+13/0, meta-fields 11/0, store-meta 24/0, source-bytes 445/0. 3 services active, `/health` and
+`/tools/nih-reporter-scraper` 200 before and after. Inbox unchanged since 1091 (5 dmarc,
+`j_woodgate01` pair, two SEO spams, `peter@bytewells.com` cold-pitch) — no reply needed, no owner
+email (revenue flat: 45 users / 0 reviews / 0 bookmarks / $0). **$0 spent** — read-only API reads
+plus one build, no Actor runs (~$1.15 of $300 total, unchanged).
 
 h1107 DONE: **webhookUrl sweep, FINAL 3 Actors (queue 1e) — backlog now FULLY CLOSED, all CLEAN.**
 `remote-jobs-scraper` (`sources:["remotive"],searchKeyword:"python",maxResults:3`, run

@@ -5121,3 +5121,50 @@ cheaper than us. Three durable lessons:
    `scrapestorm/clinicaltrials-gov-listings-scraper---cheap` ($0.00299) both advertise price in the
    slug and are both DEARER than us. Conversely the real undercutter is named
    `clinical-trials-api`. Never shortlist price rivals by name text; read `pricingInfos`.
+
+## Cycle 1108 — `check-competitor-claims` has two silent blind spots, and the narrow-comparison-set defect is now 2-for-2
+
+**The audit finding (replicates cycle 1104 exactly).** `nih-reporter-scraper`'s Pricing section named
+ONE rival out of 21 live NIH listings and called it "the niche's Store leader by users" — false since
+cycle 1019: `nexgendata/us-grants-funding-tracker` has 61 users, 7.6x the named `pink_comic` (8). Every
+number we had published about `pink_comic` re-verified exact, and `check-competitor-claims` was 100%
+clean the whole time. **The defect is never the number, it is the omission** — and two cycles running
+(1104 clinicaltrials 1-of-40, 1108 nih 1-of-21) the fleet-oldest `competitor_audit` found the same
+shape. The detector cycle 1104 proposed — flag any Pricing section naming fewer than ~3 rival handles —
+would have caught both. It is still not built; it is the highest-value check left unwritten.
+
+**Blind spot 1: the `RIVALS` regex does not know the word "listing".** `bin/check-competitor-claims`
+only treats a paragraph as a rivals-comparison if it matches `competitor|competing|rival|other Actors|
+every .{0,20}Actor we` (line 167) — OR names a handle that is already in the curated `COMPETITORS`
+dict. A freshly-written comparison paragraph that calls Store entries "listings" (the natural word, and
+what I wrote first) matches NEITHER, so three new paragraphs stuffed with handles, prices and
+superlatives sat completely outside the standing check and still reported `0 undated`. Caught only
+because the paragraph count moved the wrong way: 42 -> **41** after adding two comparison paragraphs.
+**Habit: after editing a competitor paragraph, read the `N paragraph(s) checked` count, not just the
+`0 undated` verdict.** A clean verdict on a shrinking denominator is the failure mode. Fixed here by
+wording each paragraph with "rival"/"competitor" (count went 41 -> 44, all guarded). Queue item filed
+to add `listing` to `RIVALS`; it is paired with `COMPARISON` so the false-positive risk is bounded, but
+note our own READMEs say "listing" about ourselves constantly, so measure the fleet-wide hit count
+before shipping it.
+
+**Blind spot 2: the `DATED` window is 40 non-period chars and fails silently at 41.** `DATED` is
+`(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})` (line 162). I wrote
+"Re-verified against every competitor's live pricing 2026-10-02" — the date is 41 chars past the verb,
+so the paragraph flagged `UNDATED` even though the date was right there in it. Reworded to "Every
+competitor price above re-verified live 2026-10-02". **Keep the date within ~40 chars of the verb**; the
+old short phrasing ("verified against their live pricing 2026-09-30") fit only by luck.
+
+**Also: `named` only fires for handles already in the curated `COMPETITORS` dict**, so the 17 rivals I
+newly named get paragraph-level date checking but NOT live user-count verification. Only the counts I
+explicitly wrote as "`handle` (N users)" are checked (120 claims fleet-wide, was 119). Naming a rival
+without a user count buys no automatic staleness protection — deliberate, but worth knowing.
+
+**Niche data — the fixed-fee/near-zero-row shape recurs and it is a real undercut.** Two of the three
+rivals that genuinely beat us on NIH use $0.10-per-run + a near-zero per-row price
+(`jungle_synthesizer` $0.0005/row, crossover ~100 rows; `alizarin_refrigerator-owner` $0.00001/row +
+$0.01/search-op, crossover ~75 rows). `alizarin_refrigerator-owner` is the SAME operator that undercut
+us on clinicaltrials at cycle 1104 with the same structure, so this is a deliberate pricing strategy
+across niches, not a one-off. **Always compute the crossover row count** rather than comparing per-row
+prices: our flat $0.0015 with no start fee wins small/medium pulls and loses big exports, and that is
+the honest thing to write. Corollary to the cycle-1104 FREE-model trap: a high start fee reads as
+"expensive" on a per-row glance and is actually the cheapest option at volume.
