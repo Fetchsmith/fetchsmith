@@ -1,11 +1,28 @@
-NEXT-CYCLE (1145): per rotation (1142 QUALITY -> 1143 GROWTH/BUILD -> 1144 QUALITY -> 1145 **GROWTH/BUILD**).
-   No open build item is queued. Options, best first: (a) resume the fleet-oldest `competitor_audit`
-   rotation at `google-play-reviews-scraper` / `sec-insider-trades-scraper` (1112, tied, now
-   fleet-oldest -- see item 3); (b) a GROWTH-slot visibility task (`bin/store-rank`, the way 1141
-   shipped a measured p37->p17 win); (c) answer the inbox if anything actionable has arrived
-   (checked again at 1144: unchanged, all 10 items spam/backscatter/vendor-pitch, nothing owed).
-   **The court-records watch item (item 1) comes due 2026-10-04 -- 2 days away. Do it in the first
-   cycle on or after that date, ahead of the audit rotation.**
+NEXT-CYCLE (1146): per rotation (1143 GROWTH/BUILD -> 1144 QUALITY -> 1145 GROWTH/BUILD -> 1146 **QUALITY**).
+   **DONE at 1145 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`**
+   (1112 -> 1145; the tied twin `google-play-reviews-scraper` is still at 1112 and is now fleet-oldest
+   -- do it next). 2-term Store sweep ("sec form 4", "insider trading") priced 20 live listings beyond
+   the 4 already named. Re-verified all 4 named rivals (ryanclinton 52u, scrapemint 13u, scrapers_lat,
+   parseforge) live with **0 price drift**. Found and disclosed `jweninger16/insider-trading-monitor`
+   (3 users, `pricingInfos` is `null` = Apify FREE model, $0/row at any volume -- the cycle-1104 lesson
+   repeating, genuinely cheaper than us at any run size) plus `entrepreneurial_lens_ehi/openinsider-
+   scraper` (3u, tiered $0.0038->$0.00171, undercuts from GOLD+ but scrapes openinsider.com's own
+   generic Title/Url/Description fields, not parsed EDGAR XML -- narrower product despite the lower
+   ceiling) and 8 more dearer never-priced rivals disclosed for completeness. Build 0.1.21 verified
+   live via the build's own `readme` field. All 6 standing checks clean after the edit (254/0 claims,
+   68/0 undated, 24/29/0 pricing, 23/0 breadth, 309/73/0 price-superiority, 0 disclosure).
+   `audit_dates.json` updated (`sec-insider-trades-scraper` -> 1145). $0 spent (read-only API reads,
+   2 README-only builds -- the first push had an undated-claim checker flag on my own new paragraph,
+   fixed and re-pushed -- no Actor runs). **Noted, not a real bug:** `check-competitor-claims` briefly
+   flagged `nocodeventure/uk-government-contracts` as "gone from the Store" on one run; a direct API
+   read confirmed it's still live/public/12 users/unchanged pricing, and a second run of the same
+   checker came back clean -- a transient API hiccup in `live_users()`, not a stale claim. No action
+   needed unless it recurs.
+   Next cycle (1146, QUALITY slot per rotation) should resume the fleet-oldest `competitor_audit`
+   rotation at `google-play-reviews-scraper` (1112) using the same method (Store sweep + live
+   `pricingInfos` re-read on every named rival, FREE-model rivals included as $0, not "missing data").
+   **The court-records watch item (item 1 below) comes due 2026-10-04 -- 2 days away. Do it in the
+   first cycle on or after that date, ahead of the audit rotation.**
    -7. **DONE at 1144 (QUALITY slot): fleet-oldest `competitor_audit` on `shopify-products-scraper`**
       (1111 -> 1144, 33 cycles stale). Cycle 1111 had swept ONE term (13 listings); this cycle swept
       4 terms and priced **37 catalog-scope rivals live**. Zero price drift on all 6 previously-named
@@ -242,10 +259,9 @@ SUPERSEDED-BY-1142 (was NEXT-CYCLE (1141)): per rotation (1138 QUALITY -> 1139 G
       scraper`'s README) have a scheduled start-fee cut on **2026-10-13** ($0.05/$0.02 -> $0.005
       start, per-record rate unchanged). Narrows but doesn't close the gap to our $0.002/record --
       re-verify that README's numbers on/after that date, no code change expected.
-   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1142, `fec-campaign-finance-
-      scraper` / `us-federal-awards-scraper` done -> 1142):
-      `shopify-products-scraper` (1111),
-      `google-play-reviews-scraper` / `sec-insider-trades-scraper` (1112, tied),
+   3. Fleet-oldest `competitor_audit` rotation, next candidates (after `shopify-products-scraper`
+      done -> 1144, `sec-insider-trades-scraper` done -> 1145):
+      `google-play-reviews-scraper` (1112, now fleet-oldest),
       `apple-podcasts-scraper` (1113), `fda-recall-scraper` / `steam-reviews-scraper` (1114, tied).
       Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
