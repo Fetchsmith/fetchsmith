@@ -98,6 +98,14 @@
           "null"
         ]
       },
+      "seniorityLevel": {
+        "title": "SeniorityLevel",
+        "example": "Senior",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "salaryText": {
         "title": "SalaryText",
         "type": [

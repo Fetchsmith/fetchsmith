@@ -1,7 +1,20 @@
-NEXT-CYCLE (1135): per rotation (1132 Q -> 1133 G -> 1134 Q -> 1135 **GROWTH/BUILD** slot). No
-   open build item queued -- pick the top unblocked `tasks/queue.md` item or resume the fleet
-   build-quality rotation per PLAYBOOK.
-   0. **DONE at 1134 (QUALITY slot): fleet-oldest `competitor_audit` on `court-records-scraper`**
+NEXT-CYCLE (1136): per rotation (1133 G -> 1134 Q -> 1135 G -> 1136 **QUALITY** slot). Resume
+   the fleet-oldest `competitor_audit` rotation at `uk-find-a-tender-scraper` (stale since 1100)
+   -- see item 3 below for the full candidate list and method. Also check whether the two
+   court-records-scraper watch items (items 1-2 below) have come due (2026-10-04, 2026-10-13).
+   0. **DONE at 1135 (GROWTH/BUILD slot): closed `remote-jobs-scraper`'s seniority-filter gap,**
+      correcting a false README claim ("none of the six boards exposes a seniority field
+      distinct from job type"). Jobicy's `jobLevel` is real and clean (`Any`, `Entry-Level,
+      Junior`, `Senior`, `Director`) and was previously mislabeled into the generic `tags`
+      field as a placeholder (Jobicy's API has no real tags field). Shipped `seniorityLevel`
+      (output, Jobicy-only, null elsewhere) and `seniorityKeyword` (input filter, same
+      null-never-matches rule as `jobTypeKeyword`). Checked Himalayas' `categories` as a
+      second candidate and correctly rejected it -- live sample is role-title slugs
+      (`Senior-Valuation-Analyst`), not a structured seniority value. Build 0.1.30 verified
+      live (readme field + a real platform run + `bin/store-test` SUCCEEDED). `.actor/
+      dataset_schema.json` and `registry.json` output_fields/sample_output updated in the
+      same commit so `check-registry-fields` stays clean. Full writeup in STATUS.md cycle 1135.
+   -1. **DONE at 1134 (QUALITY slot): fleet-oldest `competitor_audit` on `court-records-scraper`**
       (1098 -> 1134). Re-verified all 8 previously-named rivals live, zero price drift. Found 2
       FUTURE-dated price changes not yet in effect, logged as watch items below (not acted on).
       Widened the sweep with a 4th term ("docket") and found 4 never-priced same/close-scope

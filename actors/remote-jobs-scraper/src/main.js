@@ -108,6 +108,7 @@ function parseInput() {
     companyKeyword: (input.companyKeyword ?? '').trim().toLowerCase(),
     locationKeyword: (input.locationKeyword ?? '').trim().toLowerCase(),
     jobTypeKeyword: (input.jobTypeKeyword ?? '').trim().toLowerCase(),
+    seniorityKeyword: (input.seniorityKeyword ?? '').trim().toLowerCase(),
     salaryOnly: input.salaryOnly === true,
     minSalaryAnnual: parseMinSalaryAnnual(input.minSalaryAnnual),
     includeDescription: input.includeDescription === true,
@@ -125,7 +126,7 @@ try {
 }
 const {
   sources, maxResults, maxPagesPerSource, searchKeyword, titleExcludeKeyword,
-  companyKeyword, locationKeyword, jobTypeKeyword, salaryOnly, minSalaryAnnual, includeDescription, dedupe,
+  companyKeyword, locationKeyword, jobTypeKeyword, seniorityKeyword, salaryOnly, minSalaryAnnual, includeDescription, dedupe,
   postedAfter, postedBefore,
 } = cfg;
 
@@ -203,7 +204,7 @@ if (watchMode) {
   // reach and must move into this fingerprint.
   const criteria = {
     sources: [...sources].sort(), searchKeyword, titleExcludeKeyword, companyKeyword,
-    locationKeyword, jobTypeKeyword, salaryOnly, minSalaryAnnual,
+    locationKeyword, jobTypeKeyword, seniorityKeyword, salaryOnly, minSalaryAnnual,
     postedAfter: input.postedAfter ?? null, postedBefore: input.postedBefore ?? null,
     maxPagesPerSource,
   };
@@ -574,6 +575,7 @@ async function fromRemotive() {
     jobType: j.job_type || null,
     category: j.category || null,
     tags: asArray(j.tags),
+    seniorityLevel: null,
     salaryText: j.salary || null,
     salaryMin: null,
     salaryMax: null,
@@ -601,6 +603,7 @@ async function fromRemoteOk() {
       jobType: null,
       category: null,
       tags: asArray(j.tags),
+      seniorityLevel: null,
       salaryText: null,
       salaryMin: num(j.salary_min),
       salaryMax: num(j.salary_max),
@@ -641,7 +644,13 @@ async function fromJobicy() {
     remote: true,
     jobType: asArray(j.jobType).join(', ') || null,
     category: asArray(j.jobIndustry).join(', ') || null,
-    tags: asArray(j.jobLevel),
+    // Jobicy's API carries no freeform tags field at all (verified live 2026-10-02: a full
+    // job object has no "tags" key), so this slot stayed populated with jobLevel as a
+    // placeholder until now. jobLevel is a real, clean seniority enum ("Any", "Entry-Level,
+    // Junior", "Senior", "Director") -- the only one of the six boards that publishes one --
+    // so it gets its own field below instead of overloading tags.
+    tags: [],
+    seniorityLevel: asArray(j.jobLevel).join(', ') || null,
     salaryText: null,
     salaryMin: num(j.salaryMin),
     salaryMax: num(j.salaryMax),
@@ -677,6 +686,7 @@ async function fromArbeitnow() {
         jobType: asArray(j.job_types).join(', ') || null,
         category: null,
         tags: asArray(j.tags),
+        seniorityLevel: null,
         salaryText: null,
         salaryMin: null,
         salaryMax: null,
@@ -710,6 +720,7 @@ async function fromWorkingNomads() {
       jobType: null,
       category: j.category_name || null,
       tags: String(j.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean),
+      seniorityLevel: null,
       salaryText: null,
       salaryMin: null,
       salaryMax: null,
@@ -749,6 +760,11 @@ async function fromHimalayas() {
         jobType: j.employmentType || null,
         category: asArray(j.parentCategories).join(', ') || null,
         tags: asArray(j.categories),
+        // Himalayas' categories are role-title slugs ("Senior-Valuation-Analyst",
+        // "Software-Engineer"), not a clean seniority enum -- a seniority word sometimes
+        // rides along inside the slug, but there is no separate field to read it from, so
+        // this stays null rather than regex-guessing a level out of a job title.
+        seniorityLevel: null,
         salaryText: null,
         salaryMin: num(j.minSalary),
         salaryMax: num(j.maxSalary),
@@ -778,7 +794,9 @@ const FETCHERS = {
 // ---------------------------------------------------------------- filters
 
 function keep(row) {
-  const hay = `${row.title ?? ''} ${row.company ?? ''} ${row.category ?? ''} ${(row.tags ?? []).join(' ')}`.toLowerCase();
+  // seniorityLevel is included here so moving Jobicy's jobLevel out of `tags` (see fromJobicy)
+  // does not narrow what searchKeyword already matched before this field existed.
+  const hay = `${row.title ?? ''} ${row.company ?? ''} ${row.category ?? ''} ${(row.tags ?? []).join(' ')} ${row.seniorityLevel ?? ''}`.toLowerCase();
   if (searchKeyword && !hay.includes(searchKeyword.toLowerCase())) return false;
   if (titleExcludeKeyword && String(row.title ?? '').toLowerCase().includes(titleExcludeKeyword)) return false;
   if (companyKeyword && !String(row.company ?? '').toLowerCase().includes(companyKeyword)) return false;
@@ -787,6 +805,10 @@ function keep(row) {
   // field at all — see README), so a null row never matches a non-empty jobTypeKeyword rather
   // than being silently kept or guessed at.
   if (jobTypeKeyword && !String(row.jobType ?? '').toLowerCase().includes(jobTypeKeyword)) return false;
+  // seniorityLevel is only ever non-null on Jobicy rows (see fromJobicy) -- every other
+  // board's row has it null and therefore never matches a non-empty filter, dropped rather
+  // than guessed at, same rule as jobTypeKeyword above.
+  if (seniorityKeyword && !String(row.seniorityLevel ?? '').toLowerCase().includes(seniorityKeyword)) return false;
   if (salaryOnly && !(row.salaryText || row.salaryMin || row.salaryMax)) return false;
   if (minSalaryAnnual != null) {
     // No currency conversion is performed anywhere in this Actor (see README "Salary fields"), so
@@ -878,6 +900,7 @@ try {
       jobType: row.jobType,
       category: row.category,
       tags: row.tags,
+      seniorityLevel: row.seniorityLevel,
       salaryText: row.salaryText,
       salaryMin: row.salaryMin,
       salaryMax: row.salaryMax,

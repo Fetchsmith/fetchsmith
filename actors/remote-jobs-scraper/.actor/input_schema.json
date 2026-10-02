@@ -41,6 +41,12 @@
       "description": "Only keep postings whose job-type field contains this text (case-insensitive), e.g. \"full\" or \"contract\". This field is published by Remotive, Jobicy, Arbeitnow and Himalayas; the `remoteok` and `workingnomads` boards carry no job-type field in their API at all, so their rows never match a non-empty filter here (dropped, not guessed at). Leave empty for all job types.",
       "editor": "textfield"
     },
+    "seniorityKeyword": {
+      "title": "Seniority filter",
+      "type": "string",
+      "description": "Only keep postings whose seniority-level field contains this text (case-insensitive), e.g. \"senior\" or \"entry\". Only Jobicy publishes a clean seniority field distinct from job type (\"Any\", \"Entry-Level, Junior\", \"Senior\", \"Director\"); the other five boards carry no such field, so their rows never match a non-empty filter here (dropped, not guessed at from the job title). Leave empty for all seniority levels.",
+      "editor": "textfield"
+    },
     "postedAfter": {
       "title": "Posted on or after",
       "type": "string",
