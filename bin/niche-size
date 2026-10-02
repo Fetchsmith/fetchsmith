@@ -131,6 +131,18 @@ TERM_VARIANTS = {
         "fts ocds", "uk tender monitor", "uk tenders api", "uk tender alerts",
         "public procurement uk",
     ],
+    # Promoted by cycle 1140's competitor_audit. The auto-generated sweep off the base
+    # phrase "nih reporter" matched 26 listings against a real 53, and it could not see
+    # either of the niche's two largest listings: `nexgendata/us-grants-funding-tracker`
+    # (61 users, sells itself as "US Grant Awards Tracker -- SBIR, NIH & NSF") or
+    # `constant_quadruped/research-grant-aggregator` (13 users, free pricing, covers NIH
+    # alongside NSF/Grants.gov/USASpending). Neither says the literal phrase "nih
+    # reporter" anywhere. Every listing these terms return was price-checked live that
+    # cycle, which is the bar for a place here.
+    "nih-reporter-scraper": [
+        "nih reporter", "nih grants", "nih funding", "research funding",
+        "grant awards", "federal research grants", "grants scraper",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -145,6 +157,11 @@ MATCH_SYNONYMS = {
     # The base phrase's dot is regex-escaped, so a listing whose own copy writes "Grants gov"
     # (or "grants-gov", which lowercases into the same word pair) never matched (cycle 1128).
     "grants-gov-scraper": ["grants gov"],
+    # "nih" is the source's own name, so a funding listing that writes "NIH, NSF and
+    # Grants.gov" matches on it and on nothing else; "reporter" is the portal name
+    # (cycle 1140). Both are proper nouns here, so neither carries the common-English
+    # boilerplate-overcount risk that `--strict` exists to strip.
+    "nih-reporter-scraper": ["nih", "reporter"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",

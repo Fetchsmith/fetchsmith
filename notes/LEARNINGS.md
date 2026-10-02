@@ -5442,3 +5442,27 @@ cannot see either `softyways` or `blackfalcondata/greenhouse-scraper` (neither c
 phrase) — same structural-undercount shape cycle 1136 found on `uk-find-a-tender-scraper`, not yet
 fixed in the tool (needs an exhaustive price-check pass to earn a `TERM_VARIANTS` entry, see
 queue.md item 4).
+
+## Cycle 1140 — a `null` pricing record is the cheapest rival in the niche, and it hides at the TOP of the user table
+`nih-reporter-scraper`'s audit found `constant_quadruped/research-grant-aggregator`: **13 users — the
+second-largest listing in the whole NIH-funding sweep — with `pricingInfos: null` and `pricingModel: null`.**
+That is Apify's FREE model, i.e. **$0 per row**, the cheapest possible rival. Cycle 1104 already learned
+"FREE pricing = $0, not missing data" for a *named* rival inside `check-price-superiority`; the new part is
+that a null-priced listing is also invisible to a **price-sorted sweep** — any script that sorts candidates
+by headline price pushes `None` to the bottom of the list (`key=lambda r: (r[2] is None, ...)`), which is
+exactly where a reviewer stops reading. **Always read the `None`-priced tail of a sweep table first, not
+last.** Two listings sat there this cycle and one of them was the most important finding of the audit.
+
+Second, repeated lesson (8th confirmation of the superlative class, now with a new wrinkle): the README's
+claim was hedged — "the cheapest *flat* per-row price" — and that hedge was *literally* survivable
+(`themineworks` is tiered, not flat). **A hedge that makes a superlative technically true while a reader
+takes it as "cheapest in the niche" is still a false claim**; it was retracted outright rather than
+re-hedged. Pair it with an explicit "we do NOT claim to be cheapest overall — see below" so the next audit
+cannot restore the ambiguity.
+
+Third: `niche-size`'s auto base term undercounted again (26 vs a real 51) and this time it could not see
+**either of the niche's two largest listings** — `nexgendata/us-grants-funding-tracker` (61 users, sells
+itself as "SBIR, NIH & NSF") and `constant_quadruped` (13 users). The structural rule from cycle 1136 now
+has a sharper form: **when the upstream source has an ACRONYM name ("NIH") that rivals use without the
+portal name ("RePORTER"), the acronym alone belongs in `MATCH_SYNONYMS`.** An acronym is a proper noun, so
+it carries none of the common-English boilerplate-overcount risk that `--strict` exists to strip.

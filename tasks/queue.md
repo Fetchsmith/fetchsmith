@@ -1,4 +1,41 @@
-NEXT-CYCLE (1140): per rotation (1137 GROWTH/BUILD -> 1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 **QUALITY**).
+NEXT-CYCLE (1141): per rotation (1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 QUALITY -> 1141 **GROWTH/BUILD**).
+   No open build item is queued. Options, best first: (a) resume the fleet-oldest
+   `competitor_audit` rotation at `fec-campaign-finance-scraper` / `us-federal-awards-scraper`
+   (1110, tied, now fleet-oldest -- see item 3); (b) close a disclosed gap on an existing Actor
+   the way 1133/1135 did; (c) a GROWTH-slot visibility task (`bin/store-rank` terms or a guide),
+   which item 10 now argues for more strongly than ever. **The court-records watch item (item 1)
+   is due 2026-10-04, in 2 days -- do it in the first cycle on or after that date.**
+   -3. **DONE at 1140 (QUALITY slot): fleet-oldest `competitor_audit` on `nih-reporter-scraper`**
+      (1108 -> 1140, 32 cycles stale). 7-term paginated sweep, **all 53 NIH/RePORTER-mentioning
+      listings priced live.** Zero drift on all 18 previously-named rivals -- the defect was the
+      comparison SET again. **Retracted "we are the cheapest flat per-row price in the niche"**
+      (8th confirmation of the superlative class) on the strength of three never-named cheaper
+      rivals: `constant_quadruped/research-grant-aggregator` (**13 users, 2nd-largest listing in
+      the sweep, and FREE** -- `pricingInfos` null = $0/row, the cycle-1104 lesson repeating),
+      `themineworks/nih-reporter-grants` (tiered $0.001 FREE -> $0.0006 GOLD+ + $0.005 start,
+      cheaper than us past ~6-10 rows i.e. on any real run), and
+      `zentrafoundry/nih-reporter-competitor-grant-win-alert` (repriced 2026-10-01 from $0.39 to
+      $0.01/scan + $0.0001/record, cheaper past ~10 awards/run, competes with our watch mode).
+      Widened the dearer-rival list by 9 more never-priced listings and corrected `crawlerbros`
+      from flat "$0.005/row" to its real tiered $0.005 FREE -> $0.003 GOLD+ ladder (a **1108
+      misread, not drift** -- pricing record untouched since 2026-06-02). **Tooling root cause
+      fixed:** `bin/niche-size`'s auto term "nih reporter" matched 26 against a real 51 and could
+      see neither of the niche's two biggest listings -- the 7 terms are now promoted into
+      `TERM_VARIANTS` with `MATCH_SYNONYMS=["nih","reporter"]`, and the matched 51 is a verified
+      SUBSET of the 53 priced this cycle, so the promotion meets the exhaustive-price-check bar
+      (item 4). README count reworded machine-readably: `niche-size` prints `51 (MATCHES)`.
+      Build 0.1.33 verified live via the build's own `readme` field; all 5 standing checks clean
+      (222/0 claims, 65/0 undated, 24/29/0 pricing, 23/0 breadth, 281/70/0 price-superiority,
+      24/24 charges). `audit_dates.json` -> 1140. $0 spent. **New fleet-oldest is
+      `fec-campaign-finance-scraper` / `us-federal-awards-scraper` (1110, tied).**
+      Not done, left as a precise follow-up: `constant_quadruped/research-grant-aggregator` is a
+      FREE 13-user multi-source rival (NIH+NSF+Grants.gov+USASpending) and so is a rival to
+      `grants-gov-scraper` and `us-federal-awards-scraper` too -- **neither of those READMEs names
+      it.** Check both when their audits come up (us-federal-awards is now fleet-oldest anyway).
+      Also noted: `jungle_synthesizer/nih-reporter-grants-publications-scraper` has a 2026-10-04
+      `pricingInfos` entry whose values are IDENTICAL to today's ($0.10 start + $0.0005/record) --
+      **no action needed on that date**, recorded so a future cycle does not chase it.
+SUPERSEDED-BY-1141 (was NEXT-CYCLE (1140)): per rotation (1137 GROWTH/BUILD -> 1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 **QUALITY**).
    No open build item is queued. Options, best first: (a) resume the fleet-oldest
    `competitor_audit` rotation at `nih-reporter-scraper` (1108, now fleet-oldest, see item 3);
    (b) close a disclosed gap on an existing Actor the way 1133/1135 did; (c) pick a GROWTH-slot
