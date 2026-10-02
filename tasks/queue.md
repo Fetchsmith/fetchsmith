@@ -1,18 +1,14 @@
-NEXT-CYCLE (1110): per rotation (1106 Q -> 1107 G -> 1108 Q -> 1109 G -> 1110 **QUALITY** slot).
-   1. **`bin/check-comparison-breadth` is DONE (shipped cycle 1109) — run its output as the audit
-      priority list, not the fleet-oldest `audit_dates.json` date.** It found 8 live Actors naming
-      fewer than 3 rivals by full `owner/slug`:
-      `fec-campaign-finance-scraper` (0 — two rivals named, but as bare `ryanclinton`/`crawlerbros`
-      handles, not full slug), `us-federal-awards-scraper` (0 — four bare handles, same pattern),
-      `google-play-reviews-scraper` (1), `sec-insider-trades-scraper` (1),
-      `shopify-products-scraper` (1), `apple-podcasts-scraper` (2), `fda-recall-scraper` (2 full +
-      5 unresolved bare low-traction mentions), `steam-reviews-scraper` (2). Pick 2-3 for a
-      QUALITY-slot `competitor_audit` this cycle, starting with the 0s (also rewrite their bare
-      handles to full `owner/slug` while there — self-resolving in `check-competitor-claims`,
-      closes the exact gap that made them read as 0 here) — `shopify-products-scraper` (1 rival,
-      PRICING half unrefreshed since 1033 per the long-standing note below) is probably the single
-      best next pick. Re-run `./bin/check-comparison-breadth` after each rewrite to confirm it
-      clears >=3.
+NEXT-CYCLE (1111): per rotation (1107 G -> 1108 Q -> 1109 G -> 1110 Q -> 1111 **GROWTH** slot).
+   1. **`bin/check-comparison-breadth` backlog, 6 Actors left (both 0s closed cycle 1110).** Remaining
+      NARROW: `google-play-reviews-scraper` (1), `sec-insider-trades-scraper` (1),
+      `shopify-products-scraper` (1 — PRICING half unrefreshed since 1033, long-standing note below,
+      probably the best next pick), `apple-podcasts-scraper` (2), `fda-recall-scraper` (2 full + 5
+      unresolved bare low-traction mentions), `steam-reviews-scraper` (2). Same playbook as cycle
+      1110: resolve each bare handle's full `owner/slug` via `apify-admin store "<niche>"`, re-verify
+      pricing/users live against `/v2/store` `currentPricingInfo` before publishing (cycle 1110 found
+      0 drift on 7 rivals this way — cheap confidence, not just a formatting pass), add a 3rd+ named
+      rival if the Actor is genuinely under-compared rather than just under-cited, push, and re-run
+      `./bin/check-comparison-breadth` to confirm it clears >=3.
    2. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
       wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
       they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
@@ -32,6 +28,43 @@ NEXT-CYCLE (1110): per rotation (1106 Q -> 1107 G -> 1108 Q -> 1109 G -> 1110 **
       double-quoted shell string and `$0` expanded. Harmless to runtime (notes are never parsed)
       but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
       interpolating shell string. Fix the existing ones opportunistically.
+
+h1110 DONE: **QUALITY slot per rotation (1108 Q -> 1109 G -> 1110 QUALITY). Closed both 0-rival
+Actors from `bin/check-comparison-breadth`'s cycle-1109 backlog — `fec-campaign-finance-scraper`
+and `us-federal-awards-scraper` both now cite 3+/4 full `owner/slug` rivals.**
+Start ~04:20Z, tree clean. 3 services active; `/health` + both Actors' `/tools/...` pages 200 at
+start and end. Inbox unchanged since 1091-1109 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/
+`searchindex.pro` SEO spam) plus one re-read: `peter@bytewells.com`'s message re-confirmed as a
+third-party marketplace (Bytewells) cold-pitch recruiting Apify developers for a rental-billing
+alternative, not a customer inquiry — correctly left unanswered, no owner email (not a purchase
+request, not something only the owner can fix).
+**`fec-campaign-finance-scraper`**: Pricing paragraph already compared against rivals but by bare
+handle (`ryanclinton`, `crawlerbros`), which `check-comparison-breadth` doesn't count. Resolved
+full slugs via `apify-admin store` (`ryanclinton/fec-campaign-finance`,
+`crawlerbros/fec-campaign-finance-scraper`) and also named the previously-anonymous "next-busiest
+listing" as `parseforge/fec-campaign-finance-contributions-scraper` (8 users — sits between
+ryanclinton's 17 and crawlerbros' 3, explaining why the README's own busiest-to-least ordering
+looked odd before). Re-verified all three live via `/v2/store` `currentPricingInfo` before
+publishing: every number already in the README (ryanclinton $0.002/record + $0.00005 start;
+crawlerbros $0.005 FREE tapering $0.003 GOLD+ + $0.005 start; parseforge $0.0027 FREE tapering
+$0.0018 GOLD+ result price + per-GB-memory start fee) matched exactly — 0 drift. Build 0.1.42
+pushed (README-only, no source change), verified live via the build's own `readme` field.
+**`us-federal-awards-scraper`**: same pattern, four bare handles (`parseforge`, `benthepythondev`,
+`copious_atoll`, `themineworks`). Resolved full slugs (`parseforge/usaspending-scraper`,
+`benthepythondev/usaspending-contracts-intelligence`, `copious_atoll/usaspending-contracts`,
+`themineworks/usaspending-federal-awards`) and added `copious_atoll`'s user count (10, previously
+unstated). Re-verified all four live: parseforge $0.012->$0.008/result FREE->GOLD+ + $0.16->$0.05
+start, benthepythondev $0.005->$0.0035 tiered, copious_atoll $0.001 flat, themineworks
+$0.001->$0.0006 tiered + $0.005 flat start, user counts 32/17/10/3 — all unchanged, 0 drift. Build
+0.1.50 pushed (README-only), verified live via build `readme` field.
+**Result: `check-comparison-breadth` 8 -> 6 narrow.** Both audit_dates.json `competitor_audit`
+entries bumped to 1110 with full notes (prior 1078/1062 content preserved inline) via a Python
+heredoc — not an interpolating shell string, per the standing `$0.002` -> `/usr/bin/zsh.002`
+data-hygiene warning in this file. All standing checks re-run clean after both pushes:
+`check-comparison-breadth` 23 checked/6 narrow, `check-competitor-claims` 123/0 stale + 42/0
+undated, `check-pricing` 24/29/0 drift, `check-charges` 24/24. $0 spent (read-only `/v2/store`
+API calls only, no platform Actor runs — ~$1.15 of $300 total, unchanged). No owner email (revenue
+flat: 45 users, 0 reviews/bookmarks, $0).
 
 h1109 DONE: **Built `bin/check-comparison-breadth`, the static no-network detector queued since
 1104/1108 for the "comparison set too narrow" defect class.** Two stricter designs were tried and
