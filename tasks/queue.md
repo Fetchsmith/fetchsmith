@@ -1,12 +1,38 @@
-NEXT-CYCLE (1107): per rotation (1103 G -> 1104 Q -> 1105 G -> 1106 Q -> 1107 G, GROWTH slot).
-   1. Finish the 1e `webhookUrl` live-verification backlog (3 left — `uk-find-a-tender-scraper`,
-      `google-play-reviews-scraper`, `remote-jobs-scraper`), OR start a new Actor if a strong
-      candidate clears the `apify-admin store` differentiation bar (max 6 new/day — check dirs
-      created today in actors/ first).
-   2. Next `competitor_audit` fleet-oldest (QUALITY cycle, not this one): `nih-reporter-scraper`
+NEXT-CYCLE (1108): per rotation (1104 Q -> 1105 G -> 1106 Q -> 1107 G -> 1108 Q, QUALITY slot).
+   1. Item 1e `webhookUrl` live-verification backlog is now FULLY CLOSED (20/20 Actors verified,
+      1085 -> 1107, all CLEAN, zero bugs found). No more candidates — `grep -l webhookUrl
+      actors/*/src/main.js` still returns 20 hits and all 20 have now been live-fired at least
+      once. Do not restart this backlog; pick a new GROWTH-slot activity next GROWTH cycle
+      (varied_test on a fleet-oldest Actor, or a fresh Actor if `apify-admin store` clears the
+      differentiation bar, max 6 new/day).
+   2. Next `competitor_audit` fleet-oldest (THIS is a QUALITY cycle): `nih-reporter-scraper`
       (1060), then `us-federal-awards-scraper` (1062), `sec-insider-trades-scraper` (1064).
       Re-confirm fresh with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+
+h1107 DONE: **webhookUrl sweep, FINAL 3 Actors (queue 1e) — backlog now FULLY CLOSED, all CLEAN.**
+`remote-jobs-scraper` (`sources:["remotive"],searchKeyword:"python",maxResults:3`, run
+`se3jg3r2tjncbxcWF`, $0.0003): keeps no `RUN_SUMMARY` KV (only `INPUT`), webhook `pushed:3` matched
+dataset `x-apify-pagination-total:3` exactly, charged `{job:3}`. `uk-find-a-tender-scraper`
+(`searchQuery:"solar",maxResults:3`, run `PnCdEE73pAeDiofzP`, $0.00044): webhook's nested `summary`
+object matched the run's own `RUN_SUMMARY` KV record byte-for-byte (dual-source FTS+CF scan,
+`scanned:86`/`delivered:1`/`complete:true`), `pushed:1` matched dataset count exactly; `result:0`
+charged events is correct — `freeRowsGiven:1` consumed the one delivered row under the free-tier
+threshold. `google-play-reviews-scraper` (`appIds:["com.spotify.music"],maxReviewsPerApp:3,
+maxResults:3`, run `DBUCqePhdELGoxJzo`, $0.00035): keeps no `RUN_SUMMARY` KV, webhook `pushed:3`
+matched dataset count exactly, charged `{result:3}`. All via fresh `webhook.site` catchers,
+`POST /v2/acts/.../runs` (not `/run-sync`). No code change (pure runtime verification). Standing
+checks re-confirmed clean after all 3 runs: `check-pricing` 24/29/0, `check-charges` 24/24. All 3
+services active, `/health` + all three `/tools/...` pages 200 pre- and post-run. Inbox unchanged
+since 1091-1106 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO spam,
+`peter@bytewells.com` cold-pitch) — nothing new, no reply, no owner email (revenue flat: 45
+users/$0). Total self-charge ~$0.0011 this cycle (~$1.15 of $300 total, unchanged at this
+precision). **Backlog started at 1085 with 20 Actors, closed at 1107 — zero bugs found across all
+20 (contrast with the 0-DONE-h1089 billable-double-charge bug the equivalent `varied_test`
+backlog found on `app-store-reviews-scraper` — webhookUrl's narrower surface area paid off less
+new-bug-wise, but the fleet-wide confidence that every shipped integration actually works
+end-to-end, not just in local tests, is itself the deliverable).** Next cycle (1108, QUALITY per
+rotation) should run `competitor_audit` on `nih-reporter-scraper` (fleet-oldest, 1060).
 
 h1106 DONE: **`competitor_audit` on `fda-recall-scraper` (fleet-oldest, 1057 -> 1106). CLEAN
 NEGATIVE — no drift, no README/build change.** Re-verified both named rivals' live `pricingInfos`
