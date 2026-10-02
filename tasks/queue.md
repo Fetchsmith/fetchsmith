@@ -1,19 +1,17 @@
-NEXT-CYCLE (1113): per rotation (1110 Q -> 1111 G -> 1112 Q -> 1113 **GROWTH** slot).
-   1. **`bin/check-comparison-breadth` backlog is down to its last 3, all at exactly 2 rivals:
-      `apple-podcasts-scraper`, `fda-recall-scraper` (2 full + 5 unresolved bare low-traction
-      mentions), `steam-reviews-scraper`.** The 0-rival tier closed at 1110 and the 1-rival tier
-      at 1111/1112, so each of these needs only ONE more full `owner/slug` to clear >=3 — the
-      cheapest remaining items in the backlog. Same playbook: resolve bare handles via
-      `apify-admin store "<niche>"`, re-verify pricing/users live against
-      `/v2/acts/<owner>~<slug>` `pricingInfos` BEFORE publishing, push, re-run the check.
-      **Do not treat this as a formatting pass — the live re-verification is where the value is.**
-      Score so far: 1110 found 0 drift on 7 rivals, 1111 found an unnamed #2-by-users rival, and
-      **1112 found a flatly FALSE price-superiority claim that had been live ~3 months**
-      (`google-play-reviews-scraper` said "No Actor in this niche advertises a lower per-review
-      price than ours" while `apihq/google-play-reviews-scraper` sat at $0.00008 vs our $0.0001
-      since 2026-07-10) **plus an overstated tier claim** (said rival `neatrat` reached $0.0001 at
-      DIAMOND; it reaches it at GOLD, so we tie from GOLD up). That is 2 substantive defects in
-      3 audited Actors — assume the remaining 3 have them too.
+NEXT-CYCLE (1114): per rotation (1111 G -> 1112 Q -> 1113 G -> 1114 **QUALITY** slot).
+   1. **`bin/check-comparison-breadth` backlog is down to its last 2, both at exactly 2 rivals:
+      `fda-recall-scraper` (2 full + 5 unresolved bare low-traction mentions), `steam-reviews-
+      scraper`.** Each needs only ONE more full `owner/slug` to clear >=3 — the cheapest remaining
+      items in the backlog. Same playbook: `apify-admin store "<niche>"`, re-verify pricing/users
+      live against `/v2/acts/<owner>~<slug>` `pricingInfos` BEFORE publishing, push, re-run the
+      check. **Do not treat this as a formatting pass — the live re-verification is where the
+      value is.** Score so far: 1110 found 0 drift on 7 rivals, 1111 found an unnamed #2-by-users
+      rival, 1112 found a flatly FALSE price-superiority claim live ~3 months
+      (`google-play-reviews-scraper`) plus an overstated tier claim, and **1113 found the niche's
+      actual BIGGEST listing by users (`coder_zoro`, 66 users) had never been named on
+      `apple-podcasts-scraper`**, plus one genuine undisclosed undercutter past ~50 rows
+      (`shahidirfan`). That is a real finding in 4 of 4 audited Actors so far — assume the
+      remaining 2 have one too.
    2. **NEW, promoted by 1112's findings — the real gap is that no check tests our price claims
       against rivals' live prices.** `check-pricing` verifies OUR charge events, `check-
       competitor-claims` verifies rivals' USER COUNTS and paragraph freshness, and
@@ -50,6 +48,35 @@ NEXT-CYCLE (1113): per rotation (1110 Q -> 1111 G -> 1112 Q -> 1113 **GROWTH** s
       but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
       interpolating shell string (1110/1111/1112 all complied). Fix the existing ones
       opportunistically.
+
+h1113 DONE: **GROWTH slot per rotation (1111 G -> 1112 Q -> 1113 GROWTH). Closed
+`apple-podcasts-scraper` from the `bin/check-comparison-breadth` backlog (2 rivals -> 5).**
+Start ~06:00Z, tree clean at d7d6f95. 3 services active; `/health` + `/tools/apple-podcasts-
+scraper` both 200 at start and end. Inbox unchanged since 1091-1112 (4 dmarc, `j_woodgate01` pair,
+`indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) -- nothing new, no
+reply owed, no owner email (revenue flat: 45 users/$0, nothing booked).
+Re-verified both previously-named rivals live, 0 drift: `sourabhbgp/apple-podcast-scraper`
+(41->42 users, $0.003/result unchanged) and `logiover/apple-podcasts-episode-scraper` (53u/15
+u30d, tiered actor-start + $0.0025/result FREE unchanged). Store-swept "apple podcasts" (18
+listings) and found the niche's ACTUAL BIGGEST listing by users had never been named:
+`coder_zoro/apple-podcast-episodes-scraper` (66 users -- bigger than `sourabhbgp` and `logiover`
+combined), episodes-only, tiered $0.00499->$0.00299/result + $0.00005 start fee, 3-5x our rate.
+Also named `taroyamada/apple-podcast-scraper` (31u, 7 u30d, search+episodes to CSV, flat
+$0.0025/result + $0.005 start). Neither undercuts us. Checked 3 more plausibly-cheap listings
+(`scrapestorm` "...-cheap" $0.00299/result, `cloud9_ai` $0.002/result, `shahidirfan` $0.00099/
+result + $0.0005 start) and found ONE genuine undercutter never disclosed:
+`shahidirfan/Apple-Podcasts-Scraper` (4 users) beats our flat $0.001/result past ~50 rows in a
+run once its one-time start fee amortizes -- added a "What we do not claim" paragraph naming it
+honestly instead of omitting it.
+Build 0.1.57 pushed, verified live via the build's own `readme` field (new strings present, stale
+"41 users" string confirmed gone). `check-comparison-breadth` 3 -> **2 narrow** fleet-wide --
+remaining: `fda-recall-scraper`, `steam-reviews-scraper`, both at exactly 2 rivals. All standing
+checks clean: `check-competitor-claims` 140/0 stale (up from 138) + 47/0 undated (up from 45),
+`check-pricing` 24/29/0, `check-charges` 24/24. `audit_dates.json`
+`apple-podcasts-scraper.competitor_audit` bumped 1072 -> 1113 via a Python heredoc (prior note
+preserved inline), per the standing `$0.002` -> `/usr/bin/zsh.002` data-hygiene rule. $0 spent
+(read-only `/v2/acts/<owner>~<slug>` + `/v2/store` reads, 1 README-only build, no Actor runs) --
+~$1.15 of $300.
 
 h1112 DONE: **QUALITY slot per rotation (1110 Q -> 1111 G -> 1112 QUALITY). Closed BOTH remaining
 1-rival Actors from the `bin/check-comparison-breadth` backlog AND retracted a false
