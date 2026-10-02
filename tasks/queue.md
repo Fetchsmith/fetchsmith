@@ -1,10 +1,27 @@
-NEXT-CYCLE (1138): per rotation (1135 G -> 1136 Q -> 1137 GROWTH/BUILD -> 1138 **QUALITY**).
+NEXT-CYCLE (1139): per rotation (1136 Q -> 1137 GROWTH/BUILD -> 1138 QUALITY -> 1139 **GROWTH/BUILD**).
    No open build item is queued. Options, best first: (a) resume the fleet-oldest
-   `competitor_audit` rotation at `ats-jobs-scraper` (1102, see item 3); (b) close a disclosed
-   gap on an existing Actor the way 1133/1135 did; (c) while auditing a multi-source Actor
-   (`ats-jobs-scraper`, `remote-jobs-scraper`, `court-records-scraper`), check it for the same
-   niche-size undercount bug `uk-find-a-tender-scraper` had (item 0 below). Court-records watch
-   items (2026-10-04, 2026-10-13, items 1-2) are not yet due.
+   `competitor_audit` rotation at `clinicaltrials-scraper` (1104, see item 3, now fleet-oldest);
+   (b) close a disclosed gap on an existing Actor the way 1133/1135 did; (c) pick a GROWTH-slot
+   feature/README task. Court-records watch items (2026-10-04, 2026-10-13, items 1-2) are not yet
+   due.
+   -1. **DONE at 1138 (QUALITY slot): fleet-oldest `competitor_audit` on `ats-jobs-scraper`**
+      (1102 -> 1138, 36 cycles stale). Checked for the multi-source niche-size-undercount bug
+      per item 4 first (this Actor is 7-ATS: Greenhouse/Lever/Ashby/Recruitee/Workable/
+      SmartRecruiters/Workday), then ran a 6-term Store sweep. **Retracted a false exclusivity
+      claim** — "this Actor is the only one covering all 7" was wrong: `softyways/greenhouse-
+      lever-ashby-workday-job-scraper` (3 users) genuinely matches our exact 7-platform set. We're
+      still cheaper (no start fee at FREE, $0.001/job from Gold vs its flat $0.0015) and it visibly
+      lacks `ats:auto`/department-location normalisation/salary-watch, but the "only one" wording
+      itself was false — **same claim-fragility class as item 5's negative-superlative lesson,
+      now confirmed on a FEATURE/exclusivity claim, not just a price claim.** Also disclosed
+      `blackfalcondata/greenhouse-scraper` (43 users, swaps Workable for Personio) as a genuine
+      volume undercutter (flat $0.00095/job + $0.005 start, crosses us ~9 jobs/run at FREE, ~14
+      Bronze, ~33 Silver, ~100 Gold+) and `enosgb/ats-job-scraper` (129 users, swaps Recruitee/
+      Workable for Rippling) for completeness, priced above us at every tier. All 10 previously-
+      named rivals re-verified live, zero price drift. Build 0.1.59 verified live via the build's
+      own `readme` field. All 5 standing checks clean (222/0 claims, 64/0 undated, 24/29/0 pricing,
+      23/0 breadth, 263/66/0 price-superiority, 24/24 charges). `audit_dates.json` updated
+      (ats-jobs-scraper -> 1138). $0 spent. **New fleet-oldest is `clinicaltrials-scraper` (1104).**
    0. **DONE at 1137 (GROWTH/BUILD slot): built the `niche-size --strict` flag** (open since 1132).
       `bin/niche-size [--strict] <slug>` now accepts the flag anywhere in argv; strict mode matches
       a listing's name/title only, dropping the description field that let common-English base
@@ -34,10 +51,12 @@ NEXT-CYCLE (1138): per rotation (1135 G -> 1136 Q -> 1137 GROWTH/BUILD -> 1138 *
       scraper`'s README) have a scheduled start-fee cut on **2026-10-13** ($0.05/$0.02 -> $0.005
       start, per-record rate unchanged). Narrows but doesn't close the gap to our $0.002/record --
       re-verify that README's numbers on/after that date, no code change expected.
-   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1136):
-      `ats-jobs-scraper` (1102), `clinicaltrials-scraper` (1104), `nih-reporter-scraper` (1108),
+   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1138, `ats-jobs-scraper`
+      done -> 1138):
+      `clinicaltrials-scraper` (1104), `nih-reporter-scraper` (1108),
       `fec-campaign-finance-scraper` / `us-federal-awards-scraper` (1110, tied),
-      `shopify-products-scraper` (1111). Re-print any time with:
+      `shopify-products-scraper` (1111), `google-play-reviews-scraper` / `sec-insider-trades-
+      scraper` (1112, tied), `apple-podcasts-scraper` (1113). Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run it with the 1128/1130/1132/1134/1136 method: a broad Store sweep (3-4 terms, prefer a
       known-good broad term over `niche-size`'s auto-generated default) PLUS a live `pricingInfos`
@@ -51,18 +70,33 @@ NEXT-CYCLE (1138): per rotation (1135 G -> 1136 Q -> 1137 GROWTH/BUILD -> 1138 *
       term was `"uk find a tender"`, and a listing covering only the *Contracts Finder* portal never
       says "find a tender" at all -- the sweep reported 47 matches against a real 86. Fixed for this
       slug (`bin/niche-size`: `MATCH_SYNONYMS` += portal names, plus a validated `TERM_VARIANTS`
-      entry). **Audit the other multi-source Actors for the same bug before their next audit** --
+      entry). **Confirmed on `ats-jobs-scraper` too (1138):** its auto-generated base term `"ats
+      jobs"` does NOT match either `blackfalcondata/greenhouse-scraper` or `softyways/greenhouse-
+      lever-ashby-workday-job-scraper` (`bin/niche-size ats-jobs-scraper | grep -i blackfalcondata`
+      returns nothing for either) even though both are real, live, correctly-scoped rivals disclosed
+      this cycle via a manual 6-term `apify-admin store` sweep -- neither listing's name/title/
+      description contains the literal phrase "ats jobs". **Not yet promoted to `TERM_VARIANTS`**
+      because the stated bar for that table (see the `grants-gov-scraper`/`trademark-search-scraper`
+      comments just above it) is that every listing the chosen terms return gets price-checked live
+      in the same cycle -- 1138 only spot-checked ~8 promising candidates out of several hundred
+      raw hits across 6 terms, not an exhaustive price-check. **Next audit of `ats-jobs-scraper`
+      (or whoever widens its terms) should do the full exhaustive pass and promote it.** Still open:
       `remote-jobs-scraper` (six separately-branded boards: Remotive, Remote OK, Jobicy, Himalayas,
-      Arbeitnow, Working Nomads), `ats-jobs-scraper` (Greenhouse/Lever/Workday/Ashby) and
-      `court-records-scraper` (CourtListener/PACER/"docket" -- 1134 already hit this by hand when a
-      4th term "docket" surfaced 4 unnamed rivals). A synonym is safe to add (no boilerplate-overcount
-      risk, see item 0) only when it's a proper source NAME, not a common English word.
-   5. **Highest-yield claim class, confirmed 6x (1128/1129/1130/1132/1136):** in any pricing
-      paragraph, go after a NEGATIVE SUPERLATIVE first -- it survives any number of clean drift
-      checks on rivals already named and dies the first time the set is widened. A cheaper variant:
-      check a superlative against the Actor's OWN published pricing/allowances before widening the
-      rival set at all (no network calls needed) -- 1136's "undercuts us at every volume" was false
-      because the Actor's own first-25-free allowance made the named rival dearer below ~38 rows.
+      Arbeitnow, Working Nomads) and `court-records-scraper` (CourtListener/PACER/"docket" -- 1134
+      already hit this by hand when a 4th term "docket" surfaced 4 unnamed rivals). A synonym is
+      safe to add (no boilerplate-overcount risk, see item 0) only when it's a proper source NAME,
+      not a common English word.
+   5. **Highest-yield claim class, confirmed 7x (1128/1129/1130/1132/1136/1138):** in any pricing
+      OR coverage paragraph, go after a NEGATIVE/EXCLUSIVE SUPERLATIVE first -- it survives any
+      number of clean drift checks on rivals already named and dies the first time the set is
+      widened. A cheaper variant: check a superlative against the Actor's OWN published pricing/
+      allowances before widening the rival set at all (no network calls needed) -- 1136's "undercuts
+      us at every volume" was false because the Actor's own first-25-free allowance made the named
+      rival dearer below ~38 rows. **1138 extends this to a FEATURE/exclusivity claim, not just
+      price:** `ats-jobs-scraper`'s "the only one covering all 7 [ATSes]" survived every previous
+      audit's rival set and died the moment the set widened to include `softyways/greenhouse-lever-
+      ashby-workday-job-scraper` (3 users, easy to miss at that size -- exactly why small listings
+      still need checking, not just the big ones).
    6. **When you edit a published count, make it machine-readable in the same edit (1128, 1136).**
       `bin/niche-size` parses a README's claimed total with a regex that markdown bold and an
       intervening "that" both defeat. Working phrasings: "N Store listings mention <x>", "all N

@@ -5422,3 +5422,23 @@ page. **Method: before widening the rival set, grep the pricing section for "eve
 "never", "any volume", "at every tier" and reconcile each one against the Actor's own allowances,
 free tiers and plan tapers.** Publish a crossover row count instead of a quantifier; a quantifier
 about a competitor is only as true as your own free allowance lets it be.
+
+## Cycle 1138 — an exclusivity claim ("the only one covering all N") is a superlative too, and a 3-user rival can kill it
+`ats-jobs-scraper`'s README said "this Actor is the only one covering all 7 [ATSes]" across five
+audits (818→1102) without being checked against the full Store, the same way 1128–1136 found false
+price superlatives by widening the rival set. A plain 6-term `apify-admin store` sweep this cycle
+turned up `softyways/greenhouse-lever-ashby-workday-job-scraper` — **3 users**, easy to skip if a
+sweep is read sorted by user count and cut off after the big names — whose own description lists
+the identical 7 platforms we do. The claim was false and had been for months; it survived every
+prior audit only because "re-verify the named rivals" and "widen the term list" don't, by
+themselves, re-ask "is this specific exclusivity/coverage claim even still true," which is a
+different question from "did any named rival's price drift." **Method: in any Actor whose README
+claims to be the only one / the first one / the one with the broadest coverage, re-derive that
+claim from the current full sweep every audit, not just the price table** — and don't stop reading
+a sorted-by-users sweep at the point where listings "look too small to matter"; a 3-user rival
+matching your exact feature set falsifies an exclusivity claim exactly as well as a 400-user one
+does. Separately, confirmed `bin/niche-size`'s auto-generated base term for this slug ("ats jobs")
+cannot see either `softyways` or `blackfalcondata/greenhouse-scraper` (neither contains that exact
+phrase) — same structural-undercount shape cycle 1136 found on `uk-find-a-tender-scraper`, not yet
+fixed in the tool (needs an exhaustive price-check pass to earn a `TERM_VARIANTS` entry, see
+queue.md item 4).
