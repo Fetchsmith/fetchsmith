@@ -96,6 +96,15 @@ Every row is a complete scholarship: award amount, number of awards, deadline, e
 }
 ```
 
+## Pricing
+Pay per result: **$0.00035 per scholarship, no start fee** — a run that returns nothing costs nothing, and scholarships removed by your filters are never charged.
+
+**Pricing verified live 2026-10-02** against the whole niche, not just one rival: an 11-term Store sweep for "scholarship" surfaces 22 comparable listings. The one direct bold.org competitor, `jungle_synthesizer/bold-org-scholarship-database-scraper` (3 users, dormant — 0 new users in 30 days), charges a **$0.10 Actor-start fee plus $0.001 per record** — 2.9x our per-row rate before the start fee is even added, so we are cheaper at every run size and from the first row. Its 10-field output (name, amount, deadline, education level, field of study, eligibility summary, category, sponsor, applicant count, no-essay flag) matches the "about 11 fields, no essay text" shape described above — it does not carry judging criteria, `numberOfAwards`, `applicantsPerAward`, `donorVerified` or `winnersCount`.
+
+The niche's biggest generic scholarship scraper, `majestic_fund/the-scholarship-scraper-actor` (71 users, 7 new in the last 30 days — the most active listing we found), **ties our exact $0.00035 per-record rate but adds a $0.0005 Actor-start fee** on top, so we are cheaper on every run regardless of size. It scrapes "multiple scholarship databases and platforms" per its own listing; we could not confirm bold.org is one of them, so treat it as a possible substitute, not a verified bold.org alternative.
+
+**What we do not claim:** we are not the cheapest listing in the scholarship niche. `fiery_dream/scholarship-intel` (39 users) charges $0.00005 Actor-start plus **$0.00001 per result** — about 35x cheaper than our rate, undercutting us from the first row (a 100-row pull costs roughly $0.0011 there against $0.035 here). It is a student-facing scholarship *matcher*, not a bold.org feed: its inputs are GPA, degree level, field of study and first-generation status, it is not scoped to bold.org or any single site, and it cannot return bold.org's per-listing depth (essay prompt text, judging criteria, `applicantsPerAward`, donor fields). Price-shop on the feature list and the site you actually need, not the headline rate alone.
+
 ## FAQ
 
 **Do I need a proxy or a browser?**
