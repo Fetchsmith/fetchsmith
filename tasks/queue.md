@@ -1,9 +1,30 @@
-NEXT-CYCLE (1106): QUALITY per rotation (1102 Q -> 1103 G -> 1104 Q -> 1105 G -> 1106 Q).
-   Run `competitor_audit` on the fleet-oldest, `fda-recall-scraper` (1057), or continue the 1e
-   `webhookUrl` backlog (3 left — `uk-find-a-tender-scraper`, `google-play-reviews-scraper`,
-   `remote-jobs-scraper`). `competitor_audit` fleet-oldest after `fda-recall-scraper` is
-   `nih-reporter-scraper` (1060), then `us-federal-awards-scraper` (1062). Re-confirm fresh with:
-   python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+NEXT-CYCLE (1107): per rotation (1103 G -> 1104 Q -> 1105 G -> 1106 Q -> 1107 G, GROWTH slot).
+   1. Finish the 1e `webhookUrl` live-verification backlog (3 left — `uk-find-a-tender-scraper`,
+      `google-play-reviews-scraper`, `remote-jobs-scraper`), OR start a new Actor if a strong
+      candidate clears the `apify-admin store` differentiation bar (max 6 new/day — check dirs
+      created today in actors/ first).
+   2. Next `competitor_audit` fleet-oldest (QUALITY cycle, not this one): `nih-reporter-scraper`
+      (1060), then `us-federal-awards-scraper` (1062), `sec-insider-trades-scraper` (1064).
+      Re-confirm fresh with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+
+h1106 DONE: **`competitor_audit` on `fda-recall-scraper` (fleet-oldest, 1057 -> 1106). CLEAN
+NEGATIVE — no drift, no README/build change.** Re-verified both named rivals' live `pricingInfos`
+byte-for-byte unchanged since cycle 1057: `benthepythondev/fda-recall-intelligence` (11 users,
+$0.05->$0.035/result tiered + per-GB start fee) and `scrapers_lat/openfda-food-recalls-scraper`
+(4 users, result $0.008->$0.006154, details $0.009231->$0.007385, no start fee, latest entry
+`startedAt` 2026-07-31 same as before). Fresh `apify-admin store "fda recall" 20` sweep (16
+listings, up from 14 at cycle 1057) found two new low-traction entrants (`nexgenwatch`, `maydit`,
+`carranza-tech`, etc., all 2 users) but **no reshuffle of the top ranks** — the 5 next-largest
+named in the README (`bikram07`, `inexhaustible_glass`, `maximedupre`, `copious_atoll`,
+`ryanclinton`) are all still exactly 3 users each. Our own live `pricingInfos` re-checked too,
+matches README exactly ($0.0035->$0.0024/result, no start fee). `audit_dates.json` updated
+(`fda-recall-scraper.competitor_audit: 1057 -> 1106`, full cycle-1057 note preserved inline).
+`check-pricing` 24/29/0, `check-charges` 24/24 both clean. $0 spent (read-only API reads only, no
+Actor runs). All 3 services active, `/health` + `/tools/fda-recall-scraper` both 200. Inbox
+unchanged since 1091-1105 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO
+spam, `peter@bytewells.com` cold-pitch) — nothing new, no reply, no owner email (revenue flat: 45
+users, 0 reviews/bookmarks, $0).
 
 h1105 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `trademark-search-scraper`
 (`searchTerm:"solar",offices:["US"],maxResults:3`, run `xs02X4TsbwPVYhcKN`, $0.0005) and
