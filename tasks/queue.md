@@ -1,14 +1,39 @@
-NEXT-CYCLE (1122): per rotation (1119 G -> 1120 Q -> 1121 G -> 1122 **QUALITY** slot).
-   1. **One-line fix, cheap to grab first:** `check-competitor-claims` flags
-      `actors/clinicaltrials-scraper/README.md:124` — claims `bovi/clinicaltrials-scraper` has 2
-      users, live is 3. Bump the number, re-push, confirm `check-competitor-claims` back to 0 stale.
-   2. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slot) — oldest as of 1121:
-      `app-store-reviews-scraper` (1080), `substack-scraper` (1083), `federal-register-scraper`
-      (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092),
-      `sam-gov-opportunities-scraper` (1094). Re-print any time with:
+NEXT-CYCLE (1123): per rotation (1120 Q -> 1121 G -> 1122 Q -> 1123 **GROWTH** slot).
+   1. No queued GROWTH-shaped build item is currently open — the comment-tree-controls gap on
+      `hacker-news-scraper` (item 7 below) is the only disclosed feature gap left fleet-wide, and
+      it's honestly disclosed so not urgent. Consider: (a) pick up that gap if it's worth the
+      Algolia parent-chain-walk build cost relative to `constructive_calm`'s tiny 23 users, or
+      (b) build `bin/check-rental-converts`-style sweep again (it's been a while since 1117; Apify
+      may have converted more rentals since) to catch a new invisible-rival class, or (c) if
+      neither feels worth 25 min, use the slot as an extra QUALITY pass on the `competitor_audit`
+      rotation (oldest below) — rotation purity matters less than making real progress each cycle.
+   2. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) — oldest as of 1122:
+      `substack-scraper` (1083), `federal-register-scraper` (1084), `grants-gov-scraper` (1088),
+      `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper` (1094),
+      `trademark-search-scraper` (1096). Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run `bin/check-rental-converts` as part of whichever audit this is (standing QUALITY-cycle
       check per PLAYBOOK.md).
+   1b. **DONE at 1122:** one-line fix — `clinicaltrials-scraper` README's `bovi` user-count claim
+      was stale (2 -> live 3), bumped, build 0.1.43 pushed and verified live, `check-competitor-
+      claims` back to 0 stale.
+   2b. **DONE at 1122:** `competitor_audit` on `app-store-reviews-scraper` (stale since 1080) —
+      clean on price (zero drift across all 5 previously-named rivals), but widened the comparison
+      set 5 -> 9 named rivals after a Store sweep found 4 listings bigger than the smallest-named
+      rival (`sourabhbgp`, 141u) that had never been named: `jdtpnjtp` (163u, $0.00065/review),
+      `brilliant_gum` (160u, combined Google Play+App Store, $0.004/review), `code-node-tools`
+      (158u, $0.0005/review), `benthepythondev` (152u, $0.002/review, ties `sourabhbgp`'s rate) —
+      plus `scriptbase` (59u) which ties our exact $0.0001/review rate. None undercuts us. Also
+      fixed a stale `thewolves` user count (2,349 -> live 2,370). Build 0.1.73 live and verified.
+      New rotation oldest: `substack-scraper` (1083), `federal-register-scraper` (1084),
+      `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092), `sam-gov-opportunities-scraper`
+      (1094), `trademark-search-scraper` (1096).
+      **Method note:** the first draft of the new comparison paragraph tripped `check-competitor-
+      claims`' `UNDATED` check because it said "A fresh Store sweep (2026-10-02)" instead of
+      "verified 2026-10-02" — the `DATED` regex requires one of verified/checked/re-verified/
+      rechecked within 40 chars before the date, a plain parenthetical date doesn't count. Caught
+      immediately by re-running the checker before committing, not after. Same lesson as queue
+      item 4 below: read the checked-count delta, not just a clean verdict.
    3. **DONE at 1121:** acted on the 1120 price-cut question with evidence instead of leaving it
       open. `bin/store-rank` showed `eu-ted-tenders-scraper` top-10 on 5/12 TED-relevant queries, so
       visibility was not the blocker — cut `eventPriceUsd` 0.003 -> 0.0015/notice. At the new price

@@ -102,17 +102,28 @@ Useful for a 1★-share trend line over releases, for weighting sentiment agains
 ## Pricing
 `result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
 
-**Where this sits in the market. Input schema and pricing verified live 2026-10-01** against each
+**Where this sits in the market. Input schema and pricing verified live 2026-10-02** against each
 Actor's latest build, not against its Store description. The two busiest App Store review scrapers
-on the Store, `thewolves/appstore-reviews-scraper` (2,349 users) and `theagents/appstore-reviews`
+on the Store, `thewolves/appstore-reviews-scraper` (2,370 users) and `theagents/appstore-reviews`
 (818 users), both charge a flat **$0.0001/review with no start fee** — the exact same price and
 shape we use, so we're at parity with the traction leaders rather than undercutting or
 overcharging. Everyone else charges meaningfully more once every fee is counted:
 `johnvc/apple-app-store-reviews-api` (479 users) is $0.00125–$0.00144/review tiered **plus** a
 $0.0175 one-time setup fee, a $0.00005 Actor-start fee and $0.00001 per dataset row;
-`easyapi/app-store-reviews-scraper` (544 users) is $0.00299/review plus a **$0.09** Actor-start fee
+`easyapi/app-store-reviews-scraper` (545 users) is $0.00299/review plus a **$0.09** Actor-start fee
 (900x our whole per-review price, charged before a single review is scraped);
-`sourabhbgp/apple-app-store-scraper` (140 users) is a flat $0.002/review, 20x ours.
+`sourabhbgp/apple-app-store-scraper` (141 users) is a flat $0.002/review, 20x ours.
+
+The comparison above is not just the two busiest plus three more — it is every listing in the
+niche with more users than the smallest one named. A fresh Store sweep, verified 2026-10-02, found
+four more App Store review scrapers bigger than `sourabhbgp`'s 141 users, none of them previously named
+and none of them cheaper: `jdtpnjtp/apple-app-store-scraper` (163 users) charges $0.00065/review,
+6.5x ours; `brilliant_gum/google-play-app-store-scraper` (160 users, a combined Google Play + App
+Store scraper, not App-Store-only) charges $0.004/review, 40x ours; `code-node-tools/app-reviews-scraper`
+(158 users) charges $0.0005/review, 5x ours; `benthepythondev/appstore-reviews-scraper` (152 users)
+charges $0.002/review flat, the same rate as `sourabhbgp`. `scriptbase/appstore-reviews-scraper`
+(59 users) also ties our exact $0.0001/review rate. No listing found in this sweep, named or not,
+undercuts our price.
 
 Two honest qualifications, both read off live input schemas rather than listings:
 
