@@ -70,8 +70,8 @@ NICHE_TERMS = {
     "nih-reporter-scraper": "nih reporter",
     "fec-campaign-finance-scraper": "fec campaign finance",
     "court-records-scraper": "court records",
-    "trademark-search-scraper": "trademark search",
-    "sam-gov-opportunities-scraper": "sam.gov opportunities",
+    "trademark-search-scraper": "trademark",
+    "sam-gov-opportunities-scraper": "sam.gov",
     "remote-jobs-scraper": "remote jobs",
     "sec-insider-trades-scraper": "sec insider trading",
 }

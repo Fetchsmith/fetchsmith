@@ -5357,3 +5357,36 @@ Also: `MATCH_SYNONYMS` needed a `grants gov` entry — the base phrase's dot is 
 listing writing "Grants gov"/"grants-gov" was invisible to the matcher. And drift on previously-named
 rivals came up empty again, **6 for 6** (1122, 1123, 1124, now 1128 — four audits running). The yield
 is entirely in widening the set, never in re-reading the rivals we already named.
+
+## Cycle 1132 — the niche-count bug has a second form: the MATCH rule, not just the term list
+`trademark-search-scraper`'s README published "all 21 trademark listings" from one
+search term. A 20-term sweep found **84** real trademark listings — a 4x undercount,
+the same shape as 1124 (federal-register 24->90) and 1128 (grants-gov 44->84). That
+part is now routine. The new lesson is about the *matching* half:
+
+`bin/niche-size` matches its base phrase against name + title + **description**, and
+on the bare term `trademark` that returns **108**, not 84. The extra 24 are unrelated
+Actors (`scrapesage/redfin-scraper`, both `importyeti-scraper`s, `logiover/tripadvisor-scraper`,
+instacart, cargurus, healthgrades...) whose descriptions carry "all trademarks are the
+property of their owners" boilerplate. A generic legal word in a description is not
+niche membership. For this audit I counted on **name-or-title only** (84) and published
+BOTH numbers, phrased so `niche-size`'s own claim regex extracts the 108 it computes
+("108 Store listings mention trademarks") while the 84 is explained in the same
+sentence — otherwise the next cycle's clean check would "correct" 84 to 108 and make
+the README worse. **Follow-up for whoever is next in that file: a `--strict`
+(name/title only) mode is the real fix**; widening a base phrase to a common English
+word silently trades an undercount for an overcount.
+
+Negative-superlative rule (queue item 4) is now **5 for 5**: "the dearest listing in
+the whole niche" died the first time the set widened — `nexgenwatch/trademark-gazette-issue-digest`
+and `-portfolio-report` charge **$15/record**, 150x the $0.10 the claim called dearest.
+Note the direction: the class is "superlative about OUR cheapest rate", but a
+superlative about a RIVAL's price is equally fragile and dies the same way.
+
+Also: a rival's `isPrimaryEvent` can be the **start fee**. `dltik/euipo-trademarks-scraper`
+flags `apify-actor-start` ($0.00005) as primary while its real row rate is $0.01/result
+(200x). A primary-preferred picker that does not first exclude start events reports a
+listing as a deep undercutter when it is 5x dearer — it put dltik and
+`dltik/uspto-trademarks-scraper` on my undercut list until I excluded start events by
+key AND by event title. 1130's "primary-preferred" rule needs that exclusion stated
+explicitly, which the queue note did not.
