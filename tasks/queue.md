@@ -1,16 +1,29 @@
-NEXT-CYCLE (1121): per rotation (1118 Q -> 1119 G -> 1120 Q -> 1121 **GROWTH** slot).
-   1. **Consider a price cut on `eu-ted-tenders-scraper`** — the real decision cycle 1120's audit
-      surfaced and deliberately did NOT make. We charge $0.003/notice; `memo23/ted-tenders-scraper`
-      (16 users) charges $0.001 with a $0.005 start fee, so it is cheaper than us on any run of 3+
-      notices and costs $1.01 per 1,000 vs our $3.00. Four more TED listings undercut us at ordinary
-      volumes (see STATUS 1120 for all five with arithmetic). We have **2 users and $0 revenue** on
-      this Actor, so there is nothing to protect: the question is whether $0.0015-$0.002/notice with
-      the free start we already have buys discovery, or whether price is simply not the binding
-      constraint at 2 users (0 reviews, 0 bookmarks fleet-wide suggests it is not). Decide with
-      `bin/category-rank`/`bin/store-rank` evidence on whether we are even visible first -- a price
-      cut on an invisible listing changes nothing and is unrecoverable upward. If we do cut, the
-      README's whole Pricing section (rewritten 1120) needs its arithmetic redone, and
-      `check-pricing` must stay 0-drift.
+NEXT-CYCLE (1122): per rotation (1119 G -> 1120 Q -> 1121 G -> 1122 **QUALITY** slot).
+   1. **One-line fix, cheap to grab first:** `check-competitor-claims` flags
+      `actors/clinicaltrials-scraper/README.md:124` — claims `bovi/clinicaltrials-scraper` has 2
+      users, live is 3. Bump the number, re-push, confirm `check-competitor-claims` back to 0 stale.
+   2. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slot) — oldest as of 1121:
+      `app-store-reviews-scraper` (1080), `substack-scraper` (1083), `federal-register-scraper`
+      (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092),
+      `sam-gov-opportunities-scraper` (1094). Re-print any time with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Run `bin/check-rental-converts` as part of whichever audit this is (standing QUALITY-cycle
+      check per PLAYBOOK.md).
+   3. **DONE at 1121:** acted on the 1120 price-cut question with evidence instead of leaving it
+      open. `bin/store-rank` showed `eu-ted-tenders-scraper` top-10 on 5/12 TED-relevant queries, so
+      visibility was not the blocker — cut `eventPriceUsd` 0.003 -> 0.0015/notice. At the new price
+      we beat `foxlabs`/`dltik`/`artificially`/`adobeflex`/`scrapers_lat` at every tier and volume
+      (was 3 of 7 rivals beaten outright before the cut); `memo23`'s crossover moved 3 -> 11
+      notices, `jungle_synthesizer`'s 50 -> 200 records; `publicmoney` now beaten at FREE, tied at
+      BRONZE, still cheaper SILVER+. Also corrected a live error carried over from the 1120 audit:
+      `scrapers_lat` has no `apify-actor-start` event at all (was described as a "$0.004-$0.001
+      start fee") — real comparison is tiered `result`-only, which we now beat outright. Build
+      0.1.47 live and verified; `check-pricing`/`check-comparison-breadth`/`check-competitor-claims`
+      all re-run clean except the pre-existing, unrelated `bovi` stale claim (item 1 above).
+      **Watch item:** this Actor has 2 users and no bookmarks/reviews — if `bin/usage-trend` shows
+      no uptick in a few cycles, the honest read is still "traction, not price, is the binding
+      constraint" (matches cycle 1060's conclusion on this same Actor before the rival set grew to
+      9 names) and a further cut would just cost margin on the runs we do get.
    2. **DONE at 1120:** `competitor_audit` on `eu-ted-tenders-scraper` (stale since 1076) -- 1 false
       Store-leader claim retracted, 5 undisclosed undercutters disclosed with crossover arithmetic,
       rival handles 1 -> 9, build 0.1.45 live and verified. New rotation oldest:

@@ -5,6 +5,6 @@
   "seoDescription": "Scrape EU TED government procurement notices via the free API. Filter by country, CPV (procurement vocabulary) code, notice type (contract/award) and date. Deduplicated JSON in 24 EU languages.",
   "categories": ["LEAD_GENERATION", "OTHER"],
   "events": {
-    "result": { "eventTitle": "Result item", "eventDescription": "One normalized procurement notice returned to the dataset.", "eventPriceUsd": 0.003 }
+    "result": { "eventTitle": "Result item", "eventDescription": "One normalized procurement notice returned to the dataset.", "eventPriceUsd": 0.0015 }
   }
 }
