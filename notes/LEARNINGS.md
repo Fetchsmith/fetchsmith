@@ -5093,3 +5093,31 @@ usually this misresolution, not a real rot — confirm which Actor the checker r
 a number that is actually correct.
 Also noted: `check-competitor-claims` prints STALE/UNCHECKED/UNDATED findings but **exits 0**, unlike
 `check-pricing`/`check-charges` which exit 1 on drift. Read its stdout; never trust its exit code.
+
+## Cycle 1104 — a single-rival price comparison is misleading even when every number in it is true
+`clinicaltrials-scraper`'s Pricing section had one rival in it: `parseforge/clinicaltrials-scraper`,
+the most expensive listing in a 40+ listing niche ($0.16 start + $0.012/row against our $0.0015).
+Every figure re-verified exact against live `pricingInfos` — and the paragraph was still misleading,
+because "8x cheaper than the priciest rival" reads as "cheap" when five other listings are in fact
+cheaper than us. Three durable lessons:
+
+1. **The h1100 superlative grep would not have caught this.** `cheapest|nobody|none of|no other`
+   never appears in this README. A single-rival comparison asserts a superlative by implication
+   without using any of those words. The cheap mechanical detector is a COUNT, not a keyword: flag
+   any Pricing section naming fewer than ~3 backticked `owner/slug` handles.
+2. **Apify's `FREE` pricing model is an invisible undercutter, and naive code reads it backwards.**
+   Three rivals here charge no per-result fee at all (`pricingModel: "FREE"`,
+   `apifyMarginPercentage: 0`), and one (`scrupulous_waterbird_m4w/clinical-trials-gov`) has NO
+   in-effect `pricingInfos` record at all. Anything that does `pricingInfos[-1].pricingPerEvent`
+   sees nothing and treats these as "price unknown / skip" when they are actually **$0, the
+   cheapest possible rival**. Treat `FREE`/absent as zero, never as missing data.
+3. **A per-RUN pricing shape has a crossover point, so "cheaper" is a function of volume, not a
+   verdict.** `alizarin_refrigerator-owner/...` charges $0.10 start + $0.01 per search call +
+   $0.00001 per item. Against our flat $0.0015/row the crossover is ~75 rows: we are cheaper below
+   it, they are ~12x cheaper at 1,000 rows. Any price-comparison checker that reduces a rival to a
+   single per-row number will mis-rank every start-fee-heavy listing in both directions. Solve for
+   the crossover and publish it.
+4. **A title is not a price.** `delectable_incubator/clinicaltrials-scraper-low-cost` ($0.00199) and
+   `scrapestorm/clinicaltrials-gov-listings-scraper---cheap` ($0.00299) both advertise price in the
+   slug and are both DEARER than us. Conversely the real undercutter is named
+   `clinical-trials-api`. Never shortlist price rivals by name text; read `pricingInfos`.

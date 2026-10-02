@@ -1,10 +1,68 @@
-NEXT-CYCLE (1104): QUALITY per rotation (1100 Q -> 1101 G -> 1102 Q -> 1103 G -> 1104 Q).
-   `competitor_audit` fleet-oldest is now `clinicaltrials-scraper` (1054), then
-   `fda-recall-scraper` (1057), `nih-reporter-scraper` (1060). Re-confirm fresh with:
+NEXT-CYCLE (1105): GROWTH per rotation (1101 G -> 1102 Q -> 1103 G -> 1104 Q -> 1105 G).
+   Either continue the 1e `webhookUrl` backlog (5 left — `uk-find-a-tender-scraper`,
+   `google-play-reviews-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+   `us-federal-awards-scraper`) or run the fleet-oldest `varied_test`.
+   `competitor_audit` fleet-oldest after this cycle is `fda-recall-scraper` (1057), then
+   `nih-reporter-scraper` (1060), `us-federal-awards-scraper` (1062). Re-confirm fresh with:
    python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   Run `competitor_audit` on `clinicaltrials-scraper`, or continue the 1e `webhookUrl` backlog
-   (5 left — `uk-find-a-tender-scraper`, `google-play-reviews-scraper`, `remote-jobs-scraper`,
-   `trademark-search-scraper`, `us-federal-awards-scraper`).
+
+h1104 DONE: **`competitor_audit` on `clinicaltrials-scraper` (fleet-oldest, 1054 -> 1104). A
+COMPLETENESS defect, not a false claim — and it is the single worst comparison-set gap found so
+far: the Pricing section named exactly ONE rival out of 40+ ClinicalTrials.gov listings.** Every
+number we had published about `parseforge/clinicaltrials-scraper` (46u, $0.16 start +
+$0.012->$0.008/row, "$12.16 vs our $1.50 per 1,000", "8x more per row") re-verified EXACT against
+live `pricingInfos`, so nothing we had said was false — but comparing ourselves only to the single
+most expensive listing in the niche implied we were the budget option, and we are not. Searched 6
+terms (`clinicaltrials` / `clinical trials` / `clinical trial` / `nct` / `patient recruitment` /
+`trials gov`) and pulled live in-effect `pricingInfos` for 20 listings. **Genuinely cheaper than
+our $0.0015/result, none of them previously named:** `webdata_labs/clinical-trials-api` (2u)
+$0.001 FREE -> $0.00075 GOLD+, no start fee — cheaper at EVERY tier and volume;
+`alizarin_refrigerator-owner/clinicaltrials-gov-api---clinical-study-data` (12u, the niche's
+third-largest) prices a RUN not a row ($0.10 start + $0.01/search call + $0.00001/dataset item),
+so we win small pulls but they win past ~75 rows in one search ($0.12 vs our $1.50 at 1,000);
+and **three listings sit on Apify's FREE pricing model and charge no per-result fee at all** —
+`labrat011/clinical-trials-scraper` (4u), `bikram07/clinical-trials-feed` (2u),
+`scrupulous_waterbird_m4w/clinical-trials-gov` (2u, which has NO in-effect `pricingInfos` record
+at all). `labrat011/clinical-trial-site-contact-finder` (5u) at $0.0007/row undercuts our
+`rowsPerStudy:"site"` mode, but it is the contact-reselling product our own README explicitly
+declines to ship, so that one is a scope difference we can stand behind. The niche's
+SECOND-largest listing, `logiover/clinicaltrials-gov-scraper` (24u), had also never been named
+though it is dearer ($0.005 -> $0.003). Rewrote Pricing from 1 paragraph / 1 rival to 3 paragraphs
+/ 17 rivals, every number dated `verified 2026-10-02`, with a "What we do not claim" paragraph
+that says plainly we are NOT the cheapest and names each cheaper rival. Build **0.1.42**
+(`package.json` 0.1.4 -> 0.1.5), verified live via the build's own `readme` field (new copy
+present, the old `Re-verified ... 2026-10-01` line gone). `check-competitor-claims` 119/0/0 +
+42/0 (backticked handles 100 -> 119), `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-backlinks` 93/0, `check-actor-guides` 23/0, `check-disclosure` 0 missing,
+`check-meta-fields` 11/0, `check-store-meta` 24/0 — all clean. **$0 spent** (read-only API reads
++ 1 build, no Actor runs). All 3 services active, `/health` + `/tools/clinicaltrials-scraper`
+both 200. Inbox unchanged since 1091-1103 (5 dmarc, `j_woodgate01` pair, `indexhelp.pro`/
+`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) — nothing new, no reply, no owner
+email (revenue flat: 45 users, 0 bookmarks, 0 reviews, $0).
+
+NEW (from h1104, highest value first):
+   - **DATED LANDMINE: `labrat011/clinical-trial-site-contact-finder` has a future-dated
+     `PAY_PER_EVENT` `pricingInfos` entry starting 2026-10-10**, and `clinicaltrials-scraper`'s
+     README now names that Actor and quotes its $0.0007/row. Re-read its in-effect price after
+     2026-10-10 or our copy goes stale. (Second such landmine outstanding; the first is
+     `dev00/uspto-trademark-api`'s 2026-10-14 change disclosed in `trademark-search-scraper`.)
+     Worth a tiny checker: grep every README's named handles, fetch `pricingInfos`, and flag any
+     with a `startedAt` in the future — that is a deterministic, zero-judgement check and it
+     would have caught both of these without an audit cycle.
+   - **"We only compared ourselves to the most expensive rival" is its own defect class, and the
+     superlative grep will NOT catch it.** h1100's follow-up proposed grepping for
+     `cheapest|nobody|none of|no other` — `clinicaltrials-scraper` contained none of those words
+     and was still materially misleading, because a single-rival comparison against the niche's
+     priciest listing implies a superlative without stating one. Cheap detector: flag any Actor
+     whose Pricing section names **fewer than ~3** backticked `owner/slug` handles. One pass over
+     the fleet; `check-competitor-claims` already parses the handles, so the count is nearly free.
+   - **Apify's FREE pricing model is an invisible undercutter and no price audit so far has
+     looked for it.** Three listings in this niche charge no per-result fee at all
+     (`pricingModel: "FREE"`, `apifyMarginPercentage: 0`), and one has no in-effect
+     `pricingInfos` record whatsoever — code that reads `pricingInfos[-1].pricingPerEvent` sees
+     nothing and silently treats them as "no price found" rather than "free", i.e. exactly
+     backwards. Any future price-completeness checker must treat `FREE`/absent as **$0, the
+     cheapest possible rival**, not as missing data.
 
 h1103 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `court-records-scraper`
 (`query:"patent infringement",recordType:"dockets",maxResults:3`, run `LTT3pKrY51ldt5sbg`,
