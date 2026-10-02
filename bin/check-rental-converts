@@ -1,0 +1,151 @@
+#!/root/agent/venv/bin/python
+"""Sweep the Apify Store for rivals Apify just converted from rental pricing
+(FLAT_PRICE_PER_MONTH) to pay-per-event, per the platform's 2026-10-01 rental-
+pricing deprecation.
+
+Queued at cycle 1116/1117 after `hacker-news-scraper`'s competitor_audit found
+`epctex/hackernews-scraper` -- a dormant, 2021-era, 176-user listing (build still
+v0.0, 0 new users in 30 days) that rented FLAT_PRICE_PER_MONTH until 2026-10-01,
+when Apify auto-converted it to PAY_PER_EVENT ($0.0003/result + $0.00005 start).
+It had never shown up in ANY price comparison we own, by construction: a rental
+Actor has no per-event price, so `check-price-superiority` (and every manual
+"price vs rivals" paragraph written before today) silently skipped it, even
+though it was -- by lifetime users -- the niche's biggest listing the whole
+time. Apify is converting these on the same schedule fleet-wide, so other
+niches likely have dormant rental listings about to become comparable for the
+first time, and every competitor_audit that ran before 2026-10-01 had no way to
+have seen them.
+
+This is a DISCOVERY sweep, not a verdict: a flagged listing still needs a human
+read (as cycle 1116 did for epctex) to decide whether it is a real "niche
+leader" claim to fix, a genuine undisclosed undercutter, or neither -- it does
+not replace running competitor_audit on the flagged Actor's niche.
+
+Detection: the live `/v2/acts/<owner>~<slug>` record's currently-effective
+pricingInfos entry carries a `reasonForChange` field that literally says
+"Apify is deprecating rental pricing" on every auto-converted Actor (confirmed
+on epctex, cycle 1116) -- far more robust than diffing the pricingModel
+sequence, which would also have to handle Actors with unrelated pricing history.
+
+Search terms are a hand-curated niche -> query map, one entry per live Actor,
+mirroring the terms past competitor_audit cycles used manually for the same
+niche. A new Actor needs a new entry here -- main() warns (does not fail) if
+registry.json gains a slug with none, same spirit as other checks in this
+fleet that treat missing metadata as a loud warning rather than a silent skip.
+
+Read-only: GETs only (`/v2/store` search + `/v2/acts/<owner>~<slug>`), no Actor
+runs, no file writes.
+"""
+import datetime
+import glob
+import json
+import os
+import re
+import sys
+
+import httpx
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API = "https://api.apify.com/v2"
+FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
+CUTOFF = datetime.datetime(2026, 10, 1, tzinfo=datetime.timezone.utc)
+
+NICHE_TERMS = {
+    "ats-jobs-scraper": "ats jobs",
+    "google-news-scraper": "google news",
+    "app-store-reviews-scraper": "app store reviews",
+    "shopify-products-scraper": "shopify products",
+    "hacker-news-scraper": "hacker news",
+    "google-play-reviews-scraper": "google play reviews",
+    "substack-scraper": "substack",
+    "apple-podcasts-scraper": "apple podcasts",
+    "steam-reviews-scraper": "steam reviews",
+    "eu-ted-tenders-scraper": "eu ted tenders",
+    "uk-find-a-tender-scraper": "uk find a tender",
+    "us-federal-awards-scraper": "usaspending federal awards",
+    "fda-recall-scraper": "fda recall",
+    "federal-register-scraper": "federal register",
+    "clinicaltrials-scraper": "clinicaltrials",
+    "grants-gov-scraper": "grants.gov",
+    "nih-reporter-scraper": "nih reporter",
+    "fec-campaign-finance-scraper": "fec campaign finance",
+    "court-records-scraper": "court records",
+    "trademark-search-scraper": "trademark search",
+    "sam-gov-opportunities-scraper": "sam.gov opportunities",
+    "remote-jobs-scraper": "remote jobs",
+    "sec-insider-trades-scraper": "sec insider trading",
+}
+
+
+def token():
+    for line in open(os.path.join(ROOT, "secrets/env")):
+        if line.startswith("APIFY_TOKEN"):
+            return line.split("=", 1)[1].strip().strip('"')
+    sys.exit("check-rental-converts: no APIFY_TOKEN in secrets/env")
+
+
+def already_named():
+    idents = set()
+    for path in glob.glob(os.path.join(ROOT, "actors", "*", "README.md")):
+        idents |= set(FULL_HANDLE.findall(open(path).read()))
+    return idents
+
+
+def rental_converted(act, now):
+    live = [p for p in (act.get("pricingInfos") or [])
+            if p.get("startedAt")
+            and datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    if not live:
+        return False
+    cur = live[-1]
+    reason = (cur.get("reasonForChange") or "").lower()
+    started = datetime.datetime.fromisoformat(cur["startedAt"].replace("Z", "+00:00"))
+    return "deprecating rental" in reason and started >= CUTOFF
+
+
+def main():
+    headers = {"Authorization": f"Bearer {token()}"}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
+    live_slugs = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
+    missing = [s for s in live_slugs if s not in NICHE_TERMS]
+    if missing:
+        print(f"WARN: no NICHE_TERMS search term for: {', '.join(missing)} -- not swept")
+
+    named = already_named()
+    seen = {}
+    flagged = []
+    searched = 0
+    for slug in live_slugs:
+        term = NICHE_TERMS.get(slug)
+        if not term:
+            continue
+        searched += 1
+        r = httpx.get(f"{API}/store", params={"search": term, "limit": 20, "sortBy": "relevance"}, timeout=30)
+        for item in r.json()["data"]["items"]:
+            ident = f"{item['username']}/{item['name']}"
+            if ident == f"fetchsmith/{slug}" or ident in seen:
+                continue
+            u, n = item["username"], item["name"]
+            rr = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
+            act = rr.json().get("data") if rr.status_code == 200 else None
+            seen[ident] = act
+            if act and rental_converted(act, now):
+                stats = act.get("stats", {})
+                flagged.append({
+                    "niche": slug, "ident": ident,
+                    "users": stats.get("totalUsers", 0),
+                    "u30d": stats.get("totalUsers30Days", 0),
+                    "named": ident in named,
+                })
+
+    print(f"check-rental-converts: {searched} niches searched, {len(seen)} unique listings "
+          f"checked, {len(flagged)} newly rental-converted")
+    for f in flagged:
+        tag = "already named" if f["named"] else "NOT YET NAMED"
+        print(f"  {f['niche']:32} {f['ident']:45} users={f['users']:5} u30d={f['u30d']:4} ({tag})")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
