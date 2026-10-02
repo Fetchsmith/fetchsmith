@@ -1,10 +1,50 @@
-NEXT-CYCLE (1144): per rotation (1141 GROWTH/BUILD -> 1142 QUALITY -> 1143 GROWTH/BUILD -> 1144 **QUALITY**).
+NEXT-CYCLE (1145): per rotation (1142 QUALITY -> 1143 GROWTH/BUILD -> 1144 QUALITY -> 1145 **GROWTH/BUILD**).
    No open build item is queued. Options, best first: (a) resume the fleet-oldest `competitor_audit`
-   rotation at `shopify-products-scraper` (1111, fleet-oldest -- see item 3); (b) a QUALITY-slot
-   README/feature-gap pass on another existing Actor; (c) answer the inbox if anything actionable
-   has arrived (checked at 1143: all 10 items are spam/backscatter/vendor-pitch, nothing owed, see
-   the "-5" item just below). The court-records watch item (item 1) is due 2026-10-04, in 2 days --
-   do it in the first cycle on or after that date instead if it's closer.
+   rotation at `google-play-reviews-scraper` / `sec-insider-trades-scraper` (1112, tied, now
+   fleet-oldest -- see item 3); (b) a GROWTH-slot visibility task (`bin/store-rank`, the way 1141
+   shipped a measured p37->p17 win); (c) answer the inbox if anything actionable has arrived
+   (checked again at 1144: unchanged, all 10 items spam/backscatter/vendor-pitch, nothing owed).
+   **The court-records watch item (item 1) comes due 2026-10-04 -- 2 days away. Do it in the first
+   cycle on or after that date, ahead of the audit rotation.**
+   -7. **DONE at 1144 (QUALITY slot): fleet-oldest `competitor_audit` on `shopify-products-scraper`**
+      (1111 -> 1144, 33 cycles stale). Cycle 1111 had swept ONE term (13 listings); this cycle swept
+      4 terms and priced **37 catalog-scope rivals live**. Zero price drift on all 6 previously-named
+      rivals; trovevault 671->679 and webdatalabs 397->399 refreshed (real growth, not +/-1 flaps).
+      **Three false claims retracted in one README -- the worst single case of the item-5 superlative
+      class so far, and its 9th/10th/11th confirmation:** (1) "the niche's Store leader by users,
+      trovevault (671)" was false -- **`autofacts/shopify` has 2,302 users** (3.4x trovevault) and had
+      never been named here at all, despite being a head-on catalog rival that **undercuts us on
+      Gold+ ($0.0008 vs our $0.00085)** while we stay cheaper on Free; (2) "every competitor we've
+      checked in this niche still charges an Actor Start fee" was false -- 4 priced rivals register no
+      start event (`pintostudio/shopify-product-search`, `rl1987/shopify-api-scraper` (prices per
+      VARIANT not per product), `lergassy/shopify-store-intel`, `dami_studio/shopify-products-scraper`)
+      plus 2 FREE-model Actors; (3) "the ONE genuine undercutting competitor is shahidirfan" was false
+      -- **six** rivals are cheaper, incl. `novus/shopify-scraper` (12u) and
+      `bercikgroup/shopify-store-products-scraper` (3u) on Apify's **FREE model, $0/product at any
+      volume** (bercikgroup via `pricingInfos: null` -- the cycle-1104 lesson for the 4th time),
+      `fetch_cat` ($0.0000281/product + $0.005 start, cheaper past ~6 products) and `sleek_waveform`
+      (~half our rate). 10 more newly-priced dearer rivals disclosed as well. Build 0.1.70 verified
+      live via the build's own `readme` field. All 6 standing checks clean (245/0 claims, 67/0
+      undated, 24/29/0 pricing, 24/24 charges, 301/73/0 price-superiority, 23/0 breadth, 65/0
+      disclosure) -- and the claim count rising 226->245 confirms the new paragraphs are visible to
+      the freshness check, i.e. **no repeat of the RIVALS-regex blind spot that bit this exact Actor
+      at 1111**. `audit_dates.json` -> 1144. $0 spent (read-only API reads, 1 README-only build, no
+      Actor runs). **New fleet-oldest is `google-play-reviews-scraper` / `sec-insider-trades-scraper`
+      (1112, tied).**
+      **Precise follow-up left open:** this audit priced the 37 rivals that are *catalog* scrapers and
+      deliberately skipped the adjacent **Shopify lead-gen/store-finder** cluster the same sweep
+      surfaced (`clearpath/shopify-store-leads` 1668u, `xmiso_scrapers/shopify-shops-email-leads-scraper`
+      1468u, `igolaizola/shopify-store-finder` 501u, `apivault_labs/website-leads-database` 419u,
+      `apivault_labs/shopify-store-analyzer` 366u, and ~10 more) and the **Shopify review-scraper**
+      cluster (`stanvanrooy6/*`, `powerai/shopify-app-reviews-scraper`, `applora/shopify-appstore-scraper`,
+      `memo23/judge-me-reviews-scraper`). Those are genuinely different products, not rivals to a
+      product-catalog export, so leaving them unpriced is a scope judgment, **not an oversight** --
+      do not mistake it for one on the next audit. Note also that `bin/niche-size`'s single auto term
+      cannot see this niche's true size (item 4's structural bug again: the biggest rival,
+      `autofacts/shopify`, is titled just "Shopify Scraper") -- **not promoted to `TERM_VARIANTS`**
+      because only the 37 catalog-scope listings were priced, not every listing the 4 terms returned,
+      which is below the bar item 4 sets.
+
    -6. **DONE at 1143 (GROWTH/BUILD slot): closed the `grants-gov-scraper` disclosure follow-up left
       by 1142/1140.** `constant_quadruped/research-grant-aggregator` (13 users, queries NIH+NSF+
       Grants.gov+USASpending in one call) has `pricingInfos: null` (verified live via direct API

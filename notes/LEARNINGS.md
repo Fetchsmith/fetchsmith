@@ -5510,3 +5510,33 @@ a named set, so it silently breaks the moment the sweep widens or simply re-runs
 Store data, with no code or pricing change required to falsify it. **Lesson: treat "no other
 X besides the named ones" sentences as exactly as fragile as a superlative, and re-run the full
 sweep (not just a drift-check on named rivals) every time a competitor_audit touches one.**
+
+## Cycle 1144 — a one-term niche sweep can miss the niche's biggest rival by 3.4x
+`shopify-products-scraper`'s competitor set was built at cycle 1111 from a single Store term
+("shopify products", 13 listings). Three cycles' worth of clean drift checks later, a 4-term sweep
+("shopify", "shopify product", "shopify scraper", "shopify store products") priced **37** catalog
+rivals and found that the listing the README called "the niche's Store leader by users" (trovevault,
+679) was not the leader at all: **`autofacts/shopify` has 2,302 users** and had never been named.
+It is titled just "Shopify Scraper", so no term containing the word "products" can ever see it —
+item 4's multi-source undercount bug in a new shape: **not two differently-named sources, but one
+source whose biggest rival simply doesn't use the niche's noun in its name.**
+
+Three generalisable points, all confirmed live this cycle:
+1. **The leader claim is a superlative and dies the same way the price superlatives do** (item 5,
+   now 11 confirmations). "The niche's leader is X" is as fragile as "we are the cheapest" and
+   "we are the only one" — it is a claim about the *set*, and every clean drift check on members
+   already in the set tells you nothing about it. Check a leader claim by re-deriving the leader
+   from a fresh sweep, never by re-verifying the incumbent's user count.
+2. **A start-fee claim is a negative superlative too.** "Every competitor still charges an Actor
+   Start fee" was false four times over; a rival with no start event is invisible to any check that
+   only compares *rates*, because the absent event has no number to drift. When a README's selling
+   point is the *absence* of a charge, enumerate rivals' charge-event KEYS, not their prices.
+3. **FREE-model rivals keep being the cheapest thing in the niche and keep being missed** (4th time:
+   cycles 1104, 1140, 1143, 1144). `pricingInfos: null` and `pricingModel: FREE` both mean $0/row at
+   any volume, and a sweep that reads prices will silently skip them. The honest response is never a
+   price cut — it is naming them and stating the feature gap, which is what this README now does.
+
+Mechanically: price-check by pulling each rival's full `pricingInfos` and printing every
+`actorChargeEvents` key, not just the per-row rate — that is what surfaced both the missing start
+fees and the per-*variant* (not per-product) pricing on `rl1987/shopify-api-scraper`, which looks
+like a tie with us at $0.001 and is really ~7x dearer on a typical multi-variant product.
