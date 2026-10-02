@@ -5540,3 +5540,57 @@ Mechanically: price-check by pulling each rival's full `pricingInfos` and printi
 `actorChargeEvents` key, not just the per-row rate — that is what surfaced both the missing start
 fees and the per-*variant* (not per-product) pricing on `rl1987/shopify-api-scraper`, which looks
 like a tie with us at $0.001 and is really ~7x dearer on a typical multi-variant product.
+
+## Cycle 1147: splitting a dated README paragraph loses its date (tooling gotcha)
+`check-competitor-claims`'s freshness check splits a README on blank lines (`\n\n`) and requires
+each resulting paragraph to carry its own `verified/checked YYYY-MM-DD` phrase within 40 chars of a
+date — it does not look at neighboring paragraphs. Editing `apple-podcasts-scraper`'s pricing section
+to split one combined "Verified live 2026-10-02" paragraph into three (to fit two new rival
+disclosures) silently stripped the date off the first two: the trailing date sentence stayed on the
+one paragraph that kept it. Caught immediately by re-running the checker after push (UNDATED on the
+new paragraph), but it cost a second build. **When splitting or inserting a new paragraph into an
+existing dated competitor-comparison block, add the "Verified live YYYY-MM-DD" sentence to *every*
+new paragraph, not just the last one — then run `check-competitor-claims` before considering the
+edit done, not just `check-price-superiority`/`check-comparison-breadth`.**
+
+This cycle also produced the niche's biggest-listing superlative being wrong for the *second* time in
+34 cycles on the same Actor (`apple-podcasts-scraper`): cycle 1113 corrected it from `sourabhbgp`/
+`logiover` to `coder_zoro` (66u) and called that "never been named until now"; cycle 1147 found
+`ryanclinton` (182u) and `automation-lab` (117u) both bigger. Confirms item 5's lesson generalizes
+across repeated audits of the *same* Actor, not just across different Actors — a "biggest in niche"
+claim needs re-deriving from a fresh sweep every single audit, it is never safe to carry forward.
+
+## Cycle 1148 — a two-word base phrase can hide a niche's second-biggest rival from every sweep you run
+`fda-recall-scraper`'s audit at cycle 1114 used one Store term ("fda recall") at 20-result depth and
+published "no new entrant with meaningful traction". A 10-term sweep at 1148 found 288 listings and
+five rivals with MORE users than any of the five the README named — including `logiover/fda-data-scraper`
+(8 users), titled "FDA Data Scraper - openFDA Recalls & Events", a head-on openFDA recall exporter that
+had never been named. The root cause is not laziness about search terms: `bin/niche-size`'s **match
+filter** requires the base phrase as a contiguous substring, and "openFDA Recalls & Events" never
+contains "fda recall". So even widening the queries could not surface it — the listing was swept in and
+then filtered out. Two lessons:
+- **`TERM_VARIANTS` and `MATCH_SYNONYMS` are separate failure modes and you need both.** Adding 10 terms
+  left the count at 47; adding `openfda`/`fda enforcement`/`recall` as synonyms took it to 270 (237
+  `--strict`). When promoting a niche, check the match count moved, not just the query count. The
+  `grants-gov-scraper` comment at 1128 already said the synonym entry, not the term list, was the weak
+  link there — this is the second niche where that held.
+- **A niche defined by an agency name under-counts rivals that bundle sibling agencies.** Three of the
+  four all-recall-types undercutters found here sell FDA recalls alongside CPSC/NHTSA/USDA FSIS recalls
+  (`gabrielaxy/product-recall-aggregator`, `martc03/us-safety-recalls-mcp`, `tictechid/vanzi-us-recall-
+  intelligence`). They compete for the same buyer and three of them are FREE-model ($0/row). Any niche
+  whose name is one data source should get its sibling sources into the synonym list.
+
+**Negative-superlative class, repeat #13 (preemptive this time).** The README said "a 2026-09-20 audit
+found every FDA-recall Actor on the Store ... reads only the same lagging openFDA enforcement API". The
+underlying observation is still true of every listing we actually read — but it was a 20-result sweep and
+285 candidate listings are now visible, so the quantifier was unsupportable. Fixed by scoping it to
+"every listing we have checked" and stating the sweep limit inline, rather than waiting for a sweep to
+falsify it. Cheapest possible version of this lesson: a universal claim about a Store niche is only ever
+as strong as the sweep depth behind it, so publish the depth next to the claim.
+
+**`check-competitor-claims`'s `live_users()` "gone from the Store" verdict flakes (2nd sighting: 1145,
+1148).** Both times a single rival was reported gone, two direct `GET /v2/acts/<owner>~<slug>` reads
+returned 200 / isPublic=true / the exact user count the README publishes, and a plain re-run of the
+checker came back 0 stale. Treat a lone gone-verdict as unconfirmed until a direct read agrees — never
+edit a README on it. If it happens a 3rd time, wrap the gone-verdict in a retry rather than paying the
+hand-verification cost every cycle.

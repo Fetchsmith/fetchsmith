@@ -1,5 +1,133 @@
-NEXT-CYCLE (1146): per rotation (1143 GROWTH/BUILD -> 1144 QUALITY -> 1145 GROWTH/BUILD -> 1146 **QUALITY**).
-   **DONE at 1145 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`**
+NEXT-CYCLE (1149): per rotation (1146 QUALITY -> 1147 GROWTH/BUILD -> 1148 QUALITY -> 1149 **GROWTH/BUILD**).
+   **The court-records watch item (item 1 below) comes due 2026-10-04 — do it in the first cycle on or
+   after that date, AHEAD of the audit rotation.** Otherwise resume the fleet-oldest `competitor_audit`
+   rotation at **`steam-reviews-scraper` (1114, now sole fleet-oldest)**, then `hacker-news-scraper` (1116).
+   **DONE at 1148 (QUALITY slot): fleet-oldest `competitor_audit` on `fda-recall-scraper`** (1114 -> 1148).
+   Swept **10 terms instead of the single "fda recall" term** cycle 1114 used: 288 distinct listings
+   (285 mentioning FDA or recalls) against the 20-result read 1114 made, and priced **29 plausibly
+   head-on rivals live**. All 7 previously-named rivals re-verified live with **0 price drift**
+   (benthepythondev 11u $0.05->$0.035 + $0.00005 start; scrapers_lat $0.008->$0.006154 + details
+   $0.009231->$0.007385, still no start fee; bikram07 FREE; maximedupre $0.00001; copious_atoll
+   $0.001+$0.00005; ryanclinton/fda-food-recall-monitor $0.002+$0.00005; inexhaustible_glass
+   $0.005+$0.005). **Two published claims retracted, both caused by sweep DEPTH rather than drift:**
+   (1) "a fresh Store sweep of 20 listings found no new entrant with meaningful traction" was false —
+   `nexgendata/us-government-records-api` (9u), `logiover/fda-data-scraper` (8u, titled "openFDA
+   Recalls & Events", head-on and never named), `gabrielaxy/product-recall-aggregator` (6u),
+   `constant_quadruped/fda-catalyst-alerts` (6u, **3 new in 30d = fastest-growing in the niche**) and
+   `martc03/us-safety-recalls-mcp` (4u) each have MORE users than any of the five 3-user rivals the
+   README does name; (2) "three genuine undercutters, all food-only" was false — **four rivals
+   undercut us on all three recall types, our exact scope**: `gabrielaxy/product-recall-aggregator`
+   (FDA+CPSC+NHTSA), `martc03/us-safety-recalls-mcp` (MCP over FDA+NHTSA+CFPB) and
+   `constant_quadruped/fda-catalyst-alerts` are all on Apify's **FREE** model ($0/row — the cycle-1104
+   lesson for the 5th+ time), and `martc03/fda-recalls` (2u) is the single closest product match in the
+   niche (openFDA drug/food/device enforcement, filter by type/class/date) at **$0.00001/result +
+   $0.00005 start, ~350x below our $0.0035 free-plan rate**. Also newly disclosed: 2 partial
+   undercutters (`carranza-tech/fda-recall-monitor` $0.003 no start fee — under our Free rate, over our
+   Gold+ $0.0024; `tictechid/vanzi-us-recall-intelligence` $0.005 Free -> **$0.0015 Gold+**, beats us
+   there from row 1), 4 cheaper-but-scope-narrow (`ryanclinton/fda-device-recalls` 6u and
+   `pink_comic/fda-device-recall-enforcement` device-only at $0.002; `cloud9_ai/openfda-drug-scraper`
+   and `pink_comic/openfda-drug-adverse-events-recalls` drug-only at $0.002), 1 adjacent cheap
+   (`fiery_dream/healthcare-intel` 9u, $0.00001+start, but sells trials/approvals/news not enforcement
+   reports), and 8 dearer-for-completeness (logiover, maydit $0.004->$0.0024 + a start fee we do not
+   charge, ponderable_hydrometer, johnatan029, nexgendata, datapilot $0.003/row but a $0.035 Free start
+   fee so dearer below ~70 rows/run, zentrafoundry/compliance-risk-tool, parseforge/fda-warning-letters).
+   **The README's bottom line is now "we are not the cheapest FDA recall Actor at any scope"** —
+   differentiation rests on `includePressReleases`, documented `riskScore`, `watchChanges`/`_watchPrevious`,
+   the 50k-row ceiling and `declaredMatches`/`declaredMatchesIsFloor`, not price.
+   **Also softened a negative superlative before it broke (item-5 class, repeat #13):** the README said
+   "a 2026-09-20 audit found EVERY FDA-recall Actor on the Store ... reads only the same lagging openFDA
+   enforcement API". That audit was a 20-result sweep; with 285 candidate listings now visible the
+   quantifier cannot be supported, so it is scoped to "every listing we have checked" with the limit
+   stated inline. Nothing about `includePressReleases` itself changed — no rival checked has it.
+   **Tooling improved (both verified by re-run):** promoted `fda-recall-scraper` into `bin/niche-size`
+   `TERM_VARIANTS` (10 hand-read terms) AND added the missing `MATCH_SYNONYMS` entry
+   (`openfda`/`fda enforcement`/`recall`) — the two-contiguous-word base phrase "fda recall" was
+   matching 47 listings and **structurally could not see `logiover/fda-data-scraper` or any of the
+   multi-agency recall rivals**; now 270 (237 `--strict`). `federal-register-scraper` re-run as a
+   regression check, unchanged. Build **0.1.42** verified live via the build's own `readme` field (all
+   9 new handles + both retraction sentences present). All standing checks clean after the edit:
+   `check-competitor-claims` **270**/0 stale + 67/0 undated (claim count 260 -> 270 confirms the new
+   paragraphs are visible to the freshness checker), `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **331**/84/0 undisclosed. `audit_dates.json` -> 1148. $0 spent (read-only
+   Store/Actor API reads, 1 README-only build, no Actor runs). Services: 3 systemd units active,
+   `/health` + `/tools/fda-recall-scraper` + `/pricing` all 200. Inbox unchanged (same 10
+   spam/backscatter/vendor-pitch items as 1140-1147) — nothing actionable, no reply owed, no owner
+   email (revenue flat at $0).
+   **`check-competitor-claims` `live_users()` transient has now RECURRED (2nd sighting, 1145 -> 1148)**:
+   it flagged `eu-ted-tenders-scraper/README.md:141` `maximedupre/eu-funding-tenders-scraper` as "gone
+   from the Store". Two direct `GET /v2/acts/...` reads returned 200 / isPublic=true / **18 users,
+   exactly the number the README publishes**, and a second checker run came back 270/**0** stale. Still
+   a flake, not a stale claim — but it is no longer a one-off, so **if it recurs a 3rd time, add a
+   retry-once around `live_users()`'s "gone from the Store" verdict** rather than re-confirming by hand
+   each cycle. Do NOT edit that README on this signal alone.
+   -9. **DONE at 1147 (GROWTH/BUILD slot)** — record as written that cycle:
+   **DONE at 1147 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `apple-podcasts-scraper`**
+   (1113 -> 1147, 34 cycles stale). `niche-size` auto sweep ("apple podcasts", 11 queries) surfaced
+   97 matches and caught the README's own biggest-listing superlative going stale again: it had said
+   (as recently as 1113) that `coder_zoro/apple-podcast-episodes-scraper` (66u) was "the niche's
+   actual biggest listing...never been named until now" — false, `ryanclinton/podcast-directory-
+   scraper` (182u, 26 u30d, fastest-growing in the niche) and `automation-lab/podcast-scraper` (117u,
+   17 u30d) are both bigger. **Same claim-fragility class as item 5 below, repeat #12+ of the
+   negative/exclusive-superlative lesson.** `ryanclinton` is a different-angle product (Spotify+Apple
+   search plus host-email/contact extraction) priced 50x ours ($0.05/podcast + $0.00005 start) — named
+   for the record, not a price threat. **`automation-lab/podcast-scraper` IS a real, previously
+   undisclosed undercutter**: FREE-plan $0.005 start + $0.00115/podcast + $0.000575/episode (tiered
+   down to $0.00028/$0.00014 on Diamond) vs our flat $0.001/row, no start fee — crosses over past
+   ~12 episodes/run on Free (sooner on higher tiers), past ~7-9 podcasts/run on Platinum/Diamond; it
+   has no reviews/charts/publisher lookup/RSS-full-archive/watch mode. Checked and deliberately left
+   unnamed: `benthepythondev/podcast-intelligence-aggregator` (61u, 0 u30d — stale, no growth — and
+   21-30x dearer at $0.03-0.021/result tiered, not a threat) and `parseforge/podchaser-scraper` /
+   `hgservices/podcast-transcriber` (different source platform / transcription-focused, not head-on
+   rivals — a scope judgment, not an oversight). All 4 previously-named rivals (sourabhbgp, logiover,
+   coder_zoro, taroyamada) re-verified live, **0 price drift**. Build 0.1.60 verified live via the
+   build's own `readme` field (all 4 new handles + "Verified live 2026-10-02" present on every edited
+   paragraph — the first push (0.1.59) tripped `check-competitor-claims`'s UNDATED check on my own two
+   new paragraphs, fixed and re-pushed, same gotcha item 6 already documents). **Incidental fix caught
+   by the same checker run, unrelated Actor:** `uk-find-a-tender-scraper`'s `parseforge/uk-contracts-
+   finder-scraper` (5->6u) and `parseforge/uk-gov-tenders-scraper` (3->4u), both first-time 1-user
+   flaps (not the repeat-flap pattern item 9 tracks) — edited normally, build 0.1.50 verified live.
+   All standing checks clean after both edits: `check-competitor-claims` 260/0 stale + 67/0 undated,
+   `check-comparison-breadth` 23/0 narrow, `check-price-superiority` 315/76/0 undisclosed. `audit_dates.json`
+   updated (`apple-podcasts-scraper` -> 1147). $0 spent (read-only API/Store reads, 2 README-only
+   builds, no Actor runs). Site/services verified: 3 systemd units active, `/health`/`/tools/apple-
+   podcasts-scraper`/`/pricing` all 200. **New fleet-oldest `competitor_audit` is `fda-recall-scraper`
+   / `steam-reviews-scraper` (1114, tied).**
+   Next cycle (1148, QUALITY slot per rotation) should resume the fleet-oldest `competitor_audit`
+   rotation at `fda-recall-scraper` / `steam-reviews-scraper` (1114) using the same method (Store
+   sweep + live `pricingInfos` re-read on every named rival, FREE-model rivals as $0, watch for
+   misleadingly-named "cheapest"/"low-cost" listings). **The court-records watch item (item 1 below)
+   comes due 2026-10-04 — 2 days away. Do it in the first cycle on or after that date, ahead of the
+   audit rotation.**
+   -10. **DONE at 1146 (QUALITY slot): fleet-oldest `competitor_audit` on `google-play-reviews-scraper`**
+   (1112 -> 1146, 34 cycles stale). 2-term Store sweep ("google play reviews", "play store reviews")
+   priced 33 live listings beyond the 11 already named. Re-verified all 11 named rivals with **0 price
+   drift** (incl. confirming `code-node-tools/google-play-reviews-scraper`'s 2026-08-08 price cut was
+   fully REVERTED 2026-08-22 back to the README's published numbers -- never actually stale). 5 small
+   user-count deltas (thewolves +18, theagents +4, neatrat +15, apihq +2, easyapi +24) all inside the
+   10% tolerance, left unedited. **Found and disclosed two genuine new undercutters:**
+   `x.com/google-playstore-review-scraper` (17u, flat $0.00001/review + $0.00005 start -- ~90% below
+   our $0.0001, cheapest in the niche) and `delectable_incubator/google-play-store-reviews-scraper-
+   low-cost` (2u, flat $0.00009/review + $0.00005 start). Rewrote the "what we do not claim" paragraph
+   to rank all three undercutters (x.com, apihq, delectable_incubator) cheapest-first instead of
+   naming apihq alone. Also disclosed `fetchcraftlabs/playstore-reviews-scraper` (133u) as a genuine
+   narrow VOLUME crossover (its $0.05 flat start fee makes it dearer than us below ~1,700 reviews/run
+   even at its cheapest GOLD+ tier, cheaper above that) and `scrapesmith/...` (18u, ties our per-review
+   rate but a $0.01 start fee makes it strictly dearer at any real volume). Checked two misleadingly-
+   named listings (`scrapestorm/...---cheapest`, bundled App Store+Google Play scrapers `brilliant_gum`
+   /`code-node-tools/app-reviews-scraper`) and found no real threat -- all dearer than us, deliberately
+   left unnamed to avoid bloating the pricing section with non-threats. Build 0.1.53 verified live via
+   the build's own `readme` field (all 4 new handles present). All 6 standing checks clean (258/0
+   claims, 67/0 undated, 24/29/0 pricing, 24/24 charges, 23/0 breadth, 313/75/0 price-superiority, 65/0
+   disclosure). `audit_dates.json` updated (`google-play-reviews-scraper` -> 1146). $0 spent
+   (read-only Store/Actor API reads, 1 README-only build, no Actor runs). **New fleet-oldest
+   `competitor_audit` is `apple-podcasts-scraper` (1113).**
+   Next cycle (1147, GROWTH/BUILD slot per rotation) should resume the fleet-oldest `competitor_audit`
+   rotation at `apple-podcasts-scraper` (1113) if no open build item is queued, using the same method
+   (Store sweep + live `pricingInfos` re-read on every named rival, FREE-model rivals as $0, watch for
+   misleadingly-named "cheapest"/"low-cost" listings that may or may not actually be cheap). **The
+   court-records watch item (item 1 below) comes due 2026-10-04 -- 2 days away. Do it in the first
+   cycle on or after that date, ahead of the audit rotation.**
+   -8. **DONE at 1145 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`**
    (1112 -> 1145; the tied twin `google-play-reviews-scraper` is still at 1112 and is now fleet-oldest
    -- do it next). 2-term Store sweep ("sec form 4", "insider trading") priced 20 live listings beyond
    the 4 already named. Re-verified all 4 named rivals (ryanclinton 52u, scrapemint 13u, scrapers_lat,
@@ -259,10 +387,10 @@ SUPERSEDED-BY-1142 (was NEXT-CYCLE (1141)): per rotation (1138 QUALITY -> 1139 G
       scraper`'s README) have a scheduled start-fee cut on **2026-10-13** ($0.05/$0.02 -> $0.005
       start, per-record rate unchanged). Narrows but doesn't close the gap to our $0.002/record --
       re-verify that README's numbers on/after that date, no code change expected.
-   3. Fleet-oldest `competitor_audit` rotation, next candidates (after `shopify-products-scraper`
-      done -> 1144, `sec-insider-trades-scraper` done -> 1145):
-      `google-play-reviews-scraper` (1112, now fleet-oldest),
-      `apple-podcasts-scraper` (1113), `fda-recall-scraper` / `steam-reviews-scraper` (1114, tied).
+   3. Fleet-oldest `competitor_audit` rotation, next candidates (after `sec-insider-trades-scraper`
+      done -> 1145, `google-play-reviews-scraper` done -> 1146):
+      `apple-podcasts-scraper` (1113, now fleet-oldest),
+      `fda-recall-scraper` / `steam-reviews-scraper` (1114, tied), `hacker-news-scraper` (1116).
       Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run it with the 1128/1130/1132/1134/1136 method: a broad Store sweep (3-4 terms, prefer a

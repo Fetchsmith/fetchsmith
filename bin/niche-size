@@ -106,6 +106,19 @@ TERM_VARIANTS = {
         "assistance listing", "cfda", "grant alerts", "federal funding",
         "grants api", "grant monitor", "grants scraper",
     ],
+    # Promoted by cycle 1148's competitor_audit: these 10 terms were swept (288 distinct
+    # listings, 285 mentioning FDA or recalls) and the 29 plausibly head-on ones were
+    # price-checked live, which is the bar for a place here. The auto_variants() fallback
+    # on the bare "fda recall" base phrase returned 47 matches and -- more to the point --
+    # ranked the niche's second-biggest in-scope listing (logiover/fda-data-scraper, 8
+    # users, titled "openFDA Recalls & Events") outside what a 20-result read would see.
+    # The sibling-agency terms matter here: three of the four all-types undercutters the
+    # audit found sell FDA recalls bundled with CPSC/NHTSA/USDA FSIS recalls, so a sweep
+    # that only ever says "fda" misses them by construction.
+    "fda-recall-scraper": [
+        "fda recall", "fda recalls", "food recall", "drug recall", "device recall",
+        "openfda", "fda enforcement", "recall monitor", "fda safety", "product recall",
+    ],
     # Promoted by cycle 1132's competitor_audit: these 20 terms were swept and every
     # one of the 84 resulting listings was price-checked live, which is the bar for a
     # place here. The base phrase was also widened "trademark search" -> "trademark"
@@ -162,6 +175,15 @@ MATCH_SYNONYMS = {
     # (cycle 1140). Both are proper nouns here, so neither carries the common-English
     # boilerplate-overcount risk that `--strict` exists to strip.
     "nih-reporter-scraper": ["nih", "reporter"],
+    # The base phrase "fda recall" is two contiguous words, so the niche's second-biggest
+    # in-scope listing (`logiover/fda-data-scraper`, titled "openFDA Recalls & Events")
+    # never matched, nor did any of the multi-agency recall Actors that bundle FDA recalls
+    # with CPSC/NHTSA/USDA FSIS -- which is three of the four all-types undercutters cycle
+    # 1148's audit found. "openfda" is a proper noun; bare "recall" is deliberately wide
+    # (it pulls in vehicle/consumer-product recall listings that are NOT FDA-scoped) because
+    # those bundled listings are real competitors for the same buyer, and `--strict` is the
+    # lever for trimming description-only noise.
+    "fda-recall-scraper": ["openfda", "fda enforcement", "recall"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",
