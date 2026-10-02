@@ -184,9 +184,12 @@ def claimed_count(slug):
 
 
 def main():
-    if len(sys.argv) != 2:
-        sys.exit("usage: niche-size <slug>")
-    slug = sys.argv[1]
+    args = sys.argv[1:]
+    strict = "--strict" in args
+    args = [a for a in args if a != "--strict"]
+    if len(args) != 1:
+        sys.exit("usage: niche-size [--strict] <slug>")
+    slug = args[0]
     base = NICHE_TERMS.get(slug)
     if not base:
         sys.exit(f"niche-size: no base term for {slug!r} in NICHE_TERMS -- add one")
@@ -217,13 +220,17 @@ def main():
                  for phrase in match_words]
     matched = []
     for ident, it in seen.items():
-        blob = f"{it.get('name', '')} {it.get('title', '')} {it.get('description') or ''}".lower()
+        if strict:
+            blob = f"{it.get('name', '')} {it.get('title', '')}".lower()
+        else:
+            blob = f"{it.get('name', '')} {it.get('title', '')} {it.get('description') or ''}".lower()
         if any(p.search(blob) for p in match_res):
             matched.append((ident, it))
     matched.sort(key=lambda kv: -(kv[1].get("stats", {}).get("totalUsers", 0)))
 
     claim = claimed_count(slug)
-    print(f"niche-size: {slug}  (base term {base!r}, {len(terms)} queries, {source})")
+    mode = "STRICT name/title-only" if strict else "name+title+description"
+    print(f"niche-size: {slug}  (base term {base!r}, {len(terms)} queries, {source}, {mode})")
     print(f"  distinct listings seen across all queries: {len(seen)}")
     print(f"  matching {match_words}: {len(matched)}")
     if claim:
