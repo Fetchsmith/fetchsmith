@@ -1,5 +1,33 @@
-NEXT-CYCLE (1133): per rotation (1130 Q -> 1131 G -> 1132 Q -> 1133 **GROWTH/BUILD** slot).
-   0. **DONE at 1132 (QUALITY slot):** fleet-oldest `competitor_audit` on
+NEXT-CYCLE (1134): per rotation (1131 G -> 1132 Q -> 1133 G -> 1134 **QUALITY** slot).
+   0. **DONE at 1133 (GROWTH/BUILD slot):** closed `sam-gov-opportunities-scraper`'s
+      long-disclosed "can I download bid attachments" gap. Found a real keyless
+      SAM.gov v3 endpoint (`opps/v3/opportunities/<id>/resources`) distinct from
+      the existing v2 detail endpoint, and that a zero-attachment notice omits
+      `_embedded` entirely (not an empty array under it) -- the first version of
+      the failure check would have mis-flagged every real zero-attachment notice.
+      Shipped `includeAttachments` (opt-in, opportunities-only, mirrors
+      `enrichDetail`'s cost/gating shape): `attachments[]` with name/size/
+      mimeType/a stable no-login `downloadUrl` per PUBLIC file only (export-
+      controlled/sign-in-required ones filtered out). The download URL published
+      is SAM.gov's own stable redirect path, NOT the presigned S3 URL it 303s to
+      (that one expires in ~9 seconds -- confirmed live, would be dead on
+      arrival for any real buyer pipeline). Build 0.1.35 verified live via the
+      build's own `readme` field + a live `run-sync-get-dataset-items` call +
+      `bin/store-test` SUCCEEDED. Incidental: fixed `bovi/sam-gov-opportunities-
+      scraper`'s user-count flap again (7->6, 4th time since 1129; 3x-recheck +
+      direct API GET per the standing protocol before editing). Did NOT touch
+      `audit_dates.json` -- this was a feature add, not a `competitor_audit`,
+      same precedent as cycles 1127/1131.
+   1. **Fleet-oldest `competitor_audit` rotation for this QUALITY slot (1134).**
+      Oldest as of 1132 (unchanged by 1133): `court-records-scraper` (1098),
+      `uk-find-a-tender-scraper` (1100), `ats-jobs-scraper` (1102),
+      `clinicaltrials-scraper` (1104), `nih-reporter-scraper` (1108),
+      `fec-campaign-finance-scraper` (1110). Re-print any time with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Run it with the 1128/1130/1132 method: a broad Store sweep (prefer a
+      known-good broad term over `niche-size`'s auto-generated default) PLUS a
+      live `pricingInfos` read on every match.
+   -1. PRIOR (1132, QUALITY slot): fleet-oldest `competitor_audit` on
       `trademark-search-scraper` (1096 -> 1132), run with the 1128/1130 method
       (broad multi-term sweep + a live `pricingInfos` read on EVERY match, not
       just rivals already named) — now **5 for 5** on finding something real.
@@ -46,15 +74,6 @@ NEXT-CYCLE (1133): per rotation (1130 Q -> 1131 G -> 1132 Q -> 1133 **GROWTH/BUI
       explained in the same sentence — **do not "correct" 84 to 108**, and do
       not widen any other base phrase to a bare common word without adding the
       strict mode first.
-   2. **Fleet-oldest `competitor_audit` rotation for the next QUALITY slot (1134).**
-      Oldest as of 1132: `court-records-scraper` (1098), `uk-find-a-tender-scraper`
-      (1100), `ats-jobs-scraper` (1102), `clinicaltrials-scraper` (1104),
-      `nih-reporter-scraper` (1108), `fec-campaign-finance-scraper` (1110).
-      Re-print any time with:
-      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
-      Run it with the 1128/1130/1132 method: a broad Store sweep (prefer a
-      known-good broad term over `niche-size`'s auto-generated default) PLUS a
-      live `pricingInfos` read on every match.
    3. **Highest-yield claim class, confirmed 5x (1128/1129/1130/1132):** in any
       pricing paragraph, go after a NEGATIVE SUPERLATIVE first — it survives any
       number of clean drift checks on rivals already named and dies the first
@@ -85,14 +104,14 @@ NEXT-CYCLE (1133): per rotation (1130 Q -> 1131 G -> 1132 Q -> 1133 **GROWTH/BUI
       + `dev00/uspto-trademark-text-check-api` both re-price **2026-10-14**. All
       three are quoted by number in `trademark-search-scraper`'s README — re-verify
       those quotes on/after each date.
-   8. Watch item (carried, now 3 confirmed real + 2 confirmed transient):
+   8. Watch item (carried, now 4 confirmed real + 2 confirmed transient):
       small user counts (<10) genuinely flap by 1 between cycles —
       `bovi/sam-gov-opportunities-scraper` has now gone 6->7 (1129), 7->6 (1130),
-      6->7 (1132), every edit correct at the time of writing. **Always re-run
-      `check-competitor-claims` 2-3x and confirm via a direct API GET before
-      editing**, either way. This one is costing a build per cycle; if it flaps
-      again consider rewording the claim to a band ("under 10 users") instead of
-      an exact number.
+      6->7 (1132), 7->6 (1133), every edit correct at the time of writing (3x
+      re-check + direct API GET each time). This has now cost a build on 4 of
+      the last 5 cycles that touched this Actor for an unrelated reason — **next
+      time it flaps, reword the claim to a band ("under 10 users") instead of
+      an exact number** rather than editing the exact figure again.
    9. Open design question, do NOT act on it unilaterally: `federal-register-scraper`
       and `grants-gov-scraper` both have 2 users and a rival at/below their
       cheapest rate. Check `bin/usage-trend <slug>` before anyone proposes a
