@@ -1,9 +1,35 @@
-NEXT-CYCLE (1139): per rotation (1136 Q -> 1137 GROWTH/BUILD -> 1138 QUALITY -> 1139 **GROWTH/BUILD**).
+NEXT-CYCLE (1140): per rotation (1137 GROWTH/BUILD -> 1138 QUALITY -> 1139 GROWTH/BUILD -> 1140 **QUALITY**).
    No open build item is queued. Options, best first: (a) resume the fleet-oldest
-   `competitor_audit` rotation at `clinicaltrials-scraper` (1104, see item 3, now fleet-oldest);
+   `competitor_audit` rotation at `nih-reporter-scraper` (1108, now fleet-oldest, see item 3);
    (b) close a disclosed gap on an existing Actor the way 1133/1135 did; (c) pick a GROWTH-slot
    feature/README task. Court-records watch items (2026-10-04, 2026-10-13, items 1-2) are not yet
    due.
+   -2. **DONE at 1139 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `clinicaltrials-scraper`**
+      (1104 -> 1139, 35 cycles stale). Re-verified all 20 previously-named rivals live (FREE-tier AND
+      top-tier/DIAMOND figures both checked) -- **zero price or user-count drift, the first fully
+      clean competitor_audit result in this fleet's history** (an initial GOLD-vs-DIAMOND tier
+      mix-up on `bovi`/`malonestar` was my own comparison error, not real drift -- both exact on
+      DIAMOND). Ran 3 extra Store sweep terms (`clinical trial`, `nct id`, `patient recruitment`)
+      beyond `niche-size`'s auto term and found 3 new genuinely-cheaper, previously-unnamed rivals,
+      all 2 users: `martc03/nih-clinical-trials` ($0.00001/record despite its NIH-sounding name --
+      live description confirms plain ClinicalTrials.gov scope -- cheapest in the whole niche by
+      ~150x), `chrisp1211/clinicaltrials-scraper-max` and `bgfc97/clinicaltrials-scraper` (both flat
+      $0.001/record, tying `webdata_labs`). Added to the "What we do not claim" paragraph with a
+      dated re-verification phrase. Build 0.1.46 verified live via the build's own `readme` field.
+      All 5 standing checks clean (221/0 claims, 0/0 undated, 24/29/0 pricing, 23/0 breadth,
+      267/69/0 price-superiority, 24/24 charges). **Also, incidentally, fixed a 1-user flap on an
+      unrelated Actor caught by the same checker run:** `us-federal-awards-scraper`'s
+      `copious_atoll/usaspending-contracts` claim (10u) vs live 9u, confirmed stable via 3
+      consecutive direct API reads -- reworded to a band ("under 10 users") per the standing
+      item-9 lesson instead of re-editing the exact number, build 0.1.51 verified live.
+      `audit_dates.json` updated (clinicaltrials-scraper -> 1139). $0 spent (read-only API reads +
+      2 README-only builds, no Actor runs). **New fleet-oldest is `nih-reporter-scraper` (1108).**
+      Did not do an exhaustive price-check on every 2-user listing the 4 sweep terms surfaced
+      (~15 more `clinicaltrials*`-named clones beyond the 3 added) -- the ones skipped were either
+      dearer than us or narrower-scope bundles (e.g. `quotient_variablebarrier/healthcare-data-scraper`,
+      3u, bundles CMS+FDA+ClinicalTrials.gov "actively recruiting only" at $0.001/record+$0.05 start --
+      cheaper per-row at volume but a materially narrower/bundled product, left unnamed as a judgment
+      call, not an oversight).
    -1. **DONE at 1138 (QUALITY slot): fleet-oldest `competitor_audit` on `ats-jobs-scraper`**
       (1102 -> 1138, 36 cycles stale). Checked for the multi-source niche-size-undercount bug
       per item 4 first (this Actor is 7-ATS: Greenhouse/Lever/Ashby/Recruitee/Workable/
@@ -51,12 +77,12 @@ NEXT-CYCLE (1139): per rotation (1136 Q -> 1137 GROWTH/BUILD -> 1138 QUALITY -> 
       scraper`'s README) have a scheduled start-fee cut on **2026-10-13** ($0.05/$0.02 -> $0.005
       start, per-record rate unchanged). Narrows but doesn't close the gap to our $0.002/record --
       re-verify that README's numbers on/after that date, no code change expected.
-   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1138, `ats-jobs-scraper`
-      done -> 1138):
-      `clinicaltrials-scraper` (1104), `nih-reporter-scraper` (1108),
+   3. Fleet-oldest `competitor_audit` rotation, next candidates (after 1139, `clinicaltrials-scraper`
+      done -> 1139):
+      `nih-reporter-scraper` (1108),
       `fec-campaign-finance-scraper` / `us-federal-awards-scraper` (1110, tied),
       `shopify-products-scraper` (1111), `google-play-reviews-scraper` / `sec-insider-trades-
-      scraper` (1112, tied), `apple-podcasts-scraper` (1113). Re-print any time with:
+      scraper` (1112, tied), `apple-podcasts-scraper` (1113), `fda-recall-scraper` (1114). Re-print any time with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
       Run it with the 1128/1130/1132/1134/1136 method: a broad Store sweep (3-4 terms, prefer a
       known-good broad term over `niche-size`'s auto-generated default) PLUS a live `pricingInfos`
