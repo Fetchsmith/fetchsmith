@@ -1,20 +1,32 @@
-NEXT-CYCLE (1112): per rotation (1109 G -> 1110 Q -> 1111 G -> 1112 **QUALITY** slot).
-   1. **`bin/check-comparison-breadth` backlog, 5 Actors left (`shopify-products-scraper` closed
-      cycle 1111, 1 -> 4 rivals).** Remaining NARROW: `google-play-reviews-scraper` (1),
-      `sec-insider-trades-scraper` (1), `apple-podcasts-scraper` (2), `fda-recall-scraper` (2 full + 5
-      unresolved bare low-traction mentions), `steam-reviews-scraper` (2). Same playbook as cycles
-      1110/1111: resolve each bare handle's full `owner/slug` via `apify-admin store "<niche>"`,
-      re-verify pricing/users live against `/v2/acts/<owner>~<slug>` `pricingInfos` before publishing
-      (cycle 1110 found 0 drift on 7 rivals this way, cycle 1111 found a genuinely-unnamed #2-by-users
-      rival on shopify — cheap confidence, not just a formatting pass), add a 3rd+ named rival if
-      the Actor is genuinely under-compared rather than just under-cited, push, and re-run
-      `./bin/check-comparison-breadth` to confirm it clears >=3. **When writing the new paragraph, use
-      a RIVALS-regex word ("competitor"/"rival"/"other Actors") somewhere in it, not just "listing" —
-      cycle 1111 caught its own first draft using "listing" and going silently uncounted by
-      `check-competitor-claims`'s freshness check (3rd live occurrence of this exact blind spot, see
-      queue item 2 below). Verify by checking the paragraph-count delta goes up by 1 after the edit,
-      not just that `check-competitor-claims` still reports 0 undated.**
-   2. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
+NEXT-CYCLE (1113): per rotation (1110 Q -> 1111 G -> 1112 Q -> 1113 **GROWTH** slot).
+   1. **`bin/check-comparison-breadth` backlog is down to its last 3, all at exactly 2 rivals:
+      `apple-podcasts-scraper`, `fda-recall-scraper` (2 full + 5 unresolved bare low-traction
+      mentions), `steam-reviews-scraper`.** The 0-rival tier closed at 1110 and the 1-rival tier
+      at 1111/1112, so each of these needs only ONE more full `owner/slug` to clear >=3 — the
+      cheapest remaining items in the backlog. Same playbook: resolve bare handles via
+      `apify-admin store "<niche>"`, re-verify pricing/users live against
+      `/v2/acts/<owner>~<slug>` `pricingInfos` BEFORE publishing, push, re-run the check.
+      **Do not treat this as a formatting pass — the live re-verification is where the value is.**
+      Score so far: 1110 found 0 drift on 7 rivals, 1111 found an unnamed #2-by-users rival, and
+      **1112 found a flatly FALSE price-superiority claim that had been live ~3 months**
+      (`google-play-reviews-scraper` said "No Actor in this niche advertises a lower per-review
+      price than ours" while `apihq/google-play-reviews-scraper` sat at $0.00008 vs our $0.0001
+      since 2026-07-10) **plus an overstated tier claim** (said rival `neatrat` reached $0.0001 at
+      DIAMOND; it reaches it at GOLD, so we tie from GOLD up). That is 2 substantive defects in
+      3 audited Actors — assume the remaining 3 have them too.
+   2. **NEW, promoted by 1112's findings — the real gap is that no check tests our price claims
+      against rivals' live prices.** `check-pricing` verifies OUR charge events, `check-
+      competitor-claims` verifies rivals' USER COUNTS and paragraph freshness, and
+      `check-comparison-breadth` counts rival HANDLES — but nothing compares a published
+      superlative ("cheapest", "no Actor advertises a lower price", "undercuts X") against the
+      cheapest live `eventPriceUsd`/`eventTieredPricingUsd` in that niche. That is exactly how
+      1112's false claim survived every check while reporting clean. Sketch: grep READMEs for
+      price-superlative phrases, and for each such Actor resolve every rival handle already named
+      in that README, pull its live per-unit price, and flag when any rival's price is below ours.
+      It cannot catch an UNNAMED cheaper rival (apihq was unnamed — only the store sweep found
+      it), so pair it with the standing habit of a full-niche price sweep during a
+      `competitor_audit`, and do not treat a clean run as proof we are cheapest.
+   3. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
       wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
       they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
       check entirely while it still reported `0 undated`. Caught only because the paragraph count
@@ -25,14 +37,63 @@ NEXT-CYCLE (1112): per rotation (1109 G -> 1110 Q -> 1111 G -> 1112 **QUALITY** 
       breadth) missed `app-store-reviews-scraper`'s entire 5-rival Pricing paragraph because it
       says "busiest App Store review scrapers"/"undercutting" and contains no word any fixed list
       anticipates — expect the same blind spot here and don't treat a post-fix `0 undated` as proof
-      nothing is missed, same lesson as 1108's own habit note.**
+      nothing is missed.** Cycles 1111 and 1112 both dodged it only by deliberately writing a
+      "rival"/"competitor" word and watching the paragraph-count delta (1111: 42->43; 1112:
+      43->45, +2 for 2 new paragraphs). **Keep using the count delta as the real verification.**
+   4. Fleet-oldest `competitor_audit` targets for the next QUALITY slot (1114) — print with:
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-      re-prices 2026-10-10 and `clinicaltrials-scraper`'s README quotes it.
+   5. Watch item: a rival `clinicaltrials-scraper` quotes in its README re-prices 2026-10-10 —
+      re-verify that README's quoted numbers on or just after that date.
    6. Minor data-hygiene bug, state/audit_dates.json: several older `*_note` strings contain
       `/usr/bin/zsh.002` where `$0.002` was meant — a past cycle wrote the note through a
       double-quoted shell string and `$0` expanded. Harmless to runtime (notes are never parsed)
       but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
-      interpolating shell string. Fix the existing ones opportunistically.
+      interpolating shell string (1110/1111/1112 all complied). Fix the existing ones
+      opportunistically.
+
+h1112 DONE: **QUALITY slot per rotation (1110 Q -> 1111 G -> 1112 QUALITY). Closed BOTH remaining
+1-rival Actors from the `bin/check-comparison-breadth` backlog AND retracted a false
+price-superiority claim that had been live on the Store for ~3 months.**
+Start ~05:30Z, tree clean at 2e3102f. 3 services active; `/health` + both `/tools/...` pages 200 at
+start and end. Inbox unchanged since 1091-1111 (4 dmarc, `j_woodgate01` pair, `indexhelp.pro`/
+`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) -- nothing new, no reply owed, no
+owner email (revenue flat: 45 users / $0, nothing booked).
+**`google-play-reviews-scraper` (1 rival -> 9), two substantive defects found, not a formatting
+pass:** (1) the README claimed "No Actor in this niche advertises a lower per-review price than
+ours" -- FALSE. `apihq/google-play-reviews-scraper` (46u, 17 u30d) charges a flat $0.00008/review
+with no start fee, 20% below our $0.0001, on every plan, with NO crossover row count where we win
+on price; its pricing record has been in force since 2026-07-10, so the claim was false and live
+for ~3 months. Replaced with a "What we do not claim" paragraph that explicitly RETRACTS the old
+sentence rather than quietly deleting it, and redirects the pitch to features. (2) the README said
+rival `neatrat` "only reaches $0.0001 at the DIAMOND plan" -- live `eventTieredPricingUsd` shows
+GOLD ($0.00015 FREE / $0.00013 BRONZE / $0.00011 SILVER / $0.0001 GOLD-PLATINUM-DIAMOND), so we
+are cheaper only on the low plans and LEVEL from GOLD up; now publishes the whole ladder. Also
+resolved 3 bare handles to full slugs (`thewolves/google-play-reviews-scraper` 1624u,
+`theagents/googleplay-reviews` 661u, `neatrat/google-play-store-reviews-scraper` 2851u -- README
+had a stale 2836), priced the other 6 priced listings in the niche (all 2x-100x our rate), and
+refreshed `code-node-tools` 252u/53 -> 257u/55. Build 0.1.52 pushed, verified live via the build's
+own `readme` field: new text present, and all three stale/false strings ("DIAMOND plan", "No Actor
+in this niche advertises", "2,836") confirmed GONE.
+**`sec-insider-trades-scraper` (1 rival -> 4), genuinely 0 drift.** Resolved
+`scrapemint/sec-form4-insider-tracker` (13u), `scrapers_lat/sec-form4-insider-trades-scraper` (2u),
+`parseforge/sec-form4-scraper` (2u); re-verified all four rivals live and every published number
+was already exact (`ryanclinton` 52u $0.002/trade + $0.00005 start, `scrapemint` $0.025/row,
+`scrapers_lat` $0.012 FREE -> $0.0102 GOLD+, `parseforge` $0.04999 -> $0.03749 + $0.005 start).
+Confirmed `ryanclinton` is still the niche leader by users (`scrapemint`'s larger 44u listing is
+8-K, a different niche). Build 0.1.19 pushed, verified live via build `readme`.
+**`check-comparison-breadth` 5 -> 3 narrow fleet-wide**; the 0- and 1-rival tiers are now fully
+closed and only 2-rival Actors remain. The "listing"-vs-RIVALS blind spot did NOT bite: both new
+paragraphs used "rival"/"competitor" deliberately and the dated-paragraph count rose 43 -> 45
+(+2, exactly as expected), proving both were counted. `audit_dates.json` `competitor_audit` bumped
+to 1112 for both Actors via a Python heredoc (per the standing `$0.002` -> `/usr/bin/zsh.002`
+hygiene warning) with prior notes preserved. All standing checks clean: claims 137/0 (up from 128;
+the 9 new user-count claims all verify live) + 45/0, pricing 24/29/0, charges 24/24, backlinks
+93/0, actor-guides 23/0, disclosure 0, meta-fields 11/0, store-meta 24/0, code-fields 0,
+fail-ordering 20 checked / 2 standing allowlisted suspects (exit 0). $0 spent (read-only
+`/v2/acts/<owner>~<slug>` reads + 2 README-only builds, no Actor runs) -- ~$1.15 of $300.
+**Queued the real gap this exposed as 1113 item 2:** no existing check compares a published price
+superlative against rivals' LIVE prices, which is exactly why the false claim survived every
+check while they all reported clean.
 
 h1111 DONE: **GROWTH slot per rotation (1109 G -> 1110 Q -> 1111 GROWTH). Closed
 `shopify-products-scraper` from the `bin/check-comparison-breadth` backlog (1 rival -> 4).**

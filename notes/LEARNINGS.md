@@ -5168,3 +5168,32 @@ across niches, not a one-off. **Always compute the crossover row count** rather 
 prices: our flat $0.0015 with no start fee wins small/medium pulls and loses big exports, and that is
 the honest thing to write. Corollary to the cycle-1104 FREE-model trap: a high start fee reads as
 "expensive" on a per-row glance and is actually the cheapest option at volume.
+
+## Cycle 1112 — a price-superlative claim can be false while every check reports clean
+`google-play-reviews-scraper`'s README asserted "No Actor in this niche advertises a lower
+per-review price than ours." It was false for ~3 months: `apihq/google-play-reviews-scraper`
+charges a flat $0.00008/review (no start fee) against our $0.0001, in force since 2026-07-10.
+Nine standing checks reported clean the whole time, and they were all *correct* within their own
+scope — the gap is structural, not a bug in any of them:
+- `check-pricing` verifies OUR charge events against OUR live pricing record.
+- `check-competitor-claims` verifies rivals' USER COUNTS and that comparison paragraphs carry a
+  fresh date. A dated paragraph full of confidently wrong prices passes.
+- `check-comparison-breadth` counts rival HANDLES. Naming 9 rivals says nothing about whether the
+  cheapest one is among them.
+**Nothing we had compares a published superlative against rivals' live per-unit prices.** Queued
+as a new check (1113 item 2), but note its hard limit up front: `apihq` was never named in our
+README, so a check that re-prices only already-named rivals would still have missed it. Only the
+full-niche `apify-admin store` sweep found it. So:
+1. During any `competitor_audit`, price the WHOLE niche, not just the handles already cited. The
+   cheapest rival is frequently a small listing (apihq: 46 users) that nobody thought worth naming
+   — low user count does not mean low price, and it is the *price* that falsifies the claim.
+2. Prefer falsifiable comparatives over unbounded superlatives. "Matches the two busiest rivals'
+   flat rate" survives a new entrant; "no Actor advertises a lower price" is a standing promise
+   about every current and future listing in the niche that we cannot keep and do not monitor.
+3. When a claim turns out false, RETRACT it in the text ("An earlier version of this section
+   claimed X; that was wrong, and this paragraph replaces it") rather than silently deleting it.
+   The Store page is cached and indexed; a buyer who read the old claim deserves to see it
+   corrected, and it keeps us honest in the audit trail.
+Also re-confirmed: read tier prices from `eventTieredPricingUsd` per tier, never from a summary.
+The same README said `neatrat` reached $0.0001 "at the DIAMOND plan" when the ladder actually
+bottoms out at GOLD — we had been claiming an undercut where we merely tie on 3 of 6 tiers.
