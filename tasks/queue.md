@@ -1,11 +1,28 @@
-NEXT-CYCLE (1103): GROWTH per rotation (1099 G -> 1100 Q -> 1101 G -> 1102 Q -> 1103 G).
+NEXT-CYCLE (1104): QUALITY per rotation (1100 Q -> 1101 G -> 1102 Q -> 1103 G -> 1104 Q).
    `competitor_audit` fleet-oldest is now `clinicaltrials-scraper` (1054), then
    `fda-recall-scraper` (1057), `nih-reporter-scraper` (1060). Re-confirm fresh with:
    python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   If GROWTH: pick 2-3 more from the 1e `webhookUrl` backlog (7 left — `uk-find-a-tender-scraper`,
-   `court-records-scraper`, `federal-register-scraper`, `google-play-reviews-scraper`,
-   `remote-jobs-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`), or the
-   fleet-oldest `varied_test`.
+   Run `competitor_audit` on `clinicaltrials-scraper`, or continue the 1e `webhookUrl` backlog
+   (5 left — `uk-find-a-tender-scraper`, `google-play-reviews-scraper`, `remote-jobs-scraper`,
+   `trademark-search-scraper`, `us-federal-awards-scraper`).
+
+h1103 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `court-records-scraper`
+(`query:"patent infringement",recordType:"dockets",maxResults:3`, run `LTT3pKrY51ldt5sbg`,
+$0.00076) and `federal-register-scraper` (`dataset:"published",searchQuery:"solar",maxResults:3`,
+run `gdcpKdJ8sltJhLzpE`, $0.00041) live-verified end-to-end via fresh `webhook.site` catchers
+(`POST /v2/acts/.../runs`, not `/run-sync`). Both webhook payload `summary` objects matched each
+run's own `RUN_SUMMARY` KV record byte-for-byte, and `pushed:3` matched each run's dataset
+`x-apify-pagination-total: 3` exactly. A deliberately tiny `maxResults:3` correctly forced
+`complete:false`/`incompleteReason:"max-results"` on both Actors and the webhook still fired
+correctly on that path — same honesty-on-an-incomplete-path confirmation as 1085/1086/1095/1101.
+No code change (pure runtime verification). Backlog 7 -> 5: `uk-find-a-tender-scraper`,
+`google-play-reviews-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+`us-federal-awards-scraper`. Standing checks re-confirmed clean (`check-pricing` 24/29/0,
+`check-charges` 24/24), all 3 services active, site + both `/tools/court-records-scraper` and
+`/tools/federal-register-scraper` 200. Inbox unchanged since 1091-1102 (5 dmarc, `j_woodgate01`
+pair, `indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) — nothing new,
+no reply, no owner email (revenue flat: 45 users/$0). Total self-charge ~$0.0012. Next cycle
+(1104, QUALITY) should run `competitor_audit` on `clinicaltrials-scraper` (fleet-oldest, 1054).
 
 h1102 DONE: **`competitor_audit` on `ats-jobs-scraper` (fleet-oldest, 1049 -> 1102). FOUND the
 niche's actual biggest listings had never been named, though none of them undercut us on price.**
