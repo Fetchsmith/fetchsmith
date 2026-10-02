@@ -5,7 +5,7 @@
     "properties": {
       "id": {
         "title": "Id",
-        "example": "4058874",
+        "example": "9999959",
         "type": [
           "string",
           "null"
@@ -13,7 +13,7 @@
       },
       "type": {
         "title": "Type",
-        "example": "story",
+        "example": "comment",
         "type": [
           "string",
           "null"
@@ -21,7 +21,7 @@
       },
       "title": {
         "title": "Title",
-        "example": "HackerNews API: What if HN does not have API? Make API on the fly with APIfy",
+        "example": "LLVM for Grad Students",
         "type": [
           "string",
           "null"
@@ -29,7 +29,7 @@
       },
       "url": {
         "title": "Url",
-        "example": "http://apify.heroku.com/resources/4fca535156983f0001000002",
+        "example": "http://adriansampson.net/blog/llvm.html",
         "type": [
           "string",
           "null"
@@ -37,7 +37,7 @@
       },
       "hnUrl": {
         "title": "HnUrl",
-        "example": "https://news.ycombinator.com/item?id=4058874",
+        "example": "https://news.ycombinator.com/item?id=9999959",
         "type": [
           "string",
           "null"
@@ -45,7 +45,7 @@
       },
       "author": {
         "title": "Author",
-        "example": "sathish316",
+        "example": "eslaught",
         "type": [
           "string",
           "null"
@@ -53,7 +53,6 @@
       },
       "points": {
         "title": "Points",
-        "example": 132,
         "type": [
           "number",
           "null"
@@ -61,7 +60,6 @@
       },
       "numComments": {
         "title": "NumComments",
-        "example": 49,
         "type": [
           "number",
           "null"
@@ -69,7 +67,6 @@
       },
       "engagementScore": {
         "title": "EngagementScore",
-        "example": 156.5,
         "type": [
           "number",
           "null"
@@ -77,7 +74,7 @@
       },
       "storyId": {
         "title": "StoryId",
-        "example": 4058874,
+        "example": 9998140,
         "type": [
           "number",
           "string",
@@ -86,6 +83,7 @@
       },
       "storyTitle": {
         "title": "StoryTitle",
+        "example": "LLVM for Grad Students",
         "type": [
           "string",
           "null"
@@ -93,14 +91,31 @@
       },
       "storyUrl": {
         "title": "StoryUrl",
+        "example": "http://adriansampson.net/blog/llvm.html",
         "type": [
           "string",
           "null"
         ]
       },
+      "parentId": {
+        "title": "ParentId",
+        "example": 9999475,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "commentDepth": {
+        "title": "CommentDepth",
+        "example": 3,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "text": {
         "title": "Text",
-        "example": "Hello HN,<p>I built this because I wanted to give Claude Desktop access to my Notion workspace without running a flaky l",
+        "example": "The issue is not having the type info available. AOT compilers certainly have that (or at least, enough of it to get the",
         "type": [
           "string",
           "null"
@@ -108,7 +123,7 @@
       },
       "createdAt": {
         "title": "CreatedAt",
-        "example": "2012-06-02T19:16:33Z",
+        "example": "2015-08-03T21:27:19Z",
         "type": [
           "string",
           "null"
@@ -116,7 +131,7 @@
       },
       "query": {
         "title": "Query",
-        "example": "apify",
+        "example": "rust",
         "type": [
           "string",
           "null"
@@ -177,36 +192,6 @@
           "number",
           "null"
         ]
-      },
-      "_watchChangeType": {
-        "title": "_watchChangeType",
-        "example": [
-          "pointsMilestone"
-        ],
-        "type": [
-          "array",
-          "null"
-        ]
-      },
-      "_watchPrevious": {
-        "title": "_watchPrevious",
-        "example": {
-          "points": 99
-        },
-        "type": [
-          "object",
-          "null"
-        ]
-      },
-      "_watchMilestone": {
-        "title": "_watchMilestone",
-        "example": {
-          "points": 100
-        },
-        "type": [
-          "object",
-          "null"
-        ]
       }
     }
   },
@@ -223,8 +208,8 @@
           "author",
           "points",
           "numComments",
-          "storyId",
-          "storyTitle"
+          "engagementScore",
+          "storyId"
         ]
       },
       "display": {
@@ -262,13 +247,13 @@
             "label": "NumComments",
             "format": "number"
           },
+          "engagementScore": {
+            "label": "EngagementScore",
+            "format": "number"
+          },
           "storyId": {
             "label": "StoryId",
             "format": "number"
-          },
-          "storyTitle": {
-            "label": "StoryTitle",
-            "format": "text"
           }
         }
       }

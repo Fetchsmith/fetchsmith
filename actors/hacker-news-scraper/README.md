@@ -23,6 +23,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 | `minComments` | integer | Only stories with at least this many comments (find high-engagement discussions) — same caveat: jobs and comments have no comment count of their own |
 | `excludeKeywords` | array | Drop any story/comment whose title or text contains any of these words/phrases (case-insensitive) — HN's search has no negative-term syntax, so this is applied client-side after fetching, before you're charged |
 | `domainFilter` | array | Only keep stories (and comments on those stories) whose linked URL's domain matches one of these, e.g. `["github.com","arxiv.org"]` — matches the domain or any subdomain of it, applied client-side after fetching, before you're charged. A comment is matched on its parent story's domain; items with no resolvable URL (text-only posts, jobs) are dropped when this is set |
+| `maxCommentDepth` | integer | Only keep comments this many hops or fewer from their story (`1` = a direct reply to the story, `2` = a reply to a top-level comment, etc). HN's search index carries no depth field, so each comment's depth is resolved by walking its `parentId` chain via HN's own Items API, cached across the run and shared between comments in the same thread — leave empty to return comments at any depth, with no lookup and no `commentDepth` populated. Stories/jobs/polls are never affected |
 | `author` | string | Only items posted by this exact HN username |
 | `postedAfter` / `postedBefore` | string | ISO date bounds |
 | `maxItemsPerQuery` | integer | Cap per query (up to 1000, which is also HN's own hard limit per query — see FAQ) |
@@ -49,6 +50,8 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
   "engagementScore": 161,
   "createdAt": "2026-09-01T12:00:00.000Z",
   "query": "fetchsmith",
+  "parentId": null,
+  "commentDepth": null,
   "githubRepo": null,
   "githubStars": null,
   "githubLanguage": null,
@@ -57,6 +60,8 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 }
 ```
 `githubRepo`/`githubStars`/`githubLanguage`/`githubPushedAt`/`githubOpenIssues` are only populated when `enrichGithubLinks: true` and the item actually links to a GitHub repo (common on Show HN); otherwise they stay `null`.
+
+`parentId` is a comment's immediate HN parent (another comment, or the story itself) — `null` on stories/jobs/polls. `commentDepth` is that comment's distance from its story (`1` = direct reply) — it stays `null` on every row, comment or not, unless you set `maxCommentDepth` on this run; set it and the field is resolved for every comment that matches, not just the ones the limit would drop.
 
 `engagementScore` is `points + numComments × 0.5`, rounded to 1 decimal — a single number for sorting/filtering a result set by engagement without hand-weighing two columns yourself. It is **not** decayed by age (unlike HN's own front-page ranking): an age-decayed score collapses to ~0 for anything older than a few days, which would make it useless on relevance search or `sortBy:"date"` results spanning years — the common case for a keyword search. `null` on comment rows, which never carry `points`/`numComments`.
 
@@ -98,7 +103,7 @@ The actively-growing leader is `gentle_cloud` (157 users, 32 of them in the last
 
 Two rivals ship point/comment thresholds and a date window. `automation-lab` (28 users, `automation-lab/hackernews-scraper`) charges $0.001 per run start plus $0.00115 per story on the Free tier: a 100-story run bills $0.116 there against $0.02 here, and we charge nothing to start a run. It has no comment search, no user lookups, no `excludeKeywords`, no multi-query batching, no watch mode and no webhook. The more capable one is `constructive_calm` (23 users, `constructive_calm/hacker-news-scraper`, 15 inputs): it charges a **$0.01 Actor-start fee** plus $0.0004 per story (2x our Free rate) — but only **$0.00015 per comment, below our flat $0.0002 on the Free tier**. On a comment-heavy run that start fee is what decides it: their $0.01 + $0.00015/comment crosses our $0.0002/comment at about **200 comments**, so for comment-only pulls larger than that they are genuinely cheaper than us on the Free tier, and we only win below that size. From Silver down ($0.00013 and lower) we are cheaper at every run size. `shahidirfan` (56 users, `shahidirfan/hacker-news-data-scraper`) is $0.0009 per result plus a $0.00005 start fee, 4.5x our Free rate, with only 3 inputs. Verified live 2026-10-02.
 
-**What we do not claim.** Our input surface is still not a strict superset of every rival's in this niche: `constructive_calm` ships comment-tree controls (`maxCommentDepth`, `flattenComments`) that we do not — we return comments flat with no depth limit. We closed the other gap named here at cycle 1116 (`domainFilter`, added 2026-10-02): it restricts stories, and comments on those stories, to a given set of link domains the same way `constructive_calm`'s does. `constructive_calm` also exposes user profiles like we do, so profile lookups are no longer unique to us here. We are also not the cheapest listing at every tier or every shape of run: see the Gold-tier match with `gentle_cloud` and the ~200-comment crossover with `constructive_calm` above. Verified live 2026-10-02.
+**What we do not claim.** Our input surface is still not a strict superset of every rival's in this niche. We closed one of the two gaps named here at cycle 1116 (`domainFilter`, added 2026-10-02): it restricts stories, and comments on those stories, to a given set of link domains the same way `constructive_calm`'s does. We've now closed half of the other: `constructive_calm` ships `maxCommentDepth` and `flattenComments`; we added `maxCommentDepth` at cycle 1127 (resolved by walking each comment's parent chain, see Output above), but not `flattenComments` — our comments come from a keyword/tag search across the whole site, not a full per-story crawl, so we never hold a complete thread to flatten in the first place, only the scattered subset that matched. `constructive_calm` also exposes user profiles like we do, so profile lookups are no longer unique to us here. We are also not the cheapest listing at every tier or every shape of run: see the Gold-tier match with `gentle_cloud` and the ~200-comment crossover with `constructive_calm` above. Verified live 2026-10-02.
 
 ## Tips
 - Want the current front page? Set `queries` to `[]` and `tags` to `["front_page"]` — no keyword needed, returns the stories on HN's front page right now (verified against `hacker-news.firebaseio.com/v0/topstories.json`, refreshes on the same cadence as the live site).

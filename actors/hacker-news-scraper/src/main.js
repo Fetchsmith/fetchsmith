@@ -57,6 +57,7 @@ const commentMilestones = parseMilestones(input.watchCommentMilestones, '25,50,1
 const enrichGithubLinks = input.enrichGithubLinks === true;
 const excludeKeywords = [...new Set((input.excludeKeywords ?? []).map((k) => String(k).trim().toLowerCase()).filter((k) => k.length))];
 const domainFilter = [...new Set((input.domainFilter ?? []).map((d) => String(d).trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '')).filter((d) => d.length))];
+const maxCommentDepth = input.maxCommentDepth ? Math.max(1, Math.floor(Number(input.maxCommentDepth))) : null;
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -336,6 +337,8 @@ function mapHit(hit) {
     storyId: storyId ?? null,
     storyTitle: hit.story_title || null,
     storyUrl: hit.story_url || null,
+    parentId: isComment ? (hit.parent_id ?? null) : null,
+    commentDepth: null,
     text: hit.comment_text || hit.story_text || null,
     createdAt,
     query: hit._query ?? null,
@@ -429,6 +432,56 @@ async function enrichGithub(item) {
   }
 }
 
+// Algolia's search hits carry `parent_id` (the comment's immediate parent) but never a depth --
+// to know "how many replies deep is this" we have to walk the parent chain up to the story one
+// hop at a time via the Items API, since nothing in the search index states it directly.
+// Memoized across the whole run: `depthCache` maps an item id -> its depth once known, so two
+// comments in the same thread only pay for the hops that are not already resolved by an earlier
+// one (a comment-heavy run on one popular story converges to near-zero extra lookups after the
+// first few comments from it).
+const depthCache = new Map(); // id -> depth (1 = direct reply to the story), or id -> storyId sentinel never stored
+const DEPTH_LOOKUP_CAP = 300; // bound added latency/requests the same way GITHUB_LOOKUP_CAP bounds GitHub calls
+const DEPTH_WALK_CAP = 60; // HN threads do not nest this deep in practice; guards against an unexpected cycle/bug
+let depthLookups = 0;
+let depthLookupCapped = false;
+
+async function fetchParentId(id) {
+  const res = await gotScraping({
+    url: `https://hn.algolia.com/api/v1/items/${id}`,
+    timeout: { request: 15000 },
+    retry: { limit: 1 },
+    responseType: 'json',
+  });
+  return res.body?.parent_id ?? null;
+}
+
+// Returns the comment's depth (1 = direct reply to the story) or null if it could not be
+// determined (lookup failure or DEPTH_LOOKUP_CAP/DEPTH_WALK_CAP reached) -- callers treat null as
+// "unknown, do not filter it out" rather than dropping data because OUR lookup failed.
+async function computeCommentDepth(objectId, parentId, storyId) {
+  if (depthCache.has(objectId)) return depthCache.get(objectId);
+  const chain = [objectId];
+  let cur = parentId;
+  while (cur != null && cur !== storyId && !depthCache.has(cur)) {
+    if (chain.length >= DEPTH_WALK_CAP) return null;
+    if (depthLookups >= DEPTH_LOOKUP_CAP) {
+      if (!depthLookupCapped) { depthLookupCapped = true; log.warning(`Reached the ${DEPTH_LOOKUP_CAP}-lookup cap for comment-depth resolution -- remaining comments this run keep commentDepth:null and are not filtered by maxCommentDepth.`); }
+      return null;
+    }
+    chain.push(cur);
+    depthLookups += 1;
+    try {
+      cur = await fetchParentId(cur);
+    } catch (e) {
+      log.warning(`Comment-depth lookup failed for item ${cur}: ${e.message} -- leaving commentDepth null for this comment.`);
+      return null;
+    }
+  }
+  const base = depthCache.has(cur) ? depthCache.get(cur) : 0; // cur === storyId, or null/unresolved ancestor -- either way treat as story-level
+  for (let i = chain.length - 1; i >= 0; i -= 1) depthCache.set(chain[i], base + (chain.length - i));
+  return depthCache.get(objectId);
+}
+
 function mapUser(username, data) {
   return {
     id: data.id ?? username,
@@ -442,6 +495,8 @@ function mapUser(username, data) {
     storyId: null,
     storyTitle: null,
     storyUrl: null,
+    parentId: null,
+    commentDepth: null,
     text: null,
     createdAt: null,
     query: null,
@@ -486,6 +541,7 @@ const seenIds = new Set(); // dedup across queries — overlapping/duplicate que
 let duplicates = 0;
 let excluded = 0;
 let domainFiltered = 0;
+let commentDepthFiltered = 0;
 let keepGoing = true;
 // One record per query, written to the RUN_SUMMARY key-value record and posted on the webhook.
 // The DATASET is the only surface a pipeline reads, and there a full 100 rows for a query
@@ -515,7 +571,7 @@ for (const query of queries) {
   let fetched = 0;
   let requestFailed = false;
   const deliveredBefore = pushed;
-  const filteredBefore = excluded + duplicates + domainFiltered;
+  const filteredBefore = excluded + duplicates + domainFiltered + commentDepthFiltered;
   // Algolia's tag syntax: a COMMA between tags means AND, parentheses mean OR. `tags` is a
   // multi-select of content types, and the combinations a buyer actually picks are mutually
   // exclusive — comma-joining them matched NOTHING, forever, with a 200 and no warning
@@ -634,6 +690,16 @@ for (const query of queries) {
         if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
         await enrichGithub(mapped);
       }
+      // Same willDeliver gate as GitHub enrichment above, for the same reason: the parent-chain
+      // walk costs one request per not-yet-cached ancestor, so skip it for rows pushResult would
+      // drop uncharged anyway. Unlike GitHub enrichment this one can also DROP the row (depth
+      // too deep) -- which is exactly right here, since a row we would skip computing depth for
+      // was never going to be charged either way.
+      if (mapped.type === 'comment' && maxCommentDepth != null && willDeliver) {
+        if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+        mapped.commentDepth = await computeCommentDepth(hit.objectID, mapped.parentId, mapped.storyId);
+        if (mapped.commentDepth != null && mapped.commentDepth > maxCommentDepth) { commentDepthFiltered += 1; continue; }
+      }
       keepGoing = await pushResult(mapped, hit.objectID);
       if (!keepGoing) break;
     }
@@ -647,7 +713,7 @@ for (const query of queries) {
   }
   querySummary.scanned = fetched;
   querySummary.delivered = pushed - deliveredBefore;
-  querySummary.filteredOut = (excluded + duplicates + domainFiltered) - filteredBefore;
+  querySummary.filteredOut = (excluded + duplicates + domainFiltered + commentDepthFiltered) - filteredBefore;
   if (requestFailed) {
     erroredQueries.push(query || '<empty>');
     querySummary.status = 'error';
@@ -745,7 +811,7 @@ if (watchMode && seedFailure) {
   }
 }
 
-log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}${domainFiltered ? ` Dropped ${domainFiltered} hit(s) outside domainFilter (not charged).` : ''}`);
+log.info(`Done. Pushed ${pushed} items.${duplicates ? ` Skipped ${duplicates} duplicate hit(s) already returned by an earlier query (not charged).` : ''}${excluded ? ` Dropped ${excluded} hit(s) matching excludeKeywords (not charged).` : ''}${domainFiltered ? ` Dropped ${domainFiltered} hit(s) outside domainFilter (not charged).` : ''}${commentDepthFiltered ? ` Dropped ${commentDepthFiltered} comment(s) deeper than maxCommentDepth (not charged).` : ''}`);
 
 for (const s of truncatedSummaries) {
   log.warning(
@@ -862,6 +928,7 @@ if (pushed === 0 && watchMode && !seeding) {
   }
   if (excluded) reasons.push(`excludeKeywords (${excludeKeywords.join(', ')}) removed all ${excluded} otherwise-matching item(s)`);
   if (domainFiltered) reasons.push(`domainFilter (${domainFilter.join(', ')}) removed all ${domainFiltered} otherwise-matching item(s)`);
+  if (commentDepthFiltered) reasons.push(`maxCommentDepth (${maxCommentDepth}) removed all ${commentDepthFiltered} otherwise-matching comment(s)`);
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   if (timeBudgetExceeded) reasons.push('the run stopped early, approaching the platform run timeout, before any result could be delivered — narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) and try again');
