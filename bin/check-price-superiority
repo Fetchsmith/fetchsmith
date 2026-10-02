@@ -1,0 +1,171 @@
+#!/root/agent/venv/bin/python
+"""Flag a named rival whose LIVE price beats ours but whose README paragraph never says so.
+
+Queued at cycle 1112/1113 (NEXT-CYCLE item 2) after `google-play-reviews-scraper`'s README
+spent ~3 months publishing "No Actor in this niche advertises a lower per-review price than
+ours" while `apihq/google-play-reviews-scraper` had charged 20% less, unnoticed, since
+2026-07-10. `check-pricing` verifies OUR charge events against the platform; `check-
+competitor-claims` verifies rivals' USER COUNTS and paragraph freshness; `check-comparison-
+breadth` counts rival HANDLES. None of the three reads a rival's own live price and compares
+it to ours -- this script is that missing comparison.
+
+Scope, deliberately narrow:
+  - Only looks at rivals we have ALREADY named by full `owner/slug` (same regex as
+    check-comparison-breadth). It cannot catch an UNNAMED cheaper rival -- that needs a full
+    Store sweep during a competitor_audit, same caveat check-comparison-breadth documents.
+  - "Our price" and "rival price" are each reduced to ONE number: the event flagged
+    `isPrimaryEvent` if the live record has one, else the cheapest non-one-time (not a
+    start/setup fee) event, else the cheapest event of any kind. Actors priced per RUN rather
+    than per ROW (a `$0.10/run + $0.00001/row` shape) will compare unfavourably here at low
+    volume and favourably at high volume -- this script picks one number, it does not model
+    a crossover. Treat a flag as "go look", not as a confirmed false claim (same spirit as
+    check-comparison-breadth's NARROW).
+  - A rival on Apify's FREE pricing model prices at $0 (cycle 1104 LEARNINGS: FREE/absent
+    `pricingInfos` is the cheapest possible rival, not missing data -- a checker that skips it
+    sees the opposite of the truth).
+  - A rival whose live pricingModel is neither PAY_PER_EVENT nor FREE (e.g. a flat monthly
+    price) is skipped, not flagged -- not safely comparable to our per-event price with a
+    single number.
+  - Only flags when NO paragraph naming the rival anywhere in the file contains a disclosure
+    keyword (cheap/undercut/lower/beats/crossover/"do not claim"/etc). First tried scoping
+    the disclosure check to the one paragraph where the price comparison lives, and it false-
+    flagged `sam-gov-opportunities-scraper`'s `jungle_synthesizer`: the Pricing paragraph
+    fully discloses it as cheaper ("cheaper than our flat $0.0015 at every tier", "We are not
+    the cheapest... jungle_synthesizer... undercut us"), but an unrelated FAQ paragraph later
+    names the same handle again for its attachment-download feature, with no price word in
+    sight -- same "mention without the magic word" trap `check-competitor-claims`'s RIVALS
+    regex already has to dodge. Whole-file disclosure is the lesser false-positive risk; it
+    could in principle miss a rival disclosed in one README but silently re-named undisclosed
+    in another, but no such case exists in the fleet today.
+
+Read-only: GETs only, no Actor runs, no file writes.
+"""
+import datetime
+import glob
+import json
+import os
+import re
+import sys
+
+import httpx
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API = "https://api.apify.com/v2"
+FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
+DISCLOSED = re.compile(
+    r"cheap|undercut|lower|beats?\b|crossover|do not claim|genuine|free pricing model|\$0\b",
+    re.I,
+)
+EPSILON = 1e-9
+
+
+def token():
+    for line in open(os.path.join(ROOT, "secrets/env")):
+        if line.startswith("APIFY_TOKEN"):
+            return line.split("=", 1)[1].strip().strip('"')
+    sys.exit("check-price-superiority: no APIFY_TOKEN in secrets/env")
+
+
+def effective(pricing_infos, now):
+    live = [p for p in (pricing_infos or [])
+            if p.get("startedAt")
+            and datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    return live[-1] if live else None
+
+
+def price_of(event):
+    if "eventPriceUsd" in event:
+        return event["eventPriceUsd"]
+    tiers = event.get("eventTieredPricingUsd") or {}
+    return (tiers.get("FREE") or {}).get("tieredEventPriceUsd")
+
+
+def headline_price(act_data, now):
+    """(price, label) for the one number this script treats as "the" price, or (None, reason)."""
+    cur = effective(act_data.get("pricingInfos"), now)
+    if cur is None:
+        return None, "no pricing in effect"
+    model = cur.get("pricingModel")
+    if model == "FREE":
+        return 0.0, "FREE pricing model"
+    if model != "PAY_PER_EVENT":
+        return None, f"pricingModel={model}, not comparable"
+    events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+    if not events:
+        return None, "no charge events"
+    primary = [n for n, e in events.items() if e.get("isPrimaryEvent")]
+    if primary:
+        name = primary[0]
+    else:
+        non_onetime = [n for n, e in events.items() if not e.get("isOneTimeEvent")]
+        pool = non_onetime or list(events.keys())
+        name = min(pool, key=lambda n: (price_of(events[n]) if price_of(events[n]) is not None else float("inf")))
+    p = price_of(events[name])
+    return (p, name) if p is not None else (None, f"{name} has no resolvable price")
+
+
+def live_actor(ident, headers, cache={}):
+    if ident not in cache:
+        u, n = ident.split("/")
+        r = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
+        cache[ident] = r.json().get("data") if r.status_code == 200 else None
+    return cache[ident]
+
+
+def main():
+    headers = {"Authorization": f"Bearer {token()}"}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
+    live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
+
+    compared = cheaper_found = flagged = 0
+    for slug in live:
+        path = os.path.join(ROOT, "actors", slug, "README.md")
+        if not os.path.exists(path):
+            continue
+        our = live_actor(f"fetchsmith/{slug}", headers)
+        if our is None:
+            print(f"SKIP {slug}: our own Actor not readable live")
+            continue
+        our_price, our_label = headline_price(our, now)
+        if our_price is None:
+            print(f"SKIP {slug}: our own headline price not resolvable ({our_label})")
+            continue
+
+        text = open(path).read()
+        paragraphs = text.split("\n\n")
+        first_line = {}
+        disclosed_anywhere = {}
+        offset = 1
+        for para in paragraphs:
+            lineno = offset
+            offset += para.count("\n") + 2
+            for ident in sorted(set(FULL_HANDLE.findall(para))):
+                first_line.setdefault(ident, lineno)
+                disclosed_anywhere[ident] = disclosed_anywhere.get(ident, False) or bool(DISCLOSED.search(para))
+
+        for ident, lineno in sorted(first_line.items()):
+            if ident == f"fetchsmith/{slug}":
+                continue
+            rival = live_actor(ident, headers)
+            if rival is None:
+                continue  # gone from Store -- check-competitor-claims already flags this
+            rival_price, rival_label = headline_price(rival, now)
+            if rival_price is None:
+                continue  # not comparable with a single number, see docstring
+            compared += 1
+            if rival_price + EPSILON < our_price:
+                cheaper_found += 1
+                if not disclosed_anywhere[ident]:
+                    flagged += 1
+                    print(f"UNDISCLOSED {slug}/README.md:{lineno}  {ident} charges "
+                          f"${rival_price:g}/{rival_label} (live) vs our ${our_price:g}/{our_label} "
+                          f"-- cheaper and named, but no paragraph in this file discloses it")
+
+    print(f"check-price-superiority: {compared} named-rival price(s) compared, "
+          f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README")
+    return 1 if flagged else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

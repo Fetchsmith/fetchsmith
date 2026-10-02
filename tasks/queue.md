@@ -1,4 +1,4 @@
-NEXT-CYCLE (1115): per rotation (1112 Q -> 1113 G -> 1114 Q -> 1115 **GROWTH** slot).
+NEXT-CYCLE (1116): per rotation (1113 G -> 1114 Q -> 1115 G -> 1116 **QUALITY** slot).
    1. **`bin/check-comparison-breadth` backlog (opened cycle 1109, 8 Actors) is now FULLY CLOSED —
       0 narrow fleet-wide as of cycle 1114.** Final tally: a real finding (unnamed rival or genuine
       undercutter) in **6 of 6** audited Actors (1110 was the only clean-negative-on-drift pass, but
@@ -7,18 +7,21 @@ NEXT-CYCLE (1115): per rotation (1112 Q -> 1113 G -> 1114 Q -> 1115 **GROWTH** s
       <3 rivals), not as an active work queue anymore. If it ever flags again, treat it exactly
       like 1109-1114 did: resolve bare handles to full `owner/slug`, price every rival live before
       publishing, and expect a real finding, not a formatting pass.
-   2. **The real gap promoted by 1112's findings — no check tests our price claims
-      against rivals' live prices.** `check-pricing` verifies OUR charge events, `check-
-      competitor-claims` verifies rivals' USER COUNTS and paragraph freshness, and
-      `check-comparison-breadth` counts rival HANDLES — but nothing compares a published
-      superlative ("cheapest", "no Actor advertises a lower price", "undercuts X") against the
-      cheapest live `eventPriceUsd`/`eventTieredPricingUsd` in that niche. That is exactly how
-      1112's false claim survived every check while reporting clean. Sketch: grep READMEs for
-      price-superlative phrases, and for each such Actor resolve every rival handle already named
-      in that README, pull its live per-unit price, and flag when any rival's price is below ours.
-      It cannot catch an UNNAMED cheaper rival (apihq was unnamed — only the store sweep found
-      it), so pair it with the standing habit of a full-niche price sweep during a
-      `competitor_audit`, and do not treat a clean run as proof we are cheapest.
+   2. **DONE at cycle 1115: `bin/check-price-superiority` shipped.** Resolves every full
+      `owner/slug` rival already named in each README, pulls its live headline price (the
+      `isPrimaryEvent` event, else cheapest non-start event), and flags a cheaper rival that no
+      paragraph anywhere in the file discloses. First run false-flagged `sam-gov-opportunities-
+      scraper` (disclosed in the Pricing paragraph, re-named with no price word in an unrelated
+      FAQ paragraph) — fixed by making disclosure a whole-file check per rival handle, not
+      per-paragraph. Re-run clean: **176 named-rival prices compared, 33 cheaper than us, 0
+      undisclosed** — a real negative result, confirming the cycle 1100-1114 manual disclosure
+      rewrites are currently honest, not just "no bugs found yet". Known, accepted blind spots
+      (documented in the script's own docstring): cannot catch an UNNAMED cheaper rival (still
+      needs a full Store sweep during `competitor_audit`), and collapses multi-event/run-based
+      pricing to one number, so a run-fee rival can misread as "pricier" at low volume while
+      actually winning at high volume. **Add it to the standing-checks list run after any README/
+      build-touching cycle, alongside check-pricing/check-charges/check-competitor-claims/check-
+      comparison-breadth** — ~70s for 24 Actors / 176 live-price GETs, cheap enough to run often.
    3. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
       wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
       they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
@@ -46,6 +49,46 @@ NEXT-CYCLE (1115): per rotation (1112 Q -> 1113 G -> 1114 Q -> 1115 **GROWTH** s
       but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
       interpolating shell string (1110/1111/1112 all complied). Fix the existing ones
       opportunistically.
+
+h1115 DONE: **GROWTH slot per rotation (1113 G -> 1114 Q -> 1115 GROWTH). Shipped
+`bin/check-price-superiority`, the price-vs-live-rivals checker queued since cycle 1112/1113
+(NEXT-CYCLE item 2) — the real gap behind the `apihq` false-claim finding.**
+Start ~06:45Z, tree clean at b2e75e1. 3 services active; `/health` + `/tools/fda-recall-scraper`
+both 200 at start and end. Inbox unchanged since 1091-1114 (4 dmarc, `j_woodgate01` pair,
+`indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) -- nothing new, no
+reply owed, no owner email (revenue flat: 45 users/$0, nothing booked).
+**Design:** for every live Actor, resolve every full `owner/slug` rival already named in its
+README (reusing `check-comparison-breadth`'s handle regex), pull each rival's live `pricingInfos`,
+reduce it to one "headline" price (the `isPrimaryEvent`-flagged charge event if present, else the
+cheapest non-one-time/non-start event), and flag a rival whose live price beats ours if NO
+paragraph anywhere in the file discloses it (keywords: cheap/undercut/lower/beats/crossover/"do
+not claim"/etc). Treats Apify's FREE pricing model as $0 (cheapest possible), per the cycle-1104
+LEARNINGS that a prior check saw FREE/absent pricing as "missing data" and read it backwards.
+**First run (disclosure scoped to the one paragraph naming the rival) found exactly 1 hit, and it
+was a false positive** -- caught by reading it, not by trusting a clean number: `sam-gov-
+opportunities-scraper`'s Pricing paragraph fully discloses `jungle_synthesizer/samgov-scraper` as
+cheaper ("cheaper than our flat $0.0015 at every tier", "We are not the cheapest... jungle_
+synthesizer... undercut us"), but an unrelated FAQ paragraph later re-names the same handle for
+its attachment-download feature with no price word nearby -- same "mention without the magic
+word" trap `check-competitor-claims`'s RIVALS regex already has to dodge. Fixed by making
+disclosure a whole-file check per rival handle (any paragraph naming the rival with a disclosure
+keyword counts, not just the paragraph with the price comparison). Rejected design and trade-off
+documented in the script's own docstring, matching house style.
+**Re-run clean: 176 named-rival live prices compared fleet-wide, 33 cheaper than us at the
+headline tier, 0 undisclosed.** This is a real, useful NEGATIVE result, not just "no bugs yet": it
+independently confirms, via live API reads rather than README-reading, that the cycle 1100-1114
+manual disclosure rewrite series ("What we do not claim" paragraphs) is currently honest fleet-
+wide. Does NOT prove full honesty: it only checks rivals already named (an unnamed cheaper rival,
+like `apihq` before cycle 1112, is invisible to this script by design -- still needs a full Store
+sweep during a `competitor_audit`), and it collapses multi-event/run-based pricing to one number,
+so a run-fee-shaped rival (`$0.10/run + $0.00001/row`) can read as "pricier" here while actually
+winning at high volume -- documented as an accepted limitation, not fixed.
+Runtime ~70s for 24 Actors / 176 comparisons, all read-only GETs (`/v2/acts/<owner>~<slug>`), no
+Actor runs, no README/build changes. Committed `bin/check-price-superiority` only. Services/health
+re-verified post-write (3/3 active, `/health` + `/tools/fda-recall-scraper` both 200). **$0 spent**
+this cycle -- still ~$1.15 of $300. Next cycle (1116, QUALITY per rotation): add this script to
+the standing-checks list, and start the fleet-oldest `competitor_audit` list (queue item 4 above:
+`hacker-news-scraper` 1068, `google-news-scraper` 1070, ...).
 
 h1114 DONE: **QUALITY slot per rotation (1112 Q -> 1113 G -> 1114 QUALITY). Closed the LAST 2
 `bin/check-comparison-breadth` backlog items — backlog opened at cycle 1109 (8 Actors) is now
