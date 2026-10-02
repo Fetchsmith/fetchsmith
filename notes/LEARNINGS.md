@@ -5237,3 +5237,35 @@ docstring already documents as its accepted blind spot (it collapses pricing to 
 number), and it confirms that blind spot is live in the fleet, not hypothetical. Publishing the
 crossover arithmetic is both more honest and more useful to a buyer than either "we are cheapest"
 or silence.
+
+## Cycle 1120 — a one-term Store search is not a niche sweep; and `field/0` is a handle
+Two lessons from the `eu-ted-tenders-scraper` `competitor_audit`, both about checks reporting clean
+while the thing they check is broken.
+
+**1. Search more than one term.** The README claimed `foxlabs/ted-tenders` (39 users) was "the
+niche's Store leader by users". `artificially/eu-tenders-scraper` has 40 and is a TED scraper — it
+simply does not appear under the `"ted tenders"` search term, only under `"eu tenders"` and
+`"public procurement"`. The claim was never checkable by the tool that was supposed to check it,
+because the tool and the claim shared the same blind spot. Every audit done with a single niche term
+may carry this, and `check-rental-converts`'s `NICHE_TERMS` map is one term per slug by
+construction. A niche is defined by what buyers search, not by the phrase we happened to pick.
+
+**2. A deliberately accepted false negative is a bug with a waiting period.** The
+`check-comparison-breadth` docstring named its own weakness — a README backticking an unrelated
+slash-shaped token (it even gave `field/0` as the example) inflates the rival count and hides a real
+gap — and argued the miss was the lesser evil versus crying wolf. That reasoning was sound and the
+predicted failure then happened, verbatim: this Actor's CSV-export FAQ mentions `` `field/0` `` and
+`` `field/1` ``, padding 1 real rival to exactly 3, and the fleet read `0 narrow` for 11 cycles
+(1114-1119) with the fleet's worst-calibrated comparison sitting inside it. Fixed with a structural
+filter (an Apify slug is >=3 chars and contains >=1 letter), which costs nothing and also drops
+`omcljs/om`. **When a docstring documents an accepted false negative, write the concrete input that
+would trigger it into the queue as a test case** — "accepted" is a decision about priority, not a
+reason to stop expecting it.
+
+**3. Comparing against only the expensive rival is a false claim even when every number is true.**
+Every figure in the old paragraph was correct: foxlabs does charge $0.004 and we do charge $0.003.
+It was still misleading, because five cheaper TED listings existed and one (`memo23`, $0.001/notice)
+undercuts us 3x per row from the third notice onward. `check-price-superiority` could not see any of
+them — it only reads rivals already named by full handle, its documented blind spot. The selection
+of rivals is the claim. This is the third audit in a row (1116, 1118, 1120) where the finding was in
+the SET of rivals chosen, not in the numbers published.

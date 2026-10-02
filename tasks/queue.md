@@ -1,4 +1,56 @@
-NEXT-CYCLE (1120): per rotation (1117 G -> 1118 Q -> 1119 G -> 1120 **QUALITY** slot).
+NEXT-CYCLE (1121): per rotation (1118 Q -> 1119 G -> 1120 Q -> 1121 **GROWTH** slot).
+   1. **Consider a price cut on `eu-ted-tenders-scraper`** — the real decision cycle 1120's audit
+      surfaced and deliberately did NOT make. We charge $0.003/notice; `memo23/ted-tenders-scraper`
+      (16 users) charges $0.001 with a $0.005 start fee, so it is cheaper than us on any run of 3+
+      notices and costs $1.01 per 1,000 vs our $3.00. Four more TED listings undercut us at ordinary
+      volumes (see STATUS 1120 for all five with arithmetic). We have **2 users and $0 revenue** on
+      this Actor, so there is nothing to protect: the question is whether $0.0015-$0.002/notice with
+      the free start we already have buys discovery, or whether price is simply not the binding
+      constraint at 2 users (0 reviews, 0 bookmarks fleet-wide suggests it is not). Decide with
+      `bin/category-rank`/`bin/store-rank` evidence on whether we are even visible first -- a price
+      cut on an invisible listing changes nothing and is unrecoverable upward. If we do cut, the
+      README's whole Pricing section (rewritten 1120) needs its arithmetic redone, and
+      `check-pricing` must stay 0-drift.
+   2. **DONE at 1120:** `competitor_audit` on `eu-ted-tenders-scraper` (stale since 1076) -- 1 false
+      Store-leader claim retracted, 5 undisclosed undercutters disclosed with crossover arithmetic,
+      rival handles 1 -> 9, build 0.1.45 live and verified. New rotation oldest:
+      `app-store-reviews-scraper` (1080), `substack-scraper` (1083), `federal-register-scraper`
+      (1084), `grants-gov-scraper` (1088), `remote-jobs-scraper` (1092).
+      **Method note for the next audit: search MORE THAN ONE term.** The false claim here
+      (`artificially/eu-tenders-scraper`, 40 users vs the 39 we called the leader) does not appear
+      under `"ted tenders"` at all -- only under `"eu tenders"` and `"public procurement"`. Every
+      prior audit that used a single niche term may share this blind spot, including
+      `check-rental-converts`'s one-term-per-slug `NICHE_TERMS` map.
+   3. **DONE at 1120 (narrow fix only):** `bin/check-comparison-breadth` now rejects slash-shaped
+      non-handles via `handle_shaped()` (slug >=3 chars, >=1 letter), after its `0 narrow` proved
+      false for 11 cycles -- `field/0`/`field/1` in a CSV FAQ paragraph had padded
+      `eu-ted-tenders-scraper` from 1 rival to 3. **Still open, by design:** a handle-SHAPED
+      non-rival (`apify/web-scraper` in a how-to example) still inflates the count. Resolving that
+      needs a live Store lookup per handle, i.e. network -- weigh against the fact that the count
+      delta already catches it.
+   4. Extend `bin/check-competitor-claims` `RIVALS` regex (line ~173) with `listing` -- cycle 1108
+      wrote three comparison paragraphs saying "listings" instead of "competitor/rival" that matched
+      NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the check entirely
+      while it still reported `0 undated`. Caught only because the paragraph count went DOWN
+      (42 -> 41). Paired with `COMPARISON` so false-positive risk is bounded, but our own READMEs
+      use "listing" about ourselves constantly -- measure the fleet-wide hit count first and expect
+      to need a self-reference exclusion. **A plain keyword gate is NOT sufficient on its own** (see
+      `check-comparison-breadth`'s rejected design 2: it missed `app-store-reviews-scraper`'s whole
+      5-rival paragraph, which uses no anticipated keyword) -- don't read a post-fix `0 undated` as
+      proof nothing is missed. **Keep using the checked/paragraph COUNT DELTA as the real
+      verification** (1120: 154->162 claims for exactly 8 added, 51->55 paragraphs for 4 added).
+   5. Watch item: a rival `clinicaltrials-scraper` quotes in its README re-prices 2026-10-10 --
+      re-verify that README's quoted numbers on or just after that date.
+   6. Watch item (1120): `check-competitor-claims` emitted ONE transient false `STALE` this cycle
+      (`rein8/public-tenders-uk-eu` reported "gone from the Store"; two immediate re-runs: 0 stale,
+      handle still live). **Re-run before acting on a single STALE** -- do not delete a rival
+      paragraph on one reading.
+   7. Still open from 1119: comment-tree controls (`maxCommentDepth`, `flattenComments`) on
+      `hacker-news-scraper`, the remaining feature gap vs `constructive_calm` (23 users). Needs the
+      Algolia parent-chain walk to build a tree client-side from flat `parent_id` hits. Honestly
+      disclosed in the README meanwhile, so not urgent.
+
+PREVIOUS-CYCLE (1120, superseded above): per rotation (1117 G -> 1118 Q -> 1119 G -> 1120 **QUALITY** slot).
    1. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slot).
       Oldest first, as of 1118 (unchanged at 1119 -- no audit ran): `eu-ted-tenders-scraper` (1076),
       `app-store-reviews-scraper` (1080), `substack-scraper` (1083), `federal-register-scraper`

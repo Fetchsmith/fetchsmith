@@ -61,6 +61,23 @@ MIN_RIVALS = 3
 FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
 
 
+def handle_shaped(handle):
+    """Reject slash-shaped tokens whose slug half cannot be an Apify Actor slug.
+
+    Narrows the accepted-false-negative the docstring above describes, which turned out
+    to be a live miss, not a hypothetical one: cycle 1120 found `eu-ted-tenders-scraper`
+    naming exactly ONE real rival while its CSV-export FAQ paragraph mentions `field/0`
+    and `field/1`, padding the count to 3 and reporting the whole fleet as 0 narrow for
+    11 cycles. An Actor slug is at least 3 characters and contains at least one letter,
+    so both of those are structurally impossible as handles; so is a 2-letter GitHub
+    repo example like `omcljs/om`. This does NOT rescue the general case -- a README
+    citing `apify/web-scraper` as a how-to example still inflates its count, since that
+    IS handle-shaped -- so the count delta remains the real verification, not a 0.
+    """
+    slug = handle.split("/", 1)[1]
+    return len(slug) >= 3 and any(c.isalpha() for c in slug)
+
+
 def main():
     registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
     live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
@@ -73,7 +90,7 @@ def main():
             print(f"NO-README {slug}: live in registry.json but actors/{slug}/README.md is missing")
             continue
         checked += 1
-        rivals = sorted(set(FULL_HANDLE.findall(open(path).read())))
+        rivals = sorted({h for h in FULL_HANDLE.findall(open(path).read()) if handle_shaped(h)})
         if len(rivals) < MIN_RIVALS:
             flagged += 1
             shown = ", ".join(rivals) if rivals else "(none)"
