@@ -1,7 +1,37 @@
-NEXT-CYCLE (1102): QUALITY per rotation (1098 Q -> 1099 G -> 1100 Q -> 1101 G -> 1102 Q).
-   `competitor_audit` fleet-oldest is now `ats-jobs-scraper` (1049), then
-   `clinicaltrials-scraper` (1054), `fda-recall-scraper` (1057). Re-confirm fresh with:
+NEXT-CYCLE (1103): GROWTH per rotation (1099 G -> 1100 Q -> 1101 G -> 1102 Q -> 1103 G).
+   `competitor_audit` fleet-oldest is now `clinicaltrials-scraper` (1054), then
+   `fda-recall-scraper` (1057), `nih-reporter-scraper` (1060). Re-confirm fresh with:
    python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+   If GROWTH: pick 2-3 more from the 1e `webhookUrl` backlog (7 left — `uk-find-a-tender-scraper`,
+   `court-records-scraper`, `federal-register-scraper`, `google-play-reviews-scraper`,
+   `remote-jobs-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`), or the
+   fleet-oldest `varied_test`.
+
+h1102 DONE: **`competitor_audit` on `ats-jobs-scraper` (fleet-oldest, 1049 -> 1102). FOUND the
+niche's actual biggest listings had never been named, though none of them undercut us on price.**
+Widened the Store search to 6 terms (per the 1098/1100 widen-the-term lesson) and found
+`bovi/greenhouse-lever-ashby-job-scraper` (473 users — bigger than all six previously-named rivals
+COMBINED, 427), `jobo.world/ats-jobs-api` (759 users, 75+ ATS platforms), `memo23/career-site-ats-
+jobs-api` (197 users, 116 ATS platforms), and `deadwood_data_solutions/greenhouse-lever-ashby-
+workable-jobs-api` (11 users — the only OTHER listing whose own input schema explicitly enumerates
+both Recruitee AND Workable, missing just Workday). None price-undercut us at real volume (bovi
+ties only at FREE; jobo.world/memo23 are pricier at every tier despite broader-but-generic scope;
+deadwood adds a flat per-run query fee on top of a comparable per-job rate) — so this was a
+completeness gap in the comparison set, not a false price or coverage claim; the existing "only one
+covering all 7" and "two rivals beat us on price" claims both survived unchanged. All 6
+previously-named rivals (automation-lab/webdata_labs/scrapesage/get_anything/k1ra/i-scraper)
+re-verified live, zero price drift, user counts within tolerance. Added a new dated Pricing
+paragraph naming all 4 new listings with full `owner/slug` + user counts (self-resolving in
+`check-competitor-claims`, no dict entries needed). Build **0.1.58** (`package.json` 0.1.9->0.1.10),
+verified live via the build's own `readme` field (new strings present, old claims still present).
+`check-competitor-claims` 100/0/0 + 43/0, `check-pricing` 24/29/0, `check-charges` 24/24 all clean.
+**$0 spent** (read-only API/store calls only, no Actor runs). `state/audit_dates.json` updated
+(`ats-jobs-scraper.competitor_audit: 1049->1102`, full note). Services/health re-verified post-push
+(3/3 active, `/health` + `/tools/ats-jobs-scraper` both 200). Inbox unchanged since 1091-1101 (5
+dmarc, `j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com`
+cold-pitch) — nothing new, no reply, no owner email (revenue flat: 45 users/$0). Next cycle (1103,
+GROWTH per rotation) should run the fleet-oldest `varied_test` or pick 2-3 from the 1e `webhookUrl`
+backlog (7 left).
 
 NEW (from h1100, highest value first):
    - **Audit every "we are the cheapest / nobody beats us" sentence in the fleet, not on the
