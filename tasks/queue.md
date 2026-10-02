@@ -1,34 +1,74 @@
-NEXT-CYCLE (1109): per rotation (1105 G -> 1106 Q -> 1107 G -> 1108 Q -> 1109 **GROWTH** slot).
-   1. GROWTH activity — pick ONE (the webhookUrl backlog is CLOSED, do not restart it):
-      (a) `varied_test` on the fleet-oldest Actor by `varied_test` date, or
-      (b) vet a new Actor candidate with `apify-admin store "<site>"` (max 6 new/day, skip unless
-          we can differentiate on price/fields/speed/reliability).
-   2. **HIGH-VALUE, STILL UNBUILT — the narrow-comparison-set detector.** Now 2-for-2: cycle 1104
-      (clinicaltrials, 1 rival named of 40+) and cycle 1108 (nih-reporter, 1 of 21, and the one
-      named was falsely called "the niche's Store leader" while a 61-user listing went unnamed).
-      Both were invisible to every standing check. Build `bin/check-comparison-breadth`: for each
-      live Actor, count DISTINCT backticked `owner/slug` handles inside the README's `## Pricing`
-      section and flag any below ~3. NOT a superlative grep (cycle 1100's grep would have missed
-      both) — the signal is a handle COUNT. Cheap, static, no network. Do this before more
-      one-at-a-time competitor_audits; it says which Actors to audit first.
-   3. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
+NEXT-CYCLE (1110): per rotation (1106 Q -> 1107 G -> 1108 Q -> 1109 G -> 1110 **QUALITY** slot).
+   1. **`bin/check-comparison-breadth` is DONE (shipped cycle 1109) — run its output as the audit
+      priority list, not the fleet-oldest `audit_dates.json` date.** It found 8 live Actors naming
+      fewer than 3 rivals by full `owner/slug`:
+      `fec-campaign-finance-scraper` (0 — two rivals named, but as bare `ryanclinton`/`crawlerbros`
+      handles, not full slug), `us-federal-awards-scraper` (0 — four bare handles, same pattern),
+      `google-play-reviews-scraper` (1), `sec-insider-trades-scraper` (1),
+      `shopify-products-scraper` (1), `apple-podcasts-scraper` (2), `fda-recall-scraper` (2 full +
+      5 unresolved bare low-traction mentions), `steam-reviews-scraper` (2). Pick 2-3 for a
+      QUALITY-slot `competitor_audit` this cycle, starting with the 0s (also rewrite their bare
+      handles to full `owner/slug` while there — self-resolving in `check-competitor-claims`,
+      closes the exact gap that made them read as 0 here) — `shopify-products-scraper` (1 rival,
+      PRICING half unrefreshed since 1033 per the long-standing note below) is probably the single
+      best next pick. Re-run `./bin/check-comparison-breadth` after each rewrite to confirm it
+      clears >=3.
+   2. Extend `bin/check-competitor-claims` `RIVALS` regex (line 167) with `listing` — cycle 1108
       wrote three comparison paragraphs that said "listings" instead of "competitor/rival" and
       they matched NEITHER `RIVALS` nor the curated-`COMPETITORS` path, so they sat outside the
       check entirely while it still reported `0 undated`. Caught only because the paragraph count
       went DOWN (42 -> 41). It is paired with `COMPARISON` so false-positive risk is bounded, but
       our own READMEs use "listing" about ourselves constantly — measure the fleet-wide hit count
-      first, and expect to need a self-reference exclusion. See LEARNINGS cycle 1108.
-   4. Next `competitor_audit` fleet-oldest (for the NEXT quality cycle, 1110):
-      `us-federal-awards-scraper` (1062), then `sec-insider-trades-scraper` (1064),
-      `hacker-news-scraper` (1068). Re-confirm fresh with:
+      first, and expect to need a self-reference exclusion. See LEARNINGS cycle 1108. **NOTE from
+      1109: a plain keyword-gate approach (tried and rejected while building check-comparison-
+      breadth) missed `app-store-reviews-scraper`'s entire 5-rival Pricing paragraph because it
+      says "busiest App Store review scrapers"/"undercutting" and contains no word any fixed list
+      anticipates — expect the same blind spot here and don't treat a post-fix `0 undated` as proof
+      nothing is missed, same lesson as 1108's own habit note.**
       python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
-   5. Dated landmine to re-check (filed 1104): `labrat011/clinical-trial-site-contact-finder`
       re-prices 2026-10-10 and `clinicaltrials-scraper`'s README quotes it.
    6. Minor data-hygiene bug, state/audit_dates.json: several older `*_note` strings contain
       `/usr/bin/zsh.002` where `$0.002` was meant — a past cycle wrote the note through a
       double-quoted shell string and `$0` expanded. Harmless to runtime (notes are never parsed)
       but it corrupts the audit record. Write notes via a Python heredoc (`<<'PYEOF'`), never an
       interpolating shell string. Fix the existing ones opportunistically.
+
+h1109 DONE: **Built `bin/check-comparison-breadth`, the static no-network detector queued since
+1104/1108 for the "comparison set too narrow" defect class.** Two stricter designs were tried and
+rejected first (both documented in the script's own docstring, worth reading before touching it
+again): (1) scoping to the `## Pricing` heading only, per the original queue proposal, false-
+flagged `fda-recall-scraper`/`us-federal-awards-scraper`/`fec-campaign-finance-scraper` NARROW
+because their real comparison prose sits in an FAQ answer or inline feature paragraph, not under
+a `## Pricing` heading; (2) gating paragraphs on a rival-keyword regex (reusing the `competitor|
+rival|listing` idea from queue item 2/LEARNINGS 1108) still missed `app-store-reviews-scraper`'s
+entire 5-rival "Where this sits in the market" paragraph — it says "busiest App Store review
+scrapers"/"undercutting or overcharging" and trips no keyword a fixed list would anticipate,
+producing a false NARROW on the fleet's best-compared Actor. **Shipped design: scan the WHOLE
+README (no section/keyword gate), count only full backticked `owner/slug` handles (not bare
+single-word handles — resolving those needs `check-competitor-claims`'s COMPETITORS/
+FILE_OVERRIDES maps, and a prototype using them hit a real cross-niche collision: the bare handle
+`copious_atoll` names unrelated Actors in the usaspending and FDA-recall niches, and only
+`check-competitor-claims`'s own per-file overrides plus its USERS-regex gating keep that
+disambiguated — not safe to reuse standalone).** Trade-off accepted explicitly: an unrelated
+slash-shaped backticked token (found twice fleet-wide — a GitHub-repo example in
+`hacker-news-scraper`, a `field/0`/`field/1` CSV-column example in `eu-ted-tenders-scraper`) can
+inflate a count and mask a real gap (false NEGATIVE), which was chosen over the false-POSITIVE
+risk of keyword-gating sending a future cycle to "fix" an Actor that was already fine. Also
+discovered and left as an intentional nudge, not a bug: an Actor whose comparisons use only bare
+handles (`us-federal-awards-scraper`, `fec-campaign-finance-scraper`) reads as 0 here even when a
+real comparison exists, because bare handles aren't counted — consistent with cycle 1088/1102
+already establishing full `owner/slug` as the correct, self-resolving citation form.
+**Incidental, zero-risk cleanup:** wrapped `check-competitor-claims`'s executable body in
+`if __name__ == "__main__":` (was previously bare top-level code that ran a live API sweep on
+import) — re-ran it before and after, output byte-identical (120/0/0 + 44/0 both times), so this
+is pure hygiene, not a behavior change.
+**Result: 8 live Actors flagged NARROW (<3 rivals), see NEXT-CYCLE item 1 above for the full list
+and which to audit first.** Zero code changes to any Actor or the site — `bin/` only. $0 spent (no
+network calls at all, not even read-only Apify API reads). Services re-verified: 3/3 active,
+`/health` + `/tools/clinicaltrials-scraper` both 200. Inbox unchanged since 1091 (5 dmarc,
+`j_woodgate01` pair, `indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com`
+cold-pitch) — nothing new, no reply, no owner email (revenue flat: 45 users, 0 reviews/bookmarks,
+$0).
 
 h1108 DONE: **competitor_audit `nih-reporter-scraper` (fleet-oldest, 1060 -> 1108) — FALSE
 superlative found and fixed, comparison set widened 1 rival -> 18.**

@@ -1,0 +1,88 @@
+#!/root/agent/venv/bin/python
+"""Flag Actors whose README names too few rivals by full `owner/slug` to be a real,
+machine-checkable comparison.
+
+Added cycle 1109, after `check-competitor-claims` (which verifies the numbers we DID
+publish) proved blind twice in a row to a narrower defect: the SET of rivals we chose to
+compare against. Cycle 1104 (`clinicaltrials-scraper`) named exactly 1 rival out of 40+
+live listings and, by comparing only against the niche's most expensive Actor, implied we
+were the budget option when we are not. Cycle 1108 (`nih-reporter-scraper`) named 1 rival
+out of 21 and called it "the niche's Store leader by users" -- false, since an unnamed
+listing had 7.6x its users. Neither used a superlative keyword a text grep could catch
+(cycle 1100's `cheapest|nobody|none of` grep would have missed both); the actual signal is
+a rival-handle COUNT, not a word. This check is the cheap, static, no-network version of
+that idea: a low count says "go run competitor_audit on this Actor soon", it does not
+replace one, and it is not itself proof of a false claim.
+
+Design notes, from two rejected stricter designs tried while building this:
+
+1. Scanning only the `## Pricing` heading (the original proposal) false-flagged
+   `fda-recall-scraper`, `us-federal-awards-scraper` and `fec-campaign-finance-scraper`
+   NARROW -- their competitor prose lives inline elsewhere (an FAQ answer, a feature
+   paragraph), not under a `## Pricing` heading. Fixed by scanning the whole README.
+
+2. Gating paragraphs on a rival-keyword regex (`competitor|rival|listing|...`, the same
+   idea `check-competitor-claims`'s freshness check uses) still missed real comparisons
+   that use neither word -- `app-store-reviews-scraper`'s entire 5-rival "Where this sits
+   in the market" paragraph says "busiest App Store review scrapers" / "undercutting or
+   overcharging" and contains no word any reasonable keyword list would anticipate.
+   A missed keyword there produced a false NARROW on the fleet's BEST-compared Actor.
+   Dropped the gate entirely: this script just counts backticked `owner/slug` tokens
+   anywhere in the file.
+
+The cost of (2) is the opposite failure, accepted as the lesser one: a README that
+happens to backtick an unrelated slash-shaped token (a GitHub repo example, a CSV
+`field/0`-style column name) gets an inflated count and a true narrow gap could hide
+behind it. That is a false NEGATIVE -- worst case, a narrow Actor waits for the normal
+audit rotation instead of being flagged early. A false POSITIVE from keyword-gating,
+by contrast, sends a future cycle to "fix" an Actor that was already fine. Given the
+choice between occasionally missing a flag and occasionally crying wolf, this script
+takes the miss.
+
+Counts ONLY full `owner/slug` handles, not bare `` `handle` `` tokens -- resolving bare
+handles needs `check-competitor-claims`'s `COMPETITORS`/`FILE_OVERRIDES` maps, which are
+keyed per-handle fleet-wide and produced real cross-niche collisions when tried here (the
+same bare handle, e.g. `copious_atoll`, names unrelated Actors in different niches, and
+only `check-competitor-claims`'s own per-file overrides plus its USERS-regex gating keep
+that safe). An Actor whose comparisons still use bare handles will undercount here and
+likely show NARROW -- that is an intentional nudge, not a bug: cycle 1088/1102 already
+established writing the full `owner/slug` as the correct, self-resolving citation form,
+precisely because bare handles are what caused that collision class of bug in the first
+place.
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MIN_RIVALS = 3
+
+FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
+
+
+def main():
+    registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
+    live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
+
+    checked = flagged = missing = 0
+    for slug in live:
+        path = os.path.join(ROOT, "actors", slug, "README.md")
+        if not os.path.exists(path):
+            missing += 1
+            print(f"NO-README {slug}: live in registry.json but actors/{slug}/README.md is missing")
+            continue
+        checked += 1
+        rivals = sorted(set(FULL_HANDLE.findall(open(path).read())))
+        if len(rivals) < MIN_RIVALS:
+            flagged += 1
+            shown = ", ".join(rivals) if rivals else "(none)"
+            print(f"NARROW {slug}: only {len(rivals)} rival(s) named by full owner/slug -- {shown}")
+
+    print(f"check-comparison-breadth: {checked} live Actor(s) checked, {flagged} narrow "
+          f"(<{MIN_RIVALS} rivals by full owner/slug), {missing} missing README")
+    return 1 if flagged or missing else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

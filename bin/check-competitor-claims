@@ -194,63 +194,64 @@ def sources():
     )
 
 
-headers = {"Authorization": f"Bearer {token()}"}
-today = datetime.date.today()
-checked = flagged = unresolved = 0
+if __name__ == "__main__":
+    headers = {"Authorization": f"Bearer {token()}"}
+    today = datetime.date.today()
+    checked = flagged = unresolved = 0
 
-for path in sources():
-    name = os.path.relpath(path, ROOT)
-    competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
-    for lineno, line in enumerate(open(path), 1):
-        for handle, slug, claimed in USERS.findall(line):
-            # A claim that backticks the full `owner/slug` (queue item 2c asks every new
-            # competitor paragraph to do exactly that) needs no COMPETITORS entry -- the
-            # README already said which Actor it means. Only a bare handle needs the dict.
-            ident = handle + slug if slug else competitors.get(handle)
-            if ident is None:
-                # Cycle 1088: this used to be a silent `continue`, so a bare handle nobody
-                # had registered was reported as neither checked nor skipped -- it just
-                # vanished, and `solidcode` (7 users, really 8) hid there for 47 cycles.
-                unresolved += 1
-                print(f"UNCHECKED {name}:{lineno}  `{handle}` ({claimed} users) is not in COMPETITORS "
-                      f"and the claim does not backtick a full owner/slug -- cannot verify")
+    for path in sources():
+        name = os.path.relpath(path, ROOT)
+        competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
+        for lineno, line in enumerate(open(path), 1):
+            for handle, slug, claimed in USERS.findall(line):
+                # A claim that backticks the full `owner/slug` (queue item 2c asks every new
+                # competitor paragraph to do exactly that) needs no COMPETITORS entry -- the
+                # README already said which Actor it means. Only a bare handle needs the dict.
+                ident = handle + slug if slug else competitors.get(handle)
+                if ident is None:
+                    # Cycle 1088: this used to be a silent `continue`, so a bare handle nobody
+                    # had registered was reported as neither checked nor skipped -- it just
+                    # vanished, and `solidcode` (7 users, really 8) hid there for 47 cycles.
+                    unresolved += 1
+                    print(f"UNCHECKED {name}:{lineno}  `{handle}` ({claimed} users) is not in COMPETITORS "
+                          f"and the claim does not backtick a full owner/slug -- cannot verify")
+                    continue
+                checked += 1
+                claimed = int(claimed.replace(",", ""))
+                actual = live_users(ident, headers)
+                if actual is None:
+                    flagged += 1
+                    print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
+                elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
+                    flagged += 1
+                    print(f"STALE {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
+
+    print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, "
+          f"{flagged} stale, {unresolved} unresolvable")
+
+    # -------------------------------------------------------------- freshness
+    checked = stale = 0
+    for path in sources():
+        name = os.path.relpath(path, ROOT)
+        competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
+        text = open(path).read()
+        offset = 1
+        for para in text.split("\n\n"):
+            lineno = offset
+            offset += para.count("\n") + 2
+            named = sorted({h for h in TOKEN.findall(para) if h in competitors})
+            if not named and not (RIVALS.search(para) and COMPARISON.search(para)):
                 continue
+            what = ", ".join(named) if named else "an unnamed competitor"
             checked += 1
-            claimed = int(claimed.replace(",", ""))
-            actual = live_users(ident, headers)
-            if actual is None:
-                flagged += 1
-                print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
-            elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
-                flagged += 1
-                print(f"STALE {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
+            dates = [datetime.date.fromisoformat(d) for d in DATED.findall(para)]
+            newest = max(dates) if dates else None
+            if newest is None:
+                stale += 1
+                print(f"UNDATED {name}:{lineno}  compares against {what} with no 'verified YYYY-MM-DD'")
+            elif (today - newest).days > MAX_AGE_DAYS:
+                stale += 1
+                age = (today - newest).days
+                print(f"STALE {name}:{lineno}  compares against {what}, last verified {newest} ({age}d ago)")
 
-print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, "
-      f"{flagged} stale, {unresolved} unresolvable")
-
-# ------------------------------------------------------------------ freshness
-checked = stale = 0
-for path in sources():
-    name = os.path.relpath(path, ROOT)
-    competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
-    text = open(path).read()
-    offset = 1
-    for para in text.split("\n\n"):
-        lineno = offset
-        offset += para.count("\n") + 2
-        named = sorted({h for h in TOKEN.findall(para) if h in competitors})
-        if not named and not (RIVALS.search(para) and COMPARISON.search(para)):
-            continue
-        what = ", ".join(named) if named else "an unnamed competitor"
-        checked += 1
-        dates = [datetime.date.fromisoformat(d) for d in DATED.findall(para)]
-        newest = max(dates) if dates else None
-        if newest is None:
-            stale += 1
-            print(f"UNDATED {name}:{lineno}  compares against {what} with no 'verified YYYY-MM-DD'")
-        elif (today - newest).days > MAX_AGE_DAYS:
-            stale += 1
-            age = (today - newest).days
-            print(f"STALE {name}:{lineno}  compares against {what}, last verified {newest} ({age}d ago)")
-
-print(f"check-competitor-claims: {checked} competitor paragraph(s) checked, {stale} undated/stale")
+    print(f"check-competitor-claims: {checked} competitor paragraph(s) checked, {stale} undated/stale")
