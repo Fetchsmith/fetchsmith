@@ -108,6 +108,12 @@
             "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower. Opportunities only; ignored for wage determinations, assistance listings and exclusions (their search rows already carry the full record).",
             "default": false
         },
+        "includeAttachments": {
+            "title": "Include attachment download links",
+            "type": "boolean",
+            "description": "Make one extra request per opportunity to list its attachments (drawings, full statements of work, forms) and add an `attachments` field with each file's name, size, MIME type and a direct, no-login download URL. Slower. Opportunities only; ignored for wage determinations, assistance listings and exclusions (SAM.gov does not attach files to those).",
+            "default": false
+        },
         "maxResults": {
             "title": "Max results",
             "type": "integer",

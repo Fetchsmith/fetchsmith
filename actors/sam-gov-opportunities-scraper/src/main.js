@@ -14,6 +14,17 @@ const input = (await Actor.getInput()) ?? {};
 // developer API, no ToS click-through, no login, no key.
 const SEARCH_API = 'https://sam.gov/api/prod/sgs/v1/search/';
 const DETAIL_API = 'https://sam.gov/api/prod/opps/v2/opportunities';
+// Same keyless backend, a v3 endpoint distinct from DETAIL_API's v2 -- the detail call's own
+// `additionalInfo.sections` lists an "attachments-links" section but never the files themselves.
+// Probed live cycle 1133: `GET .../opps/v3/opportunities/<id>/resources` returns the real list, and
+// `.../opps/v3/opportunities/resources/files/<resourceId>/download` 303-redirects to a presigned,
+// public (no key/login/cookie) S3 URL -- but that redirect target expires in ~9 seconds, so the
+// STABLE sam.gov URL is what gets published, not the presigned one, which would be dead before a
+// buyer's pipeline got to it.
+const ATTACHMENTS_API = 'https://sam.gov/api/prod/opps/v3/opportunities';
+function attachmentDownloadUrl(resourceId) {
+    return `${ATTACHMENTS_API}/resources/files/${resourceId}/download`;
+}
 
 // The SAME keyless backend multiplexes several of SAM.gov's public data types behind `index=`
 // (cycle 703's rule, cycle 704's build). Probed live cycle 704/707, all 200 OK with no key/login:
@@ -262,6 +273,7 @@ const states = (Array.isArray(input.states) ? input.states : []).map((v) => Stri
 const organizationId = String(input.organizationId ?? '').trim();
 const activeOnly = input.activeOnly !== false; // default true
 let enrichDetail = input.enrichDetail === true;
+let includeAttachments = input.includeAttachments === true;
 
 // Filters that only exist on the opportunity index. Silently ignoring them in a wage-determination
 // run would return a full 10,000-row unfiltered set that LOOKS filtered -- and every row is billed.
@@ -285,6 +297,11 @@ if (isWd) {
         // Rather than enrich one of three modes asymmetrically, enrichment is opportunity-only.
         log.warning(`enrichDetail is only supported for dataType "opportunities"; ignored for "${dataType}".`);
         enrichDetail = false;
+    }
+    if (includeAttachments) {
+        // Wage determinations are not notices and carry no attachment resources on this API.
+        log.warning(`includeAttachments is only supported for dataType "opportunities"; ignored for "${dataType}".`);
+        includeAttachments = false;
     }
 }
 // The cfda index shares `organization_id` with opportunities (confirmed live cycle 707:
@@ -312,6 +329,11 @@ if (isCfda) {
         // detail call would add. Opportunity-only, same reasoning as the wd branch above.
         log.warning(`enrichDetail is only supported for dataType "opportunities"; ignored for "${dataType}".`);
         enrichDetail = false;
+    }
+    if (includeAttachments) {
+        // Assistance-listing programs are not notices and carry no attachment resources on this API.
+        log.warning(`includeAttachments is only supported for dataType "opportunities"; ignored for "${dataType}".`);
+        includeAttachments = false;
     }
 }
 // `states` is confirmed APPLIED-BUT-FAILS-CLOSED on the exclusions index (`state=TX` -> 0 of
@@ -350,6 +372,11 @@ if (isExclusions) {
         log.warning(`enrichDetail is only supported for dataType "opportunities"; ignored for "${dataType}".`);
         enrichDetail = false;
     }
+    if (includeAttachments) {
+        // Exclusion records are not notices and carry no attachment resources on this API.
+        log.warning(`includeAttachments is only supported for dataType "opportunities"; ignored for "${dataType}".`);
+        includeAttachments = false;
+    }
 }
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 200), 1), 10000); // 10k = confirmed backend depth cap (cycle 538)
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -367,7 +394,7 @@ if (webhookUrlRaw) {
 }
 
 log.info(`Starting SAM.gov ${ROW_NOUN} search (dataType=${dataType}, index=${SEARCH_INDEX})`, {
-    keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail, watchLabel,
+    keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail, includeAttachments, watchLabel,
 });
 
 function buildSearchUrl(page, size) {
@@ -551,6 +578,8 @@ function normalizeRow(row) {
         placeOfPerformanceState: null,
         placeOfPerformanceCountry: null,
         pointOfContact: null,
+        // Attachment list, filled in only when includeAttachments is on (extra HTTP call per row).
+        attachments: null,
     };
 }
 
@@ -724,6 +753,35 @@ function idOf(item) {
 }
 
 let detailLookupsFailed = 0;
+let attachmentLookupsFailed = 0;
+
+// A notice with no files at all is common and real (most presolicitations and many award
+// notices have none) -- that is `attachments: []`, not a failure. A failed lookup leaves
+// `attachments: null` instead, same "null means the call broke, not that the answer is empty"
+// rule as enrichDetail's fields, so a buyer can tell the two apart from the row alone.
+async function fetchAttachments(item) {
+    if (!item.opportunityId) { item.attachments = null; return item; }
+    const resp = await apiGet(`${ATTACHMENTS_API}/${item.opportunityId}/resources`);
+    if (!resp) { attachmentLookupsFailed += 1; item.attachments = null; return item; }
+    // A notice with zero attachments omits `_embedded` entirely rather than returning an empty
+    // list under it (verified live cycle 1133 against several sources-sought notices) -- `resp`
+    // being a real, non-null response with no `_embedded` key IS the genuine "no files" answer.
+    const list = resp._embedded?.opportunityAttachmentList?.[0]?.attachments ?? [];
+    item.attachments = list
+        // `deletedFlag`/`fileExists` filter out resources SAM.gov still lists but no longer serves.
+        // `accessLevel !== 'public'` (export-controlled or explicit-access files) is excluded too --
+        // this Actor publishes no-login public links only, never a URL that would 403/redirect to
+        // a SAM.gov sign-in for the buyer.
+        .filter((a) => a.deletedFlag !== '1' && a.fileExists !== '0' && a.accessLevel === 'public')
+        .map((a) => ({
+            name: a.name ?? null,
+            mimeType: a.mimeType ?? null,
+            sizeBytes: typeof a.size === 'number' ? a.size : null,
+            postedDate: a.postedDate ?? null,
+            downloadUrl: a.resourceId ? attachmentDownloadUrl(a.resourceId) : null,
+        }));
+    return item;
+}
 
 async function enrichOne(item) {
     if (!item.opportunityId) return item;
@@ -1108,6 +1166,18 @@ if (!seeding) {
             markIncomplete('enrich-failed', `${detailLookupsFailed} of ${results.length} detail lookup(s) failed; their naics/set-aside/place-of-performance/contact fields are null for that reason, not because SAM.gov has none`);
         }
     }
+    if (includeAttachments) {
+        log.info(`Fetching attachment lists for ${results.length} row(s)...`);
+        for (const item of results) {
+            await fetchAttachments(item);
+            await sleep(200);
+        }
+        // Same null-means-broken rule as enrich-failed above: an attachments lookup that failed
+        // leaves `attachments: null`, not `[]` (a notice with genuinely zero files is `[]`).
+        if (attachmentLookupsFailed) {
+            markIncomplete('attachments-failed', `${attachmentLookupsFailed} of ${results.length} attachment lookup(s) failed; their attachments field is null for that reason, not because the notice has none`);
+        }
+    }
 
     let beforePush = 0;
     let index = 0;
@@ -1244,6 +1314,7 @@ const runSummary = {
     maxResults,
     chargeLimitReached,
     detailLookupsFailed: enrichDetail ? detailLookupsFailed : null,
+    attachmentLookupsFailed: includeAttachments ? attachmentLookupsFailed : null,
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
     baselineSize: watchMode ? watchSeen.size : null,

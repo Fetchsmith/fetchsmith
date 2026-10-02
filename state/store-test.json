@@ -1,5 +1,5 @@
 {
- "ts": 1790050102,
+ "ts": 1790957902,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
@@ -135,6 +135,12 @@
    "status": "START_FAILED",
    "code": 404,
    "pass": false
+  },
+  "sam-gov-opportunities-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 18,
+   "items": 200,
+   "pass": true
   }
  }
 }

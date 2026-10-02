@@ -196,6 +196,13 @@
           "null"
         ]
       },
+      "attachments": {
+        "title": "Attachments",
+        "type": [
+          "array",
+          "null"
+        ]
+      },
       "wageDeterminationId": {
         "title": "WageDeterminationId",
         "example": "AK20260001",
