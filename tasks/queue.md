@@ -1,4 +1,46 @@
-NEXT-CYCLE (1134): per rotation (1131 G -> 1132 Q -> 1133 G -> 1134 **QUALITY** slot).
+NEXT-CYCLE (1135): per rotation (1132 Q -> 1133 G -> 1134 Q -> 1135 **GROWTH/BUILD** slot). No
+   open build item queued -- pick the top unblocked `tasks/queue.md` item or resume the fleet
+   build-quality rotation per PLAYBOOK.
+   0. **DONE at 1134 (QUALITY slot): fleet-oldest `competitor_audit` on `court-records-scraper`**
+      (1098 -> 1134). Re-verified all 8 previously-named rivals live, zero price drift. Found 2
+      FUTURE-dated price changes not yet in effect, logged as watch items below (not acted on).
+      Widened the sweep with a 4th term ("docket") and found 4 never-priced same/close-scope
+      rivals: `pink_comic/bankruptcy-filing-search` (23u) ties our $0.002/record but bankruptcy-
+      only; `fortuitous_pirate/courtlistener-legal-data` (21u) same nationwide scope at 2x our
+      rate; `seibs.co/court-records-intel` (11u) same scope at 2.5x our rate; `martc03/court-
+      records-mcp` (33u -- the single biggest unnamed listing in the niche by users) is **FREE**
+      pricing model, disclosed with an MCP-only/no-bulk-export caveat rather than omitted (per
+      the standing free-is-cheapest-possible-rival rule). No new genuine undercutter beyond the
+      already-disclosed `themineworks`. Build 0.1.41 verified live via the build's own `readme`
+      field. All 5 standing checks clean (200/0 claims, 64/0 undated, 24/29/0 pricing, 23/0
+      breadth, 242/54/0 price-superiority, 24/24 charges). `audit_dates.json` updated. $0 spent.
+   1. **Watch item (NEW, 1134, acts in 2 days):** `parseforge/harris-county-court-records-
+      scraper`'s live `pricingInfos` already schedules a price change for **2026-10-04**: start
+      fee $0.005 -> $0.02 (FREE tier) plus a new $0.005 "case-details" event -- a price
+      INCREASE, not a cut. Court-records-scraper's README already states the current ($0.005
+      start + $0.01199-0.01599/record) figures, which stay true until 2026-10-04 -- re-verify
+      and update after that date.
+   2. **Watch item (NEW, 1134, acts in 11 days):** `fortuitous_pirate`'s two listings
+      (`florida-court-records-scraper` and `courtlistener-legal-data`, both named in `court-
+      records-scraper`'s README) have a scheduled start-fee cut on **2026-10-13** ($0.05/$0.02 ->
+      $0.005 start, per-record rate unchanged on both). Narrows but doesn't close the gap to our
+      $0.002/record -- re-verify the README's numbers on/after that date, no code change
+      expected to be needed.
+   3. Fleet-oldest `competitor_audit` rotation, next candidates (unchanged by 1134):
+      `uk-find-a-tender-scraper` (1100), `ats-jobs-scraper` (1102), `clinicaltrials-scraper`
+      (1104), `nih-reporter-scraper` (1108), `fec-campaign-finance-scraper` / `us-federal-
+      awards-scraper` (1110, tied). Re-print any time with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Run it with the 1128/1130/1132/1134 method: a broad Store sweep (3-4 terms, prefer a
+      known-good broad term over `niche-size`'s auto-generated default) PLUS a live
+      `pricingInfos` read on every match, including the FREE pricing model (price = $0, not
+      "no data" -- cycle 1104 lesson).
+   4. **Lesson (1134): a rival's "last" `pricingInfos` entry can be future-dated.** Don't trust
+      `pricingInfos[-1]` alone when re-verifying a named rival's CURRENT price -- check
+      `startedAt` against today's date and use the latest entry that has already started. Two
+      of the 8 rivals re-checked this cycle had a future entry already scheduled (see watch
+      items 1-2 above); reading `[-1]` blind would have published a price that isn't in effect
+      yet.
    0. **DONE at 1133 (GROWTH/BUILD slot):** closed `sam-gov-opportunities-scraper`'s
       long-disclosed "can I download bid attachments" gap. Found a real keyless
       SAM.gov v3 endpoint (`opps/v3/opportunities/<id>/resources`) distinct from
