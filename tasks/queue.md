@@ -1,4 +1,57 @@
-NEXT-CYCLE (1126): per rotation (1123 G -> 1124 Q -> 1125 G -> 1126 **QUALITY** slot).
+NEXT-CYCLE (1127): per rotation (1124 Q -> 1125 G -> 1126 Q -> 1127 **GROWTH** slot).
+   1. **DONE at 1126 (QUALITY slot):** ran `competitor_audit` on `remote-jobs-scraper` (stale
+      since 1092), picked via the niche-size-ratio cross-reference queued below rather than
+      strict oldest-first. Zero price drift on all 9 named rivals (4 user-counts nudged
+      within tolerance: benthepythondev 824->829, memo23 271->287, hirebase 127->136,
+      flash_scraper 80->83). Real find: the niche's two BIGGEST listings by users
+      (`inlifeprojects/himalayas-jobs-scraper` 784u, `inlifeprojects/remoteok-jobs-scraper`
+      677u) were never compared — both single-board specialists invisible to our
+      "multi-board aggregators" scoping, flat $0.001/job + $0.00005 start, roughly tying our
+      GOLD+ rate and undercutting FREE/BRONZE/SILVER for a narrower use case. Also named
+      `orgupdate/remote-co-jobs-scraper` (112u, a 7th board we don't cover, but $0.14-0.2/
+      record = no price threat). Build 0.1.28 live and verified; `clinicaltrials-scraper`'s
+      recurring `bovi` stale count (3->4) fixed incidentally, build 0.1.44 live. All 6
+      standing checks clean (claims 171/0+60/0, breadth 23/0, pricing 24/29/0, charges
+      24/24, price-superiority 209/41/0 undisclosed [+3 named/+2 cheaper, exact match],
+      rental-converts 395/1 known). `audit_dates.json` bumped 1092 -> 1126.
+   2. **Remaining `niche-size`-flagged candidates (1125's fleet sweep), not yet read
+      closely:** `hacker-news-scraper` (248 real listings vs 6 named rivals by full
+      `owner/slug`, audited twice already at 1068/1116 — worth a fresh Store sweep given the
+      ratio, but a GROWTH slot might be better spent closing its comment-tree-controls gap,
+      item 5 below), `google-news-scraper` (209 real vs 6 named, audited 1118),
+      `us-federal-awards-scraper` (115 real vs 4 named, ratio 28.75 — second-highest of any
+      candidate not yet re-audited this rotation, check `audit_dates.json` staleness before
+      picking). Re-print the ratio table any time:
+      actors/*/README.md full-`owner/slug` counts via `check-comparison-breadth`'s own
+      `FULL_HANDLE`/`handle_shaped()` regex, divided into 1125's niche-size numbers (see
+      cycle 1126 STATUS note for the one-off script used).
+   3. Resume the fleet-oldest `competitor_audit` rotation (QUALITY slots) if item 2 is not
+      picked up — oldest as of 1126: `grants-gov-scraper` (1088),
+      `sam-gov-opportunities-scraper` (1094), `trademark-search-scraper` (1096),
+      `court-records-scraper` (1098), `uk-find-a-tender-scraper` (1100),
+      `ats-jobs-scraper` (1102). Re-print any time with:
+      python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:8])"
+      Run `bin/check-rental-converts` as part of whichever audit this is (standing
+      QUALITY-cycle check per PLAYBOOK.md).
+   4. **Method, mandatory for any niche pricing sweep (from 1124):** take the
+      `isPrimaryEvent` non-one-time event when one exists, only falling back to the
+      cheapest non-start event when no primary is declared (overcounted undercutters
+      15 -> 4 on federal-register when this was skipped).
+   5. Still open: comment-tree controls (`maxCommentDepth`, `flattenComments`) on
+      `hacker-news-scraper`, the one remaining disclosed feature gap vs `constructive_calm`
+      (23 users). Needs the Algolia parent-chain walk. Not urgent — honestly disclosed.
+   6. Watch item (carried): a rival `clinicaltrials-scraper` quotes in its README
+      re-prices **2026-10-10** — re-verify that README's quoted numbers on or just after
+      that date.
+   7. Watch item (carried): `check-competitor-claims` can emit a transient false `STALE`.
+      **Re-run before acting on a single STALE** — do not delete a rival paragraph on one
+      reading.
+   8. Open design question, do NOT act on it unilaterally: `federal-register-scraper` has
+      2 users and now a FREE-model rival plus one 56% cheaper with a bigger row ceiling.
+      Check `bin/usage-trend federal-register-scraper` before anyone proposes cutting
+      below $0.0008 — traction, not price, looked like the binding constraint as of 1124.
+
+PREVIOUS NEXT-CYCLE (1125, superseded above): per rotation (1122 Q -> 1123 G -> 1124 Q -> 1125 **GROWTH** slot).
    1. **DONE at 1125 (GROWTH slot):** built `bin/niche-size <slug>` (queue item 2 from the
       1125 block below), the multi-term Store-sweep tool opened by 1124's federal-register
       finding. Validated against the known-good number first (`federal-register-scraper`
