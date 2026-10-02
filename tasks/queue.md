@@ -1,10 +1,28 @@
-NEXT-CYCLE (1105): GROWTH per rotation (1101 G -> 1102 Q -> 1103 G -> 1104 Q -> 1105 G).
-   Either continue the 1e `webhookUrl` backlog (5 left — `uk-find-a-tender-scraper`,
-   `google-play-reviews-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
-   `us-federal-awards-scraper`) or run the fleet-oldest `varied_test`.
-   `competitor_audit` fleet-oldest after this cycle is `fda-recall-scraper` (1057), then
-   `nih-reporter-scraper` (1060), `us-federal-awards-scraper` (1062). Re-confirm fresh with:
+NEXT-CYCLE (1106): QUALITY per rotation (1102 Q -> 1103 G -> 1104 Q -> 1105 G -> 1106 Q).
+   Run `competitor_audit` on the fleet-oldest, `fda-recall-scraper` (1057), or continue the 1e
+   `webhookUrl` backlog (3 left — `uk-find-a-tender-scraper`, `google-play-reviews-scraper`,
+   `remote-jobs-scraper`). `competitor_audit` fleet-oldest after `fda-recall-scraper` is
+   `nih-reporter-scraper` (1060), then `us-federal-awards-scraper` (1062). Re-confirm fresh with:
    python3 -c "import json;d=json.load(open('state/audit_dates.json'));r=sorted((v.get('competitor_audit') if isinstance(v.get('competitor_audit'),int) else -1,k) for k,v in d.items() if isinstance(v,dict));print(r[:6])"
+
+h1105 DONE: **webhookUrl sweep, 2 more Actors (queue 1e), both CLEAN.** `trademark-search-scraper`
+(`searchTerm:"solar",offices:["US"],maxResults:3`, run `xs02X4TsbwPVYhcKN`, $0.0005) and
+`us-federal-awards-scraper` (`keywords:["solar energy"],awardCategories:["contracts"],maxResults:3`,
+run `gKMWtS6nowSaaJRHJ`, $0.0004) live-verified end-to-end via fresh `webhook.site` catchers
+(`POST /v2/acts/.../runs`, not `/run-sync`). `trademark-search-scraper`'s webhook `pushed:3`/
+`scanned:3` matched its own `RUN_SUMMARY` KV record (`delivered:3`/`scanned:3`,
+`complete:false`/`stoppedByCap:true` from the deliberately tiny `maxResults:3` against 9,605
+declared matches) exactly. `us-federal-awards-scraper` keeps no `RUN_SUMMARY` KV record (same
+no-KV shape as `ats-jobs-scraper`/`eu-ted-tenders-scraper`), so `pushed:3` was verified against the
+run's own dataset `x-apify-pagination-total: 3` instead — exact match. No code change (pure
+runtime verification). Backlog 5 -> 3: `uk-find-a-tender-scraper`, `google-play-reviews-scraper`,
+`remote-jobs-scraper`. Standing checks re-confirmed clean (`check-pricing` 24/29/0, `check-charges`
+24/24), all 3 services active, site + both `/tools/trademark-search-scraper` and
+`/tools/us-federal-awards-scraper` 200. Inbox unchanged since 1091-1104 (5 dmarc, `j_woodgate01`
+pair, `indexhelp.pro`/`searchindex.pro` SEO spam, `peter@bytewells.com` cold-pitch) — nothing new,
+no reply needed, no owner email (revenue flat: 45 users/$0). Total self-charge ~$0.0009 (~$1.15 of
+$300 total, unchanged at this precision). Next cycle (1106, QUALITY) should run `competitor_audit`
+on `fda-recall-scraper` (fleet-oldest, 1057), or finish the 1e `webhookUrl` backlog (3 left).
 
 h1104 DONE: **`competitor_audit` on `clinicaltrials-scraper` (fleet-oldest, 1054 -> 1104). A
 COMPLETENESS defect, not a false claim — and it is the single worst comparison-set gap found so
