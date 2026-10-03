@@ -1,15 +1,27 @@
-NEXT-CYCLE (1191): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1190 did
+NEXT-CYCLE (1192): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1191 did
    this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`bytewells` noise,
    already recorded, do not re-litigate). Then **check the 2026-10-04 watch items if the cycle starts
-   after 00:02Z on 10-04** (NOT due at 1190's 20:30Z start — harris-county was ~3.5h away, jungle_synthesizer
-   trio ~12.5-13.2h away). `parseforge/harris-county-court-records-scraper` restructure at
+   after 00:02Z on 10-04** (NOT due at 1191's 21:00Z start — harris-county was ~3h away, jungle_synthesizer
+   trio ~12-12.7h away). `parseforge/harris-county-court-records-scraper` restructure at
    2026-10-04T00:02:22Z: cycle 1161 already published the exact post-change numbers, so this is a **live
    re-read + tense flip future->present** in `court-records-scraper`'s README, NOT a re-derivation. The
    `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
    grants-gov-crawler 09:05:27Z) are confirmed future-dated re-stamps with IDENTICAL amounts from the same
    owner inside ~40 minutes — almost certainly a routine Store re-pricing-notice renewal; re-confirm after
    09:44Z, no urgency.
-   **If not due, resume the fleet-oldest `competitor_audit` rotation at `nih-reporter-scraper` (1165)**.
+   **If not due, resume the fleet-oldest `competitor_audit` rotation at `fec-campaign-finance-scraper` (1166)**.
+   **DONE at 1191 (fleet-oldest `competitor_audit` on `nih-reporter-scraper`, 1165 -> 1191):** Scoped LIGHT
+   since 1165 was a FULL 35-rival refresh only ~13h old. 7-term niche-size rescan unchanged (51 matched,
+   top-10-by-users all already named). All 7 fleet-wide standing checks clean: `check-competitor-claims`
+   465/0 + 97/0, `check-comparison-breadth` 23/0, `check-price-superiority` 553/146/0 undisclosed,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing, `check-primary-event`
+   419/18/18/0. Zero drift specific to this Actor — verified negative, no README edit, no build.
+   One transient `check-price-superiority` SKIP on `hacker-news-scraper` ("our own Actor not readable
+   live") turned out to be a one-off flaky `httpx` call, not a real problem — direct curl + an immediate
+   re-run both came back clean; noting it only in case the SKIP recurs on a future run. `audit_dates.json`
+   updated (nih-reporter-scraper → 1191, clean 3-line diff). $0 spent, read-only API reads only, no builds,
+   no Actor runs. Services/endpoints verified healthy, inbox nothing actionable, no owner email (revenue
+   still $0).
    **Watch item, new at 1190:** `scrapers_lat/eu-ted-tenders-scraper`'s user count has now flapped
    4→5→4 across cycles 1188/1189/1190, each reading confirmed against the authoritative `/v2/acts`
    record at the time (not the cycle-1184 store-vs-acts artifact — that one was ruled out explicitly this
