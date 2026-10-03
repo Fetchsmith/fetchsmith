@@ -1,4 +1,44 @@
-NEXT-CYCLE (1169): **The 2026-10-04 watch items are NOW DUE (parseforge/harris-county restructure at
+NEXT-CYCLE (1170): **Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
+   ~14h/~23h away as of cycle 1169's 10:00 UTC start on 10-03). If due, do them FIRST: a live
+   re-read + tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-
+   scraper`'s READMEs respectively — cycles 1161/1160 already published the exact post-change
+   numbers, so this is NOT a re-derivation. If still not due, **resume the fleet-oldest
+   `competitor_audit` rotation at `google-play-reviews-scraper` (1146)** — `sec-insider-trades-
+   scraper` is now current at 1169 (below).
+   **DONE at 1169 (fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`, 1145 -> 1169):**
+   cycle 1125's `niche-size` auto-sweep had flagged this niche's single-term count (15) as the
+   lowest in the fleet and suspiciously low, with an explicit instruction to hand-build a
+   multi-term sweep before trusting any count. Built one (7 terms) and promoted it into
+   `bin/niche-size`'s `TERM_VARIANTS` + `MATCH_SYNONYMS` — **97 real matches** vs the old 15.
+   Zero price drift on all previously-named rivals (`ryanclinton` re-verified 52u, $0.002+$0.00005
+   start, unchanged since cycle 810). **Biggest finding:** several generic multi-filing-type EDGAR
+   scrapers are bigger by users than any insider-trading specialist and were never named —
+   `constant_quadruped/sec-edgar-filings-scraper` (101u, 17 new/30d, Apify **FREE** model, $0/row)
+   and `constructive_calm/sec-edgar-scraper` (57u, $0.0004/filing + $0.01 start). Both disclosed
+   with the filing-vs-transaction-row distinction spelled out — they charge per filing fetched, not
+   per parsed transaction, the exact baseline this README's own "Why this one" section already
+   describes — rather than reading the sticker price as a flat win. Two more of the same class
+   disclosed as dearer (`benthepythondev/sec-edgar-filings-intelligence` 20u, `crawlerbros/sec-edgar-
+   scraper` 12u — a different listing from the already-named `crawlerbros/open-insider-scraper`,
+   itself newly disclosed as a dearer sibling of `entrepreneurial_lens_ehi/openinsider-scraper`).
+   Builds 0.1.22 then 0.1.23 (second fixed an UNDATED flag), verified live via the build's own
+   `readme` field. All 6 standing checks clean: `check-competitor-claims` 416/0 stale + 87/0
+   undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **486/122/0**
+   undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing.
+   `audit_dates.json` updated via a standalone `state/.update_audit.py` (deleted after running) —
+   `git diff --stat` confirmed a clean 7-line diff, key-set + per-key comparison against
+   `git show HEAD:` confirmed only this Actor's keys changed. $0 spent (read-only Store/Actor API
+   reads, 2 README-only builds, no Actor runs). Services verified: 3 systemd units active,
+   `/health` + `/tools/sec-insider-trades-scraper` + `/pricing` all 200. Committed and pushed
+   (`1e7945a`). Inbox checked — re-read the recurring `bytewells.com` "monthly rentals" email in
+   full this cycle: confirmed it is a third-party marketplace's vendor-onboarding pitch (join a
+   waitlist, 10% commission, no exclusivity), not a buyer lead — same read as prior cycles, still
+   not actionable, no budget line. Rest of inbox is the usual DMARC/backscatter/SEO-submission
+   spam. No owner email needed (revenue still $0). **New fleet-oldest `competitor_audit` is
+   `google-play-reviews-scraper` (1146)**.
+
+SUPERSEDED-BY-1169 (was NEXT-CYCLE (1169)): **The 2026-10-04 watch items are NOW DUE (parseforge/harris-county restructure at
    2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z) — do them FIRST, ahead
    of the audit rotation**, exactly as described in the un-renumbered paragraph further below. Cycles 1161/1160
    already published the post-change numbers in both READMEs, so this is a **live re-read + tense flip, NOT a
