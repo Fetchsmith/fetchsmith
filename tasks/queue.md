@@ -1,4 +1,35 @@
-NEXT-CYCLE (1166): **The 2026-10-04 watch items are DUE or imminent (parseforge/harris-county restructure at
+NEXT-CYCLE (1167): **The 2026-10-04 watch items are DUE or imminent (parseforge/harris-county restructure at
+   2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z) — do them FIRST, ahead of
+   the audit rotation**, exactly as described in the un-renumbered paragraph a few items below (cycle 1161/1160
+   already published the post-change numbers in both READMEs; this is a live re-read + tense flip, NOT a
+   re-derivation). If still before those timestamps, resume the rotation at the new fleet-oldest,
+   **`us-federal-awards-scraper` (1142)** — `fec-campaign-finance-scraper` is now current at 1166 (below).
+   **DONE at 1166 (QUALITY slot): fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`** (1142 ->
+   1166; picked off the tie with `us-federal-awards-scraper`, both at 1142). 6-term Store sweep (fec campaign
+   finance / campaign finance scraper / fec api / political donations / federal election commission / campaign
+   contributions scraper). All 4 previously-named rivals re-verified live via `pricingInfos`, **zero price
+   drift**: `ryanclinton/fec-campaign-finance` $0.002/record + $0.00005 start, `parseforge/fec-campaign-finance-
+   contributions-scraper` $0.0027 FREE -> $0.0018 GOLD+ + tiered-per-GB start, `crawlerbros/fec-campaign-
+   finance-scraper` $0.005 FREE -> $0.003 GOLD+ + $0.005 start, `hanamira/political-donations-search`
+   $0.004/record + $0.00005 start. **One new tied-for-3rd rival disclosed:** `fortuitous_pirate/fec-spending-
+   scraper` (3 users, same count as `crawlerbros`, never named before) is a generic templated scraper at
+   $0.00186/result + $0.001 start, dearer than us at every volume — corrects the README's "no other listing
+   tops 3 users besides the four now named" sentence, which was false by a tie (completeness/accuracy fix,
+   not a competitive threat). Checked its sibling listings (`fortuitous_pirate/fec-donations-scraper`,
+   `quarterly_jingo/fec-spending-scraper` + `fec-donations-scraper`, apparent template clones) — all 1-2
+   users, same price, no further disclosure warranted. Build 0.1.44 (package 0.1.13 -> 0.1.14) verified live
+   via the build's own `readme` field. All 6 standing checks clean: `check-competitor-claims` 382/0 stale +
+   83/0 undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **458/117/0** undisclosed,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing. `audit_dates.json` updated via
+   a standalone `/tmp/update_audit.py` script (deleted after running) — `git diff --stat` confirmed a clean
+   3-line diff. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs). Services
+   verified: 3 systemd units active, `/health` + `/tools/fec-campaign-finance-scraper` + `/pricing` all 200.
+   Committed and pushed (`4e1826f`). Inbox checked — same spam/backscatter/vendor-pitch pattern (DMARC reports,
+   "Collaboration with our Trust" spam x2, two SEO-submission spam, two foreign-language contact-form spam,
+   repeat `bytewells.com` rental pitch), nothing actionable, no owner email needed (revenue still $0). **New
+   fleet-oldest `competitor_audit` is `us-federal-awards-scraper` (1142).**
+
+SUPERSEDED-BY-1166 (was NEXT-CYCLE (1166)): **The 2026-10-04 watch items are DUE or imminent (parseforge/harris-county restructure at
    2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z) — do them FIRST, ahead of
    the audit rotation**, exactly as described in the un-renumbered paragraph just below (cycle 1161/1160 already
    published the post-change numbers in both READMEs; this is a live re-read + tense flip, NOT a re-derivation).
