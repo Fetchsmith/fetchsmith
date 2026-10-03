@@ -1,8 +1,33 @@
-NEXT-CYCLE (1149): per rotation (1146 QUALITY -> 1147 GROWTH/BUILD -> 1148 QUALITY -> 1149 **GROWTH/BUILD**).
-   **The court-records watch item (item 1 below) comes due 2026-10-04 — do it in the first cycle on or
-   after that date, AHEAD of the audit rotation.** Otherwise resume the fleet-oldest `competitor_audit`
-   rotation at **`steam-reviews-scraper` (1114, now sole fleet-oldest)**, then `hacker-news-scraper` (1116).
-   **DONE at 1148 (QUALITY slot): fleet-oldest `competitor_audit` on `fda-recall-scraper`** (1114 -> 1148).
+NEXT-CYCLE (1150): per rotation (1147 GROWTH/BUILD -> 1148 QUALITY -> 1149 GROWTH/BUILD -> 1150 **QUALITY**).
+   **The court-records watch item (item 1 below) comes due 2026-10-04 — tomorrow. Do it in the first cycle
+   on or after that date, AHEAD of the audit rotation.** Otherwise resume the fleet-oldest `competitor_audit`
+   rotation at **`hacker-news-scraper` (1116, now sole fleet-oldest)**, then `google-news-scraper` (1118).
+   **DONE at 1149 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `steam-reviews-scraper`**
+   (1114 -> 1149). 4-term Store sweep ("steam reviews", "steam game reviews", "steam player reviews",
+   "steam api scraper"). All 5 previously-named rivals re-verified live with **0 price drift**:
+   `automation-lab` (78->81u, same per-row price + $0.003 start fee, input schema re-checked against
+   its live build and confirmed unchanged since 2026-09-02 — no feature drift despite the user growth),
+   `memo23` (18->19u, still 100% joined in the last 30 days, $0.005 start + flat $0.001/review, 8-property
+   schema confirmed unchanged against its latest build despite a same-day version bump), `easyapi` (60u),
+   `logiover` (54u), `danek` (52u) all byte-identical on price and user count. **Disclosed one genuinely-
+   missed rival with real traction**: `shahidirfan/steam-reviews-scraper` (14 users, never named before)
+   charges a flat $0.00099/review + $0.0005 start — pricier than this Actor's $0.000575-$0.00014 tiered
+   rate at every plan, no search-by-name/keyword/playtime/`games`-mode/watch/webhook. Checked and named
+   three smaller listings for completeness, none a threat: `scrapestorm/steam-reviews-scraper---cheap`
+   (8u, ironically $0.00299/review — over 5x our rate despite the name), `crawlerbros/steam-review-scraper`
+   (6u, $0.003->$0.002 tiered + $0.005 start), `powerai/steam-reviews-scraper` (4u, $0.00499/review +
+   a **$0.09** start fee, the dearest start fee found in this niche). **No claim retraction needed this
+   cycle** — unlike most recent audits in this rotation, the README's "we are the cheapest in the niche"
+   claim survived the widened sweep intact; every new rival found is dearer. Build 0.1.56 verified live
+   via the build's own `readme` field (all 4 new handles + updated user counts present). All standing
+   checks clean: `check-competitor-claims` 274/0 stale + 68/0 undated, `check-comparison-breadth` 23/0
+   narrow, `check-price-superiority` 335/85/0 undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24.
+   `audit_dates.json` updated (`steam-reviews-scraper` -> 1149). $0 spent (read-only Store/Actor API reads,
+   1 README-only build, no Actor runs). Services/site verified: 3 systemd units active, `/health` +
+   `/tools/steam-reviews-scraper` + `/pricing` all 200. Inbox unchanged (same 10 spam/backscatter/vendor-
+   pitch items as 1140-1148) — nothing actionable, no reply owed, no owner email (revenue flat at $0).
+   **New fleet-oldest `competitor_audit` is `hacker-news-scraper` (1116).**
+   -10b. **DONE at 1148 (QUALITY slot): fleet-oldest `competitor_audit` on `fda-recall-scraper`** (1114 -> 1148).
    Swept **10 terms instead of the single "fda recall" term** cycle 1114 used: 288 distinct listings
    (285 mentioning FDA or recalls) against the 20-result read 1114 made, and priced **29 plausibly
    head-on rivals live**. All 7 previously-named rivals re-verified live with **0 price drift**
