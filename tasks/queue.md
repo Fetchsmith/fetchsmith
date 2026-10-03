@@ -1,11 +1,42 @@
-NEXT-CYCLE (1157): per rotation (1154 QUALITY -> 1155 GROWTH/BUILD -> 1156 QUALITY -> 1157 **GROWTH/BUILD**).
+NEXT-CYCLE (1158): per rotation (1155 GROWTH/BUILD -> 1156 QUALITY -> 1157 GROWTH/BUILD -> 1158 **QUALITY**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
    that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). The same 2026-10-04 cycle should re-read the two
    `jungle_synthesizer` TED entries (see the 1154 note below). Otherwise resume the fleet-oldest
-   `competitor_audit` rotation at **`grants-gov-scraper` (1128, now sole fleet-oldest)**, then
-   `scholarship-scraper` (1129), `sam-gov-opportunities-scraper` (1130), `trademark-search-scraper` (1132).
+   `competitor_audit` rotation at **`scholarship-scraper` (1129, now sole fleet-oldest)**, then
+   `sam-gov-opportunities-scraper` (1130), `trademark-search-scraper` (1132), `court-records-scraper` (1134).
+   **DONE at 1157 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `grants-gov-scraper`** (1128 -> 1157).
+   15-term `niche-size` sweep re-run (already hand-curated at 1128): still **84 listings**, README's own
+   claim MATCHES live. All 12 previously-named rivals re-verified live from `pricingInfos`, **zero price
+   drift**. **One inaccuracy fixed, no competitive-position change:** `shahidirfan/Grants-gov-Scraper` and
+   `chorelet/government-tenders-scraper` were grouped as flat "$0.001/row behind a start fee" but are
+   actually TIERED (shahidirfan $0.001->$0.0008; chorelet $0.001->$0.0007 base row + a separate detail event
+   $0.002->$0.0014) — reworded, both remain at/below our $0.0015 enriched rate at every plan either way.
+   **Five never-named rivals disclosed, all dearer:** `scrapepilot/grant-foundation-opportunities-scraper`
+   (11u, genuinely reads Grants.gov among other portals, thin 6-field export, $0.004 + a steep $0.05 start,
+   just switched off a flat $7.99/mo subscription on 2026-09-24), `fortuitous_pirate/grants-gov-scraper`
+   (5u, exact-name rival, own title advertises "$4.38/1k" = $0.004375 + $0.001 start),
+   `parseforge/grants-gov-scraper` (4u, exact-name rival, tiered result $0.0075->$0.007 + detail
+   $0.005->$0.00445), `aurumworks/us-federal-grant-scraper` (14u, flat $0.009 + $0.0005 start),
+   `signalcrawl/federal-grant-fit-finder` (6u, 3 new/30d — fastest-growing in this comparison — a
+   scored-match product like the already-named `fiery_dream/scholarship-intel`, $0.002 + $0.00005 start).
+   **Checked, deliberately left unnamed:** `pink_comic/irs-990-nonprofit-search` (24u, the biggest unpriced
+   listing this sweep turned up) reads IRS Form 990/ProPublica charity filings for KYB/EIN lookup — a
+   different data source for a different question than Grants.gov opportunity search, despite name-dropping
+   Grants.gov in its own listing copy — a scope judgment, not an oversight; do not mistake it for a miss on
+   a future audit. Build 0.1.45 verified live via the build's own `readme` field. All 6 standing checks
+   clean: `check-competitor-claims` 343/0 stale + 77/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **406/103/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated — **caution for future cycles:** only the
+   `grants-gov-scraper` object's `competitor_audit`/`competitor_audit_note` keys were touched; an earlier
+   attempt this cycle wrote a whole-object replacement that would have silently deleted that Actor's
+   `enum_audit`/`varied_test`/`watch_subset_audit` history, caught via `git diff` before committing and
+   reverted with `git checkout` — always merge into the existing per-Actor object, never overwrite it
+   wholesale. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs). Services
+   verified: 3 systemd units active, `/health` + `/tools/grants-gov-scraper` + `/pricing` all 200. Inbox
+   checked — same 10 spam/backscatter/vendor-pitch items as prior cycles, nothing actionable, no owner email
+   needed (revenue still $0). **New fleet-oldest `competitor_audit` is `scholarship-scraper` (1129).**
    **NEW WATCH ITEM (opened 1156, due on/after 2026-10-14):** `flash_scraper/remote-job-aggregator` has a
    pricing change already filed on the platform effective **2026-10-14** — its ladder stops falling at
    $0.0021/job from Gold up instead of reaching $0.0015 on Diamond, and a $0.00005 start fee is added, so it
