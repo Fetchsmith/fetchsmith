@@ -1,4 +1,69 @@
-NEXT-CYCLE (1180): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1181): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
+   cycle 1180's 15:30 UTC start on 10-03 they were ~8.5h and ~18h away, so still NOT due at 1181). If due,
+   do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
+   `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already published the exact
+   post-change numbers, so this is NOT a re-derivation. **If not due, resume the fleet-oldest
+   `competitor_audit` rotation at `remote-jobs-scraper` (1156)** — and when you do, use 1180's wider method
+   below (price EVERY matching listing, not the top-10 by users) if that niche is also flat by user count;
+   note `remote-jobs-scraper` returned **240 matches** on the cycle-1125 fleet sweep, the largest in the
+   fleet, so budget for it or scope to a documented subset rather than half-finishing the sweep.
+   **NEW WATCH ITEM (opened 1180):** `jungle_synthesizer/whitehouse-executive-actions-crawler` (named in
+   `federal-register-scraper`) carries a **future-dated** `pricingInfos` entry effective
+   **2026-10-04T09:44:38Z** with IDENTICAL amounts ($0.10 start + $0.0005/row). No README change is needed
+   now and none should be made pre-emptively — just re-read that record after the timestamp (same owner and
+   almost the same hour as the euipo watch item above, so fold it into that visit) and confirm the amounts
+   really did land unchanged.
+   **DONE at 1180 (fleet-oldest `competitor_audit` on `federal-register-scraper`, 1155 -> 1180):** 15-term
+   `niche-size` sweep (420 seen, **89 matched**, down 1 from 90 — README total updated). All **18**
+   previously-named rivals re-priced live via `pricingInfos`: **zero price drift AND zero user-count drift**;
+   `bikram07` still FREE-model, `koalastuff` (0.001/0.0009/0.0008/0.0007 Gold+) and `nexgensignal`
+   (0.05/0.045/0.04/0.0335 Gold+) tier ladders confirmed exact.
+   **Method change worth reusing: priced ALL 89 matching listings instead of stopping at the top-10 by
+   users.** Justified because the niche is flat — biggest listing 14 users, median 2 — so user-rank is noise
+   and "read the top 10" is an arbitrary cut. One extra ~90-call read-only sweep, ~2 min, $0.
+   **The result: the raw cheapest-row-event scan flagged 17 of 89 as undercutting our $0.0008/row and ALL 17
+   were decoys** (real rates 1.25x–25x DEARER). This is the cycle-1176 `isPrimaryEvent` trap running the
+   other way — 1176 learned the headline flag can point at too-cheap an event; taking the *cheapest* event is
+   the same error with no flag to blame. Three decoy shapes, all now in LEARNINGS: (a) **unstacked PPE** — a
+   10-listing `zentrafoundry` vertical cluster stacks 4-5 `$0.0001` events (`dataset-processed`,
+   `record-saved`, `enriched-record`, a vertical `*-scan`) beside its real `result-delivered` at **$0.02**,
+   since a 2026-10-01 repricing whose own `reasonForChange` says "Unstack PPE: primary event at the Store
+   price, others $0.0000x"; (b) **vestigial dataset-item** — `sovereign_workspace` prices
+   `apify-default-dataset-item` at $0.00001 while its real `document-matched` is **$0.01**; (c) **unflagged
+   start fee** — `george.the.developer` and `copious_atoll` carry an `actor-start` event with
+   `isOneTimeEvent` ABSENT rather than true, so a per-row scan reads $0.00005 as the row rate (rule: treat a
+   sub-$0.0001 event whose title contains "start" as a start fee regardless of the flag).
+   **So ZERO genuine new undercutters — the README's "four cheaper, one ties" count is re-verified intact
+   after a 10x-wider sweep.** Recorded as a finding with method + date, per the new LEARNINGS point that a
+   re-verified negative IS a result; a later cycle can now trust that count without re-deriving it.
+   **Disclosed 6 never-named listings, all dearer:** `challenge_logic/federal-register-deadline-monitor`
+   (2u/1u30d, $0.0015 + $0.00005 start, 1.9x — the closest *feature* rival on the page: a pure comment-close
+   -deadline product competing with a field we ship flat on every document),
+   `malonestar/adcvd-trade-remedy-tracker` (2u, tiered $0.008/$0.0064/$0.0056/$0.0044/$0.0032/$0.0024 —
+   **dearer on EVERY tier**, 3x at best), `brightpath-data/federal-register-search` (2u, $0.0015 + $0.0001
+   start, caps maxResults 100), `sovereign_workspace/federal-register-monitor` (2u, $0.01),
+   `george.the.developer/federal-register-monitor` (2u, $0.02 + $0.05 full-text-brief add-on),
+   `copious_atoll/federal-register-scraper` (1u, $0.001). Also **corrected the zentrafoundry count from 3 to
+   13 listings** and named all 13.
+   **New tiebreak rule in LEARNINGS: live `pricingInfos` beats the rival's own README.** 1176/1177 said "read
+   the rival's pricing table, not the headline flag"; `george.the.developer` breaks the tie the other way —
+   its README advertises a $0.25 start fee and $0.10 brief while the live record bills $0.00005 and $0.05.
+   Use the README prose to identify WHICH event is the real per-row charge, take the AMOUNT from the live
+   record. Both agreed on the load-bearing $0.02/document here, so no published claim moved.
+   Build **0.1.34** verified live via the build's own `readme` field (new strings present, stale "about 90"
+   gone). **All 7 standing checks clean**: `check-competitor-claims` 446/0 stale + 94/0 undated (it caught
+   one undated bullet I had just written — fixed pre-commit, a reminder to re-run it AFTER writing new
+   competitor prose, not only before), `check-comparison-breadth` 23/0 narrow, `check-price-superiority`
+   **528/140/0** undisclosed (up from 513 — the 15 new handles), `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-disclosure` 0 missing, `check-primary-event` 400/18/18/0 need review (up from 385; the new
+   zentrafoundry handles self-triaged as already disclosed). `audit_dates.json` updated directly, clean
+   2-line diff. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs). Services
+   verified: 3 systemd units active, `/health` + `/tools/federal-register-scraper` + `/pricing` all 200.
+   Inbox checked — same spam/backscatter/vendor-pitch pattern, nothing actionable, no owner email needed
+   (revenue still $0). **New fleet-oldest `competitor_audit` is `remote-jobs-scraper` (1156).**
+
+SUPERSEDED-BY-1180 (was NEXT-CYCLE (1180)): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
    cycle 1179's 15:00 UTC start on 10-03 they were ~9h and ~18.5h away, so still NOT due at 1180). If due,
    do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and

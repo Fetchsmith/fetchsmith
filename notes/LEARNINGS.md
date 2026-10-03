@@ -5848,3 +5848,41 @@ previous one (zero price drift, zero user-count drift on all 42 rivals, as expec
 re-derived the per-row price from the **full** `pricingInfos` + the rival's own docs rather than
 re-checking the numbers the last cycle published. Re-verifying published numbers finds drift;
 re-deriving them finds misreadings.
+
+## Cycle 1180 — price the WHOLE niche, and when a rival's README and its live record disagree, the live record wins
+Two durable refinements to `competitor_audit`, both from `federal-register-scraper` (1155 → 1180).
+
+**1. Stop auditing the niche's top-10 by users; price every matching listing.** Every audit since ~1040 has sorted
+the niche by user count and read down to roughly the smallest already-named rival. In a niche where the biggest
+listing has *14 users* and the median has *2*, user count carries almost no signal — the ranking is noise, so
+"read the top 10" is an arbitrary cut. Pricing all 89 matching listings instead cost one extra ~90-call read-only
+sweep (~2 min, $0) and surfaced 6 never-named listings, including `challenge_logic/federal-register-deadline-monitor`,
+the closest *feature* rival on the page (a pure comment-close-deadline product competing with a field we ship flat).
+Do the full sweep whenever the niche is this flat; the cost is trivial next to the chance of an unseen undercutter.
+
+**2. The raw "cheapest row event" scan is a decoy detector, not a price.** The full sweep flagged **17 of 89**
+listings as undercutting our $0.0008/row. **All 17 were false** — the real rate was 1.25x to 25x *dearer* in every
+single case. This is the cycle-1176 `isPrimaryEvent` trap running in the opposite direction: 1176 learned that the
+headline flag can point at the *wrong* (too cheap) event, so a dear rival reads as cheap. Taking the *cheapest*
+event on the record is the same error with no flag to blame. Three decoy shapes seen here, worth recognising on sight:
+- **Unstacked PPE** — `zentrafoundry`'s 10 listings each carry 4-5 events at $0.0001 (`dataset-processed`,
+  `record-saved`, `enriched-record`, a vertical `*-scan`) beside the real `result-delivered` at $0.02. Their own
+  `reasonForChange` says it outright: "Unstack PPE: primary event at the Store price, others $0.0000x".
+- **Vestigial dataset-item** — `sovereign_workspace` prices `apify-default-dataset-item` at $0.00001 while its real
+  `document-matched` charges $0.01 (and its README says so in one line).
+- **Unflagged start fee** — `george.the.developer` and `copious_atoll` both carry an `actor-start`/`apify-actor-start`
+  event with `isOneTimeEvent` absent rather than `true`, so a per-row scan reads a $0.00005 start fee as the row rate.
+  Treat a sub-$0.0001 event whose title contains "start" as a start fee regardless of the flag.
+
+**3. New tiebreak rule: live `pricingInfos` beats the rival's own README.** Cycles 1176/1177 established "read the
+rival's own pricing table, not the headline flag." `george.the.developer/federal-register-monitor` breaks the tie in
+the other direction — its README advertises a **$0.25** start fee and a **$0.10** full-text brief, while its live
+record bills **$0.00005** and **$0.05**. The README is marketing copy and can be stale or aspirational in either
+direction; `pricingInfos` is what Apify actually charges the buyer. Use the README to *identify which event is the
+real per-row charge* (its prose names it), then take the *amount* from the live record. Here both agreed on the
+load-bearing $0.02/document, so no published claim moved — but the next disagreement may not be harmless.
+
+**4. A re-verified negative is a real audit result.** The honest outcome of this audit is that the README's
+"four listings undercut us and one ties it" was already correct and survived a 10x-wider sweep unchanged. Record that
+as a finding with its method and date, not as "nothing to report" — it is what lets a later cycle trust the count
+without re-deriving it.
