@@ -5988,3 +5988,39 @@ that rival's `totalUsers30Days` is **13**, i.e. 13 of its 18 lifetime users arri
 Nothing in this fleet tracks a rival's *growth rate*, only its level; a rival at 18/13 is a different
 competitive fact from one at 18/2, and this is the first one we have seen moving that fast. Read it
 closely at the 1163 slot.
+
+## Cycle 1192 — a README can carry the right *numbers* and the wrong *lever* (FEC niche)
+
+`fec-campaign-finance-scraper`'s pricing paragraph had correctly disclosed three rivals that undercut
+our $0.001/row, and had their prices right, but framed the taper as volume: *"tapers to $0.00025 on the
+top volume tier … if you are pulling millions of rows a month, price those too."* `eventTieredPricingUsd`
+keys are **the buyer's Apify subscription plan** (FREE/BRONZE/SILVER/GOLD/PLATINUM/DIAMOND), not monthly
+volume — LEARNINGS already recorded that (see the cycle-1130ish plan-tier note), yet this README kept the
+volume framing for ~60 cycles after. The error is not academic and it is not in our favour either
+direction: a Free-plan buyer told "they get cheaper at high volume" thinks a cheaper option exists for
+them when it does not, and a Gold-plan buyer told "only at millions of rows a month" thinks it does not
+when it does (two rivals here dip under us at Gold with no volume condition at all).
+**Reusable:** knowing the semantics of a field fleet-wide does not propagate to the prose already
+shipped. Worth a cheap static check — grep every README for volume-framing words ("at volume",
+"per month", "millions of rows", "volume tier") within a sentence or two of a tier name, since the
+tier names are a closed vocabulary. Queued, not built.
+
+**Also: the `niche-size` auto_variants() fallback undercounted this niche by half, and the miss was
+load-bearing.** The base phrase `"fec campaign finance"` is three contiguous words most listings never
+write in that order: 22 matches on the fallback vs 42–44 on 16 hand-curated terms. The two rivals that
+genuinely undercut us from Gold up (`automation-lab/fec-candidates-campaign-finance` $0.00184 FREE →
+$0.00045 DIAMOND, `themineworks/fec-campaign-finance` $0.001 FREE → $0.0006 GOLD+) were both outside what
+the narrow sweep returned — so this is the 3rd niche (after remote-jobs 1156 and fda-recall 1148) where
+the *term list*, not the price tool, was the binding constraint. Niche promoted into `TERM_VARIANTS` +
+`MATCH_SYNONYMS`. **One matcher trap worth writing down:** the synonym match is substring, not
+word-boundary, so a bare `"fec"` cannot go in `MATCH_SYNONYMS` — it false-matches affect/effect/perfect/
+infected/defect. Every FEC synonym added is ≥7 chars and anchored on a real word ("fec filing",
+"openfec", "campaign finance"). My one-off audit script used `\bfec\b` regex and got 44 where the
+shipped tool gets 42; the 2-listing gap is that plus Store search non-determinism (449 vs 450 distinct
+listings seen on two consecutive runs of the same 16 queries), which is why the README states a range.
+
+**Scoreboard note on the 1188 "tail re-price" method** (price every never-named listing, not just the
+top-10-by-users): now **2-for-3** — real undercutters found at 1188 (uk-find-a-tender, 6) and here (2),
+clean negative at 1189 (ats-jobs). Both hits came from niches where the *sweep* was widened at the same
+time, so the method may really be "widen the term list, then price the tail" rather than the re-price
+alone; 1189 widened terms too and still found nothing, so that is a hypothesis, not a finding.

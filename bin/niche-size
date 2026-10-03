@@ -137,6 +137,21 @@ TERM_VARIANTS = {
     # The sibling-agency terms matter here: three of the four all-types undercutters the
     # audit found sell FDA recalls bundled with CPSC/NHTSA/USDA FSIS recalls, so a sweep
     # that only ever says "fda" misses them by construction.
+    #
+    # Promoted by cycle 1192's competitor_audit: these 16 terms were swept (450 distinct
+    # listings seen, 44 matching the niche vocabulary against 22 on the auto_variants()
+    # fallback) and every one of the 43 rivals was priced live, which is the bar for a
+    # place here. The fallback's weakness was its base phrase, not its modifiers: the
+    # niche's own words are "campaign finance"/"political donations"/"openfec", and the
+    # two rivals that undercut us from the Gold plan up (`automation-lab`, `themineworks`)
+    # were both outside what the narrow sweep returned.
+    "fec-campaign-finance-scraper": [
+        "fec campaign finance", "campaign finance", "fec filings", "political donations",
+        "campaign contributions", "political contributions", "super pac",
+        "pac contributions", "independent expenditures", "candidate committee",
+        "opensecrets", "political spending", "campaign donations", "election finance",
+        "fec data", "donor lookup",
+    ],
     "fda-recall-scraper": [
         "fda recall", "fda recalls", "food recall", "drug recall", "device recall",
         "openfda", "fda enforcement", "recall monitor", "fda safety", "product recall",
@@ -296,6 +311,23 @@ MATCH_SYNONYMS = {
     # false-match on these synonyms.
     "sec-insider-trades-scraper": ["form 4 insider", "insider trading", "insider transactions",
                                     "form4 insider", "insider trades"],
+    # The base phrase "fec campaign finance" is three contiguous words that most listings
+    # never write in that order -- cycle 1192 measured 22 matches on it against 44 on the
+    # forms below, i.e. the old count was half the niche. Deliberately NOT included: a bare
+    # "fec", because this matcher is substring-not-word-boundary and "fec" false-matches
+    # affect/effect/perfect/infected/defect. Every form below is long enough to be safe,
+    # and each one was earned by a listing the narrow phrase missed: "campaign finance"
+    # alone (`chrisp1211/openfec-scraper-max`), the FEC's own API name (`openfec`,
+    # `bakos_bence/openfec-filings-monitor`), the Schedule-A/E vocabulary
+    # ("independent expenditure", `nexgendata/fec-independent-expenditures-scraper`),
+    # and the buyer-facing phrasings the two biggest non-"FEC"-titled listings use
+    # ("political donations", `hanamira/political-donations-search`).
+    "fec-campaign-finance-scraper": ["campaign finance", "openfec", "fec filing", "fec data",
+                                      "fec spending", "fec donation", "fec candidate",
+                                      "campaign contribution", "political contribution",
+                                      "political donation", "campaign donation",
+                                      "political spending", "independent expenditure",
+                                      "super pac", "opensecrets", "election finance"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",

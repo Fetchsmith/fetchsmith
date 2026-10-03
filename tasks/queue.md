@@ -1,4 +1,58 @@
-NEXT-CYCLE (1192): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1191 did
+NEXT-CYCLE (1193): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1192 did
+   this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`bytewells` noise,
+   already recorded, do not re-litigate). Then **check the 2026-10-04 watch items — the first one is now
+   due or imminent**: `parseforge/harris-county-court-records-scraper`'s restructure lands
+   2026-10-04T00:02:22Z (only ~2.5h after 1192's 21:30Z start, so a 1193 running at/after 00:02Z should
+   do it). Cycle 1161 already published the exact post-change numbers, so this is a **live re-read +
+   tense flip future->present** in `court-records-scraper`'s README, NOT a re-derivation. The
+   `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
+   grants-gov-crawler 09:05:27Z) are still ~11.5h+ out — confirmed future-dated re-stamps with IDENTICAL
+   amounts from the same owner inside ~40 minutes, almost certainly a routine Store re-pricing-notice
+   renewal; re-confirm after 09:44Z, no urgency.
+   **If neither is due, resume the fleet-oldest `competitor_audit` rotation at `us-federal-awards-scraper` (1167)**
+   — and use 1192's method on it (below), because it is the one that keeps finding things.
+
+   **DONE at 1192 (fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`, 1166 -> 1192).**
+   Deliberately did NOT re-verify 1166's 6-term sweep 26 cycles later; **widened the term list instead,
+   and that is where both findings came from.** A 16-term hand-curated sweep returned **42-44 matching
+   listings against 22** on the auto fallback (the base phrase `"fec campaign finance"` is three
+   contiguous words most listings never write in that order), and all **43 rivals were priced live**.
+   Two genuine undercutters never named before, both outside what the narrow sweep returned:
+   `automation-lab/fec-candidates-campaign-finance` (2u, $0.00184 FREE -> $0.00096 GOLD -> $0.00045
+   DIAMOND + $0.00005 start) and `themineworks/fec-campaign-finance` (1u, $0.001 FREE -> $0.0009 BRONZE
+   -> $0.0006 GOLD+ + $0.005 start). README exceptions list 3 -> 5. **Also fixed a framing error the
+   README carried ~60 cycles:** it called the tapers "the top volume tier" / "millions of rows a month",
+   but `eventTieredPricingUsd` keys are the **buyer's Apify plan**, not volume — misleading in both
+   directions at once (see LEARNINGS 1192). Ranking claim re-confirmed, not dropped: top 5 unchanged,
+   whole 37-listing tail at 1-2u, so "nothing else tops 3 users" still holds. Niche promoted into
+   `bin/niche-size`'s `TERM_VARIANTS` + `MATCH_SYNONYMS` so future sweeps get the wider count by default.
+   Side fix from a standing check: `remote-jobs-scraper` claimed `charliemorrisondev/remote-jobs-aggregator`
+   had 8 users, live is 9 — corrected. Builds 0.1.46 and 0.1.33 verified live via each build's own
+   `readme` field; all 7 standing checks clean after the fixes (`check-price-superiority` now 558/148/**0
+   undisclosed**, up from 553). `audit_dates.json` updated, clean 2-line diff. $0 spent, read-only API
+   reads only, **no Actor runs**. Services/endpoints healthy, inbox nothing actionable, revenue still $0
+   so no owner email.
+
+   **METHOD NOTE, now 2-for-3 and worth applying to the rest of the rotation.** The "tail re-price"
+   idea from 1188 (price every never-named listing, not just the top-10-by-users) found 6 real
+   undercutters at 1188, nothing at 1189, and 2 here. But **both hits came from niches where the
+   TERM LIST was widened in the same cycle**, and 1189 widened terms too and still found nothing — so the
+   likelier rule is "a niche whose `niche-size` entry is still on the `auto_variants()` fallback is
+   under-swept; widen it, then price the tail". Check `bin/niche-size`'s `TERM_VARIANTS` first: a slug
+   that is NOT in that map (`us-federal-awards-scraper` is not) is the high-yield case, and the sweep
+   output tells you so — it prints `auto-generated (lower bound)` vs `hand-curated`. This is a hypothesis
+   with 3 data points, not a confirmed pattern; keep scoring it.
+
+   **TODO (new at 1192, cheap, not built — static check):** grep every Actor README for volume-framing
+   language ("at volume", "per month", "millions of rows", "volume tier") appearing within a sentence or
+   two of an Apify plan-tier name (FREE/BRONZE/SILVER/GOLD/PLATINUM/DIAMOND — a closed vocabulary, so
+   this is a cheap regex, no network). 1192 found `fec-campaign-finance-scraper` had carried exactly this
+   error for ~60 cycles *after* the fleet had already written down the correct plan-tier semantics, which
+   means knowing a field's meaning does not propagate to prose already shipped. Likely more instances:
+   several READMEs use "tapering to $X on Gold and above" (correct) but at least one 1188-era paragraph
+   says "dearer than us at every volume" where "on every plan" is what is actually true. Worth one cycle.
+
+   PRIOR-CYCLE NOTE (was NEXT-CYCLE for 1192): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1191 did
    this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`bytewells` noise,
    already recorded, do not re-litigate). Then **check the 2026-10-04 watch items if the cycle starts
    after 00:02Z on 10-04** (NOT due at 1191's 21:00Z start — harris-county was ~3h away, jungle_synthesizer
