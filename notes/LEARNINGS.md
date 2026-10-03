@@ -5914,3 +5914,34 @@ sweep's numbers and a README's numbers disagree — the README is right and the 
 re-read any count off `/v2/acts` before publishing it. Corollary for future audits: a 1–2 user "drift" seen only
 in a sweep is not evidence of anything. Verify it on `/v2/acts` (3x, as the prior cycles did) **and** check the
 other endpoint before writing it down as a change.
+
+## Cycle 1187: `Actor.fail()` on a diagnosed, unconditional site-block trips Apify's auto-deprecation — and the inbox needs an owner-mail-first pass
+Apify's automated Store QA re-runs every live Actor with its default/prefilled input and expects
+SUCCEEDED within 5 minutes; three failed QA runs in a row flags the Actor "Under maintenance"
+(`isDeprecated=true`), and PLAYBOOK already warned Apify **auto-deprecates permanently after 30
+days under maintenance**. `scholarship-scraper`'s code was calling `Actor.fail(msg)` whenever
+bold.org's Vercel bot-checkpoint (429, unconditional, blocking since 2026-09-20) was hit — a
+deliberate, well-intentioned choice to make the block visible in the run log rather than return
+a silent empty dataset. The side effect: because the block is unconditional, *every* QA run
+failed, and the Actor got flagged 2026-09-22. The registry.json notice written that day concluded
+"deprecated on Apify Store and can no longer be run" and the team moved on — 11 days / ~90 cycles
+of inbox checks logged "nothing actionable" on the owner's forwarded Apify email because they
+were skimmed alongside the recurring DMARC/SEO-spam/`j_woodgate01`/`bytewells` noise pattern
+instead of being checked as owner mail first.
+**Fix pattern, reusable for any Actor with a diagnosed/unconditional external-block path:** on
+that specific error class only, call `Actor.setStatusMessage(msg, {isStatusMessageTerminal:
+true})` and let the run fall through to a normal `Actor.exit()` (SUCCEEDED, 0 items, 0 charge)
+instead of `Actor.fail()`. The buyer sees the identical explanation either way; only Apify's
+internal QA accounting changes. Genuine unexpected code errors should keep using `Actor.fail()`
+— this is not "never fail", it's "don't fail on an outcome you already fully diagnosed and chose
+not to charge for."
+**The flag does not require waiting for Apify's next scheduled re-test to clear**: `PUT
+/v2/acts/<owner>~<slug>` with `{"isDeprecated": false}` then a second PUT with `{"notice": null}`
+(empty string is rejected by schema validation; `None`/null is accepted) clears both fields
+immediately, confirmed by re-`GET`. Fleet-wide sweep confirmed this was isolated — all other 23
+Actors show `isDeprecated=false, notice=NONE`.
+**Process fix: check the inbox for mail from `OWNER_EMAIL` as a distinct first pass, not folded
+into the general inbox skim.** An owner forward is categorically different signal from vendor
+spam/backscatter and deserves to be read in full every single cycle it's present, however old —
+this one was 11 days stale specifically because "same spam pattern, nothing actionable" became a
+reflex that stopped distinguishing senders.

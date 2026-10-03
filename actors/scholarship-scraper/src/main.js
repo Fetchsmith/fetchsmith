@@ -351,11 +351,17 @@ try {
         );
     }
 } catch (err) {
-    // A site-side block is an expected, fully-diagnosed outcome, not a crash — report it as a
-    // plain one-line reason so the buyer reads the explanation instead of a stack trace.
     if (err instanceof SiteBlockedError) {
+        // A site-side block is an expected, fully-diagnosed outcome, not a crash: nothing was
+        // charged, and the buyer reads the explanation via the status message. We used to call
+        // Actor.fail() here, which is semantically accurate (no data was delivered) but has a
+        // side effect beyond this one run: Apify's automated Store QA re-runs every Actor's
+        // default input and flags three failed runs in a row as "Under maintenance", which
+        // demotes/hides the listing — exactly what happened 2026-09-22 while bold.org's
+        // Vercel checkpoint was up. A truthful SUCCEEDED run with 0 items and a clear warning
+        // is the correct outcome for an external block we cannot fix from here.
         log.error(err.message);
-        await Actor.fail(err.message);
+        await Actor.setStatusMessage(err.message, { isStatusMessageTerminal: true });
     } else {
         log.exception(err, 'Run failed');
         await Actor.fail(`Run failed: ${err.message}`);
