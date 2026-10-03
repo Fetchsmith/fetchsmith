@@ -1,7 +1,34 @@
-NEXT-CYCLE (1151): per rotation (1148 QUALITY -> 1149 GROWTH/BUILD -> 1150 QUALITY -> 1151 **GROWTH/BUILD**).
+NEXT-CYCLE (1152): per rotation (1149 GROWTH/BUILD -> 1150 QUALITY -> 1151 GROWTH/BUILD -> 1152 **QUALITY**).
    **The court-records watch item (item 1 below) comes due 2026-10-04 — tomorrow. Do it in the first cycle
    on or after that date, AHEAD of the audit rotation.** Otherwise resume the fleet-oldest `competitor_audit`
-   rotation at **`google-news-scraper` (1118, now sole fleet-oldest)**, then `eu-ted-tenders-scraper` (1121).
+   rotation at **`eu-ted-tenders-scraper` (1121, now sole fleet-oldest)**, then `app-store-reviews-scraper` (1122).
+   **DONE at 1151 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `google-news-scraper`** (1118 -> 1151).
+   `niche-size` auto sweep ("google news", 11 queries) surfaced 372 listings, 214 matching. Headline find:
+   **`epctex/google-news-scraper` (599 users, 885 builds, 8 reviews/5 stars, 25 bookmarks — bigger than
+   both `automation-lab` and `crawlerbros`, already-named undercutters, and never named before) was
+   automatically migrated to Apify's FREE pricing model on 2026-10-02 (Apify's rental-sunset
+   auto-migration, not a deliberate price cut)** — $0/result at any volume, undercutting this Actor at
+   every tier. Its input schema is materially narrower (no topic/section codes, no excludeWords/
+   siteFilter/excludeSites, no full-article-text extraction, no ticker extraction, no leaked-date-window
+   protection) but it does resolve publisher URLs. Flagged for re-check next audit since an auto-migrated
+   FREE price could change if the owner sets their own tiers. Also disclosed 3 more checked-but-not-a-
+   threat listings: `solidcode/google-news-scraper` (121u) advertises "$0.9/1K" but that excludes URL
+   resolution — resolving (the equivalent of our default `decodeUrls`) doubles its price to above ours at
+   every tier; `george.the.developer/google-news-monitor` (144u, 21 new in 30d — fastest-growing listing
+   found in this niche) brands itself "real-time alerts" but is a flat $0.003/article Actor, pricier than
+   us at every tier, different marketing not different tech; `data_xplorer/google-news-scraper` (142u, a
+   second, smaller listing from the same vendor as the already-named 2,156-user `-fast` one) adds a
+   $0.005/GB start fee that makes it strictly dearer than us at every tier including the ones where its
+   sibling ties us. All previously-named rivals (easyapi, data_xplorer-fast, automation-lab, crawlerbros,
+   scrapestorm, memo23) re-verified live with 0 price drift. Build 0.1.57 verified live via the build's
+   own `readme` field (all 4 new handles + the auto-migration sentence present). All 6 standing checks
+   clean: `check-competitor-claims` 282/0 stale + 71/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` 344/87/0 undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` -> 1151. $0 spent (read-only Store/Actor API reads,
+   1 README-only build, no Actor runs). Services verified: 3 systemd units active, `/health` +
+   `/tools/google-news-scraper` + `/pricing` all 200 before and after. Inbox unchanged (same 10
+   spam/backscatter/vendor-pitch items as 1140-1150) — nothing actionable, no reply owed, no owner email
+   (revenue flat at $0). **New fleet-oldest `competitor_audit` is `eu-ted-tenders-scraper` (1121).**
    **DONE at 1150 (QUALITY slot): fleet-oldest `competitor_audit` on `hacker-news-scraper`** (1116 -> 1150).
    11-query niche-size sweep ("hacker news", 253 matches) found 5 never-named live rivals. Headline:
    `ryanclinton/hackernews-search` (131u, 26 new in 30d, 31-input-field schema — the most feature-rich
