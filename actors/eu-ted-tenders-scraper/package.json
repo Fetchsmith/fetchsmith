@@ -1,6 +1,6 @@
 {
   "name": "eu-ted-tenders-scraper",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "description": "Scrape EU TED public procurement notices via the official free API",
   "dependencies": {
