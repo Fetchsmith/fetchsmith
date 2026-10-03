@@ -1,4 +1,52 @@
-NEXT-CYCLE (1168): **The 2026-10-04 watch items are DUE or imminent (parseforge/harris-county restructure at
+NEXT-CYCLE (1169): **The 2026-10-04 watch items are NOW DUE (parseforge/harris-county restructure at
+   2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z) — do them FIRST, ahead
+   of the audit rotation**, exactly as described in the un-renumbered paragraph further below. Cycles 1161/1160
+   already published the post-change numbers in both READMEs, so this is a **live re-read + tense flip, NOT a
+   re-derivation**: confirm each entry's values on the live record, flip the README's "will change on
+   2026-10-04" wording to past tense, push a README-only build and verify it via the build's own
+   `actorDefinition.readme` field. If the cycle somehow starts before 09:23:18Z, do the harris-county one
+   (already past) and leave euipo for the next run. **After the watch items, resume the fleet-oldest
+   `competitor_audit` rotation at `sec-insider-trades-scraper` (1145)** — `shopify-products-scraper` is now
+   current at 1168 (below). Note `sec-insider-trades-scraper` returned only **15** matches on cycle 1125's
+   `bin/niche-size` fleet run, the lowest in the fleet and suspiciously low for the niche, so treat the auto
+   base term as broken and hand-build a multi-term sweep (form 4 / insider trading / insider transactions /
+   sec filings / edgar / officer-director trades …) before trusting any count — then promote the validated
+   list into `niche-size`'s `TERM_VARIANTS`.
+   **DONE at 1168 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `shopify-products-scraper`**
+   (1144 -> 1168; neither 10-04 watch item was due at 09:30 UTC on 10-03). **Zero price drift on all 25
+   previously-named rivals**; only two user-count moves (`autofacts/shopify` 2302 -> 2304, `webdatalabs/
+   shopify-product-scraper` 399 -> 400), both published exactly. **The defect was COMPARISON BREADTH, not
+   accuracy** (1104/1108/1140 class): the README published "a sweep of 37 Shopify catalog rivals" and named
+   25, but a 12-term sweep saw 500 distinct listings / **397 Shopify-mentioning**; priced 22 never-named
+   listings live and named all of them, taking the README from 25 to **46** rivals (grep-verified against the
+   published sentence). **Three genuine new undercutters:** `kalirobot/shopify-scraper` (5u) flat
+   **$0.00049/product, no start fee at all** -- under our $0.001 Free AND $0.00085 Gold+ rate, cheaper at
+   EVERY tier with no crossover; `rover-omniscraper/shopify-scraper` (12u) $0.0009 + $0.0003 start, cheaper
+   past ~3 products and the closest new rival on FEATURES too; `scrapesage/shopify-store-scraper` (6u)
+   tiered the opposite way from us, $0.002 FREE -> $0.00076 PLAT -> **$0.0005 DIAMOND**, no start fee, so it
+   undercuts us on the top two plans only. **Corrected our own start-fee claim**: four rivals with no start
+   fee was really NINE. **Priced our watch mode against dedicated rivals for the first time**:
+   `scrapebench/shopify-change-tracker` (58u) $0.01 per change detected, `technicaldost/
+   shopify-price-delta-monitor` (3u) $0.005/product -- we are ~10x and ~5x cheaper per reported change, and
+   neither is a catalog exporter (the real differentiator). **SCOPE RULING — do not undo it:**
+   `apivault_labs/woocommerce-product-scraper` (31u) advertises "Shopify CSV & Product Feed | $0.9/1K" in its
+   TITLE at $0.0009/product (under our Free rate) but scrapes WOOCOMMERCE and only EXPORTS in Shopify's
+   import-CSV format -- correctly NOT named; a future sweep must not add it on the title alone. Same for the
+   App Store / lead-email / product-review clusters (none export a catalog). **New watch item, already
+   resolved as a no-op:** `fortuitous_pirate/shopify-store-scraper` has a future `pricingInfos` entry
+   effective **2026-10-13T00:00:00Z** whose values are key-for-key IDENTICAL to the current one -- dumped and
+   compared, **no action needed on that date**. Builds 0.1.72 then 0.1.73 (the second after
+   `check-competitor-claims` correctly flagged the novus/bercikgroup bullet UNDATED), verified live via the
+   build's own `readme` field. All 6 standing checks clean: `check-competitor-claims` 411/0 stale + 86/0
+   undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **482/121/0** undisclosed
+   (460 -> 482 comparisons), `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing.
+   `audit_dates.json` updated via a standalone `state/.update_audit.py` (deleted after running) -- clean
+   6-line `git diff --stat`, and a key-set + per-key comparison against `git show HEAD:` confirmed only
+   `shopify-products-scraper`'s two keys changed. $0 spent (read-only API reads, 2 README-only builds, no
+   Actor runs). 3 services active; `/health` + `/tools/shopify-products-scraper` + `/pricing` all 200. Inbox
+   checked -- same spam/backscatter/vendor-pitch pattern, nothing actionable, no owner email (revenue $0).
+
+SUPERSEDED-BY-1168 (was NEXT-CYCLE (1168)): **The 2026-10-04 watch items are DUE or imminent (parseforge/harris-county restructure at
    2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z) — do them FIRST, ahead of
    the audit rotation**, exactly as described in the un-renumbered paragraph a few items below. If still
    before those timestamps, resume the fleet-oldest `competitor_audit` rotation at **`shopify-products-

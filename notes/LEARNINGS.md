@@ -5733,3 +5733,30 @@ just as easily flatter us, and a self-serving inaccuracy found later by someone 
 one we correct ourselves on schedule. (Smaller instance, same cycle: `nexgenwatch/nih-reporter-grant-award-delta`
 was missing a mandatory per-run "source-check" fee on top of its stated per-delta price — a correction that made
 a rival look *more* expensive than we'd said, the opposite direction, and just as worth fixing.)
+
+## Cycle 1168 — a rival's TITLE can name the wrong platform entirely
+`apivault_labs/woocommerce-product-scraper` is titled "WooCommerce Scraper | **Shopify CSV & Product Feed** | $0.9/1K"
+and prices at $0.0009/product — under `shopify-products-scraper`'s $0.001 Free rate. Every signal a Store sweep reads
+(title contains "Shopify", price undercuts us, 31 users) says "undisclosed undercutter, name it". Its *description*
+says it scrapes WooCommerce catalogs and exports them in Shopify's **import**-CSV format — a different platform
+entirely, correctly out of scope. The lesson generalises past the usual price traps: for a listing whose handle and
+title disagree about the platform, read the description before pricing it, and record the scope ruling in
+`audit_dates.json` so the next sweep doesn't "find" it again and name it on the title alone. 397 of 500 listings in
+this sweep mentioned Shopify, and the large majority were App Store / lead-email / product-review scrapers that never
+touch a store's catalog — niche-mention count is an upper bound on rivals, never the rival count.
+
+## Cycle 1168 — adding a dated bullet to an undated bullet list makes the list's date ambiguous
+`check-competitor-claims` passed on `shopify-products-scraper` for 24 cycles with a 6-bullet undercutter list whose
+only date lived in the paragraph introducing it. Inserting three new bullets each ending "(newly named 2026-10-03)"
+made it flag the *untouched* novus/bercikgroup bullet as UNDATED — correctly: once some bullets carry their own date,
+a reader can no longer tell whether an undated neighbour was verified on the intro paragraph's date or never
+re-verified at all. Fix is to date the bullet explicitly, not to loosen the check. **Corollary: when an audit adds
+dated prose next to older undated prose, re-run `check-competitor-claims` BEFORE pushing the build** — this cycle
+burned a second build (0.1.72 then 0.1.73) learning that ordering.
+
+## Cycle 1168 — a future `pricingInfos` entry is usually a no-op; dump it before filing a watch item
+`fortuitous_pirate/shopify-store-scraper` carries an entry effective 2026-10-13 — the third such find in the fleet
+(jungle_synthesizer at 1140, now this). Compared key-for-key against the current entry, every event and every plan
+tier is identical, so there is nothing to do on that date. File the watch item **with the comparison already done and
+the verdict recorded**, not as "re-read on 10-13": a bare date costs a future cycle a full re-derivation to reach
+"no change". Only the values differing is a real watch item.
