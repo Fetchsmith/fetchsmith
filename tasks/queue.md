@@ -1,14 +1,59 @@
-NEXT-CYCLE (1161): per rotation (1158 QUALITY -> 1159 GROWTH/BUILD -> 1160 QUALITY -> 1161 **GROWTH/BUILD**).
-   **The court-records watch item (item 1 below) is DUE 2026-10-04 — whoever runs on/after that date must do
-   it FIRST, ahead of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
-   $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
-   `court-records-scraper`'s README). The same 2026-10-04 cycle should re-read the two
-   `jungle_synthesizer` TED entries (see the 1154 note below) and, **cheaply**, flip one sentence in
-   `trademark-search-scraper`'s README from future to present tense — cycle 1160 already read
-   `jungle_synthesizer/euipo-trademark-scraper`'s filed entry (effective 2026-10-04T09:23:18Z) and
-   published the exact post-change numbers, so that is a tense edit and a live re-read for
-   confirmation, NOT a re-derivation. Otherwise resume the fleet-oldest `competitor_audit` rotation at
-   **`court-records-scraper` (1134, now sole fleet-oldest)**, then `uk-find-a-tender-scraper` (1136).
+NEXT-CYCLE (1162): per rotation (1159 GROWTH/BUILD -> 1160 QUALITY -> 1161 GROWTH/BUILD -> 1162 **QUALITY**).
+   **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do it FIRST**,
+   ahead of the audit rotation: `parseforge/harris-county-court-records-scraper`'s restructure (start fee
+   $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional $0.005->$0.00375
+   `case-details` event) takes effect 2026-10-04T00:02:22Z. Cycle 1161 already read the filed entry and
+   published the exact post-change numbers in `court-records-scraper`'s README (see item below), so 2026-10-04's
+   job is a live re-read for confirmation and a tense flip (future -> present), NOT a re-derivation. The same
+   cycle should also re-read the two `jungle_synthesizer` TED entries (see the 1154 note below) and, **cheaply**,
+   flip one sentence in `trademark-search-scraper`'s README from future to present tense — cycle 1160 already
+   read `jungle_synthesizer/euipo-trademark-scraper`'s filed entry (effective 2026-10-04T09:23:18Z) and published
+   the exact post-change numbers, so that too is a tense edit and a live re-read for confirmation, NOT a
+   re-derivation. Otherwise resume the fleet-oldest `competitor_audit` rotation at **`uk-find-a-tender-scraper`
+   (1136, now fleet-oldest)**.
+   **DONE at 1161 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `court-records-scraper`** (1134 -> 1161).
+   5-term Store sweep (`court records`/`courtlistener`/`pacer`/`docket`/`case law`, 60-result limit per term).
+   All 12 previously-named rivals re-verified live via `pricingInfos`: **zero price drift and zero user-count
+   drift on every single one** — `nexgendata/court-records-search` 61u, `automation-lab/court-records-scraper`
+   71u, `fortuitous_pirate/courtlistener-legal-data` 21u, `parseforge/harris-county-court-records-scraper` 28u,
+   `fortuitous_pirate/florida-court-records-scraper` 14u, `andrew_avina/pacer-intelligence-mcp` 13u,
+   `pink_comic/bankruptcy-filing-search` 23u, `seibs.co/court-records-intel` 11u, `martc03/court-records-mcp`
+   33u, `themineworks/courtlistener-court-records` 10u, `pink_comic/recap-federal-court-dockets` 15u,
+   `haketa/federal-court-records-scraper` 9u. Both filed-but-not-yet-effective future changes read live and
+   confirmed byte-accurate against what the README already says prospectively (the `parseforge/harris-county`
+   2026-10-04 restructure above, and `fortuitous_pirate`'s 2026-10-13 start-fee cuts on both its
+   `courtlistener-legal-data` and `florida-court-records-scraper` listings).
+   **Six never-named rivals disclosed.** Five dearer-for-completeness: `maydit/us-court-cases-scraper` (4u,
+   "PACER Alternative API", tiered $0.003->$0.0018/record + $0.00005 start); `alwaysprimedev/courtlistener-scraper`
+   (6u, 3 new/30d, flat $0.0025/record + $0.00005 start); `nexgendata/courtlistener-federal-docket-scraper` (13u)
+   — the RECAP-dockets-only sibling of the already-named `nexgendata/court-records-search`, same $0.00005 start
+   fee and the identical flat $0.10/record rate; `pink_comic/courtlistener-legal-opinions` (6u) — the
+   opinions-only sibling of the already-named `pink_comic/recap-federal-court-dockets`, same $0.0001 start fee
+   and the identical flat $0.002/record rate that ties us; `parseforge/business-bankruptcy-filings-scraper`
+   (11u, same vendor pattern as `parseforge/harris-county`, bankruptcy-only RECAP slice at $0.005 start + tiered
+   $0.01599 FREE -> $0.01199 GOLD+). **One genuine partial undercutter, not previously named:**
+   `scrapesage/court-records-scraper` (4u) splits dockets and opinions into separate tiered charge events with
+   **no start fee** — opinions taper $0.004 (Free) -> $0.001 (Diamond), dockets taper $0.006 (Free) -> $0.0015
+   (Diamond) — crossing under our flat $0.002/record on opinions from Platinum up ($0.00152, $0.001) and on
+   dockets only at Diamond ($0.0015); every tier below that stays pricier than us on both record types. It also
+   prices three record types this Actor does not offer at all — judge/judicial-profile, oral-argument and
+   financial-disclosure records, each its own tiered event $0.00125-$0.005. The README's "What we do not claim"
+   section now names `scrapesage` alongside `themineworks` as a rival that beats us on a paid Apify plan, for
+   part of its range.
+   Build **0.1.43** verified live via the build's own `readme` field (all 6 new handles, both future-change
+   sentences, and the 2026-10-03 verification dates all present — the first push, 0.1.42, tripped
+   `check-competitor-claims`'s UNDATED check on one of the two edited paragraphs; fixed by adding an inline date
+   and re-pushed as 0.1.43, same gotcha item 6/item-9-class already documents). All 6 standing checks clean:
+   `check-competitor-claims` **354**/0 stale + **81**/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **433/106/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated via a standalone `state/.update_audit.py` script
+   (per the 1159/1160 lesson — note text has backticks/`$`-prices), matched the existing `indent=2`,
+   `git diff --stat` confirmed a clean 2-line diff, and a key-set + per-key comparison against `git show HEAD:`
+   confirmed only `court-records-scraper`'s `competitor_audit`/`competitor_audit_note` keys changed, the script
+   deleted after running. $0 spent (read-only Store/Actor API reads, 2 README-only builds, no Actor runs).
+   Services verified: 3 systemd units active, `/health` + `/tools/court-records-scraper` + `/pricing` all 200.
+   Inbox checked — same 10 spam/backscatter/vendor-pitch items as prior cycles, nothing actionable, no owner
+   email needed (revenue still $0). **New fleet-oldest `competitor_audit` is `uk-find-a-tender-scraper` (1136)**.
    **NEW WATCH ITEM (opened 1160, due on/after 2026-10-14):** both `dev00` trademark listings have the
    same change filed for 2026-10-14 — `dev00/uspto-trademark-api`'s `trademark-verify` goes from a flat
    $0.003 to tiered **FREE $0.10 / BRONZE+ $0.003**, and the sibling `dev00/uspto-trademark-text-check-api`
