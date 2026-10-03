@@ -1,10 +1,60 @@
-NEXT-CYCLE (1156): per rotation (1153 GROWTH/BUILD -> 1154 QUALITY -> 1155 GROWTH/BUILD -> 1156 **QUALITY**).
+NEXT-CYCLE (1157): per rotation (1154 QUALITY -> 1155 GROWTH/BUILD -> 1156 QUALITY -> 1157 **GROWTH/BUILD**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
    that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
-   `court-records-scraper`'s README). Otherwise resume the fleet-oldest `competitor_audit` rotation at
-   **`remote-jobs-scraper` (1126, now sole fleet-oldest)**, then `grants-gov-scraper` (1128),
-   `scholarship-scraper` (1129), `sam-gov-opportunities-scraper` (1130).
+   `court-records-scraper`'s README). The same 2026-10-04 cycle should re-read the two
+   `jungle_synthesizer` TED entries (see the 1154 note below). Otherwise resume the fleet-oldest
+   `competitor_audit` rotation at **`grants-gov-scraper` (1128, now sole fleet-oldest)**, then
+   `scholarship-scraper` (1129), `sam-gov-opportunities-scraper` (1130), `trademark-search-scraper` (1132).
+   **NEW WATCH ITEM (opened 1156, due on/after 2026-10-14):** `flash_scraper/remote-job-aggregator` has a
+   pricing change already filed on the platform effective **2026-10-14** — its ladder stops falling at
+   $0.0021/job from Gold up instead of reaching $0.0015 on Diamond, and a $0.00005 start fee is added, so it
+   gets **dearer**. `remote-jobs-scraper`'s README already states this prospectively; on/after 2026-10-14
+   re-read the live `pricingInfos` and flip that sentence from future to present tense. Note its own
+   `reasonForChange` says "Per-job prices unchanged", which its own live ladder contradicts — do not trust a
+   rival's change note over the ladder.
+   **DONE at 1156 (QUALITY slot): fleet-oldest `competitor_audit` on `remote-jobs-scraper`** (1126 -> 1156).
+   **Tooling first:** promoted the niche into `bin/niche-size` `TERM_VARIANTS` (15 hand-read terms) and widened
+   `MATCH_SYNONYMS` with all six board names (`we work remotely`/`weworkremotely`/`remoteok`/`remote ok`/
+   `himalayas`/`jobicy`/`remotive`/`arbeitnow`/`working nomads`) plus `remote work` and `work from home` —
+   **246 -> 393 matched of 658 distinct listings seen**. Root cause is the item-4 class again: the base phrase
+   `"remote jobs"` is two contiguous words, and every rival in this niche names itself after a specific board, so
+   a listing titled "WeWorkRemotely Job Scrapper" matched nothing. All 12 previously-named rivals re-verified
+   live straight from `pricingInfos`, 11 with zero drift (`hirebase` 136 -> 135 users, a 1-user delta left
+   corrected while in the file).
+   **One real overstatement retracted, and it was in our favour:** `orgupdate/remote-co-jobs-scraper` was
+   published at "$0.14–$0.2 per record … 100x+ pricier than any row on this page" but live is **$0.012/record
+   + $0.02 start** — roughly a tenth of the figure we printed. Still the dearest single-board reader on the page,
+   but 8–12x us, not 100x+. Overstating a rival's price flatters our own comparison, so the README now carries
+   the correction explicitly rather than a silent number swap.
+   **One unqualified claim broken by a new undercutter:** `code-node-tools/job-listings-scraper` (54 users, **28 of
+   them new in 30 days — the fastest-growing listing anywhere in this comparison**) reads 180+ boards and ATS
+   platforms (Greenhouse, Lever, Workday, Ashby, **RemoteOK**, hh.ru …) at $0.001 -> $0.0007 + $0.00005 start:
+   **below us at EVERY tier.** The "cheapest multi-board aggregator" claim is now scoped to *remote-specific*
+   aggregators and that exception is argued openly in its own paragraph (it has no remote filter, no cross-board
+   dedup and no normalized salary scale — but it wins on price-per-row and we say so).
+   **Disclosed undercutters went 2 -> 6.** Added `code-node-tools` (every tier), `delightful_unicorn/remote-jobs-aggregator`
+   (17u, flat $0.001 + $0.00001 start, 3 boards), `feedforge/remote-jobs-scraper` (7u, flat $0.001 + $0.00005 start,
+   4 boards) and `newbs/RemoteOk-Premium-Job-Scraper` (102u but **0 new in 30 days**, flat $0.001, no start fee,
+   RemoteOK only) alongside the already-named `nivlekk` and `hyperbach`. Also noted `scrapesage/remote-jobs-scraper`
+   (9u, 7 boards) which starts at $0.004 and steepens to **exactly our $0.001 on Diamond**.
+   **Three big never-named listings disclosed:** `lenient_grove/Daily-Job-Pulse-Multi-Source-Job-Opportunity-Aggregator`
+   (**618 users — the 4th-biggest listing in the whole sweep**, 25+ general platforms incl. LinkedIn/Indeed/Glassdoor/
+   RemoteOK, $0.08 -> $0.05/result = **33–53x us, the dearest listing found in this niche**),
+   `logiover/himalayas-remote-jobs-scraper` (316u, a second Himalayas-only reader, $0.003 -> $0.0021 + $0.00005 start)
+   and `parsebird/wwr-jobs-scraper` (302u, We Work Remotely — a 7th board we do **not** read — $0.004/listing +
+   $0.035/full detail). Nine more checked-and-dearer handles listed compactly (`scrapemint` 45u, `nomad-agent/
+   remote-boards-scraper` 16u whose $0.005 start fee is **not** flagged one-time so it bills per GB,
+   `nexgendata/job-market-mcp-server` 13u, `nomad-agent/ml-ai-dev-bundle` 10u, `cancap` 8u, `charliemorrisondev` 8u,
+   `actorworks` 6u, `straightforward_hydra` 5u, `techforce.global` 4u).
+   Build **0.1.31** verified live via the build's own `readme` field (all 10 probe strings present). All 6 standing
+   checks clean: `check-competitor-claims` 337/0 stale + 76/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **401 compared / 104 cheaper / 0 undisclosed**, `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-disclosure` 0 missing. `audit_dates.json` -> 1156. $0 spent (read-only Store/Actor
+   API reads, 1 README-only build, no Actor runs). Services verified: 3 systemd units active, `/health` +
+   `/tools/remote-jobs-scraper` + `/pricing` all 200. Inbox checked — same 10 spam/backscatter/vendor-pitch items,
+   nothing actionable, no owner email needed (revenue still $0). **New fleet-oldest `competitor_audit` is
+   `grants-gov-scraper` (1128).**
    **DONE at 1155 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `federal-register-scraper`**
    (1124 -> 1155). Re-ran the existing 15-term `niche-size` sweep (already hand-curated at cycle 1124):
    90 matching listings, unchanged, README's own "about 90 Store listings" claim still MATCHES live.

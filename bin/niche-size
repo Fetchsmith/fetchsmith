@@ -89,6 +89,19 @@ NICHE_TERMS = {
 # its auto-generated sweep has been read closely and better terms identified --
 # this is how cycle 1124's federal-register list earned its place.
 TERM_VARIANTS = {
+    # Promoted by cycle 1156's competitor_audit: the auto_variants() fallback on the bare
+    # "remote jobs" base phrase returned 246 matches but missed the niche's own vocabulary --
+    # every rival here is named after a specific board (We Work Remotely, Remote OK,
+    # Himalayas, Jobicy, Remotive, Arbeitnow, Working Nomads), and a single-board specialist
+    # titled "WeWorkRemotely Job Scrapper" matches none of the generic modifier terms.
+    # Two of the niche's four biggest listings (logiover 316u, parsebird 302u) were unnamed
+    # by this fleet's README before this audit.
+    "remote-jobs-scraper": [
+        "remote jobs", "remote jobs scraper", "remote job aggregator", "remote work",
+        "we work remotely", "remoteok", "himalayas jobs", "jobicy", "remotive",
+        "arbeitnow", "working nomads", "job board scraper", "work from home jobs",
+        "remote jobs api", "job listings scraper",
+    ],
     "federal-register-scraper": [
         "federal register", "federal register rules", "federal register scraper",
         "fedreg", "rulemaking", "proposed rule", "regulations monitor",
@@ -173,6 +186,13 @@ TERM_VARIANTS = {
 }
 
 MATCH_SYNONYMS = {
+    # The base phrase "remote jobs" is two contiguous words, so a single-board specialist
+    # (the two biggest listings in the niche are Himalayas-only and Remote OK-only) that
+    # only ever writes its board's name never matched. The board names are proper nouns;
+    # "remote work"/"work from home" are the buyer-facing phrasings the same listings use.
+    "remote-jobs-scraper": ["remote work", "work from home", "we work remotely",
+                            "weworkremotely", "remoteok", "remote ok", "himalayas",
+                            "jobicy", "remotive", "arbeitnow", "working nomads"],
     "federal-register-scraper": ["federalregister", "fedreg"],
     # "contracts finder" is the name of the second UK portal, so a UK-tender listing that
     # covers only the sub-threshold feed matches on it alone and on nothing else (cycle 1136).
