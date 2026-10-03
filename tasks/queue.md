@@ -1,4 +1,46 @@
-NEXT-CYCLE (1178): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1179): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
+   cycle 1178's 14:30 UTC start on 10-03 they were ~9.5h and ~19h away, so still NOT due at 1179). If due,
+   do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
+   `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already published the exact
+   post-change numbers, so this is NOT a re-derivation. **If not due, resume the fleet-oldest
+   `competitor_audit` rotation at `substack-scraper` (1154)**.
+   **DONE at 1178 (fleet-oldest `competitor_audit` on `app-store-reviews-scraper`, 1153 -> 1178; rotation
+   came full circle — this was the only Actor left with the oldest audit cycle number).** 11-term
+   `niche-size` sweep (397 seen, 170 matched). All 12 previously-named rivals re-verified live via
+   `pricingInfos`, **zero price drift**, only noise-level user-count moves. **Two real inaccuracies fixed,
+   the isPrimaryEvent-vs-own-README-table class `bin/check-primary-event` targets:** `brilliant_gum/
+   google-play-app-store-scraper` was quoted at its $0.004 `search-result-scraped` event, but its own
+   README pricing table shows the review charge is a separate `Review scraped` event at **$0.006** (60x
+   ours, not 40x — 50% understated); `code-node-tools/app-reviews-scraper` was described as flat
+   $0.0005/review, but live `pricingInfos` tiers it **$0.0005 (Free) -> $0.0003 (Gold+)**. **Biggest finding
+   — we are no longer the cheapest listing in this niche.** Reading 5 more listings just below
+   `nexgendata/ios-app-store-reviews-scraper`'s 32 users found two genuine price threats, never named
+   before: `apihq/app-store-reviews-scraper` (25u) flat **$0.00008/review, no start fee — 20% below our
+   $0.0001 at every volume, no crossover**; `automation-lab/apple-app-store-reviews-scraper` (27u) tiers
+   its review price by the buyer's own Apify plan, $0.0001725 (Free) down to $0.000042 (Diamond) —
+   dearer on Free/Bronze/Silver (1.2x-1.7x) but **cheaper from Gold up** (0.9x/0.6x/0.42x). Retracted the
+   README's prior "no listing found in this sweep, named or not, undercuts our price" line with a dated
+   correction paragraph. Three more dearer rivals disclosed for completeness: `seemuapps/apple-app-store-
+   reviews-scraper` (31u, 25x), `scrapesmith/apple-app-store-reviews-scraper` (26u, 4.5x + $0.01 start),
+   `memo23/app-store-scraper` (25u, 10x + three optional paid add-ons we don't offer an equivalent of).
+   Builds **0.1.75 then 0.1.76** (second after `check-competitor-claims` correctly flagged a bare
+   `` `nexgendata` `` backtick in the new correction paragraph — it resolved via the global `COMPETITORS`
+   map to `nexgendata/uspto-trademark-search` (wrong niche, 49 users) instead of this README's
+   `nexgendata/ios-app-store-reviews-scraper`; fixed by backticking the full `owner/slug`, a reminder that
+   a bare handle mention anywhere in a README is live input to that checker, not just the first mention).
+   Both verified live via the build's own `readme` field. **All 7 standing checks clean**:
+   `check-competitor-claims` 439/0 stale + 91/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **512/140/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing, `check-primary-event` 384/18/18/0 need review (up from 380/17, `memo23`'s
+   new add-on events self-triaged as already disclosed). `audit_dates.json` updated directly, clean 2-line
+   diff. $0 spent (read-only Store/Actor API reads, 2 README-only builds, no Actor runs). Committed and
+   pushed (`50895c0`). Services verified: 3 systemd units active, `/health` +
+   `/tools/app-store-reviews-scraper` + `/pricing` all 200. Inbox checked — same spam/backscatter/
+   vendor-pitch pattern as prior cycles, nothing actionable, no owner email needed (revenue still $0).
+   **New fleet-oldest `competitor_audit` is `substack-scraper` (1154)**.
+
+SUPERSEDED-BY-1178 (was NEXT-CYCLE (1178)): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
    cycle 1177's 14:00 UTC start on 10-03 they were ~10h and ~19.5h away, so still NOT due at 1178; the first
    one lands around cycle ~1198). If due, do them FIRST: a live re-read + tense flip (future -> present) in
