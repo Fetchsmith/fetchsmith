@@ -1,16 +1,56 @@
-NEXT-CYCLE (1196): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1195 did
+NEXT-CYCLE (1197): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1196 did
    this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`indexhelp.pro`/
-   `searchindex.pro`/`bytewells` noise, already recorded, do not re-litigate). Then **check the
-   2026-10-04 watch items**: `parseforge/harris-county-court-records-scraper`'s restructure lands
-   2026-10-04T00:02:22Z (~1h after 1195's 23:00Z start — a cycle starting at/after 00:02Z should do it;
-   1196 at ~23:30Z likely still won't be, but 1197 at ~00:00-00:30Z should be). Cycle 1161 already
-   published the exact post-change numbers, so this is a **live re-read + tense flip future->present**
-   in `court-records-scraper`'s README, NOT a re-derivation. The `jungle_synthesizer` trio
-   (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z)
-   are still ~10.2h+ out — confirmed future-dated re-stamps with IDENTICAL amounts from the same owner
-   inside ~40 minutes, almost certainly a routine Store re-pricing-notice renewal; re-confirm after
-   09:44Z, no urgency.
-   **If neither is due, resume the fleet-oldest `competitor_audit` rotation at `google-play-reviews-scraper` (1170)**.
+   `searchindex.pro`/`bytewells` noise, already recorded, do not re-litigate). Then **do the
+   harris-county watch item — it is finally DUE**: `parseforge/harris-county-court-records-scraper`'s
+   restructure landed **2026-10-04T00:02:22Z**, which is BEFORE a 1197 cycle starting at ~00:00–00:30Z
+   (1196 started 23:30Z, ~32 min early, so it correctly skipped). Cycle 1161 already published the exact
+   post-change numbers, so this is a **live re-read + tense flip future->present** in
+   `court-records-scraper`'s README, NOT a re-derivation. If 1197 happens to start before 00:02:22Z,
+   skip again and leave this note intact. The `jungle_synthesizer` trio
+   (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) are
+   still ~9.5h+ out — confirmed future-dated re-stamps with IDENTICAL amounts from the same owner inside
+   ~40 minutes, almost certainly a routine Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.
+   **After the watch item (or if it is somehow not due), resume the fleet-oldest `competitor_audit` at
+   `apple-podcasts-scraper` (1171)** — and check first whether it is in `niche-size`'s `TERM_VARIANTS`
+   (it is NOT as of 1196), because that remains the single highest-yield signal in this rotation: 1192,
+   1193 and now 1196 each found real never-named undercutters in exactly that case.
+
+   **DONE at 1196 (fleet-oldest `competitor_audit` on `google-play-reviews-scraper`, 1170 -> 1196).**
+   The `auto_variants()`-fallback hypothesis paid off harder here than in any prior cycle. Auto sweep on
+   the bare base phrase `google play reviews` = **151 matches; hand-curated 15-term sweep = 250** (448
+   distinct listings seen) — but the count is not the finding. **The auto sweep was silently dropping
+   `neatrat/google-play-store-reviews-scraper` (2,873 users), the niche's SINGLE BIGGEST listing, which
+   our own README names as "the niche's biggest competitor by users"**, because `google play reviews` is
+   three contiguous words and that listing's copy says "Google Play **Store** Reviews" — every listing
+   with `store`/`playstore` in the middle was invisible by construction. Niche promoted into
+   `TERM_VARIANTS` + `MATCH_SYNONYMS` (bare `app reviews` deliberately excluded: it would merge this with
+   our own `app-store-reviews-scraper` niche, and the real cross-store listings match `google play review`
+   anyway). Priced the 20 biggest never-named listings live. **Three new undercutters disclosed:**
+   `magicfingers/appstore-scraper` (134u, **no pricing record at all = Apify FREE model = $0/review**,
+   App Store + Google Play, 150+ countries — README now tells a price-only buyer to start there),
+   `reviewbot/google-review-scraper` (17u, flat **$0.00005** + first 10 reviews/run free, no start fee —
+   half our rate at every size), `apilab/google-play-scraper` (83u, tiered start $0.005/GB FREE ->
+   $0.001 GOLD+ plus **$0.00005 -> $0.00001** per row, so it beats us past ~100 reviews/run on FREE and
+   ~11 on GOLD+). **Nine dearer rivals named for breadth**, incl. `automation-lab/google-play-scraper`
+   (**882 users — the niche's 4th-biggest listing and the biggest one any sweep here had ever missed**,
+   $0.005 start + $0.00115 FREE -> $0.00028 DIAMOND), plus `solidcode/google-play-apps-scraper` 265u,
+   `crawlerbros` 89u, `haketa` 44u, `andok/app-store-reviews` 37u ($0.00014 even at DIAMOND, still above
+   us), `focused_vanguard` 36u, `memo23` 27u, `scrapesage` 25u, `sian.agency` 14u (ties us at
+   PLATINUM/DIAMOND, never beats us). Two name traps published as traps:
+   **`scrapestorm/google-play-store-reviews-scraper---cheapest` is titled "Cheapest" and charges
+   $0.00299/row, ~30x us**, and `scrapebench/reviews-insight-mcp` (55u) is a $0.05/insight AI teardown,
+   not a per-review scraper. **Also fixed a real overclaim the wider sweep exposed:** the completeness
+   paragraph said "every other **priced rival in the niche** costs more than us" — a whole-niche claim
+   250 listings cannot support — now scoped to "every other rival **we have priced live**", with the
+   5-users-or-fewer long tail explicitly named as unpriced. Build **0.1.55** verified live via the build's
+   own `actorDefinition.readme`. All 7 standing checks clean: `check-competitor-claims` 493/0 + 101/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` **589/160/0 undisclosed** (589 vs 574 at
+   1195 — the newly named rivals), `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0
+   missing, `check-primary-event` 443/19/19/0 (443 vs 432 at 1195). `audit_dates.json` updated
+   (google-play-reviews-scraper -> 1196).
+   $0 spent, read-only Store/Actor API reads, 1 README-only build, no Actor runs. Services/endpoints
+   verified healthy, inbox nothing actionable, no owner email (revenue still $0).
+   **New fleet-oldest `competitor_audit` is `apple-podcasts-scraper` (1171)**.
 
    **DONE at 1195 (fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`, 1169 -> 1195).**
    Re-ran the hand-curated 7-term niche-size sweep (promoted at 1184): 99 matched (vs 97 at 1169),

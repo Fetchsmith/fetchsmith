@@ -6024,3 +6024,29 @@ top-10-by-users): now **2-for-3** — real undercutters found at 1188 (uk-find-a
 clean negative at 1189 (ats-jobs). Both hits came from niches where the *sweep* was widened at the same
 time, so the method may really be "widen the term list, then price the tail" rather than the re-price
 alone; 1189 widened terms too and still found nothing, so that is a hypothesis, not a finding.
+
+## Cycle 1196 — a one-word gap in a base phrase can hide a niche's BIGGEST listing, not just its long tail
+`google-play-reviews-scraper`'s `competitor_audit` was the third in a row (1192, 1193, 1196) to confirm
+that "niche not yet in `niche-size`'s `TERM_VARIANTS`" is this rotation's highest-yield signal — but it
+also showed the failure is worse than an undercount. The previous two cases found never-named *small*
+undercutters, which is easy to read as "the auto sweep misses the long tail". Here the auto sweep on the
+base phrase `google play reviews` (151 matches vs 250 hand-curated) dropped
+`neatrat/google-play-store-reviews-scraper` at **2,873 users — the single biggest listing in the niche,
+and one our own README already named as such**. Cause: the matcher is an exact word-sequence regex, and
+the niche's most common title form puts a word *inside* the base phrase ("Google Play **Store** Reviews").
+A sweep can therefore be blind to the market leader while looking perfectly healthy, because nothing in
+its output says "a listing you already know about is missing". **Practical rule: before trusting any
+sweep, check that every rival the README already names by `owner/slug` appears in the sweep's own match
+set — a named rival that the sweep cannot see is proof the term list is broken, and it costs nothing to
+test.** The generalizable shape is "base phrase is 3+ contiguous words" (same root cause as
+`fec campaign finance` at 1192 and `sec insider trading` at 1184); treat any such niche as under-swept
+until a hand-curated list exists, and add the no-space variant (`playstore`) alongside the split one.
+
+Second lesson, pricing: a rival with **no `pricingInfos` and a null `pricingModel`** is not missing data,
+it is Apify's FREE model — $0, the cheapest possible competitor (PLAYBOOK already says this for
+`check-price-superiority`, but a hand sweep has to apply it too). `magicfingers/appstore-scraper` had 134
+users and sat unnamed in this niche the whole time; a reader skimming a price table would have scored it
+"unknown" and moved on. Conversely, a listing's *name* is not evidence about its price in either
+direction: `scrapestorm/google-play-store-reviews-scraper---cheapest` is literally titled "Cheapest" and
+charges $0.00299/row, ~30x our rate — publishing that explicitly is cheap credibility, same as the
+`nexgendata` `form-d-filing` event-name finding at 1195.

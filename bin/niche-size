@@ -111,6 +111,21 @@ TERM_VARIANTS = {
         "arbeitnow", "working nomads", "job board scraper", "work from home jobs",
         "remote jobs api", "job listings scraper",
     ],
+    # Promoted by cycle 1196's competitor_audit: the auto_variants() fallback on the bare
+    # "google play reviews" base phrase returned 151 matches against 250 on the terms below,
+    # and -- the finding that earns the promotion -- it dropped the niche's SINGLE BIGGEST
+    # listing, `neatrat/google-play-store-reviews-scraper` (2,873 users, named by our own
+    # README as the biggest competitor by users), because "google play reviews" is three
+    # contiguous words and that listing's copy says "Google Play STORE Reviews". Everything
+    # with "store" or "playstore" in the middle was invisible by construction. The sweep's
+    # 20 biggest never-named listings were all priced live, which is the bar for a place here.
+    "google-play-reviews-scraper": [
+        "google play reviews", "google play store reviews", "play store reviews",
+        "google play review scraper", "google play scraper", "playstore reviews",
+        "android app reviews", "google play app reviews", "google play ratings",
+        "play store scraper", "google play store", "app store reviews scraper",
+        "mobile app reviews", "google play data", "android reviews",
+    ],
     "federal-register-scraper": [
         "federal register", "federal register rules", "federal register scraper",
         "fedreg", "rulemaking", "proposed rule", "regulations monitor",
@@ -259,6 +274,17 @@ MATCH_SYNONYMS = {
                             "weworkremotely", "remoteok", "remote ok", "himalayas",
                             "jobicy", "remotive", "arbeitnow", "working nomads"],
     "federal-register-scraper": ["federalregister", "fedreg"],
+    # The base phrase "google play reviews" is broken up by "store" in most of this niche's
+    # copy ("Google Play Store Reviews Scraper" is the single most common title in it), and
+    # the no-space form "playstore" is the second most common. Deliberately NOT included: a
+    # bare "app reviews", because that is our OWN separate `app-store-reviews-scraper`
+    # niche and would merge the two; the cross-store listings that genuinely sell both
+    # (andok, focused_vanguard, logiover) match on "google play review" anyway.
+    "google-play-reviews-scraper": ["google play store review", "play store review",
+                                     "playstore review", "android app review",
+                                     "google play review", "google play rating",
+                                     "google play scraper", "play store scraper",
+                                     "google play app review", "android review"],
     # "contracts finder" is the name of the second UK portal, so a UK-tender listing that
     # covers only the sub-threshold feed matches on it alone and on nothing else (cycle 1136).
     "uk-find-a-tender-scraper": ["find a tender", "contracts finder", "uk tender",
