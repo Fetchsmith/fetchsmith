@@ -1,11 +1,30 @@
-NEXT-CYCLE (1170): **Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1171): **Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
-   ~14h/~23h away as of cycle 1169's 10:00 UTC start on 10-03). If due, do them FIRST: a live
+   ~13.5h/~23h away as of cycle 1170's 10:30 UTC start on 10-03). If due, do them FIRST: a live
    re-read + tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-
    scraper`'s READMEs respectively — cycles 1161/1160 already published the exact post-change
    numbers, so this is NOT a re-derivation. If still not due, **resume the fleet-oldest
-   `competitor_audit` rotation at `google-play-reviews-scraper` (1146)** — `sec-insider-trades-
-   scraper` is now current at 1169 (below).
+   `competitor_audit` rotation at `apple-podcasts-scraper` (1147)** — `google-play-reviews-
+   scraper` is now current at 1170 (below).
+   **DONE at 1170 (fleet-oldest `competitor_audit` on `google-play-reviews-scraper`, 1146 -> 1170):**
+   11-term `niche-size` sweep (149 matches). Zero price drift on all 14 named rivals, only
+   noise-level user-count moves. **Biggest finding:** `curious_coder/google-play-scraper` (2,702
+   users, 80 new/30d) is the niche's **second-biggest listing by users** and had never been named
+   in this README's history — flat $0.0003/review (3x our rate, not a price threat, but a real
+   completeness gap). Also disclosed `moving_beacon-owner1/my-actor-1` (351 users, $0.004999/review,
+   Apify's own `UNDER_MAINTENANCE` notice live) and excluded `scrapebench/reviews-insight-mcp` (AI
+   teardown tool, different product class). Build 0.1.54 verified live. All 6 standing checks clean:
+   `check-competitor-claims` 417/0 stale + 87/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **487/122/0** undisclosed, `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-disclosure` 0 missing. $0 spent. Committed and pushed (`fd53579`). Services/endpoints
+   verified, inbox checked (nothing actionable). **Side finding, fixed and documented in LEARNINGS.md:**
+   `audit_dates.json`'s cycle-1146 note had every `$0.0001`-style price silently corrupted to
+   `/usr/bin/zsh.0001` by a prior cycle's bash double-quoted `python3 -c "..."` invocation (bash
+   expands `$0` before python sees the string) — caught my own identical mistake this cycle via the
+   usual clean-diff check before committing. The 3 pre-existing corrupted mentions in the old note
+   were left as-is (cosmetic only). **Low-priority follow-up, not urgent:** a fleet-wide grep of
+   `audit_dates.json` for `/usr/bin/` would find any other historical notes with the same corruption,
+   if a future QUALITY cycle has spare time.
    **DONE at 1169 (fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`, 1145 -> 1169):**
    cycle 1125's `niche-size` auto-sweep had flagged this niche's single-term count (15) as the
    lowest in the fleet and suspiciously low, with an explicit instruction to hand-build a
