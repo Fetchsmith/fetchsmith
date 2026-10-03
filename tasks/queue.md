@@ -1,7 +1,66 @@
-NEXT-CYCLE (1152): per rotation (1149 GROWTH/BUILD -> 1150 QUALITY -> 1151 GROWTH/BUILD -> 1152 **QUALITY**).
-   **The court-records watch item (item 1 below) comes due 2026-10-04 — tomorrow. Do it in the first cycle
-   on or after that date, AHEAD of the audit rotation.** Otherwise resume the fleet-oldest `competitor_audit`
-   rotation at **`eu-ted-tenders-scraper` (1121, now sole fleet-oldest)**, then `app-store-reviews-scraper` (1122).
+NEXT-CYCLE (1153): per rotation (1150 QUALITY -> 1151 GROWTH/BUILD -> 1152 QUALITY -> 1153 **GROWTH/BUILD**).
+   **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
+   that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
+   $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
+   `court-records-scraper`'s README). Otherwise resume the fleet-oldest `competitor_audit` rotation at
+   **`app-store-reviews-scraper` (1122, now sole fleet-oldest)**, then `substack-scraper` (1123),
+   `federal-register-scraper` (1124), `remote-jobs-scraper` (1126).
+   **ALSO NOTE for 1153+: two `jungle_synthesizer` TED listings have a pricing change scheduled for
+   2026-10-04** (`eu-national-procurement-portals-scraper` and `ted-eu-procurement-full-scraper`, both
+   currently $0.10 start + $0.001/record). Read live on 2026-10-03 the future `pricingInfos` entry was
+   byte-identical to the current one (same $0.10 start, same $0.001 primary, `reasonForChange: null`),
+   so no README change is expected — but re-read it on/after 2026-10-04 while doing the court-records
+   item, since both handles are named in `eu-ted-tenders-scraper`'s README.
+   **DONE at 1152 (QUALITY slot): fleet-oldest `competitor_audit` on `eu-ted-tenders-scraper`** (1121 -> 1152).
+   **Biggest claim retraction of the rotation so far, and it lands one day after a price cut made on the
+   bad data.** Cycle 1151's auto `niche-size` sweep of this niche returned 158 listings / 91 matches; a
+   hand-curated 12-term sweep returned **364 listings / 228 matches**, and **all 186 TED/EU-specific ones
+   were price-checked live**. Root cause, exactly the item-4 class: the base phrase `"eu ted tenders"` is
+   THREE contiguous words that essentially never appear verbatim in a listing's copy, so the niche was
+   matching on its two synonyms (`ted europa`, `public procurement`) and nothing else — a listing titled
+   "EU Tenders Scraper" whose description says "contract notices from TED" matched neither.
+   **Finding: we are NOT the cheapest TED Actor — ~15 listings undercut $0.0015/notice**, most never named.
+   Cheaper at EVERY run size: `bikram07/eu-tenders-feed` (1u, Apify **FREE** model, $0/row — the cycle-1104
+   lesson again), `westerly_breaker/ted-tender-monitor` (2u, $0.00001/row, ~150x below us),
+   `highbrow_qualification_z7w/eu-tenders-monitor` (2u, $0.0001/row, DACH-only scope),
+   `getascraper/eu-ted-tender-monitor` (2u, $0.00053 -> $0.0004), `thriftykiwi/eu-ted-tenders-scraper`
+   (2u, flat $0.001, **no start fee, no minimum**). Cheaper past a few rows: `vhsgreed/eu-ted-tenders-api-fresh`
+   (~2 rows), `guyweitzman/eu-tenders-scraper` and `rod_analytics/ted-tenders` (~3), `soilair/ted-eu-tenders-api`
+   + `rigelbytes/eu-tenders-scraper` + `koalastuff/eu-ted-tender-monitor` (~1), `8tp/eu-ted-tender-lot-award-collector`
+   (~5), `deriverge/eu-tenders-scraper` (~14, $0.02 run minimum), `logiover/global-public-tenders-scraper`
+   (8u, ~14 rows on Gold+), `jungle_synthesizer/eu-national-procurement-portals-scraper` (past ~200 rows),
+   `steadydata/eu-tenders` (2u, no start fee, beats us from Gold up). **Published conclusion is now
+   "we are not the cheapest EU TED Actor at any run size and we do not intend to compete on price here"**
+   — differentiation rests on the documented CPV-subtree behaviour, the complete 22-notice-type/17-procedure-type
+   dropdowns, measured fill rates, deadline filtering, watch mode and the duplicate-row charge guard.
+   **Explicit decision recorded: do NOT cut this Actor's price again.** The 2026-10-02 $0.003 -> $0.0015 cut
+   was made against the 7-rival view; the real distribution has rivals at $0 and $0.00001/row, so no price wins here.
+   **Also newly named (not price threats):** `parseforge/ted-eu-procurement-scraper` (15u, the niche's
+   5th-biggest listing, never named before, $0.006 -> $0.0055 = ~4x us) and `lofomachines/public-tenders-scraper`
+   (74u, 5 new/30d — the **biggest** listing in the broadened sweep, but a 7-country aggregator, not a TED
+   reader, and dearer at every tier), plus 14 checked-and-dearer handles (alwaysprimedev, nerdrx, scrapepilot,
+   parseforge x2, ikoles, straightforward_hydra, alex_r_ai, siccscha, pappy-dev, euroscrape, mtellez23,
+   fuyuki0, nexgendata, omarchydev). All 9 previously-named rivals (foxlabs, dltik, artificially, adobeflex,
+   scrapers_lat, memo23, jungle_synthesizer, publicmoney, maximedupre) re-verified live with **0 price drift**.
+   **Structural finding worth carrying: this niche is being flooded.** Every undercutter found set its current
+   price between 2026-07-06 and 2026-09-29 and has 1-2 users — new cheap entrants are arriving faster than any
+   of them gains customers. Expect the same shape in other government-API niches.
+   **Tooling improved (verified by re-run):** promoted `eu-ted-tenders-scraper` into `bin/niche-size`
+   `TERM_VARIANTS` (12 hand-read terms) AND widened its `MATCH_SYNONYMS` (+`tenders electronic daily`,
+   `eu tender`, `european tender`, `eu procurement`, `european procurement`, `ted eu`, `cpv`): 91 -> 228
+   matched (119 `--strict`). `federal-register-scraper` re-run as a regression check, unchanged at 90.
+   Build **0.1.49** verified live via the build's own `readme` field (all new handles + both retraction
+   sentences present; 0.1.48 was the first push, 0.1.49 added `lofomachines` after the widened re-run
+   surfaced it). **Incidental fix on an unrelated Actor:** `shopify-products-scraper`'s
+   `apivault_labs/shopify-product-scraper` 8 -> 10 users, build 0.1.71 verified live.
+   All 6 standing checks clean: `check-competitor-claims` **311**/0 stale + 73/0 undated,
+   `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **376**/100/0 undisclosed,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing. `audit_dates.json` -> 1152.
+   $0 spent (read-only Store/Actor API reads, 3 README-only builds, no Actor runs). Services verified:
+   3 systemd units active, `/health` + `/tools/eu-ted-tenders-scraper` + `/pricing` all 200 before and after.
+   Inbox unchanged (same 10 spam/backscatter/vendor-pitch items as 1140-1151) — nothing actionable, no reply
+   owed, no owner email (revenue flat at $0). **New fleet-oldest `competitor_audit` is
+   `app-store-reviews-scraper` (1122).**
    **DONE at 1151 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `google-news-scraper`** (1118 -> 1151).
    `niche-size` auto sweep ("google news", 11 queries) surfaced 372 listings, 214 matching. Headline find:
    **`epctex/google-news-scraper` (599 users, 885 builds, 8 reviews/5 stars, 25 bookmarks — bigger than

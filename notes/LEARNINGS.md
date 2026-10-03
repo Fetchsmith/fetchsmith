@@ -5596,3 +5596,30 @@ edit a README on it. If it happens a 3rd time, wrap the gone-verdict in a retry 
 hand-verification cost every cycle.
 
 **A rival's `pricingInfos` entry can show FREE because Apify forced it there, not because the owner chose it (cycle 1151).** `epctex/google-news-scraper` (599 users, long-established — 885 builds, 8 reviews) has a 2026-10-02 `pricingInfos` entry with `pricingModel: "FREE"` and `reasonForChange: "[Automatic migration]: This Actor was automatically switched to pay-per-usage during the rental sunset."` — i.e. Apify's own platform migration assigned it $0/row by default because its owner hadn't set pay-per-event pricing yet, not a deliberate undercut. It is still a real, disclosable $0 price today (same rule as the cycle-1104 FREE-model lesson), but unlike an owner-chosen FREE price it is likely to change the moment that owner configures real tiers. When a newly-found FREE rival's `pricingInfos` has this `reasonForChange` string, disclose the current price as-is but flag it for re-verification on the next audit rather than treating it as a stable competitive fact.
+
+## Cycle 1152 — a 3-word base phrase makes `niche-size` blind, and a price cut made on the blind view
+`eu-ted-tenders-scraper`'s `niche-size` base term was `"eu ted tenders"` — **three contiguous words that
+essentially never appear verbatim in a Store listing's own copy**. The matcher is `base phrase OR
+MATCH_SYNONYMS`, so the niche was effectively matching on the two synonyms (`ted europa`, `public
+procurement`) and nothing else: a listing titled "EU Tenders Scraper" whose description says "contract
+notices from TED" matched neither. Auto sweep: 158 seen / 91 matched. Hand-curated 12-term sweep with
+widened synonyms: **364 seen / 228 matched**, and pricing all 186 TED/EU-specific ones live found
+**~15 undercutters of our $0.0015/notice**, five of them cheaper at *every* run size including one on
+Apify's FREE model ($0/row) and one at $0.00001/row. The niche's 5th-biggest listing (15 users) and the
+broadened sweep's biggest listing (74 users) had never been named.
+**Generalization of the cycle-1136 item-4 lesson: the risk is not just "multi-source niche", it is
+BASE-PHRASE LENGTH.** A 2-word phrase ("fda recall", "google news") is already fragile; a 3-word phrase
+is structurally dead. Before trusting any auto sweep, check whether the base phrase would literally
+appear in a rival's title or description — if not, the number is meaningless, not just low.
+**The expensive part: cycle 1151-era data drove a real price change.** On 2026-10-02 this Actor's price
+was cut $0.003 -> $0.0015 on the strength of a seven-rival comparison, framed in the README as making us
+"the cheapest or tied-cheapest". One day later the widened sweep shows rivals at $0 and $0.00001/row —
+the cut bought nothing and gave up half the revenue per row. **Rule going forward: never change a price
+on the strength of an auto-generated `niche-size` sweep. Run the hand-curated sweep and price every
+in-scope listing first, or do not touch the price.**
+**Secondary, durable: these government-API niches are being flooded.** Every one of the ~15 TED
+undercutters set its current price between 2026-07-06 and 2026-09-29 and has 1-2 users. New cheap
+entrants arrive faster than any of them gains customers, so "cheapest in the niche" is not a defensible
+position in any niche whose upstream is a free public API — the moat has to be documented upstream
+behaviour (CPV subtree semantics, the codes the API rejects with HTTP 400, measured fill rates, the
+duplicate-row charge guard), which is the only thing none of the 15 publishes.

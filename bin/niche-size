@@ -156,6 +156,20 @@ TERM_VARIANTS = {
         "nih reporter", "nih grants", "nih funding", "research funding",
         "grant awards", "federal research grants", "grants scraper",
     ],
+    # Promoted by cycle 1152's competitor_audit: these 12 terms were swept (364 distinct
+    # listings, 186 mentioning TED or EU/European tenders/procurement) and ALL 186 were
+    # price-checked live, which is the bar for a place here. The auto_variants() fallback
+    # on the base phrase "eu ted tenders" returned 158 seen / 91 matched -- and, more to
+    # the point, missed the niche's 5th-biggest listing (parseforge/ted-eu-procurement-
+    # scraper, 15 users) plus every one of the ~15 undercutters the audit found. The base
+    # phrase is THREE contiguous words, which essentially never appears verbatim in a
+    # listing's own copy, so matching was effectively running on the two synonyms alone.
+    "eu-ted-tenders-scraper": [
+        "ted europa", "tenders electronic daily", "eu tenders", "european tenders",
+        "eu procurement", "public procurement", "contract notice", "cpv codes",
+        "government tenders europe", "tender scraper", "procurement notices",
+        "ted eu procurement",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -164,7 +178,15 @@ MATCH_SYNONYMS = {
     # covers only the sub-threshold feed matches on it alone and on nothing else (cycle 1136).
     "uk-find-a-tender-scraper": ["find a tender", "contracts finder", "uk tender",
                                  "uk public tender", "uk government tender"],
-    "eu-ted-tenders-scraper": ["ted europa", "public procurement"],
+    # The base phrase "eu ted tenders" is three contiguous words and matches almost no
+    # real listing copy, so before cycle 1152 this niche was matching on the two synonyms
+    # below and nothing else -- a listing titled "EU Tenders Scraper" whose description
+    # says "contract notices from TED" matched neither. The added forms are the names the
+    # niche actually uses for itself: TED's own full name, "EU/European tender(s)", and
+    # the CPV code vocabulary every TED listing quotes.
+    "eu-ted-tenders-scraper": ["ted europa", "public procurement",
+                               "tenders electronic daily", "eu tender", "european tender",
+                               "eu procurement", "european procurement", "ted eu", "cpv"],
     "us-federal-awards-scraper": ["usaspending"],
     "sam-gov-opportunities-scraper": ["sam gov"],
     # The base phrase's dot is regex-escaped, so a listing whose own copy writes "Grants gov"
