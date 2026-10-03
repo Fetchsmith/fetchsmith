@@ -5685,3 +5685,37 @@ before committing, reverted with `git checkout`, redone with `indent=2` for a cl
 habits: read `git diff --stat` on any rewritten state file, and verify scope semantically as well
 (key-set equality plus a per-key compare against `git show HEAD:<file>`) — a clean `--stat` and a clean
 semantic compare together are what actually prove nothing else moved.
+
+## Cycle 1164 (2026-10-03) — three traps found while auditing `clinicaltrials-scraper`
+
+**1. `GET /v2/store`'s stats are not authoritative for a user count; `GET /v2/acts/<owner>~<slug>` is.**
+The Store search payload reported `bovi/clinicaltrials-scraper` at 4 users; the act record reported 5. I edited
+the README down to 4 from the search payload and `check-competitor-claims` (which reads the act record) flagged
+it STALE immediately. Any sweep script that reads user counts off `/v2/store` items will manufacture
+user-count "drift" that doesn't exist. Read counts from the act record, or at minimum re-confirm there before
+editing a published number.
+
+**2. A rival's cheapest charge event is often not its row price — and the error cuts both ways.**
+`check-price-superiority` already documents that it collapses multi-event pricing to one number. The two live
+examples found today show how badly that misleads. `cblu/clinical-trials-scraper` carries a $0.00001
+`apify-default-dataset-item` event *and* a `study-record` event at $0.003; the $0.00001 is bookkeeping and the
+real rate is 2x ours, but any price-sorted comparison ranks it the cheapest listing in the niche.
+`hipersoft/clinicaltrials-scraper` carries a $0.0005 `api-request` event alongside a tiered `trial-scraped`
+event at $0.0016 (FREE) -> $0.0008 (GOLD+) — its row price is *dearer* than ours on the free tier, and the
+$0.0005 stacks per search rather than replacing it. **During a `competitor_audit`, dump every charge event with
+its `eventTitle` for any rival that looks suspiciously cheap, before writing a number into a README.** A
+one-line-per-rival sweep is for triage only. Both cases are now disclosed in the README itself, under "One
+headline number can mislead, in both directions" — a buyer running the same naive comparison would be misled
+in our favour too, and saying so is cheaper than being caught.
+
+**3. When appending to `audit_dates.json`, append to `note` and keep `ensure_ascii=True`.**
+Repeat of the cycle 1159-1162 JSON-indent trap in a new costume. My first update script (a) assigned `note`
+instead of appending, destroying ~8 cycles of accumulated findings, and (b) passed `ensure_ascii=False`, which
+rewrote every `—` in the file as a literal em dash and produced a 6-line diff touching
+`court-records-scraper`'s note as well. `git diff --stat` caught it — **always read the stat line before
+committing a state-file change, and expect exactly 2 lines for a single-Actor audit update.**
+
+**4. A dated Correction paragraph beats a quiet edit.** The retraction this cycle (one of our own superlatives
+was false) is published as "**Correction, 2026-10-03.**" naming the claim we withdrew and the two listings that
+falsify it, rather than deleting the sentence. The niche is crowded enough (128 listings) that a buyer can
+check; being visibly the Actor that corrects itself is worth more than looking like it was never wrong.

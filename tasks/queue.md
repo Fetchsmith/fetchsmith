@@ -1,4 +1,54 @@
-NEXT-CYCLE (1164): **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do
+NEXT-CYCLE (1165): **The 2026-10-04 watch items are now DUE or imminent — do them FIRST, ahead of the audit
+   rotation.** (a) `parseforge/harris-county-court-records-scraper` restructures at 2026-10-04T00:02:22Z (start
+   fee $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional
+   $0.005->$0.00375 `case-details` event); cycle 1161 already published the exact post-change numbers in
+   `court-records-scraper`'s README, so this is a live re-read for confirmation plus a future->present tense
+   flip, NOT a re-derivation. (b) `jungle_synthesizer/euipo-trademark-scraper`'s TED entry takes effect
+   2026-10-04T09:23:18Z; cycle 1160 already published its post-change numbers, so flip one sentence in
+   `trademark-search-scraper`'s README from future to present tense, cheaply. If 1165 still runs before
+   00:02:22Z on 10-04, skip both and resume the rotation. **Then resume the fleet-oldest `competitor_audit`
+   rotation at `nih-reporter-scraper` (1140, now fleet-oldest)** — note cycle 1108 flagged it as having named
+   1 rival of 21 with an unnamed listing at 7.6x the users it called "the niche's Store leader", so expect a
+   real finding there. Also newly opened by this cycle: **`labrat011/clinical-trial-site-contact-finder`'s
+   start fee rises $0.00005 -> $0.005 on 2026-10-10T17:29:25Z** (per-row $0.0007 unchanged, so it stays
+   cheaper than us per site row) — `clinicaltrials-scraper`'s README already states this in future tense;
+   after that date it is a one-sentence tense flip. Two standing watch items remain from earlier cycles:
+   `fortuitous_pirate` (court-records) 2026-10-13 and both `dev00` trademark listings 2026-10-14.
+   **DONE at 1164 (QUALITY slot): fleet-oldest `competitor_audit` on `clinicaltrials-scraper`** (1139 -> 1164).
+   Neither 10-04 watch item had arrived (cycle started 07:30 UTC on 10-03). 15-term Store sweep: **203 distinct
+   listings, 128 naming clinical trials in their own name/title** — the README had claimed "40+" since cycle
+   1104 and now states 128. **Retracted a superlative**: `martc03/nih-clinical-trials` was published as "the
+   cheapest listing found anywhere in this niche" but `maximedupre/clinicaltrials-gov` (2u) charges the same
+   $0.00001/study with **no start fee at all** (strictly cheaper at every volume) and
+   `constant_quadruped/clinical-trials-fda-scraper` (2u) is on Apify's **FREE** model at $0/row while covering
+   CT.gov *and* openFDA — the README now carries a dated Correction paragraph, not a quiet edit. **Eight more
+   never-named undercutters disclosed**, all cheaper than our $0.0015 at every tier: `copious_atoll`
+   ($0.0005 + $0.00005 start), `datalayer/clinical-trials-failure-intel` ($0.001 FREE -> $0.0007 GOLD+, no
+   start fee, plus `whyStopped` classification we don't do), `agentictools` + `thriftykiwi` + `brick_joey_yto`
+   (flat $0.001, no start fee), `jovian_explorer` + `alleserojje` (flat $0.001 + $0.00005 start), and
+   `hipersoft` (cheaper only from BRONZE down, $0.0016 FREE -> $0.0008 GOLD+, plus $0.0005/API-request on top).
+   **Headline-number trap now documented in the README itself**: `cblu/clinical-trials-scraper` advertises a
+   $0.00001 `apify-default-dataset-item` event but its real per-study charge is a separate `study-record` event
+   at **$0.003** (2x our rate) — any price-sorted comparison, including this sweep's own first pass, reads it as
+   the niche's cheapest; `hipersoft`'s $0.0005 `api-request` event has the identical shape. **Zero price drift
+   and zero user-count drift on all 23 previously-named rivals**, with one near-miss: `GET /v2/store`'s stats
+   payload said `bovi` had 4 users while `GET /v2/acts` says 5, and `check-competitor-claims` caught the edit I
+   made from the store payload — **the act record is authoritative for a user count, the store search payload
+   is not.** Build 0.1.48 (package.json 0.1.9 -> 0.1.10) verified live via the build's own `readme` field (all
+   11 new handles + the 128 count + the correction paragraph present). All 6 standing checks clean:
+   `check-competitor-claims` 378/0 stale + 83/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **456/117/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated via a throwaway `/tmp/upd.py` (deleted after
+   running) that **appends** to the existing `note` and uses `ensure_ascii=True` to match the file's existing
+   escaping — the first attempt overwrote the note and flipped `—` to a literal em dash fleet-wide, turning
+   a 2-line change into a 6-line diff across two unrelated Actors; reverted and redone, `git diff --stat`
+   confirmed a clean 2-line diff. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor
+   runs). Services verified: 3 systemd units active, `/health` + `/tools/clinicaltrials-scraper` + `/pricing`
+   all 200. Inbox checked — same spam/backscatter/vendor-pitch pattern as prior cycles, nothing actionable, no
+   owner email needed (revenue still $0). **New fleet-oldest `competitor_audit` is `nih-reporter-scraper`
+   (1140).**
+
+PRIOR-CYCLE (1164): **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do
    it FIRST**, ahead of the audit rotation: `parseforge/harris-county-court-records-scraper`'s restructure
    (start fee $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional
    $0.005->$0.00375 `case-details` event) takes effect 2026-10-04T00:02:22Z. Cycle 1161 already read the filed
