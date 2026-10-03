@@ -1,4 +1,43 @@
-NEXT-CYCLE (1165): **The 2026-10-04 watch items are now DUE or imminent — do them FIRST, ahead of the audit
+NEXT-CYCLE (1166): **The 2026-10-04 watch items are DUE or imminent (parseforge/harris-county restructure at
+   2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z) — do them FIRST, ahead of
+   the audit rotation**, exactly as described in the un-renumbered paragraph just below (cycle 1161/1160 already
+   published the post-change numbers in both READMEs; this is a live re-read + tense flip, NOT a re-derivation).
+   If still before those timestamps, skip and resume the rotation at the new fleet-oldest, **`fec-campaign-
+   finance-scraper` / `us-federal-awards-scraper` (tied at 1142)** — pick either; `nih-reporter-scraper` is now
+   current at 1165 (below).
+   **DONE at 1165 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `nih-reporter-scraper`** (1140 -> 1165;
+   neither 10-04 watch item was due yet at 08:00 UTC on 10-03, so the oldest-first rotation ran as scheduled).
+   Re-ran the promoted 7-term niche-size sweep: 51 matching listings, unchanged, README's own count claim still
+   MATCHES. Re-priced all 33 previously-named rivals live via `pricingInfos`: **zero price/user-count drift**
+   except two flat-vs-tiered misreads fixed (`parseforge/nih-reporter-scraper` $0.0065 flat -> tiered to $0.006
+   Gold+; `parseforge/nih-reporter-publications-scraper` $0.0018 flat -> tiered to $0.00163 Diamond — neither
+   changes the competitive conclusion, both stay dearer than our $0.0015).
+   **Real finding, in our own favour's opposite direction:** `nexgenwatch/nih-reporter-grant-award-delta` was
+   missing a mandatory per-run "source-check" fee ($0.1 Free -> $0.067 Gold+) on top of its stated $0.15/delta +
+   $0.02 start — it is dearer than we'd said, a correction against our own comparison, not for it.
+   **Biggest finding:** `datasignalslab/nih-research-funding-monitor` had been mis-stated as flat "$0.02/row"
+   since at least cycle 1140. Its live `pricingInfos` shows the $0.02 `query-analyzed` event (`isPrimaryEvent`)
+   is charged **per organization or topic scanned, not per row** — the real per-row event is $0.00001 + a
+   $0.00005 start fee — which actually crosses **under** our flat $0.0015/row past ~14 grants returned per scan.
+   Moved from the dearer-rivals list into the disclosed-undercutter paragraph with the crossover math shown —
+   the same headline-number-trap class as cycle 1164's clinicaltrials audit, this time flattering a mistake we
+   fixed anyway (see LEARNINGS item 5). One new never-named rival disclosed: `caffein.dev/grants-actor` (3
+   users, NIH RePORTER + Grants.gov + Duke Research Funding in one dataset, $0.002/result + $0.00005 start,
+   dearer than us, no threat). `fortuitous_pirate/grants-gov-scraper` (5u, Grants.gov-focused, NIH only as a
+   filter value) checked and confirmed correctly out of scope. Build 0.1.34 verified live via the build's own
+   `readme` field (all edits present). All 6 standing checks clean: `check-competitor-claims` 380/0 stale + 83/0
+   undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **457/117/0** undisclosed,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing. `audit_dates.json` updated via a
+   standalone `state/.update_audit.py` script (deleted after running) — `git diff --stat` confirmed a clean
+   2-line diff, and a key-set + per-key comparison against `git show HEAD:` confirmed only `nih-reporter-
+   scraper`'s keys changed, 23 other Actors untouched. $0 spent (read-only Store/Actor API reads, 1 README-only
+   build, no Actor runs). Services verified: 3 systemd units active, `/health` + `/tools/nih-reporter-scraper` +
+   `/pricing` all 200. Inbox checked — same spam/backscatter pattern plus a `bytewells.com` rental-marketplace
+   cold pitch (already noted at 1163), nothing actionable, no owner email needed (revenue still $0). **New
+   fleet-oldest `competitor_audit` is `fec-campaign-finance-scraper` / `us-federal-awards-scraper` (tied at
+   1142).**
+
+PRIOR-NEXT-CYCLE (1165, superseded above): **The 2026-10-04 watch items are now DUE or imminent — do them FIRST, ahead of the audit
    rotation.** (a) `parseforge/harris-county-court-records-scraper` restructures at 2026-10-04T00:02:22Z (start
    fee $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional
    $0.005->$0.00375 `case-details` event); cycle 1161 already published the exact post-change numbers in

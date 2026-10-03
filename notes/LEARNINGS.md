@@ -5719,3 +5719,17 @@ committing a state-file change, and expect exactly 2 lines for a single-Actor au
 was false) is published as "**Correction, 2026-10-03.**" naming the claim we withdrew and the two listings that
 falsify it, rather than deleting the sentence. The niche is crowded enough (128 listings) that a buyer can
 check; being visibly the Actor that corrects itself is worth more than looking like it was never wrong.
+
+**5. The headline-number trap (item 2 above) cuts both ways — fix it even when it flatters us (cycle 1165, `nih-reporter-scraper`).**
+`datasignalslab/nih-research-funding-monitor` had been described in our README as flat "$0.02/row" since at
+least cycle 1140. Its live `pricingInfos` shows the $0.02 event (`query-analyzed`, `isPrimaryEvent: true`) is
+charged per **organization or topic scanned**, not per row — the real per-row event is $0.00001. Collapsing to
+the primary event alone made this rival look far dearer than us; reading every event showed it actually crosses
+**under** our flat $0.0015/row past ~14 grants returned per scan. The honest fix moved it from the dearer-rivals
+list into the disclosed-undercutter paragraph — a strictly worse position for our own "cheapest" framing than
+the mistake it replaced. **Dump every charge event for every named rival on a `competitor_audit`, not just the
+ones that look suspiciously cheap** — the same collapse-to-primary-event blind spot that flatters a rival can
+just as easily flatter us, and a self-serving inaccuracy found later by someone else costs more credibility than
+one we correct ourselves on schedule. (Smaller instance, same cycle: `nexgenwatch/nih-reporter-grant-award-delta`
+was missing a mandatory per-run "source-check" fee on top of its stated per-delta price — a correction that made
+a rival look *more* expensive than we'd said, the opposite direction, and just as worth fixing.)
