@@ -1,4 +1,46 @@
-NEXT-CYCLE (1173): **The two 2026-10-04 watch items are now very likely DUE — do them FIRST.**
+NEXT-CYCLE (1174): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
+   ~12h/~21h away as of cycle 1173's 12:00 UTC start on 10-03). If due, do them FIRST: a live re-read +
+   tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-scraper`'s READMEs
+   respectively — cycles 1161/1160 already published the exact post-change numbers, so this is NOT a
+   re-derivation. If still not due, **resume the fleet-oldest `competitor_audit` rotation at
+   `hacker-news-scraper` (1150)** — `steam-reviews-scraper` is now current at 1173 (below).
+   **ALSO STILL OPEN (opened by 1172, low priority, spare QUALITY-cycle task):** re-running a
+   `competitor_audit`'s Store sweep *exhaustively* (pricing every matching listing, not a sample) finds
+   undercutters a sampled sweep misses — 1172 found 8 this way on `fda-recall-scraper`. Costs ~270
+   read-only API calls and ~4 min per niche; not a new fleet-wide standing check, just worth doing on a
+   niche whose last audit priced the fewest listings, when a QUALITY cycle has spare time.
+   **DONE at 1173 (fleet-oldest `competitor_audit` on `steam-reviews-scraper`, 1149 -> 1173):**
+   7-term Store sweep. Re-verified all 9 previously-named rivals via full raw `pricingInfos` JSON (not
+   just the `eventPriceUsd` flat field — the same read-only-field tooling bug 1172 found and fixed in its
+   own sweep script would have hidden every tiered rival here, e.g. `logiover`/`danek`/`crawlerbros`).
+   **Zero price drift on all 9**, one user-count correction (`automation-lab` 81->82). **Three genuine
+   undercutters disclosed, never named before:** `angaba92/steam-reviews-scraper` (2u) flat
+   **$0.0001/review** + $0.00005 start -- cheaper than our own best DIAMOND rate ($0.00014) at every
+   volume, no crossover; `fetch_cat/steam-reviews-scraper` (2u) tiers $0.00023->**$0.000056**/review
+   (~2.5x cheaper than us at every matching tier) but carries a $0.005 start fee we don't, crossing over
+   past ~15 rows on our FREE tier and ~60 rows even against our own DIAMOND rate; `maximedupre/steam-
+   reviews` (2u) tiers $0.0005->$0.00025, undercutting FREE through GOLD but pricier than us on
+   PLATINUM/DIAMOND where its own rate flattens and ours keeps falling. One tie: `lafuan/steam-game-
+   reviews` (3u) flat $0.0005 + $0.00005 start -- beats our FREE tier, exact-ties BRONZE, loses from
+   SILVER down. Ten more listings confirmed pricier at every tier with no crossover (sync-network,
+   datawell, scrapers_lat, foo121, benthepythondev, bakos_bence, 67-labs, alleserojje,
+   delectable_incubator, joseolmedosotoaguirre); one structurally-different bundle noted for completeness
+   (`pappy-dev/steam-review-intelligence`, $0.0002/review base + optional $0.03-$0.05 AI-analysis
+   add-on events, not a plain per-row comparison). Build 0.1.57 (package.json 0.1.6 -> 0.1.7) verified
+   live via the build's own `readme` field. All 6 standing checks clean: `check-competitor-claims` 431/0
+   stale + 89/0 undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **503/136/0**
+   undisclosed (up from 498/131), `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0
+   missing. `audit_dates.json` updated via a standalone `state/.update_audit.py` (deleted after running)
+   -- `git diff --stat` confirmed a clean 2-line diff, confirmed only `steam-reviews-scraper`'s keys
+   changed. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs). Committed and
+   pushed (`549debc`). Services verified: 3 systemd units active, `/health` +
+   `/tools/steam-reviews-scraper` + `/pricing` all 200. Inbox checked -- same spam/backscatter pattern,
+   `bytewells.com` rental pitch re-read in full and confirmed still just a vendor-onboarding pitch (not a
+   buyer lead), nothing actionable, no owner email needed (revenue still $0). **New fleet-oldest
+   `competitor_audit` is `hacker-news-scraper` (1150)**.
+
+SUPERSEDED-BY-1173 (was NEXT-CYCLE (1173)): **The two 2026-10-04 watch items are now very likely DUE — do them FIRST.**
    `parseforge`/harris-county restructure passed at 2026-10-04T00:02:22Z and
    `jungle_synthesizer`/euipo TED entry at 2026-10-04T09:23:18Z (both were ~12.5h/~22h away as of
    cycle 1172's 11:30 UTC start on 10-03, so the first is due after ~00:02Z and the second after
