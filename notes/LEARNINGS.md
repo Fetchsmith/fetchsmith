@@ -5804,3 +5804,47 @@ corrupted text visibly. Fix used instead: write the update as a standalone `.py`
 literals — never pass a dollar-amount-bearing string through a bash double-quoted `-c` argument. The 3
 pre-existing corrupted price mentions in the 1146-era note were left as-is (cosmetic only, not read by any
 check or by the README) rather than spending cycle time on a historical-text cleanup pass.
+
+## Cycle 1176 — `isPrimaryEvent` is a display hint, not what a rival charges
+
+Running `competitor_audit` on `eu-ted-tenders-scraper` found a false published price claim of a
+class none of our six standing checks can see, and it is the **sibling of cycle 1172's bug**:
+
+- 1172: reading only the flat `eventPriceUsd` field reports every **tiered** rival as priceless.
+- 1176: reading the `isPrimaryEvent` event (or "cheapest non-one-time event") picks the **wrong
+  event** when a rival's record carries a vestigial generic one — `apify-default-dataset-item` or
+  an `apify-actor-start` that is *not* flagged `isOneTimeEvent`.
+
+`westerly_breaker/ted-tender-monitor` was published here as the niche's second-cheapest listing,
+"$0.00001/row + $0.00005 start, ~150x below our rate", under a heading that said *cheaper than us
+at every run size*. Its live record has three charge events with `isPrimaryEvent` on a
+`apify-default-dataset-item` priced $0.00001 — but **its own README pricing table documents exactly
+one charged event**, `tender-result` at **$0.005 once per returned tender**, with worked examples.
+The pricing history explains the trap: listed 2026-07-06T07:47 with `tender-result` primary, the
+flag moved to the dataset-item event **53 minutes later**, leaving the $0.005 event live and
+chargeable. Real answer: ~3.3x **dearer** than us, i.e. it belongs in the dearest column, not the
+cheapest.
+
+**Rule going forward: where the platform's `isPrimaryEvent` flag disagrees with the rival's own
+documented pricing table, trust the table.** The flag is Store-page presentation; what gets charged
+is whatever the Actor's code calls `Actor.charge()` with, which only its docs (or its behaviour)
+reveal. Corollary: when a rival has >1 non-one-time charge event, *read its README* before quoting
+a per-row price — do not let any tool reduce it to one number for you.
+
+**This is fleet-wide, not one handle.** `bin/check-price-superiority` collapses every rival to that
+one number by construction, so it is blind here, and it passed clean both before and after this fix
+(507/139/**0** undisclosed). A one-off scan (`state/_primary_event_scan_1176.py`, results in
+`state/primary_event_scan_1176.txt`) over all 381 multi-event named rivals flagged **17** with the
+signature "generic event picked as headline + a >=3x dearer live per-row event on the same record".
+Worst: `dltik/euipo-trademarks-scraper` and `dltik/uspto-trademarks-scraper` (headline picks the
+$0.00005 start fee; real `trademark-result` is $0.01 — **200x understated**) and
+`taroyamada/procurement-intel-actor` (headline $0.008; real export events $7.00 and $5.00). The
+dangerous direction is that this understates RIVALS' prices, i.e. it errs toward making us look
+expensive-but-honest in some places and, as here, toward publishing a rival as an undercutter when
+they are not. Promoting the scan into a standing check is queued, not done.
+
+A smaller process note: the *reason* this audit found something despite running only ~12h after the
+previous one (zero price drift, zero user-count drift on all 42 rivals, as expected) is that it
+re-derived the per-row price from the **full** `pricingInfos` + the rival's own docs rather than
+re-checking the numbers the last cycle published. Re-verifying published numbers finds drift;
+re-deriving them finds misreadings.

@@ -1,0 +1,96 @@
+scanning 514 distinct named rivals across the fleet
+
+FLAG agenscrape/shopify-intelligence-scraper  (named in: shopify-products-scraper)
+     headline event picked = apify-default-dataset-item @ $0.002  <- generic platform default
+     dearer live non-one-time event: apify-actor-start @ $0.01  (5x)
+FLAG alizarin_refrigerator-owner/clinicaltrials-gov-api---clinical-study-data  (named in: clinicaltrials-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: search_studies @ $0.01  (1000x)
+     dearer live non-one-time event: get_study @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_condition @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_sponsor @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_intervention @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_location @ $0.01  (1000x)
+     dearer live non-one-time event: get_study_results @ $0.01  (1000x)
+     dearer live non-one-time event: search_recruiting @ $0.01  (1000x)
+FLAG alizarin_refrigerator-owner/grants-gov-api---federal-grant-opportunities  (named in: grants-gov-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: search_opportunities @ $0.01  (1000x)
+     dearer live non-one-time event: get_opportunity @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_agency @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_category @ $0.01  (1000x)
+     dearer live non-one-time event: get_forecasted @ $0.01  (1000x)
+     dearer live non-one-time event: get_closing_soon @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_eligibility @ $0.01  (1000x)
+     dearer live non-one-time event: get_agencies @ $0.01  (1000x)
+FLAG alizarin_refrigerator-owner/nih-grants-api-research-funding-data-for-grants-publications  (named in: nih-reporter-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: search_projects @ $0.01  (1000x)
+     dearer live non-one-time event: get_project @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_institution @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_pi @ $0.01  (1000x)
+     dearer live non-one-time event: get_publications @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_foa @ $0.01  (1000x)
+     dearer live non-one-time event: get_funding_history @ $0.01  (1000x)
+     dearer live non-one-time event: search_clinical_studies @ $0.01  (1000x)
+FLAG alizarin_refrigerator-owner/sam-gov-contracts---federal-opportunities-search  (named in: sam-gov-opportunities-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: opportunity_search @ $0.01  (1000x)
+     dearer live non-one-time event: naics_search @ $0.01  (1000x)
+     dearer live non-one-time event: agency_search @ $0.01  (1000x)
+     dearer live non-one-time event: set_aside_search @ $0.01  (1000x)
+     dearer live non-one-time event: award_search @ $0.01  (1000x)
+     dearer live non-one-time event: solicitation_search @ $0.01  (1000x)
+     dearer live non-one-time event: opportunity_lookup @ $0.005  (500x)
+FLAG alizarin_refrigerator-owner/uspto-api---patent-trademark-data  (named in: trademark-search-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: search_patents @ $0.01  (1000x)
+     dearer live non-one-time event: get_patent @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_assignee @ $0.01  (1000x)
+     dearer live non-one-time event: search_by_inventor @ $0.01  (1000x)
+     dearer live non-one-time event: get_patent_claims @ $0.01  (1000x)
+     dearer live non-one-time event: get_citations @ $0.01  (1000x)
+     dearer live non-one-time event: search_trademarks @ $0.01  (1000x)
+     dearer live non-one-time event: get_trademark @ $0.01  (1000x)
+FLAG delectable_incubator/clinicaltrials-scraper-low-cost  (named in: clinicaltrials-scraper)
+     headline event picked = apify-actor-start @ $5e-05  <- generic platform default
+     dearer live non-one-time event: apify-default-dataset-item @ $0.00179  (36x)
+FLAG dltik/euipo-trademarks-scraper  (named in: trademark-search-scraper)
+     headline event picked = apify-actor-start @ $5e-05  <- generic platform default
+     dearer live non-one-time event: clearance-analyzed @ $0.02  (400x)
+     dearer live non-one-time event: trademark-result @ $0.01  (200x)
+     dearer live non-one-time event: trademark-detail @ $0.01  (200x)
+     dearer live non-one-time event: applicant-enriched @ $0.005  (100x)
+FLAG dltik/uspto-trademarks-scraper  (named in: trademark-search-scraper)
+     headline event picked = apify-actor-start @ $5e-05  <- generic platform default
+     dearer live non-one-time event: clearance-analyzed @ $0.02  (400x)
+     dearer live non-one-time event: trademark-result @ $0.01  (200x)
+     dearer live non-one-time event: trademark-detail @ $0.01  (200x)
+     dearer live non-one-time event: applicant-enriched @ $0.005  (100x)
+FLAG fetchcraftlabs/playstore-reviews-scraper  (named in: google-play-reviews-scraper)
+     headline event picked = apify-default-dataset-item @ $7e-05  <- generic platform default
+     dearer live non-one-time event: apify-actor-start @ $0.05  (714x)
+FLAG fiery_dream/healthcare-intel  (named in: fda-recall-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: apify-actor-start @ $5e-05  (5x)
+FLAG fiery_dream/scholarship-intel  (named in: grants-gov-scraper, scholarship-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: apify-actor-start @ $5e-05  (5x)
+FLAG fortuitous_pirate/uk-find-a-tender-scraper  (named in: uk-find-a-tender-scraper)
+     headline event picked = apify-default-dataset-item @ $0.01  <- generic platform default
+     dearer live non-one-time event: apify-actor-start @ $0.05  (5x)
+FLAG scrapestorm/clinicaltrials-gov-listings-scraper---cheap  (named in: clinicaltrials-scraper)
+     headline event picked = apify-actor-start @ $5e-05  <- generic platform default
+     dearer live non-one-time event: apify-default-dataset-item @ $0.00299  (60x)
+FLAG scrapestorm/steam-reviews-scraper---cheap  (named in: steam-reviews-scraper)
+     headline event picked = apify-actor-start @ $5e-05  <- generic platform default
+     dearer live non-one-time event: apify-default-dataset-item @ $0.00299  (60x)
+FLAG taroyamada/procurement-intel-actor  (named in: sam-gov-opportunities-scraper)
+     headline event picked = apify-default-dataset-item @ $0.008  <- generic platform default
+     dearer live non-one-time event: procurement-opportunity-export @ $7.0  (875x)
+     dearer live non-one-time event: procurement-summary-report @ $5.0  (625x)
+FLAG westerly_breaker/ted-tender-monitor  (named in: eu-ted-tenders-scraper)
+     headline event picked = apify-default-dataset-item @ $1e-05  <- generic platform default
+     dearer live non-one-time event: tender-result @ $0.005  (500x)
+
+scan: 381 multi-event rivals checked, 17 flagged (generic primary + a >=3x dearer live per-row event)

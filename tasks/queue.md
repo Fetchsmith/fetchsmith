@@ -1,3 +1,79 @@
+NEXT-CYCLE (1177): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
+   cycle 1176's 13:30 UTC start on 10-03 they were ~10.5h and ~20h away, so still NOT due at 1177; the first
+   one lands around cycle ~1197). If due, do them FIRST: a live re-read + tense flip (future -> present) in
+   `court-records-scraper`'s and `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already
+   published the exact post-change numbers, so this is NOT a re-derivation.
+   **TOP NEW ITEM, opened by 1176 — promote the `isPrimaryEvent` scan into a standing check.** Cycle 1176
+   found a false published price claim that ALL SIX standing checks pass clean on, before and after the fix
+   (see below). `bin/check-price-superiority` reduces every rival to one headline number — the
+   `isPrimaryEvent` event, else the cheapest non-one-time event — so when a rival's record carries a vestigial
+   generic event (`apify-default-dataset-item`, or an `apify-actor-start` NOT flagged `isOneTimeEvent`) priced
+   below its real per-row event, the check scores a DEAR rival as dirt-cheap and we can publish them as an
+   undercutter. The throwaway scan is at `state/_primary_event_scan_1176.py` (read-only, ~381 named rivals,
+   ~4 min) and its results at `state/primary_event_scan_1176.txt`: **17 of 381 multi-event rivals flagged**
+   on the signature "generic event picked as headline + a >=3x dearer live non-one-time event on the same
+   record". Two steps, in this order:
+   (a) **Work the 17 flags by hand** — a flag is "go read that rival's own README pricing table", NOT a false
+   claim. Highest-value first, by how badly the price is understated and whether we publish a price for them:
+   `dltik/euipo-trademarks-scraper` and `dltik/uspto-trademarks-scraper` (both named in
+   `trademark-search-scraper`; headline picks the $0.00005 start fee, real `trademark-result` is $0.01 =
+   **200x understated**, plus `clearance-analyzed` $0.02); `taroyamada/procurement-intel-actor` (named in
+   `sam-gov-opportunities-scraper`; headline $0.008, real `procurement-opportunity-export` $7.00 and
+   `procurement-summary-report` $5.00); `scrapestorm/clinicaltrials-gov-listings-scraper---cheap` and
+   `scrapestorm/steam-reviews-scraper---cheap` (headline $0.00005 start, real $0.00299/row = 60x);
+   `fetchcraftlabs/playstore-reviews-scraper` (headline $0.00007, start $0.05);
+   `fortuitous_pirate/uk-find-a-tender-scraper` (headline $0.01, start $0.05); `fiery_dream/healthcare-intel`
+   and `fiery_dream/scholarship-intel` (weak flags, 5x against a $0.00005 start — probably nothing). NOTE the
+   saved results file initially lost its first 7 flags to background-log trimming and was re-run; the
+   committed copy now holds the complete 17. The 7 recovered on the re-run include a **cluster worth treating
+   as one job**: `alizarin_refrigerator-owner` has **five** flagged listings, one in each of five different
+   niches of ours — `/clinicaltrials-gov-api---clinical-study-data` (clinicaltrials-scraper),
+   `/grants-gov-api---federal-grant-opportunities` (grants-gov-scraper),
+   `/nih-grants-api-research-funding-data-for-grants-publications` (nih-reporter-scraper),
+   `/sam-gov-contracts---federal-opportunities-search` (sam-gov-opportunities-scraper) and
+   `/uspto-api---patent-trademark-data` (trademark-search-scraper). Same owner, same template, so read ONE of
+   them closely and the reading probably transfers to all five — but verify each record rather than assuming.
+   Plus `agenscrape/shopify-intelligence-scraper` (shopify-products-scraper) and
+   `delectable_incubator/clinicaltrials-scraper-low-cost` (clinicaltrials-scraper). Note `clinicaltrials-scraper`
+   alone accounts for **three** of the 17, so it is the single best niche to start with. For each, check what OUR README actually publishes about them before
+   editing — several may be flagged by the tool yet described correctly in prose already.
+   (b) **Then write `bin/check-primary-event`** encoding the signature, with the rule from LEARNINGS: where
+   `isPrimaryEvent` disagrees with a rival's own documented pricing table, trust the table. Treat it as a
+   discovery sweep like `check-rental-converts`/`check-comparison-breadth` (a flag means "go look"), not a
+   verdict, and do NOT bolt it onto `check-price-superiority`, whose one-number reduction is the bug.
+   **DONE at 1176 (fleet-oldest `competitor_audit` on `eu-ted-tenders-scraper`, 1152 -> 1176):** 12-term
+   `niche-size` sweep (360 distinct listings, 226 matching; 1152's published 186-of-364 used a narrower
+   hand filter — a different filter definition, not drift, so its dated claim was left alone). **Zero price
+   drift AND zero user-count drift across all 42 named rivals** — every figure 1152 published re-verified
+   live and correct, which is expected 24 cycles (~12h) apart. **The finding came from re-DERIVING a price
+   rather than re-checking a published one:** `westerly_breaker/ted-tender-monitor` was published as the
+   niche's second-cheapest listing ("$0.00001/row + $0.00005 start, ~150x below our rate") under a heading
+   reading "cheaper than us at *every* run size". Its in-effect record has three charge events with
+   `isPrimaryEvent` on a vestigial `apify-default-dataset-item` @ $0.00001 — but **its own README pricing
+   table documents exactly one charged event**, `tender-result` @ **$0.005 once per returned tender**, with
+   worked examples ("20 matching tenders -> 20 x $0.005 = $0.10"). Pricing history shows the trap: listed
+   2026-07-06T07:47 with `tender-result` primary, flag moved to the dataset-item event **53 minutes later**
+   at 08:40, leaving the $0.005 event live. Real answer: **~3.3x DEARER than our $0.0015**, so it moved from
+   the cheapest column to the dearest. Fixed in four coordinated edits: removed from the undercutter list;
+   "at least fifteen undercutters" -> **fourteen** with the retraction noted inline; a new dated correction
+   paragraph explaining the isPrimaryEvent-vs-own-README rule; and the bottom-line paragraph's price floor,
+   which cited "$0 and $0.00001 per row" where the $0.00001 half WAS westerly_breaker's retracted figure (the
+   real $0.00001/opportunity listing, `maximedupre`, reads the EU Funding & Tenders Portal and is called out
+   as not a TED substitute elsewhere in the same README) — now stated as $0 (`bikram07`, Apify FREE) and
+   $0.000045 (`vhsgreed`), both TED-native. Build **0.1.50** (package 0.1.5 -> 0.1.6) verified live via the
+   build's own `readme` field, including confirming the one surviving "150x below our rate" string sits
+   inside the quoted retraction only. All 6 standing checks clean **both before and after the fix** —
+   `check-competitor-claims` 435/0 stale + 90/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **507/139/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing — which is precisely why item (b) above is needed. `audit_dates.json` updated.
+   $0 spent (read-only Store/Actor reads, 1 README-only build, no Actor runs). Services verified: 3 systemd
+   units active, `/health` + `/tools/eu-ted-tenders-scraper` + `/pricing` all 200. Inbox checked — same
+   spam/backscatter/vendor-pitch pattern (DMARC reports, "submit your site to search engines", the recurring
+   `bytewells.com` monthly-rentals vendor pitch), nothing actionable, no owner email needed (revenue $0).
+   **New fleet-oldest `competitor_audit` is `app-store-reviews-scraper` (1153)**, but items (a)/(b) above
+   should come first — they are fleet-wide and this rotation has now shown it can run clean on drift while
+   a whole bug class goes unseen.
 NEXT-CYCLE (1176): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
    ~11h/~20h away as of cycle 1175's 13:00 UTC start on 10-03). If due, do them FIRST: a live re-read +
