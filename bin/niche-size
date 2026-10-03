@@ -183,6 +183,21 @@ TERM_VARIANTS = {
         "government tenders europe", "tender scraper", "procurement notices",
         "ted eu procurement",
     ],
+    # Promoted by cycle 1169's competitor_audit: cycle 1125's auto_variants() fallback on
+    # the base phrase "sec insider trading" returned only 15 matches, the lowest in the
+    # whole fleet and flagged there as suspiciously low. These 7 terms turned up 109
+    # distinct listings; most of the extra volume is NOT this niche (generic multi-filing
+    # EDGAR scrapers that mention Form 4 only as one of several filing types, European
+    # company-registry scrapers that happen to rank on "insider transactions", and
+    # Congress stock-disclosure scrapers -- a different .gov source entirely, deliberately
+    # out of scope, same call as cycle 1157's `pink_comic/irs-990` ruling). The
+    # MATCH_SYNONYMS entry below is what separates real Form-4/insider-trading listings
+    # from that noise.
+    "sec-insider-trades-scraper": [
+        "sec insider trading", "form 4 insider", "insider trading scraper",
+        "insider transactions", "sec edgar form 4", "officer director trades",
+        "insider buy sell",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -226,6 +241,14 @@ MATCH_SYNONYMS = {
     # those bundled listings are real competitors for the same buyer, and `--strict` is the
     # lever for trimming description-only noise.
     "fda-recall-scraper": ["openfda", "fda enforcement", "recall"],
+    # The base phrase "sec insider trading" is three contiguous words that almost no rival
+    # writes verbatim -- the common real phrasing is "SEC Form 4 Insider Trading" (base
+    # phrase broken up by "Form 4") or just "insider trading"/"insider transactions" on
+    # its own. Congress stock-disclosure listings are excluded on purpose: they say
+    # "stock trades"/"financial disclosures", not "insider trading", so they do not
+    # false-match on these synonyms.
+    "sec-insider-trades-scraper": ["form 4 insider", "insider trading", "insider transactions",
+                                    "form4 insider", "insider trades"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",
