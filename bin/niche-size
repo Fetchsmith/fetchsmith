@@ -43,6 +43,15 @@ found" is the normal, expected result, not a tool failure.
 
 Read-only: one `GET /v2/store` per search term, nothing else. No Actor runs, no file
 writes.
+
+CAVEAT on the top-10 table (measured cycle 1184): the user counts printed here come
+from the `/v2/store` SEARCH payload, which is an index with its own refresh lag and
+disagrees with `GET /v2/acts/<owner>~<slug>` by 1-2 users IN BOTH DIRECTIONS on real
+listings (`scrapesage/sam-gov-scraper` read 41 here vs 43 on the act record;
+`ryanclinton/clinical-trial-tracker` read 7 here vs 6). Treat this table as a RANKING
+AID only -- never copy a number out of it into a README. `check-competitor-claims`
+reads `/v2/acts`, which is the authoritative record and the arbiter when the two
+disagree. See LEARNINGS cycle 1184.
 """
 import datetime
 import json
@@ -198,6 +207,32 @@ TERM_VARIANTS = {
         "insider transactions", "sec edgar form 4", "officer director trades",
         "insider buy sell",
     ],
+    # Promoted by cycle 1184's competitor_audit. This is the niche the PLAYBOOK's
+    # niche-size paragraph has flagged since cycle 1125 as "a suspiciously low 8 despite
+    # being a large niche (likely a term-phrasing problem with the literal 'sam.gov'
+    # string)" -- the promotion that note asked for. NOTE for future cycles: that "8" is
+    # long stale; the auto_variants() fallback on 'sam.gov' now returns 135 seen / 120
+    # matched (re-measured cycle 1184), because the "sam gov" MATCH_SYNONYMS entry added
+    # after 1125 does most of the work on its own. So the promotion is NOT a rescue from
+    # an undercount -- it is here to carry the niche's own vocabulary, which the generic
+    # modifier list cannot invent: SAM.gov's four domains each have an official name this
+    # Actor's `dataType` covers ("contract opportunities", "wage determinations",
+    # "assistance listings", "entity exclusions"), the portal has a dead predecessor name
+    # buyers and old listings still write (FBO.gov / beta.SAM.gov), and the buyer-side
+    # words are "solicitation"/"RFP"/"set-aside"/"NAICS", none of which contain "sam".
+    # The wage-determination and assistance-listing terms are deliberately in scope here
+    # even though cycle 1159 left single-dataset rivals unpriced: they cover one of our
+    # four dataTypes, so we want them SEEN and then explicitly ruled in or out, not
+    # invisible. Multi-country tender aggregators are the known overcount this adds;
+    # `--strict` plus the synonym list below is the lever for trimming them.
+    "sam-gov-opportunities-scraper": [
+        "sam.gov", "sam.gov scraper", "samgov", "fbo.gov",
+        "contract opportunities", "federal contract opportunities",
+        "government contracts scraper", "federal procurement",
+        "federal solicitations", "rfp scraper", "wage determinations",
+        "assistance listings", "entity exclusions", "set-aside naics",
+        "federal bid alerts",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -223,7 +258,19 @@ MATCH_SYNONYMS = {
                                "tenders electronic daily", "eu tender", "european tender",
                                "eu procurement", "european procurement", "ted eu", "cpv"],
     "us-federal-awards-scraper": ["usaspending"],
-    "sam-gov-opportunities-scraper": ["sam gov"],
+    # The base phrase's dot is regex-escaped, so "sam gov" was added early on to catch the
+    # spaced/hyphenated spellings. Cycle 1184 added the rest: "samgov" is how several
+    # listings write their own slug (`jungle_synthesizer/samgov-scraper`,
+    # `scrapebench/samgov-opportunity-alert`), "fbo.gov"/"beta.sam" are the portal's dead
+    # predecessor names, and "contract opportunities"/"wage determination"/"assistance
+    # listing"/"entity exclusion" are SAM.gov's own official names for the four domains
+    # this Actor's `dataType` covers -- a rival scoped to exactly one of them can describe
+    # itself fully without ever writing "sam". Deliberately NOT added: bare "government
+    # contract"/"tender"/"procurement", which would pull in the multi-country tender
+    # aggregators cycle 1159 ruled out of scope as non-substitutes.
+    "sam-gov-opportunities-scraper": ["sam gov", "samgov", "fbo.gov", "beta.sam",
+                                      "contract opportunities", "wage determination",
+                                      "assistance listing", "entity exclusion"],
     # The base phrase's dot is regex-escaped, so a listing whose own copy writes "Grants gov"
     # (or "grants-gov", which lowercases into the same word pair) never matched (cycle 1128).
     "grants-gov-scraper": ["grants gov"],

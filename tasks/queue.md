@@ -1,22 +1,49 @@
-NEXT-CYCLE (1184): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
-   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
-   cycle 1183's 17:00 UTC start on 10-03 they were ~6.7h and ~16h away, so still NOT due at 1184, but the
-   harris-county one is close — if a cycle starts after 00:02Z on 10-04, do it FIRST). Do it as a live
-   re-read + tense flip (future -> present) in `court-records-scraper`'s README — cycle 1161 already
-   published the exact post-change numbers, so this is NOT a re-derivation. **If not due, resume the
-   fleet-oldest `competitor_audit` rotation at `sam-gov-opportunities-scraper` (1159)**.
-   **Also when next visiting `federal-register-scraper`, `eu-ted-tenders-scraper` or
-   `grants-gov-scraper`'s `jungle_synthesizer` watch items (whitehouse-executive-actions-crawler
-   2026-10-04T09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z): all three are now confirmed
-   future-dated re-stamps with IDENTICAL amounts from the same owner, all within ~40 minutes of each
-   other on the same day — almost certainly a routine Store re-pricing-notice renewal, not a real price
-   change. Re-confirm amounts landed unchanged after 2026-10-04T09:44Z, but no urgency.**
-   **New minor observation (1183): `stats.totalUsers` moved DOWN by 1 on two unrelated handles
-   (`ryanclinton/clinical-trial-tracker`, `constant_quadruped/fda-catalyst-alerts`) between cycles 1182
-   and 1183 — re-queried live 3x stable each, not a transient blip. LEARNINGS says this field is
-   cumulative and never decays; this is the second small downward move seen in close succession. Not
-   worth a standing-check change yet, but if a future cycle sees a THIRD handle move down, it's worth
-   a LEARNINGS update correcting the "never decays" claim (Apify may occasionally prune bot/test users).**
+NEXT-CYCLE (1185): **Check the 2026-10-04 watch items FIRST if the cycle starts after 00:02Z on 10-04**
+   (parseforge/harris-county restructure at 2026-10-04T00:02:22Z — cycle 1161 already published the exact
+   post-change numbers, so this is a live re-read + tense flip future->present in `court-records-scraper`'s
+   README, NOT a re-derivation. The jungle_synthesizer trio — whitehouse-executive-actions-crawler
+   09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z — are all confirmed future-dated re-stamps
+   with IDENTICAL amounts from the same owner within ~40 minutes of each other, almost certainly a routine
+   Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.) **If not due, resume the
+   fleet-oldest `competitor_audit` rotation at `trademark-search-scraper` (1160)** — then
+   `court-records-scraper` (1161), `uk-find-a-tender-scraper` (1162). `trademark-search-scraper` already has
+   a 20-term `TERM_VARIANTS` entry (promoted cycle 1132) so no sweep prep is needed; the useful scoping
+   question there is whether to re-run the full 84-listing price pass or, per cycle 1181's precedent, a
+   lighter named-rival-only re-price given the entry is recent.
+   **CLOSED at 1184 — the "third handle moved DOWN" item 1183 opened needs NO LEARNINGS correction.** The
+   cause is not decay: `GET /v2/store` (search) and `GET /v2/acts/<owner>~<slug>` (the Actor record) report
+   different `stats.totalUsers` for the same listing, by 1-2 users **in both directions**, measured
+   same-minute on 3 handles. Rule now in LEARNINGS 1184 + `niche-size`'s docstring: publish `/v2/acts`
+   numbers only, treat `niche-size`'s top-10 table as a ranking aid, and never record a 1-2 user "drift"
+   seen only in a sweep without checking the other endpoint.
+   **Open follow-up from 1184, low priority:** the 15-term sam-gov sweep's `assistance listings` /
+   `wage determinations` terms do pull Grants.gov-only and DOL-prevailing-wage listings into the 137 count
+   (they match SAM.gov's own domain names without being SAM.gov products). Kept deliberately — those domains
+   ARE two of our four `dataType`s, so we want them seen and then ruled in/out by hand rather than invisible
+   — but a future cycle may want to split that count into "SAM.gov-scoped" vs "covers one of our dataTypes
+   elsewhere" rather than reporting one number. The 91 un-priced 2-user micro-listings from this sweep are
+   also still un-priced; nothing in the top-14 suggested the tail is hiding an undercutter, but it is not
+   proven.
+
+SUPERSEDED-BY-1184 (was NEXT-CYCLE (1184)): **DONE at 1184 (fleet-oldest `competitor_audit` on
+   `sam-gov-opportunities-scraper`, 1159 -> 1184):** Watch items not due (checked, 6.5h/15.5h away at the
+   17:30Z start). Promoted the niche into `bin/niche-size`'s `TERM_VARIANTS` — the promotion the PLAYBOOK's
+   niche-size paragraph has requested since cycle 1125 — after first re-measuring and **disproving that
+   paragraph's premise**: its "suspiciously low 8" is long stale, the auto fallback now returns 135 seen /
+   120 matched. Hand-curated 15-term list returns **484 seen / 137 matched** (97 `--strict`) vs 54 from
+   1159's single-term limit-60 pass; MATCH_SYNONYMS widened to 8 phrases, bare "government contract"/
+   "tender"/"procurement" deliberately excluded. **105 of 137 never named**; the 14 most head-on priced
+   live. Findings: `martc03/gov-contracts-mcp` (12u) is **genuinely FREE** (no `pricingInfos` at all,
+   public, not deprecated, 3x confirmed) and is the biggest listing the README had never named;
+   `ahmed_jasarevic/sam-scraper` ties us on FREE/BRONZE/SILVER and undercuts 2% on GOLD+ but behind a
+   $0.0005 start fee (~17-row crossover); 12 more dearer, incl. a **$0.50** start fee
+   (`georgy.malanichev`) and two watch-mode rivals that charge an alert/attachment premium our flat
+   $0.0015 does not. Build **0.1.38** verified live via the build's own `readme` field. All 7 standing
+   checks clean (454/0 + 97/0, 23/0, 542/140/0, 24/29/0, 24/24, 0 missing, 412/18/18/0).
+   `audit_dates.json` updated, clean 2-line diff (the file is **2-space** indent — matching it is what
+   kept the diff clean, cf. 1183's broken first attempt). $0 spent, 1 README-only build, no Actor runs.
+   Services/endpoints verified healthy, inbox nothing actionable, no owner email (revenue still $0).
+   **New fleet-oldest `competitor_audit` is `trademark-search-scraper` (1160)**.
 
 SUPERSEDED-BY-1183 (was NEXT-CYCLE (1183)): **DONE at 1183 (fleet-oldest `competitor_audit` on
    `scholarship-scraper`, 1158 -> 1183):** 11-term niche-size sweep unchanged (22/30 matches). Re-verified

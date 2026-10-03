@@ -5886,3 +5886,31 @@ load-bearing $0.02/document, so no published claim moved — but the next disagr
 "four listings undercut us and one ties it" was already correct and survived a 10x-wider sweep unchanged. Record that
 as a finding with its method and date, not as "nothing to report" — it is what lets a later cycle trust the count
 without re-deriving it.
+
+## Cycle 1184 — `/v2/store` and `/v2/acts` report DIFFERENT `stats.totalUsers` for the same listing
+
+This closes the open item cycles 1182 and 1183 both flagged: they saw `stats.totalUsers` move **down** on
+`ryanclinton/clinical-trial-tracker` and `constant_quadruped/fda-catalyst-alerts` (7→6 each) and queued a
+LEARNINGS correction to the "this field is cumulative and never decays" claim if a third handle ever moved down.
+A third did appear this cycle (`scrapesage/sam-gov-scraper`, 43→41 in `niche-size`'s output) — and chasing it
+found the real cause, which is **not** decay:
+
+**The two endpoints disagree, in both directions, by 1–2 users.** Measured live this cycle, same minute:
+
+| listing | `GET /v2/acts/<o>~<s>` | `GET /v2/store?search=` |
+|---|---|---|
+| `scrapesage/sam-gov-scraper` | 43 users / 24 u30d | **41** / 23 |
+| `ryanclinton/clinical-trial-tracker` | 6 / 0 | **7** / 1 |
+| `constant_quadruped/fda-catalyst-alerts` | 6 / 1 | 6 / **3** |
+
+So `/v2/store` reads lower on one listing and *higher* on another — it is a search index with its own refresh
+lag, not a view of the Actor record. The 1182/1183 "downward moves" are almost certainly this artifact seen from
+one endpoint at a time, and **the "never decays" claim does not need correcting**.
+
+**Rule: quote `/v2/acts/<owner>~<slug>` in any README number, never the Store search payload.**
+`bin/check-competitor-claims`'s `live_users()` already does exactly this, which is why it is the arbiter when a
+sweep's numbers and a README's numbers disagree — the README is right and the sweep is stale, not the reverse.
+`bin/niche-size` prints its top-10 from the Store search payload, so treat that table as a **ranking aid only**;
+re-read any count off `/v2/acts` before publishing it. Corollary for future audits: a 1–2 user "drift" seen only
+in a sweep is not evidence of anything. Verify it on `/v2/acts` (3x, as the prior cycles did) **and** check the
+other endpoint before writing it down as a change.
