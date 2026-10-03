@@ -121,9 +121,18 @@ and none of them cheaper: `jdtpnjtp/apple-app-store-scraper` (163 users) charges
 6.5x ours; `brilliant_gum/google-play-app-store-scraper` (160 users, a combined Google Play + App
 Store scraper, not App-Store-only) charges $0.004/review, 40x ours; `code-node-tools/app-reviews-scraper`
 (158 users) charges $0.0005/review, 5x ours; `benthepythondev/appstore-reviews-scraper` (152 users)
-charges $0.002/review flat, the same rate as `sourabhbgp`. `scriptbase/appstore-reviews-scraper`
-(59 users) also ties our exact $0.0001/review rate. No listing found in this sweep, named or not,
-undercuts our price.
+charges $0.002/review tiered down to $0.0014 on Diamond, 14x-20x ours at every tier, same ballpark
+as `sourabhbgp`. `scriptbase/appstore-reviews-scraper` (59 users) also ties our exact $0.0001/review
+rate. No listing found in this sweep, named or not, undercuts our price.
+
+**Re-verified live 2026-10-03** (fleet-oldest `competitor_audit` rotation): all nine rivals named
+above re-checked with **zero price drift**. Three more listings surfaced in the same 169-match
+sweep, all dearer and none previously named: `fatihtahta/app-store-global-reviews-scraper` (59
+users, tied with `scriptbase`) charges $0.0004/review plus an optional $0.003/1,000-translated-words
+add-on, 4x ours; `powerai/app-store-reviews-scraper-ppr` (34 users, 0 new in 30 days) is
+$0.00499/review tiered to $0.00199 on Gold+, plus a **$0.09** Actor-start fee matching `easyapi`'s;
+`nexgendata/ios-app-store-reviews-scraper` (32 users) is a flat **$0.1/review** plus a $0.005 start
+fee, ~1,000x our rate, the dearest listing found in this niche.
 
 Two honest qualifications, both read off live input schemas rather than listings:
 
