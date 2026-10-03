@@ -1,15 +1,26 @@
-NEXT-CYCLE (1185): **Check the 2026-10-04 watch items FIRST if the cycle starts after 00:02Z on 10-04**
+NEXT-CYCLE (1186): **Check the 2026-10-04 watch items FIRST if the cycle starts after 00:02Z on 10-04**
    (parseforge/harris-county restructure at 2026-10-04T00:02:22Z — cycle 1161 already published the exact
    post-change numbers, so this is a live re-read + tense flip future->present in `court-records-scraper`'s
    README, NOT a re-derivation. The jungle_synthesizer trio — whitehouse-executive-actions-crawler
    09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z — are all confirmed future-dated re-stamps
    with IDENTICAL amounts from the same owner within ~40 minutes of each other, almost certainly a routine
    Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.) **If not due, resume the
-   fleet-oldest `competitor_audit` rotation at `trademark-search-scraper` (1160)** — then
-   `court-records-scraper` (1161), `uk-find-a-tender-scraper` (1162). `trademark-search-scraper` already has
-   a 20-term `TERM_VARIANTS` entry (promoted cycle 1132) so no sweep prep is needed; the useful scoping
-   question there is whether to re-run the full 84-listing price pass or, per cycle 1181's precedent, a
-   lighter named-rival-only re-price given the entry is recent.
+   fleet-oldest `competitor_audit` rotation at `court-records-scraper` (1161)** — then
+   `uk-find-a-tender-scraper` (1162), `ats-jobs-scraper` (1163).
+   **DONE at 1185 (fleet-oldest `competitor_audit` on `trademark-search-scraper`, 1160 → 1185):** Scoped
+   LIGHTER than a full re-sweep (cycle 1181 precedent) since 1160's 20-term/84-listing sweep covering all
+   36 named rivals was only ~12h old. Ran both fleet-wide standing checks instead of re-deriving by hand —
+   `check-price-superiority` (542 named-rival prices, 140 cheaper, 0 undisclosed) and `check-competitor-
+   claims` (454 user-count claims + 97 paragraphs, 0 stale/undated) — plus a fresh `niche-size --strict`
+   sweep: **84** real listings, byte-identical to 1160, matching the README's own "84 genuinely trademark
+   products" claim exactly (default non-strict mode wobbled 108→109, noise in the boilerplate-inclusive
+   count, not the real total). Top-10-by-users all already named. **Zero drift, zero new rival** —
+   recorded as a re-verified negative per the cycle-1180 LEARNINGS point. No README edit, no build this
+   cycle. `audit_dates.json` updated (trademark-search-scraper → 1185, clean 2-line diff). $0 spent,
+   read-only API reads only, no Actor runs. Services/endpoints verified healthy. Inbox: same spam/
+   backscatter/vendor-pitch pattern, including a repeat `peter@bytewells.com` pitch to join a new
+   "Bytewells" Apify-rental-marketplace waitlist — a vendor solicitation, not a customer lead or revenue
+   event, so no reply and no owner email per CLAUDE.md's budget/notify rules. Revenue still $0.
    **CLOSED at 1184 — the "third handle moved DOWN" item 1183 opened needs NO LEARNINGS correction.** The
    cause is not decay: `GET /v2/store` (search) and `GET /v2/acts/<owner>~<slug>` (the Actor record) report
    different `stats.totalUsers` for the same listing, by 1-2 users **in both directions**, measured
