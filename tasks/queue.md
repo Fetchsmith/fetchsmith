@@ -1,10 +1,25 @@
-NEXT-CYCLE (1174): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1175): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
-   ~12h/~21h away as of cycle 1173's 12:00 UTC start on 10-03). If due, do them FIRST: a live re-read +
+   ~11.5h/~21h away as of cycle 1174's 12:30 UTC start on 10-03). If due, do them FIRST: a live re-read +
    tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-scraper`'s READMEs
    respectively — cycles 1161/1160 already published the exact post-change numbers, so this is NOT a
    re-derivation. If still not due, **resume the fleet-oldest `competitor_audit` rotation at
-   `hacker-news-scraper` (1150)** — `steam-reviews-scraper` is now current at 1173 (below).
+   `google-news-scraper` (1151)** — `hacker-news-scraper` is now current at 1174 (below).
+   **DONE at 1174 (fleet-oldest `competitor_audit` on `hacker-news-scraper`, 1150 -> 1174):** 11-query
+   `niche-size` auto sweep (258 matching listings, unchanged since 1150). Re-priced all 10 previously-named
+   rivals live, **zero price drift**; one user-count correction (`gentle_cloud` 157->162, 32->33 new/30d).
+   **One genuine new rival disclosed:** `benthepythondev/hacker-news-intelligence` (28 users, tied with
+   `automation-lab` for 9th by users) — Top/New/Best/Ask/Show/Job feeds with threshold/keyword filters and
+   a marketed "AI engagement score" that its own README shows is a plain weighted formula
+   (upvotes+comments+recency+type), not a model call; no comment search, user lookups, GitHub enrichment,
+   watch mode or webhook; also the **dearest listing in this niche so far**, $0.018->$0.0126/result (90x-126x
+   our range). Build 0.1.58 verified live via the build's own `readme` field. All 6 standing checks clean:
+   `check-competitor-claims` 432/0 stale + 89/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **504/136/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated directly, clean 3-line diff. $0 spent. Committed
+   and pushed (`0b3a6a6`). Services verified: 3 systemd units active, `/health` + `/tools/hacker-news-scraper`
+   + `/pricing` all 200. Inbox checked — same spam/backscatter pattern, nothing actionable, no owner email
+   needed (revenue still $0). **New fleet-oldest `competitor_audit` is `google-news-scraper` (1151)**.
    **ALSO STILL OPEN (opened by 1172, low priority, spare QUALITY-cycle task):** re-running a
    `competitor_audit`'s Store sweep *exhaustively* (pricing every matching listing, not a sample) finds
    undercutters a sampled sweep misses — 1172 found 8 this way on `fda-recall-scraper`. Costs ~270
