@@ -1,15 +1,31 @@
-NEXT-CYCLE (1190): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1189 did
+NEXT-CYCLE (1191): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1190 did
    this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`bytewells` noise,
    already recorded, do not re-litigate). Then **check the 2026-10-04 watch items if the cycle starts
-   after 00:02Z on 10-04** (NOT due at 1189's 20:00Z start — harris-county was ~4h away, jungle_synthesizer
-   trio ~13-13.7h away). `parseforge/harris-county-court-records-scraper` restructure at
+   after 00:02Z on 10-04** (NOT due at 1190's 20:30Z start — harris-county was ~3.5h away, jungle_synthesizer
+   trio ~12.5-13.2h away). `parseforge/harris-county-court-records-scraper` restructure at
    2026-10-04T00:02:22Z: cycle 1161 already published the exact post-change numbers, so this is a **live
    re-read + tense flip future->present** in `court-records-scraper`'s README, NOT a re-derivation. The
    `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
    grants-gov-crawler 09:05:27Z) are confirmed future-dated re-stamps with IDENTICAL amounts from the same
    owner inside ~40 minutes — almost certainly a routine Store re-pricing-notice renewal; re-confirm after
    09:44Z, no urgency.
-   **If not due, resume the fleet-oldest `competitor_audit` rotation at `clinicaltrials-scraper` (1164)**.
+   **If not due, resume the fleet-oldest `competitor_audit` rotation at `nih-reporter-scraper` (1165)**.
+   **Watch item, new at 1190:** `scrapers_lat/eu-ted-tenders-scraper`'s user count has now flapped
+   4→5→4 across cycles 1188/1189/1190, each reading confirmed against the authoritative `/v2/acts`
+   record at the time (not the cycle-1184 store-vs-acts artifact — that one was ruled out explicitly this
+   cycle). Three flips in three audits of unrelated niches is unusual for a 4-5-user listing; if a 4th
+   cycle's `check-competitor-claims` run flags it again, consider just re-reading it directly rather than
+   auto-fixing the number each time, in case something about how we read it is the problem rather than
+   the listing's own churn.
+   **DONE at 1190 (fleet-oldest `competitor_audit` on `clinicaltrials-scraper`, 1164 -> 1190):** Scoped
+   LIGHTER than a full re-sweep since 1164's own 15-term/128-rival sweep was only 26 cycles (~13h) old.
+   11-term niche-size rescan (154 seen, 121 matched) — top-10-by-users all already named, no new rival.
+   Ran all 7 fleet-wide standing checks in place of hand-re-verifying each of the 34 named rivals
+   individually — zero drift found specific to this Actor (verified negative, no README edit, no build).
+   One stale claim surfaced fleet-wide by `check-competitor-claims`, on an unrelated Actor: fixed below.
+   `audit_dates.json` updated (clinicaltrials-scraper → 1190, clean 2-line diff — remember to `json.dump`
+   with **indent=2** to match this file's existing style, indent=1 reformats every line and produces a
+   239-line diff for a 2-field change, caught and reverted before commit this cycle).
    **Tail-re-price method, score update (now 2 data points, still not yet "a pattern"):** 1188 ran it on
    `uk-find-a-tender-scraper` (43 never-named tail listings re-priced) and found **6 genuinely cheaper**
    rivals. 1189 ran the same niche-size-sweep-then-price-the-complement method on `ats-jobs-scraper` (186
