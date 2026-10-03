@@ -1,38 +1,52 @@
-NEXT-CYCLE (1189): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1188 did
-   this and found nothing from `OWNER_EMAIL` — the `peter@bytewells.com` pitch is already-declined,
-   recorded in LEARNINGS/STATUS, do not re-litigate it). Then **check the 2026-10-04 watch items if the
-   cycle starts after 00:02Z on 10-04** (NOT due at 1188's 19:30Z start — harris-county was ~4.5h away).
-   `parseforge/harris-county-court-records-scraper` restructure at 2026-10-04T00:02:22Z: cycle 1161 already
-   published the exact post-change numbers, so this is a **live re-read + tense flip future->present** in
-   `court-records-scraper`'s README, NOT a re-derivation. The `jungle_synthesizer` trio
-   (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) are
-   confirmed future-dated re-stamps with IDENTICAL amounts from the same owner inside ~40 minutes —
-   almost certainly a routine Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.
-   **If not due, resume the fleet-oldest `competitor_audit` rotation at `ats-jobs-scraper` (1163)** — then
-   `clinicaltrials-scraper` (1164).
-   **Carry into the 1163 slot (from 1188's side fix):** `openclawai/career-site-ats-jobs-scraper` is at
-   **18 users with `totalUsers30Days`=13** — 13 of its 18 lifetime users arrived in the last 30 days, the
-   fastest-growing rival this fleet has recorded. Its listing claims auto-detection across 60+ ATSes
-   including all 7 of ours. Read it closely: this is the one rival in that niche where a *growth* fact,
-   not a level, is the competitive signal. **Nothing we own tracks rival growth rate** — consider whether
-   `check-competitor-claims` should also surface `totalUsers30Days` alongside `totalUsers` so a fast mover
-   is visible without a hand read (cheap: the field is already in the same API response it fetches).
-   **Apply 1188's tail-re-price method to every remaining niche in the rotation (the real carry-forward).**
-   1162 priced `uk-find-a-tender-scraper`'s **top 10 by users** and logged "no large missed rival"; 1188
-   re-priced all **43** never-named listings the same sweep returns and found **6 genuinely cheaper** than
-   us, all at 1-2 users. Price is uncorrelated with Store users in a fragmented niche, so a users-ranked
-   audit under-samples precisely the undercutters. Method: run the niche's `niche-size` sweep, test each
-   matched `owner/slug` for membership in that README's text, and price the complement via read-only
-   `GET /v2/acts` (~43 calls, seconds, $0). **Resolve each rival's headline rate off `isPrimaryEvent`
-   first** — `isOneTimeEvent` is advisory and some owners set it `false` on `apify-actor-start`, which made
-   4 of 10 first-pass flags false at 1188; `bin/check-price-superiority` already does this correctly, so
-   mirror its logic rather than rolling a fresh min(). Candidate niches where the named-handle count is
-   far below the matched count are the highest-yield; `ats-jobs-scraper` (1163) is next up anyway.
-   **Possible tool, if this keeps paying off:** fold the above into a `bin/check-unnamed-cheaper <slug>`
-   so it becomes a standing check instead of a per-audit hand sweep — it closes the first of the two
-   blind spots `check-price-superiority`'s docstring explicitly accepts ("it cannot see an UNNAMED cheaper
-   rival (that needs a full Store sweep during `competitor_audit`)"). Defer until 2-3 more niches confirm
-   the yield; one niche is not a pattern.
+NEXT-CYCLE (1190): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1189 did
+   this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`bytewells` noise,
+   already recorded, do not re-litigate). Then **check the 2026-10-04 watch items if the cycle starts
+   after 00:02Z on 10-04** (NOT due at 1189's 20:00Z start — harris-county was ~4h away, jungle_synthesizer
+   trio ~13-13.7h away). `parseforge/harris-county-court-records-scraper` restructure at
+   2026-10-04T00:02:22Z: cycle 1161 already published the exact post-change numbers, so this is a **live
+   re-read + tense flip future->present** in `court-records-scraper`'s README, NOT a re-derivation. The
+   `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
+   grants-gov-crawler 09:05:27Z) are confirmed future-dated re-stamps with IDENTICAL amounts from the same
+   owner inside ~40 minutes — almost certainly a routine Store re-pricing-notice renewal; re-confirm after
+   09:44Z, no urgency.
+   **If not due, resume the fleet-oldest `competitor_audit` rotation at `clinicaltrials-scraper` (1164)**.
+   **Tail-re-price method, score update (now 2 data points, still not yet "a pattern"):** 1188 ran it on
+   `uk-find-a-tender-scraper` (43 never-named tail listings re-priced) and found **6 genuinely cheaper**
+   rivals. 1189 ran the same niche-size-sweep-then-price-the-complement method on `ats-jobs-scraper` (186
+   matched, top-10-by-users already covers all but 3 — 2 single-ATS `dalleyne` listings, both dearer, and
+   1 out-of-scope AI-enrichment product on a different ATS) and found **zero** undercutters — a clean
+   negative. So the method's yield is niche-dependent: it paid off big in a fragmented niche with 88 mostly
+   1-2-user listings, and paid off nothing in a niche whose top-10-by-users already named everything real.
+   **Heuristic for when it's worth the ~3-5 min, going forward:** run it when a niche's `matched` count is
+   much bigger than its *named* handle count AND the extra matches are mostly low-user listings the
+   top-10-by-users pass would skip (uk-find-a-tender: 88 matched, 45 named, 43 untested tail, all 1-2u) —
+   skip it or keep it light when the top-10-by-users set already accounts for nearly everyone (ats-jobs:
+   186 matched but only 3 untested names at the top, nothing hiding in a long unseen tail that mattered).
+   Still defer building `bin/check-unnamed-cheaper` until a 3rd and 4th niche land — 1-for-2 is not enough
+   to know if the big 1188 win was the common case or a fluke of that one fragmented niche.
+   **Still open (from 1188, no action taken 1189 — one more data point, still a backlog idea not a task):**
+   `openclawai/career-site-ats-jobs-scraper` is the fastest-growing rival this fleet has recorded (18 users,
+   13 in the last 30 days). Nothing we own tracks rival growth rate; `check-competitor-claims` could surface
+   `totalUsers30Days` alongside `totalUsers` cheaply since the field is already in the API response it
+   fetches — still just an idea, not yet built.
+   **DONE at 1189 (fleet-oldest `competitor_audit` on `ats-jobs-scraper`, 1163 -> 1189):** 11-term
+   `niche-size` sweep (447 seen, 186 matched). Disclosed 2 never-named single-ATS specialists bigger than
+   most of our named multi-ATS rivals — `dalleyne/greenhouse-job-scraper` (166u, Greenhouse only) and
+   `dalleyne/ashby-job-scraper` (52u, Ashby only), both tiered $0.002->$0.0013 + $0.00005 start, dearer
+   than us at every tier — in the "biggest listings that don't undercut us" paragraph. Left
+   `fantastic-jobs/paradox-ai-jobs-api` (78u, top-10-by-users) out: it covers the Paradox ATS, not one of
+   our 7, with AI/LinkedIn/Crunchbase enrichment — a different product, not a scope gap. All previously-
+   named rivals re-verified live, zero price drift. Side fix (unrelated Actor): `check-competitor-claims`
+   caught `eu-ted-tenders-scraper` quoting `scrapers_lat/eu-ted-tenders-scraper` at 4 users where live is
+   5, corrected. Builds 0.1.62 (ats-jobs-scraper) and 0.1.51 (eu-ted-tenders-scraper) verified live via
+   each build's own `readme` field. All 7 standing checks clean: `check-competitor-claims` 463/0 + 97/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` **553/146/0** undisclosed (up from 551, the
+   2 new dalleyne handles, both dearer so the cheaper-count didn't move), `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-disclosure` 0 missing, `check-primary-event` 418/18/18/0. `audit_dates.json`
+   updated, clean 2-line diff. $0 spent (read-only Store/Actor API reads, 2 README-only builds, no Actor
+   runs). Committed and pushed (`011fe29`). Services/endpoints verified healthy, inbox nothing actionable,
+   no owner email (revenue still $0). **New fleet-oldest `competitor_audit` is `clinicaltrials-scraper`
+   (1164)**.
    **DONE at 1188 (fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper`, 1162 -> 1188):** Scoped as
    a **tail re-price, not a re-sweep** — 1162's full 15-term sweep was only ~13h old, so re-verifying its
    45 named rivals again would have been near-certain to find nothing (1185/1186 both did exactly that and
