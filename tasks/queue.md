@@ -1,11 +1,59 @@
-NEXT-CYCLE (1159): per rotation (1156 QUALITY -> 1157 GROWTH/BUILD -> 1158 QUALITY -> 1159 **GROWTH/BUILD**).
+NEXT-CYCLE (1160): per rotation (1157 GROWTH/BUILD -> 1158 QUALITY -> 1159 GROWTH/BUILD -> 1160 **QUALITY**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — whoever runs on/after that date must do
    it FIRST, ahead of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). The same 2026-10-04 cycle should re-read the two
    `jungle_synthesizer` TED entries (see the 1154 note below). Otherwise resume the fleet-oldest
-   `competitor_audit` rotation at **`sam-gov-opportunities-scraper` (1130, now sole fleet-oldest)**, then
-   `trademark-search-scraper` (1132), `court-records-scraper` (1134).
+   `competitor_audit` rotation at **`trademark-search-scraper` (1132, now sole fleet-oldest)**, then
+   `court-records-scraper` (1134).
+   **DONE at 1159 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper`**
+   (1130 -> 1159). Re-swept `sam.gov` with the Store search `limit` bumped from the default 20 to 60 —
+   **54 listings came back instead of 18**, almost all 2-user micro-listings that relevance ranking had
+   been cutting off (a narrower-but-different flavor of the item-4 enumeration-cap bug: this time the tool's
+   *limit*, not the search term, was capping the count). All 13 previously-named rivals re-verified live
+   straight from `pricingInfos`, **zero price drift**. Found one filed-but-not-yet-effective change:
+   `fortuitous_pirate/sam-gov-scraper`'s Actor-start fee drops $0.01 -> $0.005 on **2026-10-13** (per-row
+   $0.003 unchanged) — still pricier than us after the cut, no competitive-position change, re-read on/after
+   that date. **Three genuine new undercutters disclosed**, all 2-user listings surfaced only by the widened
+   limit: `yourwingman/usa-federal-contracts-scraper` ($0.0005/row flat + $0.00005 start — a third of our
+   rate at every volume, the 3rd-biggest undercut in this niche after `jungle_synthesizer`/`scrapesage`),
+   `factpipe/sam-gov-contracts` (tiered $0.002 FREE -> $0.0014 GOLD+, no start fee, undercuts from GOLD+),
+   `bakos_bence/sam-gov-opportunities` (tiered $0.00249 -> $0.001245 but behind a $0.02 -> $0.003 start fee,
+   crosses our flat rate only past ~12 rows/run on GOLD+). **Two exact ties disclosed:**
+   `adobeflex/sam-opportunities-lite` ($0.0015/row primary event, though a separate $0.001 "search run" event
+   plus a $0.00005 start fee make it dearer in practice) and `andrew_avina/federal-contracts-mcp` (flat
+   $0.0015/row, no other fees — a genuine tie). **Checked and deliberately left unpriced as out of this
+   Actor's 4-dataset SAM.gov scope, not an oversight:** wage-determination-only (`wishbone_data`),
+   exclusions-only (`nexgendata`, `maximedupre/sam-gov-exclusions`), contractor lead-gen/registration
+   monitoring (`lead.gen.labs`'s 3 listings), a bundled amendment-detection product (`blaidlink`, $0.02-0.03
+   per event), and 5 multi-country tender aggregators that only mention SAM.gov in passing alongside EU
+   TED/UK (`practicalmodules`, `gazidev`, `chorelet`, `snow_leo_data`, `apeye`). Build 0.1.36 verified live
+   via the build's own `readme` field (all 6 new handles + both dates present). All 6 standing checks clean:
+   `check-competitor-claims` 344/0 stale + 79/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **420/106/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated via a one-off Python script (not an inline
+   backtick-heavy shell string — see the fix note below) — `git diff` confirmed only this Actor's
+   `competitor_audit`/`competitor_audit_note` fields changed, 24 other keys untouched.
+   **Incidental fleet fix, found while running the standing checks:** `check-competitor-claims`'s
+   `live_users()` "gone from the Store" transient (tracked since 1145, recurred 1148) flaked a **3rd time**
+   this cycle on an unrelated listing (`artificially/eu-tenders-scraper` in `eu-ted-tenders-scraper`'s
+   README) — a direct re-check confirmed it's still live/public/40 users. Per the 1148 note's own
+   if-it-recurs-a-3rd-time instruction, added a retry-once (2s pause) around the non-200 case in
+   `live_users()` before it declares a listing gone; re-ran the full checker clean (344/0) immediately after.
+   Do not re-add manual re-confirmation for this specific flake class going forward — the retry now handles it.
+   **Shell gotcha hit and fixed this cycle, worth remembering:** editing `state/audit_dates.json`'s note field
+   via `python3 -c "...` inside a double-quoted heredoc let the shell command-substitute every backtick
+   (`` `owner/slug` ``) and variable-expand every `$0.00xx` price in the note text before Python ever saw it,
+   silently corrupting the JSON value (caught via `git diff` before committing, reverted with `git checkout`,
+   redone by writing the update as a standalone `.py` file and running `python3 state/.update_audit.py`
+   instead). Any future note text with backticks or `$`-prefixed dollar amounts must go through a script
+   file, never an inline `python3 -c "..."` with those characters unescaped.
+   $0 spent (read-only Store/Actor API reads, 1 code fix, no Actor runs). Services verified: 3 systemd units
+   active, `/health` + `/tools/sam-gov-opportunities-scraper` + `/pricing` all 200. Inbox checked — 1 new item
+   since 1158 (`wordpress@co-sol.ca` "CO-Sol Canada Inquiry Confirmation" — backscatter spam, someone used our
+   address as a fake sender against a Canadian contact form, same pattern as the Japanese/Italian backscatter
+   already in the inbox), nothing actionable, no owner email needed (revenue still $0). **New fleet-oldest
+   `competitor_audit` is `trademark-search-scraper` (1132)**.
    **DONE at 1158 (QUALITY slot): fleet-oldest `competitor_audit` on `scholarship-scraper`** (1129 -> 1158).
    11-term `niche-size` sweep re-run (base phrase "scholarship", not yet in `TERM_VARIANTS`): 30 seen, **22
    matching**, identical to 1129 — README claim MATCHES live. All 3 previously-named rivals re-verified live
