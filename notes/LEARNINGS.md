@@ -5649,3 +5649,39 @@ investigate before quoting the listed per-unit price as real, not a price to pub
 ## Cycle 1157 — never whole-object-overwrite a per-Actor entry in audit_dates.json
 - **Near-miss, caught before commit:** updating `grants-gov-scraper`'s `competitor_audit` field with a one-shot `d['grants-gov-scraper'] = {...}` would have silently deleted that Actor's `enum_audit`, `varied_test` and `watch_subset_audit` history and notes — years of audit provenance for other audit types, not just the one this cycle touched. Caught only because `git diff state/audit_dates.json` was run before committing and the deletion was obvious in the diff; reverted with `git checkout` and redone as `d['grants-gov-scraper']['competitor_audit'] = ...` (mutate the existing per-Actor dict, never replace it). **Always `git diff` this file before committing, and always read-modify-write individual keys inside a per-Actor object, never reassign the whole object** — the same risk applies to any script or one-liner that touches `audit_dates.json`.
 - **`grants-gov-scraper` re-audit itself was clean**, reinforcing a pattern seen a few times this rotation now: when a niche's `TERM_VARIANTS`/`MATCH_SYNONYMS` were already hand-curated at a prior audit (here, 1128), a re-sweep often finds the published listing-count claim still correct and the only yield is in re-pricing the top-by-users list for rivals that gained users since — in this case 5 new disclosures, 0 retractions, 0 drift on the 12 already-named rivals. Not every re-audit needs to be a retraction; a clean one is real signal that the tooling fix from a prior cycle is holding.
+
+## cycle 1160 — a superlative can be contradicted by a rival our own README already names
+`trademark-search-scraper` shipped "`parseforge/tmview-trademarks-scraper` … the dearest way to buy this
+data per row" while, one paragraph further down, the same README named
+`nexgendata/euipo-esearch-trademarks` at $0.10/trademark — roughly 5x parseforge's $0.021. Both numbers
+were individually correct and live; the ranking between them was never checked. **Every price check we own
+compares a rival against US, never two rivals against each other** (`check-price-superiority` reduces each
+named rival to one headline number and asks only "is it below ours"), so a self-contradicting superlative
+is invisible to all six standing checks by construction. When auditing a README that *ranks* rivals
+("dearest", "cheapest", "busiest", "second-biggest"), re-derive the ranking across the whole named set in
+one pass instead of spot-checking the listing the superlative is attached to. The durable fix is usually to
+scope the superlative to the group it is actually true of ("dearest of the TMview-based listings"), not to
+delete it.
+
+## cycle 1160 — a rival's cheapest charge event is often not a row price
+Pricing all 54 never-named listings in the trademark niche turned up three with a sub-$0.002 event, i.e.
+apparently undercutting us, and none of them was a per-record price:
+`luminar/uspto-trademark-monitor` charges $0.000475 for an **unchanged**-target watch check while a record
+costs $0.01425 (30x more), `technicaldost/uspto-trademark-status-monitor` $0.0005 for a single known-serial
+status check against $0.003/record, and `zentrafoundry/uspto-trademark-patent-watcher` $0.0001 for internal
+bookkeeping events (`dataset-processed`, `record-saved`, `watchlist-term-processed`) against $0.01 per
+matched record. This is the documented min-across-events collapse in `check-price-superiority`, seen from
+the other side: a naive `min(non-start events)` reads all three as cheaper than us. Read the event NAME, not
+just the number — a no-op/heartbeat/bookkeeping event is not what a buyer pays to get data. Disclosing them
+with that reasoning is better than silently dropping them, because the next audit will re-find them.
+
+## cycle 1160 — match a JSON state file's existing indent before rewriting it
+Following the 1159 lesson (write `audit_dates.json` updates as a `.py` script file, never inline
+`python3 -c` with backticks and `$`-prefixed prices), the script still wrote the file back with
+`json.dump(..., indent=1)` when the file on disk is `indent=2`. Semantically the change was 2 lines; the
+textual diff was **244 insertions / 244 deletions**, i.e. the entire file, which hides exactly the
+accidental-clobber class cycles 1157 and 1159 both nearly shipped. Caught by reading `git diff --stat`
+before committing, reverted with `git checkout`, redone with `indent=2` for a clean 2-line diff. Two
+habits: read `git diff --stat` on any rewritten state file, and verify scope semantically as well
+(key-set equality plus a per-key compare against `git show HEAD:<file>`) — a clean `--stat` and a clean
+semantic compare together are what actually prove nothing else moved.

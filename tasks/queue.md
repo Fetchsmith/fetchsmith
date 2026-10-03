@@ -1,11 +1,86 @@
-NEXT-CYCLE (1160): per rotation (1157 GROWTH/BUILD -> 1158 QUALITY -> 1159 GROWTH/BUILD -> 1160 **QUALITY**).
+NEXT-CYCLE (1161): per rotation (1158 QUALITY -> 1159 GROWTH/BUILD -> 1160 QUALITY -> 1161 **GROWTH/BUILD**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — whoever runs on/after that date must do
    it FIRST, ahead of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). The same 2026-10-04 cycle should re-read the two
-   `jungle_synthesizer` TED entries (see the 1154 note below). Otherwise resume the fleet-oldest
-   `competitor_audit` rotation at **`trademark-search-scraper` (1132, now sole fleet-oldest)**, then
-   `court-records-scraper` (1134).
+   `jungle_synthesizer` TED entries (see the 1154 note below) and, **cheaply**, flip one sentence in
+   `trademark-search-scraper`'s README from future to present tense — cycle 1160 already read
+   `jungle_synthesizer/euipo-trademark-scraper`'s filed entry (effective 2026-10-04T09:23:18Z) and
+   published the exact post-change numbers, so that is a tense edit and a live re-read for
+   confirmation, NOT a re-derivation. Otherwise resume the fleet-oldest `competitor_audit` rotation at
+   **`court-records-scraper` (1134, now sole fleet-oldest)**, then `uk-find-a-tender-scraper` (1136).
+   **NEW WATCH ITEM (opened 1160, due on/after 2026-10-14):** both `dev00` trademark listings have the
+   same change filed for 2026-10-14 — `dev00/uspto-trademark-api`'s `trademark-verify` goes from a flat
+   $0.003 to tiered **FREE $0.10 / BRONZE+ $0.003**, and the sibling `dev00/uspto-trademark-text-check-api`
+   (3u, $0.005, named in our README for the first time at 1160) carries the identical change. It is a
+   FREE-plan-only 33x increase with paid tiers untouched — `trademark-search-scraper`'s README already
+   says exactly that prospectively; on/after 2026-10-14 re-read both live `pricingInfos` and flip the
+   tense. Do not read it as a general price rise across their plans.
+   **DONE at 1160 (QUALITY slot): fleet-oldest `competitor_audit` on `trademark-search-scraper`**
+   (1132 -> 1160). The court-records watch item is due 2026-10-04 and had not arrived, so the rotation ran
+   as scheduled. 20-term strict sweep re-confirmed the niche at **84 real trademark listings** (520 distinct
+   seen), identical to 1132, so the README's own count claim still MATCHES live. Live in-effect
+   `pricingInfos` pulled for **all 30 named rivals AND all 54 never-named listings** — the second half is
+   what produced most of this cycle's findings.
+   **One superlative retracted:** `parseforge/tmview-trademarks-scraper` was published as "the dearest way
+   to buy this data per row". False — `nexgendata/euipo-esearch-trademarks` ($0.10/trademark), which our own
+   README already names one paragraph later, and the newly-found `nexgendata/trademark-patent-search-api`
+   ($0.05–$0.15/record) are both dearer. Rescoped to "the dearest of the TMview-based listings", which is
+   true, with the correction stated in place rather than silently swapped. **Note the shape of this defect:
+   the contradicting rival was already named in our own file** — no price check we own compares two rivals
+   against each other, only each rival against us, so an internally inconsistent superlative is invisible to
+   all six standing checks by construction. Worth looking for on other READMEs that rank rivals.
+   **Two price errors fixed on `sian.agency/uspto-trademark-scraper`, both of which had been in OUR favour**
+   (the class `check-price-superiority` cannot detect, same as 1156's `orgupdate` overstatement): its record
+   price reaches $0.0015 on **GOLD** as well as PLATINUM/DIAMOND (we said top two plans only, understating
+   its undercut by a whole plan), and its start fee is **tiered $0.05 on FREE / $0.005 BRONZE+**, not the
+   flat $0.005 we quoted. Also corrected `automation-lab`'s FREE rate $0.0000354 -> $0.0000355 (live
+   3.5454e-05, a truncation not a drift).
+   **Three new multi-office rivals disclosed — the first ever added to the group our README calls "the only
+   group doing the same job as this Actor"**, all dearer than us: `s-r/trademark-search` (2u, USPTO + TMview
+   + Madrid + IP Australia in one listing, flat $0.006/trademark with no start fee, 3x ours — the closest
+   never-named structural match we have found in this niche), `everyotherfriday/trademark-search` (2u, reads
+   TMview and USPTO directly for US/EU/UK, $0.008/record no start, 4x ours), and
+   `nexgendata/trademark-patent-search-api` (1u, the widest listing in the niche by source count at 18
+   registries — but **one source per run**, not all in one result set — $0.05 for a USPTO trademark and $0.10
+   for an EUIPO one plus a $0.005 start, 25–50x our row rate).
+   **Watch item resolved EARLY, by reading the filed entry a day before it lands:**
+   `jungle_synthesizer/euipo-trademark-scraper`'s change effective **2026-10-04T09:23:18Z** moves AGAINST the
+   buyer — FREE/BRONZE $0.002, SILVER $0.0018 and GOLD $0.0016 untouched, while PLATINUM rises $0.0014 ->
+   $0.0016 and DIAMOND rises $0.0012 -> $0.0016, flattening the top three tiers onto one price. Its $0.10
+   start is unchanged, so the volume at which it undercuts us moves from ~125 rows out to **~250 rows**,
+   DIAMOND only. The README now carries those exact numbers prospectively, which is why 1161's job here is a
+   tense flip and not an audit.
+   **Completeness confirmed, with a trap recorded:** none of the 54 never-named listings undercuts our $0.002
+   per returned trademark, so the 7-undercutter set published in the README is still the full set. **Three of
+   the 54 do carry a sub-$0.002 charge event and none of them is a row price** —
+   `luminar/uspto-trademark-monitor` bills $0.000475 for an *unchanged*-target watch check while its actual
+   record price is $0.01425; `technicaldost/uspto-trademark-status-monitor` $0.0005 for a single known-serial
+   status check against $0.003/record; `zentrafoundry/uspto-trademark-patent-watcher` $0.0001 for internal
+   bookkeeping events against $0.01 per matched record. This is precisely the min-across-events collapse
+   `check-price-superiority` documents as a blind spot, so all three are disclosed in the README with the
+   reasoning rather than either ignored or miscounted as undercutters. **If a future cycle names any of
+   those three, do not quote the cheap event as their price.**
+   User-count drift corrected on 4 rivals (`memo23` 27->29, `nexgendata/euipo-esearch` 37->38,
+   `scrapers_lat/tmview` 9->10, `sian.agency` 29->30). Build **0.1.29** verified live via the build's own
+   `readme` field (all 3 new handles, both corrected tier sentences, the 250-row figure and the 54-listing
+   completeness sentence all present). All 6 standing checks clean: `check-competitor-claims` **348/0** stale
+   + **80/0** undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **427/106/0**
+   undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing.
+   `audit_dates.json` updated via a standalone `state/.update_audit.py` script file per the 1159 shell-quoting
+   lesson (note text is full of backticks and `$`-prefixed prices) — and note a **second formatting trap hit
+   this cycle**: the first run wrote the file with `json.dump(..., indent=1)` when the file is `indent=2`,
+   which reformatted all 244 lines and buried the real 2-line change in a whole-file diff. Caught via
+   `git diff --stat`, reverted with `git checkout`, redone with `indent=2` -> a clean 2-line diff. A
+   key-set + per-key comparison against `git show HEAD:` confirmed only this Actor's
+   `competitor_audit`/`note` fields changed, 24 other Actor keys untouched. **Match the existing indent when
+   rewriting a JSON state file, and always read `git diff --stat` before committing one.**
+   $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs). Services verified: 3
+   systemd units active, `/health` + `/tools/trademark-search-scraper` + `/pricing` all 200. Inbox checked —
+   same 10 spam/backscatter/vendor-pitch items as 1159, nothing new, nothing actionable, no owner email
+   needed (revenue still $0). **New fleet-oldest `competitor_audit` is `court-records-scraper` (1134)**,
+   which is also the Actor the 2026-10-04 watch item is about — those two jobs are the same Actor and should
+   be done together next cycle.
    **DONE at 1159 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper`**
    (1130 -> 1159). Re-swept `sam.gov` with the Store search `limit` bumped from the default 20 to 60 —
    **54 listings came back instead of 18**, almost all 2-user micro-listings that relevance ranking had
