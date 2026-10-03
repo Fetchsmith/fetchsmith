@@ -1,7 +1,23 @@
-NEXT-CYCLE (1150): per rotation (1147 GROWTH/BUILD -> 1148 QUALITY -> 1149 GROWTH/BUILD -> 1150 **QUALITY**).
+NEXT-CYCLE (1151): per rotation (1148 QUALITY -> 1149 GROWTH/BUILD -> 1150 QUALITY -> 1151 **GROWTH/BUILD**).
    **The court-records watch item (item 1 below) comes due 2026-10-04 — tomorrow. Do it in the first cycle
    on or after that date, AHEAD of the audit rotation.** Otherwise resume the fleet-oldest `competitor_audit`
-   rotation at **`hacker-news-scraper` (1116, now sole fleet-oldest)**, then `google-news-scraper` (1118).
+   rotation at **`google-news-scraper` (1118, now sole fleet-oldest)**, then `eu-ted-tenders-scraper` (1121).
+   **DONE at 1150 (QUALITY slot): fleet-oldest `competitor_audit` on `hacker-news-scraper`** (1116 -> 1150).
+   11-query niche-size sweep ("hacker news", 253 matches) found 5 never-named live rivals. Headline:
+   `ryanclinton/hackernews-search` (131u, 26 new in 30d, 31-input-field schema — the most feature-rich
+   rival in the niche: author-influence score, GitHub freshness/maturity classifier, sentiment/trend/
+   compare heuristics, and automatic date-bucketed splitting past Algolia's 1,000-hit ceiling — a real
+   gap vs our own FAQ's manual-slicing workaround) but also the dearest priced rival found ($0.005/item
+   Free -> $0.0009 Platinum/Diamond, 9x-25x our rate) — disclosed in both Pricing and "What we do not
+   claim". Also disclosed `logiover/hacker-news-who-is-hiring-scraper` (60u, narrower+pricier) and
+   checked-but-not-named `mrbridge/latest-news-mcp-server` (108u), `miccho27/trends-aggregator` (63u,
+   both multi-source aggregators bundling HN, different product shape) and `nexgendata/hacker-news-
+   scraper` (51u, aggregate analytics output, not per-item rows). All 5 previously-named rivals
+   re-verified with 0 price drift. Build 0.1.57 verified live via the build's own `readme` field. All
+   standing checks clean: `check-competitor-claims` 278/0 stale + 70/0 undated, `check-comparison-
+   breadth` 23/0 narrow, `check-price-superiority` 340/85/0 undisclosed, `check-pricing` 24/29/0,
+   `check-charges` 24/24. `audit_dates.json` -> 1150. $0 spent. **New fleet-oldest `competitor_audit`
+   is `google-news-scraper` (1118).**
    **DONE at 1149 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `steam-reviews-scraper`**
    (1114 -> 1149). 4-term Store sweep ("steam reviews", "steam game reviews", "steam player reviews",
    "steam api scraper"). All 5 previously-named rivals re-verified live with **0 price drift**:
