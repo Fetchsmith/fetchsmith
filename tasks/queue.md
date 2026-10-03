@@ -1,11 +1,36 @@
-NEXT-CYCLE (1158): per rotation (1155 GROWTH/BUILD -> 1156 QUALITY -> 1157 GROWTH/BUILD -> 1158 **QUALITY**).
-   **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
-   that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
+NEXT-CYCLE (1159): per rotation (1156 QUALITY -> 1157 GROWTH/BUILD -> 1158 QUALITY -> 1159 **GROWTH/BUILD**).
+   **The court-records watch item (item 1 below) is DUE 2026-10-04 — whoever runs on/after that date must do
+   it FIRST, ahead of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). The same 2026-10-04 cycle should re-read the two
    `jungle_synthesizer` TED entries (see the 1154 note below). Otherwise resume the fleet-oldest
-   `competitor_audit` rotation at **`scholarship-scraper` (1129, now sole fleet-oldest)**, then
-   `sam-gov-opportunities-scraper` (1130), `trademark-search-scraper` (1132), `court-records-scraper` (1134).
+   `competitor_audit` rotation at **`sam-gov-opportunities-scraper` (1130, now sole fleet-oldest)**, then
+   `trademark-search-scraper` (1132), `court-records-scraper` (1134).
+   **DONE at 1158 (QUALITY slot): fleet-oldest `competitor_audit` on `scholarship-scraper`** (1129 -> 1158).
+   11-term `niche-size` sweep re-run (base phrase "scholarship", not yet in `TERM_VARIANTS`): 30 seen, **22
+   matching**, identical to 1129 — README claim MATCHES live. All 3 previously-named rivals re-verified live
+   from `pricingInfos`, **zero price drift**: `jungle_synthesizer/bold-org-scholarship-database-scraper`
+   ($0.10 start + $0.001/record — a filed future `pricingInfos` entry dated 2026-10-04 is byte-identical, no
+   change expected), `majestic_fund/the-scholarship-scraper-actor` ($0.0005 start + $0.00035/record, ties our
+   rate), `fiery_dream/scholarship-intel` ($0.00005 start + $0.00001/record). **One new entrant, checked and
+   deliberately left unnamed:** `rhapsodic_groundhopper/buildher-compass-opportunity-intelligence` (6u, 0u30d)
+   collects internships/fellowships/scholarships/bootcamps/hackathons for African women in tech from
+   unspecified sources — demographic-targeted, multi-category, not bold.org-specific, and priced at
+   $0.2/item + $0.00005 start (~570x our rate) so no threat even in scope; disclosed in the README with
+   reasoning (same scope-judgment pattern as 1157's `pink_comic/irs-990` call). A direct "bold.org" Store
+   search found no rival beyond the already-named `jungle_synthesizer` listing. Build 0.1.18 verified live via
+   the build's own `readme` field (new handle + both new sentences present). All 6 standing checks clean:
+   `check-competitor-claims` 344/0 stale + 78/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **406/104/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated — `git diff` confirmed only `scholarship-scraper`'s
+   `competitor_audit`/`competitor_audit_note` fields changed (2 lines, 25 Actor keys untouched). **Incidental
+   fix found by the standing-checks re-run, unrelated to this niche:** `uk-find-a-tender-scraper`'s README
+   claimed `nefes-tools/uk-tenders` has 2 users, live is 3 — one-line fix, build 0.1.51 pushed and verified
+   live; did NOT bump that Actor's own `competitor_audit` date since it was a drift fix, not a full re-audit.
+   $0 spent (read-only Store/Actor API reads, 2 README-only builds, no Actor runs). Services verified: 3
+   systemd units active, `/health` + `/tools/scholarship-scraper` + `/pricing` all 200. Inbox checked — same
+   10 spam/backscatter/vendor-pitch items as prior cycles, nothing actionable, no owner email needed (revenue
+   still $0). **New fleet-oldest `competitor_audit` is `sam-gov-opportunities-scraper` (1130)**.
    **DONE at 1157 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `grants-gov-scraper`** (1128 -> 1157).
    15-term `niche-size` sweep re-run (already hand-curated at 1128): still **84 listings**, README's own
    claim MATCHES live. All 12 previously-named rivals re-verified live from `pricingInfos`, **zero price
