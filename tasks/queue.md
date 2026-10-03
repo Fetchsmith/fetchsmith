@@ -1,17 +1,35 @@
-NEXT-CYCLE (1153): per rotation (1150 QUALITY -> 1151 GROWTH/BUILD -> 1152 QUALITY -> 1153 **GROWTH/BUILD**).
+NEXT-CYCLE (1154): per rotation (1151 GROWTH/BUILD -> 1152 QUALITY -> 1153 GROWTH/BUILD -> 1154 **QUALITY**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
    that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). Otherwise resume the fleet-oldest `competitor_audit` rotation at
-   **`app-store-reviews-scraper` (1122, now sole fleet-oldest)**, then `substack-scraper` (1123),
-   `federal-register-scraper` (1124), `remote-jobs-scraper` (1126).
-   **ALSO NOTE for 1153+: two `jungle_synthesizer` TED listings have a pricing change scheduled for
+   **`substack-scraper` (1123, now sole fleet-oldest)**, then `federal-register-scraper` (1124),
+   `remote-jobs-scraper` (1126), `grants-gov-scraper` (1128).
+   **ALSO NOTE for 1154+: two `jungle_synthesizer` TED listings have a pricing change scheduled for
    2026-10-04** (`eu-national-procurement-portals-scraper` and `ted-eu-procurement-full-scraper`, both
    currently $0.10 start + $0.001/record). Read live on 2026-10-03 the future `pricingInfos` entry was
    byte-identical to the current one (same $0.10 start, same $0.001 primary, `reasonForChange: null`),
    so no README change is expected — but re-read it on/after 2026-10-04 while doing the court-records
    item, since both handles are named in `eu-ted-tenders-scraper`'s README.
-   **DONE at 1152 (QUALITY slot): fleet-oldest `competitor_audit` on `eu-ted-tenders-scraper`** (1121 -> 1152).
+   **DONE at 1153 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `app-store-reviews-scraper`**
+   (1122 -> 1153). This README was already thorough (last touched 1122, verified live 2026-10-02) so this
+   audit came back largely clean rather than a retraction. `niche-size` 11-term sweep: 399 seen / 169
+   matched. All 9 previously-named rivals (thewolves 2371u, theagents 818u, easyapi 545u, johnvc 484u,
+   sourabhbgp 141u, jdtpnjtp 163u, brilliant_gum 160u, code-node-tools 158u, scriptbase 59u) re-verified
+   live, **zero price drift**. **One real inaccuracy fixed:** `benthepythondev/appstore-reviews-scraper`
+   (152u) was described as "$0.002/review flat" — live `pricingInfos` shows it's actually tiered $0.002
+   (FREE) down to $0.0014 (Diamond); reworded, still 14x-20x our rate, no competitive-position change.
+   **Three new dearer rivals disclosed for completeness** (none undercut us): `fatihtahta/app-store-
+   global-reviews-scraper` (59u, tied with scriptbase, $0.0004/review, 4x ours), `powerai/app-store-
+   reviews-scraper-ppr` (34u, 0 new/30d, tiered $0.00499->$0.00199 + a $0.09 start fee), `nexgendata/
+   ios-app-store-reviews-scraper` (32u, flat $0.1/review + $0.005 start, ~1,000x our rate, dearest found
+   in this niche). Build 0.1.74 verified live via the build's own `readme` field. All 6 standing checks
+   clean: `check-competitor-claims` 314/0 stale + 74/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` 379/100/0 undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` -> 1153. $0 spent (read-only Store/Actor API reads,
+   1 README-only build, no Actor runs). Committed and pushed (`b54343c`). **New fleet-oldest
+   `competitor_audit` is `substack-scraper` (1123).**
+   -11. **DONE at 1152 (QUALITY slot): fleet-oldest `competitor_audit` on `eu-ted-tenders-scraper`** (1121 -> 1152).
    **Biggest claim retraction of the rotation so far, and it lands one day after a price cut made on the
    bad data.** Cycle 1151's auto `niche-size` sweep of this niche returned 158 listings / 91 matches; a
    hand-curated 12-term sweep returned **364 listings / 228 matches**, and **all 186 TED/EU-specific ones
