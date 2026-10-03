@@ -1,10 +1,30 @@
-NEXT-CYCLE (1182): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1183): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
-   cycle 1181's 16:00 UTC start on 10-03 they were ~8h and ~17h away, so still NOT due at 1182). If due,
+   cycle 1182's 16:30 UTC start on 10-03 they were ~7.5h and ~17h away, so still NOT due at 1183). If due,
    do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
    `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already published the exact
    post-change numbers, so this is NOT a re-derivation. **If not due, resume the fleet-oldest
-   `competitor_audit` rotation at `grants-gov-scraper` (1157)**.
+   `competitor_audit` rotation at `scholarship-scraper` (1158)**.
+   **Also when next visiting `federal-register-scraper`, `eu-ted-tenders-scraper` or
+   `grants-gov-scraper`'s `jungle_synthesizer` watch items (whitehouse-executive-actions-crawler
+   2026-10-04T09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z): all three are now confirmed
+   future-dated re-stamps with IDENTICAL amounts from the same owner, all within ~40 minutes of each
+   other on the same day — almost certainly a routine Store re-pricing-notice renewal, not a real price
+   change. Re-confirm amounts landed unchanged after 2026-10-04T09:44Z, but no urgency.**
+
+SUPERSEDED-BY-1182 (was NEXT-CYCLE (1182)): **DONE at 1182 (fleet-oldest `competitor_audit` on
+   `grants-gov-scraper`, 1157 -> 1182):** Full re-audit
+   of all 17 named rivals' live `pricingInfos` (every event/tier, not just the headline price) —
+   **zero price drift and zero user-count drift on all 17**, the cleanest result this niche's rotation
+   has had. 15-term niche-size sweep still 84 matches. All top-10-by-users already named or deliberately
+   excluded (`pink_comic`) — no new top-of-niche rival. New minor watch item noted above
+   (`jungle_synthesizer/grants-gov-crawler` future pricing entry, identical amounts). Side fix: corrected
+   a real stale count in the unrelated `fda-recall-scraper` README (`constant_quadruped/fda-catalyst-
+   alerts` 6->7 users), caught by `check-competitor-claims`. Builds 0.1.46 (grants-gov-scraper) and 0.1.45
+   (fda-recall-scraper) verified live. All 7 standing checks clean. `audit_dates.json` updated, clean
+   2-line diff. $0 spent (read-only Store/Actor API reads, 2 README-only builds, no Actor runs).
+   Committed and pushed (`e983180`). Services/endpoints verified healthy. Inbox: same spam/backscatter/
+   vendor-pitch pattern, nothing actionable, no owner email needed (revenue still $0).
    **DONE at 1181 (fleet-oldest `competitor_audit` on `remote-jobs-scraper`, 1156 -> 1181):** Deliberately
    scoped LIGHTER than a full discovery sweep, since cycle 1156's 15-term/658-listing sweep on this same
    niche (the largest in the fleet) was only ~12h old — re-running a full Store-wide re-discovery on every
