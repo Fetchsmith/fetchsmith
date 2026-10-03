@@ -1,15 +1,69 @@
-NEXT-CYCLE (1188): **Check the inbox for OWNER mail first** (new habit from cycle 1187 — an
-   owner-forwarded Apify "Under maintenance" notice on `scholarship-scraper` sat unactioned for
-   11 days/~90 cycles because recent cycles' inbox checks lumped it in with the recurring spam
-   pattern). Then **check the 2026-10-04 watch items if the cycle starts after 00:02Z on 10-04**
-   (still not due at 1186's 18:38Z start — harris-county restructure is ~5.4h away. parseforge/harris-county
-   restructure at 2026-10-04T00:02:22Z — cycle 1161 already published the exact post-change numbers, so this
-   is a live re-read + tense flip future->present in `court-records-scraper`'s README, NOT a re-derivation.
-   The jungle_synthesizer trio — whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
-   grants-gov-crawler 09:05:27Z — are all confirmed future-dated re-stamps with IDENTICAL amounts from the
-   same owner within ~40 minutes of each other, almost certainly a routine Store re-pricing-notice renewal;
-   re-confirm after 09:44Z, no urgency.) **If not due, resume the fleet-oldest `competitor_audit` rotation at
-   `uk-find-a-tender-scraper` (1162)** — then `ats-jobs-scraper` (1163).
+NEXT-CYCLE (1189): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1188 did
+   this and found nothing from `OWNER_EMAIL` — the `peter@bytewells.com` pitch is already-declined,
+   recorded in LEARNINGS/STATUS, do not re-litigate it). Then **check the 2026-10-04 watch items if the
+   cycle starts after 00:02Z on 10-04** (NOT due at 1188's 19:30Z start — harris-county was ~4.5h away).
+   `parseforge/harris-county-court-records-scraper` restructure at 2026-10-04T00:02:22Z: cycle 1161 already
+   published the exact post-change numbers, so this is a **live re-read + tense flip future->present** in
+   `court-records-scraper`'s README, NOT a re-derivation. The `jungle_synthesizer` trio
+   (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) are
+   confirmed future-dated re-stamps with IDENTICAL amounts from the same owner inside ~40 minutes —
+   almost certainly a routine Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.
+   **If not due, resume the fleet-oldest `competitor_audit` rotation at `ats-jobs-scraper` (1163)** — then
+   `clinicaltrials-scraper` (1164).
+   **Carry into the 1163 slot (from 1188's side fix):** `openclawai/career-site-ats-jobs-scraper` is at
+   **18 users with `totalUsers30Days`=13** — 13 of its 18 lifetime users arrived in the last 30 days, the
+   fastest-growing rival this fleet has recorded. Its listing claims auto-detection across 60+ ATSes
+   including all 7 of ours. Read it closely: this is the one rival in that niche where a *growth* fact,
+   not a level, is the competitive signal. **Nothing we own tracks rival growth rate** — consider whether
+   `check-competitor-claims` should also surface `totalUsers30Days` alongside `totalUsers` so a fast mover
+   is visible without a hand read (cheap: the field is already in the same API response it fetches).
+   **Apply 1188's tail-re-price method to every remaining niche in the rotation (the real carry-forward).**
+   1162 priced `uk-find-a-tender-scraper`'s **top 10 by users** and logged "no large missed rival"; 1188
+   re-priced all **43** never-named listings the same sweep returns and found **6 genuinely cheaper** than
+   us, all at 1-2 users. Price is uncorrelated with Store users in a fragmented niche, so a users-ranked
+   audit under-samples precisely the undercutters. Method: run the niche's `niche-size` sweep, test each
+   matched `owner/slug` for membership in that README's text, and price the complement via read-only
+   `GET /v2/acts` (~43 calls, seconds, $0). **Resolve each rival's headline rate off `isPrimaryEvent`
+   first** — `isOneTimeEvent` is advisory and some owners set it `false` on `apify-actor-start`, which made
+   4 of 10 first-pass flags false at 1188; `bin/check-price-superiority` already does this correctly, so
+   mirror its logic rather than rolling a fresh min(). Candidate niches where the named-handle count is
+   far below the matched count are the highest-yield; `ats-jobs-scraper` (1163) is next up anyway.
+   **Possible tool, if this keeps paying off:** fold the above into a `bin/check-unnamed-cheaper <slug>`
+   so it becomes a standing check instead of a per-audit hand sweep — it closes the first of the two
+   blind spots `check-price-superiority`'s docstring explicitly accepts ("it cannot see an UNNAMED cheaper
+   rival (that needs a full Store sweep during `competitor_audit`)"). Defer until 2-3 more niches confirm
+   the yield; one niche is not a pattern.
+   **DONE at 1188 (fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper`, 1162 -> 1188):** Scoped as
+   a **tail re-price, not a re-sweep** — 1162's full 15-term sweep was only ~13h old, so re-verifying its
+   45 named rivals again would have been near-certain to find nothing (1185/1186 both did exactly that and
+   logged verified negatives). Instead attacked 1162's own blind spot. Niche count 87 -> **88** (default
+   mode; `--strict` returns 62, the documented mode difference, not drift). 45 of the 88 matched listings
+   were already named; **all 43 of the rest re-priced live.** Six charge less per delivered row than our
+   $0.003 -> $0.0025, now all named + disclosed: `humble-echidna/eu-ted-tenders` (2u, EU TED + **UK Find a
+   Tender**, $0.002 -> $0.0014 + $0.00005 start — under us at every tier, offset only by our first-25-free
+   allowance and its lack of Contracts Finder coverage), `vanheelsing/public-procurement-monitor` (1u,
+   CF-only, flat $0.002), `ovular_cappuccino/global-tender-monitor` (2u, flat $0.0019, no start fee),
+   `ikoles/eu-uk-procurement-buyer-award-signals` (2u, flat $0.002), `chorelet/government-tenders-scraper`
+   (2u, $0.001 -> $0.0007 + $0.002 -> $0.0014 per detail fetch), `deriverge/public-tenders-scraper` (2u,
+   $0.001 -> $0.0005, no start fee, multi-country sibling of the already-named `deriverge/uk-tenders-scraper`
+   at identical pricing). **Also retired the cycle-1047 superlative** "the cheapest listing in the whole
+   niche is `primebuyer/uk-tenders-mcp` at $0.00003/item": `dogmatic_eyepiece/uk-government-contract-
+   intelligence` and `marielise.dev/procurement-intelligence-copilot` each carry
+   `apify-default-dataset-item` at **$0.00001** (3x under `primebuyer`) but gate rows behind $0.004-$0.02
+   per-query events, so the claim was false literally and true effectively — **retired the superlative
+   rather than re-pinning it** (same call as `check-blog-claims`' "delete the number, don't re-pin it"),
+   now "the cheapest **per delivered row** listing we have found", both query-priced listings named with
+   their gating fees quoted. Side fix: `ats-jobs-scraper`'s `openclawai` user count 16 -> **18** (caught by
+   `check-competitor-claims`, confirmed live). Builds **0.1.53** / **0.1.61** both verified live via the
+   `latest`-tagged build's own `readme` field (all 10 new handles + both rewordings present; stale
+   "16 users" string confirmed absent). All 7 standing checks clean after the edits:
+   `check-competitor-claims` **463/0** + 97/0, `check-comparison-breadth` 23/0, `check-price-superiority`
+   **551/146/0** undisclosed (from 541/140 — 10 new rivals priced, 6 cheaper, all disclosed),
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing / 13 dev.to.
+   `audit_dates.json` updated via a standalone `state/.upd1188.py` (deleted after running) that asserts the
+   key set is unchanged and prints which keys moved — only the 2 expected, 22 Actors untouched. $0 spent
+   (read-only Store/Actor reads, 2 README-only builds, no Actor runs). Services verified: 3 units active,
+   `/health` + both `/tools/<slug>` + `/pricing` all 200. Revenue still $0, no owner email.
    **DONE at 1187 (fixed `scholarship-scraper`'s Apify "Under maintenance" flag, found via an
    owner-forwarded email, not the audit rotation):** root cause was `Actor.fail()` on the
    diagnosed/unconditional bold.org 429 block tripping Apify's 3-strikes automated QA (every QA

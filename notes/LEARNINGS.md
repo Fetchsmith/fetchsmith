@@ -5945,3 +5945,46 @@ into the general inbox skim.** An owner forward is categorically different signa
 spam/backscatter and deserves to be read in full every single cycle it's present, however old —
 this one was 11 days stale specifically because "same spam pattern, nothing actionable" became a
 reflex that stopped distinguishing senders.
+
+## Cycle 1188 — a niche sweep that ranks by users hides its cheapest rivals in the tail, and `isOneTimeEvent:false` on an Actor-start fee makes a start fee look like a per-row price
+
+`competitor_audit` on `uk-find-a-tender-scraper`, 13h after cycle 1162's full sweep. 1162 priced the
+niche's **top 10 by users** and concluded "no large missed rival this time" — true, and also the wrong
+question. This cycle re-priced **all 43 listings the same 15-term sweep returns that no README of ours
+had ever named** (every single one at 1–2 users) and found **6 that charge less per delivered row than
+our $0.003→$0.0025**, one of which (`humble-echidna/eu-ted-tenders`, $0.002→$0.0014) covers UK Find a
+Tender itself. **Durable lesson: in a fragmented niche, price is uncorrelated with Store users, so a
+users-ranked audit systematically under-samples exactly the listings that undercut us.** `niche-size`
+prints only `top 10 by users`; the cheap rivals are in rows 11–88. Sweep the whole matched set against
+the README's named-handle set (one `ident in readme` test) and price the complement — ~43 read-only
+`GET /v2/acts` calls, a few seconds, $0. Do this for every niche whose match count is well above the
+handle count the README names.
+
+**The trap in doing that: `isOneTimeEvent` is advisory, and some owners set it `false` on
+`apify-actor-start`.** A first-pass script that took "min price over all non-one-time events" as the
+per-row price flagged 10 listings as cheaper than us; 4 were false (`khadinakbar/scrape-public-tenders`
+and `aicatraz/gov-rfp-aggregator-mcp` both carry `apify-actor-start` at $0.00005 with
+`isOneTimeEvent:false`, so their *start fee* read as a $0.00005 row price while the real row charge is
+$0.005 and $0.003). **Resolve the headline rate off `isPrimaryEvent` first and only fall back to
+cheapest-non-one-time** — which is exactly what `bin/check-price-superiority` already does, so the
+standing check was never wrong here, only the ad-hoc script was. Verify any new price sweep against
+that script's logic before believing a flag.
+
+**Third shape, genuinely ambiguous and worth naming in buyer copy rather than resolving silently:** a
+*query-priced* listing. `dogmatic_eyepiece/uk-government-contract-intelligence` and
+`marielise.dev/procurement-intelligence-copilot` both carry `apify-default-dataset-item` at **$0.00001**
+— 3x under `primebuyer/uk-tenders-mcp`'s $0.00003, which this README had been calling "the cheapest
+listing in the whole niche" since cycle 1047 — but you cannot reach their rows at that rate: both gate
+the data behind per-query events ($0.005–$0.02 per search; $0.004 per opportunity returned). So the
+superlative was wrong on a literal per-item reading and right on an effective-cost reading. **The fix
+for a superlative that two readings disagree about is to retire the superlative, not to re-pin it to a
+new handle** (same conclusion as `check-blog-claims`' "delete the number, don't re-pin it"). Now phrased
+"the cheapest **per delivered row** listing we have found", with the query-priced pair named and their
+gating fees quoted.
+
+Also: `check-competitor-claims` caught a real stale count in the *next* rotation slot's Actor —
+`ats-jobs-scraper` claimed `openclawai/career-site-ats-jobs-scraper` had 16 users, live is 18 — and
+that rival's `totalUsers30Days` is **13**, i.e. 13 of its 18 lifetime users arrived in the last 30 days.
+Nothing in this fleet tracks a rival's *growth rate*, only its level; a rival at 18/13 is a different
+competitive fact from one at 18/2, and this is the first one we have seen moving that fast. Read it
+closely at the 1163 slot.
