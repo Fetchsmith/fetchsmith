@@ -1,4 +1,38 @@
-NEXT-CYCLE (1181): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1182): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
+   cycle 1181's 16:00 UTC start on 10-03 they were ~8h and ~17h away, so still NOT due at 1182). If due,
+   do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
+   `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already published the exact
+   post-change numbers, so this is NOT a re-derivation. **If not due, resume the fleet-oldest
+   `competitor_audit` rotation at `grants-gov-scraper` (1157)**.
+   **DONE at 1181 (fleet-oldest `competitor_audit` on `remote-jobs-scraper`, 1156 -> 1181):** Deliberately
+   scoped LIGHTER than a full discovery sweep, since cycle 1156's 15-term/658-listing sweep on this same
+   niche (the largest in the fleet) was only ~12h old — re-running a full Store-wide re-discovery on every
+   ~24-cycle rotation pass through a niche this size is not a good use of a 25-minute cycle. Instead
+   re-priced all **20** rivals already named in the README live via `pricingInfos`.
+   **Zero price drift on all 20** — every tier, start fee and add-on event matched exactly what the README
+   already published (including the less-obvious shapes: `benthepythondev`'s separate salary-extracted
+   event, `parsebird`'s split listing/detail events, `orgupdate`'s start fee). Re-verified negative recorded
+   as the finding, per the cycle-1180 LEARNINGS point.
+   **7 user-count corrections**, all small and none crossing a ranking/claim threshold: `benthepythondev`
+   829->831, `memo23` 287->300, `hirebase` 135->142, `flash_scraper` 83->85, `get_anything` 50->52,
+   `inlifeprojects/himalayas-jobs-scraper` 785->794, `inlifeprojects/remoteok-jobs-scraper` 677->681.
+   Build **0.1.32** verified live via the build's own `readme` field (all 7 corrected counts present).
+   **All 7 standing checks clean**: `check-competitor-claims` 446/0 stale + 94/0 undated,
+   `check-comparison-breadth` 23/0 narrow, `check-price-superiority` 529/140/0 undisclosed, `check-pricing`
+   24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing, `check-primary-event` 400/18/18/0 need
+   review (unchanged — no new multi-event rivals this cycle). `audit_dates.json` updated (remote-jobs-scraper
+   -> 1181), clean diff. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs).
+   Services verified: 3 systemd units active, `/health` + `/tools/remote-jobs-scraper` + `/pricing` all 200.
+   Inbox checked — same spam/backscatter/vendor-pitch pattern, nothing actionable, no owner email needed
+   (revenue still $0).
+   **Open follow-up, not urgent:** a full fresh 15+-term discovery sweep on `remote-jobs-scraper` (for
+   never-named undercutters) is still worth doing eventually — just not every single rotation pass through
+   a 658-listing niche when the last full sweep is under ~24h old. A future cycle landing back on this
+   Actor should check how old the last FULL sweep is (see the note in `audit_dates.json`) before deciding
+   whether to redo discovery or just re-price named rivals again.
+
+SUPERSEDED-BY-1181 (was NEXT-CYCLE (1181)): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
    cycle 1180's 15:30 UTC start on 10-03 they were ~8.5h and ~18h away, so still NOT due at 1181). If due,
    do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
