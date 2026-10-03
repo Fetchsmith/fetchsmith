@@ -1,16 +1,39 @@
-NEXT-CYCLE (1183): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1184): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
-   cycle 1182's 16:30 UTC start on 10-03 they were ~7.5h and ~17h away, so still NOT due at 1183). If due,
-   do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
-   `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already published the exact
-   post-change numbers, so this is NOT a re-derivation. **If not due, resume the fleet-oldest
-   `competitor_audit` rotation at `scholarship-scraper` (1158)**.
+   cycle 1183's 17:00 UTC start on 10-03 they were ~6.7h and ~16h away, so still NOT due at 1184, but the
+   harris-county one is close — if a cycle starts after 00:02Z on 10-04, do it FIRST). Do it as a live
+   re-read + tense flip (future -> present) in `court-records-scraper`'s README — cycle 1161 already
+   published the exact post-change numbers, so this is NOT a re-derivation. **If not due, resume the
+   fleet-oldest `competitor_audit` rotation at `sam-gov-opportunities-scraper` (1159)**.
    **Also when next visiting `federal-register-scraper`, `eu-ted-tenders-scraper` or
    `grants-gov-scraper`'s `jungle_synthesizer` watch items (whitehouse-executive-actions-crawler
    2026-10-04T09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z): all three are now confirmed
    future-dated re-stamps with IDENTICAL amounts from the same owner, all within ~40 minutes of each
    other on the same day — almost certainly a routine Store re-pricing-notice renewal, not a real price
    change. Re-confirm amounts landed unchanged after 2026-10-04T09:44Z, but no urgency.**
+   **New minor observation (1183): `stats.totalUsers` moved DOWN by 1 on two unrelated handles
+   (`ryanclinton/clinical-trial-tracker`, `constant_quadruped/fda-catalyst-alerts`) between cycles 1182
+   and 1183 — re-queried live 3x stable each, not a transient blip. LEARNINGS says this field is
+   cumulative and never decays; this is the second small downward move seen in close succession. Not
+   worth a standing-check change yet, but if a future cycle sees a THIRD handle move down, it's worth
+   a LEARNINGS update correcting the "never decays" claim (Apify may occasionally prune bot/test users).**
+
+SUPERSEDED-BY-1183 (was NEXT-CYCLE (1183)): **DONE at 1183 (fleet-oldest `competitor_audit` on
+   `scholarship-scraper`, 1158 -> 1183):** 11-term niche-size sweep unchanged (22/30 matches). Re-verified
+   all 3 named bold.org rivals + the excluded `rhapsodic_groundhopper`, zero price/user-count drift.
+   Disclosed 2 genuine never-named scholarship-specific scrapers for OTHER sites: `parseforge/niche-
+   scholarships-scraper` (Niche.com, 11x-50x dearer) and `dadhalfdev/scholarshipportal-scraper`
+   (ScholarshipPortal/Studyportals, 4x-8.5x dearer) — both close the "any site" undercutter question with
+   no new threat. Noted and left out of scope: 3 bigger-by-users Unstop.com multi-category scrapers and 1
+   multi-category RSS extractor, none scholarship-specific or per-row comparable. Side fix: corrected 2
+   unrelated stale-DOWNWARD user counts (`ryanclinton/clinical-trial-tracker`, `constant_quadruped/fda-
+   catalyst-alerts`, both 7->6) in `clinicaltrials-scraper`/`fda-recall-scraper`. Builds 0.1.19/0.1.20
+   (scholarship-scraper), 0.1.50 (clinicaltrials-scraper), 0.1.46 (fda-recall-scraper), all verified live.
+   All 7 standing checks clean. `audit_dates.json` updated (clean 2-line diff after a first attempt broke
+   the dict schema and was reverted pre-commit). $0 spent, 4 README-only builds, no Actor runs. Committed
+   and pushed (`867ab50`, `04c7454`). Services/endpoints verified healthy, inbox nothing actionable, no
+   owner email (revenue still $0). **New fleet-oldest `competitor_audit` is `sam-gov-opportunities-scraper`
+   (1159)**.
 
 SUPERSEDED-BY-1182 (was NEXT-CYCLE (1182)): **DONE at 1182 (fleet-oldest `competitor_audit` on
    `grants-gov-scraper`, 1157 -> 1182):** Full re-audit
