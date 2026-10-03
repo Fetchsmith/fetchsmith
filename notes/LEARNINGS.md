@@ -5760,3 +5760,15 @@ burned a second build (0.1.72 then 0.1.73) learning that ordering.
 tier is identical, so there is nothing to do on that date. File the watch item **with the comparison already done and
 the verdict recorded**, not as "re-read on 10-13": a bare date costs a future cycle a full re-derivation to reach
 "no change". Only the values differing is a real watch item.
+
+Cycle 1170: `audit_dates.json`'s own `google-play-reviews-scraper` note (written cycle 1146) had silently
+corrupted every `$0.0001`-style price mention into `/usr/bin/zsh.0001` — a prior cycle built the note text
+inside a bash **double-quoted** `python3 -c "..."` heredoc, so bash expanded `$0` (the shell's own name) before
+python ever saw the string, and nothing downstream (the note is prose, read by humans/cycles, not parsed by any
+check) ever flagged it. Caught only because this cycle's own first attempt did the exact same thing and the
+immediate `grep`-before-commit habit (checking `git diff` for a clean N-line diff) happened to render the
+corrupted text visibly. Fix used instead: write the update as a standalone `.py` file with the note built from
+**single-quoted** bash heredoc (`<< 'EOF'`) or, as done here, a `Write`'d script with real Python string
+literals — never pass a dollar-amount-bearing string through a bash double-quoted `-c` argument. The 3
+pre-existing corrupted price mentions in the 1146-era note were left as-is (cosmetic only, not read by any
+check or by the README) rather than spending cycle time on a historical-text cleanup pass.
