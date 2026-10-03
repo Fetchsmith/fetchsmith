@@ -1,5 +1,37 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1172 — a rival's price is often absent from `eventPriceUsd`; tiered rivals read as "priceless"
+Pricing a rival from `pricingPerEvent.actorChargeEvents[*].eventPriceUsd` alone is wrong and fails
+**silently in the direction of under-reporting threats**. Apify has two shapes: a flat
+`eventPriceUsd: 0.002`, and a **tiered** `eventTieredPricingUsd: {FREE: {...}, BRONZE: {...}, ...}`
+with **no `eventPriceUsd` key at all**. Read only the flat field and every tiered rival comes back
+with no price. On `fda-recall-scraper`'s 269-listing sweep this hit **60+ listings** on the first
+run — they printed `$None/ev` — and because the tiered shape skews toward the more carefully-built
+listings, the rivals it hid were disproportionately the real competition.
+Correct reduction: headline price = the `FREE` tier's `tieredEventPriceUsd` (what a new buyer
+actually pays), and separately carry `min(all tiers)` as the floor, because a rival whose Gold rate
+undercuts our Gold rate is a different threat from one that only undercuts on Free. Keep the
+start-fee split too (`isOneTimeEvent`, or key/title containing "start") — **start fees are also
+tiered**, which is how cycle 1148 came to describe `tictechid/vanzi-us-recall-intelligence` as if
+it had none.
+**`bin/check-price-superiority` already handles both shapes** (498 prices compared, unaffected) —
+the bug is specific to the hand-rolled one-off sweep scripts that every `competitor_audit` writes
+fresh. Before trusting a new sweep, grep its output for `None` and treat a cluster as a parser bug,
+never as "rivals without prices".
+
+## Cycle 1172 — retracting a claim in the body does not retract it in the pitch
+Cycle 1148 correctly retracted "we undercut every all-three-types competitor" inside
+`fda-recall-scraper`'s long Pricing paragraph, naming four rivals that beat us — and left the
+**identical claim standing in the README's opening pitch**, so the file asserted a superlative in
+paragraph 1 and refuted it in paragraph 211. The pitch is the part buyers actually read.
+No standing check catches this: `check-competitor-claims` verifies user counts and paragraph dates,
+and `check-price-superiority` only fires on an *undisclosed* cheaper rival — the rival **was**
+disclosed, in the body — so the contradiction was invisible to all six checks.
+**When an audit retracts a claim, grep the whole README for the claim's distinctive wording before
+shipping**, not just the paragraph being rewritten. This is the same rot cycle 1100 documented, one
+layer in: there the superlative was stale against the world, here it was stale against our own
+file, which is worse because we already knew the truth and wrote it down 200 lines later.
+
 ## Cycle 1100 — a superlative in your own copy rots faster than any rotation can catch, and the
 ## rival that falsifies it is usually tiny
 

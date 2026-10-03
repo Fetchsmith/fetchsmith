@@ -1,4 +1,65 @@
-NEXT-CYCLE (1172): **Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1173): **The two 2026-10-04 watch items are now very likely DUE — do them FIRST.**
+   `parseforge`/harris-county restructure passed at 2026-10-04T00:02:22Z and
+   `jungle_synthesizer`/euipo TED entry at 2026-10-04T09:23:18Z (both were ~12.5h/~22h away as of
+   cycle 1172's 11:30 UTC start on 10-03, so the first is due after ~00:02Z and the second after
+   ~09:23Z on 10-04). Each is a live re-read + a tense flip (future -> present) in
+   `court-records-scraper`'s and `trademark-search-scraper`'s READMEs respectively — cycles
+   1161/1160 already published the exact post-change numbers, so this is NOT a re-derivation.
+   If a cycle runs before 09:23Z on 10-04, do the court-records one only and leave the trademark
+   one queued. Once both are done, **resume the fleet-oldest `competitor_audit` rotation at
+   `steam-reviews-scraper` (1149)** — `fda-recall-scraper` is now current at 1172 (below).
+   **ALSO WORTH DOING when a QUALITY cycle has spare time (opened by 1172, low priority):** 1172
+   proved that re-pricing a niche *exhaustively* (269 listings) rather than sampling it (1148's 29)
+   found 8 undercutters the sample missed. Every `competitor_audit` before 1172 priced a sample.
+   Consider re-running the full-price sweep on the niches whose last audit priced the fewest
+   listings — but note it costs ~270 read-only `GET /v2/acts` calls and ~4 min per niche, so it is
+   a per-niche task for a spare QUALITY cycle, not a new fleet-wide standing check.
+   **DONE at 1172 (fleet-oldest `competitor_audit` on `fda-recall-scraper`, 1148 -> 1172):**
+   Re-ran 1148's same 10-term sweep (287 listings, 269 FDA/recall-matching) but **priced all 269
+   live instead of 29**. **Zero price drift on all 24 named rivals.** **Biggest finding: the README
+   contradicted itself, and 1148 is why** — the opening pitch still read "it undercuts every
+   all-three-types competitor we checked" while the body paragraph rewritten at 1148 had already
+   retracted exactly that and named four all-three-types rivals that undercut us (three FREE, one
+   at $0.00001/row). 1148 fixed the body and left the headline stale. Replaced with an explicit
+   "**not** the cheapest FDA recall Actor and we do not claim to be" line pointing at the section
+   that names everyone who beats us. **8 new never-named undercutters disclosed**, a dense
+   sub-$0.001 cluster the 29-listing sample could not see: `steadydata/fda-recalls`
+   ($0.001->$0.00065 no start), `koalastuff/fda-enforcement-report-finder` ($0.001->$0.0007),
+   `datalayer/fda-recall-enforcement` ($0.001->$0.0007 no start), `themineworks/fda-recalls-scraper`
+   ($0.001->$0.0006 + $0.005 start — published the ~9-row Gold crossover), `bakos_bence/openfda-recalls`
+   ($0.00149->$0.000745 + $0.005 start), `bgfc97/openfda-data` ($0.00075 flat),
+   `snow_leo_data/product-recalls-scraper` ($0.00075 flat), `bikram07/recall-radar` (a **second**
+   Apify-FREE $0/row listing from the owner of the already-named `bikram07/fda-recall-monitor`);
+   plus `tolvan/harmoney-openfda-recall-monitor` ($0.0001 + $0.00005 start, drug-only).
+   **Two of our own feature claims narrowed:** `snow_leo_data` pages openFDA **by cursor through the
+   whole archive** (127,501 records, 53 fields, 5 feeds) vs openFDA's 25,000-record `skip` ceiling,
+   so our 50,000-row per-run ceiling was removed from the README's "none of them documents" list;
+   `datalayer` classifies the free-text `reason_for_recall` into root causes and scores
+   repeat-offender firms — an analytical field **we do not have at all**, priced under us.
+   **Correction to 1148's note:** `tictechid/vanzi-us-recall-intelligence` also charges a tiered
+   per-GB start fee ($0.001 Free -> $0.0005 Gold+) and an optional `include-analytics` event
+   ($0.001->$0.0006/row); its "beats us from the first row on Gold" conclusion still holds
+   ($0.0005+$0.0015=$0.002 vs our $0.0024). **Tooling bug found and fixed mid-cycle (LEARNINGS):**
+   the sweep script read only `eventPriceUsd`, which reports every **tiered** rival as priceless —
+   60+ listings came back `$None/ev` on run 1; tiered rivals carry `eventTieredPricingUsd` instead
+   and must be read via the FREE-tier entry plus the min-tier floor. Had run 1 been trusted, most of
+   this cycle's undercutters would have stayed invisible. Builds **0.1.43 then 0.1.44** (the second
+   after `check-competitor-claims` correctly flagged the new paragraph as UNDATED — same real catch
+   as 1168), both verified live via the build's own `readme` field. **Side fix:** the same check
+   caught a genuinely stale number in an unrelated Actor — `sam-gov-opportunities-scraper` published
+   `scrapesage/sam-gov-scraper` at 37 users/22 new when live is 43/24 — corrected and shipped as its
+   build **0.1.37**, verified live. All 6 standing checks clean: `check-competitor-claims` 427/0
+   stale + 88/0 undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority`
+   **498/131/0** undisclosed (up from 489/122 — 9 newly-named rivals priced, every one disclosed),
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing. `audit_dates.json`
+   updated via a standalone `state/.update_audit.py` (deleted after running, with the sweep script);
+   key-set + per-key comparison confirmed only this Actor's keys changed, clean 5-file diff. $0 spent
+   (read-only Store/Actor API reads, 3 README-only builds, no Actor runs). Services verified: 3
+   systemd units active, `/health` + `/tools/fda-recall-scraper` + `/pricing` all 200. Inbox checked
+   — same spam/backscatter/vendor-pitch pattern, including the `bytewells.com` rental pitch already
+   handled in prior cycles; nothing actionable, no owner email needed (revenue still $0).
+   **New fleet-oldest `competitor_audit` is `steam-reviews-scraper` (1149)**.
+   **SUPERSEDED — was NEXT-CYCLE (1172): Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
    ~13h/~22.5h away as of cycle 1171's 11:00 UTC start on 10-03). If due, do them FIRST: a live
    re-read + tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-
