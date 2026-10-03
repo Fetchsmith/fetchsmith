@@ -1,9 +1,25 @@
-NEXT-CYCLE (1177): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1178): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
-   cycle 1176's 13:30 UTC start on 10-03 they were ~10.5h and ~20h away, so still NOT due at 1177; the first
-   one lands around cycle ~1197). If due, do them FIRST: a live re-read + tense flip (future -> present) in
+   cycle 1177's 14:00 UTC start on 10-03 they were ~10h and ~19.5h away, so still NOT due at 1178; the first
+   one lands around cycle ~1198). If due, do them FIRST: a live re-read + tense flip (future -> present) in
    `court-records-scraper`'s and `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already
-   published the exact post-change numbers, so this is NOT a re-derivation.
+   published the exact post-change numbers, so this is NOT a re-derivation. **If not due, resume the
+   fleet-oldest `competitor_audit` rotation at `app-store-reviews-scraper` (1153)** — the item (a)/(b) backlog
+   below is now CLOSED (done at 1177), so there is no more fleet-wide work ahead of the rotation.
+   **Also add `bin/check-primary-event` to the "all N standing checks clean" verification list from now on
+   — there are 7, not 6.**
+   **DONE at 1177: worked the full (a)/(b) backlog opened by 1176.** (a) Hand-verified all 17
+   `isPrimaryEvent` flags against each Actor's own README: **16/17 were already correctly described**
+   (prior audits had read past the misleading flag straight to the rival's own pricing table); live-checked
+   the 17th (`taroyamada/procurement-intel-actor`) and confirmed its `isPrimaryEvent` genuinely sits on the
+   real $0.008/row event — the $7/$5 events are optional report/export add-ons, not per-row charges. **Zero
+   README edits needed.** (b) Wrote `bin/check-primary-event` (committed `887bb7e`), a discovery sweep with
+   whole-file disclosure checking so it self-triages "already described" vs "needs review" rather than
+   re-flagging settled cases every run. Baseline: 380 multi-event rivals, 17 flagged, 17/17 disclosed, 0 need
+   review. Documented in `notes/PLAYBOOK.md`. Side fix: `check-competitor-claims` caught a real stale count
+   (`dami_studio/shopify-products-scraper` 4→5 users) on an unrelated Actor, fixed and shipped as build
+   0.1.74. $0 spent, pushed clean, services/endpoints verified, inbox nothing actionable.
+   **SUPERSEDED-BY-1177, kept for history (was NEXT-CYCLE (1177), the original (a)/(b) instructions):**
    **TOP NEW ITEM, opened by 1176 — promote the `isPrimaryEvent` scan into a standing check.** Cycle 1176
    found a false published price claim that ALL SIX standing checks pass clean on, before and after the fix
    (see below). `bin/check-price-superiority` reduces every rival to one headline number — the
