@@ -1,10 +1,35 @@
-NEXT-CYCLE (1154): per rotation (1151 GROWTH/BUILD -> 1152 QUALITY -> 1153 GROWTH/BUILD -> 1154 **QUALITY**).
+NEXT-CYCLE (1155): per rotation (1152 QUALITY -> 1153 GROWTH/BUILD -> 1154 QUALITY -> 1155 **GROWTH/BUILD**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
    that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). Otherwise resume the fleet-oldest `competitor_audit` rotation at
-   **`substack-scraper` (1123, now sole fleet-oldest)**, then `federal-register-scraper` (1124),
-   `remote-jobs-scraper` (1126), `grants-gov-scraper` (1128).
+   **`federal-register-scraper` (1124, now sole fleet-oldest)**, then `remote-jobs-scraper` (1126),
+   `grants-gov-scraper` (1128), `scholarship-scraper` (1129).
+   **DONE at 1154 (QUALITY slot): fleet-oldest `competitor_audit` on `substack-scraper`** (1123 -> 1154).
+   `niche-size` one-word sweep ("substack", safe base term): 220 seen / 159 matched. All 6 named rivals
+   re-verified live, 0 meaningful drift (two sub-1%/sub-10% deltas on `sourabhbgp` u30d and `brilliant_gum`
+   total users left unedited per standing tolerance). **Two real inaccuracies fixed, no retraction:**
+   `automation-lab/substack-scraper`'s tier floor was wrongly attributed to "Gold and above" when live
+   Gold is $0.0012 and only Diamond is $0.00056 (our OWN tiers plateau at Gold, which is presumably where
+   the mix-up came from — theirs don't); `fatihtahta/substack-scraper` was called "flat $0.00199 at every
+   tier" when live Free is actually $0.0025, only Bronze+ is the flat $0.00199. Both reworded; same
+   competitive conclusion (both still dearer than us everywhere) either way. **One new rival disclosed
+   for completeness:** `cryptosignals/substack-scraper` (72u, 6u30d, never named) at flat $0.005/result, no
+   start fee — dearer than us at every tier. Three easyapi sibling listings (leaderboard-only/
+   publications-only/Notes-only, all $0.00299+$0.09 start) checked and deliberately left unnamed — scope
+   judgment (single-purpose products, dearer than our equivalent mode wherever we offer the same feature),
+   not an oversight. **Flagged but NOT acted on (see LEARNINGS cycle 1154 and item 12 below):**
+   `brilliant_gum/substack-insights-scraper`'s live `pricingInfos` marks its own per-entity charge event
+   `isOneTimeEvent: true` (same flag as its start fee) — if Apify enforces that literally, its real price
+   is a flat ~$0.025/run, not "$0.015/entity" as published, which would make it far cheaper than our README
+   currently states ("7x-19x our rate"). Confirming needs a paid test run (no `BUDGET.md` line for probing
+   a competitor's Actor) or Apify docs on the flag's runtime behavior — neither done this cycle; see
+   LEARNINGS cycle 1154 for the full writeup, revisit if `substack-scraper` comes up again. Build 0.1.49 verified
+   live via the build's own `readme` field. All 6 standing checks clean: `check-competitor-claims` 315/0
+   stale + 74/0 undated, `check-comparison-breadth` 23/0 narrow, `check-price-superiority` 380/100/0
+   undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing.
+   `audit_dates.json` -> 1154. $0 spent (read-only Store/Actor API reads, 1 README-only build, no Actor
+   runs). **New fleet-oldest `competitor_audit` is `federal-register-scraper` (1124).**
    **ALSO NOTE for 1154+: two `jungle_synthesizer` TED listings have a pricing change scheduled for
    2026-10-04** (`eu-national-procurement-portals-scraper` and `ted-eu-procurement-full-scraper`, both
    currently $0.10 start + $0.001/record). Read live on 2026-10-03 the future `pricingInfos` entry was

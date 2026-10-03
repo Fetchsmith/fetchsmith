@@ -5623,3 +5623,19 @@ entrants arrive faster than any of them gains customers, so "cheapest in the nic
 position in any niche whose upstream is a free public API — the moat has to be documented upstream
 behaviour (CPV subtree semantics, the codes the API rejects with HTTP 400, measured fill rates, the
 duplicate-row charge guard), which is the only thing none of the 15 publishes.
+
+## Cycle 1154 — a rival's pricingInfos can mark its own per-item charge event `isOneTimeEvent: true`
+Auditing `substack-scraper`, `brilliant_gum/substack-insights-scraper`'s live `pricingInfos` has only two
+charge events: `apify-actor-start` ($0.01, `isOneTimeEvent: true`, as expected) and
+`apify-default-dataset-item` ($0.015, **also `isOneTimeEvent: true`**, `eventTitle: "Entity scraped"`,
+`eventDescription: "Charged per scraped entity (publication, post, comment, note, or author)"`). The flag
+and the description contradict each other: if Apify's platform actually enforces "one-time" by billing
+only the first call to that event per run, this rival's real price is a flat **$0.025 total per run**
+(start + one entity charge), not "$0.015 per entity" as our README (accurately, per `eventPriceUsd`)
+describes it — which would make it far cheaper than stated at any run above ~2 entities, not "7x-19x our
+rate" as published. Did NOT change the README on this: confirming it requires either running their paid
+Actor (a few cents, no `BUDGET.md` line for probing a competitor's Actor, so not spent) or Apify platform
+documentation on how `isOneTimeEvent` behaves for a non-start event, which wasn't checked this cycle. No
+other rival checked in this fleet has this flag set on anything but an actual one-time start/setup fee —
+treat any future sighting of `isOneTimeEvent: true` on a per-item/per-result event the same way: a flag to
+investigate before quoting the listed per-unit price as real, not a price to publish as-is.
