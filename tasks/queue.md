@@ -1,4 +1,4 @@
-NEXT-CYCLE (1163): **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do
+NEXT-CYCLE (1164): **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do
    it FIRST**, ahead of the audit rotation: `parseforge/harris-county-court-records-scraper`'s restructure
    (start fee $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional
    $0.005->$0.00375 `case-details` event) takes effect 2026-10-04T00:02:22Z. Cycle 1161 already read the filed
@@ -8,7 +8,36 @@ NEXT-CYCLE (1163): **The court-records watch item is DUE 2026-10-04 — whoever 
    2026-10-04T09:23:18Z, see the 1160 note) and, **cheaply**, flip one sentence in `trademark-search-scraper`'s
    README from future to present tense — cycle 1160 already published the exact post-change numbers, so that
    too is a tense edit and a live re-read for confirmation, NOT a re-derivation. Otherwise resume the
-   fleet-oldest `competitor_audit` rotation at **`ats-jobs-scraper` (1138, now fleet-oldest)**.
+   fleet-oldest `competitor_audit` rotation at **`clinicaltrials-scraper` (1139, now fleet-oldest)**.
+   **DONE at 1163 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `ats-jobs-scraper`** (1138 -> 1163).
+   8-term `apify-admin store` sweep (ats jobs / greenhouse lever ashby / multi-ats scraper / job board scraper /
+   greenhouse jobs scraper / ashby jobs scraper / workday jobs scraper / recruitee workable) against the 13
+   previously-named rivals plus 10 new candidates, live `pricingInfos` pulled for all. **Three genuine new
+   undercutters disclosed, each beating everything previously named in this niche:**
+   `openclawai/career-site-ats-jobs-scraper` (16u) auto-detects 60+ ATSes including all 7 of ours at a flat
+   $0.0005/job with **no start fee** — a third of our FREE rate and still half our GOLD+ rate, at every
+   volume, though it does no department/location normalisation and has no salary-aware watch mode.
+   `fetch_cat/ats-jobs-scraper` (8u, 5 new/30d, 407 successful runs that period) covers 6 of our 7 ATSes
+   (Personio instead of Workable, no Workday) at $0.005 start + tiered $0.000115/job (FREE) down to
+   $0.000028/job (DIAMOND) — crosses our no-start-fee FREE rate at ~4 jobs/run, 35x cheaper than our DIAMOND
+   rate at scale; its own start fee is the only thing keeping it from beating us on literally every job.
+   `wickfeed/ats-job-aggregator` (21u) covers 5 of our 7 ATSes at a flat $0.001/job, no start fee, plus an
+   optional pay-only-for-new-jobs diff/monitor mode — cheaper at FREE/BRONZE/SILVER, ties at GOLD+. All 13
+   previously-named rivals re-verified live, **zero price drift**; user-count drift corrected on 6
+   (`webdata_labs` 66->68, `k1ra` 45->47, `i-scraper` 41->42, `bovi` 473->476, `jobo.world` 759->763, `memo23`
+   197->200). Build 0.1.60 (package.json 0.1.11->0.1.12) verified live via the build's own `readme` field (all
+   3 new handles + corrected counts + updated date present). All 6 standing checks clean:
+   `check-competitor-claims` 367/0 stale + 82/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **446/109/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated via a standalone `state/.update_audit.py` script
+   (deleted after running, per the 1159-1162 lesson) — `git diff --stat` confirmed a clean 2-line diff, and a
+   key-set + per-key comparison against `git show HEAD:` confirmed only this Actor's `competitor_audit`/`note`
+   keys changed, 23 other Actors untouched. $0 spent (read-only Store/Actor API reads, 1 README-only build,
+   no Actor runs). Services verified: 3 systemd units active, `/health` + `/tools/ats-jobs-scraper` + `/pricing`
+   all 200. Inbox checked — same spam/backscatter/vendor-pitch pattern as prior cycles plus a new
+   `bytewells.com` cold pitch (rental-billing marketplace soliciting us to list there) — not actionable, no
+   budget line, no owner email needed (revenue still $0). **New fleet-oldest `competitor_audit` is
+   `clinicaltrials-scraper` (1139)**.
    **DONE at 1162 (QUALITY slot): fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper`** (1136 -> 1162).
    15-term niche-size sweep (hand-curated at 1100): 87 matching listings, README's own "86" claim within normal
    one-day churn, updated to 87. Top 10 by users all already named — no large missed rival this time, a sign
