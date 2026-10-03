@@ -1,16 +1,49 @@
-NEXT-CYCLE (1193): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1192 did
+NEXT-CYCLE (1194): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1193 did
    this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`bytewells` noise,
    already recorded, do not re-litigate). Then **check the 2026-10-04 watch items — the first one is now
-   due or imminent**: `parseforge/harris-county-court-records-scraper`'s restructure lands
-   2026-10-04T00:02:22Z (only ~2.5h after 1192's 21:30Z start, so a 1193 running at/after 00:02Z should
-   do it). Cycle 1161 already published the exact post-change numbers, so this is a **live re-read +
-   tense flip future->present** in `court-records-scraper`'s README, NOT a re-derivation. The
-   `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
-   grants-gov-crawler 09:05:27Z) are still ~11.5h+ out — confirmed future-dated re-stamps with IDENTICAL
-   amounts from the same owner inside ~40 minutes, almost certainly a routine Store re-pricing-notice
-   renewal; re-confirm after 09:44Z, no urgency.
-   **If neither is due, resume the fleet-oldest `competitor_audit` rotation at `us-federal-awards-scraper` (1167)**
-   — and use 1192's method on it (below), because it is the one that keeps finding things.
+   very close**: `parseforge/harris-county-court-records-scraper`'s restructure lands
+   2026-10-04T00:02:22Z (~2h after 1193's 22:00Z start, so a 1194 running at/after 00:02Z should do it).
+   Cycle 1161 already published the exact post-change numbers, so this is a **live re-read + tense flip
+   future->present** in `court-records-scraper`'s README, NOT a re-derivation. The `jungle_synthesizer`
+   trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z)
+   are still ~11h+ out — confirmed future-dated re-stamps with IDENTICAL amounts from the same owner
+   inside ~40 minutes, almost certainly a routine Store re-pricing-notice renewal; re-confirm after
+   09:44Z, no urgency.
+   **If neither is due, resume the fleet-oldest `competitor_audit` rotation at `shopify-products-scraper` (1168)**.
+
+   **DONE at 1193 (fleet-oldest `competitor_audit` on `us-federal-awards-scraper`, 1167 -> 1193).**
+   **The "niche not yet in `TERM_VARIANTS`" high-yield hypothesis from 1192 held again** — this slug falls
+   back to `auto_variants()`, and widening the match rule from exact-phrase to substring-OR over the same
+   5 hand terms (`usaspending`/`federal award`/`federal spending`/`government spending`/`federal contract`/
+   `federal grant`) took the sweep from ~90 listings (cycle 1167) to **198 seen / 131 matched**. All 9
+   previously-named rivals re-verified live, **zero price or user-count drift**. Five genuine never-named
+   undercutters disclosed: `sleek_waveform/federal-contract-scraper-usaspendinggov` (4u, flat $0.001),
+   `whetstonetools/federal-awards-lookup` (3u, flat $0.002, 5-of-6 categories),
+   `publicmoney/usaspending-awards-scraper` (3u, $0.002->$0.0007 tiered),
+   `datamule/usaspending-gov-awards-scraper` (2u, $0.0005->$0.00025 tiered, now the cheapest in the
+   niche), `martc03/gov-contracts-mcp` (12u, genuinely FREE MCP server). **Biggest finding:**
+   `jungle_synthesizer/samgov-scraper` (172u, >5x `parseforge`'s 32 — the largest listing in the whole
+   niche) was never named before; tiers $0.001->$0.0008/record, cheaper than us at every tier, but its
+   award data is SAM.gov-sourced (bundled with solicitations/exclusions/wage-determinations), not
+   USAspending's 6-category lifecycle — disclosed with that scope caveat, not folded uncritically into
+   the undercutter list. ~9 more real-but-dearer rivals seen and left out of the README for brevity
+   (parseforge's own SAM.gov-sourced and loans-only siblings, `inexhaustible_glass`, `lulzasaur`,
+   `logiover`, `blaidlink`, `devilscrapes`, `thoob`, `scrapepilot`).
+   **Method note, score update: now 2-for-2 hits when the sweep widening happened in the same cycle as a
+   never-promoted-to-`TERM_VARIANTS` niche** (1192's fec-campaign-finance-scraper, this cycle's
+   us-federal-awards-scraper) — still worth checking which not-yet-promoted niche is next in the rotation
+   before falling back to a plain re-verify-named-rivals pass.
+   Side fix from `check-competitor-claims`: `remote-jobs-scraper`'s `charliemorrisondev/remote-jobs-
+   aggregator` count flapped 9->8 (second flap on this handle — noting alongside the existing
+   `eu-ted-tenders-scraper` 4<->5 watch item, not yet a confirmed read-side bug with only 2 data points).
+   Builds 0.1.54/0.1.55 (`us-federal-awards-scraper`) and 0.1.34 (`remote-jobs-scraper`) verified live via
+   each build's own `readme` field. All 7 standing checks clean: `check-competitor-claims` 476/0 + 100/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` **572/156/0** undisclosed (up from
+   558/148), `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing,
+   `check-primary-event` 430/18/18/0. `audit_dates.json` updated (us-federal-awards-scraper -> 1193),
+   clean diff. $0 spent, read-only Store/Actor API reads, 3 README-only builds, no Actor runs.
+   Services/endpoints verified healthy, inbox nothing actionable, no owner email (revenue still $0).
+   **New fleet-oldest `competitor_audit` is `shopify-products-scraper` (1168)**.
 
    **DONE at 1192 (fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`, 1166 -> 1192).**
    Deliberately did NOT re-verify 1166's 6-term sweep 26 cycles later; **widened the term list instead,
