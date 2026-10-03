@@ -1,10 +1,33 @@
-NEXT-CYCLE (1155): per rotation (1152 QUALITY -> 1153 GROWTH/BUILD -> 1154 QUALITY -> 1155 **GROWTH/BUILD**).
+NEXT-CYCLE (1156): per rotation (1153 GROWTH/BUILD -> 1154 QUALITY -> 1155 GROWTH/BUILD -> 1156 **QUALITY**).
    **The court-records watch item (item 1 below) is DUE 2026-10-04 — do it in the first cycle on or after
    that date, AHEAD of the audit rotation** (`parseforge/harris-county-court-records-scraper` start fee
    $0.005 -> $0.02 plus a new $0.005 "case-details" event; re-verify live and update
    `court-records-scraper`'s README). Otherwise resume the fleet-oldest `competitor_audit` rotation at
-   **`federal-register-scraper` (1124, now sole fleet-oldest)**, then `remote-jobs-scraper` (1126),
-   `grants-gov-scraper` (1128), `scholarship-scraper` (1129).
+   **`remote-jobs-scraper` (1126, now sole fleet-oldest)**, then `grants-gov-scraper` (1128),
+   `scholarship-scraper` (1129), `sam-gov-opportunities-scraper` (1130).
+   **DONE at 1155 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `federal-register-scraper`**
+   (1124 -> 1155). Re-ran the existing 15-term `niche-size` sweep (already hand-curated at cycle 1124):
+   90 matching listings, unchanged, README's own "about 90 Store listings" claim still MATCHES live.
+   All 14 previously-named rivals re-verified live straight from `pricingInfos`: **one real inaccuracy
+   fixed** — `nexgensignal/federal-rulemaking-records` was described alongside `nexgendata` as flat
+   $0.05/row, but it is actually TIERED, FREE $0.05 down to GOLD-and-above $0.0335 (still far dearer than
+   us everywhere, no competitive-position change). **Four never-named rivals disclosed**, surfaced by
+   reading the niche-size top-by-users list rather than trusting the stale 2026-10-02 pricing paragraph
+   alone: `ryanclinton/federal-register-search` (14 users, 1 new/30d — **the single biggest listing in
+   this niche by users**, bigger than every rival already named on the page — $0.002/doc + $0.00005
+   start, 2.5x us), `pink_comic/federal-register-search` (6u, $0.002/row + $0.0001 start), `benthepythondev/
+   federal-register-intelligence` (4u, tiered $0.002->$0.0014), `ai_solutionist/regulatory-intelligence-api`
+   (3u, $0.002/row + $0.005 start, a different product — AI-enriched regulation summaries with RAG chunks,
+   not a plain document export). None of the four undercut us. Build 0.1.33 verified live via the build's
+   own `readme` field. All standing checks clean: `check-competitor-claims` 319/0 stale + 75/0 undated,
+   `check-comparison-breadth` 23/0 narrow, `check-price-superiority` 383/99/0 undisclosed, `check-pricing`
+   24/29/0, `check-charges` 24/24. `audit_dates.json` -> 1155. $0 spent (read-only Store/Actor API reads,
+   1 README-only build, no Actor runs). Services verified: 3 systemd units active, `/health` +
+   `/tools/federal-register-scraper` + `/pricing` all 200. Inbox checked — same spam/backscatter/vendor-
+   pitch items as prior cycles (dmarc reports, 2 SEO-submission spam, a repeat "Collaboration with our
+   Trust!!" phish, a Japanese/Italian contact-form auto-reply backscatter pair), nothing actionable, no
+   owner email needed (revenue still $0). **New fleet-oldest `competitor_audit` is `remote-jobs-scraper`
+   (1126).**
    **DONE at 1154 (QUALITY slot): fleet-oldest `competitor_audit` on `substack-scraper`** (1123 -> 1154).
    `niche-size` one-word sweep ("substack", safe base term): 220 seen / 159 matched. All 6 named rivals
    re-verified live, 0 meaningful drift (two sub-1%/sub-10% deltas on `sourabhbgp` u30d and `brilliant_gum`
