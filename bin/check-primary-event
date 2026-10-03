@@ -1,0 +1,158 @@
+#!/root/agent/venv/bin/python
+"""Discovery sweep for the `isPrimaryEvent` trap found on westerly_breaker/ted-tender-monitor
+(cycle 1176, eu-ted-tenders-scraper audit).
+
+`isPrimaryEvent` is a Store-page display hint set by the Actor owner, not a statement
+about what their code actually charges per row. A rival's live record can carry a
+GENERIC platform-default event (`apify-default-dataset-item` / `apify-actor-start`)
+flagged primary at a token price, while a real, materially dearer non-one-time event
+sits on the same record -- `westerly_breaker` listed `tender-result` at $0.005/tender as
+primary when first published, then moved the flag to a vestigial $0.00001 dataset-item
+event 53 minutes later, leaving the $0.005 charge live and undocumented by the flag.
+`check-price-superiority` reduces every rival to exactly the `isPrimaryEvent` price (or
+the cheapest non-one-time event if none is flagged), so it is blind to this by
+construction -- it passed clean both before and after the westerly_breaker fix. This is
+the sibling of the cycle-1172 tiered-pricing bug (that one hid rivals entirely; this one
+picks the wrong number for a rival it does see).
+
+Like `check-rental-converts`/`check-comparison-breadth`, this is a DISCOVERY sweep, not
+a verdict: a flag means "go read that rival's own README pricing table and decide",
+never "this is a false claim". Cycle 1176's manual scan found 17 flags fleet-wide;
+cycle 1177 read every one by hand against what our own READMEs already say and found
+16 already correctly described (the dearer event's real price is already quoted in the
+same file -- prior audits had read the rival's own pricing table even though the
+reduction above did not) and the 17th (`taroyamada/procurement-intel-actor`) merely has
+two optional per-run report/export add-ons priced above its real, correctly-primary
+$0.008/row rate. So THIS SWEEP IS NOT ITSELF PROOF OF A GAP -- it is blind to whether
+our prose already covers the dearer number, which is why it checks whole-file disclosure
+(same reasoning as `check-price-superiority`'s whole-file disclosure check, not
+per-paragraph: the rival may be described correctly in a different paragraph than the
+one a text search lands on first).
+
+Deliberately NOT bolted onto `check-price-superiority` -- that script's entire job is
+collapsing each rival to one headline number, which is the bug, not a bolt-on point.
+
+Read-only: GET /v2/acts/<owner>~<slug> only, no Actor runs, no file writes.
+"""
+import glob
+import json
+import os
+import re
+import sys
+import urllib.request
+from datetime import datetime, timezone
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GENERIC = {"apify-default-dataset-item", "apify-actor-start"}
+RATIO = 3.0
+FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
+SKIP_PREFIX = ("bin/", "cpvCodes/", "field/", "src/", "state/", "actors/", "notes/", "logs/")
+
+
+def token():
+    env = open(os.path.join(ROOT, "secrets/env")).read()
+    m = re.search(r"APIFY_TOKEN=(\S+)", env)
+    return m.group(1)
+
+
+def our_handles():
+    """Map each full owner/slug named anywhere in a README to the file(s) that name it."""
+    hs = {}
+    for p in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
+        slug = p.split("/")[-2]
+        txt = open(p).read()
+        for h in set(FULL_HANDLE.findall(txt)):
+            owner, rest = h.split("/", 1)
+            if h.startswith(SKIP_PREFIX) or "." in owner or len(rest) < 3:
+                continue
+            hs.setdefault(h, []).append((slug, p))
+    return hs
+
+
+def effective(infos):
+    best = None
+    now = datetime.now(timezone.utc)
+    for p in infos or []:
+        s = p.get("startedAt")
+        if not s:
+            continue
+        try:
+            t = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if t <= now and (best is None or t > best[0]):
+            best = (t, p)
+    return best[1] if best else None
+
+
+def price_of(d):
+    if d.get("eventPriceUsd") is not None:
+        return float(d["eventPriceUsd"])
+    tiers = d.get("eventTieredPricingUsd") or {}
+    vals = [v.get("tieredEventPriceUsd") for v in tiers.values() if v.get("tieredEventPriceUsd") is not None]
+    return float(min(vals)) if vals else None
+
+
+def price_strings(price):
+    """Plausible ways this price might be written in prose, for a whole-file disclosure check."""
+    out = {f"{price:g}", f"{price:.2f}", f"{price:.4f}", f"{price:.5f}"}
+    if price == int(price):
+        out.add(str(int(price)))
+    return out
+
+
+def main():
+    hs = our_handles()
+    print(f"check-primary-event: scanning {len(hs)} distinct named rivals across the fleet")
+    checked = flagged = disclosed = 0
+    for h in sorted(hs):
+        owner, slug = h.split("/", 1)
+        try:
+            with urllib.request.urlopen(
+                f"https://api.apify.com/v2/acts/{owner}~{slug}?token={token()}", timeout=30
+            ) as r:
+                d = json.load(r)["data"]
+        except Exception:
+            continue
+        p = effective(d.get("pricingInfos"))
+        if not p or p.get("pricingModel") != "PAY_PER_EVENT":
+            continue
+        evs = p.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+        if len(evs) < 2:
+            continue
+        checked += 1
+        primary = [k for k, v in evs.items() if v.get("isPrimaryEvent")]
+        if primary:
+            head = primary[0]
+        else:
+            cands = [(price_of(v), k) for k, v in evs.items()
+                     if not v.get("isOneTimeEvent") and price_of(v) is not None]
+            if not cands:
+                continue
+            head = min(cands)[1]
+        hp = price_of(evs[head])
+        if hp is None or head not in GENERIC:
+            continue
+        worse = [(k, price_of(v)) for k, v in evs.items()
+                 if k != head and not v.get("isOneTimeEvent")
+                 and price_of(v) is not None and hp > 0 and price_of(v) / hp >= RATIO]
+        if not worse:
+            continue
+        flagged += 1
+        files = hs[h]
+        all_text = " ".join(open(p).read() for _, p in files)
+        dear_price, dear_event = max(worse, key=lambda x: x[1])[1], max(worse, key=lambda x: x[1])[0]
+        is_disclosed = any(s in all_text for s in price_strings(dear_price))
+        tag = "ALREADY DISCLOSED" if is_disclosed else "NEEDS REVIEW"
+        if is_disclosed:
+            disclosed += 1
+        print(f"  FLAG {h}  (named in: {', '.join(s for s, _ in files)}) [{tag}]")
+        print(f"       headline={head}@${hp:g} (generic default)  dearer={dear_event}@${dear_price:g}"
+              f"  ({dear_price/hp:.0f}x)")
+    print(f"check-primary-event: {checked} multi-event rivals checked, {flagged} flagged, "
+          f"{disclosed} already disclosed in our own README, {flagged - disclosed} need review")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
