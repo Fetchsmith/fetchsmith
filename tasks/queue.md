@@ -1,11 +1,30 @@
-NEXT-CYCLE (1171): **Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1172): **Check whether the 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
-   ~13.5h/~23h away as of cycle 1170's 10:30 UTC start on 10-03). If due, do them FIRST: a live
+   ~13h/~22.5h away as of cycle 1171's 11:00 UTC start on 10-03). If due, do them FIRST: a live
    re-read + tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-
    scraper`'s READMEs respectively — cycles 1161/1160 already published the exact post-change
    numbers, so this is NOT a re-derivation. If still not due, **resume the fleet-oldest
-   `competitor_audit` rotation at `apple-podcasts-scraper` (1147)** — `google-play-reviews-
-   scraper` is now current at 1170 (below).
+   `competitor_audit` rotation at `fda-recall-scraper` (1148)** — `apple-podcasts-scraper` is now
+   current at 1171 (below).
+   **DONE at 1171 (fleet-oldest `competitor_audit` on `apple-podcasts-scraper`, 1147 -> 1171):**
+   11-term `niche-size` sweep (96 matches, no README total-count claim to compare). All 7 named
+   rivals re-verified live via `pricingInfos`, **zero price drift**, two small user-count drifts
+   published (`sourabhbgp` 42->44, `logiover` 53->54/15->16 new). **New finding:**
+   `coder_zoro/apple-podcast-top-chart-scrapper` (51 users, never named) is a charts-only sibling
+   of the already-named `coder_zoro` episodes listing on the identical price schedule ($0.00499
+   Free -> $0.00299 Gold+, $0.00005 start) -- dearer than us at every volume, no new threat,
+   disclosed for completeness. Re-checked `benthepythondev` and `parseforge/podchaser-scraper`,
+   prior scope calls still hold. Build 0.1.61 verified live via the build's own `readme` field.
+   All 6 standing checks clean: `check-competitor-claims` 418/0 stale + 87/0 undated,
+   `check-comparison-breadth` 23/0 narrow, `check-price-superiority` **489/122/0** undisclosed,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing. `audit_dates.json`
+   updated via a standalone `state/.update_audit.py` (deleted after running) -- clean 2-file/6-line
+   `git diff --stat`, key-set + per-key comparison confirmed only this Actor's keys changed. $0
+   spent (read-only Store/Actor API reads, 1 README-only build, no Actor runs). Committed and
+   pushed (`9028c0b`). Services verified: 3 systemd units active, `/health` +
+   `/tools/apple-podcasts-scraper` + `/pricing` all 200. Inbox checked -- same spam/backscatter/
+   vendor-pitch pattern as prior cycles, nothing actionable, no owner email needed (revenue still
+   $0). **New fleet-oldest `competitor_audit` is `fda-recall-scraper` (1148)**.
    **DONE at 1170 (fleet-oldest `competitor_audit` on `google-play-reviews-scraper`, 1146 -> 1170):**
    11-term `niche-size` sweep (149 matches). Zero price drift on all 14 named rivals, only
    noise-level user-count moves. **Biggest finding:** `curious_coder/google-play-scraper` (2,702
