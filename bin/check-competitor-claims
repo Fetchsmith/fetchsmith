@@ -38,6 +38,7 @@ import glob
 import os
 import re
 import sys
+import time
 
 import httpx
 
@@ -187,10 +188,20 @@ def token():
 
 
 def live_users(ident, headers, cache={}):
-    """stats.totalUsers for <user>/<name>, or None if the listing is gone."""
+    """stats.totalUsers for <user>/<name>, or None if the listing is gone.
+
+    A non-200 is retried once after a short pause before being treated as "gone" --
+    cycles 1145/1148/1159 each saw a single non-200 on a listing that a direct re-check
+    moments later confirmed was still live/public, a transient API hiccup rather than a
+    real delisting. Caching the retried result avoids re-flaking on a second lookup of
+    the same ident within one run."""
     if ident not in cache:
         u, n = ident.split("/")
-        r = httpx.get(f"https://api.apify.com/v2/acts/{u}~{n}", headers=headers, timeout=30)
+        url = f"https://api.apify.com/v2/acts/{u}~{n}"
+        r = httpx.get(url, headers=headers, timeout=30)
+        if r.status_code != 200:
+            time.sleep(2)
+            r = httpx.get(url, headers=headers, timeout=30)
         cache[ident] = r.json()["data"]["stats"]["totalUsers"] if r.status_code == 200 else None
     return cache[ident]
 
