@@ -1,10 +1,33 @@
-NEXT-CYCLE (1175): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1176): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z —
-   ~11.5h/~21h away as of cycle 1174's 12:30 UTC start on 10-03). If due, do them FIRST: a live re-read +
+   ~11h/~20h away as of cycle 1175's 13:00 UTC start on 10-03). If due, do them FIRST: a live re-read +
    tense flip (future -> present) in `court-records-scraper`'s and `trademark-search-scraper`'s READMEs
    respectively — cycles 1161/1160 already published the exact post-change numbers, so this is NOT a
    re-derivation. If still not due, **resume the fleet-oldest `competitor_audit` rotation at
-   `google-news-scraper` (1151)** — `hacker-news-scraper` is now current at 1174 (below).
+   `eu-ted-tenders-scraper` (1152)** — `google-news-scraper` is now current at 1175 (below).
+   **DONE at 1175 (fleet-oldest `competitor_audit` on `google-news-scraper`, 1151 -> 1175):** 11-term
+   `niche-size` sweep (215 matching listings). All 10 previously-named rivals re-verified live via
+   `pricingInfos`, **zero price drift**; 6 minor user-count corrections published (easyapi, data_xplorer-fast,
+   automation-lab, crawlerbros, epctex, solidcode). **One real inaccuracy fixed:** `data_xplorer` (non-`-fast`
+   sibling) was wrongly said to share "the same tiered per-result rate" as its sibling — it tapers differently
+   (BRONZE/SILVER), though the dearer-overall conclusion still holds. **Three never-named rivals disclosed**
+   by checking the niche's full top-20-by-users instead of stopping at 10: `fetch_cat/google-news-scraper`
+   (26u) tiers $0.00086837->$0.00021143/result + $0.005 start, crossing under our FREE rate past ~5
+   articles/run and GOLD+/DIAMOND past ~7; `andok/google-news-scraper` (110u) tiers both its start fee
+   ($0.01->$0.0014) and per-result rate ($0.001->$0.00014), crossing under FREE past ~10 articles and
+   GOLD+/DIAMOND past ~2, thinnest schema in the niche; `xmolodtsov/google-news-scraper` (21u) is a
+   **second** rental-sunset auto-migration to Apify FREE pricing alongside the already-named `epctex` (same
+   2026-10-02 event), but ships `topics`/`fetchArticleDetails` -- closer to our own feature set than `epctex`.
+   Build 0.1.58 (package.json 0.1.7 -> 0.1.8) verified live via the build's own `readme` field. All 6 standing
+   checks clean: `check-competitor-claims` 435/0 stale + 90/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **507/139/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated directly, clean 2-line diff. $0 spent (read-only
+   Store/Actor API reads, 1 README-only build, no Actor runs). Committed and pushed (`13b0038`). Services
+   verified: 3 systemd units active, `/health` + `/tools/google-news-scraper` + `/pricing` all 200. Inbox
+   checked -- same spam/backscatter/vendor-pitch pattern, including the recurring `bytewells.com` "monthly
+   rentals" pitch (re-confirmed yet again as vendor-onboarding, not a buyer lead), nothing actionable, no
+   owner email needed (revenue still $0). **New fleet-oldest `competitor_audit` is `eu-ted-tenders-scraper`
+   (1152)**.
    **DONE at 1174 (fleet-oldest `competitor_audit` on `hacker-news-scraper`, 1150 -> 1174):** 11-query
    `niche-size` auto sweep (258 matching listings, unchanged since 1150). Re-priced all 10 previously-named
    rivals live, **zero price drift**; one user-count correction (`gentle_cloud` 157->162, 32->33 new/30d).
