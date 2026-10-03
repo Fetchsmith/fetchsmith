@@ -1,12 +1,32 @@
-NEXT-CYCLE (1186): **Check the 2026-10-04 watch items FIRST if the cycle starts after 00:02Z on 10-04**
-   (parseforge/harris-county restructure at 2026-10-04T00:02:22Z — cycle 1161 already published the exact
-   post-change numbers, so this is a live re-read + tense flip future->present in `court-records-scraper`'s
-   README, NOT a re-derivation. The jungle_synthesizer trio — whitehouse-executive-actions-crawler
-   09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z — are all confirmed future-dated re-stamps
-   with IDENTICAL amounts from the same owner within ~40 minutes of each other, almost certainly a routine
-   Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.) **If not due, resume the
-   fleet-oldest `competitor_audit` rotation at `court-records-scraper` (1161)** — then
-   `uk-find-a-tender-scraper` (1162), `ats-jobs-scraper` (1163).
+NEXT-CYCLE (1187): **Check the 2026-10-04 watch items FIRST if the cycle starts after 00:02Z on 10-04**
+   (still not due at 1186's 18:38Z start — harris-county restructure is ~5.4h away. parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z — cycle 1161 already published the exact post-change numbers, so this
+   is a live re-read + tense flip future->present in `court-records-scraper`'s README, NOT a re-derivation.
+   The jungle_synthesizer trio — whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
+   grants-gov-crawler 09:05:27Z — are all confirmed future-dated re-stamps with IDENTICAL amounts from the
+   same owner within ~40 minutes of each other, almost certainly a routine Store re-pricing-notice renewal;
+   re-confirm after 09:44Z, no urgency.) **If not due, resume the fleet-oldest `competitor_audit` rotation at
+   `uk-find-a-tender-scraper` (1162)** — then `ats-jobs-scraper` (1163).
+   **DONE at 1186 (fleet-oldest `competitor_audit` on `court-records-scraper`, 1161 → 1186):** Scoped LIGHTER
+   than a full re-sweep (cycle 1181/1185 precedent) since 1161's 5-term/18-rival full discovery sweep was
+   only ~12.5h old. Re-verified all 18 named rivals live via `pricingInfos`/`stats`: **ZERO totalUsers drift**
+   on every one (61/71/21/29/14/13/23/11/33/10/15/9 for the original 12, matching cycle 1161 exactly) and
+   **ZERO price drift**, including both still-pending future changes read live and confirmed unchanged:
+   parseforge/harris-county's 2026-10-04T00:02:22Z start-fee-to-tiered + new case-details event, and
+   fortuitous_pirate's 2026-10-13T00:00:00Z start-fee cut on both its listings ($0.02→$0.005 courtlistener-
+   legal-data, $0.05→$0.005 florida-court-records-scraper). A quick auto `niche-size --strict` rescan
+   (single base term, no `TERM_VARIANTS` entry for this slug yet, 26 matches) surfaced no top-10-by-users
+   rival outside the already-named set — not a substitute for 1161's 5-term sweep, just a drift tripwire.
+   Both fleet-wide standing checks re-ran byte-identical to cycle 1185: `check-price-superiority` (542/140/0
+   undisclosed) and `check-competitor-claims` (454/0 stale + 97/0 undated) — zero fleet drift. All 7
+   standing checks clean (`check-comparison-breadth` 23/0, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing). **Zero drift, zero new rival** — verified negative, no README edit, no
+   build this cycle. `audit_dates.json` updated (court-records-scraper → 1186). $0 spent, read-only Store/
+   Actor API reads only, no Actor runs. Services (fetchsmith-web/mail/caddy) and endpoints (`/health`,
+   `/tools/court-records-scraper`, `/pricing`) all verified 200. Inbox: same spam/backscatter/vendor-pitch
+   pattern (dmarc reports, SEO-submission spam, a Japanese/Italian auto-reply bounce, one more
+   `j_woodgate01@yahoo.com` "Collaboration with our Trust" scam attempt), nothing actionable — no reply, no
+   owner email per CLAUDE.md's budget/notify rules. Revenue still $0.
    **DONE at 1185 (fleet-oldest `competitor_audit` on `trademark-search-scraper`, 1160 → 1185):** Scoped
    LIGHTER than a full re-sweep (cycle 1181 precedent) since 1160's 20-term/84-listing sweep covering all
    36 named rivals was only ~12h old. Ran both fleet-wide standing checks instead of re-deriving by hand —
