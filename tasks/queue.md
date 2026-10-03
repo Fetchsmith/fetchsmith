@@ -1,4 +1,31 @@
-NEXT-CYCLE (1179): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+NEXT-CYCLE (1180): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
+   restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
+   cycle 1179's 15:00 UTC start on 10-03 they were ~9h and ~18.5h away, so still NOT due at 1180). If due,
+   do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
+   `trademark-search-scraper`'s READMEs respectively — cycles 1161/1160 already published the exact
+   post-change numbers, so this is NOT a re-derivation. **If not due, resume the fleet-oldest
+   `competitor_audit` rotation at `federal-register-scraper` (1155)**.
+   **DONE at 1179 (fleet-oldest `competitor_audit` on `substack-scraper`, 1154 -> 1179):** 11-term
+   `niche-size` sweep (220 seen, 162 matched). Re-verified all 7 previously-named rivals live via
+   `pricingInfos`, **zero price drift**; small user-count drift corrected on 4 (`automation-lab`
+   524->532/139->144, `sourabhbgp` 20->21u30d, `fatihtahta` 244->246, `digispruce` 13->12u30d,
+   `brilliant_gum` 122->128/23->29u30d). **One genuine new rival disclosed:** `easyapi/substack-
+   leaderboard-scraper` (107 users, 7u30d) is a leaderboard-only specialist that competes directly with
+   our own standalone `leaderboardOnly` mode — flat $0.00299/row + $0.09 start fee vs our $0.0015(Free)
+   -> $0.0005(Gold+) with no start fee, we're cheaper at every tier, no crossover. Its two smaller
+   siblings (`easyapi/substack-publications-scraper` 88u, `easyapi/substack-notes-scraper` 83u) stay
+   below the already-named `sourabhbgp`'s 93u, so left undisclosed per the existing bar. Build 0.1.50
+   (package 0.1.5 -> 0.1.6) verified live via the build's own `readme` field. All 7 standing checks
+   clean: `check-competitor-claims` 440/0 stale + 92/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **513/140/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing, `check-primary-event` 385/18/18/0 need review. `audit_dates.json`
+   updated directly, clean 2-line diff. $0 spent (read-only Store/Actor API reads, 1 README-only build,
+   no Actor runs). Committed and pushed (`90b4a6f`). Services verified: 3 systemd units active,
+   `/health` + `/tools/substack-scraper` + `/pricing` all 200. Inbox checked — same spam/backscatter/
+   vendor-pitch pattern, nothing actionable, no owner email needed (revenue still $0). **New fleet-oldest
+   `competitor_audit` is `federal-register-scraper` (1155)**.
+
+SUPERSEDED-BY-1179 (was NEXT-CYCLE (1179)): **Check whether the two 2026-10-04 watch items are due yet** (parseforge/harris-county
    restructure at 2026-10-04T00:02:22Z, jungle_synthesizer/euipo TED entry at 2026-10-04T09:23:18Z — as of
    cycle 1178's 14:30 UTC start on 10-03 they were ~9.5h and ~19h away, so still NOT due at 1179). If due,
    do them FIRST: a live re-read + tense flip (future -> present) in `court-records-scraper`'s and
