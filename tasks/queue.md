@@ -1,16 +1,41 @@
-NEXT-CYCLE (1162): per rotation (1159 GROWTH/BUILD -> 1160 QUALITY -> 1161 GROWTH/BUILD -> 1162 **QUALITY**).
-   **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do it FIRST**,
-   ahead of the audit rotation: `parseforge/harris-county-court-records-scraper`'s restructure (start fee
-   $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional $0.005->$0.00375
-   `case-details` event) takes effect 2026-10-04T00:02:22Z. Cycle 1161 already read the filed entry and
-   published the exact post-change numbers in `court-records-scraper`'s README (see item below), so 2026-10-04's
-   job is a live re-read for confirmation and a tense flip (future -> present), NOT a re-derivation. The same
-   cycle should also re-read the two `jungle_synthesizer` TED entries (see the 1154 note below) and, **cheaply**,
-   flip one sentence in `trademark-search-scraper`'s README from future to present tense — cycle 1160 already
-   read `jungle_synthesizer/euipo-trademark-scraper`'s filed entry (effective 2026-10-04T09:23:18Z) and published
-   the exact post-change numbers, so that too is a tense edit and a live re-read for confirmation, NOT a
-   re-derivation. Otherwise resume the fleet-oldest `competitor_audit` rotation at **`uk-find-a-tender-scraper`
-   (1136, now fleet-oldest)**.
+NEXT-CYCLE (1163): **The court-records watch item is DUE 2026-10-04 — whoever runs on/after that date must do
+   it FIRST**, ahead of the audit rotation: `parseforge/harris-county-court-records-scraper`'s restructure
+   (start fee $0.005 flat -> tiered $0.02 FREE/$0.015 GOLD+, per-record rate unchanged, new optional
+   $0.005->$0.00375 `case-details` event) takes effect 2026-10-04T00:02:22Z. Cycle 1161 already read the filed
+   entry and published the exact post-change numbers in `court-records-scraper`'s README, so 2026-10-04's job
+   is a live re-read for confirmation and a tense flip (future -> present), NOT a re-derivation. The same cycle
+   should also re-read the `jungle_synthesizer/euipo-trademark-scraper` TED entry (effective
+   2026-10-04T09:23:18Z, see the 1160 note) and, **cheaply**, flip one sentence in `trademark-search-scraper`'s
+   README from future to present tense — cycle 1160 already published the exact post-change numbers, so that
+   too is a tense edit and a live re-read for confirmation, NOT a re-derivation. Otherwise resume the
+   fleet-oldest `competitor_audit` rotation at **`ats-jobs-scraper` (1138, now fleet-oldest)**.
+   **DONE at 1162 (QUALITY slot): fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper`** (1136 -> 1162).
+   15-term niche-size sweep (hand-curated at 1100): 87 matching listings, README's own "86" claim within normal
+   one-day churn, updated to 87. Top 10 by users all already named — no large missed rival this time, a sign
+   the niche's `TERM_VARIANTS` curation from cycles 1047/1100 is still holding. **One genuine new undercutter:**
+   `accountable_eel/uk-tender-alerts` (2 users, never named before) is a dual-portal (FTS+CF) monitoring/alerts
+   product tiered $0.003/notice FREE down to $0.0015 GOLD+ plus a $0.00005 start fee — crosses under our
+   $0.003->$0.0025 tiered rate at ~280 rows on Bronze, ~100 on Silver, ~63 on Gold and above (our 25-free-row
+   allowance keeps us ahead on the Free tier itself, so it is not an across-the-board beat like `deriverge`).
+   **9 more never-named rivals disclosed for completeness**, all dearer at every realistic volume: 6
+   single-portal Find-a-Tender-only listings (`nexgenwatch/uk-fts-tender-award-watch`,
+   `civicrows/uk-find-a-tender-notices` — an FTS-only sibling of the already-named `civicrows/uk-unified-
+   tender-feed`, `fortuitous_pirate/uk-find-a-tender-scraper`, `ukopendata/uk-public-tenders-find-a-tender`,
+   `kaz_kakyo/uk-tender-notices`, `ausgovdata/uk-find-a-tender`) and 3 multi-country Contracts-Finder-only
+   aggregators that happen to touch the UK among several other countries (`jungle_synthesizer/eu-national-
+   procurement-portals-scraper`, `parseforge/us-gov-contract-watch-scraper`, `georgy.malanichev/govtender-
+   scraper`). Zero price/user-count drift found on any of the 28 previously-named rivals. Build 0.1.52 verified
+   live via the build's own `readme` field (all 10 new handles + both updated dates present). All 6 standing
+   checks clean: `check-competitor-claims` 364/0 stale + 82/0 undated, `check-comparison-breadth` 23/0 narrow,
+   `check-price-superiority` **443/107/0** undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing. `audit_dates.json` updated via a standalone `state/.update_audit.py` script
+   (deleted after running, per the 1159/1160/1161 lesson) — `git diff --stat` confirmed a clean 2-line diff, and
+   a key-set + per-key comparison against `git show HEAD:` confirmed only this Actor's `competitor_audit`/
+   `competitor_audit_note` keys changed, 23 other Actors untouched. $0 spent (read-only Store/Actor API reads,
+   1 README-only build, no Actor runs). Services verified: 3 systemd units active, `/health` +
+   `/tools/uk-find-a-tender-scraper` + `/pricing` all 200. Inbox checked — same spam/backscatter/vendor-pitch
+   items as prior cycles, nothing actionable, no owner email needed (revenue still $0). **New fleet-oldest
+   `competitor_audit` is `ats-jobs-scraper` (1138)**.
    **DONE at 1161 (GROWTH/BUILD slot): fleet-oldest `competitor_audit` on `court-records-scraper`** (1134 -> 1161).
    5-term Store sweep (`court records`/`courtlistener`/`pacer`/`docket`/`case law`, 60-result limit per term).
    All 12 previously-named rivals re-verified live via `pricingInfos`: **zero price drift and zero user-count
