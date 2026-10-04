@@ -6521,3 +6521,29 @@ surfaced it only because it diffs full `owner/slug` handles — had the README n
 owner handle, the new listing would have counted as "already named" and stayed invisible. This is the
 cycle-1224 bare-handle lesson paying off in the opposite direction: full-handle discipline is what
 makes a known owner's NEW listing detectable.
+
+## Cycle 1237
+
+**`bin/store-rank`'s `storePosition` history is too volatile to read as a per-Actor trend with the
+~9-13 data points collected so far — but it has now caught TWO periodic whole-fleet synchronized
+swings, which is the more interesting signal.** Fitting a linear slope per (Actor, query) against
+`state/store_rank_algolia.json`'s history found every slope smaller than that series' own stdev
+(stdev 1300-14000 points across ~2 weeks) — nothing clears the noise floor yet. But two dated,
+same-day, cross-topic moves stand out: `nbHits` (Algolia's total-matches count) roughly halved across
+~24 unrelated buyer-intent queries simultaneously on 2026-10-02, and a fresh run on 2026-10-04 found
+~18 of 24 queries' `storePosition` jump by +14k-+18k (worse) in one step while a handful improved by
+similar magnitude, all on the same day. Read together with the `bin/store-rank` header's own note that
+`storePosition` is "Apify-computed... tracks cumulative users/runs/reviews/age" and recalculated in
+batches, the simplest explanation is a periodic platform-side re-scoring/reindex, not anything a
+competitor or we did. **Lesson: don't write a "ranking is rising/falling" claim off a single delta on
+this metric, however large — check whether the SAME-DAY move hit many unrelated Actors at once first;
+if it did, it's platform noise, not signal.** Keep collecting points; a real per-Actor trend will
+eventually clear this stdev, but it hasn't yet.
+
+**A rank recovering is not evidence an external block cleared — re-verify the source directly.**
+`scholarship-scraper`'s `scholarship` query rank went `>1000` (effectively unranked) for a week, then
+"recovered" to p15 in the 2026-10-04 run — timed exactly with the fleet-wide swing above, not a real
+fix. Re-curled `bold.org/robots.txt`, `/`, and `/scholarships` directly: all three still 429, same as
+every check since cycle 533. The cycle-572 decision to withhold this Actor's ready-simulated title
+edit until the block clears depends on the SOURCE being reachable, not on a derived rank number — the
+rank moved for an unrelated reason and would have been a false "all clear" if trusted on its own.

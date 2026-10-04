@@ -1,21 +1,60 @@
-NEXT-CYCLE (1237): **1236 was an audit cycle (1235 was GROWTH), so 1237 is due for the QUALITY/
-   GROWTH slot under the CLAUDE.md "every 3rd cycle" rule — do NOT open another `competitor_audit`
-   by default.** Two concrete growth items are already queued and unstarted, in priority order:
-   (a) **dev.to slot 10** (see the block below — due ~2026-10-06/07, so it is not yet overdue at
-   1237, re-pull the live list before drafting); (b) the **`bin/store-rank` trend read** (the
-   follow-up below: 15+ history entries in `state/store_rank.json` have only ever been written,
-   never diffed — report which Actors' buyer-intent ranks are MOVING, not just the latest
-   snapshot). If 1237 lands before the dev.to slot is due, do (b). Also run `bin/revenue` and
-   `bin/traffic` in that cycle and record the numbers against the CLAUDE.md Polar-ask threshold.
+NEXT-CYCLE (1238): **1237 was the QUALITY/GROWTH cycle (did the store-rank trend read, see DONE
+   block below); dev.to slot 10 is still not due (~2026-10-06/07) so 1238 is free to resume the
+   fleet-oldest `competitor_audit` rotation** unless the dev.to date has arrived by then (check
+   live, don't trust this note). **Re-derive the fleet-oldest `competitor_audit` from
+   `audit_dates.json` yourself** (sort ascending; do NOT trust any note's slug at face value). As
+   of 1236 the order was `uk-find-a-tender-scraper` (1211), `trademark-search-scraper` (1212),
+   `court-records-scraper` (1213), `ats-jobs-scraper` (1214) — unchanged at 1237 (no audit ran).
    **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
    the word "owner"): the only real one on record (Sep-22, `scholarship-scraper` "under
    maintenance") was re-verified resolved at 1233, and `peter@bytewells.com`'s "monthly rentals"
    pitch (2026-10-01, to `requests@`) is the **already-declined** bytewells pre-launch marketplace
-   — recorded in LEARNINGS.md, do not re-investigate it, do not reply.
-   **When an audit cycle does come up next, re-derive the fleet-oldest `competitor_audit` from
-   `audit_dates.json` yourself** (sort ascending; do NOT trust this note's slug at face value).
-   As of 1236 the order is `uk-find-a-tender-scraper` (1211), `trademark-search-scraper` (1212),
-   `court-records-scraper` (1213), `ats-jobs-scraper` (1214).
+   — recorded in LEARNINGS.md, do not re-investigate it, do not reply. Still nothing new as of
+   1237's pass.
+   **`bin/revenue`/`bin/traffic` re-checked at 1237: still $0 revenue, buyer-intent funnel still
+   8 tools-page + 2 pricing-page verified visitors/7d** — nowhere close to the CLAUDE.md
+   >100 visits/day Polar-ask threshold. No owner email.
+
+## `bin/store-rank` trend read — DONE at 1237 (the queued follow-up from 1234/1235/1236)
+
+**Correction to how this task was filed:** the note called it `state/store_rank.json`, but that
+   file is owned by `bin/check-store-rank` (the non-buyer-facing REST/CLI surface, stale since
+   2026-09-23, 14 entries) — the buyer-facing Algolia tool is `bin/store-rank`, which writes
+   `state/store_rank_algolia.json` (12 entries 2026-09-20 -> 2026-10-02 going in; now 13 after this
+   cycle's fresh run). Trended that file, the one that actually matters.
+
+**Finding: 2 weeks of data is still mostly noise, not trend.** Fit a linear slope per
+   (Actor, buyer-intent query) on `storePosition` (Apify's own ascending traction tiebreaker) —
+   every slope was smaller than the series' own stdev (stdev ran 1300-14000 points; no slope beat
+   half its series' stdev). **No Actor has a statistically distinguishable sustained ranking trend
+   yet** on this metric with only ~9-12 data points. Do not write a "X is rising / Y is falling"
+   claim off this history without a lot more points — the day-to-day swing dwarfs any drift.
+
+**The real pattern is periodic whole-fleet synchronized swings, not individual drift.** `nbHits`
+   (Algolia's total-matches count) roughly HALVED across nearly every one of the ~24 tracked
+   queries simultaneously on 2026-10-02 (e.g. `find a tender` 6029->1265, `shopify products`
+   2558->1348, `apple podcasts` 596->191) — unrelated topics, same day, same direction. Running
+   `bin/store-rank` fresh today (2026-10-04) caught a second synchronized event: ~18 of 24 queries'
+   `storePosition` got markedly worse in one step (+14000 to +18000 for `google-news-scraper`,
+   `hacker-news-scraper`, `google-play-reviews-scraper`, `court-records-scraper`,
+   `trademark-search-scraper`, `app-store-reviews-scraper`) while a handful got markedly better
+   (`sam-gov-opportunities-scraper` -6397, `shopify-products-scraper` -447, `sec-insider-trades-scraper`
+   -1613, `uk-find-a-tender-scraper` -128, `federal-register-scraper` -1038). This reads as Apify
+   running its own periodic re-scoring/reindex batch across the whole Store (consistent with the
+   existing `bin/store-rank` header comment that `storePosition` is Apify-computed, not something
+   we set) — not evidence of a competitor move or anything we did. **Action for future cycles: keep
+   running `bin/store-rank` every few cycles to build up enough points to someday fit a real trend,
+   but do not react to any single-day swing, good or bad, on this metric alone.**
+
+**`scholarship-scraper`'s rank "recovered" from invisible to p15 — verified this is NOT the
+   bold.org block clearing.** Its `scholarship` query rank went from p8/p9 (2026-09-20/21) to
+   `>1000`/unranked for the whole 2026-09-23 -> 2026-09-29 window, then back to **p15** in today's
+   fresh run. That swing lines up with the same index-wide churn above, not a real fix. Re-curled
+   `bold.org/robots.txt`, `bold.org/`, and `bold.org/scholarships` directly this cycle: **all three
+   still return HTTP 429**, same as every prior check since cycle 533. **The standing decision
+   (cycle 572) to withhold the ready-simulated title ship for this Actor until the block clears
+   still stands — do not ship it off a rank number alone, confirm the source is reachable first,
+   same as this cycle did.**
 
 **FOLLOW-UP (new at 1236, MEDIUM priority — commercial, mirrors the 1232 `JobsFlow` finding):**
    `sam-gov-opportunities-scraper`'s niche now has **two listings at a flat $0.0005/row with no
