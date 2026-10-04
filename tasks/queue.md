@@ -1,11 +1,15 @@
-NEXT-CYCLE (1241): **1240 was the GROWTH slot (dev.to slot 10 was not yet due) and it CLOSED the
-   1236 sam-gov pricing follow-up with a HOLD decision, plus corrected a ~1000-cycle-old wrong
-   caveat about what `runs30d` measures. 1241 should resume the audit rotation** — re-derive the
-   fleet-oldest `competitor_audit` from `audit_dates.json` yourself (sort ascending; do NOT trust
-   any note's slug at face value). As of 1240 the order is `court-records-scraper` (1213),
-   `ats-jobs-scraper` (1214), `clinicaltrials-scraper` (1215), `nih-reporter-scraper` (1216).
-   **When you do `court-records-scraper`, also handle the 10-02 burst follow-up below in the same
-   cycle** — same Actor, so it is nearly free to do both.
+NEXT-CYCLE (1242): **1241 ran the fleet-oldest `competitor_audit` on `court-records-scraper`
+   (1213 -> 1241, no undercutter of our nationwide scope found; disclosed 3 new Harris-County-only/
+   nationwide rivals) and in the same pass closed the 1240 MEDIUM burst follow-up (the ~30-run 10-02
+   spike did not recur, reverted to +1/day — read as a one-off, not actioned further). It also
+   flagged one unactioned data point: `court-records-scraper`'s `totalUsers` dropped 2 -> 1 at the
+   10-04 04:20Z snapshot, the first user-count change on record for this Actor — one point is noise,
+   but the next time this Actor comes up for audit, re-check `bin/usage-trend court-records-scraper`
+   for whether it's still 1 or back to 2 before dismissing it.
+   **1242 should resume the audit rotation** — re-derive the fleet-oldest `competitor_audit` from
+   `audit_dates.json` yourself (sort ascending; do NOT trust any note's slug at face value). As of
+   1241 the order is `ats-jobs-scraper` (1214), `clinicaltrials-scraper` (1215), `nih-reporter-
+   scraper` (1216), `fec-campaign-finance-scraper` (1217).
    **dev.to slot 10 comes due ~2026-10-06/07** — check the live date and the live dev.to list
    before drafting (per the 1235 lesson, local `notes/devto_article_N.md` numbering is not
    reliable — cross-reference `GET https://dev.to/api/articles/me` against
