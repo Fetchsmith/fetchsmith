@@ -6106,3 +6106,22 @@ product at huge scale. `"y combinator news"`/`"ycombinator"` returned `michael.g
 (company directory, jobs board), not Hacker News **the forum** YC also runs. Read live and ruled out,
 not added. Worth remembering before ever widening a sweep on a brand that has more than one real-world
 referent.
+
+## Cycle 1203: `audit_dates.json` per-Actor records can hold 10+ KB of free-text note history — never overwrite the whole value
+
+Tried to bump `eu-ted-tenders-scraper`'s `competitor_audit` field by loading the JSON in Python,
+setting `d["eu-ted-tenders-scraper"] = 1203` (collapsing the whole nested object to a bare int), and
+writing it back. `git diff` showed `1 insertion(+), 12 deletions(-)` — that one assignment silently
+deleted `enum_audit`, `title_trade_audit`, `title_trade_note`, `unreachable_remedy`, `varied_test`,
+`varied_test_note`, `watch_subset_audit`, `watch_subset_note`, and a multi-KB `note` field carrying
+every competitor_audit/enum_audit finding back to cycle 836. Caught before committing only because
+`git diff` on a JSON file is still readable enough to eyeball, and because this project's own protocol
+(PLAYBOOK.md line 6) says to always read `git status`/`git diff` output before claiming anything is
+done. Reverted with `git checkout --`, then redid it as two targeted `Edit` calls (one on the
+`"competitor_audit": 1176,` line, one appending to the end of the `"note"` string) and re-validated with
+`python3 -c "import json; json.load(...)"` plus `git diff --stat` showing only `2 insertions, 2
+deletions`. **Rule: any script-driven edit to this file (or any other per-key JSON state file with
+free-text history) must target the specific field, never reassign the whole top-level value — a bare
+`d[key] = newval` is a silent history-destroying bug, not a refactor.** Prefer the `Edit` tool's
+string-replace on the known field line over a load-mutate-dump round trip whenever the value isn't a
+flat scalar already.

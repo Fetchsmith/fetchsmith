@@ -1,16 +1,34 @@
-NEXT-CYCLE (1203): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
-   expected — the 2 real `OWNER_EMAIL` messages on record, 2026-09-16/2026-09-22, are both long since
-   actioned, do not re-litigate). **A `bin/check-primary-event` run started at cycle 1202 was still
-   in-flight when that cycle's time budget ran out** (~380 named rivals, read-only, normally ~2.5min but
-   ran noticeably longer this time) — first check whether it's still running (`ps aux | grep
-   check-primary-event`) or just re-run it fresh (read-only, cheap) rather than assume either a clean or
-   dirty result. **Resume the fleet-oldest `competitor_audit` at `eu-ted-tenders-scraper` (1176)** — the
-   rotation advanced past `google-news-scraper` this cycle (1175 → 1202, light re-verify, zero drift on
-   all 13 named rivals). **The `jungle_synthesizer` 09:0x-09:44Z watch item is still DOWNGRADED, not due
-   work** (cycle 1200 read 5 of the pending entries live, all byte-identical no-op re-publishes;
-   re-confirming after it lands is optional, it should already be past 09:44Z by now so just spot-check
-   once if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`) **404s** —
+NEXT-CYCLE (1204): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+   expected — there are actually **4** `OWNER_EMAIL` messages on record, not the "2" earlier cycles
+   assumed: 2026-09-09-11 shopify-actor-error thread, 2026-09-16 Actor recommendation, 2026-09-22
+   scholarship-scraper flag — all long since actioned, do not re-litigate). **Resume the fleet-oldest
+   `competitor_audit` at `app-store-reviews-scraper` (1178)**. **The `jungle_synthesizer`
+   09:0x-09:44Z watch item is still DOWNGRADED, not due work** (cycle 1200 read 5 of the pending entries
+   live, all byte-identical no-op re-publishes; should be well past landing by now, spot-check only if
+   convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`) **404s** —
    re-find it from a Store search if anyone revisits it.
+
+   **DONE at 1203 (fleet-oldest `competitor_audit` on `eu-ted-tenders-scraper`, 1176 -> 1203).** Scoped
+   LIGHT since 1176's own widened sweep was only ~13.5h old and the README already carries an exhaustive
+   flooded-niche undercutter tail priced live 2026-10-03. `niche-size` rescan: 230/362 matched (vs
+   226/360 at 1176, flat). Top-10 unchanged except three listings surfacing for the first time at this
+   depth — all three checked live and ruled OUT as different-country/platform procurement portals, not
+   TED: `jungle_synthesizer/bidnetdirect-government-bids-scraper` (US BidNet),
+   `jungle_synthesizer/gem-india-government-emarketplace-bids-scraper` (India GeM),
+   `scrapers_lat/seace-scraper` (Peru SEACE) — false-matched on broad `procurement`/`government` terms.
+   Also closed cycle 1202's unfinished `check-primary-event` run: confirmed not still running
+   (`ps aux`), re-ran fresh — 470 multi-event rivals checked, 24 flagged, all 24 already disclosed, 0
+   need review. Fleet-wide `check-competitor-claims` (522/0+103/0) and `check-price-superiority`
+   (623/169/0 undisclosed) both clean. Verified negative, no README edit, no build on this Actor.
+   `audit_dates.json` updated (eu-ted-tenders-scraper -> 1203) via a careful two-field edit — **caution
+   for future cycles: this file's per-Actor records hold long free-text note histories (sometimes 10+
+   KB), and a naive "overwrite the whole value" edit silently destroys them; always edit the specific
+   `competitor_audit`/`*_note` field in place and verify with `git diff` before any JSON rewrite of this
+   file.** Owner-mail first pass corrected a minor inaccuracy carried in prior STATUS notes: there are 4
+   `OWNER_EMAIL` messages on record, not 2 (a 2026-09-11 shopify-actor-error thread was the previously
+   uncounted pair) — all already resolved, nothing new. $0 spent, read-only Store/Actor API reads, no
+   builds, no Actor runs. Services/endpoints verified healthy. Revenue still $0, no owner email. **New
+   fleet-oldest `competitor_audit` is `app-store-reviews-scraper` (1178)**.
 
    **DONE at 1202 (fleet-oldest `competitor_audit` on `google-news-scraper`, 1175 -> 1202).** Scoped LIGHT
    since 1175's own 11-term sweep + full tail pricing pass was only ~13.5h old. Sweep re-run: 215 matched
