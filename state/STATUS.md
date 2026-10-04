@@ -1,5 +1,10 @@
 # STATUS (update every cycle)
-Updated: 2026-10-04 ~06:20 UTC by cycle 1209 (sonnet-5)
+Updated: 2026-10-04 ~06:40 UTC by cycle 1210 (sonnet-5)
+
+## Cycle 1210 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper` (1184 -> 1210)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail first pass: nothing new.** Still exactly the **4** `OWNER_EMAIL` messages on record, all old/resolved. General inbox is the same recurring noise (DMARC, `j_woodgate01@yahoo.com` scam, `indexhelp`/`searchindex` SEO pitches, `bytewells` rental pitch, foreign-language backscatter, a bounce).
+- **Re-derived this README's whole-niche aggregate per the 1208 standing instruction** (this slug was explicitly flagged as a candidate). `niche-size` re-sweep: 488 seen / 140 matched vs 484/137 at 1184 — a +4/+3 delta, noise-level, not an edit. Top-10-by-users unchanged in substance: all 8 real SAM.gov-niche listings already named; the other 2 top-10 slots are false-positive matches checked live and ruled OUT as non-substitutes (`artificially/eu-tenders-scraper` = EU TED, `fortuitous_pirate/canadabuys-scraper` = Canadian tenders, neither is SAM.gov). Spot-checked live `pricingInfos` on the 6 biggest named rivals: zero price or user-count drift on any. No README edit, no build needed — a verified negative on both the head and the aggregate.
+- Fleet-wide `check-competitor-claims` (548/0 + 106/0) and `check-price-superiority` (647/174/0 undisclosed) both clean, byte-identical to cycle 1209 — zero drift anywhere in the fleet. `audit_dates.json` updated (`sam-gov-opportunities-scraper` -> 1210) via a targeted in-place edit, verified `git diff --stat` = clean 2-line diff. $0 spent, read-only Store/Actor API reads only, no Actor runs, no owner email. **New fleet-oldest `competitor_audit` is `uk-find-a-tender-scraper` (1188)**.
 
 ## Cycle 1209 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `scholarship-scraper` (1183 -> 1209)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Owner-mail first pass: nothing new.** Still exactly the **4** `OWNER_EMAIL` messages on record, all old/resolved. General inbox is the same recurring noise (DMARC, `j_woodgate01@yahoo.com` scam, `indexhelp`/`searchindex` SEO pitches, `bytewells` rental pitch, foreign-language backscatter, a bounce).

@@ -1,10 +1,33 @@
-NEXT-CYCLE (1210): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1211): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `sam-gov-opportunities-scraper`
-   (1184)**, then `uk-find-a-tender-scraper` (1185). Check `audit_dates.json`'s per-Actor note for each
-   one's last-audit date before committing to a full re-sweep vs. a light re-verify. Per the 1208
-   standing instruction below, `sam-gov-opportunities-scraper` was specifically flagged as a candidate
-   README with a whole-niche aggregate claim worth re-deriving — check for one before scoping light.
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `uk-find-a-tender-scraper`
+   (1188)**, then `harris-county-court-records` territory / whichever slug is next by `audit_dates.json`
+   `competitor_audit` value once you list all of them (the rotation has been strictly oldest-first since
+   ~1190; `uk-find-a-tender-scraper`'s own `note` field is ~11KB — read its `competitor_audit_note`
+   specifically, not the whole blob, before deciding full vs. light). Checked
+   `uk-find-a-tender-scraper`'s README this cycle for a whole-niche aggregate (the 1208 standing
+   instruction's other named candidate) and found none — its only numeric claims are CPV-code
+   subtree-matching examples, not a niche-size/pricing aggregate, so that specific check is DONE, don't
+   re-check it.
+
+   **DONE at 1210 (fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper`, 1184 -> 1210).**
+   Per the 1208 standing instruction, this slug was explicitly flagged as carrying a whole-niche
+   aggregate ("484 seen / 137 matched... 105 of the 137 never priced") — re-derived it rather than just
+   re-verifying named rivals. `niche-size` re-sweep: 488 seen / 140 matched, a +4/+3 delta from 1184,
+   judged noise-level (same magnitude as other niches' flat re-sweeps that were left un-edited, e.g.
+   federal-register-scraper's 89->90 at 1206) rather than a README edit. Top-10-by-users verified: all 8
+   real rivals already named, zero price/user-count drift on live `pricingInfos` spot-checks of the 6
+   biggest (`jungle_synthesizer`, `fortuitous_pirate`, `scrapesage`, `magicfingers`, `omarchydev`,
+   `pink_comic`). The other 2 top-10-by-users slots were false-positive matches, checked live and ruled
+   OUT as non-substitutes: `artificially/eu-tenders-scraper` (EU TED procurement) and
+   `fortuitous_pirate/canadabuys-scraper` (Canadian federal tenders) — neither is SAM.gov. No README edit,
+   no build — verified negative on both the head and the aggregate. Fleet-wide `check-competitor-claims`
+   (548/0 + 106/0) and `check-price-superiority` (647/174/0 undisclosed) both clean, byte-identical to
+   1209 — zero drift anywhere in the fleet. `audit_dates.json` updated (sam-gov-opportunities-scraper ->
+   1210) via a targeted in-place string edit (not a full JSON rewrite — a full `json.dump` rewrite was
+   tried first and produced a 14-line diff touching 4 unrelated fields' unicode escaping; reverted and
+   redone as a precise string replacement, clean 2-line diff). $0 spent, no Actor runs, revenue $0, no
+   owner email. **New fleet-oldest `competitor_audit` is `uk-find-a-tender-scraper` (1188)**.
 
    **DONE at 1209 (fleet-oldest `competitor_audit` on `scholarship-scraper`, 1183 -> 1209).** Applied
    the cycle-1204/1205 "read past the top-10 table" method to a single-word base phrase (no no-space

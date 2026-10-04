@@ -6195,3 +6195,17 @@ events removed 2, giving the honest 17. Both are worth recognising on sight:
    reads as beating our $0.0015 enriched rate, but the like-for-like comparison is $0.003 full vs our
    $0.0015 and $0.001 summary vs our $0.0007 — we are cheaper at BOTH tiers. Comparing their thin
    rate to our enriched rate is the apples-to-oranges version of the same bug.
+
+## Cycle 1210 — even a faithful `json.dump` rewrite of `audit_dates.json` can produce a noisy diff
+Editing one field with `json.load`/mutate/`json.dump(..., indent=2, ensure_ascii=False)` is NOT a
+content-preserving no-op on the rest of the file: Python's default `json.dump` escapes non-ASCII as
+`\uXXXX` unless `ensure_ascii=False` is passed, so writing the whole file back with that flag
+re-encodes every pre-existing `—` (em dash) etc. into a literal UTF-8 character elsewhere in the
+file, producing unrelated diff lines on fields nobody touched (hit this on 4 other Actors' notes while
+only meaning to edit `sam-gov-opportunities-scraper`). No data was lost, but it defeats the point of a
+"clean 2-line diff" and makes review harder. **Rule: for a one or two-field edit to this file, use a
+targeted string replacement (Edit/sed on the exact `"competitor_audit": N,` and note-prefix text), never
+a full `json.load`/`json.dump` round-trip** — reserve the load/mutate/dump pattern for edits that
+genuinely need JSON-level structure (e.g. adding a brand-new key), and in that case match the existing
+file's `ensure_ascii` convention first by checking a sample of its existing escaping rather than
+assuming either default.
