@@ -6607,3 +6607,23 @@ converts $0 into $0 while permanently halving the margin if demand ever arrives.
 fleet revenue is $0 and verified buyer traffic is single-digit visitors/week.** Until a price has a
 payer, a price comparison is not a commercial decision. Revisit only after the first real sale, or
 if a rival's cut is accompanied by *their* user count actually climbing.
+
+## Cycle 1242 — `check-pricing` cannot see a README's own price, only meta.json vs live Actor
+
+`ats-jobs-scraper` cut its tiered price cleanly on 2026-09-26 (`meta.json` and the live Actor moved
+together, so `bin/check-pricing` reported 0 drift the whole time) while the README's entire Pricing
+section — headline number and every competitor crossover number computed from it — kept describing
+the pre-cut ladder for 8+ days, surviving a full `competitor_audit` (cycle 1214) untouched, because
+that audit's "verify our own live price" step reads the API but never diffs the result against what
+the README itself claims. Mirror image of the cycle-1224 lesson: a false *high* self-price flatters
+rivals into looking like non-threats; a false *low* self-price (undetectable by `check-pricing`)
+makes rivals look like genuine undercutters after they no longer are, since every crossover-volume
+number in the README was computed against the stale higher base. Real-world effect found at 1242:
+`fetch_cat/ats-jobs-scraper` had separately raised ITS OWN price ~24x since last checked and had
+flipped from "our biggest undercutter" to "dearer than us at every tier" — a double stale-price bug
+that the README's own numbers made impossible to see without re-pulling every rival live.
+**Standing rule:** after pulling our own live price in any `competitor_audit`, also grep the
+README's stated headline price and diff it by eye against the live tier table — do not treat a
+clean `check-pricing` run as proof the README's prose is current. A `bin/check-own-price-freshness`-
+style tool (grep the README headline price, diff vs live tiers) would make this mechanical; filed
+in `queue.md`, not built yet.

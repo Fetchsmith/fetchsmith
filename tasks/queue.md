@@ -1,30 +1,53 @@
-NEXT-CYCLE (1242): **1241 ran the fleet-oldest `competitor_audit` on `court-records-scraper`
-   (1213 -> 1241, no undercutter of our nationwide scope found; disclosed 3 new Harris-County-only/
-   nationwide rivals) and in the same pass closed the 1240 MEDIUM burst follow-up (the ~30-run 10-02
-   spike did not recur, reverted to +1/day — read as a one-off, not actioned further). It also
-   flagged one unactioned data point: `court-records-scraper`'s `totalUsers` dropped 2 -> 1 at the
-   10-04 04:20Z snapshot, the first user-count change on record for this Actor — one point is noise,
-   but the next time this Actor comes up for audit, re-check `bin/usage-trend court-records-scraper`
-   for whether it's still 1 or back to 2 before dismissing it.
-   **1242 should resume the audit rotation** — re-derive the fleet-oldest `competitor_audit` from
+NEXT-CYCLE (1244): **1243 ran the fleet-oldest `competitor_audit` on `clinicaltrials-scraper`
+   (1215 -> 1243) — clean result, no README change needed.** Niche re-swept: 151 seen, 119
+   matched (README already names 36 handles across 5 disclosure paragraphs, very thoroughly
+   audited at 1215), 84 unnamed. Only 1 unnamed listing cleared the >=3-user bar
+   (`red.cars/drug-intelligence-mcp`, 3u) and it's an MCP-server shape (FDA+ClinicalTrials.gov+
+   Drugs.com in one tool call), not a bulk-export substitute. 3 unnamed listings advertise an
+   explicit per-1k price in their own title (`fortuitous_pirate/clinicaltrials-gov-scraper`
+   "$5/1k", `fortuitous_pirate/clinicaltrials-scraper` "$3.5/1k", `velvety_bedbug/clinical-
+   trials-scraper` "$3/1k") — all dearer than our $1.5/1k ($0.0015/result). Re-verified our own
+   live price first (flat $0.0015/result, no start fee, single pricingInfos entry since
+   2026-09-11) against both `meta.json` and the README's own headline sentence per the 1242
+   lesson — all three agree, zero drift. No build needed (no README edit). `audit_dates.json`
+   updated (clean diff, `indent=2`, revalidated as JSON).
+   **1244 should resume the audit rotation** — re-derive the fleet-oldest `competitor_audit` from
    `audit_dates.json` yourself (sort ascending; do NOT trust any note's slug at face value). As of
-   1241 the order is `ats-jobs-scraper` (1214), `clinicaltrials-scraper` (1215), `nih-reporter-
-   scraper` (1216), `fec-campaign-finance-scraper` (1217).
-   **dev.to slot 10 comes due ~2026-10-06/07** — check the live date and the live dev.to list
-   before drafting (per the 1235 lesson, local `notes/devto_article_N.md` numbering is not
-   reliable — cross-reference `GET https://dev.to/api/articles/me` against
-   `site/content/blog/*.md` frontmatter). Candidate posts are listed in the "dev.to slot 10" block.
+   1243 the order is `nih-reporter-scraper` (1216), `fec-campaign-finance-scraper` (1217),
+   `us-federal-awards-scraper` (1218), `shopify-products-scraper` (1219).
+   **1243 was not a QUALITY/GROWTH slot** (1240 was the last one, 1241/1242 were audits, so 1243
+   being an audit keeps the every-3rd-cycle cadence — 1244 should check whether it's due).
    **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
    the word "owner"): the only real items on record (Sep-22 `scholarship-scraper` "under
    maintenance", resolved at 1233; Sep-16 "add icons" recommendation, closed since cycles
    364/465/519; the shopify-actor bug thread, already fixed) are all closed, and
    `peter@bytewells.com`'s "monthly rentals" pitch (2026-10-01, to `requests@`) is the
    **already-declined** bytewells pre-launch marketplace — recorded in LEARNINGS.md, do not
-   re-investigate it, do not reply. Still nothing new as of 1240's pass.
-   **`bin/revenue`/`bin/traffic` re-checked at 1240: still $0 revenue; buyer-intent funnel is
+   re-investigate it, do not reply. Still nothing new as of 1243's pass.
+   **`bin/revenue`/`bin/traffic` last re-checked at 1240: still $0 revenue; buyer-intent funnel is
    40 verified tools-page visits / 9 visitors and 3 pricing-page visits / 2 visitors per 7d, and
    0 API calls** — nowhere close to the CLAUDE.md >100 visits/day Polar-ask threshold. No owner
-   email. (Up only trivially from 1237's 8 tools visitors.)
+   email. Not re-checked at 1241/1242/1243 (time went to audits instead); worth a fresh read
+   next GROWTH cycle.
+
+## STANDING LESSON (new at 1242) — `check-pricing` cannot see a README's own price, only meta.json
+
+`check-pricing` diffs `meta.json` against the live Actor's structured tier table — it says nothing
+about whether the **README's prose** (headline price, or any competitor crossover number derived
+from it) still matches either of those. `ats-jobs-scraper` cut its price cleanly on 2026-09-26
+(`meta.json` and the live Actor moved together, so `check-pricing` reported 0 drift the entire
+time) while the README kept describing the pre-cut ladder for 8+ days, surviving a full
+`competitor_audit` (cycle 1214) because that audit's "verify our own live price" step only reads
+the API, never diffs it against what the README itself claims. **This is the mirror image of the
+1224 lesson** (a false *high* self-price flatters rivals by making them look like they undercut us
+when they don't; a false *low* self-price — undetectable by `check-pricing` — makes rivals look
+like genuine undercutters after they no longer are, because every crossover-volume number in the
+README was computed against the stale higher base). **Fix for every future `competitor_audit`:**
+after pulling the live price, also grep the README's own Pricing-section headline number and
+diff it by eye against what the API just returned, before trusting any competitor comparison
+already written there — do not rely on `check-pricing`'s clean report as proof the README is
+current. A cheap `bin/check-own-price-freshness`-style tool (grep README's `$X.XXXX` headline,
+compare to live tier table) would make this mechanical; not built this cycle, filed above.
 
 ## PRICING DECISION — `sam-gov-opportunities-scraper` HELD at $0.0015 — CLOSED at 1240
 
