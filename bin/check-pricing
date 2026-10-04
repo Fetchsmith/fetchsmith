@@ -32,19 +32,33 @@ def token():
     return env["APIFY_TOKEN"]
 
 
+TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
+
+
 def price_of(event):
     """(price, shape) for one charge event, handling both pricing shapes.
 
-    For the tiered shape the FREE tier is the headline price -- it is what a Store
-    visitor on no paid plan is quoted, and it is the tier every competitor comparison
-    in notes/ is written against."""
+    Flat -> a float. Tiered -> a dict of EVERY plan's price, not just FREE.
+
+    This used to return the FREE tier alone, on the theory that FREE is the headline
+    price a Store visitor is quoted. That made the check blind to drift in BRONZE..
+    DIAMOND on the ~9 tiered Actors -- i.e. blind to the paid plans that are the only
+    ones that ever actually bill us anything. Cycle 1224 found `steam-reviews-scraper`
+    sitting at live PLATINUM/DIAMOND $0.0003/$0.0003 while meta.json had long said
+    $0.0002/$0.00014, with this check reporting 0 drift the whole time because the two
+    agreed on FREE."""
     if event is None:
         return None, "missing"
     if "eventPriceUsd" in event:
         return event["eventPriceUsd"], "flat"
     tiers = event.get("eventTieredPricingUsd") or {}
-    free = (tiers.get("FREE") or {}).get("tieredEventPriceUsd")
-    return free, "tiered"
+    return {t: (tiers.get(t) or {}).get("tieredEventPriceUsd") for t in TIERS}, "tiered"
+
+
+def diff_tiers(lp, rp):
+    """Plan-by-plan differences between two tier maps, as display strings."""
+    return [f"{t}: meta.json ${lp.get(t)} vs live ${rp.get(t)}"
+            for t in TIERS if lp.get(t) != rp.get(t)]
 
 
 def effective(pricing_infos, now):
@@ -95,6 +109,12 @@ def main():
                 drift += 1
                 print(f"{slug}/{name}: SHAPE drift, meta.json is {lshape} but live is {rshape} "
                       f"-- publishing would overwrite the live pricing shape")
+            elif rshape == "tiered":
+                deltas = diff_tiers(lp, rp)
+                if deltas:
+                    drift += 1
+                    print(f"{slug}/{name}: TIER drift on {len(deltas)} plan(s) -- "
+                          + "; ".join(deltas))
             elif rp is None or lp is None or abs(lp - rp) > 1e-12:
                 drift += 1
                 print(f"{slug}/{name}: PRICE drift, meta.json ${lp} vs live ${rp} ({rshape})")

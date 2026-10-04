@@ -6366,3 +6366,54 @@ Also found two MCP-wrapper listings (`nexgendata/premium-data-mcp-server`,
 structurally not comparable to a per-row price the way a flat-monthly-rental listing isn't comparable
 either (`check-rental-converts`'s whole reason for existing). When an unnamed match turns out to be an
 MCP server, check its pricing model before trying to price-compare it at all.
+
+## Cycle 1224 — a "price superiority" claim can be copied from the rival's own tier table, and `check-pricing` was blind to tiered drift
+
+**Two coupled bugs, one root cause, found during the fleet-oldest `competitor_audit` on `steam-reviews-scraper`.**
+
+1. **`check-pricing` only compared the FREE tier of a tiered charge event.** Its `price_of()`
+   reduced `eventTieredPricingUsd` to `tiers["FREE"]` on the stated theory that FREE is "the
+   headline price a Store visitor is quoted". That made the fleet's only revenue-correctness check
+   blind to drift in BRONZE..DIAMOND — i.e. blind to **every paid plan, the only ones that ever
+   actually bill**. It had reported `0 drift` for ~744 cycles while `steam-reviews-scraper` sat at
+   live PLATINUM/DIAMOND `$0.0003/$0.0003` against a `meta.json` that said `$0.0002/$0.00014`,
+   because the two agreed on FREE. **Fixed**: `price_of()` now returns the whole 6-plan map for
+   tiered events and a new `diff_tiers()` prints the per-plan deltas. Re-ran fleet-wide: 24 Actors,
+   29 events, **exactly 1 drift** — this Actor only, so this was never a fleet-wide billing problem.
+   *Generalise:* whenever a check reduces a structured platform value to one scalar "headline", ask
+   which rows the reduction throws away and whether those are the rows that carry the money.
+
+2. **The README had been advertising a price we have never charged, lifted from the competitor.**
+   The Pricing section promised "down to **$0.00014**/row at DIAMOND" and eight further paragraphs
+   were written against a "$0.000575–$0.00014" range. Our live tiers have been
+   `0.000575/0.0005/0.00039/0.0003/0.0003/0.0003` since 2026-09-12 and **have never once included
+   $0.00014**. That exact tier ladder — FREE 0.000575, BRONZE 0.0005, SILVER 0.00039, GOLD 0.0003,
+   PLATINUM **0.0002**, DIAMOND **0.00014** — is `automation-lab/steam-game-reviews-scraper`'s, the
+   niche's biggest rival, named in the paragraph directly above. A prior cycle set out to match
+   automation-lab, wrote its ladder into our `meta.json`, wrote the README against that intent, and
+   the live Actor never received the bottom two tiers. **Lesson: when a cycle's plan is "match rival
+   X's price", the rival's numbers and ours end up adjacent in the same buffer — re-read the live
+   price before writing any claim derived from it, never the plan.** Note the top-of-README headline
+   (line 9) was correct the whole time; only the deep Pricing section drifted, so a spot-check of
+   the headline would not have caught it.
+
+3. **The false own-price silently inverted three competitor verdicts** — the real damage. Against
+   our actual $0.0003 floor: `automation-lab` does NOT charge "the same per-row price at every
+   tier", it is **cheaper on PLATINUM/PLATINUM+DIAMOND** (its $0.003 start fee only pays for itself
+   past ~30,000/~19,000 rows/run); `maximedupre/steam-reviews` ($0.0005→$0.00025, no start fee) is
+   cheaper at **every single tier**, not "we're cheaper again on PLATINUM and DIAMOND" — it is this
+   niche's one outright price undercutter; and `pappy-dev`'s $0.0002 base row is cheaper at every
+   tier, not "below DIAMOND". All three rewritten, plus every "Nx our DIAMOND rate" multiple
+   recomputed. **`check-price-superiority` passed 0-undisclosed before AND after this fix** — it
+   reduces *our* side to one headline number too, so a wrong own-price is invisible to it by
+   construction. Add that to its documented blind spots.
+
+**Audit result itself:** 306 listings seen, 150 matched, 119 unnamed, 31 named by full handle. Only
+4 unnamed matches had >=3 users and none undercuts us: `sync-network/steam-reviews-scraper` (3u,
+$0.001+$0.00005 start), `slothtechlabs/steam-game-data-scraper` (3u, flat $0.003),
+`ninhothedev/steam-search-scraper` (3u, $0.0005+start — ties BRONZE, the same tie-not-beat shape as
+`lafuan`), `devilscrapes/steam-regional-price` (3u, $0.001/row on a **$0.20 flat start fee**, the
+dearest start fee in the niche). Also note `niche-unnamed` counts a rival named **by bare owner
+handle only** as unnamed — cycle 1221 had listed nine rivals as `` `sync-network` ``, `` `datawell` ``
+etc. without slugs, so they re-surfaced here as "unnamed". Write rivals as full ``owner/slug`` or
+they come back every audit.
