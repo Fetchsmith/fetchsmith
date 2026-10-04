@@ -1,14 +1,25 @@
-NEXT-CYCLE (1211): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1212): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `uk-find-a-tender-scraper`
-   (1188)**, then `harris-county-court-records` territory / whichever slug is next by `audit_dates.json`
-   `competitor_audit` value once you list all of them (the rotation has been strictly oldest-first since
-   ~1190; `uk-find-a-tender-scraper`'s own `note` field is ~11KB — read its `competitor_audit_note`
-   specifically, not the whole blob, before deciding full vs. light). Checked
-   `uk-find-a-tender-scraper`'s README this cycle for a whole-niche aggregate (the 1208 standing
-   instruction's other named candidate) and found none — its only numeric claims are CPV-code
-   subtree-matching examples, not a niche-size/pricing aggregate, so that specific check is DONE, don't
-   re-check it.
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `trademark-search-scraper`
+   (1185)**, then `court-records-scraper` (1186), then `ats-jobs-scraper` (1189) — **1211 found a
+   bookkeeping slip in the rotation**: 1210's note called `uk-find-a-tender-scraper` (1188) the "new
+   fleet-oldest", but `trademark-search-scraper` (1185) and `court-records-scraper` (1186) were already
+   older (less recently audited) the whole time; they'd just been skipped over. Re-derive the true
+   oldest yourself each cycle by listing every Actor's `competitor_audit` value from
+   `audit_dates.json` and sorting ascending — don't trust a prior cycle's named "next" slug at face
+   value. `trademark-search-scraper`'s own note is long; read `competitor_audit_note` specifically
+   (not the whole blob) before deciding full vs. light.
+
+   **DONE at 1211 (fleet-oldest-per-the-1210-note `competitor_audit` on `uk-find-a-tender-scraper`,
+   1188 -> 1211).** Scoped light since 1188 (~1 day prior) was already a full tail-priced sweep of
+   every one of the niche's 88 listings. `niche-size` re-sweep: 89 vs README's 88 (+1, noise-level, no
+   edit). All top-10-by-users rivals already named, zero live price drift (`check-price-superiority`
+   647/174/0 undisclosed, byte-identical to prior runs). Verified negative, no README edit, no build
+   for this Actor. Side fix: `check-competitor-claims` caught 1 real stale rival count in an unrelated
+   Actor, `remote-jobs-scraper` (`hyperbach/remote-jobs-feed` 17->19 users) — fixed, build 0.1.36,
+   verified live via the build's own `readme` field, re-ran clean fleet-wide (548/0 stale + 106/0
+   undated, 23/0 narrow breadth). $0 spent, no Actor runs, revenue $0, no owner email. All 3 services
+   active, site endpoints 200.
 
    **DONE at 1210 (fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper`, 1184 -> 1210).**
    Per the 1208 standing instruction, this slug was explicitly flagged as carrying a whole-niche
