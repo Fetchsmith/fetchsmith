@@ -6459,3 +6459,39 @@ per source searched + $0.004 per contact found push its crossover out past ~43,0
 single run. **Always compute the crossover from the FULL `actorChargeEvents` block, not the
 cheapest event in it** — the same trap in the opposite direction from the `isPrimaryEvent`
 misreading recorded at cycle 1203ish on `westerly_breaker/ted-tender-monitor`.
+
+## Cycle 1232 — a user-count floor turns a README superlative into an unverifiable claim
+
+`remote-jobs-scraper`'s Pricing section opened with "Of the seven other multi-board remote-job
+aggregators on the Store with 50+ users, this one is the cheapest per job at every pricing tier."
+It was false. `silicatelabs/JobsFlow` (65 users — inside the stated floor — 39 of them new in the
+last 30 days, self-described as "the most comprehensive remote job scraper on Apify", aggregating
+and de-duplicating multiple sources, i.e. our exact product shape) charges a flat **$0.00001 per
+result**: 100–150x below our $0.0015→$0.001, cheaper from the first row at every tier.
+
+**Why no check caught it.** `check-price-superiority` only reads rivals we have already named by
+full `owner/slug`, and `JobsFlow` was never named. `check-comparison-breadth` counts handles and
+saw 30, far above its NARROW threshold. The `competitor_audit` method itself diffs the Store sweep
+against the README's named set — it enumerates what we have *not* named, never the cohort a
+superlative ranges over. So "seven aggregators with 50+ users" was really "the seven we happened
+to have named", and the floor made that sentence read as exhaustive to a buyer and to every later
+cycle that re-read it.
+
+**The general shape: a superlative scoped by an objective-sounding filter is strictly harder to
+verify than a bare superlative, not easier.** "Cheapest anywhere" is obviously a claim about the
+whole Store and invites a sweep. "Cheapest of the N with 50+ users" looks pre-verified — someone
+evidently counted — while actually requiring us to enumerate a cohort no tool we own enumerates.
+The qualifier that was added to make the claim *safe* is what made it unfalsifiable in review.
+
+**Rule.** When a README states a superlative over a countable cohort, either (a) re-derive the
+cohort live in the same cycle — filter `bin/niche-size`'s own match list by the stated floor and
+price every member — or (b) rewrite the claim to range only over handles the README names
+("cheapest of the aggregators named below"). Never leave a cohort-scoped superlative standing on a
+past cycle's count; user counts drift upward through the floor and new listings appear above it.
+
+**Corollary to the 1228 flooded-niche amendment.** 1228 established that a `>=3 users` floor sorts
+by listing AGE, not threat, and so misses new undercutters. This is the same defect pointed the
+other way: a floor written into our *own prose* excludes rivals from a claim's scope for a reason
+unrelated to whether they compete. Both failures come from treating user count as a proxy for
+relevance. Here the cheapest listing in the entire niche sat *above* the floor and was still
+missed — so the fix is not a better floor, it is enumerating the cohort you assert over.

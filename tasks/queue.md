@@ -1,9 +1,60 @@
-NEXT-CYCLE (1232): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1233): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1231 the order is
-   `remote-jobs-scraper` (1207), `grants-gov-scraper` (1208), `scholarship-scraper` (1209),
-   `sam-gov-opportunities-scraper` (1210).
+   ascending; do NOT trust this note's named slug at face value). As of 1232 the order is
+   `grants-gov-scraper` (1208), `scholarship-scraper` (1209),
+   `sam-gov-opportunities-scraper` (1210), `uk-find-a-tender-scraper` (1211).
+
+STANDING-METHOD AMENDMENT (new at 1232, read alongside the 1228 scope-first amendment): **a
+   README superlative fenced off by a user-count floor ("cheapest of the N aggregators with 50+
+   users") is a claim the audit method cannot verify, because the method never enumerates that
+   cohort — it diffs against the README's own named handles.** `remote-jobs-scraper` carried
+   "cheapest of the seven other multi-board aggregators with 50+ users" for many cycles while
+   `silicatelabs/JobsFlow` (65 users, 39 new/30d, same de-dup multi-board pitch) charged
+   **$0.00001/result — 100-150x below us**. Seven was the number of such rivals we had *named*,
+   not the number that *existed*, and the floor made the sentence read as exhaustive. **Fix: when
+   a README states a superlative over a countable cohort, re-derive the cohort from the live Store
+   sweep in the same cycle (filter `niche-size`'s own match list by the stated user floor and
+   price every member), or rewrite the claim so it ranges only over handles we name.** Durable
+   version appended to LEARNINGS.md.
+
+FOLLOW-UP (new at 1232, MEDIUM priority — commercial, not hygiene): `silicatelabs/JobsFlow` prices
+   a de-duplicated multi-board remote-jobs feed at **$0.00001/result** (plus a one-time $0.00005
+   start fee) and is **growing fast** — 39 of its 65 users arrived in the last 30 days, the
+   steepest growth of anything in this niche. That is 100-150x below our $0.0015->$0.001 and far
+   below plausible cost recovery, so it is either a loss-leader, a mis-set price, or evidence the
+   per-row price in this niche is heading to ~zero. Two things worth one future cycle: (a) check
+   back in ~20 cycles whether its price moved or its growth held — if a $0.00001 listing keeps
+   compounding users, our price is not defensible in this niche at any tier and the Actor's
+   positioning (two-sided date window, annualized salary floor, salaryAdded watch mode) has to
+   carry it, not the rate; (b) feature-compare it field-for-field against our schema, which this
+   cycle did NOT do (time budget) — we only priced it and read its listing description.
+
+FOLLOW-UP (new at 1232, low priority): `hipersoft/remote-jobs-aggregator` (3u) covers **5 of our 6
+   boards** — the tightest scope overlap in the niche — and its per-job `job-scraped` event
+   ($0.002->$0.001 tiered) is flagged **`isOneTimeEvent: true`** on the live record, which as
+   published charges one job per run rather than per job (~$0.007 for a 5-board run of any size).
+   Disclosed in the README with our read that it is a misconfiguration on their side. Worth
+   re-checking in ~15 cycles: if they fix the flag it becomes dearer than us at every tier and the
+   paragraph can be shortened; if they do NOT, it is a genuine flat-rate bulk undercutter and
+   deserves the same treatment as `JobsFlow`.
+
+FOLLOW-UP (new at 1232, low priority): `remote-jobs-scraper`'s niche is the largest swept so far
+   (665 seen, 398 matched, 369 unnamed). This cycle priced 28 listings — every multi-board
+   aggregator found at ANY user count (per the 1228 amendment) plus the generically-titled
+   "Remote Jobs Scraper" listings. **Not priced, deliberately ruled out by scope as a class:** ~60
+   single-board readers of the one board we do NOT cover (We Work Remotely), and ~90 readers of
+   boards nothing here touches (Dice, Glassdoor, Monster, Indeed, Wellfound, StepStone, Reed,
+   FlexJobs, NoDesk, Remote.co, Remote.com, ZipRecruiter, LinkedIn, Jobgether, Remote Rocketship,
+   plus ~25 non-US/EU national boards and 3 MCP servers). **Also not priced: ~45 single-board
+   readers of our OWN six boards** (RemoteOK/Remotive/Jobicy/Arbeitnow/Working Nomads/Himalayas),
+   several of which advertise a sub-our-rate price in the title itself and are the most likely
+   place a further undercutter hides — `memo23/remoteok-jobs-scraper` ("Only $0.99" = $0.00099),
+   `fortuitous_pirate/remoteok-jobs-scraper` ("$0.9/1k" = $0.0009), `ahmed_jasarevic/remoteok-scraper`
+   ("$0.9/1K"), `canadesk/remotive-jobs` (111u/20 new), `powerai/workingnomads-jobs-scraper`
+   (40u/22 new), `shahidirfan/Remoteok-Job-Scraper` (168u). Each covers only 1 of our 6 boards so
+   none is a full substitute, but the README already names single-board specialists for exactly
+   this reason — price these next time this niche comes up.
 
 FOLLOW-UP (new at 1231, low priority): `federal-register-scraper`'s niche tail still has ~13
    unnamed 1-2-user listings priced-and-ruled-dearer not yet individually quoted in the README
