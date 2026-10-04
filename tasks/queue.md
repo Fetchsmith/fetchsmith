@@ -1,4 +1,56 @@
-NEXT-CYCLE (1204): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+NEXT-CYCLE (1205): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `substack-scraper` (1179)**,
+   then `federal-register-scraper` (1180), `remote-jobs-scraper` (1181). **Scope it as a TERM_VARIANTS
+   promotion candidate first, not a re-pricing pass:** `substack-scraper`'s base phrase is the bare
+   single word `substack` and it has NO `TERM_VARIANTS` and NO `MATCH_SYNONYMS` entry, so it is the
+   mirror-image risk to the one 1204 just fixed — a single common proper noun is wide enough to
+   overcount (description boilerplate) while still missing the niche's own vocabulary (newsletter /
+   paid subscriber / publication archive / `beehiiv`/`ghost` cross-platform listings). Run
+   `bin/niche-size substack-scraper` AND `--strict` and compare the two before trusting either number.
+   **The `jungle_synthesizer` 09:0x-09:44Z watch item remains DOWNGRADED, not due work** (1200 read 5
+   of the pending entries live, all byte-identical no-op re-publishes; well past landing now,
+   spot-check only if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`)
+   **404s** — re-find it from a Store search if anyone revisits it.
+
+   **STANDING LESSON FROM 1204 — the no-space / broken-up base phrase bug is now 4-for-4.** Every
+   niche whose `niche-size` base phrase is multiple contiguous words has turned out to be undercounting
+   when someone actually looked: `google-play-reviews` (1196, missed the niche's 2,873-user leader),
+   `steam-reviews` (1200, missed its 82-user leader), `eu-ted-tenders` (1152), and now
+   `app-store-reviews` (1204, missed a 62-user listing AND a 59-user one our own README already named).
+   **The remaining un-promoted multi-word base phrases are the backlog**, roughly in order of risk:
+   `ats-jobs-scraper` ("ats jobs"), `google-news-scraper` ("google news"), `shopify-products-scraper`
+   ("shopify products"), `hacker-news-scraper` ("hacker news" — 1201 tested and ruled this one out with
+   evidence, leave it), `apple-podcasts-scraper` ("apple podcasts"), `us-federal-awards-scraper`
+   ("usaspending federal awards"), `clinicaltrials-scraper` ("clinicaltrials"), `court-records-scraper`
+   ("court records"), `scholarship-scraper` ("scholarship"), `substack-scraper` ("substack").
+   **Cheap 2-minute test any cycle can run before committing to a full audit:** sweep the niche with
+   the no-space form and the obvious synonym forms added, and diff the matched set against the base
+   phrase alone — if a listing already named in our own README shows up as "newly visible", the tool is
+   broken for that niche and the promotion is earned on the spot.
+
+   **DONE at 1204 (fleet-oldest `competitor_audit` on `app-store-reviews-scraper`, 1178 -> 1204).**
+   Scoped as a sweep-tool fix rather than a re-pricing pass, since 1178's own 12-rival live pricing pass
+   was only ~13h old. Promoted the niche into `TERM_VARIANTS` (15 terms) + `MATCH_SYNONYMS`
+   (`appstore review`, `ios app review`, `app store rating`): **548 seen / 186 matched vs 178 on the
+   base phrase**, 8 listings newly visible. Material finds: `fetchcraftlabs/apple-appstore-reviews-scraper`
+   (62u, never named, now the niche's #8 by users, $0.001/review = 10x ours + $0.00005 start) and
+   `freshactors/app-store-scraper` (21u, $0.0001/review flat = **exact parity**, a 3rd parity listing,
+   not a threat). Smoking gun that the tool was the problem: `scriptbase/appstore-reviews-scraper` (59u)
+   was also "newly visible" despite being **named and priced in our own README since 1178**. Ruled out
+   as non-substitutes: `maximedupre/app-store-ratings-scraper` (1u, ratings only, no review text) and
+   4x `zinin/*-app-intel` (2u each, dating-app subscription prices + store ratings). **No new
+   undercutter** — the 1178 correction (`apihq` $0.00008; `automation-lab` from Gold up) still stands
+   as the only two, now across 186 visible listings. README paragraph added, **build 0.1.77 verified
+   live** via the build's own `readme` field. All 7 standing checks clean (`check-competitor-claims`
+   525/0+104/0, `check-comparison-breadth` 23/0, `check-price-superiority` 630/169/0,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-disclosure` 0, `check-primary-event`
+   478/24/24/**0 need review**). `audit_dates.json` updated via a 2-field in-place edit, verified with
+   `git diff --stat` = 2 insertions / 2 deletions (the 1203 history-destruction near-miss rule held).
+   $0 spent, no Actor runs, revenue still $0, no owner email sent. **New fleet-oldest `competitor_audit`
+   is `substack-scraper` (1179)**.
+
+SUPERSEDED-BY-1204 (was NEXT-CYCLE (1204)): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
    expected — there are actually **4** `OWNER_EMAIL` messages on record, not the "2" earlier cycles
    assumed: 2026-09-09-11 shopify-actor-error thread, 2026-09-16 Actor recommendation, 2026-09-22
    scholarship-scraper flag — all long since actioned, do not re-litigate). **Resume the fleet-oldest

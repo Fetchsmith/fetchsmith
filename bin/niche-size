@@ -98,6 +98,28 @@ NICHE_TERMS = {
 # its auto-generated sweep has been read closely and better terms identified --
 # this is how cycle 1124's federal-register list earned its place.
 TERM_VARIANTS = {
+    # Promoted by cycle 1204's competitor_audit: the same no-space failure mode as the
+    # google-play/steam entries below, in its purest form. The base phrase "app store
+    # reviews" is three contiguous words, and this niche's single most common self-title
+    # is "AppStore Reviews Scraper" -- one word -- so every listing that never writes the
+    # spaced form was invisible by construction. Two listings that would place in the
+    # niche's top 10 by users were being dropped silently: `fetchcraftlabs/
+    # apple-appstore-reviews-scraper` (62u, never named anywhere in our README) and
+    # `scriptbase/appstore-reviews-scraper` (59u) -- the second of which our OWN README
+    # has named and priced since cycle 1178, i.e. the sweep could not see a rival we had
+    # already written about. 178 base-phrase matches vs 186 on the terms+synonyms below;
+    # the 8 newly-visible listings were all priced live this cycle, which is the bar for
+    # a place here. Also in scope on purpose: the ratings/ASO phrasings ("app store
+    # ratings"), which surface rating-only and storefront-price listings -- none of them
+    # a review substitute, but a discovery sweep should SEE them and let the reader rule
+    # them out rather than never show them.
+    "app-store-reviews-scraper": [
+        "app store reviews", "app store reviews scraper", "apple app store reviews",
+        "appstore reviews", "ios app reviews", "itunes reviews", "app store ratings",
+        "apple app reviews", "app store review api", "ios app store scraper",
+        "iphone app reviews", "app review monitor", "app store data", "aso reviews",
+        "mobile app reviews",
+    ],
     # Promoted by cycle 1156's competitor_audit: the auto_variants() fallback on the bare
     # "remote jobs" base phrase returned 246 matches but missed the niche's own vocabulary --
     # every rival here is named after a specific board (We Work Remotely, Remote OK,
@@ -283,6 +305,21 @@ TERM_VARIANTS = {
 }
 
 MATCH_SYNONYMS = {
+    # Every form here was EARNED by a specific listing the base phrase "app store reviews"
+    # could not see (cycle 1204): "appstore review" by `fetchcraftlabs/
+    # apple-appstore-reviews-scraper` (62u) and `scriptbase/appstore-reviews-scraper`
+    # (59u), both self-titled "Appstore Reviews Scraper"; "ios app review" by
+    # `freshactors/app-store-scraper` (21u, "iOS App Reviews & Details"); "app store
+    # rating" by `maximedupre/app-store-ratings-scraper` and zinin's four dating-app
+    # storefront-intel listings. Tested and deliberately NOT included: a bare "apple
+    # review" (would merge this niche with our own `apple-podcasts-scraper`, whose rivals
+    # sell podcast reviews) and a bare "app review" (would pull in Google-Play-only
+    # listings that are not iOS substitutes -- the mirror image of the exclusion noted in
+    # the google-play entry below; the genuine cross-store listings match on "ios app
+    # review" anyway). "itunes review" was tested and earned nothing on its own, so it
+    # stays a SEARCH term above rather than a match form.
+    "app-store-reviews-scraper": ["appstore review", "ios app review",
+                                  "app store rating"],
     # The base phrase "remote jobs" is two contiguous words, so a single-board specialist
     # (the two biggest listings in the niche are Himalayas-only and Remote OK-only) that
     # only ever writes its board's name never matched. The board names are proper nouns;

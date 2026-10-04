@@ -159,6 +159,28 @@ plus a $0.01 one-time start fee, 4.5x ours on the per-review rate alone; `memo23
 but are not independently verified as model calls; none of our review rows carry an equivalent field.
 All five prices read live 2026-10-03.
 
+**Widened sweep, verified live 2026-10-04 (cycle 1204).** Every sweep of this niche before today
+searched and matched on the spaced phrase "app store reviews", which is three contiguous words —
+but this niche's single most common self-title is "**AppStore** Reviews Scraper", one word, so a
+whole class of listings was invisible to our own search by construction. Re-running the sweep with
+the no-space and "iOS app reviews" phrasings added (548 listings seen, 186 matching) surfaced eight
+listings no prior sweep here could see. Two of them are real App Store review scrapers, both read
+live today and **neither undercuts us**: `fetchcraftlabs/apple-appstore-reviews-scraper` (62 users),
+which is the niche's 8th-biggest listing and had never been named in this README, charges a flat
+**$0.001/review — 10x ours** — plus a $0.00005 Actor-start fee; `freshactors/app-store-scraper`
+(21 users) charges **$0.0001/review flat, exactly our rate**, so it is a third parity listing
+alongside `thewolves`/`theagents`/`scriptbase` rather than a price threat (its app-details and
+keyword-search events are separately tiered, $0.002→$0.0008 and $0.001→$0.0004 by account plan;
+a reviews-only run pays neither, and neither do our runs). The remaining six were read and ruled
+out as non-substitutes, not competitors: `maximedupre/app-store-ratings-scraper` (1 user,
+$0.00015/row plus a $0.001 start fee) returns an app's aggregate star rating and metadata with no
+review text at all, and `zinin/tinder-app-intel`, `zinin/bumble-app-intel`, `zinin/hinge-app-intel`
+and `zinin/badoo-app-intel` (2 users each, $0.005/storefront snapshot plus a $0.005 start fee) sell
+per-country subscription prices and store ratings for one named dating app apiece. **The cycle-1178
+correction above still stands unchanged**: `apihq` at $0.00008 flat, and `automation-lab` from Gold
+up, remain the only listings in this niche — across all 186 now visible — that charge less per
+review than we do.
+
 Two honest qualifications, both read off live input schemas rather than listings:
 
 - **`sourabhbgp` does expose a per-star ratings histogram** — `includeRatingsHistogram`, on by

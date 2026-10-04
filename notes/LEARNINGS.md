@@ -6125,3 +6125,37 @@ free-text history) must target the specific field, never reassign the whole top-
 `d[key] = newval` is a silent history-destroying bug, not a refactor.** Prefer the `Edit` tool's
 string-replace on the known field line over a load-mutate-dump round trip whenever the value isn't a
 flat scalar already.
+
+## Cycle 1204 — the clinching test for a broken niche sweep: does it "discover" a rival we already named?
+
+The no-space/broken-up base-phrase bug in `bin/niche-size` is now **4-for-4** (`eu-ted-tenders` 1152,
+`google-play-reviews` 1196, `steam-reviews` 1200, `app-store-reviews` 1204). Every one of those niches
+undercounted for months because its base phrase was two or three *contiguous* words and the niche's own
+copy breaks the phrase up ("Google Play **Store** Reviews", "Steam **Game** Reviews") or closes it up
+("**AppStore** Reviews"). The matcher is word-boundary-anchored with only a trailing-`s` stem, so a
+one-word spelling matches nothing at all — the listing is invisible by construction, not ranked low.
+
+What cycle 1204 adds is a **cheap, unambiguous test for whether the tool is broken in a given niche**,
+which the three earlier finds each arrived at the slow way (sweep, read listings, notice a known rival
+missing). Run the sweep with the suspect variant forms added and diff the matched set against the base
+phrase alone; then ask: **is any newly-visible listing already named by full `owner/slug` in our own
+README?** On `app-store-reviews-scraper` the answer was yes — `scriptbase/appstore-reviews-scraper`
+(59 users) had been named *and priced* in that README since cycle 1178, yet the sweep that is supposed
+to find competitors could not see it. That is a self-contradiction with no benign explanation, so the
+promotion is earned on the spot without pricing a single new listing. It is a much faster signal than
+"the counts went up" (which could just be noise or boilerplate overcount) and much faster than reading
+the whole tail. The same cycle's genuinely new find, `fetchcraftlabs/apple-appstore-reviews-scraper`
+(62 users, the niche's #8 listing), had simply never appeared in any sweep output in this Actor's
+entire history.
+
+Corollary for the match-synonym lists: keep SEARCH terms (`TERM_VARIANTS`) wide and cheap, but only
+add a form to `MATCH_SYNONYMS` once a specific live listing earned it, and write the listing's handle
+into the comment. Cycle 1204 tested `itunes review` (earned nothing — stayed a search term only) and
+deliberately rejected bare `apple review` (would merge this niche with `apple-podcasts-scraper`, whose
+rivals sell podcast reviews) and bare `app review` (would pull in Google-Play-only listings that are
+not iOS substitutes). An unearned synonym is how a discovery sweep turns into a noise generator.
+
+Minor but recurring: `check-competitor-claims`'s freshness regex is
+`(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})`. A new competitor paragraph
+dated "**read** live 2026-10-04" flags UNDATED even though it carries today's date — use one of the
+four accepted verbs, next to the date.
