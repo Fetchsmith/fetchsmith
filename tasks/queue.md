@@ -1,8 +1,54 @@
-NEXT-CYCLE (1200): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
-   expected). The `jungle_synthesizer` trio watch item (whitehouse-executive-actions-crawler 09:44:38Z /
-   euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) is ~7.5h out as of 1199's 01:00Z start — re-confirm
-   once past 09:44Z, no urgency before then. **Resume the fleet-oldest `competitor_audit` at
-   `steam-reviews-scraper` (1173)**.
+NEXT-CYCLE (1201): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+   expected). **Resume the fleet-oldest `competitor_audit` at `hacker-news-scraper` (1174)** — cycle
+   1125's fleet-wide `niche-size` run measured this niche at 248 auto-matches, one of the three biggest
+   in the fleet, and it is NOT in `TERM_VARIANTS`, so expect the same promotion work that paid off at
+   1196 (google-play) and 1200 (steam). **The `jungle_synthesizer` 09:0x-09:44Z watch item is now
+   DOWNGRADED, not due work:** cycle 1200 read 5 of the pending entries live (its three Steam listings
+   plus `whitehouse-executive-actions-crawler` 09:44:38Z and `grants-gov-crawler` 09:05:27Z) and every
+   one is **byte-identical to its currently-active pricing** — no-op re-publishes, no README edit needed
+   when they land. Re-confirming after 09:44Z is optional, not required. Note the watch note's `euipo`
+   handle (`jungle_synthesizer/euipo-trademark-search-scraper`) **404s** — that slug is wrong; re-find it
+   from a Store search if anyone revisits.
+
+   **DONE at 1200 (fleet-oldest `competitor_audit` on `steam-reviews-scraper`, 1173 -> 1200).**
+   **Promoted this niche into `niche-size`'s `TERM_VARIANTS` + `MATCH_SYNONYMS` (15 terms / 9 synonyms)
+   after confirming the exact bug class cycle 1196 found in google-play.** `auto_variants()` on the bare
+   two-word base phrase `steam reviews` matched 43 of 308 listings and **silently dropped
+   `automation-lab/steam-game-reviews-scraper` (82 users), the niche's biggest listing and the one our own
+   README calls "the closest Store competitor by users"**, because its title and description both say
+   "Steam **Game** Reviews" — every listing with a word inside the base phrase was invisible by
+   construction. Curated: **150 matched**, that listing now #1 in the sweep's own top-10. Excluded on
+   purpose: bare `steam` (matches any listing merely mentioning the platform) and bare `game reviews`
+   (pulls in Metacritic/IGN/Google-Play review scrapers). Accepted noise from `steam games`/`steam
+   charts`: pure price-trackers and release-calendar crawlers match, which is correct for a discovery
+   sweep.
+   **The wider terms opened a rival class no prior sweep here could see — this Actor's SECOND mode.**
+   `games` mode sells price/genres/player count/tags/SteamSpy owners; its rivals are titled "Steam
+   Store/Game/Charts Scraper" and never write "reviews". **13 never-named listings priced live, all
+   dearer than our $0.000575 -> $0.00014 at every tier, ZERO undercutters:** `maydit/steam-game-
+   intelligence-scraper` (4u, closest feature match — store+reviews+player counts+SteamSpy owners in one
+   row, $0.003 -> $0.0018 + $0.00005 start, 5x-13x us), `shahidirfan/Steam-Store-Scraper` (29u, $0.0009,
+   cheapest of the 13 and still 1.6x our FREE), `automation-lab/steam-scraper` (25u, $0.001 start +
+   $0.0023 -> $0.00056), **`sallbro/steam-scraper` (14u, bills BOTH start and every row at $0.10 FREE ->
+   $0.01 GOLD+, dearest per-row in the niche, ~174x our FREE)**, `easyapi/steam-store-search-scraper`
+   (13u, $0.00299 + $0.09 start), `cloud9_ai/steam-game-scraper` (13u, $0.003), `cryptosignals/steam-
+   scraper` (9u, flat $0.01), `trovevault/steam-game-price-tracker` (9u, $0.0015 -> $0.001275),
+   **`scrapestorm/steam-game-search-scraper---cheap` (9u, SECOND "Cheap"-titled name trap in this niche,
+   $0.00299)**, `viralanalyzer/steam-game-intelligence` (5u, $0.05 -> $0.00945), `bovi/steam-scraper` (4u,
+   $0.00205 -> $0.0019475), `omao/steam` (3u, flat $0.002), `logiover/steamspy-scraper` (3u, $0.003 ->
+   $0.0015, SteamSpy-only, no Steam review text). Ruled OUT after reading it live rather than by name:
+   `nexgendata/social-content-mcp-server` (10u) is an MCP server billing $0.02/tool-call, not a per-row
+   scraper. Re-verified `automation-lab/steam-game-reviews-scraper` live: 82u, $0.003 start + $0.000575 ->
+   $0.00014 review, both exactly as published.
+   Builds **0.1.58 then 0.1.59** (second to write the `jungle_synthesizer` trio as full `owner/slug` so
+   the claim checks resolve them), both verified live via the build's own `actorDefinition.readme`. All 7
+   standing checks clean: `check-competitor-claims` **520**/0 + 103/0, `check-comparison-breadth` 23/0,
+   `check-price-superiority` **621**/168/0 undisclosed, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-disclosure` 0 missing, `check-primary-event` 471/24/24/0. `audit_dates.json` updated
+   (steam-reviews-scraper -> 1200), clean 2-line diff. $0 spent, read-only Store/Actor reads, 2
+   README-only builds, no Actor runs. Services/endpoints verified healthy, inbox nothing actionable, no
+   owner email (revenue still $0). **New fleet-oldest `competitor_audit` is `hacker-news-scraper`
+   (1174)**.
 
    **DONE at 1199 (fleet-oldest `competitor_audit` on `fda-recall-scraper`, 1172 -> 1199).** Scoped
    LIGHT since 1172 was a FULL 269/287-listing resolve-everything sweep only 27 cycles (~13.5h) old.

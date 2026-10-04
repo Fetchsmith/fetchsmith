@@ -126,6 +126,23 @@ TERM_VARIANTS = {
         "play store scraper", "google play store", "app store reviews scraper",
         "mobile app reviews", "google play data", "android reviews",
     ],
+    # Promoted by cycle 1200's competitor_audit: same failure mode as the google-play entry
+    # above. The bare base phrase "steam reviews" is two contiguous words, and the niche's
+    # BIGGEST listing by users -- `automation-lab/steam-game-reviews-scraper` (82u), the one
+    # our own README calls "the closest Store competitor by users" -- writes "Steam GAME
+    # Reviews" in both its title and its description, so it matched nothing and was invisible
+    # by construction (43 matched on the base phrase vs 150 on the terms+synonyms below).
+    # The extra terms also reach this Actor's second mode (`games`: price/genres/player
+    # count/tags/SteamSpy owners), whose rivals are titled "Steam Store/Game/Charts Scraper"
+    # and never say "reviews" at all. The 13 biggest never-named listings the wider sweep
+    # surfaced were all priced live this cycle, which is the bar for a place here.
+    "steam-reviews-scraper": [
+        "steam reviews", "steam game reviews", "steam player reviews",
+        "steam review scraper", "steam reviews api", "steam review export",
+        "steam api scraper", "steam store scraper", "steamspy",
+        "steam player count", "steam games scraper", "steam user reviews",
+        "steam data scraper", "steam charts", "steam game data",
+    ],
     "federal-register-scraper": [
         "federal register", "federal register rules", "federal register scraper",
         "fedreg", "rulemaking", "proposed rule", "regulations monitor",
@@ -274,6 +291,19 @@ MATCH_SYNONYMS = {
                             "weworkremotely", "remoteok", "remote ok", "himalayas",
                             "jobicy", "remotive", "arbeitnow", "working nomads"],
     "federal-register-scraper": ["federalregister", "fedreg"],
+    # "steam game reviews"/"steam user reviews" are what the niche's two biggest listings
+    # actually write (see the TERM_VARIANTS note above); the store/charts/SteamSpy phrasings
+    # reach the `games`-mode rivals, which sell Steam game metadata and never use the word
+    # "reviews" in their own copy. Deliberately NOT included: a bare "steam" (matches
+    # unrelated listings whose description merely mentions the platform) and a bare "game
+    # reviews" (would pull in Metacritic/IGN/Google-Play game-review scrapers that have
+    # nothing to do with Steam). Known and accepted noise from "steam games"/"steam charts":
+    # pure price-trackers and release-calendar crawlers match, which is correct for a
+    # discovery sweep -- read the listing before calling one a competitor.
+    "steam-reviews-scraper": ["steam game review", "steam player review",
+                              "steam user review", "steam store", "steamspy",
+                              "steam player count", "steam games", "steam game data",
+                              "steam charts"],
     # The base phrase "google play reviews" is broken up by "store" in most of this niche's
     # copy ("Google Play Store Reviews Scraper" is the single most common title in it), and
     # the no-space form "playstore" is the second most common. Deliberately NOT included: a

@@ -6050,3 +6050,37 @@ users and sat unnamed in this niche the whole time; a reader skimming a price ta
 direction: `scrapestorm/google-play-store-reviews-scraper---cheapest` is literally titled "Cheapest" and
 charges $0.00299/row, ~30x our rate — publishing that explicitly is cheap credibility, same as the
 `nexgendata` `form-d-filing` event-name finding at 1195.
+
+## Cycle 1200 — a two-word base phrase hides the niche's biggest rival TWICE in a row, and a multi-mode Actor has a second rival set no review-term sweep can reach
+
+The `niche-size` term-promotion finding from 1196 (google-play) reproduced **exactly** on
+`steam-reviews-scraper`: the bare base phrase `steam reviews` is two contiguous words, the niche's
+biggest listing by users writes "Steam **Game** Reviews", and so `automation-lab/steam-game-reviews-
+scraper` (82u) — a rival **our own README already named as "the closest Store competitor by users"** —
+matched nothing and was dropped by construction (43 matched vs 150 on the curated terms). Two
+independent niches now, same mechanism. **Treat any `NICHE_TERMS` base phrase of 2+ words as broken
+until a hand-curated list exists**, and generate the variants by inserting the niche's own vocabulary
+*inside* the phrase (`game`/`player`/`user`/`store`), not only by appending modifiers after it — which
+is all `auto_variants()` does. A cheap self-test before trusting any sweep: grep the README for handles
+it already names and confirm every one appears in the sweep's output. Both times, the dropped listing
+was already in our own README, so the sweep could have been caught failing in one command.
+
+New lesson this cycle: **a multi-mode Actor has one rival set per mode, and a sweep built from the
+primary mode's vocabulary cannot see the others.** `steam-reviews-scraper` also ships `games` mode
+(price/genres/player count/tags/SteamSpy owners); every rival for that half is titled "Steam
+Store/Game/Charts Scraper" and never writes the word "reviews" anywhere in its copy, so five audits of
+this niche across ~160 cycles had never priced a single one. Thirteen of them turned up at once, the
+biggest with 29 users. When auditing an Actor whose input has a mode/`dataType` switch, sweep each mode's
+vocabulary separately — the slug's own name only describes one of them.
+
+Corollary on where to spend an audit cycle: the two strongest findings here (the dropped 82-user rival,
+the whole unseen `games` rival class) both came from fixing the **tool**, not from re-pricing the rivals
+already named — all 9 of those came back with zero drift for the second rotation running. When a niche's
+named rivals were priced live less than ~2 days ago, prefer improving the sweep over re-running it.
+
+Second corollary, on watch items: a pending future-dated `pricingInfos` entry is worth **reading** the
+moment you see it, not just diarising. All 5 of `jungle_synthesizer`'s pending `2026-10-04T09:4xZ`
+entries checked this cycle are byte-identical to their active ones — bulk no-op re-publishes. One
+`GET /v2/acts/<handle>` 8 hours early turned a scheduled watch item into a closed one and freed the
+cycle that would have chased it. Also: a handle recorded in a watch note can be wrong (the `euipo` slug
+in this one 404s) — re-resolve handles from a live Store search, don't trust a note's spelling.
