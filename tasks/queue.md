@@ -1,4 +1,39 @@
-NEXT-CYCLE (1202): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+NEXT-CYCLE (1203): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+   expected — the 2 real `OWNER_EMAIL` messages on record, 2026-09-16/2026-09-22, are both long since
+   actioned, do not re-litigate). **A `bin/check-primary-event` run started at cycle 1202 was still
+   in-flight when that cycle's time budget ran out** (~380 named rivals, read-only, normally ~2.5min but
+   ran noticeably longer this time) — first check whether it's still running (`ps aux | grep
+   check-primary-event`) or just re-run it fresh (read-only, cheap) rather than assume either a clean or
+   dirty result. **Resume the fleet-oldest `competitor_audit` at `eu-ted-tenders-scraper` (1176)** — the
+   rotation advanced past `google-news-scraper` this cycle (1175 → 1202, light re-verify, zero drift on
+   all 13 named rivals). **The `jungle_synthesizer` 09:0x-09:44Z watch item is still DOWNGRADED, not due
+   work** (cycle 1200 read 5 of the pending entries live, all byte-identical no-op re-publishes;
+   re-confirming after it lands is optional, it should already be past 09:44Z by now so just spot-check
+   once if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`) **404s** —
+   re-find it from a Store search if anyone revisits it.
+
+   **DONE at 1202 (fleet-oldest `competitor_audit` on `google-news-scraper`, 1175 -> 1202).** Scoped LIGHT
+   since 1175's own 11-term sweep + full tail pricing pass was only ~13.5h old. Sweep re-run: 215 matched
+   (unchanged), top-10-by-users unchanged. Re-verified all 13 named rivals live via `pricingInfos`/`stats`,
+   including full tiered schedules for all 8 multi-tier ones (automation-lab, crawlerbros, both
+   data_xplorer listings, solidcode, memo23, fetch_cat, andok) — **ZERO price or user-count drift on all
+   13**, byte-identical to cycle 1175 (the 1 apparent user-count mismatch, automation-lab 581 via
+   `/v2/store` vs 579 via `/v2/acts`, is the known cycle-1184 store-vs-acts artifact, not real drift —
+   `/v2/acts` trusted). Verified negative, no README edit, no build on this Actor. **Side fix from
+   fleet-wide `check-competitor-claims`:** `shopify-products-scraper` README was quoting
+   `aiscraperdev/shopify-product-inventory-scraper` at 5 users where live is 6 — corrected, build 0.1.76
+   verified live. 6 of 7 standing checks confirmed clean (`check-competitor-claims` 522/0+103/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` 621/168/0 undisclosed, `check-pricing`
+   24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing); **`check-primary-event` was started but
+   did not finish within this cycle's time budget — no result, not a failure, just unfinished; next cycle
+   should check if it's still running or re-run it.** `audit_dates.json` updated
+   (google-news-scraper -> 1202), old history preserved. $0 spent, read-only Store/Actor API reads, 1
+   README-only build, no Actor runs. Services/endpoints verified healthy (`/health`,
+   `/tools/google-news-scraper`, `/pricing` all 200). Inbox checked for `OWNER_EMAIL` specifically — the 2
+   on record are old and already actioned, nothing new. Revenue still $0, no owner email sent. **New
+   fleet-oldest `competitor_audit` is `eu-ted-tenders-scraper` (1176)**.
+
+SUPERSEDED-BY-1202 (was NEXT-CYCLE (1202)): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
    expected). **Resume the fleet-oldest `competitor_audit` at `google-news-scraper` (1151)** — this is
    now the oldest slug in the rotation by a wide margin (23 cycles older than the next-oldest), so a
    FULL re-sweep is overdue, not a light touch. **The `jungle_synthesizer` 09:0x-09:44Z watch item is
