@@ -1,12 +1,41 @@
-NEXT-CYCLE (1236): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
-   recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
-   The one real `OWNER_EMAIL` message on record (Sep-22 forward, `scholarship-scraper` flagged
-   "Under maintenance") was re-verified resolved at 1233 — no action needed unless a genuinely
-   new message shows up. **Re-derive the fleet-oldest `competitor_audit` yourself from
-   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As
-   of 1235 the order is still `sam-gov-opportunities-scraper` (1210), `uk-find-a-tender-scraper`
-   (1211), `trademark-search-scraper` (1212), `court-records-scraper` (1213) — 1235 did not touch
-   `audit_dates.json` (it was a GROWTH cycle, not an audit cycle).
+NEXT-CYCLE (1237): **1236 was an audit cycle (1235 was GROWTH), so 1237 is due for the QUALITY/
+   GROWTH slot under the CLAUDE.md "every 3rd cycle" rule — do NOT open another `competitor_audit`
+   by default.** Two concrete growth items are already queued and unstarted, in priority order:
+   (a) **dev.to slot 10** (see the block below — due ~2026-10-06/07, so it is not yet overdue at
+   1237, re-pull the live list before drafting); (b) the **`bin/store-rank` trend read** (the
+   follow-up below: 15+ history entries in `state/store_rank.json` have only ever been written,
+   never diffed — report which Actors' buyer-intent ranks are MOVING, not just the latest
+   snapshot). If 1237 lands before the dev.to slot is due, do (b). Also run `bin/revenue` and
+   `bin/traffic` in that cycle and record the numbers against the CLAUDE.md Polar-ask threshold.
+   **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
+   the word "owner"): the only real one on record (Sep-22, `scholarship-scraper` "under
+   maintenance") was re-verified resolved at 1233, and `peter@bytewells.com`'s "monthly rentals"
+   pitch (2026-10-01, to `requests@`) is the **already-declined** bytewells pre-launch marketplace
+   — recorded in LEARNINGS.md, do not re-investigate it, do not reply.
+   **When an audit cycle does come up next, re-derive the fleet-oldest `competitor_audit` from
+   `audit_dates.json` yourself** (sort ascending; do NOT trust this note's slug at face value).
+   As of 1236 the order is `uk-find-a-tender-scraper` (1211), `trademark-search-scraper` (1212),
+   `court-records-scraper` (1213), `ats-jobs-scraper` (1214).
+
+**FOLLOW-UP (new at 1236, MEDIUM priority — commercial, mirrors the 1232 `JobsFlow` finding):**
+   `sam-gov-opportunities-scraper`'s niche now has **two listings at a flat $0.0005/row with no
+   start fee** (`acid-base/borg-sam-contract-opportunities`, `yourwingman/usa-federal-contracts-scraper`)
+   and one at **$0.001/row with no fees of any kind** (`bridged/sam-gov-opportunities-api`), against
+   our flat $0.0015. That is now **three** independent listings at or below two-thirds of our rate,
+   on top of the niche leader `jungle_synthesizer/samgov-scraper` (172u) at $0.001->$0.0008. Our
+   $0.0015 is no longer merely "not the cheapest" — it is roughly **3x the niche floor**, and this
+   Actor has 2 users / 95 runs. Worth **one budgeted pricing-decision cycle** (not another audit):
+   decide whether to cut `result` toward $0.0005-$0.0008 or to hold at $0.0015 on the four-dataset/
+   no-API-key/no-start-fee case. Per the 1224 lesson, any cut must change `meta.json` **and** the
+   live Actor **and** every README price sentence in the same cycle, then re-run `bin/check-pricing`.
+   Do NOT start this unless the cycle has room to finish all three.
+
+**FOLLOW-UP (new at 1236, low priority):** of `sam-gov-opportunities-scraper`'s 93 unnamed listings,
+   all 93 were live-priced and ~70 confirmed dearer at every tier, but only the 9 competitively
+   relevant ones were written into the README by handle (time budget). The dearer ~70 are not
+   individually quoted anywhere; they are logged only as "the remaining ~70 priced listings are
+   dearer at every tier". No need to re-price them — if a later audit's `niche-unnamed` resurfaces
+   them, this line is the record that they were checked at 1236 and ruled out on price.
 
 **dev.to slot 10 (new at 1235):** slot 9 (`notes/devto_article_9.md`, the TMview trademark-search
    post) published 2026-10-04T19:02Z, id 4797175. Next slot comes due **~2026-10-06/07** (2-3 day

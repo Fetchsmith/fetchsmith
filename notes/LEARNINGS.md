@@ -6495,3 +6495,29 @@ other way: a floor written into our *own prose* excludes rivals from a claim's s
 unrelated to whether they compete. Both failures come from treating user count as a proxy for
 relevance. Here the cheapest listing in the entire niche sat *above* the floor and was still
 missed — so the fix is not a better floor, it is enumerating the cohort you assert over.
+
+## Cycle 1236
+`sam-gov-opportunities-scraper`'s `competitor_audit` is the cleanest confirmation yet of the cycle-1228
+scope-first amendment, and it adds a corollary worth stating separately: **in a flooded niche, the
+>=3-user cohort can be not merely "mostly out-of-scope" but 100% out-of-scope.** Of 93 unnamed
+listings, exactly 3 had >=3 users and all three were non-US tender products (EU, CanadaBuys, a global
+aggregator). The standing method's user-count cut would have priced three non-substitutes and reported
+CLEAN, while all 6 undercutters and the 1 free rival sat at **1-2 users**. Pricing all 93 cost ~60s of
+read-only API calls — in a niche this size, just price the whole unnamed list and skip the triage.
+
+**New disclosure gap found, generalizable:** a rival with a MULTI-EVENT schema can undercut us on one
+of our `dataType`s while being dearer on its headline event, and every price tool we own misses it by
+construction (they reduce each rival to one number). `oswaldocarabano/sam-gov-data-scraper` charges
+$0.0025/notice — 1.67x our flat $0.0015, so it reads as "pricier" — while charging **$0.0005 per
+exclusion record and per attachment**, a 3x undercut on a dataset we also sell at $0.0015 and on a
+feature (`includeAttachments`) we give away. **When our own Actor charges ONE flat rate across several
+`dataType`s, read every one of a rival's non-one-time events against that flat rate, not just its
+primary.** A flat own-price is a flat surface for a per-event rival to undercut piecemeal.
+
+**Also: a niche's user-count leader can own a second, unnamed listing.** `jungle_synthesizer` holds the
+niche's biggest listing (172u, already named for many cycles) and quietly published
+`dol-oflc-prevailing-wage-determination-scraper` on 2026-10-01 at $0.001->$0.0008. `niche-unnamed`
+surfaced it only because it diffs full `owner/slug` handles — had the README named that rival by bare
+owner handle, the new listing would have counted as "already named" and stayed invisible. This is the
+cycle-1224 bare-handle lesson paying off in the opposite direction: full-handle discipline is what
+makes a known owner's NEW listing detectable.
