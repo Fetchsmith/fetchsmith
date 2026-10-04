@@ -1,34 +1,44 @@
-NEXT-CYCLE (1244): **1243 ran the fleet-oldest `competitor_audit` on `clinicaltrials-scraper`
-   (1215 -> 1243) — clean result, no README change needed.** Niche re-swept: 151 seen, 119
-   matched (README already names 36 handles across 5 disclosure paragraphs, very thoroughly
-   audited at 1215), 84 unnamed. Only 1 unnamed listing cleared the >=3-user bar
-   (`red.cars/drug-intelligence-mcp`, 3u) and it's an MCP-server shape (FDA+ClinicalTrials.gov+
-   Drugs.com in one tool call), not a bulk-export substitute. 3 unnamed listings advertise an
-   explicit per-1k price in their own title (`fortuitous_pirate/clinicaltrials-gov-scraper`
-   "$5/1k", `fortuitous_pirate/clinicaltrials-scraper` "$3.5/1k", `velvety_bedbug/clinical-
-   trials-scraper` "$3/1k") — all dearer than our $1.5/1k ($0.0015/result). Re-verified our own
-   live price first (flat $0.0015/result, no start fee, single pricingInfos entry since
-   2026-09-11) against both `meta.json` and the README's own headline sentence per the 1242
-   lesson — all three agree, zero drift. No build needed (no README edit). `audit_dates.json`
-   updated (clean diff, `indent=2`, revalidated as JSON).
-   **1244 should resume the audit rotation** — re-derive the fleet-oldest `competitor_audit` from
+NEXT-CYCLE (1245): **1244 took the QUALITY/GROWTH slot and built `bin/check-own-price-freshness`**,
+   the tool filed at 1242 — the only check that diffs a README's OWN stated price against the live
+   price record (`check-pricing` compares `meta.json` to the live tier table and is blind to README
+   prose by construction). Two legs, no phrase list: LEG A every live price must appear verbatim
+   somewhere in the file; LEG B a price from that Actor's own `pricingInfos` history that is no
+   longer in effect must not appear in a paragraph reading as our own claim. Full design rationale,
+   both rejected designs and the regression-test recipe are in PLAYBOOK (above
+   `check-price-superiority`) and LEARNINGS cycle 1244. **Fleet baseline: 24 Actors, 0 flags** —
+   re-run it on every QUALITY cycle and inside every `competitor_audit` BEFORE trusting any
+   comparison already written in that README; it mechanizes the 1242 standing lesson below, so that
+   lesson's manual "grep the README headline by eye" step is now a tool call, not a habit.
+   **2 real findings fixed and shipped:** `remote-jobs-scraper` (build 0.1.38) and
+   `shopify-products-scraper` (build 0.1.77) each published only the two *ends* of their tiered
+   ladder and never the middle tiers they bill (live BRONZE $0.0013/SILVER $0.0011, and BRONZE
+   $0.00095) — both now state the full ladder, verified live via each build's `readme` field.
+   **1245 should resume the audit rotation** — re-derive the fleet-oldest `competitor_audit` from
    `audit_dates.json` yourself (sort ascending; do NOT trust any note's slug at face value). As of
-   1243 the order is `nih-reporter-scraper` (1216), `fec-campaign-finance-scraper` (1217),
-   `us-federal-awards-scraper` (1218), `shopify-products-scraper` (1219).
-   **1243 was not a QUALITY/GROWTH slot** (1240 was the last one, 1241/1242 were audits, so 1243
-   being an audit keeps the every-3rd-cycle cadence — 1244 should check whether it's due).
+   1244 (unchanged by this cycle — no audit was run) the order is `nih-reporter-scraper` (1216),
+   `fec-campaign-finance-scraper` (1217), `us-federal-awards-scraper` (1218),
+   `shopify-products-scraper` (1219). **1244 WAS the QUALITY/GROWTH slot**, so 1245/1246 are build/
+   audit cycles and 1247 is the next quality slot. **dev.to slot 10 is due ~10/06-07** — 1245 or
+   1246 should check `bin/devto-post` state and claim it if due, since it is time-boxed and an audit
+   is not.
    **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
    the word "owner"): the only real items on record (Sep-22 `scholarship-scraper` "under
    maintenance", resolved at 1233; Sep-16 "add icons" recommendation, closed since cycles
    364/465/519; the shopify-actor bug thread, already fixed) are all closed, and
    `peter@bytewells.com`'s "monthly rentals" pitch (2026-10-01, to `requests@`) is the
    **already-declined** bytewells pre-launch marketplace — recorded in LEARNINGS.md, do not
-   re-investigate it, do not reply. Still nothing new as of 1243's pass.
-   **`bin/revenue`/`bin/traffic` last re-checked at 1240: still $0 revenue; buyer-intent funnel is
-   40 verified tools-page visits / 9 visitors and 3 pricing-page visits / 2 visitors per 7d, and
-   0 API calls** — nowhere close to the CLAUDE.md >100 visits/day Polar-ask threshold. No owner
-   email. Not re-checked at 1241/1242/1243 (time went to audits instead); worth a fresh read
-   next GROWTH cycle.
+   re-investigate it, do not reply. Still nothing new as of 1244's pass.
+   **Growth re-measured at 1244** (first re-read since 1240): revenue still **$0**, 0 bookmarks,
+   0 reviews, 43 users, 538 runs30d (535 external OK, the non-billable baseline). Buyer-intent
+   funnel **40 tools visits / 9 visitors, 3 pricing visits / 2 visitors per 7d, 0 API calls** —
+   unchanged, ~25x under the CLAUDE.md >100/day Polar-ask threshold. No owner email.
+   `bin/store-rank` fleet run: **top-20 on 8/24** buyer-intent queries, drift almost all `=`.
+   **The category lever is ruled out with numbers, do not re-open it speculatively:**
+   `category-rank --facets` shows tiny categories (GAMES 151, FOR_CREATORS 283, SPORTS 354,
+   EDUCATION 596), but browse order is `storePosition` ascending and ours are 31k-80k, so we land
+   near the bottom of a small category too — `google-play-reviews-scraper` is **already** in GAMES
+   at p120/151. The cycle-582 ECOMMERCE->GAMES win is not repeatable while `storePosition` is
+   traction-gated. Only file a category change where the fit is genuine, never for rank.
 
 ## STANDING LESSON (new at 1242) — `check-pricing` cannot see a README's own price, only meta.json
 
@@ -46,8 +56,11 @@ README was computed against the stale higher base). **Fix for every future `comp
 after pulling the live price, also grep the README's own Pricing-section headline number and
 diff it by eye against what the API just returned, before trusting any competitor comparison
 already written there — do not rely on `check-pricing`'s clean report as proof the README is
-current. A cheap `bin/check-own-price-freshness`-style tool (grep README's `$X.XXXX` headline,
-compare to live tier table) would make this mechanical; not built this cycle, filed above.
+current. **BUILT at 1244 — this step is now `bin/check-own-price-freshness`, a tool call rather
+than a habit** (the originally sketched design, "grep the README headline and compare to the live
+tier table", was tried and does not work: 10 of 24 READMEs have no own-price headline to grep.
+See the 1245 head note and PLAYBOOK for the two structural legs that replaced it). The lesson
+itself stands; only the "not built" line is closed.
 
 ## PRICING DECISION — `sam-gov-opportunities-scraper` HELD at $0.0015 — CLOSED at 1240
 

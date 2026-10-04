@@ -6627,3 +6627,49 @@ README's stated headline price and diff it by eye against the live tier table �
 clean `check-pricing` run as proof the README's prose is current. A `bin/check-own-price-freshness`-
 style tool (grep the README headline price, diff vs live tiers) would make this mechanical; filed
 in `queue.md`, not built yet.
+
+## Cycle 1244 — the README-price blind spot is now mechanical, and two READMEs were quietly under-quoting their own tiers
+
+`bin/check-own-price-freshness` (built this cycle, filed at 1242) closes the gap no other
+check could see: our READMEs' own stated prices vs the live price record. Three durable
+lessons came out of building it, beyond the tool itself.
+
+1. **A "verify our own price" step that reads only the API is not a verification.** Every
+   `competitor_audit` since ~1140 satisfied that step by pulling `pricingInfos` and
+   confirming `check-pricing` was clean. Both can be perfectly true while the README prose
+   is a week stale (the 1242 `ats-jobs-scraper` bug), because neither side of that
+   comparison is the README. The fix had to be a third comparison, not a stricter version
+   of either existing one.
+
+2. **Phrase-based detection of our own claims does not work on this fleet and should not be
+   retried.** Attempt 1 grepped own-price marker phrases ("Pay per result", "we charge",
+   "this Actor charges"). Measured result across 24 READMEs: 10 have no such headline at
+   all, and two of the hits are inside *rival* sentences — `federal-register-scraper`'s
+   "we charge beats free" and `google-news-scraper`'s "pay-per-results` (759 users)". A
+   marker regex cannot find the sentence that states our price. What works instead is
+   structural and needs no phrase list: **(A) every live price must appear verbatim
+   somewhere in the file, and (B) a price from our OWN `pricingInfos` history that is no
+   longer in effect must not appear in a paragraph reading as our own claim.** Leg B is
+   precise precisely because its candidate set is bounded by our own price history — it can
+   never flag an arbitrary number.
+
+3. **Markdown hard-wrapping breaks every per-line rival filter.** The first run produced 19
+   flags, 16 of which were two tool bugs of exactly this shape: a rival's rate sits two
+   lines below the backticked `owner/slug` handle that owns it (`app-store-reviews-scraper`),
+   so a per-line "skip rival lines" rule reads it as ours; and conversely, excluding
+   handle-bearing lines from the *completeness* leg deleted whole pricing sections, making
+   4 Actors report "README quotes no rate". **Right granularity differs per leg: Leg A is
+   whole-file, Leg B is per-paragraph.** Any future README text check should pick its unit
+   deliberately rather than defaulting to the line.
+
+**Two real findings, both fixed and pushed:** `remote-jobs-scraper` (build 0.1.38) and
+`shopify-products-scraper` (build 0.1.77) each stated only the two *ends* of their tiered
+ladder ("$0.0015 → $0.001", "$0.001 → $0.00085") and never the middle tiers they actually
+bill — live BRONZE $0.0013 / SILVER $0.0011 and BRONZE $0.00095 respectively. Not a wrong
+price, but a Bronze or Silver buyer could not read their own rate, and this abbreviating
+habit is fleet-wide convention, so it is worth knowing it was never once checked until now.
+
+**Regression-test the check against the real historical bug, not a synthetic one.**
+`git show 011fe29:actors/ats-jobs-scraper/README.md` restored into place makes the tool flag
+on both legs (2 live prices absent, 3 superseded ones still asserted). This fleet has its own
+bug history in git; use it, and restore the file from git afterwards rather than from memory.

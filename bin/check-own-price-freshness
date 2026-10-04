@@ -1,0 +1,179 @@
+#!/root/agent/venv/bin/python
+"""Diff each Actor README's OWN stated prices against the live Apify price record.
+
+Filed as a follow-up at cycle 1242 and built at 1244. The blind spot it closes:
+`bin/check-pricing` diffs `meta.json` against the live Actor's structured tier table and
+says NOTHING about the README's prose. `ats-jobs-scraper` cut its price on 2026-09-26
+with meta.json and the live record moving together -- `check-pricing` reported 0 drift
+the whole time -- while the README's entire Pricing section kept describing the pre-cut
+ladder for 8+ days, surviving a full `competitor_audit` (cycle 1214) that treated a clean
+`check-pricing` as proof the README was current. Every competitor crossover number in
+that section was computed against the stale base, so several verdicts were inverted: a
+rival that had stopped undercutting us still read as our biggest undercutter.
+
+Phrase-based detection was tried first and rejected: the fleet's own-price headline
+phrasing is inconsistent (10 of 24 READMEs have no "Pay per result"/"we charge" headline
+at all, and `federal-register-scraper`'s "we charge beats free" / `google-news-scraper`'s
+"pay-per-results` (759 users)" are false hits inside *rival* sentences), so no marker
+regex can reliably find the sentence that states OUR price. This checks structure
+against the platform instead, in two legs that need no phrase list:
+
+  LEG A (stale-by-omission): every price currently in effect on the live record must
+  appear verbatim somewhere in the README. If we charge $0.00085 on Bronze and the
+  string never occurs, the README is not describing the price we actually bill.
+
+  LEG B (stale-by-assertion): a price that appears in the Actor's OWN pricingInfos
+  history but is no longer in effect must NOT appear in a line that reads as our own
+  claim. This is the sharper leg -- it is what the 1242 bug looked like from outside
+  ($0.0015 and $0.001 were both genuinely ours once) -- and it is precise because the
+  candidate set is only ever our own superseded prices, never an arbitrary number.
+
+Leg A searches the whole file -- the price only has to be stated SOMEWHERE -- while
+Leg B skips any paragraph carrying a backticked `owner/slug` rival handle (a competitor
+comparison legitimately quotes someone else's rate) or reading as explicitly historical
+("correction", "previously", "cut from", "no longer", ...), so a dated correction note
+like ats-jobs-scraper's own does not flag forever. Leg B's unit is the PARAGRAPH, not the
+line: these READMEs hard-wrap, so `app-store-reviews-scraper`'s rival sentence carries
+its handle two lines above the rate it quotes, and a per-line rival filter flags it.
+
+Read-only: `GET /v2/acts/<id>` per Actor, launches no runs, costs no compute.
+Exit 1 on any flag.
+"""
+import datetime
+import glob
+import json
+import os
+import re
+import sys
+
+import httpx
+
+API = "https://api.apify.com/v2"
+TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
+
+# A per-unit rate in this fleet always has >=3 decimals ($0.0015, $0.00085). Totals and
+# worked examples have 2 ($1.00, $0.70), and matching those would flag arithmetic.
+MONEY = re.compile(r"\$(\d+\.\d{3,})")
+RIVAL_HANDLE = re.compile(r"`[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+`")
+HISTORICAL = re.compile(
+    r"(?i)correction|previously|used to|no longer|was cut|cut from|before the cut|stale|"
+    r"retracted|until 20\d\d|had (?:long )?said|old(?:er)? ladder|as of 20\d\d")
+
+
+def paragraphs(text):
+    """(start line number, text) per blank-line-separated block."""
+    out, buf, start = [], [], 1
+    for i, line in enumerate(text.splitlines(), 1):
+        if line.strip():
+            if not buf:
+                start = i
+            buf.append(line)
+        elif buf:
+            out.append((start, "\n".join(buf)))
+            buf = []
+    if buf:
+        out.append((start, "\n".join(buf)))
+    return out
+
+
+def token():
+    env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env")
+               if "=" in l and not l.startswith("#"))
+    return env["APIFY_TOKEN"]
+
+
+def prices_of(event):
+    """Every price a single charge event carries, flat or tiered (cf. check-pricing)."""
+    if not event:
+        return set()
+    if "eventPriceUsd" in event:
+        p = event["eventPriceUsd"]
+        return {float(p)} if p is not None else set()
+    tiers = event.get("eventTieredPricingUsd") or {}
+    out = set()
+    for t in TIERS:
+        p = (tiers.get(t) or {}).get("tieredEventPriceUsd")
+        if p is not None:
+            out.add(float(p))
+    return out
+
+
+def prices_in(entry):
+    """Every price in one pricingInfos entry, across all of its charge events."""
+    events = (entry.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
+    out = set()
+    for ev in events.values():
+        out |= prices_of(ev)
+    return out
+
+
+def split_history(pricing_infos, now):
+    """(prices in effect now, prices that were ours once but are not in effect)."""
+    dated = [p for p in (pricing_infos or []) if p.get("startedAt")]
+    past = [p for p in dated
+            if datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    if not past:
+        return set(), set()
+    current = prices_in(past[-1])
+    superseded = set()
+    for entry in past[:-1]:
+        superseded |= prices_in(entry)
+    return current, superseded - current
+
+
+def near(a, b):
+    return abs(a - b) < 1e-12
+
+
+def fmt(p):
+    return f"${p:.10f}".rstrip("0")
+
+
+def main():
+    H = {"Authorization": "Bearer " + token()}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    actors = flags = 0
+
+    for path in sorted(glob.glob("/root/agent/actors/*/README.md")):
+        slug = os.path.basename(os.path.dirname(path))
+        if slug.startswith("_"):
+            continue
+        act = httpx.get(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30).json().get("data")
+        if not act or not act.get("isPublic"):
+            continue
+        current, superseded = split_history(act.get("pricingInfos"), now)
+        if not current:
+            continue  # check-pricing owns the "no price in effect" case
+        actors += 1
+
+        text = open(path).read()
+        anywhere = {float(m) for m in MONEY.findall(text)}
+
+        # LEG A -- a live price the README never states, anywhere in the file.
+        for p in sorted(current):
+            if not any(near(p, q) for q in anywhere):
+                flags += 1
+                print(f"{slug}: LIVE price {fmt(p)} appears nowhere in the README "
+                      f"(README quotes {', '.join(fmt(q) for q in sorted(anywhere)) or 'no rate'})")
+
+        # LEG B -- a price of ours that is no longer in effect, still asserted as ours.
+        for ln, para in paragraphs(text):
+            if RIVAL_HANDLE.search(para) or HISTORICAL.search(para):
+                continue
+            for m in MONEY.finditer(para):
+                v = float(m.group(1))
+                if any(near(v, s) for s in superseded):
+                    flags += 1
+                    # Quote around the match, not the paragraph head: these paragraphs
+                    # open with a `## Pricing` heading that says nothing about the claim.
+                    lo = max(0, m.start() - 60)
+                    print(f"{slug}:{ln}: SUPERSEDED own price ${m.group(1)} still stated "
+                          f"as ours (live: {', '.join(fmt(p) for p in sorted(current))}) "
+                          f"-- ...{' '.join(para[lo:m.end() + 60].split())}...")
+
+    print(f"check-own-price-freshness: {actors} public Actors, {flags} flag(s)")
+    return 1 if flags else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
