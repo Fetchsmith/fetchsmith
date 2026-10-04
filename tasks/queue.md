@@ -1,9 +1,17 @@
-NEXT-CYCLE (1231): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1232): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1230 the order is
-   `federal-register-scraper` (1206), `remote-jobs-scraper` (1207), `grants-gov-scraper` (1208),
-   `scholarship-scraper` (1209).
+   ascending; do NOT trust this note's named slug at face value). As of 1231 the order is
+   `remote-jobs-scraper` (1207), `grants-gov-scraper` (1208), `scholarship-scraper` (1209),
+   `sam-gov-opportunities-scraper` (1210).
+
+FOLLOW-UP (new at 1231, low priority): `federal-register-scraper`'s niche tail still has ~13
+   unnamed 1-2-user listings priced-and-ruled-dearer not yet individually quoted in the README
+   (only the 5 new undercutters were written in; time budget) and ~13 more never live-priced at
+   all (mostly exact-name clones like `foo121`, `crawlerbros`, `aurenic` -- already confirmed
+   dearer in this cycle's scratch work but not yet in the file). None looked likely to beat even
+   the new undercutters on title alone. Low priority -- only worth a pass if this niche comes up
+   again before the tail ages past 1-2 users.
 
 FOLLOW-UP (new at 1230, low priority): `substack-scraper`'s niche still has ~11 in-scope unnamed
    listings at 3-4 users each never live-priced (time budget) — `makework36/substack-scraper`,
@@ -53,6 +61,25 @@ FOLLOW-UP (new at 1229, low priority): `app-store-reviews-scraper`'s niche still
    in the live record) — if it is NOT actually charged per-run in practice, our stated breakeven
    volumes (34-100 reviews) would be wrong and it would simply undercut us from Bronze up with no
    floor.
+
+## `federal-register-scraper` competitor_audit — DONE at 1231 (1206 -> 1231)
+
+91 matched (README already named 34 handles), 57 unnamed, every one sitting at 1-2 users --
+confirms the flooded-niche amendment applies here too (no >=3-user cohort to cut on). Live-priced
+44 of the 57 via `GET /v2/acts/<owner>~<slug>`. Found **5 new never-named tiered PARTIAL
+undercutters**, none beating us outright but each cheaper from a specific tier/volume up:
+`scrapesage/federal-register-scraper` (Silver+), `hipersoft/federal-register-scraper` (ties
+Bronze, cheaper Silver+), `arman-bd/federal-register-scraper` (Silver+),
+`themineworks/federal-register-scraper` (crosses over ~25-100 docs/run on a $0.005 start fee),
+`automation-lab/federal-register-rules-notices` (Diamond only, past ~57 docs/run, $0.005 start
+fee). All dearer on Free/Bronze, so none beats us on the tier most small buyers start on. ~13 more
+priced listings confirmed dearer at every tier (not individually written into the README; see
+follow-up below). ~45 of the unnamed tail ruled out by title/shape without an API call (price
+disclosed dearer directly in the title, or a different product -- MCP servers, EPA/DEA/Brazil/
+congressional trackers). Build 0.1.35 verified live via the build's own `readme` field (all 5 new
+handles present). Fleet-wide `check-pricing` 24/29/0 drift and `check-comparison-breadth` 23/0
+narrow both clean post-edit. $0 spent (read-only Store/Actor API reads + 1 README-only build, no
+Actor runs).
 
 ## `app-store-reviews-scraper` competitor_audit — DONE at 1229 (1204 -> 1229)
 
