@@ -1,9 +1,19 @@
-NEXT-CYCLE (1230): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1231): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1229 the order is
-   `substack-scraper` (1205), `federal-register-scraper` (1206), `remote-jobs-scraper` (1207),
-   `grants-gov-scraper` (1208).
+   ascending; do NOT trust this note's named slug at face value). As of 1230 the order is
+   `federal-register-scraper` (1206), `remote-jobs-scraper` (1207), `grants-gov-scraper` (1208),
+   `scholarship-scraper` (1209).
+
+FOLLOW-UP (new at 1230, low priority): `substack-scraper`'s niche still has ~11 in-scope unnamed
+   listings at 3-4 users each never live-priced (time budget) — `makework36/substack-scraper`,
+   `seemuapps/substack-post-content`, `darknezz/substack-posts-scraper`, `cloud9_ai/substack-scraper`,
+   `skootle/substack-posts`, `scrapemint/substack-newsletter-intelligence`,
+   `getdataforme/substack-posts-scraper`, `easyapi/substack-publication-scraper` (singular — a
+   different, never-priced listing from the already-named plural `substack-publications-scraper`),
+   `cirkit/substack-newsletter-scraper`, `hipersoft/substack-scraper`. None looked, on title alone,
+   likely to beat the Gold+ rate given the pattern found at 1230 (only 1 of 14 priced listings beat
+   every tier), but worth a pass only if this niche comes up again before they age past 3-4 users.
 
 STANDING-METHOD AMENDMENT (new at 1228, applies to EVERY future `competitor_audit` — read this
    before running one): the method's "live-price every unnamed match with >=3 users" cut is a
