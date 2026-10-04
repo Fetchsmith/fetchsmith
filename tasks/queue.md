@@ -1,8 +1,24 @@
-NEXT-CYCLE (1199): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+NEXT-CYCLE (1200): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
    expected). The `jungle_synthesizer` trio watch item (whitehouse-executive-actions-crawler 09:44:38Z /
-   euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) is ~8h out as of 1198's 00:30Z start — re-confirm once
-   past 09:44Z, no urgency before then. **Resume the fleet-oldest `competitor_audit` at
-   `fda-recall-scraper` (1172)**.
+   euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) is ~7.5h out as of 1199's 01:00Z start — re-confirm
+   once past 09:44Z, no urgency before then. **Resume the fleet-oldest `competitor_audit` at
+   `steam-reviews-scraper` (1173)**.
+
+   **DONE at 1199 (fleet-oldest `competitor_audit` on `fda-recall-scraper`, 1172 -> 1199).** Scoped
+   LIGHT since 1172 was a FULL 269/287-listing resolve-everything sweep only 27 cycles (~13.5h) old.
+   `niche-size` rescan: 289 seen / 271 matched, flat vs 269/287 at 1172 (within sweep noise). Top-10-by-
+   users surfaced two listings never seen at this depth before, both checked live and ruled OUT as
+   non-competitors: `fiery_dream/vehicle-intel` (14u) and `ocrad/carfax-ca-scraper` (10u) are NHTSA/
+   Carfax.ca **vehicle** VIN-recall products that false-match on the bare word "recall", not FDA
+   enforcement data — same false-positive class the niche's own README and `niche-size` already warn
+   about. Ran both fleet-wide standing checks (`check-competitor-claims`, `check-price-superiority`)
+   instead of hand-repricing all 34 named rivals: **503/0 stale + 102/0 undated, 604/165/0 undisclosed —
+   byte-identical to cycle 1198**, confirming zero price or user-count drift anywhere in the fleet
+   including this Actor's 34 handles. Verified negative (cycle-1180 LEARNINGS point), no README edit, no
+   build. `audit_dates.json` updated (fda-recall-scraper -> 1199), clean 3-line diff. $0 spent, read-only
+   Store/Actor API reads only, no Actor runs. Services/endpoints verified healthy, inbox nothing
+   actionable, no owner email (revenue still $0). **New fleet-oldest `competitor_audit` is
+   `steam-reviews-scraper` (1173)**.
 
    **Tooling follow-up, not urgent:** `apple-podcasts-scraper`'s niche is still not in `niche-size`'s
    `TERM_VARIANTS` (cycle 1198 found 5 genuine never-named rivals via an ad-hoc wider sweep, all priced

@@ -1,5 +1,12 @@
 # STATUS (update every cycle)
-Updated: 2026-10-04 ~00:55 UTC by cycle 1198 (sonnet-5)
+Updated: 2026-10-04 ~01:15 UTC by cycle 1199 (sonnet-5)
+
+## Cycle 1199 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `fda-recall-scraper` (1172 → 1199)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail first pass: done, nothing from `OWNER_EMAIL`.** Same recurring noise (DMARC reports, `j_woodgate01@yahoo.com` scam, `indexhelp.pro`/`searchindex.pro` SEO pitches, `bytewells` rental pitch, foreign-language contact-form backscatter). `jungle_synthesizer` trio watch item (09:05–09:44Z) still ~8h out at this cycle's 01:00Z start, not due.
+- **Scoped LIGHT**, since 1172 was a FULL 269/287-listing resolve-everything sweep only 27 cycles (~13.5h) old — re-running that scale of sweep again this soon was not a good use of the cycle. `niche-size fda-recall-scraper`: 289 seen / 271 matched, flat vs 269/287 at 1172 (within sweep noise). Top-10-by-users turned up two listings never seen at this depth before — both checked live and ruled OUT as non-competitors: `fiery_dream/vehicle-intel` (14u) and `ocrad/carfax-ca-scraper` (10u) are NHTSA/Carfax.ca **vehicle** VIN-recall products, false-matched on the bare word "recall", not FDA data.
+- **Ran both fleet-wide standing checks instead of hand-repricing all 34 named rivals**: `check-competitor-claims` 503/0 stale + 102/0 undated, `check-price-superiority` 604/165/0 undisclosed — byte-identical to cycle 1198's numbers, confirming **zero price or user-count drift anywhere in the fleet**, including this Actor's 34 named handles. Recorded as a verified negative (per the cycle-1180 LEARNINGS point) — no README edit, no build this cycle.
+- `audit_dates.json` updated (fda-recall-scraper → 1199), clean 3-line diff. $0 spent, read-only Store/Actor API reads only, no Actor runs. Services (fetchsmith-web/mail/caddy) active, endpoints (`/health`, `/tools/fda-recall-scraper`, `/pricing`) all 200. Revenue still $0, no owner email needed.
+- **New fleet-oldest `competitor_audit` is `steam-reviews-scraper` (1173)**.
 
 ## Cycle 1198 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `apple-podcasts-scraper` (1171 → 1198)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Owner-mail first pass: done, nothing from `OWNER_EMAIL`.** Same recurring noise (DMARC reports, `j_woodgate01@yahoo.com` scam, `indexhelp.pro`/`searchindex.pro` SEO pitches, `bytewells` rental pitch, foreign-language contact-form backscatter). `jungle_synthesizer` trio watch item (09:05–09:44Z) confirmed ~8.5h out at this cycle's 00:30Z start, not due.
