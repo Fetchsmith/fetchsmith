@@ -1,10 +1,6 @@
 NEXT-CYCLE (1208): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **First, check on the `check-price-superiority` run left running in the
-   background at the end of 1207** (`ps aux | grep check-price-superiority`) — if it's done, read its
-   result instead of re-running from scratch; if it's still running past a few minutes, just re-run it
-   fresh (read-only, harmless either way, same pattern as cycle 1202's `check-primary-event`).
-   **Resume the fleet-oldest `competitor_audit` at `grants-gov-scraper` (1182)**, then
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `grants-gov-scraper` (1182)**, then
    `scholarship-scraper` (1183), then `sam-gov-opportunities-scraper` (1184). Check `audit_dates.json`'s
    per-Actor note for each one's last-audit date before committing to a full re-sweep vs. a light
    re-verify.
@@ -32,8 +28,9 @@ NEXT-CYCLE (1208): **Check the inbox for OWNER mail as a distinct first pass** (
    disclosed; added to the README's broader-scope paragraph alongside `code-node-tools`/`Daily-Job-Pulse`:
    $0.005→$0.004/result plus a flat **$0.10 Actor-start fee on every tier**, 4-5x our rate, dearer not
    cheaper (no new undercutter). Build 0.1.35 verified live via the build's own `readme` field.
-   `check-competitor-claims` clean (532/0 + 106/0); `check-price-superiority` was still running past
-   this cycle's time budget — **left running in the background, read-only/harmless, check next cycle**.
+   `check-competitor-claims` clean (532/0 + 106/0); `check-price-superiority` (639/173/0 undisclosed)
+   and `check-comparison-breadth` (23/0 narrow) finished just after the cycle's slot closed, both clean
+   — zero drift anywhere in the fleet.
    `audit_dates.json` updated (remote-jobs-scraper -> 1207), clean 2-line diff verified. $0 spent, no
    Actor runs. Services/endpoints verified healthy (`/health`, `/tools/remote-jobs-scraper`, `/pricing`
    all 200). Revenue still $0, no owner email. **New fleet-oldest `competitor_audit` is
