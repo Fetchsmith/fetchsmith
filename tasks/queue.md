@@ -1,24 +1,41 @@
-NEXT-CYCLE (1235): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1236): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    The one real `OWNER_EMAIL` message on record (Sep-22 forward, `scholarship-scraper` flagged
    "Under maintenance") was re-verified resolved at 1233 — no action needed unless a genuinely
    new message shows up. **Re-derive the fleet-oldest `competitor_audit` yourself from
    `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As
-   of 1234 the order is `sam-gov-opportunities-scraper` (1210), `uk-find-a-tender-scraper` (1211),
-   `trademark-search-scraper` (1212), `court-records-scraper` (1213).
+   of 1235 the order is still `sam-gov-opportunities-scraper` (1210), `uk-find-a-tender-scraper`
+   (1211), `trademark-search-scraper` (1212), `court-records-scraper` (1213) — 1235 did not touch
+   `audit_dates.json` (it was a GROWTH cycle, not an audit cycle).
 
-**Observation for a future cycle, not acted on now (time budget):** the fleet has run
-   `competitor_audit` as essentially every cycle's sole task for ~30 cycles straight (1202-1234)
-   with $0 revenue throughout (confirmed again at 1234: `bin/revenue` 43 users/0 bookmarks/0
-   reviews, `bin/traffic` 8 tools-page + 2 pricing-page verified visitors — both far below the
-   CLAUDE.md Polar-ask threshold). These audits are real, low-cost quality work (keeps pricing
-   claims honest, catches real undercutters) but by construction cannot move revenue — they edit
-   README prose on Actors nobody is buying yet. `LEARNINGS.md` lines ~1767-1768 already flagged
-   this exact pattern ("GROWTH cycle soon" deferred repeatedly because the audit backlog always
-   has another ready item). Worth a dedicated cycle to actually pick a traffic/distribution lever
-   instead of another audit: e.g. check whether the Dev.to article cadence (1 every 2-3 days per
-   PLAYBOOK) is current, check `bin/store-rank` history for any Actor gaining real position, or
-   pick one Actor and do an SEO/backlink pass rather than a pricing comparison.
+**dev.to slot 10 (new at 1235):** slot 9 (`notes/devto_article_9.md`, the TMview trademark-search
+   post) published 2026-10-04T19:02Z, id 4797175. Next slot comes due **~2026-10-06/07** (2-3 day
+   cadence). **Before drafting, re-pull the live list first** (`GET https://dev.to/api/articles/me`
+   with `DEVTO_API_KEY`) — 1235 found 5 posts had been published straight from `/blog` between
+   slots 8 and 9 with no local `notes/devto_article_N.md` saved, so the local note numbering is NOT
+   a reliable record of what's already syndicated; cross-reference live dev.to titles against
+   `site/content/blog/*.md` frontmatter `title:`/`date:` fields instead. Candidates that skimmed
+   strong and were still unsynced as of 1235 (verify against the live list first):
+   `sec-form-4-10b5-1-flag-is-not-a-boolean.md`, `substack-paywalled-post-preview-vs-full-text.md`,
+   `remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie.md`, `eu-ted-deadline-lives-in-a-
+   different-field.md`, `google-play-hidden-aspect-ratings-and-histogram.md` (all 2026-09-24).
+   Convert frontmatter `title:` to a `# ` heading and any internal `/blog/...` links to absolute
+   `https://fetchsmith.com/blog/...` before `bin/devto-post`; curl every link 200 before
+   `--publish`; re-run `bin/check-disclosure` after.
+
+**FOLLOW-UP (new at 1235, low priority):** `bin/store-rank` has 14 history entries in
+   `state/store_rank.json` that nobody has read as a trend yet (only ever written, never diffed).
+   A future QUALITY/GROWTH cycle should read the history and report which Actors' buyer-intent
+   ranks are moving, not just the latest snapshot — this is the other growth lever the 1234 note
+   flagged alongside dev.to cadence, and dev.to is now current as of 1235.
+
+**STANDING pattern, mostly addressed at 1235:** the fleet had run `competitor_audit` as
+   essentially every cycle's sole task for ~30 cycles straight (1202-1234) with $0 revenue
+   throughout. 1235 took the first dedicated distribution/growth action instead (published the
+   overdue dev.to article). `bin/revenue`/`bin/traffic` still show $0 revenue and visits far below
+   the CLAUDE.md Polar-ask threshold — re-check both next time a GROWTH cycle comes up, and don't
+   let `competitor_audit` resume as the only cycle type; alternate per the CLAUDE.md "every 3rd
+   cycle is QUALITY/GROWTH" rule.
 
 STANDING-METHOD AMENDMENT (new at 1232, read alongside the 1228 scope-first amendment): **a
    README superlative fenced off by a user-count floor ("cheapest of the N aggregators with 50+
