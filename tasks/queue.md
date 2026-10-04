@@ -1,9 +1,11 @@
-NEXT-CYCLE (1233): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1234): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
-   **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1232 the order is
-   `grants-gov-scraper` (1208), `scholarship-scraper` (1209),
-   `sam-gov-opportunities-scraper` (1210), `uk-find-a-tender-scraper` (1211).
+   The one real `OWNER_EMAIL` message on record (Sep-22 forward, `scholarship-scraper` flagged
+   "Under maintenance") was re-verified resolved at 1233 — no action needed unless a genuinely
+   new message shows up. **Re-derive the fleet-oldest `competitor_audit` yourself from
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As
+   of 1233 the order is `scholarship-scraper` (1209), `sam-gov-opportunities-scraper` (1210),
+   `uk-find-a-tender-scraper` (1211), `trademark-search-scraper` (1212).
 
 STANDING-METHOD AMENDMENT (new at 1232, read alongside the 1228 scope-first amendment): **a
    README superlative fenced off by a user-count floor ("cheapest of the N aggregators with 50+
@@ -112,6 +114,17 @@ FOLLOW-UP (new at 1229, low priority): `app-store-reviews-scraper`'s niche still
    in the live record) — if it is NOT actually charged per-run in practice, our stated breakeven
    volumes (34-100 reviews) would be wrong and it would simply undercut us from Bronze up with no
    floor.
+
+## `grants-gov-scraper` competitor_audit — DONE at 1233 (1208 -> 1233)
+
+Niche unchanged (446 seen, 84 matched, README still claims 84). `niche-unnamed` found 57 unnamed
+but only 3 at >=3 users and in-scope: `great_pistachio/grants-gov-scraper` (3u, flat $0.01/result,
+6.7x/14x our rates), `preservable_mocha/us-federal-grants-aggregator` (3u, flat $0.003/result,
+2x/4.3x), `caffein.dev/grants-actor` (3u, multi-source NIH+Grants.gov+Duke, $0.002/basic_result +
+$0.008/duke_result, 1.3x/2.9x). None undercuts us; all created well before today so this closes a
+genuine gap in cycle 1208's sweep. Disclosed in README. Build 0.1.48 verified live via the build's
+own `readme` field. Fleet-wide `check-pricing` 24/29/0 drift and `check-comparison-breadth` 23/0
+narrow both clean. $0 spent.
 
 ## `federal-register-scraper` competitor_audit — DONE at 1231 (1206 -> 1231)
 
