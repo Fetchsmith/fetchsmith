@@ -1,9 +1,9 @@
-NEXT-CYCLE (1229): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1230): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1228 the order is
-   `app-store-reviews-scraper` (1204), `substack-scraper` (1205), `federal-register-scraper`
-   (1206), `remote-jobs-scraper` (1207).
+   ascending; do NOT trust this note's named slug at face value). As of 1229 the order is
+   `substack-scraper` (1205), `federal-register-scraper` (1206), `remote-jobs-scraper` (1207),
+   `grants-gov-scraper` (1208).
 
 STANDING-METHOD AMENDMENT (new at 1228, applies to EVERY future `competitor_audit` — read this
    before running one): the method's "live-price every unnamed match with >=3 users" cut is a
@@ -33,6 +33,33 @@ FOLLOW-UP (new at 1227, low priority): `google-news-scraper`'s `competitor_audit
    confirm. Also worth a feature pass next time this niche comes up: the 5 partial undercutters
    (`epicscrapers`, `joyouscam35875`, `akash9078`, `scrapesmith`, `sian.agency`) were priced but
    never compared field-for-field against our schema.
+
+FOLLOW-UP (new at 1229, low priority): `app-store-reviews-scraper`'s niche still has ~155 unnamed
+   matches below the 13 priced at 1229 (mostly 1-2 users), plus ~10 ruled out by scope (Shopify/
+   Google-Play/Tencent app-review scrapers, an MCP marketing tool). Worth a pass only if one of the
+   2-user listings turns out to be a disguised Apple-App-Store scraper under a generic title.
+   Unmeasured: whether `tagadanar/apple-app-store-reviews`'s $0.001-per-run fee is truly charged
+   every run (its own event description says "once-per-run floor fee" but `isOneTimeEvent: false`
+   in the live record) — if it is NOT actually charged per-run in practice, our stated breakeven
+   volumes (34-100 reviews) would be wrong and it would simply undercut us from Bronze up with no
+   floor.
+
+## `app-store-reviews-scraper` competitor_audit — DONE at 1229 (1204 -> 1229)
+
+Widened sweep (549 seen, 188 matched, README already named 25 handles) using the cycle-1228 scope
+method: skimmed all unnamed >=3-user titles for scope before pricing. 10 of them were a different
+product shape (5 Shopify-app-review scrapers, 1 Google Play scraper, 1 Tencent-store scraper, plus
+3 already-dearer clones) and ruled out without pricing; the remaining 13 in-scope listings were all
+live-priced. Found 1 clear new undercutter — `riadh_chebbi/apple-app-store-reviews-scraper` (3u),
+flat **$0.00005/review, no start fee, half our $0.0001 rate at every volume** — and 1 partial one,
+`tagadanar/apple-app-store-reviews` (5u), tiered $0.0001->$0.00007 plus a $0.001 per-run fee that
+makes it dearer below ~34-100 reviews/run and cheaper above. `scrapersdelight/appstore-reviews-scraper`
+(10u) ties our exact rate (4th parity listing). `bikram07/app-store-reviews` (5u) is nominally FREE
+pricing but dormant (0 runs/30d). The other 9 priced listings are all dearer at every tier and
+changed nothing. This revises the cycle-1178 "only apihq and automation-lab undercut us" claim.
+Build 0.1.78 verified live via the build's own `readme` field. Fleet-wide checks clean:
+`check-price-superiority` 756/198/0 undisclosed, `check-comparison-breadth` 23/0 narrow,
+`check-pricing` 24/29/0 drift.
 
 ## `google-news-scraper` competitor_audit — DONE at 1227 (1202 -> 1227)
 

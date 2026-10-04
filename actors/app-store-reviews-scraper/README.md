@@ -181,6 +181,35 @@ correction above still stands unchanged**: `apihq` at $0.00008 flat, and `automa
 up, remain the only listings in this niche — across all 186 now visible — that charge less per
 review than we do.
 
+**Correction, verified live 2026-10-04 (cycle 1229): that is no longer the complete undercutter
+list.** The fleet-oldest `competitor_audit` rotation re-swept this niche with the no-space/iOS
+phrasings too (549 seen, 188 matched) and live-priced every unnamed App-Store-scope listing with
+3+ users. `riadh_chebbi/apple-app-store-reviews-scraper` (3 users) charges a flat **$0.00005/review
+with no start fee — half our $0.0001 rate, at every volume, with no crossover** — the cheapest
+listing found in this niche to date. `tagadanar/apple-app-store-reviews` (5 users) tiers its
+review price by the buyer's own Apify plan, $0.0001 (Free) down to $0.00007 (Gold/Platinum/Diamond),
+**plus a flat $0.001 per-run fee this Actor does not charge**: that fee makes it dearer than us
+below roughly 50-100 reviews/run on Bronze/Silver and below roughly 34 reviews/run on Gold+, but
+cheaper above those volumes since its per-review rate undercuts ours from Bronze up. One more
+listing ties our exact rate rather than beating it: `scrapersdelight/appstore-reviews-scraper`
+(10 users) charges flat $0.0001/review with no start fee, a fourth parity listing alongside
+`thewolves`/`theagents`/`scriptbase`/`freshactors`. `bikram07/app-store-reviews` (5 users) is
+listed `FREE` (Apify's free-pricing-model flag, not a $0/review PPE rate) but has had zero runs in
+the last 30 days, so it is read as dormant rather than an active price threat. Ten more unnamed
+listings read at 3+ users in this sweep were ruled out as different-shape, not App-Store-review
+competitors: five scrape Shopify's own app-review listings (`fetch_cat/shopify-app-reviews-scraper`,
+`automation-lab/shopify-app-store-reviews-scraper`, `taroyamada/shopify-app-store-review-intelligence`,
+`philzx/shopify-app-intelligence`), one scrapes Google Play (`obsidian937/google-play-reviews-scraper`),
+and one scrapes Tencent's Android app store (`reviewbot/tencent-app-store-review-scraper`) — all
+three are different source sites entirely, not Apple's App Store. The remaining dearer-and-ruled-in
+listings (`fetch_cat/apple-app-store-reviews-scraper` $0.000575→$0.00014 tiered plus a $0.005 start
+fee; `shahidirfan/App-Store-Reviews-Scraper` $0.00099 flat plus a $0.0005 start fee; `kestrel/app-store-reviews-scraper`
+$0.004 flat; `bovi/appstore-reviews` $0.001→$0.00095 tiered plus a tiered start fee; `goat255/app-store-reviews-scraper`
+$0.00115→$0.001 tiered; `sync-network/apple-app-store-reviews-scraper` $0.001 flat plus a $0.00005 start fee;
+`skootle/app-store-reviews` $0.008→$0.005 tiered plus a $0.01 start fee; `hipersoft/appstore-reviews-scraper`
+$0.0005 flat plus a $0.00005 start fee; `darknezz/app-store-reviews-scraper` $0.002 flat plus a $0.01 start fee)
+are all dearer than us at every tier and do not change the standings above.
+
 Two honest qualifications, both read off live input schemas rather than listings:
 
 - **`sourabhbgp` does expose a per-star ratings histogram** — `includeRatingsHistogram`, on by
