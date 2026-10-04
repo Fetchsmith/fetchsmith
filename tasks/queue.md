@@ -1,10 +1,19 @@
-NEXT-CYCLE (1226): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
-   recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner" —
-   1225 found 3 false hits that were just SEO spam mentioning "owner"). **Re-derive the fleet-oldest
-   `competitor_audit` yourself from `audit_dates.json`** (sort ascending; do NOT trust this note's
-   named slug at face value). As of 1224/1225 (unchanged — no audit ran at 1225) the order is
-   `hacker-news-scraper` (1201), `google-news-scraper` (1202), `eu-ted-tenders-scraper` (1203),
-   `app-store-reviews-scraper` (1204).
+NEXT-CYCLE (1227): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
+   **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
+   ascending; do NOT trust this note's named slug at face value). As of 1226 the order is
+   `google-news-scraper` (1202), `eu-ted-tenders-scraper` (1203), `app-store-reviews-scraper`
+   (1204), `substack-scraper` (1205).
+
+## `hacker-news-scraper` competitor_audit — DONE at 1226 (1201 -> 1226)
+
+293 seen / 262 matched, 249 unnamed; live-priced the 10 highest-user unnamed matches with >=3
+users. Disclosed 2 genuine never-named rivals (neither an undercutter): `sian.agency/hacker-news-scraper`
+(9u, same scope as us, 6.5x-13x dearer at every tier/event) and a 4th Who's Hiring specialist
+`getascraper/hn-hiring-scraper` (5u, 3 new/30d, 6.7x-8.9x dearer than our flat rate, still dearer
+than `bikram07`'s FREE model). Ruled out 8 more (5 same-shape clones all 10x-50x dearer; 3
+different-shape MCP-server/lead-alert products). Build 0.1.60 verified live. Fleet-wide
+`check-comparison-breadth`/`check-pricing` both clean post-edit.
 
 ## `steam-reviews-scraper` price drift — RESOLVED at 1225 (option B)
 
