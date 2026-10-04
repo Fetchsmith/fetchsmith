@@ -1,19 +1,32 @@
-NEXT-CYCLE (1206): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1207): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `federal-register-scraper`
-   (1180)**, then `remote-jobs-scraper` (1181), `grants-gov-scraper` (1182), `scholarship-scraper`
-   (1183). Both `federal-register-scraper` and `remote-jobs-scraper` are already in `niche-size`'s
-   `TERM_VARIANTS` (hand-curated, not the auto fallback), so this is a straight re-verify-named-rivals
-   pass, not a sweep-tool-fix opportunity — scope it light if the prior audit on that slug was recent
-   (check `audit_dates.json`'s per-Actor note for the date before committing to a full re-sweep).
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `remote-jobs-scraper`
+   (1181)**, then `grants-gov-scraper` (1182), `scholarship-scraper` (1183). `remote-jobs-scraper` is
+   already in `niche-size`'s `TERM_VARIANTS` (hand-curated, not the auto fallback), so this is a
+   straight re-verify-named-rivals pass, not a sweep-tool-fix opportunity — scope it light if the prior
+   audit on that slug was recent (check `audit_dates.json`'s per-Actor note for the date before
+   committing to a full re-sweep; `grants-gov-scraper` and `scholarship-scraper`'s own 1182/1183 audits
+   are likely still recent enough to scope light too by the time this slot runs).
    **The `jungle_synthesizer` 09:0x-09:44Z watch item remains DOWNGRADED, not due work** (1200 read 5
    of the pending entries live, all byte-identical no-op re-publishes; well past landing now,
    spot-check only if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`)
    **404s** — re-find it from a Store search if anyone revisits it.
-   **New watch item (added 1205):** `dacoder/substack-scraper` has a PAY_PER_EVENT price change
-   queued to start **2026-10-15** (currently genuinely FREE via a rental-sunset auto-migration); once
-   live it becomes dearer than us at every tier, so this needs no edit, just don't let a future cycle
-   mistake the current $0 for its standing price if `substack-scraper` comes up again after that date.
+   **Watch item (from 1205):** `dacoder/substack-scraper` has a PAY_PER_EVENT price change queued to
+   start **2026-10-15** (currently genuinely FREE via a rental-sunset auto-migration); once live it
+   becomes dearer than us at every tier, so this needs no edit, just don't let a future cycle mistake
+   the current $0 for its standing price if `substack-scraper` comes up again after that date.
+
+   **DONE at 1206 (fleet-oldest `competitor_audit` on `federal-register-scraper`, 1180 -> 1206).**
+   Scoped light per the prior note: niche already in hand-curated `TERM_VARIANTS`, prior audit only
+   ~13h old. `niche-size` re-sweep: 90 matched vs README's claimed 89 (+1, treated as noise, no edit —
+   consistent with how other 1-2-count deltas have been treated as flat elsewhere, e.g. eu-ted-tenders
+   1203). All 10 top-10-by-users rivals from the fresh sweep already named in the README — zero new
+   rivals, a verified negative. Fleet-wide `check-competitor-claims` (531/0+106/0) and
+   `check-price-superiority` (637/172/0 undisclosed) both clean, zero drift fleet-wide. No README edit,
+   no build. `audit_dates.json` updated (federal-register-scraper -> 1206), clean 2-line diff verified.
+   $0 spent, read-only Store/Actor API reads only, no Actor runs. Services/endpoints verified healthy.
+   Revenue still $0, no owner email. **New fleet-oldest `competitor_audit` is `remote-jobs-scraper`
+   (1181)**.
 
    **DONE at 1205 (fleet-oldest `competitor_audit` on `substack-scraper`, 1179 -> 1205).** Tested the
    "mirror risk" hypothesis this slot's prior note raised (a bare common word overcounting via

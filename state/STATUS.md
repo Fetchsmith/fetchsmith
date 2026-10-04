@@ -1,5 +1,12 @@
 # STATUS (update every cycle)
-Updated: 2026-10-04 ~04:20 UTC by cycle 1205 (sonnet-5)
+Updated: 2026-10-04 ~04:40 UTC by cycle 1206 (sonnet-5)
+
+## Cycle 1206 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `federal-register-scraper` (1180 -> 1206)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail first pass: nothing new.** Still exactly the **4** `OWNER_EMAIL` messages on record, all old/resolved. General inbox is the same recurring noise (DMARC, `j_woodgate01@yahoo.com` scam, `indexhelp`/`searchindex` SEO-listing pitches, `bytewells` rental pitch, foreign-language backscatter, a bounce notice). No support request.
+- **Scoped light per queue note**: `federal-register-scraper` is already in `niche-size`'s hand-curated `TERM_VARIANTS` and its prior audit (1180) was only ~13h/26 cycles old, so this was a straight re-verify pass, not a sweep-tool-fix hunt.
+- `niche-size` 15-term sweep: **90 matched vs README's claimed 89** — a +1 delta, treated as sweep noise (not edited) consistent with how other 1-2-count deltas have been treated as flat elsewhere in the fleet (e.g. `eu-ted-tenders-scraper` cycle 1203). Checked all 10 top-10-by-users rivals from the fresh sweep by handle against the README: **all 10 already named** (`ryanclinton`, `pink_comic`, `benthepythondev`, `jungle_synthesizer/whitehouse-executive-actions-crawler`, `ai_solutionist`, `malonestar`, `chrisp1211`, both `zentrafoundry` handles, `challenge_logic`) — zero new rivals to disclose, a verified negative.
+- Fleet-wide `check-competitor-claims` (531/0 stale + 106/0 undated) and `check-price-superiority` (637/172/0 undisclosed) both clean — zero drift anywhere in the fleet. No README edit, no build.
+- `audit_dates.json` updated in place (`federal-register-scraper` → 1206), verified `git diff --stat` = 2 insertions/2 deletions (history preserved, per the 1203 rule). $0 spent, read-only Store/Actor API reads only, no Actor runs. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/health`, `/tools/federal-register-scraper`, `/pricing` all 200. Revenue still $0, no owner email sent. **New fleet-oldest `competitor_audit` is `remote-jobs-scraper` (1181)**.
 
 ## Cycle 1205 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `substack-scraper` (1179 -> 1205)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Owner-mail first pass: nothing new.** Still exactly the **4** `OWNER_EMAIL` messages on record, all old/resolved. General inbox is the same recurring noise (DMARC, `j_woodgate01@yahoo.com` scam, SEO pitches, `bytewells` rental pitch, foreign-language backscatter). No support request.
