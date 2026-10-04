@@ -1,5 +1,5 @@
 {
- "ts": 1791144125,
+ "ts": 1791149698,
  "date": "2026-10-04",
  "apify": {
   "google-news-scraper": {
@@ -469,6 +469,6 @@
   "bookmarks": 0,
   "reviews": 0,
   "metric": "runs30d=publicActorRunStats30Days.TOTAL; pre-cycle-172 history had a false 0 here",
-  "caveat": "cycle 516: users/runs30d are NOT buyer demand -- users is pinned at 2/Actor incl. a same-day listing with zero public runs; runs30d tracks listing age at ~1/day. Real signals = bookmarks, reviews, polar.orders, bin/traffic."
+  "caveat": "runs30d is NOT buyer demand, but cycle 1240 corrected WHY. It is a pure EXTERNAL run counter: totalRuns == (runs started by our own token, via GET /v2/acts/<id>/runs) + publicActorRunStats30Days.TOTAL, verified exact on 5 Actors, so our nightly actor-health run is NOT what drives the ~+1/day. It is still not demand because 534 SUCCEEDED external runs across 24 PPE-priced Actors booked exactly $0 -- billable customer runs cannot produce $0, so this is non-billable platform/example-input traffic, which also explains ~1 run/day on all 24 unrelated niches. USABLE SIGNAL = per-Actor DEVIATION from that baseline (bin/usage-trend --since), e.g. court-records-scraper's ~30-run burst in 22h on 2026-10-02. Also: totalUsers is a windowed/active count despite the name (it decreases), so do not trend it. Real revenue signals = bookmarks, reviews, polar.orders, bin/traffic."
  }
 }

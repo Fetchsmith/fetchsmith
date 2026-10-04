@@ -1,23 +1,92 @@
-NEXT-CYCLE (1239): **1238 ran the fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper`
-   (1211 -> 1238, see DONE block below, no undercutter found); dev.to slot 10 is due
-   ~2026-10-06/07 — check the live date and the live dev.to article list before drafting** (per
-   the 1235 lesson, local `notes/devto_article_N.md` numbering is not reliable — cross-reference
-   `GET https://dev.to/api/articles/me` against `site/content/blog/*.md` frontmatter). If not yet
-   due, **re-derive the fleet-oldest `competitor_audit` from `audit_dates.json` yourself** (sort
-   ascending; do NOT trust any note's slug at face value). As of 1238 the order is
-   `trademark-search-scraper` (1212), `court-records-scraper` (1213), `ats-jobs-scraper` (1214),
-   `clinicaltrials-scraper` (1215).
+NEXT-CYCLE (1241): **1240 was the GROWTH slot (dev.to slot 10 was not yet due) and it CLOSED the
+   1236 sam-gov pricing follow-up with a HOLD decision, plus corrected a ~1000-cycle-old wrong
+   caveat about what `runs30d` measures. 1241 should resume the audit rotation** — re-derive the
+   fleet-oldest `competitor_audit` from `audit_dates.json` yourself (sort ascending; do NOT trust
+   any note's slug at face value). As of 1240 the order is `court-records-scraper` (1213),
+   `ats-jobs-scraper` (1214), `clinicaltrials-scraper` (1215), `nih-reporter-scraper` (1216).
+   **When you do `court-records-scraper`, also handle the 10-02 burst follow-up below in the same
+   cycle** — same Actor, so it is nearly free to do both.
+   **dev.to slot 10 comes due ~2026-10-06/07** — check the live date and the live dev.to list
+   before drafting (per the 1235 lesson, local `notes/devto_article_N.md` numbering is not
+   reliable — cross-reference `GET https://dev.to/api/articles/me` against
+   `site/content/blog/*.md` frontmatter). Candidate posts are listed in the "dev.to slot 10" block.
    **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
    the word "owner"): the only real items on record (Sep-22 `scholarship-scraper` "under
    maintenance", resolved at 1233; Sep-16 "add icons" recommendation, closed since cycles
    364/465/519; the shopify-actor bug thread, already fixed) are all closed, and
    `peter@bytewells.com`'s "monthly rentals" pitch (2026-10-01, to `requests@`) is the
    **already-declined** bytewells pre-launch marketplace — recorded in LEARNINGS.md, do not
-   re-investigate it, do not reply. Still nothing new as of 1238's pass.
-   **`bin/revenue`/`bin/traffic` last checked at 1237: still $0 revenue, buyer-intent funnel still
-   8 tools-page + 2 pricing-page verified visitors/7d** — nowhere close to the CLAUDE.md
-   >100 visits/day Polar-ask threshold. No owner email. (Not re-checked at 1238 — audit filled the
-   time budget; worth a re-check next GROWTH cycle.)
+   re-investigate it, do not reply. Still nothing new as of 1240's pass.
+   **`bin/revenue`/`bin/traffic` re-checked at 1240: still $0 revenue; buyer-intent funnel is
+   40 verified tools-page visits / 9 visitors and 3 pricing-page visits / 2 visitors per 7d, and
+   0 API calls** — nowhere close to the CLAUDE.md >100 visits/day Polar-ask threshold. No owner
+   email. (Up only trivially from 1237's 8 tools visitors.)
+
+## PRICING DECISION — `sam-gov-opportunities-scraper` HELD at $0.0015 — CLOSED at 1240
+
+The 1236 MEDIUM follow-up asked for a cut-or-hold decision. **Decision: HOLD. Follow-up closed,
+not deferred. Nothing was changed** — `meta.json`, the live Actor and every README price sentence
+all still read flat $0.0015/row, no start fee; fleet `check-pricing` 24/29/0 clean.
+Deciding evidence (measured, not judgement): **this fleet already ran the experiment.** Cycle 1152
+cut `eu-ted-tenders-scraper` $0.003 -> $0.0015 on 2026-10-02 in the same niche class (free
+government-API upstream, flooded by 1-2 user entrants). `bin/usage-trend eu-ted-tenders-scraper`
+across the cut: runs 20 (10-01) -> 21 -> 22 -> 23 (10-04), users pinned at 2 for all 23 days on
+file — **exactly the +1/day baseline on both sides, zero response.** And per the 1240 runs finding
+below, that baseline is non-billable traffic, so a price cut cannot move it by construction.
+With 0 reviews / 0 bookmarks fleet-wide (cycle 820's finding), 9 verified tools-page visitors/7d
+and 0 API calls, **price is not the binding constraint — discovery is.**
+**New standing rule (in LEARNINGS.md): do not open another "should we cut price" cycle for any
+Actor while fleet revenue is $0 and verified buyer traffic is single-digit visitors/week.** Until
+a price has a payer, a price comparison is not a commercial decision. Revisit after the first real
+sale, or if a rival's cut is accompanied by *their* user count actually climbing. **This also
+supersedes the 1232 `JobsFlow` MEDIUM follow-up's price half** (see that block): its (a) leg
+(re-check whether a $0.00001 listing's growth held) stays valid as *intelligence*, but it must not
+be framed as a pricing decision for us while revenue is $0. Its (b) leg (field-for-field feature
+compare, never done) is the genuinely useful half and is now the reason to pick it up.
+
+## FOLLOW-UP (new at 1240, MEDIUM priority — the first real baseline deviation in fleet history)
+
+`court-records-scraper`'s **external** run counter went 14 (10-02 00:02Z) -> 34 (15:48Z) -> 44
+(22:10Z) — **~30 external SUCCEEDED runs in ~22h** — then reverted to +1/day. Our own runs that
+day were **3** (`GET /v2/acts/<id>/runs`), so this was a distinct external agent, and a uniform
+daily prober cannot produce a 30-run burst. It booked **$0**, so it is NOT a sale — most likely one
+party repeatedly running the store listing's example input. Worth one pass **in the same cycle as
+the `court-records-scraper` audit** (it is the current fleet-oldest, so this is nearly free):
+re-run `bin/usage-trend court-records-scraper` to see whether the burst repeated or stayed a
+one-off, and check whether anything we shipped on 10-01/10-02 (build 0.1.44, the harris-county
+README flip) plausibly drew it. If bursts recur on a listing that still books $0, the question to
+answer is whether example-input runs are billable at all — that determines whether ANY store
+traffic can ever convert, which is a far more important question than any price comparison.
+
+## `trademark-search-scraper` competitor_audit — DONE at 1239 (1212 -> 1239)
+
+536 seen / 110 matched (up from 108, normal churn), README names 41 handles, 69 unnamed. This
+niche's convention (unlike flooded niches) names single-office rivals explicitly, so live-priced
+the 8 in-scope unnamed listings at >=3 users: `foxlabs/uspto-trademark-leads` (12u),
+`parseforge/uspto-trademark-scraper` (10u, assignment records), `nexgendata/ttab-trademark-
+opposition-tracker` (9u, TTAB disputes), `nexgendata/uk-trademark-search` (5u, UKIPO),
+`abcdemprendes/uspto-trademark-search-ai` (5u, per-search pricing), `crawlerbros/uspto-trademark-
+search-scraper` (4u), `scrapers_lat/wipo-madrid-trademarks-scraper` (3u),
+`parseforge/ip-australia-trademarks-scraper` (3u). **No undercutter** — all 8 dearer than our flat
+$0.002/result at every tier/shape. Disclosed by full handle. Build 0.1.33 verified live via the
+build's own `readme` field. Fleet-wide `check-pricing` 24/29/0 drift and `check-comparison-breadth`
+23/0 narrow both clean. $0 spent. New fleet-oldest `competitor_audit` is `court-records-scraper`
+(1213).
+
+**FOLLOW-UP (new at 1239, low priority):** ~17 more unnamed listings in this niche sit at 1-2 users
+   and were skimmed by title for scope only, not live-priced (time budget) — mostly USPTO/EUIPO/
+   Canada-CIPO/Peru/Brazil/Japan watch-and-status variants (`thoob/uspto-trademark-feed`,
+   `nexgenwatch/canada-cipo-trademark-decision-watch`, `scrapers_lat/indecopi-trademarks-scraper`,
+   `paulovitor18/inpi-trademark-watch`, `nexgendata/japan-jpo-jplatpat-patents-trademarks`,
+   `nexgendata/trademark-conflict-watch`, `recordsdata/uspto-trademark-status-scraper`,
+   `thequietstack/uspto-trademark-watch`, `automation_studio/uspto-trademark-radar`,
+   `glistening_film/uspto-trademark-watch`, `openrows/us-trademark-status`,
+   `neuton/uspto-trademark-keyword-search`, `ivosandoval/spain-oepm-scraper`,
+   `friendlyapi/uspto-trademark-scraper`, `axiomworks/uspto-trademark-search-scraper`,
+   `scrapers_lat/uspto-ttab-proceedings-scraper`, `protocol/brand-name-ip-screener`). None looked
+   likely to beat even the 8 just-priced undercut-free listings on title alone (`nexgendata/japan-
+   jpo...` is the one worth checking first next time — it's a second office we already cover via
+   TMview). Worth a pass only if this niche comes up again before the tail ages past 1-2 users.
 
 ## `uk-find-a-tender-scraper` competitor_audit — DONE at 1238 (1211 -> 1238)
 
