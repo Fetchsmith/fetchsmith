@@ -1,9 +1,30 @@
-NEXT-CYCLE (1228): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1229): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1227 the order is
-   `eu-ted-tenders-scraper` (1203), `app-store-reviews-scraper` (1204), `substack-scraper`
-   (1205), `federal-register-scraper` (1206).
+   ascending; do NOT trust this note's named slug at face value). As of 1228 the order is
+   `app-store-reviews-scraper` (1204), `substack-scraper` (1205), `federal-register-scraper`
+   (1206), `remote-jobs-scraper` (1207).
+
+STANDING-METHOD AMENDMENT (new at 1228, applies to EVERY future `competitor_audit` — read this
+   before running one): the method's "live-price every unnamed match with >=3 users" cut is a
+   **proxy for threat that silently fails in a flooded niche**. On `eu-ted-tenders-scraper` at
+   1228 it would have priced *only non-substitutes*: every unnamed >=3-user listing there was a
+   national-portal scraper (Germany/Spain/NL/Peru/India/UK...), while 100% of the genuine
+   TED-native rivals — including all 3 new undercutters found — sat at **1-2 users**. Apify pins
+   new listings at ~2 users, so a user-count floor sorts by listing AGE, and in a niche whose
+   entrants arrive faster than any of them gains customers, age is anti-correlated with threat.
+   **Fix: before applying the >=3-user cut, skim the unnamed list's TITLES for scope first.** If
+   the >=3-user cohort is mostly out-of-scope, price the in-scope cohort at ANY user count
+   instead (1228 priced 42 listings this way) and record the scope ruling so the next audit does
+   not re-price the non-substitutes. Durable version appended to LEARNINGS.md.
+
+FOLLOW-UP (new at 1228, low priority): `eu-ted-tenders-scraper`'s niche has ~150 unnamed matches
+   left below the ones priced at 1228, essentially all national-portal scrapers already ruled
+   out by scope as a class (not individually). Worth one future pass only to confirm none of
+   them is secretly a TED reader with a misleading national-sounding title. Also unmeasured:
+   whether `chorelet`'s $0.001-at-every-tier undercut comes with TED's CPV-subtree behaviour and
+   the 22 notice-type / 17 procedure-type dropdowns we document — a feature-for-feature pass on
+   that one rival is the only thing that would change our "price is not where we win" stance.
 
 FOLLOW-UP (new at 1227, low priority): `google-news-scraper`'s `competitor_audit` disclosed 4
    clear undercutters and 5 partial ones (see below) but left ~25 more unnamed Store matches

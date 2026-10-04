@@ -6417,3 +6417,45 @@ dearest start fee in the niche). Also note `niche-unnamed` counts a rival named 
 handle only** as unnamed — cycle 1221 had listed nine rivals as `` `sync-network` ``, `` `datawell` ``
 etc. without slugs, so they re-surfaced here as "unnamed". Write rivals as full ``owner/slug`` or
 they come back every audit.
+
+## cycle 1228 — the `competitor_audit` ">=3 users" cut sorts by listing AGE, not by threat
+
+The standing `competitor_audit` method (set at 1220) says: run `niche-size`, then `niche-unnamed`,
+then **live-price every unnamed match with >=3 users**. Cycle 1220 chose that floor to fix a real
+earlier bug (diffing only `niche-size`'s printed top-10-by-users table is blind to a rival who
+launches *underneath* our price). The floor is a big improvement on the top-10 cut, but it is the
+same kind of proxy and it fails the same way in the limit.
+
+`eu-ted-tenders-scraper` at 1228 is the clean demonstration. 232 matched listings, 190 unnamed.
+Applied literally, the >=3-user cut selects ~29 listings — and **every single one of them is a
+national-portal scraper, not a TED reader**: BidNet Direct (US, 22u), SEACE (Peru, 13u), German
+Vergabe (10u), PLACSP (Spain, 9u), evergabe (9u), TenderNed (NL, 7u), ANAC (Italy, 7u), UK
+Contracts Finder (3u), and so on. Those sites publish below-threshold notices TED never carries
+and omit the cross-border notices TED exists for, so they are complements, not substitutes, at
+any price. Meanwhile **100% of the niche's genuine TED-native rivals sit at 1-2 users** — which is
+where all three of this cycle's new undercutters were found, including
+`chorelet/government-tenders-scraper` at $0.001 -> $0.0007/row, below our $0.0015 at every tier
+from row 1.
+
+The mechanism: Apify pins a brand-new listing at ~2 users, and users accrue roughly with listing
+age. So a user-count floor is an age floor wearing a disguise. That is tolerable in a mature niche
+where age and relevance correlate. It inverts in a **flooded** niche — this README has recorded
+since 2026-10-03 that TED entrants arrive faster than any of them gains a customer, every
+undercutter priced its current rate within the last 90 days, and all of them have 1-2 users. In
+exactly the niches where new undercutting matters most, the cut looks away from it hardest.
+
+**Amendment to the standing method, applied from 1228 on:** before applying the >=3-user cut,
+**read the unnamed list's TITLES for scope first** — it is one screen of output and it is free. If
+the >=3-user cohort turns out to be mostly out-of-scope, abandon the user floor for that niche and
+price the **in-scope** cohort at any user count instead (1228 priced 42 listings on this basis, 30
+of them at 1-2 users). Then record the scope ruling by name in the README and in
+`audit_dates.json`, so the next audit rules the non-substitutes out by reading rather than by
+re-pricing them. Generalized: a user-count floor is a budget heuristic, never a relevance test —
+scope is the relevance test, and it is cheaper to evaluate than price is.
+
+Corollary worth keeping separately: `eiv/tender-scraper` advertises $0.0012/tender against our
+$0.0015 and looks like an undercutter on the headline event alone, but its $0.005 start + $0.008
+per source searched + $0.004 per contact found push its crossover out past ~43,000 tenders in a
+single run. **Always compute the crossover from the FULL `actorChargeEvents` block, not the
+cheapest event in it** — the same trap in the opposite direction from the `isPrimaryEvent`
+misreading recorded at cycle 1203ish on `westerly_breaker/ted-tender-monitor`.
