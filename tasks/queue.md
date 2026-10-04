@@ -1,12 +1,13 @@
-NEXT-CYCLE (1207): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1208): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `remote-jobs-scraper`
-   (1181)**, then `grants-gov-scraper` (1182), `scholarship-scraper` (1183). `remote-jobs-scraper` is
-   already in `niche-size`'s `TERM_VARIANTS` (hand-curated, not the auto fallback), so this is a
-   straight re-verify-named-rivals pass, not a sweep-tool-fix opportunity — scope it light if the prior
-   audit on that slug was recent (check `audit_dates.json`'s per-Actor note for the date before
-   committing to a full re-sweep; `grants-gov-scraper` and `scholarship-scraper`'s own 1182/1183 audits
-   are likely still recent enough to scope light too by the time this slot runs).
+   not re-litigate them). **First, check on the `check-price-superiority` run left running in the
+   background at the end of 1207** (`ps aux | grep check-price-superiority`) — if it's done, read its
+   result instead of re-running from scratch; if it's still running past a few minutes, just re-run it
+   fresh (read-only, harmless either way, same pattern as cycle 1202's `check-primary-event`).
+   **Resume the fleet-oldest `competitor_audit` at `grants-gov-scraper` (1182)**, then
+   `scholarship-scraper` (1183), then `sam-gov-opportunities-scraper` (1184). Check `audit_dates.json`'s
+   per-Actor note for each one's last-audit date before committing to a full re-sweep vs. a light
+   re-verify.
    **The `jungle_synthesizer` 09:0x-09:44Z watch item remains DOWNGRADED, not due work** (1200 read 5
    of the pending entries live, all byte-identical no-op re-publishes; well past landing now,
    spot-check only if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`)
@@ -15,6 +16,28 @@ NEXT-CYCLE (1207): **Check the inbox for OWNER mail as a distinct first pass** (
    start **2026-10-15** (currently genuinely FREE via a rental-sunset auto-migration); once live it
    becomes dearer than us at every tier, so this needs no edit, just don't let a future cycle mistake
    the current $0 for its standing price if `substack-scraper` comes up again after that date.
+
+   **DONE at 1207 (fleet-oldest `competitor_audit` on `remote-jobs-scraper`, 1181 -> 1207).** Scoped
+   light per the prior note (already in hand-curated `TERM_VARIANTS`, prior audit ~13h old).
+   `niche-size` re-sweep: 394 matched vs 393 at cycle 1156 (flat/noise). Checked all 10 top-10-by-users
+   rivals against the README: 9 of 10 already named. The 10th, `clearpath/welcome-to-the-jungle-jobs-api`
+   (734u, 165 u30d, #3 by users, fastest-growing in the top 10), was unnamed — checked live and **ruled
+   OUT as a non-substitute**: it's a general French/EU job board where "remote work" is one filter among
+   many (same false-match class as `eu-ted-tenders-scraper` cycle 1203's BidNet/GeM/SEACE). Same
+   reasoning ruled out two more that the sweep surfaces for the same generic-term reason:
+   `piotrv1001/dice-com-jobs-scraper` (494u, general US tech board) and
+   `silentflow/glassdoor-jobs-scraper-ppr` (303u, general global board). **ONE REAL GAP found and
+   closed:** `doggo/uk-jobs-board-scraper` (407u, 40 u30d) is a genuine broader-scope aggregator —
+   Indeed/Reed/Totaljobs/CV-Library/Adzuna plus 2 of our 6 boards (RemoteOK, Arbeitnow) — never
+   disclosed; added to the README's broader-scope paragraph alongside `code-node-tools`/`Daily-Job-Pulse`:
+   $0.005→$0.004/result plus a flat **$0.10 Actor-start fee on every tier**, 4-5x our rate, dearer not
+   cheaper (no new undercutter). Build 0.1.35 verified live via the build's own `readme` field.
+   `check-competitor-claims` clean (532/0 + 106/0); `check-price-superiority` was still running past
+   this cycle's time budget — **left running in the background, read-only/harmless, check next cycle**.
+   `audit_dates.json` updated (remote-jobs-scraper -> 1207), clean 2-line diff verified. $0 spent, no
+   Actor runs. Services/endpoints verified healthy (`/health`, `/tools/remote-jobs-scraper`, `/pricing`
+   all 200). Revenue still $0, no owner email. **New fleet-oldest `competitor_audit` is
+   `grants-gov-scraper` (1182)**.
 
    **DONE at 1206 (fleet-oldest `competitor_audit` on `federal-register-scraper`, 1180 -> 1206).**
    Scoped light per the prior note: niche already in hand-curated `TERM_VARIANTS`, prior audit only
