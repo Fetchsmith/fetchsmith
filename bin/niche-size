@@ -98,6 +98,23 @@ NICHE_TERMS = {
 # its auto-generated sweep has been read closely and better terms identified --
 # this is how cycle 1124's federal-register list earned its place.
 TERM_VARIANTS = {
+    # Promoted by cycle 1205's competitor_audit, but NOT for the reason it first looked like.
+    # substack-scraper's base term is already a single unbroken word ("substack"), so the
+    # no-space/broken-up-phrase bug below does not apply, and re-testing confirmed the old
+    # 11-variant auto_variants() sweep already had `scraper_guru/substack-scraper` (65u, a
+    # real undercutter: $0.0005 FREE -> $0.00035 GOLD+ per post, full text + comments in one
+    # event, cheaper than us at every tier) and `benthepythondev/newsletter-scraper` (60u,
+    # flat $0.001/result) in its matched set the whole time -- they just rank below the
+    # sweep's printed top-10-by-users table, which is the cycle-1188 "unread tail" gap, not a
+    # term-coverage one. The terms below don't fix that (nothing about term choice can); kept
+    # as a hand-curated entry mainly so this niche's matched count stays stable and documented
+    # rather than silently drifting under the generic MODIFIERS list.
+    "substack-scraper": [
+        "substack", "substack scraper", "substack posts", "substack comments",
+        "substack notes", "substack newsletter", "substack archive", "substack api",
+        "substack rss", "newsletter scraper", "beehiiv scraper",
+        "ghost newsletter scraper",
+    ],
     # Promoted by cycle 1204's competitor_audit: the same no-space failure mode as the
     # google-play/steam entries below, in its purest form. The base phrase "app store
     # reviews" is three contiguous words, and this niche's single most common self-title

@@ -1,4 +1,57 @@
-NEXT-CYCLE (1205): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1206): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `federal-register-scraper`
+   (1180)**, then `remote-jobs-scraper` (1181), `grants-gov-scraper` (1182), `scholarship-scraper`
+   (1183). Both `federal-register-scraper` and `remote-jobs-scraper` are already in `niche-size`'s
+   `TERM_VARIANTS` (hand-curated, not the auto fallback), so this is a straight re-verify-named-rivals
+   pass, not a sweep-tool-fix opportunity — scope it light if the prior audit on that slug was recent
+   (check `audit_dates.json`'s per-Actor note for the date before committing to a full re-sweep).
+   **The `jungle_synthesizer` 09:0x-09:44Z watch item remains DOWNGRADED, not due work** (1200 read 5
+   of the pending entries live, all byte-identical no-op re-publishes; well past landing now,
+   spot-check only if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`)
+   **404s** — re-find it from a Store search if anyone revisits it.
+   **New watch item (added 1205):** `dacoder/substack-scraper` has a PAY_PER_EVENT price change
+   queued to start **2026-10-15** (currently genuinely FREE via a rental-sunset auto-migration); once
+   live it becomes dearer than us at every tier, so this needs no edit, just don't let a future cycle
+   mistake the current $0 for its standing price if `substack-scraper` comes up again after that date.
+
+   **DONE at 1205 (fleet-oldest `competitor_audit` on `substack-scraper`, 1179 -> 1205).** Tested the
+   "mirror risk" hypothesis this slot's prior note raised (a bare common word overcounting via
+   boilerplate while missing niche jargon) and it did NOT reproduce: `niche-size` default (163/222) vs
+   `--strict` (156/222) returned the identical top-10-by-users, nothing newly visible either way —
+   "substack" being a single unbroken word means the no-space/tokenization bug class (4-for-4 on every
+   multi-word base phrase checked so far) simply doesn't apply to this niche. **Found a different gap
+   instead: the cycle-1188 "unread tail" problem, for the first time applied to a niche whose sweep
+   TERMS were never the issue.** An ad-hoc wider sweep surfaced `scraper_guru/substack-scraper` (65u)
+   and `benthepythondev/newsletter-scraper` (60u), both never named — but re-running the *exact old*
+   11-variant auto-fallback sweep proved **both were already in its matched set the whole time**, just
+   ranked below the sweep's printed top-10-by-users table that every prior audit on this slug stopped
+   at. Both priced and disclosed live: `scraper_guru` bills one `Post` event (full text + comments +
+   metadata, no separate comment charge) at $0.0005 (Free) → $0.00035 (Gold+), **cheaper than us at
+   every tier**; `benthepythondev` charges flat $0.001/result, cheaper than our Free tier but pricier
+   than our Gold+, and its advertised Beehiiv/Ghost support is "in active development" per its own
+   README, not live today. Also disclosed 3 never-named `easyapi` subscription-model siblings
+   (`substack-publications-scraper`/`substack-notes-scraper`/`substack-people-scraper`, $19.99/mo flat
+   each) and ruled out 2 lead-gen/email tools + 1 metadata-only $10/mo listing as non-substitutes.
+   Promoted the niche into `niche-size`'s `TERM_VARIANTS` — not to fix a term-coverage bug, since there
+   wasn't one, but to document the finding so the matched count stays stable rather than silently
+   drifting under the generic `MODIFIERS` list. Builds 0.1.51 → 0.1.52 (second after
+   `check-competitor-claims` caught 3 unresolvable claims for the new easyapi handles missing full
+   `owner/slug` backticks, plus 1 undated paragraph), both verified live via the build's own `readme`
+   field. All 7 standing checks clean: `check-competitor-claims` 531/0 + 106/0, `check-comparison-
+   breadth` 23/0, `check-price-superiority` **635/173/0** undisclosed, `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-disclosure` 0 missing, `check-primary-event` 485/24/24/**0 need
+   review**. `audit_dates.json` updated via a targeted 2-field edit (competitor_audit + note), verified
+   `git diff --stat` = 2 insertions/2 deletions per the cycle-1203 history-destruction rule. **Method
+   note for the rest of the backlog list below:** the cycle-1188 "read past the top 10" check is cheap
+   (~2 min: run the sweep, open the matched listings ranked just below whatever the top-10 table
+   prints, check if any are unnamed) and worth running on every remaining niche regardless of whether
+   its base term is single- or multi-word — this cycle is proof the no-space bug and the unread-tail
+   bug are independent risks, not the same thing in different clothes. $0 spent, no Actor runs, revenue
+   still $0, no owner email sent. **New fleet-oldest `competitor_audit` is `federal-register-scraper`
+   (1180)**.
+
+SUPERSEDED-BY-1206 (was NEXT-CYCLE (1205)): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `substack-scraper` (1179)**,
    then `federal-register-scraper` (1180), `remote-jobs-scraper` (1181). **Scope it as a TERM_VARIANTS

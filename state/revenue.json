@@ -1,5 +1,5 @@
 {
- "ts": 1791084623,
+ "ts": 1791087611,
  "date": "2026-10-04",
  "apify": {
   "google-news-scraper": {
@@ -26,7 +26,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 23,
-   "runs": 684,
+   "runs": 685,
    "ext_ok30d": 23,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -45,7 +45,7 @@
    "users": 3,
    "users30d": 0,
    "runs30d": 33,
-   "runs": 696,
+   "runs": 697,
    "ext_ok30d": 33,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -64,7 +64,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 23,
-   "runs": 659,
+   "runs": 660,
    "ext_ok30d": 23,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -83,7 +83,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 23,
-   "runs": 643,
+   "runs": 644,
    "ext_ok30d": 23,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -102,7 +102,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 22,
-   "runs": 658,
+   "runs": 659,
    "ext_ok30d": 22,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -121,7 +121,7 @@
    "users": 1,
    "users30d": 0,
    "runs30d": 23,
-   "runs": 660,
+   "runs": 661,
    "ext_ok30d": 23,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -140,7 +140,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 22,
-   "runs": 649,
+   "runs": 650,
    "ext_ok30d": 22,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -178,7 +178,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 22,
-   "runs": 634,
+   "runs": 635,
    "ext_ok30d": 22,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -197,7 +197,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 33,
-   "runs": 629,
+   "runs": 630,
    "ext_ok30d": 33,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -216,7 +216,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 21,
-   "runs": 606,
+   "runs": 607,
    "ext_ok30d": 21,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -235,7 +235,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 21,
-   "runs": 585,
+   "runs": 586,
    "ext_ok30d": 21,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -254,7 +254,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 21,
-   "runs": 569,
+   "runs": 570,
    "ext_ok30d": 21,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 21,
-   "runs": 586,
+   "runs": 587,
    "ext_ok30d": 21,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -292,7 +292,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 21,
-   "runs": 511,
+   "runs": 512,
    "ext_ok30d": 21,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -311,7 +311,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 20,
-   "runs": 493,
+   "runs": 494,
    "ext_ok30d": 20,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -349,7 +349,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 18,
-   "runs": 317,
+   "runs": 318,
    "ext_ok30d": 18,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -365,10 +365,10 @@
   },
   "court-records-scraper": {
    "public": true,
-   "users": 2,
+   "users": 1,
    "users30d": 1,
    "runs30d": 45,
-   "runs": 175,
+   "runs": 176,
    "ext_ok30d": 45,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -384,10 +384,10 @@
   },
   "trademark-search-scraper": {
    "public": true,
-   "users": 3,
-   "users30d": 2,
+   "users": 1,
+   "users30d": 1,
    "runs30d": 15,
-   "runs": 121,
+   "runs": 122,
    "ext_ok30d": 15,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 12,
-   "runs": 94,
+   "runs": 95,
    "ext_ok30d": 12,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -424,16 +424,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 12,
-   "runs": 85,
-   "ext_ok30d": 12,
+   "runs30d": 13,
+   "runs": 87,
+   "ext_ok30d": 13,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 12,
+    "SUCCEEDED": 13,
     "TIMED-OUT": 0,
-    "TOTAL": 12
+    "TOTAL": 13
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -444,7 +444,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 9,
-   "runs": 59,
+   "runs": 60,
    "ext_ok30d": 9,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -462,9 +462,9 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 24,
-  "users": 46,
-  "runs30d": 515,
-  "ext_ok30d": 512,
+  "users": 43,
+  "runs30d": 516,
+  "ext_ok30d": 513,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,
