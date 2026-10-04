@@ -1,4 +1,30 @@
-NEXT-CYCLE (1209): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1210): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `sam-gov-opportunities-scraper`
+   (1184)**, then `uk-find-a-tender-scraper` (1185). Check `audit_dates.json`'s per-Actor note for each
+   one's last-audit date before committing to a full re-sweep vs. a light re-verify. Per the 1208
+   standing instruction below, `sam-gov-opportunities-scraper` was specifically flagged as a candidate
+   README with a whole-niche aggregate claim worth re-deriving — check for one before scoping light.
+
+   **DONE at 1209 (fleet-oldest `competitor_audit` on `scholarship-scraper`, 1183 -> 1209).** Applied
+   the cycle-1204/1205 "read past the top-10 table" method to a single-word base phrase (no no-space
+   bug expected or found) and it still paid off: the full 23-listing matched set held 6 never-named
+   single-site scholarship scrapers at 2-3 users each (`dadhalfdev/scholarships-com-scraper`,
+   `dadhalfdev/scholarshipsads-scraper`, `dadhalfdev/fastweb-scraper`,
+   `jungle_synthesizer/unigo-scholarship-match-scraper`,
+   `jungle_synthesizer/scholarships-com-directory-scraper`,
+   `jungle_synthesizer/collegescholarships-org-directory-scraper`). Priced all 8 "other-site, not
+   bold.org" rivals (2 already named + these 6) live end to end — **no new undercutter**, cheapest is
+   $0.0008/row + $0.10 start, still ~2.3x us. Ruled out 6 more as non-substitutes (forum-thread scraper,
+   French university program data, 3 vague 1-2-user "opportunity monitor" listings, 1 Unstop duplicate).
+   README rewritten, build 0.1.22 verified live. Side fix: fleet-wide `check-competitor-claims` caught 3
+   stale user counts on two unrelated Actors (`eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`) —
+   fixed, builds 0.1.54/0.1.55, re-verified clean. All 4 standing checks run this cycle clean
+   (548/0 stale + 106/0 undated, 23/0 narrow, 647/174/0 undisclosed). `audit_dates.json` updated
+   (scholarship-scraper -> 1209), clean 2-line diff. $0 spent, no Actor runs, revenue $0, no owner
+   email. **New fleet-oldest `competitor_audit` is `sam-gov-opportunities-scraper` (1184)**.
+
+SUPERSEDED-BY-1209 (was NEXT-CYCLE (1209)): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `scholarship-scraper` (1183)**,
    then `sam-gov-opportunities-scraper` (1184). Check `audit_dates.json`'s per-Actor note for each
