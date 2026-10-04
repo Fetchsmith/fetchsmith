@@ -1,19 +1,36 @@
-NEXT-CYCLE (1238): **1237 was the QUALITY/GROWTH cycle (did the store-rank trend read, see DONE
-   block below); dev.to slot 10 is still not due (~2026-10-06/07) so 1238 is free to resume the
-   fleet-oldest `competitor_audit` rotation** unless the dev.to date has arrived by then (check
-   live, don't trust this note). **Re-derive the fleet-oldest `competitor_audit` from
-   `audit_dates.json` yourself** (sort ascending; do NOT trust any note's slug at face value). As
-   of 1236 the order was `uk-find-a-tender-scraper` (1211), `trademark-search-scraper` (1212),
-   `court-records-scraper` (1213), `ats-jobs-scraper` (1214) — unchanged at 1237 (no audit ran).
+NEXT-CYCLE (1239): **1238 ran the fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper`
+   (1211 -> 1238, see DONE block below, no undercutter found); dev.to slot 10 is due
+   ~2026-10-06/07 — check the live date and the live dev.to article list before drafting** (per
+   the 1235 lesson, local `notes/devto_article_N.md` numbering is not reliable — cross-reference
+   `GET https://dev.to/api/articles/me` against `site/content/blog/*.md` frontmatter). If not yet
+   due, **re-derive the fleet-oldest `competitor_audit` from `audit_dates.json` yourself** (sort
+   ascending; do NOT trust any note's slug at face value). As of 1238 the order is
+   `trademark-search-scraper` (1212), `court-records-scraper` (1213), `ats-jobs-scraper` (1214),
+   `clinicaltrials-scraper` (1215).
    **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
-   the word "owner"): the only real one on record (Sep-22, `scholarship-scraper` "under
-   maintenance") was re-verified resolved at 1233, and `peter@bytewells.com`'s "monthly rentals"
-   pitch (2026-10-01, to `requests@`) is the **already-declined** bytewells pre-launch marketplace
-   — recorded in LEARNINGS.md, do not re-investigate it, do not reply. Still nothing new as of
-   1237's pass.
-   **`bin/revenue`/`bin/traffic` re-checked at 1237: still $0 revenue, buyer-intent funnel still
+   the word "owner"): the only real items on record (Sep-22 `scholarship-scraper` "under
+   maintenance", resolved at 1233; Sep-16 "add icons" recommendation, closed since cycles
+   364/465/519; the shopify-actor bug thread, already fixed) are all closed, and
+   `peter@bytewells.com`'s "monthly rentals" pitch (2026-10-01, to `requests@`) is the
+   **already-declined** bytewells pre-launch marketplace — recorded in LEARNINGS.md, do not
+   re-investigate it, do not reply. Still nothing new as of 1238's pass.
+   **`bin/revenue`/`bin/traffic` last checked at 1237: still $0 revenue, buyer-intent funnel still
    8 tools-page + 2 pricing-page verified visitors/7d** — nowhere close to the CLAUDE.md
-   >100 visits/day Polar-ask threshold. No owner email.
+   >100 visits/day Polar-ask threshold. No owner email. (Not re-checked at 1238 — audit filled the
+   time budget; worth a re-check next GROWTH cycle.)
+
+## `uk-find-a-tender-scraper` competitor_audit — DONE at 1238 (1211 -> 1238)
+
+157 seen / 93 matched (up from 88 the prior day, normal churn), 39 unnamed, all 1-2 users. Scope-
+first method (1228 amendment) applied: live-priced the 21 in-scope unnamed listings (UK-specific /
+Contracts-Finder-specific), skipped ~18 multi-country complements. **No undercutter** — all 21
+dearer than our tiered $0.003 (FREE) -> $0.0025 (GOLD+) rate; closest is `jpopendata/uk-public-
+tenders` (ties FREE per-row rate but a $0.05 start fee keeps it dearer at every run size). 6 are
+narrow `nexgenwatch` watch/delta sub-products, 3 more are narrower-scope non-substitutes (awards-
+only, deadline-deltas-only). All 21 disclosed by full handle. Build 0.1.56 verified live via the
+build's own `readme` field. Fleet-wide `check-pricing` 24/29/0 drift and `check-comparison-breadth`
+23/0 narrow both clean. $0 spent. New fleet-oldest `competitor_audit` is `trademark-search-scraper`
+(1212).
 
 ## `bin/store-rank` trend read — DONE at 1237 (the queued follow-up from 1234/1235/1236)
 
