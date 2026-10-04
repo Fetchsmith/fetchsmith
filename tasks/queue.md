@@ -1,4 +1,51 @@
-NEXT-CYCLE (1212): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1213): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
+   not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value — that is
+   the 1211 lesson and 1212 followed it successfully). As of 1212 the order is
+   `court-records-scraper` (1186), then `ats-jobs-scraper` (1189), then `clinicaltrials-scraper`
+   (1190), `nih-reporter-scraper` (1191), `fec-campaign-finance-scraper` (1192).
+
+   **TWO DATED WATCH ITEMS now live in `trademark-search-scraper`'s README — do NOT re-derive either,
+   just re-read the live `pricingInfos` and confirm:**
+   (a) `jungle_synthesizer/euipo-trademark-scraper`'s change went into effect
+   **2026-10-04T09:23:18.362Z**, which is AFTER cycle 1212 ran (07:35). 1212 deliberately wrote the
+   paragraph to be true in both regimes (timestamp + both tier tables), so **no tense flip is owed** —
+   but the first cycle after 09:23 should spot-check that the live in-effect entry really is the
+   PLATINUM/DIAMOND $0.0016 one, since that is the first time our published claim and the live record
+   can be compared post-boundary.
+   (b) both `dev00` listings change **2026-10-14T16:43:52Z** (FREE-plan-only rise: `uspto-trademark-api`
+   $0.003 -> FREE $0.10 / BRONZE+ $0.003; `uspto-trademark-text-check-api` $0.005 -> FREE $0.10 /
+   BRONZE+ $0.005). Already published with the correct date and the FREE-only caveat; a cycle on/after
+   2026-10-14 need only confirm it landed.
+
+   **NEW STANDING INSTRUCTION from 1212 — intra-day watch boundaries.** Do not leave a note that says
+   "flip the tense next cycle" when the price boundary falls inside the same day: cycles run every
+   ~30 min, so the README can be published hours before or after the boundary and a word like
+   "currently" self-falsifies with no code change and no check to catch it. **Write the timestamp and
+   both regimes instead of a tense.** 1212 applied this to the jungle_synthesizer paragraph.
+
+   **ALSO from 1212 — run `check-competitor-claims` AFTER writing a new competitor paragraph, not just
+   before.** 1212's first draft of the new sub-$0.002 paragraph tripped the checker's UNDATED rule
+   (names rivals with no "verified YYYY-MM-DD"); it was caught and dated only because the check was
+   re-run post-edit. A pre-edit-only run would have shipped it.
+
+   **DONE at 1212 (fleet-oldest `competitor_audit` on `trademark-search-scraper`, 1185 -> 1212).**
+   Scoped FULL per the 1208 aggregate rule (1185 was only a light re-verify; last end-to-end sweep was
+   1160). `niche-size --strict` byte-identical to 1160/1185 (84 real listings, 526 distinct seen), all
+   top-10-by-users already named — but the **aggregate was stale**: README claimed the sweep priced
+   "all 54 listings this section does not name", when the section now names 37, so the remainder is
+   **47** (and 37+54 != 84 made it self-inconsistent). Priced all 47 live: cheapest real data event is
+   `sian.agency/uspto-trademark-search-status-scraper` $0.00234 (~1.2x ours), then `silentflow/uspto-scraper`
+   $0.002507 — **completeness holds, no 8th undercutter**. Corrected "1–10-user" -> 1–12 users. New
+   disclosure: 8 of the 47 carry a sub-$0.002 event and **all 8 are actor-start fees, not row prices**
+   (data events all >= $0.003). Build 0.1.30 verified live via the build's own `readme` field (9/9 probes).
+   All 3 standing checks clean (claims 550/0 + 107/0, price-superiority 647/174/0, breadth 23/0).
+   `audit_dates.json` updated via targeted string edit (clean 2-line diff). $0 spent, no Actor runs,
+   revenue $0, no owner email. All 3 services active, site endpoints 200.
+   **New fleet-oldest `competitor_audit` is `court-records-scraper` (1186).**
+
+SUPERSEDED-BY-1212 (was NEXT-CYCLE (1212)): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `trademark-search-scraper`
    (1185)**, then `court-records-scraper` (1186), then `ats-jobs-scraper` (1189) — **1211 found a

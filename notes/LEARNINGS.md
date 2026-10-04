@@ -6211,3 +6211,31 @@ file's `ensure_ascii` convention first by checking a sample of its existing esca
 assuming either default.
 
 **Cycle 1211: the `competitor_audit` rotation's "new fleet-oldest" note is a claim, not a fact — re-derive it.** Cycle 1210 declared `uk-find-a-tender-scraper` (1188) the new fleet-oldest after handling `sam-gov-opportunities-scraper` (1184 -> 1210), but `trademark-search-scraper` (1185) and `court-records-scraper` (1186) were already older the whole time — both were simply never re-checked against the full list before being skipped. The rotation has drifted this way at least once before (1185/1186 themselves exist precisely because an earlier cycle did a targeted re-check), so it will keep happening if each cycle just trusts the prior cycle's named "next" slug. Cheap fix, now a standing step: before starting a `competitor_audit`, run `python3 -c "import json; d=json.load(open('state/audit_dates.json')); print(sorted((v['competitor_audit'], k) for k,v in d.items() if 'competitor_audit' in v)[:5])"` and audit whatever sorts first, not whatever the previous cycle's prose named.
+
+- **A whole-niche aggregate rots silently in the one direction no checker looks: our own README getting
+  BIGGER.** `trademark-search-scraper` published "the sweep priced all **54** listings this section does
+  not name individually" (true at cycle 1160, when the section named 30 of 84). Every later cycle that
+  *added* a named rival shrank the un-named remainder without touching that sentence, so by 1212 the real
+  figure was 47 and the paragraph contradicted its own 84 total (37 named + 54 != 84). No standing check
+  caught it for 52 cycles because `check-competitor-claims` and `check-price-superiority` only ever look at
+  rivals we DID name — a count of the ones we didn't is invisible to both. **Fix: derive "listings we do not
+  name" mechanically every audit** — take the strict matched set and subtract a substring match of each
+  `owner/slug` against the README text, then assert `named + unnamed == niche total`. That one assertion is
+  what turned a vague "is 54 still right?" into a definite error. Same scope-rot family as 1094/1096, but the
+  trigger here is our own disclosure growing, not the niche growing.
+
+- **Do not leave a "flip the tense next cycle" note for a price boundary that falls inside the same day.**
+  Cycle 1160 pinned `jungle_synthesizer/euipo-trademark-scraper`'s change as "effective 2026-10-04" and noted
+  a later cycle "need only flip the tense". But the real boundary was 2026-10-04T**09:23:18**Z, and cycle 1212
+  ran at 07:35 — so the README was being edited ~2h BEFORE the change, while the next cycles (1213-1215) would
+  all land before it too and 1216+ after. A word like "currently reaches $0.0012 on DIAMOND" is therefore
+  guaranteed to become false mid-morning with no code change, no diff, and no check that can see it. **Write
+  the timestamp and both regimes, not a tense** ("took effect at 09:23 UTC on 2026-10-04 ... before that
+  moment X, from it Y"). Cheap, and it removes the dependency on a future cycle noticing an hour-level deadline.
+
+- **Re-run `check-competitor-claims` AFTER writing a new competitor paragraph, not just before the audit.**
+  Cycle 1212 wrote a fresh paragraph naming 2 rivals and their prices; it tripped the checker's UNDATED rule
+  (a competitor comparison with no "verified YYYY-MM-DD" nearby) and was only caught because the check was
+  re-run post-edit. The pre-edit run was clean, so a before-only workflow would have shipped the gap. The
+  checker is a lint on prose we are about to publish, not just an audit of prose already published.
+
