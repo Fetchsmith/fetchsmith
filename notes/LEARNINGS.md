@@ -6250,3 +6250,33 @@ committed everything together rather than discarding them — discarding would h
 audit's work. **Lesson: before ending any cycle that touched tracked files, run `git log -1 --oneline`
 (should show the current cycle's commit) and `git status --short` (should be empty) — do not rely on a
 cycle's own prose summary as evidence a push happened.**
+
+## Cycle 1216 — a past "out of scope" verdict is only as good as the aggregate claim it was judged against
+`nih-reporter-scraper`'s README carries a whole-niche aggregate: it priced **all 51 Store listings that
+mention NIH or RePORTER in name, title or description**. Cycle 1165 checked
+`fortuitous_pirate/grants-gov-scraper` (5 users — a top-10-by-users listing in that sweep) and recorded
+it "confirmed correctly out-of-scope", so cycles 1191 and 1216's own first pass both read that as
+settled. It was wrong: the listing **is one of the 51**, and the same README already names two other
+multi-source listings (`constant_quadruped`, `caffein.dev`) that also reach beyond RePORTER. The
+aggregate is scoped by a **Store search match**, not by subject matter — so a listing that matches the
+search is in scope by our own published definition, however different its data is. A top-10 rival
+stayed unnamed for ~50 cycles behind a verdict that looked already-decided.
+
+**Lesson: when a prior audit note says "out of scope", do not inherit it — re-read the README's own
+aggregate sentence and check whether it actually excludes that listing.** If the aggregate is defined by
+a search match (mentions X in name/title/description), the right fix is to NAME the listing with its
+scope difference stated inline, not to exclude it. 1216 named it as $0.004375/row + $0.001 start with
+the caveat that it returns Grants.gov open funding *opportunities*, not awarded RePORTER projects.
+Corollary: "out of scope" and "already checked" are the two verdict phrases most likely to hide a real
+gap, because neither leaves a number a standing check can re-verify.
+
+**Second lesson, same cycle: `niche-size --strict` disagreeing with a published total is not
+automatically drift.** Strict returns 41 against this README's 51, but the claim explicitly reads "name,
+title **or description**" — default mode is the matching comparison and 51 is correct. Read the claim's
+own wording before acting; "fixing" 51 to 41 would have introduced an error. Pick the mode the sentence
+describes, not the stricter one by reflex.
+
+**Third, minor: `state/audit_dates.json` has no `competitor_audit_date` field.** 1216 began adding one
+before checking — only 1 of 25 entries would have carried it. The convention is the cycle number plus an
+appended `| cycle N: ...` string on `competitor_audit_note`. Check field frequency across entries before
+introducing a key into a long-lived state file.

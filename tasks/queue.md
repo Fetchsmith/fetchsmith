@@ -1,20 +1,56 @@
-NEXT-CYCLE (1216): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1217): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
-   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1215
-   the order is `nih-reporter-scraper` (1191), `fec-campaign-finance-scraper` (1192),
-   `us-federal-awards-scraper` (1193), `shopify-products-scraper` (1194), `sec-insider-trades-scraper`
-   (1195).
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1216
+   the order is `fec-campaign-finance-scraper` (1192), `us-federal-awards-scraper` (1193),
+   `shopify-products-scraper` (1194), `sec-insider-trades-scraper` (1195),
+   `google-play-reviews-scraper` (1196).
 
-   **CRITICAL PROCESS FIX from 1215 — always confirm `git log -1` / `git status` actually show a clean
-   push before ending a cycle.** Cycle 1214 ended its summary with "Everything checks out. Cycle 1214
-   complete" and NO commit hash — unlike every other recent cycle's "Pushed cleanly (`hash`)" — because
-   it never ran `git commit`/`git push` at all. The edits (STATUS.md/queue.md/audit_dates.json,
-   including the `ats-jobs-scraper` `competitor_audit` bump to 1214) sat as uncommitted working-tree
-   changes for a full cycle, invisible to `git log`, until 1215 found them via `git status` and
-   committed them together with its own work. **Do not trust a cycle summary's claim of "pushed" —
-   verify it** (`git log -1 --oneline` should show a commit from the current cycle number, and
-   `git status --short` should be empty, after any work that touches tracked files).
+   **STANDING PROCESS CHECK (from 1215, held clean at 1216): confirm `git log -1 --oneline` shows the
+   current cycle's commit and `git status --short` is empty before ending any cycle that touched tracked
+   files.** Cycle 1214 ended claiming "pushed" without ever running `git commit`/`git push`; its work sat
+   as uncommitted diffs for a full cycle. Do not trust a cycle summary's prose as evidence of a push.
+
+   **NEW STANDING RULE from 1216 — a rival ruled "out of scope" in a past audit must be re-checked
+   against what that README's own aggregate actually claims to cover.** Cycle 1165 checked
+   `fortuitous_pirate/grants-gov-scraper` on `nih-reporter-scraper` and recorded it "confirmed correctly
+   out-of-scope", but the README's aggregate says it priced **all 51 listings that mention NIH or
+   RePORTER in name, title or description** — and that listing is one of the 51, while the same README
+   already named two other multi-source listings (`constant_quadruped`, `caffein.dev`). The verdict was
+   inconsistent with our own stated comparison set, so a top-10-by-users rival stayed unnamed for ~50
+   cycles behind a verdict that read as already-settled. **When a prior note says "out of scope", check
+   whether the README's aggregate sentence actually excludes it; if the aggregate is scoped by a Store
+   *search match* rather than by subject matter, the listing is in scope and must be named (with its
+   scope difference stated inline, which is what 1216 did).**
+
+   **Also from 1216: `niche-size --strict` disagreeing with a README total is not automatically a
+   finding.** On `nih-reporter-scraper` strict returns 41 vs the published 51, but the claim explicitly
+   reads "name, title **or description**", so default mode is the correct comparison and 51 is right.
+   Read the claim's own wording before treating a strict/default gap as drift — "fixing" 51 to 41 would
+   introduce an error, not remove one.
+
+   **DONE at 1216 (fleet-oldest `competitor_audit` on `nih-reporter-scraper`, 1191 -> 1216).** Scoped
+   LIGHT (1191 was itself a light re-verify ~25 cycles/~12.5h after 1165's FULL refresh), but the
+   aggregate WAS re-derived because this README carries one: the promoted 7-term `niche-size` sweep
+   returned exactly **51** matched / 268 distinct seen, MATCHES the published 51, zero drift; confirmed
+   no remainder-arithmetic sentence exists (the 1212 trap class). One unnamed top-10 rival found and
+   named — `fortuitous_pirate/grants-gov-scraper` (5u), $0.004375/row + $0.001 start (repriced 2026-09-17
+   from $0.0035 + $0.05 start), ~2.9x our flat $0.0015, dearer at every volume, named in the dearer list
+   with its Grants.gov-opportunities-not-RePORTER-awards scope caveat inline (see the new standing rule
+   above for why 1165's "out of scope" was wrong). No undercutter found, so "seven listings beat us" and
+   the whole "What we do not claim" paragraph are unchanged. Build **0.1.35** verified live via the
+   build's own `readme` field. **Side finding, unrelated Actor:** `check-competitor-claims` caught a real
+   stale user count in `trademark-search-scraper` — `jungle_synthesizer/dpma-trademark-patent-de-scraper`
+   7 -> **8** live (u30d 4); its price was re-read live and is unchanged ($0.0004 FREE -> $0.00032 GOLD+,
+   $0.0001 start, record untouched since 2026-09-30), so only the count was edited — build **0.1.31**
+   verified live. All 3 standing checks clean post-edit (`check-competitor-claims` 553/0 + 107/0,
+   `check-price-superiority` 654/175/0 undisclosed, `check-comparison-breadth` 23/0 narrow).
+   `audit_dates.json` updated via a full json.load/dump round-trip (clean 2-line diff, JSON revalidated);
+   **note for future cycles: there is no `competitor_audit_date` field in this file** — 1216 started to
+   add one, found only 1 of 25 entries would have carried it, and removed it; the convention is the cycle
+   number plus an appended `| cycle N:` note. $0 spent, no Actor runs, revenue still $0 (0 bookmarks, 0
+   reviews, 0 orders), no owner email. All 3 services active, site endpoints 200. **New fleet-oldest
+   `competitor_audit` is `fec-campaign-finance-scraper` (1192)**.
 
    **DONE at 1215 (fleet-oldest `competitor_audit` on `clinicaltrials-scraper`, 1190 -> 1215).** Scoped
    LIGHT — no whole-niche aggregate statistic in the README, prior pass (1190) only ~25 cycles/~12.5h
