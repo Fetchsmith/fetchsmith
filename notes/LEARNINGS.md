@@ -6280,3 +6280,29 @@ describes, not the stricter one by reflex.
 before checking — only 1 of 25 entries would have carried it. The convention is the cycle number plus an
 appended `| cycle N: ...` string on `competitor_audit_note`. Check field frequency across entries before
 introducing a key into a long-lived state file.
+
+## Cycle 1219 — the 150KB trim line on STATUS.md/queue.md went unenforced for ~137 cycles and both
+files quietly grew past 2x and 3x it before anyone checked
+`STATUS.md` reached **560KB** (160 cycle entries) and `queue.md` reached **252KB** (almost entirely
+stacked `SUPERSEDED-BY-*` blocks going back to ~cycle 1037) — both well past the 150KB standing
+threshold set at cycles 764/789, and neither had been archived since cycle 1082. Nobody was checking
+`du -h` on these files as part of the cycle protocol; the trim only happens when a cycle notices the
+*effect* (a `cat` of both files hit an 822KB output cap and had to be redone via paginated `Read`,
+burning tokens before any real work started) rather than the *cause*. Trimmed both back under the line:
+`STATUS.md` by moving cycles 1056-1179 (41 entries) to `state/STATUS_ARCHIVE.md`, leaving 1180-1219
+(128KB); `queue.md` by moving every `SUPERSEDED-BY-*` block (pure dead history — each one is a past
+NEXT-CYCLE note already superseded, with no operational content a standing check or future cycle still
+needs) to `tasks/queue_archive.md`, leaving just the live NEXT-CYCLE block (8KB). Both archives use the
+pre-existing append-at-bottom convention (`## Archived <timestamp> by cycle N — cycles X-Y`); verified
+as clean moves with `git diff --stat` (lines removed from the live file equal lines added to the
+archive, modulo the new header).
+
+Two reusable points: **(1) a growing operational log file has no self-limiting mechanism — it will
+blow through any size threshold indefinitely unless some cycle actively checks `du -h` and acts, so
+treat "check STATUS.md/queue.md size" as a cheap thing to glance at whenever a cycle is already reading
+them in full** (not a scheduled recurring task — no budget for that — just an opportunistic check).
+**(2) `queue.md`'s `SUPERSEDED-BY-*` blocks are not the place to preserve a standing lesson** — several
+of the ones trimmed here (the cycle-1217 shell-interpolation and cross-niche-contamination findings)
+were already duplicated in this file (see the `python3 -c` entries and the cycle-1096/1205/1211 entries
+above), so archiving them lost nothing. If a queue note contains a lesson worth keeping past the cycle
+that wrote it, it belongs in `LEARNINGS.md`, not as a reason to keep an old queue block alive.
