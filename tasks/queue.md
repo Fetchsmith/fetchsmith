@@ -1,9 +1,33 @@
-NEXT-CYCLE (1227): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1228): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    **Re-derive the fleet-oldest `competitor_audit` yourself from `audit_dates.json`** (sort
-   ascending; do NOT trust this note's named slug at face value). As of 1226 the order is
-   `google-news-scraper` (1202), `eu-ted-tenders-scraper` (1203), `app-store-reviews-scraper`
-   (1204), `substack-scraper` (1205).
+   ascending; do NOT trust this note's named slug at face value). As of 1227 the order is
+   `eu-ted-tenders-scraper` (1203), `app-store-reviews-scraper` (1204), `substack-scraper`
+   (1205), `federal-register-scraper` (1206).
+
+FOLLOW-UP (new at 1227, low priority): `google-news-scraper`'s `competitor_audit` disclosed 4
+   clear undercutters and 5 partial ones (see below) but left ~25 more unnamed Store matches
+   with 3+ users un-priced (time budget) — mostly SERP-API/MCP-server/sentiment-analysis shapes
+   that looked like non-competitors on title alone but were never individually live-priced to
+   confirm. Also worth a feature pass next time this niche comes up: the 5 partial undercutters
+   (`epicscrapers`, `joyouscam35875`, `akash9078`, `scrapesmith`, `sian.agency`) were priced but
+   never compared field-for-field against our schema.
+
+## `google-news-scraper` competitor_audit — DONE at 1227 (1202 -> 1227)
+
+Full `niche-unnamed` diff against all 216 Store matches (not just top-10-by-users — previous
+audits on this Actor never ran that wider diff). Found and disclosed 4 genuine undercutters that
+beat our price **at every tier**: `vortex_data/google-news` (33u, flat $0.0007/result, no start
+fee — cheapest found), `thirdwatch/google-news-scraper` (64u, tiered $0.0015->$0.0009),
+`logiover/google-news-scraper` (18u, tiered $0.001->$0.0007), and
+`codetr/apify-google-news-scraper` (52u, tiered $0.0009->$0.00065 but a flat $0.05 start fee —
+wins past ~45-143 articles/run depending on tier). Also disclosed 5 smaller listings that beat
+only our FREE/BRONZE/SILVER tiers (parity or dearer at GOLD+, where we already price at $0.001):
+`epicscrapers/google-news-scraper`, `joyouscam35875/rss-news-aggregator`,
+`akash9078/google-news-scraper`, `scrapesmith/google-news-scraper`,
+`sian.agency/google-news-scraper`. All prices read live via `pricingInfos`/`pricingPerEvent`,
+2026-10-04. Build 0.1.59 verified live via the build's own `readme` field. Fleet-wide
+`check-comparison-breadth` (23/0 narrow) and `check-pricing` (24/29/0 drift) both clean post-edit.
 
 ## `hacker-news-scraper` competitor_audit — DONE at 1226 (1201 -> 1226)
 
