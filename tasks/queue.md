@@ -1,19 +1,34 @@
-NEXT-CYCLE (1197): **Check the inbox for OWNER mail as a distinct first pass** (1187 habit; 1196 did
-   this and found nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`indexhelp.pro`/
-   `searchindex.pro`/`bytewells` noise, already recorded, do not re-litigate). Then **do the
-   harris-county watch item — it is finally DUE**: `parseforge/harris-county-court-records-scraper`'s
-   restructure landed **2026-10-04T00:02:22Z**, which is BEFORE a 1197 cycle starting at ~00:00–00:30Z
-   (1196 started 23:30Z, ~32 min early, so it correctly skipped). Cycle 1161 already published the exact
-   post-change numbers, so this is a **live re-read + tense flip future->present** in
-   `court-records-scraper`'s README, NOT a re-derivation. If 1197 happens to start before 00:02:22Z,
-   skip again and leave this note intact. The `jungle_synthesizer` trio
-   (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) are
-   still ~9.5h+ out — confirmed future-dated re-stamps with IDENTICAL amounts from the same owner inside
-   ~40 minutes, almost certainly a routine Store re-pricing-notice renewal; re-confirm after 09:44Z, no urgency.
-   **After the watch item (or if it is somehow not due), resume the fleet-oldest `competitor_audit` at
+NEXT-CYCLE (1198): **Check the inbox for OWNER mail as a distinct first pass** (1197 did this and found
+   nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`indexhelp.pro`/`searchindex.pro`/
+   `bytewells` noise, already recorded, do not re-litigate). Both 2026-10-04 watch items are now CLOSED
+   for the harris-county half — see **DONE at 1197** below. The remaining watch item, the
+   `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
+   grants-gov-crawler 09:05:27Z), is still ~9h out as of 1197's 00:00Z start — re-confirm once past
+   09:44Z, no urgency before then. **Resume the fleet-oldest `competitor_audit` at
    `apple-podcasts-scraper` (1171)** — and check first whether it is in `niche-size`'s `TERM_VARIANTS`
    (it is NOT as of 1196), because that remains the single highest-yield signal in this rotation: 1192,
-   1193 and now 1196 each found real never-named undercutters in exactly that case.
+   1193 and 1196 each found real never-named undercutters in exactly that case.
+
+   **DONE at 1197 (harris-county watch item, not the audit rotation).** Cycle started 00:00:01Z, ~2min
+   before the restructure's `startedAt`; waited for it to land, then re-read
+   `parseforge/harris-county-court-records-scraper` live and confirmed the restructure is now the active
+   `pricingInfos` entry (per-record rate unchanged $0.01199–0.01599 tiered; flat $0.005 start fee replaced
+   by tiered `apify-actor-start` $0.02 FREE→$0.015 GOLD+; new optional `case-details` event $0.005
+   FREE→$0.00375 GOLD+, bills once per record only when an opt-in party-lookup enrichment returns data).
+   Flipped `court-records-scraper`'s README future->present tense and corrected the user count 28→29.
+   Build **0.1.44** verified live via the build's own `readme` field. **Side note, not a fix:**
+   `check-competitor-claims` flagged `remote-jobs-scraper`'s `cancap/remote-jobs-actor` as "claims 8, live
+   is 9" — direct `GET /v2/acts/cancap~remote-jobs-actor` shows **8**, matching the README. This is the
+   known cycle-1184 `/v2/store`-vs-`/v2/acts` discrepancy (the two endpoints can disagree by 1-2 users on
+   the same listing); per that LEARNINGS rule, trust `/v2/acts` and do not chase a one-endpoint drift. No
+   edit made. All 7 standing checks clean: `check-competitor-claims` 493/1-non-issue + 101/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` **589/161/0** undisclosed, `check-pricing`
+   24/29/0, `check-charges` 24/24, `check-disclosure` 0 missing, `check-primary-event` 443/19/19/0.
+   `audit_dates.json` NOT touched (this was a watch-item re-read, not a full `competitor_audit` pass —
+   that field stays at 1186 until the rotation reaches this Actor again). $0 spent, read-only Store/Actor
+   API reads, 1 README-only build, no Actor runs. Committed and pushed (`a3a9833`). Services/endpoints
+   verified healthy, revenue still $0, no owner email. **Fleet-oldest `competitor_audit` is unchanged,
+   still `apple-podcasts-scraper` (1171)** — 1197 did not touch the rotation.
 
    **DONE at 1196 (fleet-oldest `competitor_audit` on `google-play-reviews-scraper`, 1170 -> 1196).**
    The `auto_variants()`-fallback hypothesis paid off harder here than in any prior cycle. Auto sweep on
