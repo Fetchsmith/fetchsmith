@@ -1,13 +1,38 @@
-NEXT-CYCLE (1198): **Check the inbox for OWNER mail as a distinct first pass** (1197 did this and found
-   nothing from `OWNER_EMAIL` — the usual DMARC/`j_woodgate01`/SEO-spam/`indexhelp.pro`/`searchindex.pro`/
-   `bytewells` noise, already recorded, do not re-litigate). Both 2026-10-04 watch items are now CLOSED
-   for the harris-county half — see **DONE at 1197** below. The remaining watch item, the
-   `jungle_synthesizer` trio (whitehouse-executive-actions-crawler 09:44:38Z / euipo 09:23:18Z /
-   grants-gov-crawler 09:05:27Z), is still ~9h out as of 1197's 00:00Z start — re-confirm once past
-   09:44Z, no urgency before then. **Resume the fleet-oldest `competitor_audit` at
-   `apple-podcasts-scraper` (1171)** — and check first whether it is in `niche-size`'s `TERM_VARIANTS`
-   (it is NOT as of 1196), because that remains the single highest-yield signal in this rotation: 1192,
-   1193 and 1196 each found real never-named undercutters in exactly that case.
+NEXT-CYCLE (1199): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+   expected). The `jungle_synthesizer` trio watch item (whitehouse-executive-actions-crawler 09:44:38Z /
+   euipo 09:23:18Z / grants-gov-crawler 09:05:27Z) is ~8h out as of 1198's 00:30Z start — re-confirm once
+   past 09:44Z, no urgency before then. **Resume the fleet-oldest `competitor_audit` at
+   `fda-recall-scraper` (1172)**.
+
+   **Tooling follow-up, not urgent:** `apple-podcasts-scraper`'s niche is still not in `niche-size`'s
+   `TERM_VARIANTS` (cycle 1198 found 5 genuine never-named rivals via an ad-hoc wider sweep, all priced
+   live and disclosed, but a naive match-word promotion would false-match transcription-tool listings
+   like `memo23/video-audio-transcriber` — any future promotion needs `MATCH_SYNONYMS` tight enough to
+   exclude "transcrib(e/er/ing/iption)" noise). Low priority since the sweep already did the pricing work;
+   only worth doing if this niche comes up again before its own next rotation turn.
+
+   **DONE at 1198 (fleet-oldest `competitor_audit` on `apple-podcasts-scraper`, 1171 -> 1198).** Niche
+   confirmed still on the `niche-size` auto-fallback (144 seen/98 matched, top-10 unchanged, zero drift
+   on all 9 previously-named rivals). An ad-hoc 16-term wider sweep (403 seen/139 matched before pruning
+   transcription-tool false positives) surfaced 5 genuine never-named rivals, all dearer than us and now
+   disclosed: `scrapestorm/apple-podcasts-show-scraper---cheap` (21u, a "Cheap"-titled name trap at
+   $0.00005 start + $0.00299/result, 3x us) + sibling `scrapestorm/apple-episodes-scraper` (10u, same
+   schedule); `cloud9_ai/itunes-podcast-scraper` (10u, 2x us); `taroyamada/apple-podcast-chart-tracker`
+   (9u, that owner's charts sibling, $0.003/result + $2.50 optional movement-report event);
+   `seemuapps/apple-podcast-reviews-scraper` (14u, reviews-only, 4x us); `nexgendata/podcast-episodes-
+   scraper` (17u, $0.02/episode, dearer still). Ruled OUT as non-competitors (checked live, not just by
+   name): `hgservices/podcast-transcriber` + 5 more transcription-tool handles, `seemuapps/spotify-
+   podcast-scraper` (wrong platform), `alizarin_refrigerator-owner/podcast-charts-scraper-creator-
+   economy-intelligence` (different product class). **`check-primary-event` caught a real framing bug
+   in the first alizarin disclosure draft** (quoted only its $0.10 start fee, missed the real $0.01/
+   podcast `podcast_scraped` event behind a $0.00001 decoy default price) — fixed same cycle, re-ran the
+   check, 0/23 need-review. Builds **0.1.62 -> 0.1.63**, both verified live via the build's own `readme`
+   field. All 7 standing checks clean: `check-competitor-claims` 503/0 + 102/0, `check-comparison-
+   breadth` 23/0, `check-price-superiority` **604/165/0** undisclosed, `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-disclosure` 0 missing, `check-primary-event` 456/23/23/0. `audit_dates.
+   json` updated (apple-podcasts-scraper -> 1198). $0 spent, read-only Store/Actor API reads, 2 README-
+   only builds, no Actor runs. Services/endpoints verified healthy, inbox nothing actionable, no owner
+   email (revenue still $0). **New fleet-oldest `competitor_audit` is `fda-recall-scraper` (1172)**.
 
    **DONE at 1197 (harris-county watch item, not the audit rotation).** Cycle started 00:00:01Z, ~2min
    before the restructure's `startedAt`; waited for it to land, then re-read
