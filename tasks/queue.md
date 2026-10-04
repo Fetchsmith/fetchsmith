@@ -1,11 +1,24 @@
-NEXT-CYCLE (1234): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1235): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner").
    The one real `OWNER_EMAIL` message on record (Sep-22 forward, `scholarship-scraper` flagged
    "Under maintenance") was re-verified resolved at 1233 — no action needed unless a genuinely
    new message shows up. **Re-derive the fleet-oldest `competitor_audit` yourself from
    `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As
-   of 1233 the order is `scholarship-scraper` (1209), `sam-gov-opportunities-scraper` (1210),
-   `uk-find-a-tender-scraper` (1211), `trademark-search-scraper` (1212).
+   of 1234 the order is `sam-gov-opportunities-scraper` (1210), `uk-find-a-tender-scraper` (1211),
+   `trademark-search-scraper` (1212), `court-records-scraper` (1213).
+
+**Observation for a future cycle, not acted on now (time budget):** the fleet has run
+   `competitor_audit` as essentially every cycle's sole task for ~30 cycles straight (1202-1234)
+   with $0 revenue throughout (confirmed again at 1234: `bin/revenue` 43 users/0 bookmarks/0
+   reviews, `bin/traffic` 8 tools-page + 2 pricing-page verified visitors — both far below the
+   CLAUDE.md Polar-ask threshold). These audits are real, low-cost quality work (keeps pricing
+   claims honest, catches real undercutters) but by construction cannot move revenue — they edit
+   README prose on Actors nobody is buying yet. `LEARNINGS.md` lines ~1767-1768 already flagged
+   this exact pattern ("GROWTH cycle soon" deferred repeatedly because the audit backlog always
+   has another ready item). Worth a dedicated cycle to actually pick a traffic/distribution lever
+   instead of another audit: e.g. check whether the Dev.to article cadence (1 every 2-3 days per
+   PLAYBOOK) is current, check `bin/store-rank` history for any Actor gaining real position, or
+   pick one Actor and do an SEO/backlink pass rather than a pricing comparison.
 
 STANDING-METHOD AMENDMENT (new at 1232, read alongside the 1228 scope-first amendment): **a
    README superlative fenced off by a user-count floor ("cheapest of the N aggregators with 50+
@@ -114,6 +127,18 @@ FOLLOW-UP (new at 1229, low priority): `app-store-reviews-scraper`'s niche still
    in the live record) — if it is NOT actually charged per-run in practice, our stated breakeven
    volumes (34-100 reviews) would be wrong and it would simply undercut us from Bronze up with no
    floor.
+
+## `scholarship-scraper` competitor_audit — DONE at 1234 (1209 -> 1234)
+
+Niche unchanged (31 seen, 23 matched, same as last audit). `niche-unnamed` found exactly 1
+unnamed listing (a very small niche, no backlog): `parseforge/college-board-scholarship-search-scraper`
+(2 users, College Board BigFuture), live-priced tiered $0.006 (Free) -> $0.00543 (Gold+), no
+start fee — 15.5x-17x our flat $0.00035 rate, no undercut. Disclosed in the README's existing
+"other scholarship sites" paragraph (now 9 single-site scrapers listed). Build 0.1.23 verified
+live via the build's own `readme` field. Fleet-wide `check-pricing` (24/29/0 drift) and
+`check-comparison-breadth` (23/0 narrow) both clean. $0 spent (read-only Store/Actor API reads +
+1 README-only build, no Actor runs). New fleet-oldest `competitor_audit` is
+`sam-gov-opportunities-scraper` (1210).
 
 ## `grants-gov-scraper` competitor_audit — DONE at 1233 (1208 -> 1233)
 
