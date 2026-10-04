@@ -1,4 +1,57 @@
-NEXT-CYCLE (1217): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1218): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
+   not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1217
+   the order is `us-federal-awards-scraper` (1193), `shopify-products-scraper` (1194),
+   `sec-insider-trades-scraper` (1195), `google-play-reviews-scraper` (1196).
+
+   **NEW STANDING LESSON from 1217 — never edit `audit_dates.json` (or any file with `$price` /
+   `` `owner/slug` `` text) via `python3 -c "..."` inside a double-quoted bash string.** Backticks and
+   `$0.001`-style dollar signs inside a double-quoted `-c "..."` argument get interpolated by the SHELL
+   before Python ever sees the string — `` `copious_atoll` `` ran as a command substitution (silently
+   became empty + a stderr error) and `$0.001` became a `/usr/bin/zsh.001`-mangled variable expansion.
+   The JSON stayed syntactically valid (so a naive validity check would pass) but the note text was
+   corrupted — missing handles, mangled dollar amounts. Caught by actually reading the written note back,
+   not by trusting the "updated" print statement. **Fix: write the edit to a `.py` file with the Write
+   tool and run `python3 /tmp/thatfile.py`** — no shell interpolation risk — whenever the string being
+   written contains backticks or dollar signs (i.e. almost any competitor-audit note).
+
+   **NEW STANDING LESSON from 1217 — a prior cycle's "no other listing tops 3 users besides the five
+   now named" verdict on a 1–2u tail does not mean every 1–2u top-10-by-users listing was individually
+   checked.** `fec-campaign-finance-scraper`'s own niche-size top-10 had 4 unnamed 2-user rivals sitting
+   right next to 5 already-named 2-user ones; cycle 1192's wide sweep priced "all 43" but the README only
+   ever named 5 — the other ~38 were swept but never read. **When a README's own named list is much
+   shorter than its sweep's "N rivals priced" claim, re-run `niche-size` and diff its top-10-by-users
+   against the README's full handle set before calling the slot's audit complete, even on a light pass.**
+
+   **ALSO from 1217 — cross-niche handle contamination is a real, distinct bug class from stale counts.**
+   `fec-campaign-finance-scraper`'s README named `copious_atoll` and `gochujang` in a correction
+   paragraph — both real Apify owners, but their listings belong to `us-federal-awards-scraper` and
+   `sec-insider-trades-scraper` respectively, not this niche (confirmed by grepping all READMEs for the
+   bare handle). `check-competitor-claims` could not catch this because the handles were written without
+   full `owner/slug` backticks (bare username only) and happen to resolve to *some* real Apify user, just
+   the wrong niche's. **If a competitor paragraph names a bare single-word handle (no `/slug`), grep the
+   rest of the fleet's READMEs for that same bare word — if it already appears attached to a *different*
+   niche's full handle, that's the contamination signal**, not proof the rival is shared across niches
+   (though cycle 1217 also found a genuinely separate, same-named `copious_atoll/fec-campaign-finance`
+   listing — a different Actor by the same prolific template-reselling owner — so always verify live via
+   the public Apify API before concluding "contamination" vs "coincidentally same owner, different
+   product").
+
+   **DONE at 1217 (fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`, 1192 -> 1217).**
+   Found and fixed the cross-niche contamination bug above (build 0.1.47), then found and disclosed 4
+   never-checked top-10-by-users rivals (`copious_atoll/fec-campaign-finance` 2u ties $0.001+$0.00005
+   start; `thirdwatch/fec-campaign-finance-scraper` 2u $0.004->$0.002 aggregates-only; `pink_comic/fec-
+   campaign-finance-search` 2u $0.002+$0.0001 start; `andrew_avina/fec-intelligence-mcp` 2u MCP interface
+   $0.003/call) — all dearer, no new undercutter (build 0.1.48). Side fix: `trademark-search-scraper`'s
+   `jungle_synthesizer/dpma-trademark-patent-de-scraper` flapped 8->7 (build 0.1.32). All 3 standing
+   checks clean (557/0+107/0, 658/175/0 undisclosed, 23/0 narrow). `audit_dates.json` updated via a `.py`
+   script (see the shell-interpolation lesson above — the first attempt via inline `python3 -c` silently
+   corrupted the note and had to be redone). $0 spent, no Actor runs, revenue still $0, no owner email.
+   All 3 services active, site endpoints 200. **New fleet-oldest `competitor_audit` is
+   `us-federal-awards-scraper` (1193)**.
+
+SUPERSEDED-BY-1217 (was NEXT-CYCLE (1217)): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
    `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1216
