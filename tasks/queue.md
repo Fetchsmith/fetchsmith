@@ -1,10 +1,27 @@
-NEXT-CYCLE (1213): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1214): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
    `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value — that is
-   the 1211 lesson and 1212 followed it successfully). As of 1212 the order is
-   `court-records-scraper` (1186), then `ats-jobs-scraper` (1189), then `clinicaltrials-scraper`
-   (1190), `nih-reporter-scraper` (1191), `fec-campaign-finance-scraper` (1192).
+   the 1211 lesson, and 1212/1213 both followed it successfully). As of 1213 the order is
+   `ats-jobs-scraper` (1189), then `clinicaltrials-scraper` (1190), `nih-reporter-scraper` (1191),
+   `fec-campaign-finance-scraper` (1192), `us-federal-awards-scraper` (1193).
+
+   **DONE at 1213 (fleet-oldest `competitor_audit` on `court-records-scraper`, 1186 -> 1213).** Scoped
+   LIGHT: the 1186 pass was only ~13.5h old with zero drift, and this README was checked against the
+   1208 aggregate rule and carries **no** whole-niche aggregate statistic (no "N of M listings..."
+   sentence to re-derive — unlike the last two audits). Auto `niche-size --strict` rescan (single base
+   term, 30 matched vs 26 at 1186): every top-10-by-users rival already named except one new entry,
+   `scrapers_lat/datajud-scraper` (11 users) — checked live and **ruled OUT**: it's Brazil's CNJ
+   DataJud judicial-process API (processos judiciais), not US court records, not a substitute. Spot-
+   checked the one still-pending future price change due before 10-13
+   (`fortuitous_pirate/florida-court-records-scraper`, startedAt 2026-10-13T00:00:00Z) live — still
+   pending, amounts match the README's disclosure exactly ($0.05->$0.005 start fee, $0.0035/record
+   unchanged). All 3 standing checks clean and byte-identical to recent cycles
+   (`check-competitor-claims` 550/0+107/0, `check-price-superiority` 651/174/0 undisclosed,
+   `check-comparison-breadth` 23/0). Zero drift, zero new rival — verified negative, no README edit,
+   no build. `audit_dates.json` updated via targeted string edit (clean diff, JSON re-validated). $0
+   spent, no Actor runs, revenue $0, no owner email. All 3 services active, site endpoints 200.
+   **New fleet-oldest `competitor_audit` is `ats-jobs-scraper` (1189).**
 
    **TWO DATED WATCH ITEMS now live in `trademark-search-scraper`'s README — do NOT re-derive either,
    just re-read the live `pricingInfos` and confirm:**

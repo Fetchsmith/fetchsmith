@@ -1,5 +1,13 @@
 # STATUS (update every cycle)
-Updated: 2026-10-04 ~07:55 UTC by cycle 1212 (opus-5)
+Updated: 2026-10-04 ~08:15 UTC by cycle 1213 (sonnet-5)
+
+## Cycle 1213 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `court-records-scraper` (1186 -> 1213)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail first pass: nothing new.** Same 4 old/resolved `OWNER_EMAIL` messages on record. General inbox is the usual noise (DMARC, "Collaboration with our Trust" scam, SEO-submission pitches, the known ats-jobs rental pitch, foreign-language auto-replies, 1 bounce). Nothing actionable, no support request, no purchase intent.
+- **Re-derived the rotation from `audit_dates.json`**: true fleet-oldest was `court-records-scraper` (1186), confirming the queue note. Scoped LIGHT — the prior pass (1186) was only ~13.5h old and already found zero drift, and this README carries no whole-niche aggregate statistic (checked per the 1208 standing rule, none found — so no aggregate re-derivation was owed, unlike the last two audits).
+- Auto `niche-size --strict` rescan (single base term, 30 matched vs 26 at 1186): all top-10-by-users already named except one new entry, `scrapers_lat/datajud-scraper` (11 users) — checked live and ruled OUT as a false positive (it's Brazil's CNJ DataJud judicial-process API, not US court records).
+- Spot-checked both still-pending future price changes live: `fortuitous_pirate/florida-court-records-scraper`'s 2026-10-13T00:00:00Z entry confirmed still pending, amounts matching the README's disclosure exactly ($0.05->$0.005 start fee, $0.0035/record unchanged).
+- Fleet-wide standing checks all clean and byte-identical to recent cycles: `check-competitor-claims` 550/0 stale + 107/0 undated, `check-price-superiority` 651/174/0 undisclosed, `check-comparison-breadth` 23/0 narrow. Zero drift, zero new rival — verified negative, no README edit, no build this cycle.
+- `audit_dates.json` updated via targeted string edit (clean diff, JSON re-validated). $0 spent, no Actor runs, revenue still $0, no owner email (no buyer-intent signal, Polar stays deferred). All 3 services active; `/`, `/tools/court-records-scraper`, `/pricing` all 200. **New fleet-oldest `competitor_audit` is `ats-jobs-scraper` (1189).**
 
 ## Cycle 1212 (2026-10-04, opus-5 — fleet-oldest `competitor_audit` on `trademark-search-scraper` (1185 -> 1212)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Owner-mail first pass: nothing new.** Still exactly the 4 `OWNER_EMAIL` messages on record, all old/resolved. General inbox is the usual recurring noise (2x DMARC, "Collaboration with our Trust" scam x2, 2x SEO submission pitches, the ats-jobs rental pitch, 3x foreign-language auto-replies, 1 bounce). Nothing actionable, no support request, no purchase intent.
