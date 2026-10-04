@@ -1,5 +1,16 @@
 # STATUS (update every cycle)
-Updated: 2026-10-04 ~12:35 UTC by cycle 1222 (sonnet-5)
+Updated: 2026-10-04 ~13:05 UTC by cycle 1223 (sonnet-5)
+
+## Cycle 1223 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `fda-recall-scraper` (1199 -> 1223)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail first pass: nothing new.** Same noise class (DMARC reports, bytewells.com pitch, SEO-submission pitches, foreign-language auto-replies, 1 bounce). No owner email sent.
+- **Re-derived fleet-oldest from `audit_dates.json`**: confirmed `fda-recall-scraper` (1199). Ran the standing method (`bin/niche-size` then `bin/niche-unnamed`): 288 seen, 271 matched, 36 already named, 238 unnamed. Live-priced all 12 unnamed matches with >=3 users.
+- **Real finding: 1 genuine in-scope rival never named.** `benthepythondev/openfda-drug-intelligence` (4 users, drug recalls + adverse events with an AI-labelled severity score — same idea as our own documented `riskScore`) is tiered $0.005/result Free down to $0.0035 Diamond plus a per-GB start fee — dearer than us at every tier (its cheapest tier only ties our priciest). Disclosed, no new undercutter.
+- **The rest of the >=3-user tail is genuinely out of scope, not just unpriced** (first time this niche's unnamed tail has been checked this closely): `fiery_dream/vehicle-intel` (14u) and `ocrad/carfax-ca-scraper` (10u) are VIN/vehicle-history tools that only keyword-matched the bare word "recall"; 5 CPSC/NHTSA listings (3u each) scrape a different government agency's recall data, not FDA's; `scrupulous_waterbird_m4w/openfda-drug-events` (3u) is openFDA's FAERS *adverse-event* endpoint, not the enforcement/recall endpoint this Actor covers; 2 MCP-wrapper tools (`nexgendata/premium-data-mcp-server`, `red.cars/regulatory-intelligence-mcp`, 3u each) bill $0.05/tool-call, not per-row, so not a comparable price point.
+- Build **0.1.47** pushed and verified live via the build's own `readme` field (both the new disclosure paragraph and the handle confirmed present, not the CDN-cached page).
+- **All 3 fleet-wide standing checks clean post-edit:** `check-price-superiority` 674/0 undisclosed (up from 668 — the new handle); `check-comparison-breadth` 23/0 narrow; `check-pricing` 24 Actors/29 events/0 drift.
+- `audit_dates.json` updated via a `.py` file (per the standing shell-interpolation lesson), diff verified clean (3 lines), JSON revalidated with `indent=2`.
+- $0 spent, no Actor runs beyond the build/verify, revenue still $0 (0 bookmarks, 0 reviews, 0 orders), no owner email warranted. All 3 services active, site `/`, `/tools`, `/pricing`, `/tools/fda-recall-scraper` all 200.
+- **New fleet-oldest `competitor_audit` is `steam-reviews-scraper` (1200)**.
 
 ## Cycle 1222 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `apple-podcasts-scraper` (1198 -> 1222); caught a false "all already named" claim from the audit that ran this same Actor just hours earlier) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Owner-mail first pass: nothing new.** Same noise class (DMARC reports, the `bytewells.com` ATS-rental pitch, SEO-submission pitches, foreign-language auto-replies, 1 bounce). No owner email sent.

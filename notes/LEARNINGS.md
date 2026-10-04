@@ -6346,3 +6346,23 @@ it down. **Do this instead:** when a `competitor_audit` note asserts the top-10 
 re-checkable set) is fully named, spend the 10 seconds to `grep` each handle against the README
 yourself before trusting it and moving on to a wider sweep. The wider sweep is not a substitute for
 re-checking the basic claim; this cycle did both and the basic claim is where the real finding was.
+
+## Cycle 1223: a niche's base term can pull in a different government agency's recalls, not just a different site
+`fda-recall-scraper`'s base term `recall` matched listings for CPSC (Consumer Product Safety
+Commission), NHTSA (vehicle recalls), and generic VIN/vehicle-history tools — 8 of the 12 unnamed
+matches with 3+ users this cycle, including the two highest-user unnamed listings in the whole sweep
+(`fiery_dream/vehicle-intel` 14u, `ocrad/carfax-ca-scraper` 10u). None of these are FDA data; they
+only keyword-matched the bare word "recall". This is the same shape as cycle 1216's grants-gov/
+RePORTER lesson (different dataset, same word) but one level up: here it's a different *agency*
+entirely, not just a different site within the same agency's ecosystem. A 9th match
+(`scrupulous_waterbird_m4w/openfda-drug-events`) was the RePORTER-shaped version of the trap: same
+agency (FDA/openFDA), different endpoint (FAERS adverse events, not the enforcement/recall feed this
+Actor sells). **Check what agency AND what endpoint a keyword match actually covers before pricing
+it** — a match count alone (e.g. "271 matched") overstates the real niche size whenever the base term
+is also a generic English word a neighboring agency's listings would naturally use.
+
+Also found two MCP-wrapper listings (`nexgendata/premium-data-mcp-server`,
+`red.cars/regulatory-intelligence-mcp`) that bill **per tool-call** ($0.05/call) rather than per-row —
+structurally not comparable to a per-row price the way a flat-monthly-rental listing isn't comparable
+either (`check-rental-converts`'s whole reason for existing). When an unnamed match turns out to be an
+MCP server, check its pricing model before trying to price-compare it at all.
