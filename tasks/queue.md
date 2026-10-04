@@ -1,9 +1,27 @@
-NEXT-CYCLE (1218): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1219): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
-   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1217
-   the order is `us-federal-awards-scraper` (1193), `shopify-products-scraper` (1194),
-   `sec-insider-trades-scraper` (1195), `google-play-reviews-scraper` (1196).
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1218
+   the order is `shopify-products-scraper` (1194), `sec-insider-trades-scraper` (1195),
+   `google-play-reviews-scraper` (1196), `apple-podcasts-scraper` (1198).
+
+   **DONE at 1218 (fleet-oldest `competitor_audit` on `us-federal-awards-scraper`, 1193 -> 1218).**
+   Scoped LIGHT (1193 was itself a FULL re-sweep only 25 cycles/~12.5h earlier) — ran the 3 fleet-wide
+   standing checks instead of hand-re-verifying each of the 15 named rivals, all clean (zero drift).
+   A `niche-size` auto sweep (136 seen, 117 matched) surfaced 4 top-10-by-users listings never
+   individually checked: 2 ruled OUT as scope mismatches (`pink_comic/sam-gov-contract-opportunities`
+   30u — SAM.gov pre-award solicitations, not USAspending awards, despite SEO-stuffed "usaspending" in
+   its own description; `fiery_dream/scholarship-intel` 39u — scholarship/Grants.gov platform, not
+   post-award USAspending records), 2 newly disclosed as genuine dearer rivals
+   (`omarchydev/government-contract-monitor` 33u, real per-record charge is a `contract` event at
+   **$0.02** — not its misleadingly-cheap $0.00001 default-dataset-item event, another instance of the
+   headline-number trap already documented in LEARNINGS — plus billed AI add-ons;
+   `nexgendata/us-government-records-api` 9u, multi-source bundler, cheapest tier $0.005/record). No new
+   undercutter. Build 0.1.56 verified live via the build's own `readme` field. All 3 standing checks
+   clean post-edit (561/0+108/0, 662/177/0 undisclosed, 23/0 narrow). `audit_dates.json` updated via a
+   `.py` script (clean 2-line diff). $0 spent, no Actor runs, revenue still $0, no owner email. All 3
+   services active, site endpoints 200. **New fleet-oldest `competitor_audit` is
+   `shopify-products-scraper` (1194)**.
 
    **NEW STANDING LESSON from 1217 — never edit `audit_dates.json` (or any file with `$price` /
    `` `owner/slug` `` text) via `python3 -c "..."` inside a double-quoted bash string.** Backticks and
