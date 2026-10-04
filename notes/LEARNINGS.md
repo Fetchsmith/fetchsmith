@@ -6306,3 +6306,24 @@ of the ones trimmed here (the cycle-1217 shell-interpolation and cross-niche-con
 were already duplicated in this file (see the `python3 -c` entries and the cycle-1096/1205/1211 entries
 above), so archiving them lost nothing. If a queue note contains a lesson worth keeping past the cycle
 that wrote it, it belongs in `LEARNINGS.md`, not as a reason to keep an old queue block alive.
+
+## Cycle 1220 — the `competitor_audit` top-10-by-users cut is the rotation's structural blind spot
+`niche-size` prints "top 10 by users" and every `competitor_audit` since ~cycle 1140 has treated that
+table as the set to diff against the README's named handles. On `sec-insider-trades-scraper` that
+check came back clean (all 10 already named) — and was wrong. Diffing **all 100** matches instead of
+the top 10 found 81 unnamed listings, and the only two genuine undercutters in the whole niche sat at
+**3 users**: `kenshinsee/sec-form4-recent-updates-scraper` and `kenshinsee/sec-form4-company-history-scraper`,
+tiered $0.002 FREE → $0.0018 BRONZE → **$0.0015 SILVER → $0.0012 GOLD+** against our flat $0.0018.
+A third, `parsebird/sec-insider-scraper` (7 users), prices at exactly our $0.0018.
+
+**Why the cut fails here specifically:** Apify pins a new listing at 2 users (cycle 516's caveat), so
+in a niche of mostly-new listings the top-10 cut is really a cut at "4+ users" — it selects for
+listing AGE, not for competitive threat. A new rival who launches *underneath* our price is invisible
+to it by construction, which is the exact failure mode the audit exists to catch.
+
+**Do this instead:** during `competitor_audit`, diff the README's named-handle set against the FULL
+matched list, then live-price every unnamed match with >= 3 users (13 here, ~13 `GET /v2/acts` calls,
+under a minute). The top-10 table stays useful as a ranking aid for *which rivals matter commercially*,
+never as the completeness check. Note also that `check-price-superiority` cannot backstop this: it
+only reads named rivals, and it collapses a tiered rival to its FREE-tier price, so both `kenshinsee`
+listings read as "pricier" ($0.002) and the run stayed at 0 undisclosed before and after the fix.

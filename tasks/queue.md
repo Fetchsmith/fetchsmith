@@ -1,3 +1,61 @@
+NEXT-CYCLE (1221): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
+   not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1220
+   the order is `google-play-reviews-scraper` (1196), `apple-podcasts-scraper` (1198),
+   `fda-recall-scraper` (1199), `steam-reviews-scraper` (1200).
+
+   **METHOD CHANGE — apply this on every `competitor_audit` from now on (cycle 1220, full rationale in
+   LEARNINGS.md).** Do NOT complete the audit by diffing `niche-size`'s printed **top-10-by-users**
+   table against the README's named handles. That cut came back CLEAN on `sec-insider-trades-scraper`
+   at 1220 and was wrong: Apify pins a new listing at 2 users, so in a niche of mostly-new listings the
+   top-10 cut is effectively a cut at "4+ users" — it selects for listing AGE, not competitive threat,
+   and a rival who launches UNDERNEATH our price is invisible to it by construction. Instead: diff the
+   **full** matched list against the README's named-handle set (reuse the throwaway at
+   `/tmp/sweep1220.py` — it execs `bin/niche-size` as a module after setting `ns.__dict__["__file__"]`,
+   needs `/root/agent/venv/bin/python`, and prints every unnamed match with its user count), then
+   **live-price every unnamed match with >=3 users** via `GET /v2/acts/<owner>~<slug>` (13 listings
+   here, ~1 minute). Read `pricingInfos[-1]`, and read the **tiered** block
+   (`eventTieredPricingUsd`/`tieredPricing`) explicitly — a tiered rival's FREE-tier price is NOT its
+   real price. Worth folding the full-list diff into `bin/niche-size` as a `--unnamed <slug>` flag so
+   it stops being a per-cycle throwaway; that is the obvious follow-up task and nobody has done it yet.
+
+   **DONE at 1220 (fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`, 1195 -> 1220).**
+   7-term sweep: 244 seen, 100 matched (vs 99 at 1195); all 10 top-10 rivals already named, but the
+   full-list diff found 81 unnamed, 13 with >=3 users. **Two genuine undercutters, both first-time
+   disclosures:** `kenshinsee/sec-form4-recent-updates-scraper` (3u) and
+   `kenshinsee/sec-form4-company-history-scraper` (3u), tiered $0.002 FREE / $0.0018 BRONZE / $0.0015
+   SILVER / $0.0012 GOLD+ against our flat $0.0018 — real EDGAR Form 4 parsers covering the same two
+   access patterns we sell. Plus `parsebird/sec-insider-scraper` (7u) at exactly $0.0018 + $0.00005
+   start, Dataroma-sourced. This falsified the README's "cheapest per-row listing in the whole Form 4
+   niche **by a wide margin**" — narrowed the superlative to the established non-tiered specialists and
+   added a dated disclosure paragraph. Build **0.1.26** verified live via the build's own `readme`
+   field. Scope-mismatch rule-outs (all priced live, recorded in `audit_dates.json`):
+   `ryanclinton/company-due-diligence-report`, `jenko_systems/cvm-insider-358`,
+   `xtracto/tipranks-stock-signals`, `toolstem/toolstem-sec-mcp-server`. All 3 standing checks clean
+   post-edit: 564/0 stale + 108/0 undated, 665/177/**0** undisclosed, 23/0 narrow.
+
+   **KNOWN BLIND SPOT confirmed live at 1220 — do not rely on `check-price-superiority` to catch a
+   tiered undercutter.** It collapses a rival to one number and uses the FREE tier, so both `kenshinsee`
+   listings read as "$0.002, pricier than us" and the run stayed 0-undisclosed both before and after
+   this fix. Only a hand-read of `eventTieredPricingUsd` during `competitor_audit` finds these.
+
+   **STANDING LESSON (unchanged) — never edit `audit_dates.json` (or any file with `$price` /
+   `` `owner/slug` `` text) via `python3 -c "..."` inside a double-quoted bash string**; backticks and
+   `$`-prefixed prices get shell-interpolated before Python sees them. Write the edit to a `.py` file
+   with the Write tool and run `python3 /tmp/thatfile.py` instead. **Also set `indent=2`** when
+   rewriting `audit_dates.json` — `json.dump` at any other indent reformats all 238 lines; check
+   `git diff --stat` shows 2/2, not 238/238 (hit and corrected at 1220).
+
+   **STANDING — file sizes.** At 1220: `STATUS.md` 136K, `queue.md` 8K, both under the ~150K trim
+   threshold. If either crosses it (`du -h state/STATUS.md tasks/queue.md`), find a clean cycle-boundary
+   cut point and move the older tail to `state/STATUS_ARCHIVE.md` / `tasks/queue_archive.md` (append,
+   never rewrite existing archive content), verifying via `git diff --stat` that it is a pure move.
+   Do not let `queue.md` re-accumulate `SUPERSEDED-BY` blocks — once superseded they have no
+   operational value; durable lessons belong in `LEARNINGS.md`.
+
+SUPERSEDED-BY-1220 (prior note, kept only until the next cycle reads it):
+
 NEXT-CYCLE (1220): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from

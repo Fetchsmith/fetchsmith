@@ -1,0 +1,70 @@
+#!/root/agent/venv/bin/python
+"""niche-unnamed <slug> -- list EVERY niche match that the Actor's README does not
+already name, with user counts, not just niche-size's top-10-by-users table.
+
+Added cycle 1220 after that top-10 cut came back CLEAN on sec-insider-trades-scraper
+and was wrong: Apify pins a new listing at 2 users, so in a niche of mostly-new
+listings a top-10 cut is really a cut at "4+ users" -- it selects for listing AGE,
+not competitive threat. The only two genuine undercutters in that niche sat at 3
+users each (both kenshinsee Form 4 scrapers, tiered down to $0.0012 vs our $0.0018).
+
+Reuses bin/niche-size's TERM_VARIANTS/NICHE_TERMS/MATCH_SYNONYMS and its matching
+rule by exec-ing it as a module, so the two always agree on what "in the niche" means.
+Read-only: one GET /v2/store per search term, nothing else.
+
+Follow-up: live-price every unnamed match with >=3 users via GET /v2/acts/<owner>~<slug>
+and read the TIERED block (eventTieredPricingUsd/tieredPricing) -- a tiered rival's
+FREE-tier price is NOT its real price, and check-price-superiority only sees that one.
+"""
+import importlib.util
+import re
+import sys
+
+spec = importlib.util.spec_from_loader("ns", loader=None)
+ns = importlib.util.module_from_spec(spec)
+src = open("/root/agent/bin/niche-size").read().replace(
+    'if __name__ == "__main__":\n    sys.exit(main())\n', "")
+ns.__dict__["__file__"] = "/root/agent/bin/niche-size"
+exec(compile(src, "niche-size", "exec"), ns.__dict__)
+
+slug = sys.argv[1] if len(sys.argv) > 1 else sys.exit("usage: niche-unnamed <slug>")
+base = ns.NICHE_TERMS[slug]
+terms = ns.TERM_VARIANTS.get(slug) or ns.auto_variants(base)
+
+seen = {}
+for term in terms:
+    r = ns.httpx.get(f"{ns.API}/store", params={"search": term, "limit": 100}, timeout=40)
+    for it in r.json()["data"]["items"]:
+        seen[f"{it['username']}/{it['name']}"] = it
+    ns.time.sleep(0.2)
+
+
+def stem(w):
+    return w[:-1] if len(w) > 3 and w.endswith("s") else w
+
+
+match_words = [base] + ns.MATCH_SYNONYMS.get(slug, [])
+match_res = [re.compile(r"\b" + r"\s+".join(re.escape(stem(w)) + "s?" for w in phrase.split()) + r"\b")
+             for phrase in match_words]
+matched = []
+for ident, it in seen.items():
+    blob = f"{it.get('name','')} {it.get('title','')} {it.get('description') or ''}".lower()
+    if any(p.search(blob) for p in match_res):
+        matched.append((ident, it))
+matched.sort(key=lambda kv: -(kv[1].get("stats", {}).get("totalUsers", 0)))
+
+readme = open(f"/root/agent/actors/{slug}/README.md").read()
+named = set(h.strip("`").lower() for h in re.findall(r"`[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+`", readme))
+
+print(f"{len(seen)} seen, {len(matched)} matched, README names {len(named)} handles")
+print("--- UNNAMED matches, by users ---")
+n = 0
+for ident, it in matched:
+    if ident.lower() in named:
+        continue
+    st = it.get("stats", {})
+    u = st.get("totalUsers", 0)
+    n += 1
+    print(f"{u:5} u30d={st.get('totalUsers30Days',0):4} {ident}")
+    print(f"      {(it.get('title') or '')[:110]}")
+print(f"--- {n} unnamed of {len(matched)} matched ---")
