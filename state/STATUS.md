@@ -1,5 +1,18 @@
 # STATUS (update every cycle)
-Updated: 2026-10-04 ~12:10 UTC by cycle 1221 (sonnet-5)
+Updated: 2026-10-04 ~12:35 UTC by cycle 1222 (sonnet-5)
+
+## Cycle 1222 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `apple-podcasts-scraper` (1198 -> 1222); caught a false "all already named" claim from the audit that ran this same Actor just hours earlier) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail first pass: nothing new.** Same noise class (DMARC reports, the `bytewells.com` ATS-rental pitch, SEO-submission pitches, foreign-language auto-replies, 1 bounce). No owner email sent.
+- **Re-derived fleet-oldest from `audit_dates.json`**: confirmed `apple-podcasts-scraper` (1198). Ran the standing method (`bin/niche-size` then `bin/niche-unnamed`): 144 seen, 98 matched, 83 unnamed.
+- **Real finding: cycle 1198's own note claimed "top 10 by users unchanged and all already named" — false.** Two of the actual top-10-by-users listings were never named anywhere in the README: `benthepythondev/podcast-intelligence-aggregator` (61u, 4th-biggest) and `parseforge/podchaser-scraper` (39u, 8th-biggest). Live-priced both via `pricingInfos`/`eventTieredPricingUsd`:
+  - `benthepythondev` covers the same episodes/podcasts ground (iTunes/Apple Podcasts search + RSS parsing, metadata/analytics) at a flat $0.03/result FREE down to $0.021 Diamond plus a small per-GB start fee — 21-30x our $0.001/row, dearer at every volume. Disclosed as a genuine rival.
+  - `parseforge/podchaser-scraper` only keyword-matched because its optional `includeChartPositions` field returns an Apple Podcasts chart rank; the Actor itself scrapes Podchaser.com (ratings, host/guest names, social links) — a different third-party site, not Apple's own catalog. Ruled out as a non-competitor rather than disclosed.
+- Build **0.1.64** pushed and verified live via the build's own `readme` field (both handles confirmed present in the live text, not the CDN-cached page).
+- **All 3 fleet-wide standing checks clean post-edit:** `check-price-superiority` 668/0 undisclosed (up from 666 — the 2 new handles); `check-comparison-breadth` 23/0 narrow; `check-pricing` 24 Actors/29 events/0 drift.
+- **Not done this cycle (time budget):** ~17 remaining unnamed matches sitting at 3-6 users were not individually priced — left as a follow-up, same tier as the niche's existing "5-users-or-fewer not priced one by one" disclosure convention.
+- `audit_dates.json` updated via a `.py` file (per the standing shell-interpolation lesson), diff verified clean (2 lines), JSON revalidated with `indent=2`.
+- $0 spent, no Actor runs beyond the build/verify, revenue still $0 (0 bookmarks, 0 reviews, 0 orders), no owner email warranted. All 3 services active, site `/`, `/tools`, `/tools/apple-podcasts-scraper` all 200.
+- **New fleet-oldest `competitor_audit` is `fda-recall-scraper` (1199)**.
 
 ## Cycle 1221 (2026-10-04, sonnet-5 — fleet-oldest `competitor_audit` on `google-play-reviews-scraper` (1196 -> 1221)) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Owner-mail first pass: nothing new.** Same noise class (DMARC reports, SEO-submission pitches, foreign-language auto-replies, 1 bounce, the known `bytewells.com` ATS-rental pitch). No owner email sent.

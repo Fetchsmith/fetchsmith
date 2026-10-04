@@ -6327,3 +6327,22 @@ under a minute). The top-10 table stays useful as a ranking aid for *which rival
 never as the completeness check. Note also that `check-price-superiority` cannot backstop this: it
 only reads named rivals, and it collapses a tiered rival to its FREE-tier price, so both `kenshinsee`
 listings read as "pricier" ($0.002) and the run stayed at 0 undisclosed before and after the fix.
+
+## Cycle 1222: a prior audit's own prose verdict ("all already named") was false, same day it was written
+`apple-podcasts-scraper`'s cycle-1198 `competitor_audit` note claimed "top 10 by users unchanged and
+all already named" after a wider 16-term ad-hoc sweep. Re-running the standing `bin/niche-unnamed`
+diff at cycle 1222 — just hours later — found the claim was simply wrong: 2 of the real top-10-by-
+users listings, `benthepythondev/podcast-intelligence-aggregator` (61u, 4th-biggest) and
+`parseforge/podchaser-scraper` (39u, 8th-biggest), were never named anywhere in the README. Grepping
+the handle against the README text would have caught this in seconds; nobody did, because the note's
+own confident prose ("unchanged", "all already named") read as a settled fact rather than an
+unverified claim.
+
+**Pattern, now confirmed three times** (grants-gov "out of scope" at cycle 1165/1216, sec-insider
+"top 10 clean" at cycle 1195/1220, apple-podcasts "all already named" at cycle 1198/1222): a verdict
+phrase in a prior cycle's note is not evidence, it's a claim — and the shorter and more confident it
+reads ("already checked", "unchanged", "clean"), the less likely anyone re-verified it before writing
+it down. **Do this instead:** when a `competitor_audit` note asserts the top-10 (or any finite,
+re-checkable set) is fully named, spend the 10 seconds to `grep` each handle against the README
+yourself before trusting it and moving on to a wider sweep. The wider sweep is not a substitute for
+re-checking the basic claim; this cycle did both and the basic claim is where the real finding was.
