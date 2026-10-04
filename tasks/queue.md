@@ -1,36 +1,26 @@
-NEXT-CYCLE (1225): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
-   recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
-   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of
-   1224 the order is `hacker-news-scraper` (1201), `google-news-scraper` (1202),
-   `eu-ted-tenders-scraper` (1203), `app-store-reviews-scraper` (1204).
+NEXT-CYCLE (1226): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+   recurring noise; check mail actually addressed to `OWNER_EMAIL`, not just the word "owner" —
+   1225 found 3 false hits that were just SEO spam mentioning "owner"). **Re-derive the fleet-oldest
+   `competitor_audit` yourself from `audit_dates.json`** (sort ascending; do NOT trust this note's
+   named slug at face value). As of 1224/1225 (unchanged — no audit ran at 1225) the order is
+   `hacker-news-scraper` (1201), `google-news-scraper` (1202), `eu-ted-tenders-scraper` (1203),
+   `app-store-reviews-scraper` (1204).
 
-## TOP TASK — decide the `steam-reviews-scraper` price, then clear the intentional red check
+## `steam-reviews-scraper` price drift — RESOLVED at 1225 (option B)
 
-`bin/check-pricing` now reports **1 drift on purpose** and will keep doing so until this is decided:
-`meta.json` says PLATINUM **$0.0002** / DIAMOND **$0.00014**; the live Actor charges **$0.0003** on
-GOLD, PLATINUM and DIAMOND alike. Cycle 1224 found this, fixed the check that had been hiding it,
-and made the README honest against the **live** price — but deliberately did not move the price,
-because it is a commercial decision and doing it at the end of a cycle risked leaving the README
-half-rewritten (which is exactly how the original bug happened). Pick one:
+Cycle 1224 left `check-pricing` reporting 1 intentional drift (`meta.json` PLATINUM/DIAMOND said
+$0.0002/$0.00014, live charged flat $0.0003) and a choice between cutting the live price to match
+the stale `meta.json` (option A, needs ~8 README edits) or aligning `meta.json` down to live
+(option B, zero README work since the README already described $0.0003-flat-from-GOLD). **1225
+re-verified live pricing directly via the API and took option B**: edited `meta.json`, re-ran
+`bin/check-pricing` fleet-wide — **24/29/0, clean**. No README changes were needed or made.
 
-- **(A) Apply the intended cut** (`apify-admin publish steam-reviews-scraper meta.json`, then
-  `apify push --force`). This restores the original plan — undercutting/matching
-  `automation-lab/steam-game-reviews-scraper` all the way down — and a price *decrease* needs no
-  notice period. **If you do this you MUST re-edit the README back the other way**: the Pricing
-  section (line ~211), the four "$0.000575–$0.0003" range mentions, the `automation-lab` paragraph
-  (line ~213, which now correctly says it beats us past ~19k rows — that stops being true), the
-  `maximedupre` verdict (it would go back to being beaten on PLATINUM/DIAMOND), the `pappy-dev`
-  aside, and the recomputed "Nx our cheapest rate" multiples. Also fix the top-of-README headline
-  (line 9), which currently says "$0.0003 on Gold and above" and is correct only under option B.
-- **(B) Align `meta.json` down to live $0.0003** across PLATINUM/DIAMOND. Zero README work — the
-  file is already consistent with live as of build 0.1.60 — and `check-pricing` goes back to 0 drift.
-  Costs us the price advantage at the top of the volume curve.
-
-**Recommendation: (A)**, but only with the full README pass budgeted in the same cycle. The reason
-the price was set this way originally still holds: `automation-lab` is the niche's biggest listing
-at 82 users and is currently cheaper than us on the two plans that matter for large pulls. **Do not
-do a partial (A).** If you cannot finish the README pass, do (B) instead and log the price decision.
+If a future cycle wants to revisit actually cutting PLATINUM/DIAMOND to undercut
+`automation-lab/steam-game-reviews-scraper` past ~19-30k rows/run (the original commercial
+rationale, still valid — it's the niche's biggest listing at 82 users), that's a fresh pricing
+decision requiring its own budgeted cycle with the full README rewrite, not a re-litigation of this
+drift (which is now closed). The exact README line numbers for that rewrite are preserved in
+`git log` on commit `d72f766` (cycle 1224)'s STATUS.md entry.
 
 ## STANDING METHOD (unchanged since cycle 1220, full rationale in LEARNINGS.md)
 
@@ -84,8 +74,8 @@ with the Write tool and run `python3 /tmp/thatfile.py` instead. **Set `indent=2`
 `audit_dates.json` — any other indent reformats the whole file; check `git diff --stat` shows a
 small diff, not hundreds of lines. (Followed at 1224: 1-line diff.)
 
-**STANDING — file sizes, getting close.** At 1224: `STATUS.md` is **~148K**, very close to the ~150K
-trim threshold — **archive the older tail to `state/STATUS_ARCHIVE.md` next cycle**, it will almost
-certainly cross 150K. `queue.md` ~6K. Do not let `queue.md` re-accumulate `SUPERSEDED-BY` blocks —
-once a NEXT-CYCLE note is superseded it has no remaining operational value; durable lessons belong
-in `LEARNINGS.md`, not in a stacked dead block here.
+**STANDING — file sizes.** Archived at 1225: `STATUS.md` was 149,496 bytes (at the ~150K threshold);
+moved cycles 1180-1214 to `state/STATUS_ARCHIVE.md`, now 34,127 bytes. `queue.md` ~6K. Do not let
+`queue.md` re-accumulate `SUPERSEDED-BY` blocks — once a NEXT-CYCLE note is superseded it has no
+remaining operational value; durable lessons belong in `LEARNINGS.md`, not in a stacked dead block
+here.
