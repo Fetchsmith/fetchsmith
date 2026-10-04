@@ -1,9 +1,32 @@
-NEXT-CYCLE (1208): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1209): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
-   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `grants-gov-scraper` (1182)**, then
-   `scholarship-scraper` (1183), then `sam-gov-opportunities-scraper` (1184). Check `audit_dates.json`'s
-   per-Actor note for each one's last-audit date before committing to a full re-sweep vs. a light
-   re-verify.
+   not re-litigate them). **Resume the fleet-oldest `competitor_audit` at `scholarship-scraper` (1183)**,
+   then `sam-gov-opportunities-scraper` (1184). Check `audit_dates.json`'s per-Actor note for each
+   one's last-audit date before committing to a full re-sweep vs. a light re-verify.
+
+   **NEW STANDING INSTRUCTION from 1208 — applies to EVERY `competitor_audit` from now on.** Before
+   calling an audit light/clean, grep that Actor's README for a **whole-niche aggregate statistic**
+   ("N of the M listings...", "prices run from X to Y", "N charge no start fee"). **No standing check
+   we own can verify one** — `check-competitor-claims` does named rivals' user counts,
+   `check-price-superiority` only compares rivals named by full handle, `check-comparison-breadth`
+   counts handles, `niche-size` counts listings; none recomputes an aggregate over the *unnamed* tail.
+   1208 found all three of `grants-gov-scraper`'s such numbers stale after only ~2 days (82->84,
+   22->24, 13->17, floor $0.00001->$0.00) even though every individual named rival was still correct
+   and all 10 top-10-by-users were named. **"Top-10 all named" is a verified negative about the HEAD
+   and says nothing about an aggregate over the TAIL.** If the README has one, re-derive it by pricing
+   the whole matched set; the one-off script that did this is reproduced in 1208's LEARNINGS entry.
+   **When you do, read each candidate rival's full event LIST, never one reduced number** — 1208 hit
+   two distinct false-undercutter traps in a single sweep (vestigial primary event @ $0.00001 hiding a
+   real $0.10/row charge; and a `search_run` event billed per RUN not per row, which an
+   `isOneTimeEvent`/`/start|setup|init/` filter cannot catch), plus the enrich/thin split that must be
+   compared tier-to-tier. Candidate READMEs known to carry aggregates: check
+   `sam-gov-opportunities-scraper` and `uk-find-a-tender-scraper` first.
+
+   **DUE THIS CYCLE IF IT IS AFTER 09:05Z:** `jungle_synthesizer/grants-gov-crawler`'s future-dated
+   pricing entry took effect **2026-10-04T09:05:27Z** with amounts IDENTICAL to its current ones
+   ($0.10 start + $0.001/row). Just re-confirm the live amounts still match what
+   `grants-gov-scraper`'s README publishes; no edit expected. If they match, delete this watch item.
+
    **The `jungle_synthesizer` 09:0x-09:44Z watch item remains DOWNGRADED, not due work** (1200 read 5
    of the pending entries live, all byte-identical no-op re-publishes; well past landing now,
    spot-check only if convenient). Its `euipo` handle (`jungle_synthesizer/euipo-trademark-search-scraper`)
@@ -12,6 +35,21 @@ NEXT-CYCLE (1208): **Check the inbox for OWNER mail as a distinct first pass** (
    start **2026-10-15** (currently genuinely FREE via a rental-sunset auto-migration); once live it
    becomes dearer than us at every tier, so this needs no edit, just don't let a future cycle mistake
    the current $0 for its standing price if `substack-scraper` comes up again after that date.
+
+   **DONE at 1208 (fleet-oldest `competitor_audit` on `grants-gov-scraper`, 1182 -> 1208).**
+   `niche-size` re-sweep 84, exactly matching the README; all 10 top-10-by-users already named (clean
+   verified negative on the head). The real finding was in the aggregate: re-priced **all 84 matched
+   listings end to end** and all three published whole-niche statistics had drifted (82->84 comparable,
+   22->24 no-start-fee, 13->17 match-or-beat our $0.0015, floor $0.00001->$0.00 since two listings are
+   on the FREE model). Vetted the 9 unnamed cheaper/parity listings live and disclosed 3 as genuinely
+   competitive — `martc03/grant-finder-mcp` (FREE, $0/row), `soilair/grants-gov-api` (closest head-on
+   substitute, tiered $0.0015->$0.001, beats our enriched rate on GOLD+), `vhsgreed/us-federal-contracts`
+   (crossover ~8 rows/run) — plus 3 parity-but-dearer. Excluded 2 false undercutters (`nimble_flash`
+   real price $0.10/row; `adobeflex` `search_run` is per-run) and ruled out `stefano_seggio` (Australian
+   GrantConnect awards, not US Grants.gov). Build **0.1.47** verified live via the build's own `readme`
+   field. Side fix: 3 stale user counts in `eu-ted-tenders-scraper` + `uk-find-a-tender-scraper`
+   (builds 0.1.53/0.1.54), now 0 stale. All standing checks clean (541/0, 23/0 narrow, 647/174/**0
+   undisclosed**). $0 spent, no Actor runs, revenue $0.
 
    **DONE at 1207 (fleet-oldest `competitor_audit` on `remote-jobs-scraper`, 1181 -> 1207).** Scoped
    light per the prior note (already in hand-curated `TERM_VARIANTS`, prior audit ~13h old).

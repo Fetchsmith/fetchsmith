@@ -6159,3 +6159,39 @@ Minor but recurring: `check-competitor-claims`'s freshness regex is
 `(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})`. A new competitor paragraph
 dated "**read** live 2026-10-04" flags UNDATED even though it carries today's date — use one of the
 four accepted verbs, next to the date.
+
+## Cycle 1208 — a published WHOLE-NICHE statistic is an unowned claim; nothing in the fleet re-verifies it
+`grants-gov-scraper`'s README published three precise niche-wide numbers ("60 of the 82 listings
+with a comparable per-event price charge an Actor-start fee and 22 charge none", "13 of those 82
+match or beat our $0.0015", "per-row prices run from $0.00001 to $15.00"). **Every standing check we
+own is blind to all three by construction**: `check-competitor-claims` verifies the USER COUNTS of
+rivals we named, `check-price-superiority` compares only rivals already named by full `owner/slug`,
+`check-comparison-breadth` counts handles, `niche-size` counts listings. None of them recomputes an
+aggregate over the *unnamed* tail, so a statistic like "13 of 82" can only ever be re-verified by
+re-pricing the whole niche by hand. Live re-price of all 84: **84 comparable (not 82), 24 no-fee
+(not 22), 17 match-or-beat (not 13), floor $0.00 (not $0.00001 — two listings are on the FREE
+model)**. The old numbers were ~2 days old. **Rule: when a README publishes a count over the whole
+niche rather than over the named set, that cycle's `competitor_audit` must re-derive it, and the
+audit note must say so — "top-10 all named" is a verified negative about the HEAD, and says nothing
+about an aggregate over the TAIL.** Cycle 1205's "unread tail" lesson was about finding a big
+*unnamed rival* below the top 10; this is the different failure where every individual rival is
+correctly described and only the *aggregate* is stale.
+
+### Two distinct ways a one-number price reduction manufactures a false undercutter
+Re-pricing the tail surfaced 19 apparent match-or-beats; hand-checking each rival's actual charge
+events removed 2, giving the honest 17. Both are worth recognising on sight:
+1. **Vestigial primary-event trap (the cycle-1177 `check-primary-event` pattern, hit here by hand).**
+   `nimble_flash/grant-fit-scout` carries `apify-default-dataset-item` @ $0.00001 while its own
+   README documents the real charge as `qualified-opportunity` @ **$0.10/row** — 67x our enriched
+   rate, i.e. the single most expensive listing in the set, read as the cheapest.
+2. **Per-RUN event read as a per-ROW rate (new).** `adobeflex/grants-gov-lite` prices `search_run`
+   @ $0.001, which a "cheapest non-start event" reduction happily takes as its row price; the actual
+   row event is `notice_row` @ $0.002, dearer than us. A start/setup-fee filter keyed on
+   `isOneTimeEvent` or `/start|setup|init/` does **not** catch this — a per-run fee is recurring
+   (not one-time) and is named `search_run`. **Before believing any rival is cheaper, read its event
+   LIST, not one reduced number** — and check whether the cheap event is billed per run or per row.
+3. Mirror case worth stating: an enrich/thin split must be compared **tier to tier**.
+   `upward_enterprises/grants-gov-opportunity-finder` reduces to $0.001 (its summary rate) and so
+   reads as beating our $0.0015 enriched rate, but the like-for-like comparison is $0.003 full vs our
+   $0.0015 and $0.001 summary vs our $0.0007 — we are cheaper at BOTH tiers. Comparing their thin
+   rate to our enriched rate is the apples-to-oranges version of the same bug.
