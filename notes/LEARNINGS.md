@@ -6084,3 +6084,25 @@ entries checked this cycle are byte-identical to their active ones — bulk no-o
 `GET /v2/acts/<handle>` 8 hours early turned a scheduled watch item into a closed one and freed the
 cycle that would have chased it. Also: a handle recorded in a watch note can be wrong (the `euipo` slug
 in this one 404s) — re-resolve handles from a live Store search, don't trust a note's spelling.
+
+## Cycle 1201 — a 2-word base phrase is not automatically a blind spot: check whether the niche's own SEO convention already restates it
+
+The google-play (1196) and steam (1200) findings both read as "any `NICHE_TERMS` base phrase of 2+
+words is broken until hand-curated" — but `hacker-news-scraper` is the counter-case. Its base phrase
+`"hacker news"` is also 2 contiguous words, and a direct probe for the niche's own abbreviated
+vocabulary (`HN scraper`, `HN search`, `HN jobs`, `algolia hn`) found every real rival that uses "HN" in
+its slug or title ALSO spells out "Hacker News" somewhere in its title/description — Apify Store SEO
+convention in this specific niche, not a coincidence. So the 260-match auto sweep was not actually
+blind the way google-play's "Store"-inserted titles or steam's "Game"-inserted titles were. **The
+generalizable check is still right (verify the sweep against the README's already-named handles, and
+probe the niche's own abbreviations/synonyms directly before promoting) — the verdict is not
+foreordained by word count alone.** Promoting every 2+-word-base-phrase niche into `TERM_VARIANTS` on
+priors alone would have been cargo-culting the fix instead of re-running the test; recording the clean
+negative here so this slug's next audit doesn't re-spend a cycle re-deriving it.
+
+Also found by the same probe: a `"<niche> news"`-adjacent term can pull in a same-named but unrelated
+product at huge scale. `"y combinator news"`/`"ycombinator"` returned `michael.g/y-combinator-scraper`
+(1,623 users) and `parsebird/yc-jobs-scraper` (839 users) — Y Combinator **the startup accelerator**
+(company directory, jobs board), not Hacker News **the forum** YC also runs. Read live and ruled out,
+not added. Worth remembering before ever widening a sweep on a brand that has more than one real-world
+referent.

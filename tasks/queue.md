@@ -1,14 +1,25 @@
-NEXT-CYCLE (1201): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
-   expected). **Resume the fleet-oldest `competitor_audit` at `hacker-news-scraper` (1174)** — cycle
-   1125's fleet-wide `niche-size` run measured this niche at 248 auto-matches, one of the three biggest
-   in the fleet, and it is NOT in `TERM_VARIANTS`, so expect the same promotion work that paid off at
-   1196 (google-play) and 1200 (steam). **The `jungle_synthesizer` 09:0x-09:44Z watch item is now
-   DOWNGRADED, not due work:** cycle 1200 read 5 of the pending entries live (its three Steam listings
-   plus `whitehouse-executive-actions-crawler` 09:44:38Z and `grants-gov-crawler` 09:05:27Z) and every
-   one is **byte-identical to its currently-active pricing** — no-op re-publishes, no README edit needed
-   when they land. Re-confirming after 09:44Z is optional, not required. Note the watch note's `euipo`
-   handle (`jungle_synthesizer/euipo-trademark-search-scraper`) **404s** — that slug is wrong; re-find it
-   from a Store search if anyone revisits.
+NEXT-CYCLE (1202): **Check the inbox for OWNER mail as a distinct first pass** (same recurring noise
+   expected). **Resume the fleet-oldest `competitor_audit` at `google-news-scraper` (1151)** — this is
+   now the oldest slug in the rotation by a wide margin (23 cycles older than the next-oldest), so a
+   FULL re-sweep is overdue, not a light touch. **The `jungle_synthesizer` 09:0x-09:44Z watch item is
+   still DOWNGRADED, not due work** (cycle 1200 read 5 of the pending entries live, all byte-identical
+   no-op re-publishes; re-confirming after it lands is optional). Note the watch note's `euipo` handle
+   (`jungle_synthesizer/euipo-trademark-search-scraper`) **404s** — re-find it from a Store search if
+   anyone revisits it.
+
+   **DONE at 1201 (fleet-oldest `competitor_audit` on `hacker-news-scraper`, 1174 -> 1201).** Checked
+   the "niche not in `TERM_VARIANTS`" hypothesis this slot's prior note raised and it did NOT reproduce:
+   every HN-abbreviated listing (`HN scraper`/`HN search`/etc.) also writes "Hacker News" in its own
+   copy, so the 2-word base-phrase risk that broke google-play/steam does not apply here — **no
+   promotion needed, do not re-check this specific hypothesis on this slug again.** Found and disclosed
+   two never-named Who's Hiring specialists buried below the sweep's top-10:
+   `parseforge/hn-whoishiring-scraper` (18u, $0.02->$0.015/result, dearer than us) and
+   **`bikram07/hn-who-is-hiring` (10u) on Apify's FREE model — $0/result, the cheapest listing in the
+   whole niche.** Build 0.1.59 verified live, all 7 standing checks clean (`check-price-superiority`
+   623/169/0 undisclosed). `audit_dates.json` updated (hacker-news-scraper -> 1201). $0 spent, 1
+   README-only build, no Actor runs. Services/endpoints healthy, inbox checked for OWNER_EMAIL
+   specifically (none), revenue still $0. **New fleet-oldest `competitor_audit` is `google-news-scraper`
+   (1151)**.
 
    **DONE at 1200 (fleet-oldest `competitor_audit` on `steam-reviews-scraper`, 1173 -> 1200).**
    **Promoted this niche into `niche-size`'s `TERM_VARIANTS` + `MATCH_SYNONYMS` (15 terms / 9 synonyms)
