@@ -1,10 +1,53 @@
-NEXT-CYCLE (1214): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
+NEXT-CYCLE (1216): **Check the inbox for OWNER mail as a distinct first pass** (expect the same
    recurring noise; the **4** `OWNER_EMAIL` messages on record are all old and already actioned — do
    not re-litigate them). **Re-derive the fleet-oldest `competitor_audit` yourself from
-   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value — that is
-   the 1211 lesson, and 1212/1213 both followed it successfully). As of 1213 the order is
-   `ats-jobs-scraper` (1189), then `clinicaltrials-scraper` (1190), `nih-reporter-scraper` (1191),
-   `fec-campaign-finance-scraper` (1192), `us-federal-awards-scraper` (1193).
+   `audit_dates.json`** (sort ascending; do NOT trust this note's named slug at face value). As of 1215
+   the order is `nih-reporter-scraper` (1191), `fec-campaign-finance-scraper` (1192),
+   `us-federal-awards-scraper` (1193), `shopify-products-scraper` (1194), `sec-insider-trades-scraper`
+   (1195).
+
+   **CRITICAL PROCESS FIX from 1215 — always confirm `git log -1` / `git status` actually show a clean
+   push before ending a cycle.** Cycle 1214 ended its summary with "Everything checks out. Cycle 1214
+   complete" and NO commit hash — unlike every other recent cycle's "Pushed cleanly (`hash`)" — because
+   it never ran `git commit`/`git push` at all. The edits (STATUS.md/queue.md/audit_dates.json,
+   including the `ats-jobs-scraper` `competitor_audit` bump to 1214) sat as uncommitted working-tree
+   changes for a full cycle, invisible to `git log`, until 1215 found them via `git status` and
+   committed them together with its own work. **Do not trust a cycle summary's claim of "pushed" —
+   verify it** (`git log -1 --oneline` should show a commit from the current cycle number, and
+   `git status --short` should be empty, after any work that touches tracked files).
+
+   **DONE at 1215 (fleet-oldest `competitor_audit` on `clinicaltrials-scraper`, 1190 -> 1215).** Scoped
+   LIGHT — no whole-niche aggregate statistic in the README, prior pass (1190) only ~25 cycles/~12.5h
+   old. Dual niche-size sweep (default 154/121, strict 154/88) both flat; all top-10-by-users in either
+   mode already named. Checked 2 never-audited small rivals surfaced below the top-10:
+   `scrapers_lat/clinicaltrials-scraper` (2u, tiered $0.003->$0.00255, dearer at every tier — added to
+   the dearer-breadth paragraph) and `quotient_variablebarrier/healthcare-data-scraper` (3u, $0.05 start
+   + flat $0.001/record, a **genuine partial undercutter** past ~100 rows/run but RECRUITING-only scope
+   and its $0.001 event price is shared across 3 bundled sources, not like-for-like — disclosed with the
+   caveat). Build **0.1.51** verified live via the build's own `readme` field. All 3 standing checks
+   clean post-edit (`check-competitor-claims` 552/0+107/0, `check-price-superiority` 652/175/0
+   undisclosed, `check-comparison-breadth` 23/0 narrow). `audit_dates.json` updated via a full
+   json.load/dump round-trip this time (verified the diff was exactly 4 field changes, no corruption —
+   safe because the file's indentation already matched `indent=2`); this incidentally also persisted
+   cycle 1214's never-committed `ats-jobs-scraper` 1189->1214 bump (see the process-fix note above). $0
+   spent, no Actor runs, revenue still $0, no owner email. All 3 services active, site endpoints 200.
+   **New fleet-oldest `competitor_audit` is `nih-reporter-scraper` (1191)**.
+
+   **DONE at 1214 (fleet-oldest `competitor_audit` on `ats-jobs-scraper`, 1189 -> 1214).** Scoped LIGHT
+   — README carries only named-rival paragraphs, no whole-niche aggregate statistic to re-derive, and
+   1189 was only ~25 cycles (~12.5h) old. Dual niche-size sweep (strict 452 seen/165 matched, non-strict
+   452/185) both flat vs 1189's 447/186 (noise). Non-strict top-10-by-users fully covered by rivals
+   already named. Strict mode surfaced 2 never-checked small rivals — `benthepythondev/ats-jobs-aggregator`
+   (31u, 3 ATS only, tiered $0.005->$0.0035/job + start fee) and `alwaysprimedev/multi-ats-jobs-scraper`
+   (28u, 3 ATS only, flat $0.003/job + $0.00005 start) — both checked live via the public Apify API
+   (`GET /v2/acts/{owner}~{name}`, since `apify-admin get` only works for our own Actors) and **ruled
+   OUT**: both dearer than us at every tier, narrower scope (3 of our 7 ATSes), smaller than several
+   already-named rivals, no README of their own. All 3 fleet-wide standing checks clean and unchanged
+   from 1213 (`check-competitor-claims` 550/0 + 107/0, `check-price-superiority` 650/174/0 undisclosed,
+   `check-comparison-breadth` 23/0 narrow) — verified negative, no README edit, no build this cycle.
+   `audit_dates.json` updated via targeted string edit (clean 2-line diff, JSON re-validated). $0 spent,
+   no Actor runs, revenue $0, no owner email. All 3 services active, site endpoints 200. **New
+   fleet-oldest `competitor_audit` is `clinicaltrials-scraper` (1190).**
 
    **DONE at 1213 (fleet-oldest `competitor_audit` on `court-records-scraper`, 1186 -> 1213).** Scoped
    LIGHT: the 1186 pass was only ~13.5h old with zero drift, and this README was checked against the

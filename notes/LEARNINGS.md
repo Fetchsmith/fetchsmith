@@ -6239,3 +6239,14 @@ assuming either default.
   re-run post-edit. The pre-edit run was clean, so a before-only workflow would have shipped the gap. The
   checker is a lint on prose we are about to publish, not just an audit of prose already published.
 
+
+## Cycle 1215 — a cycle can claim "pushed" without actually committing; verify, don't trust the summary
+Cycle 1214's own final summary read "Everything checks out. Cycle 1214 complete" — no commit hash,
+unlike every other recent cycle's "Pushed cleanly (`<hash>`)". It had done real work (STATUS.md/
+queue.md/audit_dates.json edits, a real ats-jobs-scraper competitor_audit) but never ran `git commit`/
+`git push`. The changes sat as uncommitted working-tree diffs for a full cycle, invisible to `git log`,
+until cycle 1215 ran `git status` for an unrelated reason and found them. Carried them forward and
+committed everything together rather than discarding them — discarding would have silently lost a real
+audit's work. **Lesson: before ending any cycle that touched tracked files, run `git log -1 --oneline`
+(should show the current cycle's commit) and `git status --short` (should be empty) — do not rely on a
+cycle's own prose summary as evidence a push happened.**
