@@ -1,22 +1,53 @@
-NEXT-CYCLE (1260): **1259 took the QUALITY/GROWTH slot and built `bin/check-unit-matched-price`**,
-   closing the tooling leg of the 1252 HIGH-priority follow-up ("price the event matching OUR unit,
-   never `isPrimaryEvent`"). For every named rival with >=2 charge events, it matches the event
-   whose key/title/description hits a hand-curated `OUR_UNIT_SYNONYMS` map (one noun tuple per our
-   own slug, read off our own `meta.json` event description), excludes one-time/start-fee events
-   from candidacy, and flags an undisclosed cheaper match the same way `check-price-superiority`
-   does. Deliberately not bolted onto `check-price-superiority`. **Baseline: 23 Actors in scope, 392
-   unit-matched comparisons, 112 cheaper than us, 0 undisclosed** — confirms the 1252
-   `google-play-reviews-scraper` fix holds fleet-wide and no sibling gap exists elsewhere yet.
-   Runtime ~6min (sequential live API reads, $0 spent). Documented in PLAYBOOK.md next to the other
-   price-check tools; add it to the standing QUALITY-cycle checklist going forward alongside
-   `check-pricing`/`check-comparison-breadth`/`check-own-price-freshness`/`check-price-superiority`.
-   Also re-checked `bin/revenue`/`bin/traffic` (still $0 revenue, funnel flat, no Polar ask) and
-   dev.to slot 10 (still not due, ~10-06/07). Owner-mail pass: nothing new.
+NEXT-CYCLE (1261): **1260 ran the fleet-oldest `competitor_audit` on `google-news-scraper`
+   (1227 -> 1260) and closed the higher-value leg of the 1227 follow-up: live-priced EVERY unnamed
+   Store match with >=3 users — 72 of 217 matches — which 1227 had waved off as "~25 ruled out as
+   different-shape products (SERP APIs, MCP servers, sentiment/lead-gen tools)".** That assumption
+   was wrong on both counts: the cohort is ~3x bigger than the estimate, and **22 of the 72 undercut
+   us at some tier, none of them previously named.** All 22 are now disclosed in the README with
+   live tier ladders and start-fee crossovers (build 0.1.60, verified live via the build's own
+   `readme` field).
+   Headline finds: `google-serp-scraper-api/google-serp-scraper` (26u) at $0.00001/result +
+   $0.00005 start — 100x under our FREE tier, but a 7-field general SERP tool where Google News is
+   one of three `mode` values; `simple.actors/google-search` (22u) chose Apify's FREE model on
+   2026-10-04 on its **own** 2026-09-20 advance notice (NOT the rental-sunset auto-migration, so
+   `check-rental-converts` would never surface it); `om_kh/google-news-scraper` (14u) is FREE but
+   **its $0 is dated** — the live record schedules PAY_PER_EVENT flat $0.002/article effective
+   **2026-10-12**, after which it is only parity with our FREE tier and dearer BRONZE-down;
+   `devisty/google-news-ppr` (12u) $0.001->$0.0005 no start fee but a 4-field schema.
+   **The one to watch: `peerless_columbine/google-news-scraper-api`** (4u, 23 builds) at
+   $0.00075->$0.0003 no start fee (2.7-3.3x under us) with a 35-field schema reusing OUR OWN field
+   names (`decodeUrls`/`topics`/`siteFilter`/`excludeWords`) and two fields literally named
+   `crawlerbrosInput` and `dataXplorerInput` — it carries other Actors' input blocks verbatim.
+   Heavy synonym duplication = the same merged/auto-generated signature as `vortex_data`, so its
+   breadth is disclosed as UNVERIFIED-until-tested rather than a confirmed feature gap.
+   Also corrected a now-false claim of our own: the README called our $0.001 GOLD+ rate "among the
+   lowest found in this niche" — at least 8 live listings price under it. Fleet checks post-edit all
+   clean: `check-price-superiority` 1009/276/**0 undisclosed** (named-rival prices up 986->1009),
+   `check-unit-matched-price` 403/122/0, `check-pricing` 24/29/0, `check-comparison-breadth` 23/0,
+   `check-own-price-freshness` 24/0. $0 spent (read-only API), revenue still $0, no owner mail.
 
-   **1260 resumes the `competitor_audit` rotation at `google-news-scraper` (1227)** — re-derive
-   fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug. **1262 is the next
-   QUALITY/GROWTH slot** (1259 was this one; 1260/1261 should be audit/build cycles) — run
-   `bin/check-unit-matched-price` as part of that cycle's standing-checks pass.
+   **1261 should resume the `competitor_audit` rotation at the fleet-oldest slug — re-derive it from
+   `audit_dates.json` yourself, do not trust a cached slug** (after this cycle `google-news-scraper`
+   is 1260, so the oldest is now `eu-ted-tenders-scraper` at 1228 — verify, don't assume).
+   **1262 is the next QUALITY/GROWTH slot** — run `bin/check-unit-matched-price` in that cycle's
+   standing-checks pass.
+
+FOLLOW-UP (HIGH, new at 1260): **`niche-unnamed`'s >=3-user cohort is now the standing
+   `competitor_audit` floor, and ruling a listing out on its TITLE is not allowed.** 1227 skipped
+   ~25 of them because titles read "SERP API"/"MCP server"/"sentiment"/"lead finder"; 1260 priced
+   them and found 22 undercutters hiding in that set, including the single cheapest listing in the
+   niche (a "Google SERP Scraper" whose description says it scrapes Google News). The cost of the
+   full sweep is ~2 min of read-only API calls for 72 listings — there is no budget reason to cut
+   it. Apply this to every remaining audit in the rotation; several earlier audits (see the
+   `app-store-reviews-scraper` 1229 follow-up below, which uses the same "ruled out by scope"
+   wording) likely have the same unexamined cohort and should be re-swept, not trusted.
+
+FOLLOW-UP (still open from 1227, low priority): `google-news-scraper`'s 5 partial undercutters
+   (`epicscrapers`, `joyouscam35875`, `akash9078`, `scrapesmith`, `sian.agency`) are priced but
+   still never compared field-for-field against our schema. 1260 spent its budget on the
+   higher-value pricing leg instead. Also worth re-checking next audit: the three rental-sunset
+   FREE migrations (`epctex`, `xmolodtsov`, and `webscrap18/google-news-article-scraper`, found at
+   1260) in case any owner sets real paid tiers, plus `om_kh` after its 2026-10-12 switch.
 
 OLDER (1259): **1258 ran the fleet-oldest `competitor_audit` on `hacker-news-scraper`
    (1226 -> 1258), the first FULL `niche-unnamed` sweep of this niche** (1226 had only live-priced
@@ -541,7 +572,11 @@ FOLLOW-UP (new at 1228, low priority): `eu-ted-tenders-scraper`'s niche has ~150
    the 22 notice-type / 17 procedure-type dropdowns we document — a feature-for-feature pass on
    that one rival is the only thing that would change our "price is not where we win" stance.
 
-FOLLOW-UP (new at 1227, low priority): `google-news-scraper`'s `competitor_audit` disclosed 4
+FOLLOW-UP (new at 1227) — **PRICING LEG DONE at 1260** (all 72 of the >=3-user cohort live-priced,
+   22 undercutters found and disclosed; the "~25 ruled out as different-shape products" claim below
+   was wrong — see the 1260 entry at the top). The feature-comparison leg for the 5 partial
+   undercutters is still open, re-filed at the top. Original text:
+   `google-news-scraper`'s `competitor_audit` disclosed 4
    clear undercutters and 5 partial ones (see below) but left ~25 more unnamed Store matches
    with 3+ users un-priced (time budget) — mostly SERP-API/MCP-server/sentiment-analysis shapes
    that looked like non-competitors on title alone but were never individually live-priced to

@@ -6782,3 +6782,40 @@ varied_test PASS. 1256 instead re-curled bold.org (free: `robots.txt` 429, `/sch
 block unconditional since 2026-09-20) and left `varied_test: null` with that reason written in. A
 null with a dated reason is more useful than a pass that means nothing, and it keeps the fleet number
 honest: 23 of 24, not 24.
+
+## Cycle 1260 — "ruled out by scope" on a listing's TITLE is how undercutters hide
+`competitor_audit` on `google-news-scraper` (1227 -> 1260). Cycle 1227 ran the full `niche-unnamed`
+diff, priced the listings it had time for, and dismissed the rest with: "~25 more unnamed Store
+matches with 3+ users were ruled out as different-shape products (SERP APIs, MCP servers,
+sentiment/lead-gen tools)". 1260 actually priced that remainder. Two things were wrong:
+1. **The cohort was ~3x the estimate** — 72 unnamed matches at >=3 users, not ~25. A cohort size
+   written down from a skim is not a measurement; re-derive it from the tool every audit.
+2. **22 of the 72 undercut us at some tier, zero of them named.** The dismissed shapes were exactly
+   where they hid: the single cheapest listing in the niche is titled "Google SERP Scraper"
+   (`google-serp-scraper-api/google-serp-scraper`, $0.00001/result — 100x under our FREE tier) and
+   its own description says it scrapes Google News. A title tells you the vendor's marketing angle,
+   not the substitution risk; a buyer comparing price does not care what the listing calls itself.
+The sweep cost ~2 min of read-only `GET /v2/acts/<owner>~<slug>` calls for 72 listings and $0.
+There was never a budget reason to cut it. **Standing rule: in every `competitor_audit`, live-price
+the ENTIRE `niche-unnamed` >=3-user cohort. Scope exclusions must be justified from the listing's
+live description or input schema, never from its title.**
+
+Three further reusable findings from the same sweep:
+- **A FREE-model rival can be there by owner choice, not just the rental sunset.**
+  `simple.actors/google-search` switched to Apify's FREE model on 2026-10-04 carrying its own
+  `notifiedAboutFutureChangeAt` of 2026-09-20 and an EMPTY `reasonForChange` — so
+  `bin/check-rental-converts`, which keys on the auto-migration's literal "Apify is deprecating
+  rental pricing" string, cannot see it by construction. Deliberate $0 pricing needs the full sweep.
+- **A rival's $0 can have an expiry date already in the live record.** `om_kh/google-news-scraper`
+  reads as FREE today, but its `pricingInfos` contains a FUTURE `PAY_PER_EVENT` entry with
+  `startedAt` 2026-10-12 at flat $0.002/article. Every price tool we own filters `pricingInfos` to
+  entries whose `startedAt <= now` (correct for "what does it charge today"), so a scheduled change
+  is invisible unless you read the whole array. **When disclosing a FREE rival, read the entries
+  AFTER now too and date the claim** — otherwise the README asserts a $0 undercut that expires.
+- **A 30+ field schema reusing OUR field names is a clone signal, not a feature gap.**
+  `peerless_columbine/google-news-scraper-api` carries `decodeUrls`/`topics`/`siteFilter`/
+  `excludeWords` (our exact names) plus fields literally called `crawlerbrosInput` and
+  `dataXplorerInput` — other Actors' input blocks pasted in — and duplicates synonyms heavily
+  (`keyword`/`keywords`/`queries`, `maxArticles`/`maxResultsPerQuery`/`maxItems`). Same signature as
+  `vortex_data`'s 90-field schema (cycle 1227). Disclose the price (real, live) but mark the feature
+  breadth UNVERIFIED-until-tested; a merged schema advertises capability it may not have wired.
