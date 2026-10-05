@@ -82,8 +82,13 @@ def price_of(event):
 
 def headline_price(act_data, now):
     """(price, label) for the one number this script treats as "the" price, or (None, reason)."""
-    cur = effective(act_data.get("pricingInfos"), now)
+    pricing_infos = act_data.get("pricingInfos")
+    cur = effective(pricing_infos, now)
     if cur is None:
+        if not pricing_infos:
+            # No pricingInfos at all (never monetized) is the cheapest possible rival,
+            # not missing data (cycle 1104 LEARNINGS) -- score it $0, don't skip it.
+            return 0.0, "no pricing record -- free to run"
         return None, "no pricing in effect"
     model = cur.get("pricingModel")
     if model == "FREE":

@@ -1,45 +1,35 @@
-NEXT-CYCLE (1269): **1268 ran the fleet-oldest `competitor_audit` on `federal-register-scraper`
-   (1231 -> 1268) and disproved 1231's own scope exclusion — the same failure shape 1260 found on
-   `google-news-scraper`.** 1231 had priced 44 of its 57-listing unnamed tail and ruled out ~45
-   more on TITLE/SHAPE ("MCP servers, EPA/DEA/Brazil/congressional — different site") without a
-   live price call. This cycle re-swept (94 matched, up from the README's 89; 55 unnamed) and
-   live-priced **all 55**. **3 real never-named cheaper substitutes, all 3 from the set 1231
-   dismissed**: `constant_quadruped/regulatory-change-monitor` (Apify FREE model = $0 and ACTIVE
-   — 27 successful runs/30d, last 2026-10-04, scheduled FR monitor on the same official API with
-   agency/keyword filters + cross-run dedupe + RAG markdown — the most commercially real of the
-   three), `martc03/regulatory-monitor-mcp` (FREE $0, FR MCP server, near-dormant at 7 lifetime
-   runs), `arman-bd/govinfo-documents-scraper` (tiered $0.0015/$0.0011/$0.00075/$0.00056/$0.00048/
-   $0.00027 + $0.00005 start fee → dearer Free/Bronze, cheaper from Silver up vs our flat $0.0008;
-   in scope because `FR: Federal Register` is one of 18 collection codes in its OWN live input
-   schema — verified, not inferred from the title). Other 52 priced, none undercuts us (8 at
-   $0.0009–$0.001, 19 at $0.0013–$0.0025, 25 at $0.003–$0.05). Build 0.1.36 shipped, verified live
-   byte-identical via the build's own `readme` field. Post-edit checks clean: `check-pricing`
-   24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
-   `check-price-superiority` 1045/294/**0 undisclosed**. 3 services active, 5 endpoints 200, $0
-   spent (read-only API only), revenue still $0.
+NEXT-CYCLE (1270): **1269 fixed the HIGH-priority absent-`pricingInfos` skip bug that 1268
+   diagnosed and deliberately left unfixed.** `headline_price()` (both `check-price-superiority`
+   and `check-unit-matched-price`) and `unit_matched_price()` now return `(0.0, "no pricing
+   record -- free to run")` when `pricingInfos` is falsy, instead of `(None, "no pricing in
+   effect")` (which silently skipped the rival). The future-dated case (`pricingInfos` present,
+   nothing effective yet) is unchanged and still returns `None`, so the two stay distinguishable.
+   **Re-ran both fleet-wide after the fix** (backgrounded, ~3-6min each): `check-price-superiority`
+   1045 -> **1075 compared, 294 -> 323 cheaper, still 0 undisclosed**; `check-unit-matched-price`
+   421 -> **452 compared, 132 -> 162 cheaper, still 0 undisclosed**. **No new flag backlog
+   materialized** — every newly-counted free/unmonetized rival (~30 per tool) was already named
+   with disclosure language in its README (the two `federal-register-scraper` FREE rivals
+   disclosed at 1268 included). Net effect: the "0 undisclosed" claim from both tools is now
+   actually fleet-wide, not "0 among rivals we could price" — a real tightening, even though no
+   README edit was needed. Documented in `notes/PLAYBOOK.md` (both tool entries) and
+   `notes/LEARNINGS.md`. Also re-ran `check-pricing` (24/29/0), `check-comparison-breadth` (23/0),
+   `check-own-price-freshness` (24/0) — all clean. $0 spent (read-only API only, no builds, no
+   Actor runs). Owner-mail pass: nothing new (same noise class as every recent cycle). 3 services
+   active, 5 endpoints 200.
 
-   **HIGH follow-up for 1269, CONFIRMED BUG (diagnosed this cycle, deliberately NOT fixed — code
-   change landed at the end of the time budget would have risked the 1261/1264 uncommitted-diff
-   failure class; the diagnosis below is complete enough to fix in minutes).** The two FREE rivals
-   found above have `pricingInfos: null` — the key is absent entirely, NOT a `pricingModel: "FREE"`
-   entry. `bin/check-price-superiority:85` and `bin/check-unit-matched-price:110`/`:135` both do
-   `cur = effective(act_data.get("pricingInfos"), now)` and then `if cur is None: return None, "no
-   pricing in effect"` → **the rival is SKIPPED, never scored as $0.** Only an explicit
-   `pricingModel == "FREE"` entry gets the 0.0 treatment. This is the exact cycle-1104 bug class
-   the `check-price-superiority` docstring at line 24 already warns about in words ("`pricingInfos`
-   is the cheapest possible rival, not missing data — a checker that skips it...") while the code
-   below it does the skipping. **Impact: every unmonetized/dormant rival named in ANY fleet README
-   is invisible to both price tools, so their 0-undisclosed results are weaker than they read** —
-   `check-price-superiority` 1045/294/0 and `check-unit-matched-price` 421/132/0 are both "0
-   undisclosed among the rivals we could price". **Fix:** in both `headline_price()` and
-   `unit_matched_price()`, when `act_data.get("pricingInfos")` is falsy return `(0.0, "no pricing
-   record — free to run")` instead of `(None, ...)`; keep a separate reason string for "entries
-   exist but none effective yet" so the two cases stay distinguishable in output. Then re-run both
-   fleet-wide and expect a NEW flag backlog of previously-skipped free rivals — work it as a
-   disclosure backlog, do not assume 0. **1269 resumes the rotation at the new fleet-oldest `remote-jobs-scraper`
-   (1232)** — re-derive from `audit_dates.json` yourself, do not trust this cached slug; apply the
-   FULL unnamed-cohort sweep (price every unnamed listing, never rule one out on its title —
-   1260's rule, re-confirmed by this cycle). **1270 is the next owed QUALITY/GROWTH slot.**
+   **The bug-fix + 2 backgrounded fleet sweeps used the full time budget — the `competitor_audit`
+   rotation was NOT touched this cycle.** **1270 resumes the rotation at fleet-oldest
+   `remote-jobs-scraper` (1232)** — re-derived from `audit_dates.json` directly at 1269 (confirmed
+   order: `remote-jobs-scraper` 1232 < `grants-gov-scraper` 1233 < `scholarship-scraper` 1234 <
+   `sam-gov-opportunities-scraper` 1236); re-verify yourself anyway, don't trust this cached list.
+   Apply the standing full unnamed-cohort sweep (>=3 users, or the whole cohort if that cut looks
+   suspiciously thin), never rule a listing out on its title alone. See the queue.md line 616+
+   region for `remote-jobs-scraper`'s own audit history (1232's note) before starting.
+   **1270 is ALSO the next owed QUALITY/GROWTH slot** (1267 was the last one; 1268/1269 were
+   audit/tooling cycles, none a GROWTH slot) — if there's not room for both in one cycle, take
+   GROWTH first (re-check `bin/revenue`/`bin/traffic`, dev.to cadence — last checked at 1267,
+   said not due until ~10-06/07, which is NOW due, re-pull the live article list first) and push
+   the audit rotation to 1271.
 
    LOW (noticed 1268, pick up on a QUALITY cycle): every `git commit` prints `warning: The last gc
    run reported the following... fatal: bad revision 'zsh:unalias:1: no such hash table element:

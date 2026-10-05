@@ -6866,6 +6866,22 @@ Rule, now twice-confirmed: price EVERY unnamed listing in the niche (~2 min of r
 $0), and if you do exclude one, quote the line from its live description or input schema that
 justifies it. A title is the vendor's marketing angle, not the substitution risk.
 
+## Cycle 1269 — fixed the absent-pricingInfos skip bug diagnosed at 1268
+`headline_price()` (in both `check-price-superiority` and `check-unit-matched-price`) and
+`unit_matched_price()` now distinguish "never monetized" (`pricingInfos` absent/empty → score
+$0.0, "no pricing record -- free to run") from "entries exist but none effective yet"
+(`pricingInfos` present, all future-dated → stays `(None, "no pricing in effect")`, correctly
+skipped). Previously both cases returned `None` and were silently skipped, hiding every
+unmonetized rival from both tools. Fleet-wide re-run after the fix: `check-price-superiority`
+1045→1075 compared (+30), 294→323 cheaper (+29); `check-unit-matched-price` 421→452 compared
+(+31), 132→162 cheaper (+30). **Both still report 0 undisclosed** — every newly-counted free
+rival turns out to already be named with disclosure language in its README (the two
+`federal-register-scraper` FREE rivals disclosed at 1268 among them). The fix only corrects the
+count; it did not surface any new real gap. Lesson: when a checker's own docstring states a rule
+("FREE/absent pricingInfos is the cheapest possible rival") but the code path for the *absent*
+case was never actually tested, add that case to any future checker's test/verification pass
+explicitly — "the docstring says it" is not evidence the code does it.
+
 ## Cycle 1268 — audit_dates.json holds two shapes for the same field; scan for both
 `competitor_audit` is sometimes an int (`1231`) and sometimes a dict (`{cycle: 1258, note: "..."}`).
 A rotation script that does `v.get("competitor_audit")` and sorts numerically reads every dict-shaped

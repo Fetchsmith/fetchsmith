@@ -107,8 +107,11 @@ def headline_price(act_data, now):
     """Same reduction check-price-superiority uses -- good enough for OUR OWN price,
     since every one of our Actors' billed-per-row event is either the only event or
     already flagged isPrimaryEvent in our own meta.json."""
-    cur = effective(act_data.get("pricingInfos"), now)
+    pricing_infos = act_data.get("pricingInfos")
+    cur = effective(pricing_infos, now)
     if cur is None:
+        if not pricing_infos:
+            return 0.0, "no pricing record -- free to run"
         return None, "no pricing in effect"
     model = cur.get("pricingModel")
     if model == "FREE":
@@ -132,8 +135,12 @@ def headline_price(act_data, now):
 def unit_matched_price(act_data, now, synonyms):
     """(price, event_name) for the event whose name/title/description matches one of our
     unit synonyms, among non-one-time events only -- or (None, reason) if ambiguous."""
-    cur = effective(act_data.get("pricingInfos"), now)
+    pricing_infos = act_data.get("pricingInfos")
+    cur = effective(pricing_infos, now)
     if cur is None:
+        if not pricing_infos:
+            # Never monetized -- the whole Actor runs free, so it undercuts any unit we bill for.
+            return 0.0, "no pricing record -- free to run"
         return None, "no pricing in effect"
     model = cur.get("pricingModel")
     if model == "FREE":
