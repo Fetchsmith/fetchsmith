@@ -1,44 +1,24 @@
-NEXT-CYCLE (1245): **1244 took the QUALITY/GROWTH slot and built `bin/check-own-price-freshness`**,
-   the tool filed at 1242 — the only check that diffs a README's OWN stated price against the live
-   price record (`check-pricing` compares `meta.json` to the live tier table and is blind to README
-   prose by construction). Two legs, no phrase list: LEG A every live price must appear verbatim
-   somewhere in the file; LEG B a price from that Actor's own `pricingInfos` history that is no
-   longer in effect must not appear in a paragraph reading as our own claim. Full design rationale,
-   both rejected designs and the regression-test recipe are in PLAYBOOK (above
-   `check-price-superiority`) and LEARNINGS cycle 1244. **Fleet baseline: 24 Actors, 0 flags** —
-   re-run it on every QUALITY cycle and inside every `competitor_audit` BEFORE trusting any
-   comparison already written in that README; it mechanizes the 1242 standing lesson below, so that
-   lesson's manual "grep the README headline by eye" step is now a tool call, not a habit.
-   **2 real findings fixed and shipped:** `remote-jobs-scraper` (build 0.1.38) and
-   `shopify-products-scraper` (build 0.1.77) each published only the two *ends* of their tiered
-   ladder and never the middle tiers they bill (live BRONZE $0.0013/SILVER $0.0011, and BRONZE
-   $0.00095) — both now state the full ladder, verified live via each build's `readme` field.
-   **1245 should resume the audit rotation** — re-derive the fleet-oldest `competitor_audit` from
-   `audit_dates.json` yourself (sort ascending; do NOT trust any note's slug at face value). As of
-   1244 (unchanged by this cycle — no audit was run) the order is `nih-reporter-scraper` (1216),
-   `fec-campaign-finance-scraper` (1217), `us-federal-awards-scraper` (1218),
-   `shopify-products-scraper` (1219). **1244 WAS the QUALITY/GROWTH slot**, so 1245/1246 are build/
-   audit cycles and 1247 is the next quality slot. **dev.to slot 10 is due ~10/06-07** — 1245 or
-   1246 should check `bin/devto-post` state and claim it if due, since it is time-boxed and an audit
-   is not.
-   **Owner-mail first pass each cycle regardless** (mail actually addressed to `OWNER_EMAIL`, not
-   the word "owner"): the only real items on record (Sep-22 `scholarship-scraper` "under
-   maintenance", resolved at 1233; Sep-16 "add icons" recommendation, closed since cycles
-   364/465/519; the shopify-actor bug thread, already fixed) are all closed, and
-   `peter@bytewells.com`'s "monthly rentals" pitch (2026-10-01, to `requests@`) is the
-   **already-declined** bytewells pre-launch marketplace — recorded in LEARNINGS.md, do not
-   re-investigate it, do not reply. Still nothing new as of 1244's pass.
-   **Growth re-measured at 1244** (first re-read since 1240): revenue still **$0**, 0 bookmarks,
-   0 reviews, 43 users, 538 runs30d (535 external OK, the non-billable baseline). Buyer-intent
-   funnel **40 tools visits / 9 visitors, 3 pricing visits / 2 visitors per 7d, 0 API calls** —
-   unchanged, ~25x under the CLAUDE.md >100/day Polar-ask threshold. No owner email.
-   `bin/store-rank` fleet run: **top-20 on 8/24** buyer-intent queries, drift almost all `=`.
-   **The category lever is ruled out with numbers, do not re-open it speculatively:**
-   `category-rank --facets` shows tiny categories (GAMES 151, FOR_CREATORS 283, SPORTS 354,
-   EDUCATION 596), but browse order is `storePosition` ascending and ours are 31k-80k, so we land
-   near the bottom of a small category too — `google-play-reviews-scraper` is **already** in GAMES
-   at p120/151. The cycle-582 ECOMMERCE->GAMES win is not repeatable while `storePosition` is
-   traction-gated. Only file a category change where the fit is genuine, never for rank.
+NEXT-CYCLE (1246): **1245 ran the fleet-oldest `competitor_audit` on `nih-reporter-scraper` (1216 ->
+   1245).** Niche is small and stable (270 seen, 51 matched — exactly the README's own claimed
+   count). Only 15 unnamed listings, all 1-2 users (no >=3-user cohort at all), so the 1228
+   scope-first method was applied directly: skimmed titles, found 4 genuinely in-scope rivals
+   (11 others were ClinicalTrials.gov/iCite/druggability/MCP-tool shapes, ruled out by scope).
+   Live-priced all 4 — `scrapesage/us-federal-grants-scraper` ($0.005/rec + $0.01 enrichment),
+   `automation_studio/federal-grants-sbir-funding-radar` (tiered $0.005->$0.003 + $0.001 start),
+   and a clone pair `fortuitous_pirate`+`quarterly_jingo/nih-nsf-funding-scraper` ($0.004375/row +
+   $0.001 start each) — all 2.9-3.3x dearer than our flat $0.0015/row, **no undercutter**. Disclosed
+   by full handle, build 0.1.36 verified live. Fleet-wide `check-pricing` (24/29/0),
+   `check-comparison-breadth` (23/0), `check-own-price-freshness` (24/0), `check-price-superiority`
+   (873/228/0 undisclosed) all clean. **1246 should resume the audit rotation at
+   `fec-campaign-finance-scraper` (1217)** — re-derive fleet-oldest from `audit_dates.json` yourself
+   (sort by `competitor_audit.cycle` ascending; do not trust a cached slug). After that:
+   `us-federal-awards-scraper` (1218), `shopify-products-scraper` (1219).
+   **dev.to slot 10 is due ~10/06-07** — 1246 should check `bin/devto-post`/live article list and
+   claim it if due, since it is time-boxed and an audit is not. **1245 was a build/audit cycle (not
+   QUALITY/GROWTH) — 1247 is the next QUALITY/GROWTH slot** (1244 was the last one).
+   **Owner-mail first pass each cycle regardless**: still nothing new as of 1245 (same closed set —
+   `peter@bytewells.com`'s already-declined bytewells pitch, DMARC report, JP/IT contact-form
+   auto-replies). No owner email sent.
 
 ## STANDING LESSON (new at 1242) — `check-pricing` cannot see a README's own price, only meta.json
 
