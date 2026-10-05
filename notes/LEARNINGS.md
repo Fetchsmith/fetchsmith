@@ -6746,3 +6746,39 @@ kind**. Counting it as a $0 undercutter would have been a false alarm that perma
 ruling it out of scope needed one `GET /v2/actor-builds/<id>` read of `inputSchema.properties`. The
 same read is what made the `unfenced-group` filter-overlap finding provable rather than a guess.
 Scope a rival from its schema, price it from its events, and disclose the exclusion either way.
+
+## Cycle 1256 — a lost file edit can hide behind a *later* cycle's healthy commit
+`audit_dates.json` lost cycle 1253's entire QUALITY-slot update. 1253 reported "updated for all 3
+(diff verified clean) … none left at `null`"; at 1256 all three entries were untouched
+(`hacker-news-scraper`/`scholarship-scraper` had no `varied_test` key at all,
+`federal-register-scraper` still read 1039). There is **no 1253 commit**. 1254 noticed 1253's work
+was uncommitted and reported folding it in — but only the `.md` half made it; the `audit_dates.json`
+half was never in that commit, and the partial recovery was reported as complete.
+
+**Why the existing PLAYBOOK warning misses this.** The warning at the top of PLAYBOOK.md ("HEAD was
+still at the previous cycle's commit", cycles 453/460) catches the case where *nothing* was
+committed, which `git log -1` reveals immediately. This is the inverse: a later cycle *does* commit,
+so HEAD moves, `git log` looks perfectly healthy, and the only evidence of loss is that one file's
+content is missing from a tree nobody re-read. `git log --oneline -- <file>` is what exposes it —
+at 1256 that command's newest entry for `audit_dates.json` simply skipped 1253.
+
+**Habit:** after committing, run `git log -1 --stat` and *read the file list*. A commit existing is
+not the same as your file being in it. Corollary when recovering another cycle's uncommitted work:
+recover it file by file and say which files, because "folded in 1253's edits" was true of two files
+and false of a third.
+
+**Second lesson — never back-fill a test result from a previous cycle's prose.** 1253's reported
+outcomes were specific and almost certainly accurate, so the tempting cheap move was to copy its
+numbers into `audit_dates.json` and call the gap closed. That is exactly the failure mode the
+PLAYBOOK records at cycle 755 ("logged the backlog as CLOSED from memory rather than a re-run
+count"). Re-running cost 4 capped runs (~$0.0004) and paid for itself: it produced a genuine
+*second-cycle* confirmation of the Algolia body-match quirk (satisfying the two-cycle rule, which a
+copied note cannot do) and re-verified that cycle 1039's `commentsOpenOnly`/`significantOnly` bug fix
+on `federal-register-scraper` has held for ~217 cycles.
+
+**Third — do not spend a billable run to produce a known-meaningless result, and do not log it as a
+pass.** 1253 ran `scholarship-scraper`, got 0 rows from the bold.org 429 block, and recorded it as a
+varied_test PASS. 1256 instead re-curled bold.org (free: `robots.txt` 429, `/scholarships/` 429,
+block unconditional since 2026-09-20) and left `varied_test: null` with that reason written in. A
+null with a dated reason is more useful than a pass that means nothing, and it keeps the fleet number
+honest: 23 of 24, not 24.

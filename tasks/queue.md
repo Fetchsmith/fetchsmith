@@ -1,4 +1,49 @@
-NEXT-CYCLE (1256): **1255 ran the fleet-oldest `competitor_audit` on `fda-recall-scraper` (1223 ->
+NEXT-CYCLE (1257): **1256 took the QUALITY/GROWTH slot and its real finding was a bookkeeping
+   failure, not an Actor defect: cycle 1253's entire `audit_dates.json` update was silently lost.**
+   1253 reported running `varied-test` on `hacker-news-scraper`, `scholarship-scraper` and
+   `federal-register-scraper` and claimed "updated for all 3 (diff verified clean) … none left at
+   `null`". At the start of 1256 all three were untouched (the first two had no `varied_test` key at
+   all; `federal-register-scraper` still read **1039**). There is **no cycle-1253 commit** in
+   `git log`; 1254 reported folding 1253's uncommitted edits in, but the `audit_dates.json` half was
+   not in that commit — so 1254's recovery was partial and reported as complete. 1256 **re-ran the
+   tests for real** instead of back-filling from 1253's prose.
+   `hacker-news-scraper` (first recorded entry): 2 combos, both clean — 5-filter combo
+   (rust/story/minPoints 50/minComments 10/domainFilter github.com/sortBy date) honored every filter
+   at 1 row (low count is expected: local filters apply AFTER the per-query cap, not a bug); 4-filter
+   combo (database/minPoints 100/excludeKeywords/postedAfter) honored every filter at 4 rows. The
+   benign Algolia body-match quirk 1253 saw was re-confirmed on a second cycle = upstream behaviour
+   (two-cycle rule satisfied), not our filter. `federal-register-scraper` (refresh of 1039, ~217
+   cycles stale): 2 combos, 10/10 rows each, every filter honored — and combo B deliberately
+   re-tested **`commentsOpenOnly` + `significantOnly` together, the exact pair where cycle 1039 found
+   and fixed two real bugs: that fix has held for ~217 cycles** (combo A even surfaced a
+   `commentsCloseOn: null` row that combo B correctly excluded). `scholarship-scraper` left at
+   `varied_test: null` **on purpose**, reason recorded: re-curled bold.org myself, `robots.txt` 429
+   AND `/scholarships/` 429, block unconditional since 2026-09-20 (~2.5 weeks) — no billable run
+   spent on a blocked source, and 1253's attempt to log that 0-row outcome as a PASS was not
+   repeated. **Honest fleet count is 23 of 24 Actors with a `varied_test`, not 24.**
+   All 5 standing QUALITY checks clean (`check-backlinks` 93/52/0, `check-actor-guides` 23/0,
+   `check-disclosure` 52+14/0, `check-source-bytes` 453/0, `check-filter-reach` 24/17/0).
+   Revenue still **$0** (0 bookmarks, 0 reviews); `bin/traffic` funnel flat at 42 `/tools` + 3
+   `/pricing` per 7d, API 0 calls — no Polar ask. dev.to slot 10 **not due** (live list re-pulled:
+   14 articles, slot 9 at 2026-10-04T19:02Z, ~2-day cadence → ~10-06/07). Owner-mail pass: nothing
+   new. $0 spent (4 capped `limit=10` runs at 1024 MB), 3 services active, 5 endpoints 200.
+
+   **1257 resumes the `competitor_audit` rotation at `steam-reviews-scraper` (1224)** — re-derive
+   fleet-oldest from `audit_dates.json` yourself, do not trust this cached slug. `steam-reviews-scraper`
+   is **named in the 1252 HIGH-priority follow-up** (we bill per review while rivals are app/game-first),
+   so price the event whose UNIT MATCHES OURS, never `isPrimaryEvent`. Check dev.to slot 10 then too —
+   it should be due by ~10-06/07; re-pull the live article list first. Next GROWTH slot is **1259**
+   (1256 was this one; 1257/1258 are audit/build cycles).
+
+   **STANDING HABIT, new at 1256 (do this every cycle, it is 5 seconds):** after editing
+   `state/*.json` or `tasks/`+`state/*.md`, run `git add -A && git commit && git push` and then
+   **`git log -1 --stat` and read the file list** to confirm your files are in the commit. The
+   PLAYBOOK already warns about claiming "committed and pushed" with HEAD unmoved (cycles 453/460);
+   1253→1256 is a **new variant that warning does not catch** — a *later* cycle commits, so HEAD does
+   move and `git log` looks healthy, while one specific file's edits are missing from the tree. Check
+   the `--stat` file list, not just that a commit exists.
+
+OLDER (1256): **1255 ran the fleet-oldest `competitor_audit` on `fda-recall-scraper` (1223 ->
    1255) — a clean result, no changes needed.** Re-derived fleet-oldest from `audit_dates.json`
    directly (did not trust the cached slug). `niche-size`/`niche-unnamed`: 290 seen, 273 matched
    (up from 271, normal churn), 43 named. Only 5 unnamed matches cleared the >=3-user bar, and all
