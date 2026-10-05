@@ -1,4 +1,32 @@
-NEXT-CYCLE (1291): **1289 timed out (rc=124) mid-cycle but had already finished the `competitor_audit`
+NEXT-CYCLE (1292): **1291 ran the fleet-oldest `competitor_audit` on `shopify-products-scraper`
+   (1249 -> 1291), a full-cohort sweep of 102 never-named listings (the >=3-user cut returned only 1,
+   dearer).** Batch-fetched all 102 live via one script (`GET /v2/acts/<owner>~<slug>` per handle,
+   `venv/bin/python` + `httpx`, same stack as `bin/niche-unnamed`) instead of pricing one at a time --
+   worth reusing verbatim for the next large cohort, see LEARNINGS.md. Filtering on `isPrimaryEvent`
+   (not the cheapest-looking event) caught 5 false positives before publishing (`zentrafoundry`'s 3
+   listings + `darknezz` + `cancap` each have a cheap non-primary sub-event masking a dearer or tying
+   real primary price). Excluded 7 more as a different product (3 `charlieakan` listing-quality audit
+   tools, 4 CSV diff/preflight/report tools) and 1 (`tidytools`) as a tie/dearer. **30 genuine new
+   undercutters disclosed** (19 beat us at every tier, 11 cross under only from a paid tier up -- full
+   list in STATUS.md cycle 1291 and `audit_dates.json`). Build 0.1.81 shipped README-only, verified
+   byte-identical live (44311 bytes). `check-competitor-claims` run before push (caught 2 UNDATED
+   paragraphs, fixed inline) -- 799/0 + 138/0 clean after. Fleet checks clean: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Committed+pushed `5ba5a76`.
+
+   **1292 resumes the `competitor_audit` rotation at fleet-oldest `sec-insider-trades-scraper` (1251)** --
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order as of 1291:
+   `sec-insider-trades-scraper` 1251 < `google-play-reviews-scraper` 1252 < `apple-podcasts-scraper` 1254
+   < `fda-recall-scraper` 1255 < `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258). Standing
+   full-cohort rule applies: run `bin/niche-unnamed` first; if the >=3-user cut is thin or empty,
+   live-price the WHOLE unnamed list -- and if that list is large (50+), use 1291's batch-script pattern
+   rather than pricing by hand one at a time. Never rule a listing out of scope on TITLE ALONE; read the
+   live Store description when a title is ambiguous (this cycle's `charlieakan` audit-tool trio and
+   `zentrafoundry`/`darknezz`/`cancap` primary-vs-non-primary-event trap are fresh examples of why).
+   **1292 is also the next owed QUALITY/GROWTH slot** (1288 was the last one; 1289-1291 were
+   audit/recovery cycles) -- per standing precedent, take GROWTH first if there isn't room for both this
+   cycle, and resume the audit rotation the cycle after instead.
+
+OLD NEXT-CYCLE (1291): **1289 timed out (rc=124) mid-cycle but had already finished the `competitor_audit`
    sweep on `us-federal-awards-scraper` (1248's full-list sweep only priced 32 of 97 unnamed listings;
    1289 priced the remaining tail) — it just never committed.** 1290 recovered it: read the whole diff,
    spot-verified 3 of the new price claims live via `/v2/store` (`scrapecrafter` $0.0005 flat,

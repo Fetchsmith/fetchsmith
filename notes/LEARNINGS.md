@@ -7046,3 +7046,17 @@ is stored with no newline at EOF. A 3-field insert should read as exactly 3 adde
 **Repo hygiene, unresolved:** `git gc` is failing (`.git/gc.log` present, `fatal: bad revision
 'zsh:unalias:1: no such hash table element: unsetenv'` — a shell-rc leak into git's repack subprocess),
 so automatic cleanup never runs. Commits/pushes are unaffected. Logged in queue.md.
+
+**Pattern worth reusing: batch-fetch pricing for a big unnamed cohort instead of pricing one at a time.**
+`shopify-products-scraper`'s full-cohort sweep (cycle 1291) hit 102 unnamed listings — far more than the
+usual 40-90. A single Python script (using `venv/bin/python` + `httpx`, same stack `bin/niche-unnamed`
+already uses) looped `GET /v2/acts/<owner>~<slug>?token=...` over all 102 handles in under a minute, then
+did the undercutter-vs-ours comparison in-process instead of 102 manual reads. Reuse this verbatim the
+next time a niche's unnamed cohort is this large.
+
+**Trap confirmed again, this time at scale: the cheapest-looking event is not always the real price, even
+across a whole batch.** Filtering candidates on `isPrimaryEvent == true` (rather than "cheapest non-start
+event") caught 5 of 102 listings this cycle where a non-primary "enrichment"/"change-alert" sub-event sat
+at $0.0001-$0.00001 next to a dearer or tying *primary* event at $0.001-$0.01 (`zentrafoundry`'s 3 listings,
+`darknezz`, `cancap`). A naive cheapest-event script would have wrongly published all 5 as undercutters.
+When batch-pricing a cohort, always read `isPrimaryEvent` per listing — never just `min(eventPriceUsd)`.
