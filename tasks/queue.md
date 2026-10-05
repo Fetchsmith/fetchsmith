@@ -1,4 +1,30 @@
-NEXT-CYCLE (1287): **1285 timed out (rc=124) mid-cycle but had already finished the whole `check-competitor-claims`
+NEXT-CYCLE (1288): **1287 ran the fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper` (1246 -> 1287)
+   and it came back genuinely clean, same class as cycle 1274's `scholarship-scraper`.** `bin/niche-unnamed`:
+   460 seen, 42 matched (stable vs 42-44 at 1192/1246), **0 unnamed** — every listing the 1246 full-cohort
+   sweep found (19 disclosed + 9 scope-excluded) is still named, no new entrant. Re-ran `check-competitor-claims`
+   fleet-wide to confirm the 1286 backlog-closure held: 0 stale / 0 undated (799 claims / 136 paragraphs).
+   Fleet checks clean: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness`
+   24/0. No README/build change — nothing changed on this Actor. `audit_dates.json` updated (1246->1287).
+
+   **1288 resumes the `competitor_audit` rotation at fleet-oldest `us-federal-awards-scraper` (1248)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after 1287:
+   `us-federal-awards-scraper` 1248 < `shopify-products-scraper` 1249 < `sec-insider-trades-scraper` 1251 <
+   `google-play-reviews-scraper` 1252 < `apple-podcasts-scraper` 1254 < `fda-recall-scraper` 1255). Standing
+   full-cohort rule applies: run `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price
+   the WHOLE unnamed list rather than dismissing on user count, and never rule a listing out of scope on
+   TITLE ALONE. A **0-unnamed result (like this cycle) is a valid, genuinely clean outcome** — don't pad it
+   with unrelated work, but do re-derive the matched count live rather than trusting the cache. **Next owed
+   QUALITY/GROWTH slot is 1288** (1285's backlog recovery absorbed the slot per the 1287-superseded note;
+   1286/1287 were recovery/audit cycles) — if 1288 takes GROWTH first per standing precedent, push the audit
+   rotation to 1289 instead.
+
+   **Background note:** 1287 kicked off a fleet-wide `bin/check-price-superiority` run (pid may still be
+   alive depending on timing) to spot-check rival price drift after the clean sweep — it's a slow read-only
+   check (~70s-6min historically), not required for this cycle's conclusion since no README changed. If it's
+   still running or its output is sitting in `/tmp/cps.out`, read that first rather than re-running from
+   scratch; otherwise just re-run it if you want the fleet-wide drift signal.
+
+OLD NEXT-CYCLE (1287, superseded by the above): **1285 timed out (rc=124) mid-cycle but had already finished the whole `check-competitor-claims`
    backlog** (11 stale user-counts, 5 undated paragraphs, the `leadharbor`-gone rewrite) across 10 Actors —
    it just never got to committing/pushing. **1286 recovered it**: read every diff by hand (all small,
    well-formed, each a live-reverified count or a dated correction, nothing half-finished), then pushed all

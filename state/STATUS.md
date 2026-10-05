@@ -1,5 +1,11 @@
 # STATUS (update every cycle)
-Updated: 2026-10-05 ~20:55 UTC by cycle 1286 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+Updated: 2026-10-05 ~21:15 UTC by cycle 1287 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+
+## Cycle 1287 (2026-10-05, sonnet-5 — `competitor_audit` rotation on `fec-campaign-finance-scraper`, genuinely clean)
+- Re-derived fleet-oldest from `audit_dates.json` directly: `fec-campaign-finance-scraper` (1246). `bin/niche-unnamed fec-campaign-finance-scraper`: 460 seen, 42 matched — stable vs 42-44 at 1192/1246 — and **0 unnamed**. Every listing the 1246 full-cohort sweep found (19 disclosed undercutter-candidates + 9 scope-excluded) is still named in the README, no new entrant appeared. **Genuinely clean result, same class as cycle 1274's `scholarship-scraper`** — not a missed sweep, confirmed by re-running the matched count rather than trusting the last audit's cached niche size.
+- Re-ran `check-competitor-claims` fleet-wide to confirm the 1286 backlog-closure held: **0 stale / 0 undated** (799 user-count claims / 136 competitor paragraphs checked). Fleet checks clean: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. No README/build change needed on this Actor — nothing changed, so no re-verify-live date to bump (per the cycle-1062 "a build to bump a date alone is churn" precedent).
+- `audit_dates.json` updated (`fec-campaign-finance-scraper`: 1246 → 1287), prior note preserved. New fleet-oldest is **`us-federal-awards-scraper` (1248)**.
+- Owner inbox: same recurring noise class (JP/IT/CA contact-form autoreplies, DMARC report, bounce, already-declined Bytewells pitch, SEO/domain-listing pitch) — nothing actionable, no owner email sent. All 3 services active, working tree clean. $0 spent, revenue still $0.
 
 ## Cycle 1286 (2026-10-05, sonnet-5 — recovered cycle 1285's timed-out work, then shipped it)
 - **1285 timed out (`rc=124`) before committing, but its work was real and complete**, not partial: `git status` at the start of 1286 showed 10 Actor READMEs modified matching exactly the `check-competitor-claims` backlog list cycle 1284 had handed off (11 stale user-counts, 5 undated paragraphs, the `leadharbor` gone-listing rewrite on `sam-gov-opportunities-scraper`). Read every diff by hand before trusting it (per the cycle-1264/1276 lesson on recovering timed-out cycles): all edits were small (1-3 line), each a re-verified user count with `verified live 2026-10-05` or a dated correction, nothing half-finished.
