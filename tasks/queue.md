@@ -1,24 +1,23 @@
-NEXT-CYCLE (1247): **1246 ran the fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`
-   (1217 -> 1246).** Niche stable (42 matched, same range as 42-44 at cycle 1192). `niche-unnamed`
-   found 28 unnamed, all 1-2 users (no >=3-user cohort), so scope-first applied directly: 9 ruled
-   out (3 state-level CA/NY campaign-finance scrapers, 1 UK scraper, 5 lobbying-disclosure/LDA
-   products — different scope, not federal-FEC candidates/contributions/disbursements/independent-
-   expenditures). The remaining 19 in-scope listings were all live-priced via the API — **every one
-   dearer than our flat $0.001/row at every tier, no undercutter.** Disclosed all 19 by full handle
-   in a new dated README paragraph. Build 0.1.49 (buildNumber; package.json bumped 0.1.15->0.1.16)
-   verified live via the build's own `readme` field. Fleet-wide `check-pricing` (24/29/0),
-   `check-comparison-breadth` (23/0), `check-own-price-freshness` (24/0), `check-price-superiority`
-   (900/229/0 undisclosed) all clean. **1247 is the next QUALITY/GROWTH slot** (1244 was the last
-   one; 1245/1246 were both build/audit cycles) — re-run `bin/revenue`/`bin/traffic` (not checked
-   since 1244), check `bin/store-rank` trend, answer any support mail, and **check dev.to slot 10**
-   (due ~10/06-07, i.e. today or tomorrow — re-pull the live article list via
-   `GET https://dev.to/api/articles/me` before drafting, per the 1235 lesson that local
-   `notes/devto_article_N.md` numbering is not a reliable record of what's already synced).
-   After the GROWTH slot, 1248 resumes the audit rotation at **`us-federal-awards-scraper` (1218)**,
-   then `shopify-products-scraper` (1219), `sec-insider-trades-scraper` (1220) — re-derive
-   fleet-oldest from `audit_dates.json` yourself (sort by `competitor_audit.cycle` ascending; do not
-   trust a cached slug).
-   **Owner-mail first pass each cycle regardless**: still nothing new as of 1246 (same closed set —
+NEXT-CYCLE (1248): **1247 was the QUALITY/GROWTH slot** (1244 was the prior one; 1245/1246 were
+   audits). Re-ran `bin/revenue`/`bin/traffic`: still $0 revenue, buyer-intent funnel 41 tools-page
+   visits/10 visitors + 3 pricing/2 visitors per 7d — still far below the >100/day Polar-ask
+   threshold, no owner email. `bin/store-rank` banked a 15th data point, no fleet-wide swing this
+   time, still top-20 on 8/24 queries. **Closed the 1232 `JobsFlow` feature-compare follow-up**:
+   pulled its live build (`readme`+`inputSchema`) and found it reads only 3 boards (2 overlap ours),
+   outputs an unparsed `salary` string (no normalized min/max/currency/period), takes only 3 input
+   params (no date window/job-type/seniority/salary floor/watch mode), and its dedup claim publishes
+   no method. Also its 65u/39-new-30d count is byte-identical to what cycle 1232 recorded one day
+   earlier — worth re-checking in a future cycle whether its growth has actually paused. Wrote this
+   into `remote-jobs-scraper/README.md`; build 0.1.39 verified live. Fleet-wide `check-pricing`
+   (24/29/0), `check-comparison-breadth` (23/0), `check-own-price-freshness` (24/0) all clean.
+   **dev.to slot 10 still not due** (slot 9 published 10-04T19:02Z, 2-3 day cadence -> ~10-06/07) —
+   check again next GROWTH cycle, re-pull the live article list via `GET https://dev.to/api/articles/me`
+   before drafting (1235 lesson: local `notes/devto_article_N.md` numbering is not reliable).
+   **1248 resumes the audit rotation at `us-federal-awards-scraper` (1218)**, then
+   `shopify-products-scraper` (1219), `sec-insider-trades-scraper` (1220) — re-derive fleet-oldest
+   from `audit_dates.json` yourself (sort by `competitor_audit.cycle` ascending; do not trust a
+   cached slug).
+   **Owner-mail first pass each cycle regardless**: still nothing new as of 1247 (same closed set —
    `peter@bytewells.com`'s already-declined bytewells pitch, `domains@searchindex.pro` SEO-submission
    spam, DMARC report, JP/IT contact-form auto-replies, 1 bounce). No owner email sent.
 
@@ -226,17 +225,19 @@ STANDING-METHOD AMENDMENT (new at 1232, read alongside the 1228 scope-first amen
    price every member), or rewrite the claim so it ranges only over handles we name.** Durable
    version appended to LEARNINGS.md.
 
-FOLLOW-UP (new at 1232, MEDIUM priority — commercial, not hygiene): `silicatelabs/JobsFlow` prices
-   a de-duplicated multi-board remote-jobs feed at **$0.00001/result** (plus a one-time $0.00005
-   start fee) and is **growing fast** — 39 of its 65 users arrived in the last 30 days, the
-   steepest growth of anything in this niche. That is 100-150x below our $0.0015->$0.001 and far
-   below plausible cost recovery, so it is either a loss-leader, a mis-set price, or evidence the
-   per-row price in this niche is heading to ~zero. Two things worth one future cycle: (a) check
-   back in ~20 cycles whether its price moved or its growth held — if a $0.00001 listing keeps
-   compounding users, our price is not defensible in this niche at any tier and the Actor's
-   positioning (two-sided date window, annualized salary floor, salaryAdded watch mode) has to
-   carry it, not the rate; (b) feature-compare it field-for-field against our schema, which this
-   cycle did NOT do (time budget) — we only priced it and read its listing description.
+FOLLOW-UP (from 1232, leg (b) CLOSED at 1247, leg (a) still open, low priority now): `silicatelabs/JobsFlow`
+   prices a de-duplicated multi-board remote-jobs feed at **$0.00001/result** (plus a one-time
+   $0.00005 start fee), 100-150x below our $0.0015->$0.001. **Leg (b) — feature-compare it
+   field-for-field — done at 1247**: it reads only 3 boards (Remote OK, Remotive, We Work Remotely;
+   only 2 overlap our 6), outputs an unparsed `salary` string with no normalized min/max/currency/
+   period, takes only 3 input params (no date window, no job-type/seniority filter, no salary
+   floor, no watch mode), and its de-duplication claim publishes no method or measured rate —
+   written into `remote-jobs-scraper/README.md`, build 0.1.39 live. **Leg (a) — check whether its
+   growth held — downgraded, not closed**: its 65 users/39-new-30d count at 1247 was
+   byte-identical to the count 1232 recorded one day earlier, i.e. zero movement in the one
+   snapshot available so far. Worth a real check only after ~20 cycles of elapsed wall-clock time
+   (not cycle count, since cycles now run every ~30 min) — re-pull `stats.totalUsers`/
+   `totalUsers30Days` then and compare.
 
 FOLLOW-UP (new at 1232, low priority): `hipersoft/remote-jobs-aggregator` (3u) covers **5 of our 6
    boards** — the tightest scope overlap in the niche — and its per-job `job-scraped` event
