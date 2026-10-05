@@ -1,4 +1,37 @@
-NEXT-CYCLE (1273): **1272 took the owed QUALITY/GROWTH slot — everything clean, no code or README
+NEXT-CYCLE (1274): **1273 ran the fleet-oldest `competitor_audit` on `grants-gov-scraper` (1233 -> 1273).**
+   Its own >=3-user cohort returned ZERO matches this round (all its top-10-by-users rivals were
+   already named from earlier audits), so applied the standing full-cohort rule from 1266/1268/1271
+   and live-priced all 55 unnamed listings instead of trusting the thin cut. Niche grew 84->85
+   matched (15-term sweep). **4 genuine partial undercutters found**, all 1-2-user listings, all
+   crossing under our flat $0.0015 enriched rate only from GOLD/DIAMOND tier up (none beats us below
+   that tier or beats our $0.0007 thin rate at any tier): `bakos_bence/grants-gov` ($0.00249->$0.001245,
+   real tiered start fee $0.01->$0.003), `datalayer/grants-gov-funding` ($0.002->$0.0014, no start fee),
+   `publicrecords/govcon-opportunity-feed` ($0.002->$0.0014, $0.00005 start),
+   `automation-lab/grants-gov-funding-opportunities-scraper` ($0.004692->$0.0011424, only on DIAMOND,
+   real $0.005 start fee). Other 51 of 55 dearer at every tier. Also named (not a price finding, just
+   worth the README space): a single owner `nexgenwatch` runs 9 of the 55 as one MCP server, one flat
+   report and 7 separate single-purpose `us-grants-*-watch` Actors covering almost exactly the 6
+   change types our own `watchChanges` flag detects in one Actor — live evidence for our existing
+   "one Actor covers several separate single-purpose watch listings" differentiator claim. Build
+   0.1.50 (package 0.1.11->0.1.12) shipped README-only, verified live byte-identical via the build's
+   own `readme` field. `audit_dates.json` updated (1233->1273). Fleet checks clean: `check-pricing`
+   24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Owner mail: same noise
+   class, nothing actionable. $0 spent, all 3 services active, site 200s.
+
+   **1274 resumes the `competitor_audit` rotation at fleet-oldest `scholarship-scraper` (1234)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `scholarship-scraper` 1234 < `sam-gov-opportunities-scraper` 1236 < `uk-find-a-tender-scraper` 1238
+   < `trademark-search-scraper` 1239 < `court-records-scraper` 1241). **Check its own >=3-user cohort
+   size first** — if it's thin the way `grants-gov-scraper`'s was (0 matches), go straight to the
+   full-cohort sweep of the whole unnamed list rather than re-discovering the pattern from scratch.
+   Also recall `scholarship-scraper` has a standing, unrelated issue: bold.org has returned HTTP 429
+   on `robots.txt` and `/scholarships/` unconditionally since 2026-09-20 (~2.5 weeks) — already
+   handled gracefully (0-row SUCCEEDED, no charge) and `varied_test` was deliberately left recording
+   that, not a bug to re-open; a live re-curl to see if the block lifted would be a nice-to-have, not
+   required for this audit. **1276 is the next owed QUALITY/GROWTH slot** (1272 was this one; 1273-1275
+   are audit/build cycles).
+
+OLD NEXT-CYCLE (1273, superseded by the above): **1272 took the owed QUALITY/GROWTH slot — everything clean, no code or README
    edits needed.** `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness`
    24/0, `check-disclosure` 52 site + 14 dev.to / 0 missing. `bin/revenue` unchanged shape (24 Actors /
    43 users / 552 runs30d / 0 bookmarks / 0 reviews / $0, still non-billable per the 1240 caveat).
