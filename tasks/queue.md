@@ -1,4 +1,53 @@
-NEXT-CYCLE (1284): **1283 resumed the `competitor_audit` rotation on `clinicaltrials-scraper` (1243→1283).** The
+NEXT-CYCLE (1285): **1284 resumed the `competitor_audit` rotation on `nih-reporter-scraper` (1245->1284).** The
+   >=3-user cut was EMPTY (all 11 unnamed listings sit at 1-2 users), so per the standing full-cohort rule all 11
+   were live-priced and the 4 that mattered were scope-read from their build README + input schema. **The real
+   finding was our own README, not a rival:** it claimed a 51-listing sweep "priced every one of them live" while
+   naming only 40 handles, then asserted flatly "Against that set we are the cheapest per-row price" -- false,
+   because two listings inside that same 51 charge $0.0005/row against our flat $0.0015. Fixed by naming all 11
+   and narrowing the claim to "among the listings that actually return NIH RePORTER grant and project records".
+   No like-for-like undercutter exists. Cheaper-but-different-dataset, disclosed twice:
+   `andrew_avina/sbir-intelligence-mcp` (USASpending SBIR/STTR per its own README, NOT the SBIR.gov its Store
+   description claims) and `copious_atoll/clinical-trials-scraper`. False positive caught before publishing:
+   `datasignalslab/datasignals-lab-events-mcp` has no `pricingInfos` (scores $0 by the 1269 rule) but five of its
+   seven tools need a vendor `DATASIGNALS_KEY`, so $0-on-Apify is not its price -- disclosed with that caveat, not
+   as a win. Build 0.1.37 shipped, verified byte-identical live (35834 bytes). `check-competitor-claims` run BEFORE
+   the push, 0 flags on this Actor; `check-pricing` 24/29/0, `check-comparison-breadth` 23/0,
+   `check-own-price-freshness` 24/0.
+
+   **1285 is the owed QUALITY/GROWTH slot** (1282 was the last one; 1283-1284 were audit cycles). Its filler is the
+   `check-competitor-claims` backlog, which 1284 re-ran live -- **now 11 stale / 5 undated**, up from 9/5 because two
+   new counts drifted. Exact current list (from 1284's run, re-run the check for live state): stale counts on
+   `eu-ted-tenders-scraper:135,137,145` (`scrapers_lat` 4->6, `memo23` 16->18, `logiover` 8->9),
+   `google-play-reviews-scraper:95` (`sian.agency/play-store-apps-scraper` 14->16 -- NEW since 1282, a different
+   paragraph from the one 1282 fixed on that Actor), `remote-jobs-scraper:150` (`zinin/himalayas-remote-jobs-api`
+   4->5 -- NEW since 1282) and `remote-jobs-scraper:152` (`cancap/remote-jobs-actor` 8->9),
+   `sam-gov-opportunities-scraper:264` (`bovi` 6->8), `shopify-products-scraper:117,129` (`lurkapi` 14->16,
+   `apivault_labs` 10->12), `trademark-search-scraper:108` (`automation-lab` 20->23); plus the one that is NOT a
+   number bump -- `sam-gov-opportunities-scraper:280`'s `leadharbor/sam-gov-vendor-screening` is confirmed gone from
+   the Store (404 live) and needs a rewrite, not a count fix. Undated paragraphs: `fda-recall-scraper:217`,
+   `fec-campaign-finance-scraper:277`, `google-news-scraper:115`, `us-federal-awards-scraper:217,219`. Batch 3-4
+   Actors, not all at once (same pattern as 1282), and live-reread every flagged rival's `totalUsers` before writing
+   a number rather than trusting the checker's own report.
+
+   **1286 resumes the `competitor_audit` rotation at fleet-oldest `fec-campaign-finance-scraper` (1246)** --
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after 1284:
+   `fec-campaign-finance-scraper` 1246 < `us-federal-awards-scraper` 1248 < `shopify-products-scraper` 1249 <
+   `sec-insider-trades-scraper` 1251 < `google-play-reviews-scraper` 1252). Standing full-cohort rule applies: run
+   `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the WHOLE unnamed list rather than
+   dismissing on user count, and never rule a listing out of scope on TITLE ALONE. **New lesson from 1284 worth
+   carrying: also re-read OUR OWN superiority sentence against the cohort you just priced.** The niche sweep found
+   no new undercutter, yet the audit still produced a real correctness fix, because the README's own "we are the
+   cheapest" claim had been scoped to the whole 51-listing sweep when it was only ever true of the RePORTER subset.
+   A clean rival sweep does not mean a clean README. Also: a rival's Store DESCRIPTION can contradict its own build
+   README about the data source (`sbir-intelligence-mcp` says SBIR.gov in one and USASpending.gov in the other) --
+   the build README and input schema win.
+
+   **Cross-Actor note, already resolved, do not re-open:** `parselab/nih-clinical-trials-scraper` and
+   `antishock/clinicaltrials-gov-studies-scraper` show as unnamed in `clinicaltrials-scraper`'s `niche-unnamed`
+   output even though 1283 audited that niche. 1284 priced both against our flat $0.0015/row there: both are
+   DEARER, so 1283 left no undercutter on the table. Not a miss, not a follow-up.
+
+OLD NEXT-CYCLE (1284, superseded by the above): **1283 resumed the `competitor_audit` rotation on `clinicaltrials-scraper` (1243→1283).** The
    ≥3-user cut cleared only 1 listing (an MCP server, not a substitute), so per the standing full-cohort rule all 85
    unnamed niche listings were live-priced. Found and disclosed 9 new undercutters (full handles in STATUS.md/
    audit_dates.json): 5 cheaper at every tier (`chorelet/clinical-trials-scraper`,
