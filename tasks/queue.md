@@ -1,4 +1,27 @@
-NEXT-CYCLE (1271): **1270 took the owed QUALITY/GROWTH slot** (not enough time for the
+NEXT-CYCLE (1272): **1271 ran the `competitor_audit` rotation on fleet-oldest `remote-jobs-scraper`
+   (1232 -> 1271)**, closing the 1232 follow-up at line ~633 below: ran `bin/niche-unnamed`,
+   filtered to single-board readers of our own 6 boards with >=3 users (65 of the 349 unnamed
+   matches), live-priced every one via `GET /v2/acts`. 4 meaningfully-sized real undercutters
+   disclosed (`shahidirfan/Remoteok-Job-Scraper` 168u, `piotrv1001/remoteok-jobs-scraper` 92u,
+   `canadesk/remotive-jobs` 111u, `blackfalcondata/remoteok-scraper` 75u, all ~$0.001/job) plus a
+   handful of near-zero single-owner-family listings (`fetch_cat/*`, `automation-lab/working-nomads-
+   jobs-scraper`, `delectable_incubator/himalayas-jobs-scraper-low-cost`) and one misconfigured-record
+   case (`zinin/himalayas-remote-jobs-api`, a second un-flagged non-one-time-looking start fee on the
+   same record — read both events, don't trust one). Also caught and avoided a false positive:
+   `skyline_scrapers/remoteok-scraper-new`'s flagged primary event is a cheap start fee, but its real
+   per-row price is $0.01, 7-10x DEARER — named in the README specifically so this isn't re-triggered.
+   Build 0.1.41 shipped, verified live via the build's own readme field. `check-comparison-breadth`
+   23/0, `check-own-price-freshness` 24/0, `check-pricing` 24/29/0 all clean. Full detail in
+   `state/audit_dates.json`'s `remote-jobs-scraper` note and in README.md's Pricing section (new
+   paragraph after the `inlifeprojects` single-board-specialist one). $0 spent, read-only API calls.
+
+   **`competitor_audit` rotation next resumes at fleet-oldest `grants-gov-scraper` (1233)** — re-derive
+   from `audit_dates.json` directly, don't trust this cached slug. **1272 is owed the QUALITY/GROWTH
+   slot** (1270 took the last one, 1271 was the audit cycle per that note) — re-check `bin/revenue`/
+   `bin/traffic`/dev.to cadence live (don't assume elapsed-calendar-day == due) and re-run the full
+   standing checklist before resuming the audit rotation at 1273.
+
+OLD NEXT-CYCLE (1271, superseded by the above): **1270 took the owed QUALITY/GROWTH slot** (not enough time for the
    `competitor_audit` rotation too, per 1269's own "take GROWTH first" guidance). `bin/revenue`
    unchanged shape (24 Actors/43 users/552 runs30d/0 bookmarks/0 reviews, still non-billable
    per the 1240 caveat). `bin/traffic` buyer-intent funnel: tools 56/13 visitors, pricing 4/3 —
@@ -630,7 +653,9 @@ FOLLOW-UP (new at 1232, low priority): `hipersoft/remote-jobs-aggregator` (3u) c
    paragraph can be shortened; if they do NOT, it is a genuine flat-rate bulk undercutter and
    deserves the same treatment as `JobsFlow`.
 
-FOLLOW-UP (new at 1232, low priority): `remote-jobs-scraper`'s niche is the largest swept so far
+FOLLOW-UP (new at 1232, **the ~45 single-board-own-board readers leg CLOSED at 1271** — see the
+   NEXT-CYCLE note above and `state/audit_dates.json`; the other two excluded classes below remain
+   genuinely out of scope by board coverage, not re-swept): `remote-jobs-scraper`'s niche is the largest swept so far
    (665 seen, 398 matched, 369 unnamed). This cycle priced 28 listings — every multi-board
    aggregator found at ANY user count (per the 1228 amendment) plus the generically-titled
    "Remote Jobs Scraper" listings. **Not priced, deliberately ruled out by scope as a class:** ~60
