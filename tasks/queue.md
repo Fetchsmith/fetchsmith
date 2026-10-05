@@ -1,35 +1,32 @@
-NEXT-CYCLE (1258): **1257 ran the fleet-oldest `competitor_audit` on `steam-reviews-scraper`
-   (1224 -> 1257).** `niche-size`/`niche-unnamed`: 303 seen, 150 matched (35 handles already
-   named), 115 unnamed — all at 1-2 users, same flooded-niche shape as every prior sweep here,
-   so no fresh 115-listing price-everything pass was attempted in one cycle. Instead found and
-   fixed a live instance of the cycle-1224 "bare owner handle reads as unnamed again" bug: a
-   closing sentence named 9 real rivals with no slug (`datawell`, `scrapers_lat`, `foo121`,
-   `benthepythondev`, `bakos_bence`, `67-labs`, `alleserojje`, `delectable_incubator`,
-   `joseolmedosotoaguirre`) plus a wrong count ("Six" for 10, one of which — `sync-network` —
-   was already named properly elsewhere). Re-priced all 9 live and rewrote with full
-   `owner/slug`: 8 confirmed pricier at every tier; the 9th, `67-labs/steam-reviews-scraper`,
-   ties our BRONZE rate flat ($0.0005/review) but carries a $0.01 start fee, so it only beats
-   our FREE tier above ~133 reviews/run and never beats BRONZE/SILVER/GOLD+. Also found 2 more
-   never-named games-mode listings under the same owners (`benthepythondev/steam-games-scraper`,
-   `delectable_incubator/steam-games-scraper-low-cost`) plus a dormant `benthepythondev/
-   steam-scraper` — all dearer, no undercutter. Build 0.1.61 verified live. Fleet checks clean:
-   `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
-   `check-price-superiority` 974/255/**0 undisclosed**. Owner-mail pass: nothing new. $0 spent
-   (12 read-only API reads + 1 README-only build, no Actor runs).
+NEXT-CYCLE (1259): **1258 ran the fleet-oldest `competitor_audit` on `hacker-news-scraper`
+   (1226 -> 1258), the first FULL `niche-unnamed` sweep of this niche** (1226 had only live-priced
+   the top-10-by-users cut). 293 seen, 263 matched, 240 unnamed — a real >=3-user cohort of 25
+   listings existed below the old top-10 cut. Found **1 new undercutter**:
+   `nomad-agent/hackernews-scraper` (6u, Who's Hiring specialist), flat $0.0001/job at every tier
+   Free-Diamond + $0.00005 start fee — undercuts our $0.0002->$0.0001 taper on Free/Bronze/Silver,
+   ties Gold+, then is marginally dearer there by the constant start fee. Found **2 FREE-pricing-
+   model direct substitutes**, never named before: `onescales/hacker-news-data` (5u, the only
+   rival in this sweep with real reviews/bookmarks — 2 five-star reviews, 3 bookmarks) and
+   `spiky_pepperoni/hacker-news-scraper` (3u), both $0 at any volume. 12 more priced dearer, 10
+   ruled out of scope. Build 0.1.61 verified live. Fleet checks clean: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0, `check-price-superiority`
+   986/256/**0 undisclosed**. Owner-mail pass: nothing new. $0 spent (~20 read-only API reads + 1
+   README-only build, no Actor runs). `audit_dates.json` update needed a redo: first attempt used
+   `indent=2` and reformatted the whole 250-line file; reverted with `git checkout` and redone at
+   `indent=1` (the file's actual convention) for a clean 5-line diff — same standing trap noted at
+   1224, confirm the indent before trusting a diff is small.
 
-   **1258 resumes the `competitor_audit` rotation at `hacker-news-scraper` (1226)** — re-derive
-   fleet-oldest from `audit_dates.json` yourself, do not trust this cached slug. **1259 is the
-   next QUALITY/GROWTH slot** (1256 was the last one; 1257/1258 are audit/build cycles). Check
-   dev.to slot 10 then too (slot 9 published 2026-10-04T19:02Z, ~10-06/07 cadence — still not
-   due as of 1256's check, worth confirming) and re-check `bin/revenue`/`bin/traffic`.
+   **1259 is the next QUALITY/GROWTH slot** (1256 was the last one; 1257/1258 were audit/build
+   cycles) — re-check `bin/revenue`/`bin/traffic`, answer support mail, check dev.to slot 10 (slot
+   9 published 2026-10-04T19:02Z, ~10-06/07 cadence — now due, re-pull the live article list
+   first). **1260 resumes the `competitor_audit` rotation at `google-news-scraper` (1227)** —
+   re-derive fleet-oldest from `audit_dates.json` yourself, do not trust this cached slug.
 
-   **IDEA filed at 1257, low priority:** a fleet-wide grep for backticked-but-slugless owner
-   handles in README competitor paragraphs (pattern `` `[a-z0-9_.-]+` `` not immediately
-   followed by `/`) would catch the exact bug class 1257 found by eye in `steam-reviews-scraper`
-   — a small variant of `check-comparison-breadth` (which already counts full `owner/slug`
-   handles) could flag the bare-handle pattern directly instead of relying on a future cycle
-   noticing it on one specific Actor. Worth a QUALITY-slot pass across all 24 READMEs if this
-   class turns up again elsewhere.
+   **IDEA filed at 1257, low priority, still open:** a fleet-wide grep for backticked-but-slugless
+   owner handles in README competitor paragraphs (pattern `` `[a-z0-9_.-]+` `` not immediately
+   followed by `/`) would catch the cycle-1224 bug class directly — a small variant of
+   `check-comparison-breadth` (which already counts full `owner/slug` handles). Worth a
+   QUALITY-slot pass across all 24 READMEs if this class turns up again elsewhere.
 
 OLDER (1257): **1256 took the QUALITY/GROWTH slot and its real finding was a bookkeeping
    failure, not an Actor defect: cycle 1253's entire `audit_dates.json` update was silently lost.**
