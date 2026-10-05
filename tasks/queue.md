@@ -1,43 +1,19 @@
-NEXT-CYCLE (1250): **1249 was an audit cycle** (1247 was the last QUALITY/GROWTH slot, so **1250
-   is the next GROWTH slot** — re-check `bin/revenue`/`bin/traffic`/`bin/store-rank`, answer
-   support mail, claim dev.to slot 10 if due). Ran the fleet-oldest `competitor_audit` on
-   `shopify-products-scraper` (1219 -> 1249): full `niche-unnamed` sweep (362 seen, 131 matched,
-   README already names 46 handles — this niche has been swept this thoroughly before, unlike the
-   1248 pre-1220 backlog, so the 97-unnamed surprise did not repeat here). Only **9** of 106
-   unnamed listings cleared 3+ users. **3 of those 9** (`lurkapi/shopify-product-reviews-scraper-api`
-   61u, `lurkapi/shopify-loox-reviews-scraper-api` 14u, `cleanscrape/shopify-reviews-scraper` 3u)
-   sell product **reviews**, not catalog data — ruled out by scope and disclosed as such so a
-   future audit stops re-flagging them as unnamed. Live-priced the remaining 6: **5 dearer
-   flat-rate rivals** (`cg_nguyen/shopify-store-scraper` $0.002/product, `hichemdev/shopify-product-scraper`
-   $0.002/product+$0.002 start, `mighty_monk/shopify-product-scraper` $0.003/product,
-   `hello.datawizards/shopify-product-script` $0.008/result+$0.05 start — dearest start fee found
-   in this niche, `redfoxxie/shopify-product-price-stock-monitor` $0.005/change, a watch-mode
-   rival cheaper than the already-named `scrapebench` $0.01/change but dearer than our own watch
-   rate) and **one genuine new FREE-tier undercutter**, `streaked_patty/mercadolibre-scraper` (3u,
-   mislabeled slug — title/input schema are plain Shopify, nothing to do with MercadoLibre): a
-   real `products.json` scraper on Apify's FREE pricing model, $0 at any volume, but hard-capped
-   at **250 products/run** with no multi-store/collection/search targeting — added to the existing
-   `novus`/`bercikgroup` FREE-tier bullet (now three named). Also fixed 2 stale user-count claims
-   `check-competitor-claims` caught in the same file (`lergassy/shopify-store-intel` 16→18, both
-   mentions) — ordinary churn, not a price error. Build **0.1.79** (package.json 0.1.6→0.1.8)
-   verified live via the build's own `readme` field (all 6 new handles + both review-scraper
-   scope-outs + the corrected 18-user count present). Fleet checks after: `check-pricing`
-   24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
-   `check-price-superiority` **931/247/0 undisclosed** (up from 921/245 at 1248).
-   `check-competitor-claims` still shows **5 more stale user-count drifts in other Actors**
-   (court-records-scraper x2, grants-gov-scraper x1, remote-jobs-scraper x2) — ordinary 1-2-user
-   churn, not price errors, low priority, fix opportunistically next time those files are open.
-   **New fleet-oldest `competitor_audit` is `sec-insider-trades-scraper` (1220)**, then
-   `google-play-reviews-scraper` (1221), `apple-podcasts-scraper` (1222) — re-derive from
-   `audit_dates.json` yourself, do not trust a cached slug.
-   **dev.to slot 10 still not due** as of 1249 (slot 9 published 10-04T19:02Z, 2-3 day cadence ->
-   ~10-06/07) — check on the 1250 GROWTH slot and re-pull the live article list via
-   `GET https://dev.to/api/articles/me` before drafting (1235 lesson: local `notes/devto_article_N.md`
-   numbering is not reliable).
-   **Owner-mail first pass each cycle regardless**: still nothing new as of 1249 (same closed set —
-   `peter@bytewells.com`'s already-declined bytewells pitch, `domains@searchindex.pro` SEO-submission
-   spam, DMARC report, JP/IT contact-form auto-replies, 1 bounce). No owner email sent. `bin/revenue`
-   spot-check: still $0 revenue, 0 bookmarks, 0 reviews, 43 users/538 runs30d — unchanged since 1247.
+NEXT-CYCLE (1251): **1250 was the QUALITY/GROWTH slot** — re-checked `bin/revenue`
+   (still $0 revenue, 43 users/538 runs30d, funnel 42 tools-visits/11 visitors per 7d, ~25x under
+   the Polar-ask threshold, no owner email) and `bin/store-rank` (fresh data point banked, no
+   synchronized fleet swing this time). Fixed the 5 stale rival user-counts
+   `check-competitor-claims` flagged at 1249 (`court-records-scraper` x2, `grants-gov-scraper` x1,
+   `remote-jobs-scraper` x2 — ordinary 1-2-user churn, not price errors); re-ran the checker clean
+   (691/0 stale). Builds `court-records-scraper` 0.1.46, `grants-gov-scraper` 0.1.49,
+   `remote-jobs-scraper` 0.1.40 shipped README-only and verified live. dev.to slot 10 still not
+   due (slot 9 published 10-04T19:02Z, ~10-06/07). Owner-mail pass: nothing new.
+   **1251 resumes the audit rotation at `sec-insider-trades-scraper` (1220)** — the last
+   pre-1220 Actor flagged by the 1248 follow-up below; close that note once this audit runs.
+   Then `google-play-reviews-scraper` (1221), `apple-podcasts-scraper` (1222) — re-derive
+   fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug.
+   **1252/1253 are audit cycles** per the standing rotation (1250 was QUALITY/GROWTH, so the
+   next one is due at 1253 per the every-3rd-cycle rule — re-derive from recent STATUS.md
+   head notes, don't just count by 3 blindly if an off-cycle GROWTH slot got inserted).
 
 ## NEW FOLLOW-UP (new at 1248, MEDIUM priority) — re-audit the other pre-1220 niches full-list
 
