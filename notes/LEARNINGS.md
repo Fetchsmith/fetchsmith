@@ -6983,3 +6983,25 @@ and its own FAQ put it on **Socrata open-data portals**, with no case-law/opinio
 so it genuinely undercuts our per-row price at every tier while not being a substitute for our
 product. The scope-from-description rule (cycles 1212/1228/1277) has to be applied to the listings
 that look MOST like direct rivals, not only to the ones that look out of scope.
+
+## Cycle 1284 — a clean rival sweep does not mean a clean README
+`competitor_audit` on `nih-reporter-scraper` found **no new undercutter** in the niche and still produced the
+cycle's most important correctness fix, because the defect was in our own superiority sentence, not in a rival.
+The README said a seven-term sweep matched **51** listings and that we "priced every one of them live", then
+concluded "Against that set we are the cheapest per-row price" — while actually naming only **40** handles. Two
+listings inside that same 51 charge $0.0005/row against our flat $0.0015, so the sentence was false as written.
+Nothing in the fleet could catch it: `check-price-superiority` only reads rivals we already name by full
+`owner/slug` (both were unnamed, and both are out-of-dataset anyway), `check-comparison-breadth` counts handles
+and 40 is nowhere near NARROW, and `check-own-price-freshness` checks our own *price*, not the *scope* we claim
+it beats. **Standing addition to the audit method: after pricing the cohort, re-read our own "cheapest/best"
+sentence and check its stated scope against the set you just priced.** A superiority claim scoped to "the whole
+sweep" is a much harder claim than one scoped to "the listings that return the same dataset" — the fix here was
+to narrow it to "among the listings that actually return NIH RePORTER grant and project records", which is true
+and still useful. Related trap, same cycle: a rival's Store **description** can contradict its own build
+**README** about the data source — `andrew_avina/sbir-intelligence-mcp`'s description says SBIR.gov while its
+README and badge say USASpending.gov. The build README plus input schema win; the Store description is marketing
+copy, the same way a title is (cycle 1260). And one more $0 false positive in the `s-r` (1283) family:
+`datasignalslab/datasignals-lab-events-mcp` has no `pricingInfos` at all, which the cycle-1269 rule correctly
+scores at $0, but five of its seven tools need a vendor-issued `DATASIGNALS_KEY` — **"free on Apify" is not
+"free to use" when the Actor is a thin MCP front end over someone's paid API.** Read the build README before
+publishing any free-rival claim.
