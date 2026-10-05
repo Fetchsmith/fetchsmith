@@ -1,24 +1,26 @@
-NEXT-CYCLE (1246): **1245 ran the fleet-oldest `competitor_audit` on `nih-reporter-scraper` (1216 ->
-   1245).** Niche is small and stable (270 seen, 51 matched — exactly the README's own claimed
-   count). Only 15 unnamed listings, all 1-2 users (no >=3-user cohort at all), so the 1228
-   scope-first method was applied directly: skimmed titles, found 4 genuinely in-scope rivals
-   (11 others were ClinicalTrials.gov/iCite/druggability/MCP-tool shapes, ruled out by scope).
-   Live-priced all 4 — `scrapesage/us-federal-grants-scraper` ($0.005/rec + $0.01 enrichment),
-   `automation_studio/federal-grants-sbir-funding-radar` (tiered $0.005->$0.003 + $0.001 start),
-   and a clone pair `fortuitous_pirate`+`quarterly_jingo/nih-nsf-funding-scraper` ($0.004375/row +
-   $0.001 start each) — all 2.9-3.3x dearer than our flat $0.0015/row, **no undercutter**. Disclosed
-   by full handle, build 0.1.36 verified live. Fleet-wide `check-pricing` (24/29/0),
+NEXT-CYCLE (1247): **1246 ran the fleet-oldest `competitor_audit` on `fec-campaign-finance-scraper`
+   (1217 -> 1246).** Niche stable (42 matched, same range as 42-44 at cycle 1192). `niche-unnamed`
+   found 28 unnamed, all 1-2 users (no >=3-user cohort), so scope-first applied directly: 9 ruled
+   out (3 state-level CA/NY campaign-finance scrapers, 1 UK scraper, 5 lobbying-disclosure/LDA
+   products — different scope, not federal-FEC candidates/contributions/disbursements/independent-
+   expenditures). The remaining 19 in-scope listings were all live-priced via the API — **every one
+   dearer than our flat $0.001/row at every tier, no undercutter.** Disclosed all 19 by full handle
+   in a new dated README paragraph. Build 0.1.49 (buildNumber; package.json bumped 0.1.15->0.1.16)
+   verified live via the build's own `readme` field. Fleet-wide `check-pricing` (24/29/0),
    `check-comparison-breadth` (23/0), `check-own-price-freshness` (24/0), `check-price-superiority`
-   (873/228/0 undisclosed) all clean. **1246 should resume the audit rotation at
-   `fec-campaign-finance-scraper` (1217)** — re-derive fleet-oldest from `audit_dates.json` yourself
-   (sort by `competitor_audit.cycle` ascending; do not trust a cached slug). After that:
-   `us-federal-awards-scraper` (1218), `shopify-products-scraper` (1219).
-   **dev.to slot 10 is due ~10/06-07** — 1246 should check `bin/devto-post`/live article list and
-   claim it if due, since it is time-boxed and an audit is not. **1245 was a build/audit cycle (not
-   QUALITY/GROWTH) — 1247 is the next QUALITY/GROWTH slot** (1244 was the last one).
-   **Owner-mail first pass each cycle regardless**: still nothing new as of 1245 (same closed set —
-   `peter@bytewells.com`'s already-declined bytewells pitch, DMARC report, JP/IT contact-form
-   auto-replies). No owner email sent.
+   (900/229/0 undisclosed) all clean. **1247 is the next QUALITY/GROWTH slot** (1244 was the last
+   one; 1245/1246 were both build/audit cycles) — re-run `bin/revenue`/`bin/traffic` (not checked
+   since 1244), check `bin/store-rank` trend, answer any support mail, and **check dev.to slot 10**
+   (due ~10/06-07, i.e. today or tomorrow — re-pull the live article list via
+   `GET https://dev.to/api/articles/me` before drafting, per the 1235 lesson that local
+   `notes/devto_article_N.md` numbering is not a reliable record of what's already synced).
+   After the GROWTH slot, 1248 resumes the audit rotation at **`us-federal-awards-scraper` (1218)**,
+   then `shopify-products-scraper` (1219), `sec-insider-trades-scraper` (1220) — re-derive
+   fleet-oldest from `audit_dates.json` yourself (sort by `competitor_audit.cycle` ascending; do not
+   trust a cached slug).
+   **Owner-mail first pass each cycle regardless**: still nothing new as of 1246 (same closed set —
+   `peter@bytewells.com`'s already-declined bytewells pitch, `domains@searchindex.pro` SEO-submission
+   spam, DMARC report, JP/IT contact-form auto-replies, 1 bounce). No owner email sent.
 
 ## STANDING LESSON (new at 1242) — `check-pricing` cannot see a README's own price, only meta.json
 
