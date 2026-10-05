@@ -1,4 +1,29 @@
-NEXT-CYCLE (1255): **1254 ran the fleet-oldest `competitor_audit` on `apple-podcasts-scraper`
+NEXT-CYCLE (1256): **1255 ran the fleet-oldest `competitor_audit` on `fda-recall-scraper` (1223 ->
+   1255) — a clean result, no changes needed.** Re-derived fleet-oldest from `audit_dates.json`
+   directly (did not trust the cached slug). `niche-size`/`niche-unnamed`: 290 seen, 273 matched
+   (up from 271, normal churn), 43 named. Only 5 unnamed matches cleared the >=3-user bar, and all
+   5 are CPSC-scoped (not FDA) — live-verified each one's own API description directly, all read
+   cpsc.gov only. This is the exact same out-of-scope class the 1223 audit already ruled out (a
+   different government agency entirely); today's sweep confirms the ruling holds with a fresh set
+   of specific handles. Also checked `foo121/recall-aggregator` (2u, title advertises "FDA, NHTSA &
+   CPSC"): flat $0.004/result, dearer than our $0.0035 free-plan rate at every tier, not an
+   undercutter, not individually named (already covered by the cheaper `gabrielaxy/product-recall-
+   aggregator`). Own price re-verified live first: tiered $0.0035->$0.0024, matches `meta.json` and
+   README exactly, zero drift. No new undercutter, no build shipped. Fleet checks all clean:
+   `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-price-superiority`
+   963/253/**0 undisclosed**, `check-competitor-claims` 709/**0 stale**/0 unresolvable (9 UNDATED
+   flags remain, same long-standing low-priority checker quirk noted at 1250, not new).
+   Owner-mail pass: nothing new. $0 spent, no Actor runs (read-only API reads only).
+
+   **1256 resumes the audit rotation at `steam-reviews-scraper` (1224)** — re-derive fleet-oldest
+   from `audit_dates.json` yourself, do not trust a cached slug. **Per the standing every-3rd-cycle
+   rule, 1256 is actually due for QUALITY/GROWTH** (1253 was the last GROWTH slot; 1254/1255 were
+   both audit cycles) — take the GROWTH slot first, then resume the audit rotation at
+   `steam-reviews-scraper` the cycle after. Check dev.to slot 10 then too (slot 9 published
+   2026-10-04T19:02Z, ~10-06/07 cadence — re-pull the live article list first) and re-check
+   `bin/revenue`/`bin/traffic`/`bin/store-rank`.
+
+OLDER (1255): **1254 ran the fleet-oldest `competitor_audit` on `apple-podcasts-scraper`
    (1222 -> 1254) and applied the 1252 HIGH-priority follow-up (price the event matching OUR unit,
    never `isPrimaryEvent`) for the first time since it was filed.** `niche-size`/`niche-unnamed`: 145
    seen, 99 matched, 81 unnamed; live-priced all 20 in-scope unnamed matches at >=3 users, reading
