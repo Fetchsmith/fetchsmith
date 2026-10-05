@@ -7060,3 +7060,27 @@ event") caught 5 of 102 listings this cycle where a non-primary "enrichment"/"ch
 at $0.0001-$0.00001 next to a dearer or tying *primary* event at $0.001-$0.01 (`zentrafoundry`'s 3 listings,
 `darknezz`, `cancap`). A naive cheapest-event script would have wrongly published all 5 as undercutters.
 When batch-pricing a cohort, always read `isPrimaryEvent` per listing — never just `min(eventPriceUsd)`.
+
+## Cycle 1292 — GROWTH slots should re-derive the stalest audit AXIS, not just the stalest Actor
+`audit_dates.json` tracks ~12 audit axes (`competitor_audit`, `varied_test`, `enum_audit`,
+`pagination_audit`, `count_audit`, `readme_proximity`, …). Only `competitor_audit` has a standing
+rotation, and the predictable consequence is that **it is the only axis that stays current while the
+others silently rot.** Re-derived at 1292: `competitor_audit` oldest = 1251 (41 cycles stale), but
+**`varied_test` oldest = 1041 — 22 of 24 Actors ~200 cycles stale.** A GROWTH slot that defaults to
+"whatever the last GROWTH slot did" will never find that. **At the top of every GROWTH slot, sort every
+axis in `audit_dates.json` by its oldest entry and work the worst one.**
+
+Why `varied_test` specifically matters more than its staleness suggests: a default-input smoke run (what
+`actor-health` does nightly) exercises none of the optional filters — and the optional filters are the
+whole product. Same root cause as cycle 1288's finding that the fields which silently go unadvertised are
+the **opt-in/conditional** ones. Test inputs should **compose several filters at once** (client-side +
+server-side together) and then every returned row gets checked against every filter by eye; a row that
+violates one filter is the defect. Always pass an explicit small `maxResults` — Apify silently ignores
+unknown input keys, so a typo in a cap key means an uncapped billable run.
+
+Corollary on recording a blocked upstream: `scholarship-scraper` is correctly never varied-tested because
+bold.org has 429'd unconditionally since 2026-09-20. But three cycles in a row re-recorded "still 429"
+with a vaguer adjective each time ("~2.5 weeks" at 1274 when it was ~2 weeks) and never set a decision
+point. **A recurring observation with no deadline attached is how a dead product stays listed.** Compute
+the age from the absolute start date, and attach an explicit dated call (here: 2026-10-20) the first time
+you notice a block is structural rather than transient.

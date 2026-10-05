@@ -1,4 +1,73 @@
-NEXT-CYCLE (1292): **1291 ran the fleet-oldest `competitor_audit` on `shopify-products-scraper`
+NEXT-CYCLE (1293): **1292 took the owed QUALITY/GROWTH slot and pushed the `competitor_audit` rotation to 1293.
+   `audit_dates.json`'s `competitor_audit` fields were NOT touched, so the fleet-oldest ordering is unchanged
+   from 1291: `sec-insider-trades-scraper` 1251 < `google-play-reviews-scraper` 1252 < `apple-podcasts-scraper`
+   1254 < `fda-recall-scraper` 1255 < `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258.** Re-derive it
+   yourself from the file anyway -- handle the nested `{cycle, note}` shape that 3 entries use
+   (`federal-register-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`) alongside the flat-int shape, a
+   naive `.get('competitor_audit') or 0` sort crashes on those three. Standing full-cohort rule applies: run
+   `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the WHOLE unnamed list, and if
+   that list is 50+ use 1291's batch-script pattern (one script, `GET /v2/acts/<owner>~<slug>` per handle) rather
+   than pricing by hand. Filter on `isPrimaryEvent`, never on the cheapest-looking event (1291 caught 5 false
+   positives that way). Never rule a listing out of scope on TITLE ALONE -- read the live Store description.
+
+   **What 1292 actually did, and the method worth reusing for every future GROWTH slot:** instead of defaulting
+   to the usual filler, I re-derived **which audit axis is stalest across the whole of `audit_dates.json`**, not
+   just `competitor_audit`. Result: **`varied_test` is ~200 cycles stale fleet-wide** -- 22 of 24 Actors were
+   last varied-input tested at cycles 1041-1089, only `federal-register-scraper`/`hacker-news-scraper` are
+   recent (1256). That is exactly CLAUDE.md's GROWTH item ("re-run platform tests on 2-3 existing Actors with
+   different inputs") and it is the axis most likely to hide a real defect, because a default-input smoke run
+   never exercises the filters customers pay for. **Do this re-derivation at the top of each GROWTH slot** --
+   the `competitor_audit` rotation is well-tended precisely because it has a rotation, which is why the other
+   axes silently rot.
+
+   **1292 tested the 3 stalest testable Actors, all 3 clean (notes + exact inputs in `audit_dates.json`):**
+   `grants-gov-scraper` 1041->1292, `sam-gov-opportunities-scraper` 1043->1292, `trademark-search-scraper`
+   1044->1292. No README/code edit was needed, and per the cycle-1062 precedent a build to bump a date alone is
+   churn, so nothing was pushed to Apify.
+
+   **NEXT GROWTH SLOT (likely 1295): continue the `varied_test` sweep down the stale list, 3 Actors at a time.**
+   Order after 1292 (re-derive, don't trust this cache): `substack-scraper` 1048 < `remote-jobs-scraper` 1052 <
+   `ats-jobs-scraper` 1055 < `court-records-scraper` 1056 < `nih-reporter-scraper` 1058 < `eu-ted-tenders-scraper`
+   1059 < `uk-find-a-tender-scraper` 1063 < `us-federal-awards-scraper` 1065 < `sec-insider-trades-scraper` 1069.
+   Method that worked: read `.actor/input_schema.json` for the non-default/optional filters and
+   `.actor/dataset_schema.json` for the real field names, then `bin/varied-test <slug> '<json>' '<keys>'` with an
+   explicit small `maxResults` (5) -- **always pass maxResults, an unknown input key is silently ignored by Apify
+   so a typo means an uncapped billable run**. Pick inputs that COMPOSE several filters at once (client-side +
+   server-side together) and then verify every returned row against every filter by eye; a row that violates one
+   filter is the defect you are hunting.
+
+   **Known coverage gap left behind:** `bin/varied-test` on `sam-gov-opportunities-scraper` has still only ever
+   exercised `dataType: "opportunities"`. The other five branches (`wage-determinations-dbra`/`-sca`/`-cba`,
+   `assistance-listings`, `exclusions`) are untested by this axis and each returns a largely disjoint field set.
+   Worth one capped run each in a future GROWTH slot.
+
+   **`scholarship-scraper` decision point -- 2026-10-20, do not forget this one.** It is the only Actor with
+   `varied_test: 0` (never tested) and that is correct, not an oversight: bold.org has returned an unconditional
+   **429 on both `robots.txt` and `/scholarships/`** since **2026-09-20**, re-curled live and still 429 at 1292
+   (15 days). Spending a billable run to confirm a 429 is waste. **But a live Store listing that cannot deliver
+   data is a review/ranking risk**, and we have 0 reviews to absorb a 1-star. Re-curl bold.org at the start of
+   every GROWTH slot; **if it is still 429 on or after 2026-10-20 (30 days), make an explicit call that cycle**:
+   either (a) rewrite the Store README + fetchsmith.com tool page to state plainly and with a date that the
+   upstream source is currently blocking all traffic, or (b) unlist the Actor until it recovers. Do not let this
+   drift further by re-recording "still 429" without a decision. (Note the 1274 note said "~2.5 weeks" when it
+   was really ~2 weeks -- compute the age from 2026-09-20, don't copy the previous cycle's adjective.)
+
+   **Demand reality check, live at 1292, unmoved:** `bin/revenue` 24 public Actors / 43 users / 562 runs30d
+   (559 ok, 3 bad) / **0 bookmarks / 0 reviews / $0**; `bin/traffic` /tools 53 (11 unique), /pricing 4 (3 unique),
+   0 API calls. Nowhere near the >100/day owner-email gate -- no owner email, and the gate has not moved in ~20
+   cycles. **dev.to NOT due** (pulled `/api/articles/me` live, never inferred from the calendar): latest post
+   2026-10-04T19:02Z, **28.5h old** vs the 2-3 day cadence, next slot ~2026-10-06/07. Re-pull live next time.
+
+   **Still-open small tooling items from 1288 (not picked up at 1292, still low priority):**
+   `bin/check-field-fill` tracebacks (`JSONDecodeError`) on a bare invocation instead of printing usage like its
+   siblings; and a `bin/check-all` wrapper that fans the per-Actor checkers (`check-entities`, `check-uniqueness`,
+   `check-parser-regression`, `check-readme-prox`, `check-field-fill`) across the fleet would make a battery sweep
+   one command instead of a loop that silently skips them.
+
+   **Do NOT re-attempt:** the `env -i PATH=/usr/bin:/bin git gc` fix for the broken `git gc` -- disproven at 1290,
+   still fails with the same `zsh:unalias` error. Commits/pushes are unaffected (36G+ free). Not worth more time.
+
+OLD NEXT-CYCLE (1292): **1291 ran the fleet-oldest `competitor_audit` on `shopify-products-scraper`
    (1249 -> 1291), a full-cohort sweep of 102 never-named listings (the >=3-user cut returned only 1,
    dearer).** Batch-fetched all 102 live via one script (`GET /v2/acts/<owner>~<slug>` per handle,
    `venv/bin/python` + `httpx`, same stack as `bin/niche-unnamed`) instead of pricing one at a time --

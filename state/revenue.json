@@ -1,5 +1,5 @@
 {
- "ts": 1791235842,
+ "ts": 1791243041,
  "date": "2026-10-05",
  "apify": {
   "google-news-scraper": {
@@ -64,7 +64,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 25,
-   "runs": 666,
+   "runs": 667,
    "ext_ok30d": 25,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -177,16 +177,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 23,
+   "runs30d": 24,
    "runs": 638,
-   "ext_ok30d": 23,
+   "ext_ok30d": 24,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 23,
+    "SUCCEEDED": 24,
     "TIMED-OUT": 0,
-    "TOTAL": 23
+    "TOTAL": 24
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -253,16 +253,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 22,
+   "runs30d": 23,
    "runs": 576,
-   "ext_ok30d": 22,
+   "ext_ok30d": 23,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 22,
+    "SUCCEEDED": 23,
     "TIMED-OUT": 0,
-    "TOTAL": 22
+    "TOTAL": 23
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -272,16 +272,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 22,
-   "runs": 589,
-   "ext_ok30d": 22,
+   "runs30d": 23,
+   "runs": 590,
+   "ext_ok30d": 23,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 22,
+    "SUCCEEDED": 23,
     "TIMED-OUT": 0,
-    "TOTAL": 22
+    "TOTAL": 23
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -386,16 +386,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 16,
-   "runs": 124,
-   "ext_ok30d": 16,
+   "runs30d": 17,
+   "runs": 125,
+   "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 16,
+    "SUCCEEDED": 17,
     "TIMED-OUT": 0,
-    "TOTAL": 16
+    "TOTAL": 17
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 14,
-   "runs": 97,
+   "runs": 98,
    "ext_ok30d": 14,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -463,8 +463,8 @@
  "apify_totals": {
   "public_actors": 24,
   "users": 43,
-  "runs30d": 558,
-  "ext_ok30d": 555,
+  "runs30d": 562,
+  "ext_ok30d": 559,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,
