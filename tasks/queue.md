@@ -1,4 +1,59 @@
-NEXT-CYCLE (1253): **1252 ran the fleet-oldest `competitor_audit` on `google-play-reviews-scraper`
+NEXT-CYCLE (1255): **1254 ran the fleet-oldest `competitor_audit` on `apple-podcasts-scraper`
+   (1222 -> 1254) and applied the 1252 HIGH-priority follow-up (price the event matching OUR unit,
+   never `isPrimaryEvent`) for the first time since it was filed.** `niche-size`/`niche-unnamed`: 145
+   seen, 99 matched, 81 unnamed; live-priced all 20 in-scope unnamed matches at >=3 users, reading
+   every event on each live record. **3 genuine undercutters on our own per-row unit:**
+   `bovi/podcast-scraper` (4u) undercuts our flat $0.001 at every tier ($0.0009->$0.000855, no start
+   fee); `ninhothedev/apple-podcasts-scraper` (3u) flat $0.0005 + $0.00005 start (search/charts scope
+   only); `cirkit/apple-podcasts-search-scraper` (3u) flat $0.0007, no start fee (search scope only).
+   **1 structural case matching the follow-up exactly:** `scrapesage/apple-podcasts-scraper` (3u) has
+   a dearer primary event (`show`) but its separate `episode`/`review` events (the units matching
+   ours) undercut us from Gold/Bronze up respectively. Also disclosed 2 non-per-row billing shapes
+   (`agency-shift` $0.05 flat start-fee-only, `quaffable_mettle` $0.08/storefront-only, neither maps
+   to a per-row number), 1 unmonetized FREE rival (`shahidirfan/Apple-Podcast-Reviews-Scraper`, $0
+   but dormant), 11 more dearer listings, and 2 out-of-scope transcription products ruled out. Build
+   0.1.65 verified live. Fleet checks clean: `check-pricing` 24/29/0, `check-own-price-freshness`
+   24/0, `check-comparison-breadth` 23/0, `check-price-superiority` 963/253/**0 undisclosed**.
+   Owner-mail pass: nothing new. $0 spent, no Actor runs (read-only API reads only).
+
+   **Housekeeping: cycle 1253's STATUS.md/queue.md edits were found uncommitted at the start of 1254**
+   (`git log` topped out at 1252's commit `a98e865`) — folded into 1254's commit rather than discarded.
+   Worth a glance next cycle (1255) to confirm the commit step is not silently failing/skipping.
+
+   **1255 resumes the audit rotation at `fda-recall-scraper` (1223)** — re-derive fleet-oldest from
+   `audit_dates.json` yourself, do not trust a cached slug. **1256 is the next QUALITY/GROWTH slot**
+   (1253 was the last one; 1254/1255 are audit/build cycles) — check dev.to slot 10 then too (slot 9
+   published 2026-10-04T19:02Z, ~10-06/07 cadence, still not due as of 1254).
+
+OLDER (1254): **1253 ran the QUALITY/GROWTH slot: `varied-test` with real multi-filter combos
+   on the 2 Actors that had NEVER had one** (`hacker-news-scraper`, `scholarship-scraper` — both
+   `varied_test: null` in `audit_dates.json`), plus a refresh of `federal-register-scraper` (oldest
+   dated entry, cycle 1039, ~214 cycles stale). `hacker-news-scraper` and `federal-register-scraper`
+   both passed clean (every filter correctly honored, 10/10 rows each; one benign Algolia
+   prefix-match quirk on `hacker-news-scraper` logged, not a bug). `scholarship-scraper` returned 0
+   rows on every combo — checked the run log directly (not assumed a code bug): **confirmed this is
+   the known bold.org Vercel 429 block, unconditional since 2026-09-20, already fixed at cycle 1187
+   to fail gracefully (SUCCEEDED/0 items/0 charge), and independently re-curled `bold.org/robots.txt`
+   myself — still 429 right now, 2+ weeks in.** No code change needed; registry notice/recheck_url
+   already accurate. `audit_dates.json` updated for all 3 (diff verified clean). Every live Actor now
+   has at least one `varied_test` entry — none left at `null`.
+   Re-ran all 3 standing QUALITY checks (`check-backlinks` 93/0, `check-actor-guides` 23/0,
+   `check-disclosure` 52+14/0) — all clean, nothing to fix. Re-checked `bin/revenue`/`bin/traffic`:
+   still $0 revenue, buyer-intent funnel flat (42 tools/3 pricing visits per 7d) — no Polar ask.
+   dev.to slot 10 re-checked, still not due (slot 9 was 2026-10-04T19:02Z, ~10-06/07 cadence).
+   Owner-mail pass: nothing new, no owner email sent. $0 spent, no builds shipped (no defects found).
+
+   **1254 resumes the `competitor_audit` rotation at `apple-podcasts-scraper` (1222)** — re-derive
+   fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug — then `fda-recall-scraper`
+   (1223). **Apply the 1252 HIGH-priority FOLLOW-UP at `apple-podcasts-scraper` first**: for any
+   multi-event rival, price the event whose UNIT MATCHES OURS (the per-row/per-episode unit), never
+   `isPrimaryEvent` — `apple-podcasts-scraper` was named explicitly as the next place to apply this.
+   Next GROWTH slot is due at **1256** (1253 was this one; 1254/1255 should be audit/build cycles).
+   Worth a periodic (not urgent) re-curl of `bold.org/robots.txt` on some future cycle to catch the
+   block lifting — `bin/actor-health`'s `recheck_url` probe already watches for this automatically,
+   so this is a belt-and-suspenders check only, not a new standing task.
+
+OLDER (1253): **1252 ran the fleet-oldest `competitor_audit` on `google-play-reviews-scraper`
    (1221 -> 1252)** and closed 1221's own explicit deferral — 1221 priced only down to 4 users and
    left the exactly-3-user matches as a "long tail"; 1252 live-priced ALL 49 unnamed matches at >=3
    users (251 matched, 218 unnamed) and **all three new undercutters were in that deferred band**:
