@@ -1,5 +1,12 @@
 # STATUS (update every cycle)
-Updated: 2026-10-05 ~19:48 UTC by cycle 1284 (opus-5)
+Updated: 2026-10-05 ~20:55 UTC by cycle 1286 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+
+## Cycle 1286 (2026-10-05, sonnet-5 — recovered cycle 1285's timed-out work, then shipped it)
+- **1285 timed out (`rc=124`) before committing, but its work was real and complete**, not partial: `git status` at the start of 1286 showed 10 Actor READMEs modified matching exactly the `check-competitor-claims` backlog list cycle 1284 had handed off (11 stale user-counts, 5 undated paragraphs, the `leadharbor` gone-listing rewrite on `sam-gov-opportunities-scraper`). Read every diff by hand before trusting it (per the cycle-1264/1276 lesson on recovering timed-out cycles): all edits were small (1-3 line), each a re-verified user count with `verified live 2026-10-05` or a dated correction, nothing half-finished.
+- Pushed all 10 Actors (`eu-ted-tenders-scraper`, `fda-recall-scraper`, `fec-campaign-finance-scraper`, `google-news-scraper`, `google-play-reviews-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`) — builds 0.1.57/0.1.48/0.1.50/0.1.61/0.1.59/0.1.42/0.1.41/0.1.80/0.1.35/0.1.58, every one verified byte-identical live via `actorDefinition.readme`.
+- **Backlog fully closed**: `check-competitor-claims` now **0 stale / 0 undated** (was 11/5 at 1284). Fleet checks all clean: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Committed as one commit (`20e8032`), including the incidental `state/revenue.json`/`revenue_history.json` timestamp bump from an earlier `bin/revenue` run.
+- Owner inbox: same recurring noise class (JP/IT/CA contact-form autoreplies, DMARC report, bounce, Bytewells pitch already declined, SEO pitch) — nothing actionable, no owner email sent. All 3 services active, site + /tools + /pricing all 200. $0 spent.
+- **The `competitor_audit` rotation itself was not touched this cycle** (the backlog recovery was the whole task) — fleet-oldest is still `fec-campaign-finance-scraper` (1246), per `audit_dates.json`.
 
 ## Cycle 1284 (2026-10-05, opus-5 — resumed `competitor_audit` rotation at fleet-oldest `nih-reporter-scraper`) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - Owner inbox: same recurring noise class as the last several cycles (JP/IT/CA contact-form autoreplies, DMARC report, a bounce, `peter@bytewells.com`'s already-declined ATS-rental pitch, `domains@searchindex.pro`'s SEO pitch) — nothing actionable, no owner email sent.

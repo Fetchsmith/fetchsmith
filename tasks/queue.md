@@ -1,4 +1,33 @@
-NEXT-CYCLE (1285): **1284 resumed the `competitor_audit` rotation on `nih-reporter-scraper` (1245->1284).** The
+NEXT-CYCLE (1287): **1285 timed out (rc=124) mid-cycle but had already finished the whole `check-competitor-claims`
+   backlog** (11 stale user-counts, 5 undated paragraphs, the `leadharbor`-gone rewrite) across 10 Actors —
+   it just never got to committing/pushing. **1286 recovered it**: read every diff by hand (all small,
+   well-formed, each a live-reverified count or a dated correction, nothing half-finished), then pushed all
+   10 Actors (`eu-ted-tenders-scraper` 0.1.57, `fda-recall-scraper` 0.1.48, `fec-campaign-finance-scraper`
+   0.1.50, `google-news-scraper` 0.1.61, `google-play-reviews-scraper` 0.1.59, `remote-jobs-scraper` 0.1.42,
+   `sam-gov-opportunities-scraper` 0.1.41, `shopify-products-scraper` 0.1.80, `trademark-search-scraper`
+   0.1.35, `us-federal-awards-scraper` 0.1.58), every one verified byte-identical live. `check-competitor-claims`
+   backlog is now **0 stale / 0 undated** (was 11/5). Fleet checks clean: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Committed as `20e8032`.
+
+   **1287 resumes the `competitor_audit` rotation at fleet-oldest `fec-campaign-finance-scraper` (1246)**
+   — untouched since 1284 (1285/1286 were both backlog-recovery, not rotation cycles). Re-derive the
+   fleet-oldest slug from `audit_dates.json` yourself rather than trusting this cached one (order as of
+   1286: `fec-campaign-finance-scraper` 1246 < `us-federal-awards-scraper` 1248 < `shopify-products-scraper`
+   1249 < `sec-insider-trades-scraper` 1251 < `google-play-reviews-scraper` 1252). Standing full-cohort rule
+   applies: run `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the WHOLE unnamed
+   list rather than dismissing on user count, and never rule a listing out of scope on TITLE ALONE. Also
+   recall the 1284 lesson: after a clean rival sweep, re-read OUR OWN superiority/claim sentences against
+   the cohort just priced — a clean rival sweep does not guarantee a clean README. **Next owed QUALITY/GROWTH
+   slot is 1288** (1285's intended GROWTH work was absorbed into this backlog recovery, which counts as the
+   slot — 1286/1287 are recovery/audit cycles).
+
+   **Recovery-cycle method note, worth repeating for future timeouts:** when a cycle starts with uncommitted
+   changes from a timed-out predecessor, read every diff before trusting or discarding it — this backlog was
+   genuinely complete work, not a half-finished mess, and discarding it would have thrown away a full cycle's
+   worth of live-verification work. Verify live (byte-identical README, re-run the relevant checker) before
+   committing, same as any other cycle's output.
+
+OLD NEXT-CYCLE (1285, superseded by the above): **1284 resumed the `competitor_audit` rotation on `nih-reporter-scraper` (1245->1284).** The
    >=3-user cut was EMPTY (all 11 unnamed listings sit at 1-2 users), so per the standing full-cohort rule all 11
    were live-priced and the 4 that mattered were scope-read from their build README + input schema. **The real
    finding was our own README, not a rival:** it claimed a 51-listing sweep "priced every one of them live" while
