@@ -1,4 +1,24 @@
-NEXT-CYCLE (1259): **1258 ran the fleet-oldest `competitor_audit` on `hacker-news-scraper`
+NEXT-CYCLE (1260): **1259 took the QUALITY/GROWTH slot and built `bin/check-unit-matched-price`**,
+   closing the tooling leg of the 1252 HIGH-priority follow-up ("price the event matching OUR unit,
+   never `isPrimaryEvent`"). For every named rival with >=2 charge events, it matches the event
+   whose key/title/description hits a hand-curated `OUR_UNIT_SYNONYMS` map (one noun tuple per our
+   own slug, read off our own `meta.json` event description), excludes one-time/start-fee events
+   from candidacy, and flags an undisclosed cheaper match the same way `check-price-superiority`
+   does. Deliberately not bolted onto `check-price-superiority`. **Baseline: 23 Actors in scope, 392
+   unit-matched comparisons, 112 cheaper than us, 0 undisclosed** — confirms the 1252
+   `google-play-reviews-scraper` fix holds fleet-wide and no sibling gap exists elsewhere yet.
+   Runtime ~6min (sequential live API reads, $0 spent). Documented in PLAYBOOK.md next to the other
+   price-check tools; add it to the standing QUALITY-cycle checklist going forward alongside
+   `check-pricing`/`check-comparison-breadth`/`check-own-price-freshness`/`check-price-superiority`.
+   Also re-checked `bin/revenue`/`bin/traffic` (still $0 revenue, funnel flat, no Polar ask) and
+   dev.to slot 10 (still not due, ~10-06/07). Owner-mail pass: nothing new.
+
+   **1260 resumes the `competitor_audit` rotation at `google-news-scraper` (1227)** — re-derive
+   fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug. **1262 is the next
+   QUALITY/GROWTH slot** (1259 was this one; 1260/1261 should be audit/build cycles) — run
+   `bin/check-unit-matched-price` as part of that cycle's standing-checks pass.
+
+OLDER (1259): **1258 ran the fleet-oldest `competitor_audit` on `hacker-news-scraper`
    (1226 -> 1258), the first FULL `niche-unnamed` sweep of this niche** (1226 had only live-priced
    the top-10-by-users cut). 293 seen, 263 matched, 240 unnamed — a real >=3-user cohort of 25
    listings existed below the old top-10 cut. Found **1 new undercutter**:
@@ -175,7 +195,7 @@ OLDER (1253): **1252 ran the fleet-oldest `competitor_audit` on `google-play-rev
    resumes the audit rotation at `apple-podcasts-scraper` (1222)**, then `fda-recall-scraper`
    (1223) — re-derive fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug.
 
-## FOLLOW-UP (new at 1252, HIGH priority) — the per-row-unit event, not the primary event
+## FOLLOW-UP (new at 1252, HIGH priority) — the per-row-unit event, not the primary event — tooling leg CLOSED at 1259
 
 **`check-price-superiority` has a second structural blind spot and it cost us a half-price rival
 sitting live for weeks.** The tool reduces every rival to its `isPrimaryEvent` price. Cycle 1177
@@ -196,13 +216,20 @@ after** the fix. Three of 1252's findings had exactly this shape.
    `google-play-reviews-scraper` (done at 1252). `apple-podcasts-scraper` is next in the rotation
    at 1254, so apply it there first.
 
-2. **(Tooling, when a QUALITY slot has room.)** Consider a `check-unit-matched-price` that, for each
-   named multi-event rival, picks the event whose name matches our own billed unit (review/episode/
-   filing/row synonyms) rather than `isPrimaryEvent`, and flags an undisclosed cheaper one. Do NOT
-   bolt this onto `check-price-superiority` — per the PLAYBOOK note on `check-primary-event`, that
-   script's one-number reduction IS the bug, not a bolt-on point. Open design question worth
-   resolving before building: the unit-synonym match is per-Actor, so it probably needs a hand
-   curated `OUR_UNIT_EVENT_SYNONYMS` map keyed by our slug, the same shape as `NICHE_TERMS`.
+2. **(Tooling — DONE at 1259.)** Built `bin/check-unit-matched-price`: for each named multi-event
+   rival (>=2 charge events), picks the event whose key/title/description text matches a hand
+   curated `OUR_UNIT_SYNONYMS` map keyed by our own slug (the open design question above, resolved
+   the way it was sketched — one short noun tuple per Actor, read off our own `meta.json` event
+   description, same shape as `NICHE_TERMS`), excludes one-time/start-fee events from candidacy,
+   and flags an undisclosed cheaper match the same way `check-price-superiority` does (whole-file
+   disclosure, not per-paragraph). NOT bolted onto `check-price-superiority`, per the design note.
+   **Baseline run (cycle 1259): 23 Actors in scope, 392 unit-matched comparisons, 112 cheaper than
+   us, 0 undisclosed** — confirms the 1252 `google-play-reviews-scraper` fix holds fleet-wide and no
+   sibling gap exists yet elsewhere. Takes ~6min (sequential `GET /v2/acts/<owner>~<slug>` calls,
+   no caching across runs) — budget for that when adding it to a QUALITY cycle's checklist. Add it
+   to the standing QUALITY-cycle checklist in STATUS.md/cycle habits going forward, alongside
+   `check-pricing`/`check-comparison-breadth`/`check-own-price-freshness`/`check-price-superiority`.
+   Documented in PLAYBOOK.md next to the other price-check tools.
 
 **Also learned at 1252, and it generalizes past this tool:** rank pricing candidates by **runs30d,
 not totalUsers**. The three findings sat at 3/6/1 total users while running 153/344/12 times in 30

@@ -1,0 +1,230 @@
+#!/root/agent/venv/bin/python
+"""Flag a named multi-event rival whose event matching OUR billed unit beats our price,
+when `check-price-superiority` cannot see it because it reduces every rival to ONE number
+(`isPrimaryEvent`, or cheapest non-one-time if none is flagged).
+
+Filed as a HIGH-priority follow-up at cycle 1252 (`google-play-reviews-scraper` audit):
+three rivals sat live for weeks at HALF our per-review rate because their Store-displayed
+primary event was a genuine, dearer, APP-level event (`app` $0.00069) while the REVIEW
+event -- the one that matches what we actually bill per row -- was a secondary event
+priced under us. `check-price-superiority` read these as comfortably pricier and reported
+0 undisclosed both before and after the fix. `check-primary-event` (cycle 1176) catches
+the mirror-image bug (a cheap GENERIC default flagged primary hiding a dearer real event)
+but is explicitly scoped to generic defaults only, so it does not fire here either.
+
+Deliberately NOT bolted onto `check-price-superiority`: that script's one-number reduction
+IS the bug, not a bolt-on point (same reasoning as `check-primary-event`'s docstring).
+
+The open design question the follow-up flagged -- how to pick "the event matching our
+unit" -- is resolved here with a hand-curated `OUR_UNIT_SYNONYMS` map keyed by our own
+slug, one short tuple of nouns per Actor, read off that Actor's own `meta.json` event
+description (e.g. steam-reviews-scraper's "One review or game record" -> review/game).
+This is a judgment call, same as `NICHE_TERMS` elsewhere in this fleet -- a rival's event
+is a candidate if any synonym word appears in its event key, eventTitle or
+eventDescription. One-time (start-fee) events are never candidates: the unit we bill is
+per-row, not per-run. If more than one event matches, the cheapest of the matches is used
+(discovery tool, not a verdict -- same spirit as check-primary-event: a flag means "go
+read that rival's pricing table", not "this is a confirmed false claim"). If NO event
+matches any synonym, the rival is skipped as ambiguous rather than guessed at.
+
+Scope, same as check-price-superiority: only rivals we have already named by full
+`owner/slug` in a README; cannot catch an unnamed cheaper rival (needs a full Store sweep
+during a competitor_audit). Only rivals with >=2 charge events -- single-event rivals have
+no primary-event ambiguity and are already covered by check-price-superiority.
+
+Read-only: GETs only, no Actor runs, no file writes.
+"""
+import datetime
+import glob
+import json
+import os
+import re
+import sys
+
+import httpx
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+API = "https://api.apify.com/v2"
+FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
+DISCLOSED = re.compile(
+    r"cheap|undercut|lower|beats?\b|crossover|do not claim|genuine|free pricing model|\$0\b",
+    re.I,
+)
+EPSILON = 1e-9
+
+# One short tuple of nouns per slug, read off that Actor's OWN meta.json event
+# description -- the thing we actually bill per row, not what a rival calls it.
+OUR_UNIT_SYNONYMS = {
+    "apple-podcasts-scraper": ("episode", "review", "podcast"),
+    "app-store-reviews-scraper": ("review",),
+    "ats-jobs-scraper": ("job", "posting"),
+    "clinicaltrials-scraper": ("study", "trial"),
+    "court-records-scraper": ("docket", "opinion", "case"),
+    "eu-ted-tenders-scraper": ("tender", "procurement", "notice"),
+    "fda-recall-scraper": ("recall",),
+    "fec-campaign-finance-scraper": ("candidate", "contribution", "filing", "committee"),
+    "federal-register-scraper": ("document", "rule", "notice"),
+    "google-news-scraper": ("article", "news"),
+    "google-play-reviews-scraper": ("review",),
+    "grants-gov-scraper": ("opportunity", "grant"),
+    "hacker-news-scraper": ("story", "comment"),
+    "nih-reporter-scraper": ("project", "grant", "award"),
+    "remote-jobs-scraper": ("job", "posting"),
+    "sam-gov-opportunities-scraper": ("opportunity", "contract", "record"),
+    "scholarship-scraper": ("scholarship",),
+    "sec-insider-trades-scraper": ("transaction", "trade", "filing", "form"),
+    "shopify-products-scraper": ("product",),
+    "steam-reviews-scraper": ("review", "game"),
+    "substack-scraper": ("post",),
+    "trademark-search-scraper": ("trademark",),
+    "uk-find-a-tender-scraper": ("tender", "procurement", "notice"),
+    "us-federal-awards-scraper": ("award", "grant", "contract"),
+}
+
+
+def token():
+    for line in open(os.path.join(ROOT, "secrets/env")):
+        if line.startswith("APIFY_TOKEN"):
+            return line.split("=", 1)[1].strip().strip('"')
+    sys.exit("check-unit-matched-price: no APIFY_TOKEN in secrets/env")
+
+
+def effective(pricing_infos, now):
+    live = [p for p in (pricing_infos or [])
+            if p.get("startedAt")
+            and datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    return live[-1] if live else None
+
+
+def price_of(event):
+    if "eventPriceUsd" in event:
+        return event["eventPriceUsd"]
+    tiers = event.get("eventTieredPricingUsd") or {}
+    return (tiers.get("FREE") or {}).get("tieredEventPriceUsd")
+
+
+def headline_price(act_data, now):
+    """Same reduction check-price-superiority uses -- good enough for OUR OWN price,
+    since every one of our Actors' billed-per-row event is either the only event or
+    already flagged isPrimaryEvent in our own meta.json."""
+    cur = effective(act_data.get("pricingInfos"), now)
+    if cur is None:
+        return None, "no pricing in effect"
+    model = cur.get("pricingModel")
+    if model == "FREE":
+        return 0.0, "FREE pricing model"
+    if model != "PAY_PER_EVENT":
+        return None, f"pricingModel={model}, not comparable"
+    events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+    if not events:
+        return None, "no charge events"
+    primary = [n for n, e in events.items() if e.get("isPrimaryEvent")]
+    if primary:
+        name = primary[0]
+    else:
+        non_onetime = [n for n, e in events.items() if not e.get("isOneTimeEvent")]
+        pool = non_onetime or list(events.keys())
+        name = min(pool, key=lambda n: (price_of(events[n]) if price_of(events[n]) is not None else float("inf")))
+    p = price_of(events[name])
+    return (p, name) if p is not None else (None, f"{name} has no resolvable price")
+
+
+def unit_matched_price(act_data, now, synonyms):
+    """(price, event_name) for the event whose name/title/description matches one of our
+    unit synonyms, among non-one-time events only -- or (None, reason) if ambiguous."""
+    cur = effective(act_data.get("pricingInfos"), now)
+    if cur is None:
+        return None, "no pricing in effect"
+    model = cur.get("pricingModel")
+    if model == "FREE":
+        return 0.0, "FREE pricing model"
+    if model != "PAY_PER_EVENT":
+        return None, f"pricingModel={model}, not comparable"
+    events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+    if len(events) < 2:
+        return None, "single-event rival, not this tool's scope"
+    candidates = []
+    for name, e in events.items():
+        if e.get("isOneTimeEvent"):
+            continue
+        blob = " ".join([name, e.get("eventTitle", ""), e.get("eventDescription", "")]).lower()
+        if any(s in blob for s in synonyms):
+            p = price_of(e)
+            if p is not None:
+                candidates.append((p, name))
+    if not candidates:
+        return None, f"no event among {len(events)} matches our unit synonyms"
+    p, name = min(candidates)
+    return p, name
+
+
+def live_actor(ident, headers, cache={}):
+    if ident not in cache:
+        u, n = ident.split("/")
+        r = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
+        cache[ident] = r.json().get("data") if r.status_code == 200 else None
+    return cache[ident]
+
+
+def main():
+    headers = {"Authorization": f"Bearer {token()}"}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
+    live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
+
+    checked = multi_event = compared = cheaper_found = flagged = 0
+    for slug in live:
+        synonyms = OUR_UNIT_SYNONYMS.get(slug)
+        path = os.path.join(ROOT, "actors", slug, "README.md")
+        if synonyms is None or not os.path.exists(path):
+            continue
+        checked += 1
+        our = live_actor(f"fetchsmith/{slug}", headers)
+        if our is None:
+            print(f"SKIP {slug}: our own Actor not readable live")
+            continue
+        our_price, our_label = headline_price(our, now)
+        if our_price is None:
+            print(f"SKIP {slug}: our own headline price not resolvable ({our_label})")
+            continue
+
+        text = open(path).read()
+        paragraphs = text.split("\n\n")
+        first_line = {}
+        disclosed_anywhere = {}
+        offset = 1
+        for para in paragraphs:
+            lineno = offset
+            offset += para.count("\n") + 2
+            for ident in sorted(set(FULL_HANDLE.findall(para))):
+                first_line.setdefault(ident, lineno)
+                disclosed_anywhere[ident] = disclosed_anywhere.get(ident, False) or bool(DISCLOSED.search(para))
+
+        for ident, lineno in sorted(first_line.items()):
+            if ident == f"fetchsmith/{slug}":
+                continue
+            rival = live_actor(ident, headers)
+            if rival is None:
+                continue  # gone from Store -- check-competitor-claims already flags this
+            rival_price, rival_label = unit_matched_price(rival, now, synonyms)
+            if rival_price is None:
+                continue  # single-event, not comparable, or ambiguous -- see reason string
+            multi_event += 1
+            compared += 1
+            if rival_price + EPSILON < our_price:
+                cheaper_found += 1
+                if not disclosed_anywhere[ident]:
+                    flagged += 1
+                    print(f"UNDISCLOSED {slug}/README.md:{lineno}  {ident} charges "
+                          f"${rival_price:g}/{rival_label} (unit-matched, live) vs our "
+                          f"${our_price:g}/{our_label} -- cheaper on OUR unit, named, but no "
+                          f"paragraph in this file discloses it")
+
+    print(f"check-unit-matched-price: {checked} Actors in scope, {multi_event} unit-matched "
+          f"multi-event rival comparisons, {cheaper_found} cheaper than us, {flagged} "
+          f"undisclosed anywhere in the README")
+    return 1 if flagged else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
