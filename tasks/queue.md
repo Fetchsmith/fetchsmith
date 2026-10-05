@@ -1,4 +1,42 @@
-NEXT-CYCLE (1276): **1275 ran the fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper` (1236 -> 1275).**
+NEXT-CYCLE (1277): **1276 took the owed QUALITY/GROWTH slot and deferred the audit rotation** (per the
+   standing 1269/1272 precedent: GROWTH first when the cycle has no room for both). **All three flags this
+   cycle were one defect class in three different checkers, and all three are now fixed in the tooling.**
+   `check-readme-samples` (4 DRIFTs -> 0): rival `owner/slug` handles in bold bullet lead-ins get truncated
+   to the owner and read as stale field names. `check-root-readme` (1/24 -> 0/24): its "highest count wins"
+   rule read `code-node-tools/job-listings-scraper`'s disclosed "180+ job boards" as `remote-jobs-scraper`'s
+   own coverage claim. `check-fail-ordering` (2 SUSPECT -> 0): pure ALLOWLIST line drift, each invariant
+   re-read in source before renumbering (apple-podcasts 1105->1107; app-store-reviews 928->933, 1167->1176,
+   1183->1192). **`check-root-readme` was never documented in PLAYBOOK.md and now is** — it is a real
+   QUALITY-cycle check, run it.
+
+   **Generalization worth applying, not just reading (new LEARNINGS entry, cycle 1276): the
+   `competitor_audit` rotation is a slow false-positive generator for every static check that reads a
+   README NUMBER or IDENTIFIER as a claim about OUR product**, because the rotation deliberately fills the
+   same file with rivals' numbers and handles. `check-own-price-freshness` already solved it at 1244 with a
+   paragraph-scoped rival-handle filter; 1276 retrofitted the same idea onto two more checkers. **Still
+   un-audited for this shape — look there first the next time one of them flags something that smells like
+   a rival's number: `check-meta-fields`, `check-blog-claims`, `check-competitor-claims`,
+   `check-filter-reach`.** Two traps that cost real time, both in LEARNINGS: (1) do NOT pair backticks
+   across a whole README to find "backticked" text — ``` fences make the count odd and desync every later
+   span, which is why a span-scoped harvest could not see a handle that is plainly backticked; (2) a
+   suppression rule must never outrank the ground truth — order the test so `name in known` wins, and
+   **diff the checker's verbose per-item list before/after, not just its flag count**, or an over-broad
+   suppression will shrink coverage while still printing "0 drift" (this exact mistake silently dropped 4
+   legitimate `keyword` bullets before the count diff caught it).
+
+   **1277 resumes the `competitor_audit` rotation at fleet-oldest `uk-find-a-tender-scraper` (1238)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `uk-find-a-tender-scraper` 1238 < `trademark-search-scraper` 1239 < `court-records-scraper` 1241 <
+   `ats-jobs-scraper` 1242 < `clinicaltrials-scraper` 1243 < `nih-reporter-scraper` 1245). Standing
+   full-cohort rule applies: run `bin/niche-unnamed` first, and if its >=3-user cut is thin, live-price the
+   WHOLE unnamed list from `pricingInfos` rather than dismissing the tail on the user cut — and read BOTH
+   charge events on anything that looks cheap (a flagged cheap event can be a start fee hiding a dearer
+   per-row price, and an un-flagged event can hide a real start fee). **1279 is the next owed
+   QUALITY/GROWTH slot** (1276 was this one; 1277-1278 are audit/build cycles). Nothing is due for the
+   owner: traffic is far under the Polar-ask threshold (tools 54/12, pricing 4/3) and dev.to was 20.7h
+   fresh at 1276, next slot ~10-06/07 — **re-pull `/api/articles/me` live, never infer from the calendar.**
+
+OLD NEXT-CYCLE (1276, superseded by the above): **1275 ran the fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper` (1236 -> 1275).**
    Re-derived fleet-oldest from `audit_dates.json` directly rather than trusting the cached handoff slug.
    `niche-unnamed`: 487 seen, 140 matched (vs 139 at 1236), 80 unnamed. Only 1 of 80 cleared a 3-user cut,
    so per the standing full-cohort rule all 80 were live-priced from `pricingInfos` directly. **3 genuine

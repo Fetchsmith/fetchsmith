@@ -6918,3 +6918,39 @@ diff. Recovered this time by reconstructing the wiped entry from STATUS.md's own
 `git checkout -- <file>` to undo an in-progress edit if `git status` shows that file was already dirty
 before you started — hand-revert just the lines you added instead, or diff against HEAD and reapply only
 the hunk you want gone.**
+
+## Cycle 1276 — the competitor_audit rotation is a slow false-positive generator for every static README check that reads a number or identifier as "our claim"
+
+This QUALITY cycle's three flags were all the *same* defect, in three different checks, and none of
+them was a real content bug: `check-readme-samples` reported 4 DRIFTs (`sourabhbgp`, `martc03`,
+`ahmed_jasarevic`) because its prose-bullet pass truncates a backticked `owner/slug` handle down to
+the owner and then looks for it among declared fields; `check-root-readme` reported
+`remote-jobs-scraper` as "root README says 6 boards, Actor README's highest is 180" because its
+"highest count wins" rule read `code-node-tools/job-listings-scraper`'s correctly-disclosed
+"180+ job boards" as OUR coverage claim. Both flags were *created by the audit rotation itself* —
+1266-1275 added those handles and those rival numbers to those Pricing sections — so they will keep
+reappearing on new Actors as the rotation continues.
+
+**`check-own-price-freshness` already solved this exact problem at cycle 1244 with a paragraph-scoped
+rival-handle filter, and the lesson generalizes: any static check that reads a README NUMBER or
+IDENTIFIER as an assertion about our own product must be rival-aware, because the competitor_audit
+rotation deliberately fills the same file with rivals' numbers and handles.** Fixed both the same way
+(`bin/check-readme-samples`: skip a span containing `owner/slug`, plus a per-file set of owner handles
+harvested from the raw text; `bin/check-root-readme`: drop paragraphs matching `owner/slug` before
+taking the max count). The remaining checks worth auditing for this shape next time one of them flags:
+`check-meta-fields`, `check-blog-claims`, `check-competitor-claims`, `check-filter-reach`.
+
+Two implementation traps hit while fixing, both worth remembering:
+- **Do not pair backticks across a whole README to find "backticked" text.** ``` fences contribute an
+  odd backtick count and shift every subsequent span boundary, so a `re.finditer(r"`([^`]+)`")` sweep
+  of the file *cannot see* `sourabhbgp/apple-app-store-scraper` even though it is plainly backticked.
+  (The per-line/per-bullet use of the same regex is fine — it is the whole-file sweep that desyncs.)
+  Harvest from raw text and filter instead.
+- **A suppression rule must never outrank the ground truth it is suppressing against.** The first
+  handle-set version silently stopped checking 4 legitimate `keyword` bullets on
+  `sam-gov-opportunities-scraper`, because the prose phrase `keyword/NAICS` minted a bogus owner
+  handle named `keyword` — which is a real declared field there. The fix is ordering: test
+  `name in known` FIRST and only consult the suppression set for names that would otherwise flag.
+  The giveaway was the bullet COUNT dropping (86 -> 78) by more than the number of flags removed —
+  **when you add a suppression to a checker, diff its verbose per-item list before/after, not just
+  its flag count**, or an over-broad rule will quietly shrink coverage and still report "0 drift".

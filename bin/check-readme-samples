@@ -113,18 +113,71 @@ BACKTICK_RE = re.compile(r"`([^`]+)`")
 # A backtick span's leading identifier: "documents[].isAvailable" -> "documents",
 # 'recordType: "both"' -> "recordType", "titleClean" -> "titleClean".
 IDENT_RE = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*")
+# An Apify Actor handle, "owner/slug". Rival handles live in bold bullet
+# lead-ins all over the Pricing sections every competitor_audit rewrites, and
+# IDENT_RE truncates `martc03/gov-contracts-mcp` down to `martc03`, which is
+# not a field and never will be (cycle 1276: 4 such false flags, all added by
+# the 1266-1275 audits). Collect every owner handle the file itself names in
+# `owner/slug` form and treat a bare mention of one as a handle, not a field.
+HANDLE_RE = re.compile(r"\b([A-Za-z0-9_.-]+)/[A-Za-z0-9_.-]+\b")
 
 
-def prose_field_mentions(readme):
-    """Yield (lineno, field_name) for each backtick identifier in a bullet's bold lead-in."""
-    for lineno, line in enumerate(readme.read_text().splitlines(), start=1):
+def owner_handles(text):
+    """Owner handles this README names in full `owner/slug` form, anywhere in the file.
+
+    Harvested from the raw text, not from backtick spans: pairing backticks across a
+    whole README does not work, because ``` fences contribute an odd backtick count
+    and shift every subsequent span boundary, which is why the span-scoped version of
+    this function could not see `sourabhbgp/apple-app-store-scraper` even though it is
+    plainly backticked in the file.
+
+    Raw-text harvesting is loose -- prose slash-pairs and URL paths match too
+    ("keyword/NAICS" -> "keyword", ".../blog/x" -> "blog") -- so: dotted owners
+    (domains) and owners preceded by a slash (inside a longer path) are dropped here,
+    and the caller never lets this set suppress a DECLARED field (`keyword` is a real
+    field on sam-gov-opportunities-scraper). What remains at risk is only a *stale*
+    field mention whose name also happens to appear as "name/..." somewhere in the
+    same file -- a much rarer shape than the rival handles this is built for.
+    """
+    out = set()
+    for m in HANDLE_RE.finditer(text):
+        owner = m.group(1)
+        if "." in owner:
+            continue
+        if m.start() > 0 and text[m.start() - 1] == "/":
+            continue
+        out.add(owner)
+    return out
+
+
+def prose_field_mentions(readme, known=frozenset()):
+    """Yield (lineno, field_name) for each backtick identifier in a bullet's bold lead-in.
+
+    `known` (the declared input+output fields) is passed in only so a declared field
+    is never dropped by the handle rule below -- a real field mention always wins.
+    """
+    text = readme.read_text()
+    handles = owner_handles(text)
+    for lineno, line in enumerate(text.splitlines(), start=1):
         b = BULLET_RE.match(line)
         if not b:
             continue
         for bt in BACKTICK_RE.finditer(b.group(1)):
-            m = IDENT_RE.match(bt.group(1))
-            if m and m.group(0) not in JSON_LITERALS:
-                yield lineno, m.group(0)
+            span = bt.group(1)
+            # "owner/slug" in one span: a handle, never a top-level field name.
+            if "/" in span and HANDLE_RE.match(span):
+                continue
+            # A bare owner handle. Checked against the whole span before IDENT_RE
+            # truncation, because IDENT_RE stops at a hyphen and would otherwise
+            # turn `automation-lab` into the non-handle, non-field token "automation".
+            if span.strip() not in known and span.strip() in handles:
+                continue
+            m = IDENT_RE.match(span)
+            if not m or m.group(0) in JSON_LITERALS:
+                continue
+            if m.group(0) not in known and m.group(0) in handles:
+                continue
+            yield lineno, m.group(0)
 
 
 def main():
@@ -149,7 +202,7 @@ def main():
                 json.loads(input_schema.read_text()).get("properties", {})
             )
         suppressed_names = PROSE_SUPPRESS.get(actor_dir.name, set())
-        for lineno, name in prose_field_mentions(readme):
+        for lineno, name in prose_field_mentions(readme, known):
             checked_bullets += 1
             ok = name in known or name in suppressed_names
             if VERBOSE:

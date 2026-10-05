@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1105): (
+    ("apple-podcasts-scraper", 1107): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, the code records watch ids and `continue`s (line 632) without ever calling "
@@ -49,29 +49,33 @@ ALLOWLIST = {
         "spot-checked the other 3 `seedErrors.push(` call sites (lines 845, 1039, 1074): each "
         "sits in a fetch/search-failure branch where nothing was pushed for that item, "
         "consistent with the same invariant."
+        "Re-verified cycle 1276 (still holds, line 1105 -> 1107, line shift only): the gate is byte-identical `if (watchMode && seedErrors.length) { await Actor.fail(...) } else if (watchMode) { await saveWatchRecord(...) }`, and all 3 `seedErrors.push(` sites (now 847, 1041, 1076) are still each gated `if (seeding)`, with line 634 still `if (seeding) { watchSeen.add(watchId); continue; }` so a seed run never reaches the charge at line 261."
     ),
-    ("app-store-reviews-scraper", 928): (
+    ("app-store-reviews-scraper", 933): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
         "that ever calls Actor.charge( even starts -- nothing can have been charged yet. "
         "Re-verified cycle 845 (still holds): unchanged `if (!apps.length) await Actor.fail(...)` "
         "guard, no charge-capable code above it. Line shifted from 815 by cycle 845's watchEvents "
         "(scoreChanged) change, which added code before this point."
         "Re-verified cycle 996 (still holds, same guard condition read live in source); line shifted +21 by cycle 996's bare-date calendar-day window fix, which added lines in the input-parsing block only (nothing charge-capable)."
+        "Re-verified cycle 1276 (still holds, line 928 -> 933, line shift only): same `if (!apps.length) await Actor.fail(...)` guard, and re-traced the helper-indirection claim rather than assuming it -- `Actor.charge(` is at line 361 inside `chargeAndPush`, reached only via `pushResult` (defined 393, called only at 849 inside `scrapeAppCountrySort`), and the first real call into that chain is `scrapeAppCountry(...)` at line 1046, i.e. 113 lines AFTER this fail. Nothing charge-capable executes before it."
     ),
-    ("app-store-reviews-scraper", 1167): (
+    ("app-store-reviews-scraper", 1176): (
         "guarded by pairsAttempted > 0 and storefrontErrorPairs.length === pairsAttempted "
         "-- every pair in this run errored, so nothing was ever pushed/charged to lose. "
         "Re-verified cycle 845 (still holds, same guard condition read live in source). "
         "Line shifted from 1054 by cycle 845's watchEvents (scoreChanged) change."
         "Re-verified cycle 996 (still holds, same guard condition read live in source); line shifted +21 by cycle 996's bare-date calendar-day window fix, which added lines in the input-parsing block only (nothing charge-capable)."
+        "Re-verified cycle 1276 (still holds, line 1167 -> 1176, line shift only): guard read live in source, unchanged `if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted)`."
     ),
-    ("app-store-reviews-scraper", 1183): (
+    ("app-store-reviews-scraper", 1192): (
         "guarded by pairsAttempted > 0 and feedServed === 0 -- nothing came out of Apple "
         "for any pair in this run, so nothing was ever pushed/charged to lose; comment in-code "
         "confirms this fires before the watch record write on purpose. Re-verified cycle 845 "
         "(still holds, same guard condition read live in source). Line shifted from 1070 by "
         "cycle 845's watchEvents (scoreChanged) change."
         "Re-verified cycle 996 (still holds, same guard condition read live in source); line shifted +21 by cycle 996's bare-date calendar-day window fix, which added lines in the input-parsing block only (nothing charge-capable)."
+        "Re-verified cycle 1276 (still holds, line 1183 -> 1192, line shift only): guard is now `if (pairsAttempted > 0 && feedServed === 0 && !timeBudgetExceeded && await reviewFeedIsDown())` -- the `!timeBudgetExceeded` conjunct added since the last re-verification only NARROWS when the fail fires; `feedServed === 0` still proves nothing was pushed or charged."
     ),
 }
 

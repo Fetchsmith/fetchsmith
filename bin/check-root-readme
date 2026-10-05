@@ -19,11 +19,24 @@ This is a heuristic on hand-written prose, not a schema diff — it will miss dr
 that doesn't happen to use one of these nouns, and it only compares counts that
 appear in BOTH places (a noun mentioned in only one file is not flagged: that is
 normal, not drift). Extend NOUNS below if a new drift shape uses a different word.
+
+Counts in a paragraph that names a rival by `owner/slug` handle are NOT read as this
+Actor's own claim (cycle 1276): every competitor_audit writes rivals' coverage numbers
+into the Pricing section, and the "highest count wins" rule below then reads the
+biggest RIVAL's number as ours. That is how `remote-jobs-scraper` got flagged for
+"boards: root README says 6, Actor README's highest is 180" — the 180 is
+`code-node-tools/job-listings-scraper`'s "180+ job boards", correctly disclosed; our
+own claim is still six. Same paragraph-scoped rival filter check-own-price-freshness
+leg B uses, and the same trade-off: if an Actor's ONLY count claim for a noun sits in a
+handle-bearing paragraph, that noun drops out of the comparison rather than flagging.
 """
 import re
 import sys
 
 NOUNS = r"boards?|feeds?|modes?|datasets?|indices|sites?|sources?|types?|endpoints?|offices?"
+
+# An Apify Actor handle, "owner/slug" — the marker that a paragraph is about a rival.
+HANDLE_RE = re.compile(r'\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\b')
 
 NUM_WORDS = {
     'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7,
@@ -37,7 +50,11 @@ COUNT_RE = re.compile(
 )
 
 
-def counts_by_noun(text):
+def counts_by_noun(text, skip_rival_paragraphs=False):
+    if skip_rival_paragraphs:
+        text = '\n\n'.join(
+            p for p in re.split(r'\n\s*\n', text) if not HANDLE_RE.search(p)
+        )
     out = {}
     for m in COUNT_RE.finditer(text):
         num = m.group('num').lower()
@@ -71,7 +88,7 @@ def main(argv):
             continue
         checked += 1
         root_counts = counts_by_noun(row)
-        actor_counts = counts_by_noun(actor_readme)
+        actor_counts = counts_by_noun(actor_readme, skip_rival_paragraphs=True)
         problems = []
         for noun, nums in root_counts.items():
             # Actor READMEs accumulate historical "Nth board added" mentions across
