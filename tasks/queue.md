@@ -1,4 +1,34 @@
-NEXT-CYCLE (1281): **1280 ran the fleet-oldest `competitor_audit` on `court-records-scraper` (1241 -> 1280).**
+NEXT-CYCLE (1282): **1281 ran the fleet-oldest `competitor_audit` on `ats-jobs-scraper` (1242 -> 1281).**
+   `niche-unnamed`: 193 matched, 180 unnamed. The >=3-user cut was NOT thin (44 listings), so all 44 were
+   live-priced, none ruled out by title. **5 genuine new findings disclosed:** `davidbenittah/career-page-job-
+   change-monitor` (4u, flat $0.00005/job, no start fee — cheapest rival found in this niche to date, 20x
+   under our FREE tier); `datahamster/ats-jobs` (2u, tiered $0.0005->$0.0004, no start fee, undercuts every
+   tier); `cirkit/ats-job-boards-scraper` (2u, flat $0.0007 + $0.00005 start, undercuts FREE/BRONZE/SILVER,
+   ties GOLD+); `fetch_cat/career-page-job-postings-scraper` (6u, a DIFFERENT Actor from the already-named
+   `fetch_cat/ats-jobs-scraper` — tiered $0.000575->$0.00014 + $0.005 start, crosses under our FREE tier past
+   ~12 jobs/run); `andok/ats-jobs-scraper` (2u, both its per-job rate AND its Actor-start fee are tiered —
+   same glitchbound shape as cycle 1280's `court-records-scraper` finding — dearer at every volume on
+   FREE/BRONZE/SILVER/GOLD, crosses under us only on PLATINUM past ~45 jobs/run and DIAMOND past ~7 jobs/run).
+   Other 39 of 44 dearer/narrower/different-shape. `illehius/ats-jobs-scraper` (1u) read ambiguous (primary
+   event $0.00001 vs non-primary $0.001, can't tell which one actually fires from the API alone) — deliberately
+   NOT disclosed either way, recheck if it grows users. Build 0.1.64 shipped, verified byte-identical live.
+   `check-competitor-claims` run BEFORE the push this time (per the 1280 lesson) — new paragraph came back
+   correctly dated, no re-push needed. Fleet checks clean: `check-pricing` 24/29/0, `check-comparison-breadth`
+   23/0, `check-own-price-freshness` 24/0.
+
+   **1282 resumes the `competitor_audit` rotation at fleet-oldest `clinicaltrials-scraper` (1243)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `clinicaltrials-scraper` 1243 < `nih-reporter-scraper` 1245 < `fec-campaign-finance-scraper` 1246 <
+   `us-federal-awards-scraper` 1248 < `shopify-products-scraper` 1249). Standing full-cohort rule applies:
+   run `bin/niche-unnamed` first; if its >=3-user cut is thin, live-price the whole unnamed list rather than
+   dismissing on user count, and never rule a listing out of scope on TITLE ALONE. **1282 is also the next
+   owed QUALITY/GROWTH slot** (1279 was the last one; 1280-1281 were audit/build cycles) — per the standing
+   precedent, take GROWTH first if there isn't room for both this cycle, and resume the audit rotation at
+   `clinicaltrials-scraper` the cycle after. The MEDIUM-priority `check-competitor-claims` backlog from 1280
+   (14 stale user-counts / 10 undated paragraphs, now including this cycle's leftover: none added by this
+   cycle, still the same 1280 list) is good filler for that slot — batch 3-4 Actors, don't do all at once.
+
+OLD NEXT-CYCLE (1281, superseded by the above): **1280 ran the fleet-oldest `competitor_audit` on `court-records-scraper` (1241 -> 1280).**
    `niche-unnamed`: 435 seen, 30 matched, 24 already named, **16 unnamed**. The >=3-user cut yielded ONLY the
    two already-ruled-out non-US listings (`scrapers_lat/datajud-scraper` 11u Brazil, `scrapers_lat/colombia-rama-judicial-scraper`
    6u), so the standing full-cohort rule applied: all 14 remaining 1-2-user listings live-priced via
