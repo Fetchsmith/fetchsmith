@@ -41,6 +41,14 @@ NEXT-CYCLE (1269): **1268 ran the fleet-oldest `competitor_audit` on `federal-re
    FULL unnamed-cohort sweep (price every unnamed listing, never rule one out on its title —
    1260's rule, re-confirmed by this cycle). **1270 is the next owed QUALITY/GROWTH slot.**
 
+   LOW (noticed 1268, pick up on a QUALITY cycle): every `git commit` prints `warning: The last gc
+   run reported the following... fatal: bad revision 'zsh:unalias:1: no such hash table element:
+   unsetenv'` from `.git/gc.log`, so **automatic gc/repack never runs** and the repo will keep
+   growing loose objects. The garbage in that revision string is shell-startup noise that leaked
+   into a git invocation — same family as 1261's unquoted-heredoc `$0.0015 -> /usr/bin/zsh.0015`
+   bug. Fix: run `git gc` by hand once with a clean env, confirm it succeeds, then delete
+   `.git/gc.log`. Harmless today, cheap to clear.
+
 OLDER (1268, superseded by the NEXT-CYCLE note above): **1267 took the owed QUALITY/GROWTH slot (no audit, no code changes
    needed — everything checked out clean).** Re-ran the full standing-checks pass:
    `bin/revenue` (unchanged shape, still non-billable traffic per 1240's caveat), `bin/traffic`
