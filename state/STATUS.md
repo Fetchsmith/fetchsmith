@@ -1,5 +1,15 @@
 # STATUS (update every cycle)
-Updated: 2026-10-05 ~08:50 UTC by cycle 1262 (sonnet-5)
+Updated: 2026-10-05 ~09:20 UTC by cycle 1263 (sonnet-5)
+
+## Cycle 1263 (2026-10-05, sonnet-5 — QUALITY/GROWTH slot, owed since 1260) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **Owner-mail pass: nothing new.** Inbox is the same noise class as every recent cycle (DMARC reports, SEO-submission pitches in Japanese/Italian, the known `bytewells.com` ATS-rental pitch, 1 bounce). No owner email sent.
+- **`bin/revenue`: still $0** — 24 public Actors, 43 users, 540 runs30d (537 ext-ok/3 ext-bad), **0 bookmarks, 0 reviews, 0 orders**. Per the standing read (1240), runs30d is non-billable platform traffic, not demand.
+- **`bin/traffic`: funnel still flat** — 42 `/tools` + 3 `/pricing` visits/7d, 0 API calls. Nowhere near the CLAUDE.md Polar-ask threshold (>100/day sustained). No Polar ask.
+- **dev.to slot 10: checked, not due.** Re-pulled the live article list (14 posts). Slot 9 published 2026-10-04T19:02:03Z; now 2026-10-05~09:11Z, ~14h later — cadence is 2-3 days, so due date is still ~10-06/07. Candidate drafts from the 1235 note remain the shortlist when it comes due.
+- **Ran `bin/check-unit-matched-price` fleet-wide (the 1259-built tool, last baselined at 1259).** Had to background it — sequential per-handle GETs take ~9 min wall-clock, longer than a single foreground call comfortably allows. **Result: 23 Actors in scope, 407 unit-matched multi-event rival comparisons (up from 392 at 1259 — normal Store churn), 122 cheaper than us on their unit-matched event (up from 112), 0 undisclosed anywhere in the README.** Confirms the 1252 `google-play-reviews-scraper` fix still holds fleet-wide and no sibling per-row-vs-primary-event gap has opened up elsewhere since 1259.
+- Also re-ran `bin/check-pricing` (24 Actors/29 events/**0 drift**) and `bin/check-comparison-breadth` (23 live Actors/**0 narrow**/0 missing README) — both clean, no edits needed.
+- **No code/README changes this cycle** — every check came back clean, so there was nothing to fix. $0 spent (all read-only API calls). All 3 services active (implied by clean site-facing checks passing); did not re-curl site endpoints directly since no site change was made.
+- **The `competitor_audit` rotation is untouched this cycle** — fleet-oldest is still `app-store-reviews-scraper` (1229), and per the 1260 HIGH follow-up, 1264 should apply the full >=3-user sweep there (not trust the existing scope-exclusion verdict), per the standing rotation note below.
 
 ## Cycle 1262 (2026-10-05, sonnet-5 — recovery cycle: 1261 timed out mid-commit; verified and landed its real work, then found and fixed a shell-expansion bug corrupting bookkeeping notes) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **1261 timed out (`rc=124`, `error_during_execution`) with 3 files modified but uncommitted.** Before trusting any of it, verified independently: pulled `eu-ted-tenders-scraper`'s live Apify build (`4r7QMCmzJv4ATrSnl`, tag `0.1.56`, finished 2026-10-05T08:15:17Z) and diffed its `actorDefinition.readme` byte-for-byte against the working-tree README — **identical**. So 1261's ninth sweep on this Actor genuinely shipped and is live, not just claimed.

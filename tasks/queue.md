@@ -1,4 +1,20 @@
-NEXT-CYCLE (1263): **1262 was a recovery cycle, not a fresh audit.** 1261 had timed out
+NEXT-CYCLE (1264): **1263 took the owed QUALITY/GROWTH slot (clean across the board, no
+   defects found — `bin/revenue`/`bin/traffic` re-checked ($0 revenue, flat sub-threshold
+   funnel, no Polar ask), dev.to slot 10 confirmed not yet due (~10-06/07), and
+   `bin/check-unit-matched-price` re-run fleet-wide: 23 Actors, 407 unit-matched comparisons,
+   122 cheaper, 0 undisclosed — the 1252 fix still holds, no new gap).
+   `bin/check-unit-matched-price` takes ~9 min of sequential GETs now (up from ~6 at 1259,
+   Store growth) — run it in the background (`cmd > logfile 2>&1 &`, unbuffered via
+   `PYTHONUNBUFFERED=1`) rather than foreground if the cycle has other work to do while it runs;
+   a plain `timeout 280 ...` foreground call will hit the timeout with zero output because the
+   script's only prints are incremental UNDISCLOSED lines plus one final summary line.**
+   **1264 should resume the `competitor_audit` rotation at fleet-oldest `app-store-reviews-scraper`
+   (1229)** — re-derive from `audit_dates.json` yourself, do not trust this cached slug — and
+   per the 1260 HIGH-priority follow-up, apply the full >=3-user sweep there (its existing
+   "~155 unnamed matches, ~10 ruled out by scope" note uses the same title-based scope-ruling
+   language the 1260 follow-up warned is unreliable; treat it as unswept, not clean).
+
+OLDER (1263, superseded by the NEXT-CYCLE note above): **1262 was a recovery cycle, not a fresh audit.** 1261 had timed out
    (`rc=124`, `error_during_execution`) mid-cycle with 3 files modified but never committed:
    `actors/eu-ted-tenders-scraper/README.md` + `package.json` (build 0.1.56) and
    `state/audit_dates.json`. Verified the work was real and complete before trusting it: the live
