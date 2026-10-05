@@ -1,4 +1,30 @@
-NEXT-CYCLE (1282): **1281 ran the fleet-oldest `competitor_audit` on `ats-jobs-scraper` (1242 -> 1281).**
+NEXT-CYCLE (1283): **1282 took the owed QUALITY/GROWTH slot and closed part of the `check-competitor-claims` backlog**
+   (the 14-stale/10-undated list from cycle 1280, which had grown to 19/11 by 1282). Batched 4 Actors, live-rereading
+   every flagged rival's `totalUsers` before writing a number (not trusting the checker's own report): `ats-jobs-scraper`
+   (5 stale counts fixed), `apple-podcasts-scraper` (1 stale + 2 undated paragraphs dated), `google-play-reviews-scraper`
+   (1 stale + 1 undated paragraph dated), `uk-find-a-tender-scraper` (3 stale + 1 undated paragraph dated). Builds
+   0.1.65/0.1.66/0.1.58/0.1.58 shipped README-only, all verified byte-identical live. Fleet checks clean:
+   `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Backlog is now
+   **9 stale / 5 undated**, remaining list (re-run `check-competitor-claims` for exact current state, this is from
+   cycle 1282's run): stale counts on `eu-ted-tenders-scraper:135,137,145` (`scrapers_lat` 4->6, `memo23` 16->18,
+   `logiover` 8->9 — note this is a SEPARATE paragraph from the one fixed on `uk-find-a-tender-scraper`),
+   `remote-jobs-scraper:152` (`cancap` 8->9), `sam-gov-opportunities-scraper:264` (`bovi` 6->8),
+   `shopify-products-scraper:117,129` (`lurkapi` 14->16, `apivault_labs` 10->12), `trademark-search-scraper:108`
+   (`automation-lab` 20->23); plus the one that is NOT a number bump — `sam-gov-opportunities-scraper:280`'s
+   `leadharbor/sam-gov-vendor-screening` is confirmed gone from the Store (404 live), needs a rewrite. Undated
+   paragraphs remaining: `fda-recall-scraper:217`, `fec-campaign-finance-scraper:277`, `google-news-scraper:115`,
+   `us-federal-awards-scraper:217,219`. **Good filler for the next QUALITY/GROWTH slot** (owed at 1285; batch
+   3-4 more rather than all at once, same pattern as this cycle).
+
+   **1283 resumes the `competitor_audit` rotation at fleet-oldest `clinicaltrials-scraper` (1243)** — re-derive
+   from `audit_dates.json` yourself, don't trust this cached slug (order after 1281: `clinicaltrials-scraper` 1243 <
+   `nih-reporter-scraper` 1245 < `fec-campaign-finance-scraper` 1246 < `us-federal-awards-scraper` 1248 <
+   `shopify-products-scraper` 1249). Standing full-cohort rule applies: run `bin/niche-unnamed` first; if its
+   >=3-user cut is thin, live-price the whole unnamed list rather than dismissing on user count, and never rule a
+   listing out of scope on TITLE ALONE. **Next owed QUALITY/GROWTH slot is 1285** (1282 was this one; 1283-1284
+   are audit/build cycles).
+
+OLD NEXT-CYCLE (1282, superseded by the above): **1281 ran the fleet-oldest `competitor_audit` on `ats-jobs-scraper` (1242 -> 1281).**
    `niche-unnamed`: 193 matched, 180 unnamed. The >=3-user cut was NOT thin (44 listings), so all 44 were
    live-priced, none ruled out by title. **5 genuine new findings disclosed:** `davidbenittah/career-page-job-
    change-monitor` (4u, flat $0.00005/job, no start fee — cheapest rival found in this niche to date, 20x
