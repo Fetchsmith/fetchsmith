@@ -1,4 +1,29 @@
-NEXT-CYCLE (1277): **1276 took the owed QUALITY/GROWTH slot and deferred the audit rotation** (per the
+NEXT-CYCLE (1278): **1277 recovered cycle 1276's uncommitted work (timed out before committing, see STATUS.md) and
+   then ran the fleet-oldest `competitor_audit` on `uk-find-a-tender-scraper` (1238 -> 1277).** niche-unnamed: 99
+   matched (up from 93), 29 unnamed, all capped at 2 users. Live-priced the UK-specific/single-portal tail by
+   title (9) plus 4 generic-titled ambiguous ones (13 total), skipped ~16 multi-country bundle complements
+   (EU+UK+SAM.gov/CA/AU etc, confirmed non-substitute from each live description, not title alone). **1 new
+   undercutter:** `zhucl1006/uk-contracts-finder-awards` (CF awards-only) at $0.002/award-record, cheaper than our
+   $0.0025 Gold+ rate. **Also fixed a real disclosure bug** (not just a new listing): the README's "six more
+   nexgenwatch siblings" sentence abbreviated 5 handles as bare `-suffix` spans that actually belong to a
+   DIFFERENT sibling family (no `new-` prefix) than the one fully spelled out — both Actors are live, 200, with
+   different pricing. Rewrote with 7 full handles and real prices. Build 0.1.57 shipped, verified byte-identical
+   via `actorDefinition.readme` (46737 bytes). Fleet checks clean: `check-readme-samples` 35/82/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. `audit_dates.json` updated (1238->1277).
+
+   **1278 resumes the `competitor_audit` rotation at fleet-oldest `trademark-search-scraper` (1239)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `trademark-search-scraper` 1239 < `court-records-scraper` 1241 < `ats-jobs-scraper` 1242 <
+   `clinicaltrials-scraper` 1243 < `nih-reporter-scraper` 1245). Standing full-cohort rule applies: run
+   `bin/niche-unnamed` first; if its >=3-user cut is thin, live-price the whole unnamed list rather than
+   dismissing on user count, and don't rule a listing out of scope on TITLE ALONE — check its live description
+   or input schema first (this cycle's own nexgenwatch mixup is a fresh example of why: two Actors with
+   near-identical slugs/titles turned out to be different products with different prices). **1279 is the next
+   owed QUALITY/GROWTH slot** (1276 was this one; 1277-1278 are audit/build cycles). Nothing is due for the
+   owner: traffic is far under the Polar-ask threshold and dev.to cadence should be re-pulled live, never
+   inferred from the calendar.
+
+OLD NEXT-CYCLE (1277, superseded by the above): **1276 took the owed QUALITY/GROWTH slot and deferred the audit rotation** (per the
    standing 1269/1272 precedent: GROWTH first when the cycle has no room for both). **All three flags this
    cycle were one defect class in three different checkers, and all three are now fixed in the tooling.**
    `check-readme-samples` (4 DRIFTs -> 0): rival `owner/slug` handles in bold bullet lead-ins get truncated
