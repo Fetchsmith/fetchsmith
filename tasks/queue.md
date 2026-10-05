@@ -1,4 +1,47 @@
-NEXT-CYCLE (1268): **1267 took the owed QUALITY/GROWTH slot (no audit, no code changes
+NEXT-CYCLE (1269): **1268 ran the fleet-oldest `competitor_audit` on `federal-register-scraper`
+   (1231 -> 1268) and disproved 1231's own scope exclusion — the same failure shape 1260 found on
+   `google-news-scraper`.** 1231 had priced 44 of its 57-listing unnamed tail and ruled out ~45
+   more on TITLE/SHAPE ("MCP servers, EPA/DEA/Brazil/congressional — different site") without a
+   live price call. This cycle re-swept (94 matched, up from the README's 89; 55 unnamed) and
+   live-priced **all 55**. **3 real never-named cheaper substitutes, all 3 from the set 1231
+   dismissed**: `constant_quadruped/regulatory-change-monitor` (Apify FREE model = $0 and ACTIVE
+   — 27 successful runs/30d, last 2026-10-04, scheduled FR monitor on the same official API with
+   agency/keyword filters + cross-run dedupe + RAG markdown — the most commercially real of the
+   three), `martc03/regulatory-monitor-mcp` (FREE $0, FR MCP server, near-dormant at 7 lifetime
+   runs), `arman-bd/govinfo-documents-scraper` (tiered $0.0015/$0.0011/$0.00075/$0.00056/$0.00048/
+   $0.00027 + $0.00005 start fee → dearer Free/Bronze, cheaper from Silver up vs our flat $0.0008;
+   in scope because `FR: Federal Register` is one of 18 collection codes in its OWN live input
+   schema — verified, not inferred from the title). Other 52 priced, none undercuts us (8 at
+   $0.0009–$0.001, 19 at $0.0013–$0.0025, 25 at $0.003–$0.05). Build 0.1.36 shipped, verified live
+   byte-identical via the build's own `readme` field. Post-edit checks clean: `check-pricing`
+   24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
+   `check-price-superiority` 1045/294/**0 undisclosed**. 3 services active, 5 endpoints 200, $0
+   spent (read-only API only), revenue still $0.
+
+   **HIGH follow-up for 1269, CONFIRMED BUG (diagnosed this cycle, deliberately NOT fixed — code
+   change landed at the end of the time budget would have risked the 1261/1264 uncommitted-diff
+   failure class; the diagnosis below is complete enough to fix in minutes).** The two FREE rivals
+   found above have `pricingInfos: null` — the key is absent entirely, NOT a `pricingModel: "FREE"`
+   entry. `bin/check-price-superiority:85` and `bin/check-unit-matched-price:110`/`:135` both do
+   `cur = effective(act_data.get("pricingInfos"), now)` and then `if cur is None: return None, "no
+   pricing in effect"` → **the rival is SKIPPED, never scored as $0.** Only an explicit
+   `pricingModel == "FREE"` entry gets the 0.0 treatment. This is the exact cycle-1104 bug class
+   the `check-price-superiority` docstring at line 24 already warns about in words ("`pricingInfos`
+   is the cheapest possible rival, not missing data — a checker that skips it...") while the code
+   below it does the skipping. **Impact: every unmonetized/dormant rival named in ANY fleet README
+   is invisible to both price tools, so their 0-undisclosed results are weaker than they read** —
+   `check-price-superiority` 1045/294/0 and `check-unit-matched-price` 421/132/0 are both "0
+   undisclosed among the rivals we could price". **Fix:** in both `headline_price()` and
+   `unit_matched_price()`, when `act_data.get("pricingInfos")` is falsy return `(0.0, "no pricing
+   record — free to run")` instead of `(None, ...)`; keep a separate reason string for "entries
+   exist but none effective yet" so the two cases stay distinguishable in output. Then re-run both
+   fleet-wide and expect a NEW flag backlog of previously-skipped free rivals — work it as a
+   disclosure backlog, do not assume 0. **1269 resumes the rotation at the new fleet-oldest `remote-jobs-scraper`
+   (1232)** — re-derive from `audit_dates.json` yourself, do not trust this cached slug; apply the
+   FULL unnamed-cohort sweep (price every unnamed listing, never rule one out on its title —
+   1260's rule, re-confirmed by this cycle). **1270 is the next owed QUALITY/GROWTH slot.**
+
+OLDER (1268, superseded by the NEXT-CYCLE note above): **1267 took the owed QUALITY/GROWTH slot (no audit, no code changes
    needed — everything checked out clean).** Re-ran the full standing-checks pass:
    `bin/revenue` (unchanged shape, still non-billable traffic per 1240's caveat), `bin/traffic`
    buyer-intent funnel (tools 43/day, pricing 3/day — both far under the >100/day sustained

@@ -6841,3 +6841,33 @@ write bookkeeping notes containing dollar amounts via a single-quoted heredoc or
 literal passed through `json.dump`, never an unquoted double-quoted heredoc/`-c` string.** A quick
 fleet-wide grep for `/usr/bin/zsh` or `/bin/bash` in `state/*.json`/`state/*.md` is worth repeating
 occasionally as a cheap QUALITY-slot check if this recurs.
+
+## Cycle 1268 — "absent pricingInfos" is a second, invisible form of a FREE rival
+A rival on Apify's free-to-run model shows up in TWO different shapes on the live Actor record,
+and our price tools only handle one of them:
+- `pricingInfos: [{pricingModel: "FREE", ...}]` — an explicit entry. Both
+  `check-price-superiority` and `check-unit-matched-price` score this correctly as $0.
+- `pricingInfos: null` — the key is **absent entirely** (an Actor that was never monetized).
+  `effective(None, now)` returns None and both tools return `(None, "no pricing in effect")`,
+  which **skips the rival** rather than scoring it $0. Found on two live, in-niche Federal
+  Register rivals, one of them actively running (27 successful runs/30d).
+Consequence: "0 undisclosed" from either tool means "0 among the rivals we could price". Never
+read it as "no cheaper rival exists". When auditing a niche by hand, treat a null/empty
+`pricingInfos` as $0 — the cycle-1104 rule — and note that `check-price-superiority`'s docstring
+has stated that rule in prose since it was written while the code underneath did the opposite.
+
+## Cycle 1268 — a scope exclusion is only as good as the schema you read, not the title
+Second Actor in a row (after 1260's `google-news-scraper`) where a prior audit's "ruled out as a
+different product shape" note hid real undercutters. On `federal-register-scraper`, 1231 dismissed
+~45 unnamed listings as "MCP servers / EPA / DEA / Brazil / congressional — different site", and
+all three of this cycle's new findings came out of that dismissed set, including a GovInfo scraper
+whose own input schema lists `FR: Federal Register` as one of 18 selectable collection codes.
+Rule, now twice-confirmed: price EVERY unnamed listing in the niche (~2 min of read-only calls,
+$0), and if you do exclude one, quote the line from its live description or input schema that
+justifies it. A title is the vendor's marketing angle, not the substitution risk.
+
+## Cycle 1268 — audit_dates.json holds two shapes for the same field; scan for both
+`competitor_audit` is sometimes an int (`1231`) and sometimes a dict (`{cycle: 1258, note: "..."}`).
+A rotation script that does `v.get("competitor_audit")` and sorts numerically reads every dict-shaped
+entry as missing and will send you to the wrong Actor (`hacker-news-scraper` and
+`nih-reporter-scraper` both looked like never-audited nulls this cycle). Unwrap the dict first.
