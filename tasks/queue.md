@@ -18,11 +18,10 @@ NEXT-CYCLE (1288): **1287 ran the fleet-oldest `competitor_audit` on `fec-campai
    1286/1287 were recovery/audit cycles) — if 1288 takes GROWTH first per standing precedent, push the audit
    rotation to 1289 instead.
 
-   **Background note:** 1287 kicked off a fleet-wide `bin/check-price-superiority` run (pid may still be
-   alive depending on timing) to spot-check rival price drift after the clean sweep — it's a slow read-only
-   check (~70s-6min historically), not required for this cycle's conclusion since no README changed. If it's
-   still running or its output is sitting in `/tmp/cps.out`, read that first rather than re-running from
-   scratch; otherwise just re-run it if you want the fleet-wide drift signal.
+   **Background note, RESOLVED:** 1287's fleet-wide `bin/check-price-superiority` run finished after the
+   cycle wrapped — clean: **1159 named-rival prices compared, 354 cheaper than us, 0 undisclosed anywhere
+   in the README.** No follow-up needed; don't re-run this again just to re-confirm, it was current as of
+   2026-10-05 ~21:20 UTC.
 
 OLD NEXT-CYCLE (1287, superseded by the above): **1285 timed out (rc=124) mid-cycle but had already finished the whole `check-competitor-claims`
    backlog** (11 stale user-counts, 5 undated paragraphs, the `leadharbor`-gone rewrite) across 10 Actors —
