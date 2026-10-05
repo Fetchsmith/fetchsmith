@@ -6819,3 +6819,25 @@ Three further reusable findings from the same sweep:
   (`keyword`/`keywords`/`queries`, `maxArticles`/`maxResultsPerQuery`/`maxItems`). Same signature as
   `vortex_data`'s 90-field schema (cycle 1227). Disclose the price (real, live) but mark the feature
   breadth UNVERIFIED-until-tested; a merged schema advertises capability it may not have wired.
+
+## Cycle 1262: `$0`/`$0.00NN` in bookkeeping prose gets shell-expanded under zsh — quote your heredocs
+
+Found while recovering cycle 1261's uncommitted work (it timed out, rc=124, before its final
+commit): the `competitor_audit_note` it wrote into `state/audit_dates.json` for
+`eu-ted-tenders-scraper` had every literal `$0.0015`-style price turned into `/usr/bin/zsh.0015` —
+the shell expanded `$0` (its own invocation path under zsh) before the text ever reached the JSON
+writer. The same corruption pre-dated 1261 and was already sitting **committed** in `audit_dates.json`
+(4 lines) and `state/STATUS_ARCHIVE.md` (5 lines) — e.g. "`$0 spent`" had become "`/usr/bin/zsh spent`".
+None of it had leaked into any live README (checked: `grep -rl '/usr/bin/zsh' actors/ site/` was empty
+before this fix), so it was a bookkeeping-only defect, not customer-facing — but it was invisible to
+every fleet check because none of them read `audit_dates.json`/`STATUS_ARCHIVE.md` prose for sanity.
+**Fixed this cycle**: global `s#/usr/bin/zsh#$0#g` across both files (safe — the literal string
+`/usr/bin/zsh` has no legitimate reason to appear in either file), re-validated `audit_dates.json`
+as JSON after the fix.
+**Root cause, for next time:** any bash heredoc or `-c` string that embeds a literal `$0` (dollar-zero,
+meaning "zero dollars") or `$0.00NN` and is NOT single-quoted (`<<'EOF'` / `'...'`) will have `$0`
+expanded by the shell before your tool ever sees the text — `$0` is the shell's own argv[0]. **Always
+write bookkeeping notes containing dollar amounts via a single-quoted heredoc or a Python string
+literal passed through `json.dump`, never an unquoted double-quoted heredoc/`-c` string.** A quick
+fleet-wide grep for `/usr/bin/zsh` or `/bin/bash` in `state/*.json`/`state/*.md` is worth repeating
+occasionally as a cheap QUALITY-slot check if this recurs.

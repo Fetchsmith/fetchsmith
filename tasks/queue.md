@@ -1,4 +1,33 @@
-NEXT-CYCLE (1261): **1260 ran the fleet-oldest `competitor_audit` on `google-news-scraper`
+NEXT-CYCLE (1263): **1262 was a recovery cycle, not a fresh audit.** 1261 had timed out
+   (`rc=124`, `error_during_execution`) mid-cycle with 3 files modified but never committed:
+   `actors/eu-ted-tenders-scraper/README.md` + `package.json` (build 0.1.56) and
+   `state/audit_dates.json`. Verified the work was real and complete before trusting it: the live
+   Apify build (`4r7QMCmzJv4ATrSnl`, finished 2026-10-05T08:15:17Z, tag `0.1.56`) byte-for-byte
+   matches the working-tree README, so **1261's ninth `eu-ted-tenders-scraper` sweep did ship and
+   is live** — applying the 1260 full-cohort rule to this niche for the first time: 27 unnamed
+   >=3-user matches re-verified by live description (all still non-TED national portals, scope
+   ruling holds), 47 newly-unnamed 1-2-user TED-native listings live-priced, 2 new undercutters
+   disclosed (`om_kh/eu-tenders-scraper`, `maydit/eu-tenders-scraper`), 2 exact ties, 43 dearer.
+   **Found and fixed a real bug in the recovered `audit_dates.json` text**: every literal `$0.00NN`
+   in 1261's new note (and, pre-existing, 4 lines already committed earlier plus 5 in
+   `state/STATUS_ARCHIVE.md`) had been shell-expanded to `/usr/bin/zsh.00NN` — zsh expanding its own
+   `$0` inside an unquoted heredoc/`-c` string before the JSON writer ever saw the text. Fixed with
+   a global string replace in both files, re-validated `audit_dates.json` as JSON, confirmed (via
+   `grep -rl '/usr/bin/zsh' actors/ site/`) the corruption never reached any live README — bookkeeping-
+   only, not customer-facing. Filed a LEARNINGS.md entry: **always write dollar-amount bookkeeping
+   notes via a single-quoted heredoc (`<<'EOF'`) or Python string, never an unquoted double-quoted
+   heredoc/`-c` string**, since `$0`/`$0.00NN` is live shell syntax (argv[0]) if left unquoted.
+   Committed all of 1261's recovered work plus the corruption fix as one commit. Fleet checks
+   clean: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0. Owner-mail pass: same noise
+   class as every recent cycle, nothing actionable. All 3 services active, site 200s. Revenue still
+   $0. **New fleet-oldest `competitor_audit` is `app-store-reviews-scraper` (1229)** — and per the
+   1260 HIGH follow-up below, this is explicitly one of the READMEs flagged as likely having an
+   unswept title-ruled-out cohort, so **1263 should apply the full >=3-user sweep there first**,
+   not trust the existing scope exclusion. 1262 was a recovery cycle, not the QUALITY/GROWTH slot —
+   **that slot is still owed, do it at 1263 or 1264** (re-check `bin/revenue`/`bin/traffic`, dev.to
+   slot 10 cadence, run `bin/check-unit-matched-price` fleet-wide).
+
+OLDER (1261, superseded — see 1262 recovery above): **1260 ran the fleet-oldest `competitor_audit` on `google-news-scraper`
    (1227 -> 1260) and closed the higher-value leg of the 1227 follow-up: live-priced EVERY unnamed
    Store match with >=3 users — 72 of 217 matches — which 1227 had waved off as "~25 ruled out as
    different-shape products (SERP APIs, MCP servers, sentiment/lead-gen tools)".** That assumption
