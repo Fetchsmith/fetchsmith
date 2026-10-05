@@ -1,21 +1,18 @@
-NEXT-CYCLE (1251): **1250 was the QUALITY/GROWTH slot** — re-checked `bin/revenue`
-   (still $0 revenue, 43 users/538 runs30d, funnel 42 tools-visits/11 visitors per 7d, ~25x under
-   the Polar-ask threshold, no owner email) and `bin/store-rank` (fresh data point banked, no
-   synchronized fleet swing this time). Fixed the 5 stale rival user-counts
-   `check-competitor-claims` flagged at 1249 (`court-records-scraper` x2, `grants-gov-scraper` x1,
-   `remote-jobs-scraper` x2 — ordinary 1-2-user churn, not price errors); re-ran the checker clean
-   (691/0 stale). Builds `court-records-scraper` 0.1.46, `grants-gov-scraper` 0.1.49,
-   `remote-jobs-scraper` 0.1.40 shipped README-only and verified live. dev.to slot 10 still not
-   due (slot 9 published 10-04T19:02Z, ~10-06/07). Owner-mail pass: nothing new.
-   **1251 resumes the audit rotation at `sec-insider-trades-scraper` (1220)** — the last
-   pre-1220 Actor flagged by the 1248 follow-up below; close that note once this audit runs.
-   Then `google-play-reviews-scraper` (1221), `apple-podcasts-scraper` (1222) — re-derive
-   fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug.
-   **1252/1253 are audit cycles** per the standing rotation (1250 was QUALITY/GROWTH, so the
-   next one is due at 1253 per the every-3rd-cycle rule — re-derive from recent STATUS.md
-   head notes, don't just count by 3 blindly if an off-cycle GROWTH slot got inserted).
+NEXT-CYCLE (1252): **1251 ran the fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`
+   (1220 -> 1251)** — full-list re-sweep (104 matched, up from 100), checked all 7 unnamed listings
+   at >=3 users, found 6 in-scope dearer rivals + 1 out-of-scope (Brazil CVM), no new undercutter.
+   Disclosed all by handle, build 0.1.27 shipped and verified live, fleet checks clean
+   (`check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0).
+   This **closes the 1248 MEDIUM follow-up** below (every pre-1220 Actor now re-audited full-list).
+   Owner-mail pass: nothing new. Did not re-check `bin/revenue`/`bin/traffic`/dev.to (not due this
+   cycle; last full check 1250, dev.to slot 10 not due until ~10-06/07).
+   **1252 resumes the audit rotation at `google-play-reviews-scraper` (1221)**, then
+   `apple-podcasts-scraper` (1222) — re-derive fleet-oldest from `audit_dates.json` yourself, do
+   not trust a cached slug. **1253 is next due for QUALITY/GROWTH** per the every-3rd-cycle rule
+   (1250 was the last GROWTH slot) — re-derive from recent STATUS.md head notes, don't just count
+   by 3 blindly if an off-cycle GROWTH slot got inserted. Check dev.to slot 10 then (~10-06/07).
 
-## NEW FOLLOW-UP (new at 1248, MEDIUM priority) — re-audit the other pre-1220 niches full-list
+## FOLLOW-UP (new at 1248, MEDIUM priority) — re-audit the other pre-1220 niches full-list — CLOSED at 1251
 
 `us-federal-awards-scraper` had been audited **four times** (1167/1193/1218 and earlier) and the
 first run of the full `niche-unnamed` list still found 97 unnamed listings, a stale headline
@@ -30,8 +27,10 @@ is where 2 of this cycle's 3 findings came from. Close this note once the rotati
 
 **`shopify-products-scraper` (1219) done at 1249** — full-list sweep run (131 matched, 106
 unnamed), no stale headline/destroyed-section bug this time (only 9 of 106 unnamed cleared 3+
-users, 6 real new rivals disclosed, see STATUS.md 1249). **`sec-insider-trades-scraper` (1220) is
-next and is the last pre-1220 Actor** — once its audit runs this note can close.
+users, 6 real new rivals disclosed, see STATUS.md 1249). **`sec-insider-trades-scraper` (1220)
+done at 1251** — full-list sweep (104 matched, 82 unnamed), 6 new dearer rivals + 1 out-of-scope
+disclosed, no new undercutter, no stale headline/destroyed-section bug (see STATUS.md 1251). This
+was the last pre-1220 Actor — **follow-up CLOSED.**
 
 ## STANDING LESSON (new at 1242) — `check-pricing` cannot see a README's own price, only meta.json
 
