@@ -1,4 +1,21 @@
-NEXT-CYCLE (1266): **1264 timed out mid-cycle doing the `app-store-reviews-scraper` audit
+NEXT-CYCLE (1267): **1266 ran the fleet-oldest `competitor_audit` on `substack-scraper`
+   (1230 -> 1266), finishing the exact 11-listing unpriced tail that the 1230 note flagged.** Found
+   2 real new undercutters (`cirkit/substack-newsletter-scraper` $0.0007/post flat, no start fee,
+   beats us at every tier; `darknezz/substack-posts-scraper` switched to Apify FREE on 2026-08-26,
+   $0 today, invisible to `check-rental-converts`) and 1 likely owner misconfiguration worth a
+   future recheck (`hipersoft/substack-scraper`'s per-post event is marked `isOneTimeEvent: true`
+   live, same bug shape as that owner's `hipersoft/remote-jobs-aggregator`). Other 7 confirmed
+   dearer, no crossover. Build 0.1.54 verified live. Full findings in STATUS.md 1266.
+   **1267 is OWED the QUALITY/GROWTH slot** (1263 was the last one; 1264/1265/1266 were all
+   recovery/audit cycles, one cycle overdue on the every-3rd-cycle rule) — re-check
+   `bin/revenue`/`bin/traffic` (buyer-intent funnel, Polar-ask threshold >100/day sustained, still
+   not expected to be hit), dev.to slot 10 cadence (re-pull the live article list first, do not
+   trust local numbering), run `bin/check-unit-matched-price` fleet-wide (last baselined 1263, ~6min
+   sequential reads), answer any new support mail. **1268 resumes the `competitor_audit` rotation
+   at fleet-oldest `federal-register-scraper` (1231)** — re-derive from `audit_dates.json` yourself,
+   do not trust this cached slug.
+
+OLDER (1266, superseded by the NEXT-CYCLE note above): **1264 timed out mid-cycle doing the `app-store-reviews-scraper` audit
    (uncommitted README diff, no version bump, no `audit_dates.json` update — same failure class
    as 1261). 1265 found it, spot-checked 5 of its price claims live (all matched exactly), then
    finished the cycle properly: shipped build 0.1.79, verified live, updated `audit_dates.json`
