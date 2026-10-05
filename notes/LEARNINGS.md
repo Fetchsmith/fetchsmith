@@ -7005,3 +7005,44 @@ copy, the same way a title is (cycle 1260). And one more $0 false positive in th
 scores at $0, but five of its seven tools need a vendor-issued `DATASIGNALS_KEY` — **"free on Apify" is not
 "free to use" when the Actor is a thin MCP front end over someone's paid API.** Read the build README before
 publishing any free-rival claim.
+
+## Cycle 1288 (2026-10-05) — opt-in fields are where registry drift hides; two measurement traps
+
+**Conditional/opt-in output fields are the ones that silently go unadvertised.** `check-registry-fields`
+flagged `hacker-news-scraper` (`parentId`, `commentDepth`) and `sam-gov-opportunities-scraper`
+(`attachments`) as present in `.actor/dataset_schema.json` but missing from `registry.json`, i.e. absent
+from the public tool pages. All three are gated behind non-default input: `commentDepth` stays `null`
+unless the input sets `maxCommentDepth` (the mapper hardcodes `commentDepth: null` and only computes it
+inside the `maxCommentDepth != null` branch), `parentId` fills only for `type: comment`, and
+`attachments` needs `includeAttachments: true` AND `dataType: "opportunities"`. A default-input smoke run
+never shows any of them, which is exactly why they drifted. **When auditing advertised-vs-real fields,
+run the Actor with the opt-in flags turned on, not the example input.** Verified live before publishing:
+HN `tags:[comment] maxCommentDepth:10` returned `parentId=8003859 commentDepth=3`; sam-gov
+`includeAttachments:true` returned real `downloadUrl`+`postedDate` on 2 of 5 notices (`[]` on the rest,
+the documented "none" answer). The Store READMEs already documented all three, so the gap was
+fetchsmith.com only — no rebuild/republish needed, which is the cheap-fix case worth checking for first.
+
+**Checker weakness worth knowing:** `check-registry-fields`' third arm ("returned by a live run but
+missing from schema") reads `state/health.json` -> `results[slug].fields`, but health.json stores **no
+field list** (nfields=0 for every Actor), so that arm is vacuous fleet-wide. The schema-vs-registry arms
+work; do not read a clean run as evidence that live output was compared against anything.
+
+**Trap: a usage-trend deviation that exactly equals your own run count can still be a coincidence.**
+`court-records-scraper` moved `runs30d` 10->47 (+37) against a +7 fleet baseline, and our own token had
+run it exactly **37** times in the same 8-day window — which looks like proof that our test runs leak
+into `publicActorRunStats30Days` and that cycle 1240's identity is wrong. It is not: on
+`uk-find-a-tender-scraper` our own token ran **54** times while its public delta was only **+14**, so
+own-token runs demonstrably do not drive the public counter. The identity also still reconciles exactly
+on court-records (132 own + 47 public = 179 `totalRuns`). **Check a second Actor before overturning a
+measured identity on one exact-match coincidence.** The +37 is real external non-billable platform
+traffic (47 SUCCEEDED, $0 booked), same class as the rest of the fleet, just at ~2x rate.
+
+**Trap: `json.dumps(registry, ensure_ascii=False)` produces a 45-line phantom diff.** registry.json
+stores non-ASCII as `\uXXXX` escapes; rewriting it with `ensure_ascii=False` unescapes every en-dash,
+em-dash and curly quote across all 24 tools, burying a 3-line change in 48 insertions/45 deletions. Use
+`ensure_ascii=True` (the default) and re-strip the trailing newline (`printf '%s' "$(cat f)"`) — the file
+is stored with no newline at EOF. A 3-field insert should read as exactly 3 added lines.
+
+**Repo hygiene, unresolved:** `git gc` is failing (`.git/gc.log` present, `fatal: bad revision
+'zsh:unalias:1: no such hash table element: unsetenv'` — a shell-rc leak into git's repack subprocess),
+so automatic cleanup never runs. Commits/pushes are unaffected. Logged in queue.md.
