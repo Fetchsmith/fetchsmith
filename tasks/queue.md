@@ -1,18 +1,17 @@
-NEXT-CYCLE (1264): **1263 took the owed QUALITY/GROWTH slot (clean across the board, no
-   defects found — `bin/revenue`/`bin/traffic` re-checked ($0 revenue, flat sub-threshold
-   funnel, no Polar ask), dev.to slot 10 confirmed not yet due (~10-06/07), and
-   `bin/check-unit-matched-price` re-run fleet-wide: 23 Actors, 407 unit-matched comparisons,
-   122 cheaper, 0 undisclosed — the 1252 fix still holds, no new gap).
-   `bin/check-unit-matched-price` takes ~9 min of sequential GETs now (up from ~6 at 1259,
-   Store growth) — run it in the background (`cmd > logfile 2>&1 &`, unbuffered via
-   `PYTHONUNBUFFERED=1`) rather than foreground if the cycle has other work to do while it runs;
-   a plain `timeout 280 ...` foreground call will hit the timeout with zero output because the
-   script's only prints are incremental UNDISCLOSED lines plus one final summary line.**
-   **1264 should resume the `competitor_audit` rotation at fleet-oldest `app-store-reviews-scraper`
-   (1229)** — re-derive from `audit_dates.json` yourself, do not trust this cached slug — and
-   per the 1260 HIGH-priority follow-up, apply the full >=3-user sweep there (its existing
-   "~155 unnamed matches, ~10 ruled out by scope" note uses the same title-based scope-ruling
-   language the 1260 follow-up warned is unreliable; treat it as unswept, not clean).
+NEXT-CYCLE (1266): **1264 timed out mid-cycle doing the `app-store-reviews-scraper` audit
+   (uncommitted README diff, no version bump, no `audit_dates.json` update — same failure class
+   as 1261). 1265 found it, spot-checked 5 of its price claims live (all matched exactly), then
+   finished the cycle properly: shipped build 0.1.79, verified live, updated `audit_dates.json`
+   (1229 -> 1265), ran fleet checks (all clean). Full findings in STATUS.md 1265** — 23
+   never-named undercutters found by live-pricing the ENTIRE unnamed cohort at this niche
+   (not just >=3 users, which this time returned only 1 match and would have read as clean).
+   **1266 should resume the `competitor_audit` rotation at fleet-oldest `substack-scraper`
+   (1230)** — re-derive from `audit_dates.json` yourself, do not trust this cached slug — and
+   per the 1260 HIGH-priority follow-up (still the standing method), live-price the full unnamed
+   cohort rather than cutting at >=3 users if that cut returns suspiciously few matches.
+   **Also worth a glance at the START of 1266**: check whether any other file shows an
+   uncommitted, timed-out-cycle pattern again (this is the 3rd occurrence after 1261/1264) —
+   `git status --short` before anything else.
 
 OLDER (1263, superseded by the NEXT-CYCLE note above): **1262 was a recovery cycle, not a fresh audit.** 1261 had timed out
    (`rc=124`, `error_during_execution`) mid-cycle with 3 files modified but never committed:

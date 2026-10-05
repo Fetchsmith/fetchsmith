@@ -185,8 +185,10 @@ review than we do.
 list.** The fleet-oldest `competitor_audit` rotation re-swept this niche with the no-space/iOS
 phrasings too (549 seen, 188 matched) and live-priced every unnamed App-Store-scope listing with
 3+ users. `riadh_chebbi/apple-app-store-reviews-scraper` (3 users) charges a flat **$0.00005/review
-with no start fee — half our $0.0001 rate, at every volume, with no crossover** — the cheapest
-listing found in this niche to date. `tagadanar/apple-app-store-reviews` (5 users) tiers its
+with no start fee — half our $0.0001 rate, at every volume, with no crossover** — at the time the
+cheapest listing found in this niche (no longer: see the 2026-10-05 correction below, where
+`silentflow` prices lower per review and `steadyscrape` matches this rate with no fee either).
+`tagadanar/apple-app-store-reviews` (5 users) tiers its
 review price by the buyer's own Apify plan, $0.0001 (Free) down to $0.00007 (Gold/Platinum/Diamond),
 **plus a flat $0.001 per-run fee this Actor does not charge**: that fee makes it dearer than us
 below roughly 50-100 reviews/run on Bronze/Silver and below roughly 34 reviews/run on Gold+, but
@@ -195,12 +197,15 @@ listing ties our exact rate rather than beating it: `scrapersdelight/appstore-re
 (10 users) charges flat $0.0001/review with no start fee, a fourth parity listing alongside
 `thewolves`/`theagents`/`scriptbase`/`freshactors`. `bikram07/app-store-reviews` (5 users) is
 listed `FREE` (Apify's free-pricing-model flag, not a $0/review PPE rate) but has had zero runs in
-the last 30 days, so it is read as dormant rather than an active price threat. Ten more unnamed
+the last 30 days, so it is read as dormant rather than an active price threat. Six more unnamed
 listings read at 3+ users in this sweep were ruled out as different-shape, not App-Store-review
-competitors: five scrape Shopify's own app-review listings (`fetch_cat/shopify-app-reviews-scraper`,
+competitors (an earlier version of this sentence said "ten" and then named six, and said "five"
+Shopify listings and then named four — counts corrected and every exclusion re-verified against the
+listing's own live description, not its title, 2026-10-05, cycle 1264): four scrape Shopify's own
+app-marketplace reviews (`fetch_cat/shopify-app-reviews-scraper`,
 `automation-lab/shopify-app-store-reviews-scraper`, `taroyamada/shopify-app-store-review-intelligence`,
 `philzx/shopify-app-intelligence`), one scrapes Google Play (`obsidian937/google-play-reviews-scraper`),
-and one scrapes Tencent's Android app store (`reviewbot/tencent-app-store-review-scraper`) — all
+and one scrapes Tencent's Android app store 应用宝 (`reviewbot/tencent-app-store-review-scraper`) — all
 three are different source sites entirely, not Apple's App Store. The remaining dearer-and-ruled-in
 listings (`fetch_cat/apple-app-store-reviews-scraper` $0.000575→$0.00014 tiered plus a $0.005 start
 fee; `shahidirfan/App-Store-Reviews-Scraper` $0.00099 flat plus a $0.0005 start fee; `kestrel/app-store-reviews-scraper`
@@ -209,6 +214,83 @@ $0.00115→$0.001 tiered; `sync-network/apple-app-store-reviews-scraper` $0.001 
 `skootle/app-store-reviews` $0.008→$0.005 tiered plus a $0.01 start fee; `hipersoft/appstore-reviews-scraper`
 $0.0005 flat plus a $0.00005 start fee; `darknezz/app-store-reviews-scraper` $0.002 flat plus a $0.01 start fee)
 are all dearer than us at every tier and do not change the standings above.
+
+**Correction, verified live 2026-10-05 (cycle 1264): this niche's price floor is now well below us,
+and every "only listings that undercut us" claim above is superseded.** Sweeps of this niche have
+always live-priced the unnamed listings with **3 or more users**, on the reasoning that Apify pins a
+brand-new listing at 2 users so a 3-user floor is the cheapest honest cut. Today's sweep (553 seen,
+190 matched, 148 of them unnamed here) returned exactly **one** unnamed listing at 3+ users —
+`santhej/app-store-reviews-scraper` (3 users), flat $0.0001/review, our exact rate, plus a $0.001
+Actor-start fee we do not charge, so dearer than us below ~10 reviews/run and at parity above. By
+the standing rule this niche was clean. It is not. Live-pricing the **entire** 148-listing unnamed
+cohort including the 2-user floor — 148 `GET /v2/acts` calls, read-only, ~2 minutes — found **23
+listings that charge less per review than our $0.0001, 20 that tie it, 96 dearer, 3 on Apify's FREE
+pricing model (no price record at all, i.e. $0 — the cheapest price a rival can have) and 6 that
+bill per app or per scan rather than per review, so no per-review comparison is possible**. None of
+the 23 had ever been named here, and all 23 were confirmed to be
+Apple App Store review scrapers from their own live descriptions, not their titles. The lesson is
+structural: a 2-user listing is not a weak competitor, it is a **new** one, and a niche being
+actively flooded with new listings undercutting the incumbent rate is invisible to any user-count
+floor at all.
+
+Cheaper than us at every volume, **no start fee** (all verified 2026-10-05):
+`steadyscrape/app-store-reviews-scraper` flat
+**$0.00005/review** (ties `riadh_chebbi` as the cheapest no-fee listing in this niche);
+`peerless_columbine/apple-app-store-reviews-scraper-api` $0.00008 (Free) → $0.00005 (Gold+);
+`axiomworks/review-firehose` $0.00008 → $0.000056 (Gold+); `snow_leo_data/app-store-scraper`
+flat $0.00008 — this one also carries a **future-dated pricing entry effective 2026-10-05 12:00 UTC**,
+so its rate here is today's, not necessarily tomorrow's.
+
+Cheaper per review with an Actor-start fee, so the crossover volume is what matters (ours has no
+start fee; the figure is the run size above which the rival wins; all rates verified 2026-10-05):
+`ninhothedev/app-store-reviews-scraper`
+$0.00008 + $0.00005 start (~3 reviews); `automationnation/app-store-reviews-scraper` $0.00008 →
+$0.00005 (Gold+) + $0.00005 start (~3); `soilair/app-store-reviews-api` $0.00008 → $0.00005 (Gold+) +
+$0.00005 start (~3); `scrapesignal_labs/apple-app-store-reviews-scraper` $0.00008 + $0.00005 start (~3);
+`thenetaji/apple-app-store-reviews-scraper` $0.00008 → $0.000056 (Diamond) + $0.00005 start (~3);
+`cirkit/app-store-reviews-scraper` $0.00007 + $0.00005 start (~2);
+`betterscrapers/the-better-app-store-reviews-scraper` $0.00009 → $0.00008 (Gold+) + $0.00005 start (~5);
+`zenomastro/apple-app-store-reviews-pro` $0.00008 → $0.000064 (Gold+) + $0.0001 start (~5);
+`getanyapi/app-store-reviews-scraper` $0.000152 (Free, dearer than us) → $0.000076 (Bronze+) +
+$0.00005 start (~3 on Bronze and up only); `superslowsloth/app-store-reviews-scraper` $0.00007 +
+a **$0.002** start fee (~67); `silentflow/apple-reviews-scraper` $0.00004 → $0.000034 (Gold+) — the
+lowest per-review rate in the niche — plus a **$0.005** start fee (~83 on Free, ~76 on Gold+);
+`luminar/app-store-reviews-change-monitor` $0.000075 plus $0.005 per monitored scan;
+`grokbob/app-reviews-dual-batch-ppe` $0.00007 + a **$0.01** start fee (~333);
+`automly/appstore-reviews-scraper` $0.000095 + a **$0.01** start fee (~2,000).
+
+Cheaper only from the **Gold** account plan up, dearer below it (verified 2026-10-05):
+`lightmoon/apple-app-store-reviews-scraper`
+$0.0007 (Free/Bronze) → $0.00009 (Gold+) + $0.00005 start; `tidytools/apple-app-store-reviews`
+$0.0001 (Free/Bronze) → $0.00008 (Gold+), its app-details and app-insights events billed separately.
+A second `hipersoft` listing, `hipersoft/app-store-reviews-scraper` (distinct from the
+`hipersoft/appstore-reviews-scraper` named above), is $0.0002 → $0.0001 (Gold+) + $0.00005 start —
+dearer below Gold and at parity above, not an undercut.
+
+Lowest headline rates in the niche (verified 2026-10-05), all three bundling paid analysis events a
+reviews-only run here never incurs: `datasignalslab/app-store-review-intelligence` **$0.00001/row** but $0.02 per app
+analyzed + $0.00005 start (1 app × 1,000 reviews ≈ $0.030 against our $0.100);
+`pappy-dev/appstore-reviews-v2` $0.00005/row with five optional $0.05 analysis events;
+`listless_adzuki/app-store-review-scraper` $0.00001 per dataset item alongside a separate $0.004
+`review-result` event, so which event a reviews run actually bills is not determinable from the
+pricing record alone — read as cheap-but-unverified rather than counted above.
+
+Three of the unnamed listings carry **no price record at all** (verified 2026-10-05) — Apify's FREE pricing model, which
+means $0 per review and therefore the lowest possible price in the niche, not missing data:
+`convertfleetdotonline/app-store-reviews-scraper` and `conversational_kermis/pulse-appstore` (which
+searches the App Store by keyword and then exports the matching apps' reviews) are straight App
+Store review scrapers, and `creative_maitake/app-store-review-pain-miner` mines low-star reviews
+into scored pain points. All three sit at Apify's 2-user floor with no runs recorded in the last 30
+days, the same dormancy read applied to `bikram07/app-store-reviews` above, so they are listed as
+real $0 price points rather than as live demand we are losing to.
+
+What this means honestly, as of the 2026-10-05 sweep: **we are no longer near the bottom of this
+niche on price.** Our
+$0.0001/review is now the *modal* rate — 20 listings tie it exactly — with roughly two dozen
+listings priced under it, most of them launched recently, and a cluster of them at $0.00005 or
+below. What this Actor still offers over the cheap end is the per-storefront ratings histogram
+verified against Apple's own published average (below), no Actor-start fee at any volume, and a
+record of these comparisons being re-verified against live pricing records rather than Store copy.
 
 Two honest qualifications, both read off live input schemas rather than listings:
 
