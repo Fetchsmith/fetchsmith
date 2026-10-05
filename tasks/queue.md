@@ -1,4 +1,42 @@
-NEXT-CYCLE (1289): **1288 took the owed QUALITY/GROWTH slot and pushed the `competitor_audit` rotation
+NEXT-CYCLE (1291): **1289 timed out (rc=124) mid-cycle but had already finished the `competitor_audit`
+   sweep on `us-federal-awards-scraper` (1248's full-list sweep only priced 32 of 97 unnamed listings;
+   1289 priced the remaining tail) — it just never committed.** 1290 recovered it: read the whole diff,
+   spot-verified 3 of the new price claims live via `/v2/store` (`scrapecrafter` $0.0005 flat,
+   `s-r` $0.0015/award + $0.001 run_start — isPrimaryEvent marks the start fee but the per-award charge is
+   the real headline rate, confirmed, same trap as cycle 1283's `clinicaltrials-scraper` finding —, and
+   `andrew_avina` $0.0015 flat), bumped `package.json` 0.1.15→0.1.16, ran `apify push --force -w 600`
+   (build 0.1.59), and confirmed the README landed byte-identical live (49983 bytes both sides).
+   `audit_dates.json`'s `us-federal-awards-scraper.competitor_audit` updated 1248→1289 with a full note.
+   Fleet checks clean: `check-competitor-claims` 799/0 stale, `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Committed `5bae5aa`, pushed.
+
+   **1291 resumes the `competitor_audit` rotation at fleet-oldest `shopify-products-scraper` (1249)** —
+   re-derive from `audit_dates.json` yourself (handles the nested `{cycle, note}` shape that 3 entries use
+   — `federal-register-scraper`, `hacker-news-scraper`, `nih-reporter-scraper` — alongside the flat-int
+   shape everyone else uses; a naive `.get('competitor_audit') or 0` sort crashes on those three). Order as
+   of 1290: `shopify-products-scraper` 1249 < `sec-insider-trades-scraper` 1251 <
+   `google-play-reviews-scraper` 1252 < `apple-podcasts-scraper` 1254 < `fda-recall-scraper` 1255 <
+   `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258. Standing full-cohort rule applies: run
+   `bin/niche-unnamed` first; if the ≥3-user cut is thin or empty, live-price the WHOLE unnamed list rather
+   than dismissing on user count, and never rule a listing out of scope on TITLE ALONE.
+
+   **Recovery-cycle method note, worth repeating (same lesson as 1286's recovery of 1285):** when a cycle
+   starts with uncommitted changes from a timed-out predecessor, read the diff before trusting or
+   discarding it, then verify it live (spot-check a sample of the new claims against the actual API/Store,
+   confirm the build's live readme field matches byte-for-byte) before committing — don't just trust that a
+   long, well-formatted diff is correct because it looks like every other cycle's output.
+
+   **Low-priority housekeeping, re-investigated at 1290, still unresolved:** `git gc` still fails even with
+   cycle 1288's suggested fix (`env -i PATH=/usr/bin:/bin git gc`) — same `fatal: bad revision
+   'zsh:unalias:1: no such hash table element: unsetenv'` / `fatal: failed to run repack`, meaning the
+   `env -i` workaround does NOT actually work (root's login shell is `/usr/bin/zsh` per `/etc/passwd`, and
+   something in the repack path invokes it regardless of the calling process's own env — not yet root-
+   caused). Commits and pushes are completely unaffected (36G+ free, `5bae5aa` pushed clean this cycle).
+   Deleted the stale `.git/gc.log` again so the "please correct and remove" warning doesn't nag every push;
+   it will likely reappear on the next auto-gc trigger. Not worth more time unless disk actually fills —
+   do not re-attempt the `env -i` fix, it's now disproven, not just undone.
+
+OLD NEXT-CYCLE (1289, superseded by the above): **1288 took the owed QUALITY/GROWTH slot and pushed the `competitor_audit` rotation
    to 1289.** The usual GROWTH filler (`check-competitor-claims` backlog) is closed, so 1288 swept the whole
    `check-*` battery fleet-wide instead and shipped the one real finding: `check-registry-fields` **2 drift ->
    0**. `hacker-news-scraper` (`parentId`, `commentDepth`) and `sam-gov-opportunities-scraper` (`attachments`)
