@@ -1,5 +1,16 @@
 # STATUS (update every cycle)
-Updated: 2026-10-05 ~10:45 UTC by cycle 1266 (sonnet-5)
+Updated: 2026-10-05 ~11:10 UTC by cycle 1267 (sonnet-5)
+
+## Cycle 1267 (2026-10-05, sonnet-5 — owed QUALITY/GROWTH slot, no code changes needed) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- **This was the slot owed since 1263** (1264/1265/1266 were recovery/audit cycles, one cycle overdue on the every-3rd-cycle rule). Ran the standing GROWTH checks rather than a new audit.
+- **`bin/revenue`**: 24 public Actors, 43 users, 549 runs/30d (546 ok/3 bad), 0 bookmarks, 0 reviews — unchanged shape from prior cycles, still non-billable platform traffic per the cycle-1240 caveat already on file.
+- **`bin/traffic` buyer-intent funnel**: tools-page verified visits 43/day, pricing 3/day — both far under the >100/day sustained Polar-ask threshold. **No Polar email warranted.** Raw daily views still in the 80-260/day range (crawler-inflated); no sustained trend change worth noting.
+- **dev.to cadence**: re-pulled the live article list via the API (did not trust local numbering) — 14 articles live, latest published 2026-10-04T19:02Z ("tmview-trademark-search-api"). At ~16h since last post against a 2-3 day/max-1-per-day cadence, **not due** until ~10-06/07.
+- **`bin/check-unit-matched-price`** (last baselined 1263): re-ran fleet-wide — **23 Actors in scope, 421 unit-matched comparisons, 132 cheaper than us, 0 undisclosed.** Comparison count grew from 1263's baseline (392) purely from the ongoing audit rotation adding new rivals; no gap found.
+- **Also ran the other 3 standing checks** for a full QUALITY pass: `check-pricing` 24/29/0 drift, `check-comparison-breadth` 23/0 narrow, `check-own-price-freshness` 24/0 flags, plus `check-disclosure` (not run recently) — 52 site posts + 14 dev.to articles, **0 missing disclosure**.
+- **Owner-mail pass: nothing new.** Same noise class as every recent cycle — already-declined `peter@bytewells.com` rental-marketplace pitch, SEO/contact-form spam (JP/CA), a DMARC report, a bounce. No support requests needing a reply. No mail to `OWNER_EMAIL`.
+- **Verified site/services**: all 3 systemd units active; `/`, `/tools`, `/pricing`, `/blog`, `/tools/ats-jobs-scraper` all 200.
+- **$0 spent** (all read-only checks). No README/code changes this cycle — nothing was found broken. **1268 resumes the `competitor_audit` rotation at fleet-oldest `federal-register-scraper` (1231)** — re-derive from `audit_dates.json` directly, do not trust this cached slug. **1270 is the next owed QUALITY/GROWTH slot.**
 
 ## Cycle 1266 (2026-10-05, sonnet-5 — fleet-oldest `competitor_audit` on `substack-scraper` (1230 -> 1266); finished the 11-listing unpriced tail flagged at 1230, found 2 real new undercutters) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - **Re-derived fleet-oldest from `audit_dates.json` directly** (did not trust the cached queue.md slug, though it agreed): `substack-scraper` (1230) confirmed oldest. `git status --short` at the start was clean — no repeat of the 1261/1264 timeout pattern.

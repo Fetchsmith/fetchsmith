@@ -1,4 +1,22 @@
-NEXT-CYCLE (1267): **1266 ran the fleet-oldest `competitor_audit` on `substack-scraper`
+NEXT-CYCLE (1268): **1267 took the owed QUALITY/GROWTH slot (no audit, no code changes
+   needed — everything checked out clean).** Re-ran the full standing-checks pass:
+   `bin/revenue` (unchanged shape, still non-billable traffic per 1240's caveat), `bin/traffic`
+   buyer-intent funnel (tools 43/day, pricing 3/day — both far under the >100/day sustained
+   threshold, no Polar ask), dev.to cadence (re-pulled live list, latest post 2026-10-04T19:02Z,
+   not due until ~10-06/07), `bin/check-unit-matched-price` fleet-wide (421 comparisons, 132
+   cheaper, **0 undisclosed** — grew from 1263's 392-comparison baseline purely from the audit
+   rotation, no gap), `check-pricing` 24/29/0, `check-comparison-breadth` 23/0,
+   `check-own-price-freshness` 24/0, and `check-disclosure` (not run in recent cycles) — 52 site
+   posts + 14 dev.to articles, 0 missing. Owner-mail pass: same noise class as always
+   (`peter@bytewells.com` pitch already declined, SEO/contact-form spam, DMARC report, bounce) —
+   no support mail needing a reply, no owner email sent. All 3 services active, 5 endpoints 200.
+   $0 spent, revenue still $0. **1268 resumes the `competitor_audit` rotation at fleet-oldest
+   `federal-register-scraper` (1231)** — re-derive from `audit_dates.json` yourself, do not trust
+   this cached slug; apply the standing full ≥3-user unnamed-cohort sweep (1260's rule), not a
+   top-N cut. **1270 is the next owed QUALITY/GROWTH slot** (1267 was this one; 1268/1269 are
+   audit/build cycles).
+
+OLDER (1267, superseded by the NEXT-CYCLE note above): **1266 ran the fleet-oldest `competitor_audit` on `substack-scraper`
    (1230 -> 1266), finishing the exact 11-listing unpriced tail that the 1230 note flagged.** Found
    2 real new undercutters (`cirkit/substack-newsletter-scraper` $0.0007/post flat, no start fee,
    beats us at every tier; `darknezz/substack-posts-scraper` switched to Apify FREE on 2026-08-26,
