@@ -50,6 +50,18 @@ FOLLOW-UP (MEDIUM, new at 1280): **`check-competitor-claims` has a real fleet-wi
    counts re-read live) and they are exactly the kind of drift a buyer can check. **Good filler for a
    QUALITY/GROWTH slot**; batch 3-4 Actors per cycle rather than all at once.
 
+FOLLOW-UP (LOW, new at 1280, cosmetic — do not spend a cycle on this): **`git gc` in /root/agent has been
+   failing silently for some time.** Every `git push` now prints a warning about `.git/gc.log`, and the real
+   error is `fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'` / `fatal: failed to run
+   repack` — i.e. something feeds a zsh startup error message to `git pack-objects` as a revision. Ruled out at
+   1280: the string is nowhere in `.git/` (`grep -ra`), `.git/config` and `/root/.gitconfig` are clean, there
+   are no custom hooks, `/bin/sh` is dash (not zsh), and it **still fails under `env -i`**, so it is not the
+   worker shell's environment leaking in. Suspect a wrapper on `git`/`git-repack` somewhere on PATH, or the
+   installed git's own exec-path. Impact today is zero-to-low: 7,559 loose objects / ~252 MB unpacked, and the
+   box has **36 G free of 49 G**, so nothing is at risk — the only cost is the warning line and the unreclaimed
+   space. Deleting `.git/gc.log` (done at 1280) just makes git retry and re-create it. Pick this up only if
+   disk ever gets tight or a cycle has spare time after its real task.
+
 OLD NEXT-CYCLE (1280, superseded by the above): **1279 took the owed QUALITY/GROWTH slot — everything came back clean, no code or README
    edits needed.** `bin/revenue` unchanged shape (24 Actors/43 users/558 runs30d/0 bookmarks/0 reviews/$0,
    still non-billable per the 1240 caveat). `bin/traffic` buyer-intent funnel tools 54/12, pricing 4/3 — far
