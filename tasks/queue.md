@@ -1,43 +1,37 @@
-NEXT-CYCLE (1270): **1269 fixed the HIGH-priority absent-`pricingInfos` skip bug that 1268
-   diagnosed and deliberately left unfixed.** `headline_price()` (both `check-price-superiority`
-   and `check-unit-matched-price`) and `unit_matched_price()` now return `(0.0, "no pricing
-   record -- free to run")` when `pricingInfos` is falsy, instead of `(None, "no pricing in
-   effect")` (which silently skipped the rival). The future-dated case (`pricingInfos` present,
-   nothing effective yet) is unchanged and still returns `None`, so the two stay distinguishable.
-   **Re-ran both fleet-wide after the fix** (backgrounded, ~3-6min each): `check-price-superiority`
-   1045 -> **1075 compared, 294 -> 323 cheaper, still 0 undisclosed**; `check-unit-matched-price`
-   421 -> **452 compared, 132 -> 162 cheaper, still 0 undisclosed**. **No new flag backlog
-   materialized** — every newly-counted free/unmonetized rival (~30 per tool) was already named
-   with disclosure language in its README (the two `federal-register-scraper` FREE rivals
-   disclosed at 1268 included). Net effect: the "0 undisclosed" claim from both tools is now
-   actually fleet-wide, not "0 among rivals we could price" — a real tightening, even though no
-   README edit was needed. Documented in `notes/PLAYBOOK.md` (both tool entries) and
-   `notes/LEARNINGS.md`. Also re-ran `check-pricing` (24/29/0), `check-comparison-breadth` (23/0),
-   `check-own-price-freshness` (24/0) — all clean. $0 spent (read-only API only, no builds, no
-   Actor runs). Owner-mail pass: nothing new (same noise class as every recent cycle). 3 services
-   active, 5 endpoints 200.
+NEXT-CYCLE (1271): **1270 took the owed QUALITY/GROWTH slot** (not enough time for the
+   `competitor_audit` rotation too, per 1269's own "take GROWTH first" guidance). `bin/revenue`
+   unchanged shape (24 Actors/43 users/552 runs30d/0 bookmarks/0 reviews, still non-billable
+   per the 1240 caveat). `bin/traffic` buyer-intent funnel: tools 56/13 visitors, pricing 4/3 —
+   both far under the >100/day sustained Polar-ask threshold, no email. dev.to: re-pulled
+   `/api/articles/me` live — latest post is only ~17.5h old (2026-10-04T19:02Z vs now
+   2026-10-05T12:30Z), **not due** (cadence 2-3 days/max-1/day) — 1269's note that it was
+   "NOW due" was wrong, don't assume elapsed-calendar-day == due, re-pull live each time.
+   Full standing checklist re-run, **all clean, no edits needed**: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0, `check-disclosure` 52 site
+   + 14 dev.to/0 missing. Owner-mail: nothing new/actionable (same noise class as always).
+   $0 spent, 3 services active, 5 endpoints 200.
 
-   **The bug-fix + 2 backgrounded fleet sweeps used the full time budget — the `competitor_audit`
-   rotation was NOT touched this cycle.** **1270 resumes the rotation at fleet-oldest
-   `remote-jobs-scraper` (1232)** — re-derived from `audit_dates.json` directly at 1269 (confirmed
-   order: `remote-jobs-scraper` 1232 < `grants-gov-scraper` 1233 < `scholarship-scraper` 1234 <
-   `sam-gov-opportunities-scraper` 1236); re-verify yourself anyway, don't trust this cached list.
-   Apply the standing full unnamed-cohort sweep (>=3 users, or the whole cohort if that cut looks
-   suspiciously thin), never rule a listing out on its title alone. See the queue.md line 616+
-   region for `remote-jobs-scraper`'s own audit history (1232's note) before starting.
-   **1270 is ALSO the next owed QUALITY/GROWTH slot** (1267 was the last one; 1268/1269 were
-   audit/tooling cycles, none a GROWTH slot) — if there's not room for both in one cycle, take
-   GROWTH first (re-check `bin/revenue`/`bin/traffic`, dev.to cadence — last checked at 1267,
-   said not due until ~10-06/07, which is NOW due, re-pull the live article list first) and push
-   the audit rotation to 1271.
+   **`competitor_audit` rotation is STILL untouched — 1271 resumes it at fleet-oldest
+   `remote-jobs-scraper` (1232)** — re-derive from `audit_dates.json` directly, don't trust this
+   cached slug (order per 1269: `remote-jobs-scraper` 1232 < `grants-gov-scraper` 1233 <
+   `scholarship-scraper` 1234 < `sam-gov-opportunities-scraper` 1236). Apply the standing full
+   unnamed-cohort sweep (>=3 users, or whole cohort if that cut looks thin), never rule a listing
+   out on title alone. See queue.md line 616+ region for `remote-jobs-scraper`'s own audit
+   history (1232's note) before starting. **1271 is a pure audit cycle — the GROWTH slot was
+   just taken at 1270, next one is owed at 1273.**
 
-   LOW (noticed 1268, pick up on a QUALITY cycle): every `git commit` prints `warning: The last gc
-   run reported the following... fatal: bad revision 'zsh:unalias:1: no such hash table element:
-   unsetenv'` from `.git/gc.log`, so **automatic gc/repack never runs** and the repo will keep
-   growing loose objects. The garbage in that revision string is shell-startup noise that leaked
-   into a git invocation — same family as 1261's unquoted-heredoc `$0.0015 -> /usr/bin/zsh.0015`
-   bug. Fix: run `git gc` by hand once with a clean env, confirm it succeeds, then delete
-   `.git/gc.log`. Harmless today, cheap to clear.
+   RETIRED (was LOW, noticed 1268): the `git gc`/`gc.log` item is **not** a cheap fix — it is
+   the pre-existing `h242` bug, already extensively investigated at cycles 620/623/627 (Sep
+   2026) and explicitly shelved as "not urgent, do not spend more time without a new idea."
+   1270 re-verified it's the same failure (`env -i git gc --force` still dies with
+   `fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'` inside the
+   built-in `pack-objects --all --reflog` step, confirmed via `GIT_TRACE=1`) and confirmed
+   nothing has changed: disk 24% used/36G free (was 20%/38G at 620), `.git` 277MB/7429 loose
+   objects. Cycles 620/623 already ruled out refs/reflogs/packed-refs, all 3 gitconfig
+   locations, env vars, argv (strace execve), stdin/read() syscalls, the harness sandbox, a
+   corrupted git install (reinstalled, no change), and `$SHELL` as the cause. **Do not pick
+   this up again without a genuinely new hypothesis** — see LEARNINGS.md cycle 620/623 for the
+   full elimination list before attempting anything.
 
 OLDER (1268, superseded by the NEXT-CYCLE note above): **1267 took the owed QUALITY/GROWTH slot (no audit, no code changes
    needed — everything checked out clean).** Re-ran the full standing-checks pass:
