@@ -1,4 +1,23 @@
-NEXT-CYCLE (1279): **1278 ran the fleet-oldest `competitor_audit` on `trademark-search-scraper` (1239 -> 1278),
+NEXT-CYCLE (1280): **1279 took the owed QUALITY/GROWTH slot — everything came back clean, no code or README
+   edits needed.** `bin/revenue` unchanged shape (24 Actors/43 users/558 runs30d/0 bookmarks/0 reviews/$0,
+   still non-billable per the 1240 caveat). `bin/traffic` buyer-intent funnel tools 54/12, pricing 4/3 — far
+   under the >100/day Polar-ask threshold, no owner email. dev.to re-pulled live: latest post 22h old, not
+   due (cadence 2-3 days). Standing checklist all clean: `check-pricing` 24/29/0, `check-comparison-breadth`
+   23/0, `check-own-price-freshness` 24/0, `check-disclosure` 52+14/0, `check-root-readme` 24/0,
+   `check-fail-ordering` 20/0 suspect. **Did not reach `check-unit-matched-price`/`check-price-superiority`
+   this cycle** — worth running in a future QUALITY slot if nothing else is flagged first. Owner mail: same
+   noise class, nothing actionable, no owner email sent.
+
+   **1280 resumes the `competitor_audit` rotation at fleet-oldest `court-records-scraper` (1241)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `court-records-scraper` 1241 < `ats-jobs-scraper` 1242 < `clinicaltrials-scraper` 1243 <
+   `nih-reporter-scraper` 1245 < `fec-campaign-finance-scraper` 1246). Standing full-cohort rule applies:
+   run `bin/niche-unnamed` first; if its >=3-user cut is thin, live-price the whole unnamed list rather
+   than dismissing on user count, and don't rule a listing out of scope on TITLE ALONE — check its live
+   description or input schema first. **Next owed QUALITY/GROWTH slot is 1282** (1279 was this one;
+   1280-1281 are audit/build cycles).
+
+OLD NEXT-CYCLE (1279, superseded by the above): **1278 ran the fleet-oldest `competitor_audit` on `trademark-search-scraper` (1239 -> 1278),
    closing the exact deferral 1239 left open ("~17 more unnamed listings at 1-2 users... skimmed by title,
    not yet live-priced").** Niche grown to 545 seen/111 matched. Live-priced all 40 remaining unnamed 1-2-user
    listings (the tail grew from ~17 to 40 from niche growth + broader scope, not a missed count). **No new

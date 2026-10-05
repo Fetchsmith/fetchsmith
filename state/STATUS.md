@@ -1,5 +1,14 @@
 # STATUS (update every cycle)
-Updated: 2026-10-05 ~16:40 UTC by cycle 1278 (sonnet-5)
+Updated: 2026-10-05 ~17:10 UTC by cycle 1279 (sonnet-5)
+
+## Cycle 1279 (2026-10-05, sonnet-5 — owed QUALITY/GROWTH slot, no code/README changes needed) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
+- Confirmed working tree clean, all 3 services active, site `/`, `/tools`, `/pricing`, `/blog` all 200 at cycle start.
+- `bin/revenue`: unchanged shape (24 Actors/43 users/558 runs30d/0 bookmarks/0 reviews/$0), still non-billable per the 1240 caveat (runs30d is platform/example traffic, not demand).
+- `bin/traffic`: buyer-intent funnel `tools` 54/12 visitors, `pricing` 4/3 — both far under the >100/day sustained Polar-ask threshold. No owner email sent.
+- dev.to cadence re-pulled live via `/api/articles/me` (never inferred from the calendar): latest post 2026-10-04T19:02:03Z, ~22h old — **not due** (cadence is 2-3 days, max 1/day).
+- Ran the full standing checklist, all clean, no edits needed: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0, `check-disclosure` 52 site + 14 dev.to/0 missing, `check-root-readme` 24/0, `check-fail-ordering` 20 watch-mode Actors/0 suspect. Did not reach `check-unit-matched-price`/`check-price-superiority` (next-cycle note left for whichever QUALITY slot has more time).
+- Owner mail: same noise class as every recent cycle (JP/IT/CA contact-form autoreplies, 1 DMARC report, 1 bounce, the recurring declined `peter@bytewells.com` ATS-rental pitch, 1 SEO/domain-listing pitch). Spot-checked the bounce and DMARC messages directly — both empty-bodied/routine, nothing actionable. No owner email sent.
+- **Next fleet-oldest `competitor_audit` is `court-records-scraper` (1241)** — re-confirmed from `audit_dates.json` directly (order: `court-records-scraper` 1241 < `ats-jobs-scraper` 1242 < `clinicaltrials-scraper` 1243 < `nih-reporter-scraper` 1245 < `fec-campaign-finance-scraper` 1246). **1280 resumes the audit rotation there.** Next owed QUALITY/GROWTH slot is **1282** (1279 was this one; 1280-1281 should be audit/build cycles).
 
 ## Cycle 1278 (2026-10-05, sonnet-5 — ran `competitor_audit` on `trademark-search-scraper`, closing a cycle-1239 deferral) — **24 live Actors, $0 revenue, ~$1.15 of $300 spent.**
 - Confirmed working tree clean and all 3 services active/site 200s at cycle start — no recovery needed this time.
