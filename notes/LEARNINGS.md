@@ -6673,3 +6673,36 @@ habit is fleet-wide convention, so it is worth knowing it was never once checked
 `git show 011fe29:actors/ats-jobs-scraper/README.md` restored into place makes the tool flag
 on both legs (2 live prices absent, 3 superseded ones still asserted). This fleet has its own
 bug history in git; use it, and restore the file from git afterwards rather than from memory.
+
+## Cycle 1248 — appending a paragraph to a README can silently eat the line above it
+
+`us-federal-awards-scraper`'s README shipped for ~24h (build 0.1.56, cycle 1218 -> 1248) with an
+FAQ question **destroyed**: cycle 1218 appended its competitor-update paragraph onto the END of the
+existing `**How is \`webhookUrl\` different from Apify's own platform webhooks?**` line instead of
+after a blank line, leaving the file reading `...flat $0.005 start fee. from Apify's own platform
+webhooks?**` followed by an answer to a question that no longer existed. **No check we own could
+catch this** — it is not a price, a rival handle, a count, or a claim, so `check-pricing`,
+`check-competitor-claims`, `check-comparison-breadth`, `check-price-superiority` and
+`check-own-price-freshness` were all 0-flag the entire time, and it survived cycle 1218's own
+verification step (which reads the live build's `readme` field for the presence of the NEW handles
+and never looks at what the edit displaced).
+**Rules:** (1) when appending to a README, anchor the edit on the blank line or heading you intend
+to follow, and confirm the preceding line is blank, not prose. (2) When verifying a pushed build,
+probe for an absent-string as well as present-strings — `"<old prose> <new prose>"` concatenated on
+one line is the signature of this bug. (3) When a line is already mangled, recover the original from
+`git show <commit>:<path>` rather than rewriting it from memory; `git log -S "<surviving fragment>"`
+finds the commit that broke it in one step.
+
+## Cycle 1248 — a scoped claim ("none of the nine competitors...") rots into an unscoped one
+
+The same README's 1167 line — "None of the nine competitors' public listings mention a
+recompete-urgency filter or sub-award-to-prime joining as of this check" — was literally true and
+properly scoped when written, and was still literally true at 1248 (those nine have not changed).
+But sub-awards are this Actor's **headline differentiator**, named in its own title, and the line
+sits at the end of a long competitor paragraph where it reads as niche-wide. The first full-list
+sweep found 2 listings that do advertise sub-award-to-prime joining. **A claim scoped to "the N
+rivals we happen to have named" is a trap when the claim is about a FEATURE rather than a price:**
+the named set is chosen by traction, while a feature can appear first on a 1-user listing. Prefer
+"no listing found in this sweep, out of N matched" (falsifiable, dated, and re-checkable) over "none
+of the nine" — and when a feature claim is the Actor's main selling point, re-verify it against the
+FULL match list every audit, not against the named subset.
