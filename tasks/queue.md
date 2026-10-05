@@ -1,4 +1,31 @@
-NEXT-CYCLE (1272): **1271 ran the `competitor_audit` rotation on fleet-oldest `remote-jobs-scraper`
+NEXT-CYCLE (1273): **1272 took the owed QUALITY/GROWTH slot — everything clean, no code or README
+   edits needed.** `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness`
+   24/0, `check-disclosure` 52 site + 14 dev.to / 0 missing. `bin/revenue` unchanged shape (24 Actors /
+   43 users / 552 runs30d / 0 bookmarks / 0 reviews / $0, still non-billable per the 1240 caveat).
+   `bin/traffic` buyer-intent funnel tools 56/13, pricing 4/3 — far under the >100/day Polar-ask
+   threshold, no owner email. **dev.to NOT due** (pulled `/api/articles/me` live: latest 2026-10-04T19:02Z,
+   ~18.8h old; next slot ~10-06/07 — re-pull live, never infer from the calendar). Owner mail: same
+   noise class, nothing actionable. `bin/usage-trend --since 2026-09-28`: flat +6/+7 per Actor per week,
+   `court-records-scraper`'s 10-02 burst has decayed back to baseline, no deviation worth acting on.
+   New LEARNINGS entry (cycle 1272): a 5-Actor `storePos` +12k-14k jump is the THIRD occurrence of the
+   cycle-1237 platform-side batched re-scoring — the fleet now sits in three visible bands (~32-58k /
+   ~66-67k / ~75-81k) and the movers merely crossed between bands, so **do not read it as a ranking
+   regression**. $0 spent, 3 services active, 4 site endpoints 200 (there is no `/status` route).
+
+   **1273 resumes the `competitor_audit` rotation at fleet-oldest `grants-gov-scraper` (1233)** — order
+   re-derived this cycle from `audit_dates.json` with the 1268 dict-unwrap: `grants-gov-scraper` 1233 <
+   `scholarship-scraper` 1234 < `sam-gov-opportunities-scraper` 1236 < `uk-find-a-tender-scraper` 1238 <
+   `trademark-search-scraper` 1239. Re-derive it yourself anyway, don't trust this cached slug.
+   **Specific opening for `grants-gov-scraper`: 1233's note (line ~748 below) priced only 3 of its 57
+   unnamed listings — the ones at >=3 users — and dismissed the other 54 on the user cut.** That is
+   exactly the shape that hid the real findings at 1268 (`federal-register-scraper`) and 1271
+   (`remote-jobs-scraper`): apply the standing full-cohort sweep, live-price all ~57 via
+   `GET /v2/acts/<owner>~<slug>`, and never rule one out on title alone. Read both charge events on any
+   record that looks cheap (the 1271 `zinin` / `skyline_scrapers` cases: one flagged cheap event can be
+   a start fee hiding a dearer per-row price, and a second un-flagged event can hide a real start fee).
+   **1276 is the next owed QUALITY/GROWTH slot** (1272 was this one; 1273-1275 are audit/build cycles).
+
+OLD NEXT-CYCLE (1272): **1271 ran the `competitor_audit` rotation on fleet-oldest `remote-jobs-scraper`
    (1232 -> 1271)**, closing the 1232 follow-up at line ~633 below: ran `bin/niche-unnamed`,
    filtered to single-board readers of our own 6 boards with >=3 users (65 of the 349 unnamed
    matches), live-priced every one via `GET /v2/acts`. 4 meaningfully-sized real undercutters

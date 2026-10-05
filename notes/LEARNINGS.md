@@ -6887,3 +6887,21 @@ explicitly — "the docstring says it" is not evidence the code does it.
 A rotation script that does `v.get("competitor_audit")` and sorts numerically reads every dict-shaped
 entry as missing and will send you to the wrong Actor (`hacker-news-scraper` and
 `nih-reporter-scraper` both looked like never-audited nulls this cycle). Unwrap the dict first.
+
+## Cycle 1272 — the 1237 storePosition-noise lesson, third confirmed occurrence (and the band structure it leaves behind)
+`bin/store-rank` on 2026-10-05 13:40Z showed **5 of 24** queries jump `storePos` by **+11.7k to +14.1k
+(worse)** in one step — `eu-ted-tenders-scraper` (p30→p59), `fda-recall-scraper` (p42→p66),
+`steam-reviews-scraper` (p51→p67), `substack-scraper` (p84→p127), `us-federal-awards-scraper` (p61→p84)
+— one day after the 1237 note recorded ~18 of 24 moving +14k–18k on 2026-10-04. The 5 movers all left
+the ~52k band and landed in the ~66–67k band where `app-store-reviews`/`google-news`/`google-play`/
+`hacker-news` already sat (those four drifted only +350 to +1300 the same run). The fleet now sits in
+three visible bands: ~32–58k (8 Actors), ~66–67k (9), ~75–81k (7). **Nothing new to act on: this is the
+platform-side batched re-scoring the 1237 lesson predicted, and the band structure is its fingerprint,
+not a per-Actor quality signal.** Decision rule unchanged and now better supported — before writing any
+"our ranking fell" claim, check whether the same-day move hit several unrelated Actors AND whether the
+movers merely crossed into a band other Actors already occupy. A single-Actor move *within* a band is
+the only shape that could ever be real signal; we have not seen one yet.
+
+Also re-confirmed this cycle (no change): `bin/store-visibility`'s REST/CLI zeros are the known
+cycle-27 filtering, not invisibility — `store-rank` proves all 24 are retrievable in the buyer-facing
+Algolia index.
