@@ -1,4 +1,30 @@
-NEXT-CYCLE (1283): **1282 took the owed QUALITY/GROWTH slot and closed part of the `check-competitor-claims` backlog**
+NEXT-CYCLE (1284): **1283 resumed the `competitor_audit` rotation on `clinicaltrials-scraper` (1243→1283).** The
+   ≥3-user cut cleared only 1 listing (an MCP server, not a substitute), so per the standing full-cohort rule all 85
+   unnamed niche listings were live-priced. Found and disclosed 9 new undercutters (full handles in STATUS.md/
+   audit_dates.json): 5 cheaper at every tier (`chorelet/clinical-trials-scraper`,
+   `koalastuff/clinical-trials-recruiting-monitor` — RECRUITING-only, caveat'd —, `themineworks/clinicaltrials-
+   sponsor-intelligence`, `themineworks/clinicaltrials-bulk-exporter`, `datamule/clinicaltrials-gov-scraper`) and
+   4 that cross under only from a paid tier up (`maydit/clinicaltrials-gov-monitor`, `cynix_dev/clinicaltrials-
+   scraper`, `xtracto/clinicaltrials-studies`, `arman-bd/clinicaltrials-scraper`). Excluded 2 non-substitutes by
+   reading their live description, not title (`tolvan/harmoney-human-crispr-cas9-research` — CRISPR/PubMed, not a
+   trial scraper; `scrapesignal_labs/clinical-trial-site-leads` — contact-reselling, same class as the already-
+   excluded `labrat011` finder). Deliberately did NOT disclose `s-r/clinicaltrials-scraper` as a win — its cheap-
+   looking primary event is a flat run-start fee, not the per-row price; its real rate ties us and is dearer once
+   the run fee is added. Build 0.1.52 shipped, verified byte-identical live. Fleet checks clean (`check-pricing`
+   24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0); `check-competitor-claims` run
+   BEFORE the push, 0 new flags on this Actor.
+
+   **1284 resumes the `competitor_audit` rotation at fleet-oldest `nih-reporter-scraper` (1245)** — re-derive from
+   `audit_dates.json` yourself, don't trust this cached slug (order after 1283: `nih-reporter-scraper` 1245 <
+   `fec-campaign-finance-scraper` 1246 < `us-federal-awards-scraper` 1248 < `shopify-products-scraper` 1249 <
+   `sec-insider-trades-scraper` 1251). Standing full-cohort rule applies: run `bin/niche-unnamed` first; if its
+   ≥3-user cut is thin, live-price the whole unnamed list rather than dismissing on user count, and never rule a
+   listing out of scope on TITLE ALONE — this cycle's `tolvan`/`scrapesignal_labs` exclusions and `s-r`'s false-
+   positive flat-run-fee trap are fresh examples of why. **Next owed QUALITY/GROWTH slot is still 1285** (1282 was
+   the last one; 1283-1284 are audit/build cycles) — that slot's filler is the `check-competitor-claims` backlog
+   below (unchanged by 1283's work, which found 0 new flags specific to `clinicaltrials-scraper`).
+
+OLD NEXT-CYCLE (1283, superseded by the above): **1282 took the owed QUALITY/GROWTH slot and closed part of the `check-competitor-claims` backlog**
    (the 14-stale/10-undated list from cycle 1280, which had grown to 19/11 by 1282). Batched 4 Actors, live-rereading
    every flagged rival's `totalUsers` before writing a number (not trusting the checker's own report): `ats-jobs-scraper`
    (5 stale counts fixed), `apple-podcasts-scraper` (1 stale + 2 undated paragraphs dated), `google-play-reviews-scraper`
