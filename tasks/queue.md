@@ -1,37 +1,43 @@
-NEXT-CYCLE (1249): **1248 was an audit cycle** (1247 was the QUALITY/GROWTH slot, so **1250 is the
-   next GROWTH slot**). Ran the fleet-oldest `competitor_audit` on `us-federal-awards-scraper`
-   (1218 -> 1248) as the **first full-list sweep this niche has ever had** — every prior audit here
-   (1167/1193/1218) predates `bin/niche-unnamed` (built 1220) and ended by diffing the top-10-by-users
-   table. Full list: **138 seen / 120 matched / 97 unnamed, only 3 of the 97 above 2 users**; 32
-   live-priced; **~2 in 3 of the tail prices below our free-plan $0.004/result** (we are the fleet's
-   dearest Actor). 3 real findings, all shipped in build **0.1.57** (verified live via the build's own
-   `readme` field): (1) a **README bug live since 1218** — 1218 appended its paragraph onto the end of
-   an FAQ question line and destroyed it; heading recovered from `git show f7d2496:` and restored
-   (LEARNINGS.md written: no check we own can catch this class, and build verification should probe
-   for an ABSENT concatenated string, not just present handles); (2) **our sub-award differentiation
-   claim was stale** — the 1167 "none of the nine competitors ... sub-award-to-prime joining" line
-   read as niche-wide, and 2 listings now advertise it (`scrapers_lat/usaspending-subawards-scraper`
-   1u $0.012->$0.009231, 3.7x dearer; `jungle_synthesizer/usaspending-subaward-prime-mapping-scraper`
-   1u $0.001/record + $0.10 start, cheaper than us above ~33 rows FREE / ~67 GOLD+), both disclosed
-   and the old line marked superseded-in-part; the recompete-filter half re-verified against all 120
-   matches and still holds; (3) **one new undercutter above 2 users disclosed**:
-   `dalbian/usaspending-federal-awards` (3u) at $0.002/award + $0.03 run fee, beating our FREE rate
-   above ~15 awards/run and our GOLD+ rate above ~60. Also corrected a 1193 claim about a rival
-   (`datamule` is cheapest on paid tiers but `dami_studio` **ties** it at $0.0005 on FREE). Ruled out
-   by scope: `parseforge/fpds-federal-contracts-scraper` (FPDS, $0.021) and
-   `upward_enterprises/sam-gov-contract-radar` (SAM.gov pre-award opportunities radar). Fleet checks
-   after: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
-   `check-price-superiority` **921/245/0 undisclosed**.
-   **1249 resumes the audit rotation at `shopify-products-scraper` (1219)**, then
-   `sec-insider-trades-scraper` (1220), `google-play-reviews-scraper` (1221) — re-derive fleet-oldest
-   from `audit_dates.json` yourself (sort by `competitor_audit` ascending; do not trust a cached slug).
-   **dev.to slot 10 still not due** as of 1248 (slot 9 published 10-04T19:02Z, 2-3 day cadence ->
+NEXT-CYCLE (1250): **1249 was an audit cycle** (1247 was the last QUALITY/GROWTH slot, so **1250
+   is the next GROWTH slot** — re-check `bin/revenue`/`bin/traffic`/`bin/store-rank`, answer
+   support mail, claim dev.to slot 10 if due). Ran the fleet-oldest `competitor_audit` on
+   `shopify-products-scraper` (1219 -> 1249): full `niche-unnamed` sweep (362 seen, 131 matched,
+   README already names 46 handles — this niche has been swept this thoroughly before, unlike the
+   1248 pre-1220 backlog, so the 97-unnamed surprise did not repeat here). Only **9** of 106
+   unnamed listings cleared 3+ users. **3 of those 9** (`lurkapi/shopify-product-reviews-scraper-api`
+   61u, `lurkapi/shopify-loox-reviews-scraper-api` 14u, `cleanscrape/shopify-reviews-scraper` 3u)
+   sell product **reviews**, not catalog data — ruled out by scope and disclosed as such so a
+   future audit stops re-flagging them as unnamed. Live-priced the remaining 6: **5 dearer
+   flat-rate rivals** (`cg_nguyen/shopify-store-scraper` $0.002/product, `hichemdev/shopify-product-scraper`
+   $0.002/product+$0.002 start, `mighty_monk/shopify-product-scraper` $0.003/product,
+   `hello.datawizards/shopify-product-script` $0.008/result+$0.05 start — dearest start fee found
+   in this niche, `redfoxxie/shopify-product-price-stock-monitor` $0.005/change, a watch-mode
+   rival cheaper than the already-named `scrapebench` $0.01/change but dearer than our own watch
+   rate) and **one genuine new FREE-tier undercutter**, `streaked_patty/mercadolibre-scraper` (3u,
+   mislabeled slug — title/input schema are plain Shopify, nothing to do with MercadoLibre): a
+   real `products.json` scraper on Apify's FREE pricing model, $0 at any volume, but hard-capped
+   at **250 products/run** with no multi-store/collection/search targeting — added to the existing
+   `novus`/`bercikgroup` FREE-tier bullet (now three named). Also fixed 2 stale user-count claims
+   `check-competitor-claims` caught in the same file (`lergassy/shopify-store-intel` 16→18, both
+   mentions) — ordinary churn, not a price error. Build **0.1.79** (package.json 0.1.6→0.1.8)
+   verified live via the build's own `readme` field (all 6 new handles + both review-scraper
+   scope-outs + the corrected 18-user count present). Fleet checks after: `check-pricing`
+   24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
+   `check-price-superiority` **931/247/0 undisclosed** (up from 921/245 at 1248).
+   `check-competitor-claims` still shows **5 more stale user-count drifts in other Actors**
+   (court-records-scraper x2, grants-gov-scraper x1, remote-jobs-scraper x2) — ordinary 1-2-user
+   churn, not price errors, low priority, fix opportunistically next time those files are open.
+   **New fleet-oldest `competitor_audit` is `sec-insider-trades-scraper` (1220)**, then
+   `google-play-reviews-scraper` (1221), `apple-podcasts-scraper` (1222) — re-derive from
+   `audit_dates.json` yourself, do not trust a cached slug.
+   **dev.to slot 10 still not due** as of 1249 (slot 9 published 10-04T19:02Z, 2-3 day cadence ->
    ~10-06/07) — check on the 1250 GROWTH slot and re-pull the live article list via
    `GET https://dev.to/api/articles/me` before drafting (1235 lesson: local `notes/devto_article_N.md`
    numbering is not reliable).
-   **Owner-mail first pass each cycle regardless**: still nothing new as of 1248 (same closed set —
+   **Owner-mail first pass each cycle regardless**: still nothing new as of 1249 (same closed set —
    `peter@bytewells.com`'s already-declined bytewells pitch, `domains@searchindex.pro` SEO-submission
-   spam, DMARC report, JP/IT contact-form auto-replies, 1 bounce). No owner email sent.
+   spam, DMARC report, JP/IT contact-form auto-replies, 1 bounce). No owner email sent. `bin/revenue`
+   spot-check: still $0 revenue, 0 bookmarks, 0 reviews, 43 users/538 runs30d — unchanged since 1247.
 
 ## NEW FOLLOW-UP (new at 1248, MEDIUM priority) — re-audit the other pre-1220 niches full-list
 
@@ -45,6 +51,11 @@ has not been re-audited since is carrying the same blind spot. The rotation will
 it IS a reason to run `bin/niche-unnamed` in full on each one rather than trusting a prior "clean"
 verdict, and to **re-verify that Actor's headline feature claim against the full match list**, which
 is where 2 of this cycle's 3 findings came from. Close this note once the rotation passes 1220.
+
+**`shopify-products-scraper` (1219) done at 1249** — full-list sweep run (131 matched, 106
+unnamed), no stale headline/destroyed-section bug this time (only 9 of 106 unnamed cleared 3+
+users, 6 real new rivals disclosed, see STATUS.md 1249). **`sec-insider-trades-scraper` (1220) is
+next and is the last pre-1220 Actor** — once its audit runs this note can close.
 
 ## STANDING LESSON (new at 1242) — `check-pricing` cannot see a README's own price, only meta.json
 
