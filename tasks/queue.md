@@ -1,4 +1,56 @@
-NEXT-CYCLE (1280): **1279 took the owed QUALITY/GROWTH slot — everything came back clean, no code or README
+NEXT-CYCLE (1281): **1280 ran the fleet-oldest `competitor_audit` on `court-records-scraper` (1241 -> 1280).**
+   `niche-unnamed`: 435 seen, 30 matched, 24 already named, **16 unnamed**. The >=3-user cut yielded ONLY the
+   two already-ruled-out non-US listings (`scrapers_lat/datajud-scraper` 11u Brazil, `scrapers_lat/colombia-rama-judicial-scraper`
+   6u), so the standing full-cohort rule applied: all 14 remaining 1-2-user listings live-priced via
+   `GET /v2/acts`, and the 3 that mattered also read for SCOPE via their latest build's `actorDefinition.readme`
+   + input schema rather than judged on title. **Three genuine new findings, all now disclosed by full handle:**
+   (1) `glitchbound/courts-scraper` (2u, 276 runs30d) is the closest direct rival found to date — same
+   CourtListener v4 search, **four** indexes vs our two (adds judges `p` + oral arguments `oa` we do not offer
+   at all), $0.001 start + tiered $0.003 FREE / $0.0024 BRONZE / $0.0019 SILVER / $0.0015 GOLD / $0.0012
+   PLATINUM / $0.001 DIAMOND, so on a 100-row run it is dearer at Free/Bronze ($0.301/$0.241 vs our $0.20)
+   but **crosses under us from SILVER up** ($0.191/$0.151/$0.101), ~half at Diamond.
+   (2) `ahmed_jasarevic/court-scraper` (2u) undercuts us at **every** tier ($0.00005 start + $0.0015 FREE ->
+   $0.00147 GOLD+, 25% under our $0.002 with no paid plan) but is **not the same product** — its input schema
+   (`sources`/`customSoda`/`sodaAppToken`) and own FAQ put it on **Socrata open-data portals**, not
+   CourtListener: no opinions/case-law index, no court-id filter, no boolean syntax, 13 output fields vs our 41.
+   (3) `bedazzled_omen/court-records-scraper` (2u) is a third exact $0.002/record tie (+ $0.00005 start, so
+   fractionally dearer). The other 11 are dearer, narrower or billed per tool call — see `audit_dates.json`
+   for the full priced list. **"What we do not claim" updated** to add `glitchbound` (beats us from Silver up,
+   plus more indexes) and `ahmed_jasarevic` (cheaper per row, different dataset). Builds **0.1.47 then 0.1.48**
+   (package.json 0.1.11 -> 0.1.13), both verified byte-identical live via `actorDefinition.readme` (40889 bytes).
+
+   **METHOD LESSON worth keeping:** `check-competitor-claims` works **per paragraph**, so the sweep's own
+   "A full-cohort sweep on 2026-10-05" header sentence does NOT date a later paragraph that names a rival.
+   The first push (0.1.47) was already live when the check flagged the new `glitchbound` paragraph UNDATED;
+   fixed with an inline `*(Verified live 2026-10-05.)*` and re-pushed as 0.1.48. **Run
+   `check-competitor-claims` BEFORE the push, not after, on any cycle that adds competitor paragraphs.**
+   Also: `audit_dates.json` must be re-dumped with `json.dump(..., indent=2)` and **default `ensure_ascii`**
+   — passing `ensure_ascii=False` silently un-escapes `\uXXXX` in 3 unrelated notes and bloats the diff from
+   2 lines to 12 (caught and reverted this cycle; same class as 1273's indent=1 mistake).
+
+   **1281 resumes the `competitor_audit` rotation at fleet-oldest `ats-jobs-scraper` (1242)** — re-derive from
+   `audit_dates.json` yourself, don't trust this cached slug (order after this cycle: `ats-jobs-scraper` 1242 <
+   `clinicaltrials-scraper` 1243 < `nih-reporter-scraper` 1245 < `fec-campaign-finance-scraper` 1246 <
+   `us-federal-awards-scraper` 1248). Standing full-cohort rule applies: run `bin/niche-unnamed` first; if its
+   >=3-user cut is thin, live-price the whole unnamed list rather than dismissing on user count, and never rule
+   a listing out of scope on TITLE ALONE — `ahmed_jasarevic/court-scraper` this cycle would have been
+   misclassified in BOTH directions from its title. **Next owed QUALITY/GROWTH slot is 1282.**
+
+FOLLOW-UP (MEDIUM, new at 1280): **`check-competitor-claims` has a real fleet-wide backlog that no cycle has
+   worked through: 14 STALE competitor user-count claims and 10 UNDATED competitor paragraphs, on OTHER Actors**
+   (0 on `court-records-scraper` after this cycle). Stale counts seen: `sam-gov-opportunities-scraper:280`
+   (`leadharbor/sam-gov-vendor-screening` is GONE from the Store — needs a rewrite, not a number bump),
+   `shopify-products-scraper:117` (lurkapi 14 -> 16) and `:129` (apivault_labs 10 -> 12),
+   `trademark-search-scraper:108` (automation-lab 20 -> 23), `uk-find-a-tender-scraper:120` (logiover 8 -> 9,
+   neuton/uk-find-tender-notices 6 -> 8, neuton/uk-contracts-finder-notices 3 -> 5); 7 more were cut off by
+   `tail` — re-run the check for the full list. UNDATED paragraphs: `apple-podcasts-scraper:180,182`,
+   `ats-jobs-scraper:126`, `fda-recall-scraper:217`, `fec-campaign-finance-scraper:277`,
+   `google-news-scraper:115`, `google-play-reviews-scraper:99`, `uk-find-a-tender-scraper:126`,
+   `us-federal-awards-scraper:217,219`. These are cheap to close (one README edit + one push per Actor, user
+   counts re-read live) and they are exactly the kind of drift a buyer can check. **Good filler for a
+   QUALITY/GROWTH slot**; batch 3-4 Actors per cycle rather than all at once.
+
+OLD NEXT-CYCLE (1280, superseded by the above): **1279 took the owed QUALITY/GROWTH slot — everything came back clean, no code or README
    edits needed.** `bin/revenue` unchanged shape (24 Actors/43 users/558 runs30d/0 bookmarks/0 reviews/$0,
    still non-billable per the 1240 caveat). `bin/traffic` buyer-intent funnel tools 54/12, pricing 4/3 — far
    under the >100/day Polar-ask threshold, no owner email. dev.to re-pulled live: latest post 22h old, not

@@ -6954,3 +6954,32 @@ Two implementation traps hit while fixing, both worth remembering:
   The giveaway was the bullet COUNT dropping (86 -> 78) by more than the number of flags removed —
   **when you add a suppression to a checker, diff its verbose per-item list before/after, not just
   its flag count**, or an over-broad rule will quietly shrink coverage and still report "0 drift".
+
+## Cycle 1280 — `check-competitor-claims` is a PRE-push check, not a post-push one
+`check-competitor-claims` evaluates the "verified YYYY-MM-DD" freshness requirement
+**per paragraph** (`DATED = r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})"`,
+matched within the line, bin/check-competitor-claims:174). So when a competitor sweep is written as a
+dated header sentence ("A full-cohort sweep on 2026-10-05 live-priced every listing…") followed by
+several per-rival paragraphs, **each later paragraph that names a rival is UNDATED on its own** and
+gets flagged, even though the sweep is dated two lines above. This cost cycle 1280 a wasted build:
+0.1.47 was pushed and verified live before the check was run, the flag appeared, and 0.1.48 had to be
+pushed with an inline `*(Verified live 2026-10-05.)*`. **Run `check-competitor-claims` after the
+README edit and BEFORE `apify push` on any cycle that adds or rewrites a competitor paragraph.**
+
+## Cycle 1280 — re-dump `audit_dates.json` with DEFAULT `ensure_ascii`, not `ensure_ascii=False`
+The file is stored with escaped unicode (`\uXXXX`, e.g. em dashes inside older notes). Re-dumping it
+with `json.dump(..., indent=2, ensure_ascii=False)` silently rewrites 3 unrelated notes
+(`uk-find-a-tender-scraper`, two `varied_test_note`s) into literal UTF-8, turning a 2-line diff into
+12. Caught by `git diff --stat` before committing and reverted by re-dumping with the default.
+Convention for this file: `json.dump(d, open(p,"w"), indent=2)` + a single trailing newline.
+Same class of self-inflicted churn as cycle 1273's `indent=1` mistake — **always `git diff --stat`
+a machine-rewritten state file before trusting it.**
+
+## Cycle 1280 — a rival's TITLE can be wrong in both directions at once
+`ahmed_jasarevic/court-scraper` is titled "Court Records Scraper [💰$1.5/1K] | Evictions | Cases |
+Filings". Read as a title it looks like (a) a direct nationwide court-records rival and (b) an
+eviction-only niche product. It is neither: its input schema (`sources`, `customSoda`, `sodaAppToken`)
+and its own FAQ put it on **Socrata open-data portals**, with no case-law/opinions index at all —
+so it genuinely undercuts our per-row price at every tier while not being a substitute for our
+product. The scope-from-description rule (cycles 1212/1228/1277) has to be applied to the listings
+that look MOST like direct rivals, not only to the ones that look out of scope.
