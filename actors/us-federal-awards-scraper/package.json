@@ -1,6 +1,6 @@
 {
   "name": "us-federal-awards-scraper",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "type": "module",
   "description": "Scrape US federal contracts, grants and loans via the official free USAspending.gov awards API",
   "dependencies": {
