@@ -6706,3 +6706,43 @@ the named set is chosen by traction, while a feature can appear first on a 1-use
 "no listing found in this sweep, out of N matched" (falsifiable, dated, and re-checkable) over "none
 of the nine" — and when a feature claim is the Actor's main selling point, re-verify it against the
 FULL match list every audit, not against the named subset.
+
+## Cycle 1252 — a deferred price tail is not a long tail; and the primary-event blind spot runs BOTH ways
+
+Two reusable lessons from the `google-play-reviews-scraper` re-audit (1221 -> 1252).
+
+**1. When an audit note says "did not price the remaining N at exactly 3 users", that is the finding
+queue, not a tidy-up.** Cycle 1221 ran the full `niche-unnamed` diff correctly (250 matched, 218
+unnamed) and priced down to 4 users, explicitly deferring the ~12 matches at exactly 3 users as a
+"long tail, same treatment as the README's existing 5-users-or-fewer disclosure". Cycle 1252 priced
+all 49 unnamed matches at >=3 users and **all three new undercutters were in that deferred band** —
+including `unfenced-group/google-play-store-scraper`, which charges **half our rate at every tier**
+and has 153 successful runs in 30 days against 3 total users. The generalization of cycle 1220's
+"a top-10 cut selects for listing AGE, not threat" is stronger than it was first written: *any*
+user-count cut selects for age, including a 4-user one, because Apify pins a new listing at 2 users.
+**Use runs30d, not totalUsers, to decide whether a listing is worth pricing** — the three findings
+here ranked 153/344/12 runs per 30 days while sitting at 3/6/1 users, and a user-count sort put them
+below listings with zero recent activity. Do not inherit a previous cycle's deferral as settled.
+
+**2. `check-primary-event` watches for a rival's headline event being misleadingly CHEAP; the
+inverse is just as common and nothing we own detects it.** That check flags a generic platform
+default priced low next to a dearer real event. Here the shape was reversed: the rival's primary
+event is a genuine, *dearer*, **app-level** event (`app` $0.00069, `app-result` $0.0009) while the
+**review** event we actually compete on is a secondary event priced *under* us ($0.00005). So
+`check-price-superiority`, which reduces every rival to its `isPrimaryEvent` price, reads these
+rivals as comfortably pricier than us and stays 0-undisclosed — it did, before and after this fix
+(944 compared / 249 cheaper / **0 undisclosed** both times). Three of this cycle's findings share
+that exact shape. **Standing rule for any multi-event rival in a niche where we bill per row of one
+specific kind: price the event that MATCHES OUR UNIT, never the primary one.** A `competitor_audit`
+in a review/comment/filing niche must read every event name on the record and pick the comparable
+one by hand; the primary flag is a Store display hint the owner sets, and in an app-first scraper it
+points at the app, not the review.
+
+**3. A rival's description is not its capability — read the input schema.**
+`shahidirfan/Google-Play-Store-Scraper` is on Apify's FREE model ($0, which no paid Actor can beat)
+and its description advertises "ratings, **reviews**, downloads". Its live input schema is
+`url`/`keyword`/`category`/`subcategory`/`results_wanted`/`max_pages` — **no review parameter of any
+kind**. Counting it as a $0 undercutter would have been a false alarm that permanently undersold us;
+ruling it out of scope needed one `GET /v2/actor-builds/<id>` read of `inputSchema.properties`. The
+same read is what made the `unfenced-group` filter-overlap finding provable rather than a guess.
+Scope a rival from its schema, price it from its events, and disclose the exclusion either way.

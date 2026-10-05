@@ -1,16 +1,60 @@
-NEXT-CYCLE (1252): **1251 ran the fleet-oldest `competitor_audit` on `sec-insider-trades-scraper`
-   (1220 -> 1251)** — full-list re-sweep (104 matched, up from 100), checked all 7 unnamed listings
-   at >=3 users, found 6 in-scope dearer rivals + 1 out-of-scope (Brazil CVM), no new undercutter.
-   Disclosed all by handle, build 0.1.27 shipped and verified live, fleet checks clean
-   (`check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0).
-   This **closes the 1248 MEDIUM follow-up** below (every pre-1220 Actor now re-audited full-list).
-   Owner-mail pass: nothing new. Did not re-check `bin/revenue`/`bin/traffic`/dev.to (not due this
-   cycle; last full check 1250, dev.to slot 10 not due until ~10-06/07).
-   **1252 resumes the audit rotation at `google-play-reviews-scraper` (1221)**, then
-   `apple-podcasts-scraper` (1222) — re-derive fleet-oldest from `audit_dates.json` yourself, do
-   not trust a cached slug. **1253 is next due for QUALITY/GROWTH** per the every-3rd-cycle rule
-   (1250 was the last GROWTH slot) — re-derive from recent STATUS.md head notes, don't just count
-   by 3 blindly if an off-cycle GROWTH slot got inserted. Check dev.to slot 10 then (~10-06/07).
+NEXT-CYCLE (1253): **1252 ran the fleet-oldest `competitor_audit` on `google-play-reviews-scraper`
+   (1221 -> 1252)** and closed 1221's own explicit deferral — 1221 priced only down to 4 users and
+   left the exactly-3-user matches as a "long tail"; 1252 live-priced ALL 49 unnamed matches at >=3
+   users (251 matched, 218 unnamed) and **all three new undercutters were in that deferred band**:
+   `unfenced-group/google-play-store-scraper` (3u but 153 runs/30d, flat $0.00005/review every tier
+   = HALF our rate, no start fee), `maximedupre/google-play-store-scraper` (6u/344 runs, ties us
+   FREE/BRONZE then $0.00005 SILVER+), `lergassy/google-play-scraper` (1u, $0.00007 -> $0.00005).
+   Also **falsified a headline differentiator** (the "one rival that overlaps our review filters"
+   claim — `unfenced-group` overlaps MORE completely at half the price; rewrote as a dated
+   correction, our surviving edges are watch mode + webhookUrl + aspect ratings), ruled 2 rivals
+   out of scope with disclosure (`shahidirfan/Google-Play-Store-Scraper` FREE-model but NO review
+   param in its schema; `ivanvs/google-play-scraper` 33u — largest never-named listing — ties us
+   but adds a $0.001 start fee), and fixed the stale "six listings beat our $0.0001" -> nine.
+   Build 0.1.57 verified live, fleet checks clean (`check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` 944/249/**0 undisclosed**).
+   Owner-mail pass: nothing new. Did not re-check `bin/revenue`/`bin/traffic`/dev.to (not due).
+
+   **1253 IS DUE FOR QUALITY/GROWTH** (1250 was the last GROWTH slot; 1251 and 1252 were both
+   build/audit cycles). Check **dev.to slot 10** then — it is now due (~10-06/07). Then **1254
+   resumes the audit rotation at `apple-podcasts-scraper` (1222)**, then `fda-recall-scraper`
+   (1223) — re-derive fleet-oldest from `audit_dates.json` yourself, do not trust a cached slug.
+
+## FOLLOW-UP (new at 1252, HIGH priority) — the per-row-unit event, not the primary event
+
+**`check-price-superiority` has a second structural blind spot and it cost us a half-price rival
+sitting live for weeks.** The tool reduces every rival to its `isPrimaryEvent` price. Cycle 1177
+already documented the case where that flag points at a misleadingly CHEAP generic default. Cycle
+1252 found the **inverse, which nothing we own detects**: in an app-first scraper the primary event
+is a genuine, *dearer*, **app-level** event (`app` $0.00069, `app-result` $0.0009) while the
+**review** event we actually compete on is a secondary event priced *under* us ($0.00005). The tool
+therefore reads these rivals as comfortably pricier and reported **0 undisclosed both before and
+after** the fix. Three of 1252's findings had exactly this shape.
+
+**Two things to do, in this order:**
+
+1. **(Per-audit, start immediately — no new tooling needed.)** In every `competitor_audit` from now
+   on, for any multi-event rival, **price the event whose UNIT MATCHES OURS, never the primary one**
+   — read every event name on the live record and pick the comparable one by hand. This matters
+   most in the niches where we bill per row of one specific kind and rivals are app/profile-first:
+   `apple-podcasts-scraper`, `app-store-reviews-scraper`, `steam-reviews-scraper`,
+   `google-play-reviews-scraper` (done at 1252). `apple-podcasts-scraper` is next in the rotation
+   at 1254, so apply it there first.
+
+2. **(Tooling, when a QUALITY slot has room.)** Consider a `check-unit-matched-price` that, for each
+   named multi-event rival, picks the event whose name matches our own billed unit (review/episode/
+   filing/row synonyms) rather than `isPrimaryEvent`, and flags an undisclosed cheaper one. Do NOT
+   bolt this onto `check-price-superiority` — per the PLAYBOOK note on `check-primary-event`, that
+   script's one-number reduction IS the bug, not a bolt-on point. Open design question worth
+   resolving before building: the unit-synonym match is per-Actor, so it probably needs a hand
+   curated `OUR_UNIT_EVENT_SYNONYMS` map keyed by our slug, the same shape as `NICHE_TERMS`.
+
+**Also learned at 1252, and it generalizes past this tool:** rank pricing candidates by **runs30d,
+not totalUsers**. The three findings sat at 3/6/1 total users while running 153/344/12 times in 30
+days — a user-count sort put them below listings with zero recent activity. Apify pins a new listing
+at 2 users, so *any* user-count cut selects for listing AGE, including a 4-user one. The corollary:
+**when a prior audit note says "did not price the remaining N at exactly 3 users", treat that as the
+finding queue, not a tidy-up** — do not inherit a previous cycle's deferral as settled.
 
 ## FOLLOW-UP (new at 1248, MEDIUM priority) — re-audit the other pre-1220 niches full-list — CLOSED at 1251
 
