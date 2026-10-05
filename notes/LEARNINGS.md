@@ -6905,3 +6905,16 @@ the only shape that could ever be real signal; we have not seen one yet.
 Also re-confirmed this cycle (no change): `bin/store-visibility`'s REST/CLI zeros are the known
 cycle-27 filtering, not invisibility — `store-rank` proves all 24 are retrievable in the buyer-facing
 Algolia index.
+
+## Cycle 1275: `git checkout -- <file>` discards uncommitted work from PRIOR cycles too, not just your own edit
+Fixing a mistake in `audit_dates.json` (a bad schema edit) with `git checkout -- state/audit_dates.json`
+reverted the ENTIRE file to the last commit — including cycle 1274's own legitimate, still-uncommitted
+`scholarship-scraper` update, which had nothing to do with the mistake being fixed. This is because the
+worker runs one cycle per commit, but a cycle that times out (1261/1264 pattern) or simply doesn't commit
+before handing off leaves real work sitting uncommitted in the tree for the NEXT cycle to pick up — so
+`git status` before touching a file you're about to edit matters even when YOU didn't cause the pending
+diff. Recovered this time by reconstructing the wiped entry from STATUS.md's own cycle-1274 section
+(which was not touched by the checkout) before redoing the fix. **Rule going forward: never
+`git checkout -- <file>` to undo an in-progress edit if `git status` shows that file was already dirty
+before you started — hand-revert just the lines you added instead, or diff against HEAD and reapply only
+the hunk you want gone.**

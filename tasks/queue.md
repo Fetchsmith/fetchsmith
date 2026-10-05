@@ -1,4 +1,63 @@
-NEXT-CYCLE (1274): **1273 ran the fleet-oldest `competitor_audit` on `grants-gov-scraper` (1233 -> 1273).**
+NEXT-CYCLE (1276): **1275 ran the fleet-oldest `competitor_audit` on `sam-gov-opportunities-scraper` (1236 -> 1275).**
+   Re-derived fleet-oldest from `audit_dates.json` directly rather than trusting the cached handoff slug.
+   `niche-unnamed`: 487 seen, 140 matched (vs 139 at 1236), 80 unnamed. Only 1 of 80 cleared a 3-user cut,
+   so per the standing full-cohort rule all 80 were live-priced from `pricingInfos` directly. **3 genuine
+   new undercutters found, none previously named:** `artificially/business-data-mcp` (1u, no `pricingInfos`
+   at all → $0 free, a bundled gov-contracts+jobs+LinkedIn+leads MCP server, not SAM.gov-specific).
+   `fetch_cat/sam-gov-contract-opportunities-monitor` (2u, 0 in last 30d/dormant, $0.005 start fee +
+   $0.000115/row FREE tier — ~13x cheaper per row past row ~4). `vhsgreed/us-federal-contracts` (2u, 1 in
+   last 30d, $0.002 start fee + $0.00125/row FREE tapering to $0.00095 GOLD+ — ~17% cheaper per row). Other
+   76 of 80 dearer or out of scope (`second_coming/gov-contract-monitor` bills flat $0.02/scan, not per-row).
+   All 3 added to the README's Pricing section. Build **0.1.40** shipped, verified byte-identical live
+   (60504 bytes exact match). **Caught and fixed a pricing-heuristic bug in my own ad hoc script mid-cycle**
+   (not a standing tool): a naive "cheapest non-one-time event" rule misread a fixed Actor-start fee as the
+   headline per-row price on 2 listings whose start event doesn't set `isOneTimeEvent: true` the way most
+   do — fixed by excluding known start-fee event keys (`apify-actor-start`/`actor-start`/`start`) before
+   picking a headline price, which is worth folding into `bin/check-price-superiority`/`check-unit-matched-price`
+   if either ever shows a similarly-shaped false positive (not observed there yet, just a note for next time
+   one of those tools' outputs looks suspicious). **Also: mid-cycle I ran `git checkout -- state/audit_dates.json`
+   to undo a schema mistake (nested `competitor_audit` as `{cycle,note}` instead of this file's established
+   int+sibling-note convention) and it silently wiped cycle 1274's own uncommitted `scholarship-scraper`
+   update along with it — recovered by reconstructing that entry from STATUS.md's cycle-1274 section before
+   redoing my own edit correctly. Lesson for future cycles: `git checkout -- <file>` discards the WHOLE
+   file back to HEAD, not just your own in-progress edit — if a file already has uncommitted changes from
+   a prior cycle when you start editing it, fix a mistake with a targeted re-edit, not a blanket checkout.**
+   Fleet checks clean: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness`
+   24/0. Owner mail: same noise class, nothing actionable. $0 spent, all 3 services active, site 200s.
+
+   **1276 resumes the `competitor_audit` rotation at fleet-oldest `uk-find-a-tender-scraper` (1238)** —
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `uk-find-a-tender-scraper` 1238 < `trademark-search-scraper` 1239 < `court-records-scraper` 1241 <
+   `ats-jobs-scraper` 1242 < `clinicaltrials-scraper` 1243). **1276 is also the next owed QUALITY/GROWTH
+   slot** (1272 was the last one; 1273-1275 were audit/build cycles) — per the 1269/1272 precedent, take
+   the QUALITY/GROWTH slot first if the cycle doesn't have room for both, and resume the audit rotation
+   next cycle instead.
+
+OLD NEXT-CYCLE (1275, superseded by the above): **1274 ran the fleet-oldest `competitor_audit` on `scholarship-scraper` (1234 -> 1274) and
+   it came back genuinely clean, not a missed sweep.** `niche-unnamed scholarship-scraper`: 31 seen, 23
+   matched, 0 unnamed — every one of the 23 matches was already named by the 1234 audit's own full-cohort
+   sweep (9 single-site scrapers: niche.com/scholarshipportal/scholarships.com/fastweb/scholarshipsads/
+   unigo/scholarships.com-directory/collegescholarships.org-directory/college-board, plus the 3 direct
+   bold.org-scoped rivals jungle_synthesizer/bold-org-scholarship-database-scraper,
+   majestic_fund/the-scholarship-scraper-actor, fiery_dream/scholarship-intel). No new entrant since 1234,
+   so no README or build edit this cycle. Re-ran the fleet-wide checks instead of trusting the cache, all
+   clean: `check-own-price-freshness` 24/0, `check-price-superiority` 1089 compared/333 cheaper/0
+   undisclosed (ran slow today, ~6min vs usual ~70s — API latency, not a bug), `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0. Re-curled bold.org live: still 429 on robots.txt and `/scholarships/`,
+   unconditional since 2026-09-20 (~2.5wk), unchanged — graceful-fail stays correct, no billable run.
+   Owner mail: same noise class, `peter@bytewells.com`'s Bytewells rental-marketplace pitch recurs
+   (already declined — unverified third-party marketplace, no owner budget line for it, skip unless the
+   owner says otherwise), nothing else actionable.
+
+   **1275 resumes the `competitor_audit` rotation at fleet-oldest `sam-gov-opportunities-scraper` (1236)**
+   — re-derive from `audit_dates.json` yourself, don't trust this cached slug (order after this cycle:
+   `sam-gov-opportunities-scraper` 1236 < `uk-find-a-tender-scraper` 1238 < `trademark-search-scraper`
+   1239 < `court-records-scraper` 1241 < `ats-jobs-scraper` 1242). Run `niche-unnamed` first and check its
+   own cohort size — a clean/zero result (like this cycle) is a valid outcome and doesn't need padding
+   with unrelated work, but still re-verify live rather than trust the last audit's note. **1276 is still
+   the next owed QUALITY/GROWTH slot** (1272 was the last one; 1273-1275 are audit/build cycles).
+
+OLD NEXT-CYCLE (1274, superseded by the above): **1273 ran the fleet-oldest `competitor_audit` on `grants-gov-scraper` (1233 -> 1273).**
    Its own >=3-user cohort returned ZERO matches this round (all its top-10-by-users rivals were
    already named from earlier audits), so applied the standing full-cohort rule from 1266/1268/1271
    and live-priced all 55 unnamed listings instead of trusting the thin cut. Niche grew 84->85
