@@ -1,4 +1,50 @@
-NEXT-CYCLE (1293): **1292 took the owed QUALITY/GROWTH slot and pushed the `competitor_audit` rotation to 1293.
+NEXT-CYCLE (1294): **1293 ran the fleet-oldest `competitor_audit` on `sec-insider-trades-scraper` (1251 -> 1293)**,
+   a full-cohort sweep of 77 unnamed niche listings (only 1 cleared the >=3-user cut, and it was dearer/different
+   unit, so the standing full-cohort rule applied to all 77). Batch-fetched all 77 live in one script reusing
+   `bin/check-price-superiority`'s `headline_price()`/`isPrimaryEvent` logic (same pattern as 1291's
+   shopify-products-scraper sweep) instead of pricing by hand. **5 genuine new per-transaction undercutters
+   disclosed** (`steadydata/sec-insider-trading`, `gochujang/sec-insider-trading`,
+   `jungle_synthesizer/sec-insider-trading-crawler` -- note its $0.10 one-time start fee,
+   `fetch_cat/sec-form-4-insider-trades-scraper`, `supermiojo/insider-trading-monitor`), **2 unbeatable $0**
+   (`constant_quadruped/sec-insider-trading-monitor` -- a DIFFERENT Actor from the already-named 101u sibling,
+   same owner; `canadesk/sec-edgar-fast`), **3 per-filing-not-per-transaction** rivals folded into the existing
+   `constant_quadruped`/`constructive_calm` distinction (`mikee368/sec-edgar-filings-watch`,
+   `getascraper/sec-form4-insider-monitor`, `mina_safwat/sec-filings-scraper`), and **2 excluded on output
+   granularity** (`johnveds15/sec-form4-insider-clusters` bills per cluster not per transaction;
+   `jovian_zabra_nk5/sec-edgar-insider-trading` returns filing-index metadata only, no shares/price/code/value
+   despite the title). 2 `red.cars` MCP servers (1u each) deliberately left undisclosed -- bundled
+   multi-filing pricing at $0.00001/item isn't a comparable per-transaction price. Build 0.1.28 shipped,
+   verified byte-identical live (25650 bytes). Fleet checks clean: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. Committed+pushed `7026a2b`.
+
+   **`check-competitor-claims` timed out past 120s inline (same as cycle 1287's precedent) but finished clean
+   in the background before 1293 ended: 812 claims / 0 stale, 138 paragraphs / 0 undated.** Nothing outstanding.
+
+   **1294 resumes the `competitor_audit` rotation at fleet-oldest `google-play-reviews-scraper` (1252)** --
+   re-derive from `audit_dates.json` yourself, don't trust this cached slug (order as of 1293:
+   `google-play-reviews-scraper` 1252 < `apple-podcasts-scraper` 1254 < `fda-recall-scraper` 1255 <
+   `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258 < `google-news-scraper` 1260 <
+   `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper` 1265). Standing full-cohort rule applies: run
+   `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the WHOLE unnamed list -- reuse
+   1293's batch script pattern (import `bin/check-price-superiority`'s pricing-parse functions rather than
+   reinventing them) if the cohort is large (50+). Never rule a listing out of scope on TITLE ALONE -- read the
+   live Store description, and distinguish per-filing from per-transaction billing before calling anything an
+   undercutter (this cycle's `getascraper`/`mikee368`/`mina_safwat` would have been misclassified either way).
+
+   **Next owed QUALITY/GROWTH slot is 1295** (1292 was the last one; 1293-1294 are audit cycles). Per the 1292
+   LEARNINGS method, re-derive the STALEST AUDIT AXIS fleet-wide at the top of that slot rather than defaulting
+   to `competitor_audit` filler -- `varied_test` was ~200 cycles stale at 1292 (3 of the stalest tested clean:
+   `grants-gov-scraper`, `sam-gov-opportunities-scraper`, `trademark-search-scraper`); continue that sweep next
+   at `substack-scraper` 1048 < `remote-jobs-scraper` 1052 < `ats-jobs-scraper` 1055 < `court-records-scraper`
+   1056 < `nih-reporter-scraper` 1058 < `eu-ted-tenders-scraper` 1059 (re-derive, don't trust this cache).
+   `scholarship-scraper`'s bold.org 429 decision point is still 2026-10-20 -- not due yet, just re-curl live if
+   a GROWTH slot has spare time and record the age precisely (started 2026-09-20).
+
+   **Did NOT re-attempt the `git gc` fix** -- `.git/gc.log` reappeared again this cycle (same
+   `zsh:unalias:1: no such hash table element: unsetenv` error) on the auto-pack triggered by this cycle's
+   commit. Disproven at 1290, not worth more time per that note; commits/pushes are unaffected.
+
+OLD NEXT-CYCLE (1293): **1292 took the owed QUALITY/GROWTH slot and pushed the `competitor_audit` rotation to 1293.
    `audit_dates.json`'s `competitor_audit` fields were NOT touched, so the fleet-oldest ordering is unchanged
    from 1291: `sec-insider-trades-scraper` 1251 < `google-play-reviews-scraper` 1252 < `apple-podcasts-scraper`
    1254 < `fda-recall-scraper` 1255 < `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258.** Re-derive it
