@@ -41,6 +41,11 @@ const input = (await Actor.getInput()) ?? {};
 // that the platform fills in for any run that omits it, and silently AND-ing that default into a
 // pasted URL's search would quietly return the wrong studies. Every other input the URL does not
 // mention (maxResults, rowsPerStudy, watchLabel, hand-set dates/ages/status/sort) still applies.
+// If the URL's aggFilters DOES carry a status/phase/studyType/sex/healthy/ages/funderType code
+// AND the matching typed input is also set, the typed input wins outright (its own code is
+// dropped from the URL's aggFilters below) rather than ANDing the two into a silent contradiction
+// -- fixed cycle 1325 after a startUrl's `aggFilters=status:rec` plus a typed
+// `overallStatus:["COMPLETED"]` verified live to return 0 rows with no warning explaining why.
 const urlAggFilters = new Map();
 applyStartUrl(input.startUrl);
 
@@ -284,6 +289,22 @@ if (ageRangeFromYears !== null && ageRangeToYears !== null && ageRangeFromUnit !
 // form composes with AND inside the existing filter.advanced string, so no extra param needed.
 const AGE_GROUPS = new Set(['CHILD', 'ADULT', 'OLDER_ADULT']);
 const ageGroups = cleanList(input.ageGroups, AGE_GROUPS);
+// A startUrl's aggFilters can carry status/phase/studyType/sex/healthy/ages/funderType codes
+// (see the precedence note above), but those 7 typed inputs are sent via filter.overallStatus /
+// AREA[...] (baseParams below), NOT via the aggFilters Map -- unlike docs/results/violation,
+// which share that Map and so already get overwritten there by key. Without this, a startUrl
+// carrying aggFilters=status:rec plus a typed overallStatus=[COMPLETED] AND together into a
+// silent 0-row contradiction instead of the typed value winning as the precedence note promises
+// (verified live, cycle 1325: declaredMatches=0, the generic "No studies matched" advice never
+// mentions this cause). Clearing the URL's code here makes the typed input win outright, same as
+// docs/results/violation already do.
+if (overallStatus.length) urlAggFilters.delete('status');
+if (phases.length) urlAggFilters.delete('phase');
+if (studyTypes.length) urlAggFilters.delete('studyType');
+if (sex) urlAggFilters.delete('sex');
+if (acceptsHealthyVolunteers) urlAggFilters.delete('healthy');
+if (ageGroups.length) urlAggFilters.delete('ages');
+if (funderTypes.length) urlAggFilters.delete('funderType');
 // Study-document filter. Values are the UI's lowercase codes, OR-ed by SPACE inside one
 // aggFilters pair (`docs:sap prot`); a comma there is a 400, and an unknown code is NOT an
 // error — it silently returns 0 rows — so this list must stay a strict whitelist.
@@ -646,9 +667,10 @@ function baseParams({ countTotal = false } = {}) {
     // Verified live: `filter.hasResults` is rejected as unknown; `aggFilters=results:with` is
     // the real parameter name for this. Multiple aggFilters pairs are COMMA-separated and AND-ed
     // (`docs:sap,results:with` verified live: 9,559 vs 10,597 / 18,341 for each alone).
-    // Seeded with whatever a `startUrl` carried (status/phase/studyType/... pass straight through);
-    // a typed input for the same key overwrites it, so the Map is keyed by aggFilter id to keep
-    // the pair unique -- the API takes the LAST value for a repeated key, not the intersection.
+    // Seeded with whatever a `startUrl` carried (status/phase/studyType/sex/healthy/ages/funderType
+    // already stripped above when a typed input for that key is present). A typed `results`/`docs`/
+    // `violation` input overwrites its own startUrl code here instead, since those three route
+    // through this same Map -- the API takes the LAST value for a repeated key, not the intersection.
     const agg = new Map(urlAggFilters);
     if (resultsAvailability) agg.set('results', resultsAvailability);
     if (documentTypes.length) agg.set('docs', documentTypes.join(' '));
