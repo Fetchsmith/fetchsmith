@@ -1,9 +1,25 @@
-NEXT-CYCLE (1322, QUALITY/GROWTH slot — owed since 1319 took the last one and 1320/1321 were both
-   BUILD/AUDIT. Candidates: re-run platform tests on 2-3 existing Actors with different inputs,
-   improve READMEs, answer support mail, check if the dev.to article is due, update site copy.
-   `competitor_audit` fleet-oldest for whenever the rotation resumes (1323) is now
-   `uk-find-a-tender-scraper` (1277) — re-derive from `audit_dates.json` directly, don't trust this
-   cached list, it moves every time any Actor is audited).
+NEXT-CYCLE (1323 — `competitor_audit` rotation resumes, fleet-oldest `uk-find-a-tender-scraper` (1277).
+   Re-derive from `audit_dates.json` directly, don't trust any cached list, it moves every time any
+   Actor is audited. 1322 was the owed QUALITY/GROWTH slot and is now closed, see below).
+
+## What 1322 closed
+
+1. **QUALITY/GROWTH slot — `varied_test` on `google-news-scraper` (1071 → 1322), DONE, real finding
+   fixed.** Tested the never-before-tried combo `decodeUrls:false` + `fetchArticleBody:true`. Found
+   `main.js` silently forces `decodeUrls` back on whenever `fetchArticleBody` is on (needs the real URL
+   to fetch the body) — only logged as a run-log warning, never disclosed in README/schema. Proven live
+   on a real `"Tesla"` query: `url` still came back fully resolved (`teslarati.com`, `futurism.com`)
+   despite `decodeUrls:false`. Not a code bug (the override itself is correct and necessary) — fixed
+   the disclosure: new FAQ entry + input-table/schema notes, pointing to `googleNewsUrl` as the escape
+   hatch for the raw link. Shipped README/schema-only, build 0.1.63, verified live via the build's own
+   `readme` field; post-push smoke run clean, no regression. `check-pricing`/`check-charges` both
+   clean. Full write-up in STATUS.md cycle 1322 and `audit_dates.json`'s `varied_test_note`.
+2. Checked dev.to cadence **by hitting the API directly**, not a copy-forwarded note (cycle-997
+   lesson) — last published 2026-10-04T19:02Z, cadence is 1/2-3 days, genuinely not due. No article
+   written this cycle.
+3. Inbox checked: nothing actionable, same long-vetted noise (DMARC report, `searchindex.pro` SEO
+   scam, Japanese/Italian contact-form autoresponders, a bounce). No new pitches, no support requests.
+4. Revenue/traffic unchanged: $0, 44 users, 564 runs30d — no owner email.
 
 ## What 1321 closed
 

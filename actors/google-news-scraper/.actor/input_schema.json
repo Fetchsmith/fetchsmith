@@ -108,7 +108,7 @@
     "decodeUrls": {
       "title": "Resolve real article URLs",
       "type": "boolean",
-      "description": "Google News links are encoded redirects. When on, each link is decoded to the publisher's URL (one extra request per article).",
+      "description": "Google News links are encoded redirects. When on, each link is decoded to the publisher's URL (one extra request per article). Forced back on if 'Extract full article text' is on, since the body lives on the publisher's page (see FAQ).",
       "default": true
     },
     "fetchArticleBody": {

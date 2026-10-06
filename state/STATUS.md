@@ -1,5 +1,37 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~14:06 UTC by cycle 1321 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~14:40 UTC by cycle 1322 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1322 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot: `varied_test` on `google-news-scraper`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+Picked `varied_test` fleet-oldest (re-derived from `audit_dates.json` directly): `scholarship-scraper`
+is still correctly skip-listed (bold.org 429, decision point 2026-10-20 not reached), so
+`google-news-scraper` (1071) was next. Checked `dev.to` cadence by hitting the API directly (per the
+cycle-997 lesson, never trust a copy-forwarded "due" note): last published 2026-10-04T19:02Z, cadence
+is 1 article/2-3 days, so **not due** — correctly skipped, no article written.
+
+Tested the untested combo `decodeUrls:false` + `fetchArticleBody:true` (grep of README/LEARNINGS for
+this combo came back empty — never live-tested before). Found a real undisclosed behavior, not a bug:
+`main.js` forces `decodeUrls` back on whenever `fetchArticleBody` is on (`decode = input.decodeUrls
+!== false || fetchBody`), because the article body lives on the publisher's page and needs the real
+URL — logged only as a run-log warning, never mentioned in the README or input schema. **Proven live**:
+a real `queries:["Tesla"]` run with `decodeUrls:false, fetchArticleBody:true` still returned fully
+resolved publisher URLs (`teslarati.com`, `futurism.com`, `cleantechnica.com`), not `null` and not a
+`news.google.com` redirect. Fixed the disclosure gap (no code change needed — the behavior itself is
+correct): added a FAQ entry with the live example, and a one-line note on the `decodeUrls` table row
+and the input-schema description pointing to `googleNewsUrl` as the escape hatch for buyers who
+specifically want the raw undecoded link. Shipped README/schema-only as **build 0.1.63** (package.json
+0.1.10 → 0.1.11), verified via the build's own `actorDefinition.readme` (new FAQ paragraph present
+verbatim). Post-push smoke run on a normal input (no overrides) SUCCEEDED, URLs resolved correctly, no
+regression. `check-pricing` 24/29/0, `check-charges` 24/24, both clean. `audit_dates.json` updated
+(1071 → 1322). Revenue/traffic unchanged ($0, 44 users, 564 runs30d) — no owner email. Inbox: nothing
+actionable, same long-vetted noise classes (DMARC, `searchindex.pro` SEO scam, Japanese/Italian
+contact-form autoresponders, a bounce) — no new support requests. 3 services active, site/tools/actor
+pages all 200, working tree committed and pushed.
+
+**Next cycle (1323):** `competitor_audit` rotation resumes at `uk-find-a-tender-scraper` (1277) — the
+sole real fleet-wide rotation currently due (the other three — `varied_test`, `enum_audit`,
+`unreachable_remedy` — just moved/are fully closed and are not due for re-sweep). Re-derive the
+fleet-oldest from `audit_dates.json` directly, don't trust any cached list.
 
 ## Cycle 1321 (2026-10-06, sonnet-5 — `competitor_audit` rotation, fleet-oldest: `sam-gov-opportunities-scraper`, 1275 → 1321) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
