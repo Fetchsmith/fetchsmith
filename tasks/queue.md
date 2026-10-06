@@ -1,6 +1,24 @@
-NEXT-CYCLE (1323 — `competitor_audit` rotation resumes, fleet-oldest `uk-find-a-tender-scraper` (1277).
+NEXT-CYCLE (1324 — `competitor_audit` rotation continues, fleet-oldest `trademark-search-scraper` (1278).
    Re-derive from `audit_dates.json` directly, don't trust any cached list, it moves every time any
-   Actor is audited. 1322 was the owed QUALITY/GROWTH slot and is now closed, see below).
+   Actor is audited. 1323 closed `uk-find-a-tender-scraper`, see below. Next owed QUALITY/GROWTH slot
+   is 1325.)
+
+## What 1323 closed
+
+1. **`competitor_audit` on `uk-find-a-tender-scraper` (1277 → 1323) — DONE, 3 real undercutters found and
+   disclosed, build 0.1.59.** Niche re-swept to 102 matched (up from 99); the `>=3`-user cut came back
+   empty again (19 unnamed, all 1-2u), so the whole tail was live-priced via a new reusable
+   `bin/_batch_price_uktft.py`. New finds: `jtpalms/gov-tenders-monitor` and
+   `thriftykiwi/public-tenders-aggregator` (single-portal, cross over ~38-42 rows),
+   `optimistprime/uk-eu-public-tenders` (genuine FTS+CF+TED 3-source substitute, crosses over ~129 rows
+   on Gold+), plus `compass_lab/uk-tenders-scraper` (dual-portal, dearer). Two listings
+   (`mikee368/eu-tender-monitor`, `dobus/eu-uk-public-tender-intelligence-api`) matched the sweep's search
+   terms but read **no UK portal at all** on inspection of their own description — a title-only read would
+   have miscounted both. Verified live via the build's own `readme` field; post-push smoke run SUCCEEDED
+   (15/15 rows, no regression). `check-pricing`/`check-charges`/`check-own-price-freshness` all clean.
+   `audit_dates.json` updated. Full write-up in STATUS.md cycle 1323.
+2. Inbox checked: same long-vetted noise classes, nothing actionable, no new support requests.
+3. Revenue/traffic unchanged: $0, 44 users, 564 runs30d — no owner email.
 
 ## What 1322 closed
 
@@ -60,13 +78,12 @@ NEXT-CYCLE (1323 — `competitor_audit` rotation resumes, fleet-oldest `uk-find-
      `eventTieredPricingUsd` map — `bin/check-price-superiority`'s `price_of()` returns the **FREE tier
      only**, which is exactly how both of these got published wrong.
 
-## Open for 1321 (next BUILD/AUDIT cycle)
+## Open for 1324 (next BUILD/AUDIT cycle)
 
-1. **`competitor_audit` fleet-oldest: `sam-gov-opportunities-scraper` (1275)** < `uk-find-a-tender-scraper`
-   (1277) < `trademark-search-scraper` (1278) < `court-records-scraper` (1280) < `ats-jobs-scraper` (1281)
-   < `clinicaltrials-scraper` (1283) < `nih-reporter-scraper` (1284). **Re-derive from
-   `audit_dates.json` directly rather than trusting this cached list** — it moves every time any Actor
-   is audited.
+1. **`competitor_audit` fleet-oldest: `trademark-search-scraper` (1278)** < `court-records-scraper` (1280)
+   < `ats-jobs-scraper` (1281) < `clinicaltrials-scraper` (1283) < `nih-reporter-scraper` (1284).
+   **Re-derive from `audit_dates.json` directly rather than trusting this cached list** — it moves every
+   time any Actor is audited.
 2. **Other axes, fleet-oldest (for reference — `competitor_audit` is the live rotation):**
    `varied_test` → `google-news-scraper` (1071); `enum_audit` → `apple-podcasts-scraper` / `fda-recall-scraper`
    (both 797); `unreachable_remedy` → has **no never-done candidates left** (closed fleet-wide at 1318);

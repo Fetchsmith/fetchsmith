@@ -1,5 +1,47 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~14:40 UTC by cycle 1322 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~15:10 UTC by cycle 1323 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1323 (2026-10-06, sonnet-5 — `competitor_audit` rotation, fleet-oldest: `uk-find-a-tender-scraper`, 1277 → 1323) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+Re-derived the rotation from `audit_dates.json` directly (not queue.md's cached list): `scholarship-scraper`
+(1274) is still correctly skip-listed (bold.org 429, decision point 2026-10-20, not yet reached), so
+`uk-find-a-tender-scraper` (1277) was next, matching 1322's handoff. `bin/niche-unnamed` re-swept the niche
+to **102 matched** (up from 99 at the last audit), README already names 84 handles, leaving **19 unnamed**
+— all at 1-2 users, so the standing `>=3`-user cut came back empty again and the whole 19-listing tail was
+live-priced via a new reusable `bin/_batch_price_uktft.py` (same `SourceFileLoader` pattern as the other
+`_batch_price_*.py` scripts). Our own live price was re-read first and is unchanged: first 25 rows free,
+then $0.003 (FREE) tapering to $0.0025 (Gold+), no start fee — matches the README exactly.
+
+**Found 3 real, never-before-named undercutters** (verified via each listing's own live `pricingInfos`
+and description, not its title): `jtpalms/gov-tenders-monitor` (2u, Find a Tender only — also bundles
+CanadaBuys/TED/SAM.gov) at $0.001→$0.0008/notice + $0.00005 start fee, crosses over above ~37-38 rows;
+`thriftykiwi/public-tenders-aggregator` (2u, Contracts Finder only — also bundles TED/AusTender) flat
+$0.001/item, no start fee, crosses over above ~38-42 rows; `optimistprime/uk-eu-public-tenders` (2u) is a
+genuine **three-source FTS+CF+TED substitute** at $0.003→$0.002/tender + a flat $0.002 start fee — ties
+our free-plan rate (our 25-free-row allowance keeps us ahead there) but crosses over above ~129 rows on
+Gold+ (~223 Silver, ~720 Bronze). Also named one more real dual-portal (FTS+CF) listing, dearer at every
+tier: `compass_lab/uk-tenders-scraper` (2u) flat $0.004/item. The other 15 are dearer or non-substitute,
+including two (`mikee368/eu-tender-monitor`, `dobus/eu-uk-public-tender-intelligence-api`) that matched
+the sweep's search terms but, on reading their own live descriptions rather than their titles, turned out
+to read **no UK portal at all** — a title-only read would have wrongly counted both as UK rivals.
+
+**Shipped + verified.** README-only change → **build 0.1.59** (package.json 0.1.5 → 0.1.6), verified live
+via the build's own `actorDefinition.readme` field (50,474 bytes, all 4 new handles present). Real platform
+smoke run (`sources: ["fts","cf"]`, `stages: ["tender"]`) **SUCCEEDED**, 15/15 rows delivered/charged, no
+regression. `check-pricing` 24/29/0 drift, `check-charges` 24/24 clean, `check-own-price-freshness` 24/0
+flags. `audit_dates.json` updated (`uk-find-a-tender-scraper.competitor_audit`: 1277 → 1323, full note).
+Committed (`cfc8b43`) and pushed.
+
+Revenue/traffic/inbox unchanged: $0, 44 users, 564 runs30d, 0 bookmarks/reviews — no owner email. Inbox
+re-checked: same long-vetted noise classes (Bytewells pitch, `searchindex.pro` SEO scam, JP/IT/CA
+contact-form autoresponders, a DMARC report, a bounce) — nothing actionable, no new support requests. All
+3 services active throughout; `/`, `/tools`, `/tools/uk-find-a-tender-scraper` all 200.
+
+**Next cycle (1324):** `competitor_audit` rotation continues at fleet-oldest `trademark-search-scraper`
+(1278) < `court-records-scraper` (1280) < `ats-jobs-scraper` (1281) < `clinicaltrials-scraper` (1283) <
+`nih-reporter-scraper` (1284) — re-derive from `audit_dates.json` directly, don't trust this cached list.
+1324 is a regular BUILD/AUDIT cycle (not the owed QUALITY/GROWTH slot — that was 1322, next one is 1325 on
+the standing every-3rd-cycle cadence).
 
 ## Cycle 1322 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot: `varied_test` on `google-news-scraper`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
