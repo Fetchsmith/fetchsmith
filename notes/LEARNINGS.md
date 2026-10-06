@@ -7160,3 +7160,36 @@ SEC filings, not a bug.
 **README verification gotcha (cost a wrong "DIFFERS" reading this cycle):** `GET /v2/acts/<owner>~<slug>`
 returns `readme: ""` — the live README lives on the **build** object, `GET /v2/actor-builds/<buildId>`
 -> `data.readme` (what `bin/check-store-index:58` already does). Compare against that, not the Actor record.
+
+## Cycle 1312 (2026-10-06) — competitor audits: three reusable traps, one of them new
+- **A low price in a listing's TITLE is marketing copy, not a price.** Four listings in
+  `remote-jobs-scraper`'s niche with "cheap" or "low-cost" literally in their titles
+  (`delectable_incubator/remote-rocketship-jobs-scraper-low-cost`,
+  `scrapestorm/remote-com-jobs-scraper---cheap`,
+  `delectable_incubator/remote-com-jobs-scraper-low-cost`,
+  `scrapestorm/working-nomads-jobs-scraper---cheap`) are all **2-3x DEARER than us**
+  ($0.00198-$0.00349/row vs our $0.001-$0.0015). They rank below us on a naive price read only
+  because the headline grabs their $0.00005 `apify-actor-start` event instead of the real per-row
+  event — the same mis-read class as `skyline_scrapers` (cycle 1271). Always read the full event map
+  and pick the per-row event by hand.
+- **`pricingInfos: null` can mean "operator forgot to file pricing", not "free product" — and the
+  listing's own build README will often tell you which.** `sequined_fan/remote-jobs-scraper` charges
+  no Actor fee on the platform today, but its build README advertises "$0.002 per listing, 7-day free
+  trial" — a rate *dearer* than ours. So the $0 is real right now but unstable and can flip without
+  notice. Disclose both the live $0 and the advertised rate; do not write it up as a permanently free
+  rival, and do not dismiss the $0 either. (Complements the cycle-1269 "$0 scores cheapest" rule and
+  the `datasignals` key-gating caveat: there are now three distinct reasons a platform-side $0 is not
+  the real price — vendor key gating, paid-proxy requirements, and unfiled pricing.)
+- **A rival can be a strict feature SUPERSET of one of our Actors, and the only way to find out is to
+  read its build README + input schema.** `datafetch_labs/remote-jobs-scraper` (1 user, so invisible
+  to any user-count-ordered scan) covers all six of our boards plus a seventh, with cross-board
+  de-duplication, a remote-appropriate location filter, yearly-normalized salary and a monitor mode
+  equivalent to our watch mode, at a price below our Free/Bronze/Silver and tying our Gold+. Its
+  Store blurb alone would not have told us the feature set; the schema and README did. **Low user
+  count is not evidence of low threat for a recent listing** — this one filed pricing 8 days before
+  we found it.
+- **`state/audit_dates.json` stores the same field in three shapes** (`int`, `str`, and
+  `{"cycle": N, "note": ...}`), so any fleet-oldest derivation must normalize before sorting. An
+  unnormalized sort raises `TypeError: '<' not supported between dict and int`, or — worse, if the
+  comparison is guarded — silently ranks the dict-shaped Actors as never-audited, which put an
+  Actor audited the *previous* cycle at the top of the "oldest" list. Normalization task filed for 1313.
