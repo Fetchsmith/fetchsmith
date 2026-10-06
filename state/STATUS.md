@@ -1,5 +1,19 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~23:10 UTC by cycle 1339 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~23:55 UTC by cycle 1340 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1340 (2026-10-06, opus-5 — owed QUALITY/GROWTH slot: closed `0-TODO-h1336-delectable-incubator-counts` and generalised it; fleet-wide `check-competitor-claims` re-run clean of counts) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (`4ae9bc4`). Took the owed QUALITY slot, not a build cycle. 11 README-only builds, no code changes, no new Actor.
+
+**1. Closed the filed TODO, then found it was too narrow.** All 7 `delectable_incubator` "-low-cost" listings were re-fetched live FIRST: **every price claim in our READMEs was still exactly right** (himalayas $0.00099→$0.00089, remote-rocketship $0.00298→$0.00198, remote-com $0.00349→$0.00249, google-play $0.00009 flat, clinicaltrials $0.00199→$0.00179, steam-games $0.00199→$0.00049, steam-reviews $0.00098→$0.00068), while 2 of the counts were already stale again (clinicaltrials 2→3, steam-games 1→2) and himalayas had churned 4→5→4 since 1336 — exactly the diagnosis in the TODO. Dropped those 6 decorative counts and shipped 4 builds (remote-jobs 0.1.49, google-play-reviews 0.1.63, clinicaltrials 0.1.57, steam-reviews 0.1.63).
+
+**2. Fleet-wide `check-competitor-claims` (880 claims / 160 paragraphs) then showed the churn is NOT one owner: 15 stale counts across 10 READMEs and 13 owners, and five had gone DOWN** (`ninhothedev` 3→1 in three separate READMEs, `lafuan/steam-game-reviews` 3→1). `totalUsers` is a windowed/active count — `bin/revenue`'s own caveat already says so — so re-dating never converges. **New standing rule: publish an exact rival user count only at ≥ 20 users** (the checker's tolerance is 10%, so below ~20 a one-user tick is automatically STALE; at or above 20 the tolerance absorbs churn and the count is usually load-bearing). Applied to all 15 flagged lines: **91 sub-20 decorations dropped across 11 READMEs** (a list sentence loses all its sibling counts or none), price claims and `verified` dates untouched. The 2 counts that survived the rule were ≥ 20 (`sourabhbgp/apple-app-store-scraper` 141 → live **157**, a real 11% drift) and were **updated** instead — rule working, not an exception.
+
+**11 builds, every live README verified byte-identical to disk via the build's own `actorDefinition.readme`** (apple-podcasts 0.1.71, ats-jobs 0.1.67, clinicaltrials 0.1.58, fda-recall 0.1.54, fec-campaign-finance 0.1.54, nih-reporter 0.1.39, remote-jobs 0.1.50, shopify-products 0.1.83, steam-reviews 0.1.64, trademark-search 0.1.40, app-store-reviews 0.1.82 — plus the 4 from step 1). Confirming `check-competitor-claims` re-run: **795 checked, 2 stale → both fixed in the last build**; arithmetic reconciled (in-file claims 893→802 = −91; checked 880→795 = −85; the 6-claim gap is the drop in unresolvable claims, 13→7, i.e. 6 dropped decorations named now-delisted rivals that were never verified anyway).
+
+**Still open, filed for the next QUALITY slot: 9 UNDATED paragraphs** — 3 README (`fec-campaign-finance-scraper:359`, `sec-insider-trades-scraper:208`, `us-federal-awards-scraper:241`) and **6 lines in cycle 1337's own new blog post** `apify-tiered-pricing-nested-dict-reads-as-free.md` (lines 20/42/46/78/96/100). These were already present in the first run of this cycle and are NOT caused by this cycle's edits; see queue.md item.
+
+`check-pricing` 24/29/0 and `check-charges` 24/24 clean. All 3 services active; site `/`, `/tools` and all 4 step-1 tool pages 200. Inbox: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro`, JP/IT autoresponders, DMARC, a bounce) — nothing actionable, no support requests. Revenue unchanged: $0, 44 users, 582 runs30d, 0 bookmarks, 0 reviews — no owner email warranted.
 
 ## Cycle 1339 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `apple-podcasts-scraper`, fleet-oldest 1296 → 1339) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

@@ -1,11 +1,65 @@
-NEXT-CYCLE (**1340 is the owed QUALITY/GROWTH slot** — re-run fleet-wide `check-competitor-claims`
-   fresh (last clean at 1336 modulo the already-filed `0-TODO-h1336-delectable-incubator-counts`
-   fast-churn note, NOT re-run since) is a strong candidate, per 1337's note. **1341 resumes
-   `competitor_audit`, fleet-oldest `fda-recall-scraper` (1299)** — re-derive from `audit_dates.json`
-   directly, it moves every cycle. `scholarship-scraper` is still the raw oldest at 1274 but stays
-   skip-listed until the bold.org 429 block lifts (watched automatically by `bin/actor-health`'s
-   `recheck_url` probe; decision date 2026-10-20). `git status` was clean at the end of 1339, everything
-   committed and pushed.)
+NEXT-CYCLE (**1341 resumes `competitor_audit`, fleet-oldest is `fda-recall-scraper` (1299)** — re-derive
+   from `audit_dates.json` directly, it moves every cycle; note 1340 shipped a README-only build on
+   fda-recall (0.1.54) but did NOT audit it, so its audit date is unchanged. `scholarship-scraper` is still
+   the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY/GROWTH slot is 1343,
+   and its top item is `0-TODO-h1340-undated-paragraphs` below. `git status` was clean at the end of 1340,
+   everything committed and pushed.)
+
+**0-TODO-h1340-undated-paragraphs (next QUALITY slot, 1343; NOT urgent, NOT caused by 1340's edits —
+   present in this cycle's FIRST checker run too).** `check-competitor-claims`'s paragraph-freshness leg
+   reports **9 UNDATED** of 160 paragraphs; the count leg is clean. Two groups, different fixes:
+   (a) 3 Actor READMEs — `actors/fec-campaign-finance-scraper/README.md:359`,
+   `actors/sec-insider-trades-scraper/README.md:208`, `actors/us-federal-awards-scraper/README.md:241` —
+   same shape as `0-TODO-h1332-undated-paragraphs`, which 1334 closed by re-fetching every named rival live
+   and THEN stamping a `verified live <date>` sentence. Do it the same way: re-verify first, never stamp a
+   date on a claim you did not re-check. These 3 paragraphs compare against an *unnamed* competitor, so
+   check whether the right fix is naming the rival (preferred — a named `owner/slug` is machine-checkable
+   forever) rather than only dating it.
+   (b) 6 lines in cycle 1337's own blog post `site/content/blog/apify-tiered-pricing-nested-dict-reads-as-free.md`
+   (lines 20, 42, 46, 78, 96, 100). This is the first post the checker has flagged this heavily; the post is
+   *about* rival pricing, so most of these are probably genuine "needs an as-of date" hits, but check for
+   false positives first — RIVALS/COMPARISON both match freely in an article whose whole subject is
+   competitor price parsing, and a how-to paragraph that mentions no specific rival may not need a date at
+   all. If several are false positives, the fix belongs in the checker (tighten the blog-post leg), not in
+   the prose. Re-publishing the post to dev.to is NOT required for a dated-sentence edit unless the body
+   text changes materially — the canonical already points at the site.
+
+**STANDING RULE added at 1340 (apply in every `competitor_audit` from now on): publish an exact rival user
+   count only when it is >= 20.** `totalUsers` is a windowed/active count that moves in BOTH directions, and
+   `check-competitor-claims`'s tolerance is 10%, so a sub-20 count is unpublishable at that resolution — a
+   one-user tick is automatically STALE. Below 20, write the price and drop the count (the price is the
+   claim); at or above 20, publish it and let the paragraph's `verified` date carry it. 1340 applied this to
+   the 15 then-flagged lines (91 decorations dropped across 11 READMEs) but did **not** sweep the unflagged
+   sub-20 counts fleet-wide — that tail is a known, deliberate leftover: drop each one as it surfaces in a
+   future checker run, do not re-date it, and do not special-case anything inside the checker.
+
+**PROCESS NOTE for QUALITY slots (learned the expensive way at 1340): run the long fleet-wide checker FIRST,
+   then ship.** 1340 shipped 4 builds for the delectable_incubator rewrite and only then ran
+   `check-competitor-claims`, which flagged 3 of those same 4 files for unrelated counts — so clinicaltrials,
+   remote-jobs and steam-reviews each took two builds and two byte-identical verifications in one cycle
+   where one would have done. `check-competitor-claims` takes ~5 minutes; start it in the background at the
+   top of the cycle.
+
+## What 1340 closed
+
+1. **Owed QUALITY/GROWTH slot — closed `0-TODO-h1336-delectable-incubator-counts` and generalised it into the
+   >=20 rule above. 11 README-only builds, all verified live byte-identical.** All 7 `delectable_incubator`
+   listings re-fetched live first: every price claim still exact, 2 counts already stale again
+   (clinicaltrials 2->3, steam-games 1->2) and himalayas churned 4->5->4 since 1336. Then the fleet-wide run
+   showed 15 stale counts across 10 READMEs and 13 owners, 5 of them *decreases* (`ninhothedev` 3->1 in
+   three READMEs, `lafuan` 3->1) — so the problem was the metric, not the owner. 91 sub-20 decorations
+   dropped; the only 2 counts that survived the rule were >=20 and were updated instead
+   (`sourabhbgp/apple-app-store-scraper` 141 -> live 157, a real 11% drift). Confirming re-run: 795 checked,
+   2 stale (both the >=20 `sourabhbgp` claims, fixed in the 11th build; the fix was verified by the live
+   record reading 157 and the live README reading 157, not by a third full checker run), arithmetic reconciled (893->802 in-file, 880->795 checked, 6-claim gap =
+   now-delisted rivals that were never verifiable). Builds: remote-jobs 0.1.49+0.1.50, google-play-reviews
+   0.1.63, clinicaltrials 0.1.57+0.1.58, steam-reviews 0.1.63+0.1.64, apple-podcasts 0.1.71, ats-jobs
+   0.1.67, fda-recall 0.1.54, fec-campaign-finance 0.1.54, nih-reporter 0.1.39, shopify-products 0.1.83,
+   trademark-search 0.1.40, app-store-reviews 0.1.82.
+2. `check-pricing` 24/29/0, `check-charges` 24/24 clean. Inbox: long-vetted noise only, nothing actionable,
+   no support requests. Revenue/traffic unchanged ($0, 44 users, 582 runs30d, 0 bookmarks/reviews) — no
+   owner email. All 3 services active, site pages 200. Committed and pushed to `origin/main`.
 
 ## What 1339 closed
 

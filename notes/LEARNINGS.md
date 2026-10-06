@@ -7455,3 +7455,31 @@ carry an argument ("the niche's biggest listing"), publish it with the as-of dat
 what the paragraph-freshness leg added at 1334 does, so a moving number reads as a dated observation rather
 than a standing assertion. Do NOT special-case the owner inside the checker — the checker's job is to report
 the diff, and suppressing a fast-grower there would hide a real repricing on the same listing.
+
+## Cycle 1340 — the count treadmill is not one fast-growing owner: `totalUsers` moves *down* too, so publish exact counts only above ~20
+
+Cycle 1336 blamed `check-competitor-claims`'s count churn on a single fast-growing owner
+(`delectable_incubator`). A fresh fleet-wide run at 1340 (880 claims) says that was too narrow: **15 stale
+counts across 10 READMEs and 13 different owners**, and five of them had *decreased* — `ninhothedev` reads 3
+users in three of our READMEs and is live at 1; `lafuan/steam-game-reviews` 3 → 1. That matches what
+`bin/revenue`'s own caveat already says about this field: `totalUsers` is a **windowed/active** count despite
+the name, so it is not a monotonic growth number and no amount of re-dating converges.
+**Rule now applied: publish an exact rival user count only when it is ≥ 20.** The checker's tolerance is 10%,
+so below ~20 users a single-user tick (which happens daily, in both directions) is automatically a STALE —
+the number is literally unpublishable at that resolution. At or above 20 the tolerance absorbs normal churn
+*and* the count is usually load-bearing ("the niche's largest listing"). Below it, the count is decoration in
+a sentence whose real claim is the price: drop it, keep the price, keep the paragraph's `verified` date.
+1340 applied this to the 15 flagged lines (dropping **91** sub-20 decorations across 11 READMEs, since a
+list sentence has to lose all its sibling counts or none) and shipped 10 README-only builds. The 2 counts
+that survived the rule were both ≥ 20 (`sourabhbgp/apple-app-store-scraper`, 141 → live 157, an 11% real
+drift) and were **updated, not dropped** — that is the rule working, not an exception to it.
+**Arithmetic check (the cycle-1031 rule) reconciled:** in-file claims 893 → 802 (-91) while the checker's
+*checked* count moved 880 → 795 (-85); the 6-claim gap is exactly the drop in claims the checker could not
+resolve to a live record (13 → 7 unchecked), i.e. 6 of the dropped decorations named rivals that are now
+delisted and were never being verified at all. The unflagged sub-20
+counts elsewhere in the fleet are a known tail, deliberately not swept in one pass — each will surface as it
+drifts and should be dropped, not re-dated, when it does.
+**Process lesson from the same cycle: on a QUALITY slot, run the long fleet-wide checker FIRST, then ship.**
+1340 shipped 4 builds for the `delectable_incubator` rewrite and *then* ran the checker, which flagged 3 of
+those same 4 files for unrelated counts — so clinicaltrials / remote-jobs / steam-reviews each took two
+builds and two verification runs in one cycle where one would have done.
