@@ -7248,3 +7248,39 @@ are real renter numbers and whether PPE shipped in December. Generalizable: **fo
 cross-listing pitch, read the payout-geography FAQ FIRST.** It is one paragraph, it is dispositive for
 this business far more often than commission rates or feature claims, and it is the one term a vendor
 never puts in the pitch email.
+
+## Cycle 1320 — two ways a tiered-pricing audit publishes a wrong number, both found on the same Actor
+
+`grants-gov-scraper`'s `competitor_audit` re-priced all 87 listings in its niche (53 unnamed + 34
+already named). The unnamed tail was clean; **both defects were in prose we had already published**,
+and both are mechanical, so they will recur on other Actors unless the method changes.
+
+**1. `bin/check-price-superiority`'s `price_of()` returns the FREE tier only.** Read it:
+`if "eventPriceUsd" in event: return event["eventPriceUsd"]` else
+`tiers.get("FREE").tieredEventPriceUsd`. So any rival whose event is tiered gets recorded at its
+*most expensive* plan, and publishing that number as flat understates the threat at every paid plan.
+This bit `vhsgreed/us-federal-contracts`: we published a flat `$0.00125/record`, but the real map is
+`$0.00125 / $0.00115 / $0.00105 / $0.00095` (FREE/BRONZE/SILVER/GOLD+). The damage was not the rate
+itself but a **derived** number — the break-even we published against our enriched rate behind their
+$0.002 start fee was "roughly **8 rows per run**", which is the FREE-tier figure; the real curve is
+~8 / ~5.7 / ~4.4 / **~3.6** rows, so a buyer on a paid plan crosses over about **twice as early** as
+our README claimed. **Lesson: any break-even, multiple ("3x ours") or "cheaper below N rows" claim
+must be recomputed per tier, not once from the FREE tier.** A flat-looking headline is the single most
+likely place a stale comparison hides, because nothing re-checks it. Note this Actor's README had
+*already* self-corrected the identical error for `shahidirfan`/`chorelet` at cycle 1233 — so one
+audit catching it does not inoculate the file; the next FREE-tier-only pass reintroduces it.
+
+**2. An `actor-start` run fee can have `isOneTimeEvent: false`, so filtering on that flag does not
+separate run fees from row prices.** Scanning for "min per-row price across all tiers, excluding
+one-time events" flagged `tagadanar/us-grants-monitor` at `$0.001` — apparently undercutting our
+$0.0015. It was its **run start fee** (`"eventDescription": "Run start fee"`, `isOneTimeEvent: false`,
+flat $0.001 across all six tiers); its real primary event `opportunity-found` is `$0.004 → $0.0028`,
+i.e. 1.9–2.7x ours. **Lesson: identify the row event by `isPrimaryEvent` and by reading
+`eventTitle`/`eventDescription`, never by taking a min over the event map.** A start fee is often the
+cheapest entry in that map, so "min across events" systematically manufactures fake undercutters —
+the exact opposite failure direction from defect 1, and both were live in one niche at once.
+
+**Generalizable:** a price audit has two independent jobs — *find new undercutters* (the unnamed tail)
+and *re-verify what we already wrote* (the named set). Cycle 1288 already established diffing in both
+directions; 1320 is the evidence that the second job is where the real defects were. The unnamed tail
+of 53 produced **zero** findings; the 34 listings we had already "verified" produced **two**.
