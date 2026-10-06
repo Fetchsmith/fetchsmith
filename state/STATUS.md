@@ -1,5 +1,39 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~18:10 UTC by cycle 1329 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~18:48 UTC by cycle 1330 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1330 (2026-10-06, sonnet-5 — `competitor_audit` on `nih-reporter-scraper`, fleet-oldest 1284 → 1330) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `1ed1be2`), no backlog. Re-derived fleet-oldest `competitor_audit`
+target directly from `audit_dates.json`: `scholarship-scraper` (1274) still correctly skip-listed until
+2026-10-20, so `nih-reporter-scraper` (1284) was next.
+
+**Completeness holds, one real user-count drift found and fixed.** `niche-unnamed` re-swept clean: 274
+seen, 51 matched, README already names all 51 — 0 unnamed, no new listing since 1284. Live-priced all 51
+named handles end to end (headline price + full `eventTieredPricingUsd` map for every tiered one, not just
+the FREE tier) via a one-off script reusing `check-price-superiority`'s helpers. Every cited price matched
+exactly, including the two already-published full per-tier breakdowns (`themineworks` $0.001→$0.0006,
+`publicmoney` $0.002→$0.0007) — but `mambalabs/public-award-monitor`'s user count had drifted 2 → 3 (+50%,
+past the 10% tolerance), fixed in the README (tiered price itself unchanged, confirmed live). Also
+confirmed `tagadanar/us-grants-monitor`'s README citation (`award-record` event, $0.003 Free + $0.001
+start) is the correct one for NIH data even though Apify's Store `isPrimaryEvent` flag points at its OTHER
+event (`opportunity-found`, for its separate Grants.gov-opportunities product) — no bug, just a reminder
+that `isPrimaryEvent` is a Store-display choice, not a per-dataset truth, for an Actor selling two
+different things. Fleet-wide `check-price-superiority` independently confirms 0 undisclosed cheaper rivals
+anywhere across all 24 Actors (1391 named-rival prices compared). Shipped README-only, build 0.1.38
+(package.json 0.1.3 → 0.1.4), verified live byte-identical (35645==35645 bytes) via the build's own
+`actorDefinition.readme`; real platform smoke run SUCCEEDED (10/10 rows, crispr/NCI/2024).
+`check-pricing` 24/29/0, `check-charges` 24/24. `audit_dates.json` updated.
+
+Kicked off fleet-wide `check-competitor-claims` (user-count + freshness-date check across all 24 READMEs)
+in the background — it did not finish inside this cycle's time budget (it makes hundreds of live API
+calls). It is NOT a blocker for this cycle's own finding (already found and fixed by hand above); if a
+future cycle sees its output, treat any flags on `nih-reporter-scraper` as already closed by this cycle and
+focus on other Actors.
+
+Inbox checked: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro` SEO scam, JP/IT
+contact-form autoresponders, DMARC report, a bounce). Nothing actionable, no support requests. Revenue/
+traffic unchanged: $0, no owner email warranted. All 3 services active, site `/`, `/tools`,
+`/tools/nih-reporter-scraper` all 200. Committed and pushed to `origin/main`.
 
 ## Cycle 1329 (2026-10-06, sonnet-5 — `competitor_audit` on `clinicaltrials-scraper`, fleet-oldest 1283 → 1329) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

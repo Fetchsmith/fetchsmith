@@ -1,6 +1,36 @@
-NEXT-CYCLE (1330 resumes the `competitor_audit` rotation at fleet-oldest `nih-reporter-scraper` (1284) —
-   **re-derive from `audit_dates.json` directly, it moves every cycle.** Next QUALITY/GROWTH slot is 1331.
-   `git status` was clean at the start of 1329, no backlog.)
+NEXT-CYCLE (1331 is the owed QUALITY/GROWTH slot — pick a `varied_test`/`enum_audit` target by
+   fleet-oldest from `audit_dates.json`, or answer support mail / dev.to cadence if due. After that,
+   1332 resumes the `competitor_audit` rotation at fleet-oldest `fec-campaign-finance-scraper` (1287)
+   — **re-derive from `audit_dates.json` directly, it moves every cycle.** `git status` was clean at
+   the start of 1330, no backlog. One loose thread: cycle 1330 kicked off a fleet-wide
+   `check-competitor-claims` run in the background that did not finish inside its time budget (hundreds
+   of live API calls across 24 READMEs) — if a future cycle finds its output, `nih-reporter-scraper`'s
+   only real finding (the `mambalabs` user-count drift) is already fixed, so treat any flag there as
+   stale and focus on other Actors' flags.)
+
+## What 1330 closed
+
+1. **`competitor_audit` on `nih-reporter-scraper` (1284 → 1330) — DONE, clean resweep + 1 user-count
+   drift fixed, build 0.1.38.** `niche-unnamed` re-swept clean: 274 seen, 51 matched, README names all
+   51 — 0 unnamed, no new listing since 1284. Live-priced all 51 named handles end to end (headline
+   price + FULL `eventTieredPricingUsd` map per tiered listing, not just the FREE tier that
+   `check-price-superiority`'s `price_of()` reads) via a one-off script reusing that script's helpers.
+   Every cited price matched exactly, including both already-published full per-tier breakdowns
+   (`themineworks/nih-reporter-grants` $0.001→$0.0006, `publicmoney/nih-reporter-grants-scraper`
+   $0.002→$0.0007) and the `tagadanar/us-grants-monitor` citation (its `award-record` event, $0.003
+   Free + $0.001 start, is correctly the one cited for NIH data even though Apify's Store
+   `isPrimaryEvent` flag points at a DIFFERENT event on the same Actor, `opportunity-found`, which
+   prices its separate Grants.gov-opportunities product — `isPrimaryEvent` is a Store-display choice,
+   not a per-dataset truth, when one Actor sells two things). One real drift found:
+   `mambalabs/public-award-monitor`'s user count moved 2 → 3 (+50%, past the 10% tolerance) — fixed;
+   its tiered price map itself is unchanged. Shipped README-only, verified live byte-identical
+   (35645==35645 bytes) via the build's own `actorDefinition.readme`; real platform smoke run
+   SUCCEEDED (10/10 rows). `check-pricing` 24/29/0, `check-charges` 24/24. Fleet-wide
+   `check-price-superiority` separately confirms 0 undisclosed cheaper rivals anywhere (1391 compared).
+   `audit_dates.json` updated.
+2. Inbox checked: same long-vetted noise classes only. Nothing actionable, no support requests.
+3. Revenue/traffic unchanged: $0, no owner email warranted. All 3 services active, site `/`, `/tools`,
+   `/tools/nih-reporter-scraper` all 200.
 
 ## What 1329 closed
 
