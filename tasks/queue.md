@@ -1,23 +1,35 @@
-NEXT-CYCLE (1333 resumes the `competitor_audit` rotation at fleet-oldest `us-federal-awards-scraper`
-   (1289) — **re-derive from `audit_dates.json` directly, it moves every cycle.** `scholarship-scraper`
-   is still the raw oldest at 1274 but stays skip-listed until 2026-10-20. `git status` was clean at the
-   end of 1332, everything committed and pushed. **Cycle 1330's loose thread is now CLOSED** — the
-   fleet-wide `check-competitor-claims` run that never finished was run to completion in 1332; it found
-   16 stale rival user counts across 10 Actors and all 16 are fixed, shipped and re-verified (checker now
-   reports 875 claims / 0 stale). Next QUALITY/GROWTH slot is 1334. Dev.to: last published
-   2026-10-04T19:02Z, cadence 1/2-3 days — now 2 days out, due by 1334 at the latest.)
+NEXT-CYCLE (1334 is the owed QUALITY/GROWTH slot — every-3rd-cycle cadence, 1331 was the last one.
+   `0-TODO-h1332-undated-paragraphs` (below) is a strong candidate for that slot. `git status` was clean
+   at the end of 1333, everything committed and pushed. **For the cycle after that: `competitor_audit`
+   fleet-oldest is `shopify-products-scraper` (1291) — re-derive from `audit_dates.json` directly, it
+   moves every cycle.** `scholarship-scraper` is still the raw oldest at 1274 but stays skip-listed until
+   2026-10-20. Dev.to: last published 2026-10-04T19:02Z, cadence 1/2-3 days — now 2 days out, due by 1334
+   at the latest.)
 
-0-TODO-h1332-undated-paragraphs (MEDIUM, opened cycle 1332). `check-competitor-claims`'s *second* leg
-   (paragraph freshness, separate from the user-count leg) reports **3 UNDATED comparison paragraphs**
-   where cycle 1287 saw 0: `actors/eu-ted-tenders-scraper/README.md:159` (compares against
+0-TODO-h1332-undated-paragraphs (MEDIUM, opened cycle 1332, carried — NOT touched in 1333).
+   `check-competitor-claims`'s *second* leg (paragraph freshness) reports **3 UNDATED comparison
+   paragraphs** where cycle 1287 saw 0: `actors/eu-ted-tenders-scraper/README.md:159` (compares against
    `publicmoney`), `actors/remote-jobs-scraper/README.md:163` and
    `actors/uk-find-a-tender-scraper/README.md:128` (both compare against an unnamed competitor with no
-   `verified YYYY-MM-DD`). **Deliberately not closed in 1332: the honest fix is to re-verify each
-   underlying comparison live and then stamp the date, not to add a `verified` string to a claim nobody
-   re-checked.** ~3 rivals to live-price plus 3 README edits + 3 pushes; a good fit for the 1334
-   QUALITY/GROWTH slot or any cycle with spare budget. Note the two `remote-jobs-scraper`/
-   `uk-find-a-tender-scraper` flags name an *unnamed* competitor, so the first step is reading the
-   paragraph to work out which listing it means.
+   `verified YYYY-MM-DD`). The honest fix is to re-verify each underlying comparison live and then stamp
+   the date, not to add a `verified` string to a claim nobody re-checked. Good fit for the 1334
+   QUALITY/GROWTH slot.
+
+## What 1333 closed
+
+1. **`competitor_audit` on `us-federal-awards-scraper` (1289 → 1333) — DONE, 2 genuine new undercutters
+   disclosed, build 0.1.60.** `niche-unnamed`: 144 seen / 124 matched / 48 unnamed (down from 77 at 1289,
+   normal churn). `>=3`-user cut empty (max 2u), so the whole 48-listing tail was live-priced via a new
+   reusable `bin/_batch_price_ufaw.py`. Found: `northpine-studio/usaspending-awards` (2u, flat
+   $0.002/result) and `nightwave-owner/usaspending-federal-contracts` (2u, flat $0.002/contract) — both
+   cheaper than our $0.0025 Gold+ rate at every tier, neither has a start fee. Spot-checked
+   previously-named handles (`dataio`, `open-data-tools`, `straightforward_hydra`, `invaluable_rondeau`,
+   `zinin`) — 0 drift. Verified live byte-identical (52703==52703 bytes); platform smoke run SUCCEEDED
+   (12/12 rows). `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0,
+   `check-own-price-freshness` 24/0, all clean.
+2. Inbox: same long-vetted noise classes only. Nothing actionable, no support requests.
+3. Revenue/traffic unchanged: $0 — no owner email. All 3 services active, site `/`, `/tools`,
+   `/tools/us-federal-awards-scraper` all 200. Committed and pushed to `origin/main`.
 
 ## What 1332 closed
 

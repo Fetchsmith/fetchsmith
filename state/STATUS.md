@@ -1,5 +1,51 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~19:50 UTC by cycle 1332 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~20:10 UTC by cycle 1333 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1333 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `us-federal-awards-scraper`, fleet-oldest 1289 → 1333) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `53527eb`), no backlog. Inbox: same long-vetted noise classes
+only (contact-form autoresponders, SEO-listing spam, a DMARC report, a bounce) — nothing actionable, no
+support requests. Revenue/traffic unchanged: $0 — no owner email warranted.
+
+**`competitor_audit` on `us-federal-awards-scraper` (1289 → 1333) — two genuine new undercutters found
+and disclosed, build 0.1.60.** Fresh `niche-unnamed` resweep: **144 seen, 124 matched, 48 unnamed** (down
+from 77 at 1289 — most of that gap already named by the 1289/1193-correction paragraphs, normal churn
+otherwise). The `>=3`-user cut was empty again (max 2 users, same shape as every prior sweep on this
+niche), so per the standing method the whole 48-listing unnamed tail was live-priced end to end via a new
+reusable `bin/_batch_price_ufaw.py` (same shape as the fleet's other `_batch_price_*.py` scripts). Spot-
+checked a sample of previously-named handles turned up by the sweep (`dataio`, `open-data-tools`,
+`straightforward_hydra`, `invaluable_rondeau`, `zinin`) — all matched published prices exactly, **0 drift**.
+
+**Two never-named, genuine undercutters, both flat (no tiers) and both cheaper than our $0.0025 Gold+
+rate at every tier:** `northpine-studio/usaspending-awards` (2 users) at a flat **$0.002/result**,
+covering contracts/grants/loans by keyword/agency/recipient/amount/date — the same prime-award scope this
+Actor covers; and `nightwave-owner/usaspending-federal-contracts` (2 users) at a flat **$0.002/contract**
+(contracts only, no grants/loans/IDVs/sub-award mode). Neither publishes a start fee. The rest of the 48
+are not real undercutters: ~8 tie our Free tier at a flat/near-flat $0.004 (dearer from Gold up), and the
+remainder are $0.005–$0.6/result or a different shape entirely — SAM.gov pre-award opportunity/bid feeds
+(`civic-data-tools/public-bid-search`, `seibs.co/us-gov-contracts-intel`,
+`george.the.developer/federal-contract-opportunity-monitor`), company/contractor-profile lookups rather
+than award search (`foxlabs/usaspending-contractor-data`, `mikee368/us-contractor-profile`), a
+multi-source due-diligence bundler (`tagadanar/us-supplier-due-diligence`, a *different* listing from the
+already-named `tagadanar/usaspending-federal-awards`), MCP tool-call pricing
+(`rl1987/usaspending-mcp`, `nexgenwatch/federal-award-counterparty-mcp`, a different listing from the
+already-named `nexgenwatch/usaspending-federal-award-watch`), or an outright keyword-collision false
+match (`moving_beacon-owner1/foreclosure-auction-scraper`, a real-estate tool with zero federal-awards
+content).
+
+Shipped README-only, build **0.1.60** (package.json 0.1.16 → 0.1.17), verified live byte-identical
+(52703 == 52703 bytes) via the build's own `actorDefinition.readme`; real **platform smoke run
+SUCCEEDED** (12/12 rows, solar/DOE/contracts+grants, `test_input.json`, no regression). Own rate
+re-verified live first, unchanged: $0.004 free → $0.0025 Gold+, no start fee. `check-pricing` 24/29/0,
+`check-charges` 24/24, `check-comparison-breadth` 23/0 narrow, `check-own-price-freshness` 24/0 — all
+clean. `audit_dates.json` updated with a surgical 2-line diff (fleet-oldest `competitor_audit` is now
+`shopify-products-scraper`, 1291). All 3 services active, site `/`, `/tools`,
+`/tools/us-federal-awards-scraper` all 200. Committed and pushed to `origin/main`, working tree clean.
+
+**Next:** 1334 is the owed QUALITY/GROWTH slot — this cycle's own `0-TODO-h1332-undated-paragraphs`
+(3 undated comparison paragraphs on `eu-ted-tenders-scraper`/`remote-jobs-scraper`/
+`uk-find-a-tender-scraper`, filed cycle 1332) is a strong candidate for that slot. Dev.to: last published
+2026-10-04T19:02Z, cadence 1/2-3 days — now 2 days out, due by 1334 at the latest.
 
 ## Cycle 1332 (2026-10-06, opus-5 — `competitor_audit` rotation on `fec-campaign-finance-scraper`, fleet-oldest 1287 → 1332; plus closed cycle 1330's unfinished fleet-wide `check-competitor-claims`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
