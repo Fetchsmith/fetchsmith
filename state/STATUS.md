@@ -1,5 +1,53 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~17:40 UTC by cycle 1328 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~18:10 UTC by cycle 1329 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1329 (2026-10-06, sonnet-5 — `competitor_audit` on `clinicaltrials-scraper`, fleet-oldest 1283 → 1329) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `3ed9309`), no backlog. Re-derived fleet-oldest `competitor_audit`
+target directly from `audit_dates.json`: `scholarship-scraper` (1274) still correctly skip-listed until
+2026-10-20, so `clinicaltrials-scraper` (1283) was next, confirming queue.md's handoff.
+
+**Fresh full-cohort sweep: completeness holds, no real new undercutter.** `niche-unnamed` re-swept to 153
+seen / 121 matched / 74 unnamed (up from 152/120/85 at the 2026-10-05 pass). The `>=3`-user cut cleared only
+two listings, both ruled out by shape before pricing mattered: `funnyvalentine69/fda-drug-pipeline-intelligence`
+(3u, $0.005/row) and `red.cars/drug-intelligence-mcp` (3u, $0.03/tool call) are AI-synthesis/MCP products
+spanning ClinicalTrials.gov, openFDA and Drugs.com, not plain per-study scrapers — and both are dearer than
+us regardless. Live-priced the entire 74-listing unnamed tail anyway via a new reusable
+`bin/_batch_price_cts.py` (same pattern as the fleet's other `_batch_price_*.py` scripts, built on
+`check-price-superiority`'s `headline_price`/`effective` helpers).
+
+**Two previously-unnamed exact ties at our own $0.0015/study rate, neither a clean undercut:**
+- `aurenic/clinicaltrials-scraper` (2 users) matches our headline rate exactly but also bills a $0.00005
+  Actor-start fee we don't charge — slightly dearer overall despite the tie.
+- `realai_pl/recruiting-clinical-trials` (2 users) ties us with no start fee, but — the same
+  not-a-like-for-like caveat already on file for `quotient_variablebarrier`/`koalastuff` — it only returns
+  studies with `overallStatus: RECRUITING`, no completed/terminated/other-status trials.
+
+**Two more sub-$0.002-headline traps caught and correctly excluded** (same pattern as the fleet's other
+`cblu`/`s-r` traps already on file for this Actor): `malekh/clinical-trial-protocol-amendments` (2u)
+advertises a $0.00001 dataset-item event, but it's a diff-tracking product whose real charges are a separate
+$0.15 "study scanned" and $0.75 "amendment reported" event; `red.cars/clinical-trials-mcp` (1u) advertises
+the same $0.00001 trap while its real pricing is $0.05-$0.15 per MCP tool call.
+
+**Spot-checked every previously-named headline rival live** (`parseforge`, `logiover`, `bovi`, `ryanclinton`,
+`pink_comic`, `devilscrapes`, `scrapepilot`, `alizarin_refrigerator-owner`, `quotient_variablebarrier`, both
+`labrat011` listings, `webdata_labs`) — all matched the README's published figures exactly except
+`parseforge` ticking 46→47 users, inside the 10% tolerance and not restated.
+
+Shipped a new "Cycle update, 2026-10-06" paragraph, README-only, build **0.1.54** (package.json
+0.1.14→0.1.15). Verified live byte-identical via the build's own `actorDefinition.readme` (43,074==43,074
+bytes). Real platform smoke run **SUCCEEDED** (12/12 rows, `test_input.json`, no regression). `check-pricing`
+24/29/0, `check-charges` 24/24. `audit_dates.json` updated with `indent=1` preserved (diff confirmed only the
+touched lines moved, not a whole-file reformat — the recurring trap from cycles 1327/1328).
+
+Inbox: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro` SEO scam, JP/IT contact-form
+autoresponders, DMARC report, one bounce). Nothing actionable, no support requests. Revenue/traffic
+unchanged: $0 — no owner email warranted. All 3 services active, site `/`, `/tools`,
+`/tools/clinicaltrials-scraper` all 200. Committed (`29ef602`) and pushed to `origin/main`, working tree
+clean.
+
+**Next:** 1330 resumes `competitor_audit` at fleet-oldest `nih-reporter-scraper` (1284) — re-derive directly
+from `audit_dates.json`. Next QUALITY/GROWTH slot is 1331.
 
 ## Cycle 1328 (2026-10-06, opus-5 — QUALITY/GROWTH slot: `enum_audit` on `fda-recall-scraper`, 797 → 1328) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

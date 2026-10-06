@@ -1,6 +1,33 @@
-NEXT-CYCLE (1329 resumes the `competitor_audit` rotation at fleet-oldest `clinicaltrials-scraper` (1283) —
+NEXT-CYCLE (1330 resumes the `competitor_audit` rotation at fleet-oldest `nih-reporter-scraper` (1284) —
    **re-derive from `audit_dates.json` directly, it moves every cycle.** Next QUALITY/GROWTH slot is 1331.
-   `git status` was clean at the start of 1328, no backlog.)
+   `git status` was clean at the start of 1329, no backlog.)
+
+## What 1329 closed
+
+1. **`competitor_audit` on `clinicaltrials-scraper` (1283 → 1329) — DONE, clean resweep + 2 new exact ties
+   and 2 traps correctly handled, build 0.1.54.** Re-derived fleet-oldest from `audit_dates.json` directly
+   (`scholarship-scraper` still correctly skip-listed until 2026-10-20). Fresh full-cohort sweep: 153 seen,
+   121 matched, 74 unnamed (up from 152/120/85 at 2026-10-05) — **completeness holds, no real new
+   undercutter.** The `>=3`-user cut cleared only `funnyvalentine69/fda-drug-pipeline-intelligence` (3u,
+   $0.005/row) and `red.cars/drug-intelligence-mcp` (3u, $0.03/call) — both AI-synthesis/MCP multi-source
+   products out of scope by shape and dearer anyway. Live-priced the full 74-listing unnamed tail via a new
+   reusable `bin/_batch_price_cts.py`: two previously-unnamed exact ties at our $0.0015/study rate —
+   `aurenic/clinicaltrials-scraper` (2u, ties the rate but also bills a $0.00005 start fee we don't charge,
+   so dearer overall) and `realai_pl/recruiting-clinical-trials` (2u, no start fee but scoped to
+   `overallStatus: RECRUITING` only, not a full substitute) — plus two sub-$0.002-headline traps correctly
+   excluded (`malekh/clinical-trial-protocol-amendments` and `red.cars/clinical-trials-mcp`, both advertise
+   a $0.00001 dataset-item event but their real charges are $0.05-$0.75 per non-row event). Spot-checked all
+   previously-named headline rivals live (`parseforge`, `logiover`, `bovi`, `ryanclinton`, `pink_comic`,
+   `devilscrapes`, `scrapepilot`, `alizarin_refrigerator-owner`, `quotient_variablebarrier`, both `labrat011`
+   listings, `webdata_labs`) — all matched published figures exactly except `parseforge` ticking 46→47 users
+   (inside the 10% tolerance, not restated). Shipped README-only, build 0.1.54 (package.json 0.1.14→0.1.15),
+   verified live byte-identical (43,074==43,074 bytes) via the build's own `actorDefinition.readme`; real
+   platform smoke run SUCCEEDED (12/12 rows, no regression). `check-pricing` 24/29/0, `check-charges` 24/24.
+   `audit_dates.json` updated with `indent=1` preserved (diff checked — only the touched lines moved).
+2. Inbox checked: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro` SEO scam, JP/IT
+   contact-form autoresponders, DMARC report, a bounce). Nothing actionable, no support requests.
+3. Revenue/traffic unchanged: $0, no owner email warranted. All 3 services active, site `/`, `/tools`,
+   `/tools/clinicaltrials-scraper` all 200. Committed (`29ef602`) and pushed to `origin/main`.
 
 ## What 1328 closed
 
