@@ -11,12 +11,13 @@
 import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import * as cheerio from 'cheerio';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
 const UA = 'FetchSmith remote-jobs-scraper (+https://fetchsmith.com)';
-const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads', 'himalayas'];
+const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads', 'himalayas', 'wwr'];
 
 // Arbeitnow and Himalayas paginate up to `maxPagesPerSource` (max 20) sequential requests each,
 // on top of up to 6 sources and fetchJson's own 3 retry attempts per call — a slow run can
@@ -39,6 +40,7 @@ const SOURCE_SITE = {
   arbeitnow: 'https://www.arbeitnow.com',
   workingnomads: 'https://www.workingnomads.com',
   himalayas: 'https://himalayas.app',
+  wwr: 'https://weworkremotely.com',
 };
 
 // ---------------------------------------------------------------- input parsing
@@ -343,6 +345,39 @@ async function fetchJson(url) {
       // got-scraping sets throwHttpErrors:false, so a 404/500 arrives here as an ordinary body and
       // the source would report "fetched 0" — a dead feed looking exactly like an empty one
       // (measured cycle 616). Surface it instead, and only retry the statuses worth retrying.
+      if (res.statusCode >= 400) {
+        const err = new Error(`HTTP ${res.statusCode} from ${url}`);
+        err.statusCode = res.statusCode;
+        if (res.statusCode < 500 && res.statusCode !== 429) throw err;
+        throw Object.assign(err, { retryable: true });
+      }
+      return res.body;
+    } catch (err) {
+      if (err.statusCode && !err.retryable) throw err;
+      lastErr = err;
+      if (attempt < 2) {
+        log.warning(`${url}: ${err.code || err.name} (${err.message}). Retrying over HTTP/1.1.`);
+        await sleep(500 * (attempt + 1));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// Same transport-retry shape as fetchJson, but for the one source (We Work Remotely) that has
+// no JSON API at all — only a public RSS feed, which arrives as XML text.
+async function fetchText(url) {
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const res = await gotScraping({
+        url,
+        responseType: 'text',
+        headers: { 'User-Agent': UA, Accept: 'application/rss+xml, application/xml, text/xml' },
+        timeout: { request: 45000 },
+        retry: { limit: 2 },
+        ...(attempt > 0 ? { http2: false } : {}),
+      });
       if (res.statusCode >= 400) {
         const err = new Error(`HTTP ${res.statusCode} from ${url}`);
         err.statusCode = res.statusCode;
@@ -782,6 +817,62 @@ async function fromHimalayas() {
   return out;
 }
 
+// We Work Remotely publishes no JSON API, only a public RSS feed of its whole open-roles list
+// (~89 items live 2026-10-06, no pagination, no server-side filtering params at all — every
+// filter here comes from this Actor's own passesFilters(), same situation as Remotive).
+// Verified live: every one of 89 sampled titles follows "Company: Job title" with no exception
+// (0 missing the ": " separator), so splitting on the FIRST ": " recovers both fields cleanly —
+// a title containing ":" again past that point (e.g. a role with a subtitle) still splits
+// correctly since only the first occurrence is used as the boundary.
+async function fromWWR() {
+  const xml = await fetchText('https://weworkremotely.com/remote-jobs.rss');
+  const $ = cheerio.load(xml, { xml: true });
+  const out = [];
+  $('item').each((_, el) => {
+    const $el = $(el);
+    const rawTitle = $el.find('title').text().trim();
+    const sep = rawTitle.indexOf(': ');
+    const company = sep > -1 ? rawTitle.slice(0, sep).trim() : null;
+    const title = sep > -1 ? rawTitle.slice(sep + 2).trim() : rawTitle;
+    const url = $el.find('link').text().trim() || null;
+    // No separate id field in this feed; the posting's own permalink is the only stable
+    // per-posting key published, same gap-filling as Working Nomads' and Himalayas' sourceJobId.
+    const sourceJobId = $el.find('guid').text().trim() || url || '';
+    // region/country/state are each sometimes blank and sometimes carry real data (verified
+    // live: 19/89 sampled rows had a non-empty country, 14/89 a non-empty state) — WWR does not
+    // consistently fill all three for every posting, so this joins whichever ones it actually
+    // sent rather than guessing at the others.
+    const region = $el.find('region').text().trim();
+    const country = $el.find('country').text().trim();
+    const state = $el.find('state').text().trim();
+    const location = [region, country, state].filter(Boolean).join(', ') || null;
+    out.push({
+      source: 'wwr',
+      sourceJobId,
+      title: title || null,
+      company,
+      companyLogo: $el.find('media\\:content').attr('url') || null,
+      url,
+      location,
+      remote: true,
+      jobType: $el.find('type').text().trim() || null,
+      category: $el.find('category').text().trim() || null,
+      tags: asArray($el.find('skills').text().trim() ? $el.find('skills').text().split(',') : []),
+      seniorityLevel: null,
+      // WWR's RSS feed publishes no salary field at all (verified live: no <salary>-shaped tag
+      // anywhere in a 89-item feed), same gap as Arbeitnow and Working Nomads.
+      salaryText: null,
+      salaryMin: null,
+      salaryMax: null,
+      salaryCurrency: null,
+      salaryPeriod: null,
+      publishedAt: toIso($el.find('pubDate').text().trim()),
+      descriptionHtml: includeDescription ? ($el.find('description').text().trim() || null) : undefined,
+    });
+  });
+  return out;
+}
+
 const FETCHERS = {
   remotive: fromRemotive,
   remoteok: fromRemoteOk,
@@ -789,6 +880,7 @@ const FETCHERS = {
   arbeitnow: fromArbeitnow,
   workingnomads: fromWorkingNomads,
   himalayas: fromHimalayas,
+  wwr: fromWWR,
 };
 
 // ---------------------------------------------------------------- filters

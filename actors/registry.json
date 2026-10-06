@@ -1976,8 +1976,8 @@
     },
     {
       "slug": "remote-jobs-scraper",
-      "title": "Remote Jobs Scraper \u2013 Jobicy, Working Nomads, Arbeitnow +3",
-      "summary": "Scrape remote job postings from six public job boards \u2014 Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads and Himalayas \u2014 into one normalized schema with no API key and no login. Results come back newest-first and are de-duplicated across boards before you are charged, so the same job syndicated to two sites is billed once and carries an alsoOn list of the other boards it appeared on. Filter by keyword, company, location, remote type, salary presence and posted-date window; every row carries the board it came from, a link to the original posting and parsed salary min/max/currency/period where the board publishes one.",
+      "title": "Remote Jobs Scraper \u2013 Jobicy, Working Nomads, Arbeitnow +4",
+      "summary": "Scrape remote job postings from seven public job boards \u2014 Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas and We Work Remotely \u2014 into one normalized schema with no API key and no login. Results come back newest-first and are de-duplicated across boards before you are charged, so the same job syndicated to two sites is billed once and carries an alsoOn list of the other boards it appeared on. Filter by keyword, company, location, remote type, salary presence and posted-date window; every row carries the board it came from, a link to the original posting and parsed salary min/max/currency/period where the board publishes one.",
       "status": "live",
       "credits_per_result": 1,
       "apify_actor_id": "FJWJfcQplVDS6wQKi",
@@ -1989,7 +1989,8 @@
           "jobicy",
           "arbeitnow",
           "workingnomads",
-          "himalayas"
+          "himalayas",
+          "wwr"
         ],
         "keyword": "python",
         "maxResults": 25

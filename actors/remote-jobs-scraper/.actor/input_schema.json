@@ -6,10 +6,10 @@
     "sources": {
       "title": "Job boards",
       "type": "array",
-      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned), \"workingnomads\" (Working Nomads, general remote board with a category field on every row), \"himalayas\" (Himalayas, the largest board here at ~100k live postings, cursor-paginated 20 at a time — seniority and category tags on most rows, numeric salary range on about a quarter of them). Leave empty for all six. An unknown name fails the run rather than being silently ignored.",
+      "description": "Which public job-board APIs to pull from. Any subset of: \"remotive\" (Remotive, remote tech/design/marketing roles, worldwide), \"remoteok\" (Remote OK, ~100 most recent postings, USD salary ranges on many rows), \"jobicy\" (Jobicy, 50 most recent, salary range + currency + period on many rows), \"arbeitnow\" (Arbeitnow, a general European board — only its rows flagged remote are returned), \"workingnomads\" (Working Nomads, general remote board with a category field on every row), \"himalayas\" (Himalayas, the largest board here at ~100k live postings, cursor-paginated 20 at a time — seniority and category tags on most rows, numeric salary range on about a quarter of them), \"wwr\" (We Work Remotely, a long-running board with ~89 live postings, job type and category fields on every row, no salary data). Leave empty for all seven. An unknown name fails the run rather than being silently ignored.",
       "editor": "select",
-      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads", "himalayas"] },
-      "default": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads", "himalayas"]
+      "items": { "type": "string", "enum": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads", "himalayas", "wwr"] },
+      "default": ["remotive", "remoteok", "jobicy", "arbeitnow", "workingnomads", "himalayas", "wwr"]
     },
     "searchKeyword": {
       "title": "Keyword",
@@ -38,13 +38,13 @@
     "jobTypeKeyword": {
       "title": "Job-type filter",
       "type": "string",
-      "description": "Only keep postings whose job-type field contains this text (case-insensitive), e.g. \"full\" or \"contract\". This field is published by Remotive, Jobicy, Arbeitnow and Himalayas; the `remoteok` and `workingnomads` boards carry no job-type field in their API at all, so their rows never match a non-empty filter here (dropped, not guessed at). Leave empty for all job types.",
+      "description": "Only keep postings whose job-type field contains this text (case-insensitive), e.g. \"full\" or \"contract\". This field is published by Remotive, Jobicy, Arbeitnow, Himalayas and We Work Remotely (wwr); the `remoteok` and `workingnomads` boards carry no job-type field in their API at all, so their rows never match a non-empty filter here (dropped, not guessed at). Leave empty for all job types.",
       "editor": "textfield"
     },
     "seniorityKeyword": {
       "title": "Seniority filter",
       "type": "string",
-      "description": "Only keep postings whose seniority-level field contains this text (case-insensitive), e.g. \"senior\" or \"entry\". Only Jobicy publishes a clean seniority field distinct from job type (\"Any\", \"Entry-Level, Junior\", \"Senior\", \"Director\"); the other five boards carry no such field, so their rows never match a non-empty filter here (dropped, not guessed at from the job title). Leave empty for all seniority levels.",
+      "description": "Only keep postings whose seniority-level field contains this text (case-insensitive), e.g. \"senior\" or \"entry\". Only Jobicy publishes a clean seniority field distinct from job type (\"Any\", \"Entry-Level, Junior\", \"Senior\", \"Director\"); the other six boards carry no such field, so their rows never match a non-empty filter here (dropped, not guessed at from the job title). Leave empty for all seniority levels.",
       "editor": "textfield"
     },
     "postedAfter": {
@@ -62,7 +62,7 @@
     "salaryOnly": {
       "title": "Only postings with salary info",
       "type": "boolean",
-      "description": "Keep only postings that carry a salary range or salary text. Remote OK and Jobicy supply numeric ranges on many rows; Remotive supplies a free-text range; Arbeitnow and Working Nomads supply none, so enabling this drops all their rows.",
+      "description": "Keep only postings that carry a salary range or salary text. Remote OK and Jobicy supply numeric ranges on many rows; Remotive supplies a free-text range; Arbeitnow, Working Nomads and We Work Remotely supply none, so enabling this drops all their rows.",
       "default": false
     },
     "minSalaryAnnual": {
@@ -86,7 +86,7 @@
     "maxPagesPerSource": {
       "title": "Max pages per source",
       "type": "integer",
-      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: 326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, and only ~20 / 12 / 1 of those are flagged remote) and Himalayas (20 postings per page, cursor-based). The other four boards return their whole feed in one request. In watch mode this value is part of the label fingerprint: it decides how deep a baseline reaches, so changing it starts a fresh (free) baseline rather than reporting older postings from the newly-reached pages as new.",
+      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: 326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, and only ~20 / 12 / 1 of those are flagged remote) and Himalayas (20 postings per page, cursor-based). The other five boards return their whole feed in one request. In watch mode this value is part of the label fingerprint: it decides how deep a baseline reaches, so changing it starts a fresh (free) baseline rather than reporting older postings from the newly-reached pages as new.",
       "default": 2,
       "minimum": 1,
       "maximum": 20
