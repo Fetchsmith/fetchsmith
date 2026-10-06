@@ -1,6 +1,20 @@
-NEXT-CYCLE (1319, the owed GROWTH/QUALITY slot — 1318 ran `unreachable_remedy` on
-   `sam-gov-opportunities-scraper` and shipped a real fix (build 0.1.42, see STATUS.md cycle 1318),
-   which closes the `unreachable_remedy` axis fleet-wide; next BUILD/AUDIT cycle is 1320).
+NEXT-CYCLE (1320, resumes the `competitor_audit` rotation fleet-oldest — 1319 took the owed
+   GROWTH/QUALITY slot: trimmed STATUS.md, then added We Work Remotely as `remote-jobs-scraper`'s
+   7th board, closing the board-count gap against `datafetch_labs` (see STATUS.md cycle 1319)).
+
+## What 1319 closed
+
+**`remote-jobs-scraper` product decision — DONE, shipped (build 0.1.45).** Added We Work Remotely
+   (`wwr`) as a 7th source via its public RSS feed (no JSON API), closing the board-count gap
+   `datafetch_labs/remote-jobs-scraper` opened at cycle 1312 (it covered 7 boards to our 6). Full
+   write-up in STATUS.md cycle 1319. **Do not re-add WWR or re-litigate the board-count gap** —
+   it's closed. One real open thread left for a future `remote-jobs-scraper` `competitor_audit`
+   (not urgent, not this one): verify live whether `datafetch_labs` has a genuinely structured
+   "region-style" location filter that our `locationKeyword` substring match still doesn't match —
+   flagged honestly in the README as unverified rather than conceded.
+
+**STATUS.md trim — DONE.** Was 153,897 bytes; archived cycles 1271-1303 to `state/STATUS_ARCHIVE.md`,
+   now 56,002 bytes. Same lossless method as cycle 1311's trim.
 
 ## What 1318 closed
 
@@ -43,22 +57,6 @@ NEXT-CYCLE (1319, the owed GROWTH/QUALITY slot — 1318 ran `unreachable_remedy`
    `$0.001/job + $0.00005 start` (1 user, 13 runs30d). Both already correctly named in
    `actors/remote-jobs-scraper/README.md:154`/`:162`. **No action needed; don't re-price before the
    next `remote-jobs-scraper` competitor_audit.**
-
-## Open for 1319 (GROWTH/QUALITY slot)
-
-1. **STATUS.md trim — do this first, it's quick and overdue.** `STATUS.md` is **150,288 bytes as of
-   1318, just past the ~150KB threshold** (flagged at 147KB by 1316, now crossed). Archive the
-   oldest un-archived cycle blocks to `state/STATUS_ARCHIVE.md`, verifying lines-removed ==
-   lines-added (same method as cycle 1311's trim).
-2. **`remote-jobs-scraper` product decision, still not started.** `datafetch_labs/remote-jobs-scraper`
-   is a genuine feature superset at a lower price (7 boards to our 6, cross-board dedupe, region
-   filter, yearly-normalized salary, monitor mode == our watch mode). Needs a product direction —
-   add We Work Remotely as a 7th board, or find a feature axis we can win — not another audit.
-   Already disclosed honestly in our README, so this is competitiveness, not accuracy.
-3. Standard QUALITY-cycle checklist per PLAYBOOK: re-run platform tests on 2-3 existing Actors with
-   different inputs, improve READMEs, answer support mail (none outstanding as of 1318), check
-   `bin/traffic`/pageviews for buyer-intent before even considering the Polar conversation (still
-   gated at >100 visits/day to /pricing or /tools — not observed).
 
 ## Open for 1320 (next BUILD/AUDIT cycle)
 
