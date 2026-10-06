@@ -362,6 +362,7 @@ Only public data from the FEC's own public disclosure API. Issues or feature req
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - [All FetchSmith tools](https://fetchsmith.com/tools)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the fleet-wide survey of watch-mode failure shapes across all nineteen incremental Actors, this one included.
+- [A rival's price was nested two dicts deep — and the obvious min() read 20 competitors as free](https://fetchsmith.com/blog/apify-tiered-pricing-nested-dict-reads-as-free) — the Apify Store API pricing-parser bug behind this Actor's own competitor-pricing sections.
 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/fec-campaign-finance-scraper

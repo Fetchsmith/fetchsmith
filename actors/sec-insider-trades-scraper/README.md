@@ -209,6 +209,8 @@ Two more are cheaper than us on a unit-matched basis but out of scope for the pr
   — the 210-filing measurement behind the two notes above, plus the full transaction-code histogram.
 - [We checked every other government-data Actor for the same boolean trap](https://fetchsmith.com/blog/sec-form-4-is-the-only-actor-that-parses-raw-xml)
   — why this Actor is the only one in the fleet that could have it, and how to check that mechanically instead of by domain guess.
+- [A rival's price was nested two dicts deep — and the obvious min() read 20 competitors as free](https://fetchsmith.com/blog/apify-tiered-pricing-nested-dict-reads-as-free)
+  — the Apify Store API pricing-parser bug found while auditing this Actor's niche, and the mirror bug (`isPrimaryEvent`) found in the same sweep.
 - All FetchSmith tools: https://fetchsmith.com/tools
 
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/sec-insider-trades-scraper
