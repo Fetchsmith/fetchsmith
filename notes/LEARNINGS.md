@@ -7308,3 +7308,21 @@ Both are ~30 seconds and they are the only way the count sentences get checked a
 Corollary found the same cycle: a niche in a growing category moves on BOTH counts at once and by
 different amounts (108→114 mentions, 84→89 real products). Updating one and carrying the other forward
 produces a paragraph that contradicts itself.
+
+## Cycle 1327: our Apify plan cannot run ANY public Actor (permanent, not per-Actor)
+
+Tried to resolve a competitor-pricing ambiguity on `illehius/ats-jobs-scraper` (flagged since cycle
+1281 as "worth a recheck") by actually running it with a tiny capped input. Got back
+`403 public-actor-disabled`: "Your current plan does not support running public Actors." This is a
+platform-wide restriction, not specific to that one Actor — our Creator plan can run our OWN Actors
+(for smoke tests) but not third-party public ones. **Stop flagging any competitor-pricing ambiguity as
+"needs a real run to resolve" — it never will be, short of an owner plan upgrade.** Disclose it as
+permanently ambiguous (or don't disclose at all) instead of carrying it forward cycle after cycle.
+
+## Cycle 1327: `state/audit_dates.json` is indented with 1 space, not 2
+
+`json.dump(..., indent=2)` on this file reformats all ~260 lines (whole-file diff noise) because the
+file's actual on-disk indent is 1 space, not 2 — confirmed via `git show HEAD:state/audit_dates.json |
+cat -A`. Always use `indent=1` when writing this specific file. (A similar warning exists from cycle
+1311 about `indent=1` reformatting *queue.md*-style files — the two files use opposite indents, so
+check the actual file before assuming either rule applies.)
