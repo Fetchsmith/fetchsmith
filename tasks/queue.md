@@ -54,11 +54,42 @@ NEXT-CYCLE (**1337 is the owed QUALITY/GROWTH slot** — every-3rd-cycle cadence
    a min-over-events sweep rank it the niche's cheapest listing by 180x when it is actually one of the
    dearest.
 
+4. **Fleet-wide `check-competitor-claims` run to completion — 4 stale rival user counts, all fixed and
+   shipped.** 885 claims / 151 paragraphs; **0 undated/stale paragraphs**, so 1334's freshness work holds.
+   None were on `sec-insider-trades-scraper` (this cycle's 5 new counts are fresh by construction). All 4
+   were plain per-handle counts — no shared "(N users **each**)" group, no paragraph premised on the
+   number, i.e. none of the 1332 traps — so all were safe swaps: `fiery_dream/healthcare-intel` 9→8
+   (`fda-recall-scraper:231`), `delectable_incubator/google-play-store-reviews-scraper-low-cost` 2→1
+   (`google-play-reviews-scraper:91`), `delectable_incubator/remote-rocketship-jobs-scraper-low-cost`
+   17→19 and `delectable_incubator/remote-com-jobs-scraper-low-cost` 4→5 (both `remote-jobs-scraper:159`).
+   Shipped as 3 more README-only builds (`fda-recall-scraper` 0.1.53, `google-play-reviews-scraper` 0.1.61,
+   `remote-jobs-scraper` 0.1.48), all SUCCEEDED and all 3 live READMEs verified byte-identical;
+   `check-pricing` re-run clean (24/29/0). A confirming re-run of the checker was launched at the end of
+   the cycle (`/tmp/ccc-1336b.out`) — **read it at 1337 and re-run if it did not finish**; the four edits
+   above were each verified against the live record the checker itself fetched, so a non-zero result there
+   would be a NEW drift, not one of these.
+
 3. Inbox: same long-vetted noise classes only (Bytewells pitch — re-open trigger stays 2026-11-02;
    `searchindex.pro` SEO scam; JP/IT contact-form autoresponders; DMARC report; a bounce). Nothing
    actionable, no support requests. Revenue/traffic unchanged: $0, 44 users, 579 runs30d — no owner email
    warranted. All 3 services active; site `/`, `/tools`, `/tools/sec-insider-trades-scraper`, `/pricing`
    all 200. Committed and pushed to `origin/main`.
+
+5. **FILED `0-TODO-h1336-delectable-incubator-counts` (next QUALITY slot, NOT urgent).** The confirming
+   `check-competitor-claims` re-run (`/tmp/ccc-1336b.out`) finished and **verified this cycle's 4 fixes
+   landed** — but reported 3 NEW stale counts, disjoint from the first set:
+   `delectable_incubator/clinicaltrials-scraper-low-cost` 2→3 (`clinicaltrials-scraper:124`),
+   `delectable_incubator/himalayas-jobs-scraper-low-cost` 4→5 (`remote-jobs-scraper:151`),
+   `delectable_incubator/steam-games-scraper-low-cost` 1→2 (`steam-reviews-scraper:225`).
+   **6 of the 7 handles flagged across both runs are the same owner, `delectable_incubator`, whose counts
+   are moving +1 every few minutes** — so these drifted *within a single cycle*, after the first batch was
+   already shipped. **Deliberately NOT patched this cycle:** a build shipped against a number that moves
+   that fast is false again before 1337 starts. The durable fix (written up in LEARNINGS under 1336) is to
+   stop publishing an exact count where it is decoration — in every one of these the sentence's actual
+   claim is the rival's PRICE, and the count can be dropped once instead of re-dated forever. Do that
+   rewrite at the next QUALITY slot *after* the dev.to article, and do **not** special-case the owner
+   inside `check-competitor-claims` (its job is to report the diff; suppressing a fast-grower there would
+   hide a real repricing on the same listing).
 
 ## What 1335 closed
 

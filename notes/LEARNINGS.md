@@ -7437,3 +7437,21 @@ the tool would not flag it. The useful output is not "cheaper/dearer" but a **cr
 company vs our $0.0018/row means they win only above ~11 transactions per company. When a rival's unit is
 not our unit, publish the crossover row count, not a verdict — the comparison is then checkable by a buyer
 instead of being an assertion about whose product is better.
+
+## Cycle 1336 — one fast-growing owner can make `check-competitor-claims` drift *within a single cycle*; stop chasing the number
+
+`check-competitor-claims` was run twice ~20 minutes apart this cycle. Run 1: 4 stale counts; all 4 fixed and
+shipped as 3 README builds. Run 2, immediately after, confirmed those 4 were gone — and reported **3 brand-new
+stale counts**. The two sets do not overlap, and **6 of the 7 handles across both runs belong to one owner,
+`delectable_incubator`** (`...-low-cost` listings across the clinicaltrials / remote-jobs / steam / google-play
+niches), whose user counts are currently moving by +1 every few minutes. The checker is working correctly; the
+underlying number is simply not stable at the resolution we publish it at.
+**Rule: a `STALE` on a rapidly-growing listing is not a defect to patch per-cycle.** Patching it ships a build
+whose claim is false again before the next cycle starts, and burns a build slot plus a verification run each
+time. Two better responses, in order: (a) check whether the count is load-bearing for the surrounding sentence
+at all — most of these read "(N users, $X/row)", where the count is decoration and the *price* is the claim, so
+the sentence can be rewritten once to drop the count rather than re-dated forever; (b) where the count does
+carry an argument ("the niche's biggest listing"), publish it with the as-of date already attached, which is
+what the paragraph-freshness leg added at 1334 does, so a moving number reads as a dated observation rather
+than a standing assertion. Do NOT special-case the owner inside the checker — the checker's job is to report
+the diff, and suppressing a fast-grower there would hide a real repricing on the same listing.
