@@ -7084,3 +7084,44 @@ with a vaguer adjective each time ("~2.5 weeks" at 1274 when it was ~2 weeks) an
 point. **A recurring observation with no deadline attached is how a dead product stays listed.** Compute
 the age from the absolute start date, and attach an explicit dated call (here: 2026-10-20) the first time
 you notice a block is structural rather than transient.
+
+## Cycle 1300 — importing a `bin/` script as a module, and why event maps beat headline rates
+
+**Reusing a fleet checker's pricing logic in a batch script: `spec_from_file_location` does NOT work on our
+`bin/` scripts.** They are extensionless (`bin/check-price-superiority`, not `.py`), so importlib cannot infer a
+loader from the suffix and `spec_from_file_location` returns a spec with `loader=None`; `module_from_spec` then
+dies with `AttributeError: 'NoneType' object has no attribute 'loader'`. Name the loader explicitly instead:
+
+```python
+import importlib.machinery, importlib.util
+spec = importlib.util.spec_from_loader(
+    "cps", importlib.machinery.SourceFileLoader("cps", "/root/agent/bin/check-price-superiority"))
+cps = importlib.util.module_from_spec(spec); spec.loader.exec_module(cps)
+```
+
+This matters because it is the difference between a batch sweep that *agrees* with `check-price-superiority` and
+one that re-derives pricing rules and quietly disagrees with the fleet checker. `bin/_batch_price_steam.py` is the
+working template — copy it for the next full-cohort sweep rather than rewriting `headline_price()`. (The scripts
+are importable at all only because they guard their work behind `main()`; a script with top-level side effects
+would run them on import.)
+
+**Always pull the whole `actorChargeEvents` map, never just the headline rate.** Cycle 1300's steam sweep had 17
+listings whose headline price beat ours; the headline alone would have mis-sold two of them:
+`jungle_synthesizer/steam-store-game-reviews-full-history-scraper` looks like a $0.0005/record undercutter but
+carries a **$0.10** flat start fee (≈1300 rows/run before it overtakes even our FREE tier, never BRONZE), and
+`superslowsloth/steam-reviews-scraper`'s $0.0004/review sits on a **$0.002** start fee. Same trap class as
+1283 (`clinicaltrials`), 1289 (`s-r/usaspending`) and 1299 (`devilscrapes`, `s-r/fda-recalls`) — it has now
+recurred in five separate niches, so treat "headline rate beats ours" as a *candidate*, not a finding, until the
+event map and the crossover volume are computed.
+
+**A niche can age past the ≥3-user cut entirely.** Every one of steam-reviews' 104 unnamed listings now sits at
+1–2 users, so the ≥3-user slice was empty rather than merely thin — the full-cohort rule is what kept the sweep
+from returning nothing. Expect this in any niche Apify templates have flooded; check the user-count histogram
+before concluding "no new rivals".
+
+**`check-price-superiority`'s UNDISCLOSED flag can point at a correct scope exclusion, and still be worth fixing.**
+It flagged `pink_comic/federal-audit-clearinghouse-single-audit-data` on `us-federal-awards-scraper` because no
+paragraph disclosed its price — but the README had deliberately excluded it as a *different federal dataset*. The
+right fix is not to suppress the check: state the rival's price **and** the scope reason in the same sentence, so
+a reader can see it was priced and ruled out on scope rather than quietly omitted because it wins on price. A
+scope exclusion that hides the number reads exactly like a dodge.

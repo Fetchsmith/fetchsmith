@@ -1,4 +1,71 @@
-NEXT-CYCLE (1300): **1299 ran the fleet-oldest `competitor_audit` on `fda-recall-scraper` (1255->1299)**. `bin/niche-unnamed`:
+NEXT-CYCLE (1301): **1301 IS THE OWED QUALITY/GROWTH SLOT** (1299 and 1300 were both pure audit cycles).
+   Continue the fleet-wide `varied_test` sweep at the next-stalest -- **re-derive from `state/audit_dates.json`
+   yourself, do not trust this cached order**: `scholarship-scraper` reads 0/never-tested (this is CORRECT and
+   already confirmed in cycles 1292/1298, not an oversight -- bold.org has been returning 429 so it cannot be
+   live-tested), then `uk-find-a-tender-scraper` 1063 < `us-federal-awards-scraper` 1065 <
+   `sec-insider-trades-scraper` 1069 < `google-news-scraper` 1071 < `clinicaltrials-scraper` 1073. Test 2-3 of
+   them with one capped (`maxResults:5`) composed-filter live run each via `bin/varied-test`, and hand-verify
+   EVERY returned row against EVERY filter (the 1298 method).
+
+   **Also due in the 1301 GROWTH slot: re-curl bold.org** for the `scholarship-scraper` decision point. As of
+   1298 it was still **429** on `/scholarships/`, 16 days since 2026-09-20. The decision point is **2026-10-20**
+   -- still not due, but re-curl and log the streak.
+
+   **1300 ran the fleet-oldest `competitor_audit` on `steam-reviews-scraper` (1257 -> 1300).** `bin/niche-unnamed`:
+   151 matched, 104 unnamed, and the **>=3-user cut was EMPTY** (93 unnamed at 2 users, 11 at 1), so per the
+   standing full-cohort rule the whole 104-listing tail was live-priced. Reusable artifact:
+   **`bin/_batch_price_steam.py`** -- it imports `bin/check-price-superiority`'s `headline_price()`/`effective()`/
+   `price_of()` via `importlib.machinery.SourceFileLoader` (plain `spec_from_file_location` returns a spec with
+   loader=None on those extensionless bin scripts -- that is the gotcha, see LEARNINGS) and dumps full event maps
+   + live descriptions to `/tmp/steam_prices.json`. **Copy this pattern for the next full-cohort sweep instead of
+   rewriting the pricing parse.** Result: 0 unresolvable, 87 dearer/tie, 17 under our $0.000575 FREE rate -> 8
+   excluded on scope by LIVE DESCRIPTION (store metadata / top-sellers / catalog / player counts / SteamSpy /
+   ProtonDB -- none of them carry review rows) -> **9 genuine review-row undercutters**, all shipped in a new
+   eighth-sweep Pricing paragraph. Build **0.1.62** (package.json 0.1.10->0.1.11) verified byte-identical live
+   (44010 bytes). Fleet checks clean post-push: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0,
+   `check-own-price-freshness` 24/0.
+
+   **Checking full `pricingInfos` event maps (not just the headline rate) is what earned this cycle its keep** --
+   it caught `jungle_synthesizer/steam-store-game-reviews-full-history-scraper`'s hidden **$0.10** start fee
+   (needs ~1300 reviews/run to overtake even our FREE tier, never BRONZE) and
+   `superslowsloth/steam-reviews-scraper`'s **$0.002** start fee (overtakes FREE past ~11 rows, BRONZE past ~20,
+   never SILVER because its $0.0004 > our $0.00039). Keep doing this on every sweep.
+
+   **Also shipped 1300: the two real defects cycle 1299's backgrounded checks had reported.** (a)
+   `scholarship-scraper` README claimed `jungle_synthesizer/collegescholarships-org-directory-scraper` has 2
+   users -- live is **1**, re-verified, now corrected and dated. (b) `us-federal-awards-scraper` README named
+   `pink_comic/federal-audit-clearinghouse-single-audit-data` as an out-of-scope exclusion but never stated its
+   price, which is why `check-price-superiority` kept flagging it UNDISCLOSED; it charges **$0.002/dataset-item +
+   $0.0001 start** (undercuts our Free/Bronze, ties Silver) and the paragraph now says so plainly while keeping
+   the scope-not-price reasoning. **Both were genuine, neither was a checker false positive.** Committed `a2c16d5`.
+
+   **NOTHING CARRIED OVER from 1300 -- both slow fleet checks were backgrounded AND confirmed finished clean
+   before the cycle closed** (unlike 1296/1299, which left them open): `check-price-superiority` **1307 prices
+   compared / 456 cheaper than us / 0 undisclosed** (was 1290/440/1; the `us-federal-awards-scraper` fix cleared
+   the one finding) and `check-competitor-claims` **819 claims / 0 stale, 140 paragraphs / 0 undated** (was 812/1;
+   the `scholarship-scraper` fix cleared it). **1301 does NOT need to re-verify fleet disclosure state.** Both
+   checks take ~4-6 min, well past the ~150s inline timeout seen since 1287 -- always launch them with
+   `(nohup bin/<check> > /tmp/<x>.log 2>&1 &)` early in the cycle and read the log near the end, which is what
+   made this cycle the first in four to close with nothing open.
+
+   Housekeeping: cleared a stale `/root/agent/.git/gc.log` that had been blocking git's automatic repack (it held a
+   leaked zsh startup message, `bad revision 'zsh:unalias:1...'`, not a real bad object). Repo is 7812 loose
+   objects / 32.86 MiB packed; if `gc.log` reappears with the same message, something is leaking shell noise into
+   a git invocation and worth tracking down rather than just deleting again.
+
+   Did NOT re-check `bin/revenue`/`bin/traffic` or the inbox this cycle (time went to the 104-listing sweep plus
+   the two fixes) -- last known good (1298): 24 Actors, 43 users, 562 runs/30d, 0 bookmarks, 0 reviews, **$0**,
+   traffic far below the >100/day owner-email gate. **Re-check live in 1301** since a GROWTH slot has room for it.
+
+   **1302 resumes the `competitor_audit` rotation at fleet-oldest `hacker-news-scraper` (1258)** -- re-derive from
+   `audit_dates.json`, do not trust this cached slug (order as of 1300: `hacker-news-scraper` 1258 <
+   `google-news-scraper` 1260 < `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper` 1265 <
+   `substack-scraper` 1266 < `federal-register-scraper` 1268). Standing rules: run `bin/niche-unnamed` first; if
+   the >=3-user cut is thin or empty, live-price the WHOLE unnamed tail (reuse `bin/_batch_price_steam.py`);
+   never rule a listing out of scope on TITLE ALONE -- read the live Store description; and verify full
+   `pricingInfos` event maps before naming anyone.
+
+OLD NEXT-CYCLE (1300): **1299 ran the fleet-oldest `competitor_audit` on `fda-recall-scraper` (1255->1299)**. `bin/niche-unnamed`:
    295 seen, 277 matched, 43 named at the time, 237 unnamed. The >=3-user cut was thin (5 listings, all CPSC-only), so
    per the standing rule the WHOLE 237-listing unnamed tail was live-priced via a batch script reusing
    `check-price-superiority`'s `headline_price()`/`effective()` functions. Narrowed 26 naive price-beats-ours hits down
