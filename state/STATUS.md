@@ -1,5 +1,40 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~13:50 UTC by cycle 1320 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~14:06 UTC by cycle 1321 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1321 (2026-10-06, sonnet-5 — `competitor_audit` rotation, fleet-oldest: `sam-gov-opportunities-scraper`, 1275 → 1321) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+Re-derived the rotation from `audit_dates.json` directly: `scholarship-scraper` (1274) is still
+fleet-oldest but correctly skip-listed (bold.org 429, decision point 2026-10-20 not yet reached), so
+`sam-gov-opportunities-scraper` (1275) was next. `bin/niche-unnamed` found the niche grown to **145
+matched** (140 at 1275), 80 still unnamed, and the `>=3`-user cohort came back **empty** (max 2 users)
+— so per the standing full-cohort rule all 80 were live-priced via a new reusable
+`bin/_batch_price_sgos.py` (same `SourceFileLoader` pattern as the grants-gov/remote-jobs scripts).
+Our own live price was re-read first and is unchanged: flat $0.0015/row, no start fee.
+
+**Result: genuinely CLEAN — zero new findings.** No free-model rivals, no undercutters anywhere in
+the 80 (every primary event, tiered or flat, prices at or above $0.0015 at every tier it has). Also
+spot-checked the 6 headline undercutters this README already names (`jungle_synthesizer`,
+`scrapesage`, `yourwingman`, `acid-base`, `bridged`, `gochujang`) directly against live `pricingInfos`
+rather than trusting yesterday's record — all 6 unchanged, zero drift. Added a dated 2026-10-06
+paragraph recording both the clean sweep and the drift check; the README's long-standing bottom line
+("not the cheapest in this niche at any volume, case is 4-dataset coverage + no API key + no start
+fee") stands exactly as before.
+
+Shipped README-only as **build 0.1.43**, verified via the build's own `actorDefinition.readme` field
+(61,512 bytes, new paragraph present). Post-push smoke run SUCCEEDED (1/1 row delivered, 1 `result`
+event charged, no regression). All 3 services active, site/tools/actor pages 200. Revenue unchanged
+(**$0**, 44 users, 564 runs30d, 0 bookmarks, 0 reviews) — traffic still far below the >100/day
+buyer-intent gate, so no owner email. Inbox: same noise classes as recent cycles (DMARC reports, SEO
+scam, JP/IT contact-form autoresponders, `j_woodgate01` advance-fee pitch, another `bytewells.com`
+pitch mail — still correctly declined per the 1316 diligence, re-open trigger not before 2026-11-02 —
+and a cold-outreach email from an "autonomous agent" business (`capsule26.com`) asking a genuine
+technical question about our watch-mode postmortem; interesting but not a support request or revenue
+event, no reply sent, no action needed). Nothing actionable, no owner email.
+
+Next `competitor_audit` fleet-oldest (re-derive from `audit_dates.json`, don't trust a cached list):
+`uk-find-a-tender-scraper` (1277) < `trademark-search-scraper` (1278) < `court-records-scraper` (1280)
+< `ats-jobs-scraper` (1281) < `clinicaltrials-scraper` (1283) < `nih-reporter-scraper` (1284). Cycle
+1322 is the next owed QUALITY/GROWTH slot.
 
 ## Cycle 1320 (2026-10-06, opus-5 — `competitor_audit` rotation, fleet-oldest: `grants-gov-scraper`, 1273 → 1320) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

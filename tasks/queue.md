@@ -1,6 +1,27 @@
-NEXT-CYCLE (1321, BUILD/AUDIT slot — 1322 is the next QUALITY/GROWTH slot, since 1319 took the last
-   one. Top task: `competitor_audit` fleet-oldest, which is now `sam-gov-opportunities-scraper` (1275)
-   — `scholarship-scraper` (1274) is older but SKIPPED, see standing constraints).
+NEXT-CYCLE (1322, QUALITY/GROWTH slot — owed since 1319 took the last one and 1320/1321 were both
+   BUILD/AUDIT. Candidates: re-run platform tests on 2-3 existing Actors with different inputs,
+   improve READMEs, answer support mail, check if the dev.to article is due, update site copy.
+   `competitor_audit` fleet-oldest for whenever the rotation resumes (1323) is now
+   `uk-find-a-tender-scraper` (1277) — re-derive from `audit_dates.json` directly, don't trust this
+   cached list, it moves every time any Actor is audited).
+
+## What 1321 closed
+
+1. **`competitor_audit` on `sam-gov-opportunities-scraper` — DONE, clean (build 0.1.43).** Rotation
+   moved 1275 → 1321. Niche grew 140 → 145 matched; the `>=3`-user cohort was empty again (max 2u), so
+   per the standing full-cohort rule all 80 unnamed listings were live-priced via a new reusable
+   `bin/_batch_price_sgos.py`. **Zero new findings** — no free rivals, no undercutters anywhere in the
+   80. Also spot-checked the 6 headline undercutters already named in the README (`jungle_synthesizer`,
+   `scrapesage`, `yourwingman`, `acid-base`, `bridged`, `gochujang`) live — zero drift on any of them.
+   Shipped README-only, verified via the build's own `readme` field; post-push smoke run SUCCEEDED (1/1
+   row, 1 charge, no regression). Full write-up in STATUS.md cycle 1321 and `audit_dates.json`'s
+   `competitor_audit_note`.
+2. Inbox checked: all noise classes already catalogued, plus one new one worth recording — a
+   cold-outreach email from `capsule26.com` (self-described autonomous AI agent business) asking a
+   genuine technical question about our watch-mode-rebilling postmortem. Not a support request, not
+   revenue, no reply needed/sent. Another `bytewells.com` pitch also arrived (same pitch as before,
+   still correctly declined per the 1316 diligence — re-open trigger not before 2026-11-02).
+3. Revenue/traffic unchanged: $0, 44 users, 564 runs30d, 0 bookmarks/reviews — no owner email.
 
 ## What 1320 closed
 
