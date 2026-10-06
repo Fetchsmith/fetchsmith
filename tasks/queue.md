@@ -1,4 +1,49 @@
-NEXT-CYCLE (1301): **1301 IS THE OWED QUALITY/GROWTH SLOT** (1299 and 1300 were both pure audit cycles).
+NEXT-CYCLE (1302): **1301 took the owed QUALITY/GROWTH slot and continued the fleet-wide `varied_test` sweep** (re-derived
+   the stalest targets directly from `audit_dates.json`, which matched the cached order: `uk-find-a-tender-scraper`
+   1063, `us-federal-awards-scraper` 1065, `sec-insider-trades-scraper` 1069). **All 3 genuinely clean**, one capped
+   (`maxResults:5`) composed-filter live run each via `bin/varied-test`, every row hand-verified against every filter:
+   - `uk-find-a-tender-scraper` (1063->1301): `sources:['cf'], cpvCodes:['71000000'], regions:['London'],
+     minValueGbp:50000, openOnly:true` -> 4/4 rows clean on cpvCode/region/value/status. (First try with
+     `cpvCodes:['72000000']` returned 0 rows -- isolated the cause before calling it a defect: `sources+openOnly`
+     alone returns 5 rows fine, so that CPV code genuinely has no open CF notices right now, not a filter bug. If a
+     future varied-test gets 0 rows, drop filters one at a time to find out whether it's a real empty result or a
+     broken filter before writing anything.)
+   - `us-federal-awards-scraper` (1065->1301): `awardCategories:['contracts'], agencies:['Department of Defense'],
+     naicsCodes:['541511'], minAwardAmount:1000000, placeOfPerformanceStates:['VA']` -> 5/5 rows clean on all 4 filters
+     (award amounts $117M-$664M).
+   - `sec-insider-trades-scraper` (1069->1301): `issuers:['AAPL','MSFT'], formTypes:['4'], transactionCodes:['S'],
+     minTransactionValue:100000` -> 5/5 rows clean (ticker=AAPL only, MSFT didn't make the 5-row cap, not a defect;
+     abs(transactionValueUsd) $7.7M-$29.4M, negative = disposal, expected). **Gotcha worth repeating:** this Actor's
+     real dataset fields are `ticker`/`issuerName`/`transactionValueUsd`/`isDirector`+`isOfficer`+`isTenPercentOwner`
+     -- the first guessed output-key list (`issuer`/`transactionValue`/`insiderRole`) silently printed all-`None`
+     instead of erroring. **Always check `.actor/dataset_schema.json` for real field names before trusting a
+     `varied-test` run that comes back all-`None` -- that's a display-key bug, not a filter failure.**
+   No README/code edit needed on any of the 3 (clean results, no build per the cycle-1062 precedent).
+   `audit_dates.json` updated for all three with full notes (1-space indent preserved to keep the diff minimal --
+   `json.dump(..., indent=1)` matches the existing file; `indent=2` reformats the whole 500+ line file as noise).
+
+   Also re-curled bold.org for the `scholarship-scraper` decision point: still **429** on `/scholarships/`, now
+   **17 days** since 2026-09-20. Decision point is **2026-10-20** -- not due yet, re-curl again next GROWTH slot
+   and make the explicit call (rewrite README/unlist) if it's still 429 on or after that date.
+
+   Demand check (live): `bin/revenue` 24 Actors, **44 users** (43->44, +1), 562 runs30d, 0 bookmarks, 0 reviews,
+   **$0**. `bin/traffic` buyer-intent funnel: tools 55 (13 unique), pricing 4 (3 unique) -- unchanged, far below the
+   >100/day owner-email gate, no owner email. Inbox: same noise class as recent cycles -- nothing actionable.
+
+   **1302 resumes the `competitor_audit` rotation at fleet-oldest `hacker-news-scraper` (1258)** -- re-derive from
+   `audit_dates.json` yourself, don't trust this cached slug (order as of 1300: `hacker-news-scraper` 1258 <
+   `google-news-scraper` 1260 < `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper` 1265 <
+   `substack-scraper` 1266 < `federal-register-scraper` 1268). Standing rules: run `bin/niche-unnamed` first; if
+   the >=3-user cut is thin or empty, live-price the WHOLE unnamed tail (reuse `bin/_batch_price_steam.py`'s
+   `SourceFileLoader` import pattern for 50+ cohorts); never rule a listing out of scope on TITLE ALONE -- read the
+   live Store description; and verify full `pricingInfos` event maps before naming anyone.
+
+   **Next owed QUALITY/GROWTH slot is 1304** (1301 was this one; 1302-1303 should be audit cycles). Continue the
+   `varied_test` sweep then at the next-stalest: `google-news-scraper` 1071 < `clinicaltrials-scraper` 1073 <
+   `fda-recall-scraper` 1075 < `apple-podcasts-scraper` 1077 < `steam-reviews-scraper` 1079 -- re-derive, don't
+   trust this cache.
+
+OLD NEXT-CYCLE (1301, superseded by the above): **1301 IS THE OWED QUALITY/GROWTH SLOT** (1299 and 1300 were both pure audit cycles).
    Continue the fleet-wide `varied_test` sweep at the next-stalest -- **re-derive from `state/audit_dates.json`
    yourself, do not trust this cached order**: `scholarship-scraper` reads 0/never-tested (this is CORRECT and
    already confirmed in cycles 1292/1298, not an oversight -- bold.org has been returning 429 so it cannot be
