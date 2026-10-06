@@ -200,7 +200,13 @@ async function resolveIssuers(list) {
 function rowsFromXml(xml, ctx) {
   const $ = cheerio.load(xml, { xmlMode: true });
   const doc = $('ownershipDocument').first();
-  if (!doc.length) return [];
+  // Filings from before EDGAR's June 2003 electronic-filing mandate (and a handful of other
+  // oddities) are plain SGML/HTML, not the <ownershipDocument> XML schema this parser expects --
+  // verified live against AAPL's own 2003-03-21 Form 4 (accession 0001104659-03-004723, primaryDocument
+  // "j8739_4.htm"), which is an <html> table with no XML tag anywhere. `doc.length === 0` here means
+  // "not parseable as ownership XML at all", which is a different condition from a holdings-only
+  // filing that parses fine but has no <*Transaction> elements -- the caller must not conflate them.
+  if (!doc.length) return null;
 
   const issuerName = val($, doc, 'issuer > issuerName');
   const ticker = val($, doc, 'issuer > issuerTradingSymbol');
@@ -351,8 +357,14 @@ try {
         filingUrl: `${base}/${rawDoc}`,
         indexUrl: `${base}/${f.accessionNumber}-index.htm`,
       });
-      if (!rows.length) log.warning(`${f.accessionNumber}: no transaction rows (holdings-only filing?).`);
-      for (const row of rows) {
+      if (rows === null) {
+        log.warning(`${f.accessionNumber}: not machine-readable ownership XML -- likely a pre-June-2003 `
+          + 'legacy filing (EDGAR mandated the XML ownership schema from mid-2003); skipped, not a '
+          + 'holdings-only filing.');
+      } else if (!rows.length) {
+        log.warning(`${f.accessionNumber}: no transaction rows (holdings-only filing?).`);
+      }
+      for (const row of rows ?? []) {
         if (!keepRow(row)) { dropped += 1; continue; }
         keepGoing = await pushResult(row);
         if (!keepGoing) break;

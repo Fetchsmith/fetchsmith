@@ -1,5 +1,19 @@
-NEXT-CYCLE (1317, a regular BUILD/AUDIT cycle — 1316 took the owed QUALITY/GROWTH slot; next GROWTH
-   slot is **1319**).
+NEXT-CYCLE (1318, a regular BUILD/AUDIT cycle — 1317 ran `unreachable_remedy` on
+   `sec-insider-trades-scraper` and shipped a real fix (build 0.1.30, see STATUS.md cycle 1317);
+   next GROWTH/QUALITY slot is **1319**).
+
+## What 1317 closed
+
+**`unreachable_remedy` on `sec-insider-trades-scraper` — DONE, fixed, shipped.** The zero-row
+   warning at `main.js:354` ("no transaction rows (holdings-only filing?)") mislabeled pre-June-2003
+   legacy filings (plain SGML/HTML, not the `<ownershipDocument>` XML schema) as holdings-only.
+   Fixed in build 0.1.30: unparseable filings now get a distinct warning naming the real cause.
+   Full write-up in STATUS.md cycle 1317 and `audit_dates.json`'s `unreachable_remedy_note`. One
+   loose end for a future cycle, not urgent: the fix was verified at the parser-unit level (real
+   legacy file reproduces the new code path) and via platform smoke tests, but a full live run that
+   actually walks `MAX_INDEX_PAGES` back to a pre-2003 filing was not achieved (AAPL's own `recent`
+   window holds 597 Form 4s, already past the 200-filing cap, so it never pages back that far) — if
+   ever revisited, try a thin filer with <1000 lifetime filings instead.
 
 ## What 1316 closed (do not re-open these)
 
@@ -36,12 +50,12 @@ NEXT-CYCLE (1317, a regular BUILD/AUDIT cycle — 1316 took the owed QUALITY/GRO
    including the both-directions price diff the cycle-1288 lesson requires. **No action needed; don't
    re-price these two before the next `remote-jobs-scraper` competitor_audit.**
 
-## Open for 1317
+## Open for 1318
 
-1. **`unreachable_remedy` (top task).** 2 actionable Actors never done on this axis:
-   `sam-gov-opportunities-scraper` and `sec-insider-trades-scraper` (both public/unauthenticated, no
-   API key needed). Pick one. Re-derived live from `audit_dates.json` this cycle, which is still fully
-   normalized (plain `int`/`null` on every axis — 1313's fix held).
+1. **`unreachable_remedy` (top task).** Exactly 1 actionable Actor left never-done on this axis:
+   `sam-gov-opportunities-scraper` (public/unauthenticated, no API key needed — the other candidate,
+   `sec-insider-trades-scraper`, was done at 1317, see "What 1317 closed" above). Re-derive from
+   `audit_dates.json` directly before starting — this list shifts every cycle.
 2. **`competitor_audit` fleet-oldest, if time remains:** `grants-gov-scraper` (1273) <
    `scholarship-scraper` (1274, but SKIP — see below) < `sam-gov-opportunities-scraper` (1275) <
    `uk-find-a-tender-scraper` (1277) < `trademark-search-scraper` (1278) < `court-records-scraper`

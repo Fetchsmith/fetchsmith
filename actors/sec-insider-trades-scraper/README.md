@@ -147,6 +147,14 @@ Two have a **different output granularity entirely** and are excluded from the p
 
 ## Notes on the source
 
+- **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather
+  than miscounting them as holdings-only.** SEC only mandated the `<ownershipDocument>` XML schema
+  this parser reads from mid-2003; everything older is plain SGML/HTML — verified live against
+  Apple's own 2003-03-21 Form 4 (accession `0001104659-03-004723`), whose `primaryDocument` is an
+  `<html>` table with no ownership XML anywhere. A run that pages back that far (very old
+  `sinceDate`, or a high `maxFilingsPerIssuer` on a thinly-traded issuer) skips those filings and
+  logs a warning naming them as unparseable legacy filings, distinct from the holdings-only warning
+  below — they are never silently miscounted as zero-transaction filings.
 - Form 3 is an **initial** statement of holdings and Form 5 an annual catch-up. A Form 3 never
   contains a transaction element at all (verified across Apple's four most recent Form 3s: 0
   transactions, 1–2 non-derivative and 2–7 derivative holdings each), so with the default
