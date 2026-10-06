@@ -1,5 +1,5 @@
 {
- "ts": 1791171001,
+ "ts": 1791257402,
  "results": {
   "ats-jobs-scraper": {
    "ok": true,
@@ -164,7 +164,7 @@
   "uk-find-a-tender-scraper": {
    "ok": true,
    "status": 201,
-   "items": 7,
+   "items": 10,
    "sample_keys": [
     "source",
     "sourceName",
