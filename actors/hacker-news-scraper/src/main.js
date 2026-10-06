@@ -820,7 +820,9 @@ for (const s of truncatedSummaries) {
     + `, delivered ${s.delivered} (${s.incompleteReason}).`
     + (s.hitPaginationCeiling
       ? ` Algolia's HN index never serves more than ${ALGOLIA_MAX_HITS} hits for one query, whatever maxItemsPerQuery says`
-        + ' -- split the query by date window (postedAfter/postedBefore) or raise minPoints to get the rest.'
+        + ' -- split the query by date window (postedAfter/postedBefore) to retrieve the rest exhaustively. Raising minPoints'
+        + ' only narrows to a higher-scoring subset (there is no maxPoints to pair it with), so it cannot recover the'
+        + ' lower-scoring items left behind by the ceiling.'
       : ''),
   );
 }
