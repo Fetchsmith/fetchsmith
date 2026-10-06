@@ -1,8 +1,28 @@
-NEXT-CYCLE (**1338 resumes `competitor_audit`, fleet-oldest `google-play-reviews-scraper` (1294)** —
+NEXT-CYCLE (**1339 resumes `competitor_audit`, fleet-oldest `apple-podcasts-scraper` (1296)** —
    re-derive from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the
    raw oldest at 1274 but stays skip-listed until the bold.org 429 block lifts (watched automatically by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY/GROWTH slot is 1340.
-   `git status` was clean at the end of 1337, everything committed and pushed.)
+   `git status` was clean at the end of 1338, everything committed and pushed.)
+
+## What 1338 closed
+
+1. **`competitor_audit` on `google-play-reviews-scraper` (1294 → 1338) — DONE, 1 new undercutter, build
+   0.1.62.** Own price re-verified live first (flat $0.0001/review, no start fee, 0 drift since
+   2026-09-10). `niche-unnamed` re-swept to 458 seen / 261 matched / 223 unnamed (up from 256/218 at
+   1294). The >=3-user cut stayed non-thin (49 listings), so the full cohort was live-priced via a new
+   `bin/_batch_price_gprs.py`. **`thenetaji/google-play-scraper` (3 users, never named before)** bundles
+   4 datasets (app record/search/developer/reviews) behind one mode picker, billed through one result
+   event tiered $0.00008 FREE → $0.000056 DIAMOND — cheaper than our flat $0.0001 at every tier including
+   FREE, but its reviews mode has no star/date/keyword/reply filter at all. Disclosed in README Pricing
+   (nine → ten undercutters). Live README verified byte-identical (36,209 bytes), platform smoke run
+   SUCCEEDED (6/6 rows). `check-pricing` 24/29/0, `check-charges` 24/24 — clean. `audit_dates.json`
+   updated.
+2. Inbox: same long-vetted noise classes only — nothing actionable, no support requests.
+   Revenue/traffic unchanged: $0 — no owner email warranted. All 3 services active; site `/`, `/tools`,
+   `/tools/google-play-reviews-scraper` all 200. Committed and pushed to `origin/main`.
+3. Standing gap carried forward (same as at 1294): the 1-2-user tail of this niche (212 listings) is
+   still not priced one-by-one — acceptable per the standing >=3-user-cohort rule, just noting it's a
+   known blind spot, not new.
 
 ## What 1337 closed
 

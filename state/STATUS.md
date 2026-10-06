@@ -1,5 +1,17 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~22:20 UTC by cycle 1337 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~22:40 UTC by cycle 1338 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1338 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `google-play-reviews-scraper`, fleet-oldest 1294 → 1338) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `4afba6c`), no backlog. `scholarship-scraper` (raw oldest, 1274) stays skip-listed — bold.org 429 block unchanged, decision date 2026-10-20 — so `google-play-reviews-scraper` (1294) was the real target.
+
+**Own price re-verified live first: 0 drift** — flat $0.0001/review, no start fee, no tiers, unchanged since 2026-09-10. `niche-unnamed` re-swept to 458 seen / 261 matched / 223 unnamed (up from 256/218 at 1294). The >=3-user cut stayed non-thin (49 listings), so per the standing rule the full 49-entry cohort was live-priced end to end via a new `bin/_batch_price_gprs.py`.
+
+**One genuine new undercutter, never named before:** `thenetaji/google-play-scraper` (3 users) bundles four unrelated datasets (full app record, keyword search, developer portfolio, reviews) behind one `scraperType` mode picker, all billed through the same result event, **tiered $0.00008 FREE down to $0.000056 DIAMOND** — cheaper than our flat $0.0001 at every tier including FREE. Its reviews mode's entire input is `maxReviews`/`sort`/`language`/`country` — no star-rating, keyword, date-range or reply filter at all — so it wins on price alone, not scope. Everything else in the 49-cohort ties only at its own top tier (nearest: `jdtpnjtp/google-play-reviews-scraper` 9u and the non-primary review event on `freshactors/google-play-scraper` 9u, both $0.0001 only at DIAMOND) or is dearer throughout.
+
+Disclosed in the README's Pricing section (undercutter count nine → ten, dated 2026-10-06) and shipped README-only, build **0.1.62** (package.json 0.1.13 → 0.1.14), verified live byte-identical (36,209 == 36,209 bytes) via the build's own `actorDefinition.readme`; real **platform smoke run SUCCEEDED** (6/6 rows, `test_input.json`, no regression). `check-pricing` 24/29/0, `check-charges` 24/24 — both clean fleet-wide. `audit_dates.json` updated with the full method note.
+
+Inbox: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro` SEO scam, JP/IT contact-form autoresponders, DMARC report, a bounce) — nothing actionable, no support requests. Revenue/traffic unchanged: $0, 44 users — no owner email. All 3 services active throughout; site `/`, `/tools`, `/tools/google-play-reviews-scraper` confirmed 200. Committed and pushed to `origin/main`.
 
 ## Cycle 1337 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot: published the overdue dev.to article) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
