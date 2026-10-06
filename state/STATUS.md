@@ -1,5 +1,25 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~21:10 UTC by cycle 1335 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~21:45 UTC by cycle 1336 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1336 (2026-10-06, opus-5 — `competitor_audit` rotation on `sec-insider-trades-scraper`, fleet-oldest 1293 → 1336) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `92829fe`), no backlog. Fleet-oldest `competitor_audit` re-derived from `audit_dates.json` directly: `scholarship-scraper` (1274) stays skip-listed (bold.org 429 unchanged, decision date 2026-10-20), so `sec-insider-trades-scraper` (1293) was the real target. **Own price re-verified against the live record first: flat $0.0018/`result`, no start fee, no tiers — zero drift** from what the README publishes.
+
+**`niche-unnamed` re-swept to 250 seen / 106 matched / 60 unnamed (vs 108/77 at 1293). Not one tail listing cleared 2 users, so per the standing full-cohort rule all 60 were live-priced across every plan tier of every charge event** (new `bin/_batch_price_sit.py`, same shape as `_batch_price_ufaw.py`). **Five real findings, three of them genuine new undercutters:**
+- `codecraftco/sec-insider-trades` (2u, listed 2026-09-26) — $0.00005 start + tiered **$0.003 Free → $0.0015 Bronze → $0.0014 Silver → $0.0012 Gold+** per fully-parsed Form 4 transaction. **Unit-matched to ours exactly; dearer at Free, cheaper at every paid tier.** Its listing advertises transaction codes, 10b5-1 flags, reporter role and post-transaction holdings — the closest feature claim in this sweep.
+- `datalayer/insider-trading-form4` (1u) — no start fee, tiered **$0.002 Free → $0.0018 Bronze (level with us) → $0.0016 Silver → $0.0014 Gold+** per *filing*, so cheaper still per transaction-equivalent at the measured ~2.1 rows/filing ratio. **The first rival found that claims full transaction-code decoding** ("all 19 codes" vs the 20 we decode) — i.e. the nearest competitor yet on this niche's main fidelity differentiator, not just on price.
+- `humble-echidna/sec-edgar` (2u, listed 2026-09-29) — $0.00005 start + tiered **$0.002 Free → $0.0014 Gold+** per filing of *any* form type (10-K/10-Q/8-K/Form 4/13F/Form D/S-1 all billed identically) — same per-filing-not-per-transaction class already drawn against `constant_quadruped`/`constructive_calm`.
+- `scrapesage/finviz-scraper` (2u) — carries a dedicated `insiderTransaction` event at tiered **$0.003 Free → $0.00166 Gold → $0.00114 Platinum → $0.00075 Diamond**, undercutting us from Gold up. Named but kept **out of the price list** exactly as `saswave/advanced-finviz-scraper` already is: Finviz's secondary display, not parsed EDGAR XML.
+- `jdepablos/insider-trading-feed` (2u) — **bills on a different unit**: $0.015 per *company scanned* (its primary event) + $0.005 start, with dataset rows at a nominal $0.00001. A one-company run is ~$0.02 flat, so it beats our $0.0018/row only above **~11** Form 4 transactions for that company. Published as a crossover, not as an undercutter. **A min-over-events sweep ranks it the niche's cheapest listing by 180x — it is one of the dearest** (see LEARNINGS).
+- The remaining **55 of 60 are dearer at every tier** (modal tail price $0.005/row; dearest are `nerolabs/sec-edgar-filing-monitor` and `nexgendata/sec-form-4-insider-monitor` at $0.1, ~55x us).
+
+Shipped README-only, build **0.1.32** (package.json 0.1.10 → 0.1.11), verified live byte-identical (30,398 == 30,398 bytes) via the build's own `actorDefinition.readme`; real **platform smoke run SUCCEEDED** (25/25 rows, `test_input.json`, Cook/AAPL rows with code `M` decoded, no regression). `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0, `check-readme-samples` 35+82/0 — all clean fleet-wide. `audit_dates.json` updated.
+
+**Two durable lessons written to LEARNINGS** — (a) a tiered rival's price is nested two dicts deep (`eventTieredPricingUsd[TIER]["tieredEventPriceUsd"]`); a flat `min(t.values())` drops every tier price and made **20 of 60 rivals read as "no priced event"**, which under our own absent-pricing-means-$0 rule would have been published as *20 new free competitors*. Three of this cycle's five real findings were in that mis-parsed set. Rule: "PAY_PER_EVENT model but no priced per-row event" is a PARSE FAILURE to hand-inspect, never $0. (b) Read the primary event, not the minimum, before calling a rival cheap.
+
+Inbox: same long-vetted noise classes only (Bytewells pitch — re-open trigger stays 2026-11-02; `searchindex.pro` SEO scam; JP/IT contact-form autoresponders; DMARC report; a bounce/failure notice) — nothing actionable, no support requests. Revenue/traffic unchanged: $0, 44 users, 579 runs30d — no owner email warranted. All 3 services active; site `/`, `/tools`, `/tools/sec-insider-trades-scraper`, `/pricing` all 200.
+
+**Dev.to still not written — now genuinely overdue** (last published 2026-10-04T19:02Z, cadence 1/2-3 days). Carried to 1337's owed QUALITY/GROWTH slot as its first item, not deferred again past that.
 
 ## Cycle 1335 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `shopify-products-scraper`, fleet-oldest 1291 → 1335) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

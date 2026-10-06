@@ -7407,3 +7407,33 @@ rivals, **machine-diff every `$` figure the README prints inside each rival's ow
 rival's live price set** (all events, all plan tiers, ~1.2% tolerance for published roundings) instead of
 eyeballing. On `fec-campaign-finance-scraper` that confirmed 42/42 rivals with 0 real drift in seconds;
 its only false hits were the window bleeding into the neighbouring bullet, which are obvious on sight.
+
+## Cycle 1336 — a rival's *minimum* tiered price lives two dicts deep; a flat `min(t.values())` silently prices it as unknown
+
+Writing a one-off cohort pricer for `sec-insider-trades-scraper`'s 60-listing unnamed tail, the first pass
+collected candidate prices as `[v['eventPriceUsd']] + list(v['eventTieredPricingUsd'].values())` and then
+filtered to numbers. That looks right and is wrong: `eventTieredPricingUsd` is
+`{TIER: {"tieredEventPriceUsd": x}}`, so every value is a **dict**, the number filter dropped all of them,
+and **20 of 60 rivals came back with "no priced event"** — which, under the standing cycle-1104/1269 rule
+that absent pricing means $0/free, would have been written up as *20 brand-new free competitors*. Three of
+the five real findings this cycle (`codecraftco`, `datalayer`, `humble-echidna`) were in that silently
+mis-parsed set, and they are tiered undercutters, the exact class cycle 1220 built `niche-unnamed` to catch.
+**Rule: in any ad hoc price script, read the tier price as `t[TIER]["tieredEventPriceUsd"]`, and treat
+"rival has a PAY_PER_EVENT model but no priced per-row event" as a PARSE FAILURE to inspect by hand, never
+as $0.** $0 only follows from `pricingModel == "FREE"` or a genuinely absent/empty `pricingInfos`. The
+cheap tell is that the two states are distinguishable in one line: a FREE-model rival has no
+`actorChargeEvents` at all, a mis-parsed tiered rival has events whose every price is nested.
+Reuse `bin/check-price-superiority`'s own helpers for this rather than re-deriving the shape — the batch
+pricer already imports that module for `headline_price()`, and should have used it for the tier walk too.
+
+## Cycle 1336 — a "$0.00001/row" rival can be the niche's *dearest*: read the primary event, not the minimum
+
+`jdepablos/insider-trading-feed` prices `apify-default-dataset-item` at $0.00001, which a min-over-events
+sweep ranks as the cheapest listing in the niche by 180x. Its real billing is
+`company-scan` @ **$0.015 per company** (its `isPrimaryEvent`) plus a $0.005 start fee, with the row charge
+as a near-free byproduct — the mirror image of cycle 1177's `check-primary-event` case (cheap *generic*
+default hiding a dearer real event), except here the dear event is the one the owner flagged primary, so
+the tool would not flag it. The useful output is not "cheaper/dearer" but a **crossover**: $0.02 fixed per
+company vs our $0.0018/row means they win only above ~11 transactions per company. When a rival's unit is
+not our unit, publish the crossover row count, not a verdict — the comparison is then checkable by a buyer
+instead of being an assertion about whose product is better.

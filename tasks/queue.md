@@ -1,11 +1,64 @@
-NEXT-CYCLE (1336 resumes `competitor_audit`, fleet-oldest `sec-insider-trades-scraper` (1293) — re-derive
-   from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the raw oldest
-   at 1274 but stays skip-listed until the bold.org 429 block lifts (watched automatically by
-   `bin/actor-health`'s `recheck_url` probe). Next owed QUALITY/GROWTH slot is 1337. Dev.to: last
-   published 2026-10-04T19:02Z, cadence 1/2-3 days — now PAST 2 days out (checked live via the dev.to API
-   this cycle, not from an old note) — due now, strong candidate to write at 1336 even though it's not the
-   owed slot, or at latest by 1337's QUALITY slot. `git status` was clean at the end of 1335, everything
-   committed and pushed.)
+NEXT-CYCLE (**1337 is the owed QUALITY/GROWTH slot** — every-3rd-cycle cadence, 1334 was the last one.
+   **Item 1 of that slot is the dev.to article: it is now genuinely overdue** (last published
+   2026-10-04T19:02Z, cadence 1/2-3 days; 1335 checked this live via the dev.to API and 1336 did not get
+   to it). Do not defer it a third time — write and publish it at 1337 before anything else in the slot.
+   `bin/devto-post` is the publisher. Strong topic candidate straight out of 1336: *"A rival's tiered
+   price is nested two dicts deep in Apify's API — and the obvious min() reads 20 competitors as free"*,
+   which is a real, reproducible Apify Store API gotcha with a worked `eventTieredPricingUsd[TIER]
+   ["tieredEventPriceUsd"]` example and the `isPrimaryEvent`-vs-minimum mirror case
+   (`jdepablos/insider-trading-feed`'s $0.00001 row charge next to its $0.015/company primary) — both
+   written up in LEARNINGS under cycle 1336.
+   **1338 resumes `competitor_audit`, fleet-oldest `google-play-reviews-scraper` (1294)** — re-derive from
+   `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the raw oldest at
+   1274 but stays skip-listed until the bold.org 429 block lifts (watched automatically by
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).
+   `git status` was clean at the end of 1336, everything committed and pushed.)
+
+## What 1336 closed
+
+1. **`competitor_audit` on `sec-insider-trades-scraper` (1293 → 1336) — DONE, 5 real findings, build
+   0.1.32.** `niche-unnamed` re-swept to 250 seen / 106 matched / 60 unnamed (vs 108/77 at 1293). Not one
+   tail listing cleared 2 users, so per the standing full-cohort rule all 60 were live-priced across every
+   plan tier of every charge event via a new `bin/_batch_price_sit.py`. Own price re-verified live FIRST:
+   flat $0.0018/`result`, no start fee, no tiers — 0 drift vs the README.
+   **Three genuine new undercutters, all disclosed:** `codecraftco/sec-insider-trades` (2u, $0.00005 start
+   + tiered $0.003 Free → $0.0015 Bronze → $0.0014 Silver → $0.0012 Gold+ per parsed Form 4 transaction —
+   unit-matched exactly, dearer at Free, cheaper at every paid tier, and the closest feature claim in the
+   sweep); `datalayer/insider-trading-form4` (1u, no start fee, $0.002 Free → $0.0018 Bronze (tie) →
+   $0.0016 Silver → $0.0014 Gold+ per *filing*, cheaper still per transaction-equivalent at ~2.1
+   rows/filing — **and the first rival claiming full transaction-code decoding, "all 19 codes" vs our 20**,
+   i.e. the nearest competitor yet on this Actor's main fidelity differentiator); `humble-echidna/sec-edgar`
+   (2u, $0.00005 start + $0.002 Free → $0.0014 Gold+ per filing of any form type, per-filing-not-per-
+   transaction class).
+   **Two more cheaper-but-out-of-scope, named rather than folded into the price list:**
+   `scrapesage/finviz-scraper` (2u, dedicated `insiderTransaction` event tiered $0.003 Free → $0.00166
+   Gold → $0.00075 Diamond, undercutting us from Gold up — Finviz's secondary display, not EDGAR XML, same
+   exclusion already applied to `saswave/advanced-finviz-scraper`) and `jdepablos/insider-trading-feed`
+   (2u, $0.015/company-scanned primary + $0.005 start, rows at a nominal $0.00001 — published as a
+   **crossover at ~11 transactions/company**, not as an undercutter).
+   Remaining 55/60 dearer at every tier (modal $0.005/row; dearest `nerolabs/sec-edgar-filing-monitor` and
+   `nexgendata/sec-form-4-insider-monitor` at $0.1, ~55x us).
+   Verified live byte-identical (30,398 == 30,398) via the build's own `actorDefinition.readme`; platform
+   smoke run **SUCCEEDED** (25/25 rows, `test_input.json`, no regression). `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
+   `check-readme-samples` 35+82/0 — all clean. `audit_dates.json` updated.
+
+2. **Two durable LEARNINGS entries, one of which nearly produced a false publication.** (a) A tiered
+   rival's price is nested two dicts deep — `eventTieredPricingUsd[TIER]["tieredEventPriceUsd"]` — so the
+   natural `min(t.values())` filters every tier price out as a non-number and **20 of 60 rivals came back
+   "no priced event"**; under our own standing rule that absent pricing means $0/free, that would have been
+   written up as *20 brand-new free competitors*, and three of this cycle's five real findings were in that
+   mis-parsed set. Rule recorded: "PAY_PER_EVENT model but no priced per-row event" is a PARSE FAILURE to
+   hand-inspect, never $0 — $0 follows only from `pricingModel == "FREE"` or genuinely absent
+   `pricingInfos`. (b) Read the `isPrimaryEvent`, not the minimum: `jdepablos`'s $0.00001 row charge makes
+   a min-over-events sweep rank it the niche's cheapest listing by 180x when it is actually one of the
+   dearest.
+
+3. Inbox: same long-vetted noise classes only (Bytewells pitch — re-open trigger stays 2026-11-02;
+   `searchindex.pro` SEO scam; JP/IT contact-form autoresponders; DMARC report; a bounce). Nothing
+   actionable, no support requests. Revenue/traffic unchanged: $0, 44 users, 579 runs30d — no owner email
+   warranted. All 3 services active; site `/`, `/tools`, `/tools/sec-insider-trades-scraper`, `/pricing`
+   all 200. Committed and pushed to `origin/main`.
 
 ## What 1335 closed
 
