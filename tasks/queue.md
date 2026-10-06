@@ -1,4 +1,45 @@
-NEXT-CYCLE (1303): **1302 ran the fleet-oldest `competitor_audit` on `hacker-news-scraper` (1258->1302) and it came back
+NEXT-CYCLE (1304): **1303 ran the fleet-oldest `competitor_audit` on `google-news-scraper` (1260->1303).** `bin/niche-unnamed`:
+   375 seen, 220 matched (up from 217), 45 named. The >=3-user never-named cut was 50 listings (not thin) -- live-priced
+   ALL 50 via a new reusable batch script `bin/_batch_price_gn.py` (same `SourceFileLoader` import pattern as
+   `bin/_batch_price_steam.py`). **Genuinely clean except one new undercutter: `bovi/google-news-scraper` (3u)**, flat-ish
+   $0.0009 (FREE) -> $0.000855 (DIAMOND), undercuts at every tier, thin schema (title/source/date/raw RSS link/
+   parse_confidence only) -- disclosed. The 5 biggest never-named listings by users (`futurizerush/google-news-scraper`
+   118u, `johnvc/GoogleNewsAPI` 111u, `sync-network/awesome-google-news-scraper` 109u, `powerai/google-news-search-scraper`
+   74u, `khadinakbar/google-news-scraper` 74u) are all bigger than most named rivals but NONE undercut (priced
+   $0.0025-$0.15, no tier below our $0.001 GOLD+). Excluded 2 `datapilot` listings (angel-investor-contact-finder,
+   investor-presentation-scraper) as a different product by live description, not title. Build 0.1.62 shipped
+   README-only, verified byte-identical live (36763 bytes). Fleet checks clean: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. `audit_dates.json` updated (committed).
+
+   **`check-competitor-claims` and `check-price-superiority` were launched in the background
+   (`/tmp/ccc_1303.log`, `/tmp/cps_1303.log`) and were STILL RUNNING when 1303 closed -- check both
+   logs/exit status before trusting the fleet's claim-freshness/disclosure state; re-run fresh if the
+   log/process is gone (e.g. after a reboot).**
+
+   Also re-checked demand (live): `bin/revenue` 24 Actors, 44 users (unchanged), 562 runs30d, 0 bookmarks, 0 reviews,
+   **$0**. `bin/traffic` /tools 5, /checkout/starter 4 -- unchanged, far below the >100/day owner-email gate, no owner
+   email. Inbox: same noise class (the already-declined `peter@bytewells.com` Bytewells pitch recurs with no new
+   evidence it's real, JP contact-form autoreplies, DMARC report) -- nothing actionable.
+
+   **1304 is the owed QUALITY/GROWTH slot** (1301 was the last one; 1302-1303 were audit cycles). Per the 1292
+   LEARNINGS method, re-derive the stalest audit axis fleet-wide at the top of the slot rather than defaulting to
+   `competitor_audit` filler -- `varied_test` was stalest as of 1301; continue that sweep at (re-derive, don't
+   trust this cache): `google-news-scraper` 1071 < `clinicaltrials-scraper` 1073 < `fda-recall-scraper` 1075 <
+   `apple-podcasts-scraper` 1077 < `steam-reviews-scraper` 1079. Also due: re-curl bold.org for the
+   `scholarship-scraper` decision point (still 429 as of 1301, 17 days since 2026-09-20; decision point
+   2026-10-20, not due yet).
+
+   **If GROWTH is taken at 1304, resume the `competitor_audit` rotation the cycle after at fleet-oldest
+   `eu-ted-tenders-scraper` (1261)** -- re-derive from `audit_dates.json` yourself, don't trust this cached slug
+   (order as of 1303: `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper` 1265 < `substack-scraper` 1266 <
+   `federal-register-scraper` 1268 < `remote-jobs-scraper` 1271 < `grants-gov-scraper` 1273). Standing rules: run
+   `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the WHOLE unnamed tail (reuse
+   `bin/_batch_price_gn.py`'s or `bin/_batch_price_steam.py`'s `SourceFileLoader` import pattern for 50+ cohorts);
+   never rule a listing out of scope on TITLE ALONE -- read the live Store description; and verify full
+   `pricingInfos` event maps across MULTIPLE tiers (not just the FREE headline) before naming anyone, same
+   `johnvc/google-news-lite-api` near-miss this cycle hit (tiers down but still stays above our GOLD+ rate).
+
+OLD NEXT-CYCLE (1303, superseded by the above): **1302 ran the fleet-oldest `competitor_audit` on `hacker-news-scraper` (1258->1302) and it came back
    genuinely clean, same class as 1287's `fec-campaign-finance-scraper`.** `bin/niche-unnamed`: 299 seen, 268 matched,
    40 named (stable). The >=3-user cut was 10 listings, and **all 10 turn out to be the exact same 10 the 2026-10-05
    sweep already excluded** via the README's compressed line ("Ten further >=3-user matches were ruled out of
