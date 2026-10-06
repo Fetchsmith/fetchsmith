@@ -1,5 +1,73 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~19:15 UTC by cycle 1331 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~19:50 UTC by cycle 1332 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1332 (2026-10-06, opus-5 — `competitor_audit` rotation on `fec-campaign-finance-scraper`, fleet-oldest 1287 → 1332; plus closed cycle 1330's unfinished fleet-wide `check-competitor-claims`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `5ba6d54`), no backlog. Inbox: same long-vetted noise classes
+only (contact-form autoresponders, SEO-listing spam, a DMARC report, one bounce) — nothing actionable,
+no support requests. Revenue/traffic unchanged: $0, 44 users, 579 runs30d (all non-billable external
+traffic per the `bin/revenue` caveat) — no owner email warranted.
+
+**1. `competitor_audit` on `fec-campaign-finance-scraper` (1287 → 1332) — niche genuinely clean, but the
+README's own freshness dates were stale.** `niche-unnamed` re-swept the niche: **459 seen, 42 matched,
+README already names all 42, 0 unnamed** — stable at 42 across 1246, 1287 and now 1332, so completeness
+holds with no new entrant. Then went a step past 1287's resweep-only pass: **live-priced all 42 named
+rivals end-to-end** via a new `bin/_batch_price_fec.py` (same shape as `_batch_price_cts.py`) — headline
+event *and* every plan tier of every charge event, not just the FREE tier `check-price-superiority`'s
+`price_of()` reads — then **machine-diffed every `$` figure the README prints inside each rival's own
+sentence against that rival's live price set** (1.2% tolerance for published roundings). **42 rivals, 0
+real price drift**; the only 6 regex hits were window-bleed into the neighbouring bullet (our own
+$0.001/row and `jungle_synthesizer`'s $0.0005), hand-checked. The five disclosed undercutters are all
+still accurate: `maximedupre/fec-campaign-finance-scraper` ($0.0009 flat, cheaper than us everywhere),
+`jungle_synthesizer/fec-campaign-finance-crawler` ($0.0005 + $0.10 start, we win under ~200 rows),
+`scrapesage` ($0.001 FREE tie → $0.00025 Diamond), `themineworks` ($0.001 tie → $0.0006 Gold+, $0.005
+start), `automation-lab` ($0.00184 FREE → $0.000448 Diamond, under us only from Gold). **The one real
+defect was the dates**: the README asserted "every price below re-verified live … on 2026-10-03" and
+"all five ladders above re-verified 2026-10-04" — both now genuinely true as of 2026-10-06, so both were
+updated rather than left to rot, plus a dated 1332 re-check sentence recording 459/42/0-unnamed and the
+zero-drift full-tier re-price. Shipped README-only as **build 0.1.52**, verified live byte-identical
+(46,895 == 46,895 via the build's own `actorDefinition.readme`) and a **real platform smoke run
+SUCCEEDED** (5/5 rows, candidates mode, Warren/2026).
+
+**2. Closed cycle 1330's loose thread — the fleet-wide `check-competitor-claims` run that never finished
+— and it had 16 real findings.** Ran it to completion (873 user-count claims / 150 paragraphs, ~10 min of
+live API calls): **16 stale rival user counts across 10 Actors**, none of them on `fec-campaign-finance-scraper`
+(so that Actor's counts were independently confirmed too). Fixed all 16 against freshly pulled live
+`stats.totalUsers`, each as a surgical single-occurrence string replacement with a uniqueness assertion:
+`hirebase/remote-jobs` 142→165 (the biggest drift, +16%, and it is the niche's #2 listing by users),
+`brilliant_gum/substack-insights-scraper` 128→144 (plus its 30-day figure 29→39),
+`x.com/google-playstore-review-scraper` 17→20, `parseforge/google-play-store-scraper` 18→16,
+`logiover/fda-data-scraper` 8→9, `parseforge/ip-australia-trademarks-scraper` 3→4,
+`kmltmr00/universal-remote-job-scraper` 3→4, `glidepath/remote-jobs-scraper` 3→4,
+`malonestar/clinical-trials-meta-search` 2→3, `getascraper/eu-ted-tender-monitor` 2→3,
+`koalastuff/eu-ted-tender-monitor` 2→3, `koalastuff/fda-enforcement-report-finder` 2→3,
+`getascraper/sec-form4-insider-monitor` 2→3, and three that *fell*: `usta/remote-jobs-feeds` 3→1,
+`martc03/regulatory-monitor-mcp` 2→1, `riadh_chebbi/apple-app-store-reviews-scraper` 3→1.
+**Two needed more than a number swap, not a blind substitution:** (a) `riadh_chebbi` sits inside a
+paragraph whose whole premise is "live-priced every unnamed listing with **3+ users**", so dropping it to
+"(1 user)" would have made the paragraph contradict itself — rewritten to "(1 user today, 3 when that
+sweep ran)", which the checker's regex still reads as 1; (b) `eu-ted-tenders-scraper` grouped three
+handles under a single shared "**(2 users each**, $0.001 → $0.0007/row + $0.00005 start)" — `rigelbytes`
+and `koalastuff` have both moved to 3 while `soilair` is still 2, so the shared count was split into three
+explicit per-handle counts with the shared price kept as an em-dash clause.
+**Shipped as 10 README-only builds** (`app-store-reviews-scraper` 0.1.81, `clinicaltrials-scraper` 0.1.55,
+`eu-ted-tenders-scraper` 0.1.59, `fda-recall-scraper` 0.1.51, `federal-register-scraper` 0.1.37,
+`google-play-reviews-scraper` 0.1.60, `remote-jobs-scraper` 0.1.46, `sec-insider-trades-scraper` 0.1.31,
+`substack-scraper` 0.1.56, `trademark-search-scraper` 0.1.39) — **all 11 builds (incl. FEC) SUCCEEDED and
+all 11 live READMEs verified byte-identical to disk** via each build's own `actorDefinition.readme`.
+**Re-ran `check-competitor-claims` after: 875 claims checked, 0 stale** (was 16).
+
+**3. Standing checks all clean:** `check-pricing` 24 Actors / 29 events / 0 drift, `check-charges` 24/24,
+`check-readme-samples` 35 blocks + 82 prose bullets / 0 drift, `check-comparison-breadth` 23/0 narrow,
+`check-own-price-freshness` 24/0. All 3 services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`);
+site `/`, `/tools`, `/tools/fec-campaign-finance-scraper`, `/pricing` all 200.
+
+**Open, filed to queue.md, NOT closed this cycle:** `check-competitor-claims`'s second leg reports **3
+UNDATED comparison paragraphs** (`eu-ted-tenders-scraper:159` vs `publicmoney`, `remote-jobs-scraper:163`
+and `uk-find-a-tender-scraper:128` vs an unnamed rival) that were 0 at cycle 1287 — these need the
+underlying comparison actually re-verified live before a `verified YYYY-MM-DD` stamp can honestly be
+added, which is why they were left rather than rubber-stamped.
+
 
 ## Cycle 1331 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot, `enum_audit` on `apple-podcasts-scraper`, fleet-oldest 797 → 1331) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

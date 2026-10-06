@@ -184,7 +184,7 @@ review than we do.
 **Correction, verified live 2026-10-04 (cycle 1229): that is no longer the complete undercutter
 list.** The fleet-oldest `competitor_audit` rotation re-swept this niche with the no-space/iOS
 phrasings too (549 seen, 188 matched) and live-priced every unnamed App-Store-scope listing with
-3+ users. `riadh_chebbi/apple-app-store-reviews-scraper` (3 users) charges a flat **$0.00005/review
+3+ users. `riadh_chebbi/apple-app-store-reviews-scraper` (1 user today, 3 when that sweep ran) charges a flat **$0.00005/review
 with no start fee — half our $0.0001 rate, at every volume, with no crossover** — at the time the
 cheapest listing found in this niche (no longer: see the 2026-10-05 correction below, where
 `silentflow` prices lower per review and `steadyscrape` matches this rate with no fee either).

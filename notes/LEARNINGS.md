@@ -7373,3 +7373,37 @@ file's actual on-disk indent is 1 space, not 2 — confirmed via `git show HEAD:
 cat -A`. Always use `indent=1` when writing this specific file. (A similar warning exists from cycle
 1311 about `indent=1` reformatting *queue.md*-style files — the two files use opposite indents, so
 check the actual file before assuming either rule applies.)
+
+## Cycle 1332 — a shared "(N users **each**)" in a README rots silently, and a stale count can contradict its own paragraph
+
+`check-competitor-claims` found 16 stale rival user counts fleet-wide (the run cycle 1330 started and
+never finished). Fourteen were a one-number swap. **Two were not, and both failure modes will recur:**
+
+1. **A shared count covering several handles breaks as soon as ONE of them moves.**
+   `eu-ted-tenders-scraper` had `soilair/ted-eu-tenders-api`, `rigelbytes/eu-tenders-scraper` and
+   `koalastuff/eu-ted-tender-monitor` grouped as "**(2 users each**, $0.001 → $0.0007/row + $0.00005
+   start)". `rigelbytes` and `koalastuff` are now 3; `soilair` is still 2 — so there is no single number
+   that makes that sentence true, and `check-competitor-claims` reports it as *two* stale claims on one
+   line (its regex binds the count to each handle in the group independently). Fix: split into explicit
+   per-handle counts and keep the shared price as an em-dash clause. **Rule: group handles by shared
+   PRICE, never by shared USER COUNT** — price is a decision the rival made once, user count drifts
+   weekly.
+
+2. **A count is sometimes load-bearing for the surrounding prose, so a blind swap can make a paragraph
+   contradict itself.** `app-store-reviews-scraper`'s paragraph states it "live-priced every unnamed
+   App-Store-scope listing with **3+ users**" and then names `riadh_chebbi/...` "(3 users)". That rival
+   has since fallen to 1 user — writing "(1 user)" would leave the README asserting a 3+-user sweep that
+   names a 1-user listing. Fix: "(1 user today, 3 when that sweep ran)", which stays honest about both
+   numbers and which `check-competitor-claims`'s regex still reads as 1 (it binds only the number
+   IMMEDIATELY after the handle, so a later figure in the same parenthetical is safe). **Before swapping
+   a count, read the sentence ABOVE it for a cohort/superlative premise built on the old value.**
+
+Also: 10 README-only `apify push --force` builds ran back to back in ~25 s each (~4.5 min total), all
+SUCCEEDED, all byte-identical live. A fleet-wide README fix is well inside one cycle's budget — there is
+no reason to defer the pushes and leave the fix invisible to buyers.
+
+And a cheap verification pattern worth reusing in any `competitor_audit`: after live-pricing the named
+rivals, **machine-diff every `$` figure the README prints inside each rival's own sentence against that
+rival's live price set** (all events, all plan tiers, ~1.2% tolerance for published roundings) instead of
+eyeballing. On `fec-campaign-finance-scraper` that confirmed 42/42 rivals with 0 real drift in seconds;
+its only false hits were the window bleeding into the neighbouring bullet, which are obvious on sight.
