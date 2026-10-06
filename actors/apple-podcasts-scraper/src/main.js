@@ -69,12 +69,53 @@ if (chartType !== 'shows' && input.dataType && input.dataType !== 'charts') {
 // overall top chart). GOTCHA: an unrecognized genre id does NOT error — it silently falls back
 // to the overall top chart (HTTP 200), so a typo would read as "genre X's top chart" when it's
 // really just the front page. The whitelist below is load-bearing; never pass a raw value through.
+// Top-level categories (verified cycle 217) plus their LEAF subgenres, added cycle 1331 after a
+// bidirectional diff against Apple's own genre tree (itunes.apple.com/WebObjects/MZStoreServices.woa/
+// ws/genres?id=26) found 91 real per-subgenre charts (e.g. Christianity, Soccer, Business News) that
+// this map had never exposed — confirmed live that subgenre charts return genuinely different rankings
+// from their parent (Judaism/Islam/Soccer top-10s share zero titles with Religion & Spirituality/Sports).
 const CHART_GENRE_IDS = {
   arts: 1301, business: 1321, comedy: 1303, education: 1304, fiction: 1483,
   government: 1511, healthFitness: 1512, history: 1487, kidsFamily: 1305,
   leisure: 1502, music: 1310, news: 1489, religionSpirituality: 1314,
   science: 1533, societyCulture: 1324, sports: 1545, technology: 1318,
   trueCrime: 1488, tvFilm: 1309,
+  // Arts
+  books: 1482, design: 1402, fashionBeauty: 1459, food: 1306, performingArts: 1405, visualArts: 1406,
+  // Business
+  careers: 1410, entrepreneurship: 1493, investing: 1412, management: 1491, marketing: 1492, nonProfit: 1494,
+  // Comedy
+  comedyInterviews: 1496, improv: 1495, standUp: 1497,
+  // Education
+  courses: 1501, howTo: 1499, languageLearning: 1498, selfImprovement: 1500,
+  // Fiction
+  comedyFiction: 1486, drama: 1484, scienceFiction: 1485,
+  // Health & Fitness
+  alternativeHealth: 1513, fitness: 1514, medicine: 1518, mentalHealth: 1517, nutrition: 1515, sexuality: 1516,
+  // Kids & Family
+  educationForKids: 1519, parenting: 1521, petsAnimals: 1522, storiesForKids: 1520,
+  // Leisure
+  animationManga: 1510, automotive: 1503, aviation: 1504, crafts: 1506, games: 1507, hobbies: 1505,
+  homeGarden: 1508, videoGames: 1509,
+  // Music
+  musicCommentary: 1523, musicHistory: 1524, musicInterviews: 1525,
+  // News
+  businessNews: 1490, dailyNews: 1526, entertainmentNews: 1531, newsCommentary: 1530, politics: 1527,
+  sportsNews: 1529, techNews: 1528,
+  // Religion & Spirituality
+  buddhism: 1438, christianity: 1439, hinduism: 1463, islam: 1440, judaism: 1441, religion: 1532,
+  spirituality: 1444,
+  // Science
+  astronomy: 1538, chemistry: 1539, earthSciences: 1540, lifeSciences: 1541, mathematics: 1536,
+  naturalSciences: 1534, nature: 1537, physics: 1542, socialSciences: 1535,
+  // Society & Culture
+  documentary: 1543, personalJournals: 1302, philosophy: 1443, placesTravel: 1320, relationships: 1544,
+  // Sports
+  baseball: 1549, basketball: 1548, cricket: 1554, fantasySports: 1560, football: 1547, golf: 1553,
+  hockey: 1550, rugby: 1552, running: 1551, soccer: 1546, swimming: 1558, tennis: 1556, volleyball: 1557,
+  wilderness: 1559, wrestling: 1555,
+  // TV & Film
+  afterShows: 1562, filmHistory: 1564, filmInterviews: 1565, filmReviews: 1563, tvReviews: 1561,
 };
 let chartGenre = input.chartGenre && CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null;
 if (input.chartGenre && !chartGenre) log.warning(`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join(', ')}.`);

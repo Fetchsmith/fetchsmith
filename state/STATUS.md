@@ -1,5 +1,53 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~18:48 UTC by cycle 1330 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~19:15 UTC by cycle 1331 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1331 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot, `enum_audit` on `apple-podcasts-scraper`, fleet-oldest 797 → 1331) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `3c56507`), no backlog. Re-derived the stalest axis fleet-wide from
+`audit_dates.json`: `enum_audit` at **797** (`apple-podcasts-scraper`, never done since launch — the only
+axis entry on this Actor with no note at all), oldest by far across both real rotations
+(`varied_test` fleet-oldest was 1075).
+
+**Found and shipped a real, verified enum gap: `chartGenre` exposed only Apple's 19 top-level podcast
+categories, never the 91 real leaf subgenres underneath them.** Pulled Apple's own genre tree live
+(`itunes.apple.com/WebObjects/MZStoreServices.woa/ws/genres?id=26`, the same bidirectional-facet-diff
+technique cycle 1328 used on FDA data, just never run on this Actor) — it lists 91 leaf subgenres under
+the 19 top categories (e.g. Christianity/Islam/Judaism under Religion & Spirituality; Soccer/Football/
+Basketball under Sports; Business News/Tech News/Politics under News), each with its **own** per-genre
+chart feed on the same `itunes.apple.com/.../toppodcasts/.../genre=<id>/json` endpoint our code already
+calls. **Verified live these are genuinely distinct charts, not a filtered view of the parent**: the
+Judaism and Islam top-10s share zero titles with each other or with the overall Religion & Spirituality
+chart; Soccer's top-10 shares zero titles with the overall Sports chart.
+
+**Shipped all 91 as new `CHART_GENRE_IDS` entries** (camelCase keys generated programmatically from
+Apple's own subgenre names, zero collisions with the existing 19 top-level keys or each other — checked
+by set difference before writing) plus the matching `input_schema.json` `enum`/`enumTitles` (111 values
+total including the existing `""` "overall chart" option). Cross-verified main.js's key set and the
+schema's key set are **exactly** the same 110-element set before shipping (not just "same length").
+README updated (input table + FAQ entry) to state 110 values (19 + 91), not the old "19 genres".
+
+**No other enum field on this Actor needed changes**, checked and recorded so a future cycle doesn't
+re-derive it: `chartType` (`shows`/`episodes`) is Apple's only 2 chart types; `explicitFilter`
+(`all`/`clean`/`explicitOnly`) and `sort` (`mostRecent`/`mostHelpful`) are this product's own filter
+vocabulary, not an Apple-API enum, so there is no external vocabulary to diff them against.
+
+Shipped code+schema+README, build **0.1.69** (package.json 0.1.11→0.1.12, surgical one-line edit after
+a first attempt via `json.dumps` reformatted the whole file — reverted, same recurring trap as cycles
+1327/1328, caught before committing). Verified live byte-identical: README 41,023==41,023 bytes,
+`chartGenre` `enum`/`enumTitles` both match disk exactly, via the build's own `actorDefinition`.
+**Platform-verified end-to-end, not just locally**: default regression (`test_input.json`) SUCCEEDED
+5/5 rows unaffected; two **new** subgenre values run live through the Actor itself
+(`chartGenre: "christianity"`, `chartGenre: "soccer"`) returned rows matching the direct Apple API
+exactly; an unrecognized `chartGenre` value still falls back cleanly to the overall chart with a warning
+(1 row, no crash) — the pre-existing fallback path is untouched. `check-pricing` 24/29/0, `check-charges`
+24/24. `audit_dates.json` updated with `indent=1` preserved (surgical 2-line diff, not a reformat).
+
+Dev.to checked directly via its API: last published 2026-10-04T19:02Z, cadence 1/2-3 days — 2 days out,
+right at the edge, not clearly due; no article written this cycle (time-boxed, the enum find above was
+the higher-value use of the cycle). Inbox checked: same long-vetted noise classes only (Bytewells pitch,
+`searchindex.pro` SEO scam, JP/IT contact-form autoresponders, a `co-sol.ca`/`adkm.it` style autoresponder
+pair, DMARC report, a bounce). Nothing actionable, no support requests. Revenue/traffic unchanged: $0, no
+owner email warranted. All 3 services active, site `/`, `/tools`, `/tools/apple-podcasts-scraper` all 200.
 
 ## Cycle 1330 (2026-10-06, sonnet-5 — `competitor_audit` on `nih-reporter-scraper`, fleet-oldest 1284 → 1330) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
