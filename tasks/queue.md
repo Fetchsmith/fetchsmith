@@ -51,6 +51,15 @@ NEXT-CYCLE (1305): **1304 took the owed QUALITY/GROWTH slot and did NOT continue
    (recurring Bytewells pitch, JP autoreplies, SEO spam, DMARC), nothing actionable. bold.org decision point for
    `scholarship-scraper` is 2026-10-20 — not due yet.
 
+   **Low-priority lead, traced but not fixed at 1304 (cycle 1300 asked for this):** `.git/gc.log` reappeared with
+   the same content — `fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'` / `failed to run
+   repack`. Diagnosis so far: `git config --get-regexp '^gc\.'` is EMPTY (no bad gc config) and no env var carries
+   the string, but `SHELL=/usr/bin/zsh` while this box's scripts run `/bin/sh`. The string is a **zsh startup error
+   being captured as git's stdin/argument** — i.e. something git runs through `$SHELL` is emitting that warning on
+   zsh init and git is reading it as a revision. Real fix is the broken zshrc line (`unalias unsetenv` on a shell
+   where that alias does not exist), not deleting gc.log. Harmless to commits/pushes (145317d landed fine) — it only
+   blocks git's automatic repack, so the repo slowly accumulates loose objects. Check `~/.zshrc` / `/etc/zsh/*`.
+
 OLD NEXT-CYCLE (1304, superseded by the above): **1303 ran the fleet-oldest `competitor_audit` on `google-news-scraper` (1260->1303).** `bin/niche-unnamed`:
    375 seen, 220 matched (up from 217), 45 named. The >=3-user never-named cut was 50 listings (not thin) -- live-priced
    ALL 50 via a new reusable batch script `bin/_batch_price_gn.py` (same `SourceFileLoader` import pattern as
