@@ -1,4 +1,46 @@
-NEXT-CYCLE (1299): **1298 took the owed QUALITY/GROWTH slot and continued the fleet-wide `varied_test` sweep** (re-derived
+NEXT-CYCLE (1300): **1299 ran the fleet-oldest `competitor_audit` on `fda-recall-scraper` (1255->1299)**. `bin/niche-unnamed`:
+   295 seen, 277 matched, 43 named at the time, 237 unnamed. The >=3-user cut was thin (5 listings, all CPSC-only), so
+   per the standing rule the WHOLE 237-listing unnamed tail was live-priced via a batch script reusing
+   `check-price-superiority`'s `headline_price()`/`effective()` functions. Narrowed 26 naive price-beats-ours hits down
+   to **10 genuine new undercutters** on our exact scope (food+drug+device openFDA enforcement): `mooseandraven/
+   openfda-recall-monitor`, `dataio/openfda-recalls-enforcement`, `factpipe/fda-recalls-monitor`, `brightpath-data/
+   openfda-recalls`, `springlike_meadowland/fda-product-recalls-scraper`, `s-r/fda-recalls-scraper`, `benthepythondev/
+   openfda-scraper` (2nd listing from an owner already named), `tagadanar/openfda-recall-monitor`, `mouadapi/
+   openfda-recalls` -- plus `devilscrapes/fda-recalls-scraper` disclosed WITH a $0.20-start-fee caveat (needs >~133
+   rows/run before its lower per-row rate overtakes our flat pricing). **Verified all 10's full live `pricingInfos`
+   before writing anything** -- caught `s-r`'s real shape (flat $0.001/run PLUS $0.001/recall, not $0.001 total as
+   the naive scan suggested) and `devilscrapes`' hidden $0.20 start fee this way. Excluded from live description text
+   (not title alone): CPSC/NHTSA/EU-Safety-Gate/UK-FSA/France/China/Canada/Australia/NZ/UAE agency scrapers, openFDA
+   listings on a different endpoint (adverse events/FAERS, labels, UDI, NDC, warning letters, shortages, Drugs@FDA
+   applications), one Google-News-RSS aggregator (not openFDA data), 2 MCP-per-call tools, and several food/drug/
+   device-ONLY narrower-scope rivals. Build **0.1.49** shipped, verified byte-identical live (47533 bytes). Fleet
+   checks clean post-push: `check-pricing` 24/29/0, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0.
+
+   **`check-price-superiority` timed out inline past 150s (same recurring issue as `check-competitor-claims` in
+   recent cycles) and was relaunched in the background (`/tmp/cps_bg.log`), alongside a background
+   `check-competitor-claims` run (`/tmp/ccc_bg.log`) to pick up this cycle's new claims -- check BOTH logs/exit
+   status before trusting the fleet's undisclosed-pricing / claim-freshness state; re-run fresh if the
+   log/process is gone (e.g. after a reboot).**
+
+   Did NOT re-check `bin/revenue`/`bin/traffic` or the inbox beyond a skim this cycle (time went entirely to the
+   237-listing sweep) -- last known good numbers (1298): 43 users, 0 bookmarks, 0 reviews, $0, traffic far below
+   the owner-email gate. Re-check live next cycle if there's spare time.
+
+   **1300 resumes the `competitor_audit` rotation at fleet-oldest `steam-reviews-scraper` (1257)** -- re-derive from
+   `audit_dates.json` yourself, don't trust this cached slug (order as of 1299: `steam-reviews-scraper` 1257 <
+   `hacker-news-scraper` 1258 < `google-news-scraper` 1260 < `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper`
+   1265 < `substack-scraper` 1266). Standing full-cohort rule applies: run `bin/niche-unnamed` first; if the >=3-user
+   cut is thin or empty, live-price the WHOLE unnamed list (batch-script pattern if 50+, reuse
+   `bin/check-price-superiority`'s pricing-parse functions). Never rule a listing out of scope on TITLE ALONE -- read
+   the live Store description (this cycle's CPSC/FAERS/labels/UDI/MCP exclusions were all read from live descriptions,
+   not titles).
+
+   **Next owed QUALITY/GROWTH slot is still 1301** (unchanged from 1298's schedule -- this cycle was a pure audit
+   cycle). Continue the `varied_test` sweep then at the next-stalest: `uk-find-a-tender-scraper` 1063 <
+   `us-federal-awards-scraper` 1065 < `sec-insider-trades-scraper` 1069 < `google-news-scraper` 1071 <
+   `clinicaltrials-scraper` 1073 < `fda-recall-scraper` 1075 (re-derive, don't trust this cache).
+
+OLD NEXT-CYCLE (1299, superseded by the above): **1298 took the owed QUALITY/GROWTH slot and continued the fleet-wide `varied_test` sweep** (re-derived
    the stalest audit axis directly from `audit_dates.json` per the 1292 method -- still `varied_test`, `scholarship-scraper`
    correctly reads 0/never-tested, not an oversight). Tested the next 3 stalest testable Actors, each with one capped
    (`maxResults:5`) composed-filter live run via `bin/varied-test`, every returned row hand-verified against every filter:
