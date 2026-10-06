@@ -1,4 +1,49 @@
-NEXT-CYCLE (1294): **1293 ran the fleet-oldest `competitor_audit` on `sec-insider-trades-scraper` (1251 -> 1293)**,
+NEXT-CYCLE (1295): **1294 ran the fleet-oldest `competitor_audit` on `google-play-reviews-scraper` (1252 -> 1294).**
+   `niche-unnamed`: 256 matched, 39 already named, 218 unnamed. The >=3-user cut was NOT thin this time (45
+   listings, unlike the thin/empty cuts on the last several audited Actors) -- per the standing rule, priced
+   that 45-cohort via a batch script (reused `bin/check-price-superiority`'s `headline_price()` logic) rather
+   than the full 218, and separately screened the 173 sub-3-user listings for the "low lifetime users, high
+   runs30d" trap (a real listing hiding behind a low user count, the `dami_studio` 2026-10-04 precedent already
+   in this README) -- 0 matched (no listing has runs30d>=3 while users<3). **Result: genuinely clean, 0 new
+   undercutters** (same class as cycle 1287's `fec-campaign-finance-scraper`). 4 listings tie our flat
+   $0.0001/review rate (`santhej`, `sync-network`, `sheshinmcfly`, `angaba92`) but each adds an actor-start fee
+   we don't have, making them dearer in practice -- same trap the README already documents for the named
+   `scrapesmith/google-play-store-reviews-scraper`. No README or build change, nothing pushed to Apify. Full
+   note with per-handle pricing in `audit_dates.json`. Fleet checks clean: `check-pricing` 24/29/0,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0.
+
+   **Did NOT re-sweep the 173 sub-3-user tail one-by-one** (same standing gap as prior cycles' "1-and-2-user
+   listings not priced" disclosure already in this README) -- only screened it for the runs30d trap above.
+   If a future audit on this Actor has spare time, that tail is the next place to look, though every past
+   full-cohort sweep elsewhere in the fleet has found genuine undercutters mostly in the >=3-user tier, not
+   the 1-2-user tail, so this is low-priority.
+
+   **1295 is the owed QUALITY/GROWTH slot** (1292 was the last one; 1293-1294 were audit cycles) -- per
+   standing precedent take GROWTH first if there isn't room for both this cycle, and resume the
+   `competitor_audit` rotation the cycle after at fleet-oldest `apple-podcasts-scraper` (1254) -- re-derive
+   from `audit_dates.json` yourself, don't trust this cached order (as of 1294: `apple-podcasts-scraper` 1254
+   < `fda-recall-scraper` 1255 < `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258 <
+   `google-news-scraper` 1260 < `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper` 1265).
+
+   **Per the 1292 LEARNINGS method, re-derive the STALEST AUDIT AXIS fleet-wide at the top of the GROWTH
+   slot** rather than defaulting to `competitor_audit` filler -- `varied_test` was the stalest axis as of 1292
+   (~200 cycles stale on 22/24 Actors); 1292 already tested 3 of the stalest clean (`grants-gov-scraper`,
+   `sam-gov-opportunities-scraper`, `trademark-search-scraper`). Continue that sweep at `substack-scraper` 1048
+   < `remote-jobs-scraper` 1052 < `ats-jobs-scraper` 1055 < `court-records-scraper` 1056 <
+   `nih-reporter-scraper` 1058 < `eu-ted-tenders-scraper` 1059 (re-derive, don't trust this cache).
+   `scholarship-scraper`'s bold.org 429 decision point is due **2026-10-20** -- not yet, but 1295 should
+   re-curl it live and record the age precisely (started 2026-09-20, so ~16 days as of this cycle).
+
+   **Inbound vendor pitch, no action taken:** `peter@bytewells.com` (inbox id `14fb0a04`) pitched a
+   third-party "Apify-compatible" marketplace (Bytewells) offering flat monthly Actor rentals (10% commission
+   vs Apify's 20%, 0% on self-referred renters) for the ATS jobs scraper specifically. This is cold outreach
+   from an unverified third party, not a support request or a revenue/critical event -- CLAUDE.md rule 3 says
+   don't email the owner for this, and joining an unvetted marketplace is a business decision beyond one
+   cycle's unilateral authority. Left unanswered. Worth a mention to the owner only if it resurfaces with
+   concrete evidence Bytewells is real and has actual users (not just a waitlist pitch) -- not an action item
+   for now, just a flag so a future cycle doesn't rediscover it cold.
+
+OLD NEXT-CYCLE (1294): **1293 ran the fleet-oldest `competitor_audit` on `sec-insider-trades-scraper` (1251 -> 1293)**,
    a full-cohort sweep of 77 unnamed niche listings (only 1 cleared the >=3-user cut, and it was dearer/different
    unit, so the standing full-cohort rule applied to all 77). Batch-fetched all 77 live in one script reusing
    `bin/check-price-superiority`'s `headline_price()`/`isPrimaryEvent` logic (same pattern as 1291's
