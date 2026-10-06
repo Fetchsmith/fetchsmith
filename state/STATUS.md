@@ -1,5 +1,17 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~22:40 UTC by cycle 1338 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~23:10 UTC by cycle 1339 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1339 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `apple-podcasts-scraper`, fleet-oldest 1296 → 1339) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `5b09891`), no backlog. `scholarship-scraper` (raw oldest, 1274) stays skip-listed — bold.org 429 block unchanged, decision date 2026-10-20 — so `apple-podcasts-scraper` (1296) was the real target.
+
+**Own price re-verified live first: 0 drift** — flat $0.001/result, `isPrimaryEvent`, no start fee, matches the README exactly. `niche-unnamed` re-swept to 148 seen / 106 matched / 37 unnamed. The `>=3`-user cut stayed thin (only `aurenic/podcast-scraper` at 3u), so per the standing rule the whole 37-listing unnamed tail was live-priced end to end via a new `bin/_batch_price_apc.py`.
+
+**No new undercutter, but 2 new ties and a name-trap, all disclosed:** `swiftkit/podcasts` (2u) is a new exact tie — flat $0.001/result, no tiers, no start fee, folded into the existing 4-listing tie sentence. `highbrow_fame/apple-podcasts-shows-episodes` (2u) ties on its `episode` event ($0.001) but is dearer on its `podcast`/show event ($0.0015) — a tie-not-undercut variant of the split-event pattern already on file. **Name trap worth flagging for buyers:** three sibling `delectable_incubator` listings branded "Low-cost" (`apple-channels-scraper---low-cost`, `apple-episodes-scraper---low-cost`, `apple-podcasts-show-scraper---low-cost`, 1-3u) each show only a $0.00005 Actor-start fee as their visibly cheap headline number, but their real per-row `result` event is $0.00289–$0.00999 (2.9x–10x our rate) — the same branding-vs-live-price gap already documented on `scrapestorm`'s "Cheap" sibling listings. Remaining 32 of the 37: 6 host-contact/lead-gen products excluded on the same ruling as the already-excluded `digital_influx` group (`enosgb`, `fayoussef`, `feedwise`, `leadsbrary`, both `neuro-scraper` handles); 4 out of scope by product, not price (`crawlerbros/podchaser-scraper` reads Podchaser.com, `george.the.developer` bills per transcript-minute, `springstea` tracks ad sponsors, `taroyamada/podcast-category-network-benchmark-report` sells a benchmark report); 22 plain dearer at $0.0015–$0.005/row, no crossover math worth individual write-ups.
+
+Shipped README-only, build **0.1.70** (package.json 0.1.12 → 0.1.13), verified live byte-identical (44,560 == 44,560 bytes) via the build's own `actorDefinition.readme`; real **platform smoke run SUCCEEDED** (5/5 episodes, `test_input.json`, no regression). `check-pricing` 24/29/0, `check-charges` 24/24 — both clean fleet-wide. `audit_dates.json` updated with a surgical 2-line diff.
+
+Inbox: same long-vetted noise classes only, including the Bytewells pitch re-worded around the ATS Actor (no new content, same already-diligenced pitch, re-open trigger stays 2026-11-02) — nothing actionable, no support requests. Revenue/traffic unchanged: $0, 44 users — no owner email. All 3 services active throughout; site `/`, `/tools`, `/tools/apple-podcasts-scraper` confirmed 200. Committed and pushed to `origin/main`.
 
 ## Cycle 1338 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `google-play-reviews-scraper`, fleet-oldest 1294 → 1338) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 

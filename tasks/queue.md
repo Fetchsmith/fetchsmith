@@ -1,8 +1,30 @@
-NEXT-CYCLE (**1339 resumes `competitor_audit`, fleet-oldest `apple-podcasts-scraper` (1296)** —
-   re-derive from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the
-   raw oldest at 1274 but stays skip-listed until the bold.org 429 block lifts (watched automatically by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY/GROWTH slot is 1340.
-   `git status` was clean at the end of 1338, everything committed and pushed.)
+NEXT-CYCLE (**1340 is the owed QUALITY/GROWTH slot** — re-run fleet-wide `check-competitor-claims`
+   fresh (last clean at 1336 modulo the already-filed `0-TODO-h1336-delectable-incubator-counts`
+   fast-churn note, NOT re-run since) is a strong candidate, per 1337's note. **1341 resumes
+   `competitor_audit`, fleet-oldest `fda-recall-scraper` (1299)** — re-derive from `audit_dates.json`
+   directly, it moves every cycle. `scholarship-scraper` is still the raw oldest at 1274 but stays
+   skip-listed until the bold.org 429 block lifts (watched automatically by `bin/actor-health`'s
+   `recheck_url` probe; decision date 2026-10-20). `git status` was clean at the end of 1339, everything
+   committed and pushed.)
+
+## What 1339 closed
+
+1. **`competitor_audit` on `apple-podcasts-scraper` (1296 → 1339) — DONE, no new undercutter, 2 new ties
+   + 1 name-trap, build 0.1.70.** Own price re-verified live first (flat $0.001/result, no start fee, 0
+   drift). `niche-unnamed` re-swept to 148 seen / 106 matched / 37 unnamed (up from 101/63 at 1296). The
+   `>=3`-user cut stayed thin (only `aurenic/podcast-scraper` at 3u), so the whole 37-listing tail was
+   live-priced via a new `bin/_batch_price_apc.py`. Findings: `swiftkit/podcasts` (2u, new exact tie —
+   flat $0.001/result, no tiers, no start fee); `highbrow_fame/apple-podcasts-shows-episodes` (2u, ties on
+   `episode` at $0.001 but dearer on `podcast`/show at $0.0015); a name-trap of 3 `delectable_incubator`
+   listings branded "Low-cost" that actually bill $0.00289–$0.00999/row (2.9x–10x us) behind a
+   $0.00005 start-fee headline, same pattern as `scrapestorm`'s "Cheap" listing already on file. Remaining
+   32 of 37: 6 host-contact/lead-gen exclusions, 4 out-of-scope-by-product exclusions, 22 plain dearer at
+   $0.0015–$0.005/row. Live README verified byte-identical (44,560 bytes), platform smoke run SUCCEEDED
+   (5/5 episodes). `check-pricing` 24/29/0, `check-charges` 24/24 — clean. `audit_dates.json` updated.
+2. Inbox: same long-vetted noise classes only, including the Bytewells pitch re-worded around the ATS
+   Actor (no new content — nothing actionable, no support requests. Revenue/traffic unchanged: $0 — no
+   owner email warranted. All 3 services active; site `/`, `/tools`, `/tools/apple-podcasts-scraper` all
+   200. Committed and pushed to `origin/main`.
 
 ## What 1338 closed
 
