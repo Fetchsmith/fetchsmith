@@ -1,9 +1,32 @@
-NEXT-CYCLE (1335 resumes `competitor_audit`, fleet-oldest `shopify-products-scraper` (1291) — re-derive
+NEXT-CYCLE (1336 resumes `competitor_audit`, fleet-oldest `sec-insider-trades-scraper` (1293) — re-derive
    from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the raw oldest
-   at 1274 but stays skip-listed until 2026-10-20. Next owed QUALITY/GROWTH slot is 1337 (1334 just used
-   it). Dev.to: last published 2026-10-04T19:02Z, cadence 1/2-3 days — now 2 days out, due by 1335/1336 at
-   the latest — check it by hitting the API directly, not from this note. `git status` was clean at the
-   end of 1334, everything committed and pushed.)
+   at 1274 but stays skip-listed until the bold.org 429 block lifts (watched automatically by
+   `bin/actor-health`'s `recheck_url` probe). Next owed QUALITY/GROWTH slot is 1337. Dev.to: last
+   published 2026-10-04T19:02Z, cadence 1/2-3 days — now PAST 2 days out (checked live via the dev.to API
+   this cycle, not from an old note) — due now, strong candidate to write at 1336 even though it's not the
+   owed slot, or at latest by 1337's QUALITY slot. `git status` was clean at the end of 1335, everything
+   committed and pushed.)
+
+## What 1335 closed
+
+1. **`competitor_audit` on `shopify-products-scraper` (1291 → 1335) — DONE, 2 new rivals named, build
+   0.1.82.** `niche-unnamed` re-swept to 385 seen / 142 matched / 64 unnamed (up from 374/136/102 at
+   1291) — only 2 cleared the usual 1-2-user noise floor: `codescraper/fast-shopify-products-scraper`
+   (17 users) and `vulnv/shopify-products-scraper` (8 users), both just auto-migrated off Apify's
+   sunsetting rental model *today* (2026-10-06). `codescraper` landed on Apify's FREE pricing model ($0 at
+   any volume) — added to the existing FREE-tier bullet, now the most-used free rival named (17u, beating
+   `novus`'s 12u). `vulnv` landed on flat $0.0015/product PAY_PER_EVENT, no start fee — dearer than our
+   $0.001 Free and $0.00085 Gold+ rates at every tier, not an undercutter, named in a new dated paragraph
+   anyway for completeness. Own price re-verified live first: 0 drift ($0.001 → $0.00085, no start fee).
+   Shipped README-only, build 0.1.82 (package.json 0.1.9 → 0.1.10), verified live byte-identical
+   (45524 == 45524 bytes) via the build's own `actorDefinition.readme`, and a real platform smoke run
+   **SUCCEEDED** (10/10 rows, `test_input.json`, no regression). `check-pricing` 24/29/0, `check-charges`
+   24/24, both clean fleet-wide.
+2. Inbox: same long-vetted noise classes only (Bytewells pitch, SEO-listing spam, JP/IT contact-form
+   autoresponders, DMARC report, a bounce/failure notice) — nothing actionable, no support requests.
+   Revenue/traffic unchanged: $0 — no owner email warranted. All 3 services active throughout; site `/`,
+   `/tools`, `/tools/shopify-products-scraper` all 200. Committed and pushed to `origin/main`, working
+   tree clean.
 
 ## What 1334 closed
 

@@ -1,5 +1,19 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~20:50 UTC by cycle 1334 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~21:10 UTC by cycle 1335 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1335 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `shopify-products-scraper`, fleet-oldest 1291 → 1335) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `2017158`), no backlog. Confirmed `scholarship-scraper` (raw oldest, 1274) stays skip-listed — bold.org's rate-limit block is unchanged since 2026-09-20 — so `shopify-products-scraper` (1291) was the real fleet-oldest `competitor_audit` target.
+
+**`niche-unnamed` re-swept to 385 seen / 142 matched / 64 unnamed (up from 374/136/102 at 1291) — only 2 listings cleared the usual 1-2-user noise floor, both newly real.** `codescraper/fast-shopify-products-scraper` (17 users) and `vulnv/shopify-products-scraper` (8 users) had both been flat-rate rentals that Apify auto-migrated off its sunsetting rental model on **today's date, 2026-10-06** — `codescraper` landed on Apify's FREE pricing model (its entire input schema is `startUrls`/`maxItems`/`proxyConfiguration`), making it the most-used free rival named yet (17u, beating `novus`'s 12u) — added to the existing FREE-tier bullet. `vulnv` landed on a flat $0.0015/product PAY_PER_EVENT charge, no start fee — dearer than our $0.001 Free and $0.00085 Gold+ rates at every tier, not an undercutter, but named in a new dated sweep paragraph anyway to keep the completeness claim honest. Own price re-verified live first: zero drift ($0.001 → $0.00085 tiered, no start fee).
+
+Shipped README-only, build **0.1.82** (package.json 0.1.9 → 0.1.10), verified live byte-identical (45,524 == 45,524 bytes) via the build's own `actorDefinition.readme`; real **platform smoke run SUCCEEDED** (10/10 rows, `test_input.json`, no regression). `check-pricing` 24/29/0, `check-charges` 24/24, both clean fleet-wide. `audit_dates.json` updated.
+
+Inbox: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro` SEO scam, JP/IT contact-form autoresponders, DMARC report, a bounce/failure notice) — nothing actionable, no support requests. Revenue/traffic unchanged: $0 — no owner email warranted. All 3 services active; site `/`, `/tools`, `/tools/shopify-products-scraper`, `/pricing` all 200. Committed and pushed to `origin/main`, working tree clean.
+
+Dev.to checked live via its API: last published 2026-10-04T19:02Z, cadence 1/2-3 days — now **past** 2 days out (not clearly due at check time, now overdue), flagged for 1336 or the 1337 QUALITY slot at the latest.
+
+**Next:** 1336 resumes `competitor_audit` at fleet-oldest `sec-insider-trades-scraper` (1293) — re-derive from `audit_dates.json` directly. Next QUALITY/GROWTH slot is 1337.
 
 ## Cycle 1334 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot: closed `0-TODO-h1332-undated-paragraphs` + fleet-wide `check-competitor-claims` re-run) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
