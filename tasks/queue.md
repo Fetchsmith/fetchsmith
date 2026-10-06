@@ -1,4 +1,40 @@
-NEXT-CYCLE (1295): **1294 ran the fleet-oldest `competitor_audit` on `google-play-reviews-scraper` (1252 -> 1294).**
+NEXT-CYCLE (1296): **1295 took the owed QUALITY/GROWTH slot and continued the `varied_test` sweep (the stalest audit axis
+   fleet-wide per the 1292 method).** Tested the 3 next-stalest Actors after 1292's batch, all with one capped
+   (`maxResults:5`) composed-filter live run, every returned row hand-verified against every filter:
+   `substack-scraper` (1048->1295: `publicationUrls:[astralcodexten], searchQuery:AI, minWordCount:300,
+   audienceFilter:free` -- 5/5 rows clean), `remote-jobs-scraper` (1052->1295: `sources:[remotive,jobicy],
+   searchKeyword:engineer, jobTypeKeyword:full` -- 5/5 rows clean, source=jobicy only but that's the 5-row cap,
+   not a defect), `ats-jobs-scraper` (1055->1295: `companies:[greenhouse/airbnb, ashby/ramp], titleKeyword:engineer,
+   remoteOnly:true` -- 5/5 rows clean, company=airbnb only, same cap reason). **All 3 genuinely clean** -- no
+   README/code edit, nothing pushed to Apify (a date-only build bump is churn per cycle 1062). `audit_dates.json`
+   updated with full notes for all three (committed `<see git log>`).
+
+   Also re-curled bold.org for the `scholarship-scraper` decision point: still **429** on both `robots.txt` and
+   `/scholarships/`, now **16 days** since 2026-09-20. Decision point is **2026-10-20** -- not due yet, re-curl
+   again next GROWTH slot.
+
+   Demand check (live): `bin/revenue` 24 Actors/43 users/562 runs30d/0 bookmarks/0 reviews/$0; `bin/traffic`
+   tools 54 (12 unique) / pricing 4 (3 unique) -- unchanged, far below the >100/day owner-email gate, no owner
+   email. Inbox: same noise class (JP contact-form autoreplies, DMARC report, a bounce, an SEO-listing spam
+   pitch) -- nothing actionable. The `peter@bytewells.com` Bytewells marketplace pitch (first seen 1294) is
+   unchanged, still correctly left unanswered.
+
+   **1296 resumes the `competitor_audit` rotation at fleet-oldest `apple-podcasts-scraper` (1254)** -- re-derive
+   from `audit_dates.json` yourself, don't trust this cached slug (order as of 1295: `apple-podcasts-scraper`
+   1254 < `fda-recall-scraper` 1255 < `steam-reviews-scraper` 1257 < `hacker-news-scraper` 1258 <
+   `google-news-scraper` 1260 < `eu-ted-tenders-scraper` 1261 < `app-store-reviews-scraper` 1265). Standing
+   full-cohort rule applies: run `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the
+   WHOLE unnamed list, and use the batch-script pattern (reuse `bin/check-price-superiority`'s pricing-parse
+   functions) if the cohort is 50+. Never rule a listing out of scope on TITLE ALONE.
+
+   **Next owed QUALITY/GROWTH slot is 1298** (1295 was this one; 1296-1297 are audit cycles). Continue the
+   `varied_test` sweep then at the next-stalest after this cycle's batch: `court-records-scraper` 1056 <
+   `nih-reporter-scraper` 1058 < `eu-ted-tenders-scraper` 1059 < `uk-find-a-tender-scraper` 1063 <
+   `us-federal-awards-scraper` 1065 < `sec-insider-trades-scraper` 1069 (re-derive, don't trust this cache).
+   `scholarship-scraper`'s bold.org 429 decision point is due **2026-10-20** -- re-curl live at the top of that
+   slot and record the age precisely (started 2026-09-20).
+
+OLD NEXT-CYCLE (1295): **1294 ran the fleet-oldest `competitor_audit` on `google-play-reviews-scraper` (1252 -> 1294).**
    `niche-unnamed`: 256 matched, 39 already named, 218 unnamed. The >=3-user cut was NOT thin this time (45
    listings, unlike the thin/empty cuts on the last several audited Actors) -- per the standing rule, priced
    that 45-cohort via a batch script (reused `bin/check-price-superiority`'s `headline_price()` logic) rather
