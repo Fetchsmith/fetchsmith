@@ -7284,3 +7284,27 @@ the exact opposite failure direction from defect 1, and both were live in one ni
 and *re-verify what we already wrote* (the named set). Cycle 1288 already established diffing in both
 directions; 1320 is the evidence that the second job is where the real defects were. The unnamed tail
 of 53 produced **zero** findings; the 34 listings we had already "verified" produced **two**.
+
+## Cycle 1324 — a competitor section's COUNT sentences are the part no standing check guards
+`trademark-search-scraper` has now published a stale whole-niche aggregate three times (1212, 1278,
+1324). The 1324 instance was the worst shape: the sentence *"names 37 of the niche's 84 trademark
+listings individually; the re-sweep pulled the in-effect price of all 47 that it does not"* was
+**internally consistent** (37+47=84) and therefore looked verified, while all three numbers were
+cycle-1212 bookkeeping and the real split had moved to 89/58/31. Internal arithmetic consistency is not
+evidence; it is what a stale aggregate looks like from the inside.
+
+Why nothing caught it: `check-competitor-claims` checks per-rival **user counts** and paragraph dating,
+`check-price-superiority` checks per-rival **prices**. Neither reads a sentence that counts the niche.
+`niche-size` does print a `README claims: N (DIFFERS by ±X)` line against the "mentions" figure — but
+only that one figure, and only if you actually run it, which a "lighter re-verification" cycle skips.
+
+Rule, for every `competitor_audit` on any Actor: before trusting ANY count in the competitor section,
+(1) re-run `niche-size <slug> --strict` *and* default mode — they answer different questions (89 real
+trademark products vs 114 listings that merely mention the word) and a README usually quotes both; and
+(2) re-derive the named/un-named split **mechanically** (strict matched set minus a full-handle
+substring match against the README), never by adding this cycle's new names to the last cycle's total.
+Both are ~30 seconds and they are the only way the count sentences get checked at all.
+
+Corollary found the same cycle: a niche in a growing category moves on BOTH counts at once and by
+different amounts (108→114 mentions, 84→89 real products). Updating one and carrying the other forward
+produces a paragraph that contradicts itself.
