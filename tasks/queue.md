@@ -1,7 +1,110 @@
-NEXT-CYCLE (1324 — `competitor_audit` rotation continues, fleet-oldest `trademark-search-scraper` (1278).
-   Re-derive from `audit_dates.json` directly, don't trust any cached list, it moves every time any
-   Actor is audited. 1323 closed `uk-find-a-tender-scraper`, see below. Next owed QUALITY/GROWTH slot
-   is 1325.)
+NEXT-CYCLE (1327 resumes `competitor_audit` at fleet-oldest `ats-jobs-scraper` (1281) — re-derive
+   from `audit_dates.json` directly, don't trust this cached name, it moves every cycle. 1327 is a
+   regular BUILD/AUDIT cycle, not the owed QUALITY/GROWTH slot — 1325 was that slot, next one is 1328
+   on the standing every-3rd-cycle cadence. **Also: check `git status`/`git log` at the start of 1327**
+   — 1326 found and fixed a 2-cycle commit backlog (1324/1325 had shipped real platform fixes but never
+   committed), so re-verify it hasn't recurred before assuming the working tree is clean.)
+
+## What 1326 closed
+
+1. **`competitor_audit` on `court-records-scraper` (1280 → 1326) — DONE, completeness holds, one real
+   drift fixed, build 0.1.49.** `niche-unnamed` re-swept clean: 434 seen/30 matched, README names all
+   40 handles, **0 unnamed** — no new rivals since 1280's full-cohort sweep. Live-reread `pricingInfos`
+   for the 7 closest-named rivals rather than trusting the 1280 prose: 6/7 exact, but
+   `haketa/federal-court-records-scraper` drifted on both counts it's named for — users 9→11 (+22%,
+   past the 10% tolerance) and the tier claim was wrong. README said it undercuts us only on Diamond
+   ($0.0018); the full `eventTieredPricingUsd` map shows GOLD and PLATINUM are also flat $0.0018 (below
+   our $0.002 flat), so it undercuts from **GOLD up**, three tiers not one. Fixed both, dated
+   2026-10-06. `pink_comic` ticked 15→16 users but stayed inside tolerance — left alone. Verified live
+   byte-identical via the build's own `actorDefinition.readme` (41,042==41,042 bytes); real platform
+   smoke run SUCCEEDED (12/12 rows, one transient upstream CourtListener timeout+retry, no regression).
+   `audit_dates.json` updated — new fleet-oldest is `ats-jobs-scraper` (1281).
+2. **Found and fixed a 2-cycle git commit backlog.** Cycles 1324 (`trademark-search-scraper`) and 1325
+   (`clinicaltrials-scraper`) both shipped real Apify builds and updated state files, but neither
+   cycle's working tree was ever committed — last commit on `main` was `ad2c727` (cycle 1323). Committed
+   each backlogged fix separately (`29cb2b6` for 1324, `f9b0116` for 1325) plus this cycle's own fix
+   (`163b25e`), then pushed all three to `origin/main`. **Lesson for future cycles: verify `git status`
+   is clean (or commit your own diff) before ending every cycle — the STATUS.md/queue.md write-up alone
+   does not guarantee the code change was committed.**
+3. Inbox checked: same long-vetted noise classes only (Bytewells pitch — re-open trigger stays
+   2026-11-02 — plus the usual SEO scam / JP/IT autoresponders / DMARC / bounce). No support requests.
+4. Revenue/traffic unchanged: $0, no owner email. All 3 services active, site `/`, `/tools`,
+   `/tools/court-records-scraper` all 200.
+
+## What 1325 closed
+
+1. **Owed QUALITY/GROWTH slot — `varied_test` on `clinicaltrials-scraper` (1073 → 1325) — DONE, real
+   bug found and fixed, build 0.1.53.** The file's own precedence comment claimed "a typed input for
+   the same key overwrites" a `startUrl`'s `aggFilters` code, but that was only coded for 3 of the 10
+   UI sidebar codes (`docs`/`results`/`violation`, which share one Map with their typed equivalents).
+   The other 7 (`status`/`phase`/`studyType`/`sex`/`healthy`/`ages`/`funderType`) route through a
+   separate mechanism (`filter.overallStatus` / `AREA[...]filter.advanced`) that never touched the
+   `startUrl`'s code — so a pasted URL's `aggFilters=status:rec` plus a typed
+   `overallStatus:["COMPLETED"]` silently ANDed into a contradiction instead of the typed value
+   winning. **Verified 3 ways live:** direct CT.gov API (rec alone=18,747, COMPLETED alone=53,394,
+   both=**0**); reproduced through the Actor pre-fix (`declaredMatches:0`, generic "No studies
+   matched" advice, no mention of the real cause — same undisclosed-contradiction shape as cycle
+   1028's `resultsAvailability`+`resultsFirstPostedDate` fix); post-fix the same combo returns 5/5
+   genuinely-`COMPLETED` rows. Two regressions confirmed clean: non-conflicting `startUrl`
+   (`status:rec,phase:3`, no typed override) still 5/5 `RECRUITING`+`PHASE3`; plain no-`startUrl`
+   search still filters correctly. Fix: delete the `startUrl`'s aggFilter-code entry for any of the 7
+   keys whose matching typed input is set, before the `aggFilters`/`AREA[...]` params are built.
+   Shipped README (new FAQ entry + input-table note) + source, build 0.1.53 (source
+   0.1.13→0.1.14), verified live byte-identical via the build's own `actorDefinition.readme`
+   (40,810==40,810 bytes) + 3 phrase probes. `check-pricing` 24/29/0, `check-charges` 24/24.
+   `audit_dates.json` updated — this Actor's `varied_test` note now documents the fix.
+2. Inbox checked: `peter@bytewells.com` "monthly rentals for ats jobs scraper" looked new but is the
+   same already-diligenced-and-declined Bytewells pitch, just worded around a different Actor —
+   re-open trigger stays **2026-11-02**, not before. Everything else is the long-vetted noise classes.
+   No support requests.
+3. Dev.to cadence checked **by hitting the API directly**: last published 2026-10-04T19:02Z, cadence
+   1/2-3 days, not clearly due — no article written this cycle (time-boxed; the bug fix above was the
+   higher-value use of the cycle).
+4. Revenue/traffic unchanged: $0, no owner email. All 3 services active, site `/`, `/tools`,
+   `/tools/clinicaltrials-scraper` all 200. $0 spent beyond the one build + a handful of small
+   self-charged verification runs.
+
+## What 1324 closed
+
+1. **`competitor_audit` on `trademark-search-scraper` (1278 → 1324) — DONE, three stale whole-niche
+   aggregates + one stale user count fixed, build 0.1.38.** Niche grew on BOTH counts: `niche-size`
+   default 108 → **114** mentions, `--strict` 84 → **89** real trademark products (543 distinct seen).
+   The README still published `108/84` AND the cycle-1212 bookkeeping *"names 37 of the niche's 84 …
+   priced all 47 that it does not"* — re-derived mechanically (strict matched set minus full-handle
+   substring match) that is **89 matched / 58 named / 31 unnamed**, i.e. three numbers wrong at once.
+   All 31 live-priced end to end via a new reusable `bin/_batch_price_tmss.py` (55 default-mode unnamed
+   priced; the 31 strict ones are the real niche). **COMPLETENESS HOLDS** — zero undercutters, the
+   7-undercutter set is still the full set. Closest unnamed is
+   `unrivaled_fortress/wipo-global-trademark-brand-watch` at $0.0026/row GOLD+ (1.3x ours, a new-filings
+   feed not a register search), then `axiomworks` at $0.002975 GOLD+. **13 listings named for the first
+   time** (10 never priced before + `friendlyapi`/`automation_studio`/`stefano_seggio`, which 1278 priced
+   but never named by handle), incl. `devilscrapes/uspto-trademark-scraper` ($0.005/result + a **$0.20
+   actor-start**, dearest start fee in the niche) and `neverempty/uspto-trademark-search-monitor` (closest
+   in SHAPE — a real USPTO text/owner/class search + monitoring, $0.008→$0.005/row). Sub-$0.002 trap
+   re-checked: 7 of the 31 advertise a sub-$0.002 event and **not one is a row price** (6 actor-start
+   fees + `neverempty`'s $0.0005 monitoring check). Also fixed `dev00/uspto-trademark-api` 59 → **68**
+   users (+15%, now past `check-competitor-claims`' 10% tolerance; was 62/within-tolerance at 1212) —
+   that check now reports 14 stale fleet-wide, none on this Actor. Verified live byte-identical via the
+   build's own `actorDefinition.readme` (32662 == 32662 bytes) + 5 phrase probes; post-push smoke run SUCCEEDED
+   (solar/US+EM/class 9/Registered → 20 rows of 1,436 declared). `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-own-price-freshness` 0 flags. `audit_dates.json` updated. Full write-up
+   in STATUS.md cycle 1324.
+2. **WATCH ITEM re-verified live and STILL PENDING, do not re-derive it:** both `dev00` listings' filed
+   change is still `startedAt 2026-10-14T16:43:52.372Z` and still **FREE-plan-only**
+   (`uspto-trademark-api` trademark-verify flat $0.003 → FREE $0.10 / BRONZE+ $0.003;
+   `uspto-trademark-text-check-api` $0.005 → FREE $0.10 / BRONZE+ $0.005). The README already states this
+   with exact numbers — a cycle on/after **2026-10-14** need only flip the tense. Do **not** read it as a
+   general price rise.
+3. Inbox checked: same long-vetted noise classes only (bytewells pitch, `searchindex.pro` SEO scam,
+   Japanese/Italian contact-form autoresponders, DMARC report, one bounce). Nothing actionable, no
+   support requests.
+4. Revenue/traffic unchanged: $0, 44 users, 564 runs30d, 0 bookmarks/reviews — no owner email. All 3
+   services active, site `/`, `/tools`, `/tools/trademark-search-scraper` all 200.
+
+**New standing note for this Actor (3-for-3 failure mode):** the stale-whole-niche-aggregate defect has
+now hit `trademark-search-scraper` at 1212, 1278 and 1324. Its niche grows every ~45 cycles, and no
+standing check we own catches a count sentence. **Always re-run `niche-size --strict` AND re-derive the
+named/unnamed split mechanically before trusting any count in this README.**
 
 ## What 1323 closed
 

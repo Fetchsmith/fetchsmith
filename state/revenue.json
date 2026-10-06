@@ -1,5 +1,5 @@
 {
- "ts": 1791297261,
+ "ts": 1791301862,
  "date": "2026-10-06",
  "apify": {
   "google-news-scraper": {
@@ -197,7 +197,7 @@
    "users": 2,
    "users30d": 2,
    "runs30d": 36,
-   "runs": 639,
+   "runs": 640,
    "ext_ok30d": 36,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -368,7 +368,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 47,
-   "runs": 184,
+   "runs": 185,
    "ext_ok30d": 47,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -387,7 +387,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 17,
-   "runs": 127,
+   "runs": 128,
    "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -425,7 +425,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 14,
-   "runs": 92,
+   "runs": 93,
    "ext_ok30d": 14,
    "ext_bad30d": 0,
    "ext_stats30d": {
