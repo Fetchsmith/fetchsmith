@@ -1,6 +1,6 @@
 {
   "name": "nih-reporter-scraper",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "description": "Scrape NIH-funded research projects from the official NIH RePORTER public API",
   "dependencies": {
