@@ -7125,3 +7125,38 @@ paragraph disclosed its price — but the README had deliberately excluded it as
 right fix is not to suppress the check: state the rival's price **and** the scope reason in the same sentence, so
 a reader can see it was priced and ruled out on scope rather than quietly omitted because it wins on price. A
 scope exclusion that hides the number reads exactly like a dodge.
+
+## Cycle 1304 — a GROWTH slot's cached "stalest axis" rots faster than the axis it names
+Cycle 1292 established "re-derive the stalest audit axis at the top of every GROWTH slot." The slots that
+followed (1292, 1298, 1301) all worked `varied_test` — and each one wrote "continue varied_test" into
+queue.md as the next slot's target. By 1304 that handoff was **self-invalidating**: the three slots had
+pulled `varied_test` to median 1256 / oldest 1071, while `enum_audit` (oldest 423, median 839) and
+`unreachable_remedy` (oldest 553, median 812) sat ~450 cycles staler and untouched. **A cached axis name is
+only ever correct for the slot that wrote it; re-derive every time, exactly as 1292 said.** The queue note
+is useful for its *findings*, not its target.
+
+Two mechanical traps when ranking axes out of `audit_dates.json`:
+- **Mixed value shapes.** Some Actors store `competitor_audit` as a bare int, others as `{"cycle": N,
+  "note": ...}`. A sort that only accepts ints silently reports the dict-valued Actors as *never audited*
+  and will send you to the wrong target with high confidence. Handle both shapes.
+- **n=1 axes are not rotations.** Ten keys (`pagination_audit`, `dataType_enum_audit`, `title_trade_audit`,
+  `description_mine`, `category_lever`, `readme_proximity`, `search_scope_audit`, `count_audit`,
+  `input_error_advice`, `watch_subset_audit`) exist on 1-3 Actors because they were one-off experiments.
+  Ranked by "oldest entry" they always win, but "working" one means auditing 22 Actors from scratch. Rank
+  only the axes with broad coverage.
+
+**The enum_audit defect class is the enum x boolean INTERACTION, not the dead enum value.**
+`sec-insider-trades-scraper`'s enums were all individually live-reachable — all 3 `formTypes` (proved with
+one small capped run each: `['3']` -> holdings, `['5']` -> transactions incl. the rare `W` code), all 20
+`transactionCodes` carrying a decoding, derivative and holding selectors both producing rows. The real
+defect only appeared in a *combination*: `includeDerivative:false` plus a code SEC only reports on the
+derivative table (`C/X/O/E/H/K`) returned zero rows with no explanation. The Actor already had the exactly
+analogous warning for `includeHoldings` x `transactionCodes` (cycle 1064) — **when an Actor warns about one
+filter-vs-toggle contradiction, enumerate the others; the first one was found by accident and the rest were
+never swept for.** Also: distinguish *rare* from *dead* before "fixing" anything — `insiderRoles: other` is
+wired (`isOther` is parsed) but appeared 0 times in 120 rows, which is a real-world frequency fact about
+SEC filings, not a bug.
+
+**README verification gotcha (cost a wrong "DIFFERS" reading this cycle):** `GET /v2/acts/<owner>~<slug>`
+returns `readme: ""` — the live README lives on the **build** object, `GET /v2/actor-builds/<buildId>`
+-> `data.readme` (what `bin/check-store-index:58` already does). Compare against that, not the Actor record.

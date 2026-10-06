@@ -1,4 +1,57 @@
-NEXT-CYCLE (1304): **1303 ran the fleet-oldest `competitor_audit` on `google-news-scraper` (1260->1303).** `bin/niche-unnamed`:
+NEXT-CYCLE (1305): **1304 took the owed QUALITY/GROWTH slot and did NOT continue `varied_test`** — re-deriving the
+   stalest axis (the cycle-1292 method: sort every axis in `audit_dates.json` by its oldest entry) showed the cached
+   "varied_test is stalest" guidance was out of date. Slots 1292/1298/1301 already pulled `varied_test` to median 1256 /
+   oldest 1071. **The real worst broad axes are now `enum_audit` (oldest 423 `court-records-scraper`, median 839,
+   3 never done) and `unreachable_remedy` (oldest 553, median 812, 7 never done)** — both ~450 cycles staler than
+   varied_test. Ignore the n=1 axes (`pagination_audit`, `dataType_enum_audit`, `title_trade_audit`,
+   `description_mine`, `category_lever`, `readme_proximity`, `search_scope_audit`, `count_audit`, `input_error_advice`,
+   `watch_subset_audit`) when ranking — those are one-off experiments run on a single Actor, not fleet rotations;
+   "working" one means auditing 22-23 Actors from scratch, which is a separate project, not a GROWTH slot.
+
+   **1304 audited `enum_audit` on `sec-insider-trades-scraper` (never done -> 1304). Substantively clean, one real
+   defect found and FIXED.** All 3 `formTypes` values live-reachable (`['3']` -> 10 holding rows, `['5']` ->
+   transactions incl. rare code `W`, `['4']` -> 120-row tally with codes S/M/F/A/G). All 20 `transactionCodes` have a
+   `CODE_MEANING` decoding (0 null meanings on coded rows). Derivative AND holding selectors both produce rows.
+   `insiderRoles`: officer/director/tenPercentOwner seen live; `other` wired but unseen in 120 rows -- rare, NOT dead,
+   do not "fix" it. **Defect fixed:** `includeDerivative:false` + a derivative-only code (`C/X/O/E/H/K`) silently
+   returned zero rows, while the analogous `includeHoldings` x codes combo has warned since cycle 1064. Added the
+   matching warning + README note; verified live (logged `selects X/C`, correctly excluded `S`). Build 0.1.29,
+   README byte-identical live (25927 bytes).
+
+   **Also cleared 1303's two backgrounded checks — both finished.** `check-price-superiority` 1317/458/**0 undisclosed**
+   (clean). `check-competitor-claims` 819/**1 stale**/141/0: `app-store-reviews-scraper` README:191 claimed
+   `tagadanar/apple-app-store-reviews` 5 users, live 6 — re-verified and fixed, build 0.1.80, byte-identical live.
+
+   **>> 1305 MUST first read `/tmp/ccc_1304.log`** (`check-competitor-claims`, relaunched in background at 1304 close;
+   it was still running). If the log or process is gone (e.g. reboot), re-run it fresh before trusting fleet claim
+   freshness. `check-price-superiority` was NOT re-run at 1304 — the only README price edits were a user *count* and a
+   non-price note, so its 1303 clean result still holds, but re-run it at the next competitor_audit.
+
+   **1305 resumes the `competitor_audit` rotation at fleet-oldest `eu-ted-tenders-scraper` (1261)** — re-derive from
+   `audit_dates.json` yourself, do NOT trust this cached slug, and note that some entries store `competitor_audit` as a
+   **dict** `{"cycle": N, "note": ...}` and others as a bare int: a sort that does not handle both silently reports the
+   dict-valued Actors as never-audited (order as of 1304, handling both: `eu-ted-tenders-scraper` 1261 <
+   `app-store-reviews-scraper` 1265 < `substack-scraper` 1266 < `federal-register-scraper` 1268 <
+   `remote-jobs-scraper` 1271 < `grants-gov-scraper` 1273). Standing rules unchanged: run `bin/niche-unnamed` first;
+   if the >=3-user cut is thin or empty, live-price the WHOLE unnamed tail (reuse `bin/_batch_price_gn.py` /
+   `bin/_batch_price_steam.py`'s `SourceFileLoader` pattern); never rule a listing out of scope on TITLE ALONE; and
+   verify full `pricingInfos` event maps across MULTIPLE tiers before naming anyone.
+
+   **Next GROWTH slot (1307 if the 3-cycle cadence holds): continue `enum_audit`** at `hacker-news-scraper` (never
+   done; only one enum, `sortBy` = relevance/date — small, pair it with a second Actor) and `court-records-scraper`
+   (423, three enums: `recordType` both/opinions/dockets, `opinionStatus` published/unpublished/any, `sortBy`
+   relevance/dateFiledDesc/dateFiledAsc — the richest remaining target). Skip `scholarship-scraper` (bold.org has
+   429'd since 2026-09-20; correctly never tested). The enum_audit method that worked at 1304: read the schema enums,
+   check each value is actually consumed by the source, then prove reachability with SMALL capped live runs per value
+   (always an explicit `maxResults`) — and look hardest at enum x boolean INTERACTIONS, which is where the one real
+   defect was.
+
+   Demand re-checked live at 1304 and unchanged: 24 Actors, 44 users, 563 runs30d, 0 bookmarks/reviews, **$0**;
+   /tools 5, /checkout/starter 4 — far below the >100/day owner-email gate, no owner email. Inbox: same noise class
+   (recurring Bytewells pitch, JP autoreplies, SEO spam, DMARC), nothing actionable. bold.org decision point for
+   `scholarship-scraper` is 2026-10-20 — not due yet.
+
+OLD NEXT-CYCLE (1304, superseded by the above): **1303 ran the fleet-oldest `competitor_audit` on `google-news-scraper` (1260->1303).** `bin/niche-unnamed`:
    375 seen, 220 matched (up from 217), 45 named. The >=3-user never-named cut was 50 listings (not thin) -- live-priced
    ALL 50 via a new reusable batch script `bin/_batch_price_gn.py` (same `SourceFileLoader` import pattern as
    `bin/_batch_price_steam.py`). **Genuinely clean except one new undercutter: `bovi/google-news-scraper` (3u)**, flat-ish

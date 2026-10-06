@@ -188,7 +188,7 @@ phrasings too (549 seen, 188 matched) and live-priced every unnamed App-Store-sc
 with no start fee — half our $0.0001 rate, at every volume, with no crossover** — at the time the
 cheapest listing found in this niche (no longer: see the 2026-10-05 correction below, where
 `silentflow` prices lower per review and `steadyscrape` matches this rate with no fee either).
-`tagadanar/apple-app-store-reviews` (5 users) tiers its
+`tagadanar/apple-app-store-reviews` (6 users) tiers its
 review price by the buyer's own Apify plan, $0.0001 (Free) down to $0.00007 (Gold/Platinum/Diamond),
 **plus a flat $0.001 per-run fee this Actor does not charge**: that fee makes it dearer than us
 below roughly 50-100 reviews/run on Bronze/Silver and below roughly 34 reviews/run on Gold+, but

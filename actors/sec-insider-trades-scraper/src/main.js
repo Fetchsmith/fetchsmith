@@ -150,6 +150,22 @@ if (includeHoldings && (transactionCodes.length || minTransactionValue > 0)) {
     + 'rows carry neither a transaction code nor a value, so those filters exclude all of them.');
 }
 
+// Codes that SEC's Form 4/5 instructions only ever report in Table II (the derivative table):
+// conversions, option exercises in/out of the money, derivative expirations and equity swaps.
+// With includeDerivative off, the derivativeTransaction selector is never added, so selecting
+// one of these alone yields a silently empty dataset -- the same trap the includeHoldings
+// warning above covers. Verified live (cycle 1304): the enum values themselves are reachable
+// with includeDerivative on (an M and an A both came back on derivative rows).
+const DERIVATIVE_ONLY_CODES = ['C', 'X', 'O', 'E', 'H', 'K'];
+if (!includeDerivative && transactionCodes.length) {
+  const blocked = transactionCodes.filter((c) => DERIVATIVE_ONLY_CODES.includes(c));
+  if (blocked.length) {
+    log.warning(`includeDerivative is off but transactionCodes selects ${blocked.join('/')}, which SEC `
+      + 'only reports on derivative rows: those codes cannot match anything while derivative rows are '
+      + 'excluded. Turn includeDerivative on, or drop those codes.');
+  }
+}
+
 function keepRow(row) {
   if (transactionCodes.length && !transactionCodes.includes(row.transactionCode)) return false;
   // Compare on the ABSOLUTE value: transactionValueUsd is signed (negative on a disposition),
