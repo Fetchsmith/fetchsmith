@@ -15,10 +15,10 @@
     "dateField": {
       "title": "Date field to filter on",
       "type": "string",
-      "description": "Which date the date range below applies to. Report date (default) is when FDA published the enforcement report, which can be months after the recall actually started — switch to recall initiation date to catch recalls by when the firm/FDA acted, or termination date to find recalls that closed out in a window.",
+      "description": "Which date the date range below applies to. Report date (default) is when FDA published the enforcement report, which can be months after the recall actually started — switch to recall initiation date to catch recalls by when the firm/FDA acted, center classification date for when FDA assigned the severity class, or termination date to find recalls that closed out in a window. IMPORTANT: a recall with no value in the field you pick can never be returned, however wide the window. Report date, recall initiation date and center classification date are present on essentially every record, but termination date is missing on ~5% of food, ~18% of drug and ~36% of device recalls (the ones never closed out) — so it silently narrows the corpus as well as the window.",
       "editor": "select",
-      "enum": ["report_date", "recall_initiation_date", "termination_date"],
-      "enumTitles": ["Report date (FDA publication)", "Recall initiation date", "Termination date"],
+      "enum": ["report_date", "recall_initiation_date", "center_classification_date", "termination_date"],
+      "enumTitles": ["Report date (FDA publication)", "Recall initiation date", "Center classification date", "Termination date (excludes recalls never closed out)"],
       "default": "report_date"
     },
     "reportDateFrom": {
@@ -66,21 +66,21 @@
     "voluntaryMandated": {
       "title": "Voluntary or FDA mandated",
       "type": "string",
-      "description": "Filter by whether the recall was voluntary (firm-initiated) or FDA mandated. FDA-mandated recalls are rare (under 2% of all recalls) and often signal a more serious enforcement action.",
+      "description": "Filter by whether the recall was voluntary (firm-initiated) or FDA mandated. FDA-mandated recalls are rare (under 2% of all recalls) and often signal a more serious enforcement action. \"N/A\" is FDA's own value for recalls where the initiating party was never captured (37 rows as of 2026-10-06); a further 23 rows carry an empty value for this field and are only reachable with this filter left on \"Any\".",
       "editor": "select",
-      "enum": ["", "Voluntary: Firm initiated", "FDA Mandated"],
-      "enumTitles": ["Any", "Voluntary (firm initiated)", "FDA Mandated"],
+      "enum": ["", "Voluntary: Firm initiated", "FDA Mandated", "N/A"],
+      "enumTitles": ["Any", "Voluntary (firm initiated)", "FDA Mandated", "N/A (initiating party not captured)"],
       "default": ""
     },
     "classifications": {
       "title": "Classifications",
       "type": "array",
-      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. Leave empty for all.",
+      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. \"Not Yet Classified\" is a real but very rare fourth value FDA uses before a center assigns severity (5 rows across all three endpoints as of 2026-10-06) — so selecting Class I + II + III is not identical to leaving this empty. Leave empty for all.",
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["Class I", "Class II", "Class III"],
-        "enumTitles": ["Class I (most serious)", "Class II", "Class III (least serious)"]
+        "enum": ["Class I", "Class II", "Class III", "Not Yet Classified"],
+        "enumTitles": ["Class I (most serious)", "Class II", "Class III (least serious)", "Not Yet Classified (rare)"]
       },
       "uniqueItems": true
     },
@@ -131,7 +131,7 @@
       "description": "Sort by whichever field dateField selects, newest or oldest first.",
       "editor": "select",
       "enum": ["desc", "asc"],
-      "enumTitles": ["Newest report date first", "Oldest report date first"],
+      "enumTitles": ["Newest first (by the date field above)", "Oldest first (by the date field above)"],
       "default": "desc"
     },
     "maxResults": {

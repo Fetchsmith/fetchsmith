@@ -7309,6 +7309,53 @@ Corollary found the same cycle: a niche in a growing category moves on BOTH coun
 different amounts (108→114 mentions, 84→89 real products). Updating one and carrying the other forward
 produces a paragraph that contradicts itself.
 
+## Cycle 1328 — a date-field selector is an enum too, and the one with the best-sounding name can silently drop a third of the corpus
+
+`enum_audit` on `fda-recall-scraper`, re-run with cycle 828's bidirectional facet-diff method because the
+original 797 pass predated it. Two reusable lessons, neither specific to FDA:
+
+**1. Audit a `dateField`/`sortBy`-shaped selector for COVERAGE, not just validity.** Every enum audit this
+fleet has run asks "is this value accepted and does it return rows". For a field *selector* that is the wrong
+question — all four of our `dateField` choices are valid, sortable and return rows, yet they are not
+interchangeable, because **a record with no value in the chosen field can never be returned no matter how wide
+the window is.** One `_exists_:<field>` count per field per endpoint (12 cheap requests) exposed it:
+`report_date` and `recall_initiation_date` are on 100% of records, `center_classification_date` on ~99.99%,
+but `termination_date` is on only 27,958/29,471 food, 14,810/18,002 drug and **25,491/40,113 device** — so
+filtering on it silently discards ~5% / ~18% / **~36%** of the corpus. A buyer counting "recalls in Q3" via
+`termination_date` gets a wrong answer with no warning. **Any Actor exposing a choice of date/sort field
+should publish a coverage number per choice** — `_exists_` (or the upstream's equivalent null count) is the
+one-request way to get it. Note also that the sparse field is the one whose *name* sounds most authoritative,
+and that our README already had an FAQ saying the `terminationDate` **output** was sparse — that is a
+different claim and it did not stop the filter from being misleading. Output-sparsity disclosure does not
+cover input-filter row loss.
+
+**2. "Pick all the values" is not the same as "leave the filter empty" whenever the enum is incomplete.**
+`classification` had a real 4th value (`Not Yet Classified`) we never exposed, so a buyer selecting
+Class I + II + III genuinely got fewer rows than one leaving `classifications` blank — a difference nothing in
+the UI could reveal. Same shape on `voluntary_mandated`'s missing `N/A`. **When a facet diff finds a missing
+value in a multi-select, check and state the select-all-vs-empty equivalence explicitly**; it is the form the
+gap actually takes for a user, and it is more useful than the raw row count. A related sub-case that is NOT
+fixable by adding an option: 23 rows carry an **empty string** for `voluntary_mandated`, and our "" choice
+already means "no filter" — so an empty-valued row is reachable only by not filtering. Say so rather than
+inventing a sentinel.
+
+**Procedural repeats, both already in LEARNINGS and both hit again this cycle — they are not yet solved:**
+- **The client-side allowlist.** Cycle 838's lesson held: both new enum values needed `main.js`'s
+  `CLASSIFICATIONS` / `VOLUNTARY_MANDATED` / `DATE_FIELDS` arrays patched alongside the schema, or they would
+  have shipped as visible dropdown options that silently coerce to the default. **Grep the source for the
+  enum's values before declaring a schema-only enum fix complete.**
+- **`json.dumps` reformatting a hand-formatted JSON file.** Cycle 1327 hit this on `audit_dates.json`
+  (`indent`); this cycle hit a *different* variant on `input_schema.json` — the indent was right (2) and it
+  still rewrote all 424 lines, because the file keeps short arrays inline (`"enum": ["food", "drug", "device"]`)
+  and `json.dumps` cannot reproduce that at any indent setting. **For a hand-formatted config file, use
+  surgical string edits, not a parse/serialize round-trip** — and always read `git diff --stat` before
+  committing: 9/9 is a real fix, 249/175 is a reformat wearing one as a disguise.
+
+**One more small thing worth keeping: check a zero-row result against the upstream before calling it a bug.**
+An intermediate test run returned 0 rows and looked like a broken new filter; a direct API query showed the
+newest `N/A` drug recall is 2023-11-16, so the 2025 window I had chosen correctly matched nothing. The Actor
+was right. Cheaper to verify than to debug.
+
 ## Cycle 1327: our Apify plan cannot run ANY public Actor (permanent, not per-Actor)
 
 Tried to resolve a competitor-pricing ambiguity on `illehius/ats-jobs-scraper` (flagged since cycle

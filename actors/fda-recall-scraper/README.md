@@ -24,10 +24,10 @@ All fields are optional; with an empty input you get the last year of food, drug
 | Field | Type | Description |
 |---|---|---|
 | `productTypes` | array | `food`, `drug`, `device`. Default: all three. Results are interleaved, not one type after another. |
-| `dateField` | string | Which date `reportDateFrom`/`reportDateTo` filter on: `report_date` (default, when FDA published the report), `recall_initiation_date` (when the recall actually started), or `termination_date` (when it closed out). |
+| `dateField` | string | Which date `reportDateFrom`/`reportDateTo` filter on: `report_date` (default, when FDA published the report), `recall_initiation_date` (when the recall actually started), `center_classification_date` (when FDA assigned the severity class), or `termination_date` (when it closed out). The first three are present on essentially every record; `termination_date` is missing on ~5% of food, ~18% of drug and ~36% of device recalls, which can never be returned when you filter on it (see FAQ). |
 | `reportDateFrom` | string | Earliest date for the field above, `YYYY-MM-DD` or `YYYYMMDD`. Default: one year ago. |
 | `reportDateTo` | string | Latest date for the field above. Default: today. |
-| `classifications` | array | `Class I` (reasonable probability of serious harm or death), `Class II` (temporary/reversible), `Class III` (unlikely to cause harm). Empty = all. |
+| `classifications` | array | `Class I` (reasonable probability of serious harm or death), `Class II` (temporary/reversible), `Class III` (unlikely to cause harm), `Not Yet Classified` (real but very rare — 5 rows across all three endpoints as of 2026-10-06). Empty = all, which is **not** the same as selecting all four minus nothing: picking only Class I/II/III excludes the unclassified rows. |
 | `states` | array | Two-letter state codes of the **recalling firm**. For Canadian firms FDA stores the province spelled out in full, so use `British Columbia`, not `BC` (see FAQ). Multiple values are ORed; combined with `countries` the two ANDed. Empty = all. |
 | `countries` | array | Country names of the **recalling firm**, exactly as FDA writes them (`United States`, `Canada`, `Israel`, ...). Most recalls are US firms; foreign firms whose products entered the US market show up too. Empty = all. |
 | `recallNumber` | string | Look up one recall by its exact FDA recall number, e.g. `F-1233-2022`. Overrides every filter above except `productTypes`, and automatically searches full history regardless of `reportDateFrom`/`reportDateTo`. |
@@ -38,7 +38,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `brandName` | string | **Drug recalls only.** Filter by drug brand name, e.g. `Nurtec`. openFDA only cross-references brand/generic/manufacturer name for drug recalls — food and device recalls never match these three filters. |
 | `genericName` | string | **Drug recalls only.** Filter by generic/active-ingredient name, e.g. `ibuprofen`. |
 | `manufacturerName` | string | **Drug recalls only.** Filter by manufacturer name, e.g. `Pfizer`. Not the same as `recallingFirm` (the firm that issued the recall, any product type) — a drug's manufacturer and the firm recalling it can differ. |
-| `voluntaryMandated` | string | `Voluntary: Firm initiated` or `FDA Mandated` (rare, under 2% of recalls). Empty = both. |
+| `voluntaryMandated` | string | `Voluntary: Firm initiated`, `FDA Mandated` (rare, under 2% of recalls), or `N/A` (FDA's own value when the initiating party was never captured — 37 rows as of 2026-10-06). Empty = no filter, the only way to also see the 23 rows that carry an empty value for this field. |
 | `searchQuery` | string | Free-text phrase matched against product description, reason for recall and recalling firm. |
 | `order` | string | `desc` (newest first, default) or `asc` — sorts by whichever field `dateField` selects. |
 | `maxResults` | integer | Total rows across all selected product types. Default 100. |
@@ -152,10 +152,30 @@ Because FDA only publishes them for drugs. The `openfda` block that carries thos
 Interleaved across the product types you selected — one row per type per round — so a small `maxResults` gives you a mix rather than filling the whole quota from `food`. Within each product type, rows are ordered by `reportDate`.
 
 **What is the difference between `reportDate` and `recallInitiationDate`?**
-`recallInitiationDate` is when the firm started the recall; `reportDate` is when FDA published the enforcement report, which is often weeks or months later. The date filters apply to **`reportDate` by default** — set `dateField: "recall_initiation_date"` to filter on when the recall actually began instead, or `"termination_date"` to find recalls that closed out in a window.
+`recallInitiationDate` is when the firm started the recall; `reportDate` is when FDA published the enforcement report, which is often weeks or months later. The date filters apply to **`reportDate` by default** — set `dateField: "recall_initiation_date"` to filter on when the recall actually began instead, `"center_classification_date"` for when FDA's center assigned the severity class (it sits between the other two), or `"termination_date"` to find recalls that closed out in a window.
+
+**Which `dateField` should I use, and can one of them lose rows?**
+Yes — one of them can, and it is worth knowing before you trust a count. A recall with **no value** in the field you filter on can never be returned, however wide you make the window. Measured live on 2026-10-06 with openFDA's `_exists_` operator, per product type:
+
+| `dateField` | food | drug | device |
+|---|---|---|---|
+| `report_date` (default) | 29,471 / 29,471 | 18,002 / 18,002 | 40,113 / 40,113 |
+| `recall_initiation_date` | 29,471 / 29,471 | 18,002 / 18,002 | 40,113 / 40,113 |
+| `center_classification_date` | 29,469 / 29,471 | 18,000 / 18,002 | 40,112 / 40,113 |
+| `termination_date` | 27,958 / 29,471 | 14,810 / 18,002 | **25,491 / 40,113** |
+
+So the first three are effectively lossless, but `termination_date` silently drops ~5% of food, ~18% of drug and **~36% of device** recalls — the ones FDA has never closed out, which are mostly still `Ongoing`. That is usually what you want when you ask "what terminated in Q3", but it makes `termination_date` the wrong field for any "how many recalls happened" total. Use `report_date` or `recall_initiation_date` for counts, and `termination_date` only for close-out questions.
 
 **Why is `terminationDate` almost always null, and `moreCodeInfo` too?**
 Both are real openFDA fields, not bugs, and both are genuinely sparse — measured live, not assumed. `terminationDate` only gets a value once a recall's `status` flips to `Terminated`: sampled 30/30 Terminated-status rows filled across drug, food, and device, versus 0/30 for `Ongoing` and ~0-3% for `Completed`. Since the default sort returns the newest recalls first and most freshly-reported recalls are still `Ongoing`, `terminationDate` reads as almost-always-empty in a default query — set `status: "Terminated"` if you specifically want closed-out recalls with a termination date. `moreCodeInfo` is a free-text overflow field FDA rarely uses at all: sampled hundreds of rows with the field technically present in the API response, and it was an empty string in every drug and food row checked, non-empty in only a small fraction of device rows. Both fields are kept (not removed) because they are real, occasionally-populated upstream data, not an artifact of any input filter you chose.
+
+**Why do `classifications` and `voluntaryMandated` have an odd rare option each?**
+Because FDA's real vocabulary for both fields is one value longer than the obvious one, and without the extra option those rows were simply unreachable through the filter. Pulled straight from openFDA's own `count=<field>.exact` facets on 2026-10-06 (food / drug / device):
+
+- `classification` — `Class I`, `Class II`, `Class III`, plus **`Not Yet Classified`** (2 / 2 / 1 rows): recalls whose severity the relevant FDA center has not assigned yet. The practical consequence is that selecting `["Class I","Class II","Class III"]` is **not** the same as leaving `classifications` empty. These five rows are genuinely half-filled upstream — verified live, their `recallNumber` is blank or `N/A` — so treat them as early/incomplete records, and note `riskScore` scores them with a neutral severity component rather than guessing a class.
+- `voluntary_mandated` — `Voluntary: Firm initiated`, `FDA Mandated`, plus **`N/A`** (6 / 23 / 8 rows): FDA's own marker for recalls where the initiating party was never captured. A further 23 rows (1 / 12 / 10) carry an **empty** value for this field; those cannot be selected at all, since the empty option means "no filter" — leave `voluntaryMandated` blank if you need them.
+
+`status` is the other direction and is unchanged: the same facet sweep confirms openFDA still only ever emits `Ongoing`, `Completed` and `Terminated`, so FDA's documented `Pending` remains a real-vocabulary-but-zero-data value (the Actor logs a warning if you pick it). The facet counts reconcile exactly to each endpoint's grand total, so no recall is missing a `status` or a `classification` either.
 
 **Can I get more than 25,000 rows from one filter?**
 Yes. openFDA refuses to page past row 25,000 (`skip` is hard-capped), so when a query matches more than that the Actor automatically splits it into narrower `reportDate` windows and pages each one — the year-boundary split was verified to sum exactly to the unsplit total, with no duplicated or dropped rows. If one single window still exceeds the cap, the run logs a warning telling you to narrow the date range.

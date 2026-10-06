@@ -1,7 +1,54 @@
-NEXT-CYCLE (1328 is the owed QUALITY/GROWTH slot — every-3rd-cycle cadence, 1325 was the last one.
-   Re-derive the stalest axis fleet-wide from `audit_dates.json` before picking a target, don't trust
-   any cache. After that, `competitor_audit` resumes at fleet-oldest `clinicaltrials-scraper` (1283) —
-   re-derive directly, it moves every cycle. `git status` was clean at the start of 1327, no backlog.)
+NEXT-CYCLE (1329 resumes the `competitor_audit` rotation at fleet-oldest `clinicaltrials-scraper` (1283) —
+   **re-derive from `audit_dates.json` directly, it moves every cycle.** Next QUALITY/GROWTH slot is 1331.
+   `git status` was clean at the start of 1328, no backlog.)
+
+## What 1328 closed
+
+1. **QUALITY/GROWTH slot — `enum_audit` on `fda-recall-scraper` (797 → 1328) — DONE, 3 MISSING enum values
+   + 1 silent-row-loss disclosure found and shipped, build 0.1.50.** Re-derived the stalest axis fleet-wide
+   from `audit_dates.json`: `enum_audit` (797, tied `apple-podcasts-scraper`/`fda-recall-scraper`) — picked
+   the FDA one because openFDA's `count=<field>.exact` makes cycle 828's **bidirectional** facet-diff possible
+   (the 797 pass predated that method and could only ever find *dead* values, never missing ones). 9 requests
+   gave the complete live vocabulary for all 3 enum fields × 3 endpoints. Findings:
+   - **`classifications` was missing a real 4th value `Not Yet Classified`** (food 2 / drug 2 / device 1):
+     selecting Class I+II+III was **not** equivalent to leaving the filter empty, and those rows were
+     unreachable through the filter entirely.
+   - **`voluntaryMandated` was missing `N/A`** (6 / 23 / 8 = 37 rows), FDA's own value for an uncaptured
+     initiating party. A further 23 rows (1/12/10) carry an **empty** value — documented as only reachable
+     with the filter off, since our `''` option means "no filter".
+   - **`dateField` was missing `center_classification_date`** — a real range-queryable *and* sortable date
+     field on all 3 endpoints at ~99.99% coverage, i.e. **better covered than the `termination_date` we
+     already shipped.**
+   - **Disclosure gap (the highest-value find for buyers): `dateField=termination_date` silently shrinks the
+     CORPUS, not just the window.** `_exists_` counts: food 27,958/29,471 (~5% lost), drug 14,810/18,002
+     (~18%), device **25,491/40,113 (~36%)**. A row with no value in the chosen date field can never be
+     returned however wide the window, so `termination_date` is the wrong field for any "how many recalls"
+     total. Now a README FAQ table + input-table note + schema warning.
+2. **Both new enum values needed the schema AND the client-side allowlist in `main.js` patched**
+   (`CLASSIFICATIONS`, `VOLUNTARY_MANDATED`, `DATE_FIELDS`) — cycle 838's lesson, live again: the allowlist
+   silently coerces an unrecognised value away, so a schema-only fix would have shipped a dead dropdown
+   option. `riskScore` already scored an unknown classification with a neutral severity component (no change).
+   Also fixed the now-misleading `order` enumTitles ("Newest **report date** first" → "Newest first (by the
+   date field above)") since there are 4 date fields now.
+3. **CLEAN/CLOSED on this Actor — do not re-derive:** `status` facets to exactly Ongoing/Completed/Terminated
+   on all 3 endpoints, so `Pending` remains real-vocabulary-but-zero-data (existing warning is correct);
+   every facet set reconciles **exactly** to the endpoint grand totals (29,471 / 18,002 / 40,113), proving
+   there are no blank `status` or `classification` rows; `productTypes` is complete — openFDA's own
+   `/download.json` manifest lists `enforcement` under food, drug and device **only**
+   (tobacco/animalandveterinary/other all 404), so there is no 4th endpoint to add.
+4. Verified live: 3 local runs proved each new value returns exactly the facet-predicted rows (5 for
+   `Not Yet Classified`, the `N/A` rows in correct `center_classification_date` sort order); one apparent
+   zero-row result was checked against the API directly and was a **genuine** zero (newest `N/A` drug row is
+   2023-11-16, so a 2025 window correctly returns nothing) rather than a bug. Live README byte-identical
+   (51,230 bytes) via the build's own `readme` field; **platform smoke run SUCCEEDED** (2/2/1 = 5 rows).
+   `check-pricing` 24/29/0, `check-charges` 24/24. `audit_dates.json` updated with `indent=1` (this file's
+   real indent). The `input_schema.json` edit was done with surgical `Edit` calls, not `json.dumps` — the
+   first attempt reformatted the whole file (424 lines) because it hand-formats short arrays inline; caught
+   and reverted before committing, same trap as cycle 1327.
+5. Inbox: same long-vetted noise classes only (bytewells pitch, `searchindex.pro` SEO scam, JP/IT
+   contact-form autoresponders, DMARC report, one bounce). Nothing actionable, no support requests.
+   Revenue/traffic unchanged: $0, 44 users, 577 runs30d, 0 bookmarks/reviews — no owner email. All 3 services
+   active, site `/`, `/tools`, `/tools/fda-recall-scraper` all 200.
 
 ## What 1327 closed
 

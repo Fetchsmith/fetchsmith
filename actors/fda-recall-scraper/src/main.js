@@ -22,7 +22,12 @@ const MAX_LIMIT = 1000;
 const MAX_SKIP = 25000;
 const CHUNK_THRESHOLD = 24000; // stay under MAX_SKIP with a page of headroom
 
-const CLASSIFICATIONS = ['Class I', 'Class II', 'Class III'];
+// `Not Yet Classified` is a real fourth value FDA uses for recalls whose severity the relevant
+// center has not assigned yet -- rare but present on all three endpoints (food 2, drug 2,
+// device 1 as of 2026-10-06, via `count=classification.exact`). Selecting Class I+II+III is
+// therefore NOT the same as leaving the filter empty; without this value those rows were
+// unreachable through the classifications filter at all.
+const CLASSIFICATIONS = ['Class I', 'Class II', 'Class III', 'Not Yet Classified'];
 
 const productTypes = (input.productTypes ?? ['food', 'drug', 'device'])
     .map((t) => String(t).toLowerCase().trim())
@@ -54,7 +59,12 @@ const city = String(input.city ?? '').trim();
 const brandName = String(input.brandName ?? '').trim();
 const genericName = String(input.genericName ?? '').trim();
 const manufacturerName = String(input.manufacturerName ?? '').trim();
-const VOLUNTARY_MANDATED = ['Voluntary: Firm initiated', 'FDA Mandated'];
+// `N/A` is a real third value in openFDA's `voluntary_mandated` vocabulary (food 6, drug 23,
+// device 8 as of 2026-10-06, via `count=voluntary_mandated.exact`) -- FDA records it when the
+// initiating party was never captured. A further 23 rows (food 1, drug 12, device 10) carry an
+// EMPTY string for this field; those are only reachable by leaving the filter off entirely,
+// since the empty option here means "no filter" (documented in the README FAQ).
+const VOLUNTARY_MANDATED = ['Voluntary: Firm initiated', 'FDA Mandated', 'N/A'];
 const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMandated ?? '').trim())
     ? String(input.voluntaryMandated).trim()
     : '';
@@ -80,9 +90,19 @@ if (webhookUrlRaw) {
 }
 
 // Which date the reportDateFrom/reportDateTo range and the sort both apply to. report_date
-// (FDA publication) is the long-standing default; the other two are real distinct fields on
-// all three endpoints (verified live: sort and range both work on food/drug/device for all 3).
-const DATE_FIELDS = ['report_date', 'recall_initiation_date', 'termination_date'];
+// (FDA publication) is the long-standing default; the others are real distinct fields on
+// all three endpoints (verified live: sort and range both work on food/drug/device for all 4).
+//
+// Coverage differs sharply between them, which matters because a row with no value in the
+// chosen field can never appear in a filtered run no matter how wide the window is
+// (`_exists_` counts, 2026-10-06):
+//   report_date                food 29471/29471  drug 18002/18002  device 40113/40113
+//   recall_initiation_date     food 29471/29471  drug 18002/18002  device 40113/40113
+//   center_classification_date food 29469/29471  drug 18000/18002  device 40112/40113
+//   termination_date           food 27958/29471  drug 14810/18002  device 25491/40113
+// So termination_date silently excludes ~5% of food, ~18% of drug and ~36% of device recalls
+// (the ones never closed out -- mostly still Ongoing). Disclosed in the README FAQ + schema.
+const DATE_FIELDS = ['report_date', 'recall_initiation_date', 'center_classification_date', 'termination_date'];
 const dateField = DATE_FIELDS.includes(String(input.dateField ?? '').trim())
     ? String(input.dateField).trim()
     : 'report_date';
