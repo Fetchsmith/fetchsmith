@@ -392,13 +392,25 @@ async function fecGet(path, params) {
     const detail = body?.error?.message
       ?? (typeof body?.message === 'string' ? body.message : null)
       ?? (typeof body === 'string' ? body.slice(0, 200) : null);
-    // The shared DEMO_KEY quota is per egress IP, so exhaustion is a real runtime outcome, not an
-    // edge case. Never let it look like "this candidate has no money on file" - the totals
+    // This Actor runs on FEC_API_KEY, its own personal api.data.gov key (confirmed live 2026-10-06
+    // as a secret Actor env var in the published version), NOT the DEMO_KEY fallback at line 332
+    // (that only ever fires on a local run with no env var set). api.open.fec.gov's own rate-limit
+    // error (captured live, see the fec-campaign-finance-json-api-demo-key blog post) states the
+    // real ceilings: 40 calls/hour for DEMO_KEY (per egress IP) vs 1,000 calls/hour for a personal
+    // key -- and a personal key's limit is enforced PER KEY, not per caller/IP, so it is shared
+    // across every concurrent run of this Actor by every buyer, not "the public DEMO_KEY". Getting
+    // this right matters: the README's "you don't need your own FEC API key" section claims we
+    // are not falling back to DEMO_KEY, and a 429 message that blames DEMO_KEY would flatly
+    // contradict that claim the one time a buyer actually sees this error.
+    // Never let a rate-limit 429 look like "this candidate has no money on file" - the totals
     // endpoint expresses that as HTTP 200 with results: [].
     if (res.statusCode === 429) {
       const e = new Error(
-        'FEC API rate limit hit (HTTP 429) on the shared DEMO_KEY, which is throttled per '
-        + 'egress IP. Note each result costs 2 requests when includeTotals is on. Retry later, '
+        'FEC API rate limit hit (HTTP 429). This Actor uses its own registered api.data.gov key '
+        + '(1,000 requests/hour) rather than the public DEMO_KEY (40/hour) -- but that 1,000/hour '
+        + "limit is enforced per key, not per caller, so it's shared across every buyer running "
+        + 'this Actor at the same moment; a busy hour for other buyers can occasionally 429 your '
+        + 'run too. Each result costs 2 requests when includeTotals is on. Retry in a few minutes, '
         + 'lower maxResults, or set includeTotals to false to halve the request count.',
       );
       e.isRateLimit = true;
