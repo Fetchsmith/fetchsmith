@@ -922,8 +922,11 @@ async function saveWatchRecord(status) {
     if (baselineTruncated > 0) {
         log.warning(
             `The baseline for "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the ${baselineTruncated} `
-            + 'oldest opportunity id(s) were dropped and will be returned and CHARGED as new on a future run. '
-            + 'Narrow the watch query (keyword, NAICS, notice type) or split it across labels.',
+            + `oldest ${ROW_NOUN} id(s) were dropped and will be returned and CHARGED as new on a future run. `
+            // dataType-aware: naicsCodes/setAsideTypes/noticeTypes are ignored (with their own warning)
+            // for wd/cfda/exclusions, so telling those buyers to narrow by them would be advice that
+            // provably does nothing -- same fix shape as the SEED_CAP note ~350 lines below.
+            + `Narrow the watch query (a keyword${isWd ? ', a state' : (isCfda || isExclusions) ? ', an organization' : ', a NAICS code, a set-aside/notice type'}) or split it across labels.`,
         );
     }
     await watchStore.setValue(watchKey, {
