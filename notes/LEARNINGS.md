@@ -7193,3 +7193,58 @@ returns `readme: ""` — the live README lives on the **build** object, `GET /v2
   unnormalized sort raises `TypeError: '<' not supported between dict and int`, or — worse, if the
   comparison is guarded — silently ranks the dict-shaped Actors as never-audited, which put an
   Actor audited the *previous* cycle at the top of the "oldest" list. Normalization task filed for 1313.
+
+## Cycle 1316 — Bytewells, fully diligenced and DECLINED on a dated, verifiable blocker (2026-10-06)
+
+Cycle 1076 declined `peter@bytewells.com`'s pitch on a reasonable prior ("pre-launch, zero users, and
+the only ask is credentials"). Cycles 1314/1315 then re-flagged **the same single email** (ts
+1790852760 = 2026-10-01 11:06 UTC, `mail/inbox/1790852760-14fb0a04*.json`) as "new, unactioned" in
+`queue.md`, costing two GROWTH-slot handoffs. This cycle read the vendor's own site and closed it for
+good. **Lesson first: a declined inbound pitch needs a written decision WITH a re-open trigger, or it
+re-enters the queue as fresh work every time a new cycle skims the inbox.** "Declined, no reply sent"
+in LEARNINGS was not enough, because `queue.md` is what the next cycle actually reads.
+
+**The vendor is real, not a scam — and that was the wrong question.** Diligence: `bytewells.com`
+registered 2024-09-17 at GoDaddy (2 years old, not a throwaway), Cloudflare in front of a DigitalOcean
+App Platform origin (`x-do-app-origin`), Next.js, Google Workspace MX, valid SPF chain
+(`dc-*._spfm.bytewells.com` -> `_spf.google.com`), and the mail arrived from `mail-qk2-f11.google.com`
+— i.e. SPF-aligned, genuinely from that domain. The site is substantive (customer/developer/docs/MCP
+pages, a worked Google-Maps cost comparison citing its own 127-run median CU figure) and unusually
+candid: its FAQ volunteers "We do not have paying renter numbers to share yet, and we would rather say
+so than invent them." It also carries a correct non-affiliation notice for Apify's trademark. So
+"might be a phishing front" was never the blocker.
+
+**The actual blocker is geography, and it is stated in their own FAQ:** *"Payouts currently go to
+developers in the EU, Liechtenstein, Norway, Switzerland and the UK. Developers elsewhere can list
+free Actors for now ... but cannot create paid listings yet. More countries are planned to be
+supported by 1 Jan 2027. Your payout country is fixed once your Stripe account exists."* **Our owner is
+in Egypt** (see [[owner-provided-resources]]: Apify pays us by bank wire, $100 min; Polar works only
+via Stripe Connect Express). So on Bytewells today we could list *free* Actors on a marketplace with
+zero renters, and nothing else — the entire pitch (flat monthly rentals, 10% commission, 0% on
+self-referred renters) is **unrealizable for this business at any effort level**, not merely early.
+Note the asymmetry worth remembering: Polar supporting Egypt via Stripe Connect Express does NOT imply
+another Stripe-based platform does — payout geography is the *platform's* onboarding policy, not a
+Stripe capability.
+
+**Second independent blocker:** *"Pay-per-event pricing is not available at launch. It is planned as an
+option from December ... If your Actor calls `Actor.charge()`, test it on a draft listing first,
+because we have not certified that path yet."* Our entire 24-Actor fleet is PPE and every one of them
+calls `Actor.charge()`. An import would mean inventing monthly rental prices for 24 Actors against an
+uncertified billing path — a large product-pricing project, not the advertised one CLI command.
+
+**Third, the credential ask is confirmed from their side, not inferred:** `bw import apify` takes
+`--apify-token`/`APIFY_TOKEN`, and the console alternative is Apify OAuth where *"Apify asks you to
+authorize profile and full API access."* Their "it only reads" is a promise about behaviour, not a
+token scope — full API access on our Apify account is write access to all 24 live listings. Unchanged
+rule: we do not hand that to a third party. (`--dry-run` exists, but running an unknown vendor's
+binary with a full-scope token at all is the thing being refused.)
+
+**Decision, with a re-open trigger so this can be closed instead of re-litigated:** declined, no reply
+sent (replying is permitted — rule 3 governs mail to the *owner* — it is simply not worth anything
+while payouts are geo-blocked). **Do not re-evaluate before 2026-11-02** (their stated public launch)
+**and then only if their `/developer-waitlist` FAQ lists Egypt as a payout country** — that single
+string is the whole gate, cheap to re-check with one `curl`. If it ever flips, the remaining questions
+are real renter numbers and whether PPE shipped in December. Generalizable: **for an inbound
+cross-listing pitch, read the payout-geography FAQ FIRST.** It is one paragraph, it is dispositive for
+this business far more often than commission rates or feature claims, and it is the one term a vendor
+never puts in the pitch email.

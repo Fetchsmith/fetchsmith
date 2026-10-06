@@ -1,62 +1,81 @@
-NEXT-CYCLE (1316, the owed QUALITY/GROWTH slot — per 1314's note): **1315 ran `unreachable_remedy`
-   on `fec-campaign-finance-scraper`** (never done -> 1315) — found and fixed a real bug: the HTTP 429
-   handler's error message blamed "the shared DEMO_KEY ... throttled per egress IP", which is wrong
-   for every production run (confirmed `FEC_API_KEY` is set as a secret platform env var, so DEMO_KEY
-   is local-dev-only). Real numbers (from api.data.gov's own docs + our own blog post's live-captured
-   FEC error): DEMO_KEY=40 req/hour per IP, our personal key=1,000/hour per KEY (shared across every
-   buyer running this Actor, not per-caller) — the opposite of what README line 279 used to claim
-   ("not shared with anyone"). Fixed the 429 message, the README DEMO_KEY paragraph + FAQ answer, added
-   a new FAQ entry. Build 0.1.51 / source 0.1.17, verified live + smoke-tested (candidates mode,
-   3/3 charged, no regression). Full detail in STATUS.md and `audit_dates.json`'s
-   `unreachable_remedy_note`. **2 Actors still never done on this axis**: `sam-gov-opportunities-scraper`,
-   `sec-insider-trades-scraper` (both public/unauthenticated, no API key needed) — pick one on the
-   next *regular* (non-QUALITY) cycle. **Skip `scholarship-scraper`**: bold.org has 429'd it since
-   2026-09-20 (decision point 2026-10-20 per cycle-1292 — check whether that date has passed before
-   touching this Actor at all).
+NEXT-CYCLE (1317, a regular BUILD/AUDIT cycle — 1316 took the owed QUALITY/GROWTH slot; next GROWTH
+   slot is **1319**).
 
-   **Axis-ranking rule, settled, stop re-litigating: only `varied_test`, `enum_audit`,
-   `unreachable_remedy`, `competitor_audit` are real fleet-wide rotations (23-24 entries each).**
-   `count_audit`, `input_error_advice`, `description_mine`, `watch_subset_audit`, `search_scope_audit`
-   are one-off experiments (cycle-1304 LEARNINGS entry) — never rank them against the 4 real axes.
+## What 1316 closed (do not re-open these)
 
-   **This is a QUALITY/GROWTH cycle (every 3rd, per CLAUDE.md) — pick from these, in order of
-   readiness:**
-   (a) Sanity-check the Bytewells pitch (`bytewells.com` — see inbound mail below) before deciding
-   whether to reply to `peter@bytewells.com`.
-   (b) `remote-jobs-scraper` has a real competitive gap flagged at cycle 1312: `datafetch_labs/
-   remote-jobs-scraper` is a feature superset (adds We Work Remotely as a 7th board, cross-board
-   dedupe, region filter, yearly-normalized salary) at a lower price than our Free/Bronze/Silver
-   tiers — needs a product decision (add WWR / find a winning feature axis), not started.
-   (c) Re-check whether `sequined_fan/remote-jobs-scraper` (3u) is still `pricingInfos: null` despite
-   its own build README advertising $0.002/listing.
-   (d) Fall back to the standing QUALITY-cycle routine from CLAUDE.md if (a)-(c) don't fill the time:
-   re-run platform tests with varied inputs on 2-3 Actors, improve a README, answer support mail,
-   or check whether a Dev.to article is due.
+**Bytewells — DILIGENCED AND DECLINED. Closed, with a dated re-open trigger. Stop re-flagging it.**
+   `peter@bytewells.com`'s pitch (mail `14fb0a04`, ts 1790852760 = **2026-10-01**, the only mail they
+   have ever sent) was already declined at cycle 1076 and then re-listed as "new, unactioned" by 1314
+   and 1315, burning two GROWTH handoffs on the same email. Full write-up in LEARNINGS.md (cycle 1316).
+   Short version: the vendor is **real** (domain registered 2024-09-17, Cloudflare->DigitalOcean origin,
+   Google Workspace MX, SPF-aligned mail from Google's relay, substantive site, candid FAQ that
+   volunteers "we do not have paying renter numbers to share yet") — but three blockers, two of them
+   from their own FAQ:
+   1. **Payout geography (dispositive).** "Payouts currently go to developers in the EU, Liechtenstein,
+      Norway, Switzerland and the UK ... Developers elsewhere can list free Actors for now ... but
+      cannot create paid listings yet. More countries are planned ... by 1 Jan 2027." **Owner is in
+      Egypt.** So we could list only FREE Actors on a marketplace with zero renters. The whole pitch
+      (flat monthly rentals, 10% commission) is unrealizable for us, not merely early. Note: Polar
+      supporting Egypt via Stripe Connect Express does NOT imply another Stripe-based platform does.
+   2. **PPE not supported at launch** ("planned as an option from December ... we have not certified
+      that path yet"). All 24 of our Actors are PPE and call `Actor.charge()`.
+   3. **Credential ask confirmed from their docs:** `bw import apify` wants `APIFY_TOKEN`, console
+      alternative is Apify OAuth with "profile and **full API access**". We don't grant that.
+   **RE-OPEN TRIGGER — one curl, nothing sooner:** not before **2026-11-02** (their stated public
+   launch), and then only if Egypt appears in the payout-country answer at
+   `https://bytewells.com/developer-waitlist`. Verified reproducible this cycle; grep the rendered text
+   for `Which countries can be paid`, then for `egypt` (absent as of 2026-10-06). If it ever flips, the
+   open questions are real renter numbers and whether PPE actually shipped in December. No reply sent
+   (replying is allowed — rule 3 governs mail to the *owner* — it is just worth nothing while
+   payouts are geo-blocked).
 
-   If 1316 has cycles to spare after the QUALITY work, resume `competitor_audit` at fleet-oldest
-   `grants-gov-scraper` (1273 as of 1312/1313) — re-derive from `audit_dates.json` directly (fully
-   normalized, plain int/null) rather than trusting this cached slug, since the field moves every
-   time any Actor gets audited. Order as of 1312: `grants-gov-scraper` 1273 < `scholarship-scraper`
-   1274 < `sam-gov-opportunities-scraper` 1275 < `uk-find-a-tender-scraper` 1277 <
-   `trademark-search-scraper` 1278 < `court-records-scraper` 1280 < `ats-jobs-scraper` 1281.
+**`sequined_fan/remote-jobs-scraper` price re-check: STILL `pricingInfos: null`** (3 users, 35 runs30d,
+   re-verified live 2026-10-06). Cycle 1312's disclosure stands unchanged; `datafetch_labs` also
+   re-verified unchanged at `$0.001/job + $0.00005 start` (1 user, 13 runs30d). Both handles are
+   already named with correct live figures in `actors/remote-jobs-scraper/README.md:154` and `:162`,
+   including the both-directions price diff the cycle-1288 lesson requires. **No action needed; don't
+   re-price these two before the next `remote-jobs-scraper` competitor_audit.**
 
-   Standing `competitor_audit` rules, unchanged: run `bin/niche-unnamed` first; if the >=3-user cut is
-   thin or empty, live-price the WHOLE unnamed tail, and if it is large, live-price the whole >=3-user
-   cut anyway (reuse the `_batch_price_*.py` `SourceFileLoader` pattern with `raw_events` + `startedAt`
-   fields so finalist tiers need no second round of calls); **never rule a listing out of scope on
-   TITLE ALONE** — read the live Store description, and for anything that looks like a real substitute
-   read its latest build's `actorDefinition.readme` + input schema too; verify full `pricingInfos`
-   event maps by CURRENT `startedAt` across MULTIPLE tiers before naming anyone. A low price in a
-   listing's TITLE is marketing, not a price — check the real event map, not the headline.
+## Open for 1317
 
-   **Inbound mail, not actioned, for awareness:** `peter@bytewells.com` (2026-10-06) pitched a new
-   marketplace, "Bytewells" — Apify-compatible, flat monthly rentals (Apify discontinued those), 10%
-   commission (0% on self-referred renters) vs Apify's 20%, one-CLI-command migration, no exclusivity
-   (keep the Apify listing too). Asked to join a developer waitlist or reply "I'm in." Not a support
-   request, not revenue, not critical, so no reply/email sent per rule 3 — still unactioned as of
-   1315, logged here as GROWTH-slot candidate (a) above.
+1. **`unreachable_remedy` (top task).** 2 actionable Actors never done on this axis:
+   `sam-gov-opportunities-scraper` and `sec-insider-trades-scraper` (both public/unauthenticated, no
+   API key needed). Pick one. Re-derived live from `audit_dates.json` this cycle, which is still fully
+   normalized (plain `int`/`null` on every axis — 1313's fix held).
+2. **`competitor_audit` fleet-oldest, if time remains:** `grants-gov-scraper` (1273) <
+   `scholarship-scraper` (1274, but SKIP — see below) < `sam-gov-opportunities-scraper` (1275) <
+   `uk-find-a-tender-scraper` (1277) < `trademark-search-scraper` (1278) < `court-records-scraper`
+   (1280) < `ats-jobs-scraper` (1281). Re-derive from `audit_dates.json` directly rather than trusting
+   this cached list — it moves every time any Actor is audited.
+3. **`remote-jobs-scraper` product decision, still not started (GROWTH-slot candidate for 1319).**
+   `datafetch_labs/remote-jobs-scraper` is a genuine feature superset at a lower price (7 boards to our
+   6, cross-board dedupe, region filter, yearly-normalized salary, monitor mode == our watch mode).
+   Needs a product direction — add We Work Remotely as a 7th board, or find a feature axis we can win —
+   not another audit. Disclosed honestly in our README already, so this is competitiveness, not
+   accuracy.
 
-   Housekeeping watch: `STATUS.md` is ~140KB as of 1315. The standing threshold is ~150KB — re-trim to
-   `state/STATUS_ARCHIVE.md` (verify lines-removed == lines-added) once it crosses. Keep `queue.md`
-   lean going forward — fold a superseded `NEXT-CYCLE` block's still-relevant facts into the new one
-   and drop the rest, rather than appending `OLD NEXT-CYCLE` blocks.
+**Standing constraints, unchanged:**
+- **SKIP `scholarship-scraper` entirely** (it is fleet-oldest on three axes and will keep surfacing):
+  bold.org has 429'd it since 2026-09-20, decision point **2026-10-20** (cycle 1292). That date has NOT
+  passed as of 2026-10-06 — check it before touching this Actor at all.
+- **Axis-ranking rule, settled, stop re-litigating:** only `varied_test`, `enum_audit`,
+  `unreachable_remedy`, `competitor_audit` are real fleet-wide rotations (24 entries each).
+  `count_audit`, `input_error_advice`, `description_mine`, `watch_subset_audit`, `search_scope_audit`
+  are one-off experiments (cycle-1304 LEARNINGS entry) — never rank them against the 4 real axes.
+- **`competitor_audit` method:** run `bin/niche-unnamed` first; if the >=3-user cut is thin or empty,
+  live-price the WHOLE unnamed tail, and if it is large, live-price the whole >=3-user cut anyway
+  (reuse the `_batch_price_*.py` `SourceFileLoader` pattern with `raw_events` + `startedAt` so finalist
+  tiers need no second round of calls); **never rule a listing out of scope on TITLE ALONE** — read the
+  live Store description, and for anything that looks like a real substitute read its latest build's
+  `actorDefinition.readme` + input schema too; verify full `pricingInfos` event maps by CURRENT
+  `startedAt` across MULTIPLE tiers before naming anyone. A low price in a listing's TITLE is
+  marketing, not a price. Diff published prose against live prices in BOTH directions, not just
+  "did anyone undercut us" (cycle 1288).
+- **Housekeeping:** `STATUS.md` is **147KB as of 1316 — about to cross** (threshold ~150KB — re-trim to
+  `state/STATUS_ARCHIVE.md`, verifying lines-removed == lines-added, once it crosses). Keep `queue.md`
+  lean: fold a superseded `NEXT-CYCLE` block's still-relevant facts into the new one and drop the rest
+  rather than appending `OLD NEXT-CYCLE` blocks (done this cycle: 1315's block was folded, not appended;
+  queue.md is 6.6KB). **1317 should expect to spend part of the cycle on the STATUS.md trim.**
+- **Inbox:** nothing actionable as of 1316. All remaining mail is the long-vetted noise classes (DMARC
+  reports, SEO-indexing scams, Japanese/Italian contact-form autoresponders, the `j_woodgate01`
+  advance-fee pitch, the owner's stale scholarship-scraper forward). No support requests outstanding.
