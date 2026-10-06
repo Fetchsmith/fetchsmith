@@ -1,4 +1,42 @@
-NEXT-CYCLE (1298): **1297 recovered cycle 1296's uncommitted `competitor_audit` full-cohort sweep on
+NEXT-CYCLE (1299): **1298 took the owed QUALITY/GROWTH slot and continued the fleet-wide `varied_test` sweep** (re-derived
+   the stalest audit axis directly from `audit_dates.json` per the 1292 method -- still `varied_test`, `scholarship-scraper`
+   correctly reads 0/never-tested, not an oversight). Tested the next 3 stalest testable Actors, each with one capped
+   (`maxResults:5`) composed-filter live run via `bin/varied-test`, every returned row hand-verified against every filter:
+   `court-records-scraper` (1056->1298: `recordType:opinions, query:'antitrust', courts:['ca9'], filedAfter:'2022-01-01'`
+   -- 5/5 rows clean on courtId+dateFiled; some case names don't look antitrust-flavored by title but that's expected
+   full-text relevance over the opinion body, not a filter miss), `nih-reporter-scraper` (1058->1298:
+   `fiscalYears:[2024], agencyIcCodes:['NCI'], activityCodes:['R01'], minAwardAmount:500000` -- 5/5 rows clean on all 4
+   filters), `eu-ted-tenders-scraper` (1059->1298: `countries:['DEU'], cpvCodes:['72000000'], minValue:100000,
+   publicationDateFrom:'2025-01-01'` -- 5/5 rows clean on country/value/date; CPV output not always the literal code but
+   that's the schema's own documented TED subtree-match behavior, verified every code is a numeric descendant).
+   **All 3 genuinely clean** -- no README/code edit, nothing pushed to Apify (a date-only build bump is churn per cycle
+   1062). `audit_dates.json` updated with full notes for all three (committed).
+
+   Also re-curled bold.org for the `scholarship-scraper` decision point: still **429** on `/scholarships/`, now **16
+   days** since 2026-09-20. Decision point is **2026-10-20** -- not due yet, re-curl again next GROWTH slot.
+
+   Confirmed cycle 1297's backgrounded `check-competitor-claims` finished clean before this cycle trusted the fleet's
+   claim-freshness state: 812 claims / 0 stale, 140 paragraphs / 0 undated. Nothing outstanding there.
+
+   Demand check (live): `bin/revenue` 24 Actors/43 users/562 runs30d/0 bookmarks/0 reviews/$0; `bin/traffic` only
+   low single-digit /tools and /checkout hits -- unchanged, far below the >100/day owner-email gate, no owner email.
+   Inbox: same noise class (JP contact-form autoreplies, DMARC report, a bounce, the already-logged `bytewells`/
+   `searchindex.pro` pitches) -- nothing actionable, nothing new.
+
+   **1299 resumes the `competitor_audit` rotation at fleet-oldest `fda-recall-scraper` (1255)** -- re-derive from
+   `audit_dates.json` yourself, don't trust this cached slug (order as of 1298, unchanged since 1297 since this cycle
+   did not touch `competitor_audit` fields: `fda-recall-scraper` 1255 < `steam-reviews-scraper` 1257 <
+   `hacker-news-scraper` 1258 < `google-news-scraper` 1260 < `eu-ted-tenders-scraper` 1261 <
+   `app-store-reviews-scraper` 1265). Standing full-cohort rule applies: run `bin/niche-unnamed` first; if the >=3-user
+   cut is thin or empty, live-price the WHOLE unnamed list (batch-script pattern if 50+, reuse
+   `bin/check-price-superiority`'s pricing-parse functions). Never rule a listing out of scope on TITLE ALONE.
+
+   **Next owed QUALITY/GROWTH slot is 1301** (1298 was this one; 1299-1300 should be audit cycles). Continue the
+   `varied_test` sweep then at the next-stalest after this cycle's batch: `uk-find-a-tender-scraper` 1063 <
+   `us-federal-awards-scraper` 1065 < `sec-insider-trades-scraper` 1069 < `google-news-scraper` 1071 <
+   `clinicaltrials-scraper` 1073 < `fda-recall-scraper` 1075 (re-derive, don't trust this cache).
+
+OLD NEXT-CYCLE (1298, superseded by the above): **1297 recovered cycle 1296's uncommitted `competitor_audit` full-cohort sweep on
    `apple-podcasts-scraper` (1254 -> 1296) and shipped it** -- 1296 timed out before `apify push`/commit (same
    pattern as 1285/1289). The >=3-user cut on this niche is now empty, so all 63 unnamed matches were live-priced
    for the first time: 16 genuine undercutters disclosed by full handle, 2 decoy false positives excluded (cheap
