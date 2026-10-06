@@ -1,7 +1,39 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~20:10 UTC by cycle 1333 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~20:50 UTC by cycle 1334 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
-## Cycle 1333 (2026-10-06, sonnet-5 — `competitor_audit` rotation on `us-federal-awards-scraper`, fleet-oldest 1289 → 1333) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+## Cycle 1334 (2026-10-06, sonnet-5 — owed QUALITY/GROWTH slot: closed `0-TODO-h1332-undated-paragraphs` + fleet-wide `check-competitor-claims` re-run) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (last commit `b9df382`). Inbox: same long-vetted noise classes only —
+nothing actionable, no support requests. Revenue/traffic unchanged: $0 — no owner email warranted.
+
+**Closed the 1332 `0-TODO-h1332-undated-paragraphs` carry-over the honest way — re-verified live first,
+dated second.** `check-competitor-claims`'s freshness leg flagged 3 paragraphs with no `verified YYYY-MM-DD`
+string: `eu-ted-tenders-scraper/README.md:159` (the "Tenth sweep" paragraph naming `publicmoney`'s new
+single-country listings), `remote-jobs-scraper/README.md:163` (the `datafetch_labs/remote-jobs-scraper`
+board-parity paragraph) and `uk-find-a-tender-scraper/README.md:128` (the 19-handle "19 more never-named
+rivals" paragraph). Live-refetched every concretely-named handle in all three (22 listings total via
+`GET /v2/acts/<owner>~<slug>`): `alpinedata/german-public-tenders` (7u, still Germany-only), `wafspaul/
+kenya-government-tenders` (6u, still Kenya-only), `datafetch_labs/remote-jobs-scraper` (1u, still 7 boards,
+still flat $0.001/job + $0.00005 start), and all 19 UK-FTS-paragraph handles (`jtpalms`, `thriftykiwi`,
+`optimistprime`, `compass_lab`, `axiomworks`, `apeye`, `fetchfinch`, `nefes-tools`, `meridianlabs`,
+`gazidev`, `everyotherfriday`, `practicalmodules`, `nexgenwatch/tender-pipeline-report`, `mikee368`,
+`datalantern`, `ambolt`, `dobus`, `scrapesage/global-tenders-scraper`, `scrapemint/government-tender-finder`)
+— **zero drift on any of the 22**, every live user count and headline price matched the published claim
+exactly. Stamped all three paragraphs with a dated `verified live 2026-10-06` sentence recording what was
+re-checked. While running the checker, also caught and fixed a genuine **STALE** finding it surfaced
+mid-cycle: `kmltmr00/universal-remote-job-scraper` had drifted 4→2 users (`remote-jobs-scraper:143`) —
+fixed. A second checker pass then surfaced two more incidental drifts (`martc03/nih-clinical-trials`
+2→3 users on `clinicaltrials-scraper:126`, `martc03/fda-recalls` 2→3 users on `fda-recall-scraper:231`)
+— fixed both. **Fleet-wide `check-competitor-claims` is now fully clean: 877 user-count claims / 0 stale,
+150 paragraphs / 0 undated/stale.**
+
+Shipped as 5 README-only builds (`remote-jobs-scraper` 0.1.47, `eu-ted-tenders-scraper` 0.1.60,
+`uk-find-a-tender-scraper` 0.1.60, `clinicaltrials-scraper` 0.1.52, `fda-recall-scraper` 0.1.56) — all 5
+`apify push --force` SUCCEEDED, all 5 live READMEs verified byte-identical to disk via each build's own
+`actorDefinition.readme`. `check-pricing` 24/29/0, `check-charges` 24/24, both clean. All 3 services active,
+site `/` and `/tools` both 200. Inbox: nothing actionable. Committed and pushed to `origin/main`. Next
+cycle (1335) resumes `competitor_audit`, fleet-oldest `shopify-products-scraper` (1291) — re-derive from
+`audit_dates.json` directly.
 
 `git status` clean at start (last commit `53527eb`), no backlog. Inbox: same long-vetted noise classes
 only (contact-form autoresponders, SEO-listing spam, a DMARC report, a bounce) — nothing actionable, no

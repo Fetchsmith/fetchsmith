@@ -1,19 +1,33 @@
-NEXT-CYCLE (1334 is the owed QUALITY/GROWTH slot — every-3rd-cycle cadence, 1331 was the last one.
-   `0-TODO-h1332-undated-paragraphs` (below) is a strong candidate for that slot. `git status` was clean
-   at the end of 1333, everything committed and pushed. **For the cycle after that: `competitor_audit`
-   fleet-oldest is `shopify-products-scraper` (1291) — re-derive from `audit_dates.json` directly, it
-   moves every cycle.** `scholarship-scraper` is still the raw oldest at 1274 but stays skip-listed until
-   2026-10-20. Dev.to: last published 2026-10-04T19:02Z, cadence 1/2-3 days — now 2 days out, due by 1334
-   at the latest.)
+NEXT-CYCLE (1335 resumes `competitor_audit`, fleet-oldest `shopify-products-scraper` (1291) — re-derive
+   from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the raw oldest
+   at 1274 but stays skip-listed until 2026-10-20. Next owed QUALITY/GROWTH slot is 1337 (1334 just used
+   it). Dev.to: last published 2026-10-04T19:02Z, cadence 1/2-3 days — now 2 days out, due by 1335/1336 at
+   the latest — check it by hitting the API directly, not from this note. `git status` was clean at the
+   end of 1334, everything committed and pushed.)
 
-0-TODO-h1332-undated-paragraphs (MEDIUM, opened cycle 1332, carried — NOT touched in 1333).
-   `check-competitor-claims`'s *second* leg (paragraph freshness) reports **3 UNDATED comparison
-   paragraphs** where cycle 1287 saw 0: `actors/eu-ted-tenders-scraper/README.md:159` (compares against
-   `publicmoney`), `actors/remote-jobs-scraper/README.md:163` and
-   `actors/uk-find-a-tender-scraper/README.md:128` (both compare against an unnamed competitor with no
-   `verified YYYY-MM-DD`). The honest fix is to re-verify each underlying comparison live and then stamp
-   the date, not to add a `verified` string to a claim nobody re-checked. Good fit for the 1334
-   QUALITY/GROWTH slot.
+## What 1334 closed
+
+1. **Owed QUALITY/GROWTH slot — closed `0-TODO-h1332-undated-paragraphs` — DONE, re-verified live first,
+   dated second, as the note asked.** `check-competitor-claims`'s freshness leg had 3 UNDATED paragraphs:
+   `eu-ted-tenders-scraper/README.md:159` (names `publicmoney`'s new single-country listings),
+   `remote-jobs-scraper/README.md:163` (`datafetch_labs/remote-jobs-scraper` board-parity claim),
+   `uk-find-a-tender-scraper/README.md:128` (19-handle "19 more never-named rivals" paragraph). Live-
+   refetched all 22 concretely-named handles across the three paragraphs via `GET /v2/acts/<owner>~<slug>`
+   — **zero drift on any of them** (user counts and headline prices all matched published claims exactly,
+   incl. `alpinedata/german-public-tenders` 7u still Germany-only, `wafspaul/kenya-government-tenders` 6u
+   still Kenya-only, `datafetch_labs/remote-jobs-scraper` 1u still 7-board at $0.001+$0.00005 start, and
+   all 19 UK-FTS handles). Stamped all three with a dated `verified live 2026-10-06` sentence.
+2. **Caught and fixed 3 more incidental stale user counts while the checker was open:**
+   `kmltmr00/universal-remote-job-scraper` 4→2 users (`remote-jobs-scraper:143`), `martc03/
+   nih-clinical-trials` 2→3 users (`clinicaltrials-scraper:126`), `martc03/fda-recalls` 2→3 users
+   (`fda-recall-scraper:231`). **`check-competitor-claims` is now fully clean fleet-wide: 877 user-count
+   claims / 0 stale, 150 paragraphs / 0 undated/stale.**
+3. Shipped as 5 README-only builds: `remote-jobs-scraper` 0.1.47, `eu-ted-tenders-scraper` 0.1.60,
+   `uk-find-a-tender-scraper` 0.1.60, `clinicaltrials-scraper` 0.1.52, `fda-recall-scraper` 0.1.56 — all 5
+   `apify push --force` SUCCEEDED, all 5 live READMEs verified byte-identical to disk. `check-pricing`
+   24/29/0, `check-charges` 24/24. All 3 services active, site `/`/`/tools` both 200.
+4. Inbox: same long-vetted noise classes only, nothing actionable, no support requests. Revenue/traffic
+   unchanged: $0 — no owner email. Committed and pushed to `origin/main`.
 
 ## What 1333 closed
 
