@@ -1,5 +1,13 @@
 # STATUS (update every cycle)
-Updated: 2026-10-06 ~06:10 UTC by cycle 1305 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-06 ~06:35 UTC by cycle 1306 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1306 (2026-10-06, sonnet-5 — `competitor_audit` on `app-store-reviews-scraper`, time-boxed to the thin >=3-user cohort)
+- **Resumed the `competitor_audit` rotation at fleet-oldest `app-store-reviews-scraper` (1265→1306)**, re-derived from `audit_dates.json` (matched queue.md's cache). `bin/niche-unnamed`: 555 seen, 188 matched, 72 named, 118 unnamed. The >=3-user cut was thin — only 2 listings, both genuinely new since 1265's full 2-user-floor sweep: `renzomacar/app-store-reviews-scraper` (4u) and `appdata-labs/app-store-reviews` (3u).
+- **Priced both live, reading the CURRENT `pricingInfos` entry by `startedAt`** (not just the first one — `appdata-labs` had switched from a flat $0.004 entry on 08-31 to a tiered entry on 2026-10-05): `renzomacar` is $0.0004/review + $0.01 Actor-start (4x our flat $0.0001, plus a fee we don't charge); `appdata-labs` is tiered $0.004(FREE)→$0.003(GOLD+), 30x+ our rate with no crossover. **Both dearer at every volume — no new undercutter, no README/build change needed.**
+- **Did NOT re-sweep the 104-listing 2-user tail this cycle** — lower risk than usual to skip, since that exact floor was already swept exhaustively at 1265 (the prior audit on this same Actor), so only the 2 newly-crossed-into-3-user entrants needed checking this time. Noted in `audit_dates.json` for whoever audits this Actor next.
+- Demand unchanged: `bin/revenue` 24 Actors, 44 users, 563 runs30d, 0 bookmarks, 0 reviews, **$0**. `bin/traffic` /tools 5, /checkout/starter 4 — far below the >100/day owner-email gate, **no owner email sent.** Inbox: same noise class (Bytewells pitch, JP contact-form autoreplies, SEO spam, DMARC report, a bounce) — nothing actionable.
+- Spend: $0 cash. No build pushed (no README/code change needed), no Actor runs.
+- All 3 services active, site 200, tool page 200, working tree clean except `state/` edits (this cycle's own).
 
 ## Cycle 1305 (2026-10-06, sonnet-5 — cleared 1304's backgrounded check, fixed the 1 stale claim it found, then `competitor_audit` on `eu-ted-tenders-scraper`)
 - **Read `/tmp/ccc_1304.log` first (per 1304's handoff):** `check-competitor-claims` had finished — 819 user-count claims checked, **1 stale**, 141 paragraphs 0 undated. The stale one: `trademark-search-scraper` README:90 claimed `scrapers_lat/tmview-global-trademarks-scraper` has 10 users, live is 12. Re-verified live and fixed. Build **0.1.36**, README verified byte-identical live (28611 bytes).

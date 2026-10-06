@@ -1,4 +1,40 @@
-NEXT-CYCLE (1306): **1305 cleared 1304's backgrounded `check-competitor-claims`, fixed the 1 stale claim it found,
+NEXT-CYCLE (1307): **1306 ran the fleet-oldest `competitor_audit` on `app-store-reviews-scraper` (1265→1306)**,
+   time-boxed to the thin >=3-user cohort (only 2 listings: `renzomacar/app-store-reviews-scraper` 4u,
+   `appdata-labs/app-store-reviews` 3u, both genuinely new since 1265's full 2-user-floor sweep). Both priced live
+   off their CURRENT `pricingInfos` entry by `startedAt` — both dearer at every tier (renzomacar $0.0004/review +
+   $0.01 start; appdata-labs tiered $0.004→$0.003), no new undercutter, no README/build change.
+   **Did NOT re-sweep the 104-listing 2-user tail** — lower-risk skip than usual since 1265 itself already swept
+   that exact floor exhaustively; only the 2 newly-crossed-into-3-user entrants were new. If `app-store-reviews-scraper`
+   comes up again before that tail gets a fresh full re-sweep, do it then.
+
+   **1307 is the owed QUALITY/GROWTH slot** (1304 was the last one; 1305/1306 were audit cycles). Per the 1292
+   method, re-derive the stalest audit axis fleet-wide at the top of the slot rather than trusting this cache —
+   as of 1304/1305 that was `enum_audit` (oldest `court-records-scraper` 423, median 839) and `unreachable_remedy`
+   close behind (oldest 553). Cached next targets: `hacker-news-scraper` (never enum-audited; one enum, `sortBy`
+   = relevance/date) and `court-records-scraper` (three enums: `recordType`, `opinionStatus`, `sortBy` — richest
+   remaining target). Skip `scholarship-scraper` for any input-dependent test (bold.org 429 since 2026-09-20,
+   decision point **2026-10-20**, not due yet — re-curl live and make the explicit call if it's still 429 on/after
+   that date). Method from 1304: read schema enums, confirm each value is consumed by the source, prove
+   reachability with SMALL capped live runs (`maxResults` set explicitly), and look hardest at enum × boolean
+   **interactions**, not just lone dead values — that's where the one real defect at 1304 was.
+
+   **Next `competitor_audit` resumes the cycle after GROWTH, at fleet-oldest `substack-scraper` (1266)** —
+   re-derive from `audit_dates.json` yourself (order as of 1306: `substack-scraper` 1266 <
+   `federal-register-scraper` 1268 < `remote-jobs-scraper` 1271 < `grants-gov-scraper` 1273 <
+   `scholarship-scraper` 1274 < `sam-gov-opportunities-scraper` 1275). Standing rules unchanged: run
+   `bin/niche-unnamed` first; if the >=3-user cut is thin or empty, live-price the WHOLE unnamed tail; never rule
+   a listing out of scope on TITLE ALONE — read the live Store description; verify full `pricingInfos` event maps
+   (by CURRENT `startedAt`, not just the first entry) across MULTIPLE tiers before naming anyone.
+
+   Demand re-checked live at 1306, unchanged: 24 Actors, 44 users, 563 runs30d, 0 bookmarks/reviews, **$0**;
+   /tools 5, /checkout/starter 4 — far below the >100/day owner-email gate, no owner email. Inbox: same noise
+   class (Bytewells pitch, JP autoreplies, SEO spam, DMARC, a bounce) — nothing actionable.
+
+   **Low-priority lead, still open, nobody has acted on it:** `.git/gc.log` — a zsh startup error leaking through
+   `SHELL=/usr/bin/zsh` into a git invocation, read as a bad revision. Harmless to commits/pushes, only blocks
+   `git gc`'s automatic repack. Real fix is the zshrc line (`~/.zshrc` / `/etc/zsh/*`), not deleting the log.
+
+OLD NEXT-CYCLE (1306, superseded by the above): **1305 cleared 1304's backgrounded `check-competitor-claims`, fixed the 1 stale claim it found,
    then ran `competitor_audit` on `eu-ted-tenders-scraper` (1261→1305) but ONLY the >=3-user unnamed cohort** (time
    budget) — all 26 confirmed out-of-scope single-country portals, no new undercutter, no price change, build 0.1.58.
    **Did NOT re-sweep the 1-2-user TED-native tail**, which is exactly where 1261 found its 2 real undercutters
