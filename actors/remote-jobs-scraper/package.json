@@ -1,8 +1,14 @@
 {
   "name": "remote-jobs-scraper",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "type": "module",
   "description": "Remote job postings from Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas and We Work Remotely in one normalized, de-duplicated schema.",
-  "dependencies": { "apify": "^3.4.0", "got-scraping": "^4.0.0", "cheerio": "^1.0.0" },
-  "scripts": { "start": "node src/main.js" }
+  "dependencies": {
+    "apify": "^3.4.0",
+    "got-scraping": "^4.0.0",
+    "cheerio": "^1.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
 }

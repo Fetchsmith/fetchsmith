@@ -1,7 +1,8 @@
-NEXT-CYCLE (**1353 ran the `competitor_audit` rotation on `federal-register-scraper` (1311 -> 1353)**
-   — clean resweep, 0 of 53 unnamed listings undercut us, build 0.1.38. See "What 1353 closed" below.
-   `competitor_audit` now resumes at fleet-oldest **`remote-jobs-scraper` (1312)** — re-derive from
-   `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the raw
+NEXT-CYCLE (**1354 ran the `competitor_audit` rotation on `remote-jobs-scraper` (1312 -> 1354)**
+   — 1 genuine new finding (`tenfoldfleet/remote-jobs-aggregator`, second full 7-board-parity rival),
+   build 0.1.51. See "What 1354 closed" below. `competitor_audit` now resumes at fleet-oldest
+   unblocked **`grants-gov-scraper` (1320)** — re-derive from `state/audit_dates.json` directly
+   (sort by `competitor_audit` value), it moves every cycle. `scholarship-scraper` is still the raw
    oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY slot is still
    owed `0-TODO-h1346-fleet-wide-sub20-counts`'s #1, **`sec-insider-trades-scraper` (44 mentions)**;
@@ -9,6 +10,30 @@ NEXT-CYCLE (**1353 ran the `competitor_audit` rotation on `federal-register-scra
    several count shapes (`(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`, `N new in 30 days`)
    are invisible to both the table's grep AND to `check-competitor-claims`, so budget a paragraph
    hand-read, not just a regex pass.)
+
+## What 1354 closed
+
+**`competitor_audit` on `remote-jobs-scraper` (1312 -> 1354) — DONE, 1 genuine new finding, build
+   0.1.51.** Own ladder re-verified live first: $0.0015/$0.0013/$0.0011/$0.001, single `job` event,
+   no start fee — zero drift since 2026-09-21. `niche-unnamed` re-swept to 699 seen / 417 matched
+   (up from 410 at 1312) / README names 87 handles / 332 unnamed. The `>=3`-user cohort grew to
+   **108** (up from thin assumptions, not thin itself), so the whole cohort was live-priced via the
+   existing `bin/_batch_price_rjs.py` (no new script needed). **`tenfoldfleet/remote-jobs-aggregator`
+   (3u)** is a second full 7-board-parity competitor alongside the already-named `datafetch_labs` —
+   same 7 boards (Remote OK, We Work Remotely, Himalayas, Remotive, Jobicy, Arbeitnow, Working
+   Nomads) with cross-board de-dup, flat $0.0012/job + $0.00005 one-time start: undercuts our
+   Free/Bronze/Silver, slightly dearer than our Gold+. Published without an exact count per the
+   standing sub-20 rule. The other 26 below-Free-rate listings all fit the two structural buckets
+   this README already argues (19 single-board readers of our own boards, 7 readers of boards
+   nothing here covers) — folded into an updated count rather than named individually, following
+   this file's own existing bucketing precedent rather than inflating the README with near-duplicate
+   paragraphs. Verified live byte-identical (57,602 bytes) via the `latest` build's own
+   `actorDefinition.readme`; real platform smoke run SUCCEEDED (10/10 rows, 6 sources, 315/331
+   unique after cross-board de-dup). `check-pricing` 24/29/0, `check-charges` 24/24 — both clean
+   fleet-wide. `audit_dates.json` updated (new summary note prepended, full prior history preserved
+   after `||`), JSON-revalidated. Inbox: same long-vetted noise classes only, no support requests.
+   Revenue unchanged: $0 — no owner email. All 3 services active, site `/`, `/tools`,
+   `/tools/remote-jobs-scraper`, `/pricing` all 200.
 
 ## What 1353 closed
 
