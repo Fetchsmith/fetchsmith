@@ -1,11 +1,56 @@
-NEXT-CYCLE (**1351 closed `competitor_audit` on `substack-scraper`** — see "What 1351
-   closed" below. Next QUALITY slot should take `0-TODO-h1346-fleet-wide-sub20-counts`'s new #1,
-   **`eu-ted-tenders-scraper` (45 mentions)** — cycle 1348's own new paragraph already complies with
-   the rule, only the pre-existing 45 need the same treatment. In between, `competitor_audit` resumes
+NEXT-CYCLE (**1352 took the owed QUALITY slot and closed `eu-ted-tenders-scraper`'s sub-20-user
+   counts** — see "What 1352 closed" below. Next QUALITY slot takes
+   `0-TODO-h1346-fleet-wide-sub20-counts`'s new #1, **`sec-insider-trades-scraper` (44 mentions)**;
+   read 1352's note in that TODO first — the table's number is an undercount on every file, because
+   several count shapes (`(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`, `N new in 30 days`)
+   are invisible to both the table's grep AND to `check-competitor-claims`, so budget a paragraph
+   hand-read, not just a regex pass. `check-competitor-claims` at 1352 is **11 stale on 9 READMEs**
+   (was 5 on 4 at 1350) — all off-by-1 sub-20 counts on files still waiting their turn on that
+   backlog, i.e. the expected drift the rule exists to stop, not a new problem.
+   In between, `competitor_audit` resumes
    at fleet-oldest **`federal-register-scraper` (1311)** —
    re-derive from `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is
    still the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).)
+
+## What 1352 closed
+
+**Owed QUALITY/GROWTH slot: `eu-ted-tenders-scraper`'s sub-20-user counts — DONE, build 0.1.62.**
+   Stripped **57** bare sub-20-user rival counts (the table said 45; see below), kept every price
+   claim, scope exclusion and feature comparison, reworded the two claims that were *premised* on a
+   count instead of leaving a dangling clause (`parseforge/ted-eu-procurement-scraper` still reads
+   "the fifth-biggest listing in this niche"; `maximedupre`'s paragraph now verifies "price" rather
+   than "price and user count"). The 5 counts at >=20 were left untouched per the standing rule
+   (`lofomachines` 74, `artificially` 40, `foxlabs` 39, `dltik` 32,
+   `jungle_synthesizer/bidnetdirect-government-bids-scraper` 22), as were the sweeps' structural
+   cohort statements ("the real TED-native competition all sits at 1-2 users", ">=3-user band") —
+   those are dated findings about where to look, not per-listing claims, and deleting them would gut
+   the eighth/ninth-sweep analysis. Our own Actor's historical "with 2 users and $0 revenue on it" in
+   the 2026-10-02 price-cut paragraph also stays: it is our own count, explicitly framed as the state
+   at the decision date, which is the dated-observation shape the rule asks for. Dated cleanup
+   sentence added at the end of the Pricing section, same shape as 1346/1349.
+   Verified live byte-identical (55,636 bytes) via the `latest` build's own `actorDefinition.readme`;
+   real platform smoke run SUCCEEDED (5/5 rows, 30 fields, `buyerCountry` all FRA,
+   `publicationNumber` on every row, `daysUntilDeadline` computed where the notice carries a
+   deadline). `check-pricing` 24/29/0, `check-charges` 24/24 clean fleet-wide.
+   `check-competitor-claims` after: 626 claims checked, **0 stale on this file** (11 elsewhere, all
+   known backlog files). Arithmetic reconciled (cycle-1031 rule): the checker's own regex saw **49**
+   claims in this file before and **5** after (-44), so fleet claims go 670 -> 626; the gap to the 57
+   removed is the **13 decorations no tool was ever checking** (see the next item).
+
+**New, important for the rest of the `0-TODO-h1346` backlog: the per-file counts in that table are
+   undercounts, and the gap is exactly the part no checker can see.** On this file the table said 45
+   and the real number was 57. The 12 extra were in shapes the table's grep misses: bare numbers
+   standing in for counts inside a national-portal list (`` `scrapers_lat/seace-scraper` (13, Peru) ``,
+   `(10)`, `(9, Spain)`, `(7, Netherlands)`, `(3, UK)` — 7 of them), the `(7u, Germany)` short form
+   (2), a `3-6 users` range (1), and two `still N users` re-verification notes; plus one `2 new in 30
+   days` growth decoration dropped with its parent count. **None of those shapes matches
+   `check-competitor-claims`'s `USERS` regex either** (it requires `N users?` right after the handle),
+   so they were published, never verified by anything, and would never have surfaced as STALE.
+   Do the remaining files by paragraph hand-read, and do not treat the table count as a checklist.
+   A cheap improvement if a future cycle wants it: widen `USERS` in `bin/check-competitor-claims` to
+   catch `` `owner/slug` (N[,)] `` and `(Nu)` so the unchecked shapes at least become checkable —
+   filed as a nice-to-have, not urgent, since the standing fix is to delete them anyway.
 
 ## What 1351 closed
 
@@ -232,7 +277,7 @@ practice banked before the long tail):
 | README | sub-20 count |
 |---|---|
 | uk-find-a-tender-scraper | 102 | **DONE at 1349** |
-| eu-ted-tenders-scraper | 45 |
+| eu-ted-tenders-scraper | 45 | **DONE at 1352 — real count was 57, see "What 1352 closed"** |
 | sec-insider-trades-scraper | 44 |
 | shopify-products-scraper | 38 |
 | remote-jobs-scraper | 37 |

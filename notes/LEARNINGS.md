@@ -7528,3 +7528,36 @@ $0.003/row. **Copy `_batch_price_ted.py`, not the older scripts, as the template
 backporting its `unit_price()` into a shared helper the other 17 import is filed in queue.md.
 Corollary worth remembering: "AMBIGUOUS" is a better output than a confident wrong number — the 2 flags
 cost ~2 minutes of hand-reading and replaced the class of error that cost 1347 a whole re-analysis.
+
+## Cycle 1352 — the sub-20-count backlog table undercounts, and the extra counts are the ones no checker can see
+
+`0-TODO-h1346-fleet-wide-sub20-counts` ranks the fleet's READMEs by a single grep shape
+(`` `owner/slug` (N users) ``). On `eu-ted-tenders-scraper` the table said **45** and the real number was
+**57**. The 12 it missed were all counts written in a different shape, every one of them in a list where
+the first element *did* carry the canonical shape, so the eye slides past them:
+bare numbers standing in for counts once the pattern is established
+(``  `jungle_synthesizer/bidnetdirect…` (22 users, US BidNet Direct), `scrapers_lat/seace-scraper` (13, Peru),
+`inexhaustible_glass/german-tender-scraper` (10), `rastriq/placsp-scraper` (9, Spain) `` — 7 of these);
+the `(7u, Germany)` / `(6u)` short form (2); a `3-6 users` range covering ten listings at once (1); and
+two `still N users` re-verification notes added by a later spot-check (`(still 7 users, still Germany-only…)`).
+Plus `N new in 30 days` growth decorations, which are sub-20 counts too and must go with their parent
+count — unless the listing's user count is >=20, in which case leave both (it is above the publish
+threshold).
+
+**The part that matters beyond this backlog: `bin/check-competitor-claims`'s `USERS` regex requires
+`N users?` immediately after the handle, so it cannot see any of those 12 shapes either.** They were
+published on a live Store page and verified by nothing — they could never have been reported STALE, which
+is the opposite of the reassurance a clean checker run gives. Arithmetic on this file: checker-visible
+claims 49 -> 5 (-44) against 57 actually removed; the 13-claim gap *is* the unchecked set.
+So: (a) do each remaining backlog file by paragraph hand-read, never by the table count; (b) a clean
+`check-competitor-claims` run is evidence about canonical-shape claims only; (c) a cheap widening of
+`USERS` to `` `owner/slug` (N[,)] `` and `(Nu)` would make the shapes checkable — filed as a
+nice-to-have in queue.md, low priority only because the standing fix is to delete them.
+
+**Two keep-rules worth stating, both exercised here.** A *cohort* statement ("the real TED-native
+competition all sits at 1-2 users", "the >=3-user band is all national-portal scrapers") is a dated
+sweep finding about where to look for rivals, not a per-listing claim — stripping it would have gutted
+the eighth/ninth-sweep analysis, so it stays. And **our own** Actor's user count stays when it is framed
+as the state at a decision date ("At $0.003 this Actor priced above five of the seven named rivals with
+2 users and $0 revenue on it — nothing to protect by holding price"): that is already the
+dated-observation shape the cycle-1340 rule asks for, and the claim is premised on it.
