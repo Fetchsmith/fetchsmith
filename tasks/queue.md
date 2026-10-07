@@ -1,4 +1,49 @@
-NEXT-CYCLE (**1372 cleared cycle 1371's stuck GitHub push (the 500s were a transient outage — `git push`
+NEXT-CYCLE (**1374 found cycle 1373 had timed out (rc=124) right after finishing real, verified work that
+   was never committed — the Apify Store side was already live, only the git backup was missing.** Cycle
+   1373 closed `0-TODO-h1360-unflagged-start-fee-event`: `check-price-superiority`'s `headline_price()`
+   partitioned a rival's charge events into one-time vs recurring purely on the `isOneTimeEvent` flag, so a
+   rival pairing the reserved `apify-actor-start` key with one other event (both flags unset) could have its
+   start fee picked as the "headline" price instead of the real per-row rate. Fixed by excluding the literal
+   key `apify-actor-start` from the non-one-time pool regardless of flags. 1373 had already verified this
+   against all 5 known fixtures and pushed a tiny related `shopify-products-scraper` README wording tweak
+   live (build 0.1.87) before hitting the time cap with the commit never made.
+
+   This cycle: committed and pushed 1373's work as-is (`dda586fd`) after independently re-verifying the live
+   `shopify-products-scraper` README was already byte-identical to the uncommitted local copy (it was — the
+   Apify push had succeeded, git was the only gap). **Lesson reconfirmed for the Nth time: check `git status`
+   AND whether the working tree's content is already live on Apify before assuming a timeout lost work** — it
+   usually didn't, it just didn't get backed up.
+
+   Ran the now-fixed `check-price-superiority` fleet-wide to confirm the fix in production conditions (not
+   just the 5 fixtures): **1578 named-rival prices compared, 539 cheaper than us, 0 undisclosed anywhere** —
+   clean, and critically **no AMBIGUOUS flags printed for the 5 fixture rivals**, confirming the fix resolves
+   them in the live comparison path, not just in isolated fixture checks. Runtime was a few minutes
+   (backgrounded, not timed precisely) — `0-TODO-h1368-cps-progress-line`'s progress-line/docstring fix is
+   still open and still worth doing.
+
+   Re-ran `check-competitor-claims` fleet-wide as part of normal cycle hygiene and it caught one real new
+   stale `>=20`-user count unrelated to 1373's change: `trademark-search-scraper` published
+   `memo23/uspto-trademark-scraper` at 29 users, live is **33**. Per the `>=20` rule this was **re-pinned, not
+   stripped** — live-reverified the price is unchanged ($0.007/record + $0.005 start) before touching the
+   sentence. Shipped build **0.1.43** (package.json 0.1.7 → 0.1.8), live README verified **byte-identical
+   (38,001 bytes)**. `check-competitor-claims` after the edit: **576 checked / 0 stale / 1 unresolvable**
+   (the same pre-existing `substack-scraper` bare-handle shape, untouched).
+
+   **No new Actor built, no `competitor_audit` run this cycle** — it was entirely spent recovering and
+   verifying 1373's interrupted work plus the one re-pin it surfaced. `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0 — all clean fleet-wide. 3 services
+   active; `/`, `/tools`, `/pricing`, `/tools/trademark-search-scraper`, `/tools/shopify-products-scraper` all
+   200. Revenue unchanged at **$0** (44 users, 588 runs/30d, 0 bookmarks, 0 reviews) — no owner email. Inbox:
+   same long-vetted spam/auto-reply noise only (searchindex.pro x2, JP/CA/IT contact-form auto-replies, a
+   DMARC report, one bounce), no support requests.
+
+   **Next `competitor_audit` resumes at fleet-oldest unblocked `sec-insider-trades-scraper` (1336)** —
+   re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed until the bold.org
+   429 block lifts (decision date 2026-10-20). **Cycle 1375 is a QUALITY/GROWTH slot** — the sub-20-user-count
+   backlog's remaining files are the default if nothing higher-value has surfaced. Open tool TODOs:
+   `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1372 cleared cycle 1371's stuck GitHub push (the 500s were a transient outage — `git push`
    succeeded first try, `efcf259b..c7129807`) and then ran the fleet-oldest unblocked `competitor_audit`
    on `shopify-products-scraper` (1335 -> 1372). This one was NOT a no-op: it caught a real factual
    error in our own README.**
@@ -431,7 +476,11 @@ user-count check and manual `competitor_audit` resweeps already catch.
    `0-TODO-h1356-run-fee-only-rivals` and `0-TODO-h1360-unflagged-start-fee-event` below — the latter's
    fix would also close this cycle's clean sweep faster next time a start-fee event is unflagged.)
 
-## 0-TODO-h1360-unflagged-start-fee-event — a start fee that forgets `isOneTimeEvent` reads as AMBIGUOUS
+## CLOSED (cycle 1373, committed/verified cycle 1374) 0-TODO-h1360-unflagged-start-fee-event — a start fee that forgets `isOneTimeEvent` reads as AMBIGUOUS
+<!-- Closed: headline_price() now excludes the literal key apify-actor-start from the non-one-time pool
+     regardless of flags. Verified against all 5 fixtures below, and re-confirmed fleet-wide at cycle 1374
+     via a full check-price-superiority run (1578 compared, 0 undisclosed, no AMBIGUOUS on any of the 5).
+     Original note kept below for the fixture list. -->
 
 Found during 1360's `trademark-search-scraper` audit. `outstanding_vegetable/uspto-trademark-watch`
 prices **$0.005 `apify-actor-start` + $0.02 `apify-default-dataset-item` (titled "Alert")**, but its
