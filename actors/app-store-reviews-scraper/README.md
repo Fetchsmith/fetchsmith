@@ -172,8 +172,8 @@ which is the niche's 8th-biggest listing and had never been named in this README
 alongside `thewolves`/`theagents`/`scriptbase` rather than a price threat (its app-details and
 keyword-search events are separately tiered, $0.002→$0.0008 and $0.001→$0.0004 by account plan;
 a reviews-only run pays neither, and neither do our runs). The remaining six were read and ruled
-out as non-substitutes, not competitors: `maximedupre/app-store-ratings-scraper` (1 user,
-$0.00015/row plus a $0.001 start fee) returns an app's aggregate star rating and metadata with no
+out as non-substitutes, not competitors: `maximedupre/app-store-ratings-scraper`
+($0.00015/row plus a $0.001 start fee) returns an app's aggregate star rating and metadata with no
 review text at all, and `zinin/tinder-app-intel`, `zinin/bumble-app-intel`, `zinin/hinge-app-intel`
 and `zinin/badoo-app-intel` (2 users each, $0.005/storefront snapshot plus a $0.005 start fee) sell
 per-country subscription prices and store ratings for one named dating app apiece. **The cycle-1178
@@ -194,7 +194,7 @@ review price by the buyer's own Apify plan, $0.0001 (Free) down to $0.00007 (Gol
 below roughly 50-100 reviews/run on Bronze/Silver and below roughly 34 reviews/run on Gold+, but
 cheaper above those volumes since its per-review rate undercuts ours from Bronze up. One more
 listing ties our exact rate rather than beating it: `scrapersdelight/appstore-reviews-scraper`
-(10 users) charges flat $0.0001/review with no start fee, a fourth parity listing alongside
+charges flat $0.0001/review with no start fee, a fourth parity listing alongside
 `thewolves`/`theagents`/`scriptbase`/`freshactors`. `bikram07/app-store-reviews` (5 users) is
 listed `FREE` (Apify's free-pricing-model flag, not a $0/review PPE rate) but has had zero runs in
 the last 30 days, so it is read as dormant rather than an active price threat. Six more unnamed

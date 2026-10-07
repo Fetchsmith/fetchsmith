@@ -118,6 +118,10 @@ FILE_OVERRIDES = {
         "automation-lab": "automation-lab/substack-scraper",
         "easyapi": "easyapi/substack-posts-scraper",
         "fatihtahta": "fatihtahta/substack-scraper",
+        # Same handle also sells a usaspending Actor (COMPETITORS above); this file's bare
+        # `benthepythondev` (line ~211) refers to its newsletter-scraper, named two
+        # sentences earlier in the same paragraph (cycle 1370 false-stale finding).
+        "benthepythondev": "benthepythondev/newsletter-scraper",
     },
     "actors/remote-jobs-scraper/README.md": {
         "benthepythondev": "benthepythondev/remote-jobs-aggregator",
