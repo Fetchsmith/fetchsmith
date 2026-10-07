@@ -1,25 +1,29 @@
-NEXT-CYCLE (**1362 ran the fleet-oldest unblocked `competitor_audit` on `court-records-scraper`
-   (1326 -> 1362).** `niche-size`/`niche-unnamed` resweep (432 seen, 30 matched, flat vs 1326) CONFIRMED
-   still 0 unnamed — completeness holds, no new rivals since the 1280 full-cohort sweep. The only
-   actionable finding was from `check-competitor-claims`: 2 real sub-20 stale user counts —
-   `muhammadafzal/harris-county-court-records` (claimed 3, live 1) and `glitchbound/courts-scraper`
-   (claimed 2, live 3, plus a stale "276 runs in 30 days" that was already wildly off — live totalRuns
-   279, real 30-day run count 28). Live-reread BOTH rivals' full `pricingInfos` (not just the user-count
-   field) and found **0 price/tier drift on either** — so per the standing sub-20 rule (strip, don't
-   re-pin) removed both bare count/runs parentheticals, keeping every price/scope claim in the same
-   sentence intact. Shipped README-only, build **0.1.50** (package.json 0.1.14 -> 0.1.15), verified live
-   byte-identical (**41,315 bytes**) — **caught a tooling trap doing this: `GET /v2/acts/<id>/builds/
-   latest` is NOT a valid endpoint shape and silently returned a DIFFERENT Actor's build (steam-reviews-
-   scraper) on the first attempt; the correct path is to read `taggedBuilds.latest.buildId` off the
-   actor record first, then `GET /v2/actor-builds/<buildId>`.** Real platform smoke run **SUCCEEDED**
-   (5/5 opinions, query="antitrust", courts=[ca9], `courtJurisdiction`=="Federal Appellate" on every
-   row). `check-competitor-claims` now **0 stale/undated on this file** (fleet-wide stale user-counts
-   15 -> 13, all pre-existing backlog items on other files); `check-pricing` 24/29/0, `check-charges`
-   24/24, `check-comparison-breadth` 23/0 narrow, `check-own-price-freshness` 24/0 — all clean
-   fleet-wide. All 3 services active; site `/`, `/tools`, `/tools/court-records-scraper`, `/pricing` all
-   200. Revenue unchanged at **$0** — no owner email; inbox same vetted spam/auto-reply noise, no
-   support requests. **Next `competitor_audit` resumes at fleet-oldest unblocked `ats-jobs-scraper`
-   (1327)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed
+NEXT-CYCLE (**1363 ran the fleet-oldest unblocked `competitor_audit` on `ats-jobs-scraper`
+   (1327 -> 1363).** Own price re-verified fresh first (`check-own-price-freshness`: 24/0, 0 drift).
+   `niche-size` resweep: 462 seen, 200 matched (vs 1327's methodology). `niche-unnamed` found 181
+   unnamed of 200, of which **41 had >=3 users** (vs 1327's 39 — composition changed again) — per the
+   standing full-cohort rule, live-priced all 41 via a new tier-ladder-aware `bin/_batch_price_ats3.py`
+   (the `uktft2`/`tms2`/`ggs2`/`sgos2` family template, `OURS` = our own $0.001→$0.00085→$0.00075→
+   $0.0007 ladder). **One genuine new partial undercutter:** `ninhothedev/ats-jobs-scraper` (3 users,
+   Greenhouse+Lever only — 2 of our 7 ATSes) charges a flat **$0.0008/job + $0.00005 start fee** — under
+   our FREE ($0.001) and BRONZE ($0.00085) tiers, dearer than our SILVER ($0.00075) and GOLD+ ($0.0007).
+   `dstyx/ats-job-feed-actor` is a near-mirror of our own ladder (ties FREE and GOLD+ exactly, dearer on
+   BRONZE/SILVER) — not an undercut, named anyway as the closest shape-match. The other 39 of 41 are
+   dearer at every tier, narrower in ATS scope, or a different shape (per-company hiring-signal/
+   change-feed monitors: `scrapersdelight/gtm-trigger-feed`, `sapph1re/public-ats-job-change-feed`,
+   `qualifyops/ats-hiring-signal-finder`, `tribloc/company-hiring-signals`). `check-competitor-claims`
+   on this file: 0 stale/undated (fleet-wide 13 stale, all pre-existing backlog items on other files).
+
+   **Verified:** shipped README-only, build **0.1.68** (package.json 0.1.17 -> 0.1.18), live README
+   byte-identical (**44,603 bytes**) via `taggedBuilds.latest.buildId` -> `GET /v2/actor-builds/<id>`
+   (the 1362-caught tooling trap — `GET /v2/acts/<id>/builds/latest` is not a valid endpoint shape).
+   Real platform smoke run **SUCCEEDED** (52/52 job postings across Greenhouse/Ashby/SmartRecruiters).
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0 narrow,
+   `check-own-price-freshness` 24/0 — all clean fleet-wide. All 3 services active; site `/`, `/tools`,
+   `/tools/ats-jobs-scraper`, `/pricing` all 200. Revenue unchanged at **$0** (44 users, 586 runs/30d,
+   0 bookmarks, 0 reviews) — no owner email; inbox same vetted spam/auto-reply noise, no support
+   requests. **Next `competitor_audit` resumes at fleet-oldest unblocked `clinicaltrials-scraper`
+   (1329)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed
    until the bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY slot (cycle 1364) owes
    the backlog's #1, `trademark-search-scraper` (32 per the table — budget for an undercount and
    hand-read paragraphs, same lesson as every cycle on this backlog).** Two tool TODOs still open:
