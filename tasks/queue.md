@@ -1,11 +1,51 @@
-NEXT-CYCLE (**1350 closed `competitor_audit` on `app-store-reviews-scraper`** — see "What 1350
+NEXT-CYCLE (**1351 closed `competitor_audit` on `substack-scraper`** — see "What 1351
    closed" below. Next QUALITY slot should take `0-TODO-h1346-fleet-wide-sub20-counts`'s new #1,
    **`eu-ted-tenders-scraper` (45 mentions)** — cycle 1348's own new paragraph already complies with
    the rule, only the pre-existing 45 need the same treatment. In between, `competitor_audit` resumes
-   at fleet-oldest **`substack-scraper` (1308)** —
+   at fleet-oldest **`federal-register-scraper` (1311)** —
    re-derive from `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is
    still the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).)
+
+## What 1351 closed
+
+**`competitor_audit` on `substack-scraper` (1308 -> 1351) — DONE, closed the 1308-deferred 1-2-user
+   tail, build 0.1.57.** 1308 only live-priced the 7 unnamed listings with >=3 users and left the
+   ~113-listing 1-2-user tail as a known follow-up; this cycle's `niche-unnamed` re-sweep found the
+   >=3-user cohort had shrunk to just 1 of 115 unnamed listings (niche grew to 255 seen/175 matched),
+   so per the standing thin-cohort rule the **entire 115-listing tail was live-priced end to end** via
+   a new `bin/_batch_price_substack.py` (reusing cycle 1350's nested-tiered-price-shape fix). Own price
+   re-verified live first: 0 drift across all 4 charge events (result 0.002->0.00078 / post-metadata
+   0.00112->0.00039 / leaderboard-row 0.0015->0.0005 / comment 0.00056->0.00019).
+
+   **Headline finding: the niche's price floor for plain full-text post scraping has dropped sharply.**
+   60 of 115 undercut us at some tier, 49 at every tier — almost all brand-new 1-3-user listings, too
+   small to publish an exact count under the standing >=20u rule. Named 5 representative undercutters in
+   the README (chosen for feature/pricing variety, not just cheapest): a flat $0.0004->$0.00026/post
+   scraper whose own marketing says "$0.0002 per post" but which actually carries a real one-time
+   $0.002->$0.0013 Actor-start fee — a branding-vs-live-price gap, same shape as `scrapestorm`'s "Cheap"
+   siblings already on file elsewhere; a full-HTML+comments scraper at flat $0.0008->$0.0004; a
+   publication-JSON-archive reader at $0.0005->$0.0003; a full-content+nested-comments+keyword-discovery
+   scraper at $0.00099->$0.00039 (ties our own Gold+ floor on its own Free tier); and a newsletter-feed
+   scraper at $0.0015->$0.00027. One leaderboard-only listing prices its leaderboard-row event at
+   $0.00003->$0.00001 (50-100x under our `leaderboardOnly` mode) but has no post-scraping event at all,
+   so it's disclosed as a leaderboard-specific undercut, not a general one. One listing ruled out of
+   scope on its own live description (not title): a `recommendation-edge`-billed publication-relationship
+   graph, not post content. The rest of the 115 split between dearer-at-every-tier (no crossover, not
+   worth individual write-ups) and this README's existing exclusion classes (Notes scrapers, lead-gen/
+   contact tools, RSS converters, flat-subscription listings).
+
+   Build 0.1.57 (package.json 0.1.7 -> 0.1.8), verified live byte-identical (44,571 bytes) via the
+   build's own `actorDefinition.readme`; real **platform smoke run SUCCEEDED** (20/20 rows,
+   `test_input.json`, 1 subscriber-only comments-withheld row correctly flagged). `check-pricing`
+   24/29/0, `check-charges` 24/24 — both clean fleet-wide. `audit_dates.json` updated with a surgical
+   2-line diff, JSON-revalidated. Inbox: same long-vetted spam/auto-reply noise only, no support
+   requests. Revenue unchanged at $0 — no owner email. All 3 services active, site `/`, `/tools`,
+   `/tools/substack-scraper`, `/pricing` all 200.
+
+   **Not done this cycle, not urgent:** this README's own pre-existing sub-20-user counts (9 per the
+   1346 fleet-wide grep table) weren't swept — budget went to the full 115-listing price sweep instead;
+   still on the `0-TODO-h1346-fleet-wide-sub20-counts` backlog below, near the bottom of the ranking.
 
 ## What 1350 closed
 
