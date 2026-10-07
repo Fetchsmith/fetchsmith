@@ -38,6 +38,18 @@ Scope, deliberately narrow:
     could in principle miss a rival disclosed in one README but silently re-named undisclosed
     in another, but no such case exists in the fleet today.
 
+Runtime, measured (cycle 1384, closes 0-TODO-h1368-cps-progress-line): **~75s** for 23 live
+Actors / 1595 unique live Actor records / 1603 price comparisons, with the GETs in an 8-thread
+prefetch pool. The figure this docstring and PLAYBOOK.md carried until now -- "~70s for 24
+Actors / ~180 calls" -- was measured at cycle 1115, when the niches really were that small;
+the call count has since grown ~9x, so the same ~70s wall clock is now a coincidence of the
+parallelism added here, not continuity. Sequential, those 1595 calls took long enough that
+cycle 1366 read a 280s timeout as a hang and filed a bug against the Apify API. Progress now
+goes to STDERR with flush=True (prefetch counter every 100 records, then one line per Actor),
+so a long run is visibly alive even under `timeout ... > file`, where Python fully buffers
+stdout; STDOUT still carries only the UNDISCLOSED/SKIP findings and the summary line, so
+nothing that parses this script's stdout needs to change.
+
 Read-only: GETs only, no Actor runs, no file writes.
 """
 import datetime
@@ -46,6 +58,8 @@ import json
 import os
 import re
 import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
@@ -116,12 +130,34 @@ def headline_price(act_data, now):
     return (p, name) if p is not None else (None, f"{name} has no resolvable price")
 
 
-def live_actor(ident, headers, cache={}):
+CACHE = {}
+
+
+def live_actor(ident, headers, cache=CACHE):
     if ident not in cache:
         u, n = ident.split("/")
         r = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
         cache[ident] = r.json().get("data") if r.status_code == 200 else None
     return cache[ident]
+
+
+def prefetch(idents, headers, workers=8):
+    """Warm CACHE for every handle concurrently; the scoring pass below then reads it.
+
+    Cycle 1384 (closes 0-TODO-h1368-cps-progress-line (c)): the scoring loop is unchanged
+    and still sequential -- this only moves the ~1600 blocking GETs it used to make one at a
+    time into a small thread pool, so the verdicts are byte-identical but the wall clock is
+    not. `idents` is deduped by the caller, so no handle is fetched twice and each CACHE key
+    is written by exactly one worker.
+    """
+    todo = [i for i in idents if i not in CACHE]
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for _ in pool.map(lambda i: live_actor(i, headers), todo):
+            done += 1
+            if done % 100 == 0 or done == len(todo):
+                print(f"  ...prefetched {done}/{len(todo)} live Actor records",
+                      file=sys.stderr, flush=True)
 
 
 def main():
@@ -130,11 +166,28 @@ def main():
     registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
     live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
 
-    compared = cheaper_found = flagged = 0
+    # Pass 0: collect every handle this run will need, then fetch them all concurrently.
+    # Re-parsing the READMEs below is free compared to one HTTP call, so the scoring loop is
+    # left exactly as it was rather than restructured around a prefetched index.
+    wanted = set()
     for slug in live:
         path = os.path.join(ROOT, "actors", slug, "README.md")
         if not os.path.exists(path):
             continue
+        wanted.add(f"fetchsmith/{slug}")
+        wanted.update(FULL_HANDLE.findall(open(path).read()))
+    started = time.time()
+    print(f"check-price-superiority: {len(live)} live Actor(s), "
+          f"{len(wanted)} unique live Actor record(s) to fetch", file=sys.stderr, flush=True)
+    prefetch(sorted(wanted), headers)
+
+    compared = cheaper_found = flagged = 0
+    for n, slug in enumerate(live, 1):
+        path = os.path.join(ROOT, "actors", slug, "README.md")
+        if not os.path.exists(path):
+            continue
+        print(f"  [{n}/{len(live)}] {slug} ({time.time() - started:.0f}s elapsed)",
+              file=sys.stderr, flush=True)
         our = live_actor(f"fetchsmith/{slug}", headers)
         if our is None:
             print(f"SKIP {slug}: our own Actor not readable live")
@@ -175,7 +228,8 @@ def main():
                           f"-- cheaper and named, but no paragraph in this file discloses it")
 
     print(f"check-price-superiority: {compared} named-rival price(s) compared, "
-          f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README")
+          f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README "
+          f"({time.time() - started:.0f}s)")
     return 1 if flagged else 0
 
 

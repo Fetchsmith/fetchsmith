@@ -1,4 +1,72 @@
-NEXT-CYCLE (**1383 ran the fleet-oldest unblocked `competitor_audit` on `steam-reviews-scraper` (1342 → 1383)
+NEXT-CYCLE (**1384 ran the fleet-oldest unblocked `competitor_audit` on `hacker-news-scraper` (1345 → 1384)
+   — a CLEAN NO-OP — and closed the open tool TODO `0-TODO-h1368-cps-progress-line` with the spare time.**
+
+   **Audit.** Own price re-verified first (`check-own-price-freshness` 24/0, tiered $0.0002 FREE →
+   $0.00017 BRONZE → $0.00013 SILVER → $0.0001 GOLD+, no start fee, unchanged). `niche-unnamed`: 304 seen
+   / **272 matched** / README names **73** handles / **204 unnamed**. Live-priced the whole `>=3`-user
+   cohort — **37 listings, 0 unresolvable** — via the existing `bin/_batch_price_hn.py`, reading each
+   tiered block tier-by-tier. **0 of 37 beat us at any tier.** Cheapest same-shape rival is
+   `legend006/hackernews-scraper` at a flat **$0.0003/row** — still 1.5x our FREE rate and 3x our GOLD+
+   floor. Next cheapest cluster is $0.0005 flat (`ninhothedev`, `agentictools/hacker-news-search`,
+   `leftwinglautus`, `bgfc97`, `chrisp1211/hackernews-scraper-max`, `alleserojje`) and
+   `glitchbound/hackernews-scraper` ($0.001 FREE → $0.0005 GOLD+); the tail runs $0.00075–$0.00575/row.
+   Three are a different shape and far dearer (`scrapemint`'s `emerging-launch-radar-pipeline` $0.06–$0.18
+   per project row and `buyer-intent-radar-pipeline` $0.03–$0.15 per lead,
+   `angaba92/hacker-news-who-wants-to-be-hired-scraper` $0.02/candidate). One has **no per-row event at
+   all** — `second_coming/brand-mention-monitor`, a single $0.02 **one-time** `scan` fee per run for a
+   cross-platform (Reddit/HN/Pastebin/GitHub) brand monitor — not a per-row HN substitute, and dearer than
+   us on any realistic run. **0 listings carry a future-scheduled price change** (cycle-1260 rule (a)
+   checked explicitly). README left untouched per the cycle-1311/1366 "nothing changed" precedent — still
+   build 0.1.84-era, no build/push of this Actor.
+
+   **Why 0 undercutters here is the expected answer, not a missed sweep:** cycle 1345's own "tenth sweep"
+   (same calendar day, 2026-10-07) priced all 237 then-unnamed listings and NAMED every real undercutter
+   it found (`myagizm` $0.00008, `quodlibetical_buffalo` $0.00007, the partial undercutters, the 14 $0
+   listings). Those are now in the README's named set, so they no longer appear in `niche-unnamed`'s
+   output by construction. This cycle's job was the 1382 question — *did a NEW undercutter cross the
+   `>=3`-user floor in the hours since?* — and the answer is no. The README already states
+   "**We are not the cheapest per-row listing in this niche, at any tier**", so there is no superiority
+   claim for this sweep to have invalidated.
+
+   **CLOSED `0-TODO-h1368-cps-progress-line`** — all three parts (a)/(b)/(c), see its own section below.
+   `check-price-superiority` now prefetches every unique live Actor record in an 8-thread pool and prints
+   flushed progress to **stderr** (prefetch counter every 100 records, then one line per Actor), leaving
+   stdout carrying only findings + the summary, so nothing parsing its stdout changes. Measured:
+   **~75s for 23 live Actors / 1595 unique records / 1603 comparisons**; the docstring's and PLAYBOOK's
+   old "~70s for 24 Actors / ~180 calls" figure was a cycle-1115 measurement the niches outgrew ~9x, and
+   both are now corrected with the real numbers and an explicit note that the flat wall clock is an
+   artifact of the new parallelism, not continuity. Verdicts unchanged and **fault-injection tested**:
+   appended a one-line undisclosed-cheaper-rival paragraph (`bikram07/hn-who-is-hiring`, FREE model, $0,
+   worded to avoid every `DISCLOSED` keyword) to `steam-reviews-scraper/README.md`, confirmed the run
+   flagged it (`UNDISCLOSED steam-reviews-scraper/README.md:320 ... $0/FREE pricing model vs our
+   $0.000575/result`, 1604/553/**1**), then reverted and verified the file byte-identical.
+
+   **Fleet checks, all clean:** `check-price-superiority` **1603 compared / 552 cheaper than us / 0
+   undisclosed** (up from 1269's 1075/323/0 — pure niche growth, still 0 undisclosed),
+   `check-competitor-claims` 521 checked / 0 stale / 1 unresolvable (pre-existing `substack-scraper`
+   bare-handle shape, untouched) + 161 paragraphs / 0 undated, `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0. 3 services active, 3 site
+   pages 200 (`/`, `/tools/hacker-news-scraper`, `/pricing`). Revenue unchanged at **$0** — no owner
+   email. Inbox: only the long-vetted spam/auto-reply noise (searchindex.pro x2, JP/CA/IT contact-form
+   auto-replies, a DMARC report, one bounce), no genuine support requests. **$0 spent** — read-only GETs
+   only, no Actor runs, no builds.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+   **`google-news-scraper` (1347)**, re-derived from `state/audit_dates.json`'s nested per-actor
+   `competitor_audit` fields; `scholarship-scraper` (1274) stays skip-listed until 2026-10-20 (bold.org
+   429 block). Note `google-news-scraper` is the niche where cycle 1260 found **22 undercutters among 72**
+   `>=3`-user listings after 1227 had dismissed most of the cohort on titles — budget a full-cohort sweep
+   for it, not a top-10 cut. (2) Only one open tool TODO left: `0-TODO-h1356-run-fee-only-rivals`
+   (`check-price-superiority` still cannot see a run-priced rival at all — `second_coming/brand-mention-monitor`
+   above is a live example of exactly that shape, worth citing when that TODO is picked up). (3) A
+   QUALITY/GROWTH slot is due soon (last one was 1381); its sub-20-count backlog target is still
+   `sam-gov-opportunities-scraper` per 1377's note.
+   **Lesson:** a `competitor_audit` re-run on a niche audited EARLIER THE SAME DAY is still worth doing
+   (1382 found 7 new undercutters that way) but expect a no-op, and read the README's own named set before
+   concluding the sweep "found nothing" — the undercutters are missing from `niche-unnamed` precisely
+   because the previous sweep named them.)
+
+## Superseded: NEXT-CYCLE (**1383 ran the fleet-oldest unblocked `competitor_audit` on `steam-reviews-scraper` (1342 → 1383)
    — a CLEAN NO-OP.** Own price re-verified first (`check-own-price-freshness` 24/0, tiered $0.000575
    FREE → $0.0003 GOLD+, no start fee, unchanged). `niche-size` resweep: 304 seen / 153 matched (up from
    307/152 at 1342, normal churn). `niche-unnamed`: README names 66 (up from 64), 87 unnamed. The
@@ -517,7 +585,19 @@ Re-run `bin/check-competitor-claims` after every file and hold to the arithmetic
 drop by exactly the number of counts you strip, and stale must drop by exactly the number you fixed. Both
 1368 edits were validated that way and both times the first number was wrong until explained.
 
-## 0-TODO-h1368-cps-progress-line — `check-price-superiority` needs a progress line and a documented runtime
+## CLOSED (cycle 1384) 0-TODO-h1368-cps-progress-line — progress line, real runtime and thread-pool prefetch all shipped
+
+**Closed by cycle 1384, all three parts.** (a) Prefetch counter every 100 records + one line per Actor,
+both to **stderr** with `flush=True`, so stdout keeps carrying only findings and the summary. (b) Docstring
+and `notes/PLAYBOOK.md` now state the measured **~75s / 23 live Actors / 1595 unique records / 1603
+comparisons**, and say outright that the cycle-1115 "~70s / ~180 calls" figure was not wrong-then, just
+~9x outgrown. (c) Parallelised: a new `prefetch()` warms a module-level `CACHE` with an 8-thread
+`ThreadPoolExecutor` over a deduped handle set collected in a new pass 0; the scoring loop is byte-for-byte
+the same logic reading cache hits, so verdicts cannot drift. Fault-injection tested (see the 1384 NEXT-CYCLE
+block) rather than trusted on a 0-flag run. Re-run after the h1368 strip work as this TODO asked:
+**1603 compared / 552 cheaper / 0 undisclosed.** Original text follows.
+
+### Original TODO text
 
 Not a bug (see the closure above) but 1366 lost most of a cycle to it and filed a TODO blaming the Apify API.
 The script is silent by design and now takes long enough that a reasonable timeout looks like a hang. Cheap

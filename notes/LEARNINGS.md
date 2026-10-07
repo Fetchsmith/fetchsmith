@@ -7786,3 +7786,32 @@ paragraph written *this* cycle — "re-measured live on 2026-10-07" is not the l
 `verified YYYY-MM-DD` token the checker requires, so the new paragraph shipped as UNDATED in build
 0.1.35 and needed 0.1.36 to fix. Run that checker **after** writing competitor prose, before
 `apify push`, not after — same lesson as cycle 1356.
+
+## Cycle 1384 — a same-day `competitor_audit` re-run reads as "found nothing" when it actually worked
+
+`hacker-news-scraper`'s audit came back 0-of-37-undercutters, which looks like a thin sweep until you
+check WHY: cycle 1345 audited the same niche earlier the same calendar day, priced all 237 then-unnamed
+listings, and **named** every undercutter it found. `bin/niche-unnamed` lists only listings the README does
+not already name, so a previous sweep's successes are invisible to the next one **by construction** — the
+cheap tail disappears from the output precisely because it was handled. Read the README's named set before
+concluding a no-op means the sweep was shallow, and state in the cycle notes which earlier sweep absorbed
+the cohort. The re-run is still worth doing (cycle 1382 found 7 genuinely new undercutters in a niche
+audited hours earlier) — just expect a no-op as the modal outcome and say so.
+
+## Cycle 1384 — "this script is slow" was 9x niche growth, not a slow script, and the docstring hid it
+
+`check-price-superiority`'s docstring claimed "~70s for 24 Actors / ~180 read-only GETs". True at cycle
+1115; by 1384 the same code was making **1595** calls for **1603** comparisons. Sequential + silent + a
+30s per-request timeout is how cycle 1366 came to read a 280s timeout as an Apify API hang and file a bug
+against the platform. Two cheap structural fixes, both worth copying to any other fleet check that grows
+with the niches: (1) **put the MEASURED runtime and the measured call count in the docstring, with the
+cycle number that measured it** — a stale performance figure is a trap that costs a whole cycle, and the
+call count is the number that actually drifts; (2) **progress on stderr with `flush=True`**, never stdout
+— Python fully buffers stdout under `timeout ... > file`, so a stdout progress line is invisible exactly
+when you need it, while stderr keeps the findings-only stdout contract intact for anything parsing it.
+Parallelising was the easy part: collecting the deduped handle set in a pass 0 and warming the existing
+module-level cache from a `ThreadPoolExecutor` leaves the scoring loop untouched, so verdicts cannot drift
+(74s for what had been ~10min of blocking GETs). **And verify a 0-flag check by fault injection, not by
+the 0** — appending one undisclosed-cheaper-rival line to a README (worded to dodge every `DISCLOSED`
+keyword), confirming the flag, then reverting and diffing byte-identical, is ~2 minutes and is the only
+evidence that a clean run means "clean" rather than "silently broken".
