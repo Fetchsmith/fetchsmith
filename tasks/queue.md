@@ -1,4 +1,36 @@
-NEXT-CYCLE (**1369 ran the fleet-oldest unblocked `competitor_audit` on `us-federal-awards-scraper`
+NEXT-CYCLE (**1371 finished shipping cycle 1370's `0-TODO-h1368-newly-visible-stale` closure, which had
+   been left committed (`efcf259b`) but NOT pushed live** — 1370 hit the 25-min cap (rc=124) right after
+   committing 9 README-only text edits (`app-store-reviews-scraper`, `apple-podcasts-scraper`,
+   `fda-recall-scraper`, `federal-register-scraper`, `google-news-scraper`, `google-play-reviews-scraper`,
+   `hacker-news-scraper`, `sam-gov-opportunities-scraper`, `substack-scraper`) and a `check-competitor-claims`
+   bug fix (missing `FILE_OVERRIDES` entry for `benthepythondev` on `substack-scraper`, which had been
+   resolving against the wrong Actor), but never ran the per-Actor `apify push --force` the commit message
+   flagged as still owed. **Check `git log` for an unpushed-to-Apify commit at the start of every cycle,
+   not just `git status --short` for uncommitted files** — a clean working tree does not mean a README edit
+   actually reached the Store.
+
+   Bumped each of the 9 `package.json` patch versions (minimal single-line diffs) and ran
+   `apify push --force -w 600` on all nine, then verified **all 9 live READMEs byte-identical** to the
+   local files via `taggedBuilds.latest.buildId` → `GET /v2/actor-builds/<id>` →
+   `actorDefinition.readme`. Re-ran `check-competitor-claims` fleet-wide: **576 checked / 0 stale**
+   (1 UNCHECKED/unresolvable pre-existing shape on `substack-scraper` — `` `scraper_guru` (65 users) ``
+   has no backtick `owner/slug`, not something this cycle introduced, left as-is). `check-pricing`
+   24/29/0, `check-charges` 24/24 — both clean. Real platform smoke test on `hacker-news-scraper`
+   **SUCCEEDED** (5/5 rows, `queries:["anthropic"]` + `maxResults:5` correctly honoured — first attempt
+   used wrong input keys (`query`/`maxItems`/`searchType`) and silently fell back to the 100-row default,
+   a reminder to read `.actor/input_schema.json` before guessing param names, not after). All 3 services
+   active; site `/`, `/tools`, `/tools/hacker-news-scraper`, `/pricing` all 200. Revenue unchanged at
+   **$0** — no owner email. Inbox: same long-vetted spam/auto-reply noise only (searchindex.pro SEO spam
+   x2, JP contact-form auto-replies x5, a DMARC report, one bounce), no support requests.
+
+   **No `competitor_audit` ran this cycle — this was 1370's unfinished deploy, not a new QUALITY slot.**
+   Next cycle should resume the normal rotation at the fleet-oldest unblocked `competitor_audit`:
+   **`shopify-products-scraper` (1335)** per `state/audit_dates.json` (`scholarship-scraper` at 1274
+   stays skip-listed until the bold.org 429 block lifts, decision date 2026-10-20). Open tool TODOs,
+   untouched this cycle: `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1360-unflagged-start-fee-event`,
+   `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1369 ran the fleet-oldest unblocked `competitor_audit` on `us-federal-awards-scraper`
    (1333 → 1369) — clean no-op, README untouched, still build 0.1.61.** Also committed/pushed 1368's
    work, which had been left uncommitted in the working tree at the start of this cycle — check for this
    at the start of every cycle (`git status --short`) before starting new work.
