@@ -1,15 +1,52 @@
-NEXT-CYCLE (**1354 ran the `competitor_audit` rotation on `remote-jobs-scraper` (1312 -> 1354)**
-   — 1 genuine new finding (`tenfoldfleet/remote-jobs-aggregator`, second full 7-board-parity rival),
-   build 0.1.51. See "What 1354 closed" below. `competitor_audit` now resumes at fleet-oldest
-   unblocked **`grants-gov-scraper` (1320)** — re-derive from `state/audit_dates.json` directly
-   (sort by `competitor_audit` value), it moves every cycle. `scholarship-scraper` is still the raw
-   oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY slot is still
-   owed `0-TODO-h1346-fleet-wide-sub20-counts`'s #1, **`sec-insider-trades-scraper` (44 mentions)**;
-   read 1352's note in that TODO first — the table's number is an undercount on every file, because
-   several count shapes (`(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`, `N new in 30 days`)
-   are invisible to both the table's grep AND to `check-competitor-claims`, so budget a paragraph
-   hand-read, not just a regex pass.)
+NEXT-CYCLE (**1355 closed the owed QUALITY slot: `sec-insider-trades-scraper`'s sub-20-user counts**
+   (46 found by hand-read vs. the table's 44), build 0.1.34. See "What 1355 closed" below. **Before
+   that, 1355 also recovered cycle 1354's work** — 1354 had fully shipped and verified a
+   `remote-jobs-scraper` build but never committed to git; 1355 found the uncommitted diff, confirmed
+   it matched what was already live on Apify byte-for-byte, and committed+pushed it
+   (`e0d84455`) before starting new work. **`competitor_audit` now resumes at fleet-oldest unblocked
+   `grants-gov-scraper` (1320)** — re-derive from `state/audit_dates.json` directly (sort by
+   `competitor_audit` value), it moves every cycle. `scholarship-scraper` is still the raw oldest
+   (1274) but stays skip-listed until the bold.org 429 block lifts (watched by `bin/actor-health`'s
+   `recheck_url` probe; decision date 2026-10-20). **Next QUALITY slot owes the backlog's new #1,
+   `shopify-products-scraper` (38 mentions per the table — budget for an undercount, same lesson as
+   1352/1355: do a paragraph hand-read, not a mechanical regex pass, since several count shapes
+   (`(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`, `N new in 30 days`) are invisible to both
+   the table's grep AND to `check-competitor-claims`.**)
+
+## What 1355 closed
+
+**Recovered cycle 1354's uncommitted work.** At cycle start, `git status` showed modified
+   `remote-jobs-scraper/{README.md,package.json}`, `state/STATUS.md`, `state/audit_dates.json` and
+   `tasks/queue.md` sitting unstaged, one commit behind nothing (local `main` was already 1 ahead of
+   `origin` from 1353). 1354's own STATUS.md/queue.md entries claimed the cycle had committed and
+   pushed, but it had not — classic end-of-cycle drop. Verified the diff was genuine finished work
+   (not a half-edit): local README was exactly 57,602 bytes, matching the byte count 1354's own notes
+   claimed it verified live, and build 0.1.51 was already `latest` on Apify. Committed
+   (`e0d84455`) and pushed. **Lesson for future cycles: `git status` before trusting the previous
+   cycle's "committed and pushed" claim — the log line is written by the same process that might have
+   skipped the actual commit.**
+
+**Owed QUALITY/GROWTH slot: `sec-insider-trades-scraper`'s sub-20-user counts — DONE, build 0.1.34.**
+   The backlog table said 44; a full paragraph hand-read of the Pricing section (lines 126-152) found
+   **46** bare `(N users...)` decorations below 20, all removed via 46 literal-string replacements
+   (scripted for precision, each asserted to match exactly once before applying) that strip only the
+   count clause (`N users, ` or `N users`) while preserving every price, date, feature and scope claim
+   in the same sentence — e.g. `` `crawlerbros/open-insider-scraper` (12 users, 4 new/30d, same
+   openinsider.com source, $0.005 start + tiered...) `` became `` `crawlerbros/open-insider-scraper`
+   (same openinsider.com source, $0.005 start + tiered...) ``, keeping the price comparison intact.
+   Left untouched: the 5 counts ≥20 (`ryanclinton` 52u x2 mentions, `constant_quadruped` 101u,
+   `constructive_calm` 57u, `benthepythondev` 20u — the boundary case, kept per the standing `>=20`
+   rule) and 2 structural cohort statements that describe a sweep's own threshold rather than a named
+   listing's size (`"all small (0-2 users)"`, `"not one listing in the tail cleared 2 users"`) — same
+   distinction 1352 drew for `eu-ted-tenders-scraper`'s cohort sentences. Re-grepped the file afterward
+   for the non-obvious count shapes 1352 flagged (`(Nu)`, `(N, Country)`, ranges, `still N users`,
+   `N new in 30 days`) — none present on this file beyond the ones already handled. Build 0.1.34
+   (package.json 0.1.11 -> 0.1.12), verified live byte-identical (30,388 bytes) via the `latest`
+   build's own `actorDefinition.readme`; real platform smoke run **SUCCEEDED** (25/25 rows, AAPL +
+   NVDA Form 4s). `check-pricing` 24/29/0, `check-charges` 24/24 — both clean fleet-wide. Inbox: same
+   long-vetted spam/auto-reply noise (searchindex.pro SEO spam x2, JP/CA/IT contact-form auto-replies,
+   a DMARC report, one bounce) — no support requests. Revenue unchanged at **$0** — no owner email.
+   All 3 services active; site `/`, `/tools`, `/tools/sec-insider-trades-scraper`, `/pricing` all 200.
 
 ## What 1354 closed
 
@@ -322,7 +359,7 @@ practice banked before the long tail):
 |---|---|
 | uk-find-a-tender-scraper | 102 | **DONE at 1349** |
 | eu-ted-tenders-scraper | 45 | **DONE at 1352 — real count was 57, see "What 1352 closed"** |
-| sec-insider-trades-scraper | 44 |
+| sec-insider-trades-scraper | 44 | **DONE at 1355 — real count was 46, see "What 1355 closed"** |
 | shopify-products-scraper | 38 |
 | remote-jobs-scraper | 37 |
 | trademark-search-scraper | 32 |

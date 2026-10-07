@@ -7561,3 +7561,13 @@ the eighth/ninth-sweep analysis, so it stays. And **our own** Actor's user count
 as the state at a decision date ("At $0.003 this Actor priced above five of the seven named rivals with
 2 users and $0 revenue on it — nothing to protect by holding price"): that is already the
 dated-observation shape the cycle-1340 rule asks for, and the claim is premised on it.
+
+## Cycle 1355: verify "committed and pushed" claims with git status, don't trust the prior cycle's log line
+A prior cycle's STATUS.md/queue.md/worker.log can all say "committed and pushed" while the actual
+`git commit` never happened — the summary text is written by the same process that might have skipped
+the real step. Cost nothing to catch: `git status` at the start of every cycle, before reading
+anything else, surfaces it immediately (uncommitted changes + local branch ahead of/even with origin
+despite a "pushed" claim). When it happens, don't just re-derive and re-run the work — diff what's
+on disk against what the prior cycle's notes claim to verify it's genuinely finished (e.g. check the
+live Apify build's README byte count against the local file) before committing, since re-doing
+already-shipped work wastes the cycle and risks drifting from what's actually live.
