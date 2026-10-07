@@ -256,13 +256,28 @@ if __name__ == "__main__":
     for path in sources():
         name = os.path.relpath(path, ROOT)
         competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
+        is_blog = name.startswith("site/content/blog/")
         text = open(path).read()
         offset = 1
         for para in text.split("\n\n"):
             lineno = offset
             offset += para.count("\n") + 2
             named = sorted({h for h in TOKEN.findall(para) if h in competitors})
-            if not named and not (RIVALS.search(para) and COMPARISON.search(para)):
+            # cycle 1343: blog posts are frozen write-ups of a past audit, not live
+            # claims that need re-verifying -- RIVALS/COMPARISON match freely in any
+            # paragraph *about* competitor-price parsing, so an unnamed-rival hit there
+            # is just the article's subject matter, not a stale claim. A blog post that
+            # DOES name a registered competitor is still a real, checkable claim.
+            # Same bug, one more place: a README's own "## Related guides" backlink
+            # list is navigation, not a claim -- a bullet's anchor text can say "20
+            # competitors" because that's the linked post's own title, without this
+            # README asserting anything comparative itself.
+            para_lines = [ln for ln in para.split("\n") if ln.strip()]
+            is_link_list = bool(para_lines) and (
+                para_lines[0].lstrip().startswith("## Related guides")
+                or all(re.match(r"^\s*[-—]\s", ln) for ln in para_lines)
+            )
+            if not named and (is_blog or is_link_list or not (RIVALS.search(para) and COMPARISON.search(para))):
                 continue
             what = ", ".join(named) if named else "an unnamed competitor"
             checked += 1
