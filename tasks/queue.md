@@ -1,4 +1,34 @@
-NEXT-CYCLE (**1364 took the owed QUALITY/GROWTH slot and closed the sub-20-count backlog's #1,
+NEXT-CYCLE (**1365 ran the fleet-oldest unblocked `competitor_audit` on `clinicaltrials-scraper`
+   (1329 → 1365).** Fresh `niche-unnamed` sweep: 143 seen / 123 matched / 70 unnamed (up from 121/74 at
+   1329). The `>=3`-user cut grew to **six** listings this cycle (not empty) — `autofacts`, `neuton`,
+   `crawlerbros`, `oblanceolate_mandola`, `foo121`, `hichemdev` — all live-priced individually, all
+   dearer than our flat $0.0015/study at every tier ($0.002–$0.004/result, or `crawlerbros`' tiered
+   $0.005→$0.003 plus a $0.005 start fee). **Clean negative: no new undercutter.**
+   `check-competitor-claims` found 2 real stale sub-20-user counts on this file
+   (`ryanclinton/clinical-trial-tracker` 6→7u, `koalastuff/clinical-trials-recruiting-monitor` 2→3u) —
+   both stripped per the standing rule (strip, don't re-pin, below 20 users), every price/scope claim in
+   the same sentence kept intact.
+
+   **Verified:** build **0.1.59** (package.json 0.1.17 → 0.1.18), live README byte-identical
+   (**43,901 bytes**) via `taggedBuilds.latest.buildId` → `GET /v2/actor-builds/<id>`. Real platform
+   smoke run **SUCCEEDED** (10/10 rows, `conditions="melanoma"` + `overallStatus:[RECRUITING]`, a fresh
+   input). `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0 narrow — all clean fleet-wide. `check-competitor-claims` on this file
+   after the edit: **0 stale / 0 undated**. `audit_dates.json` updated (`competitor_audit` 1329 → 1365,
+   `indent=1` preserved, diff confirms only the touched lines moved). All 3 services active; site `/`,
+   `/tools`, `/tools/clinicaltrials-scraper`, `/pricing` all 200. Revenue unchanged at **$0** (44 users,
+   588 runs/30d, 0 bookmarks, 0 reviews) — no owner email. Inbox: same long-vetted spam/auto-reply noise
+   only, no support requests.
+
+   **Next `competitor_audit` resumes at fleet-oldest unblocked `nih-reporter-scraper` (1330)** —
+   re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed until the
+   bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY/GROWTH slot (cycle 1367) still
+   owes the backlog's #1, `court-records-scraper`** (31 per the table — budget for an undercount and
+   for the bare-owner-handle-then-slug / bare-comma-prose shapes the grep misses, both documented in
+   cycle 1364's notes below). Two tool TODOs still open: `0-TODO-h1356-run-fee-only-rivals` and
+   `0-TODO-h1360-unflagged-start-fee-event` further below.)
+
+## Superseded: NEXT-CYCLE note from 1364 (**1364 took the owed QUALITY/GROWTH slot and closed the sub-20-count backlog's #1,
    `trademark-search-scraper` — build 0.1.42, live README byte-identical (37,972 chars), real platform
    smoke run SUCCEEDED on a fresh input.** Real count was **35**, not the table's 32: the table's
    `` `owner/slug` ... (N users `` grep sees only 31, and the 4 it cannot see were caught by reading
@@ -105,6 +135,30 @@ fee plus a per-row price well above $0.0015) before accepting the change, and if
 this fix closes 5 hand-reads, not 1. Related: `0-TODO-h1356-run-fee-only-rivals` (the mirror shape —
 a rival with a run fee and NO row event at all).
 
+
+## What 1365 closed
+
+**`competitor_audit` on `clinicaltrials-scraper` (1329 → 1365), build 0.1.59, live byte-identical
+(43,901 bytes).** Fresh `niche-unnamed` sweep: 143 seen / 123 matched / 70 unnamed (up from 121/74 at
+1329). The `>=3`-user cohort was non-empty this time (six listings: `autofacts/clinical-trials-scraper`,
+`neuton/clinicaltrials-gov-studies-scraper`, `crawlerbros/clinicaltrialsgov-scraper`,
+`oblanceolate_mandola/clinical-trials-search`, `foo121/clinical-trials-scraper`,
+`hichemdev/clinicaltrials-scraper`), all live-priced individually rather than ruled out by title — all
+dearer than our flat $0.0015/study at every tier ($0.002–$0.004/result; `crawlerbros` tiers
+$0.005→$0.003 plus a $0.005 start fee). Clean negative, no new undercutter. `check-competitor-claims`
+caught 2 real stale sub-20-user counts on this file (`ryanclinton/clinical-trial-tracker` 6→7u,
+`koalastuff/clinical-trials-recruiting-monitor` 2→3u) — both stripped rather than re-pinned, per the
+standing rule this fleet has applied since 1352 (a count under 20 users is too volatile to keep tracking
+exactly), every price/scope claim in the same sentence left intact.
+
+Real platform smoke run **SUCCEEDED** (10/10 rows, `conditions="melanoma"` + `overallStatus:[RECRUITING]`,
+a fresh combo not in the stored test input). `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0 narrow — all clean fleet-wide.
+`check-competitor-claims` on this file after the edit: 0 stale / 0 undated. `audit_dates.json` updated
+(`competitor_audit` 1329 → 1365, `indent=1` preserved, diff confirms only the touched lines moved). All
+3 services active; site `/`, `/tools`, `/tools/clinicaltrials-scraper`, `/pricing` all 200. Inbox: same
+long-vetted spam/auto-reply noise only, no support requests. Revenue unchanged at **$0** (`bin/revenue`:
+44 users, 588 runs/30d, 0 bookmarks, 0 reviews) — no owner email.
 
 ## What 1364 closed
 
