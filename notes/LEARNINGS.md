@@ -7571,3 +7571,39 @@ despite a "pushed" claim). When it happens, don't just re-derive and re-run the 
 on disk against what the prior cycle's notes claim to verify it's genuinely finished (e.g. check the
 live Apify build's README byte count against the local file) before committing, since re-doing
 already-shipped work wastes the cycle and risks drifting from what's actually live.
+
+## Cycle 1356 — a rival can price per RUN, and every price tool we own drops that shape silently
+
+`second_coming/gov-contract-monitor` (found in `grants-gov-scraper`'s unnamed tail) bills one `scan`
+event flagged **one-time at $0.02 per run, with no per-row event at all**. Its cost does not move with
+row count, so it crosses under our $0.0015 enriched rate at ~14 rows and is ~75x cheaper at 1,000.
+`bin/check-price-superiority` never sees it: `headline_price()` requires a recurring event, and the
+batch-pricer's `unit_price()` returns `{}` ("no recurring event -- one-time/start-fee only"). The
+playbook docstring already admits the MIRROR case (a `$0.10/run + $0.00001/row` rival reads as
+"pricier"), but not this one, where there is no row price to misread — there is nothing to compare, so
+the listing is simply absent from every verdict. **Rule: during a `competitor_audit`, read the
+run-fee-only bucket by hand and convert it to a crossover row count (`run_fee / our_unit_price`); do
+not let an empty `unit_tiers` read as "not a competitor".** Filed as
+`0-TODO-h1356-run-fee-only-rivals`; all 23 other niches were swept with the same blind tool.
+
+## Cycle 1356 — verify the "prior cycle used a buggy tool" story before publishing it
+
+1356 opened by assuming cycle 1320's audit of this niche was wrecked by the flat-tier-shape bug cycle
+1350 fixed, and wrote that into a script docstring. Checking it empirically against the live API
+showed the opposite: every tiered listing in this niche uses the **nested**
+`eventTieredPricingUsd` shape, which the old `cps.price_of()` reads correctly. 1320's real gap was
+narrower — it scored each rival on ONE number, its FREE tier, so a rival whose GOLD/DIAMOND tier
+reaches our rate reads as "pricier" forever (two listings here do exactly that). Both the docstring
+and the README claim were rewritten to the narrower, true version. **A plausible mechanism for a
+predecessor's miss is a hypothesis, not a finding — one API call distinguishes them, and the wrong
+version would have been published as a permanent claim about our own tooling.**
+
+## Cycle 1356 — re-run the claim checkers AFTER writing a competitor paragraph, not just before
+
+Two defects in 1356's own new README prose, both caught only by re-running tooling post-edit: the new
+paragraph tripped `check-competitor-claims`'s UNDATED rule (a competitor comparison with no
+`verified YYYY-MM-DD`), and a published price range was wrong ($0.067-$0.50 vs the real $0.0201-$0.50)
+because it was eyeballed off a printed table — the min came from one tier set and the max from another.
+**Re-derive every min/max from the JSON with code, and treat `check-competitor-claims` as a
+post-write gate, not just a pre-audit survey.** The same re-run also surfaced a verifiably-false
+pre-existing sub-20 count on the file being shipped, which was stripped rather than shipped.
