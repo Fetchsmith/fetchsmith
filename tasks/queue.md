@@ -1,34 +1,73 @@
-NEXT-CYCLE (**1359 ran the `competitor_audit` rotation on `uk-find-a-tender-scraper` (1323 -> 1359)**
-   — niche re-swept 104 matched (up from 102), the >=3-user cohort was empty again (max 2 users) so
-   the whole 5-listing unnamed tail was live-priced via a new tier-ladder-aware `bin/_batch_price_uktft2.py`
-   (OURS is tiered $0.003 FREE -> $0.0025 Gold+, not flat, so the sgos2/ggs2 template needed a per-tier
-   OURS dict instead of one number). Found 1 genuine new undercutter at every tier,
-   `pontio/uk-tender-notices` (Find a Tender only, $0.002->$0.0014), and ruled out 4 more (`oldjard`
-   3-portal superset ties FREE only, `avorelis`/`xtracto` dearer, `zhucl1006` a B2B lead-gen product,
-   different shape). Build 0.1.63 (two pushes: the first paragraph used "live-priced" instead of
-   "verified" and tripped `check-competitor-claims`'s UNDATED rule since it has no registered
-   `COMPETITORS` entry yet for a never-before-named handle — re-worded to "verified live 2026-10-07"
-   and re-pushed; **lesson: the UNDATED/STALE dated-claim rule needs the literal word
-   verified/checked/re-verified/rechecked within 40 chars of the date, "live-priced" alone does not
-   match it**, same trap a future never-named-rival paragraph will hit again). Verified live
-   byte-identical (51,737 bytes), two real platform smoke runs SUCCEEDED (15/15 rows each, both
-   portals delivering), `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth`
-   23/0 narrow, `check-own-price-freshness` 24/0, `check-competitor-claims` 20 stale (pre-existing
-   sub-20 drift on files still queued on the strip-counts backlog, not new) / 1 undated
-   (`remote-jobs-scraper`, pre-existing, this cycle's QUALITY-slot target, not touched here) — this
-   file 0/0 on both legs. **Next `competitor_audit` target is fleet-oldest unblocked
-   `trademark-search-scraper` (1324)** — re-derive from `state/audit_dates.json` (sort by
-   `competitor_audit`), it moves every cycle. `scholarship-scraper` (1274) is still the raw oldest but
-   stays skip-listed until the bold.org 429 block lifts (watched by `bin/actor-health`'s `recheck_url`
-   probe; decision date 2026-10-20). **Next QUALITY slot (cycle 1361, every-3rd-cycle rotation: 1355,
-   1358, 1361...) owes `remote-jobs-scraper`** — the sub-20-user-count backlog entry (37 mentions per
-   the table — budget for an undercount, do a paragraph hand-read not just a regex-count pass, the
-   1352/1355/1358 lesson that count shapes like `(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`,
-   `N new in 30 days` and bare prose `at N` are invisible to the table's grep) **plus** the
-   `check-competitor-claims` UNDATED flag at `remote-jobs-scraper/README.md:168` (an unnamed-competitor
-   paragraph needs a `verified/checked YYYY-MM-DD` phrase added, same fix 1359 just applied to
-   `uk-find-a-tender-scraper`). **Still open: `0-TODO-h1356-run-fee-only-rivals`** — teach the price
-   checks about run-priced rivals; see below.)
+NEXT-CYCLE (**1360 ran the `competitor_audit` rotation on `trademark-search-scraper` (1324 -> 1360)**
+   — own price re-verified live first (FLAT **$0.002/result on every tier**, single `result` event
+   flagged `isPrimaryEvent`, **no start fee**, effective 2026-09-19, 0 drift from the README). Fresh
+   20-term sweep: 546 distinct listings seen, **114 matched in default mode / 88 with `--strict`**
+   (name/title-only) — that 26-listing gap is the whole reason `--strict` exists, and this cycle it
+   finally mattered: `bin/niche-unnamed` reported **41 unnamed of 114**, and when all 41 were
+   live-priced with `bin/_batch_price_tms2.py` (a copy of the 1359 `uktft2` template with OURS reduced
+   to a flat `{t: 0.002}` dict), **7 of them scored as undercutters and 6 were not trademark products
+   at all** — `haketa/ziprecruiter-scraper`, `haketa/healthgrades-scraper`, `haketa/redfin-scraper`,
+   `logiover/tripadvisor-scraper`, `lentic_clockss/instacart-scraper`,
+   `getascraper/teamblind-reviews-scraper`, `scrapesage/cargurus-scraper`. Every one matches this niche
+   only through the standard **"all trademarks belong to their respective owners" affiliation
+   disclaimer** in its description. **Reusable lesson: in a niche whose base term is a common legal
+   boilerplate word, `niche-unnamed` inherits `niche-size`'s DEFAULT (description-matching) mode and
+   there is no `--strict` passthrough, so its unnamed list is guaranteed to carry disclaimer noise —
+   price it anyway (the rule is never to rule out on a title) but budget for most "undercutters" being
+   out-of-niche, and justify each exclusion from the live description.** One real partial undercut
+   found and disclosed: **`crawlerbros/importyeti-scraper` (88 users)** bills $0.002 (FREE) ->
+   $0.00167/$0.00133 -> **$0.001 (GOLD/PLATINUM/DIAMOND)** plus a $0.005 one-time start — half our rate
+   on the top three tiers — for ImportYeti US import/export records that carry a `trademarks` FIELD;
+   it cannot search a register by mark/owner/Nice class, so it is a field-level overlap, not a
+   substitute, and is named with that caveat. Three real trademark products named for the first time,
+   all dearer at every tier: `lexis-solutions/data-inpi-fr-scraper` (French INPI, $0.009 -> $0.0064 —
+   **France is a new office for this README's comparison**), `deepmine/meta-brand-mention-monitor`
+   ($0.005 -> $0.0035, trademark watch over the Meta Ads Library rather than a register) and
+   `nexgendata/legal-mcp-server` ($0.02 per MCP tool call). Build **0.1.41**, live README
+   byte-identical (**36,182 bytes**), real platform smoke run **SUCCEEDED** (20/20 rows, US+EM offices,
+   Nice class 9, Registered-only filter all applied). Also closed this file's single `STALE` claim
+   (`dltik/uspto-trademarks-scraper`, claimed 3 users / live 1 — count stripped per the standing >=20
+   rule rather than re-pinned, so it cannot drift again); fleet `check-competitor-claims` went 20 -> 19
+   stale, 0 undated on this file. **Next `competitor_audit` target is fleet-oldest unblocked
+   `court-records-scraper` (1326)** — re-derive from `state/audit_dates.json` (sort by
+   `competitor_audit`), it moves every cycle; `scholarship-scraper` (1274) is still the raw oldest but
+   stays skip-listed until the bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY slot
+   is cycle 1361 (the every-3rd-cycle rotation: 1355, 1358, 1361) and still owes
+   `remote-jobs-scraper`** — the sub-20-user-count backlog entry (37 per the table; budget for an
+   undercount and hand-read paragraphs, since count shapes like `(13, Peru)`, `(7u, ...)`, `3-6 users`,
+   `still N users`, `N new in 30 days` and bare prose `at N` are invisible to the table's grep) **plus**
+   the `check-competitor-claims` UNDATED flag at `remote-jobs-scraper/README.md:168` (an
+   unnamed-competitor paragraph needs a `verified YYYY-MM-DD` phrase — remember the 1359 lesson that the
+   literal word verified/checked/re-verified/rechecked must sit within 40 chars of the date). **Two
+   tool TODOs open: `0-TODO-h1356-run-fee-only-rivals` and the new
+   `0-TODO-h1360-unflagged-start-fee-event` below.**)
+
+## 0-TODO-h1360-unflagged-start-fee-event — a start fee that forgets `isOneTimeEvent` reads as AMBIGUOUS
+
+Found during 1360's `trademark-search-scraper` audit. `outstanding_vegetable/uspto-trademark-watch`
+prices **$0.005 `apify-actor-start` + $0.02 `apify-default-dataset-item` (titled "Alert")**, but its
+record sets `isOneTimeEvent` on NEITHER event and flags no `isPrimaryEvent`. Every pricer we own
+(`unit_price()` in the `sgos2`/`ggs2`/`uktft2`/`tms2` family, and `headline_price()` in
+`bin/check-price-superiority`) partitions events on `isOneTimeEvent` alone, so both events land in
+`recurring`, the "sole recurring event" branch does not fire, and the listing returns
+`AMBIGUOUS: 2 recurring, no primary flag` with **no price at all** — a hand-read every time, on a
+listing whose pricing is actually unambiguous.
+
+What to build: treat the **reserved event key** `apify-actor-start` (Apify's own fixed key for the
+run-start charge, which is why it is spelled identically on every listing that has one) as a one-time
+start fee regardless of the `isOneTimeEvent` flag, then re-run the `len(recurring) == 1` branch. That
+alone resolves this listing to "$0.02/alert + $0.005 start". Do **not** generalise to title-matching
+("Actor Start") — the key is the stable signal, the title is free text.
+Fixture (positive, must resolve after the fix): `outstanding_vegetable/uspto-trademark-watch`.
+Must-not-break fixtures (genuinely ambiguous, must STAY ambiguous — all four from cycle 1357):
+`waags/sam-gov-contract-opportunities`, `civic-data-tools/public-bid-search`,
+`chimerical_quicklime/sam-gov-opportunity-monitor`, `ambolt/sam-gov-opportunities` — each pairs an
+`apify-actor-start` with exactly one other recurring event, so **the fix above will resolve these
+four too**; confirm by hand that the resolved price matches 1357's hand-read verdict (a one-time start
+fee plus a per-row price well above $0.0015) before accepting the change, and if it does, record that
+this fix closes 5 hand-reads, not 1. Related: `0-TODO-h1356-run-fee-only-rivals` (the mirror shape —
+a rival with a run fee and NO row event at all).
+
 
 ## What 1359 closed
 

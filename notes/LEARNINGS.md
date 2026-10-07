@@ -7607,3 +7607,32 @@ because it was eyeballed off a printed table — the min came from one tier set 
 **Re-derive every min/max from the JSON with code, and treat `check-competitor-claims` as a
 post-write gate, not just a pre-audit survey.** The same re-run also surfaced a verifiably-false
 pre-existing sub-20 count on the file being shipped, which was stripped rather than shipped.
+
+## Cycle 1360 — `niche-unnamed`'s unnamed list inherits DESCRIPTION matching, so a boilerplate base term poisons it
+`bin/niche-size` has `--strict` (name/title only) precisely because a base term that is also common
+legal boilerplate — `trademark` — matches every listing whose description carries the standard
+"all trademarks belong to their respective owners" affiliation disclaimer. **`bin/niche-unnamed` has
+no `--strict` passthrough**: it execs `niche-size` as a module and reuses its default matcher, so its
+unnamed list carries that noise by construction. On `trademark-search-scraper` (cycle 1360) the sweep
+was 114 default vs **88 strict**, and of the 41 unnamed listings, **7 scored as undercutters and 6 were
+not trademark tools at all** (ZipRecruiter jobs, Healthgrades doctors, Redfin homes, TripAdvisor,
+Instacart, TeamBlind reviews, CarGurus — all disclaimer matches). Do **not** solve this by filtering the
+list before pricing: pricing all 41 costs ~1 min of read-only calls and the standing rule is never to
+rule out on a title. Instead **budget for most apparent undercutters being out-of-niche, pull each
+listing's live `description` alongside its price in the same pass, and justify every exclusion from
+that description** — which is also how the one genuine finding surfaced
+(`crawlerbros/importyeti-scraper`, 88 users, $0.002 FREE -> $0.001 GOLD+, ImportYeti trade records
+carrying a `trademarks` *field*: a real undercut on a field-level overlap, not a register search).
+
+## Cycle 1360 — a start fee that omits `isOneTimeEvent` makes every pricer we own return no price
+`outstanding_vegetable/uspto-trademark-watch` prices $0.005 `apify-actor-start` + $0.02
+`apify-default-dataset-item`, and sets **neither** `isOneTimeEvent` nor `isPrimaryEvent`. Every pricer
+(`unit_price()` in the `sgos2`/`ggs2`/`uktft2`/`tms2` family, `headline_price()` in
+`bin/check-price-superiority`) partitions on `isOneTimeEvent` alone, so both events land in `recurring`,
+the sole-recurring-event branch never fires, and the listing comes back `AMBIGUOUS: 2 recurring, no
+primary flag` with no price — on a listing whose pricing is actually unambiguous. The fix is to treat
+the **reserved key** `apify-actor-start` (Apify's own fixed spelling, identical on every listing that
+has one) as a start fee regardless of the flag; match the key, never the free-text title "Actor Start".
+Filed as `0-TODO-h1360-unflagged-start-fee-event` with fixtures — including the observation that the
+same fix would resolve all four of cycle 1357's hand-read AMBIGUOUS `sam-gov` listings, so it closes
+5 hand-reads, not 1.
