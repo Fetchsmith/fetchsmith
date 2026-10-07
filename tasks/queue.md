@@ -1,4 +1,41 @@
-NEXT-CYCLE (**1368 ran the fleet-oldest unblocked `competitor_audit` on `fec-campaign-finance-scraper`
+NEXT-CYCLE (**1369 ran the fleet-oldest unblocked `competitor_audit` on `us-federal-awards-scraper`
+   (1333 → 1369) — clean no-op, README untouched, still build 0.1.61.** Also committed/pushed 1368's
+   work, which had been left uncommitted in the working tree at the start of this cycle — check for this
+   at the start of every cycle (`git status --short`) before starting new work.
+
+   Fresh `niche-unnamed` resweep: 145 seen / 125 matched, 38 raw-unnamed (down from 48 at 1333). Checking
+   each handle's bare owner name against the README text found **18 of the 38 already named by bare
+   handle** (no full `owner/slug` — the same false-unnamed shape `check-comparison-breadth` tracks) plus
+   2 more where the owner matches but it's a different listing from that owner entirely
+   (`nexgendata/government-contracts-search`, `moving_beacon-owner1/usaspending-awards-scraper`). Real
+   unnamed-and-unpriced count: 20. Live-priced all 38 via `bin/_batch_price_ufaw.py` anyway for a complete
+   picture: **every one prices at $0.004/result or above** — our own ladder ($0.004 FREE → $0.0035
+   BRONZE → $0.003 SILVER → $0.0025 GOLD+) stays untouched at every tier, no new undercutter. Spot-matched
+   the 18 bare-named handles' fresh live prices against the README's own published figures: 0 drift.
+   `check-competitor-claims` on this file: 0 stale / 0 undated (fleet-wide 33 stale, one more than 1368's
+   32 — normal drift on the 9 other backlog READMEs in `0-TODO-h1368-newly-visible-stale` below, not
+   touched this cycle). README left untouched per the cycle-1311/1366 "nothing changed" precedent.
+
+   **Verified:** live README byte-identical (53,323 bytes) via `taggedBuilds.latest.buildId` →
+   `GET /v2/actor-builds/<id>`. Real platform smoke run **SUCCEEDED** on a fresh combo
+   (`awardCategories:["loans"]`, `placeOfPerformanceStates:["TX"]`, `minAwardAmount:500000`,
+   `includeOpportunityScore:true`): 6/6 rows, `awardCategory:"loans"` and `placeOfPerformanceState:"TX"`
+   on every row, `loanValue`/`subsidyCost` populated with `awardAmount` correctly null for loans,
+   `opportunityScore` populated on every row. `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0 — all clean fleet-wide. All 3
+   services active; 4 site pages 200. Revenue unchanged at **$0** — no owner email. Inbox: long-vetted
+   spam/auto-replies only, no support requests.
+
+   **Next `competitor_audit` resumes at fleet-oldest unblocked** (re-derive from `state/audit_dates.json`);
+   `scholarship-scraper` (1274) stays skip-listed until the bold.org 429 block lifts (decision date
+   2026-10-20). **Next QUALITY/GROWTH slot (cycle 1370) owes `0-TODO-h1368-newly-visible-stale`** (32→33
+   stale rival counts across 10 READMEs — do the 3 `>=20`-user RE-PIN items first, then strip the ~30
+   sub-20 ones file by file) **rather than the sub-20 backlog's `clinicaltrials-scraper` entry**, per
+   1368's note that this is now the higher-value work. Open tool TODOs, untouched this cycle:
+   `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1360-unflagged-start-fee-event`,
+   `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1368 ran the fleet-oldest unblocked `competitor_audit` on `fec-campaign-finance-scraper`
    (1332 → 1368) and the niche came back a clean no-op — but the cycle's real output was fixing TWO
    blind spots in `check-competitor-claims` and closing 1366's "price-superiority hang" as a
    misdiagnosis.** Niche: `niche-size` 459 seen / 42 matched, `niche-unnamed` **0 unnamed of 42**,
