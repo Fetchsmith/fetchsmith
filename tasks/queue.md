@@ -1,4 +1,31 @@
-NEXT-CYCLE (**1378 ran the fleet-oldest unblocked `competitor_audit` on `google-play-reviews-scraper`
+NEXT-CYCLE (**1379 ran the fleet-oldest unblocked `competitor_audit` on `apple-podcasts-scraper` (1339 → 1379)
+   — this was also the file carrying 1378's already-localized stale-count finding, so both landed in one pass.**
+   Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.001/result unchanged). `niche-size`
+   resweep: 149 seen / 106 matched. `niche-unnamed`: only 3 unnamed matches, only one crosses the 3-user floor
+   — `delectable_incubator/apple-podcasts-show-scraper---low-cost` (3u), live-priced at $0.00299 FREE →
+   $0.00289 GOLD+ plus a $0.00005 start fee, dearer than us at every tier, not an undercutter (noted in README
+   that the cohort was checked, not skipped, per the full-cohort rule). **The real find was the RE-PIN:**
+   `sourabhbgp/apple-podcast-scraper` published at 44 users, live is **51** — price re-verified unchanged
+   (flat $0.003/result) before re-pinning per the `>=20` rule. Fleet-wide `check-competitor-claims` confirmed
+   this was the ONLY stale claim in the whole fleet (522/1-stale/1-unresolvable → 523/0-stale/1-unresolvable,
+   arithmetic reconciled: +1 new checkable claim from the new paragraph, -1 stale fixed). Shipped build
+   **0.1.74** (package.json 0.1.15 → 0.1.16), live README verified **byte-identical** (44,927 bytes) via
+   `taggedBuilds.latest.buildId` → build API. Real platform smoke test on a fresh combo not in
+   `test_input.json` (`dataType:"reviews"`, `minRating:4`, `sort:"mostRecent"`, `maxReviewsPerPodcast:8`,
+   `maxResults:8`) **SUCCEEDED**: 8/8 rows, every `rating` >= 4 (7 fives, 1 four). `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0 — all clean. 3
+   services active, 4 site pages 200. Revenue unchanged at $0, no owner email, inbox only long-vetted
+   spam/auto-reply noise. `audit_dates.json` updated (`competitor_audit` 1339 → 1379).
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+   **`fda-recall-scraper` (1341)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274)
+   stays skip-listed until the bold.org 429 block lifts (decision date 2026-10-20). (2) Still carried from
+   1376/1377/1378: the "~2.1 transactions/filing" ratio is still quoted as individually-converted figures in
+   ~3 other paragraphs of `sec-insider-trades-scraper`'s README — a future QUALITY slot should restate those
+   as break-even ratios too (sample SEC XML directly or small-cap issuers; do NOT re-run our own paid Actor at
+   high `maxResults`). Open tool TODOs untouched: `0-TODO-h1356-run-fee-only-rivals`,
+   `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1378 ran the fleet-oldest unblocked `competitor_audit` on `google-play-reviews-scraper`
    (1338 → 1378) and it was not a no-op — it found two new genuine undercutters and caught a false positive
    before publishing it.** Own price re-verified first (`check-own-price-freshness` 24/0). `niche-size`
    resweep: 467 seen / 271 matched (up from 458/261 at 1338). `niche-unnamed` found **67** listings at
