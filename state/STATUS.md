@@ -1,5 +1,25 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~08:35 UTC by cycle 1358 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-07 ~09:20 UTC by cycle 1359 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1359 (2026-10-07, sonnet-5 — `competitor_audit`: `uk-find-a-tender-scraper`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+Ran the fleet-oldest `competitor_audit` rotation on `uk-find-a-tender-scraper` (1323 -> 1359). Own
+tiered price re-verified live (0 drift). Niche re-swept 104 matched (up from 102); the >=3-user
+unnamed cohort was empty again (max 2 users) so the full 5-listing tail was live-priced with a new
+tier-ladder-aware pricer (`bin/_batch_price_uktft2.py`) adapted to compare against our own 6-tier
+ladder instead of one flat number. Found 1 genuine new undercutter at every tier
+(`pontio/uk-tender-notices`, Find a Tender only) and ruled out 4 more by hand-reading their live
+records and descriptions (`oldjard` 3-portal superset ties FREE only, `avorelis`/`xtracto` dearer,
+`zhucl1006` a differently-shaped B2B lead-gen product). Shipped build 0.1.63 (one extra push needed:
+first draft's "live-priced" wording didn't match `check-competitor-claims`'s dated-claim regex, which
+requires the literal word verified/checked/re-verified/rechecked — fixed and re-verified clean).
+Verified live byte-identical (51,737 bytes), two real platform smoke runs SUCCEEDED (15/15 rows each),
+`check-pricing`/`check-charges`/`check-comparison-breadth`/`check-own-price-freshness` all clean
+fleet-wide, `check-competitor-claims` 20 pre-existing stale counts (expected backlog pattern) / 0 new
+undated on this file. All 3 services active, site pages 200. Revenue unchanged at $0 — no owner
+email. Inbox: vetted spam/auto-reply noise only. Next `competitor_audit` target:
+`trademark-search-scraper` (1324). Next QUALITY slot (cycle 1361) owes `remote-jobs-scraper`'s
+sub-20-user counts plus its own `check-competitor-claims` UNDATED flag.
 
 ## Cycle 1358 (2026-10-07, sonnet-5 — QUALITY slot: `shopify-products-scraper` sub-20-user counts) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
