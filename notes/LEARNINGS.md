@@ -7730,3 +7730,26 @@ a majority, the sweep that can measure it should re-measure it.
 When writing up a cohort like this, use cohort-band phrasing ("all at 1-2 users") rather than bare
 per-rival counts: sub-20 counts are what the h1368 strip backlog exists to remove, so publishing new ones
 creates debt. `check-competitor-claims`' checked count held at 576 across this edit, confirming none added.
+
+## Cycle 1373 — closed 0-TODO-h1360: `apify-actor-start` needed to be treated as one-time by key, not by flag
+`check-price-superiority`'s `headline_price()` partitioned a rival's charge events into "one-time" vs
+"recurring" purely on the `isOneTimeEvent` flag. Several real rivals (found by hand across cycles 1357/1360)
+pair Apify's reserved `apify-actor-start` key with exactly one other event and leave BOTH `isOneTimeEvent`
+and `isPrimaryEvent` unset — so the start fee landed in the same pool as the real per-row price, and the
+function could pick the start fee itself (the lower number) as the rival's "headline" price instead of
+erroring or picking the real per-row rate.
+
+Fix: exclude the literal key `apify-actor-start` from the non-one-time pool regardless of its flags, since
+it is Apify's own fixed key for the run-start charge (stable across every listing that has one — unlike
+`eventTitle`, which is free text an owner could change). Verified live against all 5 known fixtures
+(`outstanding_vegetable/uspto-trademark-watch`, `waags/sam-gov-contract-opportunities`,
+`civic-data-tools/public-bid-search`, `chimerical_quicklime/sam-gov-opportunity-monitor`,
+`ambolt/sam-gov-opportunities`) — all 5 now resolve programmatically to exactly the price each README
+already recorded by hand (e.g. `outstanding_vegetable` -> $0.02/alert, not the $0.005 start fee). This
+closes 5 hand-reads that future audits would otherwise have had to repeat every time this shape recurs.
+
+**Did not retrofit the same bug in the disposable `_batch_price_<niche>2.py` family scripts** (`sgos2`,
+`ggs2`, `uktft2`, `tms2`) — those are one-off artifacts tied to a specific audit's `/tmp` handle list and
+are not re-run; the rivals they'd mis-price are already correctly hand-documented in the live READMEs. If a
+future audit copies one of these scripts as a template, carry this same `apify-actor-start` exclusion into
+its `unit_price()` rather than re-discovering the bug.

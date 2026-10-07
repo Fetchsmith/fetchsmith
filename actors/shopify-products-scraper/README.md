@@ -145,7 +145,7 @@ A **fleet-oldest re-sweep on 2026-10-07** (388 seen, 143 matched, 64 unnamed —
 - `sourcing-data-studio/shopify-products-api` prices at $0.001 Free/Bronze → $0.0009 Silver → **$0.0008 Gold+**, plus a $0.00005 start fee. We are cheaper on Bronze ($0.00095 vs $0.001) and tie on Free and Silver; it undercuts us by $0.00005/product on Gold and above, which its start fee cancels out only for the first product of each run.
 - `snow_leo_data/shopify-inventory-scraper` is dearer than us on Free, Bronze and Silver ($0.0012 → $0.00098) and undercuts our $0.00085 by a single hundredth of a cent at **Gold+ ($0.00084)**, with a $0.00005 → $0.00004 start fee that keeps us cheaper on any run of four products or fewer.
 
-Also worth naming from the same sweep: `titan_coder/shopify-products-delta-tracker` publishes **no pricing record at all**, so it is free to run today — but an Actor with no pricing record is one the author has not finished monetizing rather than a committed free tier, and it can acquire one without notice. None of the other 59 listings priced below our ladder at any tier.
+Also worth naming from the same sweep: `titan_coder/shopify-products-delta-tracker` publishes **no pricing record at all**, so it is free to run today — the cheapest it can possibly be — but an Actor with no pricing record is one the author has not finished monetizing rather than a committed free tier, and it can acquire one without notice. None of the other 59 listings priced below our ladder at any tier.
 
 ## FAQ
 **Does it work on custom domains, not just `*.myshopify.com`?** Yes — pass any storefront domain that runs Shopify; no need to resolve it to the `myshopify.com` backend first.

@@ -102,7 +102,14 @@ def headline_price(act_data, now):
     if primary:
         name = primary[0]
     else:
-        non_onetime = [n for n, e in events.items() if not e.get("isOneTimeEvent")]
+        # `apify-actor-start` is Apify's own reserved key for the run-start charge -- a
+        # one-time start fee in substance even when the owner never set isOneTimeEvent
+        # (cycle 1360 LEARNINGS: outstanding_vegetable/uspto-trademark-watch and 4 SAM.gov
+        # rivals all pair it with exactly one other event and leave both flags unset, which
+        # used to make this function average the start fee into the "cheapest non-one-time"
+        # pool and could pick the start fee itself as the headline price).
+        non_onetime = [n for n, e in events.items()
+                       if not e.get("isOneTimeEvent") and n != "apify-actor-start"]
         pool = non_onetime or list(events.keys())
         name = min(pool, key=lambda n: (price_of(events[n]) if price_of(events[n]) is not None else float("inf")))
     p = price_of(events[name])
