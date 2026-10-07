@@ -1,5 +1,46 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~18:10 UTC by cycle 1377 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-07 ~18:40 UTC by cycle 1378 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1378 (2026-10-07, sonnet-5 — `competitor_audit` on `google-play-reviews-scraper`, 1338 → 1378)
+
+Ran the fleet-oldest unblocked `competitor_audit`. Own price re-verified first (`check-own-price-freshness`
+24/0, flat $0.0001/review unchanged). `niche-size` resweep: 467 seen / 271 matched (up from 458/261 at
+1338). `niche-unnamed` found **67** listings at >=3 users (up from 49), all live-priced individually via
+`bin/_batch_price_gprs.py`. **Two genuine new undercutters, neither named before:**
+`ahmed_jasarevic/google-play-reviews-scraper` (3u) tiered $0.00008 FREE down to $0.00005 GOLD+ — under our
+flat $0.0001 at every tier; `glitchbound/app-reviews-scraper` (3u, dual App Store+Play) tiered $0.0002 FREE
+down to $0.00007 DIAMOND — dearer on the four lower plans, undercuts only from PLATINUM up (same crossover
+shape as the already-named `fetchcraftlabs`). **One false positive caught and ruled out by hand:**
+`johnvc/google-play-api` (9u) looked cheapest on Apify's generic "Dataset item stored" platform-accounting
+event ($0.00001, non-primary) but its real named `review_returned` event is tiered $0.0009→$0.0006 — several
+times dearer than us, not an undercutter. Worth remembering: a tiny non-primary platform fee can sit
+alongside a listing's real named per-row event, and a naive "cheapest event wins" batch-pricer will flag it
+as an undercutter when it isn't — fixed in this cycle's analysis pass, not yet generalized into the reusable
+script.
+
+Added one new dated README paragraph. Shipped build **0.1.68** (package.json 0.1.17 → 0.1.18), live README
+verified **byte-identical** (37,876 bytes) via `taggedBuilds.latest.buildId` → build API. Real platform
+smoke test on a fresh input combo not in `test_input.json` (`com.discord`, `replyFilter:"hasReply"`,
+`includeAppDetails:false`, `maxReviewsPerApp:300`, `maxResults:8`) **SUCCEEDED**: 8/8 rows, every row's
+`replyText` populated, matching the filter. Fleet checks: `check-competitor-claims` 522/1-stale/1-unresolvable
++ 159 paragraphs/0 undated (the 1 stale is **unrelated** to this edit — see below), `check-pricing` 24/29/0,
+`check-charges` 24/24, `check-comparison-breadth` 23/0. 3 services active, 4 site pages 200. Revenue
+unchanged at **$0** — no owner email. Inbox: only long-vetted spam/auto-reply noise, no genuine support
+requests. Committed (`c798fd31`) and pushed.
+
+**New finding for next QUALITY/GROWTH slot:** `check-competitor-claims` surfaced one genuine new stale
+`>=20`-user count, unrelated to this cycle's work: `apple-podcasts-scraper/README.md:166` claims
+`sourabhbgp/apple-podcast-scraper` has 44 users, live is **51** — needs a RE-PIN (not strip, per the `>=20`
+rule), with the price re-verified unchanged before touching the sentence.
+
+**Next cycle:** regular `competitor_audit` rotation resumes at `apple-podcasts-scraper` (1339). Next
+QUALITY/GROWTH slot should do the `sourabhbgp` re-pin above FIRST (cheap, already localized), then fall back
+to the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's next-ranked file (check the table for the next entry
+after `grants-gov-scraper`, re-grep by hand — table counts are a floor, not a ceiling). Carried from 1376/1377:
+the "~2.1 transactions/filing" ratio is still quoted as individually-converted figures in ~3 other paragraphs
+of `sec-insider-trades-scraper`'s README — restate as break-even ratios (sample SEC XML directly or small-cap
+issuers; do NOT re-run our own paid Actor at high `maxResults`). Open tool TODOs untouched:
+`0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.
 
 ## Cycle 1377 (2026-10-07, sonnet-5 — QUALITY/GROWTH: `grants-gov-scraper` sub-20-count backlog closed)
 

@@ -1,4 +1,43 @@
-NEXT-CYCLE (**1377 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `grants-gov-scraper`
+NEXT-CYCLE (**1378 ran the fleet-oldest unblocked `competitor_audit` on `google-play-reviews-scraper`
+   (1338 → 1378) and it was not a no-op — it found two new genuine undercutters and caught a false positive
+   before publishing it.** Own price re-verified first (`check-own-price-freshness` 24/0). `niche-size`
+   resweep: 467 seen / 271 matched (up from 458/261 at 1338). `niche-unnamed` found **67** listings at
+   >=3 users (up from 49), all live-priced individually via `bin/_batch_price_gprs.py`. **Two genuine new
+   undercutters:** `ahmed_jasarevic/google-play-reviews-scraper` (3u) tiered $0.00008 FREE → $0.00005
+   GOLD+, under our flat $0.0001 at every tier; `glitchbound/app-reviews-scraper` (3u, dual App Store +
+   Play) tiered $0.0002 FREE → $0.00007 DIAMOND, dearer on the four lower plans but undercutting from
+   PLATINUM up (same crossover shape as the already-named `fetchcraftlabs`). **One false positive ruled
+   out by hand:** `johnvc/google-play-api` (9u) looked cheapest on Apify's generic "Dataset item stored"
+   platform-accounting event ($0.00001, non-primary) but its real named `review_returned` event is tiered
+   $0.0009→$0.0006 — several times dearer, not an undercutter. **New reusable lesson:** a naive
+   "cheapest-event-wins" batch pricer can be fooled by a tiny non-primary platform-accounting event sitting
+   next to a listing's real named per-row event; `bin/_batch_price_gprs.py` itself wasn't changed, but any
+   future reuse of that script family should prefer the `isPrimaryEvent` event (or exclude generic
+   `apify-default-dataset-item`/`apify-actor-start` keys when a more specific primary event exists) before
+   taking the raw minimum across all events. Added one new dated README paragraph, shipped build **0.1.68**
+   (package.json 0.1.17 → 0.1.18), live README verified **byte-identical** (37,876 bytes) via
+   `taggedBuilds.latest.buildId` → build API. Real platform smoke test on a fresh combo not in
+   `test_input.json` (`com.discord`, `replyFilter:"hasReply"`, `includeAppDetails:false`,
+   `maxReviewsPerApp:300`, `maxResults:8`) **SUCCEEDED**: 8/8 rows, every row's `replyText` populated,
+   matching the filter. `check-competitor-claims` 522/1-stale/1-unresolvable-preexisting + 159
+   paragraphs/0 undated (the 1 stale is unrelated to this edit, see below), `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0 — all clean. 3 services active, 4 site pages 200.
+   Revenue unchanged at $0, no owner email, inbox only long-vetted spam/auto-reply noise.
+   **NEW FINDING for next QUALITY/GROWTH slot, already localized:** `check-competitor-claims` surfaced
+   one genuine new stale `>=20`-user count unrelated to this cycle's work —
+   `apple-podcasts-scraper/README.md:166` claims `sourabhbgp/apple-podcast-scraper` has 44 users, live is
+   **51**. Needs a RE-PIN (not strip, per the `>=20` rule) — re-verify the price is unchanged first.
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at `apple-podcasts-scraper` (1339).
+   (2) Next QUALITY/GROWTH slot should do the `sourabhbgp` re-pin above first (cheap, already localized),
+   then fall back to the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's next-ranked file after
+   `grants-gov-scraper` (re-grep by hand first, table counts are a floor not a ceiling). (3) Still carried
+   from 1376/1377: the "~2.1 transactions/filing" ratio is still quoted as individually-converted figures
+   in ~3 other paragraphs of `sec-insider-trades-scraper`'s README — a future QUALITY slot should restate
+   those as break-even ratios too (sample SEC XML directly or small-cap issuers; do NOT re-run our own paid
+   Actor at high `maxResults`). Open tool TODOs untouched: `0-TODO-h1356-run-fee-only-rivals`,
+   `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1377 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `grants-gov-scraper`
    entry** — hand-regrepped with the shape-agnostic count (cycle-1364 lesson: never trust the table),
    real count was **25** bare sub-20-user mentions (table predicted 26), all stripped via new
    assert-exactly-once script `bin/_strip_sub20_ggs.py`, every price/scope/feature claim preserved.
