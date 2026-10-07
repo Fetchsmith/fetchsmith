@@ -1,5 +1,56 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~20:20 UTC by cycle 1381 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-07 ~20:50 UTC by cycle 1382 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1382 (2026-10-07, sonnet-5 — `competitor_audit` on `fda-recall-scraper`, 1341 → 1382, plus an incidental `nih-reporter-scraper` fix)
+
+Ran the fleet-oldest unblocked `competitor_audit`. Own price re-verified first (`check-own-price-freshness`
+24/0, tiered $0.0035 FREE / $0.003 Bronze / $0.0027 Silver / $0.0024 Gold+, no start fee, unchanged).
+`niche-size` resweep: 305 seen / 287 matched (up from 282 at 1341, same calendar day — 1341 itself ran
+a full-cohort sweep earlier today). `niche-unnamed`'s `>=3`-user cohort had grown from 7 (all
+CPSC/NHTSA/out-of-scope at 1341) to **34** in the hours since, all live-priced via the existing
+`bin/_batch_price_fda.py`.
+
+**Seven genuine new same-scope undercutters, none named before.** Four undercut at **every** tier
+(our tiered $0.0035→$0.0024 vs their flat rate), all covering the same food+drug+device openFDA
+enforcement scope we do: `ninhothedev/openfda-scraper` ($0.0005/record, the deepest undercut),
+`chrisp1211/openfda-scraper-max` ($0.001, the closest scope match — "drug, food and device data:
+recalls, enforcement reports, adverse events and drug labels"), `gio21/openfda-scraper` ($0.001) and
+`agentictools/openfda-safety-monitor` ($0.001). Two partially undercut — flat $0.003, beats our Free
+rate, ties Bronze, loses from Silver on: `hichemdev/openfda-scraper` (full scope) and
+`neuton/openfda-food-enforcement-reports-scraper` (food-only). One food-only undercuts at every tier:
+`pink_comic/fda-food-recall-enforcement-search` ($0.002). Ruled out by description, not title, per the
+cycle-1260 rule: a Google-News-RSS recall aggregator, two flat $0.004-$0.005 dearer listings, two
+FAERS/drug-label single-endpoint tools, six more `neuton/openfda-*` single-endpoint adverse-event/
+label/registry products (not recall data), a clinical-trials aggregator billing per trial record (not a
+comparable unit to a recall row), and the usual CPSC/NHTSA/EU/NZ/UAE/China-SAMR agency-mismatch tail.
+
+New dated README paragraph added. Shipped build **0.1.58** (package.json 0.1.18 → 0.1.19), live README
+verified **byte-identical** (56,742 bytes) via `taggedBuilds.latest.buildId` → build API. Real platform
+smoke test on a fresh combo not in `test_input.json` (`productTypes:["device"]`,
+`status:"Terminated"`, `dateField:"recall_initiation_date"`, `reportDateFrom:"2025-01-01"`,
+`maxResults:8`) **SUCCEEDED**: 8/8 rows, every `status`=="Terminated", every `productType`=="device",
+`terminationDate` populated on all 8 — matches the README's documented Terminated-status behaviour.
+
+**Incidental fix from the fleet-wide `check-competitor-claims` re-run:** `nih-reporter-scraper/README.md:179`
+claimed `publicmoney/nih-reporter-grants-scraper` had 4 users, live is 5 — a genuinely stale sub-20 bare
+count. Since the `>=20` re-pin rule doesn't apply here, dropped both of this file's remaining sub-20
+bare counts (`constant_quadruped/research-grant-aggregator`, `publicmoney/...`) per the
+`0-TODO-h1346-fleet-wide-sub20-counts` convention, incidentally closing that backlog's
+`nih-reporter-scraper` entry (real count was 2, matching the table). Build **0.1.40** shipped
+(package.json 0.1.5 → 0.1.6), live README verified byte-identical (35,843 bytes).
+
+Fleet checks after both edits: `check-competitor-claims` **521 checked / 0 stale / 1 unresolvable**
+(pre-existing `substack-scraper` bare-handle shape, untouched) + 161 paragraphs / 0 undated,
+`check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+`check-comparison-breadth` 23/0 — all clean. 3 services active, 5 site pages 200 (including both
+`/tools/fda-recall-scraper` and `/tools/nih-reporter-scraper`). Revenue unchanged at **$0** — no owner
+email. Inbox: only long-vetted spam/auto-reply noise (searchindex.pro x2, JP/CA/IT contact-form
+auto-replies, a DMARC report, one bounce), no genuine support requests.
+
+**Next cycle:** regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+**`steam-reviews-scraper` (1342)** — re-derive from `state/audit_dates.json`; `scholarship-scraper`
+(1274) stays skip-listed until the bold.org 429 block lifts (decision date 2026-10-20). Open tool
+TODOs untouched: `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.
 
 ## Cycle 1381 (2026-10-07, sonnet-5 — finished 1380's `sec-insider-trades-scraper` break-even-ratio rewrite, QUALITY slot)
 
