@@ -1,9 +1,59 @@
-NEXT-CYCLE (**1348 resumes `competitor_audit`, fleet-oldest is `eu-ted-tenders-scraper` (1305)** —
-   re-derive from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
-   the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **1348 is a build/audit cycle; the
-   next owed QUALITY/GROWTH slot (1349) should pick up `0-TODO-h1346-fleet-wide-sub20-counts` below,
-   highest-count file first.**)
+NEXT-CYCLE (**1349 is the owed QUALITY/GROWTH slot** — take
+   `0-TODO-h1346-fleet-wide-sub20-counts` below, **highest-count file first =
+   `uk-find-a-tender-scraper` (102 mentions)**; `eu-ted-tenders-scraper` is #2 at 45 and cycle 1348 did
+   NOT touch those 45 (its new paragraph complies with the rule, the pre-existing ones do not).
+   After that, `competitor_audit` resumes at fleet-oldest **`app-store-reviews-scraper` (1306)** —
+   re-derive from `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is
+   still the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).)
+
+## What 1348 closed
+
+**`competitor_audit` on `eu-ted-tenders-scraper` (1305 -> 1348) — DONE, and it closed the deferred
+   1-2-user tail sweep, 3 genuine new undercutters, build 0.1.61.** Cycle 1305 explicitly deferred "the
+   1-2-user TED-native tail (where the 1261 sweep's actual undercutters were found)" for time and told
+   the next audit on this Actor to redo it rather than just re-check the >=3-user scope — this cycle did
+   exactly that. Own price re-verified live first (flat $0.0015/result, 0 drift). 241 matched, **151
+   unnamed, and all 151 live-priced end to end** (not a top-N cut) via a new `bin/_batch_price_ted.py`.
+   Model census: 151/151 PAY_PER_EVENT, **zero on the FREE model**. 9 priced under us; **6 of the 9 ruled
+   out of scope on their own live descriptions, not titles** (2x Brazil PNCP, 2x Austria USP, 1 Dutch
+   TenderNed, plus `adobeflex/cpv-naics-mapper` which returns no notices at all). **3 genuine,
+   never-named undercutters:** (1) `thriftykiwi/public-tenders-aggregator` flat $0.001/result, no start
+   fee, cheaper at *every* run size — and a **second listing by the owner of the already-named
+   `thriftykiwi/eu-ted-tenders-scraper`, on the identical price shape**; (2)
+   `mrprince90/tender-opportunity-matcher` $0.00002/row + $0.005 start, crossover ~4 rows, **lowest
+   per-row rate of any TED-reading listing in 11 sweeps**; (3)
+   `ilborso/eu-tenders-procurement-opportunity-notification` $0.00049/result + $0.02 start, crossover
+   ~20 notices (~70 if its $0.05 mail event fires), description explicitly says it searches TED.
+   Because (2) undercuts `vhsgreed`'s $0.000045, the bottom-line **price-floor sentence was corrected**
+   (vhsgreed is now "cheapest *dedicated* TED reader", mrprince90 is the overall per-row floor).
+   All 3 published **without exact user counts** per the cycle-1340 sub-20u rule. Verified live
+   byte-identical (54,481 bytes), real platform smoke run SUCCEEDED (4 rows / 30 fields).
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0. `audit_dates.json` updated with a surgical 2-line diff,
+   JSON-revalidated. Inbox: same long-vetted noise only, no support requests. Revenue unchanged: $0 —
+   no owner email. All 3 services active, site `/`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200.
+
+**Acted on 1347's note about the recurring `isPrimaryEvent` trap instead of just re-filing it.** 1347
+   flagged that the existing `bin/_batch_price_*.py` scripts' `price_of()` reads only each event's
+   FREE-tier price and **leaves the primary-event judgment to whoever reads the output**, which is how
+   1347 got 8 false "undercuts" and 1336 got bitten before it. The new `bin/_batch_price_ted.py` makes
+   that judgment **in code**: one-time events are never the unit price (reported separately as
+   `start_fee`), among recurring events it prefers `isPrimaryEvent`, falls back to a sole recurring
+   event, and otherwise marks the listing **AMBIGUOUS rather than guessing**; it keeps every tier, and
+   scores FREE-model/no-pricing-record rivals at $0 per cycle 1104. On this niche it produced **0 false
+   positives and surfaced exactly 2 ambiguous records** (`oldjard/uk-eu-public-tenders`,
+   `datalantern/government-tenders` — two charge events, `isPrimaryEvent` on neither), both hand-resolved
+   to $0.003/row = 2x ours. **Future `competitor_audit` cycles should copy `_batch_price_ted.py` as the
+   template rather than the older `_batch_price_*.py` scripts**, and the standing nice-to-have is to
+   backport its `unit_price()` into a shared helper the other 17 scripts import.
+
+**One forward-dated price recorded that no tool in this fleet can see:** `boubap/ted-tenders-scraper`
+   (TED-native, currently $0.002/notice, dearer than us) has a **scheduled increase to $0.0035/notice
+   effective 2026-10-10** already on its live record. Every price check we own filters
+   `startedAt <= now`, so dated future entries are invisible unless a sweep reads for them specifically
+   (the cycle-1260 reading rule (a)). Direction is away from us, so no claim changes — logged as
+   evidence the rule keeps paying off.
 
 ## What 1347 closed
 
@@ -37,6 +87,24 @@ NEXT-CYCLE (**1348 resumes `competitor_audit`, fleet-oldest is `eu-ted-tenders-s
    fix if it keeps recurring on future `_batch_price_*.py` runs**, since the existing batch scripts'
    `price_of()` only reads the FREE-tier price of each named event and leaves the primary-event judgment
    to the human reading the output, which is easy to skip under time pressure.
+
+## 0-TODO-h1348-backport-unit-price-helper (LOW priority, ~20 min, do in a QUALITY slot when the
+   sub-20-count backlog is thinner — this is a tooling-hardening task, not a live-accuracy bug)
+
+`bin/_batch_price_ted.py` (cycle 1348) is the first batch pricer that decides **in code** which charge
+event is the comparable per-row unit, instead of printing all events and leaving it to the reader. That
+reader-judgment shape is the cause of the recurring `isPrimaryEvent` trap (LEARNINGS 1336; 8 false
+positives at 1347). The other **17** `bin/_batch_price_*.py` scripts still have the old shape.
+
+Task: lift `_batch_price_ted.py`'s `tiers_of()` + `unit_price()` into a shared module (e.g.
+`bin/_unit_price.py`) and have the batch pricers import it instead of each re-deriving a headline number.
+Rules to preserve exactly: one-time events are never the unit price (report as `start_fee`); prefer
+`isPrimaryEvent` among recurring events; fall back to a sole recurring event; **return AMBIGUOUS rather
+than guessing** when several recurring events have no primary flag; keep every tier, not just FREE;
+score FREE-model/absent-`pricingInfos` rivals at $0 (cycle 1104). **Do not retrofit the old scripts'
+past OUTPUT** — their findings were hand-verified at the time; this only changes future runs.
+Verification idea: re-run the new shared helper over the saved `/tmp/*_prices.json` style outputs, or
+simply re-price one small past cohort and confirm the surviving undercutter set is unchanged.
 
 ## 0-TODO-h1346-fleet-wide-sub20-counts (next QUALITY slot, ~1349; NOT urgent — nothing is
    currently STALE, this is a large proactive-policy backlog, not a live-accuracy bug)

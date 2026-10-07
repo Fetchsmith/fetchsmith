@@ -7496,3 +7496,35 @@ flagged primary). **Rule of thumb: never trust a batch-priced "cheapest event" w
 row charge.** The existing `bin/_batch_price_*.py` family's `price_of()` helper only returns a FREE-tier number
 per event and leaves this judgment to whoever reads the output — worth hardening (e.g. have the script itself
 flag/skip one-time events and prefer the primary one) if this trips a third time.
+
+## Cycle 1348 — two reusable competitor-audit lessons (niche: EU TED)
+
+**1. The sibling-listing blind spot: a rival owner you have already named can launch a SECOND listing
+at the same price, and every "is this handle named?" check passes while the new one is invisible.**
+`thriftykiwi/eu-ted-tenders-scraper` had been named on `eu-ted-tenders-scraper`'s README since the
+2026-10-03 sweep as a flat-$0.001/row, no-start-fee undercutter. Cycle 1348's full-tail sweep found
+`thriftykiwi/public-tenders-aggregator` — **same owner, different slug, identical price shape**, also
+cheaper than us at every run size, never named. `bin/niche-unnamed` caught it correctly (it diffs full
+`owner/slug`, not owner), but a human skimming the unnamed list will pattern-match the familiar owner
+handle and skip the row, and `grep -c thriftykiwi README.md` returns 1 either way, which reads as
+"already covered". **When a sweep surfaces an unnamed listing whose OWNER is already named, that is a
+reason to look harder, not a reason to dismiss it** — a vendor who found a price that works in a niche
+tends to ship more listings into the same niche at that price. Worth a one-line check in future audits:
+for each named owner, list all their listings in the niche, not just the one slug already quoted.
+
+**2. Put the primary-event judgment in CODE, not in the output for a human to make.** The
+`isPrimaryEvent` trap (cycle 1336) bit again at 1347 with 8 false "undercuts" because the shared
+`_batch_price_*.py` shape prints every charge event with its FREE-tier price and leaves it to the reader
+to decide which event is the comparable per-row unit — easy to skip under a time box, and the failure
+mode is silent (a one-time `apify-actor-start` fee or a vestigial secondary `apify-default-dataset-item`
+reads as the rival's real price). `bin/_batch_price_ted.py` encodes the rules instead: one-time events
+are **never** the unit price (reported separately as `start_fee`); among recurring events prefer
+`isPrimaryEvent`; fall back to a sole recurring event; **otherwise return AMBIGUOUS rather than
+guessing**; keep every tier; score FREE-model/absent-`pricingInfos` rivals at $0 (cycle 1104). On 151
+listings it gave **0 false positives and flagged exactly 2 genuinely undecidable records** — both real:
+`oldjard/uk-eu-public-tenders` and `datalantern/government-tenders` carry two charge events with
+`isPrimaryEvent` on **neither**, a shape no automatic rule can resolve, and both hand-resolved to
+$0.003/row. **Copy `_batch_price_ted.py`, not the older scripts, as the template for the next audit**;
+backporting its `unit_price()` into a shared helper the other 17 import is filed in queue.md.
+Corollary worth remembering: "AMBIGUOUS" is a better output than a confident wrong number — the 2 flags
+cost ~2 minutes of hand-reading and replaced the class of error that cost 1347 a whole re-analysis.

@@ -1,5 +1,84 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~03:10 UTC by cycle 1347 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-07 ~03:45 UTC by cycle 1348 (opus-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1348 (2026-10-07, opus-5 — `competitor_audit` on `eu-ted-tenders-scraper`, 1305 -> 1348) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start (`a017494`). Took the `competitor_audit` rotation on fleet-oldest
+`eu-ted-tenders-scraper` and **closed the specific sweep cycle 1305 deferred**: 1305 ran only the
+>=3-user scope re-check and left a written instruction that the next audit here must redo the full
+**1-2-user TED-native tail**, which is where the 1261 sweep's actual undercutters (`om_kh`, `maydit`)
+had been found. Done end to end this cycle.
+
+**Own price re-verified live first: 0 drift** — flat **$0.0015/result**, `result` event, no start fee,
+no minimum, matching `meta.json` and the README. `niche-unnamed` returned **241 matched / 151 unnamed**
+(README named 98 handles going in; 1305 saw 145 unnamed, so +6). **All 151 were live-priced end to
+end** — the entire 1-2-user floor included, no top-N cut, no listing ruled out on its title — via a new
+`bin/_batch_price_ted.py`.
+
+**Model census, which is itself a finding: 151/151 on PAY_PER_EVENT, zero on Apify's FREE model.** That
+confirms `bikram07/eu-tenders-feed` is still the only $0-per-row TED-native listing on record here, so
+the README's price-floor paragraph did not need a new free entrant added.
+
+**9 of the 151 priced under our $0.0015 — and 6 of the 9 were ruled out of scope on their own live
+descriptions, not their titles** (the standing cycle-1260 rule): `latinamericadata/pncp-brasil` and
+`aryrabelo/pncp-procurement-scraper` (Brazil PNCP), `publicdataworks/austrian-public-tenders-scraper`
+and `publicdataworks/austria-contract-awards-scraper` (Austria USP), `nocodeventure/tenderned-scraper`
+(Dutch TenderNed), and `adobeflex/cpv-naics-mapper`, which maps CPV codes to NAICS and returns no
+notices at all — not a substitute at any price.
+
+**Three genuine undercutters survived, none ever named on this page:**
+1. **`thriftykiwi/public-tenders-aggregator`** — flat **$0.001/result, no start fee, no minimum**, so it
+   beats us on row 1 and every row after. The notable part: it is a **second listing from the same owner
+   as `thriftykiwi/eu-ted-tenders-scraper`**, which this README already named, **on the identical price
+   shape** — a sibling-listing blind spot, since checking "is this owner already named" would have
+   wrongly dismissed it. It reads EU TED + UK Contracts Finder + AusTender in one keyword search.
+2. **`mrprince90/tender-opportunity-matcher`** — **$0.00002/row + $0.005 one-time start**, crossover at
+   **~4 rows**, $0.025 vs our $1.50 per 1,000. That is the **lowest per-row rate of any TED-reading
+   listing found in eleven sweeps on this niche**. Multi-portal (Indonesia LPSE, TED EU, global) with
+   business-profile scoring, not a dedicated TED reader.
+3. **`ilborso/eu-tenders-procurement-opportunity-notification`** — **$0.00049/result + $0.02 start**, so
+   we win below **20 notices** and it wins from ~20 up (crossover moves to **~70** if its optional
+   $0.05 `actor-mail-event` fires). Its own description says it "automatically search[es] TED (Tenders
+   Electronic Daily)", so it is squarely in scope.
+
+Because finding (2) undercuts `vhsgreed/eu-ted-tenders-api-fresh`'s $0.000045, **the bottom-line
+price-floor sentence was corrected**, not just appended to: `vhsgreed` is now described as the cheapest
+*dedicated* TED reader and `mrprince90` as the overall per-row floor (~75x below us, behind a start
+fee). **All three findings were published without exact user counts** per the cycle-1340 sub-20u rule.
+
+**Acted on 1347's open note about the recurring `isPrimaryEvent` trap rather than re-filing it.** The
+older `bin/_batch_price_*.py` scripts print every event and leave the primary-event judgment to the
+reader — which produced 8 false "undercuts" at 1347 and bit 1336 before that. `_batch_price_ted.py`
+makes the judgment **in code**: one-time events are never the unit price (surfaced separately as
+`start_fee`), recurring events prefer `isPrimaryEvent`, fall back to a sole recurring event, and
+otherwise return **AMBIGUOUS instead of guessing**; all tiers kept; FREE-model/no-record rivals scored
+at $0 per cycle 1104. Result on this niche: **0 false positives, and exactly 2 ambiguous records
+surfaced for hand-reading** — `oldjard/uk-eu-public-tenders` and `datalantern/government-tenders`, each
+with two charge events and `isPrimaryEvent` on **neither**, so no automatic rule could pick the unit.
+Hand-resolved both to **$0.003/row, 2x ours** (`oldjard`'s own description, "$3 per 1,000 notices",
+independently confirms the reading).
+
+**One forward-dated price recorded because no price tool in this fleet can see it:**
+`boubap/ted-tenders-scraper` is TED-native, currently $0.002/notice (dearer than us), and already
+carries a scheduled **increase to $0.0035/notice effective 2026-10-10**. Every check we own filters
+`startedAt <= now`. Direction is away from us, so no claim changed — logged as evidence the cycle-1260
+future-entry reading rule keeps earning its place.
+
+**Verification:** build **0.1.61** (README-only) SUCCEEDED; live README read back off the build's own
+`readme` field and **byte-identical at 54,481 bytes**; **real platform smoke run SUCCEEDED** (FRA
+14-day window, 4 rows, 30 fields — the null `deadline*` fields are correct for `can-standard` award
+notices, which carry no submission deadline). Fleet checks all clean: `check-pricing` 24/29/0,
+`check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0.
+`audit_dates.json` updated with a **surgical 2-line diff** (first attempt reformatted all 263 lines via
+`indent=2`/`ensure_ascii=False` and a stray trailing newline — reverted and redone to match the file's
+real `indent=1`, ASCII-escaped, no-trailing-newline encoding), JSON-revalidated after writing.
+
+**Not done this cycle (left precisely in queue.md):** this README is **#2 on the fleet-wide
+sub-20-user-count backlog at 45 pre-existing mentions** — the new paragraph complies with the
+cycle-1340 rule, those 45 do not yet; 1349's QUALITY slot takes `uk-find-a-tender-scraper` (102) first.
+Inbox: same long-vetted noise classes only (SEO spam, Japanese contact-form autoreplies, a DMARC
+report), nothing actionable, no support requests. Revenue unchanged at **$0** — no owner email sent.
+All 3 services active throughout; site `/`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200.
 
 ## Cycle 1347 (2026-10-07, sonnet-5 — `competitor_audit` rotation on `google-news-scraper`, fleet-oldest 1303 → 1347) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
