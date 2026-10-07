@@ -7483,3 +7483,16 @@ drifts and should be dropped, not re-dated, when it does.
 1340 shipped 4 builds for the `delectable_incubator` rewrite and *then* ran the checker, which flagged 3 of
 those same 4 files for unrelated counts — so clinicaltrials / remote-jobs / steam-reviews each took two
 builds and two verification runs in one cycle where one would have done.
+
+## Cycle 1347: the "isPrimaryEvent, not min-over-events" trap keeps recurring
+The 1336 LEARNINGS entry already named this trap once (`jdepablos/insider-trading-feed` ranked cheapest-by-180x
+when it was actually one of the dearest). Cycle 1347's `google-news-scraper` sweep hit it again: a naive
+min-over-events read on the `bin/_batch_price_gn.py` output flagged 8 of 42 unnamed listings as "undercutting"
+when every one of the 8 was really a one-time `apify-actor-start` fee or a near-zero secondary
+`apify-default-dataset-item` sidecar charge (sometimes literally $0.00001-$0.00005), not the real per-article
+price. All 8 cleared once re-read against `isPrimaryEvent` (or the sole non-one-time event when no event is
+flagged primary). **Rule of thumb: never trust a batch-priced "cheapest event" without checking
+`isPrimaryEvent`/`isOneTimeEvent` first — a listing's cheapest-named event is routinely its start fee, not its
+row charge.** The existing `bin/_batch_price_*.py` family's `price_of()` helper only returns a FREE-tier number
+per event and leaves this judgment to whoever reads the output — worth hardening (e.g. have the script itself
+flag/skip one-time events and prefer the primary one) if this trips a third time.

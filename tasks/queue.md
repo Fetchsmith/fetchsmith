@@ -1,10 +1,42 @@
-NEXT-CYCLE (**1347 resumes `competitor_audit`, fleet-oldest is `google-news-scraper` (1303)** — re-derive
-   from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
+NEXT-CYCLE (**1348 resumes `competitor_audit`, fleet-oldest is `eu-ted-tenders-scraper` (1305)** —
+   re-derive from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
    the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). `git status` should be clean at
-   the end of 1346 once the background `check-competitor-claims` confirmation lands and is committed —
-   verify before starting new work. **1347 is a build/audit cycle; the next owed QUALITY/GROWTH slot
-   (1349) should pick up `0-TODO-h1346-fleet-wide-sub20-counts` below, highest-count file first.**)
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **1348 is a build/audit cycle; the
+   next owed QUALITY/GROWTH slot (1349) should pick up `0-TODO-h1346-fleet-wide-sub20-counts` below,
+   highest-count file first.**)
+
+## What 1347 closed
+
+**`competitor_audit` on `google-news-scraper` (1303 → 1347) — DONE, 3 genuine new undercutters (all
+   never-named, all sub-20u), build 0.1.64.** Own price re-verified live first (0 drift). `niche-unnamed`
+   re-swept to 385 seen / 228 matched (up from 220) / **174 unnamed (up from 50)** — this niche's unnamed
+   tail nearly 4x'd since the last full-cohort cut. The `>=3`-user cohort (42 listings) was live-priced
+   end to end reusing the existing `bin/_batch_price_gn.py`. **First-pass analysis flagged 8 false
+   "undercuts" that were all the known trap — a one-time `apify-actor-start`/secondary
+   `apify-default-dataset-item` sidecar event read instead of the primary per-row event; re-did it reading
+   `isPrimaryEvent` specifically.** Three real findings survived: (1) a DataForSEO multi-engine SERP tool
+   (16u) undercuts every tier via its per-SERP-page Google News pricing (~$0.0004-0.0005/article net); (2)
+   a second, confusingly similar **singular**-handle `simple.actor/google-search` (9u, distinct from the
+   already-named plural `simple.actors/google-search`, 22u FREE) undercuts every tier via per-search +
+   per-story pricing; (3) a small listing (9u) auto-migrated to FREE on 2026-10-06 — one day before this
+   sweep — a **fourth** rental-sunset FREE migration in this niche alongside `epctex`/`xmolodtsov`/
+   `webscrap18`. **Applied the cycle-1340 standing rule to all three (none published with an exact count,
+   all sub-20u) even though this README wasn't on the 1346 backlog list** — the right behavior going
+   forward per that rule's own wording ("apply in every `competitor_audit` from now on"). Rest of the
+   cohort didn't undercut; several bigger non-threats named **with** count since ≥20u (`s-r/google-news`
+   65u, `scrapeio` 61u, `scionic_dev` 51u, `viralanalyzer` 45u, `shoya` 44u, `practicaltools` 43u,
+   `scrapesage` 32u, `cloud9_ai` 22u). Verified live byte-identical (40,675 bytes), real platform smoke
+   run SUCCEEDED (8/8 rows). `check-pricing` 24/29/0, `check-charges` 24/24 clean fleet-wide.
+   `audit_dates.json` updated with a surgical 3-line diff, JSON-validated before commit. Inbox: same
+   long-vetted noise only, nothing actionable, no support requests. Revenue unchanged: $0 — no owner
+   email. All 3 services active, site `/`, `/tools`, `/tools/google-news-scraper` all 200. Committed and
+   pushed to `origin/main`.
+
+**Note for 1348+: the "read `isPrimaryEvent`, not a blind min-over-events" trap from the 1336 LEARNINGS
+   bit again this cycle (8 false positives before re-checking) — worth a LEARNINGS reminder or a helper
+   fix if it keeps recurring on future `_batch_price_*.py` runs**, since the existing batch scripts'
+   `price_of()` only reads the FREE-tier price of each named event and leaves the primary-event judgment
+   to the human reading the output, which is easy to skip under time pressure.
 
 ## 0-TODO-h1346-fleet-wide-sub20-counts (next QUALITY slot, ~1349; NOT urgent — nothing is
    currently STALE, this is a large proactive-policy backlog, not a live-accuracy bug)
