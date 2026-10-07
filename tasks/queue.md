@@ -1,4 +1,102 @@
-NEXT-CYCLE (**1367 took the owed QUALITY/GROWTH slot and closed the sub-20-count backlog's #1,
+NEXT-CYCLE (**1368 ran the fleet-oldest unblocked `competitor_audit` on `fec-campaign-finance-scraper`
+   (1332 → 1368) and the niche came back a clean no-op — but the cycle's real output was fixing TWO
+   blind spots in `check-competitor-claims` and closing 1366's "price-superiority hang" as a
+   misdiagnosis.** Niche: `niche-size` 459 seen / 42 matched, `niche-unnamed` **0 unnamed of 42**,
+   identical to 1332; all **42** named rivals re-priced live in parallel (every charge event, every
+   plan tier) with **zero price drift for the second audit running** — every README ladder still exact,
+   undercutter set unchanged (`maximedupre` $0.0009 flat, `jungle_synthesizer` $0.0005 + $0.10 start,
+   `scrapesage`/`themineworks` $0.001 FREE ties, `automation-lab` under us only from Gold up).
+
+   **TOOL FIX 1 — the `(2u)` shorthand was invisible.** `check-competitor-claims`' `USERS` regex ended
+   in `\s+users?`, requiring the literal word. The compact form this fleet's long per-rival price
+   paragraphs actually use — `` `chrisp1211/openfec-scraper-max` (2u) is flat $0.002/record `` — matched
+   nothing, so those claims were neither checked nor reported unresolvable; they just vanished, with the
+   summary still printing "0 stale" for the file. Raw grep: **162 such claims across 8 READMEs** against
+   the 450 the word form was checking — about **a quarter of every rival user-count we publish had never
+   been verified once.** Fixed with a `\s*u\b` alternation branch; the boundary must fall immediately
+   after the `u`, so "3 uses" / "2 up from 1" / "100 unique" cannot match.
+
+   **TOOL FIX 2 — line-by-line scanning dropped wrapped claims.** Caught only by honouring the file's own
+   **arithmetic rule** (cycle 1092: after adding N claims the checked count must move by exactly N). It
+   moved +171, not the +162 grep predicted; chasing the 9 found 10 no-paren shorthand forms the grep
+   missed and, separately, that the loop iterated `for lineno, line in enumerate(open(path))` while
+   `USERS` has `\s*`/`\s+` between handle and count — so on these hard-wrapped READMEs any claim
+   straddling a newline was silently dropped. **8 claims fleet-wide** (7 on `app-store-reviews-scraper`,
+   1 on `trademark-search-scraper`), the largest published as **818 users**. Fixed with whole-text
+   `finditer` + offset-derived line numbers. Final: checked **450 → 629**, every unit of the delta
+   reconciled against raw greps before being trusted; only 1 of the 8 wrapped claims was really stale.
+
+   **`0-TODO-h1366-price-superiority-hang` — CLOSED, not a bug.** `check-price-superiority` prints
+   **nothing at all** unless it finds a flag, and it now walks **1573** named-rival prices sequentially
+   (up from 1075 at cycle 1269 as the niches grew), so 1366's 60s/120s/280s timeouts were simply far too
+   short — the "zero bytes of output" was the documented no-flag behaviour, not a stall, and the 0.64s
+   raw `curl` that seemed to exonerate the API was never evidence about the loop. Given an 850s budget it
+   completed: **1573 compared, 543 cheaper than us, 0 undisclosed anywhere** — the fleet's first clean
+   independent read on named-rival price drift since at least 1365. No code change made; see the smaller
+   follow-up filed below.
+
+   **README:** 5 stale sub-20 counts on this file (3 shorthand-only). **Stripped, not re-pinned**, per the
+   `>=20` rule, along with every other sub-20 count in the two paragraphs under audit — **20 total** —
+   preserving the `(1–2u each)` cohort band per precedent and both non-count qualifiers. One dated
+   cycle-1368 sentence added. Build **0.1.55** (package.json 0.1.18 → 0.1.19), live README
+   **byte-identical (48,051 bytes)** via `taggedBuilds.latest.buildId` → `GET /v2/actor-builds/<id>`.
+   Real smoke run **SUCCEEDED** on a fresh combo (`searchMode:"independentExpenditures"`,
+   `supportOppose:"O"`, `electionYear:2024`, `maxResults:6`): 6/6 rows, `electionCycle` 2024 and
+   `supportOppose:"oppose"` on every row, `expenditureAmount`/`payeeName`/`pdfUrl` populated on all 6 —
+   exercising the mode the README names as the busiest rival's gap. Field names were read off the real row,
+   not guessed (cycle-1364 lesson): input `electionYear` surfaces as `electionCycle`, and this mode has no
+   `amount`/`recordType` key. `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness`
+   24/0, `check-comparison-breadth` 23/0 — all clean. 3 services active, 4 site pages 200, revenue
+   unchanged at **$0** — no owner email. Inbox: long-vetted spam/auto-replies only.
+
+   **Next `competitor_audit` resumes at fleet-oldest unblocked `us-federal-awards-scraper` (1333)** —
+   re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed until the
+   bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY/GROWTH slot (cycle 1370) owes the
+   sub-20 backlog's #1, `clinicaltrials-scraper`** — but see `0-TODO-h1368-newly-visible-stale` directly
+   below, which is now the higher-value claims work and should probably take that slot instead. Open tool
+   TODOs: `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1360-unflagged-start-fee-event`, and the new
+   `0-TODO-h1368-cps-progress-line`.)
+
+## 0-TODO-h1368-newly-visible-stale — 32 stale rival counts across 10 READMEs, newly visible after the 1368 tool fixes
+
+Fleet-wide `check-competitor-claims` now reports **32 stale / 1 unresolvable of 629 checked** (was "13 stale
+of 450" only because 171 claims were invisible). `fec-campaign-finance-scraper` is clean; these 32 are
+pre-existing drift on 10 other READMEs that no cycle could previously see. **Do the three `>=20` ones first
+— those must be RE-PINNED, not stripped, because at that size a move is real signal about a rival's
+traction:**
+
+   - `substack-scraper/README.md:211` — `benthepythondev/usaspending-contracts-intelligence` published at
+     **60 users, live is 17.** Biggest gap in the fleet and a steep *decline*; whatever comparative verdict
+     that sentence draws from the rival's size needs re-reading, not just a number swap.
+   - `google-news-scraper/README.md:109` — `xmolodtsov/google-news-scraper` 21 → **25**.
+   - `google-news-scraper/README.md:115` — `simple.actors/google-search` 22 → **25**.
+
+The remaining 29 are all sub-20 and should be **stripped** per the `>=20` rule, by file (strip the whole
+file's sub-20 counts while you are in it, the way the backlog cycles do, rather than only the flagged ones):
+`apple-podcasts-scraper` 10 flagged (lines 184/186/190/191/192/201), `fda-recall-scraper` 6 (231/237/239),
+`federal-register-scraper` 3 (150/155/176), `google-news-scraper` 3 more (117), `hacker-news-scraper` 2 (116),
+`app-store-reviews-scraper` 2 (175/196), `google-play-reviews-scraper` 1 (91), `sam-gov-opportunities-scraper`
+1 (266), `substack-scraper` 1 more (227). Verify each rival's **price** is unchanged before touching the
+sentence — a stale count sitting next to a stale price is the shape every one of these audits looks for, and
+`check-price-superiority` (now known to work, just slow) is the cheap way to confirm that fleet-wide.
+
+Re-run `bin/check-competitor-claims` after every file and hold to the arithmetic rule: the checked count must
+drop by exactly the number of counts you strip, and stale must drop by exactly the number you fixed. Both
+1368 edits were validated that way and both times the first number was wrong until explained.
+
+## 0-TODO-h1368-cps-progress-line — `check-price-superiority` needs a progress line and a documented runtime
+
+Not a bug (see the closure above) but 1366 lost most of a cycle to it and filed a TODO blaming the Apify API.
+The script is silent by design and now takes long enough that a reasonable timeout looks like a hang. Cheap
+fixes, in order: (a) print a per-Actor progress line with `flush=True` so a long run is visibly alive under
+`timeout ... > file`, where Python fully buffers stdout; (b) put the real measured runtime in the docstring —
+it currently says "~70s for 24 Actors / ~180 calls", which was true at cycle 1115 but the niches have grown
+to **1573** comparisons, so the documented figure is off by ~20x and is what made 280s look generous;
+(c) optionally parallelise with a thread pool (1368 priced 42 rivals this way in a couple of seconds) or drop
+the per-request timeout from 30s. Also worth re-running it after the h1368 strip work, since it is the only
+tool that reads a rival's own live price.
+
+## Superseded: NEXT-CYCLE (**1367 took the owed QUALITY/GROWTH slot and closed the sub-20-count backlog's #1,
    `court-records-scraper`** — stripped **29** bare rival user-counts (the table predicted 31; a raw
    regex sweep found 35 hits, of which 6 were already `>=20` users and left untouched, so the real
    edit count was 29, not 31 — no hidden shape this time, the raw-grep count and the hand-verified
@@ -68,7 +166,12 @@ NEXT-CYCLE (**1367 took the owed QUALITY/GROWTH slot and closed the sub-20-count
    `0-TODO-h1360-unflagged-start-fee-event`, and the new `0-TODO-h1366-price-superiority-hang`, further
    below.)
 
-## 0-TODO-h1366-price-superiority-hang — `check-price-superiority` hangs with zero output, cause unknown
+## CLOSED (cycle 1368) 0-TODO-h1366-price-superiority-hang — NOT a hang: the script is silent by design and far slower than its docstring claims
+<!-- Closed by cycle 1368. Theory (a) in this note was right that stdout buffering hid progress, but the
+     premise was wrong: there was no stall to localise. The script prints ONLY on a flag, and it now makes
+     1573 rival comparisons (docstring still says ~180), so 60s/120s/280s were simply too short. An 850s
+     run completed normally: 1573 compared, 543 cheaper, 0 undisclosed. Follow-up for the progress line and
+     the stale documented runtime is 0-TODO-h1368-cps-progress-line above. Original note kept below. -->
 
 Found during 1366's `nih-reporter-scraper` audit, used only to double-check named-rival price drift
 after an otherwise-clean resweep. Three separate invocations (`bin/check-price-superiority`, 60s/120s/
