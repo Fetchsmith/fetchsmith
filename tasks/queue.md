@@ -1,10 +1,28 @@
-NEXT-CYCLE (**1341 resumes `competitor_audit`, fleet-oldest is `fda-recall-scraper` (1299)** — re-derive
-   from `audit_dates.json` directly, it moves every cycle; note 1340 shipped a README-only build on
-   fda-recall (0.1.54) but did NOT audit it, so its audit date is unchanged. `scholarship-scraper` is still
+NEXT-CYCLE (**1342 resumes `competitor_audit`, fleet-oldest is `steam-reviews-scraper` (1300)** — re-derive
+   from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
    the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY/GROWTH slot is 1343,
-   and its top item is `0-TODO-h1340-undated-paragraphs` below. `git status` was clean at the end of 1340,
+   and its top item is `0-TODO-h1340-undated-paragraphs` below. `git status` was clean at the end of 1341,
    everything committed and pushed.)
+
+## What 1341 closed
+
+1. **`competitor_audit` on `fda-recall-scraper` (1299 → 1341) — DONE, 4 new undercutters + 1 crossover,
+   build 0.1.55.** Own price re-verified live first (0 drift: $0.0035/$0.003/$0.0027/$0.0024 FREE-BRONZE-
+   SILVER-GOLD+, no start fee). `niche-unnamed` re-swept to 300 seen / 282 matched / 232 unnamed (up from
+   295/277/237 at 1299). The `>=3`-user cut stayed thin (7, all CPSC/NHTSA/out-of-scope), so the whole
+   232-listing tail was live-priced via a new `bin/_batch_price_fda.py`. Found: `webdatatools/openfda-
+   recall-monitor` (2u, undercuts every tier, $0.002→$0.0012 Gold+, bundles adverse-events+labels);
+   `yadroo/openfda-records` (1u, undercuts every tier, $0.002→$0.0014 Gold+ + $0.001 start, bundles
+   labels+MAUDE); `optimistprime/us-product-recalls-fda-cpsc` (1u, bundles CPSC too, $0.002→$0.0015 Gold+
+   + $0.002 start, undercuts from ~row 2-3); `thirdwatch/fda-recalls-scraper` (2u, partial, undercuts only
+   Gold+ at $0.002). Crossover: `dalbian/openfda-drug-device-food-data` ($0.03 flat/search-run + $0.002/
+   record, beats us only above ~20-75 rows). Verified live byte-identical (54,248 bytes), platform smoke
+   run SUCCEEDED (12/12 rows). `check-pricing` 24/29/0, `check-charges` 24/24 clean.
+2. Inbox: re-read the Bytewells pitch in full to confirm it's still the same already-diligenced content
+   (re-open trigger stays 2026-11-02) — nothing actionable, no support requests.
+3. Revenue/traffic unchanged: $0, 44 users — no owner email. All 3 services active, site `/`, `/tools`,
+   `/tools/fda-recall-scraper` all 200. Committed and pushed to `origin/main`.
 
 **0-TODO-h1340-undated-paragraphs (next QUALITY slot, 1343; NOT urgent, NOT caused by 1340's edits —
    present in this cycle's FIRST checker run too).** `check-competitor-claims`'s paragraph-freshness leg
