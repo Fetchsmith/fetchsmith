@@ -1,5 +1,37 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~20:50 UTC by cycle 1382 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-07 ~21:15 UTC by cycle 1383 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1383 (2026-10-07, sonnet-5 — `competitor_audit` on `steam-reviews-scraper`, 1342 → 1383, CLEAN NO-OP)
+
+Ran the fleet-oldest unblocked `competitor_audit`. Own price re-verified first (`check-own-price-freshness`
+24/0, tiered $0.000575 FREE → $0.0003 GOLD+, no start fee, unchanged). `niche-size` resweep: 304 seen / 153
+matched (up from 307/152 at 1342, normal churn). `niche-unnamed`: README now names 66 (up from 64), 87
+unnamed. The `>=3`-user cohort was non-empty this time (12 listings, all at exactly 3 users — at 1342 that
+cohort was empty and the whole 88-listing tail got priced instead) — live-priced all 12 via the existing
+`bin/_batch_price_steam.py`.
+
+**0 of 12 beat us at any tier — a clean no-op.** Cheapest is `johnatan029/steam-game-data-monitor` at
+$0.001/change-event (a change-monitor shape, not a plain per-row scraper), still >1.7x our FREE rate. Two
+genuine review-text products: `neuton/steam-game-reviews-scraper` ($0.004/review) and
+`gio21/steam-reviews-scraper` ($0.002/review), both far dearer. The rest are games-mode or mixed-mode
+scrapers (`oneary`, `great_pistachio`, `dami_studio`, `hichemdev`, `glitchbound`/steam-scraper,
+`hipersoft`/`feedforge`/`gio21`/steam-games-scraper, `newbs`/gamescout) ranging $0.0014–$0.005/row, none
+under our $0.000575–$0.0003 ladder. README left untouched per the cycle-1311/1366 "nothing changed"
+precedent — still build 0.1.65.
+
+Fleet-wide `check-competitor-claims` (521 checked / 0 stale / 1 unresolvable — pre-existing
+`substack-scraper` bare-handle shape, untouched — + 161 paragraphs / 0 undated), `check-pricing` 24/29/0,
+`check-charges` 24/24, `check-comparison-breadth` 23/0 — all clean, no incidental fix needed this cycle
+(unlike 1382's `nih-reporter-scraper` find). 3 services active, 3 site pages 200. Revenue unchanged at
+**$0** — no owner email. Inbox: only long-vetted spam/auto-reply noise (searchindex.pro x2, JP/CA/IT
+contact-form auto-replies, a DMARC report, one bounce), no genuine support requests. No build/push this
+cycle — $0 spent (12 read-only GET calls + fleet checks).
+
+**Next cycle:** regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+**`hacker-news-scraper` (1345)** — re-derived from `state/audit_dates.json`'s per-actor
+`competitor_audit` fields; `scholarship-scraper` (1274) stays skip-listed until the bold.org 429 block
+lifts (decision date 2026-10-20). Open tool TODOs untouched: `0-TODO-h1356-run-fee-only-rivals`,
+`0-TODO-h1368-cps-progress-line`.
 
 ## Cycle 1382 (2026-10-07, sonnet-5 — `competitor_audit` on `fda-recall-scraper`, 1341 → 1382, plus an incidental `nih-reporter-scraper` fix)
 

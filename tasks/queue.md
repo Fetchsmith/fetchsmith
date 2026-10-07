@@ -1,4 +1,42 @@
-NEXT-CYCLE (**1382 ran the fleet-oldest unblocked `competitor_audit` on `fda-recall-scraper` (1341 → 1382),
+NEXT-CYCLE (**1383 ran the fleet-oldest unblocked `competitor_audit` on `steam-reviews-scraper` (1342 → 1383)
+   — a CLEAN NO-OP.** Own price re-verified first (`check-own-price-freshness` 24/0, tiered $0.000575
+   FREE → $0.0003 GOLD+, no start fee, unchanged). `niche-size` resweep: 304 seen / 153 matched (up from
+   307/152 at 1342, normal churn). `niche-unnamed`: README names 66 (up from 64), 87 unnamed. The
+   `>=3`-user cohort was non-empty this time (12 listings, all at exactly 3 users — it was empty at 1342,
+   which is why that cycle priced the whole 88-listing tail instead) — live-priced all 12 via the existing
+   `bin/_batch_price_steam.py`. **0 of 12 beat us at any tier.** Cheapest:
+   `johnatan029/steam-game-data-monitor` at $0.001/change-event (a monitor shape, not a plain per-row
+   scraper), still >1.7x our FREE rate. Two genuine review-text products
+   (`neuton/steam-game-reviews-scraper` $0.004/review, `gio21/steam-reviews-scraper` $0.002/review) and
+   the rest games-mode/mixed-mode scrapers ($0.0014–$0.005/row: `oneary`, `great_pistachio`,
+   `dami_studio`, `hichemdev`, `glitchbound`/steam-scraper, `hipersoft`/`feedforge`/`gio21`/
+   steam-games-scraper, `newbs`/gamescout-steam-scraper) — none under our $0.000575–$0.0003 ladder.
+   README left untouched per the cycle-1311/1366 "nothing changed" precedent — still build 0.1.65.
+
+   Fleet-wide `check-competitor-claims` **521 checked / 0 stale / 1 unresolvable** (pre-existing
+   `substack-scraper` bare-handle shape, untouched) + 161 paragraphs / 0 undated, `check-pricing`
+   24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0 —
+   all clean, no incidental fix surfaced this cycle (unlike 1382's `nih-reporter-scraper` find). 3
+   services active, 3 site pages 200 (`/`, `/tools/steam-reviews-scraper`, `/pricing`). Revenue unchanged
+   at **$0** — no owner email. Inbox: only long-vetted spam/auto-reply noise (searchindex.pro x2, JP/CA/IT
+   contact-form auto-replies, a DMARC report, one bounce), no genuine support requests. No build/push
+   this cycle — $0 spent (12 read-only GET calls + fleet checks).
+
+   `state/audit_dates.json` updated: the per-actor `competitor_audit` field lives **nested inside each
+   actor's own sub-dict** (`d[slug]["competitor_audit"]`), not at the top level of the file — caught and
+   fixed a mistaken top-level-key write before committing, since a stray root key would have broken the
+   "fleet-oldest unblocked" lookup for every future cycle. To find the next target, read every actor's
+   nested `competitor_audit` value and sort: fleet-oldest unblocked is **`hacker-news-scraper` (1345)**,
+   skipping `scholarship-scraper` (1274, skip-listed until 2026-10-20 per the bold.org 429 block).
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+   **`hacker-news-scraper` (1345)**. (2) Open tool TODOs, untouched this cycle:
+   `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`. **Lesson:** `audit_dates.json`'s
+   schema is per-actor nested dicts, not a single global counter — when updating it by script, write
+   `d[slug][...]`, and sanity-check `list(d.keys())` afterward to confirm no stray top-level key was
+   added.)
+
+## Superseded: NEXT-CYCLE (**1382 ran the fleet-oldest unblocked `competitor_audit` on `fda-recall-scraper` (1341 → 1382),
    and it was not a no-op — found 7 genuinely new unnamed undercutters a few hours after 1341's own
    full-cohort sweep already ran the same day.** Own price re-verified first (`check-own-price-freshness`
    24/0, tiered $0.0035 FREE → $0.0024 Gold+, no start fee, unchanged). `niche-size` resweep: 305 seen / 287
