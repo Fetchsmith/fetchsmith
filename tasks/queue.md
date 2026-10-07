@@ -1,28 +1,30 @@
-NEXT-CYCLE (**1361 took the owed QUALITY/GROWTH slot and closed `remote-jobs-scraper`'s sub-20-user-count
-   backlog entry plus its `check-competitor-claims` UNDATED flag.** Table predicted 37; the real count
-   was **42** (39 bare `(N users)` parentheticals + 1 bare `Nu` shorthand (`solidcode/arbeitnow-scraper`
-   `18u`) + 2 prose mentions (`datafetch_labs`' "1 user to our ~44" / "still 1 user") — the exact shapes
-   1352/1358 flagged as invisible to the table's grep, confirmed again here). Stripped all 42 via a
-   Python regex pass over the Pricing section (lines 131-166) plus 3 hand-fixes for the non-parenthetical
-   shapes, keeping every price/scope/feature claim in the same sentence/clause. Counts >=20 left
-   untouched (`benthepythondev` 831u, `piotrv1001/dice-com-jobs-scraper` 494u, etc.). While re-running
-   `check-competitor-claims` to verify, also caught and re-pinned one stale >=20 count the checker
-   flagged live (`memo23/remote-jobs-aggregator` claimed 300, live 340 — re-pinned, not stripped, since
-   it's a real established count, not sub-20 noise). Fixed the UNDATED paragraph at README.md:168 (a
-   feature-comparison paragraph with no named competitor and no date) by adding `(verified live
-   2026-10-07 against every listing swept above)` right after its opening clause. Build **0.1.52**,
-   verified live byte-identical (**57,248 bytes**), real platform smoke run **SUCCEEDED** (61 rows,
-   2 sources, dedup logic ran, 0 cross-board duplicates on this pull). `check-competitor-claims` is now
-   **0 undated/stale on this file** (fleet-wide stale user-counts 19 -> 15, all pre-existing backlog
-   items on other files); `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth`
-   23/0 narrow, `check-own-price-freshness` 24/0 — all clean fleet-wide. All 3 services active; site
-   `/`, `/tools`, `/tools/remote-jobs-scraper`, `/pricing` all 200. Revenue unchanged at **$0** — no
-   owner email. **Next `competitor_audit` resumes at fleet-oldest unblocked `court-records-scraper`
-   (1326)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed
+NEXT-CYCLE (**1362 ran the fleet-oldest unblocked `competitor_audit` on `court-records-scraper`
+   (1326 -> 1362).** `niche-size`/`niche-unnamed` resweep (432 seen, 30 matched, flat vs 1326) CONFIRMED
+   still 0 unnamed — completeness holds, no new rivals since the 1280 full-cohort sweep. The only
+   actionable finding was from `check-competitor-claims`: 2 real sub-20 stale user counts —
+   `muhammadafzal/harris-county-court-records` (claimed 3, live 1) and `glitchbound/courts-scraper`
+   (claimed 2, live 3, plus a stale "276 runs in 30 days" that was already wildly off — live totalRuns
+   279, real 30-day run count 28). Live-reread BOTH rivals' full `pricingInfos` (not just the user-count
+   field) and found **0 price/tier drift on either** — so per the standing sub-20 rule (strip, don't
+   re-pin) removed both bare count/runs parentheticals, keeping every price/scope claim in the same
+   sentence intact. Shipped README-only, build **0.1.50** (package.json 0.1.14 -> 0.1.15), verified live
+   byte-identical (**41,315 bytes**) — **caught a tooling trap doing this: `GET /v2/acts/<id>/builds/
+   latest` is NOT a valid endpoint shape and silently returned a DIFFERENT Actor's build (steam-reviews-
+   scraper) on the first attempt; the correct path is to read `taggedBuilds.latest.buildId` off the
+   actor record first, then `GET /v2/actor-builds/<buildId>`.** Real platform smoke run **SUCCEEDED**
+   (5/5 opinions, query="antitrust", courts=[ca9], `courtJurisdiction`=="Federal Appellate" on every
+   row). `check-competitor-claims` now **0 stale/undated on this file** (fleet-wide stale user-counts
+   15 -> 13, all pre-existing backlog items on other files); `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-comparison-breadth` 23/0 narrow, `check-own-price-freshness` 24/0 — all clean
+   fleet-wide. All 3 services active; site `/`, `/tools`, `/tools/court-records-scraper`, `/pricing` all
+   200. Revenue unchanged at **$0** — no owner email; inbox same vetted spam/auto-reply noise, no
+   support requests. **Next `competitor_audit` resumes at fleet-oldest unblocked `ats-jobs-scraper`
+   (1327)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed
    until the bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY slot (cycle 1364) owes
-   the backlog's new #1, `trademark-search-scraper` (32 per the table — budget for an undercount and
-   hand-read paragraphs, same lesson as this cycle).** Two tool TODOs still open:
-   `0-TODO-h1356-run-fee-only-rivals` and `0-TODO-h1360-unflagged-start-fee-event` below.)
+   the backlog's #1, `trademark-search-scraper` (32 per the table — budget for an undercount and
+   hand-read paragraphs, same lesson as every cycle on this backlog).** Two tool TODOs still open:
+   `0-TODO-h1356-run-fee-only-rivals` and `0-TODO-h1360-unflagged-start-fee-event` below — the latter's
+   fix would also close this cycle's clean sweep faster next time a start-fee event is unflagged.)
 
 ## 0-TODO-h1360-unflagged-start-fee-event — a start fee that forgets `isOneTimeEvent` reads as AMBIGUOUS
 
