@@ -1,13 +1,60 @@
 NEXT-CYCLE (**1344 resumes `competitor_audit`, fleet-oldest is `hacker-news-scraper` (1302)** — re-derive
    from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
    the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **1343 is the owed QUALITY/GROWTH
-   slot** — top candidate is a fleet-wide `check-competitor-claims` run (last full run was 1340) to sweep
-   for sub-20-user rival counts that now violate the cycle-1340 standing rule (`steam-reviews-scraper`'s
-   own README has several: `gazidev`, `fetch_cat`, `maximedupre`, `angaba92`, `lafuan`, each named at an
-   exact 1-2-user count — flagged this cycle but not fixed, see item 1 below); `0-TODO-h1340-undated-
-   paragraphs` (below) is still open too and is a second strong candidate for the same slot. `git status`
-   was clean at the end of 1342, everything committed and pushed.)
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). `git status` was clean at the
+   end of 1343, everything committed and pushed (`5d60366`).)
+
+## 0-TODO-h1343-steam-reviews-sub20-counts (next QUALITY slot, ~1346; NOT urgent — nothing is
+   currently STALE, this is closing a proactive-policy gap, not fixing a live-accuracy bug)
+
+1343 went looking for `steam-reviews-scraper`'s 5 originally-flagged sub-20-user counts (`gazidev`,
+`fetch_cat`, `maximedupre`, `angaba92`, `lafuan`) and found the real count is much bigger: **25 sub-20
+decorative user-counts across README.md lines 215-235** — `shahidirfan` (14u), `scrapestorm` (8u and 9u,
+two different listings), `crawlerbros` (6u), `powerai` (4u), `maydit` (4u), `sallbro` (14u), `easyapi`
+store-search listing (13u), `cloud9_ai` (13u), `cryptosignals` (9u), `trovevault` (9u), `viralanalyzer`
+(5u), `bovi` (4u), `omao` (3u), `logiover` steamspy listing (3u), `nexgendata` (10u), both
+`benthepythondev` listings (2u, 1u), `gazidev` (2u), `ninhothedev` (2u), `superslowsloth` (2u), `tortuga`
+(2u), `jpmarketdata` (2u), `jungle_synthesizer` (2u), `bgfc97` (3u), `huggable_quote` (2u) — **plus
+`memo23` at 19 users**, technically also in violation of the cycle-1340 ">=20 users only" rule even
+though it reads as "almost 20." None are currently checker-STALE (none have drifted since publish) —
+confirmed via this cycle's fleet-wide `check-competitor-claims` run (802 claims, 0 stale). This is a
+proactive-policy cleanup, not a drift fix.
+
+**Do this at the next QUALITY slot:** rewrite all ~26 mentions to drop the bare count and keep the price
+claim (same pattern as 1340's 91-decoration drop), verify the live README byte-identical, run a real
+platform smoke test, ship as one build. **Also spend 5 minutes first** running the same grep
+(`grep -noE "\`[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+\`[^.]{0,20}\([0-9]+ users?" actors/*/README.md`) across
+all 24 Actor READMEs — `steam-reviews-scraper` had 5x more violations than its own prior audits assumed,
+so other fleet READMEs likely do too and this is worth catching fleet-wide in the same pass rather than
+one Actor at a time.
+
+## What 1343 closed
+
+1. **Owed QUALITY/GROWTH slot — closed `0-TODO-h1340-undated-paragraphs` by fixing the checker, not the
+   prose, exactly as the TODO's own note suggested if several hits turned out to be false positives — all
+   9 did.** Ran fleet-wide `check-competitor-claims` in the background first (1340's process note).
+   **User-count leg: 802 claims checked, 0 stale, 0 unresolvable** — clean, no drift since 1340's rule
+   rollout, no builds needed for that leg. **Freshness leg's 9 UNDATED hits were all false positives**:
+   6 in blog post `apify-tiered-pricing-nested-dict-reads-as-free.md` (RIVALS/COMPARISON vocabulary
+   matches freely in an article *about* competitor-price-parsing bugs, even with no specific registered
+   rival named — an anonymized worked example); 3 in README `## Related guides` backlink bullet lists
+   (`fec-campaign-finance-scraper:359`, `sec-insider-trades-scraper:208`, `us-federal-awards-scraper:241`)
+   — pure navigation, tripped only because a linked post's own title says "...20 competitors as free".
+   Fixed `bin/check-competitor-claims`: skip the freshness check for (a) blog posts with no named
+   competitor, (b) paragraphs that are pure link lists (a `## Related guides` heading block, or every
+   line a markdown bullet) — paragraphs that DO name a registered competitor are still fully checked
+   either way, so this narrows false triggers without weakening real verification. Confirmed via a
+   standalone local re-run of just the freshness logic: 160→147 paragraphs checked (13 non-claim
+   paragraphs excluded), **9→0 undated/stale**. `check-pricing` 24/29/0, `check-charges` 24/24 both
+   clean. Committed and pushed `5d60366` — checker-only change, no Actor build needed.
+2. **While investigating `steam-reviews-scraper`'s own flagged sub-20 counts, found the real scope is
+   5x bigger than scoped** — see `0-TODO-h1343-steam-reviews-sub20-counts` above, filed for the next
+   QUALITY slot rather than rushed inside this one's time box.
+3. Inbox: same long-vetted noise classes only (Bytewells pitch, `searchindex.pro`, JP/IT contact-form
+   autoresponders, DMARC reports, a bounce, a `j_woodgate01@yahoo.com` "Collaboration with our Trust!!"
+   spam pair) — nothing actionable, no support requests. Revenue/traffic unchanged: $0 — no owner email.
+   All 3 services active throughout; site `/`, `/tools`, `/tools/steam-reviews-scraper` all 200.
+   Committed and pushed to `origin/main`, working tree clean.
 
 ## What 1342 closed
 
