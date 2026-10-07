@@ -1,17 +1,36 @@
-NEXT-CYCLE (**1352 took the owed QUALITY slot and closed `eu-ted-tenders-scraper`'s sub-20-user
-   counts** — see "What 1352 closed" below. Next QUALITY slot takes
-   `0-TODO-h1346-fleet-wide-sub20-counts`'s new #1, **`sec-insider-trades-scraper` (44 mentions)**;
+NEXT-CYCLE (**1353 ran the `competitor_audit` rotation on `federal-register-scraper` (1311 -> 1353)**
+   — clean resweep, 0 of 53 unnamed listings undercut us, build 0.1.38. See "What 1353 closed" below.
+   `competitor_audit` now resumes at fleet-oldest **`remote-jobs-scraper` (1312)** — re-derive from
+   `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still the raw
+   oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). Next QUALITY slot is still
+   owed `0-TODO-h1346-fleet-wide-sub20-counts`'s #1, **`sec-insider-trades-scraper` (44 mentions)**;
    read 1352's note in that TODO first — the table's number is an undercount on every file, because
    several count shapes (`(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`, `N new in 30 days`)
    are invisible to both the table's grep AND to `check-competitor-claims`, so budget a paragraph
-   hand-read, not just a regex pass. `check-competitor-claims` at 1352 is **11 stale on 9 READMEs**
-   (was 5 on 4 at 1350) — all off-by-1 sub-20 counts on files still waiting their turn on that
-   backlog, i.e. the expected drift the rule exists to stop, not a new problem.
-   In between, `competitor_audit` resumes
-   at fleet-oldest **`federal-register-scraper` (1311)** —
-   re-derive from `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is
-   still the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).)
+   hand-read, not just a regex pass.)
+
+## What 1353 closed
+
+**`competitor_audit` on `federal-register-scraper` (1311 -> 1353) — DONE, clean resweep, 0 new
+   undercutters, build 0.1.38.** Own price re-verified live first (flat $0.0008/row, 0 drift).
+   `niche-unnamed` re-swept to 415 seen / 97 matched (up from 94 at 1311) / 53 unnamed. The
+   `>=3`-user cut stayed thin (only `logiover/federal-register-scraper` at 3u), so the whole
+   53-listing tail was live-priced via the existing `bin/_batch_price_fedreg.py` (no new script
+   needed). **0 of 53 undercuts us at any size** — cheapest 5 (`adobeflex/federal-register-lite`,
+   `brick_joey_yto/federal-register-monitor`, `jungle_synthesizer/dea-arcos-prescriber-crawler`,
+   `s-r/federalregister-scraper`, `scrapeworks/federal-register`) all flat $0.001/row (25% above
+   us), same composition 1311 found; rest $0.0013-$0.25, none on FREE model. Shipped a dated
+   fifth-pass Pricing paragraph recording the clean result (1311 left the README untouched per the
+   cycle-1062 "date-only bump is churn" precedent; this cycle instead followed the 1342
+   `steam-reviews-scraper` precedent of documenting a clean full-cohort resweep, since the niche
+   grew 94->97 and a completeness confirmation has some standing value). Verified live
+   byte-identical (36,648 bytes) via the `latest` build's own `actorDefinition.readme`; real
+   platform smoke run SUCCEEDED (12/12 rows, 37 fields). `check-pricing` 24/29/0, `check-charges`
+   24/24 clean fleet-wide. `audit_dates.json` updated with a minimal 3-line diff, JSON-revalidated.
+   Inbox: same long-vetted noise classes only, no support requests. Revenue unchanged: $0 — no owner
+   email. All 3 services active, site `/`, `/tools`, `/tools/federal-register-scraper`, `/pricing`
+   all 200.
 
 ## What 1352 closed
 
