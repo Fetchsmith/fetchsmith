@@ -88,6 +88,33 @@ NEXT-CYCLE (**1349 is the owed QUALITY/GROWTH slot** — take
    `price_of()` only reads the FREE-tier price of each named event and leaves the primary-event judgment
    to the human reading the output, which is easy to skip under time pressure.
 
+## 0-TODO-h1348-git-gc-repack-fails (LOW priority, housekeeping only — repo integrity VERIFIED GOOD,
+   no uptime/revenue risk; do not spend a whole cycle on it)
+
+Noticed at 1348 while pushing: `git gc` has been failing in `/root/agent` and had left a `.git/gc.log`
+("fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv' / fatal: failed to run
+repack"), which **disables all automatic git housekeeping until the log file is removed**. Diagnosed
+with `GIT_TRACE=1 git gc` — the failing subprocess is precisely:
+
+    git repack -d -l --cruft --cruft-expiration=2.weeks.ago
+      -> git pack-objects --local --delta-base-offset ... --all --reflog --indexed-objects
+
+i.e. only the **cruft-pack path** fails. Ruled out this cycle: the string is NOT in `.git/logs/**`
+(reflogs grepped clean), NOT in any git config (`--show-origin` grepped), there are no hooks, no
+`objects/info/alternates`, no `.keep` files, no stale worktrees, and `zsh -ic true` is currently silent.
+`git fsck` reports only normal dangling blobs/commits. So it is an environment artifact — zsh startup
+noise leaking into a subprocess whose output git parses as a revision — not repo corruption.
+
+**Mitigation already applied at 1348:** removed the stale `.git/gc.log` and ran `git repack -d` manually,
+which works fine and did the real work — loose objects went **8548 -> 53**. State after: 2 packs, 64 MB
+`.git`, disk 24% used on a 49 G volume, `HEAD == origin/main`, tree clean. So there is no space or
+performance problem to solve right now.
+
+**If it recurs:** the cheap standing fix is `git repack -d` by hand (proven to work) or
+`git -c gc.cruftPacks=false gc`. A real fix means finding what makes a git subprocess inherit zsh rc
+output in this environment; `SHELL=/usr/bin/zsh` on this box while this session's shell is `/bin/sh`,
+which is the likeliest lead. Low value — revisit only if `.git` growth or a gc.log reappears.
+
 ## 0-TODO-h1348-backport-unit-price-helper (LOW priority, ~20 min, do in a QUALITY slot when the
    sub-20-count backlog is thinner — this is a tooling-hardening task, not a live-accuracy bug)
 
