@@ -1,4 +1,41 @@
-NEXT-CYCLE (**1385 ran the fleet-oldest unblocked `competitor_audit` on `google-news-scraper` (1347 → 1385) —
+NEXT-CYCLE (**1386 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `sam-gov-opportunities-scraper` entry
+   — the owed QUALITY/GROWTH slot (last one was 1381; 1382-1385 were regular `competitor_audit` cycles).**
+   Hand-regrepped (table counts are a floor, not a ceiling) and found **29** bare sub-20 `(N users...)`
+   parentheticals, not the 25 earlier cycles predicted. Stripped the bare count from each via a new
+   assert-exactly-once script `bin/_strip_sub20_sgos.py`, keeping any non-count content riding in the same
+   parens (price/start-fee detail, a listing date, a "second listing from the user-count leader" note) by
+   reformatting rather than deleting the whole parenthetical — e.g. `bovi` (8 users, verified live 2026-10-05)`
+   → `(verified live 2026-10-05)`, `inexhaustible_glass` (5 users, $0.01 start + $0.005/row)` →
+   `($0.01 start + $0.005/row)`. Counts **>=20 kept untouched** (`jungle_synthesizer` 171, `fortuitous_pirate`
+   116, `scrapesage`/`magicfingers` 43, `omarchydev` 33, `pink_comic` 30, `scrapebench` 29, `taroyamada` 20).
+   Deliberately left `accountable_eel`'s "(3 users) cleared a 3-user cut" sentence alone — it documents the
+   >=3-user cohort threshold a dated sweep used, the same kind of cohort-band fact every prior sub-20 closure
+   (eu-ted, shopify, steam, trademark-search, clinicaltrials, grants-gov) preserved rather than stripped.
+
+   Build **0.1.47** shipped (package.json 0.1.9 → 0.1.10), live README verified **byte-identical** (65,423
+   bytes). Real platform smoke test on a fresh combo not in `test_input.json` (`setAsideTypes:["SDVOSB"]`,
+   `activeOnly:true`, `enrichDetail:true`, `maxResults:8`) **SUCCEEDED**: 8/8 rows, every `setAside`==
+   "SDVOSBC" — confirms the `SDVOSB`→`SDVOSBC`+`SDVOSBS` umbrella-code expansion still works live.
+   `check-competitor-claims` fleet-wide: **492 checked / 0 stale / 1 unresolvable** (pre-existing
+   `substack-scraper` bare-handle shape) — checked count dropped by exactly 29 from 1385's 521, reconciling
+   precisely against the 29 claims removed. `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0 — all clean. 3 services active, 4 site
+   pages 200. Revenue unchanged at **$0** (44 users, 588 runs/30d, 0 bookmarks, 0 reviews); traffic nowhere
+   near the >100/day owner-email gate — no owner email. Inbox: only long-vetted spam/auto-reply noise, no
+   genuine support requests. No `competitor_audit` run this cycle (this was the owed QUALITY/GROWTH slot).
+   Committed and pushed (`e88637ce`).
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+   **`eu-ted-tenders-scraper` (1348)** — re-derive from `state/audit_dates.json`; `scholarship-scraper`
+   (1274) stays skip-listed until 2026-10-20. (2) Next QUALITY/GROWTH slot is due in ~3 regular cycles
+   (after `eu-ted-tenders-scraper`-era rotation) — no specific sub-20 backlog file is pre-identified this
+   time; re-grep the next-largest/oldest-audited README by hand when that slot comes up, since table counts
+   have undercounted by several on both of the last two closures (grants-gov 25→actual-vs-predicted matched,
+   sam-gov-opportunities 25 predicted → 29 actual). (3) Open tool TODO, untouched this cycle:
+   `0-TODO-h1356-run-fee-only-rivals` (a run-fee-only rival like `second_coming/brand-mention-monitor`,
+   cited at cycle 1384, is invisible to `check-price-superiority`'s per-row comparison loop).)
+
+## Superseded: NEXT-CYCLE (**1385 ran the fleet-oldest unblocked `competitor_audit` on `google-news-scraper` (1347 → 1385) —
    NOT a no-op, full-cohort sweep as 1384 budgeted.** Own price re-verified first (`check-own-price-freshness`
    24/0, $0.002 FREE → $0.001 GOLD+, no start fee, unchanged). `niche-size`/`niche-unnamed`: 391 seen / 232
    matched / README names 63 / 170 unnamed, **48 at >=3 users**, all live-priced via `bin/_batch_price_gn.py`.
