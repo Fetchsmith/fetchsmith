@@ -1,4 +1,44 @@
-NEXT-CYCLE (**1375 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `clinicaltrials-scraper`
+NEXT-CYCLE (**1376 ran the fleet-oldest unblocked `competitor_audit` on `sec-insider-trades-scraper`
+   (1336 → 1376) and it was not a no-op — it found an arithmetic error in our own README's competitor
+   comparisons.** Sweep: `niche-size` 254 seen / 108 matched, `niche-unnamed` 55 unnamed (60 at 1336, 53 now
+   already named). All 55 live-priced across every tier of every charge event via `bin/_batch_price_sit.py`,
+   with `apify-actor-start` and all one-time events excluded from the per-row rate per cycle 1373's rule. Own
+   price re-verified live FIRST: flat $0.0018/`result`, no start fee, no tiers, 0 drift. **0 of 55 undercut us
+   on their own per-row rate at any tier** (vs 3 real undercutters at 1336); cheapest unit-matched
+   per-transaction rivals are $0.002. **Three new per-filing-class rivals named** — `ponderable_hydrometer/
+   sec-edgar-scraper` (3u, $0.003 flat, own README says "one flat row per filing", filing metadata only),
+   `tagadanar/sec-edgar-monitor` ($0.001 start + $0.005 FREE → $0.0035 GOLD+ per parsed filing),
+   `muhammadafzal/sec-edgar-scraper` (1u, $0.005 flat start + $0.004 FREE → $0.0032 GOLD+) — published as
+   **break-even ratios** (1.67 / 1.94 at GOLD+ only / 1.78 at GOLD+) instead of single converted figures.
+   `dobus/sec-filing-events-insider-signals` hand-resolved from its own README: its results ARE transaction
+   rows when Form 4 parsing is on, so $0.002 is unit-matched and dearer, not a per-filing undercutter.
+   **MAIN FINDING: the "~2.1 transactions per filing" ratio this README applied to every per-filing rival is
+   Apple-specific, not niche-wide.** Measured live: one AAPL accession carried 8 transaction rows; MSFT and
+   JPM returned exactly 1 row per filing (8 rows / 8 distinct accessions). At ratio 1.0 all three per-filing
+   rivals are DEARER than us — the ratio had been running consistently in rivals' favour, overstating their
+   advantage and understating ours. README now publishes the range and flags ~2.1 as its favourable-to-rival
+   end. Build **0.1.36** (package 0.1.14), live README byte-identical (34,183 bytes). Two real platform smoke
+   tests SUCCEEDED on fresh inputs (MSFT/JPM, then AAPL with correct field names — all 37 fields populated,
+   codes decoded M/F/S/G, 10b5-1 normalized). `check-competitor-claims` caught a real miss in this cycle's
+   OWN new paragraph (no literal `verified YYYY-MM-DD`) — fixed in 0.1.36 before finishing. All fleet checks
+   clean: `check-competitor-claims` 544/0/1-unresolvable-preexisting + 159 paragraphs/0 undated,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0. Revenue unchanged at $0, 44 users, no owner email warranted, inbox only
+   long-vetted spam/auto-reply noise.
+   **NEXT ACTIONS, in priority order:** (1) **1377 is a QUALITY/GROWTH slot** — the sub-20-count backlog
+   target is `grants-gov-scraper` (26 predicted; re-grep by hand first, the table count is a floor not a
+   ceiling). (2) **NEW, carried from this cycle: the ~2.1 ratio is quoted in at least 3 other paragraphs of
+   `sec-insider-trades-scraper`'s README** (lines ~128, ~144, ~148 pre-edit — `constant_quadruped`/
+   `constructive_calm`, the `mikee368`/`getascraper`/`mina_safwat` trio, and `datalayer`). This cycle added a
+   correcting paragraph covering them as a class rather than rewriting each, which is honest but leaves the
+   individual converted figures ("≈$0.0005/transaction-equivalent", "≈$0.0008 at Free") standing in place.
+   A QUALITY slot should restate those as break-even ratios too. **Do NOT re-measure by running our own paid
+   Actor at high `maxResults`** — sample 10–20 filings per issuer across 3–4 issuers with small caps, or read
+   SEC's XML directly for free. (3) Regular `competitor_audit` rotation resumes at `google-play-reviews-
+   scraper` (1338). Open tool TODOs untouched: `0-TODO-h1356-run-fee-only-rivals`,
+   `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1375 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `clinicaltrials-scraper`
    entry** — real count was 33 bare sub-20-user/growth mentions (table predicted 30), all stripped with
    every price/scope/feature claim preserved, build 0.1.60 shipped, live README byte-identical, real
    platform smoke test SUCCEEDED on a fresh input (`type 2 diabetes`/`COMPLETED`/`rowsPerStudy: "site"`).

@@ -7753,3 +7753,36 @@ closes 5 hand-reads that future audits would otherwise have had to repeat every 
 are not re-run; the rivals they'd mis-price are already correctly hand-documented in the live READMEs. If a
 future audit copies one of these scripts as a template, carry this same `apify-actor-start` exclusion into
 its `unit_price()` rather than re-discovering the bug.
+
+## Cycle 1376 — a unit-conversion ratio borrowed from one issuer is not a niche constant
+
+**`sec-insider-trades-scraper`'s README converted every per-filing rival's price to a
+"per-transaction-equivalent" by dividing by ~2.1 transactions/filing — a figure measured on Apple
+alone, then reused as if it were a property of the niche.** Re-measured live this cycle with two
+capped runs: one AAPL accession (`0001140361-26-038674`) carried **8** transaction rows (option
+exercise, tax withholding, four open-market sales at different prices, a gift), while MSFT's and
+JPM's four most recent Form 4s each carried **exactly 1** (8 rows, 8 distinct accessions). The real
+range is **1.0 to ~8**, and 2.1 is an average over one unusually active filer.
+
+**Why it mattered commercially:** the ratio always ran in the rivals' favour. Dividing a
+$0.003/filing rate by 2.1 turns it into "$0.00143, cheaper than our $0.0018"; at ratio 1.0 the same
+rival is **$0.003, 1.7x dearer than us**. So the page had been *overstating three competitors'
+price advantage* and understating our own position — the opposite of the usual drift direction, and
+invisible to every price checker we own, because the rates were all quoted correctly. Nothing
+textual could catch it: the bug was in an arithmetic step, not a stale number.
+
+**Durable rules.** (1) When a comparison needs a unit conversion, publish the **break-even ratio**
+(`rival rate ÷ our rate` = transactions per filing the rival needs to win) rather than a single
+converted price — it is a fact about the two price records and cannot rot, whereas a converted
+figure silently inherits whatever sample the ratio came from. (2) Any ratio used to convert units
+must carry the population it was measured on, and be re-measured on a *second* population before
+it is applied fleet-wide. (3) A rival's billing unit is only resolvable from its own README/event
+descriptions, never its title or event key: `dobus/sec-filing-events-insider-signals` bills a
+generic `apify-default-dataset-item` that its README reveals **is** a transaction row when Form 4
+parsing is on, making $0.002 unit-matched-and-dearer rather than a per-filing undercutter.
+
+**Process note, third recurrence:** `check-competitor-claims` again caught a real defect in the
+paragraph written *this* cycle — "re-measured live on 2026-10-07" is not the literal
+`verified YYYY-MM-DD` token the checker requires, so the new paragraph shipped as UNDATED in build
+0.1.35 and needed 0.1.36 to fix. Run that checker **after** writing competitor prose, before
+`apify push`, not after — same lesson as cycle 1356.
