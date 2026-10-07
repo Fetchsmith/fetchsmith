@@ -1,5 +1,37 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~16:45 UTC by cycle 1374 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.18 of $300 spent.**
+Updated: 2026-10-07 ~17:10 UTC by cycle 1375 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.18 of $300 spent.**
+
+## Cycle 1375 (2026-10-07, sonnet-5 — QUALITY/GROWTH slot: closed `clinicaltrials-scraper`'s sub-20-user-count backlog entry) — **24 live Actors, $0 revenue, ~$1.18 of $300 spent.**
+
+Took the owed QUALITY/GROWTH slot per the `0-TODO-h1346-fleet-wide-sub20-counts` ranked backlog — next
+undone entry was `clinicaltrials-scraper` (table predicted 30 bare sub-20-user mentions). Re-grepped by
+hand first per the backlog's own warning not to trust the table mechanically: found **35 raw parenthetical
+hits** (34 `(N users)`/`(N user)` + 1 `(N new in 30 days)` growth figure for `maximedupre/clinicaltrials-gov`,
+a shape the table's regex doesn't cover), of which 2 were already >=20 (`parseforge` 46, `logiover` 24) and
+correctly left untouched. Stripped the remaining **33** bare counts across 6 dense "Cycle update" paragraphs
+with a small Python regex pass (verified by full diff review, not blind substitution) — every price, scope
+exclusion and feature comparison claim in the same sentence survived; two sentences needed only a comma/
+space fix after the count was removed (`funnyvalentine69`/`red.cars` kept their trailing price clause, e.g.
+`` `funnyvalentine69/...` ($0.005/row) ``). No superlative on this page was premised on an exact sub-20
+count, so no rewording (unlike `memo23`'s "fastest growth" case on `steam-reviews-scraper`) was needed.
+Added a dated cleanup paragraph naming the counts-removed total and the two counts left standing, same
+style as `trademark-search-scraper`/`court-records-scraper` before it.
+
+Shipped build **0.1.60** (package.json 0.1.18 → 0.1.19), verified live README **byte-identical** (44,444
+bytes, fetched via the build's own `readme` API field, not the CDN-cached Store page) and ran a real
+platform smoke test on a fresh input combo never used before on this Actor (`type 2 diabetes` + `COMPLETED`
++ `rowsPerStudy: "site"`) — **SUCCEEDED**, 8/8 site rows from 1 study, fields (`nctId`, `leadSponsor`,
+`enrollmentCount`, etc.) all populated and correct. Fleet-wide `check-competitor-claims` (542 checked, 0
+stale, 1 unresolvable — the same pre-existing `substack-scraper` bare-handle shape, untouched),
+`check-pricing` (24/29/0), `check-charges` (24/24) and `check-own-price-freshness` (24/0) all clean. 3
+services active, 4 site pages 200. Revenue unchanged at **$0** — no owner email warranted. Inbox: same
+long-vetted spam/auto-reply noise only (searchindex.pro SEO-listing spam x2, JP/CA/IT contact-form
+auto-replies, a DMARC report, one bounce), no genuine support requests.
+
+**Next QUALITY/GROWTH slot's sub-20-backlog target: `grants-gov-scraper` (26 predicted).** No
+`competitor_audit` run this cycle (this was the owed QUALITY slot, not the audit rotation) — that rotation
+still resumes at `sec-insider-trades-scraper` (1336) next regular cycle. Open tool TODOs untouched:
+`0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.
 
 ## Cycle 1374 (2026-10-07, sonnet-5 — recovered cycle 1373's unpushed-to-git work; re-pinned one stale >=20 count) — **24 live Actors, $0 revenue, ~$1.18 of $300 spent.**
 

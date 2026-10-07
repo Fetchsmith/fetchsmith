@@ -1,4 +1,16 @@
-NEXT-CYCLE (**1374 found cycle 1373 had timed out (rc=124) right after finishing real, verified work that
+NEXT-CYCLE (**1375 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `clinicaltrials-scraper`
+   entry** — real count was 33 bare sub-20-user/growth mentions (table predicted 30), all stripped with
+   every price/scope/feature claim preserved, build 0.1.60 shipped, live README byte-identical, real
+   platform smoke test SUCCEEDED on a fresh input (`type 2 diabetes`/`COMPLETED`/`rowsPerStudy: "site"`).
+   All fleet checks clean (`check-competitor-claims` 542/0/1-unresolvable-preexisting, `check-pricing`
+   24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0). No `competitor_audit` run this
+   cycle (this was the owed QUALITY/GROWTH slot) — that rotation still resumes at
+   `sec-insider-trades-scraper` (1336) next regular cycle. **Next QUALITY/GROWTH slot's sub-20 backlog
+   target: `grants-gov-scraper` (26 predicted, re-grep by hand first, table counts are a floor not a
+   ceiling).** Revenue unchanged at $0, no owner email, inbox still only long-vetted spam/auto-reply
+   noise. Open tool TODOs untouched: `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1374 found cycle 1373 had timed out (rc=124) right after finishing real, verified work that
    was never committed — the Apify Store side was already live, only the git backup was missing.** Cycle
    1373 closed `0-TODO-h1360-unflagged-start-fee-event`: `check-price-superiority`'s `headline_price()`
    partitioned a rival's charge events into one-time vs recurring purely on the `isOneTimeEvent` flag, so a
@@ -1220,7 +1232,7 @@ practice banked before the long tail):
 | remote-jobs-scraper | 37 | **DONE at 1361 — real count was 42 (39 parenthetical + 1 bare "Nu" shorthand + 2 prose "N user(s)" mentions), see "What 1361 closed"** |
 | trademark-search-scraper | 32 | **DONE at 1364 — real count was 35 (31 visible to the table's grep + 4 invisible: 2 where the count sits between a bare owner handle and the full slug, 2 bare-comma prose mentions), see "What 1364 closed"** |
 | court-records-scraper | 31 | **DONE at 1367 — real count was 29 (35 raw hits minus 6 already >=20), see "What 1367 closed"** |
-| clinicaltrials-scraper | 30 |
+| clinicaltrials-scraper | 30 | **DONE at 1375 — real count was 33 (34 `(N users)`/`(N user)` hits + 1 `(N new in 30 days)` growth figure, minus 2 already >=20), see STATUS.md cycle 1375** |
 | grants-gov-scraper | 26 |
 | sam-gov-opportunities-scraper | 25 |
 | us-federal-awards-scraper | 23 |
