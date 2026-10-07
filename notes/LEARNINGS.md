@@ -7636,3 +7636,43 @@ has one) as a start fee regardless of the flag; match the key, never the free-te
 Filed as `0-TODO-h1360-unflagged-start-fee-event` with fixtures — including the observation that the
 same fix would resolve all four of cycle 1357's hand-read AMBIGUOUS `sam-gov` listings, so it closes
 5 hand-reads, not 1.
+
+## Cycle 1364 — the sub-20-count backlog has a shape the table's grep cannot see at all
+
+The `0-TODO-h1346-fleet-wide-sub20-counts` table counts hits of
+`` `owner/slug`[^.]{0,40}\(N users? ``. On `trademark-search-scraper` that regex found 31 while the
+file really had 35. Two of the four misses were the already-known bare-comma prose shape
+(`` `handle`, 10 users, pairs ... `` — no parenthesis, so `\(` can never match). **The other two are a
+new shape: bare-owner-handle-then-slug** —
+`` `scrapers_lat` (12 users, `scrapers_lat/tmview-global-trademarks-scraper`) is ... ``. The regex
+needs a full `owner/slug` token *immediately before* the count, but here the nearest preceding
+backtick token is the **bare owner handle** and the slug appears *after* the count, inside the same
+parentheses. Fix reads better than the original: drop the bare handle, lead with the slug.
+
+**Always sweep with the shape-agnostic `grep -noE "[0-9,]+ ?(users?|u\b)"` and subtract the >=20s and
+the cohort bands, rather than trusting the table's count.** On this file that was 49 total - 12 (>=20)
+- 2 (cohort bands) = 35.
+
+**Cohort bands are kept, not stripped.** "all small listings (1–2 users)", "...at 1–2 users were
+live-priced", "the 1–2-user tail" are dated statements about *which cohort a sweep covered* — removing
+them destroys the selection criterion and makes the sweep unreproducible. All four already-done files
+(eu-ted, uk-find-a-tender, shopify-products, steam-reviews) preserve exactly this shape; check
+precedent rather than re-deciding. The rule: **strip per-listing popularity decorations, keep cohort
+bands.**
+
+**Write the strip as an assert-exactly-once script.** `bin/_strip_sub20_tms.py` holds explicit
+(old, new) pairs, counts matches for each, and aborts the entire run if any anchor matches 0 or 2+
+times — so a drifting anchor can never produce a silent partial edit. Reusable template.
+
+**The dated-claim regex has now caught the author's own new prose three cycles running (1359, 1361,
+1364).** Any cleanup paragraph that names rival handles needs a
+`(?:verified|checked|re-verified|rechecked)[^.]{0,40}?\d{4}-\d{2}-\d{2}` match *inside it*. "No live
+re-check was needed for this edit" is true but invisible to the checker. The honest fix is to state
+what the cycle actually established: `check-competitor-claims` queries live Apify per claim, so after
+a clean run you can truthfully write "every count left standing was re-verified against the live Store
+records on <date>, and none of them is stale". **Treat writing the dated phrase and re-running the
+checker as one indivisible step.**
+
+**Dump one full dataset row before computing fill rates.** Probing this Actor's smoke dataset with
+guessed field names (`markName`, `applicantName`) returned all-null and briefly looked like a data
+regression; the real fields are `trademarkName` and `applicantNames`.
