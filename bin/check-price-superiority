@@ -112,16 +112,17 @@ def headline_price(act_data, now):
     events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
     if not events:
         return None, "no charge events"
-    primary = [n for n, e in events.items() if e.get("isPrimaryEvent")]
+    # `apify-actor-start` is Apify's own reserved key for the run-start charge -- a
+    # one-time start fee in substance even when the owner never set isOneTimeEvent, AND
+    # even when the owner (mistakenly or not) marks it isPrimaryEvent (cycle 1385 LEARNINGS:
+    # delectable_incubator/google-news-scraper-low-cost and fanciful_geode/google-news-es both
+    # flag apify-actor-start as primary, which used to make this function report the $0.00005
+    # start fee as "the price" instead of the real $0.00239/$0.001 per-row rate -- cycle 1360's
+    # fix only excluded it from the non-primary fallback pool, not this branch).
+    primary = [n for n, e in events.items() if e.get("isPrimaryEvent") and n != "apify-actor-start"]
     if primary:
         name = primary[0]
     else:
-        # `apify-actor-start` is Apify's own reserved key for the run-start charge -- a
-        # one-time start fee in substance even when the owner never set isOneTimeEvent
-        # (cycle 1360 LEARNINGS: outstanding_vegetable/uspto-trademark-watch and 4 SAM.gov
-        # rivals all pair it with exactly one other event and leave both flags unset, which
-        # used to make this function average the start fee into the "cheapest non-one-time"
-        # pool and could pick the start fee itself as the headline price).
         non_onetime = [n for n, e in events.items()
                        if not e.get("isOneTimeEvent") and n != "apify-actor-start"]
         pool = non_onetime or list(events.keys())

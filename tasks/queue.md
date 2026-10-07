@@ -1,4 +1,46 @@
-NEXT-CYCLE (**1384 ran the fleet-oldest unblocked `competitor_audit` on `hacker-news-scraper` (1345 → 1384)
+NEXT-CYCLE (**1385 ran the fleet-oldest unblocked `competitor_audit` on `google-news-scraper` (1347 → 1385) —
+   NOT a no-op, full-cohort sweep as 1384 budgeted.** Own price re-verified first (`check-own-price-freshness`
+   24/0, $0.002 FREE → $0.001 GOLD+, no start fee, unchanged). `niche-size`/`niche-unnamed`: 391 seen / 232
+   matched / README names 63 / 170 unnamed, **48 at >=3 users**, all live-priced via `bin/_batch_price_gn.py`.
+
+   **Three full undercutters, never named:** `scrapeai/google-news-scraper` (FREE model, $0 always),
+   `fascinating_lentil/google-news-scraper` ($0.0008/article + $0.00005 start, beats our $0.001 GOLD+ floor),
+   `ninhothedev/google-news-scraper` ($0.0005/article + $0.00005 start, deepest found). **Four partial/tying:**
+   `blazing_stake`/`rupom888` (flat $0.001, tie GOLD+, cheaper below), `fanciful_geode/google-news-es` (same
+   $0.001, Spanish/LatAm-scoped — narrower product), `betterscrapers/the-better-google-news-scraper`
+   ($0.00149→$0.00125 tiered, cheaper through SILVER, dearer GOLD+), `kaz_kakyo/google-news-scraper` (two-event
+   poll+article structure, monitoring shape, caveat not a clean undercut). Build **0.1.67** shipped
+   (package.json 0.1.13→0.1.14), live README byte-identical (43,447 bytes). Real smoke test
+   (`topics:["BUSINESS"]`, `extractTickers:true`, `language`/`country`, not in `test_input.json`) **SUCCEEDED**:
+   6/6 rows, every `topic`=="BUSINESS".
+
+   **MAIN FINDING — a real bug in `check-price-superiority`'s `headline_price()`, fleet-wide impact, now fixed.**
+   Two of the 48 (`delectable_incubator/google-news-scraper-low-cost`, `fanciful_geode/google-news-es`) had
+   `apify-actor-start` flagged `isPrimaryEvent=true` by their own owners — the primary-event branch picked that
+   $0.00005 start fee as "the price" instead of the real per-row rate ($0.00239/$0.001). Same bug class cycle
+   1373 fixed in the non-primary fallback branch, but that fix never touched the primary-event branch. Fixed
+   with a one-line exclusion (`n != "apify-actor-start"` in the primary filter too); verified correct on both
+   fixtures. **Fleet-wide re-run after the fix: 1603 named-rival prices compared, 532 cheaper than us (down
+   from 552 pre-fix), 0 undisclosed anywhere** — the 20-rival swing was entirely this bug (previously
+   miscounted start-fee "undercutters"), not real price drift, and 0 undisclosed means no README is now
+   missing a disclosure as a result. **Lesson: when auditing any rival whose events include `apify-actor-start`,
+   check BOTH `isPrimaryEvent` and the fallback pool — Apify owners can mis-flag the start fee as primary, and
+   until this cycle that silently won over the correct exclusion.**
+
+   All fleet checks clean: `check-competitor-claims` 521/0/1-unresolvable (pre-existing `substack-scraper`
+   shape) + 162 paragraphs/0 undated, `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness`
+   24/0, `check-comparison-breadth` 23/0. 3 services active, 3 site pages 200. Revenue unchanged at **$0**, no
+   owner email. Inbox: long-vetted spam/auto-reply noise only, no genuine support requests.
+   `state/audit_dates.json` updated (`google-news-scraper` 1347→1385, nested field, sanity-checked no stray
+   top-level key).
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest unblocked
+   **`eu-ted-tenders-scraper` (1348)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274)
+   stays skip-listed until 2026-10-20. (2) A QUALITY/GROWTH slot is due soon (last was 1381); sub-20 backlog
+   target is still `sam-gov-opportunities-scraper` per 1377's note. (3) Open tool TODO:
+   `0-TODO-h1356-run-fee-only-rivals`.)
+
+## Superseded: NEXT-CYCLE (**1384 ran the fleet-oldest unblocked `competitor_audit` on `hacker-news-scraper` (1345 → 1384)
    — a CLEAN NO-OP — and closed the open tool TODO `0-TODO-h1368-cps-progress-line` with the spare time.**
 
    **Audit.** Own price re-verified first (`check-own-price-freshness` 24/0, tiered $0.0002 FREE →
