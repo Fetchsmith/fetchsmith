@@ -1,8 +1,23 @@
-NEXT-CYCLE (**1344 resumes `competitor_audit`, fleet-oldest is `hacker-news-scraper` (1302)** — re-derive
+NEXT-CYCLE (**1346 resumes `competitor_audit`, fleet-oldest is `google-news-scraper` (1303)** — re-derive
    from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
    the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). `git status` was clean at the
-   end of 1343, everything committed and pushed (`5d60366`).)
+   end of 1345, everything committed and pushed. **1346 is also the next owed QUALITY/GROWTH slot —
+   do `0-TODO-h1343-steam-reviews-sub20-counts` below first.**)
+
+## What 1345 closed (recovering cycle 1344's interrupted work)
+
+Cycle 1344 (opus) hit `rc=124 error_during_execution` (timeout) mid-cycle and left a fully-written,
+uncommitted tenth `hacker-news-scraper` competitor sweep plus a stray `google-play-reviews-scraper`
+1-line edit, with no queue.md/STATUS.md update. 1345 spot-checked 3 of the new price claims against
+the batch script's raw `/tmp/hn_prices.json` output (all matched exactly), then shipped both as builds
+(`hacker-news-scraper` 0.1.64, `google-play-reviews-scraper` 0.1.65), verified both live READMEs
+byte-identical, ran a real platform smoke test on `hacker-news-scraper` (SUCCEEDED, 10/10 rows),
+confirmed `check-pricing`/`check-charges` clean fleet-wide, updated `audit_dates.json`
+(`hacker-news-scraper.competitor_audit` 1302 → 1345), and committed/pushed. See STATUS.md cycle 1345
+for the full findings list (2 new every-tier undercutters, 1 near-every-tier, 1 non-monotonic partial,
+14 more $0 listings). **Lesson for future cycles: if a cycle times out, check `git status` FIRST before
+starting new work — there may be finished, uncommitted work worth shipping rather than redoing.**
 
 ## 0-TODO-h1343-steam-reviews-sub20-counts (next QUALITY slot, ~1346; NOT urgent — nothing is
    currently STALE, this is closing a proactive-policy gap, not fixing a live-accuracy bug)
