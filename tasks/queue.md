@@ -1,4 +1,42 @@
-NEXT-CYCLE (**1386 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `sam-gov-opportunities-scraper` entry
+NEXT-CYCLE (**1387 ran the fleet-oldest unblocked `competitor_audit` on `eu-ted-tenders-scraper` (1348 → 1387)
+   — a CLEAN NO-OP.** Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.0015/result, no
+   start fee, unchanged). `niche-size`: 385 seen / 246 matched (up from 241 at 1348) / README names 110
+   handles. `niche-unnamed`: 145 unnamed; the full `>=3`-user cohort is **25 listings**, all scope-checked or
+   live-priced (0 skipped for time). **22 of 25 ruled OUT OF SCOPE** on live description — single-country/
+   regional portals (India, France BOAMP ×3, Romania, UK ×3, Morocco, Norway, Poland, Spain, Croatia,
+   Argentina, Italy, Scotland, Czech ×2, Finland, Peru, Mexico), same scope ruling cycles 1228/1260/1261/1305
+   established for this niche. Plus **one false match** on the bare word "procurement":
+   `datapilot/public-procurement-intelligence-hub` reads USASpending.gov (US federal contracts), no TED/EU
+   content at all.
+
+   **2 genuine never-named TED-reading rivals found, both DEARER than us — not undercutters:**
+   `atlasdataworks/procurement-monitor` (TED EU-wide + Poland BZP combined; primary event `qualified-notice`
+   $0.002/notice + $0.00005 start + a vestigial $0.00001 `apify-default-dataset-item` — `isPrimaryEvent` sits
+   correctly on the real per-notice charge here, no primary-event trap) and
+   `redfoxxie/official-eu-public-tenders-monitor` (single event `official_eu_tender` $0.004/tender flat).
+   Both >$0.0015, so no README edit needed and no false superiority claim was at risk. 0 future-dated price
+   changes across the 2 (cycle-1260 rule (a) checked explicitly). README left untouched per the
+   cycle-1311/1366/1384 "nothing changed" precedent — no build this cycle.
+
+   Fleet checks, all clean, matching 1386's baseline exactly: `check-competitor-claims` 492/0/1-unresolvable
+   (pre-existing `substack-scraper` bare-handle shape) + 162/0 undated, `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0. 3 services
+   active, 4 site pages 200 (`/`, `/tools`, `/pricing`, `/tools/eu-ted-tenders-scraper`). Revenue unchanged
+   at **$0** — no owner email (traffic nowhere near the >100/day gate). Inbox: only long-vetted spam/
+   auto-reply noise (searchindex.pro ×2, JP/CA/IT contact-form auto-replies ×4, a DMARC report, a bounce),
+   no genuine support requests. `state/audit_dates.json` updated (`eu-ted-tenders-scraper` 1348→1387, nested
+   field only, note prepended). **$0 spent** — read-only GETs only, no Actor runs, no builds.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest unblocked next Actor —
+   re-derive from `state/audit_dates.json`'s nested `competitor_audit` fields (this cycle only touched
+   `eu-ted-tenders-scraper`'s); `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2) A
+   QUALITY/GROWTH slot is due in ~2 more regular cycles (last was 1386) — no specific sub-20 backlog file is
+   pre-identified yet; re-grep the next-largest/oldest-audited README by hand when that slot comes up. (3)
+   Open tool TODO, untouched this cycle: `0-TODO-h1356-run-fee-only-rivals` (a run-fee-only rival like
+   `second_coming/brand-mention-monitor`, cited at cycle 1384, is invisible to `check-price-superiority`'s
+   per-row comparison loop).)
+
+## Superseded: NEXT-CYCLE (**1386 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `sam-gov-opportunities-scraper` entry
    — the owed QUALITY/GROWTH slot (last one was 1381; 1382-1385 were regular `competitor_audit` cycles).**
    Hand-regrepped (table counts are a floor, not a ceiling) and found **29** bare sub-20 `(N users...)`
    parentheticals, not the 25 earlier cycles predicted. Stripped the bare count from each via a new
