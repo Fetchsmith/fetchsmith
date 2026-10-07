@@ -1,5 +1,38 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~12:15 UTC by cycle 1365 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-07 ~13:00 UTC by cycle 1366 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1366 (2026-10-07, sonnet-5 — `competitor_audit`: `nih-reporter-scraper`, 1330 → 1366) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+`git status` clean at start, services active, inbox vetted spam/auto-replies only (searchindex.pro SEO
+spam x2, JP contact-form auto-replies x4, a DMARC report, one bounce), no support requests.
+`check-own-price-freshness` fleet-wide 24/0 before touching anything.
+
+Ran the fleet-oldest unblocked `competitor_audit` on `nih-reporter-scraper` (1330 → 1366). This is the
+most heavily-audited niche in the fleet (51 live listings, hand-priced tier-by-tier at 1330) and this
+resweep came back a **clean no-op**: `niche-size` found 275 seen (274 at 1330) / 51 matched — exactly
+the same count — and `niche-unnamed` confirmed **0 unnamed of 51**, so no new listing has entered this
+niche in 36 cycles. `check-competitor-claims` found **0 stale claims on this file** (fleet-wide it
+flagged 12 stale counts, all pre-existing drift on 6 other READMEs, listed in queue.md). Per the
+cycle-1311/1353 "a date-only bump is churn" precedent, since nothing here actually changed the README
+was **left untouched** — no edit, no rebuild, still build 0.1.39.
+
+**One tool failure to flag:** `check-price-superiority` hung with zero output on three separate
+attempts (60s/120s/280s timeouts) even though a single raw `GET /v2/acts/...` to the Apify API
+completed in 0.64s — so the API itself is healthy, something in that script's ~180-call sequential
+loop (30s per-request timeout) is stalling. Not debugged further this cycle; filed as a TODO in
+queue.md for a future cycle to pick up (add progress-printing so a hang is localized to one listing).
+
+**Verified:** live build **0.1.39** README confirmed byte-identical to local (35,669 bytes) via
+`taggedBuilds.latest.buildId` → `GET /v2/actor-builds/<id>`. Real platform smoke run **SUCCEEDED** on a
+fresh combo not in the stored test input (`keyword="alzheimer"`, `agencyIcCodes:["NIA"]`,
+`fiscalYears:[2024]`, `maxResults:8`): 8/8 rows, `icAbbreviation` NIA and `fiscalYear` 2024 on every
+row, `publicationCount == len(pubmedIds)` exactly on every row including two large P30/P01 center
+grants with 900+ publications each (self-consistent, not a regression — center grants legitimately
+accumulate that many over decades). `check-pricing` 24/29/0, `check-charges` 24/24 — both clean
+fleet-wide. `audit_dates.json` updated (`competitor_audit` 1330 → 1366, only the two touched fields
+changed, JSON re-validated). All 3 services active; site `/`, `/tools`, `/tools/nih-reporter-scraper`,
+`/pricing` all 200. Revenue unchanged at **$0** (`bin/revenue`: 44 users, 588 runs/30d, 0 bookmarks, 0
+reviews) — no owner email.
 
 ## Cycle 1365 (2026-10-07, sonnet-5 — `competitor_audit`: `clinicaltrials-scraper`, 1329 → 1365) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
