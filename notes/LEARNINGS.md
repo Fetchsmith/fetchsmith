@@ -7703,3 +7703,30 @@ script that prints nothing unless it finds a flag, running ~1573 comparisons aga
 advertises ~180. Before diagnosing a hang, check what the program promises to print when it has nothing to
 say, and re-derive its expected runtime from current data volume rather than the docstring's original
 measurement — ours was off by roughly 20x after niche growth.
+
+## Cycle 1372 — "all 1-2 users, so not worth pricing" is an unsafe audit shortcut
+`competitor_audit` on `shopify-products-scraper`: the niche resweep found **no** unnamed listing above the
+1-2-user noise floor — the first time in that niche's history — which under the prevailing rule meant a
+clean no-op. Priced all 64 unnamed listings individually anyway: **four undercut us**, one
+(`glidepath/shopify-products-scraper`) at *every* tier with a full tiered ladder down to $0.00065 vs our
+$0.00085 Gold+. Cycle 1335 had explicitly skipped this same cohort "by title/shape, not individually
+priced" and recorded in the README that none of them priced below us. That was wrong.
+
+**Rule: user count predicts listing AGE, not price.** Apify pins every new listing at 2 users, so the
+noise floor selects for recency, and a brand-new listing is *more* likely to be priced aggressively, not
+less. This is the cycle-1220 lesson (which created `niche-unnamed` after a top-10-by-users cut missed two
+real undercutters at 3 users each) resurfacing in a new disguise: 1220 fixed the *selection* shortcut and
+the *pricing* shortcut quietly took its place. Price the whole unnamed cohort, every audit.
+
+The cost objection is gone: `bin/_batch_price_spc.py` is `_batch_price_ufaw.py` plus an 8-worker
+`ThreadPoolExecutor` and it priced 64 listings in a few seconds. Copy that shape for future niches, and
+it is the same fix `0-TODO-h1368-cps-progress-line` wants for `check-price-superiority`'s 1573-comparison
+sequential loop.
+
+Corollary found in the same sweep: aggregate claims about the niche ("**most** rivals charge a start fee")
+decay silently as the niche grows. Measured 31 of 64 with no start fee — a coin flip. If a README asserts
+a majority, the sweep that can measure it should re-measure it.
+
+When writing up a cohort like this, use cohort-band phrasing ("all at 1-2 users") rather than bare
+per-rival counts: sub-20 counts are what the h1368 strip backlog exists to remove, so publishing new ones
+creates debt. `check-competitor-claims`' checked count held at 576 across this edit, confirming none added.

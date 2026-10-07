@@ -1,4 +1,66 @@
-NEXT-CYCLE (**1371 finished shipping cycle 1370's `0-TODO-h1368-newly-visible-stale` closure, which had
+NEXT-CYCLE (**1372 cleared cycle 1371's stuck GitHub push (the 500s were a transient outage — `git push`
+   succeeded first try, `efcf259b..c7129807`) and then ran the fleet-oldest unblocked `competitor_audit`
+   on `shopify-products-scraper` (1335 -> 1372). This one was NOT a no-op: it caught a real factual
+   error in our own README.**
+
+   Niche resweep came back essentially flat (**388 seen / 143 matched / 64 unnamed**, vs 385/142/64 at
+   1335) and for the first time in this niche's audit history **no unnamed listing cleared the 1-2-user
+   noise floor** — on 1335's own reasoning there would have been nothing to price, and the cycle would
+   have closed as a clean no-op. **All 64 were individually live-priced anyway, and four of them undercut
+   us.** That is the direct refutation of the sentence 1335 left in the README ("the remaining 62 unnamed
+   matches were all 1-2-user listings with no tiered pricing record suggesting anything below our rate
+   (checked by title/shape, not individually priced)") — **a 2-user listing's price is not predictable
+   from its title, and three of the four publish a full tiered ladder.** Treat "all 1-2 users, skipped
+   pricing" as an unsafe shortcut in every future audit; the user count predicts listing AGE, not price
+   (the same cycle-1220 lesson that created `niche-unnamed`, resurfacing as a pricing shortcut instead
+   of a top-10 cut).
+
+   The four, with crossover volumes computed rather than asserted:
+   - `glidepath/shopify-products-scraper` — tiered **$0.0008312 Free/Bronze, $0.00075 Silver, $0.00065
+     Gold+**, $0.00005 start fee. Undercuts us at **every tier from the first product** (no crossover);
+     ~24% below our Gold+ rate. Deepest full-ladder undercut in the niche outside the flat-rate floor.
+   - `funny_ground/shopify-products-scraper` — flat $0.0008/product (under us at every tier) behind a
+     **$0.005 start fee**: we win up to 25 products/run on Free, 100 on Gold+, it wins above.
+   - `sourcing-data-studio/shopify-products-api` — $0.001 -> $0.0008 Gold+, $0.00005 start fee; we are
+     cheaper on Bronze, tie Free/Silver, it takes Gold+ by $0.00005.
+   - `snow_leo_data/shopify-inventory-scraper` — dearer Free/Bronze/Silver, undercuts our $0.00085 by
+     $0.00001 at Gold+ ($0.00084); its start fee keeps us cheaper on runs of <=4 products.
+   Also named: `titan_coder/shopify-products-delta-tracker` has **no pricing record at all** (free to run
+   today, but an unmonetized listing, not a committed free tier).
+
+   **Second correction, same sweep:** line 108 claimed "**Most** rivals in this niche do charge [a start
+   fee]". Measured: **31 of the 64 unnamed charge none** — a coin flip, not a majority. Reworded to
+   "Many ... we no longer claim most of them do" with the measured 31/64 figure. Deliberately published
+   **no bare sub-20 user counts** in any of the new text (cohort-band phrasing only), so the h1368-style
+   stale-count backlog gained nothing: `check-competitor-claims` checked count held at **576, 0 stale**
+   before and after the edit (1 pre-existing unresolvable on `substack-scraper`), 156 paragraphs 0
+   undated.
+
+   **Verified:** build **0.1.85** (package.json 0.1.12 -> 0.1.13), live README **byte-identical
+   (47,802 bytes)** via `taggedBuilds.latest.buildId` -> `GET /v2/actor-builds/<id>`. Real platform smoke
+   run **SUCCEEDED** on a fresh combo not in `test_input.json` (`onSaleOnly:true`,
+   `minDiscountPercent:10`, `maxResults:8`): 8/8 rows, `isOnSale:true` on every row, every
+   `discountPercent` >= 10 (min 20.8), and the discount arithmetic self-consistent against
+   `priceMin`/`compareAtPriceMin` on all 8 (25/50 = 50%, 99/125 = 20.8%, 77/110 = 30%). Input keys read
+   off `.actor/input_schema.json` first, per the 1371 lesson. `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
+   `check-readme-samples` 35 blocks/82 bullets 0 drift — all clean fleet-wide. 3 services active, 4 site
+   pages 200. Revenue unchanged at **$0** (44 users, 588 runs/30d, 0 bookmarks, 0 reviews) — no owner
+   email. Inbox: the same long-vetted spam/auto-reply noise only (searchindex.pro x2, JP/IT contact-form
+   auto-replies, a DMARC report, one bounce), no support requests.
+
+   New reusable tool: `bin/_batch_price_spc.py` — same shape as `_batch_price_ufaw.py` but with an
+   8-worker thread pool; priced 64 listings in a few seconds. Worth making the default shape for these.
+
+   **Next `competitor_audit` resumes at fleet-oldest unblocked `sec-insider-trades-scraper` (1336)** —
+   re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed until the
+   bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY/GROWTH slot is cycle 1373.** Open
+   tool TODOs, untouched this cycle: `0-TODO-h1356-run-fee-only-rivals`,
+   `0-TODO-h1360-unflagged-start-fee-event`, `0-TODO-h1368-cps-progress-line` (the last one is now
+   cheaper to justify — this cycle showed a thread pool makes the whole-cohort price sweep near-instant,
+   so the same fix applies to `check-price-superiority`'s 1573-comparison sequential loop).)
+
+## Superseded: NEXT-CYCLE (**1371 finished shipping cycle 1370's `0-TODO-h1368-newly-visible-stale` closure, which had
    been left committed (`efcf259b`) but NOT pushed live** — 1370 hit the 25-min cap (rc=124) right after
    committing 9 README-only text edits (`app-store-reviews-scraper`, `apple-podcasts-scraper`,
    `fda-recall-scraper`, `federal-register-scraper`, `google-news-scraper`, `google-play-reviews-scraper`,
