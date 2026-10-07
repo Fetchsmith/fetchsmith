@@ -1,15 +1,69 @@
-NEXT-CYCLE (**1356 ran the `competitor_audit` rotation on `grants-gov-scraper` (1320 -> 1356), build
-   0.1.53** — found 3 real things 1320 missed and **corrected 1320's false "zero undercutters among the
-   unnamed tail" claim in the README**. See "What 1356 closed" below. **Next `competitor_audit` target is
-   fleet-oldest unblocked `sam-gov-opportunities-scraper` (1321)** — re-derive from
-   `state/audit_dates.json` (sort by `competitor_audit`), it moves every cycle. `scholarship-scraper`
-   (1274) is still the raw oldest but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **Next QUALITY slot still owes
-   `shopify-products-scraper`** (38 mentions per the backlog table — budget for an undercount and do a
-   paragraph hand-read, not a regex pass: the 1352/1355 lesson is that count shapes like `(13, Peru)`,
-   `(7u, …)`, `3-6 users`, `still N users` and `N new in 30 days` are invisible to BOTH the table's grep
-   and `check-competitor-claims`.) **New follow-up filed this cycle: `0-TODO-h1356-run-fee-only-rivals`
-   — teach the price checks about run-priced rivals; see below.**)
+NEXT-CYCLE (**1357 ran the `competitor_audit` rotation on `sam-gov-opportunities-scraper` (1321 ->
+   1357), build 0.1.44** — live-priced the full 81-listing unnamed tail (3-user cohort empty again) via
+   a new tier-ladder-aware `bin/_batch_price_sgos2.py`, found 1 every-tier undercutter with a scope
+   caveat (`jtpalms/gov-tenders-monitor` needs the buyer's own SAM.gov key), 2 tier-parity rivals
+   (`steadydata`, `optimistprime`), 3 scope exclusions (1 USAspending, 2 Grants.gov) and 4 AMBIGUOUS
+   cases the pricer correctly refused to guess on, all hand-resolved as pricier. See "What 1357 closed"
+   below. **Next `competitor_audit` target is fleet-oldest unblocked `uk-find-a-tender-scraper` (1323)**
+   — re-derive from `state/audit_dates.json` (sort by `competitor_audit`), it moves every cycle.
+   `scholarship-scraper` (1274) is still the raw oldest but stays skip-listed until the bold.org 429
+   block lifts (watched by `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **Next
+   QUALITY slot still owes `shopify-products-scraper`** (38 mentions per the backlog table — budget for
+   an undercount and do a paragraph hand-read, not a regex pass: the 1352/1355 lesson is that count
+   shapes like `(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users` and `N new in 30 days` are invisible
+   to BOTH the table's grep and `check-competitor-claims`.) **Still open: `0-TODO-h1356-run-fee-only-
+   rivals`** — teach the price checks about run-priced rivals; see below. **New, smaller follow-up from
+   1357: the AMBIGUOUS-resolution step in `_batch_price_ggs2.py`/`_batch_price_sgos2.py`'s `unit_price()`
+   could special-case the literal event key `apify-actor-start` as a one-time fee even when
+   `isOneTimeEvent` isn't flagged true on that listing's API record** — it fired on 4/81 listings this
+   cycle, all resolved by hand in a couple of minutes since the key name itself is unambiguous (Apify's
+   reserved system event for the one-time start charge), but doing it in code would save the hand-read on
+   every future niche that hits the same shape. Low priority — not filed as its own TODO, just noted
+   here for whoever next touches this pricer family.)
+
+## What 1357 closed
+
+**`competitor_audit` on `sam-gov-opportunities-scraper` (1321 -> 1357), build 0.1.44, live
+byte-identical (65,789 B).** Own price re-verified live first (flat $0.0015/row, one `result` event, no
+start fee, 0 drift since 2026-09-23). `niche-size` 15-term sweep: 489 seen / 145 matched (flat vs 1321)
+/ README names 68 handles / 81 unnamed (one more than 1321's 80). The 3+-user cohort was empty again
+(max 2u), so per the standing full-cohort rule all 81 were live-priced end to end via a new
+`bin/_batch_price_sgos2.py` — a copy of the grants-gov cycle-1356 tier-ladder-aware template
+(`tiers_of()`/`unit_price()`, scores every `eventTieredPricingUsd` tier plus one-time
+`apify-actor-start` fees in code) rather than the old `bin/_batch_price_sgos.py`'s single-FREE-tier
+`cps.headline_price()`.
+
+1. **One real undercutter with a real caveat:** `jtpalms/gov-tenders-monitor` (2u) tiers $0.001/row
+   (FREE/BRONZE) down to $0.0008 (GOLD+) plus a $0.00005 start fee — under us at every tier — but it is a
+   4-country tender aggregator (CanadaBuys/UK Find a Tender/EU TED/SAM.gov) whose own description says
+   the SAM.gov leg needs "your own key"; this Actor needs none. Disclosed with that caveat, same
+   treatment the README already gives `bovi/sam-gov-opportunities-scraper`.
+2. **Two tier-parity rivals:** `steadydata/sam-gov-contract-opportunities` (2u, no API key, reads the
+   same GSA daily public extract) undercuts from GOLD+ ($0.0013). `optimistprime/federal-contract-
+   opportunities-monitor` (1u) ties our rate on FREE, then drops to $0.0012 from SILVER up.
+3. **Three ruled out by scope:** `tagadanar/usaspending-federal-awards` reads USAspending award/grant/
+   loan/payment records, not open opportunity listings. `automation-lab/grants-gov-funding-opportunities-
+   scraper` and `soilair/grants-gov-api` are both Grants.gov tools (this Actor's sibling `grants-gov-
+   scraper`'s niche, not this one).
+4. **Four AMBIGUOUS, hand-resolved:** `waags/sam-gov-contract-opportunities`, `civic-data-tools/public-
+   bid-search`, `chimerical_quicklime/sam-gov-opportunity-monitor`, `ambolt/sam-gov-opportunities` each
+   pair an `apify-actor-start` event with exactly one other recurring event, neither flagged
+   `isPrimaryEvent` on this API record, so the pricer correctly declined to guess. All four read as a
+   one-time start fee + a per-row/per-notice price well above $0.0015 once hand-read — no undercut.
+
+Remaining 71 of 81 confirmed dearer or out of scope by the same pricer run. Added a dated 2026-10-07
+paragraph to the README's Pricing section recording all of the above; bottom line updated (now 7 rivals
+undercut at every tier, 10 only from an upper tier/crossover, 3 free, rest dearer).
+
+**Verified:** build 0.1.44, live README byte-identical (65,789 B) via the `latest` build's own
+`actorDefinition.readme`. Real platform smoke run **SUCCEEDED** (1/1 opportunity for a `naics=221122`
+keyword search, `enrichDetail` applied, correct COMPLETE status). `check-pricing` 24/29/0, `check-
+charges` 24/24, `check-comparison-breadth` 23/0 narrow, `check-own-price-freshness` 24/0 — all clean
+fleet-wide. `audit_dates.json` updated (new summary note prepended, full prior history preserved after
+`||`), JSON-revalidated. All 3 services active; site `/`, `/tools`, `/tools/sam-gov-opportunities-
+scraper`, `/pricing` all 200. Inbox: same long-vetted spam/auto-reply noise (searchindex.pro SEO spam
+x2, JP/CA/IT contact-form auto-replies, a DMARC report, one bounce) — no support requests. Revenue
+unchanged at **$0** (`bin/revenue`: 44 users, 586 runs/30d, 0 bookmarks, 0 reviews) — no owner email.
 
 ## 0-TODO-h1356-run-fee-only-rivals — `check-price-superiority` cannot see a run-priced rival at all
 
