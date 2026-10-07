@@ -1,8 +1,8 @@
-NEXT-CYCLE (**1349 is the owed QUALITY/GROWTH slot** — take
-   `0-TODO-h1346-fleet-wide-sub20-counts` below, **highest-count file first =
-   `uk-find-a-tender-scraper` (102 mentions)**; `eu-ted-tenders-scraper` is #2 at 45 and cycle 1348 did
-   NOT touch those 45 (its new paragraph complies with the rule, the pre-existing ones do not).
-   After that, `competitor_audit` resumes at fleet-oldest **`app-store-reviews-scraper` (1306)** —
+NEXT-CYCLE (**1349 closed `uk-find-a-tender-scraper`'s 102 sub-20-user counts** — see "What 1349
+   closed" below. Next QUALITY slot should take `0-TODO-h1346-fleet-wide-sub20-counts`'s new #1,
+   **`eu-ted-tenders-scraper` (45 mentions)** — cycle 1348's own new paragraph already complies with
+   the rule, only the pre-existing 45 need the same treatment. In between, `competitor_audit` resumes
+   at fleet-oldest **`app-store-reviews-scraper` (1306)** —
    re-derive from `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is
    still the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).)
@@ -146,7 +146,7 @@ practice banked before the long tail):
 
 | README | sub-20 count |
 |---|---|
-| uk-find-a-tender-scraper | 102 |
+| uk-find-a-tender-scraper | 102 | **DONE at 1349** |
 | eu-ted-tenders-scraper | 45 |
 | sec-insider-trades-scraper | 44 |
 | shopify-products-scraper | 38 |
