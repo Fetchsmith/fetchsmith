@@ -55,9 +55,15 @@ def tiers_of(ev):
 
 
 def unit_price(events):
+    # Cycle 1388: `apify-actor-start` is ALWAYS a start fee, never the per-row unit,
+    # even when its owner neglects isOneTimeEvent and/or flags it isPrimaryEvent=true.
+    # This is the cycle-1385 check-price-superiority bug (it picked a $0.00005 start
+    # fee as "the price" and miscounted 20 rivals fleet-wide); this file was written
+    # at 1350 and classified purely on isOneTimeEvent, so it reproduced it.
     onetime, recurring = {}, {}
     for k, v in events.items():
-        (onetime if v.get("isOneTimeEvent") else recurring)[k] = v
+        is_start = v.get("isOneTimeEvent") or k == "apify-actor-start"
+        (onetime if is_start else recurring)[k] = v
     start_fee = max((min(tiers_of(v).values(), default=0.0) for v in onetime.values()),
                     default=0.0)
     if not recurring:

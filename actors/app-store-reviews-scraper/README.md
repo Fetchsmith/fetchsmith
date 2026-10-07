@@ -308,6 +308,46 @@ description and all tie or lose to our rate: `cybermax/app-reviews`, `openkrill/
 `datalantern/app-store-reviews` ($0.0003). Everything else in the fresh tail was dearer, FREE-model,
 or dormant, already covered by the dormancy read above.
 
+**Second full-tail resweep the same day, verified live 2026-10-07 ~23:30 UTC (cycle 1388).** The
+cycle-1350 pass above ran earlier on 2026-10-07; re-pricing the identical 122-listing unnamed tail
+hours later turned up **four more undercutters, none previously named, and three of them had cut
+their price that same day** — which is the sharpest evidence yet for the "new-listing-heavy niche"
+read above: in this niche a sweep's price findings can go stale inside one day, so the date on each
+block below is a timestamp, not a season. All four were read against their own currently-effective
+pricing record, and in each case the per-review charge (not a one-time or secondary event) was the
+figure compared:
+
+- `myagizm/appstore-reviews-scraper` — flat **$0.00008 per dataset row, every tier, no start fee**,
+  20% under our $0.0001. This one is **not** explained by a price change: its pricing entry dates to
+  2026-09-29 and so was already live during cycle 1350's pass, which means that pass missed it. Its
+  unit is Apify's generic `apify-default-dataset-item` rather than a named review event, so the rate
+  is per row emitted; its description scopes the Actor to written App Store reviews, so row and
+  review should coincide, but we have not run it to confirm one row per review.
+- `om_kh/appstore-reviews-api` — tiered **$0.0001 (Free, our exact rate) → $0.000085 (Bronze) →
+  $0.00007 (Silver) → $0.000055 (Gold+)**, no start fee. It **cut its price roughly 8x on 2026-10-07
+  at 13:23 UTC**, from $0.0008 (Free) → $0.00044 (Gold+); cycle 1350's pass reading it as dearer than
+  us was correct at the time. So: parity on Free, a real undercut from Bronze down.
+- `dropin-apis/app-store-reviews` — **$0.00008 per dataset row plus a $0.00005 Actor-start fee**,
+  also cut that same day (2026-10-07 17:42 UTC, from $0.0002/row). With a start fee the crossover is
+  what matters, and here it is tiny: it costs less than us above about **3 rows per run**, so treat
+  it as a genuine undercutter at any realistic volume.
+- `northbell/app-store-reviews-scraper` — listed 2026-10-07 02:24 UTC, tiered **$0.0001 (Free and
+  Bronze, our exact rate) → $0.00009 (Silver) → $0.00008 (Gold+)**, but carrying a **$0.01
+  Actor-start fee**, which inverts the comparison at low volume. Crossovers against our flat
+  $0.0001 with no fee: **~500 reviews per run on Gold+, ~1,000 on Silver, and never on Free or
+  Bronze** (it ties our per-review rate there, so the $0.01 fee leaves it strictly dearer at every
+  volume). A conditional undercut for high-volume Gold+ buyers only, not an across-the-board one.
+
+The only **future-dated** price change anywhere in the 122-listing tail is
+`vonsensey/app-store-reviews-all-countries-scraper-api`, cutting its review event $0.004 → $0.002
+(Gold+) effective 2026-10-09 — still 20-40x our rate, so it is not an undercutter before or after
+that date. Of the rest of the tail, **15 listings tie our $0.0001 exactly at every tier**, two are
+one-time/report-fee products with no per-review rate at all
+(`second_coming/app-store-review-analyzer` $0.02 per scan run,
+`muhammadafzal/apple-app-store-review-intelligence` $0.016-$0.02 per report plus a $0.005-$0.00625
+start fee — a per-report shape, not a per-review substitute), and the remainder are dearer. Nothing
+in this pass was ruled out on its title.
+
 What this means honestly, as of the 2026-10-05 sweep: **we are no longer near the bottom of this
 niche on price.** Our
 $0.0001/review is now the *modal* rate — 20 listings tie it exactly — with roughly two dozen

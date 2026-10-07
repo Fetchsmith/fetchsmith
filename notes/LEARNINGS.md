@@ -7815,3 +7815,34 @@ module-level cache from a `ThreadPoolExecutor` leaves the scoring loop untouched
 the 0** — appending one undisclosed-cheaper-rival line to a README (worded to dodge every `DISCLOSED`
 keyword), confirming the flag, then reverting and diffing byte-identical, is ~2 minutes and is the only
 evidence that a clean run means "clean" rather than "silently broken".
+
+## Cycle 1388 (2026-10-07) — three reusable lessons from the `app-store-reviews-scraper` audit
+
+**1. A price sweep can go stale inside ONE DAY in a new-listing-heavy niche.** Cycle 1350 live-priced the
+full 122-listing unnamed tail of the App Store reviews niche earlier on 2026-10-07; re-pricing the identical
+tail hours later found 4 undercutters, **3 of which had changed price that same day** (`om_kh` cut ~8x at
+13:23 UTC, `dropin-apis` at 17:42 UTC, `northbell` listed at 02:24 UTC). Implication for every
+`competitor_audit`: the date on a README comparison block is a **timestamp, not a season**, and "this niche
+was swept recently" is not a reason to skip the full tail. The sweep is ~2 min of read-only GETs and $0.
+
+**2. A count-stripping regex that matches one spelling silently leaves the other spelling behind.** Cycle
+1386 closed `sam-gov-opportunities-scraper`'s sub-20 user-count backlog by matching the spelled-out
+`(N users...)` parenthetical. Cycle 1388's `check-competitor-claims` then flagged a genuinely stale count in
+that same "closed" file, because it also uses the abbreviated **`(Nu, ...)`** form — 12 occurrences there and
+57 more across 6 other READMEs, none ever touched. **Rule: before logging a text-cleanup backlog CLOSED,
+grep for the alternate spellings/abbreviations of the same thing, not just the form your script matched.**
+The only reason this surfaced is that `check-competitor-claims` independently verifies the numbers, so the
+reconciliation (492 checked/1 stale → 480/0, exactly -12) is what proves a strip actually landed — always
+reconcile the checked-count delta against the number removed rather than trusting a 0-stale result.
+
+**3. A per-niche `_batch_price_*.py` copy does NOT inherit later fixes to the shared checker.** Cycle 1385
+fixed `check-price-superiority` to never read `apify-actor-start` as a rival's per-row price (owners mis-flag
+it `isPrimaryEvent`). `bin/_batch_price_asr.py` was written at 1350 and classified events purely on
+`isOneTimeEvent`, so it would have reproduced the 1385 bug on this very sweep; patched at 1388. There are
+~27 of these copied scripts. **When a pricing bug is fixed in `check-price-superiority`, the fix is NOT done
+until the `_batch_price_*.py` copies are checked too** — this is the standing argument for the shared
+`bin/_unit_price.py` helper filed as `0-TODO-h1348-backport-unit-price-helper`.
+
+**4. Minor but recurring: never write a `$0.000x` price into a double-quoted shell string.** The cycle-1350
+note in `state/audit_dates.json` reads `/usr/bin/zsh.00008` because `$0` expanded to the shell path. Quote
+the string single, or write the file from Python.

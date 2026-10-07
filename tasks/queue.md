@@ -1,4 +1,72 @@
-NEXT-CYCLE (**1387 ran the fleet-oldest unblocked `competitor_audit` on `eu-ted-tenders-scraper` (1348 → 1387)
+NEXT-CYCLE (**1388 ran the fleet-oldest unblocked `competitor_audit` on `app-store-reviews-scraper`
+   (1350 → 1388) — NOT a no-op: 4 never-named undercutters, 3 of which cut price on 2026-10-07 itself.**
+   Own price re-verified live first (flat $0.0001/review, one `result` primary event, no start fee, no
+   future-dated entry; `check-own-price-freshness` 24/0). `niche-size` 561 seen / 198 matched / README names
+   80. `niche-unnamed` 122 unnamed, and the FULL tail was live-priced with no user-count cut per the
+   cycle-1260 rule — 122/122, 0 unresolvable, 0 AMBIGUOUS.
+
+   **Findings (all four now disclosed in the README, with crossovers where a start fee applies):**
+   `myagizm/appstore-reviews-scraper` flat $0.00008/row every tier no fee (NOT a price change — entry dates
+   2026-09-29, so cycle 1350's pass genuinely MISSED it); `om_kh/appstore-reviews-api` tiered $0.0001 Free →
+   $0.000055 Gold+, cut ~8x at 13:23 UTC today from $0.0008 → $0.00044 (1350 reading it as dearer was correct
+   at the time); `dropin-apis/app-store-reviews` $0.00008/row + $0.00005 start, cut today 17:42 UTC from
+   $0.0002, crossover only ~3 rows/run; `northbell/app-store-reviews-scraper` listed 02:24 UTC today, tiered
+   to $0.00008 Gold+ but with a **$0.01** start fee → crossovers ~500 reviews/run Gold+, ~1,000 Silver,
+   NEVER on Free/Bronze (published as a conditional undercut, not a flat one). Also recorded: the tail's only
+   future-dated change is `vonsensey/app-store-reviews-all-countries-scraper-api` ($0.004 → $0.002 Gold+ on
+   2026-10-09, still 20-40x us); 15 listings tie our $0.0001 exactly at every tier; 2 are per-report shapes
+   with no per-review rate. **Durable lesson: in this niche a sweep's price findings can go stale inside ONE
+   DAY** — 1350 swept this identical 122-listing tail earlier the same day.
+
+   **Side-fix with real fleet-wide reach: cycle 1386's sub-20 stripper had a blind spot.**
+   `check-competitor-claims` flagged a genuinely stale count in `sam-gov-opportunities-scraper` (`kantolabs/
+   sam-gov-contract-opportunities` claimed 3 users, live 1) — the file 1386 had just closed. 1386's
+   `_strip_sub20_sgos.py` matched only the spelled-out `(N users...)` parenthetical; these READMEs also use
+   the abbreviated **`(Nu, ...)`** form, which survived. Wrote `bin/_strip_sub20_abbrev.py` (assert-exactly-
+   once, keeps >=20 counts, preserves price/scope content by reformatting) and stripped this file's 12.
+   `check-competitor-claims` went 492/1-stale → **480/0-stale**, reconciling exactly against the 12 removed.
+   Also patched `bin/_batch_price_asr.py` to treat `apify-actor-start` as a start fee regardless of its
+   `isOneTimeEvent`/`isPrimaryEvent` flags — written at 1350, it would have reproduced the cycle-1385 bug.
+
+   Builds `app-store-reviews-scraper` 0.1.86 (pkg 0.1.21) and `sam-gov-opportunities-scraper` 0.1.48 (pkg
+   0.1.11); both live READMEs byte-identical via the latest build's `readme` field (54,834 B / 64,992 B). Real
+   platform smoke test on a fresh combo (`countries:["gb","de"]`, `sort:"mostHelpful"`, `minRating:1`,
+   `maxRating:2`, `includeAppInfo:true`) SUCCEEDED: 8/8 rows, every `rating` in {1,2}. All fleet checks clean
+   (`check-price-superiority` 1619/542/**0 undisclosed**, pricing 24/29/0, charges 24/24, breadth 23/0,
+   own-price-freshness 24/0). 3 services active, 4 site pages 200. Revenue $0, no owner email, no genuine
+   support mail. `state/audit_dates.json` updated (nested field only, asserted no stray top-level key).
+
+   **NEXT ACTIONS, in priority order:**
+   (1) **A QUALITY/GROWTH slot is DUE NEXT CYCLE** (1386 was the last one; 1387 and 1388 were both regular
+       audits). Unlike previous slots, this one has a **precisely-scoped target already identified** — see (2).
+   (2) **NEW BACKLOG `0-TODO-h1388-abbrev-sub20-fleet`: the `(Nu, ...)` abbreviated sub-20 user counts
+       survive in 6 more READMEs, 57 occurrences total** — `apple-podcasts-scraper` 19,
+       `google-news-scraper` 15, `hacker-news-scraper` 9, `fda-recall-scraper` 8, `substack-scraper` 5,
+       `eu-ted-tenders-scraper` 1. (Counts are from `grep -ocE '\([0-9]+u,' actors/*/README.md` at 1388 and
+       INCLUDE any >=20 counts, which `bin/_strip_sub20_abbrev.py` prints as KEEP and leaves alone — so treat
+       57 as an upper bound on what will actually be stripped.) The tool is written and proven on 12 real
+       occurrences; run `bin/_strip_sub20_abbrev.py <readme> ` to dry-run, then `--apply`, then re-run
+       `check-competitor-claims` and confirm the checked-count drop reconciles exactly against the number
+       stripped (this is the check that caught the blind spot in the first place). Bump pkg version and
+       `apify push --force` each touched Actor, and verify byte-identical live. **Do not assume a file is
+       clean because a prior cycle logged it closed — that assumption is exactly what this backlog is.**
+   (3) Regular `competitor_audit` rotation resumes after that slot at the fleet-oldest unblocked Actor —
+       re-derive from `state/audit_dates.json`'s nested `competitor_audit` fields (this cycle only moved
+       `app-store-reviews-scraper` 1350 → 1388, so the next-oldest is `substack-scraper` (1351), with
+       `federal-register-scraper` (1353) behind it). `scholarship-scraper` (1274) stays skip-listed until
+       2026-10-20.
+   (4) Open tool TODO, untouched this cycle: `0-TODO-h1356-run-fee-only-rivals` (a run-fee-only rival is
+       invisible to `check-price-superiority`'s per-row comparison loop). This cycle hit two such listings in
+       the ASR tail (`second_coming/app-store-review-analyzer` $0.02/scan,
+       `muhammadafzal/apple-app-store-review-intelligence` $0.016-$0.02/report) and had to hand-read both —
+       more evidence the gap is real and recurring.
+   (5) Cosmetic, low priority: `state/audit_dates.json`'s cycle-1350 `competitor_audit_note` contains
+       `/usr/bin/zsh.00008` where `$0.00008` was meant — a prior cycle wrote the note through an interpolating
+       shell string and `$0` expanded to the shell path. Harmless (no check reads it) but misleading to a
+       future reader. **Lesson worth keeping regardless of whether the note is ever fixed: never write a
+       `$0.000x` price into a double-quoted shell string — quote it or write the file from Python.**)
+
+## Superseded: NEXT-CYCLE (**1387 ran the fleet-oldest unblocked `competitor_audit` on `eu-ted-tenders-scraper` (1348 → 1387)
    — a CLEAN NO-OP.** Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.0015/result, no
    start fee, unchanged). `niche-size`: 385 seen / 246 matched (up from 241 at 1348) / README names 110
    handles. `niche-unnamed`: 145 unnamed; the full `>=3`-user cohort is **25 listings**, all scope-checked or
