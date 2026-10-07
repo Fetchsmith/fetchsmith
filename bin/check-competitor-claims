@@ -170,7 +170,16 @@ FILE_OVERRIDES = {
 # and the summary still printed "0 stale". Caught only by the cycle-1031 arithmetic rule:
 # after adding N claims, the checked count must move by exactly N (it moved 62 -> 67 for 6
 # added claims). Keep both character classes as permissive as Apify's real namespace.
-USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)\s+users?")
+# Cycle 1368 added the `(2u)` shorthand. The `\s+users?` tail required the literal word,
+# so every claim written in the compact form this fleet's long per-rival price paragraphs
+# actually use -- `` `chrisp1211/openfec-scraper-max` (2u) is flat $0.002/record `` -- was
+# invisible: not checked, not unresolvable, just absent, with the summary still printing
+# "0 stale" for the file. A raw grep found 162 such claims across 8 READMEs against the 450
+# the word form was checking, so roughly a quarter of all published rival counts had never
+# been verified by this tool; 3 of the first 16 (on `fec-campaign-finance-scraper`) were
+# already stale. The shorthand branch is `\s*u\b`, not `\s*u`, so "3 uses"/"2 up from 1"/
+# "100 unique" cannot match -- the boundary must fall immediately after the `u`.
+USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_.-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
@@ -224,29 +233,40 @@ if __name__ == "__main__":
     for path in sources():
         name = os.path.relpath(path, ROOT)
         competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
-        for lineno, line in enumerate(open(path), 1):
-            for handle, slug, claimed in USERS.findall(line):
-                # A claim that backticks the full `owner/slug` (queue item 2c asks every new
-                # competitor paragraph to do exactly that) needs no COMPETITORS entry -- the
-                # README already said which Actor it means. Only a bare handle needs the dict.
-                ident = handle + slug if slug else competitors.get(handle)
-                if ident is None:
-                    # Cycle 1088: this used to be a silent `continue`, so a bare handle nobody
-                    # had registered was reported as neither checked nor skipped -- it just
-                    # vanished, and `solidcode` (7 users, really 8) hid there for 47 cycles.
-                    unresolved += 1
-                    print(f"UNCHECKED {name}:{lineno}  `{handle}` ({claimed} users) is not in COMPETITORS "
-                          f"and the claim does not backtick a full owner/slug -- cannot verify")
-                    continue
-                checked += 1
-                claimed = int(claimed.replace(",", ""))
-                actual = live_users(ident, headers)
-                if actual is None:
-                    flagged += 1
-                    print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
-                elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
-                    flagged += 1
-                    print(f"STALE {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
+        # Cycle 1368: this loop used to read the file LINE BY LINE, which silently dropped
+        # every claim whose handle and count land on opposite sides of a hard wrap -- USERS
+        # has `\s*`/`\s+` between them and these READMEs are hard-wrapped, so
+        # `` `theagents/appstore-reviews` `` ending a line with "(818 users)" opening the
+        # next was the same "it just vanished" failure the cycle-1092 note above describes,
+        # not a STALE and not an UNCHECKED. Eight claims fleet-wide were hiding there (seven
+        # on app-store-reviews-scraper, one on trademark-search-scraper), the largest of them
+        # published as 818 users. Scanning the whole text with finditer and deriving the line
+        # number from the match offset catches those while keeping output line-addressable.
+        text = open(path).read()
+        for m in USERS.finditer(text):
+            handle, slug, claimed = m.groups()
+            lineno = text.count("\n", 0, m.start()) + 1
+            # A claim that backticks the full `owner/slug` (queue item 2c asks every new
+            # competitor paragraph to do exactly that) needs no COMPETITORS entry -- the
+            # README already said which Actor it means. Only a bare handle needs the dict.
+            ident = handle + slug if slug else competitors.get(handle)
+            if ident is None:
+                # Cycle 1088: this used to be a silent `continue`, so a bare handle nobody
+                # had registered was reported as neither checked nor skipped -- it just
+                # vanished, and `solidcode` (7 users, really 8) hid there for 47 cycles.
+                unresolved += 1
+                print(f"UNCHECKED {name}:{lineno}  `{handle}` ({claimed} users) is not in COMPETITORS "
+                      f"and the claim does not backtick a full owner/slug -- cannot verify")
+                continue
+            checked += 1
+            claimed = int(claimed.replace(",", ""))
+            actual = live_users(ident, headers)
+            if actual is None:
+                flagged += 1
+                print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
+            elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
+                flagged += 1
+                print(f"STALE {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
 
     print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, "
           f"{flagged} stale, {unresolved} unresolvable")

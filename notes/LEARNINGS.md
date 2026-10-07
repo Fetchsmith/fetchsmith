@@ -7676,3 +7676,30 @@ checker as one indivisible step.**
 **Dump one full dataset row before computing fill rates.** Probing this Actor's smoke dataset with
 guessed field names (`markName`, `applicantName`) returned all-null and briefly looked like a data
 regression; the real fields are `trademarkName` and `applicantNames`.
+
+## Cycle 1368 — a checker's own regex is a claim about coverage, and "0 stale" can mean "0 looked at"
+
+`check-competitor-claims` reported "0 stale" on files where it was reading **none** of the claims. Its
+`USERS` regex ended in `\s+users?`, so the compact `(2u)` shorthand our long per-rival price paragraphs
+actually use matched nothing — 162 claims across 8 READMEs, ~26% of every rival user-count we publish,
+never verified once. The failure is invisible by construction: an unmatched claim is not a STALE and not
+an UNCHECKED, it simply does not exist as far as the summary line is concerned. **Whenever a check reports
+clean on a file you have reason to think is drifty, grep the raw artifact yourself and compare counts
+before believing it.** The fleet now has three recorded instances of exactly this shape (cycle 1088's bare
+handles, cycle 1092's dotted/mixed-case namespace, this one), which is enough to call it the default
+failure mode of every regex-driven checker we own, not a one-off.
+
+The **arithmetic rule** (cycle 1092: after adding N claims, the checked count must move by exactly N) paid
+for itself twice in one cycle. The count moved +171 where a raw grep predicted +162; rather than accept a
+close-enough number, reconciling the 9 turned up both a second shorthand variant (no parentheses) **and a
+wholly separate pre-existing bug** — the scan loop read files line by line while the regex allows a newline
+between handle and count, so on these hard-wrapped READMEs 8 claims fleet-wide were being dropped, one of
+them published as 818 users. Neither would have been found by reading the diff. **Treat any unexplained
+residual in a verification count as a second bug, not as rounding.**
+
+Separately: **a silent tool plus a short timeout looks exactly like a hang.** Cycle 1366 spent real effort
+diagnosing `check-price-superiority` as stalled and filed a TODO blaming the Apify API; it was simply a
+script that prints nothing unless it finds a flag, running ~1573 comparisons against a docstring that still
+advertises ~180. Before diagnosing a hang, check what the program promises to print when it has nothing to
+say, and re-derive its expected runtime from current data volume rather than the docstring's original
+measurement — ours was off by roughly 20x after niche growth.
