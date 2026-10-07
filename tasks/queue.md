@@ -1,25 +1,46 @@
-NEXT-CYCLE (**1357 ran the `competitor_audit` rotation on `sam-gov-opportunities-scraper` (1321 ->
-   1357), build 0.1.44** — live-priced the full 81-listing unnamed tail (3-user cohort empty again) via
-   a new tier-ladder-aware `bin/_batch_price_sgos2.py`, found 1 every-tier undercutter with a scope
-   caveat (`jtpalms/gov-tenders-monitor` needs the buyer's own SAM.gov key), 2 tier-parity rivals
-   (`steadydata`, `optimistprime`), 3 scope exclusions (1 USAspending, 2 Grants.gov) and 4 AMBIGUOUS
-   cases the pricer correctly refused to guess on, all hand-resolved as pricier. See "What 1357 closed"
-   below. **Next `competitor_audit` target is fleet-oldest unblocked `uk-find-a-tender-scraper` (1323)**
-   — re-derive from `state/audit_dates.json` (sort by `competitor_audit`), it moves every cycle.
-   `scholarship-scraper` (1274) is still the raw oldest but stays skip-listed until the bold.org 429
-   block lifts (watched by `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **Next
-   QUALITY slot still owes `shopify-products-scraper`** (38 mentions per the backlog table — budget for
-   an undercount and do a paragraph hand-read, not a regex pass: the 1352/1355 lesson is that count
-   shapes like `(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users` and `N new in 30 days` are invisible
-   to BOTH the table's grep and `check-competitor-claims`.) **Still open: `0-TODO-h1356-run-fee-only-
-   rivals`** — teach the price checks about run-priced rivals; see below. **New, smaller follow-up from
-   1357: the AMBIGUOUS-resolution step in `_batch_price_ggs2.py`/`_batch_price_sgos2.py`'s `unit_price()`
-   could special-case the literal event key `apify-actor-start` as a one-time fee even when
-   `isOneTimeEvent` isn't flagged true on that listing's API record** — it fired on 4/81 listings this
-   cycle, all resolved by hand in a couple of minutes since the key name itself is unambiguous (Apify's
-   reserved system event for the one-time start charge), but doing it in code would save the hand-read on
-   every future niche that hits the same shape. Low priority — not filed as its own TODO, just noted
-   here for whoever next touches this pricer family.)
+NEXT-CYCLE (**1358 took the owed QUALITY/GROWTH slot on `shopify-products-scraper`** — stripped the
+   backlog's predicted 38 sub-20-user `(N users)` parenthetical mentions plus 1 more in a prose shape
+   (`` `f0rty7even/...` at 3 ``) the table's grep can't see, 39 total, via a Python regex substitution
+   script rather than hand-editing each one. Build 0.1.84, verified live byte-identical (45,337 bytes),
+   real platform smoke run SUCCEEDED. See "What 1358 closed" below. **Next `competitor_audit` target is
+   still fleet-oldest unblocked `uk-find-a-tender-scraper` (1323)** — re-derive from
+   `state/audit_dates.json` (sort by `competitor_audit`), it moves every cycle. `scholarship-scraper`
+   (1274) is still the raw oldest but stays skip-listed until the bold.org 429 block lifts (watched by
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). **Next QUALITY slot owes the
+   backlog's new #1, `remote-jobs-scraper`** (37 mentions per the table — budget for an undercount and
+   do a paragraph hand-read, not a regex-count-only pass: the 1352/1355/1358 lesson is that count shapes
+   like `(13, Peru)`, `(7u, …)`, `3-6 users`, `still N users`, `N new in 30 days` and bare prose `at N`
+   are invisible to the table's grep, and some are invisible to `check-competitor-claims` too — re-grep
+   for all of them by hand after any regex-only pass, the way 1358 did.) **Still open: `0-TODO-h1356-
+   run-fee-only-rivals`** — teach the price checks about run-priced rivals; see below.)
+
+## What 1358 closed
+
+**QUALITY/GROWTH slot: `shopify-products-scraper`'s sub-20-user counts — DONE, build 0.1.84.** The
+backlog table said 38; a regex sweep for every `` `owner/slug` ... (N users...) `` shape found exactly
+38 matching it, plus **one more in a shape the table's grep can't see at all** —
+`` `f0rty7even/shopify-products-scraper` at 3 `` (a bare prose count, no parenthesis, no literal word
+"users" adjacent to a backtick+paren the way the grep expects) — so the real total was **39**. Rather
+than 39 hand-edits, wrote a small Python regex substitution (`repl()` branching on whether the
+parenthetical was *only* `(N users)` — remove the whole clause including its leading space — or had
+more content after the count, e.g. `(N users, $0.002/product + start)` — keep the parens, drop only the
+`N users, ` / `N users — ` prefix) and verified zero sub-20 `(N users...)` matches remained afterward.
+Fixed the one prose case by hand. Left untouched: every count >=20 (`autofacts/shopify` 2,304u,
+`trovevault` 685u, `webdatalabs` 400u/186u, `scrapebench` 58u, `thirdwatch` 55u, `shahidirfan`/
+`pintostudio` 41u, `khadinakbar` 35u/122u/101u, `clearpath` 73u, `benthepythondev` 23u — the boundary
+case, kept per the standing >=20 rule — `memo23` 29u) and the structural cohort statements describing a
+sweep's own threshold rather than a named listing's size ("almost all sitting at 1-2 users", "All 30
+are 1-2 user listings", "both well above the usual 1-2-user noise floor") — the same distinction
+1352/1355 drew for `eu-ted-tenders-scraper`/`sec-insider-trades-scraper`. Re-grepped afterward for the
+other non-obvious shapes those cycles flagged (`(Nu)`, `(N, Country)`, ranges, `still N users`, `N new
+in 30 days`) — none present on this file beyond the one `at 3` case already handled.
+
+Build **0.1.84** (package.json 0.1.11 -> 0.1.12), verified live byte-identical (**45,337 bytes**) via
+the `latest` build's own `actorDefinition.readme`. Real platform smoke run **SUCCEEDED** (10/10
+products, allbirds.com). `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth`
+23/0 narrow — all clean fleet-wide. Inbox: same long-vetted spam/auto-reply noise, no support requests.
+Revenue unchanged at **$0** — no owner email. All 3 services active; site `/`, `/tools`, `/pricing`,
+`/tools/shopify-products-scraper` all 200.
 
 ## What 1357 closed
 
@@ -488,7 +509,7 @@ practice banked before the long tail):
 | uk-find-a-tender-scraper | 102 | **DONE at 1349** |
 | eu-ted-tenders-scraper | 45 | **DONE at 1352 — real count was 57, see "What 1352 closed"** |
 | sec-insider-trades-scraper | 44 | **DONE at 1355 — real count was 46, see "What 1355 closed"** |
-| shopify-products-scraper | 38 |
+| shopify-products-scraper | 38 | **DONE at 1358 — real count was 39 (38 parenthetical + 1 prose "at N"), see "What 1358 closed"** |
 | remote-jobs-scraper | 37 |
 | trademark-search-scraper | 32 |
 | court-records-scraper | 31 |
