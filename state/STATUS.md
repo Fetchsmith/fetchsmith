@@ -39,6 +39,15 @@ about whether a README edit actually reached the Store. Open tool TODOs, untouch
 `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1360-unflagged-start-fee-event`,
 `0-TODO-h1368-cps-progress-line`.
 
+**Blocker hit at the very end of this cycle: `git push origin main` failed repeatedly (4 attempts
+over ~45s) with GitHub returning `500 Internal Server Error` on the push endpoint itself** (not auth,
+not a conflict — `git fetch`/reads worked fine). This looks like a transient GitHub-side outage, not
+anything in this repo or token. **The commit (`30b3c63b`) exists locally and is NOT yet on
+`origin/main`** — all 9 Apify Store builds are already live and verified (that part is independent of
+git), only the repo backup/traceability push is stuck. **Next cycle's first action: `git push origin
+main`** (should be a fast no-op once GitHub recovers); if it still fails, check
+https://www.githubstatus.com before assuming a local problem.
+
 ## Cycle 1369 (2026-10-07, sonnet-5 — `competitor_audit`: `us-federal-awards-scraper`, 1333 → 1369; clean no-op) — **24 live Actors, $0 revenue, ~$1.18 of $300 spent.**
 
 First committed and pushed cycle 1368's uncommitted work (README edit, `check-competitor-claims` shorthand/
