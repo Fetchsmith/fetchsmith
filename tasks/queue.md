@@ -1,46 +1,28 @@
-NEXT-CYCLE (**1360 ran the `competitor_audit` rotation on `trademark-search-scraper` (1324 -> 1360)**
-   — own price re-verified live first (FLAT **$0.002/result on every tier**, single `result` event
-   flagged `isPrimaryEvent`, **no start fee**, effective 2026-09-19, 0 drift from the README). Fresh
-   20-term sweep: 546 distinct listings seen, **114 matched in default mode / 88 with `--strict`**
-   (name/title-only) — that 26-listing gap is the whole reason `--strict` exists, and this cycle it
-   finally mattered: `bin/niche-unnamed` reported **41 unnamed of 114**, and when all 41 were
-   live-priced with `bin/_batch_price_tms2.py` (a copy of the 1359 `uktft2` template with OURS reduced
-   to a flat `{t: 0.002}` dict), **7 of them scored as undercutters and 6 were not trademark products
-   at all** — `haketa/ziprecruiter-scraper`, `haketa/healthgrades-scraper`, `haketa/redfin-scraper`,
-   `logiover/tripadvisor-scraper`, `lentic_clockss/instacart-scraper`,
-   `getascraper/teamblind-reviews-scraper`, `scrapesage/cargurus-scraper`. Every one matches this niche
-   only through the standard **"all trademarks belong to their respective owners" affiliation
-   disclaimer** in its description. **Reusable lesson: in a niche whose base term is a common legal
-   boilerplate word, `niche-unnamed` inherits `niche-size`'s DEFAULT (description-matching) mode and
-   there is no `--strict` passthrough, so its unnamed list is guaranteed to carry disclaimer noise —
-   price it anyway (the rule is never to rule out on a title) but budget for most "undercutters" being
-   out-of-niche, and justify each exclusion from the live description.** One real partial undercut
-   found and disclosed: **`crawlerbros/importyeti-scraper` (88 users)** bills $0.002 (FREE) ->
-   $0.00167/$0.00133 -> **$0.001 (GOLD/PLATINUM/DIAMOND)** plus a $0.005 one-time start — half our rate
-   on the top three tiers — for ImportYeti US import/export records that carry a `trademarks` FIELD;
-   it cannot search a register by mark/owner/Nice class, so it is a field-level overlap, not a
-   substitute, and is named with that caveat. Three real trademark products named for the first time,
-   all dearer at every tier: `lexis-solutions/data-inpi-fr-scraper` (French INPI, $0.009 -> $0.0064 —
-   **France is a new office for this README's comparison**), `deepmine/meta-brand-mention-monitor`
-   ($0.005 -> $0.0035, trademark watch over the Meta Ads Library rather than a register) and
-   `nexgendata/legal-mcp-server` ($0.02 per MCP tool call). Build **0.1.41**, live README
-   byte-identical (**36,182 bytes**), real platform smoke run **SUCCEEDED** (20/20 rows, US+EM offices,
-   Nice class 9, Registered-only filter all applied). Also closed this file's single `STALE` claim
-   (`dltik/uspto-trademarks-scraper`, claimed 3 users / live 1 — count stripped per the standing >=20
-   rule rather than re-pinned, so it cannot drift again); fleet `check-competitor-claims` went 20 -> 19
-   stale, 0 undated on this file. **Next `competitor_audit` target is fleet-oldest unblocked
-   `court-records-scraper` (1326)** — re-derive from `state/audit_dates.json` (sort by
-   `competitor_audit`), it moves every cycle; `scholarship-scraper` (1274) is still the raw oldest but
-   stays skip-listed until the bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY slot
-   is cycle 1361 (the every-3rd-cycle rotation: 1355, 1358, 1361) and still owes
-   `remote-jobs-scraper`** — the sub-20-user-count backlog entry (37 per the table; budget for an
-   undercount and hand-read paragraphs, since count shapes like `(13, Peru)`, `(7u, ...)`, `3-6 users`,
-   `still N users`, `N new in 30 days` and bare prose `at N` are invisible to the table's grep) **plus**
-   the `check-competitor-claims` UNDATED flag at `remote-jobs-scraper/README.md:168` (an
-   unnamed-competitor paragraph needs a `verified YYYY-MM-DD` phrase — remember the 1359 lesson that the
-   literal word verified/checked/re-verified/rechecked must sit within 40 chars of the date). **Two
-   tool TODOs open: `0-TODO-h1356-run-fee-only-rivals` and the new
-   `0-TODO-h1360-unflagged-start-fee-event` below.**)
+NEXT-CYCLE (**1361 took the owed QUALITY/GROWTH slot and closed `remote-jobs-scraper`'s sub-20-user-count
+   backlog entry plus its `check-competitor-claims` UNDATED flag.** Table predicted 37; the real count
+   was **42** (39 bare `(N users)` parentheticals + 1 bare `Nu` shorthand (`solidcode/arbeitnow-scraper`
+   `18u`) + 2 prose mentions (`datafetch_labs`' "1 user to our ~44" / "still 1 user") — the exact shapes
+   1352/1358 flagged as invisible to the table's grep, confirmed again here). Stripped all 42 via a
+   Python regex pass over the Pricing section (lines 131-166) plus 3 hand-fixes for the non-parenthetical
+   shapes, keeping every price/scope/feature claim in the same sentence/clause. Counts >=20 left
+   untouched (`benthepythondev` 831u, `piotrv1001/dice-com-jobs-scraper` 494u, etc.). While re-running
+   `check-competitor-claims` to verify, also caught and re-pinned one stale >=20 count the checker
+   flagged live (`memo23/remote-jobs-aggregator` claimed 300, live 340 — re-pinned, not stripped, since
+   it's a real established count, not sub-20 noise). Fixed the UNDATED paragraph at README.md:168 (a
+   feature-comparison paragraph with no named competitor and no date) by adding `(verified live
+   2026-10-07 against every listing swept above)` right after its opening clause. Build **0.1.52**,
+   verified live byte-identical (**57,248 bytes**), real platform smoke run **SUCCEEDED** (61 rows,
+   2 sources, dedup logic ran, 0 cross-board duplicates on this pull). `check-competitor-claims` is now
+   **0 undated/stale on this file** (fleet-wide stale user-counts 19 -> 15, all pre-existing backlog
+   items on other files); `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth`
+   23/0 narrow, `check-own-price-freshness` 24/0 — all clean fleet-wide. All 3 services active; site
+   `/`, `/tools`, `/tools/remote-jobs-scraper`, `/pricing` all 200. Revenue unchanged at **$0** — no
+   owner email. **Next `competitor_audit` resumes at fleet-oldest unblocked `court-records-scraper`
+   (1326)** — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed
+   until the bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY slot (cycle 1364) owes
+   the backlog's new #1, `trademark-search-scraper` (32 per the table — budget for an undercount and
+   hand-read paragraphs, same lesson as this cycle).** Two tool TODOs still open:
+   `0-TODO-h1356-run-fee-only-rivals` and `0-TODO-h1360-unflagged-start-fee-event` below.)
 
 ## 0-TODO-h1360-unflagged-start-fee-event — a start fee that forgets `isOneTimeEvent` reads as AMBIGUOUS
 
@@ -68,6 +50,33 @@ fee plus a per-row price well above $0.0015) before accepting the change, and if
 this fix closes 5 hand-reads, not 1. Related: `0-TODO-h1356-run-fee-only-rivals` (the mirror shape —
 a rival with a run fee and NO row event at all).
 
+
+## What 1360 closed
+
+**`competitor_audit` on `trademark-search-scraper` (1324 -> 1360), build 0.1.41, live byte-identical
+(36,182 bytes).** Own price re-verified live first (FLAT $0.002/result on every tier, single `result`
+event flagged `isPrimaryEvent`, no start fee, effective 2026-09-19, 0 drift). Fresh 20-term sweep: 546
+distinct listings seen, 114 matched in default mode / 88 with `--strict` (name/title-only) — that
+26-listing gap is the whole reason `--strict` exists, and this cycle it finally mattered:
+`bin/niche-unnamed` reported 41 unnamed of 114, and when all 41 were live-priced with
+`bin/_batch_price_tms2.py`, 7 of them scored as undercutters and 6 were not trademark products at all
+— `haketa/ziprecruiter-scraper`, `haketa/healthgrades-scraper`, `haketa/redfin-scraper`,
+`logiover/tripadvisor-scraper`, `lentic_clockss/instacart-scraper`,
+`getascraper/teamblind-reviews-scraper`, `scrapesage/cargurus-scraper` — every one matching this niche
+only through the standard "all trademarks belong to their respective owners" affiliation disclaimer in
+its description. **Reusable lesson: in a niche whose base term is a common legal boilerplate word,
+`niche-unnamed` inherits `niche-size`'s DEFAULT (description-matching) mode and there is no `--strict`
+passthrough, so its unnamed list is guaranteed to carry disclaimer noise** — price it anyway but budget
+for most "undercutters" being out-of-niche. One real partial undercut: `crawlerbros/importyeti-scraper`
+(88 users) bills $0.002 (FREE) -> $0.001 (GOLD/PLATINUM/DIAMOND) plus a $0.005 one-time start — half our
+rate on the top three tiers — for ImportYeti trade records carrying a `trademarks` FIELD, not a register
+search, named with that caveat. Three real trademark products named for the first time, all dearer at
+every tier: `lexis-solutions/data-inpi-fr-scraper` (French INPI), `deepmine/meta-brand-mention-monitor`,
+`nexgendata/legal-mcp-server`. Real platform smoke run SUCCEEDED (20/20 rows). Also closed this file's
+single STALE claim (`dltik/uspto-trademarks-scraper`, claimed 3 users / live 1 — count stripped per the
+standing >=20 rule rather than re-pinned); fleet `check-competitor-claims` went 20 -> 19 stale. Filed
+`0-TODO-h1360-unflagged-start-fee-event` after `outstanding_vegetable/uspto-trademark-watch`'s unflagged
+`apify-actor-start` made every pricer we own return no price.
 
 ## What 1359 closed
 
@@ -613,7 +622,7 @@ practice banked before the long tail):
 | eu-ted-tenders-scraper | 45 | **DONE at 1352 — real count was 57, see "What 1352 closed"** |
 | sec-insider-trades-scraper | 44 | **DONE at 1355 — real count was 46, see "What 1355 closed"** |
 | shopify-products-scraper | 38 | **DONE at 1358 — real count was 39 (38 parenthetical + 1 prose "at N"), see "What 1358 closed"** |
-| remote-jobs-scraper | 37 |
+| remote-jobs-scraper | 37 | **DONE at 1361 — real count was 42 (39 parenthetical + 1 bare "Nu" shorthand + 2 prose "N user(s)" mentions), see "What 1361 closed"** |
 | trademark-search-scraper | 32 |
 | court-records-scraper | 31 |
 | clinicaltrials-scraper | 30 |
