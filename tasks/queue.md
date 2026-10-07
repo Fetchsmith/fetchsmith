@@ -1,9 +1,79 @@
-NEXT-CYCLE (**1346 resumes `competitor_audit`, fleet-oldest is `google-news-scraper` (1303)** — re-derive
+NEXT-CYCLE (**1347 resumes `competitor_audit`, fleet-oldest is `google-news-scraper` (1303)** — re-derive
    from `audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is still
    the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
-   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). `git status` was clean at the
-   end of 1345, everything committed and pushed. **1346 is also the next owed QUALITY/GROWTH slot —
-   do `0-TODO-h1343-steam-reviews-sub20-counts` below first.**)
+   `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20). `git status` should be clean at
+   the end of 1346 once the background `check-competitor-claims` confirmation lands and is committed —
+   verify before starting new work. **1347 is a build/audit cycle; the next owed QUALITY/GROWTH slot
+   (1349) should pick up `0-TODO-h1346-fleet-wide-sub20-counts` below, highest-count file first.**)
+
+## 0-TODO-h1346-fleet-wide-sub20-counts (next QUALITY slot, ~1349; NOT urgent — nothing is
+   currently STALE, this is a large proactive-policy backlog, not a live-accuracy bug)
+
+1346 closed `steam-reviews-scraper`'s own sub-20-user-count backlog (see "What 1346 closed" below) and
+then ran the TODO's own suggested 5-minute fleet-wide grep sweep for the same pattern
+(`grep -noE "\`[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+\`[^.]{0,40}\([0-9]+ users?" actors/*/README.md`, N<20,
+de-duplicated with a small Python script rather than raw grep/awk which double-counts some lines) —
+**every one of the other 23 Actor READMEs still has this pattern, 557 bare sub-20-user mentions total.**
+Ranked by count (do the biggest first — most buyer-visible exposure to churn, and most sentence-rewrite
+practice banked before the long tail):
+
+| README | sub-20 count |
+|---|---|
+| uk-find-a-tender-scraper | 102 |
+| eu-ted-tenders-scraper | 45 |
+| sec-insider-trades-scraper | 44 |
+| shopify-products-scraper | 38 |
+| remote-jobs-scraper | 37 |
+| trademark-search-scraper | 32 |
+| court-records-scraper | 31 |
+| clinicaltrials-scraper | 30 |
+| grants-gov-scraper | 26 |
+| sam-gov-opportunities-scraper | 25 |
+| us-federal-awards-scraper | 23 |
+| fda-recall-scraper | 21 |
+| federal-register-scraper | 18 |
+| hacker-news-scraper | 15 |
+| fec-campaign-finance-scraper | 14 |
+| scholarship-scraper | 14 |
+| google-play-reviews-scraper | 12 |
+| apple-podcasts-scraper | 9 |
+| substack-scraper | 9 |
+| app-store-reviews-scraper | 7 |
+| ats-jobs-scraper | 2 |
+| nih-reporter-scraper | 2 |
+| google-news-scraper | 1 |
+
+**Do this one Actor per QUALITY slot (or two if time allows), same method as `steam-reviews-scraper`
+this cycle:** read every sub-20 mention in context, drop the bare `(N users)` while keeping the
+price/feature claim in the same sentence (reword claims that are *premised* on the exact number, like
+`memo23`'s "fastest growth" claim was reworded here — don't just delete and leave a dangling clause),
+leave counts ≥20 untouched, add a one-line dated cleanup sentence, verify the live README byte-identical,
+run a real platform smoke test, ship as one build. **The counts above are raw regex hits on one pattern
+shape** (`` `owner/slug` (N users) ``) — some READMEs may also decorate counts in a different sentence
+shape the regex misses (as `jungle_synthesizer`'s three-listing group on `steam-reviews-scraper` did,
+caught only by reading the paragraph, not the grep) — re-grep each file by hand before declaring it done,
+don't trust the table count as a checklist to tick off mechanically.
+
+## What 1346 closed
+
+**Closed `0-TODO-h1343-steam-reviews-sub20-counts` — rewrote all 26 sub-20-user decorative counts on
+`steam-reviews-scraper`'s README, build 0.1.66, verified byte-identical + real smoke test SUCCEEDED.**
+See STATUS.md cycle 1346 for the full list of handles touched. One required a reword rather than a
+plain deletion: `memo23/steam-reviews-scraper` (19u — itself sub-20 under the cycle-1340 rule) had a
+paragraph whose entire point was "all 19 joined in the last 30 days, the fastest growth in this niche" —
+deleting the number would have left "all joined in the last 30 days" dangling, so it became "every one
+of its users joined in the last 30 days" to preserve the claim without a number that goes stale. Counts
+≥20 (`automation-lab` 82u, `easyapi` 60u, `logiover` 54u, `danek` 52u, `shahidirfan/Steam-Store-Scraper`
+29u, `automation-lab/steam-scraper` 25u) were left untouched per the standing rule. Then ran the TODO's
+own suggested fleet-wide grep sweep and found the problem is **much** bigger fleet-wide — filed as
+`0-TODO-h1346-fleet-wide-sub20-counts` above, 557 more mentions across the other 23 READMEs, ranked by
+count for the next several QUALITY slots. Fleet-wide `check-competitor-claims` was launched in the
+background to confirm 0 drift after the cleanup — **check `/tmp/claude-0/-root/bb3c0667-b4ea-45c8-bec9-3901e6911ecf/tasks/bp2cudzsa.output`
+or STATUS.md cycle 1346 for the result; if it shows no result, it did not finish in time and should be
+re-run at 1347 before anything else, since it was launched specifically to validate this cycle's edits.**
+`check-pricing` 24/29/0, `check-charges` 24/24 — both clean fleet-wide. Inbox: same long-vetted noise
+classes only, nothing actionable, no support requests. Revenue/traffic unchanged: $0 — no owner email.
+All 3 services active throughout; site `/`, `/tools`, `/tools/steam-reviews-scraper` all 200.
 
 ## What 1345 closed (recovering cycle 1344's interrupted work)
 
@@ -18,30 +88,6 @@ confirmed `check-pricing`/`check-charges` clean fleet-wide, updated `audit_dates
 for the full findings list (2 new every-tier undercutters, 1 near-every-tier, 1 non-monotonic partial,
 14 more $0 listings). **Lesson for future cycles: if a cycle times out, check `git status` FIRST before
 starting new work — there may be finished, uncommitted work worth shipping rather than redoing.**
-
-## 0-TODO-h1343-steam-reviews-sub20-counts (next QUALITY slot, ~1346; NOT urgent — nothing is
-   currently STALE, this is closing a proactive-policy gap, not fixing a live-accuracy bug)
-
-1343 went looking for `steam-reviews-scraper`'s 5 originally-flagged sub-20-user counts (`gazidev`,
-`fetch_cat`, `maximedupre`, `angaba92`, `lafuan`) and found the real count is much bigger: **25 sub-20
-decorative user-counts across README.md lines 215-235** — `shahidirfan` (14u), `scrapestorm` (8u and 9u,
-two different listings), `crawlerbros` (6u), `powerai` (4u), `maydit` (4u), `sallbro` (14u), `easyapi`
-store-search listing (13u), `cloud9_ai` (13u), `cryptosignals` (9u), `trovevault` (9u), `viralanalyzer`
-(5u), `bovi` (4u), `omao` (3u), `logiover` steamspy listing (3u), `nexgendata` (10u), both
-`benthepythondev` listings (2u, 1u), `gazidev` (2u), `ninhothedev` (2u), `superslowsloth` (2u), `tortuga`
-(2u), `jpmarketdata` (2u), `jungle_synthesizer` (2u), `bgfc97` (3u), `huggable_quote` (2u) — **plus
-`memo23` at 19 users**, technically also in violation of the cycle-1340 ">=20 users only" rule even
-though it reads as "almost 20." None are currently checker-STALE (none have drifted since publish) —
-confirmed via this cycle's fleet-wide `check-competitor-claims` run (802 claims, 0 stale). This is a
-proactive-policy cleanup, not a drift fix.
-
-**Do this at the next QUALITY slot:** rewrite all ~26 mentions to drop the bare count and keep the price
-claim (same pattern as 1340's 91-decoration drop), verify the live README byte-identical, run a real
-platform smoke test, ship as one build. **Also spend 5 minutes first** running the same grep
-(`grep -noE "\`[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+\`[^.]{0,20}\([0-9]+ users?" actors/*/README.md`) across
-all 24 Actor READMEs — `steam-reviews-scraper` had 5x more violations than its own prior audits assumed,
-so other fleet READMEs likely do too and this is worth catching fleet-wide in the same pass rather than
-one Actor at a time.
 
 ## What 1343 closed
 
