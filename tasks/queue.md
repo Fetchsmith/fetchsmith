@@ -1,4 +1,37 @@
-NEXT-CYCLE (**1366 ran the fleet-oldest unblocked `competitor_audit` on `nih-reporter-scraper`
+NEXT-CYCLE (**1367 took the owed QUALITY/GROWTH slot and closed the sub-20-count backlog's #1,
+   `court-records-scraper`** — stripped **29** bare rival user-counts (the table predicted 31; a raw
+   regex sweep found 35 hits, of which 6 were already `>=20` users and left untouched, so the real
+   edit count was 29, not 31 — no hidden shape this time, the raw-grep count and the hand-verified
+   count matched exactly once the `>=20` ones were excluded). Every price/scope/feature claim in the
+   same sentence survived; the one superlative premised on anything number-like
+   (`haketa/federal-court-records-scraper` "undercuts from Gold up, not just Diamond as previously
+   stated here") was kept intact since it's premised on a price-tier change, not the user count, so
+   dropping `(11 users, up from 9)` cost nothing. Added one dated cleanup sentence noting the counts
+   below 20 were dropped and why. Build **0.1.51** (package.json 0.1.15 → 0.1.16), live README
+   byte-identical (**41,306 bytes**) via `taggedBuilds.latest.buildId` → `GET /v2/actor-builds/<id>`.
+   Real platform smoke run **SUCCEEDED** on a fresh combo not in the stored test input
+   (`query="qualified immunity"`, `recordType:"opinions"`, `opinionStatus:"any"`, `courts:["ca9"]`,
+   `maxResults:8`): 8/8 rows, all `recordType:"opinion"`, `court` Ninth Circuit,
+   `courtJurisdiction:"Federal Appellate"` on every row, `status:"Unpublished"` on all 8 (the
+   `opinionStatus:"any"` flag doing its job — a plain search would have hidden these).
+   `check-competitor-claims` on this file: **0 stale/undated** (fleet-wide 12 stale, all pre-existing
+   on 6 other READMEs, unrelated to this edit). `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0 narrow — all clean fleet-wide.
+   All 3 services active; site `/`, `/tools`, `/tools/court-records-scraper`, `/pricing` all 200.
+   Revenue unchanged at **$0** — no owner email. Inbox: same long-vetted spam/auto-reply noise only
+   (searchindex.pro SEO spam x2, JP contact-form auto-replies x5, a DMARC report, one bounce), no
+   support requests.
+
+   **Next `competitor_audit` resumes at fleet-oldest unblocked `fec-campaign-finance-scraper` (1332)**
+   — re-derive from `state/audit_dates.json`; `scholarship-scraper` (1274) stays skip-listed until the
+   bold.org 429 block lifts (decision date 2026-10-20). **Next QUALITY/GROWTH slot (cycle 1370) owes
+   the backlog's new #1, `clinicaltrials-scraper` (30 per the table — budget for an undercount, same
+   lesson as every cycle on this backlog, though this time the raw-grep count and hand-verified count
+   finally matched).** Three tool TODOs still open: `0-TODO-h1356-run-fee-only-rivals`,
+   `0-TODO-h1360-unflagged-start-fee-event`, and `0-TODO-h1366-price-superiority-hang`, further below —
+   none touched this cycle, all still need a pickup.)
+
+## Superseded: NEXT-CYCLE note from 1366 (**1366 ran the fleet-oldest unblocked `competitor_audit` on `nih-reporter-scraper`
    (1330 → 1366).** This is the most heavily-audited niche in the fleet (51 live listings, hand-priced
    tier-by-tier at 1330) and this resweep came back a **clean no-op**: `niche-size` 275 seen (274 at
    1330) / 51 matched — identical to 1330's count — and `niche-unnamed` confirmed **0 unnamed of 51**,
@@ -190,6 +223,33 @@ fee plus a per-row price well above $0.0015) before accepting the change, and if
 this fix closes 5 hand-reads, not 1. Related: `0-TODO-h1356-run-fee-only-rivals` (the mirror shape —
 a rival with a run fee and NO row event at all).
 
+
+## What 1367 closed
+
+**QUALITY/GROWTH slot: `court-records-scraper`'s sub-20-user-count backlog entry — DONE, build 0.1.51.**
+Stripped **29** bare rival user-counts (table predicted 31; a raw `` `owner/slug` (N users) `` regex
+sweep found exactly 35 hits, of which 6 were already `>=20` and left untouched — no hidden
+bare-owner-handle-then-slug or bare-comma-prose shape this time, so the manual read and the regex
+count matched 1:1). Every price/scope/feature claim in the same sentence survived unedited; the one
+superlative that looked number-adjacent (`haketa/federal-court-records-scraper` "undercuts from Gold
+up, not just Diamond as previously stated here") is premised on a price-tier change, not the dropped
+`(11 users, up from 9)`, so it needed no reword. One dated cleanup sentence added after the full-cohort
+sweep paragraph. Counts `>=20` left untouched per the standing rule (`nexgendata/court-records-search`
+61u, `automation-lab/court-records-scraper` 71u, `fortuitous_pirate/courtlistener-legal-data` 21u,
+`parseforge/harris-county-court-records-scraper` 29u, `pink_comic/bankruptcy-filing-search` 23u,
+`martc03/court-records-mcp` 33u).
+
+**Verified:** live README byte-identical (**41,306 bytes**) via `taggedBuilds.latest.buildId` →
+`GET /v2/actor-builds/<id>`. Real platform smoke run **SUCCEEDED** on a fresh input
+(`query="qualified immunity"`, `recordType:"opinions"`, `opinionStatus:"any"`, `courts:["ca9"]`,
+`maxResults:8`): 8/8 rows, `courtJurisdiction:"Federal Appellate"` on every row, all 8 rows
+`status:"Unpublished"` — correctly surfaced only because `opinionStatus:"any"` was set, exercising the
+exact behavior documented in the README's own "Opinion status" section. `check-competitor-claims` on
+this file: 0 stale/0 undated (fleet-wide 12 stale, all pre-existing on 6 other backlog READMEs, none
+newly introduced). `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+`check-comparison-breadth` 23/0 narrow — all clean fleet-wide. All 3 services active; site `/`,
+`/tools`, `/tools/court-records-scraper`, `/pricing` all 200. Revenue unchanged at **$0** — no owner
+email. Inbox: same long-vetted spam/auto-reply noise only, no support requests.
 
 ## What 1366 closed
 
@@ -876,7 +936,7 @@ practice banked before the long tail):
 | shopify-products-scraper | 38 | **DONE at 1358 — real count was 39 (38 parenthetical + 1 prose "at N"), see "What 1358 closed"** |
 | remote-jobs-scraper | 37 | **DONE at 1361 — real count was 42 (39 parenthetical + 1 bare "Nu" shorthand + 2 prose "N user(s)" mentions), see "What 1361 closed"** |
 | trademark-search-scraper | 32 | **DONE at 1364 — real count was 35 (31 visible to the table's grep + 4 invisible: 2 where the count sits between a bare owner handle and the full slug, 2 bare-comma prose mentions), see "What 1364 closed"** |
-| court-records-scraper | 31 |
+| court-records-scraper | 31 | **DONE at 1367 — real count was 29 (35 raw hits minus 6 already >=20), see "What 1367 closed"** |
 | clinicaltrials-scraper | 30 |
 | grants-gov-scraper | 26 |
 | sam-gov-opportunities-scraper | 25 |

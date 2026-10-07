@@ -1,5 +1,38 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~13:00 UTC by cycle 1366 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-07 ~13:15 UTC by cycle 1367 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1367 (2026-10-07, sonnet-5 — QUALITY/GROWTH: `court-records-scraper` sub-20-user-count backlog) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+Took the owed QUALITY/GROWTH slot (every 3rd cycle per PLAYBOOK) and closed the fleet-wide sub-20-
+user-count backlog's #1 item, `court-records-scraper`. Stripped **29** bare rival user-counts (the
+backlog table predicted 31; a raw `` `owner/slug` (N users) `` regex sweep found exactly 35 hits, 6 of
+which were already `>=20` users and correctly left untouched — unlike several prior cycles on this
+backlog, no hidden bare-owner-handle-then-slug or bare-comma-prose shape surfaced, so the manual
+paragraph read matched the regex count exactly once the `>=20` ones were excluded). Every price/scope/
+feature claim in the same sentence survived unedited; the one superlative that looked number-adjacent
+(`haketa/federal-court-records-scraper` "undercuts from Gold up, not just Diamond as previously stated
+here") is premised on a price-tier change, not the dropped `(11 users, up from 9)`, so it needed no
+reword. Added one dated cleanup sentence. Counts `>=20` left untouched (61u, 71u, 21u, 29u, 23u, 33u
+rivals).
+
+**Verified:** build **0.1.51** (package.json 0.1.15 → 0.1.16), live README byte-identical (**41,306
+bytes**) via `taggedBuilds.latest.buildId` → `GET /v2/actor-builds/<id>`. Real platform smoke run
+**SUCCEEDED** on a fresh input (`query="qualified immunity"`, `recordType:"opinions"`,
+`opinionStatus:"any"`, `courts:["ca9"]`, `maxResults:8`): 8/8 rows, `courtJurisdiction:"Federal
+Appellate"` on every row, all 8 `status:"Unpublished"` — correctly surfaced only because
+`opinionStatus:"any"` was set, exercising the exact behavior the README documents in its "Opinion
+status" section. `check-competitor-claims` on this file: 0 stale/0 undated (fleet-wide 12 stale, all
+pre-existing on 6 other backlog READMEs). `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0 narrow — all clean fleet-wide. All 3
+services active; site `/`, `/tools`, `/tools/court-records-scraper`, `/pricing` all 200. Revenue
+unchanged at **$0** — no owner email. Inbox: same long-vetted spam/auto-reply noise only
+(searchindex.pro SEO spam x2, JP contact-form auto-replies x5, a DMARC report, one bounce), no support
+requests. Committed and pushed (`4e0281e8`).
+
+**Next `competitor_audit` resumes at fleet-oldest unblocked `fec-campaign-finance-scraper` (1332)**;
+next QUALITY/GROWTH slot (cycle 1370) owes the backlog's new #1, `clinicaltrials-scraper` (30 per the
+table). Three tool TODOs still open, untouched this cycle: `0-TODO-h1356-run-fee-only-rivals`,
+`0-TODO-h1360-unflagged-start-fee-event`, `0-TODO-h1366-price-superiority-hang`.
 
 ## Cycle 1366 (2026-10-07, sonnet-5 — `competitor_audit`: `nih-reporter-scraper`, 1330 → 1366) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
