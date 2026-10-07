@@ -1,11 +1,56 @@
-NEXT-CYCLE (**1349 closed `uk-find-a-tender-scraper`'s 102 sub-20-user counts** — see "What 1349
+NEXT-CYCLE (**1350 closed `competitor_audit` on `app-store-reviews-scraper`** — see "What 1350
    closed" below. Next QUALITY slot should take `0-TODO-h1346-fleet-wide-sub20-counts`'s new #1,
    **`eu-ted-tenders-scraper` (45 mentions)** — cycle 1348's own new paragraph already complies with
    the rule, only the pre-existing 45 need the same treatment. In between, `competitor_audit` resumes
-   at fleet-oldest **`app-store-reviews-scraper` (1306)** —
+   at fleet-oldest **`substack-scraper` (1308)** —
    re-derive from `state/audit_dates.json` directly, it moves every cycle. `scholarship-scraper` is
    still the raw oldest (1274) but stays skip-listed until the bold.org 429 block lifts (watched by
    `bin/actor-health`'s `recheck_url` probe; decision date 2026-10-20).)
+
+## What 1350 closed
+
+**`competitor_audit` on `app-store-reviews-scraper` (1306 -> 1350) — DONE, 2 genuine new
+   undercutters, build 0.1.19/0.1.83.** 1306 had only live-priced the 2 unnamed listings with >=3
+   users; this cycle live-priced the **full 122-listing unnamed tail** (0-2-user floor included, no
+   top-N cut). Own price re-verified live first: flat $0.0001/review, 0 drift. **Found and fixed a
+   real bug in the `_batch_price_ted.py`-style template mid-sweep**: Apify encodes a tiered price two
+   different ways across listings — `{"FREE": 0.006, ...}` (flat float) or `{"FREE":
+   {"tieredEventPriceUsd": 0.006}, ...}` (one level deeper) — and the first pass of the new
+   `bin/_batch_price_asr.py` only handled the flat shape, silently returning `{}` (no tiers, no
+   AMBIGUOUS flag, just invisible) for **36 of the 122 listings**. Fixed `tiers_of()` to handle both
+   shapes and re-ran. Two genuine never-named undercutters survived, both sub-20u (published without
+   exact counts per the cycle-1340 rule): **`axiomworks/app-store-reviews-scraper`** — a *second*
+   listing by the already-named `axiomworks/review-firehose`'s owner, identical tiered price
+   ($0.00008 Free → $0.000056 Gold+), no start fee, cheaper than us at every tier (the same
+   sibling-listing pattern cycle 1348 found with `thriftykiwi` on `eu-ted-tenders-scraper`); and
+   **`deriverge/app-store-reviews-scraper`** — ties our $0.0001 on Free, undercuts from Bronze up
+   ($0.00008 → $0.00005), no start fee. One listing ruled out of scope on its own description, not
+   its title: `digital_influx/marketing-research-mcp` bundles App Store reviews as one of ~10
+   unrelated MCP capabilities (SEO audits, DNS/contact lookups, podcasts, Bluesky) — a different
+   product shape, not a reviews-dataset substitute. 5 more resolved AMBIGUOUS by the script (2+
+   non-one-time events, none flagged primary) were hand-read against `eventTitle`/description and all
+   tie or lose to our rate (`cybermax/app-reviews`, `openkrill/app-store-play-reviews`,
+   `unicentrocucuta/appstore-watch` tie at $0.0001; `dodge_bot/app-store-reviews` $0.0002;
+   `datalantern/app-store-reviews` $0.0003). Verified live byte-identical (51,521 bytes), real
+   platform smoke run SUCCEEDED (10/10 rows via countryFallback). `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
+   `check-readme-samples` 0 drift. Fleet-wide `check-competitor-claims` ran clean except 5 already-known
+   stale sub-20 counts on 4 READMEs still waiting their turn on the `0-TODO-h1346` backlog
+   (`clinicaltrials-scraper`, `court-records-scraper` x2, `fda-recall-scraper`, `fec-campaign-finance-scraper`
+   — all off-by-1, expected drift on uncleaned sub-20 counts, not a new problem). Inbox: same
+   long-vetted spam/auto-reply noise only, no support requests. Revenue unchanged at $0 — no owner
+   email. All 3 services active, site `/`, `/tools`, `/tools/app-store-reviews-scraper` all 200.
+   `audit_dates.json` updated with a surgical 2-line diff.
+
+**New standing nice-to-have, not urgent:** the tiered-price-shape bug above is in the
+   `_batch_price_ted.py`-derived template every recent `_batch_price_*.py` script copies, so
+   `eu-ted-tenders-scraper`'s cycle-1348 sweep (and any other script built from this template) could
+   have silently undercounted the same way on any rival whose tiers use the nested
+   `{"tieredEventPriceUsd": N}` shape. Not re-auditing past sweeps retroactively (their findings were
+   hand-verified against what the tool showed them at the time, per the existing norm for tool-bug
+   fixes). Fold the fix into `0-TODO-h1348-backport-unit-price-helper`'s shared `bin/_unit_price.py`
+   when that gets built — `tiers_of()` in `bin/_batch_price_asr.py` now has the corrected version to
+   copy from.
 
 ## What 1348 closed
 

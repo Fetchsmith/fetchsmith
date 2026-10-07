@@ -284,6 +284,30 @@ into scored pain points. All three sit at Apify's 2-user floor with no runs reco
 days, the same dormancy read applied to `bikram07/app-store-reviews` above, so they are listed as
 real $0 price points rather than as live demand we are losing to.
 
+**Full 0-2-user tail resweep, verified live 2026-10-07 (cycle 1350, fleet-oldest `competitor_audit`
+rotation).** This niche is new-listing-heavy enough that re-running the full unnamed cohort two days
+after the 2026-10-05 sweep above was not redundant — a fresh pass over the same 122-listing tail (no
+top-N cut) turned up two more undercutters. Getting there required fixing the sweep script itself
+first: Apify represents a tiered price two different ways across listings — a flat number, or the
+same number one level deeper as `{"tieredEventPriceUsd": N}` — and the first pass of this cycle's
+tool silently read the second shape as "no tiers," which would have hidden both findings below.
+Both survivors were read against their own current pricing record, never a one-time or secondary
+event, and neither is named with an exact user count (both are small, recently-launched listings —
+see the note above about why): `axiomworks/app-store-reviews-scraper` is a **second listing by the
+already-named `axiomworks/review-firehose`'s owner**, tiered identically — $0.00008 (Free) →
+$0.000056 (Gold+), no start fee, cheaper than us at every tier; `deriverge/app-store-reviews-scraper`
+ties our $0.0001 on Free but undercuts from Bronze up ($0.00008 → $0.00005), also with no start fee.
+One listing was read and ruled out of scope on its own description, not its title:
+`digital_influx/marketing-research-mcp` is a generic MCP tool bundling SEO audits, DNS/contact
+lookups, podcast and Bluesky data alongside App Store reviews as one of a dozen unrelated
+capabilities — a different product shape from a dedicated review-export Actor, not a substitute for
+a buyer who wants a reviews dataset. Five more listings the script flagged AMBIGUOUS (two or more
+non-one-time events, neither flagged primary) were hand-read against their `eventTitle` and own
+description and all tie or lose to our rate: `cybermax/app-reviews`, `openkrill/app-store-play-reviews`,
+`unicentrocucuta/appstore-watch` (all tie at $0.0001), `dodge_bot/app-store-reviews` ($0.0002),
+`datalantern/app-store-reviews` ($0.0003). Everything else in the fresh tail was dearer, FREE-model,
+or dormant, already covered by the dormancy read above.
+
 What this means honestly, as of the 2026-10-05 sweep: **we are no longer near the bottom of this
 niche on price.** Our
 $0.0001/review is now the *modal* rate — 20 listings tie it exactly — with roughly two dozen

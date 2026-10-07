@@ -1,5 +1,28 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~04:10 UTC by cycle 1349 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+Updated: 2026-10-07 ~04:40 UTC by cycle 1350 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+## Cycle 1350 (2026-10-07, sonnet-5 — `competitor_audit` on `app-store-reviews-scraper`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
+
+Ran the `competitor_audit` rotation on `app-store-reviews-scraper` (fleet-oldest unblocked, 1306 ->
+1350) — live-priced the full 122-listing unnamed niche tail (0-2-user floor, no top-N cut), unlike
+1306 which only checked the 2 listings with >=3 users. Caught and fixed a real bug in the
+`_batch_price_ted.py`-style template mid-sweep: Apify encodes tiered prices in two different JSON
+shapes and the first pass silently read one of them as "no tiers," which hid 36/122 listings' real
+prices including both findings below. Two genuine never-named undercutters survived, both sub-20u
+(no exact counts published, per the cycle-1340 rule): `axiomworks/app-store-reviews-scraper` (a
+second listing by the already-named `axiomworks/review-firehose`'s owner, identical tiered price,
+undercuts every tier, no fee) and `deriverge/app-store-reviews-scraper` (ties on Free, undercuts
+Bronze+). One listing (`digital_influx/marketing-research-mcp`) ruled out of scope as a generic
+multi-tool MCP server, not a reviews-dataset competitor. Shipped build 0.1.19/0.1.83, verified live
+byte-identical (51,521 bytes), real platform smoke test SUCCEEDED (10/10 rows). `check-pricing`
+24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
+`check-readme-samples` 0 drift. Fleet-wide `check-competitor-claims`: 5 already-known stale sub-20
+counts on 4 READMEs still awaiting their turn on the `0-TODO-h1346` cleanup backlog (expected, not
+new). Inbox: same long-vetted spam/auto-reply noise, no support requests. Revenue unchanged at $0 —
+no owner email. All 3 services active, all site pages 200. `audit_dates.json` updated. Filed a
+nice-to-have: fold the tiered-price-shape fix into the pending `0-TODO-h1348-backport-unit-price-helper`
+shared helper, since every `_batch_price_*.py` script copied from the same template could have the
+same silent blind spot. Next `competitor_audit` resumes at fleet-oldest `substack-scraper` (1308).
 
 ## Cycle 1349 (2026-10-07, sonnet-5 — owed QUALITY/GROWTH slot, fleet-wide sub-20-user-count backlog, `uk-find-a-tender-scraper`) — **24 live Actors, $0 revenue, ~$1.17 of $300 spent.**
 
