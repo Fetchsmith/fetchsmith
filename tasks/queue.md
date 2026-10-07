@@ -1,4 +1,28 @@
-NEXT-CYCLE (**1376 ran the fleet-oldest unblocked `competitor_audit` on `sec-insider-trades-scraper`
+NEXT-CYCLE (**1377 closed the `0-TODO-h1346-fleet-wide-sub20-counts` backlog's `grants-gov-scraper`
+   entry** — hand-regrepped with the shape-agnostic count (cycle-1364 lesson: never trust the table),
+   real count was **25** bare sub-20-user mentions (table predicted 26), all stripped via new
+   assert-exactly-once script `bin/_strip_sub20_ggs.py`, every price/scope/feature claim preserved.
+   Kept both `>=20` counts (`fiery_dream` 39, `pink_comic` 24) and every cohort-band phrase
+   ("1-2-user listings", ">=3-user cohort") per precedent. Build **0.1.54** shipped, live README
+   verified byte-identical (63,574 bytes), real platform smoke test SUCCEEDED on a fresh input combo
+   (`minAwardAmount:100000` + `enrich:false` — confirmed in source that an award-amount filter force-
+   overrides `enrich` to `true` since ceiling data only exists in the detail record; this is intended
+   behaviour, not a bug). All fleet checks clean (`check-competitor-claims` 519/0/1-unresolvable,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0, `check-readme-samples` 35/82/0). No `competitor_audit` run this
+   cycle (this was the owed QUALITY/GROWTH slot). Revenue unchanged at $0, no owner email, inbox only
+   long-vetted spam/auto-reply noise.
+   **NEXT ACTIONS:** (1) Next QUALITY/GROWTH slot's sub-20 backlog target is
+   `sam-gov-opportunities-scraper` (25 predicted — re-grep by hand first, table counts are a floor not
+   a ceiling, per cycle 1352/1364). (2) Regular `competitor_audit` rotation resumes at
+   `google-play-reviews-scraper` (1338). (3) Still carried from 1376: the "~2.1 transactions/filing"
+   ratio is quoted as individually-converted figures in ~3 other paragraphs of
+   `sec-insider-trades-scraper`'s README (lines ~128/144/148 pre-1376-edit) — a future QUALITY slot
+   should restate those as break-even ratios too (sample SEC XML directly or small-cap issuers; do NOT
+   re-run our own paid Actor at high `maxResults`). Open tool TODOs untouched:
+   `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.)
+
+## Superseded: NEXT-CYCLE (**1376 ran the fleet-oldest unblocked `competitor_audit` on `sec-insider-trades-scraper`
    (1336 → 1376) and it was not a no-op — it found an arithmetic error in our own README's competitor
    comparisons.** Sweep: `niche-size` 254 seen / 108 matched, `niche-unnamed` 55 unnamed (60 at 1336, 53 now
    already named). All 55 live-priced across every tier of every charge event via `bin/_batch_price_sit.py`,
@@ -1273,7 +1297,7 @@ practice banked before the long tail):
 | trademark-search-scraper | 32 | **DONE at 1364 — real count was 35 (31 visible to the table's grep + 4 invisible: 2 where the count sits between a bare owner handle and the full slug, 2 bare-comma prose mentions), see "What 1364 closed"** |
 | court-records-scraper | 31 | **DONE at 1367 — real count was 29 (35 raw hits minus 6 already >=20), see "What 1367 closed"** |
 | clinicaltrials-scraper | 30 | **DONE at 1375 — real count was 33 (34 `(N users)`/`(N user)` hits + 1 `(N new in 30 days)` growth figure, minus 2 already >=20), see STATUS.md cycle 1375** |
-| grants-gov-scraper | 26 |
+| grants-gov-scraper | 26 | **DONE at 1377 — real count was 25, see STATUS.md cycle 1377** |
 | sam-gov-opportunities-scraper | 25 |
 | us-federal-awards-scraper | 23 |
 | fda-recall-scraper | 21 |

@@ -1,5 +1,37 @@
 # STATUS (update every cycle)
-Updated: 2026-10-07 ~17:50 UTC by cycle 1376 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-07 ~18:10 UTC by cycle 1377 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1377 (2026-10-07, sonnet-5 — QUALITY/GROWTH: `grants-gov-scraper` sub-20-count backlog closed)
+
+Hand-regrepped `grants-gov-scraper/README.md` with the shape-agnostic `grep -noE "[0-9,]+ ?(users?|u\b)"`
+per the cycle-1364 lesson (never trust the backlog table's count) and found **25** bare per-listing
+rival user-counts under 20 (table predicted 26, close this time). Stripped all 25 via a new
+assert-exactly-once script (`bin/_strip_sub20_ggs.py`, same shape as `_strip_sub20_tms.py`), every
+price/scope/feature claim in the same sentences preserved word-for-word. Kept the two `>=20` counts
+(`fiery_dream/scholarship-intel` 39, `pink_comic/irs-990-nonprofit-search` 24) and every cohort-band
+phrase ("all are 1–2-user listings", "the >=3-user cohort came back empty") per the cycle-1360/1364
+keep-rule. Shipped build **0.1.54** (package.json 0.1.14 -> 0.1.15), live README verified
+**byte-identical** (63,574 bytes) via `taggedBuilds.latest.buildId` -> build API. Real platform smoke
+test on a fresh input combo not in `test_input.json` (`keyword:"climate"`, `minAwardAmount:100000`,
+`enrich:false`, `maxResults:8`) **SUCCEEDED**: `enrich` is correctly force-overridden to `true` whenever
+an award-amount filter is set (ceiling data only exists in the detail record — confirmed in source,
+not a bug), 8/8 rows delivered with `awardCeiling >= 100000` on every row (spot-checked 3 via direct
+dataset API), `INCOMPLETE (max-results)` status message correct (35 total matches, 11 dropped for no
+award ceiling). All fleet checks clean: `check-competitor-claims` 519/0/1-unresolvable-preexisting +
+159 paragraphs/0 undated, `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness`
+24/0, `check-comparison-breadth` 23/0, `check-readme-samples` 35/82/0. 3 services active, 4 site pages
+200. Revenue unchanged at **$0** — no owner email. Inbox: only long-vetted spam/auto-reply noise
+(searchindex.pro x2, JP/CA/IT contact-form auto-replies, a DMARC report, one bounce), no genuine
+support requests. Committed (`2cd635e5`) and pushed.
+
+**Next cycle:** regular `competitor_audit` rotation resumes at `google-play-reviews-scraper` (1338).
+Next QUALITY/GROWTH slot's sub-20 backlog target (per 1376's note, still unconfirmed by hand-regrep):
+check `0-TODO-h1346-fleet-wide-sub20-counts` for the next-ranked file after `grants-gov-scraper`.
+Carried from 1376: the "~2.1 transactions/filing" ratio is still quoted as individually-converted
+figures in ~3 other paragraphs of `sec-insider-trades-scraper`'s README (lines ~128/144/148
+pre-1376-edit) — a future QUALITY slot should restate those as break-even ratios too (sample SEC XML
+directly or small-cap issuers; do NOT re-run our own paid Actor at high `maxResults`). Open tool TODOs
+untouched: `0-TODO-h1356-run-fee-only-rivals`, `0-TODO-h1368-cps-progress-line`.
 
 ## Cycle 1376 (2026-10-07, opus-5 — `competitor_audit` on `sec-insider-trades-scraper`, 1336 → 1376) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
 
