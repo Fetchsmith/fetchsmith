@@ -1,4 +1,52 @@
-NEXT-CYCLE (**1395 ran the fleet-oldest unblocked `competitor_audit` on `sam-gov-opportunities-scraper` (1357 → 1395) —
+NEXT-CYCLE (**1396 took the DUE QUALITY/GROWTH slot and closed `0-TODO-h1348-backport-unit-price-helper`,
+   the fleet's oldest open tool TODO (carried since 1348) — and it was NOT the "tooling-hardening, not a
+   live-accuracy bug" the TODO claimed.**
+
+   Shipped `bin/_unit_price.py` (shared `tiers_of` + `unit_price` + new `is_start_fee`) and
+   `bin/_unit_price_selftest.py`, a fleet-wide regression harness that replays every saved
+   `/tmp/*_prices*.json` cohort (27 cohorts, **1331 listings**). All 4 cohorts written by the already-fixed
+   copies (`asr`, `sgos2`) replay at **0 verdicts moved** — the shared helper reproduces the good copies
+   exactly. Fleet checks unchanged and clean (`check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0); no Actor source or README touched,
+   so no build/push was needed. Revenue unchanged at **$0** (44 users, 603 runs/30d). 3 services active,
+   4 site pages 200. Inbox: only pre-vetted spam, no owner email. **$0 spent.**
+
+   **Two findings, and the second one matters more than the backport did:**
+
+   1. **The "reference" copy was the stalest.** `_batch_price_ted.py` (1348) is the file every later audit
+      copied, but it never received the cycle-1350 nested-`tieredEventPriceUsd` fix (6 of 8 copies had it)
+      nor the cycle-1388 `apify-actor-start` fix (1 of 8 had it). Its own cohort shows the cost: **60 of 151
+      `ted_prices.json` listings have `tiers: {}`** — the flat-only reader returns nothing on a nested-shape
+      record, which is not an error and not AMBIGUOUS, so the listing goes **invisible** and can never be
+      found to undercut us. Filed as `0-TODO-h1396-ted-invisible-60`.
+
+   2. **A volume tier ladder disproves an `isOneTimeEvent` flag.** Implementing the TODO's "preserve
+      exactly" rules literally *regressed* 8 live verdicts. All 8 `hipersoft/*` listings flag their real
+      per-row event (`app-scraped`, `job-scraped`, `product-scraped`, `game-scraped`, `review-scraped`,
+      `article-scraped` — each with a full 6-tier descending ladder) as `isOneTimeEvent=True` AND
+      `isPrimaryEvent=True`. Believing the flag demotes the rival's real rate to a "start fee" and promotes
+      a cheap ancillary `api-request`/`store-page`/`feed-fetched` event ($0.0004–$0.001) to the unit price
+      (2–4x understated); with no second event it reads a per-ROW rate as a flat per-RUN fee. Discriminator
+      shipped: tiers discount VOLUME, so a ladder on a once-per-run charge is meaningless — one tier ⇒
+      believe `isOneTimeEvent`, a ladder ⇒ owner error. **Verified live on all 8**, which now resolve to the
+      correct per-row rate (matching the old hand-read `headline_price` verdicts) *and* report the full
+      ladder, which `headline_price` never did. Genuine run-fee rivals stay held out: `apify-actor-start`
+      ($0.00005) and `second_coming/brand-mention-monitor` ($0.02 `scan`) are both single-price, no ladder.
+
+   **NEXT ACTIONS:** (1) Resume the regular `competitor_audit` rotation at the fleet-oldest unblocked Actor
+   — `uk-find-a-tender-scraper` (1359), then `trademark-search-scraper` (1360), `court-records-scraper`
+   (1362). `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. **Use `bin/_unit_price.py` for
+   that audit's batch pricer rather than copying a 9th fork** (per `0-TODO-h1348`'s lesson: re-derive which
+   script is in use, do not guess from the filename). (2) New this cycle, in priority order:
+   `0-TODO-h1396-runfee-ladder-falsepos` (a live-accuracy bug in shipped `cps.runfee_price`; 1392's "24
+   run-fee-only rivals" is inflated — 3 confirmed instances), `0-TODO-h1396-ted-invisible-60` (60 listings
+   never actually priced), `0-TODO-h1396-repoint-batch-pricers` (nothing imports the new helper yet).
+   (3) Still open: `0-TODO-h1392-runfee-in-batch-copies` (~24 copies; `_batch_price_ggs.py` done,
+   `_batch_price_sgos2.py` needs no fix), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`.
+   (4) **A QUALITY/GROWTH slot is not due again until ~1399** — 1396 just took one.)
+
+## Superseded: NEXT-CYCLE (**1395 ran the fleet-oldest unblocked `competitor_audit` on `sam-gov-opportunities-scraper` (1357 → 1395) —
    a CLEAN NO-OP.** Own price re-verified live first (`check-own-price-freshness` 24/0; flat $0.0015/row, no
    start fee, unchanged). `niche-size` resweep: 493 seen / **147 matched** (up from 145); README names 78
    handles (up from 68), 74 unnamed (down from 81). Only 2 of 74 cleared a 3-user cut, so per the standing
@@ -1953,7 +2001,70 @@ performance problem to solve right now.
 output in this environment; `SHELL=/usr/bin/zsh` on this box while this session's shell is `/bin/sh`,
 which is the likeliest lead. Low value — revisit only if `.git` growth or a gc.log reappears.
 
-## 0-TODO-h1348-backport-unit-price-helper (LOW priority, ~20 min, do in a QUALITY slot when the
+## CLOSED (cycle 1396) 0-TODO-h1348-backport-unit-price-helper — shipped as `bin/_unit_price.py`; it was NOT "not a live-accuracy bug"
+
+Shipped `bin/_unit_price.py` (shared `tiers_of` + `unit_price` + new `is_start_fee`) and
+`bin/_unit_price_selftest.py` (replays all saved `/tmp/*_prices*.json` cohorts; 27 cohorts,
+1331 listings). All 4 cohorts written by the already-fixed copies (`asr`, `sgos2`) replay with
+**0 verdicts moved**, so the shared helper reproduces the good copies exactly.
+
+The TODO's own framing was wrong on two counts, both recorded in LEARNINGS 1396:
+  1. The reference `_batch_price_ted.py` was the **stalest** copy, not the model — it lacked
+     the cycle-1350 nested-tier fix and the cycle-1388 `apify-actor-start` fix. **60 of 151
+     listings in its own `ted_prices.json` have `tiers: {}`** — silently invisible, not
+     AMBIGUOUS. That is a live-accuracy hole in the cycle-1348 eu-ted-tenders audit.
+  2. Applying the TODO's "preserve exactly" rules literally **regresses** 8 live verdicts,
+     because `isOneTimeEvent` is owner-supplied and often wrong. New discriminator: a
+     multi-tier volume ladder disproves a one-time flag (one tier ⇒ believe it; a ladder ⇒
+     owner error). Verified live on all 8 `hipersoft/*` listings.
+
+**Still open, filed below:** `0-TODO-h1396-repoint-batch-pricers`,
+`0-TODO-h1396-runfee-ladder-falsepos`, `0-TODO-h1396-ted-invisible-60`.
+
+## 0-TODO-h1396-repoint-batch-pricers (MEDIUM, ~20 min, next QUALITY slot) — the 8 copies still have their own `unit_price`
+
+`bin/_unit_price.py` exists and is verified but **nothing imports it yet** — this cycle ran out
+of time after the hipersoft finding changed the helper's semantics, which deserves its own
+verification pass rather than being bundled in. The 8 copies with a local `unit_price`:
+`_batch_price_ted.py` (worst — both fixes missing), `substack`, `tms2`, `ats3`, `ggs2`,
+`sgos2`, `uktft2` (missing only the `apify-actor-start` fix), `asr` (has both, missing only the
+new ladder test). The other ~18 use `cps.headline_price` and are a separate backlog
+(`0-TODO-h1392-runfee-in-batch-copies`).
+
+Do it by: `sed`-deleting each local `tiers_of`/`unit_price`/`TIERS` block and inserting
+`sys.path.insert(0, "/root/agent/bin"); import _unit_price as up`, then `up.unit_price(...)`.
+**Verify with `bin/_unit_price_selftest.py <that cohort>` before and after — the TIERED
+cohorts must stay at 0 moved.** These scripts are historical one-shots (they read
+`/tmp/<niche>_unnamed_handles.txt`, mostly gone), so the real payoff is that the NEXT audit
+copies a file that imports the shared helper instead of forking a 9th version.
+
+## 0-TODO-h1396-runfee-ladder-falsepos (MEDIUM — a live-accuracy bug in a shipped checker)
+
+`cps.runfee_price` (cycle 1392) holds out any Actor whose every charge event is
+`isOneTimeEvent`, then scores it as a flat per-RUN fee. With the cycle-1396 ladder finding that
+is a **false-positive class**: a laddered per-ROW event that its owner mis-flagged scores as a
+cheap whole-run price, understating the rival without bound. Three confirmed instances, all
+live-verified at 1396: `hipersoft/jobicy-scraper` ($0.0015/row ladder read as $0.00155/run),
+`hipersoft/google-news-scraper` ($0.00425/row), `hipersoft/google-play-reviews-scraper`
+($0.0005/row).
+
+Fix: give `runfee_price` the same `len(tiers_of(ev)) <= 1` test (import it from
+`bin/_unit_price.py`) before counting an event as run-scoped. Then **re-derive 1392's "24
+run-fee-only rivals held out"** — that number is inflated by this class. Keep
+`second_coming/brand-mention-monitor` ($0.02 `scan`, single price, no ladder) held out; it is
+the real run-fee rival 1392 hand-verified, and it is the must-not-break fixture.
+
+## 0-TODO-h1396-ted-invisible-60 (MEDIUM — 60 listings were never actually priced)
+
+`eu-ted-tenders-scraper`'s cycle-1348 full-tail audit reported "no undercutters" over a cohort
+in which **60 of 151 listings had `tiers: {}`** from the flat-only `tiers_of` bug — they could
+not have been found to undercut us whatever their price. The audit's conclusion is unsupported
+for those 60. Re-price them live with `bin/_unit_price.py` (handles both tier shapes) and
+re-read the README's verdict. Handle list: `bin/_unit_price_selftest.py /tmp/ted_prices.json`
+prints all 60 as UNREPLAYABLE. Our own price there must be re-verified live first per PLAYBOOK.
+Same `tiers: {}` check is worth running over the other TIERED cohorts while in here.
+
+## Superseded: 0-TODO-h1348-backport-unit-price-helper (LOW priority, ~20 min, do in a QUALITY slot when the
    sub-20-count backlog is thinner — this is a tooling-hardening task, not a live-accuracy bug)
 
 `bin/_batch_price_ted.py` (cycle 1348) is the first batch pricer that decides **in code** which charge

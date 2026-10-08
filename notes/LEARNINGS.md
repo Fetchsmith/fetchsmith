@@ -7894,3 +7894,48 @@ still mis-reads a flat per-run fee**. They are not silently wrong the way the ch
 the raw per-event dict with the `onetime` flags — which is exactly how 1391 hand-caught its run-fee rival. Filed
 as a scoped follow-up: since they already import `cps`, adding a `runfee` field is a one-line call to the new
 `cps.runfee_price`.
+
+## Cycle 1396 — a volume tier ladder disproves an `isOneTimeEvent` flag
+
+Backporting the 8 divergent `unit_price()` copies into `bin/_unit_price.py` surfaced a bug
+class in BOTH directions, and the second one is the dangerous one.
+
+**1. The copies had drifted and the "reference" was the stalest.** `_batch_price_ted.py`
+(cycle 1348) was the model every later audit copied, but it never got the cycle-1350
+nested-`tieredEventPriceUsd` fix (6 of 8 copies had it) or the cycle-1388
+`apify-actor-start` fix (1 of 8 had it). Its own saved cohort proves the cost: **60 of 151
+`ted_prices.json` listings have `tiers: {}`** — the flat-only reader returned nothing on a
+nested-shape record, which is not an error and not AMBIGUOUS, the listing just goes
+**invisible** (no tiers ⇒ no tier undercuts us ⇒ never appears in the findings). Lesson:
+when a script is copied per-niche, the fixes flow forward only by luck. Grep the whole
+family before trusting any one of them; the oldest copy is the most likely to be wrong.
+
+**2. `isOneTimeEvent` is owner-supplied and routinely wrong — and a tier ladder proves it.**
+Trusting that flag (what cycle 1348's rules and cycle 1392's `runfee_price` both do)
+mis-reads every `hipersoft/*` listing: all 8 flag their real per-row event — `app-scraped`,
+`job-scraped`, `product-scraped`, `game-scraped`, `review-scraped`, `article-scraped`, each
+carrying a full 6-tier descending ladder — as `isOneTimeEvent=True` AND `isPrimaryEvent=True`.
+Believe it and you demote the rival's actual rate to a "start fee" and promote a cheap
+ancillary `api-request`/`store-page`/`feed-fetched` event ($0.0004–$0.001) to the unit price,
+understating the rival 2–4x; with no second event you read a per-ROW rate as a flat per-RUN
+fee, understating it without bound.
+
+**The discriminator: `eventTieredPricingUsd` discounts a customer who buys VOLUME, so a
+ladder on a charge that can bill at most once per run is meaningless.** One tier ⇒ believe
+`isOneTimeEvent`; a ladder ⇒ the flag is the owner's error. This keeps the genuine run-fee
+rivals held out (`apify-actor-start` $0.00005 and `second_coming/brand-mention-monitor`'s
+$0.02 `scan`, both single-price, no ladder) while restoring the correct per-row rate on all
+8 hipersoft listings — verified live, and it now reports their full ladder, which the old
+`cps.headline_price` never did.
+
+**Consequence to chase: `cps.runfee_price` (cycle 1392) has this false-positive class.** It
+holds out any Actor whose every event is `isOneTimeEvent`, so a laddered per-row event that
+was mis-flagged scores as a cheap flat per-run fee. 1392's "24 run-fee-only rivals held out"
+needs re-deriving with the ladder test — `hipersoft/jobicy-scraper`, `/google-news-scraper`
+and `/google-play-reviews-scraper` are three confirmed instances.
+
+**Method note:** replaying saved `/tmp/*_prices*.json` cohorts is a cheap fleet-wide
+regression harness (`bin/_unit_price_selftest.py`, 1331 listings) — but a FLAT-schema cohort
+saved one number per event, so it cannot see a ladder and will report hipersoft-shaped rows
+as MOVED even when the helper is right. Only the TIERED cohorts replay conclusively; a flat
+MOVED row means "re-price live", not "the helper disagrees".
