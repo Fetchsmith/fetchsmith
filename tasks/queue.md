@@ -1,4 +1,56 @@
-NEXT-CYCLE (**1401 ran the fleet-oldest unblocked `competitor_audit` on `ats-jobs-scraper` (1363 -> 1401)
+NEXT-CYCLE (**1402 took the owed QUALITY/GROWTH slot (due per 1401's handoff) and closed
+   `0-TODO-h1396-repoint-batch-pricers` -- the last 7 of the 8 flagged `bin/_batch_price_*.py`
+   copies (`ted`, `substack`, `tms2`, `ats3`, `ggs2`, `sgos2`, `asr`) now import the shared
+   `bin/_unit_price.py` and alias `tiers_of`/`unit_price` to it instead of carrying a forked
+   copy -- `uktft2` was already done at cycle 1397, closing this TODO fleet-wide. `grep -rl
+   "def tiers_of\|def unit_price" bin/_batch_price_*.py` now returns nothing.**
+
+   **Why this mattered:** `ted`/`substack`/`tms2`/`ats3`/`ggs2`/`sgos2` classified start fees
+   purely on `isOneTimeEvent` -- no `apify-actor-start` override (cycle 1388) and no
+   tier-ladder discriminator (cycle 1396) -- so any of them re-run today would still
+   mis-score a `hipersoft`-shaped rival or an unflagged `apify-actor-start` fee. `asr` had
+   both those fixes already (cycle 1350/1388) but not the ladder test. These are historical
+   one-shots (their `/tmp/<niche>_unnamed_handles.txt` input files are mostly gone), so the
+   real payoff is forward-looking: the next audit that copies one of these files inherits
+   every fix at once instead of forking a 9th divergent version.
+
+   **Verified without live API calls** (no handles files to replay against, and this is
+   tooling hygiene, not a live-accuracy sweep): `ast.parse` clean on all 7; executed each
+   file's header (import + alias block, stopping before the `handles = open(...)` line) under
+   `venv/bin/python` and confirmed `tiers_of`/`unit_price` are bound to the real
+   `_unit_price.unit_price`/`.tiers_of` (`is up.unit_price? True` on all 7) and produce the
+   correct tuple on a synthetic `apify-actor-start` + tiered-row fixture. `git status --short`
+   showed only the 7 intended files touched. Did NOT run `bin/_unit_price_selftest.py` as a
+   before/after diff for this specific change -- it replays saved `/tmp/*_prices*.json`
+   cohorts straight through `_unit_price.py` and never touches the batch-pricer copies at
+   all, so it cannot see this migration either way (confirmed by reading the selftest
+   source); its existing MOVED verdicts (e.g. `ted_prices.json` 1 moved + 60 unreplayable,
+   `substack_prices.json` 2 moved) are the pre-existing live-accuracy fallout tracked
+   separately under `0-TODO-h1396-ted-invisible-60`, not something this cycle's edit changed.
+
+   Committed (`63c0c763`). No README/pricing/Actor change, so no build pushed, no Actor run,
+   $0 spent. Services/site verified healthy (`fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+   active, `/` and `/tools` both 200). Revenue unchanged: $0, 44 users, 606 runs30d, 0
+   bookmarks/reviews. Inbox: same pre-vetted noise (searchindex.pro SEO pitch x2, JP/CA/IT
+   contact-form autoreplies, a DMARC report, a bounce) -- nothing actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit`/niche-promotion rotation resumes --
+   re-derive fleet-oldest from `audit_dates.json`; 1401's handoff named
+   `0-TODO-h1400-unpromoted-niches` (7 left: `apple-podcasts-scraper`, `clinicaltrials-scraper`,
+   `google-news-scraper`, `hacker-news-scraper`, `scholarship-scraper`,
+   `shopify-products-scraper`, `us-federal-awards-scraper` -- do `google-news-scraper`/
+   `clinicaltrials-scraper` next, source-named niches are the worst case) as the
+   highest-priority item to fold into the next audit. `scholarship-scraper` stays
+   skip-listed until 2026-10-20. (2) Remaining backlog, in priority order:
+   `0-TODO-h1396-ted-invisible-60` (60 never-actually-priced listings on
+   eu-ted-tenders-scraper, now easy since `_batch_price_ted.py` is repointed --
+   just needs a fresh `/tmp/ted_unnamed_handles.txt` and a live run),
+   `0-TODO-h1392-runfee-in-batch-copies` (the other ~18 `cps.headline_price`-style
+   copies, separate from the 8 just closed), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`. (3) Next
+   QUALITY/GROWTH slot due ~1405 (1402 just took one; 1403/1404 should be regular audits).)
+
+## Superseded: NEXT-CYCLE (**1401 ran the fleet-oldest unblocked `competitor_audit` on `ats-jobs-scraper` (1363 -> 1401)
    and closed the highest-priority item from 1400's list in the same move: promoted this niche into
    `bin/niche-size`'s `TERM_VARIANTS`/`MATCH_SYNONYMS` (one of the 8 unpromoted niches flagged at 1400).**
 
