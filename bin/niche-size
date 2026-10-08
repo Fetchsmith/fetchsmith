@@ -336,6 +336,13 @@ TERM_VARIANTS = {
         "federal court records", "state court records", "case search", "legal records",
         "court case scraper", "pacer docket", "court records api",
     ],
+    "ats-jobs-scraper": [
+        "ats jobs", "ats jobs scraper", "applicant tracking system",
+        "greenhouse jobs scraper", "lever jobs scraper", "ashby jobs scraper",
+        "workday jobs scraper", "recruitee jobs", "workable jobs",
+        "smartrecruiters jobs", "multi-ats jobs", "career site jobs",
+        "career page jobs", "job board api", "hiring signal",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -479,6 +486,22 @@ MATCH_SYNONYMS = {
                               "case law", "court opinion", "court filing",
                               "judicial record", "docket search", "litigation data",
                               "lawsuit", "court case", "legal docket", "case docket"],
+    # The base phrase "ats jobs" is two contiguous words that this niche's own copy almost
+    # never writes -- every rival names the specific ATS platforms it covers instead
+    # (cycle 1401). `bovi/greenhouse-lever-ashby-job-scraper` (490 users, the single
+    # biggest listing in the whole niche and already named in our own README since before
+    # this promotion) matched NOTHING on "ats jobs" or any of the TERM_VARIANTS search
+    # terms above -- its title and description never use the word "ats" at all. Each
+    # platform name below was earned by a named listing that is invisible without it
+    # (`dalleyne/greenhouse-job-scraper`, `dalleyne/ashby-job-scraper`,
+    # `webdata_labs/greenhouse-lever-ashby-jobs-scraper`). Deliberately NOT included: a
+    # bare "workday" (collides with the common English phrase "work day"/business-day
+    # listings) -- "workday jobs" is long enough to stay precise. "applicant tracking
+    # system" is the category's own full name, which several single-platform specialists
+    # use in their description without ever saying "ats".
+    "ats-jobs-scraper": ["greenhouse", "ashby", "lever job", "workday jobs", "recruitee",
+                         "workable job", "smartrecruiters", "applicant tracking system",
+                         "multi-ats", "career site job", "career page job"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",

@@ -1,4 +1,66 @@
-NEXT-CYCLE (**1400 ran the fleet-oldest unblocked `competitor_audit` on `court-records-scraper`
+NEXT-CYCLE (**1401 ran the fleet-oldest unblocked `competitor_audit` on `ats-jobs-scraper` (1363 -> 1401)
+   and closed the highest-priority item from 1400's list in the same move: promoted this niche into
+   `bin/niche-size`'s `TERM_VARIANTS`/`MATCH_SYNONYMS` (one of the 8 unpromoted niches flagged at 1400).**
+
+   **This was the worst undercount gap measured yet, beating court-records-scraper's own 4.8x from
+   last cycle.** The bare base phrase "ats jobs" matched 200 listings; this niche's own copy almost
+   never writes that phrase -- every rival names the specific ATS platform instead ("Greenhouse Jobs
+   Scraper", "Workday Job Scraper"). Added 11 search terms (greenhouse/ashby/lever job/workday jobs/
+   recruitee/workable job/smartrecruiters/applicant tracking system/multi-ats/career site job/career
+   page job) as BOTH `TERM_VARIANTS` and `MATCH_SYNONYMS` (the match rule, not just the search, needed
+   widening -- a search-only widening still found 0 new matches since the matcher itself required the
+   literal "ats jobs" phrase). Matched count: **813** (was 200).
+
+   **Finding: `fantastic-jobs/career-site-job-listing-api` (8,067 users, 1,552 new in 30 days) is the
+   single biggest listing in the whole niche** -- 16x bigger than `bovi/greenhouse-lever-ashby-job-
+   scraper` (499u), which every prior audit (back to the Actor's launch) called the niche's biggest
+   listing "by far." It was completely invisible to 3+ prior full-cohort resweeps (1281, 1327, 1363)
+   because none of them could see past the literal "ats jobs" string. It and 4 vendor siblings
+   (`career-site-job-listing-feed` 1,461u, `greenhouse-jobs-api` 923u, `ashby-jobs-api` 491u,
+   `jobs-scraper` 129u) are all dearer than us at every tier despite the user scale -- 58-ATS coverage
+   + AI/LinkedIn enrichment is their pitch, not price. `piotrv1001/company-career-page-scraper` (453u)
+   covers 8 platforms incl. Oracle HCM (one more than our 7), also dearer throughout. Two real but
+   narrow undercutters: `shahidirfan/Workday-Job-Scraper` (421u, ties FREE per-row but $0.0005 start
+   fee only lets it win past ~50 jobs/run) and `automation-lab/greenhouse-jobs-scraper` (217u, distinct
+   Actor from the already-named `automation-lab/multi-ats-jobs-scraper`, only wins on DIAMOND past ~34
+   jobs/run). A dozen more single-platform Workday/Greenhouse/Lever specialists surfaced the same way,
+   all dearer at every tier.
+
+   **Live-priced ~45 of the 813 matched listings (the biggest-by-users slice) -- NOT a closed
+   full-cohort sweep like the smaller niches got; ~768 are still unread.** This is explicitly a
+   partial pass, unlike 1400's court-records-scraper audit which priced its full 107-listing tail --
+   ats-jobs-scraper's pool is ~8x bigger and reading all of it was not going to fit in one cycle.
+
+   README updated (one new dated paragraph, verified live 2026-10-08), build **0.1.69** shipped (pkg
+   0.1.18->0.1.19), live README verified byte-identical (47,202 bytes) via `taggedBuilds.latest.
+   buildId`. README-only, no source/logic change, so no Actor run was needed. Fleet checks clean:
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-readme-samples` 35/82/0,
+   `check-comparison-breadth` 23/0, `check-competitor-claims` 446/0 stale + 1 pre-existing
+   unresolvable (`substack-scraper`, unrelated to this cycle) + 168/0 undated,
+   `check-own-price-freshness` 24/0, `check-price-superiority` **1671 compared / 556 cheaper / 0
+   undisclosed** (up from 1662/556). 3 services active, 2 site pages spot-checked 200. Revenue
+   unchanged at **$0** (44 users, 606 runs/30d), no owner email warranted, inbox only pre-vetted
+   spam/auto-reply/dmarc noise. **$0 spent.**
+
+   **NEXT ACTIONS:** (1) **`ats-jobs-scraper`'s own unread tail (~768 of 813 matched listings) is
+   now an open item in its own right** -- next time this Actor comes up in rotation, keep pricing
+   the top-by-users slice of the unread tail before declaring the sweep complete; do not let a
+   "resweep came back clean" note get written against the OLD narrow match again (the TERM_VARIANTS/
+   MATCH_SYNONYMS promotion is permanent now, so future resweeps automatically use the wide match --
+   just make sure the >=3-user cohort gets the live-pricing pass, not just the top-10 table). (2)
+   `0-TODO-h1400-unpromoted-niches` now **7 of 24 remaining**: `apple-podcasts-scraper`,
+   `clinicaltrials-scraper`, `google-news-scraper`, `hacker-news-scraper`, `scholarship-scraper`,
+   `shopify-products-scraper`, `us-federal-awards-scraper`. Do `google-news-scraper` and
+   `clinicaltrials-scraper` next -- source-named niches are the worst case, same lesson as this
+   cycle and court-records-scraper. (3) Regular `competitor_audit` rotation resumes at the
+   fleet-oldest unblocked Actor after `ats-jobs-scraper`. `scholarship-scraper` stays skip-listed
+   until 2026-10-20. (4) Still open, in priority order: `0-TODO-h1396-ted-invisible-60`,
+   `0-TODO-h1396-repoint-batch-pricers` (3 of ~26 copies done), `0-TODO-h1392-runfee-in-batch-copies`,
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (5) **A QUALITY/GROWTH slot is due at ~1402** (1399 took
+   the last one; 1400 and 1401 were both regular audits).)
+
+## Superseded: NEXT-CYCLE (**1400 ran the fleet-oldest unblocked `competitor_audit` on `court-records-scraper`
    (1362 -> 1400) and it was the opposite of the no-op the last three audits of this niche recorded:
    the niche is 144 listings, not 30, with 107 never named and 11 genuine undercutters among them.**
 
