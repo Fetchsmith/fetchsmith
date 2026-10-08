@@ -1,4 +1,52 @@
-NEXT-CYCLE (**1405 took the due QUALITY/GROWTH slot and closed the `google-news-scraper` leg of
+NEXT-CYCLE (**1406 ran the regular `competitor_audit` rotation on the re-derived fleet-oldest
+   unblocked Actor, `fec-campaign-finance-scraper` (1368 -> 1406) — clean for a THIRD consecutive
+   time (460 seen / 42 matched / 0 unnamed, stable vs 459/42/0 at cycles 1332 and 1368).**
+
+   Re-priced all 42 named rivals live in parallel via the existing `bin/_batch_price_fec.py`, then
+   checked for price drift **paragraph-scoped** (found the handle's actual README paragraph via
+   blank-line splitting, not a fixed-400-char window after the handle — a fixed window bleeds into
+   neighbouring rivals' numbers, exactly the trap the cycle-1332 note on this Actor already flagged
+   and hand-checked around). Every in-scope rival's live price still matches a dollar figure in its
+   own paragraph within 5%; the one apparent miss (`nexgendata/lda-lobbying-disclosure-scraper`,
+   live $0.05, no match) is one of the 4 listings this README explicitly rules OUT OF SCOPE (CA/NY
+   state-level filings, 1 UK scraper, 5 LDA-lobbying products including this one) and correctly
+   carries no price claim at all — not drift. Zero real price drift found. No README/build change
+   needed — nothing to re-verify-live since no content changed (1311/1353 churn precedent still
+   holds). `audit_dates.json`'s `fec-campaign-finance-scraper.competitor_audit` bumped 1368 -> 1406
+   with the new note prepended (old note chain preserved).
+
+   **Verified:** `niche-size`/`niche-unnamed` re-run live (460/42/0, matches README's claimed 42).
+   Fleet-wide `check-price-superiority` 1673/557/**0 undisclosed**, `check-competitor-claims`
+   446/0 stale + 1 pre-existing unresolvable (`substack_guru`, unrelated) + 169/0 undated,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0 — all clean, all counts unchanged from cycle 1404/1405's
+   baselines (confirming no silent regression from the `_apify_get` repoint either). Services
+   (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; site 200 on `/` and `/tools`.
+   `bin/traffic` checked for the Polar-checkout gate: no sustained >100/day hits to `/pricing` or
+   `/tools`, so per owner instructions still do NOT raise Polar. Revenue unchanged: $0, 44 users,
+   606 runs30d, 0 bookmarks/reviews. Inbox: 9 messages, same pre-vetted noise (2x searchindex.pro
+   SEO pitch, JP/CA/IT contact-form autoreplies, 1 DMARC report, 1 bounce) — nothing actionable,
+   no owner email. No code/README change, no build, $0 spent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the new fleet-oldest
+   unblocked Actor — **re-derive fresh from `state/audit_dates.json`, do not trust this handoff's
+   guess**: as of this edit it is `us-federal-awards-scraper` (1369), then `shopify-products-scraper`
+   (1372). `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2) Next QUALITY/GROWTH
+   slot is due ~1408 (1405 took the last one) — continue `0-TODO-h1400-unpromoted-niches`, now
+   **5 of 24**: `apple-podcasts-scraper`, `hacker-news-scraper`, `scholarship-scraper`,
+   `shopify-products-scraper`, `us-federal-awards-scraper` (note: `us-federal-awards-scraper` and
+   `shopify-products-scraper` will likely get touched by the regular audit rotation first per (1) —
+   check `TERM_VARIANTS` promotion status as part of THAT audit rather than redoing it separately).
+   (3) `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open. (4) Finish the
+   `_apify_get` repoint (small, mechanical, helper already tested, carried over from 1404/1405,
+   still not done): `check-disclosure` (2 call sites — note line 83 is the dev.to API, not Apify,
+   re-read `FINAL_MISSING` for that host before repointing) and `check-store-index` (3 call sites,
+   all `.json()["data"]` with no `.get`, so they `KeyError` as well as `JSONDecodeError`). (5)
+   Backlog unchanged, priority order: `0-TODO-h1396-ted-invisible-60`,
+   `0-TODO-h1392-runfee-in-batch-copies`, `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: NEXT-CYCLE (**1405 took the due QUALITY/GROWTH slot and closed the `google-news-scraper` leg of
    `0-TODO-h1400-unpromoted-niches` — the nih-reporter outcome, not a rescue: promoted it into
    `bin/niche-size`'s `TERM_VARIANTS` (its own 11-term `auto_variants()` sweep made explicit/
    hand-curated, no `MATCH_SYNONYMS` needed) and the matched count was UNCHANGED (389 seen / 232

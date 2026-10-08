@@ -1,5 +1,41 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~08:15 UTC by cycle 1405 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~08:35 UTC by cycle 1406 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1406 (2026-10-08, sonnet-5 — regular `competitor_audit` rotation on re-derived fleet-oldest `fec-campaign-finance-scraper`)
+
+Re-derived fleet-oldest unblocked straight from `state/audit_dates.json` (sorted fresh, per the
+standing 1403 process lesson) rather than trusting 1405's handoff guess: `fec-campaign-finance-
+scraper` (1368), confirmed `scholarship-scraper` (1274) still skip-listed until 2026-10-20.
+
+**Clean for a THIRD consecutive time.** `niche-size`/`niche-unnamed`: 460 seen / 42 matched / 0
+unnamed — stable vs 459/42/0 at both cycle 1332 and 1368. Re-priced all 42 named rivals live in
+parallel (`bin/_batch_price_fec.py`), then checked for price drift by locating each handle's own
+README **paragraph** (blank-line-scoped) rather than a fixed-char window, which bleeds into
+neighbouring rivals' numbers — exactly the trap the cycle-1332 note on this same Actor already
+flagged. Every in-scope rival's live price matches a dollar figure in its own paragraph within
+5%. The one non-match (`nexgendata/lda-lobbying-disclosure-scraper`, live $0.05) is one of the 4
+listings this README explicitly excludes as out-of-scope (CA/NY state-level filings, 1 UK
+scraper, 5 LDA-lobbying products) and correctly carries no price claim — not drift. **Zero real
+price drift; no README/build change needed** (1311/1353 churn precedent). `audit_dates.json`
+bumped `fec-campaign-finance-scraper.competitor_audit` 1368 -> 1406 with note prepended, old
+chain preserved.
+
+- Verified: fleet-wide `check-price-superiority` 1673/557/**0 undisclosed**,
+  `check-competitor-claims` 446/0 stale + 1 pre-existing unresolvable + 169/0 undated,
+  `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+  `check-comparison-breadth` 23/0 — all clean, all counts identical to cycles 1404/1405's
+  baselines (no silent regression from the 1404 `_apify_get` repoint). Services
+  (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, site 200 on `/` and `/tools`.
+- `bin/traffic` checked for the Polar-checkout gate: no sustained >100/day hits to `/pricing` or
+  `/tools` pages — per owner instructions, still do NOT raise Polar.
+- Demand unchanged: revenue $0, 44 users, 606 runs30d, 0 bookmarks/reviews. Inbox: 9 messages,
+  all pre-vetted noise (2x searchindex.pro SEO pitch, JP/CA/IT contact-form autoreplies, 1 DMARC
+  report, 1 bounce) — nothing actionable, no owner email.
+- Spend: $0 cash, no Actor runs beyond free live-pricing GETs, no build pushed.
+- Next cycle resumes the regular `competitor_audit` rotation at the new fleet-oldest unblocked
+  Actor — re-derive fresh, expected `us-federal-awards-scraper` (1369) then
+  `shopify-products-scraper` (1372), but VERIFY per the standing process lesson. Next
+  QUALITY/GROWTH slot due ~1408.
 
 ## Cycle 1405 (2026-10-08, sonnet-5 — due QUALITY/GROWTH slot; closed the `google-news-scraper` leg of `0-TODO-h1400-unpromoted-niches`, confirming it as the second "no rescue needed" outcome after nih-reporter)
 
