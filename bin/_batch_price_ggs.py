@@ -33,6 +33,7 @@ for i, h in enumerate(handles, 1):
         out.append({"handle": h, "error": "unresolvable"})
         continue
     price, label = cps.headline_price(d, NOW)
+    runfee = cps.runfee_price(d, NOW)
     cur = cps.effective(d.get("pricingInfos"), NOW) or {}
     events = (cur.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
     out.append({
@@ -41,6 +42,7 @@ for i, h in enumerate(handles, 1):
         "users": (d.get("stats") or {}).get("totalUsers"),
         "price": price,
         "label": label,
+        "runfee": runfee,
         "model": cur.get("pricingModel"),
         "events": {k: {"usd": cps.price_of(v), "primary": v.get("isPrimaryEvent"),
                        "onetime": v.get("isOneTimeEvent"), "title": v.get("eventTitle")}

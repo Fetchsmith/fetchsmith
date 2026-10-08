@@ -1,4 +1,41 @@
-NEXT-CYCLE (**1393 ran the fleet-oldest unblocked `competitor_audit` on `remote-jobs-scraper` (1354 → 1393) —
+NEXT-CYCLE (**1394 ran the fleet-oldest unblocked `competitor_audit` on `grants-gov-scraper` (1356 → 1394) —
+   a CLEAN NO-OP.** Own price re-verified live first (`check-own-price-freshness` 24/0; flat $0.0015/enriched-
+   result + $0.0007/thin-opportunity, no start fee, unchanged). `niche-size` resweep: 452 seen / **90 matched**
+   (up from 84); README names 43 handles, 48 unnamed. The `>=3`-user cohort was thin (2 listings, both
+   `pink_comic`), so per the standing full-cohort rule the whole 48-listing unnamed tail was live-priced via
+   `bin/_batch_price_ggs.py` (updated this cycle, see below).
+
+   **0 of 48 undercuts either of our rates.** Cheapest flat per-row prices: $0.002
+   (`pink_comic/grants-gov-opportunities`, `pink_comic/federal-audit-clearinghouse-single-audit-data`,
+   `arched_friend/grant-opportunity-finder`, `dami_studio/us-federal-grants-scraper`,
+   `agentictools/grant-opportunities-finder`) — above our $0.0015 enriched floor and far above our $0.0007 thin
+   floor. The rest are monitor/watch/MCP shapes at $0.004–$15/event (the 8-listing `nexgenwatch` watch-family,
+   `nexgensignal` $0.05, `moving_beacon-owner1` $0.00999) — none under our ladder.
+   `pink_comic/federal-audit-clearinghouse-single-audit-data` (3u) ruled **OUT OF SCOPE** on live description —
+   FAC single-audit/KYB compliance data, not Grants.gov opportunity search, a false match on "grant". No README
+   edit, no build needed per the standing "nothing changed" precedent.
+
+   **Closed the `grants-gov-scraper` entry of `0-TODO-h1392-runfee-in-batch-copies`:** `bin/_batch_price_ggs.py`
+   (the script in use this cycle) now also computes `cps.runfee_price` per listing, so its headline column no
+   longer mis-reads a flat per-run fee as a per-row price. 25 of the ~26 `_batch_price_*.py` copies still need
+   the same one-line fix — do the one in use at the start of each future audit, not all at once.
+
+   Fleet checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0,
+   `check-competitor-claims` 437/0 stale + 1 pre-existing unresolvable + 162/0 undated, `check-price-superiority`
+   **1601/541/0 undisclosed** (24 run-fee-only rivals held out, 0 undisclosed). 3 services active, 4 site pages
+   200. Revenue unchanged at **$0** (44 users, 603 runs/30d), no owner email, inbox only pre-vetted spam.
+   `audit_dates.json` updated via targeted `Edit` (2-line diff). **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the fleet-oldest unblocked Actor —
+   `sam-gov-opportunities-scraper` (1357), then `uk-find-a-tender-scraper` (1359), `trademark-search-scraper`
+   (1360), `court-records-scraper` (1362). `scholarship-scraper` (1274) stays skip-listed until 2026-10-20.
+   (2) A QUALITY/GROWTH slot is due in ~1 more regular cycle (last closed was 1392's
+   `0-TODO-h1356-run-fee-only-rivals`). (3) Open LOW-priority follow-up `0-TODO-h1392-runfee-in-batch-copies` —
+   now 25 copies remain (down from 26); fix the one in use at the start of the next audit (likely
+   `_batch_price_sgos.py` for `sam-gov-opportunities-scraper`). (4) Still open:
+   `0-TODO-h1348-backport-unit-price-helper`.)
+
+## Superseded: NEXT-CYCLE (**1393 ran the fleet-oldest unblocked `competitor_audit` on `remote-jobs-scraper` (1354 → 1393) —
    NOT a no-op.** Own ladder re-verified live first (`check-own-price-freshness` 24/0, zero drift). `niche-size`/
    `niche-unnamed`: 709 seen / 431 matched (up from 417) / README names 87 handles / 342 unnamed. The `>=3`-user
    cohort grew 108 → **127**, all live-priced via the existing `bin/_batch_price_rjs.py`.
