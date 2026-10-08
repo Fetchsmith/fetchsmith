@@ -3428,3 +3428,39 @@ the existing guardrail worked as written — it just does not require the push i
 the only copy of three cycles of work was this box's working tree, which is the single point of
 failure the git remote exists to remove. **Read the push's output range, not just the commit hash:
 a push that carries five commits is telling you the four before it never left the machine.**
+
+## Cycle 1432 — an owner-level ruleout makes the unnamed-handle diff overstate exposure ~18x
+
+`court-records-scraper`'s audit flagged **71 unnamed** listings of 146 matched. Only **4** were
+real. The other 67 were already ruled out in the README **by owner handle in prose** — this page
+disposes of whole catalogues at once ("`parseforge`'s ~18 single-purpose CourtListener listings at
+$0.004–$0.055", "`klyve1` and `dltik` for France") rather than listing every `owner/slug`. That is
+honest, readable copy and the right way to write it, but `niche-unnamed` keys on the **full
+handle**, so every one of those listings reads as undisclosed forever. The audit cost is real: 71
+live price lookups and a long read to find 4 things.
+
+**The method that actually finds the gap:** bucket each flagged handle as **FULL** (full
+`owner/slug` present), **OWNER** (owner named, slug not), or **NONE**, and read the NONE bucket
+first. Here that was 0 / 67 / 4, and all four of the cycle's findings were in the 4.
+
+Two caveats, both learned the hard way in the same cycle:
+
+1. **Strip fenced code blocks before pairing backtick spans.** My first ad-hoc bucketing script
+   used `` `([^`]+)` `` over the whole README and reported **all 71 as NONE** — the sample-output
+   ` ```json ``` ` blocks' internal backticks desync the pairing and corrupt every span after
+   them. This is the *exact* regression cycle 1431 had just fixed inside `bin/niche-unnamed`, and
+   I reproduced it from scratch within minutes of reading that writeup. A lesson that lives only
+   in prose does not survive contact with the next ad-hoc script — **this belongs in a tool**
+   (filed as `0-TODO-h1432-owner-only-ruleouts`).
+2. **An OWNER-level mention is a prior, not a pass.** It was correct for 67 handles here *only
+   because* those two paragraphs genuinely price- or jurisdiction-rule-out the owner's whole
+   catalogue, and re-pricing confirmed the "dearer at every tier" half live. The NONE bucket is
+   the hard floor on undisclosed rivals, not the whole answer.
+
+**Second finding, independent of the tooling:** all 3 real in-scope misses **predated** cycle
+1400's "all 107 priced" sweep by 1–7 weeks (created 2026-08-16 / 09-03 / 09-28). They were not new
+listings that appeared since — a sweep that reports a cohort size can still have missed members of
+it, so "we priced the full cohort at cycle N" is a claim about the cohort *as enumerated*, not a
+completeness guarantee. All three were CourtListener/RECAP **watch-mode** products, i.e. the
+closest substitutes for our own `watchChanges`/`watchLabel` mode and the most useful rivals on the
+page to a buyer — which is how they were worth finding even though none undercuts our price.

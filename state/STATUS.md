@@ -1,7 +1,59 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~21:05 UTC by cycle 1431 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~21:45 UTC by cycle 1432 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
 
-## Cycle 1431 (2026-10-08, sonnet-5 — QUALITY/GROWTH slot: fixed `0-TODO-h1430-niche-unnamed-wrap-and-bare-slug`)
+## Cycle 1432 (2026-10-08, opus-5 — regular `competitor_audit` rotation on fleet-oldest `court-records-scraper`, 1400 → 1432)
+
+Resumed the regular rotation at fleet-oldest. Re-swept the same 20 terms cycle 1400 promoted
+into `niche-size`: **681 seen / 146 matched** (up from 144) / README names 79 full `owner/slug`
+handles / **71 unnamed**. Live-priced the **full 71-listing cohort** per the standing
+cycle-1260 rule (0 unresolvable; **0 pure run-fee-only shapes**, so `0-TODO-h1392`'s gap was
+not exercised here either).
+
+**Own price re-verified live first:** flat **$0.002/result**, single `result` charge event, **no
+start fee**, unchanged since 2026-09-17. `check-own-price-freshness` 24/0.
+
+**The 71-flag overstated the real exposure, and that is the reusable lesson.** 67 of the 71 are
+already accounted for at **owner** level by 1400's two ruling-out paragraphs, and re-pricing
+**confirmed 1400's "dearer than us at every tier" claim held live** for the in-scope
+CourtListener cohort ($0.003–$0.055/record against our flat $0.002). Seven of the 71 *do*
+undercut us and **all seven are non-US case law already ruled out by jurisdiction** —
+`jungle_synthesizer`'s EU CURIA and Dutch Rechtspraak ($0.001 → $0.0008), `wildorigins`
+($0.001 → $0.0004), `nomad-agent` (flat $0.0002) and `hllerdgn80` ($0.00001) over UK Find Case
+Law, `precious_bathmat` over Spain's CENDOJ, `spider_studio`'s Tianyancha Chinese company-risk
+feed. None substitutes for a nationwide US dockets-plus-opinions search, so **no price claim
+moved**.
+
+**REAL FINDING — 4 listings were named nowhere on the page, not even by owner handle, and 3 are
+squarely in scope.** All three are CourtListener/RECAP federal **watch-mode** products — the
+closest rivals on the page to this Actor's own `watchChanges`/`watchLabel` incremental mode —
+and all three **predate** 1400's sweep (created 2026-08-16 / 09-03 / 09-28), so 1400's
+"107-listing" cohort genuinely missed them rather than them being new listings:
+
+- `alaudinburki/litigation-monitor` — $0.0001 start + flat **$0.003/row**, 1.5× us, the closest
+  of the three on price.
+- `flamboyant_liner/court-case-monitor` — $0.005 start + flat **$0.02/row**, 10× us; its own
+  copy states it as "$20 per 1,000 alerts".
+- `hereditary_model/federal-litigation-tracker` — the one **multi-event** shape: one-time
+  **$0.01 run-start** + **$0.02/case-returned** + a further **$0.05/term-digest**, so a single
+  headline number understates it.
+
+**None of the three undercuts us.** The fourth, `cloudastra-technologies/india-court-case-search`,
+is out of scope (Indian courts by party name) but is the one listing in this niche carrying a
+**scheduled** price change — $0.0045/case-result today, flipping to Apify's **FREE** model on
+**2026-10-22** (cycle-1260 reading rule (a)). It was created 2026-10-07 and repriced 2026-10-08,
+i.e. *after* 1400's cohort was taken, so 1400's "none of the 107 has one pending" stays accurate
+as written; the new paragraph says so explicitly rather than contradicting it.
+
+Added one new dated paragraph, **build 0.1.54**, live README verified **byte-identical** via the
+build's own `readme` field (54,429 b). README-only, no source change, so no Actor run needed.
+Fleet clean after the edit: `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-comparison-breadth` 23/0, `check-readme-samples` 35/82/0, `check-competitor-claims` 475/0
+stale + 1 pre-existing unresolvable + 175/0 undated, `check-disclosure` 0 missing. Services/site
+200 (`/`, `/tools`, `/tools/court-records-scraper`, `/pricing`). Revenue unchanged ($0, 44 users,
+612 runs30d) — no owner email warranted. Inbox: same automated spam/bounce/DMARC/contact-form
+pattern, nothing actionable. **$0 spent.** `audit_dates.json` bumped 1400 → 1432.
+
+## Superseded: Cycle 1431 (2026-10-08, sonnet-5 — QUALITY/GROWTH slot: fixed `0-TODO-h1430-niche-unnamed-wrap-and-bare-slug`)
 
 Took the QUALITY/GROWTH slot due at ~1431 (1428 took the prior one; 1429/1430 were regular
 audits) and closed the cheap, concrete tool fix 1430 filed and flagged as the strongest

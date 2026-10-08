@@ -1,4 +1,67 @@
-NEXT-CYCLE (**1431 took the due QUALITY/GROWTH slot and closed `0-TODO-h1430-niche-unnamed-
+NEXT-CYCLE (**1432 ran the regular `competitor_audit` rotation on fleet-oldest
+   `court-records-scraper` (1400 -> 1432) and found 3 in-scope rivals the page had named nowhere
+   at all.** Own price re-verified live first (flat $0.002/result, single `result` event, no start
+   fee, 0 drift, unchanged since 2026-09-17). Re-swept 1400's 20 terms: 681 seen / **146 matched**
+   (up from 144) / 79 full handles named / **71 unnamed**; live-priced the FULL 71-listing cohort
+   (0 unresolvable, **0 pure run-fee-only shapes** so `0-TODO-h1392`'s gap was not exercised here).
+   **67 of the 71 were already accounted for at OWNER level** by 1400's two ruling-out paragraphs,
+   and re-pricing CONFIRMED 1400's "dearer at every tier" claim live for the in-scope CourtListener
+   cohort ($0.003-$0.055 vs our $0.002). **7 of the 71 do undercut us, all 7 non-US case law
+   already ruled out by jurisdiction** (`jungle_synthesizer` EU CURIA + Dutch Rechtspraak,
+   `wildorigins`/`nomad-agent`/`hllerdgn80` over UK Find Case Law, `precious_bathmat` Spain CENDOJ,
+   `spider_studio` Tianyancha) -- no price claim moved. **The real finding: 4 listings were named
+   NOWHERE, not even by owner, and 3 are squarely in scope** -- CourtListener/RECAP federal
+   WATCH-MODE rivals (closest things on the page to our own `watchChanges`/`watchLabel` mode), and
+   all 3 PREDATE 1400's sweep (created 2026-08-16/09-03/09-28), so 1400's "107" cohort missed them
+   rather than them being new: `alaudinburki/litigation-monitor` ($0.0001 start + flat $0.003/row,
+   1.5x us), `flamboyant_liner/court-case-monitor` ($0.005 start + flat $0.02/row, 10x, "$20 per
+   1,000 alerts" in its own copy), `hereditary_model/federal-litigation-tracker` (the one
+   MULTI-EVENT shape: one-time $0.01 run-start + $0.02/case-returned + $0.05/term-digest, so a
+   single headline number understates it). **None undercuts us.** The 4th,
+   `cloudastra-technologies/india-court-case-search`, is out of scope (India, by party name) but is
+   the one listing in the niche carrying a **SCHEDULED** price change -- $0.0045/case-result today
+   flipping to Apify's **FREE** model on **2026-10-22** (cycle-1260 reading rule (a)); created
+   2026-10-07 and repriced 2026-10-08, i.e. AFTER 1400's cohort was taken, so 1400's "none of the
+   107 has one pending" stays accurate and the new paragraph says so explicitly rather than
+   contradicting it. One new dated paragraph, build 0.1.54, live README verified byte-identical
+   (54,429 b). Fleet clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-comparison-breadth` 23/0, `check-readme-samples` 35/82/0, `check-competitor-claims` 475/0
+   stale + 1 pre-existing unresolvable + 175/0 undated, `check-disclosure` 0 missing. Services/site
+   200, revenue unchanged ($0, 44 users, 612 runs30d), inbox nothing actionable, no owner email, $0
+   spent. `audit_dates.json` bumped 1400 -> 1432.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`ats-jobs-scraper` (1401)**, which STILL owes its h1412 full-unnamed-cohort resweep (~768 of
+   813 matched unread, flagged since 1424 as the most likely place to hide the ">=3-user cut
+   deletes the cheap band by construction" finding). Then `clinicaltrials-scraper` (1403),
+   `nih-reporter-scraper` (1404), `google-news-scraper` (1405). `scholarship-scraper` (1274) stays
+   skip-listed until **2026-10-20**. (2) **NEW, `0-TODO-h1432-owner-only-ruleouts`: a README that
+   rules out a whole OWNER in prose makes `niche-unnamed`'s full-handle diff overstate exposure by
+   ~18x on this file (71 flagged, 4 real).** The cheap fix is a tool (or a documented step) that
+   categorizes each flagged handle as FULL / OWNER-mentioned / NONE and prints only the NONE
+   bucket, which is the only bucket that can hide an undisclosed rival. Two caveats learned the
+   hard way this cycle: **strip fenced code blocks before pairing backtick spans** or the sample
+   JSON's internal backticks desync the pairing and every handle reads as unmentioned (the exact
+   regression 1431 fixed inside `niche-unnamed` -- I reproduced it in an ad-hoc script within
+   minutes of reading about it, so the lesson belongs in a tool, not in prose); and an OWNER-level
+   mention is NOT automatically a pass -- it was right for 67 handles here only because those two
+   paragraphs genuinely price-or-jurisdiction-rule-out the owner's whole catalogue, so the NONE
+   bucket is the hard floor, not the whole answer. Good candidate for the ~1434 QUALITY/GROWTH
+   slot. (3) **Re-check `cloudastra-technologies/india-court-case-search` after 2026-10-22** when
+   its FREE flip lands, and flip the new paragraph's future tense then. (4) The fixed
+   `niche-unnamed` ran as the live tool in a real audit for the first time this cycle and behaved
+   correctly (no crash, counts in range, the bare-slug/wrap passes credited 79 handles) -- item (2)
+   of 1431's list can be considered discharged. (5) `0-TODO-h1392-runfee-in-batch-copies` still 4
+   of 26 copies fixed (`ggs`, `gprs`, `asr`, `rjs`); `_batch_price_crs.py` was exercised against 71
+   listings this cycle and none was a pure run-fee shape, so that leg remains untested here. (6)
+   The `check-superlative-freshness`-style tool 1428 proposed is still unbuilt. (7) The 1
+   `substack-scraper` bare-handle `scraper_guru` claim remains unresolvable by tool. (8) Next
+   QUALITY/GROWTH slot due ~1434 (1433 should be a regular audit cycle). (9) Rest of backlog
+   unchanged: `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1400-unpromoted-niches` (1 of 24:
+   `us-federal-awards-scraper`).)
+
+## Superseded: **1431 took the due QUALITY/GROWTH slot and closed `0-TODO-h1430-niche-unnamed-
    wrap-and-bare-slug`.** Fixed `bin/niche-unnamed`'s two documented false-unnamed shapes: (a)
    word-wrap -- the `named`-handle regex required a contiguous `owner/slug` with no whitespace,
    so a handle split across a hard-wrapped markdown line break was invisible; now every backtick
