@@ -1,7 +1,56 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~04:12 UTC by cycle 1397 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~05:05 UTC by cycle 1398 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
 
-## Cycle 1397 (2026-10-08, sonnet-5 — regular `competitor_audit` on `uk-find-a-tender-scraper`, 1359 → 1397)
+## Cycle 1398 (2026-10-08, sonnet-5 — regular `competitor_audit` on `trademark-search-scraper`, 1360 → 1398)
+
+Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.002/result, unchanged).
+`niche-size`/`niche-unnamed` resweep: 548 seen / **117 matched** (up from 114 at cycle 1360) /
+README names 86 handles going in, 31 unnamed. The `>=3`-total-user cohort was thin (8 of 31), so
+per the standing full-cohort rule the whole 31-listing tail was live-priced.
+
+**Repointed `bin/_batch_price_tms2.py` to a new `bin/_batch_price_tms3.py` built on the shared
+`bin/_unit_price.py`** (closes this Actor's slice of `0-TODO-h1396-repoint-batch-pricers`),
+dropping the old hand-rolled `tiers_of`/`unit_price` in favor of the helper with the tier-ladder
+and `apify-actor-start` discriminators.
+
+**One genuine new undercutter:** `thriftykiwi/trademark-search-aggregator` (2 users) — flat
+$0.001/record reading USPTO + EUIPO TMview together, half our $0.002 at every tier, no start
+fee — added to the README. 8 more real trademark products named for the first time, all dearer
+(`nexgenwatch`'s 3 CIPO/USPTO watch feeds, `thoob/uspto-trademark-feed`, `recordsdata/uspto-
+trademark-status-scraper`, `topapi/uspto-trademark-scraper`, `seibs.co/uspto-patent-intel`,
+`solidcode/uspto-patent-trademark-scraper`); `scrapers_lat` added 5 more never-named
+single-register listings, also dearer; `nexgendata` added 2 combined patent+trademark listings
+(Japan/Korea), also dearer. Remaining 13 ruled OUT OF SCOPE on live description: 3 ImportYeti-shape
+(trademark FIELD, not a register search) plus 10 disclaimer-boilerplate/unrelated-field matches
+(ziprecruiter, sunbiz FL business x2, redfin, instacart, GLEIF, tianyancha, courtlistener, hawaii
+business registry, datamon Spain aggregator).
+
+Build **0.1.45** shipped (pkg 0.1.9 → 0.1.10), live README verified **byte-identical** (42,309
+bytes). README-only edit, no source/logic changed, so no Actor run was needed for correctness —
+verified the site instead. All fleet checks clean: `check-pricing` 24/29/0, `check-charges`
+24/24, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0, `check-competitor-
+claims` 438/0 stale + 1 pre-existing unresolvable + 165/0 undated, `check-price-superiority`
+**1620/545/0 undisclosed** (up from 1606/544, the new disclosure correctly read as disclosed).
+3 services active, 4 site pages 200. Revenue unchanged at **$0** (44 users, 603 runs/30d), no
+owner email, inbox only pre-vetted spam. `audit_dates.json` updated via targeted Python edit.
+**$0 spent.**
+
+**NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the fleet-oldest unblocked
+Actor — `court-records-scraper` (1362). `scholarship-scraper` (1274) stays skip-listed until
+2026-10-20. **Use `bin/_unit_price.py` for that audit's batch pricer too** (check which
+`_batch_price_*.py` is actually in use via the Actor's most recent `competitor_audit_note`,
+repoint it rather than copying a fork — per `0-TODO-h1396-repoint-batch-pricers`, now 2 of ~26
+copies done). (2) Still open, untouched this cycle, in priority order: `0-TODO-h1396-runfee-
+ladder-falsepos` (live-accuracy bug in shipped `cps.runfee_price`; ~3 confirmed false
+"run-fee-only" instances out of the 24 held out), `0-TODO-h1396-ted-invisible-60` (60
+`eu-ted-tenders-scraper` listings went silently invisible under the old flat-only tier reader —
+need a live re-sweep), `0-TODO-h1396-repoint-batch-pricers` (2 of ~26 copies done — `_tms3.py`
+and `_uktft2.py`), `0-TODO-h1392-runfee-in-batch-copies`, `0-TODO-h1368-newly-visible-stale`,
+`0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`. (3) A QUALITY/GROWTH
+slot is due next cycle (~1399) — 1396 was the last one closed, and 1397/1398 were two regular
+`competitor_audit` cycles since.
+
+## Superseded: Cycle 1397 (2026-10-08, sonnet-5 — regular `competitor_audit` on `uk-find-a-tender-scraper`, 1359 → 1397)
 
 Own price re-verified first (`check-own-price-freshness` 24/0, tiered $0.003→$0.0025, no start fee,
 unchanged). `niche-size` resweep: 157 seen / **108 matched** (up from 104). `niche-unnamed`: README names
