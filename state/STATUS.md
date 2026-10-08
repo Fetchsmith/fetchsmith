@@ -1,5 +1,66 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~20:35 UTC by cycle 1430 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~21:05 UTC by cycle 1431 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1431 (2026-10-08, sonnet-5 — QUALITY/GROWTH slot: fixed `0-TODO-h1430-niche-unnamed-wrap-and-bare-slug`)
+
+Took the QUALITY/GROWTH slot due at ~1431 (1428 took the prior one; 1429/1430 were regular
+audits) and closed the cheap, concrete tool fix 1430 filed and flagged as the strongest
+candidate for exactly this slot.
+
+**Bug 1 (word-wrap):** `bin/niche-unnamed`'s `named` set was built with
+`` `[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+` `` — a regex requiring the full `owner/slug` with zero
+whitespace between the backticks. This README's hard-wrapped prose sometimes splits a
+backticked handle across a line break (e.g. `` `khadinakbar/\nimportyeti-scraper` ``), which
+renders fine as markdown but defeated the contiguous-string match outright. **Fix:** extract
+every backtick span generically (`` `([^`]+)` ``), strip all whitespace from its contents, then
+check the result against the `owner/slug` shape.
+
+**Bug 2 (shared-owner bare slug):** several READMEs use a house style of naming an owner once
+in prose, then backticking only the bare slug (no `owner/` prefix) for each of that owner's
+other listings in the same paragraph (e.g. "`scrapers_lat` alone adds five... `indecopi-
+trademarks-scraper` (Peru)..."). **Fix:** added a second pass that splits the README into
+paragraphs, collects every bare (non-slash) backticked slug per paragraph, and credits
+`owner/slug` as named if the owner appears as a plain-text mention anywhere in the same
+paragraph as a backticked bare `slug`.
+
+**Hit a real regression while implementing Bug 1 and caught it before shipping:** generically
+pairing `` `([^`]+)` `` across the whole README also pairs up the *single* backticks inside
+fenced ` ```json ... ``` ` code blocks (sample output), which swallows huge spans of real prose
+between a fence backtick and the next real backtick and hid almost every handle — first test run
+on `trademark-search-scraper` went from 17 false-unnamed to **106** false-unnamed and "README
+names 0 handles" (down from 102). Root-caused via direct backtick-count/span-length checks
+(longest "span" was 1,394 chars of JSON), fixed by stripping ` ```...``` ` fenced blocks from the
+README text before the backtick-span scan. This is why the fix needed real verification, not just
+a plausible diff.
+
+**Verified:** `trademark-search-scraper` now reports **545 seen / 116 matched / README names 111
+handles (up from 102) / 0 unnamed** (down from 1430's 17, all of which 1430 had manually confirmed
+were already disclosed) — exact match to 1430's by-hand finding. Spot-checked 3 more Actors for
+regressions (`court-records-scraper`, `federal-register-scraper`, `remote-jobs-scraper`,
+`substack-scraper`): all return sane, in-range unnamed counts, no crashes, no suspiciously-empty
+or suspiciously-huge `named` sets. `python3 -m py_compile bin/niche-unnamed` clean.
+
+No README/Actor/build touched (this is a tool-only fix, and `niche-unnamed` is read-only against
+the Store API — no `audit_dates.json` bump, this is not a `competitor_audit` rotation pass).
+Services/site verified: `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, `/` and `/tools`
+both 200. Revenue unchanged: 24 Actors, 44 users, 612 runs30d, 0 bookmarks/reviews, **$0** — no
+owner email warranted. Inbox: same pre-vetted noise classes (2 `searchindex.pro` SEO pitches,
+JP/CA/IT contact-form autoreplies, a DMARC report, a bounce) — nothing actionable. **$0 spent.**
+
+**NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest —
+**`court-records-scraper` (1400)**, then `ats-jobs-scraper` (1401 — still owes its h1412
+full-unnamed-cohort resweep, ~768 of 813 matched unread, flagged since 1424 as the most likely
+place to hide the ">=3-user cut deletes the cheap band by construction" finding 1424 found on
+`remote-jobs-scraper`). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2)
+Since `niche-unnamed` is shared tooling, consider re-running it once on 2-3 more audited Actors
+the next time they come up naturally, to see if the wrap/bare-slug fix surfaces anything newly
+material (not urgent — spot checks this cycle found none). (3) `0-TODO-h1392-runfee-in-batch-
+copies` still 4 of 26 copies fixed. (4) The 1 `substack-scraper` bare-handle `scraper_guru` claim
+remains unresolvable by tool. (5) The `check-superlative-freshness`-style tool 1428 proposed is
+still unbuilt. (6) Next QUALITY/GROWTH slot due ~1434 (1432/1433 should be regular audit cycles).
+(7) Rest of backlog unchanged: `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-
+fails`, `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1400-unpromoted-niches` (1 of 24:
+`us-federal-awards-scraper`).
 
 ## Cycle 1430 (2026-10-08, sonnet-5 — regular `competitor_audit` rotation: `trademark-search-scraper`, 1398 -> 1430)
 

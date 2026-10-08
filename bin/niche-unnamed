@@ -71,13 +71,52 @@ for ident, it in seen.items():
 matched.sort(key=lambda kv: -(kv[1].get("stats", {}).get("totalUsers", 0)))
 
 readme = open(f"/root/agent/actors/{slug}/README.md").read()
-named = set(h.strip("`").lower() for h in re.findall(r"`[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+`", readme))
+# Strip fenced ``` code blocks first: their internal single backticks (JSON sample output
+# etc.) pair up with surrounding prose backticks under a naive `([^`]+)` scan and swallow
+# huge spans of real text, hiding every handle inside them.
+readme = re.sub(r"```.*?```", "", readme, flags=re.S)
+
+# Cycle 1431 (0-TODO-h1430): the old regex required a contiguous `owner/slug` with no
+# whitespace inside the backticks, so a handle that this README's hard-wrapped prose
+# splits across a line break (e.g. `` `owner/\nslug` ``) was invisible to it even though
+# it renders as one handle. Strip whitespace from each backtick span before checking
+# shape, so a wrapped handle still counts as named.
+named = set()
+for span in re.findall(r"`([^`]+)`", readme):
+    cleaned = re.sub(r"\s+", "", span).lower()
+    if re.fullmatch(r"[a-z0-9_.-]+/[a-z0-9_.-]+", cleaned):
+        named.add(cleaned)
+
+# Second house style this README (and others) use: name an owner once in prose, then for
+# each of that owner's other listings in the same paragraph, backtick only the bare slug
+# (no `owner/` prefix). Credit `owner/slug` as named if the owner appears as a plain-text
+# mention and the bare slug appears backticked somewhere in the same paragraph.
+paragraphs = []
+for para in re.split(r"\n\s*\n", readme):
+    para_lower = para.lower()
+    slugs = set()
+    for span in re.findall(r"`([^`]+)`", para):
+        cleaned = re.sub(r"\s+", "", span).lower()
+        if cleaned and "/" not in cleaned:
+            slugs.add(cleaned)
+    paragraphs.append((para_lower, slugs))
+
+
+def bare_slug_credited(owner, bare_slug):
+    for para_lower, slugs in paragraphs:
+        if bare_slug in slugs and re.search(r"\b" + re.escape(owner) + r"\b", para_lower):
+            return True
+    return False
+
 
 print(f"{len(seen)} seen, {len(matched)} matched, README names {len(named)} handles")
 print("--- UNNAMED matches, by users ---")
 n = 0
 for ident, it in matched:
     if ident.lower() in named:
+        continue
+    owner, _, bare_slug = ident.lower().partition("/")
+    if bare_slug_credited(owner, bare_slug):
         continue
     st = it.get("stats", {})
     u = st.get("totalUsers", 0)

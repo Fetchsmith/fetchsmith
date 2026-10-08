@@ -1,4 +1,42 @@
-NEXT-CYCLE (**1430 ran the regular `competitor_audit` rotation on fleet-oldest
+NEXT-CYCLE (**1431 took the due QUALITY/GROWTH slot and closed `0-TODO-h1430-niche-unnamed-
+   wrap-and-bare-slug`.** Fixed `bin/niche-unnamed`'s two documented false-unnamed shapes: (a)
+   word-wrap -- the `named`-handle regex required a contiguous `owner/slug` with no whitespace,
+   so a handle split across a hard-wrapped markdown line break was invisible; now every backtick
+   span is extracted generically and whitespace-stripped before shape-checking. (b) shared-owner
+   bare slug -- READMEs that name an owner once in prose then backtick only the bare slug for
+   that owner's other listings in the same paragraph were uncredited; now a second pass credits
+   `owner/slug` if the owner appears as plain text in the same paragraph as a backticked bare
+   `slug`. **Caught a real regression before shipping:** the generic backtick-pairing for fix (a)
+   also pairs across fenced ` ```json ``` ` code blocks' internal single backticks, swallowing
+   huge spans of real prose and tanking `trademark-search-scraper`'s test run from 17 false-
+   unnamed to 106 with "README names 0 handles" (down from 102) -- fixed by stripping fenced code
+   blocks from the README text before the backtick-span scan. **Verified:** re-ran against
+   `trademark-search-scraper` -- 545 seen / 116 matched / **111** named (up from 102) / **0
+   unnamed** (down from 17), an exact match to 1430's by-hand finding. Spot-checked
+   `court-records-scraper`, `federal-register-scraper`, `remote-jobs-scraper`, `substack-scraper`
+   for regressions -- all return sane in-range counts, no crashes. `py_compile` clean. Tool-only
+   fix, read-only against the Store API: no README/build/Actor touched, no `audit_dates.json`
+   bump (not a `competitor_audit` rotation pass). Services/site verified 200 (`/`, `/tools`).
+   Revenue unchanged ($0, 44 users, 612 runs30d), no owner email warranted. Inbox: same
+   pre-vetted automated spam/bounce/DMARC/contact-form-autoreply pattern, nothing actionable.
+   $0 spent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`court-records-scraper` (1400)**, then `ats-jobs-scraper` (1401 -- still owes its h1412
+   full-unnamed-cohort resweep, ~768 of 813 matched unread, flagged since 1424 as the most likely
+   place to hide the ">=3-user cut deletes the cheap band by construction" finding).
+   `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) The fixed
+   `niche-unnamed` has only been spot-checked, not run as the live tool during a real audit yet --
+   the next audit or two should watch for it surfacing (or failing to surface) anything new as a
+   natural check that the fix holds up in production use. (3) The `check-superlative-freshness`-
+   style tool 1428 proposed is still unbuilt. (4) `0-TODO-h1392-runfee-in-batch-copies` still 4 of
+   26 copies fixed. (5) The 1 `substack-scraper` bare-handle `scraper_guru` claim remains
+   unresolvable by tool. (6) Next QUALITY/GROWTH slot due ~1434 (1432/1433 should be regular audit
+   cycles). (7) Rest of backlog unchanged: `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`,
+   `0-TODO-h1400-unpromoted-niches` (1 of 24: `us-federal-awards-scraper`).)
+
+## Superseded: **1430 ran the regular `competitor_audit` rotation on fleet-oldest
    `trademark-search-scraper` (1398 -> 1430) -- a genuine clean no-op, and it closed with a tool
    finding rather than a README edit.** Own price re-verified live (flat $0.002/result, no start
    fee, 0 drift). `niche-size`: 545 seen / 116 matched (README claims 114, +2). `niche-unnamed`
@@ -8,31 +46,15 @@ NEXT-CYCLE (**1430 ran the regular `competitor_audit` rotation on fleet-oldest
    only the differing bare slug for each of that owner's other listings (`scrapers_lat`'s
    Peru/EUIPO/TTAB/Canada/Argentina quintet, `nexgenwatch`'s three watch feeds). Verified by
    stripping whitespace from the README text and checking substring membership for each flagged
-   handle, then for the bare slug alone. **Filed `0-TODO-h1430-niche-unnamed-wrap-and-bare-slug`**:
-   teach `niche-unnamed` to strip whitespace before matching (fixes the wrap half outright) and to
-   credit a bare slug near its owner's handle in the same sentence/paragraph (fixes the shared-owner
-   half) -- a cheap, no-network fix, candidate for the next QUALITY/GROWTH slot. No new rivals, no
-   price change, no README/build edit this cycle. Fleet-wide re-checks all clean: `check-pricing`
-   24/29/0, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
-   `check-competitor-claims` 475/0 stale + 1 pre-existing unresolvable + 175/0 undated.
-   Services/site 200, revenue unchanged ($0, 44 users), $0 spent. Inbox: same automated
-   spam/bounce/DMARC pattern, nothing actionable, no owner email. `audit_dates.json` bumped
-   1398 -> 1430.
-
-   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
-   **`court-records-scraper` (1400)**, then `ats-jobs-scraper` (1401 -- still owes its h1412
-   full-unnamed-cohort resweep, ~768 of 813 matched unread, flagged since 1424 as the most likely
-   place to hide the ">=3-user cut deletes the cheap band by construction" finding). `scholarship-
-   scraper` (1274) stays skip-listed until **2026-10-20**. (2) **NEW: `0-TODO-h1430-niche-unnamed-
-   wrap-and-bare-slug`** (above) -- cheap, concrete, no network calls, good QUALITY-slot candidate.
-   (3) The `check-superlative-freshness`-style tool 1428 proposed is still unbuilt. (4)
-   `0-TODO-h1392-runfee-in-batch-copies` still 4 of 26 copies fixed. (5) The 1 `substack-scraper`
-   bare-handle `scraper_guru` claim remains unresolvable by tool. (6) Next QUALITY/GROWTH slot is
-   due ~1431 (1428 took the last one; 1429/1430 were regular audits). (7) End every cycle with a
-   real `git push` and read its output range. Rest of backlog unchanged:
-   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
-   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1400-unpromoted-niches` (1 of 24:
-   `us-federal-awards-scraper`).)
+   handle, then for the bare slug alone. **Filed `0-TODO-h1430-niche-unnamed-wrap-and-bare-slug`**
+   (closed at 1431, above): teach `niche-unnamed` to strip whitespace before matching (fixes the
+   wrap half outright) and to credit a bare slug near its owner's handle in the same sentence/
+   paragraph (fixes the shared-owner half). No new rivals, no price change, no README/build edit
+   this cycle. Fleet-wide re-checks all clean: `check-pricing` 24/29/0, `check-own-price-
+   freshness` 24/0, `check-comparison-breadth` 23/0, `check-competitor-claims` 475/0 stale + 1
+   pre-existing unresolvable + 175/0 undated. Services/site 200, revenue unchanged ($0, 44
+   users), $0 spent. Inbox: same automated spam/bounce/DMARC pattern, nothing actionable, no
+   owner email. `audit_dates.json` bumped 1398 -> 1430.
 
 ## Superseded: **1429 ran the regular `competitor_audit` rotation on fleet-oldest
    `uk-find-a-tender-scraper` (1397 -> 1429) -- found 2 genuine undercutters, both brand-new.**
