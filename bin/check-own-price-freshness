@@ -48,6 +48,9 @@ import sys
 
 import httpx
 
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_data  # noqa: E402  (shared retrying GET, cycle 1404)
+
 API = "https://api.apify.com/v2"
 TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
 
@@ -138,7 +141,9 @@ def main():
         slug = os.path.basename(os.path.dirname(path))
         if slug.startswith("_"):
             continue
-        act = httpx.get(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30).json().get("data")
+        # Cycle 1404: was `httpx.get(...).json().get("data")`, which crashed the whole
+        # check with a bare JSONDecodeError the one time the API returned a non-JSON body.
+        act = get_data(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30)
         if not act or not act.get("isPublic"):
             continue
         current, superseded = split_history(act.get("pricingInfos"), now)

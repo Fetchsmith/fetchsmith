@@ -8009,3 +8009,62 @@ recorded for those 8 carries the same unmeasured caveat.
   i.e. ~34 billed rows per opinion, making it ~15x our rate per opinion. Every price tool we own
   (including `_unit_price.py`) compares rate-per-row and cannot see this; only the live description
   can. Disclosed in the README with the unit stated both ways.
+
+## Cycle 1404 — a passing retry is not the same as a passing check: three shapes of transient-API failure
+
+`bin/check-own-price-freshness` died with a bare `json.decoder.JSONDecodeError: Expecting
+value: line 1 column 1 (char 0)`. Re-running the identical command seconds later printed
+`24 public Actors, 0 flag(s)`. The fleet was fine; the Apify API had returned exactly one
+response whose body was not JSON, and the tool called `.json()` on it without looking at the
+status. **The lesson is not "retry your HTTP calls" — it is that the three ways this fleet
+handled a failed GET are ranked in the opposite order from how dangerous they are.**
+
+1. **CRASH** (6 tools, unguarded `.json()`): loudest, least harmful. You know something
+   went wrong. Its real cost is procedural — a traceback mid-audit reads as "investigate
+   this" or gets written off as "could not be completed this cycle" and the check is then
+   skipped for a full rotation. That is not hypothetical: cycle 1366's note on
+   `nih-reporter-scraper` records exactly that outcome for `check-price-superiority`.
+2. **SILENT SKIP** (`check-price-superiority:213`, `... if r.status_code == 200 else None`):
+   looks like defensive code, is the worst of the three. A transient 429 made one rival
+   score as "no live record" and drop out of the comparison — in the single tool whose job
+   is catching a rival cheaper than us, which issues ~1600 GETs through an 8-thread pool and
+   is therefore the most rate-limit-exposed thing we own. The output would read "N compared,
+   0 undisclosed", i.e. indistinguishable from a clean run, with `N` quietly short.
+3. **SILENT UNDERCOUNT** (`niche-size`'s `except Exception: continue`): one failed search
+   term dropped that term's entire 100-listing page, and the sweep still printed a confident
+   "N matched". `niche-unnamed` execs the same loop, so a dropped term also hides unnamed
+   rivals — in the tool built specifically to close that blind spot.
+
+**Transferable rule: when a tool's job is COMPLETENESS, partial failure must change the
+tool's own output, not just stderr.** Retrying is necessary but not sufficient — after
+retries are exhausted, an incomplete sweep has to say so where the numbers are printed, or
+the next cycle records the undercount as an audit result. Hence the explicit
+`WARNING: INCOMPLETE SWEEP -- N of M search term(s) failed` line, fault-injection-verified
+against an unresolvable host rather than assumed to work (cycle 451's precedent).
+
+**The one thing that must NOT be retried: a 404.** A delisted rival is a real, final answer.
+Lumping it in with transient failures would make every audit of a niche containing one dead
+handle pay full exponential backoff for nothing. `_apify_get.FINAL_MISSING` (401/403/404/410)
+is the whole reason this is a shared module and not a fix pasted into five call sites — the
+same argument as cycle 1402's `_unit_price.py`, where 8 forked copies had each drifted.
+
+**Verification bar for this class of refactor:** re-run live and reproduce the recorded
+baseline *exactly*, and check the direction of any change. `check-price-superiority` went
+1600 -> 1673 compared; a repoint that was dropping rivals would show `compared` **falling**,
+so the increase is the evidence, not just the "0 undisclosed".
+
+**Separate audit finding (`nih-reporter-scraper`, 1366 -> 1404), worth recording because it
+is the first NEGATIVE result for the ats-jobs/court-records playbook:** three consecutive
+clean sweeps (1330/1366/1404, 51 matched / 0 unnamed each time) prompted a test of whether
+the MATCH RULE was under-matching, as it had been on `ats-jobs-scraper` (200 -> 813) and
+`court-records-scraper` (4.8x). It was not. Reading all 83 non-matching listings with >=3
+users showed the high-user non-matches are noise dragged in by the wide `research funding`
+search term — LinkedIn company scrapers, four Crunchbase listings, Kickstarter, and two
+*crypto funding-rate* Actors — which is precisely why `MATCH_SYNONYMS` is held to the two
+proper nouns `nih`/`reporter`. **A wide SEARCH term plus a narrow MATCH rule is the correct
+design, not an oversight**; the two knobs exist to be set differently. The only genuinely
+adjacent cohort was ~25 federal-grant scrapers on a *different source* (USASpending,
+Grants.gov, NSF), which the README already handles in prose and which are the niches of our
+own `us-federal-awards-scraper`/`grants-gov-scraper` — folding them in would double-count.
+**Takeaway: "N consecutive clean sweeps" justifies testing the rule once, and a documented
+negative result is a real deliverable — it stops the next cycle re-testing the same thing.**

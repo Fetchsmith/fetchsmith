@@ -23,6 +23,9 @@ import sys
 
 import httpx
 
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_json  # noqa: E402  (shared retrying GET, cycle 1404)
+
 API = "https://api.apify.com/v2"
 
 
@@ -76,8 +79,10 @@ def main():
 
     for path in sorted(glob.glob("/root/agent/actors/*/meta.json")):
         slug = os.path.basename(os.path.dirname(path))
-        r = httpx.get(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30).json()
-        act = r.get("data")
+        # Cycle 1404: was an unguarded `.json()`, which aborts the whole fleet check on one
+        # non-JSON body. `get_json` retries transient failures and never masks a real 404.
+        r, _st = get_json(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30)
+        act = (r or {}).get("data")
         if not act or not act.get("isPublic"):
             continue
         actors += 1

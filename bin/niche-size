@@ -62,6 +62,9 @@ import time
 
 import httpx
 
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_json  # noqa: E402  (shared retrying GET, cycle 1404)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://api.apify.com/v2"
 
@@ -583,16 +586,34 @@ def main():
     source = "hand-curated" if slug in TERM_VARIANTS else "auto-generated (lower bound)"
 
     seen = {}
+    # Cycle 1404: the GET is now retried (shared `_apify_get.get_json`) instead of being a
+    # bare one-shot `.json()` inside a blanket `except Exception: continue`. That old shape
+    # was the quietest failure in the fleet: one transient 429 on one search term dropped
+    # that term's ENTIRE result page and the sweep still printed a confident-looking
+    # "N matched" count, under-reporting the niche by up to 100 listings. Since
+    # `niche-unnamed` reuses this exact loop, a dropped term also made unnamed rivals
+    # invisible -- the same class of blind spot that tool was built to close.
+    # The per-term except is KEPT (an exhausted term must not kill a 7-term sweep), but a
+    # failure is now counted and reported next to the totals, so an incomplete sweep can
+    # never be mistaken for a clean one.
+    failed_terms = []
     for term in terms:
         try:
-            r = httpx.get(f"{API}/store", params={"search": term, "limit": 100}, timeout=40)
-            items = r.json()["data"]["items"]
+            body, _st = get_json(f"{API}/store", params={"search": term, "limit": 100},
+                                 timeout=40)
+            items = ((body or {}).get("data") or {}).get("items") or []
         except Exception as e:
+            failed_terms.append(term)
             print(f"  ERR searching {term!r}: {e}", file=sys.stderr)
             continue
         for it in items:
             seen[f"{it['username']}/{it['name']}"] = it
         time.sleep(0.2)
+    if failed_terms:
+        print(f"  WARNING: INCOMPLETE SWEEP -- {len(failed_terms)} of {len(terms)} search "
+              f"term(s) failed after retries ({', '.join(repr(t) for t in failed_terms)}); "
+              f"every count below is an undercount, do not record it as an audit result.",
+              file=sys.stderr)
 
     # Each word gets an optional trailing 's' so "shopify products" also matches
     # a listing whose own copy says "shopify product" -- plain substring missed

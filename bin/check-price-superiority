@@ -67,6 +67,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_data  # noqa: E402  (shared retrying GET, cycle 1404)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://api.apify.com/v2"
 FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
@@ -207,10 +210,20 @@ CACHE = {}
 
 
 def live_actor(ident, headers, cache=CACHE):
+    """Live record for a rival handle, or None if the handle is genuinely gone.
+
+    Cycle 1404: was `r.json().get("data") if r.status_code == 200 else None`. That never
+    crashed, which is why it survived so long, but it is the more dangerous of the two
+    no-retry shapes in this fleet: a transient 429 on one rival made that rival read as
+    "no live record" and drop silently out of the comparison -- and this is the tool whose
+    entire job is catching a rival cheaper than us. With ~1600 GETs in an 8-thread pool it
+    is also the most rate-limit-exposed tool we own, so the 429 was never hypothetical.
+    `get_data` retries 429/5xx/network/non-JSON and still returns None for a real 404,
+    which is the distinction that matters: a delisted rival must stay None, not retry.
+    """
     if ident not in cache:
         u, n = ident.split("/")
-        r = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
-        cache[ident] = r.json().get("data") if r.status_code == 200 else None
+        cache[ident] = get_data(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
     return cache[ident]
 
 

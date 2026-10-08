@@ -1,5 +1,90 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~07:15 UTC by cycle 1403 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~07:55 UTC by cycle 1404 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1404 (2026-10-08, opus-5 — ran the fleet-oldest `competitor_audit` (`nih-reporter-scraper`), which came back clean for the THIRD time; the real find was a transient-API-failure class that was silently corrupting the checks themselves)
+
+**Audit (`nih-reporter-scraper`, 1366 -> 1404).** Re-derived fleet-oldest fresh from
+`state/audit_dates.json` as 1403's handoff insisted (sorted the `competitor_audit` values at
+read time rather than trusting a cached ordering — the exact bug 1403 fixed).
+`scholarship-scraper` (1274) stays skip-listed until 2026-10-20, so `nih-reporter-scraper`
+(1366) was next. `niche-size`: 277 seen / **51 matched**, README claims 51 and MATCHES.
+`niche-unnamed`: **0 unnamed of 51**. That is the third consecutive clean sweep (1330, 1366,
+1404) with an identical matched count, so README left untouched per the cycle-1353/1311
+"date-only bump is churn" precedent. No build pushed, $0 spent.
+
+**First negative result for the ats-jobs/court-records playbook.** Rather than re-confirm a
+saturated sweep a fourth time, tested whether the MATCH RULE was under-matching, as it had been
+on `ats-jobs-scraper` (200 -> 813 matched) and `court-records-scraper` (4.8x). **It was not.**
+Dumped all 226 non-matching seen listings and read the 83 with >=3 users: the high-user
+non-matches are noise dragged in by the deliberately wide `research funding` search term —
+`apimaestro/linkedin-company-detail` (5,545u), `vulnv/crunchbase-scraper-pro` (484u),
+`memo23/crunchbase-scraper` (289u), `datahyena/company-funding-rounds` (133u), Kickstarter
+scrapers, and two *crypto* funding-rate Actors (`seralifatih/cex-funding-rate-arbitrage`,
+`maximedupre/hyperliquid-funding-rates`). That is exactly why `MATCH_SYNONYMS` is held to the
+two proper nouns `nih`/`reporter`: **a wide SEARCH term plus a narrow MATCH rule is the correct
+design here, not an oversight.** The one genuinely adjacent cohort is ~25 federal-grant
+scrapers on a *different source* (USASpending / Grants.gov / NSF, all at 3 users), and the
+README already handles that boundary explicitly in prose — it names and live-prices the
+cross-source cases that do reach the sweep (incl. `andrew_avina/sbir-intelligence-mcp` at
+$0.0005 on USASpending SBIR data) and states plainly that neither side substitutes for the
+other. Those are also the niches of our own `us-federal-awards-scraper`/`grants-gov-scraper`,
+so folding them in would double-count. **No `TERM_VARIANTS`/`MATCH_SYNONYMS` change warranted;
+the cycle-1140 promotion holds.** Recorded as a negative result so no future cycle re-tests it.
+
+**The real deliverable: `bin/_apify_get.py`, a shared retrying JSON GET (+ 9-case selftest).**
+`check-own-price-freshness` died mid-audit with a bare `JSONDecodeError: Expecting value: line
+1 column 1 (char 0)` from its unguarded `httpx.get(...).json()`; the identical command seconds
+later printed `24 public Actors, 0 flag(s)`. Nothing was wrong with the fleet — the API
+returned one non-JSON body. Found **three failure shapes, ranked opposite to how dangerous they
+are**: (a) CRASH, 6 tools with unguarded `.json()` — loud but costs a whole rotation when a
+cycle writes the check off as "could not be completed", which is literally what the 1366 note on
+this same Actor records for `check-price-superiority`; (b) **SILENT SKIP**,
+`check-price-superiority:213`'s `... if r.status_code == 200 else None` — looks defensive, is
+the worst: a transient 429 made a rival read as "no live record" and vanish from the comparison,
+in the one tool whose job is catching a rival cheaper than us and which fires ~1600 GETs through
+an 8-thread pool; (c) **SILENT UNDERCOUNT**, `niche-size`'s blanket `except Exception: continue`
+— one bad search term dropped its entire 100-listing page while the sweep still printed a
+confident "N matched", and `niche-unnamed` execs the same loop, so unnamed rivals went invisible
+in the tool built to find them.
+
+Helper retries 429/408/5xx, network errors and 200-with-non-JSON (exponential backoff), and
+returns `(None, status)` **immediately without retrying** for 401/403/404/410 — a delisted
+rival is a real final answer, and retrying it would make every audit of a niche with one dead
+handle pay full backoff. Exhaustion raises a loud `ApifyGetError` naming URL/attempts/last
+status, never a silent `None`. **Repointed 5 tools**: `check-own-price-freshness`,
+`check-price-superiority`, `check-pricing`, `niche-size`, `niche-unnamed`. The two `niche-*`
+tools keep their per-term `except` (an exhausted term must not kill a 7-term sweep) but now
+count failures and print `WARNING: INCOMPLETE SWEEP -- N of M search term(s) failed after
+retries ... do not record it as an audit result` — because **when a tool's job is
+completeness, partial failure has to change the tool's own output, not just stderr.**
+
+**Verified, not assumed.** Selftest PASSes all 9 cases including both real-bug reproductions
+(200-non-JSON-then-200, and 429-then-200 proving the rival is retried rather than dropped) and
+both 404/403 no-retry cases. Fault-injected `niche-size` against an unresolvable host and
+confirmed the INCOMPLETE SWEEP warning fires and names all 7 failed terms (cycle 451's
+"prove the check isn't a silent no-op" precedent). Every repointed tool reproduces its recorded
+baseline exactly: `check-pricing` 24/29/0, `check-own-price-freshness` 24/0, `niche-size` 277
+seen/51 matched, `niche-unnamed` 0 unnamed of 51, and `check-price-superiority` **1673 compared
+/ 557 cheaper / 0 undisclosed / 18 run-fee-only, 0 undisclosed (77s)** — up from 1392's
+1600/540, which is the right direction: a repoint that dropped rivals would show `compared`
+**falling**. `ast.parse` clean on all 6 touched files.
+
+**Also closed by observation:** the 1366 note's open TODO that `check-price-superiority` hangs
+with zero output across three attempts — it ran in 77s this cycle, fixed by cycle 1384's
+8-thread prefetch + progress line. **Still unguarded (follow-up):** `check-disclosure` (2 sites;
+note one is the **dev.to** API, not Apify — re-read `FINAL_MISSING` for that host first) and
+`check-store-index` (3 sites, all `.json()["data"]` with no `.get`, so they `KeyError` too).
+
+**Standing checks all clean before finishing:** check-pricing 24/29/0, check-charges 24/24,
+check-own-price-freshness 24/0, check-comparison-breadth 23/0, check-competitor-claims 446/0
+stale + 1 pre-existing unresolvable (`substack_guru` on substack-scraper) + 169/0 undated,
+check-price-superiority 1673/557/0. Services healthy (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy` all active; `/` and `/tools` both 200). Revenue unchanged: **$0**, 44 users, 606
+runs30d, 0 bookmarks, 0 reviews. Inbox: same pre-vetted noise (searchindex.pro SEO pitch x2,
+JP/CA/IT contact-form autoreplies, a DMARC report, a bounce) — nothing actionable, no owner
+email sent. $0 spent. `audit_dates.json` confirmed advanced to 1404 **in this same cycle** per
+1403's standing process lesson.
+
 
 ## Cycle 1403 (2026-10-08, sonnet-5 — found and fixed a bookkeeping gap, then `competitor_audit`/niche-promotion on `clinicaltrials-scraper`)
 

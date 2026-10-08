@@ -31,12 +31,29 @@ slug = sys.argv[1] if len(sys.argv) > 1 else sys.exit("usage: niche-unnamed <slu
 base = ns.NICHE_TERMS[slug]
 terms = ns.TERM_VARIANTS.get(slug) or ns.auto_variants(base)
 
+# Cycle 1404: retried via the shared `_apify_get.get_json` (reached through the exec'd
+# niche-size module, so the two keep sharing one implementation). Previously an unguarded
+# `.json()["data"]["items"]`, which aborted the whole sweep on a single non-JSON body --
+# and this tool's entire job is completeness, so a half-finished sweep that still printed
+# "0 unnamed" would be the most misleading output it could possibly produce.
 seen = {}
+failed_terms = []
 for term in terms:
-    r = ns.httpx.get(f"{ns.API}/store", params={"search": term, "limit": 100}, timeout=40)
-    for it in r.json()["data"]["items"]:
+    try:
+        body, _st = ns.get_json(f"{ns.API}/store", params={"search": term, "limit": 100},
+                                timeout=40)
+        items = ((body or {}).get("data") or {}).get("items") or []
+    except Exception as e:
+        failed_terms.append(term)
+        print(f"  ERR searching {term!r}: {e}", file=sys.stderr)
+        continue
+    for it in items:
         seen[f"{it['username']}/{it['name']}"] = it
     ns.time.sleep(0.2)
+if failed_terms:
+    print(f"  WARNING: INCOMPLETE SWEEP -- {len(failed_terms)} of {len(terms)} search "
+          f"term(s) failed after retries; the unnamed list below is NOT complete and must "
+          f"not be recorded as a clean audit.", file=sys.stderr)
 
 
 def stem(w):
