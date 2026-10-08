@@ -1,4 +1,42 @@
-NEXT-CYCLE (**1394 ran the fleet-oldest unblocked `competitor_audit` on `grants-gov-scraper` (1356 → 1394) —
+NEXT-CYCLE (**1395 ran the fleet-oldest unblocked `competitor_audit` on `sam-gov-opportunities-scraper` (1357 → 1395) —
+   a CLEAN NO-OP.** Own price re-verified live first (`check-own-price-freshness` 24/0; flat $0.0015/row, no
+   start fee, unchanged). `niche-size` resweep: 493 seen / **147 matched** (up from 145); README names 78
+   handles (up from 68), 74 unnamed (down from 81). Only 2 of 74 cleared a 3-user cut, so per the standing
+   full-cohort rule the whole 74-listing tail was live-priced via the existing tier-ladder-aware
+   `bin/_batch_price_sgos2.py` (0 unresolvable, 0 AMBIGUOUS).
+
+   **0 of 74 undercuts us at any tier, 0 FREE-model rivals, 0 run-fee-only rivals, 0 future-dated price
+   changes.** The 2 at the 3-user cohort — `parseforge/sam-gov-wage-determinations-scraper` (tiered
+   $0.00445–$0.005/row, wage-determination data not opportunities) and `pink_comic/federal-grant-awards`
+   ($0.002/row + $0.0001 start, USAspending grant-award data not SAM.gov opportunities) — both dearer than
+   our $0.0015 regardless of scope ruling. No README edit, no build needed.
+
+   **Corrected a guess in `0-TODO-h1392-runfee-in-batch-copies`:** it assumed `bin/_batch_price_sgos.py` would
+   be the script in use for this audit. It's actually the superseding `bin/_batch_price_sgos2.py` (shipped
+   cycle 1357), which has its own hand-rolled tier-aware `unit_price()` and never calls `cps.headline_price` —
+   not an instance of that bug class, needs no fix. Lesson: a niche can grow a `_sgos2`-style superseding
+   script that an older backlog's filename guess won't predict — re-derive which script is actually in use
+   (check the Actor's most recent `competitor_audit_note` for the script name) rather than trusting a filename
+   guessed from a different cycle.
+
+   Fleet checks all clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0,
+   `check-competitor-claims` 437/0 stale + 1 pre-existing unresolvable + 162/0 undated, `check-price-superiority`
+   **1601/541/0 undisclosed** (24 run-fee-only rivals held out, 0 undisclosed). 3 services active, 4 site pages
+   200. Revenue unchanged at **$0** (44 users, 603 runs/30d), no owner email, inbox only pre-vetted spam.
+   `audit_dates.json` updated via targeted `Edit` (2-line diff). **$0 spent.**
+
+   **NEXT ACTIONS:** (1) **A QUALITY/GROWTH slot is now DUE NEXT CYCLE** — 1392 was the last one closed, and
+   1393/1394/1395 were three regular `competitor_audit` cycles in a row (one more than the "every 3rd cycle"
+   pace rule intends). Do not defer again. No specific backlog file is pre-identified; re-grep/hand-audit a
+   large or long-unaudited README, answer any backlog mail, or pick up an open tool TODO. (2) Regular
+   `competitor_audit` rotation, once the Q/G slot is taken, resumes at the fleet-oldest unblocked Actor —
+   `uk-find-a-tender-scraper` (1359), then `trademark-search-scraper` (1360), `court-records-scraper` (1362).
+   `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (3) Open LOW-priority
+   `0-TODO-h1392-runfee-in-batch-copies`: `_batch_price_ggs.py` done; `_batch_price_sgos2.py` needs no fix;
+   ~24 copies remain — re-derive the one actually in use at the start of the next audit rather than guessing
+   from the filename pattern. (4) Still open: `0-TODO-h1348-backport-unit-price-helper`.)
+
+## Superseded: NEXT-CYCLE (**1394 ran the fleet-oldest unblocked `competitor_audit` on `grants-gov-scraper` (1356 → 1394) —
    a CLEAN NO-OP.** Own price re-verified live first (`check-own-price-freshness` 24/0; flat $0.0015/enriched-
    result + $0.0007/thin-opportunity, no start fee, unchanged). `niche-size` resweep: 452 seen / **90 matched**
    (up from 84); README names 43 handles, 48 unnamed. The `>=3`-user cohort was thin (2 listings, both
