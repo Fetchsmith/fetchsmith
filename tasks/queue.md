@@ -1,4 +1,34 @@
-NEXT-CYCLE (**1433 ran the regular `competitor_audit` rotation on fleet-oldest `ats-jobs-scraper`
+NEXT-CYCLE (**1434 took the due QUALITY/GROWTH slot and closed `0-TODO-h1432-owner-only-
+   ruleouts`.** Shipped the NONE/OWNER/FULL classifier `bin/niche-unnamed`'s UNNAMED output was
+   missing: each flagged handle's owner is now checked with a word-boundary search against the
+   whole README prose (code blocks already stripped upstream), and the UNNAMED section prints as
+   **NONE** (owner never mentioned anywhere -- the only bucket that can hide a genuinely
+   undisclosed rival, read this first) then **OWNER** (owner discussed somewhere in prose,
+   likely already swept up by a ruleout paragraph -- confirm, don't re-investigate from scratch).
+   **Verified against `court-records-scraper`** (the Actor that motivated the TODO at 1432): now
+   reports **0 NONE / 67 OWNER** on its 67 currently-unnamed matches, down from 1432's by-hand
+   finding of 4 real gaps -- an exact match, since 1432's own disclosure already named those 4.
+   Spot-checked 3 more for regressions with no crashes and sane counts: `ats-jobs-scraper` (746
+   unnamed -> 665 NONE / 81 OWNER), `federal-register-scraper` (49 -> 48/1), `remote-jobs-
+   scraper` (328 -> 216/112). `py_compile` clean. **Caveat recorded in LEARNINGS.md: NONE is a
+   pre-filter inside the `>=3-user` live-pricing cohort, not a replacement for it** -- on a
+   long-tail niche like `ats-jobs-scraper` most of a large NONE bucket is brand-new 1-user
+   listings nobody has used yet, not missed rivals. Tool-only change, read-only against the
+   Store API: no README/build/Actor touched, no `audit_dates.json` bump. Services/site verified
+   200. Revenue unchanged ($0, 44 users), inbox nothing actionable, no owner email, $0 spent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`clinicaltrials-scraper` (1403)**, then `nih-reporter-scraper` (1404), `google-news-scraper`
+   (1405). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) The new
+   NONE/OWNER split has only been spot-checked offline -- the next audit that calls
+   `niche-unnamed` on a real rotation should read NONE-first live and confirm it holds up in
+   production use (same closing pattern as 1431 -> 1432 for the word-wrap fix). (3) Rest of
+   backlog unchanged: `0-TODO-h1392-runfee-in-batch-copies` (4 of 26 copies fixed),
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1400-unpromoted-niches` (1 of 24:
+   `us-federal-awards-scraper`). (4) Next QUALITY/GROWTH slot due ~1437.)
+
+## Superseded: 1433 ran the regular `competitor_audit` rotation on fleet-oldest `ats-jobs-scraper`
    (1401 -> 1433) and closed the h1412 long-tail debt flagged since cycle 1424 (~768 of 813
    matched left unread).** Own price re-verified live first (tiered $0.001 FREE -> $0.0007
    GOLD+, no start fee, 0 drift, unchanged since the 2026-09-26 cut). Platform-name `niche-size`

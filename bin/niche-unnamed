@@ -109,18 +109,43 @@ def bare_slug_credited(owner, bare_slug):
     return False
 
 
+# Cycle 1434 (0-TODO-h1432-owner-only-ruleouts): a README that rules out a whole owner's
+# catalogue in prose -- without backticking every one of that owner's listings -- makes
+# the full-handle unnamed diff above overstate exposure by an order of magnitude (71
+# flagged, 4 real, on court-records-scraper at cycle 1432). An owner-level mention is a
+# hint the listing was considered, NOT proof this exact listing was priced or ruled out --
+# so split UNNAMED into NONE (owner never appears anywhere in the prose: the only bucket
+# that can hide a genuinely undisclosed rival, read this one) and OWNER (owner's name
+# appears somewhere outside a backtick span: likely already swept up in a ruleout
+# paragraph, worth a quick confirm rather than a fresh investigation).
+readme_lower = readme.lower()
+
+
+def owner_mentioned(owner):
+    return re.search(r"\b" + re.escape(owner) + r"\b", readme_lower) is not None
+
+
 print(f"{len(seen)} seen, {len(matched)} matched, README names {len(named)} handles")
-print("--- UNNAMED matches, by users ---")
-n = 0
+unnamed = []
 for ident, it in matched:
     if ident.lower() in named:
         continue
     owner, _, bare_slug = ident.lower().partition("/")
     if bare_slug_credited(owner, bare_slug):
         continue
+    unnamed.append((ident, it, owner))
+
+none_bucket = [(ident, it) for ident, it, owner in unnamed if not owner_mentioned(owner)]
+owner_bucket = [(ident, it) for ident, it, owner in unnamed if owner_mentioned(owner)]
+
+print(f"--- NONE: owner never mentioned, by users ({len(none_bucket)}) ---")
+for ident, it in none_bucket:
     st = it.get("stats", {})
-    u = st.get("totalUsers", 0)
-    n += 1
-    print(f"{u:5} u30d={st.get('totalUsers30Days',0):4} {ident}")
+    print(f"{st.get('totalUsers',0):5} u30d={st.get('totalUsers30Days',0):4} {ident}")
     print(f"      {(it.get('title') or '')[:110]}")
-print(f"--- {n} unnamed of {len(matched)} matched ---")
+print(f"--- OWNER: owner mentioned elsewhere in prose, verify ruleout covers this listing, by users ({len(owner_bucket)}) ---")
+for ident, it in owner_bucket:
+    st = it.get("stats", {})
+    print(f"{st.get('totalUsers',0):5} u30d={st.get('totalUsers30Days',0):4} {ident}")
+    print(f"      {(it.get('title') or '')[:110]}")
+print(f"--- {len(unnamed)} unnamed of {len(matched)} matched ({len(none_bucket)} NONE, {len(owner_bucket)} OWNER) ---")

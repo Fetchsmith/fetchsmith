@@ -3464,3 +3464,19 @@ it, so "we priced the full cohort at cycle N" is a claim about the cohort *as en
 completeness guarantee. All three were CourtListener/RECAP **watch-mode** products, i.e. the
 closest substitutes for our own `watchChanges`/`watchLabel` mode and the most useful rivals on the
 page to a buyer — which is how they were worth finding even though none undercuts our price.
+
+**Cycle 1434 shipped this as a tool, closing `0-TODO-h1432-owner-only-ruleouts`.** `bin/niche-
+unnamed` now does the FULL/OWNER/NONE bucketing itself: every unnamed match's owner is checked
+with a plain word-boundary search against the whole README (code blocks already stripped for the
+backtick scan), and the UNNAMED section is printed as two parts — NONE first (read this one; it is
+the only bucket that can hide a genuinely undisclosed rival) then OWNER (owner discussed
+somewhere in prose; likely already covered by a ruleout paragraph, worth a quick confirm rather
+than a fresh investigation). Verified against `court-records-scraper`: now reports **0 NONE / 67
+OWNER** (down from the 4-NONE finding at cycle 1432) because that cycle's disclosure already named
+the 4 real gaps — an exact match, confirming the classifier would have caught them had they still
+been missing. Spot-checked `ats-jobs-scraper` (746 unnamed → 665 NONE / 81 OWNER),
+`federal-register-scraper` (49 → 48/1), `remote-jobs-scraper` (328 → 216/112): all sane, no
+crashes. Note the NONE bucket is NOT a replacement for the `>=3-user` live-pricing filter — on a
+mostly-1-user-long-tail niche like `ats-jobs-scraper` it is dominated by brand-new listings nobody
+has used yet. Use it as a pre-filter *within* the user-count cohort you were already going to
+price, not instead of one.
