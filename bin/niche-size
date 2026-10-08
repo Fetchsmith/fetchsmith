@@ -343,6 +343,26 @@ TERM_VARIANTS = {
         "smartrecruiters jobs", "multi-ats jobs", "career site jobs",
         "career page jobs", "job board api", "hiring signal",
     ],
+    # Promoted by cycle 1403, one of the 8 niches flagged unpromoted at cycle 1400 --
+    # but unlike ats-jobs/court-records, this one was NOT a false clear. The Actor's own
+    # competitor_audit history (cycles 1104/1139 onward) already hand-ran a wider term set
+    # than niche-size's single-word "clinicaltrials" base every cycle and the README is the
+    # fleet's most thoroughly audited page (40+ named rivals, daily full-cohort sweeps
+    # 2026-10-03 through 2026-10-07). This promotion exists to make niche-size's own count
+    # match what the manual audits already know, not to rescue a missed undercutter: live
+    # re-test this cycle found the single-word base matches 124/145 (auto_variants()), and
+    # adding "clinical trials" as a synonym raises it to 141/217 -- 16 newly-visible listings,
+    # every single one already individually named in the README from a cycle-1104-1375
+    # sweep using these same terms by hand (e.g. m_ctim/clinical-trial-tracker,
+    # datapilot/clinical-trials-protocol-scraper, the EU CTIS registry listings ruled out of
+    # scope on source). "nct" and "patient recruitment" are the two other terms cycle 1104's
+    # note names as having been searched by hand; included here even though neither changed
+    # the matched set in this cycle's re-test, since a future rival could use either without
+    # ever writing "clinical trial".
+    "clinicaltrials-scraper": [
+        "clinicaltrials", "clinicaltrials.gov", "clinical trials", "clinical trial",
+        "nct", "patient recruitment", "trials gov",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -502,6 +522,15 @@ MATCH_SYNONYMS = {
     "ats-jobs-scraper": ["greenhouse", "ashby", "lever job", "workday jobs", "recruitee",
                          "workable job", "smartrecruiters", "applicant tracking system",
                          "multi-ats", "career site job", "career page job"],
+    # "clinical trials"/"clinical trial" are the two-word form this niche's own copy
+    # uses about as often as the single-word "clinicaltrials" base (e.g.
+    # `m_ctim/clinical-trial-tracker`, `datapilot/clinical-trials-protocol-scraper`) --
+    # without this as a MATCH_SYNONYM the search-term widening above still finds these
+    # listings but the matcher drops them again since the base phrase never appears as
+    # one word. "patient recruitment" is this niche's own buyer-facing term (see this
+    # Actor's own `seoTitle`), included per cycle 1104's note that it was searched by
+    # hand but has not independently added a match in any re-test since.
+    "clinicaltrials-scraper": ["clinical trials", "patient recruitment"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",
