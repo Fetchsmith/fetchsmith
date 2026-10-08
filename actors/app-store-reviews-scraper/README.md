@@ -146,7 +146,7 @@ re-verified all twelve rivals named above with **zero price drift**, but reading
 just below `nexgendata/ios-app-store-reviews-scraper`'s 32 users found two genuine price threats
 this README's earlier "no listing found in this sweep, named or not, undercuts our price" line
 (just above) no longer covers:
-`apihq/app-store-reviews-scraper` (25 users) charges a flat **$0.00008/review with no start fee —
+`apihq/app-store-reviews-scraper` (28 users) charges a flat **$0.00008/review with no start fee —
 20% below our $0.0001, at every volume, with no crossover**; `automation-lab/apple-app-store-reviews-scraper`
 (27 users) tiers its review price by the buyer's own Apify plan, $0.0001725 (Free) down to
 $0.000042 (Diamond) — dearer than us on Free/Bronze/Silver (1.2x-1.7x our rate) but **cheaper from

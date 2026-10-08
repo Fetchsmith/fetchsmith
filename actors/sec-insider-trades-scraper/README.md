@@ -157,6 +157,27 @@ Two more are cheaper than us on a unit-matched basis but out of scope for the pr
 
 **The ratio itself, re-measured live (verified 2026-10-07), is not a constant, and the "~2.1 transactions per filing" figure used elsewhere on this page is an Apple-specific average, not a niche-wide one.** A capped run over Apple's four most recent Form 4s returned **8 transaction rows from a single accession** (`0001140361-26-038674`, Tim Cook — one option exercise, one tax-withholding, four separate open-market sales at different prices, and a gift, all decoded), while a capped run over Microsoft's and JPMorgan's four most recent Form 4s each returned **exactly one transaction row per filing** (8 rows, 8 distinct accessions). So for a single-transaction issuer — which both MSFT and JPM were across this sample — every per-filing rival's per-transaction cost is simply its sticker price, and all three above are then **dearer** than our $0.0018, not cheaper. Per-filing pricing only beats ours for buyers tracking multi-transaction filers like Apple. **As of 2026-10-07 no comparison on this page converts a per-filing rate at ~2.1x any more**: every per-filing rival above is stated as a break-even ratio instead, so a buyer can apply their own filers' filing density rather than inherit Apple's. That re-statement moved two rivals out of the "undercutter" reading entirely — `datalayer/insider-trading-form4` and `humble-echidna/sec-edgar` both break even at 1.11 transactions/filing on Free, i.e. dearer than us for a single-transaction filing — and left the four sub-1.0 rivals (`constructive_calm`, `mikee368`, `getascraper`, `mina_safwat`) cheaper on the per-row rate at any density, which the ratio was never what decided.
 
+**A full-cohort re-sweep of the unnamed tail (46 listings, checked live 2026-10-08 —
+`niche-unnamed` now matches 108 of 256 seen, 64 already named).** Our own price was re-verified
+against the live record first: flat **$0.0018/`result`, no start fee**, unchanged. Only
+`sutraflow/sec-insider-trading-signals` (3 users) cleared the usual ≥3-user floor and bills $0.01
+start + $0.01 per `insider-transaction` — dearer than us. The remaining 45 (0-1 users each) were
+all live-priced across every charge event and tier regardless; their per-row rate is dearer than
+ours at every tier too, modal price ~$0.003-$0.005/row, consistent with every prior sweep on this
+niche. **Two are a shape worth flagging rather than filing under "dearer," though,** because — like
+the per-filing rivals above — their price is volume-dependent rather than a flat per-row
+comparison: `m_ctim/insider-trading-alert` charges one flat `insider-search` fee ($0.007 FREE →
+$0.0055 DIAMOND) regardless of how many transactions that search returns, breaking even against our
+$0.0018/row at **3.1-3.9** rows — below the 8 rows this page's own Apple sample pulled from one
+accession; `zinin/insider-trading-tracker` charges per ticker delivered ($0.005 FREE → $0.004
+DIAMOND) covering that ticker's "bounded Form 3/4/5 activity" rather than per row, breaking even at
+**2.2-2.8** rows/ticker — again below Apple's 8, though above the single row MSFT and JPM each
+returned. Neither is a confirmed undercut: both sit at 1 user and neither's own listing claims the
+20-code decode, signed value, or 10b5-1 normalization this Actor leads on, and both lose to us on
+any issuer with the low per-filing activity this page's own MSFT/JPM sample found typical. Noted
+because a buyer who only ever pulls high-activity issuers like Apple would pay less at either one
+than here.
+
 ## Notes on the source
 
 - **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather

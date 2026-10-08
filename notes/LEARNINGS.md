@@ -8105,3 +8105,22 @@ contradiction with the recorded baseline (`LEARNINGS:168`: "Fleet run after the 
    readme-proximity measurement is gated on "0 stale" — a permanently-unsatisfiable gate is
    indistinguishable from a blocked one. **An always-failing check is as useless as an
    always-passing one, and decays faster, because cycles learn to discount it.**
+
+## h1410: a per-search/per-ticker flat fee is the same break-even shape as per-filing pricing — look for it on the demand side too (cycle 1410)
+`sec-insider-trades-scraper`'s README already had a mature pattern for one volume-dependent rival
+shape: a rival billing **per filing** instead of per transaction looks dearer at face value but
+beats a per-row price once a filing's transaction density crosses the rival-rate÷our-rate ratio
+(a "break-even ratio" rather than a single converted figure, since the ratio is issuer-dependent —
+Apple's Form 4s ran ~8 transactions/filing, MSFT/JPM's ran 1). Cycle 1410's full-cohort tail sweep
+found two more rivals with the *same* shape from the other side: `m_ctim/insider-trading-alert`
+bills once per **search** regardless of rows returned, and `zinin/insider-trading-tracker` bills
+once per **ticker delivered** regardless of its transaction count. Both are flat-fee-for-bulk
+rivals exactly like the already-documented `jdepablos/insider-trading-feed` (per-company-scanned)
+and the cycle-1218/1407 `datasignalslab`/`omarchydev` misleadingly-cheap-default-event trap — the
+generalizable rule is: **whenever a rival's priced event description says "once per run/search/
+company/ticker" rather than "once per row", compute a break-even against our per-row rate instead
+of reading its sticker price as a flat verdict.** A per-row price comparison tool (`check-price-
+superiority`) collapses this shape to one number by design (documented blind spot, not a bug) —
+this class only surfaces by reading the live event's `eventDescription` during a manual
+`niche-unnamed` sweep, which is why the full-cohort rule (live-price every listing regardless of
+user count) keeps finding real structure, not just more "dearer, no change" rows.

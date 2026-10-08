@@ -1,5 +1,69 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~10:10 UTC by cycle 1409 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~10:40 UTC by cycle 1410 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1410 (2026-10-08, sonnet-5 — regular `competitor_audit` rotation on fleet-oldest `sec-insider-trades-scraper`)
+
+Re-derived fleet-oldest fresh from `state/audit_dates.json`: `scholarship-scraper` (1274) still
+skip-listed until 2026-10-20, so `sec-insider-trades-scraper` (1376) was next.
+
+**Audit found a real, if small, disclosure gap — not a flat "clean negative."** `niche-size`:
+256 seen / 108 matched (up from 254/108 at 1376, no change in matched count). `niche-unnamed`: 46
+unnamed (down from 55, README now names 64 vs 53). Own price re-verified live first: flat
+**$0.0018/`result`, no start fee**, unchanged. Only `sutraflow/sec-insider-trading-signals` (3
+users) cleared the usual ≥3-user floor ($0.01 start + $0.01/txn — dearer, no undercut). Per the
+standing full-cohort rule for this niche, live-priced the entire remaining 45-listing tail (0-1
+users each) anyway: **0 new per-row undercutters**, modal price ~$0.003-$0.005/row, consistent
+with every prior sweep.
+
+**The real find: two volume-dependent near-misses, same class as the README's existing
+per-filing break-even paragraphs, just on the per-search/per-ticker side instead.**
+`m_ctim/insider-trading-alert` charges one flat `insider-search` fee ($0.007 FREE → $0.0055
+DIAMOND) regardless of how many transactions a search returns — breaks even against our
+$0.0018/row at **3.1-3.9 rows**, below the 8 rows this README's own Apple sample already pulled
+from one accession. `zinin/insider-trading-tracker` charges per ticker delivered ($0.005 FREE →
+$0.004 DIAMOND) covering that ticker's "bounded Form 3/4/5 activity" — breaks even at **2.2-2.8
+rows/ticker**, again below Apple's 8 (though above MSFT/JPM's 1-row-per-filing sample). Neither
+is a confirmed undercut (both 1 user, neither's listing claims the code-decode/signed-value/flag
+fidelity this Actor leads on), but both price per-search/per-ticker rather than per-row, so a
+buyer pulling a high-activity issuer would pay less there than here. Added as a new paragraph
+disclosing both with their break-evens, following the README's own established convention for
+this exact shape.
+
+**Verified, caught and fixed my own slip:** `check-competitor-claims` (run after the first push)
+flagged my own new paragraph — I'd written `sutraflow` as "2 users" when the live count was 3.
+Fixed and re-pushed (build 0.1.38 → 0.1.39). The same check run also caught an unrelated
+pre-existing stale claim on `app-store-reviews-scraper` (`apihq/app-store-reviews-scraper` stated
+as 25 users, live 28) — fixed and pushed that Actor's build too (0.1.21 → 0.1.22). Live build
+readme confirmed to contain the new text (`httpx`/API read of the `latest` build, not the
+CDN-cached Store page). Fleet-wide `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0, `check-readme-samples` 0 drift
+— all clean, all identical to prior baselines. `check-competitor-claims` fleet-wide now 447
+claims/**1 stale** (the pre-existing `apple-podcasts-scraper`→`spokentext` 2-vs-3-user drift,
+found but left — ordinary single-user churn outside this cycle's scope, not chased)/1
+unresolvable (the long-standing `scraper_guru` case) + 170 paragraphs/0 undated. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; site 200 on `/` and
+`/tools/sec-insider-trades-scraper`. Revenue unchanged: $0, 44 users, 606 runs30d, 0
+bookmarks/reviews. `bin/traffic`: `/pricing` 3, `/tools` 7 — below the >100/day Polar gate, so
+per owner instructions Polar not raised. Inbox: 10 messages, all pre-vetted noise (2x
+searchindex.pro SEO pitch, JP/CA/IT contact-form autoreplies, 1 DMARC report, 1 bounce) — nothing
+actionable, no owner email sent. `audit_dates.json`'s `sec-insider-trades-scraper.competitor_audit`
+bumped 1376 → 1410 with a new note prepended (old chain preserved). $0 spent.
+
+**NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes — re-derive fleet-oldest fresh
+from `state/audit_dates.json`, do not trust this guess: as of this edit it is
+`google-play-reviews-scraper` (1378), then `apple-podcasts-scraper` (1379). `scholarship-scraper`
+(1274) stays skip-listed until 2026-10-20. (2) `0-TODO-h1400-unpromoted-niches` is still **4 of
+24** (unchanged this cycle — `sec-insider-trades-scraper` was already promoted into
+`TERM_VARIANTS` as of the 1220/1376 work, this cycle just re-ran it): `apple-podcasts-scraper`,
+`hacker-news-scraper`, `scholarship-scraper`, `us-federal-awards-scraper`. (3) The incidental
+`apple-podcasts-scraper`→`spokentext` 2-vs-3-user staleness found by this cycle's
+`check-competitor-claims` run is trivial and low-priority — fix opportunistically whenever that
+Actor is next touched, not worth a dedicated cycle. (4) `ats-jobs-scraper`'s unread tail (~768 of
+813 matched) is still open. (5) Backlog unchanged, priority order:
+`0-TODO-h1396-ted-invisible-60`, `0-TODO-h1392-runfee-in-batch-copies`,
+`0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+`0-TODO-h1346-fleet-wide-sub20-counts`. (6) A QUALITY/GROWTH slot is due ~1411 (1408 took the
+last one, 1409/1410 were both regular audits).
 
 ## Cycle 1409 (2026-10-08, sonnet-5 — regular `competitor_audit` rotation on fleet-oldest `shopify-products-scraper`, also closed that Actor's leg of `0-TODO-h1400-unpromoted-niches`)
 
