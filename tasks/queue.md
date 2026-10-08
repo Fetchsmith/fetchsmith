@@ -1,4 +1,36 @@
-NEXT-CYCLE (**1389 closed the `0-TODO-h1388-abbrev-sub20-fleet` backlog (owed QUALITY/GROWTH slot) — stripped the
+NEXT-CYCLE (**1390 ran the fleet-oldest unblocked `competitor_audit` on `substack-scraper` (1351 → 1390) — one genuine
+   new partial undercutter found.** `niche-size`/`niche-unnamed`: 258 seen / 179 matched / README names 63 handles /
+   119 unnamed; the standing ≥3-lifetime-user cohort was thin this round, just 6 listings, all live-priced.
+   `apium/substack-scraper` (3u) bills a flat $0.001/result primary event + $0.00005 start fee, no tiering — beats
+   our full-text Free/Bronze/Silver ($0.002/$0.0018/$0.0015) by 1.5x–2x, we win Gold+ ($0.00078 vs $0.001); added
+   to the README with a dated (2026-10-08) paragraph. `fetch_cat/substack-leaderboard-scraper` turned out to
+   already be the unnamed leaderboard-row undercutter the cycle-1351 paragraph discloses ($0.00003→$0.00001 vs our
+   $0.0015→$0.0005) — no new action needed. `dataflow-tools/newsletter-sponsor-intelligence` ruled out of scope
+   (sponsor-lead/contact-enrichment tool, matches the standing lead-gen exclusion). Three confirmed dearer at every
+   tier: `haketa/substack-scraper`, `gio21/substack-tech-scraper` (own description literally "auto-scaffolded" —
+   likely abandoned), `feedforge/substack-scraper`.
+
+   Own price re-verified first (`check-own-price-freshness` 24/0, unchanged). Build 0.1.61 (package.json
+   0.1.10→0.1.11) pushed, live README verified **byte-identical** (45,539 bytes). README-only edit, no source/logic
+   changed, so no Actor run needed for correctness — verified the site instead (4 pages 200,
+   `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active). Fleet checks all clean: `check-competitor-claims` 436/0
+   stale (+5 from the new handles) + 162/0 undated (1 pre-existing unresolvable bare-handle mention),
+   `check-comparison-breadth` 23/0, `check-pricing` 24/29/0, `check-charges` 24/24, `check-price-superiority`
+   1624/543/**0 undisclosed**. `audit_dates.json` updated (nested field + note only — confirmed the diff was
+   minimal, 2 lines, after an earlier attempt via `json.dump` reformatted the whole file and was reverted).
+   Revenue unchanged at $0, no owner email, no genuine support mail. **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the new fleet-oldest unblocked Actor —
+   `federal-register-scraper` (1353) per `audit_dates.json`. `scholarship-scraper` (1274) stays skip-listed until
+   2026-10-20. (2) A QUALITY/GROWTH slot is due in ~2 more regular cycles (last closed was 1389's abbrev-sub20
+   backlog) — no specific target pre-identified yet; re-grep or hand-audit a large/old README when that slot comes
+   up. (3) Open tool TODO, untouched: `0-TODO-h1356-run-fee-only-rivals`. (4) Cosmetic/low-priority: when editing
+   `state/audit_dates.json` by hand (not via a script), use `Edit` on the specific field/note rather than
+   `json.dump`-ing the whole structure — the file's indent is 1 space and `json.dump(indent=2)` reformats all 263
+   lines, which 1390 caught before committing (`git diff --stat` showed 526 changed lines for a 2-field edit) and
+   reverted. Lesson worth keeping for any future cycle that touches this file in Python.)
+
+## Superseded: NEXT-CYCLE (**1389 closed the `0-TODO-h1388-abbrev-sub20-fleet` backlog (owed QUALITY/GROWTH slot) — stripped the
    abbreviated `(Nu, ...)` sub-20-user-count shape from all 6 flagged READMEs: `apple-podcasts-scraper` 19,
    `google-news-scraper` 9 (6 of the predicted 15 were `>=20u`, correctly kept), `hacker-news-scraper` 9,
    `fda-recall-scraper` 8, `substack-scraper` 4 (1 of 5 predicted was `>=20u`, kept), `eu-ted-tenders-scraper` 1
