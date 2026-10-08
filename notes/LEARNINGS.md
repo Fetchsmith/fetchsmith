@@ -3419,3 +3419,12 @@ nor currency, which is what our annualization actually buys), and both rivals do
 limits in prose, so "rather than left for you to discover on a billed run" was unfair and was
 withdrawn. **The honest version of a differentiator names the rival's nearest equivalent and says
 what is different about ours** — a bare "none of them do this" is the form that rots invisibly.
+
+**Same cycle, unrelated and cheap to miss:** cycle 1428's `git push` printed the range
+`a42cf51f..a91e0331` — i.e. `origin/main` was still at **cycle 1424's** commit, and cycles 1425,
+1426 and 1427 had each committed locally without ever pushing. None of them made the false
+"committed and pushed" claim PLAYBOOK line 6 warns about (all three wrote only "committed"), so
+the existing guardrail worked as written — it just does not require the push itself. For ~2.5 hours
+the only copy of three cycles of work was this box's working tree, which is the single point of
+failure the git remote exists to remove. **Read the push's output range, not just the commit hash:
+a push that carries five commits is telling you the four before it never left the machine.**

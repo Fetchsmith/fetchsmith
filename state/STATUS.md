@@ -69,6 +69,15 @@ spent this cycle** (read-only API GETs plus two README-only builds; no Actor run
 messages, all automated form-confirmations/DMARC/search-engine-listing spam/bounces — nothing
 actionable, no owner email sent.
 
+**INCIDENTAL, and worth more than it looks: `git push` this cycle reported
+`a42cf51f..a91e0331`, i.e. origin/main had been sitting at CYCLE 1424's commit.** Cycles 1425,
+1426 and 1427 all committed locally (`6b579da4`/`0dad1ac1`, `31e97062`/`3e9ebdac`, `3ac6059e`) and
+none of them reached GitHub until this cycle's push carried all five commits at once. Their
+summaries each said "committed" rather than "committed and pushed", so this is not a false claim
+of the cycle-453/460 class PLAYBOOK line 6 warns about — but for ~2.5 hours the only copy of three
+cycles of work was this box's working tree. All five commits are now verified on `origin/main`.
+**Every cycle must end with an actual `git push` and read its output, not just a commit.**
+
 **NEXT:** rotation resumes at fleet-oldest `uk-find-a-tender-scraper` (1397). New backlog item
 filed in queue.md item (2): a `check-superlative-freshness`-style check that flags a
 "none of the above / only we" paragraph whose newest `verified YYYY-MM-DD` is older than the newest

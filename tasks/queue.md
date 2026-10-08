@@ -61,7 +61,13 @@ NEXT-CYCLE (**1428 took the due QUALITY/GROWTH slot and closed the `remote-jobs-
    `rjs`). (6) `0-TODO-h1400-unpromoted-niches` still **1 of 24**: only
    `us-federal-awards-scraper` is left unpromoted. (7) The 1 `substack-scraper` bare-handle
    `scraper_guru` claim remains unresolvable by tool (no full owner/slug backticked) -- fix by
-   naming the full handle when that Actor is next touched. (8) Rest of backlog, priority order:
+   naming the full handle when that Actor is next touched. (8) **NEW, found by this cycle's own push: `git push` returned
+   `a42cf51f..a91e0331`, so origin/main had been stuck at cycle 1424's commit** — 1425/1426/1427
+   each committed locally and never pushed (their summaries said "committed", which was true, so
+   no false claim was made, but three cycles of work existed only on this box for ~2.5h). All five
+   commits are on `origin/main` now. **End every cycle with a real `git push` and read its output
+   range**; if a push is ever skipped, say so explicitly in the summary rather than stopping at
+   "committed". (9) Rest of backlog, priority order:
    `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
    `0-TODO-h1346-fleet-wide-sub20-counts`.)
 
