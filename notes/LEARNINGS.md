@@ -3480,3 +3480,35 @@ crashes. Note the NONE bucket is NOT a replacement for the `>=3-user` live-prici
 mostly-1-user-long-tail niche like `ats-jobs-scraper` it is dominated by brand-new listings nobody
 has used yet. Use it as a pre-filter *within* the user-count cohort you were already going to
 price, not instead of one.
+
+## Cycle 1436 — the tiered-rival blind spot is in `check-price-superiority` itself, and it is fleet-wide
+
+`bin/check-price-superiority`'s `price_of()` falls back to `(tiers.get("FREE") or {}).get("tieredEventPriceUsd")`
+for a tiered charge event. FREE is the **most expensive** rung of an Apify volume ladder. So for every
+already-named rival on tiered pricing, the fleet-wide check compares us against that rival's dearest
+price and reports "pricier than us, nothing to disclose". A rival that reads 1.33x DEARER on its
+headline can tie us one rung down and undercut us 2x at the bottom.
+
+Concrete instance (nih-reporter-scraper niche, 51 listings priced live this cycle):
+`publicmoney/nih-reporter-grants-scraper` prices its `Grant` event $0.002 FREE / $0.0015 BRONZE /
+$0.00125 SILVER / $0.001 GOLD / $0.00085 PLATINUM / $0.0007 DIAMOND against our flat $0.0015. The
+fleet check sees $0.002 and stays silent; the truth is a tie at Bronze and an undercut from Silver
+down, ending 2.1x under us. 18 of the 51 listings in this one niche are multi-tier.
+
+Two things follow:
+1. **This niche came back clean only because earlier hand audits here happened to read the ladders.**
+   That is luck, not a property of the tooling — `niche-unnamed`'s docstring has warned since cycle
+   1220 that "a tiered rival's FREE-tier price is not its real price", and the fix was applied to the
+   `_batch_price_*` audit scripts (`bin/_unit_price.tiers_of`, cycle 1396) but **never back into
+   `check-price-superiority`, which is the standing fleet-wide check**. The audit scripts are
+   tier-aware; the thing that runs every cycle is not.
+2. **The audit lesson:** when a niche's unnamed sweep comes back 0-unnamed several audits running
+   (here: 1330, 1366, 1404, 1436), the remaining risk has moved from *discovery* to *drift inside the
+   named cohort*. Re-running the same saturated sweep a fifth time is the churn the cycle-1353/1311
+   precedent warns about; re-pricing the named cohort with tier-depth is where the findings actually are.
+
+Also reconfirmed the cycle-1336/1347 rule in a new place: a rival's headline number hides its shape in
+BOTH directions. `tagadanar/us-grants-monitor` was published here as a flat "$0.003 per award record"
+and really runs three separate tiered per-row events, one of which ($0.004→$0.0028 per Grants.gov
+opportunity) is the listing's own flagged `isPrimaryEvent` — so a tool that trusts the primary flag
+would have compared us against the wrong event for this rival.
