@@ -414,6 +414,28 @@ TERM_VARIANTS = {
         "shopify store products", "shopify catalog", "shopify store", "shopify product",
         "shopify ecommerce",
     ],
+    # Promoted by cycle 1414's competitor_audit -- closes this niche's leg of
+    # 0-TODO-h1400-unpromoted-niches. The 11-term auto_variants() sweep (base phrase
+    # "apple podcasts" + generic modifiers) hits 149 seen / 108 matched, and the
+    # README (last full-tail sweep cycle 1339) already names 104 of those 108 by hand.
+    # Tested 7 extra hand-picked terms from this niche's own vocabulary ("itunes
+    # podcast", "podcast scraper", "podcast directory", "podcast charts", "podcast
+    # rss", "podcast episodes", "applepodcasts" no-space) and they widened `seen` to
+    # 293 but surfaced only ONE genuinely new handle not already covered by the base
+    # sweep or the README's hand-named list: `northglasslabs/itunes-podcast-discovery`
+    # (1u), tiered $0.0025 (Free) -> $0.00213 (Diamond) per result -- 2.1x-2.5x dearer
+    # than our flat $0.001, no undercut. This is a CLEAN NEGATIVE, not a rescue (same
+    # shape as the shopify-products-scraper promotion above): kept the extra terms
+    # anyway so this niche's "0 unnamed" stops carrying the UNMEASURED caveat and the
+    # sweep is explicit rather than silently depending on the generic MODIFIERS list.
+    "apple-podcasts-scraper": [
+        "apple podcasts", "apple podcasts scraper", "apple podcasts monitor",
+        "apple podcasts api", "apple podcasts tracker", "apple podcasts crawler",
+        "apple podcasts data", "apple podcasts feed", "apple podcasts export",
+        "apple podcasts alerts", "apple podcasts tool", "itunes podcast",
+        "podcast scraper", "podcast directory", "podcast charts", "podcast rss",
+        "podcast episodes",
+    ],
 }
 
 MATCH_SYNONYMS = {
