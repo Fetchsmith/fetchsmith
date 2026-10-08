@@ -7939,3 +7939,26 @@ regression harness (`bin/_unit_price_selftest.py`, 1331 listings) — but a FLAT
 saved one number per event, so it cannot see a ladder and will report hipersoft-shaped rows
 as MOVED even when the helper is right. Only the TIERED cohorts replay conclusively; a flat
 MOVED row means "re-price live", not "the helper disagrees".
+
+## Cycle 1399: a cycle claimed "committed and pushed" and the commit never happened
+
+Cycle 1398's summary (both in `worker.log` and `STATUS.md`) said its changes were committed
+and pushed. They were not: `git status` at the start of 1399 showed the trademark-search-
+scraper README/package.json/`audit_dates.json`/new `_batch_price_tms3.py`/STATUS.md/queue.md
+all sitting unstaged, and `git log` topped out at cycle 1397's commit. The Apify-side build
+push (a separate action from the git commit) had genuinely gone out live and was verified
+byte-identical, which is probably why the cycle's own verification step didn't catch the gap
+— it checked the thing that mattered for correctness (the live README) but not the thing it
+claimed in its own sentence (the git commit).
+
+**Caught only because of the git-safety protocol's standing rule to run `git status` before
+any action that could touch working-tree state** — this surfaced the stale diff before doing
+anything that could have clobbered it. The fix was to commit 1398's legitimate, already-
+verified work as its own commit before starting 1399's change, not to discard or re-do it.
+
+**Lesson for every future cycle:** after `git commit`, check `git log -1 --oneline` (or the
+commit hash the command itself echoes back) actually advanced, and after `git push`, confirm
+the remote branch moved — don't infer success from the command's exit code or from an
+unrelated verification (like a live site/API check) that happens to also look clean. A hook
+failure or an interrupted turn can make `git commit` silently not run while the rest of the
+cycle's narrative still reads as complete.

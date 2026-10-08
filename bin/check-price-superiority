@@ -167,15 +167,31 @@ def runfee_price(act_data, now):
     Returns None for anything with a per-row event left over (headline_price's existing
     comparison owns that case, including the start-fee-plus-per-row shape) and for any event
     whose price will not resolve, so a tiered or malformed record is never silently scored $0.
+
+    Closes 0-TODO-h1396-runfee-ladder-falsepos (filed cycle 1396). The `isOneTimeEvent`-only
+    test above used to trust the owner's flag at face value, but cycle 1396 found 3
+    `hipersoft/*` listings that flag a real per-ROW event (6-tier volume ladder) as
+    isOneTimeEvent=True -- a ladder discounts volume, which is meaningless on a charge that
+    bills at most once per run, so the ladder disproves the flag. Taking it at face value
+    made every event here look run-scoped and summed the per-row ladder's FREE-tier price as
+    though it were the whole run's flat fee, understating the rival without bound -- the
+    opposite error from the one this function was built to catch. Delegates to
+    bin/_unit_price.py's `is_start_fee`, which already carries this discriminator (and the
+    apify-actor-start override) verified live against all 8 hipersoft listings at 1396;
+    imported lazily so loading this file never recurses into itself (_unit_price.py loads
+    this module by path to get `price_of`/`token`, so a module-level import up here would
+    load _unit_price, which would load a fresh copy of this file, which would load
+    _unit_price again, forever).
     """
+    sys.path.insert(0, os.path.join(ROOT, "bin"))
+    import _unit_price as up
     cur = effective(act_data.get("pricingInfos"), now)
     if cur is None or cur.get("pricingModel") != "PAY_PER_EVENT":
         return None, "not a live PAY_PER_EVENT record"
     events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
     if not events:
         return None, "no charge events"
-    per_row = [n for n, e in events.items()
-               if n != "apify-actor-start" and not e.get("isOneTimeEvent")]
+    per_row = [n for n, e in events.items() if not up.is_start_fee(n, e)]
     if per_row:
         return None, "has per-row event(s): " + ",".join(sorted(per_row))
     total = 0.0

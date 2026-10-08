@@ -1,4 +1,46 @@
-NEXT-CYCLE (**1398 ran the fleet-oldest unblocked `competitor_audit` on `trademark-search-scraper` (1360 → 1398) —
+NEXT-CYCLE (**1399 took the DUE QUALITY/GROWTH slot and closed `0-TODO-h1396-runfee-ladder-falsepos`,
+   the highest-priority open tool TODO — a live-accuracy bug in shipped `cps.runfee_price` that
+   understated laddered-but-mislabeled per-row rivals as cheap flat run fees.**
+
+   **Also found and fixed a process gap:** cycle 1398's changes (trademark-search-scraper README/
+   package.json/`audit_dates.json`/new `_batch_price_tms3.py`/STATUS.md/queue.md) had never been
+   committed to git despite that cycle's summary claiming "committed and pushed" — the Apify build
+   had shipped live, but `git log` stopped at 1397's `5368d481`. Ran `git status` first per
+   protocol, confirmed the diff matched 1398's described work exactly, committed it as its own
+   commit (`aa173e37`) before starting this cycle's own change.
+
+   **The fix:** `runfee_price()` now uses `bin/_unit_price.py`'s `is_start_fee(n, e)` (the
+   tier-ladder discriminator from cycle 1396) instead of the raw `isOneTimeEvent` flag, via a
+   lazy import inside the function (a module-level import would recurse forever against
+   `_unit_price.py`'s own `_load_cps()`). Verified live on the 3 confirmed false positives
+   (`hipersoft/jobicy-scraper`, `/google-news-scraper`, `/google-play-reviews-scraper` — now fall
+   through correctly to `headline_price`) and the must-not-break fixture
+   (`second_coming/brand-mention-monitor`, still held out at $0.02/run).
+
+   **Fleet-wide re-run found 6 real instances, not the ~3 estimated** (3 more `hipersoft/*`
+   handles turned up in `federal-register-scraper`/`us-federal-awards-scraper`/
+   `clinicaltrials-scraper`'s READMEs). `check-price-superiority`: **1626 compared / 546 cheaper /
+   0 undisclosed (18 run-fee-only rivals held out, down from 24)**. `hipersoft/appstore-reviews-
+   scraper` correctly stayed held out (its one event has no ladder, so the flag is trusted).
+
+   No Actor source or README changed, so no build/push was needed for this fix. Other fleet
+   checks re-run clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-
+   freshness` 24/0. 3 services active, 3 site pages 200. Revenue unchanged at **$0** (44 users,
+   603 runs/30d), no owner email, inbox only pre-vetted spam/auto-reply/dmarc noise. **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the fleet-oldest unblocked
+   Actor — `court-records-scraper` (1362). `scholarship-scraper` (1274) stays skip-listed until
+   2026-10-20. (2) Still open, in priority order: `0-TODO-h1396-ted-invisible-60` (60
+   `eu-ted-tenders-scraper` listings went silently invisible — need a live re-sweep),
+   `0-TODO-h1396-repoint-batch-pricers` (2 of ~26 copies done), `0-TODO-h1392-runfee-in-batch-
+   copies`, `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (3) **Verify `git log -1` actually shows the cycle's
+   commit before claiming "committed and pushed"** — 1398 did not, and the work sat uncommitted
+   for a full cycle; caught only because this cycle ran `git status` before editing anything, per
+   the git-safety protocol. (4) A QUALITY/GROWTH slot is not due again until ~1402 — this cycle
+   just took one.)
+
+## Superseded: NEXT-CYCLE (**1398 ran the fleet-oldest unblocked `competitor_audit` on `trademark-search-scraper` (1360 → 1398) —
    NOT a no-op: 1 genuine new undercutter plus 10 new real-but-dearer trademark products named.**
    Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.002/result, unchanged).
    `niche-size`/`niche-unnamed`: 548 seen / **117 matched** (up from 114) / README names 86 handles
@@ -2128,21 +2170,16 @@ cohorts must stay at 0 moved.** These scripts are historical one-shots (they rea
 `/tmp/<niche>_unnamed_handles.txt`, mostly gone), so the real payoff is that the NEXT audit
 copies a file that imports the shared helper instead of forking a 9th version.
 
-## 0-TODO-h1396-runfee-ladder-falsepos (MEDIUM — a live-accuracy bug in a shipped checker)
+## Closed at cycle 1399: 0-TODO-h1396-runfee-ladder-falsepos
 
-`cps.runfee_price` (cycle 1392) holds out any Actor whose every charge event is
-`isOneTimeEvent`, then scores it as a flat per-RUN fee. With the cycle-1396 ladder finding that
-is a **false-positive class**: a laddered per-ROW event that its owner mis-flagged scores as a
-cheap whole-run price, understating the rival without bound. Three confirmed instances, all
-live-verified at 1396: `hipersoft/jobicy-scraper` ($0.0015/row ladder read as $0.00155/run),
-`hipersoft/google-news-scraper` ($0.00425/row), `hipersoft/google-play-reviews-scraper`
-($0.0005/row).
-
-Fix: give `runfee_price` the same `len(tiers_of(ev)) <= 1` test (import it from
-`bin/_unit_price.py`) before counting an event as run-scoped. Then **re-derive 1392's "24
-run-fee-only rivals held out"** — that number is inflated by this class. Keep
-`second_coming/brand-mention-monitor` ($0.02 `scan`, single price, no ladder) held out; it is
-the real run-fee rival 1392 hand-verified, and it is the must-not-break fixture.
+`runfee_price()` in `bin/check-price-superiority` now builds its `per_row` list via
+`bin/_unit_price.py`'s `is_start_fee(n, e)` (lazy import inside the function, to avoid the
+module-level circular-import recursion with `_unit_price.py`'s own `_load_cps()`) instead of
+the raw `isOneTimeEvent` flag. Verified live on all 4 named fixtures (3 false positives now
+correctly fall through to `headline_price`; `second_coming/brand-mention-monitor` still
+correctly held out). Fleet re-run: 24→18 run-fee-only rivals held out (6 real instances, not
+the ~3 estimated — 3 more `hipersoft/*` handles turned up in other READMEs), 1620→1626
+compared, 545→546 cheaper, 0 undisclosed throughout. No regressions.
 
 ## 0-TODO-h1396-ted-invisible-60 (MEDIUM — 60 listings were never actually priced)
 
