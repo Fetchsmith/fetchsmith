@@ -319,6 +319,23 @@ TERM_VARIANTS = {
         "assistance listings", "entity exclusions", "set-aside naics",
         "federal bid alerts",
     ],
+    # Promoted by cycle 1400's competitor_audit, and this niche was the worst
+    # auto_variants() case measured so far: the bare base phrase "court records" matched
+    # 30 listings and reported 0 unnamed, which cycle 1362 recorded as "completeness
+    # holds". The 20 terms below see 682 distinct listings and 144 matches -- 4.8x -- with
+    # 107 the README had never named, 11 of them genuine in-scope undercutters. The niche
+    # does not call itself "court records": it calls itself CourtListener, PACER, RECAP,
+    # dockets, case law and opinions, and the single most common title in it is
+    # "CourtListener Scraper". The sibling-source terms (justia, findlaw, caselaw access,
+    # google scholar) matter because several rivals sell US case law from a non-
+    # CourtListener source, which is still a substitute for the opinions half of our scope.
+    "court-records-scraper": [
+        "court records", "courtlistener", "pacer", "recap archive", "court docket",
+        "case law", "court opinions", "docket scraper", "judicial records",
+        "bankruptcy filings", "court filings", "litigation data", "lawsuit data",
+        "federal court records", "state court records", "case search", "legal records",
+        "court case scraper", "pacer docket", "court records api",
+    ],
 }
 
 MATCH_SYNONYMS = {
@@ -438,6 +455,30 @@ MATCH_SYNONYMS = {
                                       "political donation", "campaign donation",
                                       "political spending", "independent expenditure",
                                       "super pac", "opensecrets", "election finance"],
+    # The base phrase "court records" is two contiguous words that this niche's own copy
+    # almost never writes (cycle 1400): the dominant self-description is "CourtListener
+    # Scraper", and a listing titled "CourtListener Scraper - US Case Law & Opinions" whose
+    # description says "search US case law and court opinions via the free CourtListener
+    # API" matched NOTHING before these forms existed -- yet it undercuts us on five of six
+    # plan tiers. Each form was earned: "courtlistener" (the ~55 single-vendor listings over
+    # the exact API we use), "pacer"/"recap" (`dataio/pacer-recap-court-dockets`,
+    # `moving_beacon-owner1/pacer-rss-docket-monitor`), "case law" (`parselab/
+    # courtlistener-case-law-scraper` and the non-CourtListener US case-law sources
+    # `parseforge/justia-case-law-scraper`, `parseforge/caselaw-access-scraper`,
+    # `moving_beacon-owner1/findlaw-case-law-scraper`), "court opinion" (`oblanceolate_
+    # mandola/court-opinions-search`), "court docket"/"docket search"/"court filing"
+    # (`brick_joey_yto/federal-court-monitor`, `datapilot/public-court-filings-dockets-
+    # monitor`), "litigation data" (`hereditary_model/federal-litigation-tracker`).
+    # Deliberately NOT included: a bare "court", which pulls in every unrelated listing
+    # whose boilerplate mentions a court, and a bare "legal", same problem. Known and
+    # accepted noise: the foreign-jurisdiction case-law listings (Brazil CNJ/JusBrasil,
+    # India eCourts, UK BAILII, France Judilibre, Spain CENDOJ, NL Rechtspraak, EU CURIA)
+    # match on "case law"/"court case" and are correct for a DISCOVERY sweep -- they are
+    # ruled out on scope when read, not by term choice.
+    "court-records-scraper": ["courtlistener", "pacer", "recap archive", "court docket",
+                              "case law", "court opinion", "court filing",
+                              "judicial record", "docket search", "litigation data",
+                              "lawsuit", "court case", "legal docket", "case docket"],
 }
 
 MODIFIERS = ["", " scraper", " monitor", " api", " tracker", " crawler",

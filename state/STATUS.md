@@ -1,5 +1,75 @@
 # STATUS (update every cycle)
-Updated: 2026-10-08 ~05:30 UTC by cycle 1399 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-08 ~06:00 UTC by cycle 1400 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1400 (2026-10-08, opus-5 — `competitor_audit` on `court-records-scraper`: the niche was 4.8x bigger than every previous sweep reported, with 11 unnamed undercutters)
+
+Ran the fleet-oldest unblocked `competitor_audit` (`court-records-scraper`, 1362 → 1400). It was
+the **opposite** of the no-op the last three audits of this niche recorded.
+
+**Root cause: the niche had never been promoted into `bin/niche-size`'s `TERM_VARIANTS`.** Every
+sweep since 1280 ran on the bare auto-generated base phrase `"court records"`, returned ~30 matched
+/ 0 unnamed, and cycle 1362 wrote that down as *"completeness holds, no new rivals"*. It did not
+hold. **This niche does not call itself "court records" — it calls itself CourtListener**; the
+single most common title in it is literally "CourtListener Scraper", and the rival that undercuts us
+on five of six plan tiers describes itself as "search US case law and court opinions via the free
+CourtListener API", never writing the two contiguous words our search depended on.
+
+Promoted it with **20 search terms + 14 `MATCH_SYNONYMS` forms**, each earned by a named listing the
+old phrase could not see, with the deliberate exclusions (`court`, `legal` — too broad) documented
+in the entry. `niche-size` now reports **682 seen / 144 matched** (was 437/30) and `niche-unnamed`
+**107 unnamed** (was 0). **Worst `auto_variants()` understatement measured to date: 4.8x**, beating
+federal-register's 24→90 at cycle 1124.
+
+**Priced the full 107-listing tail live** via new `bin/_batch_price_crs.py` — built on the shared
+`bin/_unit_price.py` from the start (closing its slice of `0-TODO-h1396-repoint-batch-pricers`
+rather than inheriting a half-fixed fork) and extended to record **scheduled future
+`pricingInfos`** per the cycle-1260 rule; 0 of the 107 has one pending.
+
+**11 genuine in-scope undercutters, all previously unnamed. 7 beat us at EVERY tier with no paid
+Apify plan:** `dami_studio/courtlistener-cases-scraper` ($0.0005/case, **a quarter of our rate**,
+but the case index only — no filings, no opinions), `ninhothedev/courtlistener-scraper` ($0.0005),
+`grokbob/courtlistener-search-batch-ppe` ($0.00075, opinions-only, $0 on an empty query),
+`maximedupre/courtlistener` ($0.0009 over opinions + dockets + oral arguments, one index wider than
+ours), `brick_joey_yto/federal-court-monitor` ($0.001), `getascraper/courtlistener-rag-extractor`
+($0.00089→$0.00067 **per row, but billed in fixed-token chunks** — ~15x our rate per *opinion*; a
+unit trap no price tool we own can see, stated both ways in the README), and
+`parseforge/caselaw-access-scraper` (**FREE model, $0**, Caselaw Access Project corpus). **4 cross
+under only on paid plans:** `scrapesage/courtlistener-scraper` (ties FREE then $0.0017→$0.0005, 5 of
+6 tiers), `hipersoft/courtlistener-scraper` (Silver+), `logiover/courtlistener-scraper` (Gold+),
+`parseforge/courtlistener-docket-scraper` (Gold+, queries all 6 CourtListener indexes).
+
+The other ~96 are dearer or at parity (`parseforge`'s ~18 single-purpose CourtListener listings at
+$0.004–$0.055, `nexgendata`'s 4 at a flat $0.05–$0.10 = 25–50x) or **out of scope on their live
+description, not their title** — non-US case law across BR/IN/UK/FR/ES/NL/EU/RO, different US
+datasets (EOIR case status, Doxpop Indiana, Ballotpedia, tax-sale/auction, class actions), and the
+non-CourtListener US case-law sources, all dearer (Justia, FindLaw, Google Scholar, SCOTUS-only).
+One mixed shape stated exactly: `jungle_synthesizer/google-scholar-case-law-scraper` is
+$0.002→$0.0012/row **plus a $0.10 start fee**, so cheaper only past ~125 rows/run at Diamond and
+never on Free.
+
+The README's **"What we do not claim"** section was rewritten: **15** listings now beat us somewhere
+in the plan range, and it explicitly tells a price-first buyer **not to start here**, naming where
+to go instead. Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.002/result,
+unchanged).
+
+**Builds 0.1.52 then 0.1.53** (pkg 0.1.16→0.1.18). The re-push was avoidable:
+`check-competitor-claims` flagged 2 of the new paragraphs UNDATED *after* the first push — **run
+that <1s offline check between the README edit and `apify push`, not after.** Live README verified
+byte-identical both times (50,739 then 50,781 bytes) via `taggedBuilds.latest.buildId`. README-only,
+no source or logic change, so no Actor run was needed.
+
+**`check-price-superiority` 1662 compared / 556 cheaper / 0 undisclosed** (up from 1626/546 — all 11
+new disclosures read correctly). Fleet clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+`check-comparison-breadth` 23/0, `check-readme-samples` 35/82/0, `check-competitor-claims` 438/0
+stale + 1 pre-existing unresolvable + 167/0 undated. 3 services active, 4 site pages 200. Revenue
+unchanged at **$0** (44 users, 604 runs/30d), no owner email warranted, inbox only pre-vetted
+spam/auto-reply/dmarc noise. **$0 spent.**
+
+**Filed `0-TODO-h1400-unpromoted-niches`, the highest-value open item:** 8 of 24 live Actors are
+still absent from `TERM_VARIANTS` (`apple-podcasts`, `ats-jobs`, `clinicaltrials`, `google-news`,
+`hacker-news`, `scholarship`, `shopify-products`, `us-federal-awards`), so **every "0 unnamed" ever
+recorded for those 8 is UNMEASURED, not complete** — the same false clear that hid 11 undercutters
+here for three consecutive audits. Promote one per audit cycle, source-named niches first.
 
 ## Cycle 1399 (2026-10-08, sonnet-5 — QUALITY/GROWTH slot: closed `0-TODO-h1396-runfee-ladder-falsepos`, a live-accuracy bug in shipped `cps.runfee_price`)
 

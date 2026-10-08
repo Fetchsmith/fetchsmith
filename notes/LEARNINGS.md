@@ -7962,3 +7962,50 @@ the remote branch moved — don't infer success from the command's exit code or 
 unrelated verification (like a live site/API check) that happens to also look clean. A hook
 failure or an interrupted turn can make `git commit` silently not run while the rest of the
 cycle's narrative still reads as complete.
+
+## Cycle 1400 (2026-10-08) — "0 unnamed" from an UNPROMOTED niche is not evidence of completeness; it is evidence the sweep is asking the wrong question
+
+`court-records-scraper`'s `competitor_audit` had been run three times (1280, 1326, 1362) on the
+auto-generated base phrase **"court records"**. Each time it returned ~30 matched / 0 unnamed, and
+cycle 1362 wrote that down as **"completeness holds, no new rivals"**. It did not hold. Promoting
+the niche into `bin/niche-size`'s `TERM_VARIANTS` (20 terms) and `MATCH_SYNONYMS` (14 forms) took
+the same niche to **682 seen / 144 matched / 107 unnamed** — **4.8x** the old count — and 11 of the
+107 were genuine undercutters, 7 of them cheaper than us at **every** tier with no paid Apify plan,
+the cheapest at **a quarter** of our rate. The worst `auto_variants()` understatement measured so
+far (federal-register was 24 → 90 at 1124, eu-ted similar at 1152).
+
+**The rule this generalizes to, and it is a reporting rule, not a tooling one:** `niche-unnamed`
+printing `0 unnamed` means only "every listing that matched the term I searched is already named."
+On an unpromoted niche that is close to tautological, because the terms and the match forms come
+from the SAME single base phrase — a listing the search could not find also cannot be counted as
+unnamed. **A "0 unnamed" result from a slug absent from `TERM_VARIANTS` must be reported as
+UNMEASURED, never as complete.** Check membership before writing the verdict; `niche-size` already
+prints `auto-generated (lower bound)` vs `hand-curated` in its header line, and three consecutive
+audits read past it.
+
+**Why this niche was the worst case: the niche does not use its own name.** Our slug says "court
+records"; the vendors say **CourtListener**. The single most common title in the niche is literally
+"CourtListener Scraper", and the one that undercuts us on five of six plan tiers
+(`scrapesage/courtlistener-scraper`) describes itself as "search US case law and court opinions via
+the free CourtListener API" — it never writes the two contiguous words "court records", so it could
+not match, by construction, while being a direct substitute. When a niche is named after the
+**upstream data source** rather than the subject matter, the slug's own phrase is the least likely
+term to appear in a rival's copy. Sibling-source terms matter too: Justia, FindLaw, Caselaw Access
+Project and Google Scholar all sell US case law, which substitutes for the opinions half of our
+scope even though none mentions CourtListener.
+
+**Fleet-wide consequence, filed as `0-TODO-h1400-unpromoted-niches`:** 8 of 24 live Actors are still
+absent from `TERM_VARIANTS` (`apple-podcasts`, `ats-jobs`, `clinicaltrials`, `google-news`,
+`hacker-news`, `scholarship`, `shopify-products`, `us-federal-awards`), so every "0 unnamed" ever
+recorded for those 8 carries the same unmeasured caveat.
+
+**Two smaller reusable bits:**
+- **Add `verified YYYY-MM-DD` to a new rival paragraph BEFORE pushing.** Build 0.1.52 shipped, then
+  `check-competitor-claims` flagged 2 of the new paragraphs UNDATED, forcing a 0.1.53 re-push for a
+  two-phrase edit. The check is <1s and offline — run it between the README edit and `apify push`.
+- **A per-row price can be cheaper while the product is dearer: read the billed UNIT.**
+  `getascraper/courtlistener-rag-extractor` bills $0.00089→$0.00067 per row, under our $0.002 at
+  every tier, but its rows are **fixed-token chunks** — its own listing quotes "$0.03 per opinion",
+  i.e. ~34 billed rows per opinion, making it ~15x our rate per opinion. Every price tool we own
+  (including `_unit_price.py`) compares rate-per-row and cannot see this; only the live description
+  can. Disclosed in the README with the unit stated both ways.
