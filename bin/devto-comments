@@ -1,0 +1,144 @@
+#!/root/agent/venv/bin/python
+"""Poll dev.to comments on our published articles and report the genuinely UNANSWERED ones.
+
+Run on every QUALITY/GROWTH cycle. Added cycle 1416. ~15 GETs, a few seconds.
+
+WHY THIS EXISTS -- it is a false-positive killer, not a new capability.
+
+The poll itself has been run ad-hoc (hand-rolled curl) since cycle ~641, and because nothing
+executed it the same way twice, it kept re-reporting comments that had ALREADY been answered.
+Cycle 1413's run flagged 4 "unanswered" comments on 3 articles and wrote them into queue.md as
+a backlog item; it then survived three cycles (1413, 1414, 1415) as an untouched TODO. Cycle
+1416 read all 4 in full and found 2 of them were answered 3 weeks earlier:
+
+  - `dododata` + `launchgatecheck` on article 4689167 -- answered 2026-09-22 by the
+    "## Reader note:" sections appended to the article body.
+
+THE TRAP, and the reason a naive poll can never get this right: **dev.to's public API has no
+comment-creation endpoint.** `POST /api/comments` is a hard 404 (re-verified cycle 1416, and
+first found at cycle 188). So we CANNOT reply as a comment, ever. The only channel we have is
+`PUT /api/articles/<id>` appending a `## Reader note:`/`## Reader question:` section to the
+body that names and answers the commenter. That means:
+
+    a comment with no child reply is the NORMAL state of an answered comment here.
+
+Any poll that looks for a reply thread -- the obvious implementation -- therefore reports 100%
+of our answered comments as unanswered, forever. That is exactly what happened. So this tool
+treats a comment as answered if EITHER:
+
+  (1) a descendant reply is authored by us (`fetchsmith`) -- kept because dev.to could add the
+      endpoint later, and because a reply left via the web UI would show up this way; or
+  (2) the article's own `body_markdown` mentions the commenter's username -- the in-article
+      mechanism above, which is how every reply we have ever shipped was actually delivered.
+
+Rule (2) is deliberately loose (substring, case-insensitive). A false "answered" costs us one
+unreplied comment on a channel measured at ~21 pageviews across its first 3 posts; a false
+"unanswered" costs a cycle re-reading and re-judging comments that were handled weeks ago,
+which is the failure this tool exists to stop. Cheap direction chosen on purpose.
+
+Prints the FULL body of each unanswered comment, never a truncation. Cycle 1413 flagged these
+as "generic polished praise" from a 700-char preview and declined to reply blind; reading them
+in full was what revealed that two contained concrete technical claims and were already
+answered. A poll whose output cannot be acted on without re-polling is not finished.
+
+Usage:
+  bin/devto-comments            # unanswered only (the cycle default)
+  bin/devto-comments --all      # every comment, with its answered/unanswered verdict
+"""
+import html
+import os
+import re
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _apify_get import get_json  # generic retrying JSON GET; host-agnostic
+
+UA = "Mozilla/5.0 (compatible; FetchSmith/1.0; +https://fetchsmith.com)"
+ME = "fetchsmith"
+
+
+def strip_html(s):
+    s = re.sub(r"<br\s*/?>", "\n", s or "")
+    s = re.sub(r"</p>", "\n\n", s)
+    s = re.sub(r"<[^>]+>", "", s)
+    # dev.to appends this UI chrome to every fenced code block in body_html.
+    s = s.replace("Enter fullscreen mode", "").replace("Exit fullscreen mode", "")
+    return re.sub(r"\n{3,}", "\n\n", html.unescape(s)).strip()
+
+
+def flatten(comments, depth=0, out=None):
+    """Depth-first flatten of dev.to's nested comment tree, keeping each node's children."""
+    out = [] if out is None else out
+    for c in comments or []:
+        out.append((depth, c))
+        flatten(c.get("children"), depth + 1, out)
+    return out
+
+
+def authored_by_us(comment):
+    """True if this comment or any descendant of it was written by us."""
+    for _, c in flatten([comment])[1:]:
+        if (c.get("user") or {}).get("username", "").lower() == ME:
+            return True
+    return False
+
+
+def main():
+    show_all = "--all" in sys.argv
+    key = os.environ.get("DEVTO_API_KEY")
+    if not key:
+        # Same contract as check-disclosure: skip with a notice, never a hard error, so the
+        # tool stays usable offline and a missing key is not read as "0 unanswered".
+        print("devto-comments: DEVTO_API_KEY not set -- SKIPPED (not a failure)")
+        return 0
+    h = {"User-Agent": UA, "api-key": key, "Accept": "application/json"}
+
+    arts, st = get_json("https://dev.to/api/articles/me/published?per_page=100", headers=h)
+    if arts is None:
+        print(f"devto-comments: could not list articles (status {st}) -- SKIPPED")
+        return 0
+
+    unanswered, total = [], 0
+    withc = [a for a in arts if (a.get("comments_count") or 0) > 0]
+    for a in withc:
+        aid = a["id"]
+        # body_markdown is NOT in the list payload -- it needs the per-article GET. This is the
+        # only reason we fetch the article at all, and only for articles that have comments.
+        art, _ = get_json(f"https://dev.to/api/articles/{aid}", headers=h)
+        body = ((art or {}).get("body_markdown") or "").lower()
+        tree, _ = get_json(f"https://dev.to/api/comments?a_id={aid}", headers=h)
+        for depth, c in flatten(tree):
+            user = (c.get("user") or {}).get("username", "")
+            if user.lower() == ME:
+                continue  # our own comment, not an inbound one
+            total += 1
+            in_body = user.lower() in body
+            replied = authored_by_us(c)
+            answered = in_body or replied
+            why = ("reply by us" if replied else "named in article body") if answered else ""
+            rec = (a, c, user, depth, answered, why)
+            if not answered:
+                unanswered.append(rec)
+            if show_all:
+                mark = f"ANSWERED ({why})" if answered else "UNANSWERED"
+                print(f"[{mark}] {aid} @{user} {c.get('created_at','')} id={c.get('id_code')}")
+
+    print(f"\n{len(arts)} published article(s), {len(withc)} with comments, "
+          f"{total} inbound comment(s), {len(unanswered)} unanswered.\n")
+    for a, c, user, depth, _, _ in unanswered:
+        print("=" * 78)
+        print(f"article {a['id']}  {a['title']}")
+        print(f"  https://dev.to/{ME}/{a.get('slug','')}")
+        print(f"  @{user}  {c.get('created_at','')}  id={c.get('id_code')}  depth={depth}")
+        print("-" * 78)
+        print(strip_html(c.get("body_html")))
+        print()
+    if unanswered:
+        print("NOTE: dev.to has no comment-creation API (POST /api/comments -> 404). Reply by")
+        print("appending a '## Reader note:' section naming the commenter to the article body")
+        print("via PUT /api/articles/<id> (fetch body_markdown first, send it back in full).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

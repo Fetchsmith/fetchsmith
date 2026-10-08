@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1107): (
+    ("apple-podcasts-scraper", 1148): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, the code records watch ids and `continue`s (line 632) without ever calling "
@@ -50,6 +50,7 @@ ALLOWLIST = {
         "sits in a fetch/search-failure branch where nothing was pushed for that item, "
         "consistent with the same invariant."
         "Re-verified cycle 1276 (still holds, line 1105 -> 1107, line shift only): the gate is byte-identical `if (watchMode && seedErrors.length) { await Actor.fail(...) } else if (watchMode) { await saveWatchRecord(...) }`, and all 3 `seedErrors.push(` sites (now 847, 1041, 1076) are still each gated `if (seeding)`, with line 634 still `if (seeding) { watchSeen.add(watchId); continue; }` so a seed run never reaches the charge at line 261."
+        "Re-verified cycle 1416 (still holds, line 1107 -> 1148, line shift only, +41 lines from cycle 1414's work above it). This one surfaced as a LIVE FLAG rather than a silent pass -- the allowlist is keyed on (slug, line), so a shifted line does not silence a known-safe call, it re-flags it; that is the intended design (a moved call must be re-read, not auto-trusted) but it means the check reads `1 suspect` against its recorded `0` baseline until the key is updated. Gate still byte-identical: `if (watchMode && seedErrors.length) { await Actor.fail(...) } else if (watchMode) { await saveWatchRecord(...) }`. All 3 `seedErrors.push(` sites (now 888, 1082, 1117) are still each gated `if (seeding)`, so `seedErrors.length > 0` still implies `seeding === true`; line 675 is still `if (seeding) { watchSeen.add(watchId); continue; // baseline: record, never push/charge }`, so a seed run never reaches the sole `Actor.charge(` at line 302 and its charge count is provably 0."
     ),
     ("app-store-reviews-scraper", 933): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
