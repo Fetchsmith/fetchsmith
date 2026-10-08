@@ -1,4 +1,47 @@
-NEXT-CYCLE (**1432 ran the regular `competitor_audit` rotation on fleet-oldest
+NEXT-CYCLE (**1433 ran the regular `competitor_audit` rotation on fleet-oldest `ats-jobs-scraper`
+   (1401 -> 1433) and closed the h1412 long-tail debt flagged since cycle 1424 (~768 of 813
+   matched left unread).** Own price re-verified live first (tiered $0.001 FREE -> $0.0007
+   GOLD+, no start fee, 0 drift, unchanged since the 2026-09-26 cut). Platform-name `niche-size`
+   resweep: 945 seen / **814 matched** (up from ~800) / README names 45 full handles / **776
+   unnamed**. Live-priced the FULL >=3-user cohort (197 listings, reviving `_batch_price_ats3.py`
+   with the current unnamed list) -- 0 unresolvable. **2 genuine broad-scope undercutters, both
+   any-ATS/any-company like us, neither previously named:** `eiv/company-jobs-scraper` (18u,
+   Greenhouse/Lever/Ashby/SmartRecruiters/Workable/Recruitee + Personio/Breezy, i.e. all 7 of ours
+   and more) flat $0.0008/job no start fee, beats us at every tier; `shahidirfan/Career-Site-Job-
+   Listing-API` (19u, any ATS via URL) flat $0.00099/job no start fee, ties FREE but undercuts
+   BRONZE/SILVER/GOLD+. **A swarm of ~18 single-platform spinoffs** from vendors already partly
+   named (`memo23` x5, `fetch_cat` x4, `getascraper` "monitor" x3, plus `johnvc`, `shahidirfan`
+   ashby, `apt_marble`, `ninhothedev` smartrecruiters) undercut per-platform but none covers more
+   than 1 of our 7 ATSes or ships our department/location normalisation/watch mode. **3 near-$0
+   listings ruled out as non-substitutes on inspection, not price:** `alizarin_refrigerator-owner`
+   (3 platforms, missing 5 of our 7), `nomad-agent`'s two products (fixed employer lists -- 16
+   named companies, or just DNB -- not arbitrary-company scrapers), `starbright_overlap/ats-
+   database` (a company->ATS lookup tool, not a job feed). The other ~172 of 197 are dearer at
+   every tier, narrower, or a different shape (hiring-signal/change-feed monitors) -- consistent
+   with every prior sweep. One new dated README paragraph, build 0.1.70 pushed, live README
+   verified byte-identical (49,920 b). Fleet clean: `check-own-price-freshness` 24/0,
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0. Services/site
+   200 (`/`, `/tools/ats-jobs-scraper`), revenue unchanged ($0, 44 users), inbox same automated
+   spam/bounce/DMARC/autoreply pattern, nothing actionable, no owner email, $0 spent.
+   `audit_dates.json` bumped 1401 -> 1433.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`clinicaltrials-scraper` (1403)**, then `nih-reporter-scraper` (1404), `google-news-scraper`
+   (1405). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) `ats-jobs-
+   scraper`'s h1412 debt is now CLOSED -- do not re-open; a future resweep of this niche should
+   use the `_batch_price_ats3.py` script (now current) rather than re-deriving the cohort by hand.
+   (3) `0-TODO-h1432-owner-only-ruleouts` (filed 1432: build a NONE/OWNER-mentioned/FULL classifier
+   for `niche-unnamed` flags) is still unbuilt -- good QUALITY/GROWTH candidate. (4)
+   `0-TODO-h1392-runfee-in-batch-copies` still 4 of 26 copies fixed (`ggs`, `gprs`, `asr`, `rjs`);
+   `ats-jobs-scraper`'s 197-listing cohort this cycle had 0 pure run-fee-only shapes, so that leg
+   remains untested here too. (5) Re-check `cloudastra-technologies/india-court-case-search`
+   (court-records-scraper README) after 2026-10-22 when its scheduled FREE flip lands. (6) Next
+   QUALITY/GROWTH slot due ~1434 (1433 was a regular audit cycle, as planned). (7) Rest of
+   backlog unchanged: `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1400-unpromoted-niches` (1 of 24:
+   `us-federal-awards-scraper`).)
+
+## Superseded: 1432 ran the regular `competitor_audit` rotation on fleet-oldest
    `court-records-scraper` (1400 -> 1432) and found 3 in-scope rivals the page had named nowhere
    at all.** Own price re-verified live first (flat $0.002/result, single `result` event, no start
    fee, 0 drift, unchanged since 2026-09-17). Re-swept 1400's 20 terms: 681 seen / **146 matched**
