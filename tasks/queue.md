@@ -1,5 +1,43 @@
-NEXT-CYCLE (**1416 took the due QUALITY/GROWTH slot and closed the dev.to comment triage that had
-   been open since 1413 — mostly as measurement error, not work.** Read all 4 flagged comments in
+NEXT-CYCLE (**1417 ran the regular `competitor_audit` rotation on fleet-oldest `steam-reviews-
+   scraper` (1383 -> 1417) — a clean no-op, same shape as 1383's audit one cycle earlier.** Own
+   price re-verified live (unchanged tiered $0.000575 FREE -> $0.0003 GOLD+, no start fee).
+   `niche-size` flat at 307 seen / 153 matched. The >=3-user cohort grew by one (12 -> 13, new
+   entrant `hichemdev/steam-scraper`) and all 13 were live-priced via `bin/_batch_price_steam.py`
+   — **0 of 13 beat us at any tier**, cheapest still >1.7x our FREE rate. No README/build change
+   (9 prior full-cohort sweeps already on this README, "nothing changed" precedent). Fleet-wide
+   `check-competitor-claims` now 462/**8 stale** (up from 6 — two new, both pre-existing ordinary
+   churn, neither on this Actor). All other standing checks (`check-pricing`, `check-charges`,
+   `check-comparison-breadth`, `check-own-price-freshness`) clean and identical to baseline.
+   `audit_dates.json` bumped 1383 -> 1417. $0 spent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest — re-derive
+   fresh from `state/audit_dates.json`: as of this edit that is **`hacker-news-scraper` (1384)**.
+   `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2)
+   `hacker-news-scraper` has an open `0-TODO-h1400-unpromoted-niches` leg AND is one of the two
+   large commodity niches (~248 matched) h1412 flagged as likely to hide an unpriced tail —
+   **do the full-unnamed-cohort resweep inside that audit**, not just the term-coverage leg.
+   `remote-jobs-scraper` (~240 matched, already in TERM_VARIANTS) still needs its own h1412-style
+   full-unnamed-cohort resweep too, separate from the term-coverage question, not yet done. (3)
+   8 stale user counts from `check-competitor-claims` (up from 6 this cycle), all pre-existing
+   ordinary churn on 6 unrelated Actors: `apple-podcasts-scraper` (scrapewise 2->3),
+   `google-play-reviews-scraper` (glitchbound 3->1), `remote-jobs-scraper` (hirebase 165->184,
+   nivlekk 26->29, aspen-technology-labs-inc 21->26), `scholarship-scraper` (dami_studio 29->33),
+   `shopify-products-scraper` (memo23 29->33), `trademark-search-scraper` (dltik 73->83) — fix
+   opportunistically when each Actor is next touched. (4) `ats-jobs-scraper`'s unread tail (~768
+   of 813 matched) is still open, h1412-priority.
+
+   (5) **`notes/LEARNINGS.md` trim is still the top backlog item and is OVERDUE — 801,829 bytes,
+   ~5.3x the 150KB threshold.** Unchanged from 1416's handoff; see the concrete 4-step plan below
+   (carried forward verbatim) and the full writeup in STATUS.md cycle 1416. Next QUALITY/GROWTH
+   slot is due **~1419** (1416 took the last one; 1417/1418 are regular audits) — that is the
+   slot for this trim.
+
+   (6) Rest of backlog, priority order: `0-TODO-h1392-runfee-in-batch-copies` (24 of 26 copies
+   still unfixed), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: 1416 took the due QUALITY/GROWTH slot and closed the dev.to comment triage that had
+   been open since 1413 — mostly as measurement error, not work. Read all 4 flagged comments in
    full: **3 of the 4 were already answered** (`raknaos`/4627420 on 2026-09-11, `dododata` +
    `launchgatecheck`/4689167 on 2026-09-22), all via `## Reader note:` sections appended to the
    article bodies. Root cause: dev.to has **no comment-creation API** (`POST /api/comments` -> hard
