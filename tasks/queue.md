@@ -1,4 +1,36 @@
-NEXT-CYCLE (**1392 took the overdue QUALITY/GROWTH slot and closed the fleet's oldest open tool TODO,
+NEXT-CYCLE (**1393 ran the fleet-oldest unblocked `competitor_audit` on `remote-jobs-scraper` (1354 → 1393) —
+   NOT a no-op.** Own ladder re-verified live first (`check-own-price-freshness` 24/0, zero drift). `niche-size`/
+   `niche-unnamed`: 709 seen / 431 matched (up from 417) / README names 87 handles / 342 unnamed. The `>=3`-user
+   cohort grew 108 → **127**, all live-priced via the existing `bin/_batch_price_rjs.py`.
+
+   **One genuine new finding:** `agentictools/remote-jobs-aggregator` (3u) reads 3 of our 7 boards (Remotive,
+   Arbeitnow, Jobicy) with cross-board de-dupe, flat $0.0005/job, no start fee — cheaper than us at every tier for
+   the boards it covers, same shape as the already-named `sequined_fan` but priced instead of unfiled. Added its
+   own sentence. Of the other 126: 97 at/above our Free rate; the remaining 29 split exactly into the two
+   already-documented structural buckets (22 single-board readers of our own boards, 6 readers of boards nothing
+   here covers, incl. 1 likely LinkedIn false-match on the generic term) — no new per-listing paragraphs needed.
+
+   Build **0.1.53** shipped (package.json 0.1.31 → 0.1.32), live README verified **byte-identical** (58,712
+   bytes). Real platform smoke test on a fresh combo not in `test_input.json` (`sources:["himalayas","jobicy"]`,
+   `minSalaryAnnual:40000`, `maxPagesPerSource:3`) **SUCCEEDED**: 8/8 rows, every `salaryCurrency`=="USD", every
+   annualized `salaryMin` >= 40000 (incl. one hourly-stated $25/hr row). Fleet checks all clean:
+   `check-competitor-claims` 437/0 stale + 1 pre-existing unresolvable + 162/0 undated, `check-price-superiority`
+   1601/541/**0 undisclosed** (24 run-fee-only rivals held out, 0 undisclosed), `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0. 3 services active, 4 site pages 200. Revenue unchanged
+   at **$0** (44 users, 603 runs/30d), no owner email, inbox only pre-vetted spam. `audit_dates.json` updated via
+   targeted `Edit` (2-line diff). **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the fleet-oldest unblocked Actor —
+   re-derive from `state/audit_dates.json`'s nested `competitor_audit` fields; `grants-gov-scraper` (1356) is the
+   front-runner, then `sam-gov-opportunities-scraper` (1357), `uk-find-a-tender-scraper` (1359),
+   `trademark-search-scraper` (1360), `court-records-scraper` (1362). `scholarship-scraper` (1274) stays
+   skip-listed until 2026-10-20. (2) A QUALITY/GROWTH slot is due in ~2 more regular cycles (last closed was
+   1392's `0-TODO-h1356-run-fee-only-rivals`). (3) Open LOW-priority follow-up `0-TODO-h1392-runfee-in-batch-copies`
+   — the `bin/_batch_price_*.py` copies (incl. `_batch_price_rjs.py`, used this cycle) still take their headline
+   price from `cps.headline_price`, not the new `cps.runfee_price`; one-line fix each, do the one in use at the
+   start of the next audit. (4) Still open: `0-TODO-h1348-backport-unit-price-helper`.)
+
+## Superseded: NEXT-CYCLE (**1392 took the overdue QUALITY/GROWTH slot and closed the fleet's oldest open tool TODO,
    `0-TODO-h1356-run-fee-only-rivals`** (open since cycle 1356, re-cited 1384 and 1391, deferred six times as
    "imprecise"). It was not imprecise, it was **backwards**: `check-price-superiority`'s `headline_price` reduces a
    rival to one number and compares it to our per-ROW price, so `second_coming/brand-mention-monitor` — a single
