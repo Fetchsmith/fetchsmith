@@ -15,11 +15,15 @@ Scope, deliberately narrow:
     Store sweep during a competitor_audit, same caveat check-comparison-breadth documents.
   - "Our price" and "rival price" are each reduced to ONE number: the event flagged
     `isPrimaryEvent` if the live record has one, else the cheapest non-one-time (not a
-    start/setup fee) event, else the cheapest event of any kind. Actors priced per RUN rather
-    than per ROW (a `$0.10/run + $0.00001/row` shape) will compare unfavourably here at low
-    volume and favourably at high volume -- this script picks one number, it does not model
-    a crossover. Treat a flag as "go look", not as a confirmed false claim (same spirit as
-    check-comparison-breadth's NARROW).
+    start/setup fee) event, else the cheapest event of any kind. A MIXED shape
+    (`$0.10/run + $0.00001/row`) still reduces to its per-row number, so it compares
+    unfavourably here at low volume and favourably at high volume -- for that shape this
+    script picks one number and does not model a crossover. Treat a flag as "go look", not as
+    a confirmed false claim (same spirit as check-comparison-breadth's NARROW).
+  - A PURE run-fee-only rival (every charge event run-scoped, no per-row event at all) is the
+    one case where the single number is not just imprecise but backwards, so since cycle 1392
+    it is held out of the comparison above and routed to `runfee_price` + an exact crossover
+    instead. See that function's docstring (closes 0-TODO-h1356-run-fee-only-rivals).
   - A rival on Apify's FREE pricing model prices at $0 (cycle 1104 LEARNINGS: FREE/absent
     `pricingInfos` is the cheapest possible rival, not missing data -- a checker that skips it
     sees the opposite of the truth).
@@ -71,6 +75,12 @@ DISCLOSED = re.compile(
     re.I,
 )
 EPSILON = 1e-9
+# A run-fee-only rival (see runfee_price) is cheaper than us on every run bigger than
+# `its flat fee / our per-row price` rows. Our Actors are bulk row exporters whose useful
+# runs are tens-to-thousands of rows, so a crossover under this many rows means a typical
+# customer run really does cost less there and the README has to say so. Above it, the
+# rival only wins on runs too small to be the use case we sell, which is not a claim defect.
+RUNFEE_CROSSOVER_ROWS = 1000
 
 
 def token():
@@ -131,6 +141,52 @@ def headline_price(act_data, now):
     return (p, name) if p is not None else (None, f"{name} has no resolvable price")
 
 
+def runfee_price(act_data, now):
+    """(flat_usd_per_run, label) when EVERY live charge event is run-scoped, else (None, reason).
+
+    Closes 0-TODO-h1356-run-fee-only-rivals, open since cycle 1356 and re-cited at 1384 and
+    1391. `headline_price` above reduces a rival to ONE number and then compares it to our
+    per-ROW price. That is right for the per-row rivals which are nearly all of the fleet's
+    niches, but it reads a flat per-RUN fee as though it were a per-row rate, and the error
+    points the wrong way: `second_coming/brand-mention-monitor` (cycle 1384, re-verified live
+    at cycle 1392) charges a single `scan` event of $0.02 with isOneTimeEvent=True and no
+    per-row event at all. headline_price takes it as primary, compares $0.02 > our $0.0008
+    and stays silent -- but $0.02 buys a WHOLE RUN there, so it undercuts us on any run past
+    ~25 rows. A false negative, i.e. exactly the undisclosed-cheaper-rival case this script
+    exists to catch, and invisible to it until now. (The other handle 1391 cited for this
+    TODO, `firmhound/congressional-intelligence-api`, turned out NOT to be an instance: it
+    has a real $0.006/dataset-item event alongside its $0.01 start fee, so headline_price
+    already picks the per-row rate correctly. Noted so a later cycle does not re-hunt it.)
+
+    Run-scoped means `apify-actor-start` (Apify's reserved start-fee key) or any event the
+    owner marked isOneTimeEvent -- a one-time event bills at most once per run, so when NO
+    other event exists the run costs the SUM of them no matter how many rows it returns.
+    That sum is both floor and ceiling, which is what makes a single-number crossover against
+    our per-row price exact here rather than the "go look" heuristic headline_price gives.
+
+    Returns None for anything with a per-row event left over (headline_price's existing
+    comparison owns that case, including the start-fee-plus-per-row shape) and for any event
+    whose price will not resolve, so a tiered or malformed record is never silently scored $0.
+    """
+    cur = effective(act_data.get("pricingInfos"), now)
+    if cur is None or cur.get("pricingModel") != "PAY_PER_EVENT":
+        return None, "not a live PAY_PER_EVENT record"
+    events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+    if not events:
+        return None, "no charge events"
+    per_row = [n for n, e in events.items()
+               if n != "apify-actor-start" and not e.get("isOneTimeEvent")]
+    if per_row:
+        return None, "has per-row event(s): " + ",".join(sorted(per_row))
+    total = 0.0
+    for name, event in sorted(events.items()):
+        p = price_of(event)
+        if p is None:
+            return None, f"{name} has no resolvable price"
+        total += p
+    return total, "+".join(sorted(events))
+
+
 CACHE = {}
 
 
@@ -183,6 +239,7 @@ def main():
     prefetch(sorted(wanted), headers)
 
     compared = cheaper_found = flagged = 0
+    runfee_seen = runfee_flagged = 0
     for n, slug in enumerate(live, 1):
         path = os.path.join(ROOT, "actors", slug, "README.md")
         if not os.path.exists(path):
@@ -216,6 +273,30 @@ def main():
             rival = live_actor(ident, headers)
             if rival is None:
                 continue  # gone from Store -- check-competitor-claims already flags this
+            # Run-fee-only rivals first: headline_price would mis-read their flat per-run fee
+            # as a per-row rate and conclude they are dearer. Our own price is per-row for all
+            # 24 live Actors, but guard the division anyway -- if we ever price at $0 nobody
+            # can undercut us and there is nothing to disclose.
+            flat, flat_label = runfee_price(rival, now)
+            if flat is not None and our_price > 0:
+                runfee_seen += 1
+                rows = flat / our_price
+                verdict = ("UNDISCLOSED" if rows < RUNFEE_CROSSOVER_ROWS
+                           and not disclosed_anywhere[ident] else None)
+                if verdict:
+                    runfee_flagged += 1
+                    flagged += 1
+                    print(f"RUNFEE-UNDISCLOSED {slug}/README.md:{lineno}  {ident} charges a flat "
+                          f"${flat:g}/run ({flat_label}, no per-row event) vs our "
+                          f"${our_price:g}/{our_label} -- cheaper than us on any run over "
+                          f"~{rows:.0f} row(s), but no paragraph in this file discloses it")
+                else:
+                    print(f"RUNFEE {slug}/README.md:{lineno}  {ident} charges a flat ${flat:g}/run "
+                          f"({flat_label}) vs our ${our_price:g}/{our_label} -- crossover "
+                          f"~{rows:.0f} row(s)"
+                          f"{'; disclosed' if disclosed_anywhere[ident] else '; above the '+str(RUNFEE_CROSSOVER_ROWS)+'-row floor'}")
+                continue
+
             rival_price, rival_label = headline_price(rival, now)
             if rival_price is None:
                 continue  # not comparable with a single number, see docstring
@@ -230,7 +311,9 @@ def main():
 
     print(f"check-price-superiority: {compared} named-rival price(s) compared, "
           f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README "
-          f"({time.time() - started:.0f}s)")
+          f"({runfee_seen} run-fee-only rival(s) held out of the per-row comparison, "
+          f"{runfee_flagged} of them undisclosed under the {RUNFEE_CROSSOVER_ROWS}-row "
+          f"crossover floor) ({time.time() - started:.0f}s)")
     return 1 if flagged else 0
 
 

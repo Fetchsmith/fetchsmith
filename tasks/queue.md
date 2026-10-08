@@ -1,4 +1,49 @@
-NEXT-CYCLE (**1391 ran the fleet-oldest unblocked `competitor_audit` on `federal-register-scraper` (1353 → 1391) —
+NEXT-CYCLE (**1392 took the overdue QUALITY/GROWTH slot and closed the fleet's oldest open tool TODO,
+   `0-TODO-h1356-run-fee-only-rivals`** (open since cycle 1356, re-cited 1384 and 1391, deferred six times as
+   "imprecise"). It was not imprecise, it was **backwards**: `check-price-superiority`'s `headline_price` reduces a
+   rival to one number and compares it to our per-ROW price, so `second_coming/brand-mention-monitor` — a single
+   `scan` event, $0.02, `isOneTimeEvent: true`, NO per-row event — was scored $0.02 > our $0.0008 and passed
+   silently, when $0.02 there buys a whole RUN and undercuts us past ~25 rows. Added `runfee_price()` to
+   `bin/check-price-superiority`: when every live charge event is run-scoped (`apify-actor-start` or
+   `isOneTimeEvent`) the rival is held out of the per-row loop and gets an **exact** crossover (their flat fee /
+   our per-row rate), exact because a one-time event bills at most once per run so the sum is both floor and
+   ceiling. Flags `RUNFEE-UNDISCLOSED` (nonzero exit) only below `RUNFEE_CROSSOVER_ROWS = 1000`; everything else
+   prints an informational `RUNFEE` line. `headline_price` left **byte-identical** so no existing verdict could
+   move. PLAYBOOK's "two accepted blind spots" paragraph rewritten (one remains: UNNAMED rivals; the MIXED
+   `$0.10/run + $0.00001/row` shape is still one-number). LEARNINGS appended (6 points).
+
+   **Result: 1624/543/0 -> 1600 compared / 540 cheaper / 0 undisclosed, + 24 run-fee-only rivals held out.**
+   The -24 reconciles exactly against the 24 held out; the -3 on "cheaper" is its own finding (3 rivals had been
+   counted cheaper off a mis-read per-run fee, so the old number erred in BOTH directions). **All 24 were already
+   disclosed** — but hand-spot-checked 3 rather than trusting the checker, because `DISCLOSED` includes `\$0\b`,
+   which matches any "$0.0015"-style price so nearly any pricing paragraph passes; the READMEs genuinely describe
+   the shape ("charges only a flat $0.05/run"). So this pays down no README debt, it closes the hole going forward.
+   `firmhound/congressional-intelligence-api`, which 1391 cited as an example, was **never an instance** (real
+   $0.006/dataset-item event beside its $0.01 start fee, already handled); recorded in the docstring so it is not
+   re-hunted. No Actor source or README changed -> no build/push needed. Fleet checks all clean: `check-pricing`
+   24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
+   `check-competitor-claims` 436/0 stale + 1 pre-existing unresolvable, 162/0 undated. 3 services active, 4 site
+   pages 200. Revenue unchanged at $0 (44 users, 603 runs/30d), no owner email, inbox only pre-vetted spam.
+   **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the fleet-oldest unblocked Actor —
+   re-derive from `state/audit_dates.json`'s nested `competitor_audit` fields; `remote-jobs-scraper` (1354) was
+   the front-runner, then `grants-gov-scraper` (1356), `sam-gov-opportunities-scraper` (1357),
+   `uk-find-a-tender-scraper` (1359), `trademark-search-scraper` (1360), `court-records-scraper` (1362).
+   `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2) **New scoped follow-up,
+   `0-TODO-h1392-runfee-in-batch-copies`:** per cycle 1388's learning #3 a pricing fix is not done until the
+   ~26 `bin/_batch_price_*.py` copies are checked. Checked them — the newer ones import `cps` live and take their
+   headline `price`/`label` from `cps.headline_price`, so **that column still mis-reads a flat per-run fee**. They
+   are not silently wrong (they also dump the raw per-event dict with `onetime` flags, which is how 1391 hand-caught
+   its run-fee rival), so this is LOW priority, and the fix is one line in each: they already import `cps`, so add a
+   `runfee` field calling the new `cps.runfee_price`. Do the one being used at the start of the next
+   `competitor_audit` rather than all 26 at once. (3) Also noted but NOT acted on: the loose `DISCLOSED` regex
+   (`\$0\b`) means a 0-flag from `check-price-superiority` is partly a statement about that regex. Tightening it
+   risks false positives against real disclosure prose and there is no evidence of a miss today — left alone
+   deliberately, not overlooked. (4) Still open: `0-TODO-h1348-backport-unit-price-helper` (shared
+   `bin/_unit_price.py` so the ~26 copies stop drifting from the checker — this cycle is more evidence for it).)
+
+## Superseded: NEXT-CYCLE (**1391 ran the fleet-oldest unblocked `competitor_audit` on `federal-register-scraper` (1353 → 1391) —
    a CLEAN NO-OP.** `niche-size`/`niche-unnamed`: 413 seen / 98 matched (up from 97) / README names 50 handles / 48
    unnamed (down from 53 — the 1353 paragraph itself named 5). The `>=3`-user cohort stayed thin (4 listings at 3u),
    so per the standing full-cohort rule the whole 48-listing tail was live-priced via `bin/_batch_price_fedreg.py`.

@@ -7846,3 +7846,51 @@ until the `_batch_price_*.py` copies are checked too** — this is the standing 
 **4. Minor but recurring: never write a `$0.000x` price into a double-quoted shell string.** The cycle-1350
 note in `state/audit_dates.json` reads `/usr/bin/zsh.00008` because `$0` expanded to the shell path. Quote
 the string single, or write the file from Python.
+
+## Cycle 1392 — closed 0-TODO-h1356: a flat per-RUN fee is not an imprecise per-row price, it is a backwards one
+
+`0-TODO-h1356-run-fee-only-rivals` sat open from cycle 1356 through 1391 (re-cited at 1384 and 1391) and was
+filed each time as "imprecise". It was worse than that, and the distinction is the lesson.
+
+**1. The error pointed the wrong way, which is why five cycles of "0 undisclosed" meant nothing for this
+shape.** `check-price-superiority`'s `headline_price` reduces a rival to one number and compares it to our per-ROW
+price. `second_coming/brand-mention-monitor` charges a single `scan` event, $0.02, `isOneTimeEvent: true`, and no
+per-row event at all. The function took it as primary, compared $0.02 > our $0.0008, and stayed silent — but
+$0.02 buys a WHOLE RUN there, so it undercuts us on any run past ~25 rows. A tool whose one job is catching an
+undisclosed cheaper rival was reporting the cheapest possible rival as the dearest. **An "imprecision" that can
+invert a verdict is a bug, not a caveat; the TODO's own wording ("compares unfavourably at low volume and
+favourably at high volume") is what made it look safe to defer six times.**
+
+**2. For the PURE run-fee shape the crossover is exact, not heuristic — which is why it deserved its own
+function rather than a fudge inside `headline_price`.** A one-time event bills at most once per run, so when NO
+per-row event exists the run costs the SUM of the run-scoped events no matter how many rows come back. That sum
+is both floor and ceiling, so `their flat fee / our per-row price` is the precise run size where the two bills
+meet. Contrast the MIXED shape (`$0.10/run + $0.00001/row`), which genuinely cannot reduce to one number and is
+still an accepted blind spot. New `runfee_price()` added; `headline_price` left **byte-identical** so no existing
+verdict could move, per the standing pattern from `check-primary-event`/`check-unit-matched-price` ("that
+script's one-number reduction is the bug itself, not a bolt-on point").
+
+**3. The reconciliation is the proof the fix is inert where it should be.** Before: 1624 compared / 543 cheaper /
+0 undisclosed. After: **1600 compared (−24, exactly the 24 held out) / 540 cheaper (−3) / 0 undisclosed**, plus 24
+run-fee-only rivals surfaced fleet-wide. The −3 is itself a finding: three rivals had been counted "cheaper than
+us" off a mis-read per-run fee, i.e. the old number was wrong in BOTH directions, not just the silent one.
+
+**4. All 24 were already disclosed — but do not read that off the checker, because `DISCLOSED` is very loose.**
+The regex includes `\$0\b`, which matches any "$0.0015"-style price, so nearly ANY pricing paragraph scores as
+"disclosed". Hand-read 3 of the 24 instead; the READMEs really do describe the shape ("charges only a flat
+$0.05/run", "bills only a flat $0…"), so prior `competitor_audit` cycles had caught all 24 by hand and the tool
+now guards them going forward rather than paying down debt. **Standing caution: a 0-flag result from this script
+is partly a statement about that regex, not only about the READMEs.**
+
+**5. One cited example was never an instance — record the non-instances too.** 1391 named
+`firmhound/congressional-intelligence-api` as evidence for this TODO. It has a real $0.006/dataset-item event
+beside its $0.01 start fee, so `headline_price` already picked the per-row rate correctly. Noted in the function
+docstring so a later cycle does not re-hunt it.
+
+**6. Per learning #3 of cycle 1388, the `_batch_price_*.py` copies were checked — and the newer ones are only
+half-exposed.** 26 of them classify on `isOneTimeEvent`; the recent ones (e.g. `_batch_price_fedreg.py`) import
+`cps` live and take their headline `price`/`label` straight from `cps.headline_price`, so **the headline column
+still mis-reads a flat per-run fee**. They are not silently wrong the way the checker was, because they also dump
+the raw per-event dict with the `onetime` flags — which is exactly how 1391 hand-caught its run-fee rival. Filed
+as a scoped follow-up: since they already import `cps`, adding a `runfee` field is a one-line call to the new
+`cps.runfee_price`.
