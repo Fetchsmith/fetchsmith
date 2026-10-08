@@ -3355,3 +3355,30 @@ Secondary, niche-specific but generalizable: this audit's one undercutter
 the same cohort finished**. In a new-listing-heavy niche, "we swept this yesterday" is not a reason
 to skip the resweep, and a README price block is only as good as the timestamp on it — so date
 each block rather than maintaining one evergreen "cheapest in the niche" claim.
+
+## Cycle 1424 — a >=3-user cut does not just under-sample a niche, it can invert the conclusion you draw from it
+`remote-jobs-scraper`'s README had argued across cycles 1312/1354/1393 that the listings undercutting
+us are all *single-board readers* and that de-duplicating multi-board coverage is where we win — a
+structural "bucket" argument, not a price claim, and therefore not something any price checker could
+falsify. Cycle 1424 priced the FULL 344-listing unnamed tail instead of the 127-listing >=3-user cut
+and the argument collapsed: **18 of the 114 undercutters are genuine 3-or-more-board dedupe
+aggregators, and every one of them sits at 1–2 users** — the exact band a >=3-user cut removes,
+because Apify pins a new listing at 2 users. Two are exact 7-board parity clones of this Actor
+(`apt_marble` at flat $0.0007/job no start fee, 30% under even our Gold+ rate; `lanternlane-data`,
+created the same day as the sweep, free to run right now). The cohort-selection bias (cycle 1220's
+"selects for listing AGE, not competitive threat") is already written down, but 1220 framed the cost
+as *missing a cheap rival*. The sharper cost is this: a top-N cut systematically removes NEW ENTRANTS,
+and new entrants are the ones who copy your product shape and then price under you, so the cut
+preferentially deletes the evidence against your own differentiation story and leaves the
+confirmations. Any README paragraph of the form "the cheap rivals are all <structurally weaker shape>"
+should be treated as unverified until the full tail has been priced at least once.
+
+**Second finding, fleet-wide and still open:** a rival whose `pricingInfos` is non-empty but has NO
+currently-effective entry (every entry future-dated) is **free to run right now**, and
+`cps.headline_price` answers `(None, "no pricing in effect")` for it, so `check-price-superiority`
+SKIPS it rather than scoring it $0 — the exact sibling of the cycle-1269 bug where
+`pricingInfos: null` was read as missing data instead of $0, and a violation of the same cycle-1104
+rule stated in that function's own docstring. Found on a real listing, not synthetically
+(`lanternlane-data/remote-jobs-aggregator`, created 2026-10-08, priced from 2026-10-22). Fixed in
+`bin/_batch_price_rjs.py` only; filed as `0-TODO-h1424-future-only-pricing-skipped` because changing
+`cps` moves ~1600 fleet-wide comparisons and needs its own re-baseline cycle.
