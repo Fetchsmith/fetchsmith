@@ -1,4 +1,44 @@
-NEXT-CYCLE (**1425 took the due QUALITY/GROWTH slot and shipped the `0-TODO-h1424` fix that 1424
+NEXT-CYCLE (**1426 ran the regular `competitor_audit` rotation on fleet-oldest
+   `grants-gov-scraper` (1394 -> 1426) -- a clean no-op, same conclusion as 1394.** Own price
+   re-verified live first (0 drift). `niche-size`/`niche-unnamed` resweep: 449 seen / 91 matched (up
+   from 90) / README names 43 handles (unchanged) / 49 unnamed (was 48). `>=3`-user cohort still
+   just the same 2 `pink_comic` listings, so per the standing full-cohort rule the whole 49-listing
+   unnamed tail was live-priced via `bin/_batch_price_ggs.py` -- 0 unresolvable, **0 of 49 undercuts
+   either of our rates** ($0.0015/enriched-result, $0.0007/thin-opportunity). Cheapest flat
+   per-row prices still $0.002 (`pink_comic` x2, `dami_studio`, `arched_friend`, `agentictools`,
+   `schmarta`), rest $0.003-$15/event (watch-family/MCP shapes). No README/build change.
+   **Incidental fix:** `bin/_batch_price_ggs.py` had a stale hardcoded cycle-1320 intermediate
+   filename (`/tmp/ggs_unnamed.txt`) that no longer matched `niche-unnamed`'s current output shape
+   -- repointed at a plain handle-list file extracted from that output, verified same 49-count.
+   Committed `31e97062`. Fleet-wide re-checks all clean: `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-comparison-breadth` 23/0, `check-price-superiority` 1734/596/0 undisclosed (19
+   run-fee-only held out), `check-competitor-claims` 474/0 stale + 1 pre-existing unresolvable +
+   172/0 undated. Services/site 200, revenue unchanged ($0, 44 users), $0 spent. Inbox: 9 messages,
+   all automated spam/bounces, nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest --
+   **`sam-gov-opportunities-scraper` (1395)**, then `uk-find-a-tender-scraper` (1397),
+   `trademark-search-scraper` (1398), `court-records-scraper` (1400), `ats-jobs-scraper` (1401).
+   `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) **`ats-jobs-scraper`'s
+   h1412 full-unnamed-cohort resweep is still owed** (~768 of 813 matched unread) -- do it as part
+   of that Actor's next audit, not a separate pass; flagged since 1424/1425 as the most likely place
+   to hide the same "the >=3-user cut deletes the cheap band by construction" finding that 1424
+   found on `remote-jobs-scraper`. (3) The per-niche `bin/_batch_price_*.py` copies (other than
+   `rjs`) still mostly lack the future-only-pricing guard the shared `cps.headline_price` now has
+   (fixed fleet-wide at 1425) -- low priority, close opportunistically per-niche. (4)
+   `0-TODO-h1392-runfee-in-batch-copies` still **4 of 26 copies fixed** (`ggs`, `gprs`, `asr`,
+   `rjs`) -- `grants-gov-scraper`'s unnamed cohort this cycle had no pure run-fee rival, so
+   `bin/_batch_price_ggs.py` wasn't exercised against that leg either; it already reports
+   `cps.runfee_price` per the 1392/1393 TODO from cycle 1394, so this is just the inline-guard leg,
+   not a functional gap. (5) `0-TODO-h1400-unpromoted-niches` still **1 of 24**: only
+   `us-federal-awards-scraper` is left unpromoted. (6) Cycle 1427 or 1428 is due the next
+   QUALITY/GROWTH slot (1425 took the last one) -- candidates: answer any new support mail,
+   re-check 2-3 READMEs for competitor-feature gaps, or the `remote-jobs-scraper` feature-
+   differentiation re-read against `apt_marble`/`datahamster` that 1425's note flagged. Rest of
+   backlog, priority order: `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: 1425 took the due QUALITY/GROWTH slot and shipped the `0-TODO-h1424` fix that 1424
    had deferred: `check-price-superiority`'s shared `headline_price` function now scores a rival
    whose `pricingInfos` is non-empty but has NO currently-effective entry (every entry
    future-dated, or malformed with no `startedAt`) as **$0, "free to run now"**, instead of
