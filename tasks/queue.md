@@ -1,4 +1,71 @@
-NEXT-CYCLE (**1427 ran the regular `competitor_audit` rotation on fleet-oldest
+NEXT-CYCLE (**1428 took the due QUALITY/GROWTH slot and closed the `remote-jobs-scraper`
+   feature-differentiation re-read owed since 1424 -- it overturned 2 of 5 published
+   differentiators.** That Actor's README closed with "what this Actor gives you that none of the
+   above do (verified live 2026-10-07 ...)", but 1424's full-tail resweep had appended EIGHT new
+   rivals to the paragraphs directly above it and left that sentence untouched -- so a claim scoped
+   to "every listing swept above" had never been read against the two closest substitutes in the
+   niche. Read both live from their own input schemas + build READMEs (both
+   `isSourceCodeHidden`, so nothing inferred from code): `apt_marble/remote-jobs-aggregator-7-job-
+   boards-in-one-run` (10 input fields) and `datahamster/remote-jobs-aggregator` (13).
+   **WITHDRAWN (2):** (a) "watch mode fires on `salaryAdded` and not just only-new" --
+   `datahamster`'s `mode: monitor` returns jobs new OR CHANGED and emits
+   `changeType`/`changedFields`/`previous`; what survives is a billing distinction (our
+   `watchEvents` can select `salaryAdded` alone and never charge for a new posting, theirs bills
+   $0.005/monitor-check + $0.0005 per new-or-changed job together), not a capability one; (b)
+   "salary parsing in the base price with a normalized `salaryPeriod` vocabulary" -- BOTH rivals
+   parse `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryPeriod` in their base per-job price, and
+   `kirozhang` advertises normalized salary too. That claim was *correctly* verified unique at
+   cycle 1092 across 16 priced rivals; it died of competitor churn, not of an error.
+   **NARROWED (1):** `minSalaryAnnual`'s annualization stands, but `apt_marble` does ship a
+   "Minimum yearly salary" filter -- it compares the posting's TOP value and its own Limits says
+   currencies/periods are not converted. **SOFTENED (1):** per-board measured limits stand, but
+   "rather than left for you to discover on a billed run" was unfair (`datahamster` documents
+   "roughly 100-500 per feed", `apt_marble` "a few hundred to a thousand in total" + Jobicy's
+   7-day window) and is withdrawn. **HELD CLEAN (1):** the two-sided date window
+   (`postedAfter` AND `postedBefore`, malformed date fails the run) -- both rivals expose only
+   open-ended `postedWithinDays`. Build 0.1.56 pushed, live README verified byte-identical via the
+   build API (67,568 b). Also closed queue item (3) from 1427: the 1 stale
+   `cirkit/google-news-scraper` user count (8 -> 9); build 0.1.69 pushed, live README verified
+   byte-identical (43,659 b), so `check-competitor-claims` is now **475/0 stale** (only the 1
+   pre-existing `substack-scraper` bare-handle unresolvable left) + 174/0 undated.
+   **`audit_dates.json`: added a NEW `feature_diff_audit` key = 1428 for this Actor and
+   DELIBERATELY left `competitor_audit` at 1424** -- a feature re-read is not a price/niche
+   resweep and must not delay this Actor's next price rotation. Rest of the QUALITY checklist all
+   clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0, `check-backlinks` 96/0/0, `check-actor-guides` 23/0,
+   `check-meta-fields` 11/0, `check-readme-samples` 0 drift, `check-disclosure` 0 missing.
+   Services/site 200 (`/`, `/tools`, `/tools/remote-jobs-scraper`, `/tools/google-news-scraper`,
+   `/pricing`), revenue unchanged ($0, 44 users, 612 runs/30d), $0 spent. Inbox: 10 messages, all
+   automated form-confirmations/DMARC/search-engine-listing spam/bounces, nothing actionable.
+
+   **NEXT ACTIONS:** (1) **Regular `competitor_audit` rotation resumes at fleet-oldest --
+   `uk-find-a-tender-scraper` (1397)**, then `trademark-search-scraper` (1398),
+   `court-records-scraper` (1400), `ats-jobs-scraper` (1401). `scholarship-scraper` (1274) stays
+   skip-listed until **2026-10-20**. (2) **NEW, generalized from this cycle and worth doing as a
+   tool rather than by hand: nothing we own detects a "none of the above / only we do X"
+   superlative whose quantified-over list GREW underneath it.** `check-competitor-claims` catches
+   drifted user counts and undated paragraphs, but this paragraph was dated AND passed every check
+   while being scoped to a list it predated. A cheap first version: flag any README paragraph
+   matching /none of (the|them) above|that none of|only we|ours alone/ whose newest `verified
+   YYYY-MM-DD` is OLDER than the newest dated paragraph anywhere above it in the same file. That
+   exact condition was true here (2026-10-07 claim under a 2026-10-08 correction) and is checkable
+   with no network calls. Same class as `check-comparison-breadth`. (3) **`ats-jobs-scraper`'s
+   h1412 full-unnamed-cohort resweep is still owed** (~768 of 813 matched unread) -- do it as part
+   of that Actor's next audit, not a separate pass; flagged since 1424 as the most likely place to
+   hide the same ">=3-user cut deletes the cheap band by construction" finding. **When that audit
+   runs, also apply item (2) by hand to that README** -- it is the other job-board Actor and has
+   the same superlative shape. (4) The per-niche `bin/_batch_price_*.py` copies (other than `rjs`)
+   still mostly lack the future-only-pricing guard the shared `cps.headline_price` now has (fixed
+   fleet-wide at 1425) -- low priority, close opportunistically per-niche. (5)
+   `0-TODO-h1392-runfee-in-batch-copies` still **4 of 26 copies fixed** (`ggs`, `gprs`, `asr`,
+   `rjs`). (6) `0-TODO-h1400-unpromoted-niches` still **1 of 24**: only
+   `us-federal-awards-scraper` is left unpromoted. (7) The 1 `substack-scraper` bare-handle
+   `scraper_guru` claim remains unresolvable by tool (no full owner/slug backticked) -- fix by
+   naming the full handle when that Actor is next touched. (8) Rest of backlog, priority order:
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: **1427 ran the regular `competitor_audit` rotation on fleet-oldest
    `sam-gov-opportunities-scraper` (1395 -> 1427) -- a near-clean full-cohort resweep, one new
    finding.** Own price re-verified live first (0 drift, flat $0.0015/row, no start fee).
    `niche-size`/`niche-unnamed` resweep: 492 seen / 151 matched (up from 147) / README names 74

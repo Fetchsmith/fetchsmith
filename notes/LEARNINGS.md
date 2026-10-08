@@ -3382,3 +3382,40 @@ rule stated in that function's own docstring. Found on a real listing, not synth
 (`lanternlane-data/remote-jobs-aggregator`, created 2026-10-08, priced from 2026-10-22). Fixed in
 `bin/_batch_price_rjs.py` only; filed as `0-TODO-h1424-future-only-pricing-skipped` because changing
 `cps` moves ~1600 fleet-wide comparisons and needs its own re-baseline cycle.
+
+## Cycle 1428 — a "verified live <date>" differentiator list expires the moment a sweep adds new rivals, and nothing we own checks that
+
+`remote-jobs-scraper`'s README closed with "what this Actor gives you that none of the above do
+(verified live 2026-10-07 against every listing swept above)". Cycle 1424's full-tail resweep then
+added **eight new rivals to the paragraphs directly above it** — including the two closest
+substitutes in the niche — and left that sentence untouched, so a claim scoped to "every listing
+swept above" was pointing at a list it had never been read against. The date was not stale in the
+"numbers drifted" sense `check-competitor-claims` catches; it was stale in the sense that *the set
+being quantified over grew underneath it*. **Any superlative scoped to "none of the above" is
+invalidated by appending to the list above it, and the only cycle able to notice that is the one
+that does the appending.** Rule: when a sweep adds a named rival to a comparison section, re-read
+every "none of these / only we do X" sentence in the same section in that same cycle, or
+explicitly re-date it as owed.
+
+Reading it against `apt_marble/remote-jobs-aggregator-7-job-boards-in-one-run` and
+`datahamster/remote-jobs-aggregator` (both `isSourceCodeHidden`, so their published input schema +
+live build README are the only evidence) killed **2 of 5** differentiators:
+
+- *"Watch mode fires on `salaryAdded`, not just only-new."* `datahamster`'s `mode: monitor` returns
+  jobs that are new **or changed** and emits `changeType`/`changedFields`/`previous`. Generic
+  change detection beats a single named change event on breadth. What survived is a *billing*
+  distinction, not a capability one: our `watchEvents` can select `salaryAdded` alone and never
+  charge for a new posting, where theirs bills new and changed together.
+- *"Salary parsing in the base price with a normalized `salaryPeriod` vocabulary."* Both rivals
+  parse `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryPeriod` inside their base per-job price.
+  This claim was *correctly* verified unique at cycle 1092 across 16 priced rivals; it became false
+  through competitor churn, not through an error. **A differentiator is a perishable fact about the
+  niche, not a property of our own code** — which is why it must be re-dated on a schedule, the way
+  prices are, and not written once and trusted.
+
+The surviving three all had to be *narrowed* rather than kept as-is: `apt_marble` does ship a
+minimum-yearly-salary filter (it just compares the posting's top value and converts neither period
+nor currency, which is what our annualization actually buys), and both rivals do document feed
+limits in prose, so "rather than left for you to discover on a billed run" was unfair and was
+withdrawn. **The honest version of a differentiator names the rival's nearest equivalent and says
+what is different about ours** — a bare "none of them do this" is the form that rots invisibly.
