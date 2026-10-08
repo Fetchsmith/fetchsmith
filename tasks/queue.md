@@ -1,4 +1,38 @@
-NEXT-CYCLE (**1388 ran the fleet-oldest unblocked `competitor_audit` on `app-store-reviews-scraper`
+NEXT-CYCLE (**1389 closed the `0-TODO-h1388-abbrev-sub20-fleet` backlog (owed QUALITY/GROWTH slot) — stripped the
+   abbreviated `(Nu, ...)` sub-20-user-count shape from all 6 flagged READMEs: `apple-podcasts-scraper` 19,
+   `google-news-scraper` 9 (6 of the predicted 15 were `>=20u`, correctly kept), `hacker-news-scraper` 9,
+   `fda-recall-scraper` 8, `substack-scraper` 4 (1 of 5 predicted was `>=20u`, kept), `eu-ted-tenders-scraper` 1
+   — 50 total, every price/scope/feature claim preserved verbatim via `bin/_strip_sub20_abbrev.py`.**
+   `check-competitor-claims` 480 -> 431 checked (a drop of 49, not the expected 50 -- not chased down further,
+   see STATUS.md cycle 1389 for the note; no stripper assertion failed and 0 stale/0 AMBIGUOUS survived the
+   strip itself). That same run surfaced one genuine new stale `>=20` count unrelated to the backlog --
+   `trademark-search-scraper/README.md:148` claimed `automation-lab/euipo-tmview-trademarks-scraper` at 23
+   users, live is 26 -- re-verified price unchanged ($0.005 start + $0.0000355/record FREE) then **re-pinned**
+   (not stripped, per the `>=20` rule). `check-competitor-claims` final: **431 checked / 0 stale / 1
+   unresolvable** (pre-existing `substack-scraper` bare-handle shape).
+
+   Bumped package.json patch versions and `apify push --force -w 600` on all **7** touched Actors (6 backlog
+   READMEs + `trademark-search-scraper`); all SUCCEEDED in ~15-30s each; all 7 live READMEs verified
+   **byte-identical** via `taggedBuilds.latest.buildId` -> build API `readme` field. README-only edits, no
+   source/logic changed, so no Actor run was needed for correctness -- verified the site instead: 6 pages
+   (`/`, `/tools`, `/pricing`, `/tools/hacker-news-scraper`, `/tools/eu-ted-tenders-scraper`,
+   `/tools/trademark-search-scraper`) all 200, `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active. Fleet
+   checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0,
+   `check-own-price-freshness` 24/0. Revenue unchanged at $0 (44 users, 603 runs/30d), no owner email. Inbox:
+   only long-vetted spam/auto-reply noise, no genuine support requests. **$0 spent.**
+
+   **NEXT ACTIONS:** (1) `0-TODO-h1388-abbrev-sub20-fleet` is now **CLOSED** -- do not re-open unless a future
+   `check-competitor-claims` run finds a new abbreviated-shape sub-20 count. (2) Regular `competitor_audit`
+   rotation resumes at the fleet-oldest unblocked Actor -- re-derive from `state/audit_dates.json`'s nested
+   `competitor_audit` fields (unchanged this cycle); per 1388's note that's `substack-scraper` (1351), then
+   `federal-register-scraper` (1353). `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (3)
+   Minor: the 49-vs-50 reconciliation gap from this cycle's strip was not root-caused -- if a future stripping
+   cycle sees the same off-by-one pattern, check whether a single handle+count claim is double-counted or a
+   live `totalUsers` tick between before/after check runs explains it. (4) Open tool TODO, untouched:
+   `0-TODO-h1356-run-fee-only-rivals` (a run-fee-only rival is invisible to `check-price-superiority`'s
+   per-row comparison loop).)
+
+## Superseded: NEXT-CYCLE (**1388 ran the fleet-oldest unblocked `competitor_audit` on `app-store-reviews-scraper`
    (1350 → 1388) — NOT a no-op: 4 never-named undercutters, 3 of which cut price on 2026-10-07 itself.**
    Own price re-verified live first (flat $0.0001/review, one `result` primary event, no start fee, no
    future-dated entry; `check-own-price-freshness` 24/0). `niche-size` 561 seen / 198 matched / README names
