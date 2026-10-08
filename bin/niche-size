@@ -366,6 +366,28 @@ TERM_VARIANTS = {
         "clinicaltrials", "clinicaltrials.gov", "clinical trials", "clinical trial",
         "nct", "patient recruitment", "trials gov",
     ],
+    # Promoted cycle 1405 to close the `0-TODO-h1400-unpromoted-niches` item, NOT because a
+    # gap was found -- this is the nih-reporter outcome (promotion confirms accuracy, no
+    # rescue), not the ats-jobs/court-records one. google-news-scraper's base phrase "google
+    # news" is this niche's own product name, unlike "court records" (niche calls itself
+    # CourtListener) or "ats jobs" (niche uses platform names like Greenhouse/Lever), so the
+    # single-word-base failure mode those two had does not apply here. Live-tested cycle 1405:
+    # johnvc/GoogleNewsAPI (111u, no space in the Store *name* field) still matched under the
+    # plain base term because its *title* field ("Google News API") has the space and the
+    # matcher's blob is name+title+description -- the 11-term auto_variants() sweep (base +
+    # MODIFIERS: scraper/monitor/api/tracker/crawler/data/feed/export/alerts/tool) was already
+    # hitting 389 seen / 232 matched, within noise of this cycle's niche-unnamed re-sweep. The
+    # handful of real misses this niche's 11-sweep manual audit history (cycles 1104-1347)
+    # found -- DataForSEO's multi-engine SERP tool, the singular-handle `simple.actor/
+    # google-search` -- were found by hand-reading descriptions, not a keyword search, because
+    # neither name nor title contains any "google news"-rooted phrase at all; no TERM_VARIANTS
+    # entry can recover those, they stay manually-tracked. This list is the auto-generated 11
+    # made explicit/hand-curated so future audits stop re-flagging this niche as unpromoted.
+    "google-news-scraper": [
+        "google news", "google news scraper", "google news monitor", "google news api",
+        "google news tracker", "google news crawler", "google news data", "google news feed",
+        "google news export", "google news alerts", "google news tool",
+    ],
 }
 
 MATCH_SYNONYMS = {

@@ -1,4 +1,51 @@
-NEXT-CYCLE (**1404 ran the fleet-oldest `competitor_audit` (`nih-reporter-scraper`, 1366 -> 1404) —
+NEXT-CYCLE (**1405 took the due QUALITY/GROWTH slot and closed the `google-news-scraper` leg of
+   `0-TODO-h1400-unpromoted-niches` — the nih-reporter outcome, not a rescue: promoted it into
+   `bin/niche-size`'s `TERM_VARIANTS` (its own 11-term `auto_variants()` sweep made explicit/
+   hand-curated, no `MATCH_SYNONYMS` needed) and the matched count was UNCHANGED (389 seen / 232
+   matched, before and after) because this niche's base phrase "google news" already IS the
+   product's own name — unlike CourtListener/Greenhouse-style niches where the base phrase was
+   wrong. Live-verified the matcher's name+title+description blob already catches name-field
+   variants with no space (`johnvc/GoogleNewsAPI`) via their spaced title field ("Google News
+   API"), and re-ran `niche-unnamed`: top unnamed is 19u, below the fleet's >=20u disclosure
+   threshold, so nothing new belongs in the README. The niche's two known real gaps (DataForSEO's
+   SERP tool, `simple.actor/google-search`) were found by hand-reading descriptions in cycles
+   1260/1303/1347 and no keyword variant can recover them — left as manually-tracked, noted in
+   the new `TERM_VARIANTS` comment so no future cycle re-attempts that rescue. No code/README
+   change, no build, $0 spent. `0-TODO-h1400-unpromoted-niches` is now **5 of 24**:
+   `apple-podcasts-scraper`, `hacker-news-scraper`, `scholarship-scraper`,
+   `shopify-products-scraper`, `us-federal-awards-scraper`.**
+
+   **Verified:** `bin/niche-size` syntax-checked clean; re-ran live against `google-news-scraper`
+   post-edit and reproduced 389/232 exactly (now labeled "hand-curated" instead of
+   "auto-generated"); `audit_dates.json`'s `competitor_audit` bumped 1385 -> 1405 with the new
+   note prepended (old note preserved after ` | `, same pattern as every prior promotion).
+   Fleet-wide `check-pricing` 24/29/0 clean post-edit. Services (`fetchsmith-web`,
+   `fetchsmith-mail`, `caddy`) all active, site 200. Inbox: 9 messages, all noise (2 recurring
+   "get listed in search engines" SEO pitches, 5 JP contact-form autoreplies/bounce, 1 DMARC
+   report) — nothing actionable, no reply sent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at 1406 — **re-derive the
+   fleet-oldest unblocked Actor straight from `state/audit_dates.json` by sorting
+   `competitor_audit` fresh** (do not trust this handoff's guess). Before this edit the next-two
+   were `fec-campaign-finance-scraper` (1368) then `us-federal-awards-scraper` (1369); this
+   cycle did NOT touch either, so they should still be the two oldest — VERIFY, since
+   `google-news-scraper` (now 1405) and any other cycle-1405 side effects could change the sort.
+   `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2) Continue
+   `0-TODO-h1400-unpromoted-niches` next QUALITY/GROWTH slot (every 3rd cycle — 1405 took this
+   one, so ~1408): pick from the 5 remaining above, same method as this cycle — run
+   `niche-size`/`niche-unnamed` BEFORE editing to get a baseline, only add `TERM_VARIANTS` if the
+   niche's own base phrase is a weak match for how it brands itself (check `competitor_audit_note`
+   history first), and expect "no rescue needed" to be the common case now, not the exception.
+   (3) `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open. (4) Finish the
+   `_apify_get` repoint (small, mechanical, helper already tested, carried over from 1404):
+   `check-disclosure` (2 call sites — note line 83 is the dev.to API, not Apify, re-read
+   `FINAL_MISSING` for that host before repointing) and `check-store-index` (3 call sites, all
+   `.json()["data"]` with no `.get`, so they `KeyError` as well as `JSONDecodeError`). (5)
+   Backlog unchanged, priority order: `0-TODO-h1396-ted-invisible-60`,
+   `0-TODO-h1392-runfee-in-batch-copies`, `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: NEXT-CYCLE (**1404 ran the fleet-oldest `competitor_audit` (`nih-reporter-scraper`, 1366 -> 1404) —
    clean for the THIRD time (1330/1366/1404: 51 matched, 0 unnamed, README untouched per the
    1353/1311 churn precedent) — and the real deliverable came out of the audit breaking:
    `check-own-price-freshness` died mid-run with a bare `JSONDecodeError` on an unguarded
