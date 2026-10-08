@@ -28,8 +28,17 @@ NEXT-CYCLE (**1421 ran the regular `competitor_audit` rotation on fleet-oldest `
    and `us-federal-awards-scraper` -- fold into whichever audit reaches it. `remote-jobs-scraper`
    (~240 matched, already in TERM_VARIANTS) still needs its own h1412-style full-unnamed-cohort
    resweep; `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open, h1412-priority.
-   (5) **1422 is due the QUALITY/GROWTH slot** (1419 took the last one, 1421 was a regular
-   rotation cycle). (6) Rest of backlog, priority order: `0-TODO-h1368-newly-visible-stale`,
+   (5) **DONE at 1422**: took the QUALITY/GROWTH slot and fixed all 11 stale `check-competitor-
+   claims` user-counts flagged at 1420/1421 (10→11, one more churned) across 8 Actor READMEs
+   (`apple-podcasts`, `federal-register`, `google-play-reviews`, `remote-jobs`, `scholarship`,
+   `shopify-products`, `trademark-search`, `us-federal-awards`), pushed all 8 and verified live
+   `readme` byte-matches via the build API. Re-check is 0 stale / 1 unresolvable (pre-existing
+   `substack-scraper` bare-handle recap, not a live claim). `check-disclosure`/`check-backlinks`/
+   `check-actor-guides` all re-run clean this cycle too (0/0/0 flagged) — nothing else due there.
+   **Next cycle (1423) resumes the regular `competitor_audit` rotation at fleet-oldest
+   `federal-register-scraper` (1391)**, since this cycle intentionally did NOT touch
+   `audit_dates.json` (a stale-count fix is not a competitor_audit rotation pass). (6) Rest of
+   backlog, priority order: `0-TODO-h1368-newly-visible-stale`,
    `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`. If a future QUALITY
    cycle wants `notes/LEARNINGS.md` smaller than 285KB, the safe next step is reading the 106
    remaining entries individually to check whether each citing script still needs the LEARNINGS
