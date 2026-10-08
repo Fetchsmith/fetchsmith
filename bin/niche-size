@@ -388,6 +388,32 @@ TERM_VARIANTS = {
         "google news tracker", "google news crawler", "google news data", "google news feed",
         "google news export", "google news alerts", "google news tool",
     ],
+    # Promoted cycle 1409 (fleet-oldest competitor_audit, 1372 -> 1409) to close another leg of
+    # `0-TODO-h1400-unpromoted-niches` -- a THIRD "no rescue needed" instance after nih-reporter
+    # (1404) and google-news (1405), not a repeat of the ats-jobs/court-records single-word-base
+    # failure. Base phrase "shopify products" stems to also match "shopify product" (singular),
+    # and the matcher's name+title+description blob already catches titles like `swerve/
+    # shopify-scraper`'s description "Shopify Product Scraper - Any Store". The 11-term
+    # auto_variants() sweep hit 396 seen / 145 matched; tested 6 extra hand-picked terms from
+    # this niche's own cycle-1144 vocabulary ("shopify scraper", "shopify store products",
+    # "shopify catalog", "shopify store", "shopify product", "shopify ecommerce") and they
+    # widened `seen` to 512 but added only 4 more matches, 3 of them 0-3-user listings dearer
+    # than us at every tier (litezero, elegant_economy, fascinating_lentil) and the 4th,
+    # `mighty_monk/shopify-reviews-scraper` (65u), a FALSE POSITIVE -- it scrapes Shopify
+    # **review widgets** (Judge.me/Loox/Stamped/Yotpo/Okendo), not the product catalog, and only
+    # matched because its description happens to say "Shopify product pages"; a different owner
+    # listing, `mighty_monk/shopify-product-scraper`, is the real catalog rival already named in
+    # the README. Kept the extra terms anyway (wide search costs nothing, narrow MATCH is what
+    # protects against false positives like the reviews-scraper one) so this niche's sweep is
+    # explicit and documented rather than silently depending on the generic MODIFIERS list.
+    "shopify-products-scraper": [
+        "shopify products", "shopify products scraper", "shopify products monitor",
+        "shopify products api", "shopify products tracker", "shopify products crawler",
+        "shopify products data", "shopify products feed", "shopify products export",
+        "shopify products alerts", "shopify products tool", "shopify scraper",
+        "shopify store products", "shopify catalog", "shopify store", "shopify product",
+        "shopify ecommerce",
+    ],
 }
 
 MATCH_SYNONYMS = {

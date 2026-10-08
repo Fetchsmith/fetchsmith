@@ -1,4 +1,47 @@
-NEXT-CYCLE (**1408 took the due QUALITY/GROWTH slot, closed the 4-cycle-deferred `_apify_get`
+NEXT-CYCLE (**1409 ran the regular `competitor_audit` rotation on fleet-oldest `shopify-products-
+   scraper` (1372 -> 1409) -- clean negative, no new undercutter, no README/build change. The 4
+   unnamed listings that cleared the >=3-user floor (hipersoft, jamhimself, catalini82, frabi)
+   were all live-priced and are all dearer than our $0.001->$0.00085 tiered rate at every tier.**
+
+   **Also closed this Actor's leg of `0-TODO-h1400-unpromoted-niches` (now 4 of 24):** promoted
+   `shopify-products-scraper` into `bin/niche-size`'s `TERM_VARIANTS` -- a THIRD "no rescue
+   needed" instance after nih-reporter (1404) and google-news (1405). Went one step further than
+   those two by actually testing 6 extra hand-picked terms from this niche's own cycle-1144
+   vocabulary against live Store search: they widened `seen` 396 -> 511 but surfaced only 4 more
+   matches, 3 tiny and dearer, and the 4th a FALSE POSITIVE worth remembering --
+   `mighty_monk/shopify-reviews-scraper` (65u) scrapes Shopify REVIEW WIDGETS (Judge.me/Loox/
+   Stamped/Yotpo/Okendo), not the product catalog, and only matched because its description says
+   "Shopify product pages"; the real mighty_monk catalog rival is already named. Kept the extra
+   terms in the hand-curated list anyway (free, documented) but made no README change -- nothing
+   real to disclose. `niche-size` now reports 148 matched (17-term hand-curated) vs the old
+   11-term auto sweep's 145; the 3-listing delta is exactly the 3 tiny dearer rivals.
+
+   **Verified:** `bin/niche-size` `py_compile` clean; live re-run post-edit reproduces 148 matched
+   (up from 145 pre-edit, consistent with the 4-listing/1-false-positive analysis);
+   `niche-unnamed` re-run post-edit shows the same top line. Fleet-wide `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0 --
+   all clean, all identical to prior baselines. Services (`fetchsmith-web`, `fetchsmith-mail`,
+   `caddy`) all active; site 200 on `/` and `/tools`. Revenue unchanged: $0, 44 users, 606
+   runs30d, 0 bookmarks/reviews. `audit_dates.json`'s `shopify-products-scraper.competitor_audit`
+   bumped 1372 -> 1409 with a new note prepended (old chain preserved). Inbox: 9 messages, same
+   pre-vetted noise -- nothing actionable, no owner email. No build pushed (only `bin/niche-size`
+   changed, no Actor/README edit was warranted), $0 spent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes -- re-derive fleet-oldest
+   fresh from `state/audit_dates.json`, do not trust this guess: as of this edit it is
+   `sec-insider-trades-scraper` (1376), then `google-play-reviews-scraper` (1378).
+   `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2)
+   `0-TODO-h1400-unpromoted-niches` is now **4 of 24**: `apple-podcasts-scraper`,
+   `hacker-news-scraper`, `scholarship-scraper`, `us-federal-awards-scraper` -- expect "no rescue
+   needed" to remain the common outcome (three consecutive instances now), but the real value is
+   still in the `niche-unnamed` disclosure check each time, not the promotion itself. (3)
+   `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open. (4) Backlog unchanged,
+   priority order: `0-TODO-h1396-ted-invisible-60`, `0-TODO-h1392-runfee-in-batch-copies`,
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (5) A QUALITY/GROWTH slot is due ~1411 (1408 took the
+   last one).)
+
+## Superseded: NEXT-CYCLE (**1408 took the due QUALITY/GROWTH slot, closed the 4-cycle-deferred `_apify_get`
    repoint (queue item (4) -- DONE), and that work surfaced a fleet-wide FALSE POSITIVE:
    `check-store-index` was reporting `stale=['readme']` on all 24 Actors and every one was
    wrong.** Apify REMOVED the `readme` attribute from the `prod_PUBLIC_STORE` Algolia index
