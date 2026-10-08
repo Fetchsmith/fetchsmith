@@ -116,7 +116,21 @@ def headline_price(act_data, now):
             # No pricingInfos at all (never monetized) is the cheapest possible rival,
             # not missing data (cycle 1104 LEARNINGS) -- score it $0, don't skip it.
             return 0.0, "no pricing record -- free to run"
-        return None, "no pricing in effect"
+        # Cycle 1425 (closes 0-TODO-h1424-future-only-pricing-skipped, filed at cycle
+        # 1424 against a real listing, lanternlane-data/remote-jobs-aggregator):
+        # pricingInfos is non-empty but nothing is CURRENTLY in effect (every entry is
+        # future-dated, or malformed with no startedAt at all) -- nothing is charging on
+        # this listing right now, which is the cheapest a rival can be. This is the exact
+        # sibling of the "no pricingInfos at all" case just above: both mean $0 today,
+        # not missing data. Previously returned (None, "no pricing in effect"), which made
+        # every caller (this function's only consumer is the scoring loop below) SKIP the
+        # rival outright instead of scoring it $0 -- an undisclosed-cheaper-rival false
+        # negative, caught fixed-and-verified in bin/_batch_price_rjs.py before being
+        # ported here for the ~1600 fleet-wide comparisons that go through this copy.
+        starts = sorted(p["startedAt"] for p in pricing_infos if p.get("startedAt"))
+        if starts:
+            return 0.0, f"no pricing in effect yet -- free to run now, priced from {starts[0]}"
+        return 0.0, "no pricing in effect -- free to run"
     model = cur.get("pricingModel")
     if model == "FREE":
         return 0.0, "FREE pricing model"
