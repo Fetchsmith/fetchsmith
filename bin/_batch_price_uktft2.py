@@ -1,10 +1,14 @@
 #!/root/agent/venv/bin/python
-"""Cycle 1359: live-price the 5-listing full unnamed tail of uk-find-a-tender-scraper's niche
-(104 matched, >=3u cohort empty, so per standing rule the whole unnamed tail is priced).
+"""Cycle 1397: live-price the unnamed tail of uk-find-a-tender-scraper's niche.
+
+Repointed to the shared bin/_unit_price.py (closes this Actor's slice of
+0-TODO-h1396-repoint-batch-pricers) instead of this file's own hand-rolled
+tiers_of/unit_price, which classified start fees purely on isOneTimeEvent and so
+lacked the cycle-1396 tier-ladder discriminator and the apify-actor-start override.
 
 OURS: tiered $0.003/result (FREE) -> $0.0028 (BRONZE) -> $0.0026 (SILVER) -> $0.0025 (GOLD+),
-no start fee, first 25 rows/run free -- re-verified live at the top of cycle 1359 against the
-actor's own pricingInfos record (effective since 2026-09-12, 0 drift from meta.json).
+no start fee, first 25 rows/run free -- re-verified live at the top of cycle 1397 against the
+actor's own pricingInfos record (0 drift from meta.json, check-own-price-freshness 24/0).
 """
 import datetime
 import importlib.machinery
@@ -21,6 +25,9 @@ spec = importlib.util.spec_from_loader("cps", importlib.machinery.SourceFileLoad
 cps = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cps)
 
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+import _unit_price as up  # noqa: E402
+
 H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
@@ -28,44 +35,10 @@ NOW = datetime.datetime.now(datetime.timezone.utc)
 OURS = {"FREE": 0.003, "BRONZE": 0.0028, "SILVER": 0.0026, "GOLD": 0.0025,
         "PLATINUM": 0.0025, "DIAMOND": 0.0025}
 
+tiers_of = up.tiers_of
+unit_price = up.unit_price
 
-def tiers_of(ev):
-    t = ev.get("eventTieredPricingUsd") or ev.get("tieredEventPriceUsd")
-    out = {}
-    if isinstance(t, dict):
-        for k, v in t.items():
-            if isinstance(v, (int, float)):
-                out[k] = v
-            elif isinstance(v, dict) and isinstance(v.get("tieredEventPriceUsd"), (int, float)):
-                out[k] = v["tieredEventPriceUsd"]
-    if out:
-        return out
-    p = cps.price_of(ev)
-    return {"FREE": p} if isinstance(p, (int, float)) else {}
-
-
-def unit_price(events):
-    onetime, recurring = {}, {}
-    for k, v in events.items():
-        (onetime if v.get("isOneTimeEvent") else recurring)[k] = v
-    start_fee = max((min(tiers_of(v).values(), default=0.0) for v in onetime.values()),
-                    default=0.0)
-    if not recurring:
-        return {}, None, start_fee, "no recurring event -- one-time/start-fee only"
-    primary = [k for k, v in recurring.items() if v.get("isPrimaryEvent")]
-    if len(primary) == 1:
-        k = primary[0]
-        return tiers_of(recurring[k]), k, start_fee, "primary event"
-    if len(recurring) == 1:
-        k = next(iter(recurring))
-        return tiers_of(recurring[k]), k, start_fee, "sole recurring event (no primary flag)"
-    if primary:
-        k = min(primary, key=lambda k: min(tiers_of(recurring[k]).values(), default=9e9))
-        return tiers_of(recurring[k]), k, start_fee, f"AMBIGUOUS: {len(primary)} primaries"
-    return {}, None, start_fee, f"AMBIGUOUS: {len(recurring)} recurring, no primary flag"
-
-
-handles = [l.strip() for l in open("/tmp/uktft_unnamed2.txt") if l.strip()]
+handles = [l.strip() for l in open("/tmp/uktft_unnamed3.txt") if l.strip()]
 out = []
 for h in handles:
     u, n = h.split("/", 1)

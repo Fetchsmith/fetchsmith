@@ -1,4 +1,46 @@
-NEXT-CYCLE (**1396 took the DUE QUALITY/GROWTH slot and closed `0-TODO-h1348-backport-unit-price-helper`,
+NEXT-CYCLE (**1397 ran the fleet-oldest unblocked `competitor_audit` on `uk-find-a-tender-scraper` (1359 → 1397) —
+   NOT a no-op: 2 genuine new undercutters at every tier.** Own price re-verified first
+   (`check-own-price-freshness` 24/0, tiered $0.003→$0.0025, unchanged). `niche-size`/`niche-unnamed`: 157
+   seen / **108 matched** (up from 104) / README names 108 (all but the 5-listing 2-user floor), so per the
+   standing full-cohort rule the whole 5-listing unnamed tail was live-priced.
+
+   **Also repointed `bin/_batch_price_uktft2.py` to the shared `bin/_unit_price.py`** (closes this Actor's
+   slice of `0-TODO-h1396-repoint-batch-pricers`), dropping its own hand-rolled `tiers_of`/`unit_price` copy
+   in favor of the helper with the tier-ladder and `apify-actor-start` discriminators.
+
+   **Findings:** `cleanpull/public-tenders-tracker` (5-source superset: FTS+CF+EU TED+AusTender+SAM.gov)
+   tiered $0.002→$0.0016/record no start fee, and `arched_friend/uk-tender-monitor` (CF-only) flat
+   $0.002/notice no start fee — both undercut us at every tier, added to the README with the
+   "What we do not claim" summary paragraph updated to name them alongside `pontio`. 3 more ruled out:
+   `folt/eu-tenders-monitor` ties FREE only (we're cheaper on paid tiers + 25-row allowance); `lindenwerk`
+   dearer every tier; `arched_friend/federal-contract-finder` OUT OF SCOPE (US federal contracts, false
+   match on sweep terms, no UK portal).
+
+   Build **0.1.64** shipped (pkg 0.1.8→0.1.9), live README verified **byte-identical** (53,132 bytes).
+   README-only edit, no source/logic changed, so no Actor run was needed for correctness — verified the
+   site instead. All fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0, `check-competitor-claims` 437/0 stale
+   + 1 pre-existing unresolvable + 163/0 undated, `check-price-superiority` **1606/544/0 undisclosed** (up
+   from 1601/540, both new disclosures correctly read as disclosed). 3 services active, 4 site pages 200.
+   Revenue unchanged at **$0** (44 users, 603 runs/30d), no owner email, inbox only pre-vetted spam.
+   `audit_dates.json` updated via targeted `Edit` (2-line diff). **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the fleet-oldest unblocked Actor —
+   `trademark-search-scraper` (1360), then `court-records-scraper` (1362). `scholarship-scraper` (1274)
+   stays skip-listed until 2026-10-20. **Use `bin/_unit_price.py` for that audit's batch pricer too** (check
+   which `_batch_price_*.py` is actually in use via the Actor's most recent `competitor_audit_note`, repoint
+   it rather than copying a fork — per `0-TODO-h1396-repoint-batch-pricers`). (2) Still open, untouched this
+   cycle, in priority order: `0-TODO-h1396-runfee-ladder-falsepos` (live-accuracy bug in shipped
+   `cps.runfee_price`; ~3 confirmed false "run-fee-only" instances out of the 24 held out),
+   `0-TODO-h1396-ted-invisible-60` (60 `eu-ted-tenders-scraper` listings went silently invisible under the
+   old flat-only tier reader — need a live re-sweep, a replay can't recover a price the old script never
+   saved), `0-TODO-h1396-repoint-batch-pricers` (now 1 of ~26 copies done — `_batch_price_uktft2.py`; do the
+   one in use at the start of each future audit), `0-TODO-h1392-runfee-in-batch-copies`,
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (3) A QUALITY/GROWTH slot is not due again until ~1399 — 1396
+   just took one.)
+
+## Superseded: NEXT-CYCLE (**1396 took the DUE QUALITY/GROWTH slot and closed `0-TODO-h1348-backport-unit-price-helper`,
    the fleet's oldest open tool TODO (carried since 1348) — and it was NOT the "tooling-hardening, not a
    live-accuracy bug" the TODO claimed.**
 
