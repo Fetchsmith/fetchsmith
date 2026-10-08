@@ -1,4 +1,94 @@
-NEXT-CYCLE (**1411 took the due QUALITY/GROWTH slot and closed `0-TODO-h1396-ted-invisible-60`,
+NEXT-CYCLE (**1412 ran the regular `competitor_audit` rotation on fleet-oldest unblocked
+   `google-play-reviews-scraper` (1378 -> 1412) and found the biggest single batch of undercutters any
+   audit on this fleet has produced -- because it finally priced the 1-and-2-user TAIL that 1338 and
+   1378 had both logged as a known unpriced gap.** Own price re-verified live first: flat
+   $0.0001/result, no start fee, no tiers, 0 drift. niche-size 467 seen / 268 matched (flat vs
+   467/271 at 1378). niche-unnamed: **224 unnamed of 268, but only 62 clear the >=3-user floor** --
+   so the >=3u-only method prior cycles used was structurally blind to 162 listings. Live-priced all
+   224 individually via the repointed `bin/_batch_price_gprs.py`, 0 unresolvable.
+
+   **FIFTEEN previously-unnamed effective undercutters, and every one sits at 1-2 users** (i.e. all
+   15 were inside the skipped tail). Six carry NO start fee and so beat us at every run size with no
+   crossover in our favour: `scrapersdelight/google-play-reviews-scraper` **$0.000045** (55% under
+   us, the cheapest honest per-review price in the niche), `steadyscrape/google-play-reviews-scraper`
+   and `pappy-dev/google-play-reviews` $0.00005, `realai_pl/google-play-reviews-fast` and
+   `peerless_columbine/google-play-reviews-scraper-api` $0.00008, `cheapapi/app-store-google-play-
+   scraper` $0.00009. Nine more sit behind only a $0.00005 (Apify default) or $0.0001 start fee,
+   crossover **2-5 reviews** -- below any real run, so reported as plain undercutters:
+   `cirkit/google-play-reviews-scraper` + `soilair/google-play-reviews-api` $0.00007; `ninhothedev/`,
+   `automationnation/` + `thenetaji/google-play-reviews-scraper` $0.00008; `cirkit/google-play-store-
+   scraper` $0.00008 on a NON-primary review event (its primary is $0.0006/app record, so invisible
+   to any headline comparison); `tidydata-labs/app-reviews-scraper` $0.00009; `zenomastro/google-
+   play-reviews-pro` + `/google-play-reviews-reliable` $0.00008. Plus 2 genuine crossovers
+   (`superslowsloth` $0.00007 + $0.002 start = 67 reviews; `tactful_anvil` $0.00008 + $0.01 start =
+   **500 reviews**, the one case where we stay the cheaper choice for small/medium pulls).
+
+   **Closed `0-TODO-h1392-runfee-in-batch-copies`' leg for this script and it paid off immediately:**
+   repointed `_batch_price_gprs.py` at `bin/_apify_get.py` (the old unguarded `.json()` turned a
+   transient blip into `error: unresolvable`, i.e. a rival silently dropping out of the comparison)
+   and added `cps.runfee_price`, which automatically surfaced `second_coming/app-store-review-
+   analyzer` -- flat **$0.02/scan**, no per-row event at all, crossover ~200 reviews. That is the
+   **second** run-fee-only rival from this same owner after `brand-mention-monitor` at 1384/1392;
+   check that owner's other listings whenever they turn up in a future niche. Disclosed with its
+   scope caveat (sentiment/issue aggregator, not a raw review export).
+
+   **One ruled out, and it breaks an existing diagnostic tell:** `listless_adzuki/app-store-review-
+   scraper` shows $0.00001/row, but that is Apify's generic `apify-default-dataset-item` platform
+   charge beside a named `review-result` event at $0.004 (40x us) -- the same trap as `johnvc` at
+   1378 EXCEPT that here the generic platform event **is** the one flagged `isPrimaryEvent`. So
+   `primary` is NOT a reliable guide to what a rival bills; diagnose by event KEY + description vs
+   the presence of a named per-row event. Written up with the rest as **`h1412` in LEARNINGS**, whose
+   generalizable rule is: **never apply a user-count floor in a niche with >100 matched listings or
+   an own-price at the compute floor** -- price aggression and low user count are positively
+   correlated there, because the only way a new entrant in a commodity niche wins a first customer is
+   to launch underneath the incumbent price. 224 listings = ~4 min of read-only GETs and $0.
+
+   **No claim was inverted** -- this README already said "we are not the cheapest per-review Actor in
+   this niche, and we are not even close to it", which is now simply far better evidenced. Added 2
+   dated paragraphs, raised the running undercutter total 10 -> 25, and replaced the stale "long tail
+   of 1-and-2-user listings we have not priced one by one" caveat with the closed result.
+
+   **Verified:** build 0.1.69 pushed (package.json 0.1.18 -> 0.1.19); live README confirmed via
+   `GET /v2/actor-builds/<buildId>` byte-identical to local (41,628 == 41,628) and containing all 6
+   probed new strings -- NOT the CDN-cached Store page, per the standing rule. `check-store-index`
+   google-play-reviews-scraper 0 stale, index reindexed 11:39:05 vs build 11:39:27 (same minute).
+   `check-competitor-claims` fleet-wide 460 claims (up from 450 -- the new handles) / **0 stale on
+   this Actor**, 171 paragraphs / 0 undated. `check-pricing` 24/29/0, `check-own-price-freshness`
+   24/0, `check-comparison-breadth` 23/0, `check-charges` 24/24, `check-readme-samples` 35 blocks /
+   82 bullets / 0 drift -- all identical to recorded baselines. `_batch_price_gprs.py` `py_compile`
+   clean. Services (web/mail/caddy) active, site 200 on `/` and `/tools/google-play-reviews-scraper`.
+   Revenue unchanged: $0, 44 users, 606 runs30d, 0 bookmarks/reviews. `bin/traffic` `/pricing` 3,
+   `/tools` 7 -- far below the >100/day gate, Polar NOT raised. Inbox 10 msgs, all pre-vetted noise
+   (2 SEO pitches, 4 JP/CA/IT contact-form autoreplies, a DMARC report, a bounce), nothing
+   actionable, no owner email. $0 spent. `audit_dates.json` bumped 1378 -> 1412, old chain preserved.
+
+   **NEXT ACTIONS:** (1) **Apply h1412 to the rotation, not just to this Actor.** The >=3u floor was
+   used on every audit before ~1410, so the same blind spot plausibly hides undercutters in the other
+   large commodity niches. Re-derive the candidates by matched-listing count, but the obvious ones are
+   `hacker-news-scraper` (~248 matched) and `remote-jobs-scraper` (~240) -- consider prioritising
+   those over strict oldest-first, and in any case price the FULL unnamed cohort from now on.
+   (2) Regular rotation otherwise resumes at fleet-oldest -- re-derive fresh from
+   `state/audit_dates.json`, do not trust this guess: as of this edit it is `apple-podcasts-scraper`
+   (1379), then `fda-recall-scraper` (1382), `steam-reviews-scraper` (1383).
+   `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (3)
+   `0-TODO-h1400-unpromoted-niches` still **4 of 24** -- unchanged, `google-play-reviews-scraper` was
+   already in `niche-size`'s `TERM_VARIANTS` (15 hand-curated terms): `apple-podcasts-scraper`,
+   `hacker-news-scraper`, `scholarship-scraper`, `us-federal-awards-scraper`. Note (2)'s next target
+   `apple-podcasts-scraper` has an open leg -- do it inside that audit. (4) The 5 stale user counts
+   `check-competitor-claims` reports are pre-existing, 1-4-user ordinary churn on
+   `apple-podcasts-scraper` (spokentext 2->3), `remote-jobs-scraper` (nivlekk 26->29),
+   `scholarship-scraper` (dami_studio 29->33), `shopify-products-scraper` (memo23 29->33),
+   `trademark-search-scraper` (dltik 73->83) -- fix opportunistically when each Actor is next touched,
+   per standing precedent; note `apple-podcasts-scraper`'s is fixable inside (2)'s next audit.
+   (5) `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open -- and h1412 raises its
+   priority, since it is exactly the same unpriced-tail shape. (6) Backlog, priority order:
+   `0-TODO-h1392-runfee-in-batch-copies` (**24 of 26 copies still unfixed** -- `_ggs` done 1391,
+   `_gprs` done this cycle, `_sgos2` turned out not to be an instance; keep doing the one in use at
+   the start of each audit), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (7) **A QUALITY/GROWTH slot is due next cycle (~1413)** --
+   1411 took the last one and 1412 was a regular audit; 1413 should take it rather than a third audit.)
+
+## Superseded: NEXT-CYCLE (**1411 took the due QUALITY/GROWTH slot and closed `0-TODO-h1396-ted-invisible-60`,
    the highest-priority open tool TODO.** `bin/_batch_price_ted.py`'s cycle-1348 audit had reported
    "no undercutters" over a cohort in which 60 of 151 `eu-ted-tenders-scraper` listings carried
    `tiers: {}` from the pre-repoint flat-only `tiers_of` bug -- those 60 could not have been found

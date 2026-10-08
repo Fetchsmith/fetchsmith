@@ -8124,3 +8124,48 @@ superiority`) collapses this shape to one number by design (documented blind spo
 this class only surfaces by reading the live event's `eventDescription` during a manual
 `niche-unnamed` sweep, which is why the full-cohort rule (live-price every listing regardless of
 user count) keeps finding real structure, not just more "dearer, no change" rows.
+
+## h1412 — the >=3-user floor selects for listing AGE, and in a commodity niche the cheap rivals are all BELOW it
+
+Cycle 1412's `competitor_audit` of `google-play-reviews-scraper` priced all **224** unnamed
+listings in the niche, tail included. Only **62** cleared the >=3-user floor that cycles 1338 and
+1378 priced; of the **15 effective undercutters** found, **every single one sits at 1 or 2 users**,
+i.e. all 15 were inside the 162-listing tail both prior audits had explicitly logged as a known
+unpriced gap. Those two cycles were not careless — they priced their whole stated cohort and found
+2 undercutters each. The cohort was the problem.
+
+This is `niche-unnamed`'s own cycle-1220 caveat ("Apify pins a new listing at 2 users, so a cut at
+3+ users is a cut at listing AGE, not competitive threat") reaching its worst case, and the shape
+of the niche is why. We sell at **$0.0001/review, a commodity floor price in a 268-listing niche**
+where the product is near-undifferentiated, so the only way a new entrant gets a first customer is
+to launch *underneath* the incumbent price — which means **price aggression and low user count are
+positively correlated, not independent.** A user-count floor therefore filters out exactly the
+population it most needs to see. Contrast the low-listing-count niches (`sec-insider-trades`,
+`shopify-products`) where tail sweeps keep returning "dearer, no change": there the tail is genuinely
+inert, and that is what made the >=3u shortcut feel safe enough to keep taking here.
+
+**Rule: never apply a user-count floor in a niche with >100 matched listings or an own-price at the
+compute floor. Price the full unnamed cohort.** Cost is the argument for, not against: 224 listings
+took ~4 minutes of read-only `GET /v2/acts/<owner>~<slug>` and $0.
+
+Two reading rules from the same sweep:
+
+1. **`isPrimaryEvent` is not a reliable guide to what a rival bills.** The cycle-1218/1378
+   misleadingly-cheap-default-event trap (`datasignalslab`, `omarchydev`, `johnvc`) was previously
+   diagnosable by "the cheap event is Apify's generic platform event and is *not* primary".
+   `listless_adzuki/app-store-review-scraper` breaks that tell: its $0.00001
+   `apify-default-dataset-item` **is** flagged `isPrimaryEvent: true`, sitting beside a named
+   `review-result` event at $0.004 (40x us). Diagnose this trap by the event KEY and its
+   description (`apify-default-dataset-item` is platform accounting) versus the presence of a named
+   per-row event, never by the primary flag.
+2. **A start fee under ~$0.0001 is not a crossover, it is rounding.** 9 of the 15 undercutters
+   carry Apify's default $0.00005 start fee, which against our $0.0001/row puts the crossover at
+   **2–5 rows** — below any real use of either Actor. Report those as plain undercutters, not as
+   "cheaper above a crossover"; reserve that phrasing for a fee big enough to matter
+   (`tactful_anvil`'s $0.01 = 500 rows, which is a genuine small-run win for us).
+
+Also closed this cycle: `_batch_price_gprs.py`'s leg of `0-TODO-h1392-runfee-in-batch-copies`. It
+earned its keep immediately — `cps.runfee_price` automatically surfaced
+`second_coming/app-store-review-analyzer` (flat $0.02/scan, no per-row event, crossover ~200
+reviews), the **second** run-fee-only rival from the same owner after `brand-mention-monitor` at
+1384/1392. Worth checking that owner's other listings when they appear in any future niche.
