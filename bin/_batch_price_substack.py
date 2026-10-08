@@ -4,9 +4,11 @@ The >=3-user cut at this cycle's niche-unnamed sweep was thin (only 1 of 115
 unnamed listings has >=3 users), so per the standing full-cohort rule the whole
 115-listing tail is priced end to end, 0-2-user floor included, no top-N cut.
 
-Same isPrimaryEvent-safe unit_price()/tiers_of() as bin/_batch_price_asr.py
-(cycle 1350's fix for the nested eventTieredPricingUsd shape) -- copied rather
-than imported pending 0-TODO-h1348-backport-unit-price-helper.
+Repointed to the shared bin/_unit_price.py (closes this Actor's slice of
+0-TODO-h1396-repoint-batch-pricers) instead of this file's own hand-rolled
+tiers_of/unit_price, which classified start fees purely on isOneTimeEvent and so
+lacked both the cycle-1388 apify-actor-start override and the cycle-1396
+tier-ladder discriminator.
 
 Our own live price (full-text post, the 'result' event, re-verified live at the
 top of cycle 1351): 0.002 FREE -> 0.00078 GOLD+. This is a multi-event product
@@ -29,49 +31,16 @@ spec = importlib.util.spec_from_loader("cps", importlib.machinery.SourceFileLoad
 cps = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cps)
 
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+import _unit_price as up  # noqa: E402
+tiers_of = up.tiers_of
+unit_price = up.unit_price
+
 H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
 OURS = 0.002  # our FREE-tier "result" (full-text post) price; GOLD+ floor is 0.00078
-TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
-
-
-def tiers_of(ev):
-    t = ev.get("eventTieredPricingUsd") or ev.get("tieredEventPriceUsd")
-    out = {}
-    if isinstance(t, dict):
-        for k, v in t.items():
-            if isinstance(v, (int, float)):
-                out[k] = v
-            elif isinstance(v, dict) and isinstance(v.get("tieredEventPriceUsd"), (int, float)):
-                out[k] = v["tieredEventPriceUsd"]
-    if out:
-        return out
-    p = cps.price_of(ev)
-    return {"FREE": p} if isinstance(p, (int, float)) else {}
-
-
-def unit_price(events):
-    onetime, recurring = {}, {}
-    for k, v in events.items():
-        (onetime if v.get("isOneTimeEvent") else recurring)[k] = v
-    start_fee = max((min(tiers_of(v).values(), default=0.0) for v in onetime.values()),
-                    default=0.0)
-    if not recurring:
-        return {}, None, start_fee, "no recurring event -- one-time/start-fee only"
-    primary = [k for k, v in recurring.items() if v.get("isPrimaryEvent")]
-    if len(primary) == 1:
-        k = primary[0]
-        return tiers_of(recurring[k]), k, start_fee, "primary event"
-    if len(recurring) == 1:
-        k = next(iter(recurring))
-        return tiers_of(recurring[k]), k, start_fee, "sole recurring event (no primary flag)"
-    if primary:
-        k = min(primary, key=lambda k: min(tiers_of(recurring[k]).values(), default=9e9))
-        return tiers_of(recurring[k]), k, start_fee, f"AMBIGUOUS: {len(primary)} primaries"
-    return {}, None, start_fee, f"AMBIGUOUS: {len(recurring)} recurring, no primary flag"
-
 
 handles = [l.strip() for l in open("/tmp/substack_unnamed_handles.txt") if l.strip()]
 out = []

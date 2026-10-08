@@ -4,9 +4,10 @@ app-store-reviews-scraper's niche -- cycle 1306 only live-priced the 2 listings
 with >=3 users and left the other 120 unchecked, which the eu-ted-tenders-scraper
 sweep (cycle 1348) showed is exactly where undercutters hide in a mostly-new niche.
 
-Same isPrimaryEvent-safe unit_price() logic as bin/_batch_price_ted.py (see that
-file's docstring for the full rule set) -- copied rather than imported pending the
-0-TODO-h1348-backport-unit-price-helper shared-module task.
+Repointed to the shared bin/_unit_price.py (closes this Actor's slice of
+0-TODO-h1396-repoint-batch-pricers) instead of this file's own hand-rolled
+tiers_of/unit_price, which had both the tiered-shape and apify-actor-start fixes
+already but lacked the cycle-1396 tier-ladder discriminator.
 """
 import datetime
 import importlib.machinery
@@ -23,63 +24,17 @@ spec = importlib.util.spec_from_loader("cps", importlib.machinery.SourceFileLoad
 cps = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cps)
 
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+import _unit_price as up  # noqa: E402
+tiers_of = up.tiers_of
+unit_price = up.unit_price
+
 H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
 # our own live price, flat per review, re-verified live at the top of cycle 1350
 OURS = 0.0001
-TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
-
-
-def tiers_of(ev):
-    """All tier prices for one charge event. Apify uses two different shapes for
-    eventTieredPricingUsd across listings -- {"FREE": 0.006, ...} (flat float, what
-    bin/_batch_price_ted.py's version of this function assumed) and
-    {"FREE": {"tieredEventPriceUsd": 0.006}, ...} (nested dict, found cycle 1350 on
-    36/122 of this niche's unnamed tail) -- and the flat-only version silently
-    returned {} (no undercut, no AMBIGUOUS, just invisible) on every nested-shape
-    listing. Handle both."""
-    t = ev.get("eventTieredPricingUsd") or ev.get("tieredEventPriceUsd")
-    out = {}
-    if isinstance(t, dict):
-        for k, v in t.items():
-            if isinstance(v, (int, float)):
-                out[k] = v
-            elif isinstance(v, dict) and isinstance(v.get("tieredEventPriceUsd"), (int, float)):
-                out[k] = v["tieredEventPriceUsd"]
-    if out:
-        return out
-    p = cps.price_of(ev)
-    return {"FREE": p} if isinstance(p, (int, float)) else {}
-
-
-def unit_price(events):
-    # Cycle 1388: `apify-actor-start` is ALWAYS a start fee, never the per-row unit,
-    # even when its owner neglects isOneTimeEvent and/or flags it isPrimaryEvent=true.
-    # This is the cycle-1385 check-price-superiority bug (it picked a $0.00005 start
-    # fee as "the price" and miscounted 20 rivals fleet-wide); this file was written
-    # at 1350 and classified purely on isOneTimeEvent, so it reproduced it.
-    onetime, recurring = {}, {}
-    for k, v in events.items():
-        is_start = v.get("isOneTimeEvent") or k == "apify-actor-start"
-        (onetime if is_start else recurring)[k] = v
-    start_fee = max((min(tiers_of(v).values(), default=0.0) for v in onetime.values()),
-                    default=0.0)
-    if not recurring:
-        return {}, None, start_fee, "no recurring event -- one-time/start-fee only"
-    primary = [k for k, v in recurring.items() if v.get("isPrimaryEvent")]
-    if len(primary) == 1:
-        k = primary[0]
-        return tiers_of(recurring[k]), k, start_fee, "primary event"
-    if len(recurring) == 1:
-        k = next(iter(recurring))
-        return tiers_of(recurring[k]), k, start_fee, "sole recurring event (no primary flag)"
-    if primary:
-        k = min(primary, key=lambda k: min(tiers_of(recurring[k]).values(), default=9e9))
-        return tiers_of(recurring[k]), k, start_fee, f"AMBIGUOUS: {len(primary)} primaries"
-    return {}, None, start_fee, f"AMBIGUOUS: {len(recurring)} recurring, no primary flag"
-
 
 handles = [l.strip() for l in open("/tmp/asr_unnamed_handles.txt") if l.strip()]
 out = []

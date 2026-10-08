@@ -7,6 +7,12 @@ alongside the prices so each exclusion is justified from the listing's own live 
 OURS: FLAT $0.002/result on every plan tier, single `result` event (isPrimaryEvent), NO start fee
 -- re-verified live at the top of cycle 1360 against the actor's own pricingInfos record
 (PAY_PER_EVENT, effective since 2026-09-19, 0 drift from the README).
+
+Repointed to the shared bin/_unit_price.py (closes this Actor's slice of
+0-TODO-h1396-repoint-batch-pricers) instead of this file's own hand-rolled
+tiers_of/unit_price, which classified start fees purely on isOneTimeEvent and so
+lacked the cycle-1388 apify-actor-start override and the cycle-1396 tier-ladder
+discriminator.
 """
 import datetime
 import importlib.machinery
@@ -23,48 +29,16 @@ spec = importlib.util.spec_from_loader("cps", importlib.machinery.SourceFileLoad
 cps = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cps)
 
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+import _unit_price as up  # noqa: E402
+tiers_of = up.tiers_of
+unit_price = up.unit_price
+
 H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
 OURS = {t: 0.002 for t in ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")}
-
-
-def tiers_of(ev):
-    t = ev.get("eventTieredPricingUsd") or ev.get("tieredEventPriceUsd")
-    out = {}
-    if isinstance(t, dict):
-        for k, v in t.items():
-            if isinstance(v, (int, float)):
-                out[k] = v
-            elif isinstance(v, dict) and isinstance(v.get("tieredEventPriceUsd"), (int, float)):
-                out[k] = v["tieredEventPriceUsd"]
-    if out:
-        return out
-    p = cps.price_of(ev)
-    return {"FREE": p} if isinstance(p, (int, float)) else {}
-
-
-def unit_price(events):
-    onetime, recurring = {}, {}
-    for k, v in events.items():
-        (onetime if v.get("isOneTimeEvent") else recurring)[k] = v
-    start_fee = max((min(tiers_of(v).values(), default=0.0) for v in onetime.values()),
-                    default=0.0)
-    if not recurring:
-        return {}, None, start_fee, "no recurring event -- one-time/start-fee only"
-    primary = [k for k, v in recurring.items() if v.get("isPrimaryEvent")]
-    if len(primary) == 1:
-        k = primary[0]
-        return tiers_of(recurring[k]), k, start_fee, "primary event"
-    if len(recurring) == 1:
-        k = next(iter(recurring))
-        return tiers_of(recurring[k]), k, start_fee, "sole recurring event (no primary flag)"
-    if primary:
-        k = min(primary, key=lambda k: min(tiers_of(recurring[k]).values(), default=9e9))
-        return tiers_of(recurring[k]), k, start_fee, f"AMBIGUOUS: {len(primary)} primaries"
-    return {}, None, start_fee, f"AMBIGUOUS: {len(recurring)} recurring, no primary flag"
-
 
 handles = [l.strip() for l in open("/tmp/tm_unnamed.txt") if l.strip()]
 out = []
