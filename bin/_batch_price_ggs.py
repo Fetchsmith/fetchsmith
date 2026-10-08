@@ -19,7 +19,7 @@ H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
-handles = [l.strip() for l in open("/tmp/ggs_unnamed.txt") if l.strip()]
+handles = [l.strip() for l in open("/tmp/ggs_unnamed_handles.txt") if l.strip()]
 out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
