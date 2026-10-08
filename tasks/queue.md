@@ -1,4 +1,124 @@
-NEXT-CYCLE (**1406 ran the regular `competitor_audit` rotation on the re-derived fleet-oldest
+NEXT-CYCLE (**1408 took the due QUALITY/GROWTH slot, closed the 4-cycle-deferred `_apify_get`
+   repoint (queue item (4) -- DONE), and that work surfaced a fleet-wide FALSE POSITIVE:
+   `check-store-index` was reporting `stale=['readme']` on all 24 Actors and every one was
+   wrong.** Apify REMOVED the `readme` attribute from the `prod_PUBLIC_STORE` Algolia index
+   (hits now carry `readmeSummary`, an ~285-word AI-generated summary). The cycle-972 compare
+   `norm(hit.get("readme")) != norm(bmd)` read a MISSING key as `None` -> `""` and diffed it
+   against a 6,612-word build readme: guaranteed mismatch, every Actor, permanently. Confirmed by
+   dumping a hit's keys, by `-v` ("indexed 0 words vs build 6612 words"), and by re-running the
+   pre-edit file via `git show HEAD:bin/check-store-index` (identical 24/24 -> bug predated this
+   cycle, repoint is behaviour-neutral). `readmeSummary` is NOT substitutable (derived prose), so
+   the fix REPORTS the lost coverage instead of retargeting the check to keep a green tick: fleet
+   now reads **0 stale / 24** plus an explicit `readme NOT CHECKED for 24 Actor(s)` note. This
+   un-blocks a real gate -- `LEARNINGS:168` makes "run `check-store-index <slug>` after every
+   readme change" standing, and every h904 readme-proximity measurement is gated on "0 stale",
+   which was unsatisfiable. Lesson written up as `h1408` in LEARNINGS (the fourth, INVERTED
+   check-failure shape: a check that INVENTS a finding via upstream schema drift; `.get()`
+   defended against a crash and converted a schema change into a confident permanent wrong
+   answer).
+
+   Also in the repoint: `check-store-index`'s 3 sites each needed a DIFFERENT policy, not a
+   blanket guard -- the `?my=true` listing is the tool's denominator so it now `sys.exit`s FATAL
+   (an empty fleet would have printed a confident "0 stale"); a 404/403 on a per-Actor record we
+   just read out of our OWN listing is not a normal absence (`LIVE RECORD UNREADABLE` + new
+   `WARNING: INCOMPLETE CHECK` naming every uncompared Actor). `check-disclosure`: the handoff's
+   warning was right and understated -- BOTH call sites are dev.to, not Apify (lines 78 AND 83).
+   Repointed anyway (`get_json` is host-agnostic; only the `FINAL_MISSING`/`RETRY_STATUS` split
+   is Apify-tuned and it is correct for dev.to too). Its crash was not the real bug: one
+   `try/except` wrapped the WHOLE leg, so a blip on one article aborted the rest while printing
+   only "SKIPPED", and "0 missing disclosure(s)" + exit 0 looked the same whether dev.to was
+   fully checked or not at all. Per-article failures are now counted (`UNCHECKED`) with a
+   `COVERAGE INCOMPLETE` line beside the verdict; exit stays 0 on an unreachable dev.to because
+   offline usability is the documented design intent.
+
+   **Verified:** both tools `py_compile` clean; BOTH new guards fault-injected -- bogus token ->
+   `FATAL ... (status=401)` with script exit 1; wrong slug -> `LIVE RECORD UNREADABLE
+   (status=404)` + the INCOMPLETE warning. Live: `check-disclosure` 53 site posts + 15 dev.to /
+   0 missing / no COVERAGE line; `check-store-index` 0 stale / 24. Standing checks all identical
+   to recorded baselines: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-own-price-freshness` 24/0, `check-competitor-claims` 446/0 stale + 1 pre-existing
+   unresolvable (`scraper_guru` in substack-scraper README, unrelated) + 169/0 undated. Services
+   (web/mail/caddy) active, site 200 on `/` and `/tools`. Revenue unchanged: $0, 44 users, 606
+   runs30d, 0 bookmarks/reviews. `bin/traffic`: `/pricing` 3, `/tools` 7 -- far below the >100/day
+   Polar gate, so Polar NOT raised per owner instructions. Inbox 10 msgs, all pre-vetted noise,
+   nothing actionable. No README/Actor change, no build, $0 spent. No `competitor_audit` ran
+   (QUALITY slot) so `audit_dates.json` is untouched BY DESIGN -- do not read that as a missed
+   bookkeeping step (cf. the cycle-1401/1403 gap).
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes -- **re-derive fleet-oldest
+   fresh from `state/audit_dates.json`, do not trust this guess**: as of this edit it is
+   `shopify-products-scraper` (1372), then `sec-insider-trades-scraper` (1376).
+   `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2)
+   `0-TODO-h1400-unpromoted-niches` is still **5 of 24** -- 1408 did NOT touch it (it spent the
+   QUALITY slot on the older deferred repoint item instead): `apple-podcasts-scraper`,
+   `hacker-news-scraper`, `scholarship-scraper`, `shopify-products-scraper`,
+   `us-federal-awards-scraper`. Note `shopify-products-scraper` will likely be touched by the
+   regular audit per (1) -- check its `TERM_VARIANTS` promotion status as part of THAT audit
+   rather than redoing it separately; `us-federal-awards-scraper`'s leg is also open since 1407
+   touched that Actor without checking promotion status. Expect "no rescue needed" to be the
+   common outcome (two consecutive instances now). (3) **NEW, from this cycle:** readme index
+   freshness is no longer verifiable from the Store index at all. If an h904 readme-proximity
+   measurement needs it, the only remaining route is snapshotting `readmeSummary` per build and
+   diffing OUR OWN snapshots over time (it is regenerated from the readme, so it should move when
+   the readme does) -- a real piece of work, not a one-liner, and worth doing only if something
+   actually depends on it. Do NOT word-diff `readmeSummary` against the readme. (4)
+   `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open. (5) Backlog unchanged,
+   priority order: `0-TODO-h1396-ted-invisible-60`, `0-TODO-h1392-runfee-in-batch-copies`,
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: NEXT-CYCLE (**1407 ran the regular `competitor_audit` rotation on the re-derived fleet-oldest
+   unblocked Actor, `us-federal-awards-scraper` (1369 -> 1407) — clean negative, no new
+   undercutter, no drift. `niche-size`/`niche-unnamed`: 147 seen / 126 matched / 40 unnamed (up
+   from 145/125/38 at 1369, normal churn). The `>=3u` unnamed cut is thin (3 listings): 2
+   (`nasasurfer`, `carranza-tech`) already covered by the README's bare-handle "tie our Free
+   tier" sentence; the third (`crawlerbros`, 2 listings) ties $0.005 FREE -> $0.003 GOLD+ + a
+   $0.005 start fee, dearer than us at every tier. Live-priced a 30-listing sample of the 2u tail
+   too — everything resolvable priced at $0.004+. The one listing that looked like a steal,
+   `datasignalslab/gov-contract-awards-monitor` ($0.00001 on the default dataset-item event), is
+   the SAME misleadingly-cheap-default-event trap the cycle-1218 note on this Actor already
+   flagged on `omarchydev` — its real `isPrimaryEvent` is `company-analyzed` at $0.02, a
+   different shape (per-company risk score, not bulk export), correctly left unnamed. Spot-
+   checked 8 headline named rivals for drift (parseforge, benthepythondev, ryanclinton,
+   copious_atoll, fortuitous_pirate, pink_comic, jungle_synthesizer/samgov-scraper, datamule) —
+   every resolved price matched the README exactly. Per the 1311/1353/1369 "nothing changed"
+   precedent, README left untouched, no build pushed. `audit_dates.json`'s
+   `us-federal-awards-scraper.competitor_audit` bumped 1369 -> 1407 with a new note prepended
+   (old chain preserved).
+
+   **Verified:** fleet-wide `check-competitor-claims` 446/0 stale + 1 pre-existing unresolvable
+   (`substack_guru`, unrelated) + 169/0 undated; `check-price-superiority` 1673/557/**0
+   undisclosed**; `check-pricing` 24/29/0; `check-charges` 24/24 — all clean, all identical to
+   the 1404-1406 baselines (no regression). Services (`fetchsmith-web`, `fetchsmith-mail`,
+   `caddy`) all active; site 200 on `/` and `/tools`. `bin/traffic` checked for the Polar-
+   checkout gate: no sustained >100/day hits to `/pricing` or `/tools`, so per owner instructions
+   still do NOT raise Polar. Revenue unchanged: $0, 44 users, 606 runs30d, 0 bookmarks/reviews.
+   Inbox: 9 messages, same pre-vetted noise (2x searchindex.pro SEO pitch, JP/CA/IT contact-form
+   autoreplies, 1 DMARC report, 1 bounce) — nothing actionable, no owner email. No code/README
+   change, no build, $0 spent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the new fleet-oldest
+   unblocked Actor — **re-derive fresh from `state/audit_dates.json`, do not trust this
+   handoff's guess**: as of this edit it is `shopify-products-scraper` (1372), then
+   `sec-insider-trades-scraper` (1376). `scholarship-scraper` (1274) stays skip-listed until
+   2026-10-20. (2) Next QUALITY/GROWTH slot is due ~1408 (1405 took the last one) — continue
+   `0-TODO-h1400-unpromoted-niches`, now **5 of 24**: `apple-podcasts-scraper`,
+   `hacker-news-scraper`, `scholarship-scraper`, `shopify-products-scraper`,
+   `us-federal-awards-scraper` (note: `shopify-products-scraper` will likely get touched by the
+   regular audit rotation first per (1) — check `TERM_VARIANTS` promotion status as part of THAT
+   audit rather than redoing it separately; `us-federal-awards-scraper`'s own leg of this TODO is
+   now also open since 1407 touched this Actor without checking `TERM_VARIANTS` promotion — carry
+   it forward). (3) `ats-jobs-scraper`'s unread tail (~768 of 813 matched) is still open. (4)
+   Finish the `_apify_get` repoint (small, mechanical, helper already tested, carried over from
+   1404/1405/1406, still not done): `check-disclosure` (2 call sites — note line 83 is the
+   dev.to API, not Apify, re-read `FINAL_MISSING` for that host before repointing) and
+   `check-store-index` (3 call sites, all `.json()["data"]` with no `.get`, so they `KeyError` as
+   well as `JSONDecodeError`). (5) Backlog unchanged, priority order:
+   `0-TODO-h1396-ted-invisible-60`, `0-TODO-h1392-runfee-in-batch-copies`,
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+## Superseded: NEXT-CYCLE (**1406 ran the regular `competitor_audit` rotation on the re-derived fleet-oldest
    unblocked Actor, `fec-campaign-finance-scraper` (1368 -> 1406) — clean for a THIRD consecutive
    time (460 seen / 42 matched / 0 unnamed, stable vs 459/42/0 at cycles 1332 and 1368).**
 

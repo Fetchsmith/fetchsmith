@@ -63,28 +63,63 @@ for f in posts:
 print("check-disclosure: %d site blog post(s) checked" % len(posts))
 
 # --- 2. dev.to ----------------------------------------------------------------
+devto_unchecked = -1  # -1 = the dev.to leg did not run at all; >=0 = ran, N articles unread.
 key = os.environ.get("DEVTO_API_KEY")
 if not key:
     print("check-disclosure: dev.to SKIPPED (DEVTO_API_KEY not in env; "
           "source /root/agent/secrets/env to include it)")
 else:
-    try:
-        import httpx
+    # Cycle 1408: both GETs below used to be bare `httpx.get(...).json()` under ONE
+    # try/except that printed SKIPPED. Two problems, neither of them the crash:
+    #   - a blip on any SINGLE article aborted the whole leg, so the remaining articles
+    #     went unchecked while the output said only "SKIPPED";
+    #   - the final "N missing disclosure(s)" line and exit 0 looked identical whether
+    #     dev.to had been fully checked or not at all.
+    # `_apify_get.get_json` is host-agnostic (it is only the FINAL_MISSING/RETRY_STATUS
+    # split that was tuned for Apify, and that split is right for dev.to too: 401/403 is
+    # a real auth/UA rejection, not worth retrying; 429/5xx is). Per-article failures are
+    # now counted and surfaced instead of ending the leg.
+    sys.path.insert(0, "/root/agent/bin")
+    from _apify_get import get_json, ApifyGetError
 
-        # dev.to 403s the default urllib/httpx UA on some routes (cycle 681).
-        H = {"api-key": key,
-             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                           "Chrome/120 Safari/537.36"}
-        arts = httpx.get("https://dev.to/api/articles/me/published",
-                         headers=H, timeout=30).json()
+    # dev.to 403s the default urllib/httpx UA on some routes (cycle 681).
+    H = {"api-key": key,
+         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                       "Chrome/120 Safari/537.36"}
+    try:
+        arts, st = get_json("https://dev.to/api/articles/me/published", headers=H)
+    except ApifyGetError as e:
+        arts, st = None, "unreachable: %s" % e
+    if not isinstance(arts, list):
+        # Stays a notice, not an error -- this check must remain useful offline (see
+        # the module docstring). But it is now also reflected in the summary below.
+        print("check-disclosure: dev.to SKIPPED (could not list articles, status=%s)" % (st,))
+        devto_unchecked = -1
+    else:
+        devto_unchecked = 0
         for a in arts:
             # The list endpoint does NOT return body_markdown; fetch each article.
-            body = httpx.get("https://dev.to/api/articles/%d" % a["id"],
-                             headers=H, timeout=30).json().get("body_markdown", "")
-            check("dev.to/%d %s" % (a["id"], a["title"][:40]), body)
-        print("check-disclosure: %d dev.to article(s) checked" % len(arts))
-    except Exception as e:  # network/API trouble must not fail the whole check
-        print("check-disclosure: dev.to SKIPPED (%s: %s)" % (type(e).__name__, e))
+            try:
+                art, st = get_json("https://dev.to/api/articles/%d" % a["id"], headers=H)
+            except ApifyGetError as e:
+                art, st = None, "unreachable: %s" % e
+            if not isinstance(art, dict):
+                print("UNCHECKED  dev.to/%d %s (status=%s)"
+                      % (a["id"], a["title"][:40], st))
+                devto_unchecked += 1
+                continue
+            check("dev.to/%d %s" % (a["id"], a["title"][:40]),
+                  art.get("body_markdown", ""))
+        print("check-disclosure: %d dev.to article(s) checked%s"
+              % (len(arts) - devto_unchecked,
+                 ", %d UNCHECKED" % devto_unchecked if devto_unchecked else ""))
 
 print("check-disclosure: %d missing disclosure(s)" % len(failures))
+# Exit stays 0 on an unreachable dev.to (docstring: offline-usable by design), but say so
+# on the SAME line a cycle reads as the verdict -- a clean "0 missing" over a leg that
+# never ran is the cycle-692 rot shape all over again.
+if devto_unchecked != 0:
+    print("check-disclosure: COVERAGE INCOMPLETE -- dev.to %s"
+          % ("leg did not run" if devto_unchecked < 0
+             else "left %d article(s) unread" % devto_unchecked))
 sys.exit(1 if failures else 0)

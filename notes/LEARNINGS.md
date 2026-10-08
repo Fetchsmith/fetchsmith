@@ -8068,3 +8068,40 @@ Grants.gov, NSF), which the README already handles in prose and which are the ni
 own `us-federal-awards-scraper`/`grants-gov-scraper` — folding them in would double-count.
 **Takeaway: "N consecutive clean sweeps" justifies testing the rule once, and a documented
 negative result is a real deliverable — it stops the next cycle re-testing the same thing.**
+
+## h1408 A check can fail by INVENTING a finding, not just by missing one — upstream schema drift
+
+Cycle 1404 catalogued three ways a check fails quietly (crash / silent skip / silent undercount)
+and extracted the rule *"when a tool's job is COMPLETENESS, partial failure must change the
+tool's own OUTPUT."* Cycle 1408 found the **fourth and inverted shape, which that rule does not
+cover: a FALSE POSITIVE manufactured by upstream schema drift.**
+
+`bin/check-store-index` reported `stale=['readme']` for **all 24 Actors**. Nothing was stale.
+Apify had **removed the `readme` attribute from the `prod_PUBLIC_STORE` Algolia index** (hits now
+carry `readmeSummary`, an ~285-word AI-generated summary). The cycle-972 comparison was
+`norm(hit.get("readme")) != norm(bmd)` — `.get` on a **missing** key returned `None`, `norm`
+turned that into `""`, and the tool diffed an empty string against a 6,612-word build readme.
+Guaranteed mismatch, every Actor, forever. `.get()` defended against a crash and thereby
+converted a schema change into a confident, permanent, wrong finding.
+
+**What actually caught it:** not the tool — it was *louder* than a clean run. It was the
+contradiction with the recorded baseline (`LEARNINGS:168`: "Fleet run after the fix: 0 stale").
+24/24 failing a check whose recorded history is 0/24 is a tool-level hypothesis, not 24 incidents.
+*A fleet-wide uniform failure is nearly always the measurement, not the fleet.*
+
+**Rules extracted:**
+1. **Before believing a finding, confirm the field you read EXISTS.** Dump the keys
+   (`sorted(hit.keys())`) — don't trust `.get()` to tell absence from difference. Absent and
+   different need different code paths and different output.
+2. **Re-ran the pre-edit version from `git show HEAD:<file>` to prove the 24/24 predated my
+   edits.** Do this before diagnosing anything while you have uncommitted changes in the file —
+   otherwise you cannot tell an inherited bug from one you just introduced.
+3. **A derived replacement field is not a substitute.** `readmeSummary` is generated prose;
+   word-diffing it against the readme is wrong by construction. When coverage is genuinely lost,
+   **report the loss** — do not retarget the check at the nearest-looking field to keep a green
+   tick. The fix prints `readme NOT CHECKED for 24 Actor(s)` beside `0 stale`.
+4. **Cost of this class is silent dependency rot.** `LEARNINGS:168` makes "run
+   `check-store-index <slug>` after every readme change" a standing rule, and every h904
+   readme-proximity measurement is gated on "0 stale" — a permanently-unsatisfiable gate is
+   indistinguishable from a blocked one. **An always-failing check is as useless as an
+   always-passing one, and decays faster, because cycles learn to discount it.**

@@ -10,7 +10,10 @@ live record and the Store PAGE but does not by itself push the new text into the
 listing text can stay stale in search results indefinitely. Any Store-ranking / keyword-membership
 probe is meaningless until this reports 0 stale fields for the Actor in question.
 """
-import sys, json, urllib.request, datetime, httpx
+import sys, json, urllib.request, datetime
+
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_json  # noqa: E402  (shared retrying GET, cycle 1404)
 
 FIELDS = ("title", "description", "seoTitle", "seoDescription")
 APP, KEY, IDX = "OW0O5I3QO7", "0ecccd09f50396a4dbbe5dbfb17f4525", "prod_PUBLIC_STORE"
@@ -34,14 +37,32 @@ req = urllib.request.Request(
 alg = {h["name"]: h for h in json.load(urllib.request.urlopen(req))["hits"] if h.get("username") == "fetchsmith"}
 
 stale_total = 0
-for a in sorted(httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"], key=lambda x: x["name"]):
+unknown = []  # Actors whose index-vs-live comparison could NOT be completed (see cycle 1408 note).
+readme_not_indexed = []  # Actors where the index no longer exposes `readme` (cycle 1408).
+
+# Cycle 1408: this was `httpx.get(...).json()["data"]["items"]` -- a non-JSON body raised
+# JSONDecodeError and a shape change raised KeyError. Worse, had it ever yielded an empty
+# list the tool would have printed a confident "0 stale field(s)" over an empty fleet. The
+# fleet listing is this tool's denominator, so a failure here must abort, not degrade.
+fleet, st = get_json(f"{API}/acts?my=true&limit=1000", headers=H)
+if not (fleet or {}).get("data", {}).get("items"):
+    sys.exit(f"FATAL: could not list our own Actors (status={st}) -- no fleet to check.")
+for a in sorted(fleet["data"]["items"], key=lambda x: x["name"]):
     n = a["name"]
     if only and n not in only:
         continue
     if n not in alg:
         print(f"{n:28s} NOT IN SEARCH INDEX")
         continue
-    live = httpx.get(f"{API}/acts/fetchsmith~{n}", headers=H).json()["data"]
+    # A 404/403 here is NOT a normal absence: we just read `n` out of our own `?my=true`
+    # listing, so it must exist. Report it rather than letting the Actor fall out of the
+    # stale count silently.
+    live, st = get_json(f"{API}/acts/fetchsmith~{n}", headers=H)
+    live = (live or {}).get("data")
+    if not live:
+        print(f"{n:28s} LIVE RECORD UNREADABLE (status={st}) -- not checked")
+        unknown.append(n)
+        continue
     hit = alg[n]
     idx_mod = datetime.datetime.fromtimestamp(hit["modifiedAt"], datetime.UTC).strftime("%m-%d %H:%M:%S")
     build = (live.get("taggedBuilds", {}).get("latest") or {}).get("finishedAt", "")[5:19].replace("T", " ")
@@ -53,17 +74,51 @@ for a in sorted(httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["d
     # short for 50 minutes). Every readme-proximity (h904) measurement is meaningless
     # until this says readme is in sync. Compare against the latest BUILD's readme,
     # which is exactly what the index snapshots.
+    #
+    # CYCLE 1408 -- READ THIS BEFORE "FIXING" A STALE README. Apify REMOVED the `readme`
+    # attribute from the prod_PUBLIC_STORE index; hits now carry `readmeSummary` (an
+    # ~285-word AI-generated summary) instead. The cycle-972 compare above therefore read
+    # a MISSING field as an empty string and diffed it against the full build readme, so
+    # every Actor scored `stale=['readme']` unconditionally: a fleet-wide FALSE POSITIVE
+    # (24/24 when found), not 24 real staleness events. Verified by dumping a hit's keys
+    # -- no `readme` key at all -- and by `-v`, which showed "indexed 0 words vs build
+    # 6612 words" on steam-reviews-scraper. That contradicted the LEARNINGS "fleet run
+    # after the fix: 0 stale" baseline, which is what exposed it.
+    # `readmeSummary` is NOT substitutable: it is derived prose, so word-diffing it
+    # against the readme is wrong by construction. We therefore cannot verify readme
+    # index freshness from the index any more -- report that honestly instead of
+    # emitting a finding we cannot support.
     bid = (live.get("taggedBuilds", {}).get("latest") or {}).get("buildId")
+    if bid and "readme" not in hit:
+        readme_not_indexed.append(n)
+        bid = None  # skip the build fetch: there is nothing to compare it against.
     if bid:
-        bmd = httpx.get(f"{API}/actor-builds/{bid}", headers=H).json()["data"].get("readme") or ""
-        if norm(hit.get("readme")) != norm(bmd):
-            stale.append("readme")
-            if verbose:
-                print(f"    readme  indexed {len((hit.get('readme') or '').split())} words"
-                      f"  vs build {len(bmd.split())} words")
+        bld, st = get_json(f"{API}/actor-builds/{bid}", headers=H)
+        bld = (bld or {}).get("data")
+        if bld is None:
+            # Cannot compare -- say so. Silently skipping would report "readme in sync",
+            # which is the one claim every h904 readme-proximity measurement depends on.
+            stale.append("readme=UNKNOWN(%s)" % st)
+            unknown.append(n)
+        else:
+            bmd = bld.get("readme") or ""
+            if norm(hit.get("readme")) != norm(bmd):
+                stale.append("readme")
+                if verbose:
+                    print(f"    readme  indexed {len((hit.get('readme') or '').split())} words"
+                          f"  vs build {len(bmd.split())} words")
     stale_total += len(stale)
     print(f"{n:28s} idx={idx_mod}  build={build}  stale={stale or '-'}")
     if verbose and stale:
         for f in stale:
-            print(f"    {f}\n      indexed: {(hit.get(f) or '')[:160]}\n      live   : {(live.get(f) or '')[:160]}")
+            if f in FIELDS:
+                print(f"    {f}\n      indexed: {(hit.get(f) or '')[:160]}\n      live   : {(live.get(f) or '')[:160]}")
 print(f"\n{stale_total} stale field(s) in the Store search index.")
+if readme_not_indexed:
+    print(f"NOTE: readme NOT CHECKED for {len(readme_not_indexed)} Actor(s) -- Apify dropped the "
+          f"`readme` attribute from prod_PUBLIC_STORE (only `readmeSummary`, a derived summary, "
+          f"remains). This is expected, not a regression; see the cycle-1408 comment above. "
+          f"The {len(FIELDS)} title/description/SEO fields above ARE still verified.")
+if unknown:
+    print(f"WARNING: INCOMPLETE CHECK -- {len(unknown)} Actor(s) could not be compared "
+          f"({', '.join(sorted(set(unknown)))}). Re-run before trusting the count above.")
