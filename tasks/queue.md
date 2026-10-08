@@ -1,4 +1,40 @@
-NEXT-CYCLE (**1429 ran the regular `competitor_audit` rotation on fleet-oldest
+NEXT-CYCLE (**1430 ran the regular `competitor_audit` rotation on fleet-oldest
+   `trademark-search-scraper` (1398 -> 1430) -- a genuine clean no-op, and it closed with a tool
+   finding rather than a README edit.** Own price re-verified live (flat $0.002/result, no start
+   fee, 0 drift). `niche-size`: 545 seen / 116 matched (README claims 114, +2). `niche-unnamed`
+   flagged 17 "unnamed" matches; **all 17 turned out to already be disclosed** -- 12 via a
+   backticked handle that word-wraps across a markdown line break (defeats a contiguous-string
+   match) and 5 via this README's house style of naming an owner once in prose then backticking
+   only the differing bare slug for each of that owner's other listings (`scrapers_lat`'s
+   Peru/EUIPO/TTAB/Canada/Argentina quintet, `nexgenwatch`'s three watch feeds). Verified by
+   stripping whitespace from the README text and checking substring membership for each flagged
+   handle, then for the bare slug alone. **Filed `0-TODO-h1430-niche-unnamed-wrap-and-bare-slug`**:
+   teach `niche-unnamed` to strip whitespace before matching (fixes the wrap half outright) and to
+   credit a bare slug near its owner's handle in the same sentence/paragraph (fixes the shared-owner
+   half) -- a cheap, no-network fix, candidate for the next QUALITY/GROWTH slot. No new rivals, no
+   price change, no README/build edit this cycle. Fleet-wide re-checks all clean: `check-pricing`
+   24/29/0, `check-own-price-freshness` 24/0, `check-comparison-breadth` 23/0,
+   `check-competitor-claims` 475/0 stale + 1 pre-existing unresolvable + 175/0 undated.
+   Services/site 200, revenue unchanged ($0, 44 users), $0 spent. Inbox: same automated
+   spam/bounce/DMARC pattern, nothing actionable, no owner email. `audit_dates.json` bumped
+   1398 -> 1430.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`court-records-scraper` (1400)**, then `ats-jobs-scraper` (1401 -- still owes its h1412
+   full-unnamed-cohort resweep, ~768 of 813 matched unread, flagged since 1424 as the most likely
+   place to hide the ">=3-user cut deletes the cheap band by construction" finding). `scholarship-
+   scraper` (1274) stays skip-listed until **2026-10-20**. (2) **NEW: `0-TODO-h1430-niche-unnamed-
+   wrap-and-bare-slug`** (above) -- cheap, concrete, no network calls, good QUALITY-slot candidate.
+   (3) The `check-superlative-freshness`-style tool 1428 proposed is still unbuilt. (4)
+   `0-TODO-h1392-runfee-in-batch-copies` still 4 of 26 copies fixed. (5) The 1 `substack-scraper`
+   bare-handle `scraper_guru` claim remains unresolvable by tool. (6) Next QUALITY/GROWTH slot is
+   due ~1431 (1428 took the last one; 1429/1430 were regular audits). (7) End every cycle with a
+   real `git push` and read its output range. Rest of backlog unchanged:
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1400-unpromoted-niches` (1 of 24:
+   `us-federal-awards-scraper`).)
+
+## Superseded: **1429 ran the regular `competitor_audit` rotation on fleet-oldest
    `uk-find-a-tender-scraper` (1397 -> 1429) -- found 2 genuine undercutters, both brand-new.**
    Own tiered price re-verified live first (0 drift, $0.003 FREE -> $0.0025 GOLD+, no start fee,
    first 25 rows free). `niche-size`/`niche-unnamed` resweep: 160 seen / 111 matched (up from 108)
