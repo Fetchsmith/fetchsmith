@@ -101,6 +101,23 @@ NICHE_TERMS = {
 # its auto-generated sweep has been read closely and better terms identified --
 # this is how cycle 1124's federal-register list earned its place.
 TERM_VARIANTS = {
+    # Promoted by cycle 1418's competitor_audit, the same no-space/abbreviated-form bug as
+    # the steam-reviews/google-play-reviews entries below. The base phrase "hacker news" is
+    # two contiguous words, so the plain auto_variants() fallback (11 modifiers on that one
+    # phrase) is structurally blind to any listing titled "HackerNews" (no space) or "HN"
+    # (the niche's own common abbreviation) unless the phrase also happens to appear
+    # elsewhere in its description. Widening to the terms below moved matched 281 -> 304 (23
+    # genuinely new listings); the 21 unnamed ones were all read and the ones worth pricing
+    # were priced live this cycle (several dearer flat-rate clones plus 3 new real $0
+    # substitutes) -- see this Actor's README "Eleventh sweep" paragraph.
+    "hacker-news-scraper": [
+        "hacker news", "hacker news scraper", "hacker news monitor", "hacker news api",
+        "hacker news tracker", "hacker news crawler", "hacker news data",
+        "hacker news feed", "hacker news export", "hacker news alerts",
+        "hacker news tool", "hackernews", "hn scraper", "hn api", "algolia hn",
+        "ask hn", "show hn", "hn jobs", "hn who is hiring", "y combinator news",
+        "hn comments", "hn search",
+    ],
     # Promoted by cycle 1205's competitor_audit, but NOT for the reason it first looked like.
     # substack-scraper's base term is already a single unbroken word ("substack"), so the
     # no-space/broken-up-phrase bug below does not apply, and re-testing confirmed the old
