@@ -8,6 +8,21 @@ Repointed to the shared bin/_unit_price.py (closes this Actor's slice of
 0-TODO-h1396-repoint-batch-pricers) instead of this file's own hand-rolled
 tiers_of/unit_price, which had both the tiered-shape and apify-actor-start fixes
 already but lacked the cycle-1396 tier-ladder discriminator.
+
+Cycle 1420: closed this copy's leg of `0-TODO-h1392-runfee-in-batch-copies` and
+repointed the GET at `bin/_apify_get.py`, same two changes cycle 1412 made to the
+gprs copy:
+  * `runfee` — a PURE run-fee rival (every charge event run-scoped) has an EMPTY
+    per-row tier map here, so `undercuts_tiers`/`every_tier` both came back empty
+    and the listing read as "no threat" when its flat fee buys a whole run. At our
+    $0.0001/review a $0.02 flat fee undercuts us past 200 reviews, i.e. on nearly
+    every real export. `cps.runfee_price` (cycle 1392) holds that shape out of the
+    per-row comparison and returns an exact crossover (their fee / our unit price),
+    exact because a one-time event bills at most once per run.
+  * `get_json` — the old unguarded `httpx.get(...).json()` turned one transient
+    non-JSON body into `error: unresolvable`, i.e. a rival that silently drops out
+    of the comparison (the cycle-1404 shape-(b) SILENT SKIP). 401/403/404/410 still
+    resolve immediately without retrying: a delisted rival is a real final answer.
 """
 import datetime
 import importlib.machinery
@@ -16,15 +31,15 @@ import json
 import os
 import sys
 
-import httpx
-
 ROOT = "/root/agent"
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+from _apify_get import ApifyGetError, get_data  # noqa: E402
+
 _path = os.path.join(ROOT, "bin/check-price-superiority")
 spec = importlib.util.spec_from_loader("cps", importlib.machinery.SourceFileLoader("cps", _path))
 cps = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cps)
 
-sys.path.insert(0, os.path.join(ROOT, "bin"))
 import _unit_price as up  # noqa: E402
 tiers_of = up.tiers_of
 unit_price = up.unit_price
@@ -41,9 +56,8 @@ out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
     try:
-        r = httpx.get(f"{API}/acts/{u}~{n}", headers=H, timeout=30)
-        d = r.json().get("data") if r.status_code == 200 else None
-    except Exception as e:
+        d = get_data(f"{API}/acts/{u}~{n}", headers=H)
+    except ApifyGetError as e:
         d = None
         print(f"ERR {h}: {e}", file=sys.stderr)
     if not d:
@@ -59,6 +73,10 @@ for i, h in enumerate(handles, 1):
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and p["startedAt"] > NOW.isoformat()]
     undercuts = sorted(t for t, v in ut.items() if v < OURS)
+    # h1392: a PURE run-fee rival has no per-row event at all, so `ut` is empty and
+    # `undercuts`/`every_tier` are silent about a flat fee that buys a whole run.
+    runfee, runfee_label = cps.runfee_price(d, NOW)
+    crossover = round(runfee / OURS) if runfee else None
     out.append({
         "handle": h,
         "title": d.get("title"),
@@ -69,6 +87,9 @@ for i, h in enumerate(handles, 1):
         "start_fee": fee,
         "note": note,
         "undercuts_tiers": undercuts,
+        "runfee": runfee,
+        "runfee_label": runfee_label,
+        "runfee_crossover_rows": crossover,
         "every_tier": bool(ut) and all(v < OURS for v in ut.values()),
         "future_pricing": future,
         "events": {k: {"tiers": tiers_of(v), "primary": v.get("isPrimaryEvent"),
@@ -81,4 +102,6 @@ for i, h in enumerate(handles, 1):
 
 json.dump(out, open("/tmp/asr_prices.json", "w"), indent=1)
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
-print(f"priced {len(out)} listings -> /tmp/asr_prices.json ({len(amb)} ambiguous, need hand-reading)")
+rf = [o for o in out if o.get("runfee")]
+print(f"priced {len(out)} listings -> /tmp/asr_prices.json ({len(amb)} ambiguous, need hand-reading; "
+      f"{len(rf)} pure run-fee)")

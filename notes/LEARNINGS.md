@@ -3319,3 +3319,39 @@ run's charge count is provably 0. Key updated to 1148 with the re-verification a
 re-verification: 986, 1034, 1276, 1416). **Expect this check to cost one re-read per cycle that
 edits a watch-mode Actor above an allowlisted line, and budget for it rather than reading
 `1 suspect` as a fleet regression.**
+
+## h1420 — a pure run-fee rival fails SILENTLY in a batch pricer, which is a different (and worse) failure than the one `check-price-superiority` had
+
+`0-TODO-h1392-runfee-in-batch-copies` was filed as "port cycle 1392's `runfee_price` fix into the
+26 `bin/_batch_price_*.py` copies," which reads like mechanical duplication. It is not the same
+bug on both sides, and the difference matters when deciding how urgent the remaining 23 copies are:
+
+- In `check-price-superiority`, `headline_price` collapses a rival to ONE number, so a flat
+  per-run fee was compared as if it were a per-row rate and came out **"pricier"** — a wrong
+  answer, but a *printed* one.
+- In a batch pricer, the per-row map (`unit_tiers`) for such a rival is **empty**, so
+  `undercuts_tiers` is `[]` and `every_tier` is `False`. The listing reads as "no threat" and
+  appears nowhere in the audit's undercutter summary. Nothing is printed to be wrong about.
+  An audit that ends "0 undercutters found" cannot distinguish this from a genuinely clean niche.
+
+Verified on `app-store-reviews-scraper` (cycle 1420) by fault-injecting a **real** instance from
+that niche rather than a synthetic record: `second_coming/app-store-review-analyzer`, a single
+$0.02 `scan` event, went from `unit_tiers={}, undercuts_tiers=[]` to
+`runfee=0.02, runfee_crossover_rows=200`. Prefer a real in-niche instance for this check — it
+simultaneously proves the leg fires AND tells you whether the niche you are auditing has the shape
+at all (the 117-listing unnamed cohort had zero, so the clean result was trustworthy).
+
+**Open tension, for whoever does the next copy:** `cps.runfee_price` and `bin/_unit_price.py`
+disagree about a one-time event carrying a full 6-tier descending ladder. `_unit_price`'s
+cycle-1396 discriminator reads a ladder as "the owner's `isOneTimeEvent` flag is an error" and
+scores it per-row; `runfee_price` therefore returns `None` for
+`muhammadafzal/apple-app-store-review-intelligence`, whose $0.016–$0.02 **per-report** event is
+genuinely one-time and genuinely tiered. The crossover had to be computed by hand (~262 reviews on
+Free). The bias is conservative (a per-report rival reads as dearer, never cheaper), so this is not
+urgent, but one of the two rules should own the tiered-one-time shape rather than both guessing.
+
+Secondary, niche-specific but generalizable: this audit's one undercutter
+(`tinyrex/app-store-reviews-scraper`) was **created 12 minutes after the previous cycle's sweep of
+the same cohort finished**. In a new-listing-heavy niche, "we swept this yesterday" is not a reason
+to skip the resweep, and a README price block is only as good as the timestamp on it — so date
+each block rather than maintaining one evergreen "cheapest in the niche" claim.

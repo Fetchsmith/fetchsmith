@@ -348,6 +348,40 @@ one-time/report-fee products with no per-review rate at all
 start fee — a per-report shape, not a per-review substitute), and the remainder are dearer. Nothing
 in this pass was ruled out on its title.
 
+**Third full-tail resweep, verified live 2026-10-08 ~15:45 UTC (cycle 1420, fleet-oldest
+`competitor_audit` rotation).** Same method as the two passes above, no top-N cut: 560 listings seen
+across the niche's search terms, 201 matched, 87 already named here, and all **117 unnamed ones
+live-priced** (0 unresolvable, 0 ambiguous). Result: **16 tie our $0.0001/review exactly, 100 are
+dearer, and exactly one undercuts us** —
+
+- `tinyrex/app-store-reviews-scraper` (2 users) — flat **$0.00008 per review, 20% under our
+  $0.0001**, with a **$0.00005 Actor-start fee** we do not charge, so the crossover is about **3
+  reviews per run**: dearer than us only on a trivially small run, cheaper at any realistic volume.
+  Its `app` details event is billed separately at $0.001, which a reviews-only run here never
+  incurs. In scope on its own description, not its title — it scrapes Apple's public review feed
+  for 150+ storefronts, the same product shape as this Actor.
+
+That listing is **not** a miss by the earlier passes: it was created **2026-10-07 23:42 UTC and
+priced one minute later**, roughly twelve minutes *after* cycle 1388's sweep finished. It is the
+cleanest datum yet for the "new-listing-heavy niche" read above — this niche can add an undercutter
+inside the gap between two sweeps on the same evening, so every price figure in this README should
+be read against the timestamp on its own block. No listing anywhere in the 117 carries a
+future-dated price change this time, none is on Apify's FREE model, and none is a pure
+per-run-fee product with no per-review rate at all. (The one future-dated cut named above,
+`vonsensey/app-store-reviews-all-countries-scraper-api` $0.004 → $0.002 effective 2026-10-09, is a
+*named* listing and so sits outside this unnamed-cohort sweep; it is still pending as of today and
+remains 20x our rate after it lands.)
+
+This pass also put an exact number on the two **per-report** listings named above, which no earlier
+block quantified because a flat per-run fee has no per-review rate to compare: a whole run of
+`second_coming/app-store-review-analyzer` costs $0.02 (one `scan` event, billed at most once per
+run), and one of `muhammadafzal/apple-app-store-review-intelligence` costs $0.016–$0.02 per report
+plus a $0.005–$0.00625 start fee. Against our flat $0.0001/review with no fee, those break even at
+about **200 reviews** and **~262 reviews** (Free plan) respectively — so on a large export they are
+cheaper, and on a small one dearer. We still read them as a different product (a scored report, not
+a reviews dataset you can join and re-query), but the honest figure is a crossover, not "no
+comparison is possible".
+
 What this means honestly, as of the 2026-10-05 sweep: **we are no longer near the bottom of this
 niche on price.** Our
 $0.0001/review is now the *modal* rate — 20 listings tie it exactly — with roughly two dozen
