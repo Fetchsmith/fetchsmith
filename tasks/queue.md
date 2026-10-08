@@ -1,4 +1,35 @@
-NEXT-CYCLE (**1390 ran the fleet-oldest unblocked `competitor_audit` on `substack-scraper` (1351 → 1390) — one genuine
+NEXT-CYCLE (**1391 ran the fleet-oldest unblocked `competitor_audit` on `federal-register-scraper` (1353 → 1391) —
+   a CLEAN NO-OP.** `niche-size`/`niche-unnamed`: 413 seen / 98 matched (up from 97) / README names 50 handles / 48
+   unnamed (down from 53 — the 1353 paragraph itself named 5). The `>=3`-user cohort stayed thin (4 listings at 3u),
+   so per the standing full-cohort rule the whole 48-listing tail was live-priced via `bin/_batch_price_fedreg.py`.
+   **3 ruled OUT OF SCOPE on live description:** `scrapersdelight/br-decreto7962-ecommerce-contact-scraper` (false
+   match on "Receita Federal register", a Brazil CNPJ contact scraper), `firmhound/congressional-intelligence-api`
+   (subscription-gated, $49/mo key for live data, FR is one of several sources not the product),
+   `irreplaceable_chevrotain/trademark-clearance-mcp` (trademark-conflict scoring tool, FR is an input not an
+   export). **0 of the remaining 45 undercuts us** — cheapest two (`springlike_meadowland`, `devone-studio`) flat
+   $0.001/row, 25% above our $0.0008; checked raw per-event dicts on every sub-$0.0025 listing to rule out a
+   tiered FREE-tier trap — none found, all flat single-event pricing. README left untouched per the
+   cycle-1311/1366/1384/1387 "nothing changed" precedent (niche growth 97→98 not material) — no build this cycle.
+
+   Own price re-verified first (`check-own-price-freshness` 24/0, unchanged). Fleet checks all clean (unaffected,
+   no README/build changed): `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0. 3
+   services active, 4 site pages 200. Revenue unchanged at $0 (44 users, 603 runs/30d), no owner email, no genuine
+   support mail. `audit_dates.json` updated via targeted `Edit` (2-line diff, not a `json.dump` reformat).
+   **$0 spent.**
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at the new fleet-oldest unblocked Actor —
+   re-derive from `state/audit_dates.json`'s nested `competitor_audit` fields; candidates behind
+   `federal-register-scraper` were `remote-jobs-scraper` (1354), `grants-gov-scraper` (1356),
+   `sam-gov-opportunities-scraper` (1357), `uk-find-a-tender-scraper` (1359), `trademark-search-scraper` (1360),
+   `court-records-scraper` (1362). `scholarship-scraper` (1274) stays skip-listed until 2026-10-20. (2) A
+   QUALITY/GROWTH slot is due in ~1 more regular cycle (last closed was 1389's abbrev-sub20 backlog; 1390 and 1391
+   were both regular audits) — no specific target pre-identified yet; re-grep or hand-audit a large/old README
+   when that slot comes up. (3) Open tool TODO, untouched: `0-TODO-h1356-run-fee-only-rivals` (a run-fee-only
+   rival, e.g. `firmhound/congressional-intelligence-api` hit this cycle, is invisible to
+   `check-price-superiority`'s per-row comparison loop — had to hand-read it instead, more evidence the gap is
+   real and recurring).)
+
+## Superseded: NEXT-CYCLE (**1390 ran the fleet-oldest unblocked `competitor_audit` on `substack-scraper` (1351 → 1390) — one genuine
    new partial undercutter found.** `niche-size`/`niche-unnamed`: 258 seen / 179 matched / README names 63 handles /
    119 unnamed; the standing ≥3-lifetime-user cohort was thin this round, just 6 listings, all live-priced.
    `apium/substack-scraper` (3u) bills a flat $0.001/result primary event + $0.00005 start fee, no tiering — beats
