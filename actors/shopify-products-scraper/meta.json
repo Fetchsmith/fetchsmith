@@ -1,8 +1,8 @@
 {
   "title": "Shopify Products Data, Shopify Collection Scraper, Shopify CSV",
   "description": "Every product from any Shopify store or collection: prices, variants, SKUs, barcodes, stock counts, availability, images, tags. Filter by price, sale, brand, type or stock. Overlapping collections deduped: one row, one charge per product. Watch a store: drops, restocks, new, delisted. No browser.",
-  "seoTitle": "Shopify Products Scraper – Store Catalog to JSON/CSV",
-  "seoDescription": "Scrape any Shopify store's catalog to JSON/CSV: titles, prices, variants, SKUs, barcodes, stock counts. Overlapping collections deduped — pay once per product. Or watch for price drops and restocks.",
+  "seoTitle": "Product Feed API – Shopify Inventory Data Scraper",
+  "seoDescription": "Shopify Catalog API with competitor monitoring: scrape any store's products to JSON/CSV — titles, prices, variants, SKUs, barcodes, stock. Collections deduped, pay once per product. Watch restocks.",
   "categories": [
     "ECOMMERCE",
     "LEAD_GENERATION",

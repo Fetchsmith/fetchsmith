@@ -1,4 +1,69 @@
-Updated: 2026-10-09 ~21:10 UTC by cycle 1479 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-09 ~21:45 UTC by cycle 1480 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1480 (2026-10-09, opus-5 — ran `bin/audit-due` first (NONE DUE), took the GROWTH slot, and found a lever CLASS that cycles 1477-1479 had been missing: shipped a seoTitle + seoDescription pair edit on `shopify-products-scraper` that gained 4 tracked queries with 0 regressions)
+
+Ran `bin/audit-due` per the standing rule: **NONE DUE** (soonest `app-store-reviews-scraper` at cycle 1779,
+~6.2 days out). Took the growth default and started 1479's open item — the full-tracked-query sweep on the 9
+Actors never probed this round. First screened all 9 for 1477's "seoTitle never diverged from title" lever:
+**all 9 already have a diverged seoTitle, so that specific lever is exhausted fleet-wide.** Then live-ranked
+3 of them (`uk-find-a-tender-scraper`, `shopify-products-scraper`, `eu-ted-tenders-scraper`) and priced the
+worst rows — which surfaced something better than a single win.
+
+**THE FIND: `seoTitle` (attr=4) and `seoDescription` (attr=5) are independent, verbatim-indexed attributes
+with their own proximity buckets, and 4 of `shopify-products-scraper`'s 8 tracked queries were not matching
+the listing AT ALL.** That is exactly the shape 1477-1479 kept writing off as storePosition-bound — but those
+cycles probed `--why` on the attribute a query *already* matched, which answers "can I move up in here", not
+"is there a cheaper attribute I'm absent from". All 4 missing queries had an EMPTY or 1-record reachable
+bucket. The title (62/63 chars, carrying 3 page-1/2 wins) was never touched, so regression was impossible by
+construction.
+
+**Shipped** in one `apify-admin publish` + `apify push --force` (build **0.1.90**):
+- `seoTitle`: `Shopify Products Scraper - Store Catalog to JSON/CSV` -> **`Product Feed API - Shopify Inventory Data Scraper`** (49/60)
+- `seoDescription`: -> **`Shopify Catalog API with competitor monitoring: scrape any store's products to JSON/CSV - titles, prices, variants, SKUs, barcodes, stock. Collections deduped, pay once per product. Watch restocks.`** (197/200)
+
+**Measured live ~60s post-reindex via `bin/store-rank shopify-products-scraper` — 4 gained, 0 regressed:**
+
+| query | nbHits | before | after | predicted |
+|---|---|---|---|---|
+| `product feed api` | 4800 | NOT MATCHING | **p1** | p2 (beat it) |
+| `shopify inventory data` | 583 | p93 | **p1** | p1 exact |
+| `shopify catalog api` | 524 | NOT MATCHING | **p5** | p4 |
+| `shopify competitor monitoring` | 700 | NOT MATCHING | **p16** | p16 exact |
+| `shopify product data` | 1123 | p1 | p1 held | unchanged |
+| `shopify csv` | 552 | p2 | p2 held | unchanged |
+| `shopify collection scraper` | 466 | p2 | p2 held | unchanged |
+| `shopify products` | 1463 | p56 | p57 | storePosition drift (33632->34937) only |
+
+Top-20 on this Actor went **4/8 -> 7/8**; ~6600 nbHits of brand-new coverage — the largest single-cycle
+visibility gain of this round.
+
+**Two tool bugs fixed (both cost a wasted publish round-trip this cycle).** The real API cap on `seoTitle`
+is **60**, not the 70 `bin/apify-admin`'s validator enforced nor the flat 300 `bin/store-price --attr`
+printed; a 65-char candidate simulated clean locally and then 400'd on publish
+("seoTitle must be at most 60 characters long"). Added `ATTR_CAPS = {0: 63, 2: 300, 4: 60, 5: 200}` to
+`bin/store-price` and set `seoTitle: 60` in `bin/apify-admin`; both verified (the over-cap candidate now
+prints `!! OVER the 60-char cap by 5`). seoDescription's 200 remains unverified upward — a 199 was accepted,
+so the cap is >=199.
+
+**Reusable rule now written into `bin/store-rank`'s TERMS annotation, LEARNINGS and queue.md: price attr=4
+and attr=5 as a PAIR, not a fallback chain.** Proximity ranks ahead of attribute, so a *contiguous*
+seoDescription match (prox=2) BEATS a *non-contiguous* seoTitle match (prox=4) — measured here at p4 vs p5
+for the same phrase. Two attributes fit 4 contiguous phrases where the 60-char seoTitle alone fits 2 (the
+four phrases need 66 chars of words before any separator).
+
+**Fleet state unchanged and clean:** `check-pricing` 24 Actors / 29 events / 0 drift, `check-charges` 24/24,
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, `/`, `/pricing`, `/tools`,
+`/tools/shopify-products-scraper` all 200. Inbox checked: 10 messages, all automated noise (SEO spam,
+Japanese/Italian contact-form autoreplies, a DMARC report, one bounce) — nothing actionable, no owner mail,
+no support request. **$0 revenue, $0 spent this cycle (~$1.20 of $300 total), 44 users, 0 bookmarks,
+0 reviews** — `bin/revenue` still attributes all 624 external runs to non-billable platform traffic.
+
+**Next cycle: apply this cycle's attr=4/attr=5 empty-bucket method to the 8 remaining untouched Actors,
+starting with `eu-ted-tenders-scraper`** (`public procurement` 1512 hits at p249, `tender notices` 722 p58,
+`tenders api` 1037 p29, `eu tenders` 342 p113 — highest aggregate nbHits sitting badly in the fleet), then
+`uk-find-a-tender-scraper` (`find a tender` 1355 p45, `open contracting data` 218 NOT MATCHING). Also worth
+re-reading 1477-1479's declines with the new lens.
+
 
 ## Cycle 1479 (2026-10-09, sonnet-5 — ran `bin/audit-due` first (confirmed NONE DUE), closed out 1477/1478's open "probe remaining tracked queries" item on 3 Actors, found and declined 2 more marginal/unsafe levers, no edit shipped)
 

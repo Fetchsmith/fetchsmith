@@ -789,6 +789,30 @@ TERMS = {
     # and "shopify catalog" span 3->4 (neither was a targeted query, both already
     # deep in the ranks either way).
     "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "shopify collection scraper", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data"],
+    # cycle 1480 (GROWTH, biggest single-cycle visibility gain in this round): the TITLE
+    # here was already saturated/maxed, but `seoTitle` (attr=4) and `seoDescription`
+    # (attr=5) are SEPARATE verbatim-indexed attributes with their OWN proximity buckets,
+    # and 4 of the 8 tracked queries were not matching this listing at all. Sized with
+    # `bin/store-price --title "<text>" --attr 4` / `--attr 5` (title untouched, so the
+    # title-carried wins could not regress by construction) and shipped BOTH in one
+    # publish + `apify push --force` (build 0.1.90):
+    #   seoTitle       "Product Feed API - Shopify Inventory Data Scraper" (49/60)
+    #   seoDescription "Shopify Catalog API with competitor monitoring: scrape any store's
+    #                   products to JSON/CSV - ..." (197/200)
+    # Measured live ~60s post-reindex, all 4 gained, 0 regression:
+    #   "product feed api"              4800 hits  NOT MATCHING -> **p1** (beat pred p2)
+    #   "shopify inventory data"         583 hits  p93          -> **p1** (pred p1 exact)
+    #   "shopify catalog api"            524 hits  NOT MATCHING -> **p5** (pred p4)
+    #   "shopify competitor monitoring"  700 hits  NOT MATCHING -> **p16** (pred p16 exact)
+    # Held byte-identical: "shopify product data" p1, "shopify csv" p2, "shopify collection
+    # scraper" p2; "shopify products" p56->p57 is storePosition drift (33632->34937) only.
+    # Top-20 on this Actor went 4/8 -> 7/8; ~6600 nbHits of brand-new coverage.
+    # REUSABLE: when a title is maxed, price the SAME query list at `--attr 4` AND `--attr 5`
+    # before declaring an Actor storePosition-bound -- a contiguous seoDescription match
+    # (prox=2) BEATS a non-contiguous seoTitle match (prox=4), because proximity ranks
+    # ahead of attribute, so the two attributes are worth shopping as a pair, not a
+    # fallback chain. Remaining dead end: "shopify products" (1463 hits) has 200 title
+    # matchers ahead at every attribute -- genuinely storePosition-bound, do not re-probe.
     # cycle 1460: shipped the title edit cycle 1459 sized but could not fit. Title
     # "Shopify Products Data Scraper – Full Catalog, Shopify CSV" (57) ->
     # "Shopify Products Data, Shopify Collection Scraper, Shopify CSV" (62/63) using the

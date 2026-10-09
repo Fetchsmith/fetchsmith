@@ -101,6 +101,8 @@ def predict(hits, target, our_sp):
 
 ATTR_NAMES = {0: "title", 1: "name", 2: "description", 4: "seoTitle",
               5: "seoDescription", 6: "readme"}
+# Measured API caps, kept in sync with `bin/apify-admin`'s publish-time validator.
+ATTR_CAPS = {0: 63, 2: 300, 4: 60, 5: 200}
 
 
 def main(argv):
@@ -113,7 +115,11 @@ def main(argv):
     while rest and rest[0] in ("--title", "--desc", "--attr"):
         if rest[0] == "--attr":
             attr, rest = int(rest[1]), rest[2:]
-            cap, label = (300, ATTR_NAMES.get(attr, f"attr{attr}"))
+            # real API caps per attribute, not a flat 300 (cycle 1480): title 63 (cycle
+            # 536), seoTitle 60 (cycle 1480 — a 65-char seoTitle 400s), seoDescription
+            # >=199 accepted so 200 is the working assumption, description 300. A flat 300
+            # here let a 65-char `--attr 4` candidate simulate clean and then 400 on publish.
+            cap, label = (ATTR_CAPS.get(attr, 300), ATTR_NAMES.get(attr, f"attr{attr}"))
         elif rest[0] == "--title":
             title, rest = rest[1], rest[2:]
             attr, cap, label = 0, 63, "title"

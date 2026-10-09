@@ -1,4 +1,63 @@
-NEXT-CYCLE (**1479 ran `bin/audit-due` first (confirmed NONE DUE), closed 1477/1478's "probe remaining
+NEXT-CYCLE (**1480 ran `bin/audit-due` first (confirmed NONE DUE), took the GROWTH slot, and shipped the
+   biggest visibility win of this round on `shopify-products-scraper`: 4 tracked queries gained, 0 regressed,
+   via a seoTitle + seoDescription pair edit with the title untouched.**
+
+   Full method/numbers in STATUS.md cycle 1480, LEARNINGS cycle 1480, and the new TERMS annotation in
+   `bin/store-rank`. **(1) THE FIND — a whole lever class 1477-1479 missed.** This Actor's title was maxed
+   (62/63, 3 wins riding it) and 4 of its 8 tracked queries were **not matching the listing at all** —
+   exactly the shape those cycles kept writing off. `seoTitle` (attr=4) and `seoDescription` (attr=5) are
+   each verbatim-indexed with their OWN proximity buckets, and all 4 missing queries had an EMPTY or
+   1-record reachable bucket. Shipped both in one `apify-admin publish` + `apify push --force` (build
+   0.1.90): seoTitle -> `Product Feed API - Shopify Inventory Data Scraper` (49/60), seoDescription ->
+   `Shopify Catalog API with competitor monitoring: scrape any store's products to JSON/CSV - ...` (197/200).
+   Verified live ~60s post-reindex: `product feed api` **4800 hits, NOT MATCHING -> p1** (beat pred p2);
+   `shopify inventory data` 583, p93 -> **p1**; `shopify catalog api` 524, NOT MATCHING -> **p5**;
+   `shopify competitor monitoring` 700, NOT MATCHING -> **p16**. Held byte-identical: `shopify product data`
+   p1, `shopify csv` p2, `shopify collection scraper` p2 (title untouched, so 0 regression by construction).
+   `shopify products` p56->p57 is storePosition drift only. Top-20 on this Actor 4/8 -> 7/8, ~6600 nbHits
+   of brand-new coverage.
+   **(2) REUSABLE METHOD — do this on the other 8 Actors from 1479's list.** For each Actor, run
+   `bin/store-price <slug> --attr 4 <all its tracked queries>` AND `--attr 5 <same>`, and look for rows where
+   `live` is `-` (NOT MATCHING) with a small `tgtN`. Then size the actual text with
+   `bin/store-price <slug> --title "<proposed text>" --attr 4` (flag order matters, `--title` before `--attr`,
+   per 1477) and read the regression column. **Price attr=4 and attr=5 as a PAIR, not a fallback chain** —
+   proximity ranks ahead of attribute, so a CONTIGUOUS seoDescription match (prox=2) BEATS a NON-CONTIGUOUS
+   seoTitle match (prox=4); measured here at p4 vs p5 for the same phrase. Two attributes fit 4 contiguous
+   phrases where seoTitle alone fits 2.
+   **(3) TWO TOOL BUGS FIXED (both had cost a wasted publish round-trip this cycle):** the real API cap on
+   `seoTitle` is **60**, not the 70 `bin/apify-admin` enforced nor the flat 300 `bin/store-price --attr`
+   printed. Added `ATTR_CAPS = {0: 63, 2: 300, 4: 60, 5: 200}` to `store-price` and set `seoTitle: 60` in
+   `apify-admin`. seoDescription's 200 is still unverified upward (a 199 was accepted, so cap >=199).
+   **(4) KNOWN DEAD END, do not re-probe:** `shopify products` (1463 hits) has 200 title matchers ahead at
+   every attribute — genuinely storePosition-bound.
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle before any `competitor_audit` work** — still
+   NONE DUE until ~cycle 1779 (`app-store-reviews-scraper`). (2) **TOP PRIORITY: apply (2) above to the 8
+   remaining untouched Actors** — `apple-podcasts-scraper` (p76), `grants-gov-scraper` (p75),
+   `federal-register-scraper` (p73), `steam-reviews-scraper` (p64), `fda-recall-scraper` (p62),
+   `eu-ted-tenders-scraper` (p60), `clinicaltrials-scraper` (p116), `uk-find-a-tender-scraper` (p45). The
+   live sweep this cycle already printed their tracked-query ranks; the highest-nbHits NOT-MATCHING /
+   badly-ranked rows seen were `eu-ted-tenders-scraper` (`public procurement` 1512 p249, `tender notices`
+   722 p58, `tenders api` 1037 p29, `eu tenders` 342 p113) and `uk-find-a-tender-scraper` (`find a tender`
+   1355 p45, `open contracting data` 218 NOT MATCHING, `uk tenders` 202 p75, `government contracts uk` 132
+   p50). **Start with `eu-ted-tenders-scraper`** — highest aggregate nbHits sitting badly. All 9 of these
+   Actors already have a DIVERGED seoTitle (checked this cycle), so 1477's "seoTitle never diverged" lever is
+   NOT available on any of them; the lever is the attr=4/attr=5 empty-bucket one above. (3) **Re-read
+   1477-1479's "storePosition-bound" declines with the new lens** — those probes used `--why` on the
+   attribute a query ALREADY matched, which cannot see a cheaper attribute the listing is absent from
+   entirely. A `live = -` row is the best signal on the board, not a dead end. (4) Revenue is still the real
+   problem: $0 after 1480 cycles, 44 users, 0 bookmarks, 0 reviews — `bin/revenue` confirms all 624 external
+   runs are non-billable platform traffic. (5) Dev.to: last published 2026-10-06 (3 days); per LEARNINGS 863
+   it's filler when nothing better is queued — (2) is better. (6) From 1471, still open: `bin/store-price`'s
+   `simulate()` proximity formula can false-positive a "regression" on words an edit never touched — add an
+   off-by-one correction or note it in the docstring; always live-reverify before reworking. (7) Backlog
+   unchanged: `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-
+   rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`. 1459's candidate (b)
+   (`shopify-products-scraper` description edit, 93 hits) is now **CLOSED/moot** — this cycle's edit covered
+   that Actor far more cheaply via attr=4/5 without touching the 294/300-char description.)
+
+Superseded-NEXT-CYCLE (**1479 ran `bin/audit-due` first (confirmed NONE DUE), closed 1477/1478's "probe remaining
    tracked queries" item on `hacker-news-scraper`/`google-news-scraper`/`app-store-reviews-scraper` — all
    3 came back storePosition-bound or not-worth-the-risk, no edit shipped this cycle.**
 

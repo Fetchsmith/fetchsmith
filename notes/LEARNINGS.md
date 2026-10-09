@@ -4316,3 +4316,36 @@ is weighted into that even when `firstMatchedWord` still reports attr=0 title. *
 controlled test, and NOT actionable here regardless** — renaming an Actor's slug is a one-way, user/URL-breaking
 change and out of scope for a rank edit. Filed so a future cycle doesn't re-spend time on title tweaks for this
 specific query: the lever, if it exists, is the slug, which we will not touch for this reason alone.
+
+## cycle 1480 (2026-10-09, opus-5) — seoTitle AND seoDescription are a PAIR of independent levers; shop both before declaring an Actor storePosition-bound
+
+`shopify-products-scraper` had a maxed title (62/63 chars, 3 page-1/2 wins riding it) and 4 of its 8
+tracked queries were **not matching the listing at all** — the shape cycles 1477-1479 kept writing off as
+storePosition-bound. It was not. `seoTitle` (attr=4) and `seoDescription` (attr=5) are each verbatim-indexed
+with their OWN proximity buckets, and all four missing queries had an EMPTY or 1-record reachable bucket.
+Shipped both in one publish + `apify push --force` (build 0.1.90), title untouched so the title-carried wins
+could not regress by construction. Measured live ~60s post-reindex, **4 gained, 0 regressed**:
+`product feed api` 4800 hits NOT MATCHING -> **p1** (pred p2); `shopify inventory data` 583 p93 -> **p1**;
+`shopify catalog api` 524 NOT MATCHING -> **p5**; `shopify competitor monitoring` 700 NOT MATCHING -> **p16**.
+Top-20 on this Actor went 4/8 -> 7/8; ~6600 nbHits of new coverage — the largest single-cycle visibility gain
+of this round.
+
+**Three durable lessons.**
+
+1. **Shop attr=4 and attr=5 as a pair, not a fallback chain.** Proximity ranks AHEAD of attribute, so a
+   *contiguous* seoDescription match (prox=2) BEATS a *non-contiguous* seoTitle match (prox=4) — measured
+   here: `shopify catalog api` priced p5 crammed into the seoTitle vs p4 contiguous in the seoDescription.
+   So when a phrase doesn't fit the 60-char seoTitle, the seoDescription is not a consolation prize. Pricing
+   two attributes let 4 phrases land where a seoTitle-only edit fits at most 2 (word budget: the four
+   contiguous phrases need 66 chars of words alone, over the 60-char cap before any separator).
+2. **`bin/store-price`'s char counter was lying for `--attr`, and `bin/apify-admin`'s validator was too
+   loose.** Both said seoTitle's cap was 70/300; the REAL API cap is **60** (a 65-char seoTitle 400s with
+   "seoTitle must be at most 60 characters long"). A simulated-clean candidate failed at publish. Fixed both:
+   `ATTR_CAPS = {0: 63, 2: 300, 4: 60, 5: 200}` in `store-price`, and `seoTitle: 60` in `apify-admin`.
+   seoDescription's 200 is still *unverified upward* — a 199-char value was accepted, so the true cap is
+   >=199. **Lesson: a locally-validated length is not a verified length; only a 400 from the API is.**
+3. **The "storePosition-bound" verdict of 1477-1479 was premature in at least one case.** Those cycles
+   probed the `--why` bucket table for the attribute a query ALREADY matched in, which answers "can I move
+   up within this attribute" — not "is there a cheaper attribute I'm absent from entirely". A query showing
+   `live = -` (not matching) is the highest-value signal on the board, not a dead end: it means every
+   attribute is still open. Re-read the 9 Actors flagged in 1479 with that lens before trusting their ranks.
