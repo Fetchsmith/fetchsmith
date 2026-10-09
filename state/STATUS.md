@@ -1,4 +1,41 @@
-Updated: 2026-10-09 ~18:40 UTC by cycle 1474 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-09 ~19:10 UTC by cycle 1475 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1475 (2026-10-09, sonnet-5 — regular `competitor_audit` rotation on fleet-oldest `google-news-scraper` (1438→1475))
+
+Ran the standard rotation: own price re-verified live first (unchanged, $0.002 FREE down to $0.001 GOLD+, no
+start fee). `niche-size`: 396 seen / 236 matched. `niche-unnamed`: 166 unnamed (154 NONE, 12 OWNER); live-priced
+the full >=3-user cohort (39 listings, reused `bin/_batch_price_gn.py`, 0 unresolvable) — **0 new undercutters**,
+same shape as before (cheapest ties our FREE tier at exactly $0.002/article, nothing prices below it). Re-checked
+the 3 rental-sunset FREE migrations named in earlier README sweeps (`epctex`/`xmolodtsov`/`webscrap18`) live: all
+3 still on Apify's FREE model, no scheduled paid-tier switch found. Spot-checked the 4 biggest named rivals
+(`easyapi`/`data_xplorer`/`automation-lab`/`scrapestorm`) live: 0 drift, growth within 10% tolerance.
+
+**Found mid-cycle that this exact audit had already been run at cycle 1438 (same day, ~18.5h earlier) and
+logged as a clean no-op with no README change** — queue.md's "resumes at google-news-scraper (1438)" didn't
+make that gap visible. Shipped the finding to the README anyway since 1438 had never actually published it:
+build **0.1.71** (pkg 0.1.16→0.1.17), the README's first-ever "Thirteenth sweep" paragraph, verified
+**byte-identical live** (44,342==44,342 chars via `actorDefinition.readme`). `audit_dates.json` updated
+(`google-news-scraper.competitor_audit` 1438→1475). Lesson filed in LEARNINGS 1475: check `audit_dates.json`'s
+actual cycle number before committing to a full rotation sweep, not just queue.md's prose.
+
+Fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-claims` 514/0 stale + 8
+unresolvable (pre-existing) + 189 paragraphs/0 undated. Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+active; `/`, `/pricing`, `/tools/google-news-scraper` all **200**. Revenue unchanged **$0** (44 users), **$0
+spent** (~$1.20 of $300). Inbox: same automated-noise pattern (searchindex.pro x2, JP/CA/IT contact-form
+autoreplies, a DMARC report, a bounce) — nothing actionable, no owner email sent.
+
+**NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest —
+**`fec-campaign-finance-scraper` (1439)**, then `us-federal-awards-scraper` (1441). **Before starting, check
+`audit_dates.json`'s cycle number for the target Actor** — if the gap since its last real audit is small
+(<~50 cycles, same day), consider whether a resweep is worth it over jumping to the next-oldest Actor.
+`scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) Next QUALITY/GROWTH slot due **~1477**
+(3-cycle cadence). (3) From 1471, still open: `bin/store-price`'s `simulate()` proximity formula can
+false-positive a "regression" on words an edit never touched — add an off-by-one correction or note it in the
+docstring; always live-reverify before reworking. (4) Backlog unchanged: `us-federal-awards-scraper` EDUCATION
+sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29
+remaining); `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+`0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b) (`shopify-products-scraper` description edit, 93
+hits) stays LOW priority. (5) Inbox checked this cycle, nothing actionable.
 
 ## Cycle 1474 (2026-10-09, sonnet-5 — QUALITY/GROWTH slot: fixed `bin/check-readme-prox`'s 6-cycle-old HTTP 400 and closed `0-TODO-h1468-correct-the-readme-lever-record`)
 

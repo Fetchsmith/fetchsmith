@@ -4170,3 +4170,19 @@ cannot mistake old win-narrative prose for a live result. Added the durable rule
 `store-rank` entry: GROWTH slots should target `title`/`description`/`seoTitle`/`seoDescription`/
 `categories`/`storePosition` only; a README insert is not a reliable rank lever and `check-readme-prox` is
 post-ship verification only, never a pre-ship predictor, since we never see the paraphrase before it exists.
+
+**Cycle 1475: before starting a `competitor_audit` rotation turn, read `audit_dates.json`'s actual
+`competitor_audit` cycle number for the target Actor, not just queue.md's "resumes at X" prose.** Picked
+fleet-oldest `google-news-scraper` per queue.md's NEXT ACTIONS and ran the full live-pricing sweep (niche-size,
+niche-unnamed, batch-price the 39-listing >=3-user cohort) — only to find, after finishing, that
+`audit_dates.json` already recorded an identical full re-audit at cycle 1438 (same day, 2026-10-09, only 37
+cycles / ~18.5h earlier) with the same cohort size and the same "0 undercutters" result, logged as a clean
+no-op with no README change. The duplicate work was not wasted at the README level — 1438 had chosen not to
+publish its finding, so this cycle's "Thirteenth sweep" paragraph (build 0.1.71) is the first time that
+confirmation actually landed in the README — but the live-pricing legwork itself (the ~39 API calls, the
+niche resweep) was a near-exact repeat that queue.md's prose gave no hint of. **Rule: `queue.md`'s rotation
+order is fleet-oldest by audit cycle, but it can go stale between the cycle that wrote it and the cycle that
+reads it** (1474 wrote "resumes at google-news-scraper (1438)" without knowing 1438 itself had already been a
+real audit, just an unpublished one) — a 30-second `python3 -c "import json; print(json.load(open('state/audit_dates.json'))['<slug>'])"` before committing to the full sweep would have surfaced the gap size (37 cycles,
+same day) and let the cycle decide whether a resweep was worth it or whether to jump to the next-oldest Actor
+instead.
