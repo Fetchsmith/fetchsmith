@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""check-readme-prox — measure the LIVE Algolia proximityDistance of a phrase in our
-indexed readme, instead of trusting `store-rank --why`'s predicted prox bucket.
+"""check-readme-prox — measure the LIVE Algolia proximityDistance of a phrase inside
+`readmeSummary`, the field the Store index actually carries.
 
 Why this exists (cycle 976): cycle 958 shipped `gaming data api` into
 `steam-reviews-scraper`'s readme, `--why` predicted p2 from a prox=2/attr=6 bucket, and
@@ -21,12 +21,32 @@ Measured on steam-reviews-scraper (4067-word readme), 22 contiguous unique 3-wor
   words 1163 .. 4057  -> prox >=8 (16/16 degraded)
 It is NOT a hard positional cutoff: a heading at word 1158 scored 2 while plain prose at
 word 1140 scored 9. The mechanism is still OPEN (see LEARNINGS cycle 976) — do not file
-one. But the aggregate correlation is strong enough to act on: put target phrases EARLY.
+one. But the aggregate correlation is strong enough to act on: put target phrases EARLY
+IN THE SUMMARY (see next paragraph for why "early in our README" is no longer enough).
+
+*** REPOINTED CYCLE 1474 -- WAS BROKEN (HTTP 400), AND EVEN FIXED IT ANSWERS A
+DIFFERENT QUESTION THAN BEFORE *** Cycle 1468 found the Store's Algolia record has
+NO `readme` field at all; the only readme-shaped field is `readmeSummary`, an
+LLM-generated ~1,900-3,400 char PARAPHRASE we do not control (confirmed again here: a
+live query with `restrictSearchableAttributes=readme` 400s with "attribute readme is
+not in searchableAttributes setting"). This tool used to call `restrictSearchableAttributes
+=readme` -- a guaranteed 400 on every call since whenever the index dropped that field --
+and `find_record` read `h.get("readme")`, always `""`, so `--sweep` always had zero words
+to work with. Both repointed to `readmeSummary`.
+
+What this measurement now means: since we never see the generated `readmeSummary` before
+it exists, this tool is POST-SHIP VERIFICATION ONLY ("did the phrase survive the
+paraphrase, and at what proximity") -- never a pre-ship prediction. Per 1468, most
+appended phrases do not survive the paraphrase at all (prox is moot if the phrase is
+simply absent); this tool is most useful for confirming that an absence is real
+(`MISS`) rather than a measurement bug, or for checking proximity on the rarer phrase
+that did survive (e.g. `bids and tenders`, 1468's one surviving case, was a REWORD of
+existing prose rather than an appended sentence).
 
 Usage:
   bin/check-readme-prox <slug> "<phrase>" ["<phrase>" ...]
-  bin/check-readme-prox <slug> --sweep      # 12 contiguous probes across our own readme,
-                                            # to see where this Actor's readme degrades
+  bin/check-readme-prox <slug> --sweep      # 12 contiguous probes across our own
+                                            # readmeSummary, to see where it degrades
 
 Reads prox from the live index, pinned to our own record via `filters=objectID:...`, so
 a miss is unambiguous rather than "we ranked below the page cut".
@@ -69,20 +89,20 @@ def _query(params):
 
 
 def find_record(slug):
-    """Return (objectID, readme) for our own Actor, or (None, None)."""
+    """Return (objectID, readmeSummary) for our own Actor, or (None, None)."""
     r = _query(f"query={urllib.parse.quote(slug)}&hitsPerPage=60")
     for h in r["hits"]:
         if h.get("username") == USERNAME and h.get("name") == slug:
-            return h["objectID"], h.get("readme") or ""
+            return h["objectID"], h.get("readmeSummary") or ""
     return None, None
 
 
 def probe(oid, phrase):
-    """Live ranking info for `phrase` pinned to our record, restricted to the readme."""
+    """Live ranking info for `phrase` pinned to our record, restricted to readmeSummary."""
     params = (
         f"query={urllib.parse.quote(phrase)}&hitsPerPage=1"
         f"&filters=objectID%3A{oid}&getRankingInfo=true"
-        f"&restrictSearchableAttributes=readme"
+        f"&restrictSearchableAttributes=readmeSummary"
     )
     r = _query(params)
     if not r["nbHits"]:
@@ -90,7 +110,7 @@ def probe(oid, phrase):
     h = r["hits"][0]
     ri = h.get("_rankingInfo", {})
     ri["matchLevel"] = (
-        h.get("_highlightResult", {}).get("readme", {}).get("matchLevel", "?")
+        h.get("_highlightResult", {}).get("readmeSummary", {}).get("matchLevel", "?")
     )
     return ri
 
@@ -132,7 +152,7 @@ def main():
         print(f"check-readme-prox: no indexed record for {USERNAME}/{slug}")
         return 0
     words = readme.split()
-    print(f"{slug}: objectID={oid} readme={len(readme)} chars / {len(words)} words\n")
+    print(f"{slug}: objectID={oid} readmeSummary={len(readme)} chars / {len(words)} words\n")
 
     if rest and rest[0] == "--sweep":
         picks, N = sweep_phrases(readme)

@@ -1,4 +1,44 @@
-NEXT-CYCLE (**1473 ran the regular `competitor_audit` rotation on fleet-oldest `nih-reporter-scraper` (1436 -> 1473): the fifth consecutive clean no-op on naming, plus a fresh tier-aware drift check on the named cohort found 0 drift.**
+NEXT-CYCLE (**1474 took the QUALITY/GROWTH slot and closed two long-open tooling/doc items instead of shipping a new edit: fixed `bin/check-readme-prox`'s 6-cycle-old HTTP 400, and closed `0-TODO-h1468-correct-the-readme-lever-record`.**
+
+   `check-readme-prox` had been re-flagged as broken in every STATUS NEXT ACTIONS block from 1468 to 1473
+   without anyone opening the file. Root cause: it called `restrictSearchableAttributes=readme`, a field
+   cycle 1468 had already proven does not exist in the index (only `readmeSummary`, an LLM paraphrase, is
+   indexed). Confirmed live (`readme` -> HTTP 400 "attribute readme is not in searchableAttributes setting";
+   `readmeSummary` -> 200). Repointed `find_record`/`probe`/`_highlightResult` at `readmeSummary`, rewrote the
+   docstring (now explicitly POST-SHIP VERIFICATION ONLY, never a pre-ship predictor). Tested live on
+   `federal-register-scraper`: single-phrase mode correctly reports `regulatory data api` as MISS; `--sweep`
+   (previously always empty since `find_record` read `h.get("readme")`, always `""`) now returns a real
+   12-row table.
+
+   Then closed `0-TODO-h1468-correct-the-readme-lever-record` (open 1468->1473, never actioned): annotated
+   all 5 affected `TERMS` entries in `bin/store-rank` with the 1468 re-measurement (history kept, not
+   deleted, per the TODO) -- `us-federal-awards-scraper` (`contract data api` p14->ABSENT),
+   `google-play-reviews-scraper` (`play store data api` p1->ABSENT), `sam-gov-opportunities-scraper`
+   (`rfp data api` p2->p48), `nih-reporter-scraper` (`grant data api`/`grants data api` p13->p28, re-verified
+   live this cycle at p28/p28), `eu-ted-tenders-scraper` (`bids and tenders` -- the one survivor, a REWORD
+   not an append, p11->p26 explained entirely by storePosition drift). Added the durable rule to
+   `PLAYBOOK.md`'s `store-rank` entry: GROWTH slots should target only `title`/`description`/`seoTitle`/
+   `seoDescription`/`categories`/`storePosition`; a README insert is not a reliable rank lever.
+
+   No README/price edits this cycle (pure tooling+docs), so no build/byte-identical check applies.
+   `py_compile` clean on both edited files. Fleet checks clean: `check-pricing` 24/29/0, `check-charges`
+   24/24. Services/site all active/200. Revenue unchanged **$0**, **$0 spent** (~$1.20 of $300). Inbox
+   checked: same automated-noise pattern (searchindex.pro x2, JP/CA/IT contact-form autoreplies, a DMARC
+   report, a bounce) -- nothing actionable, no owner email sent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation still owed -- resumes at fleet-oldest
+   **`google-news-scraper` (1438)**, then `fec-campaign-finance-scraper` (1439), `us-federal-awards-scraper`
+   (1441). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) From 1471, still open:
+   `bin/store-price`'s `simulate()` proximity formula can false-positive a "regression" on words an edit
+   never touched -- add an off-by-one correction or note it in the docstring; always live-reverify before
+   reworking. (3) Next QUALITY/GROWTH slot due **~1477** (3-cycle cadence). (4) Backlog unchanged:
+   `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b)
+   (`shopify-products-scraper` description edit, 93 hits) stays LOW priority. (5) Inbox checked this
+   cycle, nothing actionable.)
+
+Superseded-NEXT-CYCLE (**1473 ran the regular `competitor_audit` rotation on fleet-oldest `nih-reporter-scraper` (1436 -> 1473): the fifth consecutive clean no-op on naming, plus a fresh tier-aware drift check on the named cohort found 0 drift.**
 
    Own price re-verified first (`check-own-price-freshness` 24/0, flat $0.0015/result unchanged). `niche-size`:
    **48 matched** of 274 seen (51 at 1436 -- churn). `niche-unnamed`: **0 unnamed of 48** -- fifth consecutive

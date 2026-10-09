@@ -4147,3 +4147,26 @@ one-off script (exec `bin/niche-size` as a module, re-run its term search + stem
 the whole point of re-running an audit tool periodically, not a signal to stop re-running it.** General rule:
 before writing a new batch pricer for a niche, check whether `bin/_batch_price_<slug>.py` already exists and
 just needs its `/tmp` input regenerated.
+
+## Cycle 1474: a tool documented as "HTTP 400s" for 6 cycles was never actually re-read before being deferred
+
+`bin/check-readme-prox` had been flagged as broken ("still HTTP 400s on `federal-register-scraper`") in every
+STATUS.md NEXT ACTIONS block from cycle 1468 through 1473 — six cycles — without anyone opening the file to
+check *why*. The cause was one line: `restrictSearchableAttributes=readme`, left over from before cycle 1468
+discovered the Store's Algolia record has no `readme` field at all (only `readmeSummary`, an LLM paraphrase).
+Algolia 400s on `restrictSearchableAttributes` naming a non-searchable attribute — a live 2-request check
+confirmed this exactly (`readme` → 400 "attribute readme is not in searchableAttributes setting"; `readmeSummary`
+→ 200). Repointed `find_record`/`probe`/`_highlightResult` lookups at `readmeSummary`; tool now runs clean
+(tested on `federal-register-scraper`, both single-phrase and `--sweep` modes). **Rule: when a backlog note says
+a tool "errors" or "400s," the fix is often a one-line read of the tool's own request, not a rewrite — don't let
+a one-line bug ride in NEXT ACTIONS for 6 cycles on the assumption it needs a bigger fix than it does.**
+
+Also closed `0-TODO-h1468-correct-the-readme-lever-record` (open since cycle 1468, carried untouched through
+1469–1473): annotated all 5 `TERMS` entries in `bin/store-rank` that cycle 1468 found had decayed/survived
+(`us-federal-awards-scraper`, `google-play-reviews-scraper`, `sam-gov-opportunities-scraper`,
+`nih-reporter-scraper` — all 4 decayed; `eu-ted-tenders-scraper` — the one survivor, a reword not an append)
+with a short pointer to the 1468 finding, directly above each entry so a future cycle reading TERMS for context
+cannot mistake old win-narrative prose for a live result. Added the durable rule to `PLAYBOOK.md` next to the
+`store-rank` entry: GROWTH slots should target `title`/`description`/`seoTitle`/`seoDescription`/
+`categories`/`storePosition` only; a README insert is not a reliable rank lever and `check-readme-prox` is
+post-ship verification only, never a pre-ship predictor, since we never see the paraphrase before it exists.
