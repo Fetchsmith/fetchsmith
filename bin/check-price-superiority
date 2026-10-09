@@ -107,6 +107,31 @@ def price_of(event):
     return (tiers.get("FREE") or {}).get("tieredEventPriceUsd")
 
 
+def _select_event(events):
+    """(name, event) for the headline charge event among a live record's
+    `actorChargeEvents`. Shared by headline_price (reads its FREE rung) and all_tiers
+    (reads its full ladder) -- cycle 1437, split out of headline_price so both paths
+    pick the SAME event rather than risk the two ever disagreeing (closes
+    0-TODO-h1436-tier-blind-spot-fleetwide).
+
+    # `apify-actor-start` is Apify's own reserved key for the run-start charge -- a
+    # one-time start fee in substance even when the owner never set isOneTimeEvent, AND
+    # even when the owner (mistakenly or not) marks it isPrimaryEvent (cycle 1385 LEARNINGS:
+    # delectable_incubator/google-news-scraper-low-cost and fanciful_geode/google-news-es both
+    # flag apify-actor-start as primary, which used to make this function report the $0.00005
+    # start fee as "the price" instead of the real $0.00239/$0.001 per-row rate -- cycle 1360's
+    # fix only excluded it from the non-primary fallback pool, not this branch).
+    """
+    primary = [n for n, e in events.items() if e.get("isPrimaryEvent") and n != "apify-actor-start"]
+    if primary:
+        return primary[0], events[primary[0]]
+    non_onetime = [n for n, e in events.items()
+                   if not e.get("isOneTimeEvent") and n != "apify-actor-start"]
+    pool = non_onetime or list(events.keys())
+    name = min(pool, key=lambda n: (price_of(events[n]) if price_of(events[n]) is not None else float("inf")))
+    return name, events[name]
+
+
 def headline_price(act_data, now):
     """(price, label) for the one number this script treats as "the" price, or (None, reason)."""
     pricing_infos = act_data.get("pricingInfos")
@@ -139,23 +164,46 @@ def headline_price(act_data, now):
     events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
     if not events:
         return None, "no charge events"
-    # `apify-actor-start` is Apify's own reserved key for the run-start charge -- a
-    # one-time start fee in substance even when the owner never set isOneTimeEvent, AND
-    # even when the owner (mistakenly or not) marks it isPrimaryEvent (cycle 1385 LEARNINGS:
-    # delectable_incubator/google-news-scraper-low-cost and fanciful_geode/google-news-es both
-    # flag apify-actor-start as primary, which used to make this function report the $0.00005
-    # start fee as "the price" instead of the real $0.00239/$0.001 per-row rate -- cycle 1360's
-    # fix only excluded it from the non-primary fallback pool, not this branch).
-    primary = [n for n, e in events.items() if e.get("isPrimaryEvent") and n != "apify-actor-start"]
-    if primary:
-        name = primary[0]
-    else:
-        non_onetime = [n for n, e in events.items()
-                       if not e.get("isOneTimeEvent") and n != "apify-actor-start"]
-        pool = non_onetime or list(events.keys())
-        name = min(pool, key=lambda n: (price_of(events[n]) if price_of(events[n]) is not None else float("inf")))
-    p = price_of(events[name])
+    name, event = _select_event(events)
+    p = price_of(event)
     return (p, name) if p is not None else (None, f"{name} has no resolvable price")
+
+
+def all_tiers(act_data, now):
+    """({tier: usd}, name) for the SAME headline event headline_price picks, but keeping
+    every rung of its volume ladder instead of collapsing to FREE. ({}, reason) if the
+    current pricing record is not a live PAY_PER_EVENT entry or the event has no
+    resolvable price.
+
+    headline_price's FREE rung is always a tiered rival's MOST EXPENSIVE rung (Apify's
+    ladder is keyed by the buyer's own Apify platform plan, descending from FREE down to
+    DIAMOND) -- cycle 1436 found a real rival that reads 1.33x dearer than us at FREE,
+    ties us at BRONZE, and undercuts us 2.1x by DIAMOND, invisible to headline_price alone.
+    Closes 0-TODO-h1436-tier-blind-spot-fleetwide: this is `bin/_unit_price.tiers_of`,
+    already proven in the one-off `_batch_price_*.py` audit scripts, ported into the
+    standing fleet-wide check instead of re-derived per niche.
+    """
+    sys.path.insert(0, os.path.join(ROOT, "bin"))
+    import _unit_price as up
+    cur = effective(act_data.get("pricingInfos"), now)
+    if cur is None or cur.get("pricingModel") != "PAY_PER_EVENT":
+        return {}, "not a live PAY_PER_EVENT record"
+    events = cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+    if not events:
+        return {}, "no charge events"
+    name, event = _select_event(events)
+    return up.tiers_of(event), name
+
+
+def tier_price_at(tiers, tier):
+    """This side's price at `tier`. A flat (single-rung) ladder charges the same number
+    regardless of the buyer's Apify plan, so it applies at every tier; a genuinely
+    multi-rung ladder missing that specific tier key returns None rather than guess."""
+    if tier in tiers:
+        return tiers[tier]
+    if len(tiers) == 1:
+        return next(iter(tiers.values()))
+    return None
 
 
 def runfee_price(act_data, now):
@@ -283,6 +331,7 @@ def main():
 
     compared = cheaper_found = flagged = 0
     runfee_seen = runfee_flagged = 0
+    tier_checked = tier_flagged = 0
     for n, slug in enumerate(live, 1):
         path = os.path.join(ROOT, "actors", slug, "README.md")
         if not os.path.exists(path):
@@ -297,6 +346,7 @@ def main():
         if our_price is None:
             print(f"SKIP {slug}: our own headline price not resolvable ({our_label})")
             continue
+        our_tiers, _ = all_tiers(our, now)
 
         text = open(path).read()
         paragraphs = text.split("\n\n")
@@ -344,19 +394,46 @@ def main():
             if rival_price is None:
                 continue  # not comparable with a single number, see docstring
             compared += 1
+            free_rung_flagged = False
             if rival_price + EPSILON < our_price:
                 cheaper_found += 1
                 if not disclosed_anywhere[ident]:
+                    free_rung_flagged = True
                     flagged += 1
                     print(f"UNDISCLOSED {slug}/README.md:{lineno}  {ident} charges "
                           f"${rival_price:g}/{rival_label} (live) vs our ${our_price:g}/{our_label} "
                           f"-- cheaper and named, but no paragraph in this file discloses it")
 
+            # Tier check (cycle 1437, closes 0-TODO-h1436-tier-blind-spot-fleetwide): the
+            # comparison above only ever reads the FREE rung (headline_price's rung), which
+            # is a tiered rival's MOST EXPENSIVE rung. Read every rung of the SAME headline
+            # event and flag a rival that undercuts us at some lower tier even when FREE
+            # read dearer-or-tied, so this check cannot stay silent just because the rival's
+            # own ladder happens to start above ours.
+            if our_tiers and not free_rung_flagged:
+                rival_tiers, _ = all_tiers(rival, now)
+                if rival_tiers:
+                    tier_checked += 1
+                    undercuts = {t: p for t, p in rival_tiers.items()
+                                 if tier_price_at(our_tiers, t) is not None
+                                 and p + EPSILON < tier_price_at(our_tiers, t)}
+                    if undercuts and not disclosed_anywhere[ident]:
+                        tier_flagged += 1
+                        flagged += 1
+                        best = min(undercuts, key=undercuts.get)
+                        print(f"TIER-UNDISCLOSED {slug}/README.md:{lineno}  {ident} reads "
+                              f"${rival_price:g}/{rival_label} at FREE but drops to "
+                              f"${undercuts[best]:g} at {best} (vs our "
+                              f"${tier_price_at(our_tiers, best):g} there) -- cheaper at a "
+                              f"lower tier, but no paragraph in this file discloses it")
+
     print(f"check-price-superiority: {compared} named-rival price(s) compared, "
           f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README "
           f"({runfee_seen} run-fee-only rival(s) held out of the per-row comparison, "
           f"{runfee_flagged} of them undisclosed under the {RUNFEE_CROSSOVER_ROWS}-row "
-          f"crossover floor) ({time.time() - started:.0f}s)")
+          f"crossover floor; {tier_checked} tiered-rival ladder(s) also checked at every "
+          f"rung, {tier_flagged} undisclosed only below the FREE rung) "
+          f"({time.time() - started:.0f}s)")
     return 1 if flagged else 0
 
 
